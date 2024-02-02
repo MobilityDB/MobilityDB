@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions manipulating skiplists.
+ * @brief Functions manipulating skiplists
  * @note See the description of skip lists in Wikipedia
  * https://en.wikipedia.org/wiki/Skip_list
  * Note also that according to
@@ -45,6 +45,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/timestamp.h>
 #if MEOS
   #define MaxAllocSize   ((Size) 0x3fffffff) /* 1 gigabyte - 1 */
 #else
@@ -55,8 +56,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
-#include "general/span.h"
 #include "general/temporal_aggfuncs.h"
 #include "general/type_util.h"
 
@@ -76,7 +75,8 @@
 #define SKIPLIST_INITIAL_FREELIST 32
 
 /**
- * @brief Enumeration for the relative position of a given element into a skiplist
+ * @brief Enumeration for the relative position of a given element into a
+ * skiplist
  */
 typedef enum
 {
@@ -108,7 +108,7 @@ ensure_same_skiplist_subtype(SkipList *state, uint8 subtype)
 
 /* Global variable for skip lists which require the gsl random generator */
 
-gsl_rng *_aggregation_rng = NULL;
+gsl_rng *_AGGREGATION_RNG = NULL;
 
 #ifdef NO_FFSL
 static int
@@ -127,9 +127,9 @@ ffsl(long int i)
 static long int
 gsl_random48()
 {
-  if(! _aggregation_rng)
-    _aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1);
-  return gsl_rng_get(_aggregation_rng);
+  if(! _AGGREGATION_RNG)
+    _AGGREGATION_RNG = gsl_rng_alloc(gsl_rng_ranlxd1);
+  return gsl_rng_get(_AGGREGATION_RNG);
 }
 
 /**
@@ -144,7 +144,7 @@ random_level()
 
 /**
  * @brief Return the position to store an additional element in the skiplist
- * @return On error return INT_MAX
+ * @return On error return @p INT_MAX
  */
 static int
 skiplist_alloc(SkipList *list)
@@ -219,8 +219,9 @@ skiplist_delete(SkipList *list, int cur)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
- * @brief Free the skiplist
+ * @ingroup meos_internal_temporal_agg
+ * @brief Delete the skiplist and free its allocated memory
+ * @param[in] list Skiplist
  */
 void
 skiplist_free(SkipList *list)
@@ -273,10 +274,10 @@ skiplist_print(const SkipList *list)
       len += sprintf(buf+len, "<p0>\"];\n");
     else
     {
-      Span p;
-      temporal_set_period(e->value, &p);
+      Span s;
+      temporal_set_tstzspan(e->value, &s);
       /* The second argument of span_out is not used for spans */
-      char *val = span_out(&p, Int32GetDatum(0));
+      char *val = span_out(&s, Int32GetDatum(0));
       len +=  sprintf(buf+len, "<p0>%s\"];\n", val);
       pfree(val);
     }
@@ -296,6 +297,7 @@ skiplist_print(const SkipList *list)
   }
   sprintf(buf+len, "}\n");
   meos_error(WARNING, 0, "SKIPLIST: %s", buf);
+  return;
 }
 #endif
 
@@ -303,7 +305,6 @@ skiplist_print(const SkipList *list)
 
 /**
  * @brief Reads the state value from the buffer
- *
  * @param[in] state State
  * @param[in] data Structure containing the data
  * @param[in] size Size of the structure
@@ -323,6 +324,7 @@ aggstate_set_extra(SkipList *state, void *data, size_t size)
 #if ! MEOS
   MemoryContextSwitchTo(oldctx);
 #endif /* ! MEOS */
+  return;
 }
 
 /**
@@ -349,7 +351,6 @@ skiplist_tailval(SkipList *list)
 
 /**
  * @brief Constructs a skiplist from the array of values values
- *
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  */
@@ -377,7 +378,7 @@ skiplist_make(void **values, int count)
   /* Fill values first */
   result->elems[0].value = NULL; /* set head value to NULL */
   for (int i = 0; i < count - 2; i++)
-    result->elems[i + 1].value = temporal_copy((Temporal *) values[i]);
+    result->elems[i + 1].value = temporal_cp((Temporal *) values[i]);
   result->elems[count - 1].value = NULL; /* set tail value to NULL */
   result->tail = count - 1;
 #if ! MEOS
@@ -402,14 +403,14 @@ skiplist_make(void **values, int count)
 }
 
 /**
- * @brief Determine the relative position of a period and a timestamp
+ * @brief Determine the relative position of a span and a timestamptz
  */
 static RelativeTimePos
-pos_period_timestamp(const Span *p, TimestampTz t)
+pos_span_timestamptz(const Span *s, TimestampTz t)
 {
-  if (left_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
+  if (left_span_value(s, TimestampTzGetDatum(t)))
     return BEFORE;
-  if (right_span_value(p, TimestampTzGetDatum(t), T_TIMESTAMPTZ))
+  if (right_span_value(s, TimestampTzGetDatum(t)))
     return AFTER;
   return DURING;
 }
@@ -418,11 +419,11 @@ pos_period_timestamp(const Span *p, TimestampTz t)
  * @brief Determine the relative position of two periods
  */
 static RelativeTimePos
-pos_period_period(const Span *p1, const Span *p2)
+pos_span_span(const Span *s1, const Span *s2)
 {
-  if (left_span_span(p1, p2))
+  if (lf_span_span(s1, s2))
     return BEFORE;
-  if (right_span_span(p1, p2))
+  if (lf_span_span(s2, s1))
     return AFTER;
   return DURING;
 }
@@ -431,7 +432,7 @@ pos_period_period(const Span *p1, const Span *p2)
  * @brief Comparison function used for skiplists
  */
 static RelativeTimePos
-skiplist_elempos(const SkipList *list, Span *p, int cur)
+skiplist_elempos(const SkipList *list, Span *s, int cur)
 {
   if (cur == 0)
     return AFTER; /* Head is -inf */
@@ -440,9 +441,9 @@ skiplist_elempos(const SkipList *list, Span *p, int cur)
 
   Temporal *temp = (Temporal *) list->elems[cur].value;
   if (temp->subtype == TINSTANT)
-    return pos_period_timestamp(p, ((TInstant *) temp)->t);
+    return pos_span_timestamptz(s, ((TInstant *) temp)->t);
   else /* temp->subtype == TSEQUENCE */
-    return pos_period_period(p, &((TSequence *) temp)->period);
+    return pos_span_span(s, &((TSequence *) temp)->period);
 }
 
 /**
@@ -456,7 +457,8 @@ skiplist_elempos(const SkipList *list, Span *p, int cur)
  * @param[in,out] list Skiplist
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
- * @param[in] func Function used when aggregating temporal values
+ * @param[in] func Function used when aggregating temporal values, may be NULL
+ * for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments when
  * aggregating temporal value
  */
@@ -464,11 +466,11 @@ void
 skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   bool crossings)
 {
+  assert(list->length > 0);
+
 #if ! MEOS
   MemoryContext oldctx;
 #endif /* ! MEOS */
-
-  assert(list->length > 0);
 
   /* Temporal aggregation cannot mix instants and sequences */
   Temporal *temp1 = (Temporal *) skiplist_headval(list);
@@ -488,7 +490,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   }
 
   /* Compute the span of the new values */
-  Span p;
+  Span s;
   uint8 subtype = 0;
   subtype = ((Temporal *) skiplist_headval(list))->subtype;
   if (subtype == TINSTANT)
@@ -496,14 +498,14 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     TInstant *first = (TInstant *) values[0];
     TInstant *last = (TInstant *) values[count - 1];
     span_set(TimestampTzGetDatum(first->t), TimestampTzGetDatum(last->t),
-      true, true, T_TIMESTAMPTZ, &p);
+      true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
   }
   else /* subtype == TSEQUENCE */
   {
     TSequence *first = (TSequence *) values[0];
     TSequence *last = (TSequence *) values[count - 1];
-    span_set(first->period.lower, last->period.upper,
-      first->period.lower_inc, last->period.upper_inc, T_TIMESTAMPTZ, &p);
+    span_set(first->period.lower, last->period.upper, first->period.lower_inc,
+      last->period.upper_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
   }
 
   /* Find the list values that are strictly before the span of new values */
@@ -515,7 +517,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
   for (int level = height - 1; level >= 0; level--)
   {
     while (e->next[level] != -1 &&
-      skiplist_elempos(list, &p, e->next[level]) == AFTER)
+      skiplist_elempos(list, &s, e->next[level]) == AFTER)
     {
       cur = e->next[level];
       e = &list->elems[cur];
@@ -528,7 +530,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 
   /* Count the number of elements that will be merged with the new values */
   int spliced_count = 0;
-  while (skiplist_elempos(list, &p, cur) == DURING)
+  while (skiplist_elempos(list, &s, cur) == DURING)
   {
     cur = e->next[0];
     e = &list->elems[cur];
@@ -612,7 +614,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 #if ! MEOS
     oldctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
-    newelm->value = temporal_copy(values[i]);
+    newelm->value = temporal_cp(values[i]);
 #if ! MEOS
     unset_aggregation_context(oldctx);
 #endif /* ! MEOS */
@@ -670,7 +672,7 @@ skiplist_temporal_values(SkipList *list)
   int count = 0;
   while (cur != list->tail)
   {
-    result[count++] = temporal_copy(list->elems[cur].value);
+    result[count++] = temporal_cp(list->elems[cur].value);
     cur = list->elems[cur].next[0];
   }
   return result;

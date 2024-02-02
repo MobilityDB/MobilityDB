@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -54,11 +54,18 @@ COPY tbl_floatspanset_tmp FROM '/tmp/tbl_floatspanset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
 DROP TABLE tbl_floatspanset_tmp;
 
+COPY tbl_datespanset TO '/tmp/tbl_datespanset' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_datespanset_tmp;
+CREATE TABLE tbl_datespanset_tmp AS TABLE tbl_datespanset WITH NO DATA;
+COPY tbl_datespanset_tmp FROM '/tmp/tbl_datespanset' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_datespanset t1, tbl_datespanset_tmp t2 WHERE t1.k = t2.k AND t1.d <> t2.d;
+DROP TABLE tbl_datespanset_tmp;
+
 COPY tbl_tstzspanset TO '/tmp/tbl_tstzspanset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tstzspanset_tmp;
 CREATE TABLE tbl_tstzspanset_tmp AS TABLE tbl_tstzspanset WITH NO DATA;
 COPY tbl_tstzspanset_tmp FROM '/tmp/tbl_tstzspanset' (FORMAT BINARY);
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset_tmp t2 WHERE t1.k = t2.k AND t1.ps <> t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
 DROP TABLE tbl_tstzspanset_tmp;
 
 -- Input/output from/to WKB and HexWKB
@@ -66,30 +73,36 @@ DROP TABLE tbl_tstzspanset_tmp;
 SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromBinary(asBinary(i)) <> i;
 SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromBinary(asBinary(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromBinary(asBinary(f)) <> f;
-SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromBinary(asBinary(ps)) <> ps;
+SELECT COUNT(*) FROM tbl_datespanset WHERE datespansetFromBinary(asBinary(d)) <> d;
+SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromBinary(asBinary(t)) <> t;
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE intspansetFromHexWKB(asHexWKB(i)) <> i;
 SELECT COUNT(*) FROM tbl_bigintspanset WHERE bigintspansetFromHexWKB(asHexWKB(b)) <> b;
 SELECT COUNT(*) FROM tbl_floatspanset WHERE floatspansetFromHexWKB(asHexWKB(f)) <> f;
-SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromHexWKB(asHexWKB(ps)) <> ps;
+SELECT COUNT(*) FROM tbl_datespanset WHERE datespansetFromHexWKB(asHexWKB(d)) <> d;
+SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromHexWKB(asHexWKB(t)) <> t;
 
 -------------------------------------------------------------------------------
 -- Casting
 -------------------------------------------------------------------------------
 
 SELECT MAX(lower(spanset(i))) FROM tbl_intspan;
+SELECT MAX(lower(spanset(b))) FROM tbl_bigintspan;
 SELECT MAX(lower(spanset(f))) FROM tbl_floatspan;
-SELECT MAX(lower(spanset(p))) FROM tbl_tstzspan;
+SELECT MAX(lower(spanset(d))) FROM tbl_datespan;
+SELECT MAX(lower(spanset(t))) FROM tbl_tstzspan;
 
 SELECT MAX(lower(span(i))) FROM tbl_intspanset;
+SELECT MAX(lower(span(b))) FROM tbl_bigintspanset;
 SELECT MAX(lower(span(f))) FROM tbl_floatspanset;
-SELECT MAX(lower(span(ps))) FROM tbl_tstzspanset;
+SELECT MAX(lower(span(d))) FROM tbl_datespanset;
+SELECT MAX(lower(span(t))) FROM tbl_tstzspanset;
 
--------------------------------------------------------------------------------
--- Transformation Functions
--------------------------------------------------------------------------------
+SELECT MAX(lower(d::tstzspanset)) FROM tbl_datespanset ORDER BY 1;
+SELECT MAX(lower(t::datespanset)) FROM tbl_tstzspanset ORDER BY 1;
 
-SELECT MAX(lower(round(f, 6))) FROM tbl_floatspanset;
+SELECT COUNT(*) FROM tbl_intspanset WHERE (i::floatspanset)::intspanset <> i;
+SELECT COUNT(*) FROM tbl_datespanset WHERE (d::tstzspanset)::datespanset <> d;
 
 -------------------------------------------------------------------------------
 -- Accessor Functions
@@ -97,29 +110,31 @@ SELECT MAX(lower(round(f, 6))) FROM tbl_floatspanset;
 
 SELECT MAX(memSize(i)) FROM tbl_intspanset;
 SELECT MAX(memSize(f)) FROM tbl_floatspanset;
-SELECT MAX(memSize(ps)) FROM tbl_tstzspanset;
+SELECT MAX(memSize(t)) FROM tbl_tstzspanset;
 
 SELECT MAX(lower(i)) FROM tbl_intspanset;
 SELECT round(MAX(lower(f))::numeric, 6) FROM tbl_floatspanset;
-SELECT MAX(lower(ps)) FROM tbl_tstzspanset;
+SELECT MAX(lower(t)) FROM tbl_tstzspanset;
 
 SELECT MAX(upper(i)) FROM tbl_intspanset;
 SELECT round(MAX(upper(f))::numeric, 6) FROM tbl_floatspanset;
-SELECT MAX(upper(ps)) FROM tbl_tstzspanset;
+SELECT MAX(upper(t)) FROM tbl_tstzspanset;
 
 SELECT DISTINCT lower_inc(i) FROM tbl_intspanset;
 SELECT DISTINCT lower_inc(f) FROM tbl_floatspanset;
-SELECT DISTINCT lower_inc(ps) FROM tbl_tstzspanset;
+SELECT DISTINCT lower_inc(t) FROM tbl_tstzspanset;
 
 SELECT DISTINCT upper_inc(i) FROM tbl_intspanset;
 SELECT DISTINCT upper_inc(f) FROM tbl_floatspanset;
-SELECT DISTINCT upper_inc(ps) FROM tbl_tstzspanset;
+SELECT DISTINCT upper_inc(t) FROM tbl_tstzspanset;
 
 SELECT MAX(width(i)) FROM tbl_intspanset;
 SELECT MAX(width(f)) FROM tbl_floatspanset;
 
-SELECT MAX(duration(ps)) FROM tbl_tstzspanset;
-SELECT MAX(duration(ps, true)) FROM tbl_tstzspanset;
+SELECT MAX(duration(d)) FROM tbl_datespanset;
+SELECT MAX(duration(d, true)) FROM tbl_datespanset;
+SELECT MAX(duration(t)) FROM tbl_tstzspanset;
+SELECT MAX(duration(t, true)) FROM tbl_tstzspanset;
 
 SELECT MAX(numSpans(i)) FROM tbl_intspanset;
 SELECT MAX(lower(startSpan(i))) FROM tbl_intspanset;
@@ -133,34 +148,34 @@ SELECT MAX(lower(endSpan(f))) FROM tbl_floatspanset;
 SELECT MAX(lower(spanN(f, 1))) FROM tbl_floatspanset;
 SELECT MAX(array_length(spans(f),1)) FROM tbl_floatspanset;
 
-SELECT MAX(numSpans(ps)) FROM tbl_tstzspanset;
-SELECT MAX(lower(startSpan(ps))) FROM tbl_tstzspanset;
-SELECT MAX(lower(endSpan(ps))) FROM tbl_tstzspanset;
-SELECT MAX(lower(spanN(ps, 1))) FROM tbl_tstzspanset;
-SELECT MAX(array_length(spans(ps),1)) FROM tbl_tstzspanset;
+SELECT MAX(numSpans(t)) FROM tbl_tstzspanset;
+SELECT MAX(lower(startSpan(t))) FROM tbl_tstzspanset;
+SELECT MAX(lower(endSpan(t))) FROM tbl_tstzspanset;
+SELECT MAX(lower(spanN(t, 1))) FROM tbl_tstzspanset;
+SELECT MAX(array_length(spans(t),1)) FROM tbl_tstzspanset;
 
-SELECT MAX(numTimestamps(ps)) FROM tbl_tstzspanset;
-SELECT MAX(startTimestamp(ps)) FROM tbl_tstzspanset;
-SELECT MAX(endTimestamp(ps)) FROM tbl_tstzspanset;
-SELECT MAX(timestampN(ps, 0)) FROM tbl_tstzspanset;
-SELECT MAX((timestamps(ps))[1]) FROM tbl_tstzspanset;
+SELECT MAX(numTimestamps(t)) FROM tbl_tstzspanset;
+SELECT MAX(startTimestamp(t)) FROM tbl_tstzspanset;
+SELECT MAX(endTimestamp(t)) FROM tbl_tstzspanset;
+SELECT MAX(timestampN(t, 0)) FROM tbl_tstzspanset;
+SELECT MAX((timestamps(t))[1]) FROM tbl_tstzspanset;
 
 SELECT MAX(lower(shift(i, 5))) FROM tbl_intspanset;
 SELECT MAX(lower(shift(b, 5))) FROM tbl_bigintspanset;
 SELECT round(MAX(lower(shift(f, 5)))::numeric, 6) FROM tbl_floatspanset;
-SELECT MAX(lower(shift(ps, '5 min'))) FROM tbl_tstzspanset;
+SELECT MAX(lower(shift(t, '5 min'))) FROM tbl_tstzspanset;
 
 SELECT MAX(lower(scale(i, 5))) FROM tbl_intspanset;
 SELECT MAX(lower(scale(b, 5))) FROM tbl_bigintspanset;
 SELECT round(MAX(lower(scale(f, 5)))::numeric, 6) FROM tbl_floatspanset;
-SELECT MAX(lower(scale(ps, '5 min'))) FROM tbl_tstzspanset;
+SELECT MAX(lower(scale(t, '5 min'))) FROM tbl_tstzspanset;
 
 SELECT MAX(lower(shiftScale(i, 5, 5))) FROM tbl_intspanset;
 SELECT MAX(lower(shiftScale(b, 5, 5))) FROM tbl_bigintspanset;
 SELECT round(MAX(lower(shiftScale(f, 5, 5)))::numeric, 6) FROM tbl_floatspanset;
-SELECT MAX(lower(shiftScale(ps, '5 min', '5 min'))) FROM tbl_tstzspanset;
+SELECT MAX(lower(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzspanset;
 
-SELECT MAX(startTimestamp(shiftScale(ps, '5 min', '5 min'))) FROM tbl_tstzspanset;
+SELECT MAX(startTimestamp(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzspanset;
 
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE spanset_cmp(t1.i, t2.i) = -1;
 SELECT COUNT(*) FROM tbl_intspanset t1, tbl_intspanset t2 WHERE t1.i = t2.i;
@@ -186,15 +201,21 @@ SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f <= t2.f
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f > t2.f;
 SELECT COUNT(*) FROM tbl_floatspanset t1, tbl_floatspanset t2 WHERE t1.f >= t2.f;
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spanset_cmp(t1.ps, t2.ps) = -1;
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps = t2.ps;
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps <> t2.ps;
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps < t2.ps;
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps <= t2.ps;
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps > t2.ps;
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps >= t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE spanset_cmp(t1.t, t2.t) = -1;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t = t2.t;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t <> t2.t;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t < t2.t;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t <= t2.t;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t > t2.t;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t >= t2.t;
 
-SELECT MAX(spanset_hash(ps)) != 0 FROM tbl_tstzspanset;
-SELECT MAX(spanset_hash_extended(ps, 1)) != 0 FROM tbl_tstzspanset;
+SELECT MAX(spanset_hash(t)) != 0 FROM tbl_tstzspanset;
+SELECT MAX(spanset_hash_extended(t, 1)) != 0 FROM tbl_tstzspanset;
+
+-------------------------------------------------------------------------------
+-- Transformation Functions
+-------------------------------------------------------------------------------
+
+SELECT MAX(lower(round(f, 6))) FROM tbl_floatspanset;
 
 -------------------------------------------------------------------------------

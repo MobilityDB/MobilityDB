@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal spatial relationships for temporal network points.
+ * @brief Temporal spatial relationships for temporal network points
  *
  * These relationships are applied at each instant and result in a temporal
  * boolean/text. The following relationships are supported:
@@ -49,31 +49,29 @@
  *****************************************************************************/
 
 /**
- * @brief Return the temporal disjoint/intersection relationship between the
- * temporal network point and the network point
+ * @brief Return the temporal disjoint/intersection relationship between a
+ * temporal network point and a network point
  */
 Temporal *
 tinterrel_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool tinter,
   bool restr, bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) np) || 
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) np) ||
       ! ensure_same_srid(tnpoint_srid(temp), npoint_srid(np)))
     return NULL;
 
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = npoint_geom(np);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo(tempgeom, gs, tinter, restr,
-     atvalue);
-  pfree(tempgeom);
-  pfree(gs);
+  Temporal *result = tinterrel_tpoint_geo(tpoint, gs, tinter, restr, atvalue);
+  pfree(tpoint); pfree(gs);
   return result;
 }
 
 /**
- * @brief Return the temporal disjoint/intersection relationship between the
- * temporal network point and the geometry
+ * @brief Return the temporal disjoint/intersection relationship between a
+ * temporal network point and a geometry
  */
 Temporal *
 tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
@@ -85,19 +83,18 @@ tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
       ! ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs)))
     return NULL;
 
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo(tempgeom, gs, tinter, restr,
-    atvalue);
-  pfree(tempgeom);
+  Temporal *result = tinterrel_tpoint_geo(tpoint, gs, tinter, restr, atvalue);
+  pfree(tpoint);
   return result;
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Return the temporal contains relationship between the geometry and
- * the temporal network point
+ * @brief Return the temporal contains relationship between a geometry and
+ * a temporal network point
  */
 Temporal *
 tcontains_geo_tnpoint(GSERIALIZED *gs, Temporal *temp, bool restr,
@@ -105,15 +102,15 @@ tcontains_geo_tnpoint(GSERIALIZED *gs, Temporal *temp, bool restr,
 {
   if (gserialized_is_empty(gs))
     return NULL;
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tcontains_geo_tpoint(gs, tempgeom, restr, atvalue);
-  pfree(tempgeom);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  Temporal *result = tcontains_geo_tpoint(gs, tpoint, restr, atvalue);
+  pfree(tpoint);
   return result;
 }
 
 /**
- * @brief Return the temporal touches relationship between the temporal network
- * point and the geometry
+ * @brief Return the temporal touches relationship between a temporal network
+ * point and a geometry
  */
 Temporal *
 ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
@@ -124,16 +121,16 @@ ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
       ! ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs)))
     return NULL;
 
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = ttouches_tpoint_geo(tempgeom, gs, restr, atvalue);
-  pfree(tempgeom);
+  Temporal *result = ttouches_tpoint_geo(tpoint, gs, restr, atvalue);
+  pfree(tpoint);
   return result;
 }
 
 /**
- * @brief Return the temporal touches relationship between the temporal network
- * point and the geometry
+ * @brief Return the temporal touches relationship between a temporal network
+ * point and a geometry
  */
 Temporal *
 ttouches_geo_tnpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
@@ -143,8 +140,8 @@ ttouches_geo_tnpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
 }
 
 /**
- * @brief Return the temporal touches relationship between the temporal network
- * point and the network point
+ * @brief Return the temporal touches relationship between a temporal network
+ * point and a network point
  */
 Temporal *
 ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr,
@@ -154,18 +151,17 @@ ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr,
   if (! ensure_same_srid(tnpoint_srid(temp), npoint_srid(np)))
     return NULL;
 
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = npoint_geom(np);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = ttouches_tpoint_geo(tempgeom, gs, restr, atvalue);
-  pfree(tempgeom);
-  pfree(gs);
+  Temporal *result = ttouches_tpoint_geo(tpoint, gs, restr, atvalue);
+  pfree(tpoint); pfree(gs);
   return result;
 }
 
 /**
- * @brief Return the temporal touches relationship between the temporal network
- * point and the network point
+ * @brief Return the temporal touches relationship between a temporal network
+ * point and a network point
  */
 Temporal *
 ttouches_npoint_tnpoint(const Npoint *np, const Temporal *temp, bool restr,
@@ -175,8 +171,8 @@ ttouches_npoint_tnpoint(const Npoint *np, const Temporal *temp, bool restr,
 }
 
 /**
- * @brief Return a temporal Boolean that states whether the geometry and the
- * temporal network point are within the given distance
+ * @brief Return a temporal Boolean that states whether a geometry and a
+ * temporal network point are within a distance
  */
 Temporal *
 tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *gs, double dist, bool restr,
@@ -184,15 +180,15 @@ tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *gs, double dist, bool restr,
 {
   if (gserialized_is_empty(gs))
     return NULL;
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tdwithin_tpoint_geo(tempgeom, gs, dist, restr, atvalue);
-  pfree(tempgeom);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  Temporal *result = tdwithin_tpoint_geo(tpoint, gs, dist, restr, atvalue);
+  pfree(tpoint);
   return result;
 }
 
 /**
- * @brief Return a temporal Boolean that states whether the geometry and the
- * temporal network point are within the given distance
+ * @brief Return a temporal Boolean that states whether a geometry and a
+ * temporal network point are within a distance
  */
 Temporal *
 tdwithin_geo_tnpoint(GSERIALIZED *gs, Temporal *temp, double dist, bool restr,
@@ -202,23 +198,23 @@ tdwithin_geo_tnpoint(GSERIALIZED *gs, Temporal *temp, double dist, bool restr,
 }
 
 /**
- * @brief Return a temporal Boolean that states whether the network point and
- * the temporal network point are within the given distance
+ * @brief Return a temporal Boolean that states whether a network point and
+ * a temporal network point are within a distance
  */
 Temporal *
 tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np, double dist, bool restr,
   bool atvalue)
 {
   GSERIALIZED *geom = npoint_geom(np);
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tdwithin_tpoint_geo(tempgeom, geom, dist, restr, atvalue);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  Temporal *result = tdwithin_tpoint_geo(tpoint, geom, dist, restr, atvalue);
   pfree(geom);
   return result;
 }
 
 /**
- * @brief Return a temporal Boolean that states whether the network point and
- * the temporal network point are within the given distance
+ * @brief Return a temporal Boolean that states whether a network point and
+ * a temporal network point are within a distance
  */
 Temporal *
 tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, double dist, bool restr,
@@ -228,8 +224,8 @@ tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, double dist, bool restr,
 }
 
 /**
- * @brief Return a temporal Boolean that states whether the temporal network
- * points are within the given distance
+ * @brief Return a temporal Boolean that states whether two temporal network
+ * points are within a distance
  */
 Temporal *
 tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2, double dist,
@@ -242,12 +238,11 @@ tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2, double dist,
     &sync1, &sync2))
     return NULL;
 
-  Temporal *tempgeom1 = tnpoint_tgeompoint(sync1);
-  Temporal *tempgeom2 = tnpoint_tgeompoint(sync2);
-  Temporal *result = tdwithin_tpoint_tpoint1(tempgeom1, tempgeom2, dist, restr,
+  Temporal *tpoint1 = tnpoint_tgeompoint(sync1);
+  Temporal *tpoint2 = tnpoint_tgeompoint(sync2);
+  Temporal *result = tdwithin_tpoint_tpoint1(tpoint1, tpoint2, dist, restr,
     atvalue);
-  pfree(sync1); pfree(sync2);
-  pfree(tempgeom1); pfree(tempgeom2);
+  pfree(sync1); pfree(sync2); pfree(tpoint1); pfree(tpoint2);
   return result;
 }
 

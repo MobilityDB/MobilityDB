@@ -136,6 +136,24 @@ SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f + t2.f IS NOT N
   9801
 (1 row)
 
+SELECT COUNT(*) FROM tbl_dateset t1, tbl_date t2 WHERE t1.d + t2.d IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_date t1, tbl_dateset t2 WHERE t1.d + t2.d IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_dateset t1, tbl_dateset t2 WHERE t1.d + t2.d IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_timestamptz t2 WHERE t1.t + t2.t IS NOT NULL;
  count 
 -------
@@ -203,6 +221,24 @@ SELECT COUNT(*) FROM tbl_float t1, tbl_floatset t2 WHERE t1.f - t2.f IS NOT NULL
 (1 row)
 
 SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f - t2.f IS NOT NULL;
+ count 
+-------
+  9702
+(1 row)
+
+SELECT COUNT(*) FROM tbl_dateset t1, tbl_date t2 WHERE t1.d - t2.d IS NOT NULL;
+ count 
+-------
+  9801
+(1 row)
+
+SELECT COUNT(*) FROM tbl_date t1, tbl_dateset t2 WHERE t1.d - t2.d IS NOT NULL;
+ count 
+-------
+  9616
+(1 row)
+
+SELECT COUNT(*) FROM tbl_dateset t1, tbl_dateset t2 WHERE t1.d - t2.d IS NOT NULL;
  count 
 -------
   9702
@@ -280,6 +316,24 @@ SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset t2 WHERE t1.f * t2.f IS NOT N
     99
 (1 row)
 
+SELECT COUNT(*) FROM tbl_dateset t1, tbl_date t2 WHERE t1.d * t2.d IS NOT NULL;
+ count 
+-------
+   185
+(1 row)
+
+SELECT COUNT(*) FROM tbl_date t1, tbl_dateset t2 WHERE t1.d * t2.d IS NOT NULL;
+ count 
+-------
+   185
+(1 row)
+
+SELECT COUNT(*) FROM tbl_dateset t1, tbl_dateset t2 WHERE t1.d * t2.d IS NOT NULL;
+ count 
+-------
+  1425
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_timestamptz t2 WHERE t1.t * t2.t IS NOT NULL;
  count 
 -------
@@ -347,6 +401,24 @@ SELECT MIN(t1.f <-> t2.f) FROM tbl_floatset t1, tbl_float t2;
 (1 row)
 
 SELECT MIN(t1.f <-> t2.f) FROM tbl_floatset t1, tbl_floatset t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.d <-> t2.d) FROM tbl_date t1, tbl_dateset t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.d <-> t2.d) FROM tbl_dateset t1, tbl_date t2;
+ min 
+-----
+   0
+(1 row)
+
+SELECT MIN(t1.d <-> t2.d) FROM tbl_dateset t1, tbl_dateset t2;
  min 
 -----
    0

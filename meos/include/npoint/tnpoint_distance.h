@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -60,12 +60,12 @@ extern double nad_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 extern double nad_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2);
 
-extern bool shortestline_tnpoint_geo(const Temporal *temp,
-  const GSERIALIZED *geo, GSERIALIZED **result);
+extern GSERIALIZED *shortestline_tnpoint_geo(const Temporal *temp,
+  const GSERIALIZED *geo);
 extern GSERIALIZED *shortestline_tnpoint_npoint(const Temporal *temp,
   const Npoint *np);
-extern bool shortestline_tnpoint_tnpoint(const Temporal *temp1,
-  const Temporal *temp2, GSERIALIZED **result);
+extern GSERIALIZED *shortestline_tnpoint_tnpoint(const Temporal *temp1,
+  const Temporal *temp2);
 
 /*****************************************************************************/
 

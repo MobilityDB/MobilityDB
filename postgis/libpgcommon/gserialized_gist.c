@@ -142,7 +142,7 @@ void gbox_from_gidx(GIDX *a, GBOX *gbox, int flags)
 
 
 /**
-* Peak into a #GSERIALIZED datum to find the bounding box. If the
+* Peek into a #GSERIALIZED datum to find the bounding box. If the
 * box is there, copy it out and return it. If not, calculate the box from the
 * full object and return the box based on that. If no box is available,
 * return #LW_FAILURE, otherwise #LW_SUCCESS.

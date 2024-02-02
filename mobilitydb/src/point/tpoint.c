@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,22 +29,19 @@
 
 /**
  * @file
- * @brief General functions for temporal points.
+ * @brief General functions for temporal points
  */
 
 #include "point/tpoint.h"
 
-/* C */
-#include <limits.h>
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
+#include "general/temporal.h"
+#include "point/stbox.h"
 #include "point/tpoint_parser.h"
-#include "point/tpoint_boxops.h"
-#include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
@@ -62,7 +59,7 @@
  * General functions
  *****************************************************************************/
 
-#define PGC_ERRMSG_MAXLEN 2048
+#define PGC_ERRMSG_MAX_LEN 2048
 
 /**
  * @brief Output an error message
@@ -70,9 +67,9 @@
 static void
 pg_error(const char *fmt, va_list ap)
 {
-  char errmsg[PGC_ERRMSG_MAXLEN + 1];
-  vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
-  errmsg[PGC_ERRMSG_MAXLEN]='\0';
+  char errmsg[PGC_ERRMSG_MAX_LEN + 1];
+  vsnprintf (errmsg, PGC_ERRMSG_MAX_LEN, fmt, ap);
+  errmsg[PGC_ERRMSG_MAX_LEN]='\0';
   ereport(ERROR, (errmsg_internal("%s", errmsg)));
   return;
 }
@@ -83,9 +80,9 @@ pg_error(const char *fmt, va_list ap)
 static void
 pg_notice(const char *fmt, va_list ap)
 {
-  char errmsg[PGC_ERRMSG_MAXLEN + 1];
-  vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
-  errmsg[PGC_ERRMSG_MAXLEN]='\0';
+  char errmsg[PGC_ERRMSG_MAX_LEN + 1];
+  vsnprintf (errmsg, PGC_ERRMSG_MAX_LEN, fmt, ap);
+  errmsg[PGC_ERRMSG_MAX_LEN]='\0';
   ereport(NOTICE, (errmsg_internal("%s", errmsg)));
   return;
 }
@@ -94,9 +91,10 @@ pg_notice(const char *fmt, va_list ap)
  * @brief Set the handlers for initializing the liblwgeom library
  */
 void
-temporalgeom_init()
+mobilitydb_init()
 {
   lwgeom_set_handlers(palloc, repalloc, pfree, pg_error, pg_notice);
+  return;
 }
 
 /*****************************************************************************
@@ -153,7 +151,7 @@ PGDLLEXPORT Datum Tpoint_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_in);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Generic input function for temporal points
+ * @brief Return a temporal point from its Well-Known Text (WKT) representation
  *
  * Examples of input for the various temporal types:
  * @code
@@ -167,15 +165,14 @@ PG_FUNCTION_INFO_V1(Tpoint_in);
  * { [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 ) ,
  *   [ Point(1 1) @ 2012-01-01 08:20:00 , Point(0 0) @ 2012-01-01 08:30:00 ] }
  * @endcode
- * @sqlfunc tpoint_in()
+ * @sqlfn tpoint_in()
  */
 Datum
 Tpoint_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Temporal *result = tpoint_parse(&input, oid_type(temptypid));
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(tpoint_parse(&input, oid_type(temptypid)));
 }
 
 /**
@@ -201,9 +198,9 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   /*
    * There are several ways to define a column wrt type modifiers:
    *   column_type(TempSubType, Geometry, SRID) => All modifiers are determined.
-   *    column_type(TempSubType, Geometry) => The SRID is generic.
-   *    column_type(Geometry, SRID) => The temporal type is generic.
-   *    column_type(Geometry) => The temporal type and SRID are generic.
+   *   column_type(TempSubType, Geometry) => The SRID is generic.
+   *   column_type(Geometry, SRID) => The temporal type is generic.
+   *   column_type(Geometry) => The temporal type and SRID are generic.
    *   column_type(TempSubType) => The geometry type and SRID are generic.
    *   column_type => The temporal type, geometry type, and SRID are generic.
    *
@@ -320,7 +317,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 PGDLLEXPORT Datum Tgeompoint_typmod_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_typmod_in);
 /**
- * @brief Input typmod information for temporal geometric points
+ * @brief Input typmod information for temporal geometry points
  */
 Datum
 Tgeompoint_typmod_in(PG_FUNCTION_ARGS)
@@ -333,7 +330,7 @@ Tgeompoint_typmod_in(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tgeogpoint_typmod_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeogpoint_typmod_in);
 /**
- * @brief Input typmod information for temporal geographic points
+ * @brief Input typmod information for temporal geography points
  */
 Datum
 Tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
@@ -403,7 +400,7 @@ Tpoint_enforce_typmod(PG_FUNCTION_ARGS)
   int32 typmod = PG_GETARG_INT32(1);
   /* Check if typmod of temporal point is consistent with the supplied one */
   temp = tpoint_valid_typmod(temp, typmod);
-  PG_RETURN_POINTER(temp);
+  PG_RETURN_TEMPORAL_P(temp);
 }
 
 /*****************************************************************************
@@ -414,22 +411,17 @@ PGDLLEXPORT Datum Tpointinst_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpointinst_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
- * @brief Construct a temporal instant point value from the arguments
- * @sqlfunc tgeompoint_inst(), tgeogpoint_inst(),
+ * @brief Return a temporal instant point from a point and a timestamptz
+ * @sqlfn tgeompoint_inst(), tgeogpoint_inst()
  */
 Datum
 Tpointinst_constructor(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  ensure_point_type(gs);
-  ensure_not_empty(gs);
-  ensure_has_not_M_gs(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  Temporal *result = (Temporal *) tinstant_make(PointerGetDatum(gs), temptype,
-    t);
+  Temporal *result = (Temporal *) tpointinst_make(gs, t);
   PG_FREE_IF_COPY(gs, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -440,8 +432,8 @@ PGDLLEXPORT Datum Tpoint_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Return the bounding box of a temporal point
- * @sqlfunc stbox()
+ * @brief Return a temporal point converted to a spatiotemporal box
+ * @sqlfn stbox()
  * @sqlop @p ::
  */
 Datum
@@ -450,7 +442,7 @@ Tpoint_to_stbox(PG_FUNCTION_ARGS)
   Datum tempdatum = PG_GETARG_DATUM(0);
   STBox *result = palloc(sizeof(STBox));
   temporal_bbox_slice(tempdatum, result);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************
@@ -461,9 +453,9 @@ PGDLLEXPORT Datum Geo_expand_space(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_expand_space);
 /**
  * @ingroup mobilitydb_temporal_transf
- * @brief Return the bounding box of a temporal point expanded on the
- * spatial dimension
- * @sqlfunc expandSpace()
+ * @brief Return the bounding box of a geometry/geography expanded on the
+ * spatial dimension by a value
+ * @sqlfn expandSpace()
  */
 Datum
 Geo_expand_space(PG_FUNCTION_ARGS)
@@ -474,7 +466,7 @@ Geo_expand_space(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 PGDLLEXPORT Datum Tpoint_expand_space(PG_FUNCTION_ARGS);
@@ -482,8 +474,8 @@ PG_FUNCTION_INFO_V1(Tpoint_expand_space);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return the bounding box of a temporal point expanded on the
- * spatial dimension
- * @sqlfunc expandSpace()
+ * spatial dimension by a value
+ * @sqlfn expandSpace()
  */
 Datum
 Tpoint_expand_space(PG_FUNCTION_ARGS)
@@ -492,7 +484,7 @@ Tpoint_expand_space(PG_FUNCTION_ARGS)
   double d = PG_GETARG_FLOAT8(1);
   STBox *result = tpoint_expand_space(temp, d);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************/

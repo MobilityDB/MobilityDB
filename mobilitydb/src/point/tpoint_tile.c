@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for spatial and spatiotemporal tiles.
+ * @brief Functions for spatial and spatiotemporal tiles
  */
 
 /* C */
@@ -43,8 +43,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
 #include "general/temporal_tile.h"
+#include "point/stbox.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tile.h"
 /* MobilityDB */
@@ -55,9 +55,9 @@
 PGDLLEXPORT Datum Stbox_tile_list(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_tile_list);
 /**
- * @brief @ingroup mobilitydb_temporal_tile
- * @brief Generate a multidimensional grid for temporal points.
- * @sqlfunc multidimGrid()
+ * @brief @ingroup mobilitydb_temporal_analytics_tile
+ * @brief Return the multidimensional grid of a spatiotemporal box
+ * @sqlfn multidimGrid()
  */
 Datum
 Stbox_tile_list(PG_FUNCTION_ARGS)
@@ -85,6 +85,7 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
     GSERIALIZED *sorigin;
     int64 tunits = 0; /* make compiler quiet */
     TimestampTz torigin = 0; /* make compiler quiet */
+    assert(PG_NARGS() == 5 || PG_NARGS() == 7);
     if (PG_NARGS() == 5)
       sorigin = PG_GETARG_GSERIALIZED_P(4);
     else /* PG_NARGS() == 7 */
@@ -173,22 +174,21 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_tile);
 /**
- * @ingroup mobilitydb_temporal_tile
- * @brief Generate a tile in a multidimensional grid for temporal points.
- * @sqlfunc multidimTile()
+ * @ingroup mobilitydb_temporal_analytics_tile
+ * @brief Return a tile in the multidimensional grid of a spatiotemporal box
+ * @sqlfn multidimTile()
  */
 Datum
 Stbox_tile(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *point = PG_GETARG_GSERIALIZED_P(0);
-  ensure_not_empty(point);
-  ensure_point_type(point);
-  TimestampTz t = 0; /* make compiler quiet */
   double xsize, ysize, zsize;
-  int64 tunits = 0; /* make compiler quiet */
   GSERIALIZED *sorigin;
+  TimestampTz t = 0; /* make compiler quiet */
   TimestampTz torigin = 0; /* make compiler quiet */
+  Interval *duration = NULL; /* make compiler quiet */
   bool hast = false;
+  assert(PG_NARGS() == 5 || PG_NARGS() == 8);
   if (PG_NARGS() == 5)
   {
     xsize = PG_GETARG_FLOAT8(1);
@@ -203,58 +203,14 @@ Stbox_tile(PG_FUNCTION_ARGS)
     xsize = PG_GETARG_FLOAT8(2);
     ysize = PG_GETARG_FLOAT8(3);
     zsize = PG_GETARG_FLOAT8(4);
-    Interval *duration = PG_GETARG_INTERVAL_P(5);
-    ensure_valid_duration(duration);
-    tunits = interval_units(duration);
+    duration = PG_GETARG_INTERVAL_P(5);
     sorigin = PG_GETARG_GSERIALIZED_P(6);
     torigin = PG_GETARG_TIMESTAMPTZ(7);
     hast = true;
   }
-  /* Ensure parameter validity */
-  ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
-  ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
-  ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
-  ensure_not_empty(sorigin);
-  ensure_point_type(sorigin);
-  int32 srid = gserialized_get_srid(point);
-  int32 gs_srid = gserialized_get_srid(sorigin);
-  if (gs_srid != SRID_UNKNOWN)
-    ensure_same_srid(srid, gs_srid);
-  POINT3DZ pt, ptorig;
-  memset(&pt, 0, sizeof(POINT3DZ));
-  memset(&ptorig, 0, sizeof(POINT3DZ));
-  bool hasz = (bool) FLAGS_GET_Z(point->gflags);
-  if (hasz)
-  {
-    ensure_has_Z_gs(sorigin);
-    const POINT3DZ *p1 = GSERIALIZED_POINT3DZ_P(point);
-    pt.x = p1->x;
-    pt.y = p1->y;
-    pt.z = p1->z;
-    const POINT3DZ *p2 = GSERIALIZED_POINT3DZ_P(sorigin);
-    ptorig.x = p2->x;
-    ptorig.y = p2->y;
-    ptorig.z = p2->z;
-  }
-  else
-  {
-    const POINT2D *p1 = GSERIALIZED_POINT2D_P(point);
-    pt.x = p1->x;
-    pt.y = p1->y;
-    const POINT2D *p2 = GSERIALIZED_POINT2D_P(sorigin);
-    ptorig.x = p2->x;
-    ptorig.y = p2->y;
-  }
-  double xmin = float_bucket(pt.x, xsize, ptorig.x);
-  double ymin = float_bucket(pt.y, ysize, ptorig.y);
-  double zmin = float_bucket(pt.z, zsize, ptorig.z);
-  TimestampTz tmin = 0; /* make compiler quiet */
-  if (hast)
-    tmin = timestamptz_bucket1(t, tunits, torigin);
-  STBox *result = palloc0(sizeof(STBox));
-  stbox_tile_set(xmin, ymin, zmin, tmin, xsize, ysize, zsize, tunits, hasz,
-    hast, srid, result);
-  PG_RETURN_POINTER(result);
+
+  PG_RETURN_STBOX_P(stbox_tile(point, t, xsize, ysize, zsize, duration, 
+    sorigin, torigin, hast));
 }
 
 /*****************************************************************************
@@ -263,7 +219,7 @@ Stbox_tile(PG_FUNCTION_ARGS)
 
 /**
  * @brief Split a temporal point with respect to a spatial and possibly a
- * temporal grid.
+ * temporal grid
  */
 Datum
 Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
@@ -292,79 +248,20 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     double zsize = PG_GETARG_FLOAT8(3);
     Interval *duration = NULL;
     TimestampTz torigin = 0;
-    int64 tunits = 0;
     int i = 4;
     if (timesplit)
-    {
       duration = PG_GETARG_INTERVAL_P(i++);
-      ensure_valid_duration(duration);
-      tunits = interval_units(duration);
-    }
     GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(i++);
     if (timesplit)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
     bool bitmatrix = PG_GETARG_BOOL(i++);
 
-    /* ---> */
-
-    /* Set bounding box */
-    STBox bounds;
-    temporal_set_bbox(temp, &bounds);
-    if (! timesplit)
-      /* Disallow T dimension for generating a spatial only grid */
-      MEOS_FLAGS_SET_T(bounds.flags, false);
-
-    /* Ensure parameter validity */
-    ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
-    ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
-    ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
-    ensure_not_empty(sorigin);
-    ensure_point_type(sorigin);
-    ensure_same_geodetic(temp->flags, sorigin->gflags);
-    int32 srid = bounds.srid;
-    int32 gs_srid = gserialized_get_srid(sorigin);
-    if (gs_srid != SRID_UNKNOWN)
-      ensure_same_srid(srid, gs_srid);
-    POINT3DZ pt;
-    memset(&pt, 0, sizeof(POINT3DZ));
-    hasz = MEOS_FLAGS_GET_Z(temp->flags);
-    if (hasz)
-    {
-      ensure_has_Z_gs(sorigin);
-      const POINT3DZ *p3d = GSERIALIZED_POINT3DZ_P(sorigin);
-      pt.x = p3d->x;
-      pt.y = p3d->y;
-      pt.z = p3d->z;
-    }
-    else
-    {
-      const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
-      pt.x = p2d->x;
-      pt.y = p2d->y;
-    }
+    /* Initialize state and verify parameter validity */
+    int ntiles;
+    STboxGridState *state = tpoint_space_time_split_init(temp, xsize, ysize,
+      zsize, duration, sorigin, torigin, bitmatrix, &ntiles);
 
     /* Create function state */
-    state = stbox_tile_state_make(temp, &bounds, xsize, ysize, zsize, tunits,
-      pt, torigin);
-    /* If a bit matrix is used to speed up the process */
-    if (bitmatrix)
-    {
-      /* Create the bit matrix and set the tiles traversed by the temporal point */
-      int count[MAXDIMS];
-      memset(&count, 0, sizeof(count));
-      int ndims = 2;
-      /* We need to add 1 to take into account the last bucket for each dimension */
-      count[0] = (int) ((state->box.xmax - state->box.xmin) / state->xsize) + 1;
-      count[1] = (int) ((state->box.ymax - state->box.ymin) / state->ysize) + 1;
-      if (MEOS_FLAGS_GET_Z(state->box.flags))
-        count[ndims++] = (int) ((state->box.zmax - state->box.zmin) /
-          state->zsize) + 1;
-      if (state->tunits)
-        count[ndims++] = (int) ((DatumGetTimestampTz(state->box.period.upper) -
-          DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
-      state->bm = bitmatrix_make(count, ndims);
-      tpoint_set_tiles(temp, state, state->bm);
-    }
     funcctx->user_fctx = state;
 
     /* Build a tuple description for a multidimensional grid tuple */
@@ -403,7 +300,8 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       /* Switch to memory context appropriate for multiple function calls */
       MemoryContext oldcontext =
         MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-      if (state->bm) pfree(state->bm);
+      if (state->bm)
+        pfree(state->bm);
       pfree(state);
       MemoryContextSwitchTo(oldcontext);
       SRF_RETURN_DONE(funcctx);
@@ -419,8 +317,8 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     /* Form tuple and return */
     int i = 0;
     hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
-    tuple_arr[i++] = PointerGetDatum(gspoint_make(box.xmin, box.ymin, box.zmin,
-      hasz, false, box.srid));
+    tuple_arr[i++] = PointerGetDatum(geopoint_make(box.xmin, box.ymin,
+      box.zmin, hasz, false, box.srid));
     if (timesplit)
       tuple_arr[i++] = box.period.lower;
     tuple_arr[i++] = PointerGetDatum(atstbox);
@@ -433,9 +331,9 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
 PGDLLEXPORT Datum Tpoint_space_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_space_split);
 /**
- * @ingroup mobilitydb_temporal_tile
- * @brief Split a temporal point with respect to a spatial grid.
- * @sqlfunc spaceSplit()
+ * @ingroup mobilitydb_temporal_analytics_tile
+ * @brief Return a temporal point split with respect to a spatial grid
+ * @sqlfn spaceSplit()
  */
 Datum
 Tpoint_space_split(PG_FUNCTION_ARGS)
@@ -446,9 +344,9 @@ Tpoint_space_split(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_space_time_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_space_time_split);
 /**
- * @ingroup mobilitydb_temporal_tile
- * @brief Split a temporal point with respect to a spatiotemporal grid.
- * @sqlfunc spaceTimeSplit()
+ * @ingroup mobilitydb_temporal_analytics_tile
+ * @brief Return a temporal point split with respect to a spatiotemporal grid
+ * @sqlfn spaceTimeSplit()
  */
 Datum
 Tpoint_space_time_split(PG_FUNCTION_ARGS)

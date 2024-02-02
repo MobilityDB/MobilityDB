@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -28,12 +28,26 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
+-- Geoset
+
+SELECT SRID(geomset '{"SRID=5676;Point(1 1)", "SRID=5676;Point(2 2)"}');
+SELECT asEWKT(setSRID(geomset '{"Point(0 0)", "Point(1 1)"}', 5676));
+
+-- Tests independent of the PROJ version
+WITH test(geoset) AS (
+  SELECT geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )
+SELECT asEWKT(transform(transform(geoset, 5676), 4326), 6) FROM test;
+
+-- Noop
+SELECT asEWKT(transform(geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}', 4326));
+
+-------------------------------------------------------------------------------
 -- STBOX
 
-SELECT srid(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
-SELECT srid(stbox 'SRID=4326;STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT SRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+SELECT SRID(stbox 'SRID=4326;STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
 /* Errors */
-SELECT srid(stbox 'STBOX T([2000-01-01,2000-01-02])');
+SELECT SRID(stbox 'STBOX T([2000-01-01,2000-01-02])');
 
 SELECT setSRID(stbox 'STBOX X((1,1),(2,2))', 5676);
 SELECT setSRID(stbox 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])', 5676);
@@ -45,7 +59,7 @@ SELECT setSRID(stbox 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 
 SELECT setSRID(stbox 'STBOX T([2000-01-01,2000-01-02])', 5676);
 SELECT setSRID(stbox 'GEODSTBOX T([2000-01-01,2000-01-02])', 4326);
 
--- Tests independent of PROJ version
+-- Tests independent of the PROJ version
 SELECT round(transform(transform(stbox 'SRID=4326;STBOX X((1,1),(2,2))', 5676), 4326), 1);
 SELECT round(transform(transform(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])', 5676), 4326), 1);
 SELECT round(transform(transform(stbox 'SRID=4326;STBOX Z((1,1,1),(2,2,2))', 5676), 4326), 1);
@@ -56,8 +70,14 @@ SELECT round(transform(transform(stbox 'SRID=4326;GEODSTBOX ZT(((1,1,1),(2,2,2))
 SELECT DISTINCT SRID(b) FROM tbl_stbox;
 SELECT MIN(xmin(setSRID(b,4326))) FROM tbl_stbox;
 
-SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,4326), 5676), 4326)))::numeric, 1) FROM tbl_stbox;
-SELECT MIN(xmin(round(transform(transform(setSRID(b, 4326), 5676), 4326), 1))) FROM tbl_stbox;
+SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,5676), 4326), 5676)))::numeric, 1) FROM tbl_stbox;
+SELECT MIN(xmin(round(transform(transform(setSRID(b,5676), 4326), 5676), 1))) FROM tbl_stbox;
+
+-- Noop
+SELECT transform(stbox 'SRID=4326;STBOX X((1,1),(2,2))', 4326);
+
+/* Errors */
+SELECT transform(stbox 'SRID=4326;STBOX X((1,1),(2,2))', 0);
 
 -------------------------------------------------------------------------------
 -- 2D
@@ -88,10 +108,52 @@ SELECT asEWKT(setSRID(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 
 SELECT asEWKT(setSRID(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', 4269));
 SELECT asEWKT(setSRID(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 4269));
 
-SELECT startValue(transform(setSRID(tgeompoint 'Point(1 1 1)@2000-01-01', 5676), 4326)) = st_transform(geometry 'SRID=5676;Point(1 1 1)', 4326);
-SELECT startValue(transform(setSRID(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 5676), 4326)) = st_transform(geometry 'SRID=5676;Point(1 1 1)', 4326);
-SELECT startValue(transform(setSRID(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 5676), 4326)) = st_transform(geometry 'SRID=5676;Point(1 1 1)', 4326);
-SELECT startValue(transform(setSRID(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 5676), 4326)) = st_transform(geometry 'SRID=5676;Point(1 1 1)', 4326);
+SELECT startValue(transform(tgeompoint 'SRID=5676;Point(1 2 3)@2000-01-01', 4326)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 4326);
+SELECT startValue(transform(tgeompoint 'SRID=5676;{Point(1 2 3)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 2 3)@2000-01-03}', 4326)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 4326);
+SELECT startValue(transform(tgeompoint 'SRID=5676;[Point(1 2 3)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 2 3)@2000-01-03]', 4326)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 4326);
+SELECT startValue(transform(tgeompoint 'SRID=5676;{[Point(1 2 3)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 2 3)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 4326)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 4326);
+-- Noop
+SELECT startValue(transform(tgeompoint 'SRID=5676;Point(1 2 3)@2000-01-01', 5676)) = st_transform(geometry 'SRID=5676;Point(1 2 3)', 5676);
+SELECT startValue(transform(tgeompoint 'SRID=5676;Point(1 2 3)@2000-01-01', 4326)) = st_transform(geometry 'SRID=4326;Point(1 2 3)', 4326);
+
+-------------------------------------------------------------------------------
+-- Transform with pipeline
+
+WITH test(geoset, pipeline) AS (
+  SELECT geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}',
+   text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT asText(transformPipeline(transformPipeline(geoset, pipeline, 4326), pipeline, 4326, false), 3) = asText(geoset, 3)
+FROM test;
+
+WITH test(box, pipeline) AS (
+  SELECT tgeompoint 'SRID=4326;[POINT(2.123456 49.123456)@2000-01-01, POINT(3.123456 50.123456)@2000-01-02]'::stbox,
+   text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT asText(transformPipeline(transformPipeline(box, pipeline, 4326), pipeline, 4326, false), 3) = asText(box, 3)
+FROM test;
+
+-- This test ensure correctness between PostGIS and MobilityDB results.
+-- However, it was commented out since not all installations have the latest 
+-- PostGIS version 3.4
+-- SELECT startValue(transformPipeline(tgeompoint 'SRID=4326;Point(1 2 3)@2000-01-01',
+  -- 'urn:ogc:def:coordinateOperation:EPSG::16031', 5676, true)) = 
+  -- st_transformpipeline(geometry 'SRID=4326;Point(1 2 3)', 'urn:ogc:def:coordinateOperation:EPSG::16031', 5676);
+
+SELECT asText(transformPipeline(tgeompoint 'SRID=4326;POINT(2 49)@2000-01-01',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031'));
+SELECT asText(transformPipeline(tgeompoint 'POINT(426857.9877165967 5427937.523342293)@2000-01-01 00:00:00+01',
+  text 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, false), 3);
+
+WITH test1(pipeline) AS (
+  SELECT text 'urn:ogc:def:coordinateOperation:EPSG::16031' ),
+test2(temp) AS (
+  SELECT tgeompoint 'SRID=4326;POINT(2.123456 49.123456)@2000-01-01' UNION
+  SELECT tgeompoint 'SRID=4326;{POINT(2.123456 49.123456)@2000-01-01, POINT(3.123456 50.123456)@2000-01-02}' UNION
+  SELECT tgeompoint 'SRID=4326;[POINT(2.123456 49.123456)@2000-01-01, POINT(3.123456 50.123456)@2000-01-02]' UNION
+  SELECT tgeompoint 'SRID=4326;{[POINT(2.123456 49.123456)@2000-01-01, POINT(3.123456 50.123456)@2000-01-02],'
+    '[POINT(2.123456 49.123456)@2000-01-03, POINT(3.123456 50.123456)@2000-01-04]}'
+    )
+SELECT DISTINCT asText(transformPipeline(transformPipeline(temp, pipeline, 4326), pipeline, 4326, false), 3) = asText(temp, 3)
+FROM test1, test2;
 
 --------------------------------------------------------
 
@@ -194,6 +256,9 @@ SELECT asText(round(tgeogpoint 'Point(1.12345 1.12345 1.12345)@2000-01-01', 2));
 SELECT asText(round(tgeogpoint '{Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03}', 2));
 SELECT asText(round(tgeogpoint '[Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03]', 2));
 SELECT asText(round(tgeogpoint '{[Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2));
+
+SELECT asText(round(ARRAY[tgeompoint '[Point(1.55 1.55)@2000-01-01, Point(2.55 2.55)@2000-01-02, Point(1.55 1.55)@2000-01-03]', '[Point(3.55 3.55)@2000-01-04, Point(3.55 3.55)@2000-01-05]'],1));
+SELECT round(ARRAY[]::tgeompoint[]);
 
 --------------------------------------------------------
 
@@ -392,31 +457,22 @@ SELECT round(cumulativeLength(tgeogpoint 'Interp=Step;[Point(1.5 1.5 1.5)@2000-0
 SELECT round(cumulativeLength(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
 
 -- 2D
-SELECT round(speed(tgeompoint 'Point(1 1)@2000-01-01'), 6);
-SELECT round(speed(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'), 6);
 SELECT round(speed(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'), 6);
 SELECT round(speed(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'), 6);
-SELECT round(speed(tgeogpoint 'Point(1.5 1.5)@2000-01-01'), 6);
-SELECT round(speed(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'), 6);
 SELECT round(speed(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'), 6);
 SELECT round(speed(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 6);
--- NULL
-SELECT round(speed(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'), 6);
-SELECT round(speed(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'), 6);
-SELECT round(speed(tgeogpoint 'Interp=Step;[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'), 6);
-SELECT round(speed(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 6);
 -- 3D
-SELECT round(speed(tgeompoint 'Point(1 1 1)@2000-01-01'), 6);
-SELECT round(speed(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'), 6);
 SELECT round(speed(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'), 6);
 SELECT round(speed(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'), 6);
-SELECT round(speed(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01'), 6);
-SELECT round(speed(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}'), 6);
 SELECT round(speed(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'), 6);
 SELECT round(speed(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
 /* Errors */
+SELECT round(speed(tgeompoint 'Point(1 1)@2000-01-01'), 6);
+SELECT round(speed(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'), 6);
 SELECT round(speed(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'), 6);
 SELECT round(speed(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'), 6);
+SELECT round(speed(tgeogpoint 'Point(1.5 1.5)@2000-01-01'), 6);
+SELECT round(speed(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'), 6);
 SELECT round(speed(tgeogpoint 'Interp=Step;[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'), 6);
 SELECT round(speed(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
 

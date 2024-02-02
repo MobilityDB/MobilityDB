@@ -1,12 +1,12 @@
 ﻿-------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -100,8 +100,22 @@ SELECT round(minusGeometryTime(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0
 SELECT round(minusGeometryTime(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tstzspan '[2000-01-02, 2000-01-02]'), 6);
 SELECT round(minusGeometryTime(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tstzspan '[2000-01-02, 2000-01-02]'), 6);
 
-SELECT equals(npoint(1, 0.5), npoint(1, 0.50000001));
-SELECT equals(npoint 'Npoint(1, 1)', npoint 'Npoint(2, 1)');
+SELECT round(atStbox(tnpoint 'Npoint(1, 0.5)@2000-01-01', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
+SELECT round(atStbox(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
+SELECT round(atStbox(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
+SELECT round(atStbox(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
+SELECT round(atStbox(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
+SELECT round(atStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
+
+SELECT round(minusStbox(tnpoint 'Npoint(1, 0.5)@2000-01-01', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
+SELECT round(minusStbox(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
+SELECT round(minusStbox(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
+SELECT round(minusStbox(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
+SELECT round(minusStbox(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
+SELECT round(minusStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])'), 6);
+
+SELECT same(npoint(1, 0.5), npoint(1, 0.50000001));
+SELECT same(npoint 'Npoint(1, 1)', npoint 'Npoint(2, 1)');
 -- TODO
 -- SELECT equals(npoint(1, 0.7744007411523213), npoint(2, 0.6952992297355585));
 
@@ -117,6 +131,9 @@ SELECT round(cumulativeLength(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-01, 
 
 SELECT round(speed(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6);
 SELECT round(speed(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6);
+/* Errors */
+SELECT round(speed(tnpoint 'Npoint(1, 0.2)@2000-01-01'), 6);
+SELECT round(speed(tnpoint '{Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6);
 SELECT round(speed(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6);
 SELECT round(speed(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6);
 

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -41,18 +41,16 @@
 #include <catalog/pg_type.h>
 /* PostGIS */
 #include <liblwgeom.h>
+/* MEOS */
+#include <meos.h>
 
 /*****************************************************************************/
 
-extern Datum boxop_geo_tpoint_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_stbox_tpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_tpoint_geo_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tpoint_stbox(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_stbox_tpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tpoint_tpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
 
 /*****************************************************************************/

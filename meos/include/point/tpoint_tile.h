@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -35,7 +35,7 @@
 #define __TPOINT_TILE_H__
 
 /* MEOS */
-#include "general/temporal.h"
+#include <meos.h>
 
 #define MAXDIMS 4
 
@@ -91,6 +91,10 @@ extern STboxGridState *stbox_tile_state_make(const Temporal *temp,
   POINT3DZ sorigin, TimestampTz torigin);
 extern void stbox_tile_state_next(STboxGridState *state);
 extern bool stbox_tile_state_get(STboxGridState *state, STBox *box);
+
+extern STboxGridState *tpoint_space_time_split_init(Temporal *temp,
+  float xsize, float ysize, float zsize, Interval *duration,
+  GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, int *ntiles);
 
 /*****************************************************************************/
 

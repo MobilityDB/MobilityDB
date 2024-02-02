@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -38,195 +38,17 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
+#include "general/temporal.h"
 #include "npoint/tnpoint.h"
-#include "npoint/tnpoint_static.h"
-#include "npoint/tnpoint_spatialfuncs.h"
-/* MobilityDB */
-#include "pg_general/temporal.h"
-#include "pg_general/type_util.h"
-#include "pg_npoint/tnpoint.h"
+#include "npoint/tnpoint_routeops.h"
 
 /*****************************************************************************
  * Generic route functions
  *****************************************************************************/
-
-/**
- * @brief Return true if the temporal network point and the route satisfy the
- * function
- */
-bool
-contains_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
-  bool invert __attribute__((unused)))
-{
-  Set *routes = tnpoint_routes(temp);
-  return contains_set_value(routes, Int64GetDatum(rid), T_INT8);
-}
-
-/**
- * @brief Return true if the temporal network point and the route satisfy the
- * function
- */
-bool
-contained_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
-  bool invert __attribute__((unused)))
-{
-  return contains_rid_tnpoint_bigint(temp, rid, INVERT);
-}
-
-/**
- * @brief Return true if the temporal network point and the route satisfy the
- * function
- */
-bool
-same_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
-  bool invert __attribute__((unused)))
-{
-  Set *routes = tnpoint_routes(temp);
-  return (routes->count == 1) &&
-    (DatumGetInt64(SET_VAL_N(routes, 0)) == rid);
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Return true if the temporal network point and the big integer set
- * satisfy the function
- */
-bool
-overlaps_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
-  bool invert __attribute__((unused)))
-{
-  Set *routes = tnpoint_routes(temp);
-  return overlaps_set_set(routes, s);
-}
-
-/**
- * @brief Return true if the temporal network point and the big integer set
- * satisfy the function
- */
-bool
-contains_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
-  bool invert)
-{
-  Set *routes = tnpoint_routes(temp);
-  return invert ? contains_set_set(s, routes) : contains_set_set(routes, s);
-}
-
-/**
- * @brief Return true if the temporal network point and the big integer set
- * satisfy the function
- */
-bool
-contained_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
-  bool invert)
-{
-  return contains_rid_tnpoint_bigintset(temp, s, ! invert);
-}
-
-/**
- * @brief Return true if the temporal network point and the big integer set
- * satisfy the function
- */
-bool
-same_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
-  bool invert __attribute__((unused)))
-{
-  Set *routes = tnpoint_routes(temp);
-  return set_eq(routes, s);
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Return true if the temporal network point and the network point
- * satisfy the function
- */
-bool
-contains_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  bool invert __attribute__((unused)))
-{
-  Set *routes = tnpoint_routes(temp);
-  bool result = contains_set_value(routes, Int64GetDatum(np->rid),
-    T_INT8);
-  return result;
-}
-
-/**
- * @brief Return true if the temporal network point and the network point
- * satisfy the function
- */
-bool
-contained_rid_npoint_tnpoint(const Temporal *temp, const Npoint *np,
-  bool invert __attribute__((unused)))
-{
-  return contains_rid_tnpoint_npoint(temp, np, invert);
-}
-
-/**
- * @brief Return true if the temporal network point and the network point
- * satisfy the function
- */
-bool
-same_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  bool invert __attribute__((unused)))
-{
-  Set *routes = tnpoint_routes(temp);
-  return (routes->count == 1) &&
-    (DatumGetInt64(SET_VAL_N(routes, 0)) == np->rid);
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Return true if the two temporal network points satisfy the function
- */
-bool
-overlaps_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
-{
-  Set *routes1 = tnpoint_routes(temp1);
-  Set *routes2 = tnpoint_routes(temp2);
-  return overlaps_set_set(routes1, routes2);
-}
-
-/**
- * @brief Return true if the two temporal network points satisfy the function
- */
-bool
-contains_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
-{
-  Set *routes1 = tnpoint_routes(temp1);
-  Set *routes2 = tnpoint_routes(temp2);
-  return contains_set_set(routes1, routes2);
-}
-
-/**
- * @brief Return true if the two temporal network points satisfy the function
- */
-bool
-contained_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
-{
-  Set *routes1 = tnpoint_routes(temp1);
-  Set *routes2 = tnpoint_routes(temp2);
-  return contains_set_set(routes2, routes1);
-}
-
-/**
- * @brief Return true if the two temporal network points satisfy the function
- */
-bool
-same_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
-{
-  Set *routes1 = tnpoint_routes(temp1);
-  Set *routes2 = tnpoint_routes(temp2);
-  return set_eq(routes1, routes2);
-}
-
-/*****************************************************************************/
 
 /**
  * @brief Generic route function for a geometry and a temporal network point
@@ -235,7 +57,7 @@ same_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  * @param[in] func Function
  */
 Datum
-routeop_bigint_tnpoint_ext(FunctionCallInfo fcinfo,
+Routeop_bigint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, int64, bool))
 {
   int64 rid = PG_GETARG_INT64(0);
@@ -252,7 +74,7 @@ routeop_bigint_tnpoint_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-routeop_tnpoint_bigint_ext(FunctionCallInfo fcinfo,
+Routeop_tnpoint_bigint(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, int64, bool))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -269,7 +91,7 @@ routeop_tnpoint_bigint_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-routeop_bigintset_tnpoint_ext(FunctionCallInfo fcinfo,
+Routeop_bigintset_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, const Set *, bool))
 {
   Set *s = PG_GETARG_SET_P(0);
@@ -287,7 +109,7 @@ routeop_bigintset_tnpoint_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-routeop_tnpoint_bigintset_ext(FunctionCallInfo fcinfo,
+Routeop_tnpoint_bigintset(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, const Set *, bool))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -305,7 +127,7 @@ routeop_tnpoint_bigintset_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-routeop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
+Routeop_npoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, const Npoint *, bool))
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
@@ -322,7 +144,7 @@ routeop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-routeop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
+Routeop_tnpoint_npoint(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, const Npoint *, bool))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -339,7 +161,7 @@ routeop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-routeop_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
+Routeop_tnpoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const Temporal *, const Temporal *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
@@ -358,15 +180,15 @@ PGDLLEXPORT Datum Overlaps_rid_bigintset_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_rid_bigintset_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the routes in the set and the routes of
- * the temporal network point overlap
- * @sqlfunc overlaps_rid()
+ * @brief Return true if the routes in a set and the routes of
+ * a temporal network point overlap
+ * @sqlfn overlaps_rid()
  * @sqlop @p @@
  */
 Datum
 Overlaps_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_bigintset_tnpoint_ext(fcinfo, &overlaps_rid_tnpoint_bigintset);
+  return Routeop_bigintset_tnpoint(fcinfo, &overlaps_rid_tnpoint_bigintset);
 }
 
 /*****************************************************************************/
@@ -375,30 +197,29 @@ PGDLLEXPORT Datum Overlaps_rid_tnpoint_bigintset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_rid_tnpoint_bigintset);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the routes of the temporal network point and
- * the routes in the set overlap
- * @sqlfunc overlaps_rid()
+ * @brief Return true if the routes of a temporal network point and
+ * the routes in a set overlap
+ * @sqlfn overlaps_rid()
  * @sqlop @p @@
  */
 Datum
 Overlaps_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_bigintset_ext(fcinfo, &overlaps_rid_tnpoint_bigintset);
+  return Routeop_tnpoint_bigintset(fcinfo, &overlaps_rid_tnpoint_bigintset);
 }
 
 PGDLLEXPORT Datum Overlaps_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_rid_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the routes of the temporal network points
- * overlap
- * @sqlfunc overlaps_rid()
+ * @brief Return true if the routes of two temporal network points overlap
+ * @sqlfn overlaps_rid()
  * @sqlop @p @@
  */
 Datum
 Overlaps_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_tnpoint_ext(fcinfo, &overlaps_rid_tnpoint_tnpoint);
+  return Routeop_tnpoint_tnpoint(fcinfo, &overlaps_rid_tnpoint_tnpoint);
 }
 
 /*****************************************************************************
@@ -409,15 +230,15 @@ PGDLLEXPORT Datum Contains_rid_bigintset_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_rid_bigintset_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if routes in the set contain the routes of the temporal
+ * @brief Return true if routes in a set contain the routes of a temporal
  * network point
- * @sqlfunc contains_rid()
+ * @sqlfn contains_rid()
  * @sqlop @p \@?
  */
 Datum
 Contains_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_bigintset_tnpoint_ext(fcinfo, &contains_rid_tnpoint_bigintset);
+  return Routeop_bigintset_tnpoint(fcinfo, &contains_rid_tnpoint_bigintset);
 }
 
 /*****************************************************************************/
@@ -426,45 +247,45 @@ PGDLLEXPORT Datum Contains_rid_tnpoint_bigint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_bigint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the routes of the temporal network point
- * contain the routes in the set
- * @sqlfunc contains_rid()
+ * @brief Return true if the routes of a temporal network point
+ * contain the routes in a set
+ * @sqlfn contains_rid()
  * @sqlop @p \@?
  */
 Datum
 Contains_rid_tnpoint_bigint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_bigint_ext(fcinfo, &contains_rid_tnpoint_bigint);
+  return Routeop_tnpoint_bigint(fcinfo, &contains_rid_tnpoint_bigint);
 }
 
 PGDLLEXPORT Datum Contains_rid_tnpoint_bigintset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_bigintset);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the routes of the temporal network point
- * contain the routes in the set
- * @sqlfunc contains_rid()
+ * @brief Return true if the routes of a temporal network point
+ * contain the routes in a set
+ * @sqlfn contains_rid()
  * @sqlop @p \@?
  */
 Datum
 Contains_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_bigintset_ext(fcinfo, &contains_rid_tnpoint_bigintset);
+  return Routeop_tnpoint_bigintset(fcinfo, &contains_rid_tnpoint_bigintset);
 }
 
 PGDLLEXPORT Datum Contains_rid_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the routes of the temporal network point
- * contain the route of the network point
- * @sqlfunc contains_rid()
+ * @brief Return true if the routes of a temporal network point
+ * contain the route of a network point
+ * @sqlfn contains_rid()
  * @sqlop @p \@?
  */
 Datum
 Contains_rid_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_npoint_ext(fcinfo, &contains_rid_tnpoint_npoint);
+  return Routeop_tnpoint_npoint(fcinfo, &contains_rid_tnpoint_npoint);
 }
 
 PGDLLEXPORT Datum Contains_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -472,14 +293,14 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
  * @brief Return true if the routes of the first temporal network point
- * contain the routes of the second temporal network point
- * @sqlfunc contains_rid()
+ * contain the routes of the second one
+ * @sqlfn contains_rid()
  * @sqlop @p \@?
  */
 Datum
 Contains_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_tnpoint_ext(fcinfo, &contains_rid_tnpoint_tnpoint);
+  return Routeop_tnpoint_tnpoint(fcinfo, &contains_rid_tnpoint_tnpoint);
 }
 
 /*****************************************************************************
@@ -490,15 +311,15 @@ PGDLLEXPORT Datum Contained_rid_bigint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_rid_bigint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the route is contained in the routes of the temporal
+ * @brief Return true if a route is contained in the routes of a temporal
  * network point
- * @sqlfunc contained_rid()
+ * @sqlfn contained_rid()
  * @sqlop @p ?@
  */
 Datum
 Contained_rid_bigint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_bigint_tnpoint_ext(fcinfo, &contained_rid_tnpoint_bigint);
+  return Routeop_bigint_tnpoint(fcinfo, &contained_rid_tnpoint_bigint);
 }
 
 PGDLLEXPORT Datum Contained_rid_bigintset_tnpoint(PG_FUNCTION_ARGS);
@@ -506,29 +327,29 @@ PG_FUNCTION_INFO_V1(Contained_rid_bigintset_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
  * @brief Return true if the routes in the set are contained in the routes of
- * the temporal network point
- * @sqlfunc contained_rid()
+ * a temporal network point
+ * @sqlfn contained_rid()
  * @sqlop @p ?@
  */
 Datum
 Contained_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_bigintset_tnpoint_ext(fcinfo, &contained_rid_tnpoint_bigintset);
+  return Routeop_bigintset_tnpoint(fcinfo, &contained_rid_tnpoint_bigintset);
 }
 
 PGDLLEXPORT Datum Contained_rid_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_rid_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the route of the network point is contained in
- * the routes of the temporal network point
- * @sqlfunc contained_rid()
+ * @brief Return true if the route of a network point is contained in
+ * the routes of a temporal network point
+ * @sqlfn contained_rid()
  * @sqlop @p ?@
  */
 Datum
 Contained_rid_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_npoint_tnpoint_ext(fcinfo, &contained_rid_npoint_tnpoint);
+  return Routeop_npoint_tnpoint(fcinfo, &contained_rid_npoint_tnpoint);
 }
 
 /*****************************************************************************/
@@ -538,14 +359,14 @@ PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_bigintset);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
  * @brief Return true if the routes of the temporal network point are
- * contained in the routes fo the set
- * @sqlfunc contained_rid()
+ * contained in the routes of a set
+ * @sqlfn contained_rid()
  * @sqlop @p ?@
  */
 Datum
 Contained_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_bigintset_ext(fcinfo, &contained_rid_tnpoint_bigintset);
+  return Routeop_tnpoint_bigintset(fcinfo, &contained_rid_tnpoint_bigintset);
 }
 
 PGDLLEXPORT Datum Contained_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -554,13 +375,13 @@ PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_tnpoint);
  * @ingroup mobilitydb_temporal_spatial_route
  * @brief Return true if the routes of the first temporal network point
  * are contained in the routes of the second temporal network point
- * @sqlfunc contained_rid()
+ * @sqlfn contained_rid()
  * @sqlop @p ?@
  */
 Datum
 Contained_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_tnpoint_ext(fcinfo, &contained_rid_tnpoint_tnpoint);
+  return Routeop_tnpoint_tnpoint(fcinfo, &contained_rid_tnpoint_tnpoint);
 }
 
 /*****************************************************************************
@@ -571,45 +392,45 @@ PGDLLEXPORT Datum Same_rid_bigint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_bigint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the route and the routes of the temporal network point
+ * @brief Return true if a route and the routes of a temporal network point
  * are equal
- * @sqlfunc same_rid()
+ * @sqlfn same_rid()
  * @sqlop @p @=
  */
 Datum
 Same_rid_bigint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_bigint_tnpoint_ext(fcinfo, &same_rid_tnpoint_bigint);
+  return Routeop_bigint_tnpoint(fcinfo, &same_rid_tnpoint_bigint);
 }
 
 PGDLLEXPORT Datum Same_rid_bigintset_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_bigintset_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the routes of the set and the routes of the temporal
+ * @brief Return true if the routes of a set and the routes of a temporal
  * network point are equal
- * @sqlfunc same_rid()
+ * @sqlfn same_rid()
  * @sqlop @p @=
  */
 Datum
 Same_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_bigintset_tnpoint_ext(fcinfo, &same_rid_tnpoint_bigintset);
+  return Routeop_bigintset_tnpoint(fcinfo, &same_rid_tnpoint_bigintset);
 }
 
 PGDLLEXPORT Datum Same_rid_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the route of the network point and the routes of the
+ * @brief Return true if the route of a network point and the routes of a
  * temporal network point are equal
- * @sqlfunc same_rid()
+ * @sqlfn same_rid()
  * @sqlop @p @=
  */
 Datum
 Same_rid_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_npoint_tnpoint_ext(fcinfo, &same_rid_tnpoint_npoint);
+  return Routeop_npoint_tnpoint(fcinfo, &same_rid_tnpoint_npoint);
 }
 
 /*****************************************************************************/
@@ -618,59 +439,59 @@ PGDLLEXPORT Datum Same_rid_tnpoint_bigint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_tnpoint_bigint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the routes of the temporal network point and the route 
+ * @brief Return true if the routes of a temporal network point and a route
  * are equal
- * @sqlfunc same_rid()
+ * @sqlfn same_rid()
  * @sqlop @p @=
  */
 Datum
 Same_rid_tnpoint_bigint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_bigint_ext(fcinfo, &same_rid_tnpoint_bigint);
+  return Routeop_tnpoint_bigint(fcinfo, &same_rid_tnpoint_bigint);
 }
 
 PGDLLEXPORT Datum Same_rid_tnpoint_bigintset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_tnpoint_bigintset);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the routes of the temporal network point and the
- * routes of the set are equal
- * @sqlfunc same_rid()
+ * @brief Return true if the routes of a temporal network point and the
+ * routes of a set are equal
+ * @sqlfn same_rid()
  * @sqlop @p @=
  */
 Datum
 Same_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_bigintset_ext(fcinfo, &same_rid_tnpoint_bigintset);
+  return Routeop_tnpoint_bigintset(fcinfo, &same_rid_tnpoint_bigintset);
 }
 
 PGDLLEXPORT Datum Same_rid_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the routes of the temporal network point and the route
- * of the network point are equal
- * @sqlfunc same_rid()
+ * @brief Return true if the routes of a temporal network point and the route
+ * of a network point are equal
+ * @sqlfn same_rid()
  * @sqlop @p @=
  */
 Datum
 Same_rid_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_npoint_ext(fcinfo, &same_rid_tnpoint_npoint);
+  return Routeop_tnpoint_npoint(fcinfo, &same_rid_tnpoint_npoint);
 }
 
 PGDLLEXPORT Datum Same_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_rid_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_route
- * @brief Return true if the routes of the temporal network points are equal
- * @sqlfunc same_rid()
+ * @brief Return true if the routes of two temporal network points are equal
+ * @sqlfn same_rid()
  * @sqlop @p @=
  */
 Datum
 Same_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return routeop_tnpoint_tnpoint_ext(fcinfo, &same_rid_tnpoint_tnpoint);
+  return Routeop_tnpoint_tnpoint(fcinfo, &same_rid_tnpoint_tnpoint);
 }
 
 /*****************************************************************************/

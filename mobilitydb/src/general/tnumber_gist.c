@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief R-tree GiST index for temporal integers and temporal floats.
+ * @brief R-tree GiST index for temporal integers and temporal floats
  *
  * These functions are based on those in the file `gistproc.c`.
  */
@@ -39,27 +39,28 @@
 /* C */
 #include <assert.h>
 #include <float.h>
-#include <math.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/set.h"
+#include "general/span.h"
+#include "general/tbox.h"
 #include "general/temporal_boxops.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
-#include "pg_general/time_gist.h"
+#include "pg_general/span_gist.h"
 
 /*****************************************************************************
  * GiST consistent methods
  *****************************************************************************/
 
 /**
- * @brief Leaf-level consistency for temporal numbers.
+ * @brief Leaf-level consistency for temporal numbers
  *
  * Since temporal boxes do not distinguish between inclusive and
  * exclusive bounds, it is necessary to generalize the tests, e.g.,
@@ -130,7 +131,7 @@ tbox_index_consistent_leaf(const TBox *key, const TBox *query,
 }
 
 /**
- * @brief GiST internal-page consistent method for temporal numbers.
+ * @brief GiST internal-page consistent method for temporal numbers
  *
  * Return false if for all data items x below entry, the predicate
  * x op query must be false, where op is the oper corresponding to
@@ -194,23 +195,24 @@ tnumber_gist_consistent(const TBox *key, const TBox *query,
 
 /**
  * @brief Transform the query argument into a box initializing the dimensions
- * that must not be taken into account by the operators to infinity.
+ * that must not be taken into account by the operators to infinity
  */
 static bool
 tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
 {
   meosType type = oid_type(typid);
+  Span *s;
   if (tnumber_spantype(type))
   {
-    Span *span = PG_GETARG_SPAN_P(1);
-    if (span == NULL)
+    s = PG_GETARG_SPAN_P(1);
+    if (s == NULL)
       return false;
-    numspan_set_tbox(span, result);
+    numspan_set_tbox(s, result);
   }
   else if (type == T_TSTZSPAN)
   {
-    Span *p = PG_GETARG_SPAN_P(1);
-    period_set_tbox(p, result);
+    s = PG_GETARG_SPAN_P(1);
+    tstzspan_set_tbox(s, result);
   }
   else if (type == T_TBOX)
   {
@@ -301,7 +303,7 @@ tbox_adjust(void *bbox1, void *bbox2)
 PGDLLEXPORT Datum Tbox_gist_union(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_union);
 /**
- * @brief GiST union method for temporal numbers.
+ * @brief GiST union method for temporal numbers
  *
  * Return the minimal bounding box that encloses all the entries in entryvec
  */
@@ -310,10 +312,10 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GISTENTRY *ent = entryvec->vector;
-  TBox *result = tbox_copy(DatumGetTboxP(ent[0].key));
+  TBox *result = tbox_cp(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     tbox_adjust((void *)result, DatumGetPointer(ent[i].key));
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TBOX_P(result);
 }
 
 /*****************************************************************************
@@ -346,7 +348,7 @@ Tnumber_gist_compress(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Calculates the union of two tboxes.
+ * @brief Calculates the union of two temporal boxes
  * @param[in] a,b Input boxes
  * @param[out] new Resulting box
  * @note This function uses NaN-aware comparisons
@@ -371,8 +373,8 @@ tbox_union_rt(const TBox *a, const TBox *b, TBox *new)
 }
 
 /**
- * @brief Return the size of a temporal box for penalty-calculation purposes.
- * The result can be +Infinity, but not NaN.
+ * @brief Return the size of a temporal box for penalty-calculation purposes
+ * @note The result can be +Infinity, but not NaN
  */
 static double
 tbox_size(const TBox *box)
@@ -384,8 +386,9 @@ tbox_size(const TBox *box)
    *
    * The less-than cases should not happen, but if they do, say "zero".
    */
-  if (FLOAT8_LE(DatumGetFloat8(box->span.upper), DatumGetFloat8(box->span.lower)) ||
-    datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ))
+  if (FLOAT8_LE(DatumGetFloat8(box->span.upper),
+        DatumGetFloat8(box->span.lower)) ||
+      datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ))
     return 0.0;
 
   /*
@@ -401,8 +404,9 @@ tbox_size(const TBox *box)
 }
 
 /**
- * @brief Return the amount by which the union of the two boxes is larger than
- * the original TBox's area.  The result can be +Infinity, but not NaN.
+ * @brief Return the amount by which the union of two temporal boxes is larger
+ * than the area of the first one
+ * @note The result can be +Infinity, but not NaN
  */
 double
 tbox_penalty(void *bbox1, void *bbox2)
@@ -417,8 +421,8 @@ tbox_penalty(void *bbox1, void *bbox2)
 PGDLLEXPORT Datum Tbox_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_penalty);
 /**
- * @brief GiST penalty method for temporal boxes.
- * As in the R-tree paper, we use change in area as our penalty metric
+ * @brief GiST penalty method for temporal boxes
+ * @note As in the R-tree paper, we use change in area as our penalty metric
  */
 Datum
 Tbox_gist_penalty(PG_FUNCTION_ARGS)
@@ -437,7 +441,7 @@ Tbox_gist_penalty(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Interval comparison function by lower bound of the interval.
+ * @brief Interval comparison function by lower bound of the intervals
  */
 int
 interval_cmp_lower(const void *i1, const void *i2)
@@ -449,19 +453,19 @@ interval_cmp_lower(const void *i1, const void *i2)
 }
 
 /**
- * @brief Interval comparison function by upper bound of the interval.
+ * @brief Interval comparison function by upper bound of the intervals
  */
 int
 interval_cmp_upper(const void *i1, const void *i2)
 {
   double upper1 = ((const SplitInterval *) i1)->upper,
-    upper2 = ((const SplitInterval *) i2)->upper;
+         upper2 = ((const SplitInterval *) i2)->upper;
 
   return float8_cmp_internal(upper1, upper2);
 }
 
 /**
- * @brief Replace negative (or NaN) value with zero.
+ * @brief Replace negative (or NaN) value with zero
  */
 inline float
 non_negative(float val)
@@ -473,7 +477,7 @@ non_negative(float val)
 }
 
 /**
- * @brief Consider replacement of currently selected split with the better one.
+ * @brief Consider replacement of currently selected split with the better one
  */
 inline void
 bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
@@ -482,6 +486,7 @@ bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
 {
   int leftCount, rightCount;
   float4 ratio, overlap;
+  assert(bboxtype == T_TBOX || bboxtype == T_STBOX);
 
   /*
    * Calculate entries distribution ratio assuming most uniform distribution
@@ -655,7 +660,7 @@ bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
 }
 
 /**
- * @brief Double sorting split algorithm.
+ * @brief Double sorting split algorithm
  *
  * The algorithm finds split of boxes by considering splits along each axis.
  * Each entry is first projected as an interval on the X-axis, and different
@@ -679,7 +684,7 @@ bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
 Datum
-bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
+bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
   void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *))
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
@@ -688,8 +693,9 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
   ConsiderSplitContext context;
   void *box, *leftBox, *rightBox;
   SplitInterval *intervalsLower, *intervalsUpper;
-  CommonEntry *commonEntries;
-  int nentries, commonEntriesCount, dim;
+  CommonEntry *common_entries;
+  int nentries, common_entries_count, dim;
+  assert(bboxtype == T_TBOX || bboxtype == T_STBOX);
 
   int maxdims = bbox_max_dims(bboxtype);
   size_t bbox_size = bbox_get_size(bboxtype);
@@ -723,7 +729,7 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
   }
 
   /*
-   * Iterate over axes for optimal split searching.
+   * Iterate over axes for optimal split searching
    */
   context.first = true;    /* nothing selected yet */
   for (dim = 0; dim < maxdims; dim++)
@@ -735,7 +741,7 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
     if (dim == 2 && ! hasz)
       continue;
 
-    /* Project each entry as an interval on the selected axis. */
+    /* Project each entry as an interval on the selected axis */
     for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
     {
       box = DatumGetPointer(entryvec->vector[i].key);
@@ -899,6 +905,8 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
     }
   }
 
+  pfree(intervalsLower); pfree(intervalsUpper);
+
   /*
    * If we failed to find any acceptable splits, use trivial split.
    */
@@ -929,8 +937,8 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
    * Allocate an array for "common entries" - entries which can be placed to
    * either group without affecting overlap along selected axis.
    */
-  commonEntriesCount = 0;
-  commonEntries = palloc(nentries * sizeof(CommonEntry));
+  common_entries_count = 0;
+  common_entries = palloc(nentries * sizeof(CommonEntry));
 
   /*
    * Distribute entries which can be distributed unambiguously, and collect
@@ -944,6 +952,7 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
      * Get upper and lower bounds along selected axis.
      */
     box = DatumGetPointer(entryvec->vector[i].key);
+    assert(bboxtype == T_TBOX || bboxtype == T_STBOX);
     if (bboxtype == T_TBOX)
     {
       if (context.dim == 0)
@@ -987,7 +996,7 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
       if (FLOAT8_GE(lower, context.rightLower))
       {
         /* Fits also to the right group, so "common entry" */
-        commonEntries[commonEntriesCount++].index = i;
+        common_entries[common_entries_count++].index = i;
       }
       else
       {
@@ -1012,7 +1021,7 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
   /*
    * Distribute "common entries", if any.
    */
-  if (commonEntriesCount > 0)
+  if (common_entries_count > 0)
   {
     /*
      * Calculate minimum number of entries that must be placed in both
@@ -1024,10 +1033,10 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
      * Calculate delta between penalties of join "common entries" to
      * different groups.
      */
-    for (i = 0; i < commonEntriesCount; i++)
+    for (i = 0; i < common_entries_count; i++)
     {
-      box = DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
-      commonEntries[i].delta = fabs(bbox_penalty(leftBox, box) -
+      box = DatumGetPointer(entryvec->vector[common_entries[i].index].key);
+      common_entries[i].delta = fabs(bbox_penalty(leftBox, box) -
         bbox_penalty(rightBox, box));
     }
 
@@ -1035,24 +1044,24 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
      * Sort "common entries" by calculated deltas in order to distribute
      * the most ambiguous entries first.
      */
-    qsort(commonEntries, (size_t) commonEntriesCount, sizeof(CommonEntry),
+    qsort(common_entries, (size_t) common_entries_count, sizeof(CommonEntry),
       common_entry_cmp);
 
     /*
      * Distribute "common entries" between groups.
      */
-    for (i = 0; i < commonEntriesCount; i++)
+    for (i = 0; i < common_entries_count; i++)
     {
-      OffsetNumber idx = (OffsetNumber) (commonEntries[i].index);
+      OffsetNumber idx = (OffsetNumber) (common_entries[i].index);
       box = DatumGetPointer(entryvec->vector[idx].key);
 
       /*
        * Check if we have to place this entry in either group to achieve
        * LIMIT_RATIO.
        */
-      if (v->spl_nleft + (commonEntriesCount - i) <= m)
+      if (v->spl_nleft + (common_entries_count - i) <= m)
         PLACE_LEFT(box, idx);
-      else if (v->spl_nright + (commonEntriesCount - i) <= m)
+      else if (v->spl_nright + (common_entries_count - i) <= m)
         PLACE_RIGHT(box, idx);
       else
       {
@@ -1067,6 +1076,9 @@ bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
 
   v->spl_ldatum = PointerGetDatum(leftBox);
   v->spl_rdatum = PointerGetDatum(rightBox);
+
+  pfree(common_entries);
+
   PG_RETURN_POINTER(v);
 }
 
@@ -1078,7 +1090,7 @@ PG_FUNCTION_INFO_V1(Tbox_gist_picksplit);
 Datum
 Tbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
-  return bbox_gist_picksplit_ext(fcinfo, T_TBOX, &tbox_adjust, &tbox_penalty);
+  return bbox_gist_picksplit(fcinfo, T_TBOX, &tbox_adjust, &tbox_penalty);
 }
 /*****************************************************************************
  * GiST same method
@@ -1087,7 +1099,7 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_gist_same(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_same);
 /**
- * @brief GiST same method for temporal numbers.
+ * @brief GiST same method for temporal numbers
  * Return true only when boxes are exactly the same.  We can't use fuzzy
  * comparisons here without breaking index consistency; therefore, this isn't
  * equivalent to box_same().
@@ -1118,8 +1130,8 @@ Tbox_gist_same(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_distance);
 /**
- * @brief GiST support function. Take in a query and an entry and return the
- * "distance" between them.
+ * @brief GiST support distance function that takes in a query and an entry and
+ * returns the "distance" between them
 */
 Datum
 Tbox_gist_distance(PG_FUNCTION_ARGS)

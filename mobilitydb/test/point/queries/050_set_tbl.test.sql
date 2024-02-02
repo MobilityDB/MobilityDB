@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -75,38 +75,38 @@ SELECT memSize(set_union(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT S
 SELECT MAX(memSize(set(g))) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
 SELECT MAX(memSize(set(g))) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
 
--- Coverage of periodset_stbox_slice
+-- Coverage of tstzspanset_stbox_slice
 DROP TABLE IF EXISTS test;
-CREATE TABLE test(ps) AS
-WITH test(ps) AS (
+CREATE TABLE test(t) AS
+WITH test(t) AS (
   SELECT span(day, day + interval '1 hour')
   FROM generate_series(timestamptz '2000-01-01', timestamptz '2000-04-01', '1 day') AS day )
-SELECT spanset(array_agg(ps)) FROM test;
-SELECT ps::stbox FROM test;
+SELECT spanset(array_agg(t)) FROM test;
+SELECT t::stbox FROM test;
 DROP TABLE test;
-
--------------------------------------------------------------------------------
--- Transformation functions
-
-SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
-SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
 
 -------------------------------------------------------------------------------
 -- Accessor functions
 
 SELECT MAX(memSize(g)) FROM tbl_geomset;
 SELECT MIN(numValues(g)) FROM tbl_geomset;
-SELECT MIN(ST_X(startValue(g))) FROM tbl_geomset;
-SELECT MIN(ST_X(endValue(g))) FROM tbl_geomset;
-SELECT MIN(ST_X(valueN(g, 1))) FROM tbl_geomset;
+SELECT MIN(round(ST_X(startValue(g))::numeric, 6)) FROM tbl_geomset;
+SELECT MIN(round(ST_X(endValue(g))::numeric, 6)) FROM tbl_geomset;
+SELECT MIN(round(ST_X(valueN(g, 1))::numeric, 6)) FROM tbl_geomset;
 SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geomset;
 
 SELECT MAX(memSize(g)) FROM tbl_geogset;
 SELECT MIN(numValues(g)) FROM tbl_geogset;
-SELECT MIN(ST_X(startValue(g)::geometry)) FROM tbl_geogset;
-SELECT MIN(ST_X(endValue(g)::geometry)) FROM tbl_geogset;
-SELECT MIN(ST_X(valueN(g, 1)::geometry)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(startValue(g)::geometry)::numeric, 6)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(endValue(g)::geometry)::numeric, 6)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(valueN(g, 1)::geometry)::numeric, 6)) FROM tbl_geogset;
 SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
+
+-------------------------------------------------------------------------------
+-- Transformation functions
+
+SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
+SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
 
 -------------------------------------------------------------------------------
 -- Set_union and unnest functions

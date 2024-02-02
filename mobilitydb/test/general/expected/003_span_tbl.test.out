@@ -1,38 +1,11 @@
 COPY tbl_intspan TO '/tmp/tbl_intspan' (FORMAT BINARY);
 COPY 100
-COPY tbl_bigintspan TO '/tmp/tbl_bigintspan' (FORMAT BINARY);
-COPY 100
-COPY tbl_floatspan TO '/tmp/tbl_floatspan' (FORMAT BINARY);
-COPY 100
-COPY tbl_tstzspan TO '/tmp/tbl_tstzspan' (FORMAT BINARY);
-COPY 100
 DROP TABLE IF EXISTS tbl_intspan_tmp;
 NOTICE:  table "tbl_intspan_tmp" does not exist, skipping
 DROP TABLE
-DROP TABLE IF EXISTS tbl_bigintspan_tmp;
-NOTICE:  table "tbl_bigintspan_tmp" does not exist, skipping
-DROP TABLE
-DROP TABLE IF EXISTS tbl_floatspan_tmp;
-NOTICE:  table "tbl_floatspan_tmp" does not exist, skipping
-DROP TABLE
-DROP TABLE IF EXISTS tbl_tstzspan_tmp;
-NOTICE:  table "tbl_tstzspan_tmp" does not exist, skipping
-DROP TABLE
 CREATE TABLE tbl_intspan_tmp AS TABLE tbl_intspan WITH NO DATA;
 CREATE TABLE AS
-CREATE TABLE tbl_bigintspan_tmp AS TABLE tbl_bigintspan WITH NO DATA;
-CREATE TABLE AS
-CREATE TABLE tbl_floatspan_tmp AS TABLE tbl_floatspan WITH NO DATA;
-CREATE TABLE AS
-CREATE TABLE tbl_tstzspan_tmp AS TABLE tbl_tstzspan WITH NO DATA;
-CREATE TABLE AS
 COPY tbl_intspan_tmp FROM '/tmp/tbl_intspan' (FORMAT BINARY);
-COPY 100
-COPY tbl_bigintspan_tmp FROM '/tmp/tbl_bigintspan' (FORMAT BINARY);
-COPY 100
-COPY tbl_floatspan_tmp FROM '/tmp/tbl_floatspan' (FORMAT BINARY);
-COPY 100
-COPY tbl_tstzspan_tmp FROM '/tmp/tbl_tstzspan' (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
  count 
@@ -40,30 +13,74 @@ SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan_tmp t2 WHERE t1.k = t2.k AND t1
      0
 (1 row)
 
+DROP TABLE tbl_intspan_tmp;
+DROP TABLE
+COPY tbl_bigintspan TO '/tmp/tbl_bigintspan' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_bigintspan_tmp;
+NOTICE:  table "tbl_bigintspan_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_bigintspan_tmp AS TABLE tbl_bigintspan WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_bigintspan_tmp FROM '/tmp/tbl_bigintspan' (FORMAT BINARY);
+COPY 100
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
  count 
 -------
      0
 (1 row)
 
+DROP TABLE tbl_bigintspan_tmp;
+DROP TABLE
+COPY tbl_floatspan TO '/tmp/tbl_floatspan' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_floatspan_tmp;
+NOTICE:  table "tbl_floatspan_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_floatspan_tmp AS TABLE tbl_floatspan WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_floatspan_tmp FROM '/tmp/tbl_floatspan' (FORMAT BINARY);
+COPY 100
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_tmp t2 WHERE t1.k = t2.k AND t1.p <> t2.p;
+DROP TABLE tbl_floatspan_tmp;
+DROP TABLE
+COPY tbl_datespan TO '/tmp/tbl_datespan' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_datespan_tmp;
+NOTICE:  table "tbl_datespan_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_datespan_tmp AS TABLE tbl_datespan WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_datespan_tmp FROM '/tmp/tbl_datespan' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan_tmp t2 WHERE t1.k = t2.k AND t1.d <> t2.d;
  count 
 -------
      0
 (1 row)
 
-DROP TABLE tbl_intspan_tmp;
+DROP TABLE tbl_datespan_tmp;
 DROP TABLE
-DROP TABLE tbl_bigintspan_tmp;
+COPY tbl_tstzspan TO '/tmp/tbl_tstzspan' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_tstzspan_tmp;
+NOTICE:  table "tbl_tstzspan_tmp" does not exist, skipping
 DROP TABLE
-DROP TABLE tbl_floatspan_tmp;
-DROP TABLE
+CREATE TABLE tbl_tstzspan_tmp AS TABLE tbl_tstzspan WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_tstzspan_tmp FROM '/tmp/tbl_tstzspan' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
+ count 
+-------
+     0
+(1 row)
+
 DROP TABLE tbl_tstzspan_tmp;
 DROP TABLE
 SELECT COUNT(*) FROM tbl_intspan WHERE intspanFromBinary(asBinary(i)) <> i;
@@ -84,7 +101,13 @@ SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromBinary(asBinary(f)) <> f;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromBinary(asBinary(p)) <> p;
+SELECT COUNT(*) FROM tbl_datespan WHERE datespanFromBinary(asBinary(d)) <> d;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromBinary(asBinary(t)) <> t;
  count 
 -------
      0
@@ -108,7 +131,67 @@ SELECT COUNT(*) FROM tbl_floatspan WHERE floatspanFromHexWKB(asHexWKB(f)) <> f;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromHexWKB(asHexWKB(p)) <> p;
+SELECT COUNT(*) FROM tbl_tstzspan WHERE tstzspanFromHexWKB(asHexWKB(t)) <> t;
+ count 
+-------
+     0
+(1 row)
+
+SELECT MAX(lower(d::tstzspanset)) FROM tbl_datespanset ORDER BY 1;
+             max              
+------------------------------
+ Fri Sep 07 00:00:00 2001 PDT
+(1 row)
+
+SELECT MAX(lower(t::datespanset)) FROM tbl_tstzspanset ORDER BY 1;
+    max     
+------------
+ 12-30-2001
+(1 row)
+
+SELECT MAX(lower(i::floatspan)) FROM tbl_intspan ORDER BY 1;
+ max 
+-----
+  99
+(1 row)
+
+SELECT MAX(lower(f::intspan)) FROM tbl_floatspan ORDER BY 1;
+ max 
+-----
+  99
+(1 row)
+
+SELECT MAX(lower(d::tstzspan)) FROM tbl_datespan ORDER BY 1;
+             max              
+------------------------------
+ Tue Dec 18 00:00:00 2001 PST
+(1 row)
+
+SELECT MAX(lower(t::datespan)) FROM tbl_tstzspan ORDER BY 1;
+    max     
+------------
+ 12-29-2001
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspan WHERE (i::floatspan)::intspan <> i;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_datespan WHERE (d::tstzspan)::datespan <> d;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspan WHERE (i::floatspan)::intspan <> i;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_datespan WHERE (d::tstzspan)::datespan <> d;
  count 
 -------
      0
@@ -120,13 +203,31 @@ SELECT MAX(lower(i::int4range)) FROM tbl_intspan ORDER BY 1;
   99
 (1 row)
 
-SELECT MAX(lower(p::tstzrange)) FROM tbl_tstzspan ORDER BY 1;
+SELECT MAX(lower(d::daterange)) FROM tbl_datespan ORDER BY 1;
+    max     
+------------
+ 12-18-2001
+(1 row)
+
+SELECT MAX(lower(t::tstzrange)) FROM tbl_tstzspan ORDER BY 1;
              max              
 ------------------------------
  Sat Dec 29 12:53:00 2001 PST
 (1 row)
 
-SELECT MAX(lower(r::tstzspan)) FROM tbl_tstzrange ORDER BY 1;
+SELECT MAX(lower(d::datespan)) FROM tbl_daterange ORDER BY 1;
+    max     
+------------
+ 12-20-2001
+(1 row)
+
+SELECT MAX(lower(d::datespan)) FROM tbl_date ORDER BY 1;
+    max     
+------------
+ 12-29-2001
+(1 row)
+
+SELECT MAX(lower(t::tstzspan)) FROM tbl_tstzrange ORDER BY 1;
              max              
 ------------------------------
  Tue Dec 25 01:23:00 2001 PST
@@ -138,76 +239,108 @@ SELECT MAX(lower(t::tstzspan)) FROM tbl_timestamptz ORDER BY 1;
  Tue Dec 25 23:12:00 2001 PST
 (1 row)
 
-SELECT MAX(lower(shift(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2;
- max 
------
- 197
-(1 row)
-
-SELECT MAX(lower(shift(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2;
- max 
------
- 190
-(1 row)
-
-SELECT round(MAX(lower(shift(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2;
-   round    
-------------
- 198.767557
-(1 row)
-
-SELECT MAX(lower(shift(p, i))) FROM tbl_tstzspan, tbl_interval;
-             max              
-------------------------------
- Sat Dec 29 14:32:00 2001 PST
-(1 row)
-
-SELECT MAX(lower(scale(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2 WHERE t2.i > 0;
+SELECT MAX(lower(i)) FROM tbl_intspan;
  max 
 -----
   99
 (1 row)
 
-SELECT MAX(lower(scale(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t2.b > 0;
- max 
------
-  90
-(1 row)
-
-SELECT round(MAX(lower(scale(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2 WHERE t2.f > 0;
+SELECT round(MAX(lower(f))::numeric, 6) FROM tbl_floatspan;
    round   
 -----------
  99.383221
 (1 row)
 
-SELECT MAX(lower(scale(p, i))) FROM tbl_tstzspan, tbl_interval;
+SELECT MAX(lower(t)) FROM tbl_tstzspan;
              max              
 ------------------------------
  Sat Dec 29 12:53:00 2001 PST
 (1 row)
 
-SELECT MAX(lower(shiftScale(t1.i, t2.i, t3.i))) FROM tbl_intspan t1, tbl_int t2, tbl_int t3 WHERE t3.i > 0;
+SELECT MAX(upper(i)) FROM tbl_intspan;
  max 
 -----
- 197
+ 108
 (1 row)
 
-SELECT MAX(lower(shiftScale(t1.b, t2.b, t3.b))) FROM tbl_bigintspan t1, tbl_bigint t2, tbl_bigint t3 WHERE t3.b > 0;
- max 
------
- 190
-(1 row)
-
-SELECT round(MAX(lower(shiftScale(t1.f, t2.f, t3.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2, tbl_float t3 WHERE t3.f > 0;
+SELECT round(MAX(upper(f))::numeric, 6) FROM tbl_floatspan;
    round    
 ------------
- 198.767557
+ 106.033025
 (1 row)
 
-SELECT MAX(lower(shiftScale(p, t1.i, t2.i))) FROM tbl_tstzspan, tbl_interval t1, tbl_interval t2;
+SELECT MAX(upper(t)) FROM tbl_tstzspan;
              max              
 ------------------------------
- Sat Dec 29 14:32:00 2001 PST
+ Sat Dec 29 13:00:00 2001 PST
+(1 row)
+
+SELECT DISTINCT lower_inc(i) FROM tbl_intspan;
+ lower_inc 
+-----------
+ 
+ t
+(2 rows)
+
+SELECT DISTINCT lower_inc(f) FROM tbl_floatspan;
+ lower_inc 
+-----------
+ 
+ t
+(2 rows)
+
+SELECT DISTINCT lower_inc(t) FROM tbl_tstzspan;
+ lower_inc 
+-----------
+ 
+ f
+ t
+(3 rows)
+
+SELECT DISTINCT upper_inc(i) FROM tbl_intspan;
+ upper_inc 
+-----------
+ f
+ 
+(2 rows)
+
+SELECT DISTINCT upper_inc(f) FROM tbl_floatspan;
+ upper_inc 
+-----------
+ f
+ 
+(2 rows)
+
+SELECT DISTINCT upper_inc(t) FROM tbl_tstzspan;
+ upper_inc 
+-----------
+ 
+ f
+ t
+(3 rows)
+
+SELECT SUM(width(i)) FROM tbl_intspan;
+ sum 
+-----
+ 513
+(1 row)
+
+SELECT round(SUM(width(f))::numeric, 6) FROM tbl_floatspan;
+   round    
+------------
+ 524.526653
+(1 row)
+
+SELECT MAX(duration(d)) FROM tbl_datespan;
+   max   
+---------
+ 10 days
+(1 row)
+
+SELECT MAX(duration(t)) FROM tbl_tstzspan;
+   max    
+----------
+ 00:09:00
 (1 row)
 
 SELECT MAX(duration(span(t, t + i))) FROM tbl_timestamptz, tbl_interval;
@@ -240,147 +373,145 @@ SELECT MAX(duration(span(t, t + i, false, false))) FROM tbl_timestamptz, tbl_int
  01:39:00
 (1 row)
 
-SELECT SUM(width(i)) FROM tbl_intspan;
- sum 
------
- 513
-(1 row)
-
-SELECT round(SUM(width(f))::numeric, 6) FROM tbl_floatspan;
-   round    
-------------
- 524.526653
-(1 row)
-
-SELECT MAX(lower(i)) FROM tbl_intspan;
- max 
------
-  99
-(1 row)
-
-SELECT round(MAX(lower(f))::numeric, 6) FROM tbl_floatspan;
-   round   
------------
- 99.383221
-(1 row)
-
-SELECT MAX(lower(p)) FROM tbl_tstzspan;
-             max              
-------------------------------
- Sat Dec 29 12:53:00 2001 PST
-(1 row)
-
-SELECT MAX(upper(i)) FROM tbl_intspan;
- max 
------
- 108
-(1 row)
-
-SELECT round(MAX(upper(f))::numeric, 6) FROM tbl_floatspan;
-   round    
-------------
- 106.033025
-(1 row)
-
-SELECT MAX(upper(p)) FROM tbl_tstzspan;
-             max              
-------------------------------
- Sat Dec 29 13:00:00 2001 PST
-(1 row)
-
-SELECT DISTINCT lower_inc(i) FROM tbl_intspan;
- lower_inc 
------------
- 
- t
-(2 rows)
-
-SELECT DISTINCT lower_inc(f) FROM tbl_floatspan;
- lower_inc 
------------
- 
- t
-(2 rows)
-
-SELECT DISTINCT lower_inc(p) FROM tbl_tstzspan;
- lower_inc 
------------
- 
- f
- t
-(3 rows)
-
-SELECT DISTINCT upper_inc(i) FROM tbl_intspan;
- upper_inc 
------------
- f
- 
-(2 rows)
-
-SELECT DISTINCT upper_inc(f) FROM tbl_floatspan;
- upper_inc 
------------
- f
- 
-(2 rows)
-
-SELECT DISTINCT upper_inc(p) FROM tbl_tstzspan;
- upper_inc 
------------
- 
- f
- t
-(3 rows)
-
-SELECT MAX(duration(p)) FROM tbl_tstzspan;
-   max    
-----------
- 00:09:00
-(1 row)
-
-SELECT MAX(lower(shift(p, '5 min'))) FROM tbl_tstzspan;
+SELECT MAX(lower(shift(t, '5 min'))) FROM tbl_tstzspan;
              max              
 ------------------------------
  Sat Dec 29 12:58:00 2001 PST
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE span_cmp(t1.p, t2.p) = -1;
+SELECT MAX(lower(shift(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2;
+ max 
+-----
+ 197
+(1 row)
+
+SELECT MAX(lower(shift(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2;
+ max 
+-----
+ 190
+(1 row)
+
+SELECT round(MAX(lower(shift(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2;
+   round    
+------------
+ 198.767557
+(1 row)
+
+SELECT MAX(lower(shift(t1.d, t2.i))) FROM tbl_datespan t1, tbl_int t2;
+    max     
+------------
+ 03-26-2002
+(1 row)
+
+SELECT MAX(lower(shift(t, i))) FROM tbl_tstzspan, tbl_interval;
+             max              
+------------------------------
+ Sat Dec 29 14:32:00 2001 PST
+(1 row)
+
+SELECT MAX(lower(scale(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2 WHERE t2.i > 0;
+ max 
+-----
+  99
+(1 row)
+
+SELECT MAX(lower(scale(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t2.b > 0;
+ max 
+-----
+  90
+(1 row)
+
+SELECT round(MAX(lower(scale(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2 WHERE t2.f > 0;
+   round   
+-----------
+ 99.383221
+(1 row)
+
+SELECT MAX(lower(scale(t1.d, t2.i))) FROM tbl_datespan t1, tbl_int t2;
+    max     
+------------
+ 12-18-2001
+(1 row)
+
+SELECT MAX(lower(scale(t, i))) FROM tbl_tstzspan, tbl_interval;
+             max              
+------------------------------
+ Sat Dec 29 12:53:00 2001 PST
+(1 row)
+
+SELECT MAX(lower(shiftScale(t1.i, t2.i, t3.i))) FROM tbl_intspan t1, tbl_int t2, tbl_int t3 WHERE t3.i > 0;
+ max 
+-----
+ 197
+(1 row)
+
+SELECT MAX(lower(shiftScale(t1.b, t2.b, t3.b))) FROM tbl_bigintspan t1, tbl_bigint t2, tbl_bigint t3 WHERE t3.b > 0;
+ max 
+-----
+ 190
+(1 row)
+
+SELECT round(MAX(lower(shiftScale(t1.f, t2.f, t3.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2, tbl_float t3 WHERE t3.f > 0;
+   round    
+------------
+ 198.767557
+(1 row)
+
+SELECT MAX(lower(shiftScale(t1.d, t2.i, t3.i))) FROM tbl_datespan t1, tbl_int t2, tbl_int t3 WHERE t3.i > 0;
+    max     
+------------
+ 03-26-2002
+(1 row)
+
+SELECT MAX(lower(shiftScale(t, t1.i, t2.i))) FROM tbl_tstzspan, tbl_interval t1, tbl_interval t2;
+             max              
+------------------------------
+ Sat Dec 29 14:32:00 2001 PST
+(1 row)
+
+SELECT MIN(lower(round(f, 5))) FROM tbl_floatspan;
+   min   
+---------
+ 1.24606
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE span_cmp(t1.t, t2.t) = -1;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p < t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t < t2.t;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <= t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <= t2.t;
  count 
 -------
   4950
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p > t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t > t2.t;
  count 
 -------
   4851
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p >= t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t >= t2.t;
  count 
 -------
   4950
 (1 row)
 
-SELECT MAX(span_hash(p)) != 0 FROM tbl_tstzspan;
+SELECT MAX(span_hash(t)) != 0 FROM tbl_tstzspan;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT MAX(span_hash_extended(p, 1)) != 0 FROM tbl_tstzspan;
+SELECT MAX(span_hash_extended(t, 1)) != 0 FROM tbl_tstzspan;
  ?column? 
 ----------
  t

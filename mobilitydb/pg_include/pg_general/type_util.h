@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -36,8 +36,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/palloc.h>
-#include <fmgr.h>
 #include <lib/stringinfo.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
@@ -45,8 +43,8 @@
   #include <utils/multirangetypes.h>
 #endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 /* MEOS */
-#include "general/span.h"
-#include "general/temporal.h"
+#include <meos.h>
+#include "general/meos_catalog.h"
 
 /*****************************************************************************/
 
@@ -83,14 +81,15 @@ extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
 extern Datum *datumarr_extract(ArrayType *array, int *count);
 extern TimestampTz *timestamparr_extract(ArrayType *array, int *count);
 extern Span *spanarr_extract(ArrayType *array, int *count);
-extern Temporal **temporalarr_extract(ArrayType *array, int *count);
+extern Temporal **temparr_extract(ArrayType *array, int *count);
 
 extern ArrayType *datumarr_to_array(Datum *values, int count, meosType type);
-extern ArrayType *int64arr_to_array(const int64 *longints, int count);
-extern ArrayType *timestamparr_to_array(const TimestampTz *times, int count);
+extern ArrayType *int64arr_to_array(int64 *longints, int count);
+extern ArrayType *datearr_to_array(DateADT *dates, int count);
+extern ArrayType *tstzarr_to_array(TimestampTz *times, int count);
 extern ArrayType *spanarr_to_array(const Span **spans, int count);
 extern ArrayType *strarr_to_textarray(char **strarr, int count);
-extern ArrayType *temporalarr_to_array(const Temporal **temporal, int count);
+extern ArrayType *temparr_to_array(Temporal **temporal, int count, bool free_all);
 extern ArrayType *stboxarr_to_array(STBox *boxarr, int count);
 
 /*****************************************************************************/

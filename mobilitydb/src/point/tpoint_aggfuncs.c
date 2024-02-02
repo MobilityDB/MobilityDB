@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Aggregate functions for temporal points.
+ * @brief Aggregate functions for temporal points
  *
  * The only functions currently provided are extent and temporal centroid.
  */
@@ -40,16 +40,11 @@
 #include <assert.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
-#include "general/temporaltypes.h"
-#include "general/doublen.h"
 #include "general/skiplist.h"
 #include "general/temporal_aggfuncs.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "point/stbox.h"
 /* MobilityDB */
 #include "pg_general/skiplist.h"
-#include "pg_general/temporal.h"
 
 /*****************************************************************************
  * Extent
@@ -58,8 +53,9 @@
 PGDLLEXPORT Datum Tpoint_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_extent_transfn);
 /**
- * @brief Transition function for temporal extent aggregation of temporal point
- * values
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function for temporal extent aggregation of temporal points
+ * @sqlfn extent()
  */
 Datum
 Tpoint_extent_transfn(PG_FUNCTION_ARGS)
@@ -69,7 +65,7 @@ Tpoint_extent_transfn(PG_FUNCTION_ARGS)
   STBox *result = tpoint_extent_transfn(box, temp);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************
@@ -79,8 +75,10 @@ Tpoint_extent_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_transfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal centroid aggregation of temporal
- * network points
+ * points
+ * @sqlfn tcentroid()
  */
 Datum
 Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
@@ -91,7 +89,7 @@ Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   state = tpoint_tcentroid_transfn(state, temp);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(state);
+  PG_RETURN_TEMPORAL_P(state);
 }
 
 /*****************************************************************************/
@@ -99,8 +97,9 @@ Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_combinefn);
 /**
- * @brief Combine function for temporal centroid aggregation of temporal point
- * values
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Combine function for temporal centroid aggregation of temporal points
+ * @sqlfn tcentroid()
  */
 Datum
 Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
@@ -121,9 +120,7 @@ Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
     extra = state2->extra;
   assert(extra != NULL);
   datum_func2 func = extra->hasz ? &datum_sum_double4 : &datum_sum_double3;
-  SkipList *result = temporal_tagg_combinefn(state1, state2, func, false);
-
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SKIPLIST_P(temporal_tagg_combinefn(state1, state2, func, false));
 }
 
 /*****************************************************************************/
@@ -131,8 +128,9 @@ Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_finalfn);
 /**
- * @brief Final function for temporal centroid aggregation of temporal point
- * values
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Final function for temporal centroid aggregation of temporal points
+ * @sqlfn tcentroid()
  */
 Datum
 Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
@@ -141,7 +139,7 @@ Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
   Temporal *result = tpoint_tcentroid_finalfn(state);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

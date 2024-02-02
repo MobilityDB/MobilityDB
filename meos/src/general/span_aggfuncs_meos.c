@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Aggregate functions for span types.
+ * @brief Aggregate functions for span types
  */
 
 /* C */
@@ -39,15 +39,15 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/spanset.h"
-#include "general/type_util.h"
+#include "general/span.h"
+#include "general/temporal.h"
 
 /*****************************************************************************
  * Aggregate functions for span set types
  *****************************************************************************/
 
 /**
- * @brief Append a span to an unordered span set.
+ * @brief Append a span to an unordered span set
  * @param[in,out] ss Span set
  * @param[in] span Span to append
  * @param[in] expand True when using expandable structures
@@ -72,12 +72,12 @@ spanset_append_span(SpanSet *ss, const Span *span, bool expand)
    * free space */
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
   for (int i = 0; i < ss->count; i++)
-    spans[i] = *spanset_sp_n(ss, i);
+    spans[i] = *SPANSET_SP_N(ss, i);
   spans[ss->count] = *span;
   int maxcount = ss->maxcount * 2;
-#ifdef DEBUG_BUILD
-  printf(" spanset -> %d\n", maxcount);
-#endif /* DEBUG_BUILD */
+#ifdef DEBUG_EXPAND
+  printf(" Spanset -> %d\n", maxcount);
+#endif /* DEBUG_EXPAND */
 
   SpanSet *result = spanset_make_exp(spans, ss->count + 1, maxcount,
     NORMALIZE_NO, ORDERED_NO);
@@ -87,7 +87,7 @@ spanset_append_span(SpanSet *ss, const Span *span, bool expand)
 }
 
 /**
- * @brief Append a span set to an unordered span set.
+ * @brief Append a span set to an unordered span set
  * @param[in,out] ss1 Span set
  * @param[in] ss2 Span set to append
  * @param[in] expand True when using expandable structures
@@ -116,15 +116,15 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
   int count = ss1->count + ss2->count;
   Span *spans = palloc(sizeof(Span) * count);
   for (int i = 0; i < ss1->count; i++)
-    spans[i] = *spanset_sp_n(ss1, i);
+    spans[i] = *SPANSET_SP_N(ss1, i);
   for (int i = 0; i < ss2->count; i++)
-    spans[i + ss1->count] = *spanset_sp_n(ss2, i);
+    spans[i + ss1->count] = *SPANSET_SP_N(ss2, i);
   int maxcount = ss1->maxcount * 2;
   while (maxcount < count)
     maxcount *= 2;
-#ifdef DEBUG_BUILD
-  printf(" spanset -> %d\n", maxcount);
-#endif /* DEBUG_BUILD */
+#ifdef DEBUG_EXPAND
+  printf(" Spanset -> %d\n", maxcount);
+#endif /* DEBUG_EXPAND */
 
   SpanSet *result = spanset_make_exp(spans, count, maxcount, NORMALIZE_NO,
     ORDERED_NO);
@@ -133,29 +133,33 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for span set aggregate union
+ * @param[in,out] state Current aggregate state
+ * @param[in] s Span to aggregate
  */
 SpanSet *
-span_union_transfn(SpanSet *state, const Span *span)
+span_union_transfn(SpanSet *state, const Span *s)
 {
   /* Null span: return current state */
-  if (! span)
+  if (! s)
     return state;
   /* Null state: create a new span set with the input span */
   if (! state)
     /* Arbitrary initialization to 64 elements */
-    return spanset_make_exp((Span *) span, 1, 64, NORMALIZE_NO, ORDERED_NO);
+    return spanset_make_exp((Span *) s, 1, 64, NORMALIZE_NO, ORDERED_NO);
 
   /* Ensure validity of the arguments */
-  if (! ensure_same_span_type(&state->elems[0], span))
+  if (! ensure_same_span_type(&state->elems[0], s))
     return NULL;
-  return spanset_append_span(state, span, true);
+  return spanset_append_span(state, s, true);
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for span set aggregate union
+ * @param[in,out] state Current aggregate state
+ * @param[in] ss Span set to aggregate
  */
 SpanSet *
 spanset_union_transfn(SpanSet *state, const SpanSet *ss)
@@ -179,8 +183,9 @@ spanset_union_transfn(SpanSet *state, const SpanSet *ss)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for set aggregate of values
+ * @param[in] state Current aggregate state
  */
 SpanSet *
 spanset_union_finalfn(SpanSet *state)

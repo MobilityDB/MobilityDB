@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -32,8 +32,10 @@
  * Spatial functions for temporal points.
  */
 
+/*****************************************************************************/
+
 CREATE FUNCTION SRID(stbox)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Stbox_get_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setSRID(stbox, integer)
@@ -43,6 +45,11 @@ CREATE FUNCTION setSRID(stbox, integer)
 CREATE FUNCTION transform(stbox, integer)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transformPipeline(stbox, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION round(stbox, integer DEFAULT 0)
   RETURNS stbox
@@ -80,6 +87,21 @@ CREATE FUNCTION setSRID(tgeogpoint, integer)
 CREATE FUNCTION transform(tgeompoint, integer)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpoint_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transformPipeline(tgeompoint, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tpoint_transform_pipeline'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transform(tgeogpoint, integer)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tpoint_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transformPipeline(tgeogpoint, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tpoint_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Gauss Kruger transformation
@@ -133,20 +155,20 @@ CREATE FUNCTION getZ(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Tpoint_get_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION round(tgeompoint, int DEFAULT 0)
+CREATE FUNCTION round(tgeompoint, integer DEFAULT 0)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpoint_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION round(tgeogpoint, int DEFAULT 0)
+CREATE FUNCTION round(tgeogpoint, integer DEFAULT 0)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tpoint_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION round(tgeompoint[], int DEFAULT 0)
+CREATE FUNCTION round(tgeompoint[], integer DEFAULT 0)
   RETURNS tgeompoint[]
   AS 'MODULE_PATHNAME', 'Tpointarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION round(tgeogpoint[], int DEFAULT 0)
+CREATE FUNCTION round(tgeogpoint[], integer DEFAULT 0)
   RETURNS tgeogpoint[]
   AS 'MODULE_PATHNAME', 'Tpointarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -241,7 +263,7 @@ CREATE FUNCTION bearing(geography, geography)
 
 CREATE FUNCTION bearing(geometry, tgeompoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Bearing_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Bearing_point_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bearing(tgeompoint, geometry)
   RETURNS tfloat
@@ -254,7 +276,7 @@ CREATE FUNCTION bearing(tgeompoint, tgeompoint)
 
 CREATE FUNCTION bearing(geography, tgeogpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Bearing_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Bearing_point_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bearing(tgeogpoint, geography)
   RETURNS tfloat

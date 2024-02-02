@@ -52,7 +52,7 @@
 					<entry><varname>ttext</varname></entry>
 				</row>
 				<row>
-					<entry><emphasis role="bold"><varname>int</varname></emphasis></entry>
+					<entry><emphasis role="bold"><varname>integer</varname></emphasis></entry>
 					<entry><varname>intset</varname></entry>
 					<entry><varname>intspan</varname></entry>
 					<entry><varname>intspanset</varname></entry>
@@ -71,6 +71,13 @@
 					<entry><varname>floatspan</varname></entry>
 					<entry><varname>floatspanset</varname></entry>
 					<entry><varname>tfloat</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>date</varname></emphasis></entry>
+					<entry><varname>dateset</varname></entry>
+					<entry><varname>datespan</varname></entry>
+					<entry><varname>datespanset</varname></entry>
+					<entry><varname></varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>timestamptz</varname></emphasis></entry>
@@ -184,11 +191,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="lower"><varname>lower</varname>, <varname>upper</varname></link>: Obtener el límite inferior/superior</para>
+					<para><link linkend="lower"><varname>lower</varname>, <varname>upper</varname></link>: Obtener el límite inferior o superior</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: ¿Es el límite inferior/superior inclusivo?</para>
+					<para><link linkend="setspan_lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: ¿Es el límite inferior o superior inclusivo?</para>
 				</listitem>
 
 				<listitem>
@@ -204,15 +211,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_numTimestamps"><varname>numValues</varname></link>: Obtener el número de valores</para>
+					<para><link linkend="setspan_numValues"><varname>numValues</varname></link>: Obtener el número de valores</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startTimestamp"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener el valor inicial, final o enésimo</para>
+					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener el valor inicial, final o enésimp</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_timestamps"><varname>values</varname></link>: Obtener los valores diferentes</para>
+					<para><link linkend="setspan_getValues"><varname>getValue</varname></link>: Obtener los valores</para>
 				</listitem>
 
 				<listitem>
@@ -226,6 +233,18 @@
 				<listitem>
 					<para><link linkend="spans"><varname>spans</varname></link>: Obtener los rangos</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_numTimestamps"><varname>numDates</varname>, <varname>numTimestamps</varname></link>: Obtener el número de fechas o marcas de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_startTimestamp"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname>, <varname>startTimestamp</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener la fecha or marca de tiempo inicial, final o enésima</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="setspan_timestamps"><varname>dates</varname>, <varname>timestamps</varname></link>: Obtener los fechas o marcas de tiempo diferentes</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -234,23 +253,31 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Desplazar el conjunto o el rango con un valor o intervalo de tiempo</para>
+					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Desplazar un conjunto o un rango con un valor o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_scale"><varname>scale</varname></link>: Escalar el conjunto o el rango con un valor o intervalo de tiempo</para>
+					<para><link linkend="setspan_scale"><varname>scale</varname></link>: Escalar un conjunto o un rango con un valor o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_shiftScale"><varname>shiftScale</varname></link>: Desplazar y escalar el conjunto o el rango los valores or intervalos de tiempo</para>
+					<para><link linkend="setspan_shiftScale"><varname>shiftScale</varname></link>: Desplazar y escalar un conjunto o un rango con los valores o intervalos de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatspan_round"><varname>round</varname></link>: Redondear los límites de un rango flotante a un número de decimales</para>
+					<para><link linkend="floatspan_round"><varname>round</varname></link>: Redondear un conjunto o un rango flotante a un número de decimales</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="textset_lower"><varname>lower</varname>, <varname>upper</varname></link>: Transformar entre minúsculas y majúsculas</para>
+					<para><link linkend="floatset_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir un conjunto flotante a grados o radianes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="textset_lower"><varname>lower</varname>, <varname>upper</varname>, <varname>initcap</varname></link>: Transformar en minúsculas, majúsculas o initcap</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="textset_concat"><varname>concat</varname></link>: Concatenación de texto</para>
 				</listitem>
 
 				<listitem>
@@ -285,6 +312,24 @@
 
 				<listitem>
 					<para><link linkend="setspan_ge"><varname>&gt;=</varname></link>: ¿Es el primer valor mayor o igual que el segundo?</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Sistema de referencia espacial</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="geoset_SRID"><varname>SRID</varname></link>: Obtener el identificador de referencia espacial</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="geoset_setSRID"><varname>setSRID</varname></link>: Especificar el identificador de referencia espacial</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="geoset_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transformar a una referencia espacial diferente</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -509,7 +554,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_round"><varname>round</varname></link>: Redondear el valor o las coordenadas del cuadro delimitador a un número de decimales</para>
+					<para><link linkend="box_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir a grados o radianes</para>
 				</listitem>
 
 			</itemizedlist>
@@ -528,7 +573,7 @@
 					</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_transform"><varname>transform</varname></link>: Transformar a una referencia espacial diferente</para>
+					<para><link linkend="stbox_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transformar a una referencia espacial diferente</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -790,6 +835,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: ¿Es el instante inicial/final inclusivo?</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="numInstants"><varname>numInstants</varname></link>: Obtener el número de instantes diferentes</para>
 				</listitem>
 
@@ -976,27 +1025,27 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="ttype_eveq"><varname>?=</varname>, <varname>%=</varname></link>: ¿Es el valor temporal alguna vez/siempre igual al valor?</para>
+						<para><link linkend="ttype_eveq"><varname>?=</varname>, <varname>%=</varname></link>: ¿Es el valor temporal alguna vez o siempre igual al valor?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evne"><varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname></link>: ¿Es el valor temporal alguna vez/siempre diferente del valor?</para>
+						<para><link linkend="ttype_evne"><varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname></link>: ¿Es el valor temporal alguna vez o siempre diferente del valor?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evlt"><varname>?&lt;</varname>, <varname>%&lt;</varname></link>: ¿Es el valor temporal alguna vez/siempre menor que el valor?</para>
+						<para><link linkend="ttype_evlt"><varname>?&lt;</varname>, <varname>%&lt;</varname></link>: ¿Es el valor temporal alguna vez o siempre menor que el valor?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evgt"><varname>?&gt;</varname>, <varname>%&gt;</varname></link>: ¿Es el valor temporal alguna vez/siempre mayor que el valor?</para>
+						<para><link linkend="ttype_evgt"><varname>?&gt;</varname>, <varname>%&gt;</varname></link>: ¿Es el valor temporal alguna vez o siempre mayor que el valor?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evle"><varname>?&lt;=</varname>, <varname>%&lt;=</varname></link>: ¿Es el valor temporal alguna vez/siempre menor o igual que el valor?</para>
+						<para><link linkend="ttype_evle"><varname>?&lt;=</varname>, <varname>%&lt;=</varname></link>: ¿Es el valor temporal alguna vez o siempre menor o igual que el valor?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_evge"><varname>?&gt;=</varname>, <varname>%&gt;=</varname></link>: ¿Es el valor temporal alguna vez/siempre mayor o igual que el valor?</para>
+						<para><link linkend="ttype_evge"><varname>?&gt;=</varname>, <varname>%&gt;=</varname></link>: ¿Es el valor temporal alguna vez o siempre mayor o igual que el valor?</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1082,7 +1131,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir entre radianes y grados</para>
+					<para><link linkend="degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir a grados o radianes</para>
 				</listitem>
 
 				<listitem>
@@ -1117,11 +1166,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttext_concat"><varname>||</varname></link>: Concatenación de texto temporal</para>
+					<para><link linkend="ttext_concat"><varname>||</varname></link>: Concatenación de texto</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname></link>: Transformar entre minúsculas y mayúsculas</para>
+					<para><link linkend="ttext_lower"><varname>lower</varname>, <varname>upper</varname>, <varname>initcap</varname></link>: Transformar en minúsculas, mayúsculas o initcap</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1197,7 +1246,7 @@
 					</listitem>
 
 				<listitem>
-					<para><link linkend="tpoint_transform"><varname>transform</varname></link>: Transformar a una referencia espacial diferente</para>
+					<para><link linkend="tpoint_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transformar a una referencia espacial diferente</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1307,27 +1356,27 @@
 			<title>Relaciones espaciales</title>
 
 			<sect3>
-				<title>Relaciones espaciales alguna vez</title>
+				<title>Relaciones espaciales alguna vez o siempre</title>
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="econtains"><varname>econtains</varname></link>: Contiene alguna vez</para>
+						<para><link linkend="eContains"><varname>eContains</varname>, <varname>aContains</varname></link>: Contiene alguna vez o siempre</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="edisjoint"><varname>edisjoint</varname></link>: Es disjunto alguna vez</para>
+						<para><link linkend="eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Es disjunto alguna vez o siempre</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="edwithin"><varname>edwithin</varname></link>: Está alguna vez a distancia de</para>
+						<para><link linkend="eDwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Está alguna vez o siempre a distancia de</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="eintersects"><varname>eintersects</varname></link>: Cruza alguna vez</para>
+						<para><link linkend="eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Cruza alguna vez o siempre</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="etouches"><varname>etouches</varname></link>: Toca alguna vez</para>
+						<para><link linkend="eTouches"><varname>eTouches</varname>, <varname>aTouches</varname></link>: Toca alguna vez o siempre</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1337,23 +1386,23 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Contiene temporal</para>
+						<para><link linkend="tContains"><varname>tContains</varname></link>: Contiene temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Disjunto temporal</para>
+						<para><link linkend="tDisjoint"><varname>tDisjoint</varname></link>: Disjunto temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Estar a distancia de temporal </para>
+						<para><link linkend="tDwithin"><varname>tDwithin</varname></link>: Estar a distancia de temporal </para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tintersects"><varname>tintersects</varname></link>: Intersección temporal</para>
+						<para><link linkend="tIntersects"><varname>tIntersects</varname></link>: Intersección temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttouches"><varname>ttouches</varname></link>: Toca temporal</para>
+						<para><link linkend="tTouches"><varname>tTouches</varname></link>: Toca temporal</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1408,11 +1457,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="dynamicTimeWarp"><varname>dynamicTimeWarp</varname></link>: Obtener la distancia de distorsión de tiempo dinámica (Dynamic Time Warp) entre dos valores temporales</para>
+					<para><link linkend="dynTimeWarpDistance"><varname>dynTimeWarpDistance</varname></link>: Obtener la distancia de distorsión de tiempo dinámica (Dynamic Time Warp) entre dos valores temporales</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="dynamicTimeWarpPath"><varname>dynamicTimeWarpPath</varname></link>: Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
+					<para><link linkend="dynTimeWarpPath"><varname>dynTimeWarpPath</varname></link>: Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1584,7 +1633,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="startPosition"><varname>startPosition</varname>, <varname>endPosition</varname></link>: Obtener la posición inicial/final</para>
+						<para><link linkend="startPosition"><varname>startPosition</varname>, <varname>endPosition</varname></link>: Obtener la posición inicial o final</para>
 					</listitem>
 
 					<listitem>
@@ -1782,11 +1831,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_espatialrels"><varname>econtains, edisjoint, eintersects, etouches, edwithin</varname></link>: Relaciones espaciales alguna vez</para>
+						<para><link linkend="tnpoint_espatialrels"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>aTouches</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Relaciones espaciales alguna vez o siempre</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_tspatialrels"><varname>tcontains, tdisjoint, tintersects, ttouches, tdwithin</varname></link>: Relaciones espaciales temporales</para>
+						<para><link linkend="tnpoint_tspatialrels"><varname>tContains</varname>, <varname>tDisjoint</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname>, <varname>tDwithin</varname></link>: Relaciones espaciales temporales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

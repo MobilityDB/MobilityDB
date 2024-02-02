@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -37,9 +37,8 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include "general/skiplist.h"
+#include <meos.h>
 #include "general/temporal.h"
-#include "general/type_util.h"
 
 /*****************************************************************************/
 
@@ -88,6 +87,10 @@ extern Temporal *temporal_tagg_finalfn(SkipList *state);
 extern SkipList *temporal_tagg_transform_transfn(SkipList *state, const Temporal *temp,
   datum_func2 func, bool crossings, TInstant *(*transform)(const TInstant *));
 
+extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
+  double maxdist, Interval *maxt);
+extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
+  
 /*****************************************************************************/
 
 #endif

@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -559,6 +559,8 @@ SELECT asText(setInterp(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 
 SELECT asText(setInterp(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(2 2)@2000-01-04], [Point(3 3)@2000-01-05, Point(4 4)@2000-01-06]}', 'linear'));
 
 -------------------------------------------------------------------------------
+-- Modification functions
+-------------------------------------------------------------------------------
 
 SELECT asText(appendInstant(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02'));
 SELECT asText(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-04'));
@@ -958,14 +960,14 @@ SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(
 SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ?= ST_Point(1.5,1.5);
 SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ?= ST_Point(1.5,1.5);
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}' ?= 'Point(1.5 1.5)';
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]' ?= 'Point(1 1)';
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= 'Point(2 2)';
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= 'Point(1.5 1.5)';
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]}' ?= 'Point(0 0)';
-SELECT tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= 'Point(1.5 1.5)';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}' ?= geometry 'Point(1.5 1.5)';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]' ?= geometry 'Point(1 1)';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= geometry 'Point(2 2)';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= geometry 'Point(1.5 1.5)';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]}' ?= geometry 'Point(0 0)';
+SELECT tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= geometry 'Point(1.5 1.5)';
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03]' ?= 'Point(2 2 2)';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03]' ?= geometry 'Point(2 2 2)';
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'Point empty';
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ?= geometry 'Point empty';

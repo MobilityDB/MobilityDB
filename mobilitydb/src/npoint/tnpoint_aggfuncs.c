@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -33,27 +33,22 @@
  * @note The only function currently provided is temporal centroid.
  */
 
-/* C */
-#include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal_aggfuncs.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
-#include "point/tpoint_aggfuncs.h"
-#include "npoint/tnpoint.h"
+#include "general/temporal.h"
+#include "general/skiplist.h"
 #include "npoint/tnpoint_aggfuncs.h"
 /* MobilityDB */
 #include "pg_general/skiplist.h"
-#include "pg_general/temporal.h"
 
 /*****************************************************************************/
 
 PGDLLEXPORT Datum Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_tcentroid_transfn);
 /**
+ * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal centroid aggregation of temporal
  * network points
  */
@@ -66,7 +61,7 @@ Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   state = tnpoint_tcentroid_transfn(state, temp);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(state);
+  PG_RETURN_SKIPLIST_P(state);
 }
 
 

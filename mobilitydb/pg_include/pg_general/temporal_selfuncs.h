@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -45,8 +45,6 @@
 #include <meos.h>
 #include "general/meos_catalog.h"
 #include "general/temporal.h"
-/* MobilityDB */
-#include "pg_general/meos_catalog.h"
 
 #define BTREE_AM_OID   403
 
@@ -62,7 +60,7 @@
 
 extern Selectivity scalarineqsel(PlannerInfo *root, Oid operid, bool isgt,
   bool iseq, VariableStatData *vardata, Datum constval, Oid consttypid);
-extern Selectivity temporal_sel_period(VariableStatData *vardata, Span *period,
+extern Selectivity temporal_sel_tstzspan(VariableStatData *vardata, Span *s,
   meosOper oper);
 
 /*****************************************************************************
@@ -71,14 +69,13 @@ extern Selectivity temporal_sel_period(VariableStatData *vardata, Span *period,
 
 extern float8 temporal_sel(PlannerInfo *root, Oid operid, List *args,
   int varRelid, TemporalFamily tempfamily);
-extern double temporal_sel_ext(FunctionCallInfo fcinfo,
+extern double temporal_sel_family(FunctionCallInfo fcinfo,
   TemporalFamily tempfamily);
 
 extern double temporal_joinsel(PlannerInfo *root, Oid operid,
   List *args, JoinType jointype, SpecialJoinInfo *sjinfo,
   TemporalFamily tempfamily);
-
-extern double temporal_joinsel_ext(FunctionCallInfo fcinfo,
+extern double temporal_joinsel_family(FunctionCallInfo fcinfo,
   TemporalFamily tempfamily);
 
 /*****************************************************************************/

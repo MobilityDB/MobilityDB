@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Operators for set types.
+ * @brief Operators for set types
  */
 
 /* PostgreSQL */
@@ -39,8 +39,65 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
+#include "pg_general/temporal.h"
+
+/*****************************************************************************
+ * Boolean operators
+ *****************************************************************************/
+
+/**
+ * @brief Generic function for set operators on sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Boolop_base_set(FunctionCallInfo fcinfo,
+  bool (*func)(Datum, const Set *))
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = func(value, s);
+  DATUM_FREE_IF_COPY(value, s->basetype, 0);
+  PG_FREE_IF_COPY(s, 1);
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic function for boolean operators on sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Boolop_set_base(FunctionCallInfo fcinfo,
+  bool (*func)(const Set *, Datum))
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Datum value = PG_GETARG_ANYDATUM(1);
+  bool result = func(s, value);
+  DATUM_FREE_IF_COPY(value, s->basetype, 1);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic function for boolean operators on sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Boolop_set_set(FunctionCallInfo fcinfo,
+  bool (*func)(const Set *, const Set *))
+{
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  bool result = func(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
+  PG_RETURN_BOOL(result);
+}
 
 /*****************************************************************************/
 /* contains? */
@@ -50,37 +107,27 @@ PG_FUNCTION_INFO_V1(Contains_set_value);
 /**
  * @ingroup mobilitydb_setspan_topo
  * @brief Return true if a set contains a value
- * @sqlfunc time_contains()
+ * @sqlfn set_contains()
  * @sqlop @p \@>
  */
 Datum
 Contains_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = contains_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_base(fcinfo, &contains_set_value);
 }
 
 PGDLLEXPORT Datum Contains_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if the first timestamp set contains the second one
- * @sqlfunc time_contains()
+ * @brief Return true if the first set contains the second one
+ * @sqlfn set_contains()
  * @sqlop @p \@>
  */
 Datum
 Contains_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  bool result = contains_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_set(fcinfo, &contains_set_set);
 }
 
 /*****************************************************************************/
@@ -90,38 +137,28 @@ PGDLLEXPORT Datum Contained_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_value_set);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if a timestamp is contained in a timestamp set
- * @sqlfunc time_contained()
+ * @brief Return true if a value is contained in a set
+ * @sqlfn set_contained()
  * @sqlop @p <@
  */
 Datum
 Contained_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = contained_value_set(d, basetype, s);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_set(fcinfo, &contained_value_set);
 }
 
 PGDLLEXPORT Datum Contained_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if the first timestamp set is contained in the second one
- * @sqlfunc time_contained()
+ * @brief Return true if the first set is contained in the second one
+ * @sqlfn set_contained()
  * @sqlop @p <@
  */
 Datum
 Contained_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  bool result = contained_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_set(fcinfo, &contained_set_set);
 }
 
 /*****************************************************************************/
@@ -131,79 +168,59 @@ PGDLLEXPORT Datum Overlaps_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_set_set);
 /**
  * @ingroup mobilitydb_setspan_topo
- * @brief Return true if the timestamp sets overlap
- * @sqlfunc time_overlaps()
+ * @brief Return true if two sets overlap
+ * @sqlfn set_overlaps()
  * @sqlop @p &&
  */
 Datum
 Overlaps_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  bool result = overlaps_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_set(fcinfo, &overlaps_set_set);
 }
 
 /*****************************************************************************/
 /* strictly left of? */
 
-PGDLLEXPORT Datum Overlaps_set_set(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum Left_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a timestamp is strictly left a timestamp set
- * @sqlfunc time_left()
- * @sqlop @p <<#
+ * @brief Return true if a value is to the left of a set
+ * @sqlfn set_left()
+ * @sqlop @p <<
  */
 Datum
 Left_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = left_value_set(d, basetype, s);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_set(fcinfo, &left_value_set);
 }
 
 PGDLLEXPORT Datum Left_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a timestamp set is strictly left a timestamp
- * @sqlfunc time_left()
- * @sqlop @p <<#
+ * @brief Return true if a set is to the left of a value
+ * @sqlfn set_left()
+ * @sqlop @p <<
  */
 Datum
 Left_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = left_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_base(fcinfo, &left_set_value);
 }
 
 PGDLLEXPORT Datum Left_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Left_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if the first timestamp set is strictly left the second one
- * @sqlfunc time_left()
- * @sqlop @p <<#
+ * @brief Return true if the first set is to the left of the second one
+ * @sqlfn set_left()
+ * @sqlop @p <<
  */
 Datum
 Left_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  bool result = left_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_set(fcinfo, &left_set_set);
 }
 
 /*****************************************************************************/
@@ -213,57 +230,42 @@ PGDLLEXPORT Datum Right_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a timestamp is strictly right a timestamp set
- * @sqlfunc time_right()
- * @sqlop @p #>>
+ * @brief Return true if a value is to the right of a set
+ * @sqlfn set_right()
+ * @sqlop @p >>
  */
 Datum
 Right_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = right_value_set(d, basetype, s);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_set(fcinfo, &right_value_set);
 }
 
 PGDLLEXPORT Datum Right_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a timestamp set is strictly right a timestamp
- * @sqlfunc time_right()
- * @sqlop @p #>>
+ * @brief Return true if a set is to the right of a value
+ * @sqlfn set_right()
+ * @sqlop @p >>
  */
 Datum
 Right_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = right_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_base(fcinfo, &right_set_value);
 }
 
 PGDLLEXPORT Datum Right_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Right_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if the first timestamp set is strictly right the second one
- * @sqlfunc time_right()
- * @sqlop @p #>>
+ * @brief Return true if the first set is to the right of the second one
+ * @sqlfn set_right()
+ * @sqlop @p >>
  */
 Datum
 Right_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  bool result = right_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_set(fcinfo, &right_set_set);
 }
 
 /*****************************************************************************/
@@ -273,57 +275,43 @@ PGDLLEXPORT Datum Overleft_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a timestamp is not right a timestamp set
- * @sqlfunc time_overleft()
- * @sqlop @p &<#
+ * @brief Return true if a value does not extend to the right of a set
+ * @sqlfn set_overleft()
+ * @sqlop @p &<
  */
 Datum
 Overleft_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = overleft_value_set(d, basetype, s);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_set(fcinfo, &overleft_value_set);
 }
 
 PGDLLEXPORT Datum Overleft_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a timestamp is not right a timestamp
- * @sqlfunc time_overleft()
- * @sqlop @p &<#
+ * @brief Return true if a set does not extend to the right of a value
+ * @sqlfn set_overleft()
+ * @sqlop @p &<
  */
 Datum
 Overleft_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = overleft_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_base(fcinfo, &overleft_set_value);
 }
 
 PGDLLEXPORT Datum Overleft_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overleft_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if the first timestamp set is not right the second one
- * @sqlfunc time_overleft()
- * @sqlop @p &<#
+ * @brief Return true if the first set does not extend to the right of the
+ * second one
+ * @sqlfn set_overleft()
+ * @sqlop @p &<
  */
 Datum
 Overleft_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  bool result = overleft_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_set(fcinfo, &overleft_set_set);
 }
 
 /*****************************************************************************/
@@ -333,57 +321,104 @@ PGDLLEXPORT Datum Overright_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_value_set);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a timestamp is not left a timestamp set
- * @sqlfunc time_overright()
+ * @brief Return true if a value does not extend to the left of a set
+ * @sqlfn set_overright()
  * @sqlop @p
  */
 Datum
 Overright_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool result = overright_value_set(d, basetype, s);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_BOOL(result);
+  return Boolop_base_set(fcinfo, &overright_value_set);
 }
 
 PGDLLEXPORT Datum Overright_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_set_value);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if a timestamp set is not left a timestamp
- * @sqlfunc time_overright()
- * @sqlop @p #&>
+ * @brief Return true if a set does not extend to the left of a value
+ * @sqlfn set_overright()
+ * @sqlop @p &>
  */
 Datum
 Overright_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  bool result = overright_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_BOOL(result);
+  return Boolop_set_base(fcinfo, &overright_set_value);
 }
 
 PGDLLEXPORT Datum Overright_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_set_set);
 /**
  * @ingroup mobilitydb_setspan_pos
- * @brief Return true if the first timestamp set is not left the second one
- * @sqlfunc time_overright()
- * @sqlop @p #&>
+ * @brief Return true if the first set does not extend to the left of the
+ * second one
+ * @sqlfn set_overright()
+ * @sqlop @p &>
  */
 Datum
 Overright_set_set(PG_FUNCTION_ARGS)
 {
+  return Boolop_set_set(fcinfo, &overright_set_set);
+}
+
+/*****************************************************************************
+ * Set operators
+ *****************************************************************************/
+
+/**
+ * @brief Generic function for set operators on sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Setop_base_set(FunctionCallInfo fcinfo,
+  Set * (*func)(Datum, const Set *))
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  Set *s = PG_GETARG_SET_P(1);
+  Set *result = func(value, s);
+  DATUM_FREE_IF_COPY(value, s->basetype, 0);
+  PG_FREE_IF_COPY(s, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
+/**
+ * @brief Generic function for set operators on sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Setop_set_base(FunctionCallInfo fcinfo,
+  Set * (*func)(const Set *, Datum))
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Datum value = PG_GETARG_ANYDATUM(1);
+  Set *result = func(s, value);
+  DATUM_FREE_IF_COPY(value, s->basetype, 1);
+  PG_FREE_IF_COPY(s, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
+}
+
+/**
+ * @brief Generic function for set operators on sets
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the operator
+ */
+static Datum
+Setop_set_set(FunctionCallInfo fcinfo,
+  Set * (*func)(const Set *, const Set *))
+{
   Set *s1 = PG_GETARG_SET_P(0);
   Set *s2 = PG_GETARG_SET_P(1);
-  bool result = overright_set_set(s1, s2);
+  Set *result = func(s1, s2);
   PG_FREE_IF_COPY(s1, 0);
   PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_BOOL(result);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************
@@ -394,59 +429,42 @@ PGDLLEXPORT Datum Union_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Union_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the union of a timestamp and a timestamp set
- * @sqlfunc time_union()
+ * @brief Return the union of a value and a set
+ * @sqlfn set_union()
  * @sqlop @p +
  */
 Datum
 Union_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Set *result = union_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_POINTER(result);
+  return Setop_base_set(fcinfo, &union_value_set);
 }
-
-/*****************************************************************************/
 
 PGDLLEXPORT Datum Union_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Union_set_value);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the union of a timestamp set and a timestamp
- * @sqlfunc time_union()
+ * @brief Return the union of a set and a value
+ * @sqlfn set_union()
  * @sqlop @p +
  */
 Datum
 Union_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Set *result = union_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(result);
+  return Setop_set_base(fcinfo, &union_set_value);
 }
 
 PGDLLEXPORT Datum Union_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Union_set_set);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the union of the timestamp sets
- * @sqlfunc time_union()
+ * @brief Return the union of two sets
+ * @sqlfn set_union()
  * @sqlop @p +
  */
 Datum
 Union_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  Set *result = union_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  PG_RETURN_POINTER(result);
+  return Setop_set_set(fcinfo, &union_set_set);
 }
 
 /*****************************************************************************
@@ -457,65 +475,42 @@ PGDLLEXPORT Datum Intersection_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intersection_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the intersection of a timestamp and a timestamp set
- * @sqlfunc time_intersection()
+ * @brief Return the intersection of a value and a set
+ * @sqlfn set_intersection()
  * @sqlop @p *
  */
 Datum
 Intersection_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  Datum result;
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bool found = intersection_set_value(s, d, basetype, &result);
-  PG_FREE_IF_COPY(s, 1);
-  if (! found)
-    PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  return Setop_base_set(fcinfo, &intersection_value_set);
 }
 
 PGDLLEXPORT Datum Intersection_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intersection_set_value);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the intersection of a timestamp set and a timestamp
- * @sqlfunc time_intersection()
+ * @brief Return the intersection of a set and a value
+ * @sqlfn set_intersection()
  * @sqlop @p *
  */
 Datum
 Intersection_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Datum result;
-  bool found = intersection_set_value(s, d, basetype, &result);
-  PG_FREE_IF_COPY(s, 0);
-  if (! found)
-    PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  return Setop_set_base(fcinfo, &intersection_set_value);
 }
 
 PGDLLEXPORT Datum Intersection_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intersection_set_set);
 /**
  * @ingroup mobilitydb_setspan_set
- * @brief Return the intersection of the timestamp sets
- * @sqlfunc time_intersection()
+ * @brief Return the intersection of two sets
+ * @sqlfn set_intersection()
  * @sqlop @p *
  */
 Datum
 Intersection_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  Set *result = intersection_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return Setop_set_set(fcinfo, &intersection_set_set);
 }
 
 /*****************************************************************************
@@ -528,21 +523,13 @@ PG_FUNCTION_INFO_V1(Minus_value_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a value and a set
- * @sqlfunc time_minus()
+ * @sqlfn set_minus()
  * @sqlop @p -
  */
 Datum
 Minus_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
-  Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Datum result;
-  bool found = minus_value_set(d, basetype, s, &result);
-  PG_FREE_IF_COPY(s, 1);
-  if (! found)
-    PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  return Setop_base_set(fcinfo, &minus_value_set);
 }
 
 /*****************************************************************************/
@@ -552,20 +539,13 @@ PG_FUNCTION_INFO_V1(Minus_set_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a set and a value
- * @sqlfunc time_minus()
+ * @sqlfn set_minus()
  * @sqlop @p -
  */
 Datum
 Minus_set_value(PG_FUNCTION_ARGS)
 {
-  Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Set *result = minus_set_value(s, d, basetype);
-  PG_FREE_IF_COPY(s, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return Setop_set_base(fcinfo, &minus_set_value);
 }
 
 PGDLLEXPORT Datum Minus_set_set(PG_FUNCTION_ARGS);
@@ -573,88 +553,72 @@ PG_FUNCTION_INFO_V1(Minus_set_set);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of two sets
- * @sqlfunc time_minus()
+ * @sqlfn set_minus()
  * @sqlop @p -
  */
 Datum
 Minus_set_set(PG_FUNCTION_ARGS)
 {
-  Set *s1 = PG_GETARG_SET_P(0);
-  Set *s2 = PG_GETARG_SET_P(1);
-  Set *result = minus_set_set(s1, s2);
-  PG_FREE_IF_COPY(s1, 0);
-  PG_FREE_IF_COPY(s2, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return Setop_set_set(fcinfo, &minus_set_set);
 }
 
 /******************************************************************************
- * Distance functions returning a double representing the number of seconds
+ * Distance functions
  ******************************************************************************/
 
 PGDLLEXPORT Datum Distance_value_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_value_set);
 /**
  * @ingroup mobilitydb_setspan_dist
- * @brief Return the distance in seconds between a value and a set
- * @sqlfunc time_distance()
+ * @brief Return the distance between a value and a set
+ * @sqlfn set_distance()
  * @sqlop @p <->
  */
 Datum
 Distance_value_set(PG_FUNCTION_ARGS)
 {
-  Datum d = PG_GETARG_DATUM(0);
+  Datum value = PG_GETARG_DATUM(0);
   Set *s = PG_GETARG_SET_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Span s1;
-  set_set_span(s, &s1);
-  double result = distance_span_value(&s1, d, basetype);
+  Datum result = distance_set_value(s, value);
   PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum Distance_set_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_set_value);
 /**
  * @ingroup mobilitydb_setspan_dist
- * @brief Return the distance in seconds between a set and a value
- * @sqlfunc time_distance()
+ * @brief Return the distance between a set and a value
+ * @sqlfn set_distance()
  * @sqlop @p <->
  */
 Datum
 Distance_set_value(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Datum d = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Span s1;
-  set_set_span(s, &s1);
-  double result = distance_span_value(&s1, d, basetype);
+  Datum value = PG_GETARG_DATUM(1);
+  Datum result = distance_set_value(s, value);
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_DATUM(result);
 }
 
 PGDLLEXPORT Datum Distance_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_set_set);
 /**
  * @ingroup mobilitydb_setspan_dist
- * @brief Return the distance in seconds between two sets
- * @sqlfunc time_distance()
+ * @brief Return the distance between two sets
+ * @sqlfn set_distance()
  * @sqlop @p <->
  */
 Datum
 Distance_set_set(PG_FUNCTION_ARGS)
 {
-  Set *os1 = PG_GETARG_SET_P(0);
-  Set *os2 = PG_GETARG_SET_P(1);
-  Span s1, s2;
-  set_set_span(os1, &s1);
-  set_set_span(os2, &s2);
-  double result = distance_span_span(&s1, &s2);
-  PG_FREE_IF_COPY(os1, 0);
-  PG_FREE_IF_COPY(os2, 1);
-  PG_RETURN_FLOAT8(result);
+  Set *s1 = PG_GETARG_SET_P(0);
+  Set *s2 = PG_GETARG_SET_P(1);
+  Datum result = distance_set_set(s1, s2);
+  PG_FREE_IF_COPY(s1, 0);
+  PG_FREE_IF_COPY(s2, 1);
+  PG_RETURN_DATUM(result);
 }
 
 /******************************************************************************/

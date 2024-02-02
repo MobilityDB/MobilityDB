@@ -1,1432 +1,1432 @@
-SELECT tcontains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tContains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
  tcontains 
 -----------
  
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
  tcontains 
 -----------
  
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
            tcontains            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
                                             tcontains                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
                             tcontains                             
 ------------------------------------------------------------------
  [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
                                                               tcontains                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tContains(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
  tcontains 
 -----------
  
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+SELECT tContains(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
  tcontains 
 -----------
  
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT tContains(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
  tcontains 
 -----------
  
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+SELECT tContains(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
  tcontains 
 -----------
  
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', true);
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', true);
  tcontains 
 -----------
  
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', true);
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', true);
  tcontains 
 -----------
  
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', true);
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', true);
  tcontains 
 -----------
  
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', true);
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', true);
  tcontains 
 -----------
  
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', false);
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', false);
            tcontains            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', false);
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', false);
                                             tcontains                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', false);
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', false);
                              tcontains                              
 --------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', false);
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', false);
                                                               tcontains                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdisjoint(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tDisjoint(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
            tdisjoint            
 --------------------------------
  t@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
                                             tdisjoint                                             
 --------------------------------------------------------------------------------------------------
  {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
                             tdisjoint                             
 ------------------------------------------------------------------
  [t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
                                                               tdisjoint                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tDisjoint(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+SELECT tDisjoint(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT tDisjoint(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+SELECT tDisjoint(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tDisjoint(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01');
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', NULL::tnpoint);
+SELECT tDisjoint(npoint 'NPoint(2, 0.3)', NULL::tnpoint);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tDisjoint(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
            tdisjoint            
 --------------------------------
  t@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+SELECT tDisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
                                             tdisjoint                                             
 --------------------------------------------------------------------------------------------------
  {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT tDisjoint(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
                             tdisjoint                             
 ------------------------------------------------------------------
  [t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+SELECT tDisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
                                                               tdisjoint                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry);
+SELECT tDisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)');
+SELECT tDisjoint(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)');
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
+SELECT tDisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
            tdisjoint            
 --------------------------------
  t@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
+SELECT tDisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
                                             tdisjoint                                             
 --------------------------------------------------------------------------------------------------
  {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
+SELECT tDisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
                             tdisjoint                             
 ------------------------------------------------------------------
  [t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
+SELECT tDisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
                                                               tdisjoint                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
+SELECT tDisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
+SELECT tDisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
+SELECT tDisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
+SELECT tDisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint);
+SELECT tDisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(NULL::tnpoint, npoint 'NPoint(2, 0.3)');
+SELECT tDisjoint(NULL::tnpoint, npoint 'NPoint(2, 0.3)');
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
+SELECT tDisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
            tdisjoint            
 --------------------------------
  t@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)');
+SELECT tDisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)');
                                             tdisjoint                                             
 --------------------------------------------------------------------------------------------------
  {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)');
+SELECT tDisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)');
                             tdisjoint                             
 ------------------------------------------------------------------
  [t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)');
+SELECT tDisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)');
                                                               tdisjoint                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', true);
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', true);
            tdisjoint            
 --------------------------------
  t@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', true);
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', true);
                                             tdisjoint                                             
 --------------------------------------------------------------------------------------------------
  {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', true);
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', true);
                             tdisjoint                             
 ------------------------------------------------------------------
  [t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', true);
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', true);
                                                               tdisjoint                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', true);
+SELECT tDisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', true);
            tdisjoint            
 --------------------------------
  t@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)', true);
+SELECT tDisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)', true);
                                             tdisjoint                                             
 --------------------------------------------------------------------------------------------------
  {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)', true);
+SELECT tDisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)', true);
                             tdisjoint                             
 ------------------------------------------------------------------
  [t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)', true);
+SELECT tDisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)', true);
                                                               tdisjoint                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', true);
+SELECT tDisjoint(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', true);
            tdisjoint            
 --------------------------------
  t@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', true);
+SELECT tDisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', true);
                                             tdisjoint                                             
 --------------------------------------------------------------------------------------------------
  {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', true);
+SELECT tDisjoint(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', true);
                             tdisjoint                             
 ------------------------------------------------------------------
  [t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', true);
+SELECT tDisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', true);
                                                               tdisjoint                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', true);
+SELECT tDisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', true);
            tdisjoint            
 --------------------------------
  t@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)', true);
+SELECT tDisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)', true);
                                             tdisjoint                                             
 --------------------------------------------------------------------------------------------------
  {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)', true);
+SELECT tDisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)', true);
                             tdisjoint                             
 ------------------------------------------------------------------
  [t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)', true);
+SELECT tDisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)', true);
                                                               tdisjoint                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', false);
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', false);
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', false);
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', false);
+SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', false);
+SELECT tDisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)', false);
+SELECT tDisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)', false);
+SELECT tDisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)', false);
+SELECT tDisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', false);
+SELECT tDisjoint(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', false);
+SELECT tDisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', false);
+SELECT tDisjoint(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', false);
+SELECT tDisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', false);
+SELECT tDisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)', false);
+SELECT tDisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)', false);
+SELECT tDisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)', false);
+SELECT tDisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)');
+SELECT tDisjoint(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)');
            tdisjoint            
 --------------------------------
  t@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdisjoint(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', false);
+SELECT tDisjoint(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', false);
  tdisjoint 
 -----------
  
 (1 row)
 
-SELECT tdisjoint(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', true);
+SELECT tDisjoint(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', true);
            tdisjoint            
 --------------------------------
  t@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tintersects(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tIntersects(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+SELECT tIntersects(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tIntersects(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
           tintersects           
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+SELECT tIntersects(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
                                            tintersects                                            
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT tIntersects(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
                            tintersects                            
 ------------------------------------------------------------------
  [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+SELECT tIntersects(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
                                                              tintersects                                                              
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tintersects(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tIntersects(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+SELECT tIntersects(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT tIntersects(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+SELECT tIntersects(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tIntersects(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01');
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(npoint 'NPoint(2, 0.3)', NULL::tnpoint);
+SELECT tIntersects(npoint 'NPoint(2, 0.3)', NULL::tnpoint);
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tIntersects(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
           tintersects           
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tintersects(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+SELECT tIntersects(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
                                            tintersects                                            
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tintersects(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT tIntersects(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
                            tintersects                            
 ------------------------------------------------------------------
  [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tintersects(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+SELECT tIntersects(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
                                                              tintersects                                                              
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry);
+SELECT tIntersects(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry);
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)');
+SELECT tIntersects(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)');
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
+SELECT tIntersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
           tintersects           
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tintersects(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
+SELECT tIntersects(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
                                            tintersects                                            
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tintersects(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
+SELECT tIntersects(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
                            tintersects                            
 ------------------------------------------------------------------
  [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tintersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
+SELECT tIntersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
                                                              tintersects                                                              
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
+SELECT tIntersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
+SELECT tIntersects(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
+SELECT tIntersects(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
+SELECT tIntersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint);
+SELECT tIntersects(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint);
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(NULL::tnpoint, npoint 'NPoint(2, 0.3)');
+SELECT tIntersects(NULL::tnpoint, npoint 'NPoint(2, 0.3)');
  tintersects 
 -------------
  
 (1 row)
 
-SELECT tintersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
+SELECT tIntersects(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
           tintersects           
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tintersects(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)');
+SELECT tIntersects(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)');
                                            tintersects                                            
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tintersects(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)');
+SELECT tIntersects(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)');
                            tintersects                            
 ------------------------------------------------------------------
  [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tintersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)');
+SELECT tIntersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)');
                                                              tintersects                                                              
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tintersects(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)');
+SELECT tIntersects(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)');
           tintersects           
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tintersects(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', false);
+SELECT tIntersects(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', false);
           tintersects           
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tintersects(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', true);
+SELECT tIntersects(tnpoint 'Npoint(1,0.5)@2000-01-01', npoint 'Npoint(1,0.6)', true);
  tintersects 
 -------------
  
 (1 row)
 
-SELECT ttouches(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tTouches(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+SELECT tTouches(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tTouches(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
             ttouches            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+SELECT tTouches(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
                                              ttouches                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT tTouches(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
                              ttouches                             
 ------------------------------------------------------------------
  [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+SELECT tTouches(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
                                                                ttouches                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tTouches(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+SELECT tTouches(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT tTouches(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+SELECT tTouches(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tTouches(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01');
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(npoint 'NPoint(2, 0.3)', NULL::tnpoint);
+SELECT tTouches(npoint 'NPoint(2, 0.3)', NULL::tnpoint);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tTouches(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
             ttouches            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+SELECT tTouches(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
                                              ttouches                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT tTouches(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
                              ttouches                             
 ------------------------------------------------------------------
  [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+SELECT tTouches(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
                                                                ttouches                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
+SELECT tTouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
             ttouches            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT ttouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
+SELECT tTouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
                                              ttouches                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT ttouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
+SELECT tTouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
                              ttouches                             
 ------------------------------------------------------------------
  [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
+SELECT tTouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
                                                                ttouches                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry);
+SELECT tTouches(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)');
+SELECT tTouches(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)');
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
+SELECT tTouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
+SELECT tTouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
+SELECT tTouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
+SELECT tTouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint);
+SELECT tTouches(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(NULL::tnpoint, npoint 'NPoint(2, 0.3)');
+SELECT tTouches(NULL::tnpoint, npoint 'NPoint(2, 0.3)');
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
+SELECT tTouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
             ttouches            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT ttouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)');
+SELECT tTouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)');
                                              ttouches                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT ttouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)');
+SELECT tTouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)');
                              ttouches                             
 ------------------------------------------------------------------
  [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)');
+SELECT tTouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)');
                                                                ttouches                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', true);
+SELECT tTouches(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', true);
+SELECT tTouches(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', true);
+SELECT tTouches(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', true);
+SELECT tTouches(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', true);
+SELECT tTouches(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', true);
+SELECT tTouches(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', true);
+SELECT tTouches(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', true);
+SELECT tTouches(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', true);
+SELECT tTouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)', true);
+SELECT tTouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)', true);
+SELECT tTouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)', true);
+SELECT tTouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', true);
+SELECT tTouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)', true);
+SELECT tTouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)', true);
+SELECT tTouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)', true);
+SELECT tTouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)', true);
  ttouches 
 ----------
  
 (1 row)
 
-SELECT tdwithin(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+SELECT tDwithin(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint, 2);
+SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint, 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL);
+SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
             tdwithin            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
                                              tdwithin                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
                               tdwithin                              
 --------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
                                                                tdwithin                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+SELECT tDwithin(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+SELECT tDwithin(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+SELECT tDwithin(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+SELECT tDwithin(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+SELECT tDwithin(NULL::npoint, tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(npoint 'NPoint(2, 0.3)', NULL::tnpoint, 2);
+SELECT tDwithin(npoint 'NPoint(2, 0.3)', NULL::tnpoint, 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL);
+SELECT tDwithin(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+SELECT tDwithin(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
             tdwithin            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+SELECT tDwithin(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
                                              tdwithin                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+SELECT tDwithin(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
                               tdwithin                              
 --------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+SELECT tDwithin(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
                                                                tdwithin                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry, 2);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::geometry, 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)', 2);
+SELECT tDwithin(NULL::tnpoint, geometry 'SRID=5676;Point(1 1)', 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', NULL);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', NULL);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', 2);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', 2);
             tdwithin            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)', 2);
+SELECT tDwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)', 2);
                                              tdwithin                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)', 2);
+SELECT tDwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)', 2);
                               tdwithin                              
 --------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)', 2);
+SELECT tDwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)', 2);
                                                                tdwithin                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty', 2);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty', 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty', 2);
+SELECT tDwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty', 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty', 2);
+SELECT tDwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty', 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty', 2);
+SELECT tDwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty', 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint, 2);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::npoint, 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(NULL::tnpoint, npoint 'NPoint(2, 0.3)', 2);
+SELECT tDwithin(NULL::tnpoint, npoint 'NPoint(2, 0.3)', 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', NULL);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', NULL);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', 2);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', 2);
             tdwithin            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)', 2);
+SELECT tDwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)', 2);
                                              tdwithin                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)', 2);
+SELECT tDwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)', 2);
                               tdwithin                              
 --------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)', 2);
+SELECT tDwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)', 2);
                                                                tdwithin                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdwithin(NULL::tnpoint, tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+SELECT tDwithin(NULL::tnpoint, tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::tnpoint, 2);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL::tnpoint, 2);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.5)@2000-01-01', NULL);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
             tdwithin            
 --------------------------------
  t@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+SELECT tDwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
             tdwithin            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+SELECT tDwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
             tdwithin            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+SELECT tDwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
             tdwithin            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
             tdwithin            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+SELECT tDwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
                                              tdwithin                                             
 --------------------------------------------------------------------------------------------------
  {t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+SELECT tDwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
                                              tdwithin                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+SELECT tDwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
                                              tdwithin                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
             tdwithin            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+SELECT tDwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
                                              tdwithin                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+SELECT tDwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
                               tdwithin                              
 --------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+SELECT tDwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
                               tdwithin                              
 --------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
             tdwithin            
 --------------------------------
  f@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tdwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+SELECT tDwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
                                              tdwithin                                             
 --------------------------------------------------------------------------------------------------
  {f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tdwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+SELECT tDwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
                               tdwithin                              
 --------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+SELECT tDwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
                                                                tdwithin                                                               
 --------------------------------------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2, true);
+SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2, true);
+SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2, true);
+SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2, true);
+SELECT tDwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2, true);
+SELECT tDwithin(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2, true);
+SELECT tDwithin(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2, true);
+SELECT tDwithin(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2, true);
+SELECT tDwithin(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', 2, true);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)', 2, true);
+SELECT tDwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)', 2, true);
+SELECT tDwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)', 2, true);
+SELECT tDwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', 2, true);
+SELECT tDwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)', 2, true);
+SELECT tDwithin(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)', 2, true);
+SELECT tDwithin(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)', 2, true);
  tdwithin 
 ----------
  
 (1 row)
 
-SELECT tdwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)', 2, true);
+SELECT tDwithin(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)', 2, true);
  tdwithin 
 ----------
  

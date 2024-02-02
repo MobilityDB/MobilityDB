@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Functions for selectivity estimation of operators on temporal types
- * whose bounding box is a `Period`, that is, `tbool` and `ttext`.
+ * whose bounding box is a `tstzspan`, that is, `tbool` and `ttext`
  *
  * The operators currently supported are as follows
  * - B-tree comparison operators: `<`, `<=`, `>`, `>=`
@@ -46,31 +46,16 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#include <access/amapi.h>
-#include <access/heapam.h>
-#include <access/htup_details.h>
-#include <access/itup.h>
-#include <access/relscan.h>
-#include <access/visibilitymap.h>
-#include <access/skey.h>
-#include <catalog/pg_collation_d.h>
 #include <parser/parsetree.h>
-#include <executor/tuptable.h>
-#include <optimizer/paths.h>
-#include <storage/bufmgr.h>
-#include <utils/date.h>
-#include <utils/datum.h>
-#include <utils/memutils.h>
-#include <utils/rel.h>
-#include <utils/syscache.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/spanset.h"
+#include "general/span.h"
+#include "general/tbox.h"
+#include "point/stbox.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/span_selfuncs.h"
-#include "pg_general/temporal_analyze.h"
 #include "pg_general/temporal_selfuncs.h"
 #include "pg_point/tpoint_selfuncs.h"
 
@@ -82,18 +67,18 @@
  *****************************************************************************/
 
 /**
- * @brief Transform the constant into a period
+ * @brief Transform the constant into a timestamptz span
  */
 static bool
-temporal_const_to_period(Node *other, Span *period)
+temporal_const_to_tstzspan(Node *other, Span *s)
 {
   Oid consttype = ((Const *) other)->consttype;
   Datum constvalue = ((Const *) other)->constvalue;
   meosType type = oid_type(consttype);
   if (time_type(type))
-    span_const_to_span(other, period);
+    span_const_to_span(other, s);
   else if (talpha_type(type))
-    temporal_set_bbox(DatumGetTemporalP(constvalue), period);
+    temporal_set_bbox(DatumGetTemporalP(constvalue), s);
   else
     return false;
   return true;
@@ -103,35 +88,35 @@ temporal_const_to_period(Node *other, Span *period)
  * @brief Transform the constant into a temporal box
  */
 bool
-tnumber_const_to_span_period(const Node *other, Span **s, Span **p)
+tnumber_const_to_span_tstzspan(const Node *other, Span **s, Span **p)
 {
   Oid consttypid = ((Const *) other)->consttype;
   meosType type = oid_type(consttypid);
   if (numspan_type(type))
   {
     Span *span = DatumGetSpanP(((Const *) other)->constvalue);
-    *s = span_copy(span);
+    *s = span_cp(span);
   }
   else if (type == T_TSTZSPAN)
   {
-    Span *period = DatumGetSpanP(((Const *) other)->constvalue);
-    *p = span_copy(period);
+    Span *s = DatumGetSpanP(((Const *) other)->constvalue);
+    *p = span_cp(s);
   }
   else if (type == T_TBOX)
   {
     const TBox *box = DatumGetTboxP(((Const *) other)->constvalue);
     if (MEOS_FLAGS_GET_X(box->flags))
-      *s = span_copy(&box->span);
+      *s = span_cp(&box->span);
     if (MEOS_FLAGS_GET_T(box->flags))
-      *p = span_copy(&box->period);
+      *p = span_cp(&box->period);
   }
   else if (tnumber_type(type))
   {
     const Temporal *temp = DatumGetTemporalP(((Const *) other)->constvalue);
     TBox box;
     temporal_set_bbox(temp, &box);
-    *s = span_copy(&box.span);
-    *p = span_copy(&box.period);
+    *s = span_cp(&box.span);
+    *p = span_cp(&box.period);
   }
   else
   {
@@ -144,7 +129,7 @@ tnumber_const_to_span_period(const Node *other, Span **s, Span **p)
 }
 
 /**
- * @brief Transform the constant into an STBox
+ * @brief Transform the constant into a spatiotemporal box
  * @note This function is also used for temporal network points
  */
 static bool
@@ -156,7 +141,7 @@ tpoint_const_to_stbox(Node *other, STBox *box)
   if (geo_basetype(type))
     geo_set_stbox(DatumGetGserializedP(constvalue), box);
   else if (type == T_TSTZSPAN)
-    period_set_stbox(DatumGetSpanP(constvalue), box);
+    tstzspan_set_stbox(DatumGetSpanP(constvalue), box);
   else if (type == T_STBOX)
     memcpy(box, DatumGetSTboxP(constvalue), sizeof(STBox));
   else if (tspatial_type(type))
@@ -175,7 +160,7 @@ tpoint_const_to_stbox(Node *other, STBox *box)
 
 /**
  * @brief Return a default selectivity estimate for the operator when we don't
- * have statistics or cannot use them for some reason.
+ * have statistics or cannot use them for some reason
  */
 static double
 temporal_sel_default(meosOper oper)
@@ -212,7 +197,7 @@ temporal_sel_default(meosOper oper)
 
 /**
  * @brief Return a default selectivity estimate for the operator when we don't
- * have statistics or cannot use them for some reason.
+ * have statistics or cannot use them for some reason
  */
 float8
 tnumber_sel_default(meosOper operator)
@@ -253,7 +238,7 @@ tnumber_sel_default(meosOper operator)
 
 /**
  * @brief Return a default restriction selectivity estimate for a given
- * operator, when we don't have statistics or cannot use them for some reason.
+ * operator, when we don't have statistics or cannot use them for some reason
  */
 static float8
 tpoint_sel_default(meosOper oper)
@@ -299,7 +284,7 @@ tpoint_sel_default(meosOper oper)
 
 /**
  * @brief Return a default join selectivity estimate for given operator, when
- * we don't have statistics or cannot use them for some reason.
+ * we don't have statistics or cannot use them for some reason
  */
 float8
 temporal_joinsel_default(Oid operid __attribute__((unused)))
@@ -310,7 +295,7 @@ temporal_joinsel_default(Oid operid __attribute__((unused)))
 
 /**
  * @brief Return a default join selectivity estimate for given operator, when
- * we don't have statistics or cannot use them for some reason.
+ * we don't have statistics or cannot use them for some reason
  */
 float8
 tnumber_joinsel_default(meosOper oper __attribute__((unused)))
@@ -321,7 +306,7 @@ tnumber_joinsel_default(meosOper oper __attribute__((unused)))
 
 /**
  * @brief Return a default join selectivity estimate for a given operator,
- * when we don't have statistics or cannot use them for some reason.
+ * when we don't have statistics or cannot use them for some reason
  */
 static float8
 tpoint_joinsel_default(meosOper oper)
@@ -434,7 +419,8 @@ tnpoint_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
 }
 
 /**
- * @brief Get enumeration value associated to the operator according to the family
+ * @brief Get enumeration value associated to the operator according to the
+ * family
  */
 static bool
 temporal_oper_sel_family(meosOper oper __attribute__((unused)), meosType ltype,
@@ -463,7 +449,7 @@ temporal_oper_sel_family(meosOper oper __attribute__((unused)), meosType ltype,
 
 /**
  * @brief Return an estimate of the selectivity of the search period and the
- * operator for columns of temporal values.
+ * operator for columns of temporal values
  *
  * For the traditional comparison operators (<, <=, ...), we follow the
  * approach for range types in PostgreSQL, this function computes the
@@ -471,7 +457,7 @@ temporal_oper_sel_family(meosOper oper __attribute__((unused)), meosType ltype,
  * <> are eqsel and neqsel, respectively.
  */
 Selectivity
-temporal_sel_period(VariableStatData *vardata, Span *period, meosOper oper)
+temporal_sel_tstzspan(VariableStatData *vardata, Span *s, meosOper oper)
 {
   float8 selec;
 
@@ -483,11 +469,11 @@ temporal_sel_period(VariableStatData *vardata, Span *period, meosOper oper)
   {
     Oid operid = oper_oid(EQ_OP, T_TSTZSPAN, T_TSTZSPAN);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-    selec = var_eq_const(vardata, operid, SpanPGetDatum(period),
+    selec = var_eq_const(vardata, operid, SpanPGetDatum(s),
       false, false, false);
 #else
     selec = var_eq_const(vardata, operid, DEFAULT_COLLATION_OID,
-      SpanPGetDatum(period), false, false, false);
+      SpanPGetDatum(s), false, false, false);
 #endif
   }
   else if (oper == OVERLAPS_OP || oper == CONTAINS_OP ||
@@ -503,7 +489,7 @@ temporal_sel_period(VariableStatData *vardata, Span *period, meosOper oper)
     oper == GT_OP || oper == GE_OP)
   {
     /* Convert the period as a span to call the span selectivity functions */
-    selec = span_sel_hist(vardata, (Span *) period, oper, TIME_SEL);
+    selec = span_sel_hist(vardata, s, oper, TIME_SEL);
   }
   else /* Unknown operator */
   {
@@ -514,7 +500,7 @@ temporal_sel_period(VariableStatData *vardata, Span *period, meosOper oper)
 
 /**
  * @brief Return an estimate of the selectivity of the temporal search box and
- * the operator for columns of temporal numbers.
+ * the operator for columns of temporal numbers
  *
  * For the traditional comparison operators (<, <=, ...) we follow the approach
  * for span types in PostgreSQL, this function computes the selectivity for <,
@@ -522,11 +508,11 @@ temporal_sel_period(VariableStatData *vardata, Span *period, meosOper oper)
  * neqsel, respectively.
  */
 Selectivity
-tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
+tnumber_sel_span_tstzspan(VariableStatData *vardata, Span *span, Span *period,
   meosOper oper)
 {
   double selec;
-  Oid value_oprid, period_oprid;
+  Oid value_oprid, tstzspan_oprid;
 
   /* Enable the multiplication of the selectivity of the value and time
    * dimensions since either may be missing */
@@ -553,12 +539,12 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
     /* Selectivity for the time dimension */
     if (period != NULL)
     {
-      period_oprid = oper_oid(EQ_OP, period->spantype, period->spantype);
+      tstzspan_oprid = oper_oid(EQ_OP, period->spantype, period->spantype);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-      selec *= var_eq_const(vardata, period_oprid, SpanPGetDatum(period),
+      selec *= var_eq_const(vardata, tstzspan_oprid, SpanPGetDatum(period),
         false, false, false);
 #else
-      selec *= var_eq_const(vardata, period_oprid, DEFAULT_COLLATION_OID,
+      selec *= var_eq_const(vardata, tstzspan_oprid, DEFAULT_COLLATION_OID,
         SpanPGetDatum(period), false, false, false);
 #endif
     }
@@ -606,7 +592,7 @@ tnumber_sel_span_period(VariableStatData *vardata, Span *span, Span *period,
 
 /**
  * @brief Estimate the selectivity value of the operators for temporal types
- * whose bounding box is a period, that is, tbool and ttext
+ * whose bounding box is a timestamptz span, that is, tbool and ttext
  */
 float8
 temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
@@ -690,23 +676,23 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   if (tempfamily == TEMPORALTYPE)
   {
     Span period;
-    if (! temporal_const_to_period(other, &period))
+    if (! temporal_const_to_tstzspan(other, &period))
       /* In the case of unknown constant */
       return temporal_sel_default(oper);
     /* Compute the selectivity */
-    selec = temporal_sel_period(&vardata, &period, oper);
+    selec = temporal_sel_tstzspan(&vardata, &period, oper);
   }
   else if (tempfamily == TNUMBERTYPE)
   {
-    /* Transform the constant into a span and/or a period */
+    /* Transform the constant into a value and/or a timestamptz span */
     Span *s = NULL;
     Span *p = NULL;
-    if (! tnumber_const_to_span_period(other, &s, &p))
+    if (! tnumber_const_to_span_tstzspan(other, &s, &p))
       /* In the case of unknown constant */
       return tnumber_sel_default(oper);
 
     /* Compute the selectivity */
-    selec = tnumber_sel_span_period(&vardata, s, p, oper);
+    selec = tnumber_sel_span_tstzspan(&vardata, s, p, oper);
     /* Free variables */
     if (s) pfree(s);
     if (p) pfree(p);
@@ -744,12 +730,12 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
      */
     if (MEOS_FLAGS_GET_T(box.flags))
     {
-      /* Transform the STBox into a Period */
+      /* Transform the STBox into a timestamptz span */
       Span period;
       memcpy(&period, &box.period, sizeof(Span));
 
       /* Compute the selectivity */
-      selec *= temporal_sel_period(&vardata, &period, oper);
+      selec *= temporal_sel_tstzspan(&vardata, &period, oper);
     }
   }
 
@@ -763,7 +749,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
  * various families of temporal types.
  */
 float8
-temporal_sel_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+temporal_sel_family(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
   Oid operid = PG_GETARG_OID(1);
@@ -780,12 +766,12 @@ PGDLLEXPORT Datum Temporal_sel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_sel);
 /**
  * @brief Estimate the selectivity value of the operators for temporal types
- * whose bounding box is a period, that is, tbool and ttext.
+ * whose bounding box is a timestamptz span, that is, `tbool` and `ttext`
  */
 Datum
 Temporal_sel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_sel_ext(fcinfo, TEMPORALTYPE));
+  return Float8GetDatum(temporal_sel_family(fcinfo, TEMPORALTYPE));
 }
 
 PGDLLEXPORT Datum Tnumber_sel(PG_FUNCTION_ARGS);
@@ -796,7 +782,7 @@ PG_FUNCTION_INFO_V1(Tnumber_sel);
 Datum
 Tnumber_sel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_sel_ext(fcinfo, TNUMBERTYPE));
+  return Float8GetDatum(temporal_sel_family(fcinfo, TNUMBERTYPE));
 }
 
 PGDLLEXPORT Datum Tpoint_sel(PG_FUNCTION_ARGS);
@@ -808,7 +794,7 @@ PG_FUNCTION_INFO_V1(Tpoint_sel);
 Datum
 Tpoint_sel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_sel_ext(fcinfo, TPOINTTYPE));
+  return Float8GetDatum(temporal_sel_family(fcinfo, TPOINTTYPE));
 }
 
 PGDLLEXPORT Datum Tnpoint_sel(PG_FUNCTION_ARGS);
@@ -820,7 +806,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_sel);
 Datum
 Tnpoint_sel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_sel_ext(fcinfo, TNPOINTTYPE));
+  return Float8GetDatum(temporal_sel_family(fcinfo, TNPOINTTYPE));
 }
 
 /*****************************************************************************
@@ -920,7 +906,7 @@ tpoint_joinsel_components(meosOper oper, meosType oprleft,
 
 /**
  * @brief Return an estimate of the join selectivity for columns of temporal
- * values.
+ * values
  *
  * For the traditional comparison operators (<, <=, ...), we follow the
  * approach for range types in PostgreSQL, this function  computes the
@@ -991,8 +977,8 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args, JoinType jointype,
       // TODO
       selec *= span_joinsel_default(oper);
     else
-      /* Estimate join selectivity */
-      selec *= span_joinsel(root, oper, args, jointype, sjinfo);
+      /* Estimate join selectivity for value dimension */
+      selec *= span_joinsel(root, true, oper, args, jointype, sjinfo);
   }
   if (space)
   {
@@ -1029,8 +1015,8 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args, JoinType jointype,
       (oper == OVERLAPS_OP && list_length(args) != 2))
       selec *= span_joinsel_default(oper);
     else
-      /* Estimate join selectivity */
-      selec *= span_joinsel(root, oper, args, jointype, sjinfo);
+      /* Estimate join selectivity for time dimension */
+      selec *= span_joinsel(root, false, oper, args, jointype, sjinfo);
   }
 
   CLAMP_PROBABILITY(selec);
@@ -1039,10 +1025,10 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args, JoinType jointype,
 
 /*
  * @brief Estimate the join selectivity value of the operators for temporal
- * alphanumeric types and temporal number types.
+ * alphanumeric types
  */
 float8
-temporal_joinsel_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+temporal_joinsel_family(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
   Oid operid = PG_GETARG_OID(1);
@@ -1067,12 +1053,12 @@ PGDLLEXPORT Datum Temporal_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_joinsel);
 /*
  * Estimate the join selectivity value of the operators for temporal types
- * whose bounding box is a period, that is, tbool and ttext.
+ * whose bounding box is a timestamptz span, that is, tbool and ttext.
  */
 Datum
 Temporal_joinsel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_joinsel_ext(fcinfo, TEMPORALTYPE));
+  return Float8GetDatum(temporal_joinsel_family(fcinfo, TEMPORALTYPE));
 }
 
 PGDLLEXPORT Datum Tnumber_joinsel(PG_FUNCTION_ARGS);
@@ -1084,7 +1070,19 @@ PG_FUNCTION_INFO_V1(Tnumber_joinsel);
 Datum
 Tnumber_joinsel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_joinsel_ext(fcinfo, TNUMBERTYPE));
+  return Float8GetDatum(temporal_joinsel_family(fcinfo, TNUMBERTYPE));
+}
+
+PGDLLEXPORT Datum Tpoint_joinsel(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_joinsel);
+/**
+ * @brief Estimate the join selectivity value of the operators for temporal
+ * points
+ */
+Datum
+Tpoint_joinsel(PG_FUNCTION_ARGS)
+{
+  return Float8GetDatum(temporal_joinsel_family(fcinfo, TPOINTTYPE));
 }
 
 PGDLLEXPORT Datum Tnpoint_joinsel(PG_FUNCTION_ARGS);
@@ -1096,19 +1094,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_joinsel);
 Datum
 Tnpoint_joinsel(PG_FUNCTION_ARGS)
 {
-  return Float8GetDatum(temporal_joinsel_ext(fcinfo, TNPOINTTYPE));
-}
-
-PGDLLEXPORT Datum Tpoint_joinsel(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_joinsel);
-/**
- * @brief Estimate the join selectivity value of the operators for temporal
- * points.
- */
-Datum
-Tpoint_joinsel(PG_FUNCTION_ARGS)
-{
-  return Float8GetDatum(temporal_joinsel_ext(fcinfo, TPOINTTYPE));
+  return Float8GetDatum(temporal_joinsel_family(fcinfo, TNPOINTTYPE));
 }
 
 /*****************************************************************************/

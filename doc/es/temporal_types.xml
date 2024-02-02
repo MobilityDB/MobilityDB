@@ -15,7 +15,7 @@
 		<title>Introduction</title>
 
 		<para>
-			MobilityDB proporciona seis tipos temporales nativos, a saber, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, que se basan, respectivamente, en los tipos de base <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname> y <varname>geography</varname> (los dos últimos tipos restringidos a puntos 2D o 3D con dimensión Z).
+			MobilityDB proporciona seis tipos temporales nativos, a saber, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, que se basan, respectivamente, en los tipos de base <varname>bool</varname>, <varname>integer</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname> y <varname>geography</varname> (los dos últimos tipos restringidos a puntos 2D o 3D con dimensión Z).
 		</para>
 
 		<para>
@@ -38,12 +38,12 @@ SELECT tfloat '17@2018-01-01 08:00:00';
 	</para>
 		<programlisting language="sql" xml:space="preserve">
 -- Interpolación discreta
-SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00, 18@2018-01-01 08:10:00}'
+SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00, 18@2018-01-01 08:10:00}';
 -- Interpolación escalonada
 SELECT tfloat 'Interp=Step;(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00,
-  15@2018-01-01 08:10:00]'
+  15@2018-01-01 08:10:00]';
 -- Interpolación lineal
-SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]'
+SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 </programlisting>
 
 		<para>
@@ -81,13 +81,13 @@ SELECT tfloat '{[17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00],
 		<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
 -- [1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00, 2@2001-01-05 00:00:00+00)
-SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
-  Point(1 1)@2001-01-01 08:10:00)';
+SELECT asText(tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
+  Point(1 1)@2001-01-01 08:10:00)');
 -- [Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:10:00)
 SELECT tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]';
 -- [1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]
-SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00,
-  Point(3 3)@2001-01-01 08:10:00]';
+SELECT asText(tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00,
+  Point(3 3)@2001-01-01 08:10:00]');
 -- [Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]
 </programlisting>
 
@@ -139,7 +139,7 @@ CREATE TABLE Flight(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));
 		</para>
 	<itemizedlist>
 			<listitem>
-				<para>El tipo <varname>period</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>, donde solo se considera la extensión temporal.</para>
+				<para>El tipo <varname>tstzspan</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>, donde solo se considera la extensión temporal.</para>
 			</listitem>
 
 			<listitem>
@@ -168,35 +168,36 @@ CREATE TABLE Temperature(RoomNo integer, Temp tfloat);
 INSERT INTO Temperature VALUES
   (1001, tfloat '{18.5@2001-01-01 08:00:00, 20.0@2001-01-01 08:10:00}'),
   (2001, tfloat '{19.0@2001-01-01 08:00:00, 22.5@2001-01-01 08:10:00}');
+
 -- Valor en una marca de tiempo
 SELECT RoomNo, valueAtTimestamp(Temp, '2001-01-01 08:10:00')
 FROM temperature;
--- 1001 |
+-- 1001 | 20
 -- 2001 | 22.5
 
 -- Restricción a un valor
-SELECT DeptNo, atValue(NoEmps, 10)
+SELECT DeptNo, atValues(NoEmps, 10)
 FROM Department;
--- 10 | [10@2001-01-01 00:00:00+00, 10@2001-04-01 00:00:00+00)
--- 20 | NULL
+-- 10 | [10@2001-01-01, 10@2001-04-01)
+-- 20 | 
 
 -- Restricción a un período
-SELECT DeptNo, atTime(NoEmps, atTime(NoEmps, tstzspan '[2001-01-01, 2001-04-01]')
+SELECT DeptNo, atTime(NoEmps, tstzspan '[2001-01-01, 2001-04-01]')
 FROM Department;
--- 10 | [10@2001-01-01 00:00:00+00, 12@2001-04-01 00:00:00+00]
--- 20 | [4@2001-02-01 00:00:00+00, 4@2001-04-01 00:00:00+00]
+-- 10 | [10@2001-01-01, 12@2001-04-01]
+-- 20 | [4@2001-02-01, 4@2001-04-01]
 
 -- Comparación temporal
 SELECT DeptNo, NoEmps #&lt;= 10
 FROM Department;
--- 10 | [t@2001-01-01 00:00:00+00, f@2001-04-01 00:00:00+00, f@2001-08-01 00:00:00+00)
--- 20 | [t@2001-04-02 00:00:00+00, t@2001-10-01 00:00:00+00)
+-- 10 | [t@2001-01-01, f@2001-04-01, f@2001-08-01)
+-- 20 | [t@2001-02-01, t@2001-10-01)
 
 -- Agregación temporal
 SELECT tsum(NoEmps)
 FROM Department;
-/* {[10@2001-01-01 00:00:00+00, 14@2001-02-01 00:00:00+00, 16@2001-04-01 00:00:00+00,
-   18@2001-06-01 00:00:00+00, 6@2001-08-01 00:00:00+00, 6@2001-10-01 00:00:00+00)} */
+/* {[10@2001-01-01, 14@2001-02-01, 16@2001-04-01,
+   18@2001-06-01, 6@2001-08-01, 6@2001-10-01)} */
 </programlisting>
 		<para>A continuación se dan ejemplos de uso de tipos de puntos temporales.</para>
 		<programlisting language="sql" xml:space="preserve">
@@ -206,6 +207,7 @@ INSERT INTO Trips VALUES
 Point(2 1)@2001-01-01 08:15:00)}'),
   (20, 1, tgeompoint '{[Point(0 0)@2001-01-01 08:05:00, Point(1 1)@2001-01-01 08:10:00,
   Point(3 3)@2001-01-01 08:20:00)}');
+
 -- Valor en una marca de tiempo
 SELECT CarId, ST_AsText(valueAtTimestamp(Trip, timestamptz '2001-01-01 08:10:00'))
 FROM Trips;
@@ -213,10 +215,10 @@ FROM Trips;
 -- 20 | POINT(1 1)
 
 -- Restricción a un valor
-SELECT CarId, asText(atValue(Trip, 'Point(2 0)'))
+SELECT CarId, asText(atValues(Trip, geometry 'Point(2 0)'))
 FROM Trips;
 -- 10 | {"[POINT(2 0)@2001-01-01 08:10:00+00]"}
--- 20 | NULL
+-- 20 |
 
 -- Restricción a un período
 SELECT CarId, asText(atTime(Trip, tstzspan '[2001-01-01 08:05:00,2001-01-01 08:10:00]'))

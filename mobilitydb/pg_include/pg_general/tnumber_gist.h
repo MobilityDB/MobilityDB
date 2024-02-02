@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -40,6 +40,7 @@
 #include <access/gist.h>
 #include <access/stratnum.h>
 /* MEOS */
+#include <meos.h>
 #include "general/temporal.h"
 
 /*****************************************************************************/
@@ -75,7 +76,7 @@ extern float non_negative(float val);
 extern void bbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
   meosType bboxtype, double rightLower, int minLeftCount, double leftUpper,
   int maxLeftCount);
-extern Datum bbox_gist_picksplit_ext(FunctionCallInfo fcinfo, meosType bboxtype,
+extern Datum bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
   void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *));
 
 /* The following functions are also called by tnumber_spgist.c */

@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -80,8 +80,8 @@ SELECT round(extent((temp::geography)::tgeogpoint), 6) FROM tbl_tgeogpoint3D;
 SELECT ST_Extent(round(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
 SELECT ST_Extent(round(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint3D t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
 
-SELECT ST_Extent(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint WHERE speed(temp) IS NOT NULL;
-SELECT ST_Extent(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint3D WHERE speed(temp) IS NOT NULL;
+SELECT ST_Extent(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint  WHERE interp(temp) = 'Linear';
+SELECT ST_Extent(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint3D WHERE interp(temp) = 'Linear';
 
 -------------------------------------------------------------------------------
 

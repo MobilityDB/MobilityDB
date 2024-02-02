@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Internal types used in particular for computing the average and
- * centroid temporal aggregates.
+ * centroid temporal aggregates
  *
  * The `double2`, `double3`, and `double4` types are base types composed,
  * respectively, of two, three, and four `double` values. The `tdouble2`,
@@ -45,12 +45,11 @@
 
 /* C */
 #include <assert.h>
-#include <float.h>
 /* PostgreSQL */
-#include <utils/float.h>
+#include <postgres.h>
 /* MEOS */
+#include <meos.h>
 #include "general/pg_types.h"
-#include "general/type_util.h"
 
 /*****************************************************************************
  * Double2
@@ -82,8 +81,7 @@ double2_out(const double2 *d, int maxdd)
   char *bstr = float8_out(d->b, maxdd);
   char *result = palloc(strlen(astr) + strlen(bstr) + 4);
   sprintf(result, "(%s,%s)", astr, bstr);
-  pfree(astr);
-  pfree(bstr);
+  pfree(astr); pfree(bstr);
   return result;
 }
 #endif /* MEOS */
@@ -98,6 +96,7 @@ double2_set(double a, double b, double2 *result)
   memset(result, 0, sizeof(double2));
   result->a = a;
   result->b = b;
+  return;
 }
 
 /**
@@ -167,9 +166,7 @@ double3_out(const double3 *d, int maxdd)
   char *cstr = float8_out(d->c, maxdd);
   char *result = palloc(strlen(astr) + strlen(bstr) + strlen(cstr) + 5);
   sprintf(result, "(%s,%s,%s)", astr, bstr, cstr);
-  pfree(astr);
-  pfree(bstr);
-  pfree(cstr);
+  pfree(astr); pfree(bstr); pfree(cstr);
   return result;
 }
 #endif /* MEOS */
@@ -185,6 +182,7 @@ double3_set(double a, double b, double c, double3 *result)
   result->a = a;
   result->b = b;
   result->c = c;
+  return;
 }
 
 /**
@@ -261,10 +259,7 @@ double4_out(const double4 *d, int maxdd)
   char *result = palloc(strlen(astr) + strlen(bstr) + strlen(cstr) +
     strlen(dstr) + 6);
   sprintf(result, "(%s,%s,%s,%s)", astr, bstr, cstr, dstr);
-  pfree(astr);
-  pfree(bstr);
-  pfree(cstr);
-  pfree(dstr);
+  pfree(astr); pfree(bstr); pfree(cstr); pfree(dstr);
   return result;
 }
 #endif /* MEOS */
@@ -281,6 +276,7 @@ double4_set(double a, double b, double c, double d, double4 *result)
   result->b = b;
   result->c = c;
   result->d = d;
+  return;
 }
 
 /**
@@ -303,14 +299,13 @@ double4_add(const double4 *d1, const double4 *d2)
 bool
 double4_eq(const double4 *d1, const double4 *d2)
 {
-  return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c &&
-    d1->d == d2->d);
+  return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c && d1->d == d2->d);
 }
 
 #if 0 /* not used */
 /**
- * @brief Return -1, 0, or 1 depending on whether the first double4
- * is less than, equal, or greater than the second one
+ * @brief Return -1, 0, or 1 depending on whether the first double4 is less
+ * than, equal, or greater than the second one
  */
 int
 double4_cmp(const double4 *d1, const double4 *d2)

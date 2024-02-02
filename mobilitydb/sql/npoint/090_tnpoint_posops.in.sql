@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -40,19 +40,19 @@
 
 CREATE FUNCTION temporal_before(tstzspan, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_period_temporal'
+  AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tstzspan, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tstzspan, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_period_temporal'
+  AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tstzspan, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -206,19 +206,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tnpoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_temporal_period'
+  AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tnpoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tnpoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_temporal_period'
+  AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tnpoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (

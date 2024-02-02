@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /*
  * spanset.sql
- * Functions for set of spans.
+ * Functions for set of spans of values (a.k.a. multiranges).
  */
 
 /******************************************************************************
@@ -48,6 +48,10 @@ CREATE FUNCTION floatspanset_in(cstring)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Spanset_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION datespanset_in(cstring)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Spanset_in'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tstzspanset_in(cstring)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Spanset_in'
@@ -62,6 +66,10 @@ CREATE FUNCTION bigintspanset_out(bigintspanset)
   AS 'MODULE_PATHNAME', 'Spanset_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspanset_out(floatspanset)
+  RETURNS cstring
+  AS 'MODULE_PATHNAME', 'Spanset_out'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION datespanset_out(datespanset)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Spanset_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -82,6 +90,10 @@ CREATE FUNCTION floatspanset_recv(internal)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Spanset_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION datespanset_recv(internal)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Spanset_recv'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tstzspanset_recv(internal)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Spanset_recv'
@@ -99,12 +111,16 @@ CREATE FUNCTION floatspanset_send(floatspanset)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spanset_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION datespanset_send(datespanset)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Spanset_send'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tstzspanset_send(tstzspanset)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spanset_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* span_analyze function defined in file 001_set.in.sql */
+/* The span_analyze function is defined in file 001_set.in.sql */
 
 CREATE TYPE intspanset (
   internallength = variable,
@@ -139,6 +155,16 @@ CREATE TYPE floatspanset (
   storage = extended,
   analyze = span_analyze
 );
+CREATE TYPE datespanset (
+  internallength = variable,
+  input = datespanset_in,
+  output = datespanset_out,
+  receive = datespanset_recv,
+  send = datespanset_send,
+  alignment = double,
+  storage = extended,
+  analyze = span_analyze
+);
 CREATE TYPE tstzspanset (
   internallength = variable,
   input = tstzspanset_in,
@@ -149,6 +175,8 @@ CREATE TYPE tstzspanset (
   storage = extended,
   analyze = span_analyze
 );
+
+/******************************************************************************/
 
 -- Input/output in WKB and HexWKB format
 
@@ -162,6 +190,10 @@ CREATE FUNCTION bigintspansetFromBinary(bytea)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION floatspansetFromBinary(bytea)
   RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Spanset_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION datespansetFromBinary(bytea)
+  RETURNS datespanset
   AS 'MODULE_PATHNAME', 'Spanset_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tstzspansetFromBinary(bytea)
@@ -181,6 +213,10 @@ CREATE FUNCTION floatspansetFromHexWKB(text)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Spanset_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION datespansetFromHexWKB(text)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Spanset_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tstzspansetFromHexWKB(text)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Spanset_from_hexwkb'
@@ -195,6 +231,10 @@ CREATE FUNCTION asText(bigintspanset)
   AS 'MODULE_PATHNAME', 'Spanset_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asText(floatspanset, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spanset_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(datespanset)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spanset_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -215,6 +255,10 @@ CREATE FUNCTION asBinary(floatspanset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spanset_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asBinary(datespanset, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Spanset_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asBinary(tstzspanset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Spanset_as_wkb'
@@ -232,13 +276,17 @@ CREATE FUNCTION asHexWKB(floatspanset, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spanset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(datespanset, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spanset_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexWKB(tstzspanset, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spanset_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Constructor
+ * Constructor functions
  ******************************************************************************/
 
 CREATE FUNCTION spanset(intspan[])
@@ -253,16 +301,20 @@ CREATE FUNCTION spanset(floatspan[])
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Spanset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset(datespan[])
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Spanset_constructor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset(tstzspan[])
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Spanset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Casting
+ * Conversion functions
  ******************************************************************************/
 
-CREATE FUNCTION spanset(int)
+CREATE FUNCTION spanset(integer)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Value_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -274,14 +326,19 @@ CREATE FUNCTION spanset(float)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Value_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset(date)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Value_to_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset(timestamptz)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Value_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (int AS intspanset) WITH FUNCTION spanset(int);
+CREATE CAST (integer AS intspanset) WITH FUNCTION spanset(integer);
 CREATE CAST (bigint AS bigintspanset) WITH FUNCTION spanset(bigint);
 CREATE CAST (float AS floatspanset) WITH FUNCTION spanset(float);
+CREATE CAST (date AS datespanset) WITH FUNCTION spanset(date);
 CREATE CAST (timestamptz AS tstzspanset) WITH FUNCTION spanset(timestamptz);
 
 CREATE FUNCTION spanset(intset)
@@ -296,6 +353,10 @@ CREATE FUNCTION spanset(floatset)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Set_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset(dateset)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Set_to_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset(tstzset)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Set_to_spanset'
@@ -304,6 +365,7 @@ CREATE FUNCTION spanset(tstzset)
 CREATE CAST (intset AS intspanset) WITH FUNCTION spanset(intset);
 CREATE CAST (bigintset AS bigintspanset) WITH FUNCTION spanset(bigintset);
 CREATE CAST (floatset AS floatspanset) WITH FUNCTION spanset(floatset);
+CREATE CAST (dateset AS datespanset) WITH FUNCTION spanset(dateset);
 CREATE CAST (tstzset AS tstzspanset) WITH FUNCTION spanset(tstzset);
 
 CREATE FUNCTION spanset(intspan)
@@ -318,6 +380,10 @@ CREATE FUNCTION spanset(floatspan)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Span_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset(datespan)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Span_to_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset(tstzspan)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Span_to_spanset'
@@ -326,11 +392,67 @@ CREATE FUNCTION spanset(tstzspan)
 CREATE CAST (intspan AS intspanset) WITH FUNCTION spanset(intspan);
 CREATE CAST (bigintspan AS bigintspanset) WITH FUNCTION spanset(bigintspan);
 CREATE CAST (floatspan AS floatspanset) WITH FUNCTION spanset(floatspan);
+CREATE CAST (datespan AS datespanset) WITH FUNCTION spanset(datespan);
 CREATE CAST (tstzspan AS tstzspanset) WITH FUNCTION spanset(tstzspan);
+
+CREATE FUNCTION span(intspanset)
+  RETURNS intspan
+  AS 'MODULE_PATHNAME', 'Spanset_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span(bigintspanset)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Spanset_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span(floatspanset)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Spanset_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span(datespanset)
+  RETURNS datespan
+  AS 'MODULE_PATHNAME', 'Spanset_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span(tstzspanset)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Spanset_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (intspanset AS intspan) WITH FUNCTION span(intspanset);
+CREATE CAST (bigintspanset AS bigintspan) WITH FUNCTION span(bigintspanset);
+CREATE CAST (floatspanset AS floatspan) WITH FUNCTION span(floatspanset);
+CREATE CAST (datespanset AS datespan) WITH FUNCTION span(datespanset);
+CREATE CAST (tstzspanset AS tstzspan) WITH FUNCTION span(tstzspanset);
+
+CREATE FUNCTION intspanset(floatspanset)
+  RETURNS intspanset
+  AS 'MODULE_PATHNAME', 'Floatspanset_to_intspanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION floatspanset(intspanset)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Intspanset_to_floatspanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (intspanset AS floatspanset) WITH FUNCTION floatspanset(intspanset);
+CREATE CAST (floatspanset AS intspanset) WITH FUNCTION intspanset(floatspanset);
+
+CREATE FUNCTION datespanset(tstzspanset)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Tstzspanset_to_datespanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tstzspanset(datespanset)
+  RETURNS tstzspanset
+  AS 'MODULE_PATHNAME', 'Datespanset_to_tstzspanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (datespanset AS tstzspanset) WITH FUNCTION tstzspanset(datespanset);
+CREATE CAST (tstzspanset AS datespanset) WITH FUNCTION datespanset(tstzspanset);
 
 #if POSTGRESQL_VERSION_NUMBER >= 140000
 CREATE FUNCTION multirange(intspanset)
   RETURNS int4multirange
+  AS 'MODULE_PATHNAME', 'Spanset_to_multirange'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION multirange(datespanset)
+  RETURNS datemultirange
   AS 'MODULE_PATHNAME', 'Spanset_to_multirange'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION multirange(tstzspanset)
@@ -342,117 +464,50 @@ CREATE FUNCTION spanset(int4multirange)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Multirange_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset(datemultirange)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Multirange_to_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset(tstzmultirange)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Multirange_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (intspanset AS int4multirange) WITH FUNCTION multirange(intspanset);
+CREATE CAST (datespanset AS datemultirange) WITH FUNCTION multirange(datespanset);
 CREATE CAST (tstzspanset AS tstzmultirange) WITH FUNCTION multirange(tstzspanset);
 CREATE CAST (int4multirange AS intspanset) WITH FUNCTION spanset(int4multirange);
+CREATE CAST (datemultirange AS datespanset) WITH FUNCTION spanset(datemultirange);
 CREATE CAST (tstzmultirange AS tstzspanset) WITH FUNCTION spanset(tstzmultirange);
 #endif //POSTGRESQL_VERSION_NUMBER >= 140000
-
-/*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-CREATE FUNCTION shift(intspanset, int)
-  RETURNS intspanset
-  AS 'MODULE_PATHNAME', 'Numspanset_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(bigintspanset, bigint)
-  RETURNS bigintspanset
-  AS 'MODULE_PATHNAME', 'Numspanset_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(floatspanset, float)
-  RETURNS floatspanset
-  AS 'MODULE_PATHNAME', 'Numspanset_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shift(tstzspanset, interval)
-  RETURNS tstzspanset
-  AS 'MODULE_PATHNAME', 'Periodset_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION scale(intspanset, int)
-  RETURNS intspanset
-  AS 'MODULE_PATHNAME', 'Numspanset_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION scale(bigintspanset, bigint)
-  RETURNS bigintspanset
-  AS 'MODULE_PATHNAME', 'Numspanset_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION scale(floatspanset, float)
-  RETURNS floatspanset
-  AS 'MODULE_PATHNAME', 'Numspanset_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION scale(tstzspanset, interval)
-  RETURNS tstzspanset
-  AS 'MODULE_PATHNAME', 'Periodset_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION shiftScale(intspanset, int, int)
-  RETURNS intspanset
-  AS 'MODULE_PATHNAME', 'Numspanset_shift_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftScale(bigintspanset, bigint, bigint)
-  RETURNS bigintspanset
-  AS 'MODULE_PATHNAME', 'Numspanset_shift_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftScale(floatspanset, float, float)
-  RETURNS floatspanset
-  AS 'MODULE_PATHNAME', 'Numspanset_shift_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION shiftScale(tstzspanset, interval, interval)
-  RETURNS tstzspanset
-  AS 'MODULE_PATHNAME', 'Periodset_shift_scale'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION round(floatspanset, integer DEFAULT 0)
-  RETURNS floatspanset
-  AS 'MODULE_PATHNAME', 'Floatspanset_round'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Accessor Functions
  ******************************************************************************/
 
 CREATE FUNCTION memSize(intspanset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(bigintspanset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(floatspanset)
-  RETURNS int
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Spanset_mem_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION memSize(datespanset)
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION memSize(tstzspanset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION span(intspanset)
-  RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Spanset_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span(bigintspanset)
-  RETURNS bigintspan
-  AS 'MODULE_PATHNAME', 'Spanset_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span(floatspanset)
-  RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Spanset_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span(tstzspanset)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Spanset_span'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION lower(intspanset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_lower'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lower(bigintspanset)
@@ -463,13 +518,17 @@ CREATE FUNCTION lower(floatspanset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Spanset_lower'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lower(datespanset)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Spanset_lower'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lower(tstzspanset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Spanset_lower'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION upper(intspanset)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upper(bigintspanset)
@@ -478,6 +537,10 @@ CREATE FUNCTION upper(bigintspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upper(floatspanset)
   RETURNS float
+  AS 'MODULE_PATHNAME', 'Spanset_upper'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION upper(datespanset)
+  RETURNS date
   AS 'MODULE_PATHNAME', 'Spanset_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upper(tstzspanset)
@@ -494,6 +557,10 @@ CREATE FUNCTION lower_inc(bigintspanset)
   AS 'MODULE_PATHNAME', 'Spanset_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lower_inc(floatspanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Spanset_lower_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lower_inc(datespanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -514,26 +581,35 @@ CREATE FUNCTION upper_inc(floatspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION upper_inc(datespanset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Spanset_upper_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upper_inc(tstzspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION width(intspanset, boundspan boolean DEFAULT FALSE)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Spanset_width'
+  RETURNS int
+  AS 'MODULE_PATHNAME', 'Numspanset_width'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION width(bigintspanset, boundspan boolean DEFAULT FALSE)
-  RETURNS float
-  AS 'MODULE_PATHNAME', 'Spanset_width'
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Numspanset_width'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION width(floatspanset, boundspan boolean DEFAULT FALSE)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Spanset_width'
+  AS 'MODULE_PATHNAME', 'Numspanset_width'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION duration(datespanset, boundspan boolean DEFAULT FALSE)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'Datespanset_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION duration(tstzspanset, boundspan boolean DEFAULT FALSE)
   RETURNS interval
-  AS 'MODULE_PATHNAME', 'Periodset_duration'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numSpans(intspanset)
@@ -545,6 +621,10 @@ CREATE FUNCTION numSpans(bigintspanset)
   AS 'MODULE_PATHNAME', 'Spanset_num_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION numSpans(floatspanset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Spanset_num_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION numSpans(datespanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_num_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -565,6 +645,10 @@ CREATE FUNCTION startSpan(floatspanset)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Spanset_start_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION startSpan(datespanset)
+  RETURNS datespan
+  AS 'MODULE_PATHNAME', 'Spanset_start_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION startSpan(tstzspanset)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Spanset_start_span'
@@ -580,6 +664,10 @@ CREATE FUNCTION endSpan(bigintspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endSpan(floatspanset)
   RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Spanset_end_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION endSpan(datespanset)
+  RETURNS datespan
   AS 'MODULE_PATHNAME', 'Spanset_end_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endSpan(tstzspanset)
@@ -599,6 +687,10 @@ CREATE FUNCTION spanN(floatspanset, integer)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Spanset_span_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanN(datespanset, integer)
+  RETURNS datespan
+  AS 'MODULE_PATHNAME', 'Spanset_span_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanN(tstzspanset, integer)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Spanset_span_n'
@@ -616,38 +708,139 @@ CREATE FUNCTION spans(floatspanset)
   RETURNS floatspan[]
   AS 'MODULE_PATHNAME', 'Spanset_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spans(datespanset)
+  RETURNS datespan[]
+  AS 'MODULE_PATHNAME', 'Spanset_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spans(tstzspanset)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Spanset_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION numDates(datespanset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Datespanset_num_dates'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION startDate(datespanset)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Datespanset_start_date'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endDate(datespanset)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Datespanset_end_date'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION dateN(datespanset, integer)
+  RETURNS date
+  AS 'MODULE_PATHNAME', 'Datespanset_date_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION dates(datespanset)
+  RETURNS date[]
+  AS 'MODULE_PATHNAME', 'Datespanset_dates'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION numTimestamps(tstzspanset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Periodset_num_timestamps'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_num_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startTimestamp(tstzspanset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Periodset_start_timestamp'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_start_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION endTimestamp(tstzspanset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Periodset_end_timestamp'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_end_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestampN(tstzspanset, integer)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Periodset_timestamp_n'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_timestamptz_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestamps(tstzspanset)
   RETURNS timestamptz[]
-  AS 'MODULE_PATHNAME', 'Periodset_timestamps'
+  AS 'MODULE_PATHNAME', 'Tstzspanset_timestamps'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+CREATE FUNCTION shift(intspanset, integer)
+  RETURNS intspanset
+  AS 'MODULE_PATHNAME', 'Numspanset_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(bigintspanset, bigint)
+  RETURNS bigintspanset
+  AS 'MODULE_PATHNAME', 'Numspanset_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(floatspanset, float)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Numspanset_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(datespanset, integer)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Numspanset_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shift(tstzspanset, interval)
+  RETURNS tstzspanset
+  AS 'MODULE_PATHNAME', 'Tstzspanset_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION scale(intspanset, integer)
+  RETURNS intspanset
+  AS 'MODULE_PATHNAME', 'Numspanset_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(bigintspanset, bigint)
+  RETURNS bigintspanset
+  AS 'MODULE_PATHNAME', 'Numspanset_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(floatspanset, float)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Numspanset_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(datespanset, integer)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Numspanset_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION scale(tstzspanset, interval)
+  RETURNS tstzspanset
+  AS 'MODULE_PATHNAME', 'Tstzspanset_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftScale(intspanset, integer, integer)
+  RETURNS intspanset
+  AS 'MODULE_PATHNAME', 'Numspanset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(bigintspanset, bigint, bigint)
+  RETURNS bigintspanset
+  AS 'MODULE_PATHNAME', 'Numspanset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(floatspanset, float, float)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Numspanset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(datespanset, integer, integer)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Numspanset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shiftScale(tstzspanset, interval, interval)
+  RETURNS tstzspanset
+  AS 'MODULE_PATHNAME', 'Tstzspanset_shift_scale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION round(floatspanset, integer DEFAULT 0)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Floatspanset_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Comparison functions and B-tree indexing
+ * Comparison operators
  ******************************************************************************/
 
 CREATE FUNCTION spanset_eq(intspanset, intspanset)
@@ -659,6 +852,10 @@ CREATE FUNCTION spanset_eq(bigintspanset, bigintspanset)
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset_eq(floatspanset, floatspanset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Spanset_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset_eq(datespanset, datespanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -679,6 +876,10 @@ CREATE FUNCTION spanset_ne(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset_ne(datespanset, datespanset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Spanset_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset_ne(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ne'
@@ -693,6 +894,10 @@ CREATE FUNCTION spanset_lt(bigintspanset, bigintspanset)
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset_lt(floatspanset, floatspanset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Spanset_lt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset_lt(datespanset, datespanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -713,6 +918,10 @@ CREATE FUNCTION spanset_le(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset_le(datespanset, datespanset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Spanset_le'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset_le(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_le'
@@ -727,6 +936,10 @@ CREATE FUNCTION spanset_ge(bigintspanset, bigintspanset)
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset_ge(floatspanset, floatspanset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Spanset_ge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset_ge(datespanset, datespanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -747,6 +960,10 @@ CREATE FUNCTION spanset_gt(floatspanset, floatspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset_gt(datespanset, datespanset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Spanset_gt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset_gt(tstzspanset, tstzspanset)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Spanset_gt'
@@ -761,6 +978,10 @@ CREATE FUNCTION spanset_cmp(bigintspanset, bigintspanset)
   AS 'MODULE_PATHNAME', 'Spanset_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset_cmp(floatspanset, floatspanset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Spanset_cmp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset_cmp(datespanset, datespanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -788,6 +1009,12 @@ CREATE OPERATOR = (
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR = (
+  LEFTARG = datespanset, RIGHTARG = datespanset,
+  PROCEDURE = spanset_eq,
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
+);
+CREATE OPERATOR = (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   PROCEDURE = spanset_eq,
   COMMUTATOR = =, NEGATOR = <>,
@@ -813,6 +1040,12 @@ CREATE OPERATOR <> (
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR <> (
+  LEFTARG = datespanset, RIGHTARG = datespanset,
+  PROCEDURE = spanset_ne,
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
+);
+CREATE OPERATOR <> (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   PROCEDURE = spanset_ne,
   COMMUTATOR = <>, NEGATOR = =,
@@ -838,6 +1071,12 @@ CREATE OPERATOR < (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
+  LEFTARG = datespanset, RIGHTARG = datespanset,
+  PROCEDURE = spanset_lt,
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR < (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   PROCEDURE = spanset_lt,
   COMMUTATOR = >, NEGATOR = >=,
@@ -863,6 +1102,12 @@ CREATE OPERATOR <= (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
+  LEFTARG = datespanset, RIGHTARG = datespanset,
+  PROCEDURE = spanset_le,
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <= (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   PROCEDURE = spanset_le,
   COMMUTATOR = >=, NEGATOR = >,
@@ -888,6 +1133,12 @@ CREATE OPERATOR >= (
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
+  LEFTARG = datespanset, RIGHTARG = datespanset,
+  PROCEDURE = spanset_ge,
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR >= (
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   PROCEDURE = spanset_ge,
   COMMUTATOR = <=, NEGATOR = <,
@@ -908,6 +1159,12 @@ CREATE OPERATOR > (
 );
 CREATE OPERATOR > (
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
+  PROCEDURE = spanset_gt,
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR > (
+  LEFTARG = datespanset, RIGHTARG = datespanset,
   PROCEDURE = spanset_gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -943,6 +1200,14 @@ CREATE OPERATOR CLASS floatspanset_btree_ops
     OPERATOR  4  >=,
     OPERATOR  5  >,
     FUNCTION  1  spanset_cmp(floatspanset, floatspanset);
+CREATE OPERATOR CLASS datespanset_btree_ops
+  DEFAULT FOR TYPE datespanset USING btree AS
+    OPERATOR  1  <,
+    OPERATOR  2  <=,
+    OPERATOR  3  =,
+    OPERATOR  4  >=,
+    OPERATOR  5  >,
+    FUNCTION  1  spanset_cmp(datespanset, datespanset);
 CREATE OPERATOR CLASS tstzspanset_btree_ops
   DEFAULT FOR TYPE tstzspanset USING btree AS
     OPERATOR  1  <,
@@ -966,6 +1231,10 @@ CREATE FUNCTION spanset_hash(floatspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset_hash(datespanset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Spanset_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset_hash(tstzspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_hash'
@@ -980,6 +1249,10 @@ CREATE FUNCTION spanset_hash_extended(bigintspanset, bigint)
   AS 'MODULE_PATHNAME', 'Spanset_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset_hash_extended(floatspanset, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Spanset_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset_hash_extended(datespanset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Spanset_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1003,6 +1276,11 @@ CREATE OPERATOR CLASS floatspanset_hash_ops
     OPERATOR    1   = ,
     FUNCTION    1   spanset_hash(floatspanset),
     FUNCTION    2   spanset_hash_extended(floatspanset, bigint);
+CREATE OPERATOR CLASS datespanset_hash_ops
+  DEFAULT FOR TYPE datespanset USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   spanset_hash(datespanset),
+    FUNCTION    2   spanset_hash_extended(datespanset, bigint);
 CREATE OPERATOR CLASS tstzspanset_hash_ops
   DEFAULT FOR TYPE tstzspanset USING hash AS
     OPERATOR    1   = ,

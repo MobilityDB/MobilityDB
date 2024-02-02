@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -36,7 +36,6 @@
  * Temporal text concatenation
  *****************************************************************************/
 
-
 CREATE FUNCTION ttext_cat(text, ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Textcat_text_ttext'
@@ -52,18 +51,15 @@ CREATE FUNCTION ttext_cat(ttext, ttext)
 
 CREATE OPERATOR || (
   PROCEDURE = ttext_cat,
-  LEFTARG = text, RIGHTARG = ttext,
-  COMMUTATOR = ||
+  LEFTARG = text, RIGHTARG = ttext
 );
 CREATE OPERATOR || (
   PROCEDURE = ttext_cat,
-  LEFTARG = ttext, RIGHTARG = text,
-  COMMUTATOR = ||
+  LEFTARG = ttext, RIGHTARG = text
 );
 CREATE OPERATOR || (
   PROCEDURE = ttext_cat,
-  LEFTARG = ttext, RIGHTARG = ttext,
-  COMMUTATOR = ||
+  LEFTARG = ttext, RIGHTARG = ttext
 );
 
 /******************************************************************************
@@ -78,6 +74,11 @@ CREATE FUNCTION upper(ttext)
 CREATE FUNCTION lower(ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Ttext_lower'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION initcap(ttext)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Ttext_initcap'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

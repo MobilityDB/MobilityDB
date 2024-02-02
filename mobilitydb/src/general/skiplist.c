@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,31 +29,20 @@
 
 /**
  * @file
- * @brief Functions manipulating skiplists.
+ * @brief Functions for manipulating skiplists
  */
 
 #include "general/skiplist.h"
 
-/* C */
-#include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <executor/spi.h>
 #include <libpq/pqformat.h>
-#include <utils/memutils.h>
-#include <utils/timestamp.h>
-/* GSL */
-#include <gsl/gsl_rng.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
-#include "general/span.h"
-#include "general/temporal_aggfuncs.h"
+#include "general/type_util.h"
 /* MobilityDB */
-#include "pg_general/span.h"
 #include "pg_general/temporal.h"
-#include "pg_general/type_util.h"
 
 /*****************************************************************************
  * Functions manipulating skip lists
@@ -133,13 +122,13 @@ aggstate_read(StringInfo buf)
   return result;
 }
 
-Datum Tagg_serialize(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tagg_serialize);
+Datum Taggstate_serialize(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Taggstate_serialize);
 /**
  * @brief Serialize the state value
  */
 Datum
-Tagg_serialize(PG_FUNCTION_ARGS)
+Taggstate_serialize(PG_FUNCTION_ARGS)
 {
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
   StringInfoData buf;
@@ -148,13 +137,13 @@ Tagg_serialize(PG_FUNCTION_ARGS)
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
-Datum Tagg_deserialize(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tagg_deserialize);
+Datum Taggstate_deserialize(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Taggstate_deserialize);
 /**
  * @brief Deserialize the state value
  */
 Datum
-Tagg_deserialize(PG_FUNCTION_ARGS)
+Taggstate_deserialize(PG_FUNCTION_ARGS)
 {
   bytea *data = PG_GETARG_BYTEA_P(0);
   StringInfoData buf =
@@ -165,7 +154,7 @@ Tagg_deserialize(PG_FUNCTION_ARGS)
     .maxlen = VARSIZE(data)
   };
   SkipList *result = aggstate_read(&buf);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SKIPLIST_P(result);
 }
 
 /*****************************************************************************/

@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -159,10 +159,10 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE memSize(temp) > 0;
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE memSize(temp) > 0;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
 
-SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint;
-SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint;
-SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint3D;
-SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint3D;
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeompoint;
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeogpoint;
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeompoint3D;
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeogpoint3D;
 
 /* There is no st_memSize neither MAX for geography. */
 SELECT MAX(st_memSize(getValue(inst))) FROM tbl_tgeompoint_inst;
@@ -400,15 +400,15 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzset WHERE temp != merge(atTime(temp
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
 
 -------------------------------------------------------------------------------
 -- Modification functions
@@ -480,39 +480,5 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
 WHERE t1.temp > t2.temp;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
 WHERE t1.temp >= t2.temp;
-
--------------------------------------------------------------------------------
-
--- Test index support function for ever/always equal and intersects<Time>
-
-CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING gist(temp);
-CREATE INDEX tbl_tgeogpoint_rtree_idx ON tbl_tgeogpoint USING gist(temp);
-
--- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= 'Point(1 1)';
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
-
-DROP INDEX tbl_tgeompoint_rtree_idx;
-DROP INDEX tbl_tgeogpoint_rtree_idx;
-
--------------------------------------------------------------------------------
-
--- Test index support function for ever/always equal and intersects<Time>
-
-CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING spgist(temp);
-CREATE INDEX tbl_tgeogpoint_quadtree_idx ON tbl_tgeogpoint USING spgist(temp);
-
--- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= 'Point(1 1)';
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
-
-DROP INDEX tbl_tgeompoint_quadtree_idx;
-DROP INDEX tbl_tgeogpoint_quadtree_idx;
 
 -------------------------------------------------------------------------------

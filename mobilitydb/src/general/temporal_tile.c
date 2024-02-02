@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,26 +29,25 @@
 
 /**
  * @file
- * @brief Bucket and tile functions for temporal types.
+ * @brief Bucket and tile functions for temporal types
  *
  * @note The time bucket functions are inspired from TimescaleDB.
  * https://docs.timescale.com/latest/api#time_bucket
  */
 
+#include "general/temporal_tile.h"
+
 /* C */
 #include <assert.h>
-#include <float.h>
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>
-#include <utils/datetime.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
-#include "general/temporal_tile.h"
-#include "general/type_util.h"
+#include "general/span.h"
+#include "general/tbox.h"
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 
@@ -60,7 +59,7 @@ PGDLLEXPORT Datum Number_bucket(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Number_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return the initial value of the bucket in which an integer value falls.
+ * @brief Return the initial value of the bucket in which an integer value falls
  */
 Datum
 Number_bucket(PG_FUNCTION_ARGS)
@@ -69,8 +68,7 @@ Number_bucket(PG_FUNCTION_ARGS)
   Datum size = PG_GETARG_DATUM(1);
   Datum origin = PG_GETARG_DATUM(2);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Datum result = datum_bucket(value, size, origin, basetype);
-  PG_RETURN_DATUM(result);
+  PG_RETURN_DATUM(datum_bucket(value, size, origin, basetype));
 }
 
 /*****************************************************************************
@@ -81,7 +79,7 @@ PGDLLEXPORT Datum Timestamptz_bucket(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamptz_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return the initial timestamp of the bucket in which a timestamp falls.
+ * @brief Return the initial timestamp of the bucket in which a timestamp falls
  */
 Datum
 Timestamptz_bucket(PG_FUNCTION_ARGS)
@@ -89,14 +87,16 @@ Timestamptz_bucket(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  TimestampTz result = timestamptz_bucket(t, duration, origin);
-  PG_RETURN_TIMESTAMPTZ(result);
+  PG_RETURN_TIMESTAMPTZ(timestamptz_bucket(t, duration, origin));
 }
 
 /*****************************************************************************/
 
+/**
+ * @brief Return the bucket list of a span
+ */
 Datum
-Span_bucket_list_ext(FunctionCallInfo fcinfo, bool valuelist)
+Span_bucket_list(FunctionCallInfo fcinfo, bool valuelist)
 {
   FuncCallContext *funcctx;
   SpanBucketState *state;
@@ -170,67 +170,65 @@ Span_bucket_list_ext(FunctionCallInfo fcinfo, bool valuelist)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Span_bucket_list(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_bucket_list);
+PGDLLEXPORT Datum Numberspan_bucket_list(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numberspan_bucket_list);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Generate a span bucket list.
+ * @brief Return the bucket list of a number span
  */
 Datum
-Span_bucket_list(PG_FUNCTION_ARGS)
+Numberspan_bucket_list(PG_FUNCTION_ARGS)
 {
-  return Span_bucket_list_ext(fcinfo, true);
+  return Span_bucket_list(fcinfo, true);
 }
 
-PGDLLEXPORT Datum Period_bucket_list(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_bucket_list);
+PGDLLEXPORT Datum Tstzspan_bucket_list(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_bucket_list);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Generate a period bucket list.
+ * @brief Return the bucket list of a timestamptz span
  */
 Datum
-Period_bucket_list(PG_FUNCTION_ARGS)
+Tstzspan_bucket_list(PG_FUNCTION_ARGS)
 {
-  return Span_bucket_list_ext(fcinfo, false);
+  return Span_bucket_list(fcinfo, false);
 }
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Span_bucket(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_bucket);
+PGDLLEXPORT Datum Valuespan_bucket(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Valuespan_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Generate an integer or float span bucket in a bucket list for spans.
+ * @brief Return a span bucket in a bucket list for number spans
 */
 Datum
-Span_bucket(PG_FUNCTION_ARGS)
+Valuespan_bucket(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
   Datum origin = PG_GETARG_DATUM(2);
   meosType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Datum value_bucket = datum_bucket(value, size, origin, type);
-  Span *result = span_bucket_get(value_bucket, size, type);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(span_bucket_get(value_bucket, size, type));
 }
 
-PGDLLEXPORT Datum Period_bucket(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Period_bucket);
+PGDLLEXPORT Datum Tstzspan_bucket(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Generate a bucket in a bucket list for periods.
+ * @brief Return a bucket in a bucket list for timestamptz spans.
 */
 Datum
-Period_bucket(PG_FUNCTION_ARGS)
+Tstzspan_bucket(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
   TimestampTz time_bucket = timestamptz_bucket(t, duration, origin);
   int64 tunits = interval_units(duration);
-  Span *result = span_bucket_get(TimestampTzGetDatum(time_bucket),
-    Int64GetDatum(tunits), T_TIMESTAMPTZ);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(span_bucket_get(TimestampTzGetDatum(time_bucket),
+    Int64GetDatum(tunits), T_TIMESTAMPTZ));
 }
 
 /*****************************************************************************/
@@ -239,7 +237,7 @@ PGDLLEXPORT Datum Tbox_tile_list(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_tile_list);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Generate a multidimensional grid for temporal numbers.
+ * @brief Return the tile list of a temporal box
  */
 Datum
 Tbox_tile_list(PG_FUNCTION_ARGS)
@@ -317,26 +315,20 @@ PGDLLEXPORT Datum Tbox_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_tile);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Generate a tile in a multidimensional grid for temporal numbers.
+ * @brief Return a tile in a multidimensional grid for temporal numbers
  */
 Datum
 Tbox_tile(PG_FUNCTION_ARGS)
 {
-  double value = PG_GETARG_FLOAT8(0);
+  Datum value = PG_GETARG_DATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  double xsize = PG_GETARG_FLOAT8(2);
-  ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
+  Datum vsize = PG_GETARG_DATUM(2);
   Interval *duration = PG_GETARG_INTERVAL_P(3);
-  ensure_valid_duration(duration);
-  int64 tunits = interval_units(duration);
-  double xorigin = PG_GETARG_FLOAT8(4);
+  Datum vorigin = PG_GETARG_DATUM(4);
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(5);
-  double value_bucket = float_bucket(value, xsize, xorigin);
-  TimestampTz time_bucket = timestamptz_bucket(t, duration, torigin);
-  TBox *result = palloc(sizeof(TBox));
-  tbox_tile_get(Float8GetDatum(value_bucket), time_bucket,
-    Float8GetDatum(xsize), tunits, T_FLOAT8, result);
-  PG_RETURN_POINTER(result);
+  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  PG_RETURN_TBOX_P(tbox_tile(value, t, vsize, duration, vorigin, torigin,
+    basetype));
 }
 
 /*****************************************************************************
@@ -394,7 +386,7 @@ value_time_split_state_next(ValueTimeSplitState *state)
 
 /**
  * @brief Split a temporal value with respect to a base value and possibly a
- * temporal grid.
+ * temporal grid
  */
 Datum
 Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
@@ -499,7 +491,8 @@ PGDLLEXPORT Datum Temporal_time_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_time_split);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Split a temporal value into fragments with respect to period buckets.
+ * @brief Return the fragments of a temporal value split according to
+ * time buckets
  */
 Datum
 Temporal_time_split(PG_FUNCTION_ARGS)
@@ -511,7 +504,8 @@ PGDLLEXPORT Datum Tnumber_value_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_value_split);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Split a temporal value into fragments with respect to period tiles.
+ * @brief Return the fragments of a temporal number split according to value
+ * buckets
  */
 Datum
 Tnumber_value_split(PG_FUNCTION_ARGS)
@@ -523,8 +517,8 @@ PGDLLEXPORT Datum Tnumber_value_time_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Split a temporal value into fragments with respect to span and period
- * tiles.
+ * @brief Return the fragments of a temporal number split according to value
+ * and time buckets
  */
 Datum
 Tnumber_value_time_split(PG_FUNCTION_ARGS)

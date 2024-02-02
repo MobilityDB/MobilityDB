@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -39,8 +39,8 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
+#include <meos.h>
 #include "general/temporal.h"
-#include "point/tpoint.h"
 
 /*****************************************************************************/
 
@@ -49,7 +49,7 @@ extern double tpointinst_distance(const TInstant *inst1, const TInstant *inst2,
   datum_func2 func);
 extern double tinstant_distance(const TInstant *inst1, const TInstant *inst2,
   datum_func2 func);
-extern bool tgeogpoint_min_dist_at_timestamp(const TInstant *start1,
+extern bool tgeogpoint_min_dist_at_timestamptz(const TInstant *start1,
   const TInstant *end1, const TInstant *start2, const TInstant *end2,
   Datum *mindist, TimestampTz *t);
 

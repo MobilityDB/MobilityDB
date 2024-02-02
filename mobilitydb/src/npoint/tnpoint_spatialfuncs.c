@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -32,18 +32,18 @@
  * @brief Spatial functions for temporal network points.
  */
 
-/* C */
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include "point/tpoint_spatialfuncs.h"
+#include <meos_internal.h>
+#include "general/span.h"
+#include "point/stbox.h"
 #include "point/tpoint_restrfuncs.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_general/type_util.h"
+#include "pg_point/postgis.h"
 
 /*****************************************************************************
  * Functions for spatial reference systems
@@ -54,7 +54,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_get_srid);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the SRID of a temporal network point
- * @sqlfunc SRID()
+ * @sqlfn SRID()
  */
 Datum
 Tnpoint_get_srid(PG_FUNCTION_ARGS)
@@ -75,7 +75,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_trajectory);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the geometry covered by a temporal network point
- * @sqlfunc trajectory()
+ * @sqlfn trajectory()
  */
 Datum
 Tnpoint_trajectory(PG_FUNCTION_ARGS)
@@ -83,7 +83,7 @@ Tnpoint_trajectory(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *result = tnpoint_geom(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -94,8 +94,8 @@ PGDLLEXPORT Datum Npoint_same(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_same);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Determines the spatial equality for network points
- * @sqlfunc equals()
+ * @brief Return true if two network points are spatially equal
+ * @sqlfn equals()
  */
 Datum
 Npoint_same(PG_FUNCTION_ARGS)
@@ -113,8 +113,8 @@ PGDLLEXPORT Datum Tnpoint_length(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_length);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Length traversed by a temporal network point
- * @sqlfunc length()
+ * @brief Return the length traversed by a temporal network point
+ * @sqlfn length()
  */
 Datum
 Tnpoint_length(PG_FUNCTION_ARGS)
@@ -129,8 +129,8 @@ PGDLLEXPORT Datum Tnpoint_cumulative_length(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_cumulative_length);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Cumulative length traversed by a temporal network point
- * @sqlfunc cumulativeLength()
+ * @brief Return the cumulative length traversed by a temporal network point
+ * @sqlfn cumulativeLength()
  */
 Datum
 Tnpoint_cumulative_length(PG_FUNCTION_ARGS)
@@ -138,7 +138,7 @@ Tnpoint_cumulative_length(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tnpoint_cumulative_length(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -149,8 +149,8 @@ PGDLLEXPORT Datum Tnpoint_speed(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_speed);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Speed of a temporal network point
- * @sqlfunc speed()
+ * @brief Return the speed of a temporal network point
+ * @sqlfn speed()
  */
 Datum
 Tnpoint_speed(PG_FUNCTION_ARGS)
@@ -160,7 +160,7 @@ Tnpoint_speed(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -172,15 +172,15 @@ PG_FUNCTION_INFO_V1(Tnpoint_twcentroid);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Return the time-weighed centroid of a temporal network point
- * @sqlfunc twcentroid()
+ * @sqlfn twcentroid()
  */
 Datum
 Tnpoint_twcentroid(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = tnpoint_twcentroid(temp);
+  GSERIALIZED *result = tnpoint_twcentroid(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 /*****************************************************************************
@@ -191,8 +191,8 @@ PGDLLEXPORT Datum Tnpoint_azimuth(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_azimuth);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Temporal azimuth of a temporal network point
- * @sqlfunc azimuth()
+ * @brief Return the temporal azimuth of a temporal network point
+ * @sqlfn azimuth()
  */
 Datum
 Tnpoint_azimuth(PG_FUNCTION_ARGS)
@@ -202,7 +202,7 @@ Tnpoint_azimuth(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -210,80 +210,124 @@ Tnpoint_azimuth(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Restrict a temporal network point to (the complement of) a geometry
+ * @brief Return a temporal network point restricted to (the complement of) a
+ * geometry
  */
 static Datum
-tnpoint_restrict_geom_time_ext(FunctionCallInfo fcinfo, bool atfunc,
+Tnpoint_restrict_geom_time(FunctionCallInfo fcinfo, bool atfunc,
   bool resttime)
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1)|| (resttime && PG_ARGISNULL(2)))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Span *period = NULL;
+  Span *s = NULL;
   if (PG_NARGS() > 2)
-    period = PG_GETARG_SPAN_P(2);
+    s = PG_GETARG_SPAN_P(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Temporal *result = tnpoint_restrict_geom_time(temp, gs, NULL, period,
-    atfunc);
+  Temporal *result = tnpoint_restrict_geom_time(temp, gs, NULL, s, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tnpoint_at_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_at_geom);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restricts a temporal point to a geometry
- * @sqlfunc atGeometry()
+ * @brief Return a temporal network point restricted to a geometry
+ * @sqlfn atGeometry()
  */
 Datum
 Tnpoint_at_geom(PG_FUNCTION_ARGS)
 {
-  return tnpoint_restrict_geom_time_ext(fcinfo, REST_AT, REST_TIME_NO);
+  return Tnpoint_restrict_geom_time(fcinfo, REST_AT, REST_TIME_NO);
 }
 
 PGDLLEXPORT Datum Tnpoint_at_geom_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_at_geom_time);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restricts a temporal point to a geometry
- * @sqlfunc atGeometry()
+ * @brief Return a temporal network point restricted to a geometry and a time
+ * value
+ * @sqlfn atGeometryTime()
  */
 Datum
 Tnpoint_at_geom_time(PG_FUNCTION_ARGS)
 {
-  return tnpoint_restrict_geom_time_ext(fcinfo, REST_AT, REST_TIME);
+  return Tnpoint_restrict_geom_time(fcinfo, REST_AT, REST_TIME);
 }
 
 PGDLLEXPORT Datum Tnpoint_minus_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_minus_geom);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal point to the complement of a geometry
- * @sqlfunc minusGeometry()
+ * @brief Return a temporal network point restricted to the complement of a
+ * geometry
+ * @sqlfn minusGeometry()
  */
 Datum
 Tnpoint_minus_geom(PG_FUNCTION_ARGS)
 {
-  return tnpoint_restrict_geom_time_ext(fcinfo, REST_MINUS, REST_TIME_NO);
+  return Tnpoint_restrict_geom_time(fcinfo, REST_MINUS, REST_TIME_NO);
 }
 
 PGDLLEXPORT Datum Tnpoint_minus_geom_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_minus_geom_time);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Restrict a temporal point to the complement of a geometry
- * @sqlfunc minusGeometry()
+ * @brief Return a temporal network point restricted to the complement of a
+ * geometry
+ * @sqlfn minusGeometry()
  */
 Datum
 Tnpoint_minus_geom_time(PG_FUNCTION_ARGS)
 {
-  return tnpoint_restrict_geom_time_ext(fcinfo, REST_MINUS, REST_TIME);
+  return Tnpoint_restrict_geom_time(fcinfo, REST_MINUS, REST_TIME);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Tnpoint_at_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnpoint_at_stbox);
+/**
+ * @ingroup mobilitydb_temporal_restrict
+ * @brief Return a temporal network point restricted to a spatiotemporal box
+ * @sqlfn atStbox()
+ */
+Datum
+Tnpoint_at_stbox(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *box = PG_GETARG_STBOX_P(1);
+  Temporal *result = tnpoint_restrict_stbox(temp, box, REST_AT);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tnpoint_minus_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnpoint_minus_stbox);
+/**
+ * @ingroup mobilitydb_temporal_restrict
+ * @brief Return a temporal network point restricted to the complement of a
+ * spatiotemporal box
+ * @sqlfn minusStbox()
+ */
+Datum
+Tnpoint_minus_stbox(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *box = PG_GETARG_STBOX_P(1);
+  Temporal *result = tnpoint_restrict_stbox(temp, box, REST_MINUS);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

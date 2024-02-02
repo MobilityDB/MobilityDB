@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -40,6 +40,8 @@
 #ifndef int16
 typedef signed short int16;
 #endif
+/* MEOS */
+#include <meos.h>
 
 /*****************************************************************************
  * Data structures
@@ -53,53 +55,59 @@ typedef enum
 {
   T_UNKNOWN        = 0,   /**< unknown type */
   T_BOOL           = 1,   /**< boolean type */
-  T_DOUBLE2        = 2,   /**< double2 type */
-  T_DOUBLE3        = 3,   /**< double3 type */
-  T_DOUBLE4        = 4,   /**< double4 type */
-  T_FLOAT8         = 5,   /**< float8 type */
-  T_FLOATSET       = 6,   /**< float8 set type */
-  T_FLOATSPAN      = 7,   /**< float8 span type */
-  T_FLOATSPANSET   = 8,   /**< float8 span set type */
-  T_INT4           = 9,   /**< int4 type */
-  T_INT4RANGE      = 10,  /**< PostgreSQL int4 range type */
-  T_INT4MULTIRANGE = 11,  /**< PostgreSQL int4 multirange type */
-  T_INTSET         = 12,  /**< int4 set type */
-  T_INTSPAN        = 13,  /**< int4 span type */
-  T_INTSPANSET     = 14,  /**< int4 span set type */
-  T_INT8           = 15,  /**< int8 type */
-  T_BIGINTSET      = 16,  /**< int8 set type */
-  T_BIGINTSPAN     = 17,  /**< int8 span type */
-  T_BIGINTSPANSET  = 18,  /**< int8 span set type */
-  T_STBOX          = 19,  /**< spatiotemporal box type */
-  T_TBOOL          = 20,  /**< temporal boolean type */
-  T_TBOX           = 21,  /**< temporal box type */
-  T_TDOUBLE2       = 22,  /**< temporal double2 type */
-  T_TDOUBLE3       = 23,  /**< temporal double3 type */
-  T_TDOUBLE4       = 24,  /**< temporal double4 type */
-  T_TEXT           = 25,  /**< text type */
-  T_TEXTSET        = 26,  /**< text type */
-  T_TFLOAT         = 27,  /**< temporal float type */
-  T_TIMESTAMPTZ    = 28,  /**< timestamp with time zone type */
-  T_TINT           = 29,  /**< temporal integer type */
-  T_TSTZMULTIRANGE = 30,  /**< PostgreSQL timestamp with time zone multirange type */
-  T_TSTZRANGE      = 31,  /**< PostgreSQL timestamp with time zone range type */
-  T_TSTZSET        = 32,  /**< timestamptz set type */
-  T_TSTZSPAN       = 33,  /**< timestamptz span type */
-  T_TSTZSPANSET    = 34,  /**< timestamptz span set type */
-  T_TTEXT          = 35,  /**< temporal text type */
-  T_GEOMETRY       = 36,  /**< geometry type */
-  T_GEOMSET        = 37,  /**< geometry set type */
-  T_GEOGRAPHY      = 38,  /**< geography type */
-  T_GEOGSET        = 39,  /**< geography set type */
-  T_TGEOMPOINT     = 40,  /**< temporal geometry point type */
-  T_TGEOGPOINT     = 41,  /**< temporal geography point type */
-  T_NPOINT         = 42,  /**< network point type */
-  T_NPOINTSET      = 43,  /**< network point set type */
-  T_NSEGMENT       = 44,  /**< network segment type */
-  T_TNPOINT        = 45,  /**< temporal network point type */
+  T_DATE           = 2,   /**< date type */
+  T_DATEMULTIRANGE = 3,   /**< PostgreSQL date multirange type */
+  T_DATERANGE      = 4,   /**< PostgreSQL date range type */
+  T_DATESET        = 5,   /**< date set type */
+  T_DATESPAN       = 6,   /**< date span type */
+  T_DATESPANSET    = 7,   /**< date span set type */
+  T_DOUBLE2        = 8,   /**< double2 type */
+  T_DOUBLE3        = 9,   /**< double3 type */
+  T_DOUBLE4        = 10,   /**< double4 type */
+  T_FLOAT8         = 11,  /**< float8 type */
+  T_FLOATSET       = 12,  /**< float8 set type */
+  T_FLOATSPAN      = 13,  /**< float8 span type */
+  T_FLOATSPANSET   = 14,  /**< float8 span set type */
+  T_INT4           = 15,  /**< int4 type */
+  T_INT4MULTIRANGE = 16,  /**< PostgreSQL int4 multirange type */
+  T_INT4RANGE      = 17,  /**< PostgreSQL int4 range type */
+  T_INTSET         = 18,  /**< int4 set type */
+  T_INTSPAN        = 19,  /**< int4 span type */
+  T_INTSPANSET     = 20,  /**< int4 span set type */
+  T_INT8           = 21,  /**< int8 type */
+  T_BIGINTSET      = 22,  /**< int8 set type */
+  T_BIGINTSPAN     = 23,  /**< int8 span type */
+  T_BIGINTSPANSET  = 24,  /**< int8 span set type */
+  T_STBOX          = 25,  /**< spatiotemporal box type */
+  T_TBOOL          = 26,  /**< temporal boolean type */
+  T_TBOX           = 27,  /**< temporal box type */
+  T_TDOUBLE2       = 28,  /**< temporal double2 type */
+  T_TDOUBLE3       = 29,  /**< temporal double3 type */
+  T_TDOUBLE4       = 30,  /**< temporal double4 type */
+  T_TEXT           = 31,  /**< text type */
+  T_TEXTSET        = 32,  /**< text type */
+  T_TFLOAT         = 33,  /**< temporal float type */
+  T_TIMESTAMPTZ    = 34,  /**< timestamp with time zone type */
+  T_TINT           = 35,  /**< temporal integer type */
+  T_TSTZMULTIRANGE = 36,  /**< PostgreSQL timestamp with time zone multirange type */
+  T_TSTZRANGE      = 37,  /**< PostgreSQL timestamp with time zone range type */
+  T_TSTZSET        = 38,  /**< timestamptz set type */
+  T_TSTZSPAN       = 39,  /**< timestamptz span type */
+  T_TSTZSPANSET    = 40,  /**< timestamptz span set type */
+  T_TTEXT          = 41,  /**< temporal text type */
+  T_GEOMETRY       = 42,  /**< geometry type */
+  T_GEOMSET        = 43,  /**< geometry set type */
+  T_GEOGRAPHY      = 44,  /**< geography type */
+  T_GEOGSET        = 45,  /**< geography set type */
+  T_TGEOMPOINT     = 46,  /**< temporal geometry point type */
+  T_TGEOGPOINT     = 47,  /**< temporal geography point type */
+  T_NPOINT         = 48,  /**< network point type */
+  T_NPOINTSET      = 49,  /**< network point set type */
+  T_NSEGMENT       = 50,  /**< network segment type */
+  T_TNPOINT        = 51,  /**< temporal network point type */
 } meosType;
 
-#define NO_MEOS_TYPES 46
+#define NO_MEOS_TYPES 52
 
 /**
  * Enumeration that defines the classes of Boolean operators used in
@@ -190,34 +198,43 @@ typedef struct
 
 /*****************************************************************************/
 
+extern bool temptype_subtype(tempSubtype subtype);
+extern bool temptype_subtype_all(tempSubtype subtype);
+extern const char *tempsubtype_name(tempSubtype subtype);
+extern bool tempsubtype_from_string(const char *str, int16 *subtype);
+extern const char *meosoper_name(meosOper oper);
+extern meosOper meosoper_from_string(const char *name);
+extern const char *interptype_name(interpType interp);
+extern interpType interptype_from_string(const char *interp_str);
+
 /* Type conversion functions */
 
-extern const char *meostype_name(meosType temptype);
-extern meosType temptype_basetype(meosType temptype);
-extern meosType settype_basetype(meosType settype);
-extern meosType spantype_basetype(meosType spantype);
-extern meosType spantype_spansettype(meosType spantype);
-extern meosType spansettype_spantype(meosType spansettype);
-extern meosType basetype_spantype(meosType basetype);
-extern meosType basetype_settype(meosType basetype);
+extern const char *meostype_name(meosType type);
+extern meosType temptype_basetype(meosType type);
+extern meosType settype_basetype(meosType type);
+extern meosType spantype_basetype(meosType type);
+extern meosType spantype_spansettype(meosType type);
+extern meosType spansettype_spantype(meosType type);
+extern meosType basetype_spantype(meosType type);
+extern meosType basetype_settype(meosType type);
 
 /* Catalog functions */
 
-extern bool meostype_internal(meosType type);
 extern bool meos_basetype(meosType type);
-extern bool alpha_basetype(meosType basetype);
-extern bool number_basetype(meosType basetype);
-extern bool alphanum_basetype(meosType basetype);
-extern bool geo_basetype(meosType basetype);
-extern bool spatial_basetype(meosType basetype);
+extern bool alpha_basetype(meosType type);
+extern bool tnumber_basetype(meosType type);
+extern bool alphanum_basetype(meosType type);
+extern bool geo_basetype(meosType type);
+extern bool spatial_basetype(meosType type);
 
-extern bool time_type(meosType timetype);
-extern bool set_basetype(meosType basetype);
+extern bool time_type(meosType type);
+extern bool set_basetype(meosType type);
 
 extern bool set_type(meosType type);
 extern bool numset_type(meosType type);
 extern bool ensure_numset_type(meosType type);
 extern bool timeset_type(meosType type);
+extern bool ensure_timeset_type(meosType type);
 extern bool set_spantype(meosType type);
 extern bool ensure_set_spantype(meosType type);
 extern bool alphanumset_type(meosType settype);
@@ -235,28 +252,31 @@ extern bool numspan_type(meosType type);
 extern bool ensure_numspan_type(meosType type);
 extern bool timespan_basetype(meosType type);
 extern bool timespan_type(meosType type);
+extern bool ensure_timespan_type(meosType type);
 
 extern bool spanset_type(meosType type);
 extern bool numspanset_type(meosType type);
 extern bool timespanset_type(meosType type);
+extern bool ensure_timespanset_type(meosType type);
 
-extern bool temporal_type(meosType temptype);
-extern bool temporal_basetype(meosType basetype);
-extern bool temptype_continuous(meosType temptype);
+extern bool temporal_type(meosType type);
+extern bool temporal_basetype(meosType type);
+extern bool temptype_continuous(meosType type);
 extern bool basetype_byvalue(meosType type);
 extern bool basetype_varlength(meosType type);
-extern int16 basetype_length(meosType basetype);
+extern int16 basetype_length(meosType type);
 extern bool talphanum_type(meosType type);
-extern bool talpha_type(meosType temptype);
-extern bool tnumber_type(meosType temptype);
-extern bool ensure_tnumber_type(meosType temptype);
-extern bool tnumber_basetype(meosType basetype);
-extern bool tnumber_settype(meosType settype);
-extern bool tnumber_spantype(meosType settype);
-extern bool tnumber_spansettype(meosType spansettype);
-extern bool tspatial_type(meosType temptype);
-extern bool ensure_tspatial_type(meosType temptype);
-extern bool tspatial_basetype(meosType basetype);
+extern bool talpha_type(meosType type);
+extern bool tnumber_type(meosType type);
+extern bool ensure_tnumber_type(meosType type);
+extern bool tnumber_basetype(meosType type);
+extern bool ensure_tnumber_basetype(meosType type);
+extern bool tnumber_settype(meosType type);
+extern bool tnumber_spantype(meosType type);
+extern bool tnumber_spansettype(meosType type);
+extern bool tspatial_type(meosType type);
+extern bool ensure_tspatial_type(meosType type);
+extern bool tspatial_basetype(meosType type);
 extern bool tgeo_type(meosType type);
 extern bool ensure_tgeo_type(meosType type);
 extern bool ensure_tnumber_tgeo_type(meosType type);

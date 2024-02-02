@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - '.github/workflows/macos.yml'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
@@ -12,6 +13,7 @@ on:
     branch_ignore: gh-pages
   pull_request:
     paths:
+      - '.github/workflows/macos.yml'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
@@ -50,7 +52,7 @@ jobs:
           initdb -D /usr/local/var/postgres
           pg_ctl -D /usr/local/var/postgres start
           createdb ___mobdb___test___
-          psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version();"
+          psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE;  SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
 
       - name: Test
         run: |

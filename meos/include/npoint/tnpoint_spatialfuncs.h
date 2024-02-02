@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -68,10 +68,12 @@ extern bool npoint_same(const Npoint *np1, const Npoint *np2);
 extern double tnpoint_length(const Temporal *temp);
 extern Temporal *tnpoint_cumulative_length(const Temporal *temp);
 extern Temporal *tnpoint_speed(const Temporal *temp);
-extern Datum tnpoint_twcentroid(const Temporal *temp);
+extern GSERIALIZED *tnpoint_twcentroid(const Temporal *temp);
 extern Temporal *tnpoint_azimuth(const Temporal *temp);
 extern Temporal *tnpoint_restrict_geom_time(const Temporal *temp,
   const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc);
+extern Temporal *tnpoint_restrict_stbox(Temporal *temp, STBox *box,
+  bool atfunc);
 
 /*****************************************************************************/
 

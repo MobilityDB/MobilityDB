@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -37,8 +37,8 @@ SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(i, 2, 1) AS bl FROM 
 SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(f, 2) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(f, 2.5, 1.5) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(p, '2 days') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(p, '2 days', '2001-06-01') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(t, '2 days') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(t, '2 days', '2001-06-01') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 -------------------------------------------------------------------------------
 

@@ -863,9 +863,9 @@ SELECT tstzspanset '{[2000-01-05, 2000-01-07], [2000-01-08, 2000-01-09], [2000-0
 (1 row)
 
 SELECT timestamptz '2000-01-01' - tstzset '{2000-01-02, 2000-01-03, 2000-01-05}';
-           ?column?           
-------------------------------
- Sat Jan 01 00:00:00 2000 PST
+             ?column?             
+----------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST"}
 (1 row)
 
 SELECT timestamptz '2000-01-01' - tstzset '{2000-01-01, 2000-01-03, 2000-01-05}';
@@ -881,15 +881,15 @@ SELECT timestamptz '2000-01-05' - tstzset '{2000-01-01, 2000-01-03, 2000-01-05}'
 (1 row)
 
 SELECT timestamptz '2000-01-06' - tstzset '{2000-01-01, 2000-01-03, 2000-01-05}';
-           ?column?           
-------------------------------
- Thu Jan 06 00:00:00 2000 PST
+             ?column?             
+----------------------------------
+ {"Thu Jan 06 00:00:00 2000 PST"}
 (1 row)
 
 SELECT timestamptz '2000-01-01' - tstzspan '[2000-01-02, 2000-01-03]';
-           ?column?           
-------------------------------
- Sat Jan 01 00:00:00 2000 PST
+                            ?column?                            
+----------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]}
 (1 row)
 
 SELECT timestamptz '2000-01-01' - tstzspan '[2000-01-01, 2000-01-03]';
@@ -899,9 +899,9 @@ SELECT timestamptz '2000-01-01' - tstzspan '[2000-01-01, 2000-01-03]';
 (1 row)
 
 SELECT timestamptz '2000-01-01' - tstzspan '(2000-01-01, 2000-01-03]';
-           ?column?           
-------------------------------
- Sat Jan 01 00:00:00 2000 PST
+                            ?column?                            
+----------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]}
 (1 row)
 
 SELECT timestamptz '2000-01-02' - tstzspan '[2000-01-01, 2000-01-03]';
@@ -917,15 +917,15 @@ SELECT timestamptz '2000-01-03' - tstzspan '[2000-01-01, 2000-01-03]';
 (1 row)
 
 SELECT timestamptz '2000-01-03' - tstzspan '[2000-01-01, 2000-01-03)';
-           ?column?           
-------------------------------
- Mon Jan 03 00:00:00 2000 PST
+                            ?column?                            
+----------------------------------------------------------------
+ {[Mon Jan 03 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
 SELECT timestamptz '2000-01-05' - tstzspan '[2000-01-01, 2000-01-03]';
-           ?column?           
-------------------------------
- Wed Jan 05 00:00:00 2000 PST
+                            ?column?                            
+----------------------------------------------------------------
+ {[Wed Jan 05 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
 SELECT timestamptz '2000-01-01' - tstzspanset '{[2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}';
@@ -935,9 +935,9 @@ SELECT timestamptz '2000-01-01' - tstzspanset '{[2000-01-01, 2000-01-03],[2000-0
 (1 row)
 
 SELECT timestamptz '2000-01-01' - tstzspanset '{[2000-01-02, 2000-01-03],[2000-01-04, 2000-01-05]}';
-           ?column?           
-------------------------------
- Sat Jan 01 00:00:00 2000 PST
+                            ?column?                            
+----------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]}
 (1 row)
 
 SELECT timestamptz '2000-01-03' - tstzspanset '{[2000-01-02, 2000-01-03],[2000-01-04, 2000-01-05]}';
@@ -953,9 +953,9 @@ SELECT timestamptz '2000-01-04' - tstzspanset '{[2000-01-02, 2000-01-03],[2000-0
 (1 row)
 
 SELECT timestamptz '2000-01-04' - tstzspanset '{[2000-01-02, 2000-01-03],[2000-01-05, 2000-01-05]}';
-           ?column?           
-------------------------------
- Tue Jan 04 00:00:00 2000 PST
+                            ?column?                            
+----------------------------------------------------------------
+ {[Tue Jan 04 00:00:00 2000 PST, Tue Jan 04 00:00:00 2000 PST]}
 (1 row)
 
 SELECT timestamptz '2000-01-05' - tstzspanset '{[2000-01-02, 2000-01-03],[2000-01-04, 2000-01-05]}';
@@ -965,9 +965,9 @@ SELECT timestamptz '2000-01-05' - tstzspanset '{[2000-01-02, 2000-01-03],[2000-0
 (1 row)
 
 SELECT timestamptz '2000-01-06' - tstzspanset '{[2000-01-02, 2000-01-03],[2000-01-04, 2000-01-05]}';
-           ?column?           
-------------------------------
- Thu Jan 06 00:00:00 2000 PST
+                            ?column?                            
+----------------------------------------------------------------
+ {[Thu Jan 06 00:00:00 2000 PST, Thu Jan 06 00:00:00 2000 PST]}
 (1 row)
 
 SELECT tstzset '{2000-01-01}' - timestamptz '2000-01-01';
@@ -1145,15 +1145,15 @@ SELECT timestamptz '2000-01-01' * tstzset '{2000-01-02, 2000-01-03, 2000-01-05}'
 (1 row)
 
 SELECT timestamptz '2000-01-01' * tstzset '{2000-01-01, 2000-01-03, 2000-01-05}';
-           ?column?           
-------------------------------
- Sat Jan 01 00:00:00 2000 PST
+             ?column?             
+----------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST"}
 (1 row)
 
 SELECT timestamptz '2000-01-05' * tstzset '{2000-01-01, 2000-01-03, 2000-01-05}';
-           ?column?           
-------------------------------
- Wed Jan 05 00:00:00 2000 PST
+             ?column?             
+----------------------------------
+ {"Wed Jan 05 00:00:00 2000 PST"}
 (1 row)
 
 SELECT timestamptz '2000-01-06' * tstzset '{2000-01-01, 2000-01-03, 2000-01-05}';
@@ -1169,9 +1169,9 @@ SELECT timestamptz '2000-01-01' * tstzspan '[2000-01-02, 2000-01-03]';
 (1 row)
 
 SELECT timestamptz '2000-01-01' * tstzspan '[2000-01-01, 2000-01-03]';
-           ?column?           
-------------------------------
- Sat Jan 01 00:00:00 2000 PST
+                           ?column?                           
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
 (1 row)
 
 SELECT timestamptz '2000-01-01' * tstzspan '(2000-01-01, 2000-01-03]';
@@ -1181,15 +1181,15 @@ SELECT timestamptz '2000-01-01' * tstzspan '(2000-01-01, 2000-01-03]';
 (1 row)
 
 SELECT timestamptz '2000-01-02' * tstzspan '[2000-01-01, 2000-01-03]';
-           ?column?           
-------------------------------
- Sun Jan 02 00:00:00 2000 PST
+                           ?column?                           
+--------------------------------------------------------------
+ [Sun Jan 02 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
 SELECT timestamptz '2000-01-03' * tstzspan '[2000-01-01, 2000-01-03]';
-           ?column?           
-------------------------------
- Mon Jan 03 00:00:00 2000 PST
+                           ?column?                           
+--------------------------------------------------------------
+ [Mon Jan 03 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
 SELECT timestamptz '2000-01-03' * tstzspan '[2000-01-01, 2000-01-03)';
@@ -1205,9 +1205,9 @@ SELECT timestamptz '2000-01-05' * tstzspan '[2000-01-01, 2000-01-03]';
 (1 row)
 
 SELECT timestamptz '2000-01-01' * tstzspanset '{[2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}';
-           ?column?           
-------------------------------
- Sat Jan 01 00:00:00 2000 PST
+                            ?column?                            
+----------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]}
 (1 row)
 
 SELECT timestamptz '2000-01-01' * tstzspanset '{[2000-01-02, 2000-01-03],[2000-01-04, 2000-01-05]}';
@@ -1217,15 +1217,15 @@ SELECT timestamptz '2000-01-01' * tstzspanset '{[2000-01-02, 2000-01-03],[2000-0
 (1 row)
 
 SELECT timestamptz '2000-01-03' * tstzspanset '{[2000-01-02, 2000-01-03],[2000-01-04, 2000-01-05]}';
-           ?column?           
-------------------------------
- Mon Jan 03 00:00:00 2000 PST
+                            ?column?                            
+----------------------------------------------------------------
+ {[Mon Jan 03 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
 SELECT timestamptz '2000-01-04' * tstzspanset '{[2000-01-02, 2000-01-03],[2000-01-04, 2000-01-05]}';
-           ?column?           
-------------------------------
- Tue Jan 04 00:00:00 2000 PST
+                            ?column?                            
+----------------------------------------------------------------
+ {[Tue Jan 04 00:00:00 2000 PST, Tue Jan 04 00:00:00 2000 PST]}
 (1 row)
 
 SELECT timestamptz '2000-01-04' * tstzspanset '{[2000-01-02, 2000-01-03],[2000-01-05, 2000-01-05]}';
@@ -1235,9 +1235,9 @@ SELECT timestamptz '2000-01-04' * tstzspanset '{[2000-01-02, 2000-01-03],[2000-0
 (1 row)
 
 SELECT timestamptz '2000-01-05' * tstzspanset '{[2000-01-02, 2000-01-03],[2000-01-04, 2000-01-05]}';
-           ?column?           
-------------------------------
- Wed Jan 05 00:00:00 2000 PST
+                            ?column?                            
+----------------------------------------------------------------
+ {[Wed Jan 05 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
 SELECT timestamptz '2000-01-06' * tstzspanset '{[2000-01-02, 2000-01-03],[2000-01-04, 2000-01-05]}';
@@ -1247,9 +1247,9 @@ SELECT timestamptz '2000-01-06' * tstzspanset '{[2000-01-02, 2000-01-03],[2000-0
 (1 row)
 
 SELECT tstzset '{2000-01-01, 2000-01-03, 2000-01-05}' * timestamptz '2000-01-01';
-           ?column?           
-------------------------------
- Sat Jan 01 00:00:00 2000 PST
+             ?column?             
+----------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST"}
 (1 row)
 
 SELECT tstzset '{2000-01-01, 2000-01-03, 2000-01-05}' * tstzset '{2000-01-01, 2000-01-03, 2000-01-05}';
@@ -1271,9 +1271,9 @@ SELECT tstzset '{2000-01-01, 2000-01-03}' * tstzset '{2000-01-02, 2000-01-04}';
 (1 row)
 
 SELECT tstzspan '[2000-01-01, 2000-01-03]' * timestamptz '2000-01-01';
-           ?column?           
-------------------------------
- Sat Jan 01 00:00:00 2000 PST
+                           ?column?                           
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
 (1 row)
 
 SELECT tstzspan '[2000-01-01, 2000-01-03]' * tstzspan '[2000-01-01, 2000-01-03]';
@@ -1301,9 +1301,9 @@ SELECT tstzspan '[2000-01-03, 2000-01-04]' * tstzspanset '{[2000-01-01, 2000-01-
 (1 row)
 
 SELECT tstzspanset '{[2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}' * timestamptz '2000-01-01';
-           ?column?           
-------------------------------
- Sat Jan 01 00:00:00 2000 PST
+                            ?column?                            
+----------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]}
 (1 row)
 
 SELECT tstzspanset '{[2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}' * tstzspan '[2000-01-01, 2000-01-03]';
@@ -1536,9 +1536,9 @@ SELECT tstzspanset '{[2000-01-03, 2000-01-04],[2000-01-07, 2000-01-08]}' <-> tst
 
 ANALYZE tbl_tstzspan_big;
 ANALYZE
-CREATE INDEX tbl_tstzspan_big_quadtree_idx ON tbl_tstzspan_big USING SPGIST(p);
+CREATE INDEX tbl_tstzspan_big_quadtree_idx ON tbl_tstzspan_big USING SPGIST(t);
 CREATE INDEX
-SELECT p <-> timestamptz '2001-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+SELECT t <-> timestamptz '2001-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
         0
@@ -1546,7 +1546,7 @@ SELECT p <-> timestamptz '2001-06-01' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
      3840
 (3 rows)
 
-SELECT p <-> tstzspan '[2001-06-01, 2001-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+SELECT t <-> tstzspan '[2001-06-01, 2001-07-01]' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
         0
@@ -1554,7 +1554,7 @@ SELECT p <-> tstzspan '[2001-06-01, 2001-07-01]' FROM tbl_tstzspan_big ORDER BY 
         0
 (3 rows)
 
-SELECT p <-> tstzspanset '{[2001-01-01, 2001-01-15], [2001-02-01, 2001-02-15]}' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+SELECT t <-> tstzspanset '{[2001-01-01, 2001-01-15], [2001-02-01, 2001-02-15]}' FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
  ?column? 
 ----------
         0
@@ -1566,9 +1566,9 @@ DROP INDEX tbl_tstzspan_big_quadtree_idx;
 DROP INDEX
 CREATE INDEX tbl_tstzset_big_rtree_idx ON tbl_tstzset_big USING gist(t);
 CREATE INDEX
-CREATE INDEX tbl_tstzspan_big_rtree_idx ON tbl_tstzspan_big USING gist(p);
+CREATE INDEX tbl_tstzspan_big_rtree_idx ON tbl_tstzspan_big USING gist(t);
 CREATE INDEX
-CREATE INDEX tbl_tstzspanset_big_rtree_idx ON tbl_tstzspanset_big USING gist(ps);
+CREATE INDEX tbl_tstzspanset_big_rtree_idx ON tbl_tstzspanset_big USING gist(t);
 CREATE INDEX
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE t && tstzset '{2001-06-01, 2001-07-01}';
  count 
@@ -1576,25 +1576,25 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE t && tstzset '{2001-06-01, 2001-07-01
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspan '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
    998
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps && tstzspan '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
    982
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspanset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
    998
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps && tstzspanset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
    982
@@ -1606,13 +1606,13 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> timestamptz '2001-06-01';
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> timestamptz '2001-06-01';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> timestamptz '2001-06-01';
  count 
 -------
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> timestamptz '2001-06-01';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> timestamptz '2001-06-01';
  count 
 -------
      0
@@ -1624,25 +1624,25 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> tstzset '{2001-06-01, 2001-07-01
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspan '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> tstzspan '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspanset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> tstzspanset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -1654,13 +1654,13 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' <@ t;
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' <@ p;
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' <@ t;
  count 
 -------
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' <@ ps;
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' <@ t;
  count 
 -------
      0
@@ -1672,25 +1672,25 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE tstzset '{2001-06-01, 2001-07-01}' <@
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE tstzspan '[2001-06-01, 2001-07-01]' <@ p;
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE tstzspan '[2001-06-01, 2001-07-01]' <@ t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE tstzspan '[2001-06-01, 2001-07-01]' <@ ps;
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE tstzspan '[2001-06-01, 2001-07-01]' <@ t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE tstzspanset '{[2001-06-01, 2001-07-01]}' <@ p;
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE tstzspanset '{[2001-06-01, 2001-07-01]}' <@ t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE tstzspanset '{[2001-06-01, 2001-07-01]}' <@ ps;
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE tstzspanset '{[2001-06-01, 2001-07-01]}' <@ t;
  count 
 -------
      0
@@ -1704,9 +1704,9 @@ DROP INDEX tbl_tstzspanset_big_rtree_idx;
 DROP INDEX
 CREATE INDEX tbl_tstzset_rtree_idx ON tbl_tstzset USING gist(t);
 CREATE INDEX
-CREATE INDEX tbl_tstzspan_rtree_idx ON tbl_tstzspan USING gist(p);
+CREATE INDEX tbl_tstzspan_rtree_idx ON tbl_tstzspan USING gist(t);
 CREATE INDEX
-CREATE INDEX tbl_tstzspanset_rtree_idx ON tbl_tstzspanset USING gist(ps);
+CREATE INDEX tbl_tstzspanset_rtree_idx ON tbl_tstzspanset USING gist(t);
 CREATE INDEX
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
  count 
@@ -1714,49 +1714,49 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p && t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t && t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.ps && t2.p;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.t && t2.t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p && t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.t && t2.t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps && t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t && t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p @> t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t @> t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.ps @> t2.p;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.t @> t2.t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p @> t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.t @> t2.t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps @> t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t @> t2.t;
  count 
 -------
     99
@@ -1768,25 +1768,25 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <@ t2.t;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <@ t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.ps <@ t2.p;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p <@ t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.t <@ t2.t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps <@ t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t <@ t2.t;
  count 
 -------
     99
@@ -1800,9 +1800,9 @@ DROP INDEX tbl_tstzspanset_rtree_idx;
 DROP INDEX
 CREATE INDEX tbl_tstzset_big_quadtree_idx ON tbl_tstzset_big USING spgist(t);
 CREATE INDEX
-CREATE INDEX tbl_tstzspan_big_quadtree_idx ON tbl_tstzspan_big USING spgist(p);
+CREATE INDEX tbl_tstzspan_big_quadtree_idx ON tbl_tstzspan_big USING spgist(t);
 CREATE INDEX
-CREATE INDEX tbl_tstzspanset_big_quadtree_idx ON tbl_tstzspanset_big USING spgist(ps);
+CREATE INDEX tbl_tstzspanset_big_quadtree_idx ON tbl_tstzspanset_big USING spgist(t);
 CREATE INDEX
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE t && tstzset '{2001-06-01, 2001-07-01}';
  count 
@@ -1810,25 +1810,25 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE t && tstzset '{2001-06-01, 2001-07-01
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspan '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
    998
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps && tstzspan '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
    982
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p && tstzspanset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
    998
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps && tstzspanset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
    982
@@ -1840,13 +1840,13 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> timestamptz '2001-06-01';
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> timestamptz '2001-06-01';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> timestamptz '2001-06-01';
  count 
 -------
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> timestamptz '2001-06-01';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> timestamptz '2001-06-01';
  count 
 -------
      0
@@ -1858,25 +1858,25 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> tstzset '{2001-06-01, 2001-07-01
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspan '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> tstzspan '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> tstzspan '[2001-06-01, 2001-07-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE p @> tstzspanset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE ps @> tstzspanset '{[2001-06-01, 2001-07-01]}';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> tstzspanset '{[2001-06-01, 2001-07-01]}';
  count 
 -------
      0
@@ -1888,13 +1888,13 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' <@ t;
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' <@ p;
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' <@ t;
  count 
 -------
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' <@ ps;
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' <@ t;
  count 
 -------
      0
@@ -1906,25 +1906,25 @@ SELECT COUNT(*) FROM tbl_tstzset_big WHERE tstzset '{2001-06-01, 2001-07-01}' <@
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE tstzspan '[2001-06-01, 2001-07-01]' <@ p;
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE tstzspan '[2001-06-01, 2001-07-01]' <@ t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE tstzspan '[2001-06-01, 2001-07-01]' <@ ps;
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE tstzspan '[2001-06-01, 2001-07-01]' <@ t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE tstzspanset '{[2001-06-01, 2001-07-01]}' <@ p;
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE tstzspanset '{[2001-06-01, 2001-07-01]}' <@ t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE tstzspanset '{[2001-06-01, 2001-07-01]}' <@ ps;
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE tstzspanset '{[2001-06-01, 2001-07-01]}' <@ t;
  count 
 -------
      0
@@ -1938,9 +1938,9 @@ DROP INDEX tbl_tstzspanset_big_quadtree_idx;
 DROP INDEX
 CREATE INDEX tbl_tstzset_quadtree_idx ON tbl_tstzset USING gist(t);
 CREATE INDEX
-CREATE INDEX tbl_tstzspan_quadtree_idx ON tbl_tstzspan USING gist(p);
+CREATE INDEX tbl_tstzspan_quadtree_idx ON tbl_tstzspan USING gist(t);
 CREATE INDEX
-CREATE INDEX tbl_tstzspanset_quadtree_idx ON tbl_tstzspanset USING gist(ps);
+CREATE INDEX tbl_tstzspanset_quadtree_idx ON tbl_tstzspanset USING gist(t);
 CREATE INDEX
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
  count 
@@ -1948,31 +1948,13 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p && t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t && t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps && t2.ps;
- count 
--------
-    99
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
- count 
--------
-    99
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p && t2.p;
- count 
--------
-    99
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps && t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t && t2.t;
  count 
 -------
     99
@@ -1984,13 +1966,13 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p && t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t && t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps && t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t && t2.t;
  count 
 -------
     99
@@ -2002,13 +1984,31 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p && t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t && t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps && t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t && t2.t;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t && t2.t;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t && t2.t;
  count 
 -------
     99
@@ -2020,13 +2020,13 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t @> t2.t;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p @> t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t @> t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps @> t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t @> t2.t;
  count 
 -------
     99
@@ -2038,55 +2038,37 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t @> t2.t;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p @> t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t @> t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps @> t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t @> t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p @> t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t @> t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps @> t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t @> t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p @> t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t @> t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps @> t2.ps;
- count 
--------
-    99
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <@ t2.t;
- count 
--------
-    99
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <@ t2.p;
- count 
--------
-    99
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps <@ t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t @> t2.t;
  count 
 -------
     99
@@ -2098,37 +2080,55 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <@ t2.t;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <@ t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps <@ t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t <@ t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <@ t2.p;
+SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <@ t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps <@ t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <@ t2.p;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t <@ t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps <@ t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t <@ t2.t;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t <@ t2.t;
  count 
 -------
     99
@@ -2142,9 +2142,9 @@ DROP INDEX tbl_tstzspanset_quadtree_idx;
 DROP INDEX
 CREATE INDEX tbl_tstzset_quadtree_idx ON tbl_tstzset USING spgist(t);
 CREATE INDEX
-CREATE INDEX tbl_tstzspan_quadtree_idx ON tbl_tstzspan USING spgist(p);
+CREATE INDEX tbl_tstzspan_quadtree_idx ON tbl_tstzspan USING spgist(t);
 CREATE INDEX
-CREATE INDEX tbl_tstzspanset_quadtree_idx ON tbl_tstzspanset USING spgist(ps);
+CREATE INDEX tbl_tstzspanset_quadtree_idx ON tbl_tstzspanset USING spgist(t);
 CREATE INDEX
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
  count 
@@ -2152,25 +2152,25 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t && t2.t;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p && t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t && t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.ps && t2.p;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.t && t2.t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p && t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.t && t2.t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps && t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t && t2.t;
  count 
 -------
     99
@@ -2182,25 +2182,25 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t @> t2.t;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p @> t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t @> t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.ps @> t2.p;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.t @> t2.t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p @> t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.t @> t2.t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps @> t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t @> t2.t;
  count 
 -------
     99
@@ -2212,25 +2212,25 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <@ t2.t;
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.p <@ t2.p;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t;
  count 
 -------
     99
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.ps <@ t2.p;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.p <@ t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspanset t2 WHERE t1.t <@ t2.t;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.ps <@ t2.ps;
+SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t <@ t2.t;
  count 
 -------
     99

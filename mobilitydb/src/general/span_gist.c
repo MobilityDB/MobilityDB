@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief R-tree GiST index for span and span set types.
+ * @brief R-tree GiST index for span and span set types
  *
  * These functions are based on those in the file `rangetypes_gist.c`.
  */
@@ -40,13 +40,14 @@
 #include <assert.h>
 #include <float.h>
 /* PostgreSQL */
+#include <postgres.h>
+#include <fmgr.h>
 #include <access/gist.h>
-#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
-#include "general/spanset.h"
+#include "general/span.h"
 #include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
@@ -58,7 +59,7 @@
  *****************************************************************************/
 
 /**
- * @brief Leaf-level consistency for span types.
+ * @brief Leaf-level consistency for span types
  *
  * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
@@ -72,28 +73,28 @@ span_index_consistent_leaf(const Span *key, const Span *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
-      return overlaps_span_span(key, query);
+      return over_span_span(key, query);
     case RTContainsStrategyNumber:
-      return contains_span_span(key, query);
+      return cont_span_span(key, query);
     case RTContainedByStrategyNumber:
-      return contains_span_span(query, key);
+      return cont_span_span(query, key);
     case RTEqualStrategyNumber:
     case RTSameStrategyNumber:
       return span_eq(key, query);
     case RTAdjacentStrategyNumber:
-      return adjacent_span_span(key, query);
+      return adj_span_span(key, query);
     case RTLeftStrategyNumber:
     case RTBeforeStrategyNumber:
-      return left_span_span(key, query);
+      return lf_span_span(key, query);
     case RTOverLeftStrategyNumber:
     case RTOverBeforeStrategyNumber:
-      return overleft_span_span(key, query);
+      return ovlf_span_span(key, query);
     case RTRightStrategyNumber:
     case RTAfterStrategyNumber:
-      return right_span_span(key, query);
+      return ri_span_span(key, query);
     case RTOverRightStrategyNumber:
     case RTOverAfterStrategyNumber:
-      return overright_span_span(key, query);
+      return ovri_span_span(key, query);
     default:
       elog(ERROR, "unrecognized span strategy: %d", strategy);
       return false;    /* keep compiler quiet */
@@ -115,25 +116,25 @@ span_gist_consistent(const Span *key, const Span *query,
   {
     case RTOverlapStrategyNumber:
     case RTContainedByStrategyNumber:
-      return overlaps_span_span(key, query);
+      return over_span_span(key, query);
     case RTContainsStrategyNumber:
     case RTEqualStrategyNumber:
     case RTSameStrategyNumber:
-      return contains_span_span(key, query);
+      return cont_span_span(key, query);
     case RTAdjacentStrategyNumber:
-      return adjacent_span_span(key, query) || overlaps_span_span(key, query);
+      return adj_span_span(key, query) || overlaps_span_span(key, query);
     case RTLeftStrategyNumber:
     case RTBeforeStrategyNumber:
-      return ! overright_span_span(key, query);
+      return ! ovri_span_span(key, query);
     case RTOverLeftStrategyNumber:
     case RTOverBeforeStrategyNumber:
-      return ! right_span_span(key, query);
+      return ! ri_span_span(key, query);
     case RTRightStrategyNumber:
     case RTAfterStrategyNumber:
-      return ! overleft_span_span(key, query);
+      return ! ovlf_span_span(key, query);
     case RTOverRightStrategyNumber:
     case RTOverAfterStrategyNumber:
-      return ! left_span_span(key, query);
+      return ! lf_span_span(key, query);
     default:
       elog(ERROR, "unrecognized span strategy: %d", strategy);
       return false;    /* keep compiler quiet */
@@ -148,9 +149,14 @@ span_index_recheck(StrategyNumber strategy)
 {
   /* These operators are based on bounding boxes */
   if (strategy == RTLeftStrategyNumber ||
+      strategy == RTBeforeStrategyNumber ||
       strategy == RTOverLeftStrategyNumber ||
+      strategy == RTOverBeforeStrategyNumber ||
       strategy == RTRightStrategyNumber ||
-      strategy == RTOverRightStrategyNumber)
+      strategy == RTAfterStrategyNumber ||
+      strategy == RTOverRightStrategyNumber ||
+      strategy == RTOverAfterStrategyNumber ||
+      strategy == RTKNNSearchStrategyNumber)
     return false;
   return true;
 }
@@ -164,9 +170,10 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
   meosType type = oid_type(typid);
   if (span_basetype(type))
   {
-    /* Since function span_gist_consistent is strict, d is not NULL */
-    Datum d = PG_GETARG_DATUM(1);
-    span_set(d, d, true, true, type, result);
+    /* Since function span_gist_consistent is strict, value is not NULL */
+    Datum value = PG_GETARG_DATUM(1);
+    meosType spantype = basetype_spantype(type);
+    span_set(value, value, true, true, type, spantype, result);
   }
   else if (set_type(type))
   {
@@ -185,7 +192,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
     Datum psdatum = PG_GETARG_DATUM(1);
     spanset_span_slice(psdatum, result);
   }
-  /* For temporal types whose bounding box is a period */
+  /* For temporal types whose bounding box is a timestamptz span */
   else if (talpha_type(type))
   {
     Datum tempdatum = PG_GETARG_DATUM(1);
@@ -244,7 +251,7 @@ Span_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GISTENTRY *ent = entryvec->vector;
-  Span *result = span_copy(DatumGetSpanP(ent[0].key));
+  Span *result = span_cp(DatumGetSpanP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     span_expand(DatumGetSpanP(ent[i].key), result);
   PG_RETURN_SPAN_P(result);
@@ -266,8 +273,7 @@ Set_gist_compress(PG_FUNCTION_ARGS)
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Span *span = palloc(sizeof(Span));
-    set_set_span(DatumGetSetP(entry->key), span);
+    Span *span = set_span(DatumGetSetP(entry->key));
     gistentryinit(*retval, PointerGetDatum(span), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
@@ -303,11 +309,11 @@ Spanset_gist_compress(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_penalty);
 /**
- * @brief GiST page split penalty function for spans.
+ * @brief GiST page split penalty function for spans
  *
  * The penalty function has the following goals (in order from most to least
  * important):
- * - Avoid broadening (as determined by distance_value_value) the original
+ * - Avoid broadening (as determined by dist_double_value_value) the original
  *   predicate
  * - Favor adding spans to narrower original predicates
  */
@@ -323,12 +329,12 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
   span_deserialize(orig, &orig_lower, &orig_upper);
   span_deserialize(new, &new_lower, &new_upper);
 
-  /* Calculate extension of original span by calling distance_value_value */
+  /* Calculate extension of original span by calling dist_double_value_value */
   float8 diff = 0.0;
   if (span_bound_cmp(&new_lower, &orig_lower) < 0)
-    diff += distance_value_value(orig->lower, new->lower, orig->basetype);
+    diff += dist_double_value_value(orig->lower, new->lower, orig->basetype);
   if (span_bound_cmp(&new_upper, &orig_upper) > 0)
-    diff += distance_value_value(new->upper, orig->upper, new->basetype);
+    diff += dist_double_value_value(new->upper, orig->upper, new->basetype);
   *penalty = (float4) diff;
 
   PG_RETURN_POINTER(penalty);
@@ -337,22 +343,6 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * GiST picksplit method for span types
  *****************************************************************************/
-
-/**
- * @brief Return the bounding union of two spans.
- * @note The result of the function is always a span even if the spans do not
- * overlap
- * @note This function is similar to `bbox_union_span_span` with memory
- * allocation
- */
-static Span *
-super_union_span_span(const Span *s1, const Span *s2)
-{
-  assert(s1->spantype == s2->spantype);
-  Span *result = span_copy(s1);
-  span_expand(s2, result);
-  return result;
-}
 
 /* Helper macros to place an entry in the left or right group during split */
 /* Note direct access to variables v, left_span, right_span */
@@ -376,7 +366,7 @@ super_union_span_span(const Span *s1, const Span *s2)
 
 /**
  * @brief Trivial split: half of entries will be placed on one page
- * and the other half on the other page.
+ * and the other half on the other page
  */
 static void
 span_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
@@ -386,7 +376,8 @@ span_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 
   maxoff = (OffsetNumber) (entryvec->n - 1);
   /* Split entries before this to left page, after to right: */
-  split_idx = (OffsetNumber) ((maxoff - FirstOffsetNumber) / 2 + FirstOffsetNumber);
+  split_idx = (OffsetNumber) ((maxoff - FirstOffsetNumber) / 
+    2 + FirstOffsetNumber);
 
   v->spl_nleft = 0;
   v->spl_nright = 0;
@@ -423,7 +414,7 @@ typedef struct
 
 /**
  * @brief Consider replacement of currently selected split with a better one
- * during span_gist_double_sorting_split.
+ * during #span_gist_double_sorting_split
  */
 static void
 span_gist_consider_split(ConsiderSplitContext *context, SpanBound *right_lower,
@@ -462,7 +453,7 @@ span_gist_consider_split(ConsiderSplitContext *context, SpanBound *right_lower,
      * values) and minimal ratio secondarily.  The subtype_diff is
      * used for overlap measure.
      */
-    overlap = (float4) distance_value_value(left_upper->val, right_lower->val,
+    overlap = (float4) dist_double_value_value(left_upper->val, right_lower->val,
       left_upper->basetype);
 
     /* If there is no previous selection, select this split */
@@ -496,7 +487,7 @@ span_gist_consider_split(ConsiderSplitContext *context, SpanBound *right_lower,
 
 /**
  * @brief Structure keeping the bounds extracted from a span, for use in the
- * function span_gist_double_sorting_split
+ * function #span_gist_double_sorting_split
  */
 typedef struct
 {
@@ -505,7 +496,7 @@ typedef struct
 } SpanBounds;
 
 /**
- * @brief Compare SpanBounds by lower bound.
+ * @brief Compare span bounds by lower bound
  */
 static int
 spanbounds_cmp_lower(const void *a, const void *b)
@@ -516,7 +507,7 @@ spanbounds_cmp_lower(const void *a, const void *b)
 }
 
 /**
- * @brief Compare SpanBounds by upper bound.
+ * @brief Compare span bounds by upper bound
  */
 static int
 spanbounds_cmp_upper(const void *a, const void *b)
@@ -527,8 +518,8 @@ spanbounds_cmp_upper(const void *a, const void *b)
 }
 
 /**
- * @brief Compare CommonEntrys by their deltas.
- * (We assume the deltas can't be NaN.)
+ * @brief Compare common entries by their deltas
+ * @note We assume the deltas can't be NaN
  */
 int
 common_entry_cmp(const void *i1, const void *i2)
@@ -544,7 +535,7 @@ common_entry_cmp(const void *i1, const void *i2)
 }
 
 /**
- * @brief Double sorting split algorithm.
+ * @brief Double sorting split algorithm
  *
  * The algorithm considers dividing spans into two groups. The first (left)
  * group contains general left bound. The second (right) group contains
@@ -716,6 +707,8 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
     span_gist_consider_split(&context, right_lower, i1 + 1, left_upper, i2 + 1);
   }
 
+  pfree(by_lower); pfree(by_upper);
+
   /*
    * If we failed to find any acceptable splits, use trivial split.
    */
@@ -770,9 +763,9 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
          * (context.left_upper - upper)
          */
         common_entries[common_entries_count].delta =
-          distance_value_value(span->lower, context.right_lower.val,
+          dist_double_value_value(span->lower, context.right_lower.val,
             span->basetype) -
-          distance_value_value(context.left_upper.val, span->upper,
+          dist_double_value_value(context.left_upper.val, span->upper,
             span->basetype);
         common_entries_count++;
       }
@@ -827,6 +820,9 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 
   v->spl_ldatum = PointerGetDatum(left_span);
   v->spl_rdatum = PointerGetDatum(right_span);
+  
+  pfree(common_entries);
+
   return;
 }
 
@@ -886,8 +882,8 @@ Span_gist_same(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_distance);
 /**
- * @brief GiST support function. Take in a query and an entry and return the
- * "distance" between them.
+ * @brief GiST distance method for span types
+ * @note Take in a query and an entry and return the "distance" between them
 */
 Datum
 Span_gist_distance(PG_FUNCTION_ARGS)
@@ -897,22 +893,22 @@ Span_gist_distance(PG_FUNCTION_ARGS)
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   Span *key = (Span *) DatumGetPointer(entry->key);
   Span query;
-  double distance;
+  Datum distance;
 
   /* The index is not lossy */
   if (GIST_LEAF(entry))
     *recheck = false;
 
   if (key == NULL)
-    PG_RETURN_FLOAT8(DBL_MAX);
+    PG_RETURN_DATUM((Datum) -1);
 
-  /* Transform the query into a box */
+  /* Transform the query into a span */
   if (! span_gist_get_span(fcinfo, &query, typid))
-    PG_RETURN_FLOAT8(DBL_MAX);
+    PG_RETURN_DATUM((Datum) -1);
 
-  distance = distance_span_span(key, &query);
+  distance = dist_span_span(key, &query);
 
-  PG_RETURN_FLOAT8(distance);
+  PG_RETURN_DATUM(distance);
 }
 
 /*****************************************************************************
@@ -922,7 +918,7 @@ Span_gist_distance(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Span_gist_fetch(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_fetch);
 /**
- * @brief GiST fetch method for span types (result in a span)
+ * @brief GiST fetch method for span types, which result in a span
  */
 Datum
 Span_gist_fetch(PG_FUNCTION_ARGS)

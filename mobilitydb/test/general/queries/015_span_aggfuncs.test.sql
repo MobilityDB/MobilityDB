@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -50,8 +50,8 @@ SELECT extent(temp) FROM (VALUES
 
 SELECT extent(t) FROM tbl_timestamptz;
 SELECT extent(t) FROM tbl_tstzset;
-SELECT extent(p) FROM tbl_tstzspan;
-SELECT extent(ps) FROM tbl_tstzspanset;
+SELECT extent(t) FROM tbl_tstzspan;
+SELECT extent(t) FROM tbl_tstzspanset;
 
 SELECT numValues(set_union(t)) from tbl_tstzset_big;
 SELECT extent(temp::tstzspan) FROM tbl_tfloat_big;
@@ -105,8 +105,8 @@ SELECT tcount(temp) FROM (VALUES
 
 SELECT numInstants(tcount(t)) FROM tbl_timestamptz;
 SELECT numInstants(tcount(t)) FROM tbl_tstzset;
-SELECT numInstants(tcount(p)) FROM tbl_tstzspan;
-SELECT numInstants(tcount(ps)) FROM tbl_tstzspanset;
+SELECT numInstants(tcount(t)) FROM tbl_tstzspan;
+SELECT numInstants(tcount(t)) FROM tbl_tstzspanset;
 
 -------------------------------------------------------------------------------
 
@@ -164,7 +164,7 @@ SELECT startValue(set_union(t)) FROM Temp;
 
 SELECT numValues(set_union(t)) FROM tbl_timestamptz;
 SELECT numValues(set_union(t)) FROM tbl_tstzset;
-SELECT numSpans(span_union(p)) FROM tbl_tstzspan;
-SELECT numSpans(span_union(ps)) FROM tbl_tstzspanset;
+SELECT numSpans(span_union(t)) FROM tbl_tstzspan;
+SELECT numSpans(span_union(t)) FROM tbl_tstzspanset;
 
 -------------------------------------------------------------------------------

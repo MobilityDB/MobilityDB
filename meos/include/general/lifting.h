@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -36,7 +36,8 @@
 #define __LIFTING_H__
 
 /* MEOS */
-#include "general/temporal.h"
+#include <meos.h>
+#include "general/meos_catalog.h"
 
 /**
  * Structure to represent the information about lifted functions
@@ -48,7 +49,7 @@
  * that apply the lifted function to two base values.
  */
 
-#define MAX_PARAMS 3
+#define MAX_PARAMS 1
 
 typedef struct
 {
@@ -61,6 +62,7 @@ typedef struct
   bool reslinear;            /**< True if the result has linear interpolation */
   bool invert;               /**< True if the arguments of the function must be inverted */
   bool discont;              /**< True if the function has instantaneous discontinuities */
+  bool ever;                 /**< True/false when computing the ever/always semantics */
   bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, meosType,
     Datum *, TimestampTz *); /**< Turning point function for temporal and base types*/
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
@@ -103,7 +105,9 @@ extern Temporal *tfunc_temporal_temporal(const Temporal *temp1,
 
 /*****************************************************************************/
 
-extern int efunc_temporal_temporal(const Temporal *temp1,
+extern int eafunc_temporal_base(const Temporal *temp, Datum value,
+  LiftedFunctionInfo *lfinfo);
+extern int eafunc_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, LiftedFunctionInfo *lfinfo);
 
 /*****************************************************************************/

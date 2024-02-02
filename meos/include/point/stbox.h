@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -39,7 +39,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
-#include "general/set.h"
+#include <meos.h>
 
 /*****************************************************************************
  * fmgr macros
@@ -61,12 +61,8 @@ extern bool ensure_has_T_stbox(const STBox *box);
 
 extern void point_get_coords(const GSERIALIZED *point, bool hasz,
   double *x, double *y, double *z);
-extern void timestampset_stbox_slice(Datum tsdatum, STBox *box);
-extern void periodset_stbox_slice(Datum psdatum, STBox *box);
-
-/* SRID functions */
-
-extern STBox *stbox_set_srid(const STBox *box, int32 srid);
+extern void tstzset_stbox_slice(Datum tsdatum, STBox *box);
+extern void tstzspanset_stbox_slice(Datum psdatum, STBox *box);
 
 /*****************************************************************************/
 

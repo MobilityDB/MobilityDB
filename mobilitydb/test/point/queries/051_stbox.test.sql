@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -116,12 +116,15 @@ SELECT stbox_zt(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
 SELECT geodstbox_zt(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
 
 -------------------------------------------------------------------------------
--- Casting
+-- Conversions
 -------------------------------------------------------------------------------
 
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])'::tstzspan;
 SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'::tstzspan;
 SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::tstzspan;
+
+SELECT stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::box2d;
+SELECT stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,5,5)),[2000-01-01,2000-01-05])'::box3d;
 
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])'::geometry);
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(1,5)),[2000-01-01,2000-01-05])'::geometry);
@@ -136,11 +139,15 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,5,1)),[2000-01-01,2000-01
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(5,1,1)),[2000-01-01,2000-01-05])'::geometry);
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT(((1,1,1),(1,1,1)),[2000-01-01,2000-01-05])'::geometry);
 /* Errors */
+SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::box2d;
+SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::box3d;
 SELECT stbox 'STBOX T([2000-01-01, 2000-01-02])'::geometry;
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))'::tstzspan;
 SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::tstzspan;
 
 SELECT geomset '{"Point(1 1 1)", "Point(2 2 2)", "Point(3 3 3)"}'::stbox;
+SELECT box2d 'BOX(1 1,5 5)'::stbox;
+SELECT box3d 'BOX3D(1 1 1,5 5 5)'::stbox;
 
 -------------------------------------------------------------------------------
 
@@ -363,6 +370,7 @@ SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])' + stbox '
 SELECT stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])' + stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])';
 SELECT stbox 'STBOX T([2001-01-01,2001-01-02])' + stbox 'STBOX T([2001-01-01,2001-01-02])';
 /* Errors */
+SELECT stbox 'SRID=5676;STBOX X((1,2),(3,4))' + stbox 'STBOX X((1,2),(3,4))';
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' + stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))';
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' + stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])';
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' + stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])';

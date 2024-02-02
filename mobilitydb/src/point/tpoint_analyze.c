@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for gathering statistics from temporal point columns.
+ * @brief Functions for gathering statistics from temporal point columns
  *
  * Various kind of statistics are collected for both the value and the time
  * dimensions of temporal types. The kind of statistics depends on the subtype
@@ -60,15 +60,14 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <access/htup_details.h>
-#include <executor/spi.h>
-#include <utils/lsyscache.h>
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint_spatialfuncs.h"
+#include "general/set.h"
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/span_analyze.h"
@@ -96,6 +95,7 @@
 /**
  * @brief The SD factor restricts the side of the statistics histogram
  * based on the standard deviation of the extent of the data.
+ * 
  * SDFACTOR is the number of standard deviations from the mean
  * the histogram will extend.
  */
@@ -111,7 +111,7 @@
 
 /**
  * @brief Maximum width of a dimension that we'll bother trying to
- * compute statistics on.
+ * compute statistics on
  */
 #define MAX_DIMENSION_WIDTH 1.0E+20
 
@@ -145,7 +145,7 @@ nd_box_init(ND_BOX *a)
 
 /**
  * @brief Prepare an ND_BOX for bounds calculation: set the maximum values to
- * the smallest thing possible and the mininum values to the largest.
+ * the smallest thing possible and the mininum values to the largest
  */
 static int
 nd_box_init_bounds(ND_BOX *a)
@@ -221,7 +221,7 @@ nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
 }
 
 /**
- * @brief Return true if #ND_BOX a overlaps b, false otherwise.
+ * @brief Return true if #ND_BOX a overlaps b, false otherwise
  */
 int
 nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
@@ -309,6 +309,7 @@ nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box)
     nd_box->min[d] = (float4) gbox->mmin;
     nd_box->max[d] = (float4) gbox->mmax;
   }
+  return;
 }
 
 /**
@@ -325,7 +326,7 @@ range_quintile(int *vals, int nvals)
 /**
  * @brief Given an n-d index array (counter), and a domain to increment it
  * in (ibox) increment it by one, unless it's already at the max of
- * the domain, in which case return false.
+ * the domain, in which case return false
  */
 int
 nd_increment(ND_IBOX *ibox, int ndims, int *counter)
@@ -946,6 +947,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   stats->stawidth = (int32) (total_width / notnull_cnt);
   stats->stadistinct = -1.0f;
   stats->stats_valid = true;
+  return;
 }
 
 /*****************************************************************************
@@ -1018,8 +1020,8 @@ spatialset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* We found only nulls; assume the column is entirely null */
     stats->stats_valid = true;
     stats->stanullfrac = 1.0;
-    stats->stawidth = 0;    /* "unknown" */
-    stats->stadistinct = 0.0;  /* "unknown" */
+    stats->stawidth = 0;       /* unknown */
+    stats->stadistinct = 0.0;  /* unknown */
   }
 
   return;
@@ -1069,15 +1071,15 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
     /* Get period from temporal point */
     Span period;
-    temporal_set_period(temp, &period);
+    temporal_set_tstzspan(temp, &period);
 
     /* Remember time bounds and length for further usage in histograms */
-    SpanBound period_lower, period_upper;
-    span_deserialize((Span *) &period, &period_lower, &period_upper);
-    time_lowers[notnull_cnt] = period_lower;
-    time_uppers[notnull_cnt] = period_upper;
-    time_lengths[notnull_cnt] = distance_value_value(period_upper.val,
-      period_lower.val, T_TIMESTAMPTZ);
+    SpanBound tstzspan_lower, tstzspan_upper;
+    span_deserialize((Span *) &period, &tstzspan_lower, &tstzspan_upper);
+    time_lowers[notnull_cnt] = tstzspan_lower;
+    time_uppers[notnull_cnt] = tstzspan_upper;
+    time_lengths[notnull_cnt] = distance_value_value(tstzspan_upper.val,
+      tstzspan_lower.val, T_TIMESTAMPTZ);
 
     /* Increment our "good feature" count */
     notnull_cnt++;
@@ -1116,8 +1118,8 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* We found only nulls; assume the column is entirely null */
     stats->stats_valid = true;
     stats->stanullfrac = 1.0;
-    stats->stawidth = 0;    /* "unknown" */
-    stats->stadistinct = 0.0;  /* "unknown" */
+    stats->stawidth = 0;       /* unknown */
+    stats->stadistinct = 0.0;  /* unknown */
   }
 
   pfree(time_lowers);

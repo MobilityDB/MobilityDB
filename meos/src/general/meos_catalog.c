@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Create a cache of metadata information about temporal types and
- * span types in global arrays.
+ * span types in global arrays
  */
 
 #include "general/meos_catalog.h"
@@ -47,10 +47,9 @@
 #endif
 /* MEOS */
 #include <meos.h>
-#include "general/pg_types.h"
-#include "general/temporaltypes.h"
+#include "general/doublen.h"
 #if NPOINT
-  #include "npoint/tnpoint_static.h"
+  #include "npoint/tnpoint.h"
 #endif
 
 /*****************************************************************************
@@ -59,12 +58,18 @@
 
 /**
  * @brief Global array containing the type names corresponding to the
- * enumeration meosType defined in file meos_catalog.h.
+ * enumeration meosType defined in file `meos_catalog.h`
  */
-const char *_meosType_names[] =
+const char *_MEOSTYPE_NAMES[] =
 {
   [T_UNKNOWN] = "",
   [T_BOOL] = "bool",
+  [T_DATE] = "date",
+  [T_DATEMULTIRANGE] = "datemultirange",
+  [T_DATERANGE] = "daterange",
+  [T_DATESET] = "dateset",
+  [T_DATESPAN] = "datespan",
+  [T_DATESPANSET] = "datespanset",
   [T_DOUBLE2] = "double2",
   [T_DOUBLE3] = "double3",
   [T_DOUBLE4] = "double4",
@@ -73,8 +78,8 @@ const char *_meosType_names[] =
   [T_FLOATSPAN] = "floatspan",
   [T_FLOATSPANSET] = "floatspanset",
   [T_INT4] = "int4",
-  [T_INT4RANGE] = "int4range",
   [T_INT4MULTIRANGE] = "int4multirange",
+  [T_INT4RANGE] = "int4range",
   [T_INTSET] = "intset",
   [T_INTSPAN] = "intspan",
   [T_INTSPANSET] = "intspanset",
@@ -112,9 +117,135 @@ const char *_meosType_names[] =
 };
 
 /**
- * @brief Global array that keeps type information for the temporal types
+ * @brief Global array containing the operator names corresponding to the
+ * enumeration meosOper defined in file `meos_catalog.h`
  */
-temptype_catalog_struct _temptype_catalog[] =
+const char *_MEOSOPER_NAMES[] =
+{
+  [UNKNOWN_OP] = "",
+  [EQ_OP] = "=",
+  [NE_OP] = "<>",
+  [LT_OP] = "<",
+  [LE_OP] = "<=",
+  [GT_OP] = ">",
+  [GE_OP] = ">=",
+  [ADJACENT_OP] = "-|-",
+  [UNION_OP] = "+",
+  [MINUS_OP] = "-",
+  [INTERSECT_OP] = "*",
+  [OVERLAPS_OP] = "&&",
+  [CONTAINS_OP] = "@>",
+  [CONTAINED_OP] = "<@",
+  [SAME_OP] = "~=",
+  [LEFT_OP] = "<<",
+  [OVERLEFT_OP] = "&<",
+  [RIGHT_OP] = ">>",
+  [OVERRIGHT_OP] = "&>",
+  [BELOW_OP] = "<<|",
+  [OVERBELOW_OP] = "&<|",
+  [ABOVE_OP] = "|>>",
+  [OVERABOVE_OP] = "|&>",
+  [FRONT_OP] = "<</",
+  [OVERFRONT_OP] = "&</",
+  [BACK_OP] = "/>>",
+  [OVERBACK_OP] = "/&>",
+  [BEFORE_OP] = "<<#",
+  [OVERBEFORE_OP] = "&<#",
+  [AFTER_OP] = "#>>",
+  [OVERAFTER_OP] = "#&>",
+  [EVEREQ_OP] = "?=",
+  [EVERNE_OP] = "?<>",
+  [EVERLT_OP] = "?<",
+  [EVERLE_OP] = "?<=",
+  [EVERGT_OP] = "?>",
+  [EVERGE_OP] = "?>=",
+  [ALWAYSEQ_OP] = "%=",
+  [ALWAYSNE_OP] = "%<>",
+  [ALWAYSLT_OP] = "%<",
+  [ALWAYSLE_OP] = "%<=",
+  [ALWAYSGT_OP] = "%>",
+  [ALWAYSGE_OP] = "%>=",
+};
+
+#define TEMPSUBTYPE_STR_MAX_LEN 12
+
+/**
+ * @brief Global array storing the string representation of the concrete
+ * subtypes of temporal types
+ */
+static char *_TEMPSUBTYPE_NAMES[] =
+{
+  [ANYTEMPSUBTYPE] = "Any subtype",
+  [TINSTANT] = "Instant",
+  [TSEQUENCE] = "Sequence",
+  [TSEQUENCESET] = "SequenceSet"
+};
+
+#define INTERP_STR_MAX_LEN 8
+
+/**
+
+ * @brief Global array containing the interpolation names corresponding to the
+ * enumeration interpType defined in file `meos_catalog.h`
+ * @note The names are in lowercase since they are used in error messages
+ */
+char * _INTERPTYPE_NAMES[] =
+{
+  [INTERP_NONE] = "None",
+  [DISCRETE] = "Discrete",
+  [STEP] = "Step",
+  [LINEAR] = "Linear"
+};
+
+/*****************************************************************************/
+
+/**
+ * @brief Global array that keeps type information for the defined set types
+ */
+settype_catalog_struct _SETTYPE_CATALOG[] =
+{
+  /* settype        basetype */
+  {T_INTSET,        T_INT4},
+  {T_BIGINTSET,     T_INT8},
+  {T_FLOATSET,      T_FLOAT8},
+  {T_DATESET,       T_DATE},
+  {T_TSTZSET,       T_TIMESTAMPTZ},
+  {T_TEXTSET,       T_TEXT},
+  {T_GEOMSET,       T_GEOMETRY},
+  {T_GEOGSET,       T_GEOGRAPHY},
+  {T_NPOINTSET,     T_NPOINT},
+};
+
+/**
+ * @brief Global array that keeps type information for the defined span types
+ */
+spantype_catalog_struct _SPANTYPE_CATALOG[] =
+{
+  /* spantype       basetype */
+  {T_INTSPAN,       T_INT4},
+  {T_BIGINTSPAN,    T_INT8},
+  {T_FLOATSPAN,     T_FLOAT8},
+  {T_DATESPAN,      T_DATE},
+  {T_TSTZSPAN,      T_TIMESTAMPTZ},
+};
+
+/**
+ * @brief Global array that keeps type information for the defined span set types
+ */
+spansettype_catalog_struct _SPANSETTYPE_CATALOG[] =
+{
+  /* spansettype    spantype */
+  {T_INTSPANSET,    T_INTSPAN},
+  {T_BIGINTSPANSET, T_BIGINTSPAN},
+  {T_FLOATSPANSET,  T_FLOATSPAN},
+  {T_DATESPANSET,   T_DATESPAN},
+  {T_TSTZSPANSET,   T_TSTZSPAN},
+};
+
+/**
+ * @brief Global array that keeps type information for the defined temporal types
+ */
+temptype_catalog_struct _TEMPTYPE_CATALOG[] =
 {
   /* temptype    basetype */
   {T_TDOUBLE2,   T_DOUBLE2},
@@ -129,45 +260,169 @@ temptype_catalog_struct _temptype_catalog[] =
   {T_TNPOINT,    T_NPOINT},
 };
 
-/**
- * @brief Global array that keeps type information for the set types defined
- */
-settype_catalog_struct _settype_catalog[] =
-{
-  /* settype        basetype */
-  {T_INTSET,        T_INT4},
-  {T_BIGINTSET,     T_INT8},
-  {T_FLOATSET,      T_FLOAT8},
-  {T_TSTZSET,       T_TIMESTAMPTZ},
-  {T_TEXTSET,       T_TEXT},
-  {T_GEOMSET,       T_GEOMETRY},
-  {T_GEOGSET,       T_GEOGRAPHY},
-  {T_NPOINTSET,     T_NPOINT},
-};
+/*****************************************************************************/
 
 /**
- * @brief Global array that keeps type information for the span types defined
+ * @brief Return the string representation of the MEOS type
  */
-spantype_catalog_struct _spantype_catalog[] =
+const char *
+meostype_name(meosType type)
 {
-  /* spantype       basetype */
-  {T_INTSPAN,       T_INT4},
-  {T_BIGINTSPAN,    T_INT8},
-  {T_FLOATSPAN,     T_FLOAT8},
-  {T_TSTZSPAN,      T_TIMESTAMPTZ},
-};
+  return _MEOSTYPE_NAMES[type];
+}
+
+/*****************************************************************************/
 
 /**
- * @brief Global array that keeps type information for the span set types defined
+ * @brief Return the string representation of the subtype of the temporal type
+ * corresponding to the enum value
  */
-spansettype_catalog_struct _spansettype_catalog[] =
+const char *
+tempsubtype_name(tempSubtype subtype)
 {
-  /* spansettype    spantype */
-  {T_INTSPANSET,    T_INTSPAN},
-  {T_BIGINTSPANSET, T_BIGINTSPAN},
-  {T_FLOATSPANSET,  T_FLOATSPAN},
-  {T_TSTZSPANSET,   T_TSTZSPAN},
-};
+  return _TEMPSUBTYPE_NAMES[subtype];
+}
+
+/**
+ * @brief Return the enum value corresponding to the string representation
+ * of the concrete subtype of a temporal type
+ */
+bool
+tempsubtype_from_string(const char *str, int16 *subtype)
+{
+  char *tmpstr;
+  size_t tmpstartpos, tmpendpos;
+  size_t i;
+
+  /* Initialize */
+  *subtype = 0;
+  /* Locate any leading/trailing spaces */
+  tmpstartpos = 0;
+  for (i = 0; i < strlen(str); i++)
+  {
+    if (str[i] != ' ')
+    {
+      tmpstartpos = i;
+      break;
+    }
+  }
+  tmpendpos = strlen(str) - 1;
+  for (i = strlen(str) - 1; i != 0; i--)
+  {
+    if (str[i] != ' ')
+    {
+      tmpendpos = i;
+      break;
+    }
+  }
+  tmpstr = palloc(tmpendpos - tmpstartpos + 2);
+  for (i = tmpstartpos; i <= tmpendpos; i++)
+    tmpstr[i - tmpstartpos] = str[i];
+  /* Add NULL to terminate */
+  tmpstr[i - tmpstartpos] = '\0';
+  size_t len = strlen(tmpstr);
+  /* Now check for the type */
+  size_t n = sizeof(_TEMPSUBTYPE_NAMES) / sizeof(char *);
+  for (i = 0; i < n; i++)
+  {
+    if (len == strnlen(_TEMPSUBTYPE_NAMES[i], TEMPSUBTYPE_STR_MAX_LEN) &&
+      ! pg_strncasecmp(tmpstr, _TEMPSUBTYPE_NAMES[i], TEMPSUBTYPE_STR_MAX_LEN))
+    {
+      *subtype = i;
+      pfree(tmpstr);
+      return true;
+    }
+  }
+  pfree(tmpstr);
+  return false;
+}
+
+#if DEBUG_BUILD
+/**
+ * @brief Ensure that the subtype of a temporal value is valid
+ * @note The function is used for the dispatch functions for temporal types
+ */
+bool
+temptype_subtype(tempSubtype subtype)
+{
+  if (subtype == TINSTANT || subtype == TSEQUENCE || subtype == TSEQUENCESET)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Ensure that the subtype of a temporal value is valid
+ * @note The function is used for the the analyze and selectivity functions
+ */
+bool
+temptype_subtype_all(tempSubtype subtype)
+{
+  if (subtype == ANYTEMPSUBTYPE ||
+    subtype == TINSTANT || subtype == TSEQUENCE || subtype == TSEQUENCESET)
+    return true;
+  return false;
+}
+#endif /* DEBUG_BUILD */
+
+
+
+/*****************************************************************************/
+
+/**
+ * @brief Return the string name from a MEOS operator number
+ */
+const char *
+meosoper_name(meosOper oper)
+{
+  return _MEOSOPER_NAMES[oper];
+}
+
+/**
+ * @brief Fetch the operator number from its name
+ * @arg[in] str Name of the type
+ */
+meosOper
+meosoper_from_string(const char *str)
+{
+  int n = sizeof(_MEOSOPER_NAMES) / sizeof(char *);
+  for (int i = 0; i < n; i++)
+  {
+    if (strcmp(_MEOSOPER_NAMES[i], str) == 0)
+      return i;
+  }
+  return UNKNOWN_OP;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return the string representation of the subtype of the temporal type
+ * corresponding to the enum value
+ */
+const char *
+interptype_name(interpType interp)
+{
+  return _INTERPTYPE_NAMES[interp];
+}
+
+/**
+ * @brief Get the interpolation type from the interpolation string
+ */
+interpType
+interptype_from_string(const char *str)
+{
+  int n = sizeof(_INTERPTYPE_NAMES) / sizeof(char *);
+  for (int i = 0; i < n; i++)
+  {
+    if (pg_strncasecmp(str, _INTERPTYPE_NAMES[i],
+      INTERP_STR_MAX_LEN) == 0)
+      return i;
+  }
+  /* Error */
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unknown interpolation type: %s", str);
+  return INTERP_NONE; /* make compiler quiet */
+}
 
 /*****************************************************************************
  * Cache functions
@@ -176,135 +431,18 @@ spansettype_catalog_struct _spansettype_catalog[] =
 /**
  * @brief Return the base type from the temporal type
  */
-const char *
-meostype_name(meosType type)
-{
-  return _meosType_names[type];
-}
-
-/**
- * @brief Return the base type from the temporal type
- */
 meosType
-temptype_basetype(meosType temptype)
+temptype_basetype(meosType type)
 {
-  int n = sizeof(_temptype_catalog) / sizeof(temptype_catalog_struct);
+  int n = sizeof(_TEMPTYPE_CATALOG) / sizeof(temptype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_temptype_catalog[i].temptype == temptype)
-      return _temptype_catalog[i].basetype;
+    if (_TEMPTYPE_CATALOG[i].temptype == type)
+      return _TEMPTYPE_CATALOG[i].basetype;
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a temporal type", temptype);
-  return T_UNKNOWN;
-}
-
-/**
- * @brief Return the base type from the span type
- */
-meosType
-spantype_basetype(meosType spantype)
-{
-  int n = sizeof(_spantype_catalog) / sizeof(spantype_catalog_struct);
-  for (int i = 0; i < n; i++)
-  {
-    if (_spantype_catalog[i].spantype == spantype)
-      return _spantype_catalog[i].basetype;
-  }
-  /* We only arrive here on error */
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a span type", spantype);
-  return T_UNKNOWN;
-}
-
-/**
- * @brief Return the span type from the span set type
- */
-meosType
-spansettype_spantype(meosType spansettype)
-{
-  int n = sizeof(_spansettype_catalog) / sizeof(spansettype_catalog_struct);
-  for (int i = 0; i < n; i++)
-  {
-    if (_spansettype_catalog[i].spansettype == spansettype)
-      return _spansettype_catalog[i].spantype;
-  }
-  /* We only arrive here on error */
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a span set type", spansettype);
-  return T_UNKNOWN;
-}
-
-/**
- * @brief Return the base type from the span type
- */
-meosType
-basetype_spantype(meosType basetype)
-{
-  int n = sizeof(_spantype_catalog) / sizeof(spantype_catalog_struct);
-  for (int i = 0; i < n; i++)
-  {
-    if (_spantype_catalog[i].basetype == basetype)
-      return _spantype_catalog[i].spantype;
-  }
-  /* We only arrive here on error */
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a span type", basetype);
-  return T_UNKNOWN;
-}
-
-/**
- * @brief Return the span type from the span set type
- */
-meosType
-spantype_spansettype(meosType spantype)
-{
-  int n = sizeof(_spansettype_catalog) / sizeof(spansettype_catalog_struct);
-  for (int i = 0; i < n; i++)
-  {
-    if (_spansettype_catalog[i].spantype == spantype)
-      return _spansettype_catalog[i].spansettype;
-  }
-  /* We only arrive here on error */
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a span type", spantype);
-  return T_UNKNOWN;
-}
-
-/**
- * @brief Return the base type from a set type
- */
-meosType
-settype_basetype(meosType settype)
-{
-  int n = sizeof(_settype_catalog) / sizeof(settype_catalog_struct);
-  for (int i = 0; i < n; i++)
-  {
-    if (_settype_catalog[i].settype == settype)
-      return _settype_catalog[i].basetype;
-  }
-  /* We only arrive here on error */
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a set type", settype);
-  return T_UNKNOWN;
-}
-
-/**
- * @brief Return the base type from the set type
- */
-meosType
-basetype_settype(meosType basetype)
-{
-  int n = sizeof(_settype_catalog) / sizeof(settype_catalog_struct);
-  for (int i = 0; i < n; i++)
-  {
-    if (_settype_catalog[i].basetype == basetype)
-      return _settype_catalog[i].settype;
-  }
-  /* We only arrive here on error */
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %u is not a set type", basetype);
+    "type %s is not a temporal type", meostype_name(type));
   return T_UNKNOWN;
 }
 
@@ -312,7 +450,117 @@ basetype_settype(meosType basetype)
  * Catalog functions
  *****************************************************************************/
 
-#ifdef DEBUG_BUILD
+/**
+ * @brief Return the base type from a set type
+ */
+meosType
+settype_basetype(meosType type)
+{
+  int n = sizeof(_SETTYPE_CATALOG) / sizeof(settype_catalog_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_SETTYPE_CATALOG[i].settype == type)
+      return _SETTYPE_CATALOG[i].basetype;
+  }
+  /* We only arrive here on error */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %s is not a set type", meostype_name(type));
+  return T_UNKNOWN;
+}
+
+/**
+ * @brief Return the base type from the set type
+ */
+meosType
+basetype_settype(meosType type)
+{
+  int n = sizeof(_SETTYPE_CATALOG) / sizeof(settype_catalog_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_SETTYPE_CATALOG[i].basetype == type)
+      return _SETTYPE_CATALOG[i].settype;
+  }
+  /* We only arrive here on error */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %s is not a set type", meostype_name(type));
+  return T_UNKNOWN;
+}
+
+/**
+ * @brief Return the base type from the span type
+ */
+meosType
+spantype_basetype(meosType type)
+{
+  int n = sizeof(_SPANTYPE_CATALOG) / sizeof(spantype_catalog_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_SPANTYPE_CATALOG[i].spantype == type)
+      return _SPANTYPE_CATALOG[i].basetype;
+  }
+  /* We only arrive here on error */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %s is not a span type", meostype_name(type));
+  return T_UNKNOWN;
+}
+
+/**
+ * @brief Return the span type from the span set type
+ */
+meosType
+spansettype_spantype(meosType type)
+{
+  int n = sizeof(_SPANSETTYPE_CATALOG) / sizeof(spansettype_catalog_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_SPANSETTYPE_CATALOG[i].spansettype == type)
+      return _SPANSETTYPE_CATALOG[i].spantype;
+  }
+  /* We only arrive here on error */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %s is not a span set type", meostype_name(type));
+  return T_UNKNOWN;
+}
+
+/**
+ * @brief Return the span type of a base type
+ */
+meosType
+basetype_spantype(meosType type)
+{
+  int n = sizeof(_SPANTYPE_CATALOG) / sizeof(spantype_catalog_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_SPANTYPE_CATALOG[i].basetype == type)
+      return _SPANTYPE_CATALOG[i].spantype;
+  }
+  /* We only arrive here on error */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %s is not a span type", meostype_name(type));
+  return T_UNKNOWN;
+}
+
+/**
+ * @brief Return the span type from the span set type
+ */
+meosType
+spantype_spansettype(meosType type)
+{
+  int n = sizeof(_SPANSETTYPE_CATALOG) / sizeof(spansettype_catalog_struct);
+  for (int i = 0; i < n; i++)
+  {
+    if (_SPANSETTYPE_CATALOG[i].spantype == type)
+      return _SPANSETTYPE_CATALOG[i].spansettype;
+  }
+  /* We only arrive here on error */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %s is not a span type", meostype_name(type));
+  return T_UNKNOWN;
+}
+
+/*****************************************************************************/
+
+#if 0 /* not used */
 /**
  * @brief Determine whether the type is an internal MobilityDB type
  */
@@ -324,17 +572,19 @@ meostype_internal(meosType type)
     return true;
   return false;
 }
+#endif /* not used */
 
+#ifdef DEBUG_BUILD
 /**
  * @brief Return true if the type is a base type of one of the template types,
- * that is, Set, Span, SpanSet, and Temporal
+ * that is, @p Set, @p Span, @p SpanSet, and @p Temporal
  * @note This function is only used in the asserts
  */
 bool
 meos_basetype(meosType type)
 {
-  if (type == T_BOOL || type == T_TEXT || type == T_INT4 ||
-    type == T_INT8 || type == T_FLOAT8 || type == T_TIMESTAMPTZ ||
+  if (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
+    type == T_TEXT || type == T_DATE || type == T_TIMESTAMPTZ ||
     /* The doubleX are internal types used for temporal aggregation */
     type == T_DOUBLE2 || type == T_DOUBLE3 || type == T_DOUBLE4 ||
     type == T_GEOMETRY || type == T_GEOGRAPHY || type == T_NPOINT
@@ -345,20 +595,20 @@ meos_basetype(meosType type)
 #endif
 
 /**
- * @brief Return true if the values of the base type are passed by value.
+ * @brief Return true if the values of the base type are passed by value
  */
 bool
 basetype_byvalue(meosType type)
 {
   assert(meos_basetype(type));
   if (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
-      type == T_TIMESTAMPTZ)
+      type == T_DATE || type == T_TIMESTAMPTZ)
     return true;
   return false;
 }
 
 /**
- * @brief Return true if the values of the base type are of variable length.
+ * @brief Return true if the values of the base type are of variable length
  */
 bool
 basetype_varlength(meosType type)
@@ -394,7 +644,7 @@ basetype_length(meosType type)
     return sizeof(Npoint);
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "unknown base type: %d", type);
+    "Unknown base type: %s", meostype_name(type));
   return SHRT_MAX;
 }
 
@@ -406,8 +656,8 @@ basetype_length(meosType type)
 bool
 alphanum_basetype(meosType type)
 {
-  if (type == T_BOOL || type == T_TEXT || type == T_INT4 ||
-      type == T_INT8 || type == T_FLOAT8 || type == T_TIMESTAMPTZ)
+  if (type == T_BOOL || type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
+      type == T_TEXT || type == T_DATE || type == T_TIMESTAMPTZ)
     return true;
   return false;
 }
@@ -443,7 +693,8 @@ spatial_basetype(meosType type)
 bool
 time_type(meosType type)
 {
-  if (type == T_TIMESTAMPTZ || type == T_TSTZSET ||
+  if (type == T_DATE || type == T_DATESET || type == T_DATESPAN ||
+      type == T_DATESPANSET || type == T_TIMESTAMPTZ || type == T_TSTZSET ||
     type == T_TSTZSPAN || type == T_TSTZSPANSET)
     return true;
   return false;
@@ -459,9 +710,9 @@ time_type(meosType type)
 bool
 set_basetype(meosType type)
 {
-  if (type == T_TIMESTAMPTZ || type == T_INT4 || type == T_INT8 ||
-      type == T_FLOAT8 || type == T_TEXT || type == T_GEOMETRY ||
-      type == T_GEOGRAPHY || type == T_NPOINT)
+  if (type == T_TIMESTAMPTZ || type == T_DATE || type == T_INT4 ||
+      type == T_INT8 || type == T_FLOAT8 || type == T_TEXT ||
+      type == T_GEOMETRY || type == T_GEOGRAPHY || type == T_NPOINT)
     return true;
   return false;
 }
@@ -473,9 +724,9 @@ set_basetype(meosType type)
 bool
 set_type(meosType type)
 {
-  if (type == T_TSTZSET || type == T_INTSET || type == T_BIGINTSET ||
-      type == T_FLOATSET || type == T_TEXTSET || type == T_GEOMSET ||
-      type == T_GEOGSET || type == T_NPOINTSET)
+  if (type == T_TSTZSET || type == T_DATESET || type == T_INTSET ||
+      type == T_BIGINTSET || type == T_FLOATSET || type == T_TEXTSET ||
+      type == T_GEOMSET || type == T_GEOGSET || type == T_NPOINTSET)
     return true;
   return false;
 }
@@ -486,7 +737,9 @@ set_type(meosType type)
 bool
 numset_type(meosType type)
 {
-  if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET)
+  if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
+      /* Dates are represented as integers */
+      type == T_DATESET)
     return true;
   return false;
 }
@@ -497,9 +750,13 @@ numset_type(meosType type)
 bool
 ensure_numset_type(meosType type)
 {
-  if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET)
-    return true;
-  return false;
+  if (! numset_type(type))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The set value must be a number or a date set");
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -508,10 +765,27 @@ ensure_numset_type(meosType type)
 bool
 timeset_type(meosType type)
 {
-  if (type == T_TSTZSET)
+  if (type == T_DATESET || type == T_TSTZSET)
     return true;
   return false;
 }
+
+#if 0 /* not used */
+/**
+ * @brief Ensure that the type is a number set type
+ */
+bool
+ensure_timeset_type(meosType type)
+{
+  if (! timeset_type(type))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The set value must be a time set");
+    return false;
+  }
+  return true;
+}
+#endif /* not used */
 
 /**
  * @brief Return true if the type is a set type with a span as a bounding box
@@ -520,7 +794,7 @@ bool
 set_spantype(meosType type)
 {
   if (type == T_INTSET || type == T_BIGINTSET || type == T_FLOATSET ||
-    type == T_TSTZSET)
+    type == T_DATESET || type == T_TSTZSET)
     return true;
   return false;
 }
@@ -546,8 +820,8 @@ ensure_set_spantype(meosType type)
 bool
 alphanumset_type(meosType type)
 {
-  if (type == T_TSTZSET || type == T_INTSET || type == T_BIGINTSET ||
-      type == T_FLOATSET || type == T_TEXTSET)
+  if (type == T_TSTZSET || type == T_DATESET || type == T_INTSET ||
+      type == T_BIGINTSET || type == T_FLOATSET || type == T_TEXTSET)
     return true;
   return false;
 }
@@ -589,7 +863,6 @@ spatialset_type(meosType type)
   return false;
 }
 
-#if MEOS
 /**
  * @brief Ensure that a temporal value is a temporal number
  */
@@ -604,7 +877,6 @@ ensure_spatialset_type(meosType type)
   }
   return true;
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -614,8 +886,8 @@ ensure_spatialset_type(meosType type)
 bool
 span_basetype(meosType type)
 {
-  if (type == T_TIMESTAMPTZ || type == T_INT4 || type == T_INT8 ||
-      type == T_FLOAT8)
+  if (type == T_TIMESTAMPTZ || type == T_DATE || type == T_INT4 ||
+      type == T_INT8 || type == T_FLOAT8)
     return true;
   return false;
 }
@@ -626,7 +898,7 @@ span_basetype(meosType type)
 bool
 span_canon_basetype(meosType type)
 {
-  if (type == T_INT4 || type == T_INT8)
+  if (type == T_DATE || type == T_INT4 || type == T_INT8)
     return true;
   return false;
 }
@@ -637,7 +909,7 @@ span_canon_basetype(meosType type)
 bool
 span_type(meosType type)
 {
-  if (type == T_TSTZSPAN || type == T_INTSPAN ||
+  if (type == T_TSTZSPAN || type == T_DATESPAN || type == T_INTSPAN ||
       type == T_BIGINTSPAN || type == T_FLOATSPAN)
     return true;
   return false;
@@ -659,18 +931,20 @@ span_bbox_type(meosType type)
 #endif
 
 /**
- * @brief Return true if the type is a numeric span type
+ * @brief Return true if the type is a number span type
  */
 bool
 numspan_basetype(meosType type)
 {
-  if (type == T_INT4 || type == T_INT8 || type == T_FLOAT8)
+  if (type == T_INT4 || type == T_INT8 || type == T_FLOAT8 ||
+      /* Dates are represented as integers */
+      type == T_DATE)
     return true;
   return false;
 }
 
 /**
- * @brief Return true if the type is a numeric span type
+ * @brief Return true if the type is a number span type
  */
 bool
 numspan_type(meosType type)
@@ -681,7 +955,7 @@ numspan_type(meosType type)
 }
 
 /**
- * @brief Ensure that a span is a numeric span type
+ * @brief Ensure that a span is a number span type
  */
 bool
 ensure_numspan_type(meosType type)
@@ -689,33 +963,50 @@ ensure_numspan_type(meosType type)
   if (! numspan_type(type))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The span value must be a numeric span type");
+      "The span value must be a number span type");
     return false;
   }
   return true;
 }
 
 /**
- * @brief Return true if the type is a numeric span type
+ * @brief Return true if the type is a time span type
  */
 bool
 timespan_basetype(meosType type)
 {
-  if (type == T_TIMESTAMPTZ)
+  if (type == T_TIMESTAMPTZ || type == T_DATE)
     return true;
   return false;
 }
 
 /**
- * @brief Return true if the type is a numeric span type
+ * @brief Return true if the type is a time span type
  */
 bool
 timespan_type(meosType type)
 {
-  if (type == T_TSTZSPAN)
+  if (type == T_TSTZSPAN || type == T_DATESPAN)
     return true;
   return false;
 }
+
+#if 0 /* not used */
+/**
+ * @brief Ensure that a span is a time span type
+ */
+bool
+ensure_timespan_type(meosType type)
+{
+  if (! timespan_type(type))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The span value must be a time span type");
+    return false;
+  }
+  return true;
+}
+#endif /* not used */
 
 /*****************************************************************************/
 
@@ -725,7 +1016,7 @@ timespan_type(meosType type)
 bool
 spanset_type(meosType type)
 {
-  if (type == T_TSTZSPANSET || type == T_INTSPANSET ||
+  if (type == T_TSTZSPANSET || type == T_DATESPANSET || type == T_INTSPANSET ||
       type == T_BIGINTSPANSET || type == T_FLOATSPANSET)
     return true;
   return false;
@@ -733,7 +1024,7 @@ spanset_type(meosType type)
 
 #if 0 /* not used */
 /**
- * @brief Return true if the type is a numeric span type
+ * @brief Return true if the type is a number span type
  */
 bool
 numspanset_type(meosType type)
@@ -746,20 +1037,35 @@ numspanset_type(meosType type)
 #endif
 
 /**
- * @brief Return true if the type is a numeric span type
+ * @brief Return true if the type is a time span type
  */
 bool
 timespanset_type(meosType type)
 {
-  if (type == T_TSTZSPANSET)
+  if (type == T_TSTZSPANSET || type == T_DATESPANSET)
     return true;
   return false;
+}
+
+/**
+ * @brief Ensure that a span is a time span type
+ */
+bool
+ensure_timespanset_type(meosType type)
+{
+  if (! timespanset_type(type))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The value must be a time span set type");
+    return false;
+  }
+  return true;
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Return true if the type is an EXTERNAL temporal type
+ * @brief Return true if the type is an @b external temporal type
  * @note Function used in particular in the indexes
  */
 bool
@@ -830,7 +1136,7 @@ talphanum_type(meosType type)
 
 /**
  * @brief Return true if the type is a temporal alpha type (i.e., those whose
- * bounding box is a period)
+ * bounding box is a timestamptz span)
  */
 bool
 talpha_type(meosType type)
@@ -853,7 +1159,7 @@ tnumber_type(meosType type)
 }
 
 /**
- * @brief Ensure that a temporal value is a temporal number
+ * @brief Ensure that a type is a temporal number
  */
 bool
 ensure_tnumber_type(meosType type)
@@ -877,6 +1183,22 @@ tnumber_basetype(meosType type)
     return true;
   return false;
 }
+
+/**
+ * @brief Ensure that a type is a temporal number base type
+ */
+bool
+ensure_tnumber_basetype(meosType type)
+{
+  if (! tnumber_basetype(type))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The temporal value must be a base value of temporal number");
+    return false;
+  }
+  return true;
+}
+
 
 /**
  * @brief Return true if the type is a span number type
@@ -905,9 +1227,9 @@ tnumber_spansettype(meosType type)
 
 /**
  * @brief Return true if the type is a spatiotemporal type
- * @note This function is used for features common to all spatiotemporal types,
- * in particular, all of them use the same bounding box STBox. Therefore it is
- * used for the indexes and selectivity functions
+ * @details This function is used for features common to all spatiotemporal 
+ * types, in particular, all of them use the same bounding box @ STBox.
+ * Therefore, it is used for the indexes and selectivity functions.
  */
 bool
 tspatial_type(meosType type)
@@ -939,8 +1261,8 @@ ensure_tspatial_type(meosType type)
 
 /**
  * @brief Return true if the type is a base type of a spatiotemporal type
- * @note This function is used for features common to all spatiotemporal types,
- * in particular, all of them use the same bounding box STBox
+ * @details This function is used for features common to all spatiotemporal 
+ * types, in particular, all of them use the same bounding box @p STBox
  */
 bool
 tspatial_basetype(meosType type)

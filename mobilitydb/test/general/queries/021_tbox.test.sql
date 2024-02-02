@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
@@ -98,8 +98,6 @@ SELECT tbox(tstzspan '[2000-01-01,2000-01-02]');
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])'::floatspan;
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])'::tstzspan;
 SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::floatspan;
-SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::tstzspan;
-SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::floatspan;
 SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::tstzspan;
 
 SELECT 1::tbox;
@@ -113,6 +111,17 @@ SELECT tstzspan '[2000-01-01,2000-01-02]'::tbox;
 SELECT intspanset '{[1,2]}'::tbox;
 SELECT floatspanset '{[1,2]}'::tbox;
 SELECT tstzspanset '{[2000-01-01,2000-01-02]}'::tbox;
+/* Errors */
+SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::floatspan;
+SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::tstzspan;
+
+SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
+SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
+SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
+SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
+/* Errors */
+SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::intspan;
+SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::floatspan;
 
 -------------------------------------------------------------------------------
 
@@ -177,6 +186,8 @@ SELECT shiftTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '1 day'
 SELECT shiftTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-1 day');
 
 SELECT scaleValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2.0);
+/* Errors */
+SELECT scaleValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -2.0);
 
 SELECT scaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '1 day');
 SELECT scaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '1 hour');
@@ -187,13 +198,16 @@ SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -
 SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '1 day', '1 hour');
 SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-1 day', '1 hour');
 
-SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2);
+SELECT expandValue(tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])', 2);
+SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2.0);
 SELECT expandTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', interval '1 day');
 SELECT round(tbox 'TBOXFLOAT XT([1.123456789,2.123456789],[2000-01-01,2000-01-02])', 2);
 /* Errors */
 SELECT scaleValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', -1.0);
 SELECT scaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-1 hour');
 SELECT expandValue(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
+SELECT expandValue(tbox 'TBOXINT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2.0);
+SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2);
 SELECT expandTime(tbox 'TBOXFLOAT X([1,2])', interval '1 day');
 SELECT round(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
 

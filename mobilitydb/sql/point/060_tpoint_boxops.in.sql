@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -81,11 +81,11 @@ CREATE FUNCTION stboxes(tgeompoint)
 
 CREATE FUNCTION temporal_contains(tstzspan, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(tgeompoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -105,11 +105,11 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION temporal_contains(tstzspan, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(tgeogpoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -199,11 +199,11 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION temporal_contained(tstzspan, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(tgeompoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -257,11 +257,11 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION temporal_contained(tstzspan, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(tgeogpoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -317,11 +317,11 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION temporal_overlaps(tstzspan, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(tgeompoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -375,11 +375,11 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION temporal_overlaps(tstzspan, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(tgeogpoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overlaps_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -435,11 +435,11 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION temporal_same(tstzspan, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_period_temporal'
+  AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_same(tgeompoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_temporal_period'
+  AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -493,11 +493,11 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION temporal_same(tstzspan, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_period_temporal'
+  AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_same(tgeogpoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Same_temporal_period'
+  AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -553,11 +553,11 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION temporal_adjacent(tstzspan, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_period_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(tgeompoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_temporal_period'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -611,11 +611,11 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION temporal_adjacent(tstzspan, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_period_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(tgeogpoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adjacent_temporal_period'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (

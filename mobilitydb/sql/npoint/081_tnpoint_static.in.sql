@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -134,7 +134,7 @@ CREATE FUNCTION getPosition(npoint)
   LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION srid(npoint)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Npoint_get_srid'
   LANGUAGE C IMMUTABLE STRICT;
 
@@ -154,7 +154,7 @@ CREATE FUNCTION endPosition(nsegment)
   LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION srid(nsegment)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Nsegment_get_srid'
   LANGUAGE C IMMUTABLE STRICT;
 
@@ -162,12 +162,12 @@ CREATE FUNCTION srid(nsegment)
  * Modification functions
  *****************************************************************************/
 
-CREATE FUNCTION round(npoint, int DEFAULT 0)
+CREATE FUNCTION round(npoint, integer DEFAULT 0)
   RETURNS npoint
   AS 'MODULE_PATHNAME', 'Npoint_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION round(nsegment, int DEFAULT 0)
+CREATE FUNCTION round(nsegment, integer DEFAULT 0)
   RETURNS nsegment
   AS 'MODULE_PATHNAME', 'Nsegment_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

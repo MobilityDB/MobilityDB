@@ -288,6 +288,13 @@ SELECT spaceSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2000-01-01', 2.0, geometry 
 ERROR:  Operation on mixed SRID
 CONTEXT:  SQL function "spacesplit" statement 1
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
+FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2000-01-01', 2.0, interval '2 days', bitmatrix:=false) AS sp) t;
+   point    |             time             |                 tpoint                  
+------------+------------------------------+-----------------------------------------
+ POINT(0 0) | Sat Jan 01 00:00:00 2000 PST | POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2000-01-01', 2.0, interval '2 days') AS sp) t;
    point    |             time             |                 tpoint                  
 ------------+------------------------------+-----------------------------------------

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,24 +29,22 @@
 
 /**
  * @file
- * @brief Aggregate functions for set types.
+ * @brief Aggregate functions for set types
  */
 
 /* C */
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/memutils.h>
-#include <utils/timestamp.h>
+#include <funcapi.h>
+#include <utils/array.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
+#include "general/temporal.h"
 #include "general/type_util.h"
-#include "general/skiplist.h"
 /* MobilityDB */
-#include "pg_general/skiplist.h"
-#include "pg_general/temporal.h"
 #include "pg_general/meos_catalog.h"
 
 /*****************************************************************************
@@ -55,11 +53,12 @@
 
 PGDLLEXPORT Datum Value_union_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_union_transfn);
-/*
- * @brief Transition function for aggregating spans
- *
- * All we do here is gather the input spans into an array
- * so that the finalfn can sort and combine them.
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for union aggregation of sets
+ * @note We simply gather the input values into an array so that the final
+ * function can sort and combine them
+ * @sqlfn union()
  */
 Datum
 Value_union_transfn(PG_FUNCTION_ARGS)
@@ -86,11 +85,12 @@ Value_union_transfn(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Set_union_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_union_transfn);
-/*
- * @brief Transition function for aggregating spans
- *
- * All we do here is gather the input span sets' spans into an array so
- * that the finalfn can sort and combine them.
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for union aggregation of sets
+ * @note We simply gather the input values into an array so that the final
+ * function can sort and combine them
+ * @sqlfn union()
  */
 Datum
 Set_union_transfn(PG_FUNCTION_ARGS)
@@ -112,10 +112,10 @@ Set_union_transfn(PG_FUNCTION_ARGS)
     state = (ArrayBuildState *) PG_GETARG_POINTER(0);
 
   /* skip NULLs */
-  if (! PG_ARGISNULL(1) )
+  if (! PG_ARGISNULL(1))
   {
     Set *set = PG_GETARG_SET_P(1);
-    Datum *values = set_values(set);
+    Datum *values = set_vals(set);
     for (int i = 0; i < set->count; i++)
       accumArrayResult(state, values[i], false, baseoid, aggContext);
     pfree(values);
@@ -125,9 +125,10 @@ Set_union_transfn(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Set_union_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_union_finalfn);
-/*
- * @brief use our internal array to merge overlapping/touching spans.
- * @note Shared by Span_union_finalfn() and Spanset_union_finalfn().
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Final function for union aggregation of sets
+ * @sqlfn union()
  */
 Datum
 Set_union_finalfn(PG_FUNCTION_ARGS)
@@ -158,7 +159,7 @@ Set_union_finalfn(PG_FUNCTION_ARGS)
     values[i] = typlen > 0 ? state->dvalues[i] :
       PointerGetDatum(PG_DETOAST_DATUM(state->dvalues[i]));
 
-  Set *result = set_make_exp(values, count, count, basetype, ORDERED);
+  Set *result = set_make_exp(values, count, count, basetype, ORDERED_NO);
 
   /* Free memory */
   if (typbyval)
@@ -166,7 +167,7 @@ Set_union_finalfn(PG_FUNCTION_ARGS)
   else
     pfree_array((void **) values, count);
 
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************/

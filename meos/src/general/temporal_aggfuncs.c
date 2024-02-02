@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,14 +29,13 @@
 
 /**
  * @file
- * @brief General aggregate functions for temporal types.
+ * @brief General aggregate functions for temporal types
  */
 
 #include "general/temporal_aggfuncs.h"
 
 /* C */
 #include <assert.h>
-#include <math.h>
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -44,12 +43,22 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
 #include "general/skiplist.h"
+#include "general/span.h"
 #include "general/spanset.h"
-#include "general/temporaltypes.h"
-#include "general/temporal_tile.h"
+#include "general/temporal_restrict.h"
 #include "general/tbool_boolops.h"
-#include "general/doublen.h"
+#include "general/tinstant.h"
+#include "general/tsequence.h"
+#include "general/type_util.h"
+
+#if ! MEOS
+  extern FunctionCallInfo fetch_fcinfo();
+  extern void store_fcinfo(FunctionCallInfo fcinfo);
+  extern MemoryContext set_aggregation_context(FunctionCallInfo fcinfo);
+  extern void unset_aggregation_context(MemoryContext ctx);
+#endif /* ! MEOS */
 
 /*****************************************************************************
  * Aggregate functions on datums
@@ -97,7 +106,7 @@ datum_max_float8(Datum l, Datum r)
  Datum
 datum_min_text(Datum l, Datum r)
 {
-  return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0 ? l : r;
+  return text_cmp(DatumGetTextP(l), DatumGetTextP(r)) < 0 ? l : r;
 }
 
 /**
@@ -106,7 +115,7 @@ datum_min_text(Datum l, Datum r)
 Datum
 datum_max_text(Datum l, Datum r)
 {
-  return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) > 0 ? l : r;
+  return text_cmp(DatumGetTextP(l), DatumGetTextP(r)) > 0 ? l : r;
 }
 
 /**
@@ -167,6 +176,10 @@ datum_sum_double4(Datum l, Datum r)
  * @param[in] instants1 Accumulated state
  * @param[in] instants2 Instants of the input temporal discrete sequence
  * @note Return new sequences that must be freed by the calling function.
+ * @param[in] instants1,instants2 Arrays of instants
+ * @param[in] count1,count2 Number of values in the input arrays
+ * @param[in] func Function, may be NULL for the merge aggregate function
+ * @param[out] newcount Number of instants in the output array
  */
 TInstant **
 tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
@@ -183,7 +196,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
     {
       if (func != NULL)
         result[count++] = tinstant_make(
-          func(tinstant_value(inst1), tinstant_value(inst2)), inst1->temptype,
+          func(tinstant_val(inst1), tinstant_val(inst2)), inst1->temptype,
           inst1->t);
       else
       {
@@ -191,7 +204,10 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
           result[count++] = tinstant_copy(inst1);
         else
         {
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Unable to merge values");
+          char *t1 = pg_timestamptz_out(inst1->t);
+          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            "The temporal values have different value at their common timestamp %s",
+            t1);
           return NULL;
         }
       }
@@ -219,10 +235,9 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
 }
 
 /**
- * @brief Generic aggregate function for temporal sequences
- * (iterator function).
+ * @brief Generic aggregate function for temporal sequences (iterator function)
  * @param[in] seq1,seq2 Temporal sequence values to be aggregated
- * @param[in] func Function
+ * @param[in] func Function, may be NULL for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments
  * @param[out] result Array on which the pointers of the newly constructed
  * ranges are stored
@@ -238,7 +253,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   {
     const TSequence *sequences[2];
     /* The two sequences do not intersect: copy the sequences in the right order */
-    if (span_cmp(&seq1->period, &seq2->period) < 0)
+    if (span_cmp_int(&seq1->period, &seq2->period) < 0)
     {
       sequences[0] = (TSequence *) seq1;
       sequences[1] = (TSequence *) seq2;
@@ -295,14 +310,14 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   if (cmp1 < 0 || (lower1_inc && !lower_inc && cmp1 == 0))
   {
     span_set(TimestampTzGetDatum(lower1), TimestampTzGetDatum(lower),
-      lower1_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
-    sequences[nseqs++] = tcontseq_at_period(seq1, &period);
+      lower1_inc, ! lower_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &period);
+    sequences[nseqs++] = tcontseq_at_tstzspan(seq1, &period);
   }
   else if (cmp2 < 0 || (lower2_inc && !lower_inc && cmp2 == 0))
   {
     span_set(TimestampTzGetDatum(lower2), TimestampTzGetDatum(lower),
-      lower2_inc, ! lower_inc, T_TIMESTAMPTZ, &period);
-    sequences[nseqs++] = tcontseq_at_period(seq2, &period);
+      lower2_inc, ! lower_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &period);
+    sequences[nseqs++] = tcontseq_at_tstzspan(seq2, &period);
   }
 
   /*
@@ -317,7 +332,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
     const TInstant *inst2 = TSEQUENCE_INST_N(syncseq2, i);
     if (func != NULL)
       instants[i] = tinstant_make(
-        func(tinstant_value(inst1), tinstant_value(inst2)), seq1->temptype,
+        func(tinstant_val(inst1), tinstant_val(inst2)), seq1->temptype,
         inst1->t);
     else
     {
@@ -325,7 +340,10 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
         instants[i] = tinstant_copy(inst1);
       else
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Unable to merge values");
+        char *t1 = pg_timestamptz_out(inst1->t);
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "The temporal values have different value at their common timestamp %s",
+          t1);
         return -1;
       }
     }
@@ -341,14 +359,14 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   if (cmp1 < 0 || (!upper_inc && upper1_inc && cmp1 == 0))
   {
     span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper1),
-      ! upper_inc, upper1_inc, T_TIMESTAMPTZ, &period);
-    sequences[nseqs++] = tcontseq_at_period(seq1, &period);
+      ! upper_inc, upper1_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &period);
+    sequences[nseqs++] = tcontseq_at_tstzspan(seq1, &period);
   }
   else if (cmp2 < 0 || (! upper_inc && upper2_inc && cmp2 == 0))
   {
     span_set(TimestampTzGetDatum(upper), TimestampTzGetDatum(upper2),
-      ! upper_inc, upper2_inc, T_TIMESTAMPTZ, &period);
-    sequences[nseqs++] = tcontseq_at_period(seq2, &period);
+      ! upper_inc, upper2_inc, T_TIMESTAMPTZ, T_TSTZSPAN, &period);
+    sequences[nseqs++] = tcontseq_at_tstzspan(seq2, &period);
   }
 
   /* Normalization */
@@ -367,12 +385,12 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * @brief Generic aggregate function for temporal sequences.
+ * @brief Generic aggregate function for temporal sequences
  * @param[in] sequences1 Accumulated state
  * @param[in] count1 Number of elements in the accumulated state
  * @param[in] sequences2 Sequences of a temporal sequence set value
  * @param[in] count2 Number of elements in the temporal sequence set value
- * @param[in] func Function
+ * @param[in] func Function, may be NULL for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments
  * @param[out] newcount Number of elements in the result
  * @note Return new sequences that must be freed by the calling function.
@@ -460,9 +478,9 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
 /**
  * @brief Generic transition function for aggregating temporal values
  * of instant subtype
- * @param[in,out] state Skiplist containing the state
- * @param[in] inst Temporal value
- * @param[in] func Function
+ * @param[in,out] state Current aggregate state
+ * @param[in] inst Temporal value to aggregate
+ * @param[in] func Function, may be NULL for the merge aggregate function
  */
 SkipList *
 tinstant_tagg_transfn(SkipList *state, const TInstant *inst, datum_func2 func)
@@ -487,13 +505,13 @@ tinstant_tagg_transfn(SkipList *state, const TInstant *inst, datum_func2 func)
  * sequence values
  * @param[in,out] state Skiplist containing the state
  * @param[in] seq Temporal value
- * @param[in] func Function
+ * @param[in] func Function, may be NULL for the merge aggregate function
  */
 SkipList *
 tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
 {
   assert(seq);
-  const TInstant **instants = tsequence_instants(seq);
+  const TInstant **instants = tsequence_insts(seq);
   SkipList *result;
   if (! state)
     result = skiplist_make((void **) instants, seq->count);
@@ -511,7 +529,7 @@ tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
  * of sequence subtype
  * @param[in,out] state Skiplist containing the state
  * @param[in] seq Temporal value
- * @param[in] func Function
+ * @param[in] func Function, may be NULL for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments
  */
 SkipList *
@@ -535,7 +553,7 @@ tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
  * of sequence set subtype
  * @param[in,out] state Skiplist containing the state
  * @param[in] ss Temporal value
- * @param[in] func Function
+ * @param[in] func Function, may be NULL for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments
  */
 SkipList *
@@ -543,7 +561,7 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
   datum_func2 func, bool crossings)
 {
   assert(ss);
-  const TSequence **sequences = tsequenceset_sequences_p(ss);
+  const TSequence **sequences = tsequenceset_seqs(ss);
   SkipList *result;
   if (! state)
     result = skiplist_make((void **) sequences, ss->count);
@@ -561,26 +579,26 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
  * of sequence set subtype
  * @param[in,out] state Skiplist containing the state
  * @param[in] temp Temporal value
- * @param[in] func Function
+ * @param[in] func Function, may be NULL for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments
  */
 SkipList *
 temporal_tagg_transfn(SkipList *state, const Temporal *temp, datum_func2 func,
   bool crossings)
 {
-  assert(temp);
-  assert(temptype_subtype(temp->subtype));
-  SkipList *result;
-  if (temp->subtype == TINSTANT)
-    result =  tinstant_tagg_transfn(state, (TInstant *) temp, func);
-  else if (temp->subtype == TSEQUENCE)
-    result = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
-      tdiscseq_tagg_transfn(state, (TSequence *) temp, func) :
-      tcontseq_tagg_transfn(state, (TSequence *) temp, func, crossings);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_tagg_transfn(state, (TSequenceSet *) temp,
-      func, crossings);
-  return result;
+  assert(temp); assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return  tinstant_tagg_transfn(state, (TInstant *) temp, func);
+    case TSEQUENCE:
+      return MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
+        tdiscseq_tagg_transfn(state, (TSequence *) temp, func) :
+        tcontseq_tagg_transfn(state, (TSequence *) temp, func, crossings);
+    default: /* TSEQUENCESET */
+      return tsequenceset_tagg_transfn(state, (TSequenceSet *) temp, func,
+        crossings);
+  }
 }
 
 /**
@@ -613,17 +631,19 @@ temporal_tagg_combinefn(SkipList *state1, SkipList *state2, datum_func2 func,
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup meos_temporal_agg
  * @brief Generic final function for aggregating temporal values
- * @param[in] state State values
+ * @param[in] state Current aggregate state
+ * @csqlfn #Temporal_tagg_finalfn()
  */
 Temporal *
 temporal_tagg_finalfn(SkipList *state)
 {
   if (! state || state->length == 0)
     return NULL;
-  /* A copy of the values is needed for switching from aggregate context */
-  Temporal **values = skiplist_temporal_values(state);
+  /* A copy of the values is needed for switching from aggregate context,
+   * for this reason the #skiplist_values cannot be used */
+  Temporal **values = (Temporal **) skiplist_temporal_values(state);
   Temporal *result = NULL;
   assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
   if (values[0]->subtype == TINSTANT)
@@ -636,11 +656,17 @@ temporal_tagg_finalfn(SkipList *state)
   return result;
 }
 
+/*****************************************************************************
+ * MEOS aggregate transition functions
+ *****************************************************************************/
+
 #if MEOS
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal and of temporal booleans.
- * @sqlfunc tand()
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal and of temporal booleans
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Tbool_tand_transfn()
  */
 SkipList *
 tbool_tand_transfn(SkipList *state, const Temporal *temp)
@@ -649,15 +675,17 @@ tbool_tand_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TBOOL))
+  if (! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_and, CROSSINGS_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal or of temporal booleans.
- * @sqlfunc tor()
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal or of temporal booleans
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Tbool_tor_transfn()
  */
 SkipList *
 tbool_tor_transfn(SkipList *state, const Temporal *temp)
@@ -666,15 +694,17 @@ tbool_tor_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TBOOL))
+  if (! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_or, CROSSINGS_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal minimum of temporal values.
- * @sqlfunc tmin()
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal minimum of temporal values
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Tint_tmin_transfn()
  */
 SkipList *
 tint_tmin_transfn(SkipList *state, const Temporal *temp)
@@ -683,15 +713,17 @@ tint_tmin_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TINT))
+  if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_min_int32, CROSSINGS_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal minimum of temporal values.
- * @sqlfunc tmin()
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal minimum of temporal values
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Tfloat_tmin_transfn()
  */
 SkipList *
 tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
@@ -700,15 +732,17 @@ tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TFLOAT))
+  if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_min_float8, CROSSINGS);
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal maximum of temporal values.
- * @sqlfunc tmax()
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal maximum of temporal values
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Tint_tmax_transfn()
  */
 SkipList *
 tint_tmax_transfn(SkipList *state, const Temporal *temp)
@@ -717,15 +751,17 @@ tint_tmax_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TINT))
+  if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_max_int32, CROSSINGS_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal maximum of temporal values.
- * @sqlfunc tmax()
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal maximum of temporal values
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Tfloat_tmax_transfn()
  */
 SkipList *
 tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
@@ -734,15 +770,17 @@ tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TFLOAT))
+  if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_max_float8, CROSSINGS);
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal sum of temporal values.
- * @sqlfunc tsum()
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal sum of temporal values
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Tint_tsum_transfn()
  */
 SkipList *
 tint_tsum_transfn(SkipList *state, const Temporal *temp)
@@ -751,15 +789,17 @@ tint_tsum_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TINT))
+  if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_sum_int32, CROSSINGS_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal sum of temporal values.
- * @sqlfunc tsum()
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal sum of temporal values
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Tfloat_tsum_transfn()
  */
 SkipList *
 tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
@@ -768,15 +808,17 @@ tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TFLOAT))
+  if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_sum_float8, CROSSINGS_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal average of temporal numbers.
- * @sqlfunc tavg()
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal average of temporal numbers
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Tnumber_tavg_transfn()
  */
 SkipList *
 tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
@@ -792,9 +834,11 @@ tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal minimum of temporal text values.
- * @sqlfunc tmin()
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal minimum of temporal text values
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Ttext_tmin_transfn()
  */
 SkipList *
 ttext_tmin_transfn(SkipList *state, const Temporal *temp)
@@ -803,15 +847,17 @@ ttext_tmin_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TTEXT))
+  if (! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_min_text, CROSSINGS_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Transition function for temporal maximum of temporal text values.
- * @sqlfunc tmax()
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal maximum of temporal text values
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Ttext_tmax_transfn()
  */
 SkipList *
 ttext_tmax_transfn(SkipList *state, const Temporal *temp)
@@ -820,7 +866,7 @@ ttext_tmax_transfn(SkipList *state, const Temporal *temp)
   if (! temp)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_temporal_has_type(temp, T_TTEXT))
+  if (! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_max_text, CROSSINGS_NO);
 }
@@ -843,10 +889,7 @@ tdiscseq_transform_tagg(const TSequence *seq,
 {
   TInstant **result = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    result[i] = func(inst);
-  }
+    result[i] = func(TSEQUENCE_INST_N(seq, i));
   return result;
 }
 
@@ -859,10 +902,7 @@ tcontseq_transform_tagg(const TSequence *seq,
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    instants[i] = func(inst);
-  }
+    instants[i] = func(TSEQUENCE_INST_N(seq, i));
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
@@ -876,10 +916,7 @@ tsequenceset_transform_tagg(const TSequenceSet *ss,
 {
   TSequence **result = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    result[i] = tcontseq_transform_tagg(seq, func);
-  }
+    result[i] = tcontseq_transform_tagg(TSEQUENCESET_SEQ_N(ss, i), func);
   return result;
 }
 
@@ -891,36 +928,40 @@ temporal_transform_tagg(const Temporal *temp, int *count,
   TInstant *(*func)(const TInstant *))
 {
   Temporal **result;
-  if (temp->subtype == TINSTANT)
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
   {
-    result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *)func((TInstant *) temp);
-    *count = 1;
-  }
-  else if (temp->subtype == TSEQUENCE)
-  {
-    if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
-    {
-      result = (Temporal **) tdiscseq_transform_tagg((TSequence *) temp,
-        func);
-      *count = ((TSequence *) temp)->count;
-    }
-    else
+    case TINSTANT:
     {
       result = palloc(sizeof(Temporal *));
-      result[0] = (Temporal *) tcontseq_transform_tagg((TSequence *) temp,
-        func);
+      result[0] = (Temporal *)func((TInstant *) temp);
       *count = 1;
+      return result;
+    }
+    case TSEQUENCE:
+    {
+      if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
+      {
+        *count = ((TSequence *) temp)->count;
+        return (Temporal **) tdiscseq_transform_tagg((TSequence *) temp,
+          func);
+      }
+      else
+      {
+        result = palloc(sizeof(Temporal *));
+        result[0] = (Temporal *) tcontseq_transform_tagg((TSequence *) temp,
+          func);
+        *count = 1;
+        return result;
+      }
+    }
+    default: /* TSEQUENCESET */
+    {
+      *count = ((TSequenceSet *) temp)->count;
+      return (Temporal **) tsequenceset_transform_tagg((TSequenceSet *) temp,
+        func);
     }
   }
-  else /* temp->subtype == TSEQUENCESET */
-  {
-    result = (Temporal **) tsequenceset_transform_tagg((TSequenceSet *) temp,
-      func);
-    *count = ((TSequenceSet *) temp)->count;
-  }
-  assert(result != NULL);
-  return result;
 }
 
 /**
@@ -969,7 +1010,7 @@ timestamp_transform_tcount(TimestampTz t)
  * performing temporal count aggregation
  */
 static TInstant **
-timestampset_transform_tcount(const Set *s)
+tstzset_transform_tcount(const Set *s)
 {
   TInstant **result = palloc(sizeof(TInstant *) * s->count);
   for (int i = 0; i < s->count; i++)
@@ -981,17 +1022,17 @@ timestampset_transform_tcount(const Set *s)
 }
 
 /**
- * @brief Transform a period value into a temporal integer value for
+ * @brief Transform a a timestamptz span into a temporal integer value for
  * performing temporal count aggregation
  */
 static TSequence *
-period_transform_tcount(const Span *s)
+tstzspan_transform_tcount(const Span *s)
 {
-  TSequence *result;
   Datum datum_one = Int32GetDatum(1);
   TInstant *instants[2];
   TimestampTz t = s->lower;
   instants[0] = tinstant_make(datum_one, T_TINT, t);
+  TSequence *result;
   if (s->lower == s->upper)
   {
     result = tsequence_make((const TInstant **) instants, 1, s->lower_inc,
@@ -1010,18 +1051,15 @@ period_transform_tcount(const Span *s)
 }
 
 /**
- * @brief Transform a period set value into a temporal integer value for
- * performing temporal count aggregation
+ * @brief Transform a timestamptz span set value into a temporal integer value
+ * for performing temporal count aggregation
  */
 static TSequence **
-periodset_transform_tcount(const SpanSet *ss)
+tstzspanset_transform_tcount(const SpanSet *ss)
 {
   TSequence **result = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-  {
-    const Span *s = spanset_sp_n(ss, i);
-    result[i] = period_transform_tcount(s);
-  }
+    result[i] = tstzspan_transform_tcount(SPANSET_SP_N(ss, i));
   return result;
 }
 
@@ -1038,8 +1076,8 @@ tinstant_transform_tcount(const TInstant *inst)
 }
 
 /**
- * @brief Transform a temporal discrete sequence value into a temporal integer value
- * for performing temporal count aggregation
+ * @brief Transform a temporal discrete sequence value into a temporal integer
+ * value for performing temporal count aggregation
  */
 static TInstant **
 tdiscseq_transform_tcount(const TSequence *seq)
@@ -1048,8 +1086,7 @@ tdiscseq_transform_tcount(const TSequence *seq)
   Datum datum_one = Int32GetDatum(1);
   for (int i = 0; i < seq->count; i++)
   {
-    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    TimestampTz t = inst->t;
+    TimestampTz t = TSEQUENCE_INST_N(seq, i)->t;
     result[i] = tinstant_make(datum_one, T_TINT, t);
   }
   return result;
@@ -1068,9 +1105,7 @@ tcontseq_transform_tcount(const TSequence *seq)
   if (seq->count == 1)
   {
     TInstant *inst = tinstant_make(datum_one, T_TINT, t);
-    result = tinstant_to_tsequence(inst, STEP);
-    pfree(inst);
-    return result;
+    return tinstant_to_tsequence_free(inst, STEP);
   }
 
   TInstant *instants[2];
@@ -1084,18 +1119,15 @@ tcontseq_transform_tcount(const TSequence *seq)
 }
 
 /**
- * @brief Transform a temporal sequence set value into a temporal integer value for
- * performing temporal count aggregation
+ * @brief Transform a temporal sequence set value into a temporal integer value
+ * for performing temporal count aggregation
  */
 static TSequence **
 tsequenceset_transform_tcount(const TSequenceSet *ss)
 {
   TSequence **result = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    result[i] = tcontseq_transform_tcount(seq);
-  }
+    result[i] = tcontseq_transform_tcount(TSEQUENCESET_SEQ_N(ss, i));
   return result;
 }
 
@@ -1107,43 +1139,51 @@ Temporal **
 temporal_transform_tcount(const Temporal *temp, int *count)
 {
   Temporal **result;
-  if (temp->subtype == TINSTANT)
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
   {
-    result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *) tinstant_transform_tcount((TInstant *) temp);
-    *count = 1;
-  }
-  else if (temp->subtype == TSEQUENCE)
-  {
-    if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
-    {
-      result = (Temporal **) tdiscseq_transform_tcount((TSequence *) temp);
-      *count = ((TSequence *) temp)->count;
-    }
-    else
+    case TINSTANT:
     {
       result = palloc(sizeof(Temporal *));
-      result[0] = (Temporal *) tcontseq_transform_tcount((TSequence *) temp);
+      result[0] = (Temporal *) tinstant_transform_tcount((TInstant *) temp);
       *count = 1;
+      return result;
+    }
+    case TSEQUENCE:
+    {
+      if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
+      {
+        result = (Temporal **) tdiscseq_transform_tcount((TSequence *) temp);
+        *count = ((TSequence *) temp)->count;
+      }
+      else
+      {
+        result = palloc(sizeof(Temporal *));
+        result[0] = (Temporal *) tcontseq_transform_tcount((TSequence *) temp);
+        *count = 1;
+      }
+      return result;
+    }
+    default: /* TSEQUENCESET */
+    {
+      *count = ((TSequenceSet *) temp)->count;
+      return (Temporal **) tsequenceset_transform_tcount((TSequenceSet *) temp);
     }
   }
-  else /* temp->subtype == TSEQUENCESET */
-  {
-    result = (Temporal **) tsequenceset_transform_tcount((TSequenceSet *) temp);
-    *count = ((TSequenceSet *) temp)->count;
-  }
-  assert(result != NULL);
-  return result;
+
 }
 
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_temporal_agg
  * @brief Transition function for temporal count aggregate of timestamps
+ * @param[in,out] state Current aggregate state
+ * @param[in] t Timestamp to aggregate
+ * @csqlfn #Timestamptz_tcount_transfn()
  */
 SkipList *
-timestamp_tcount_transfn(SkipList *state, TimestampTz t)
+timestamptz_tcount_transfn(SkipList *state, TimestampTz t)
 {
   TInstant **instants = timestamp_transform_tcount(t);
   if (! state)
@@ -1161,20 +1201,23 @@ timestamp_tcount_transfn(SkipList *state, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_temporal_agg
  * @brief Transition function for temporal count aggregate of timestamp sets
+ * @param[in,out] state Current aggregate state
+ * @param[in] s Timestamp set to aggregate
+ * @csqlfn #Tstzset_tcount_transfn()
  */
 SkipList *
-timestampset_tcount_transfn(SkipList *state, const Set *s)
+tstzset_tcount_transfn(SkipList *state, const Set *s)
 {
   /* Null set: return state */
   if (! s)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_set_has_type(s, T_TSTZSET))
+  if (! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
 
-  TInstant **instants = timestampset_transform_tcount(s);
+  TInstant **instants = tstzset_transform_tcount(s);
   if (! state)
     state = skiplist_make((void **) instants, s->count);
   else
@@ -1190,20 +1233,23 @@ timestampset_tcount_transfn(SkipList *state, const Set *s)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
- * @brief Transition function for temporal count aggregate of periods
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal count aggregate of timestamptz spans
+ * @param[in,out] state Current aggregate state
+ * @param[in] s Timestamp span to aggregate
+ * @csqlfn #Tstzspan_tcount_transfn()
  */
 SkipList *
-period_tcount_transfn(SkipList *state, const Span *s)
+tstzspan_tcount_transfn(SkipList *state, const Span *s)
 {
   /* Null span: return state */
   if (! s)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_span_has_type(s, T_TSTZSPAN))
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
 
-  TSequence *seq = period_transform_tcount(s);
+  TSequence *seq = tstzspan_transform_tcount(s);
   if (! state)
     state = skiplist_make((void **) &seq, 1);
   else
@@ -1218,20 +1264,24 @@ period_tcount_transfn(SkipList *state, const Span *s)
 }
 
 /**
- * @ingroup libmeos_setspan_agg
- * @brief Transition function for temporal count aggregate of period sets
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal count aggregate of timestamptz span
+ * sets
+ * @param[in,out] state Current aggregate state
+ * @param[in] ss Timestamp span set to aggregate
+ * @csqlfn #Tstzspanset_tcount_transfn()
  */
 SkipList *
-periodset_tcount_transfn(SkipList *state, const SpanSet *ss)
+tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss)
 {
   /* Null span set: return state */
   if (! ss)
     return state;
   /* Ensure validity of the arguments */
-  if (! ensure_spanset_has_type(ss, T_TSTZSPANSET))
+  if (! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
 
-  TSequence **sequences = periodset_transform_tcount(ss);
+  TSequence **sequences = tstzspanset_transform_tcount(ss);
   int start = 0;
   if (! state)
   {
@@ -1256,8 +1306,11 @@ periodset_tcount_transfn(SkipList *state, const SpanSet *ss)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_agg
- * @brief Generic transition function for temporal count aggregation
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal count aggregation
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Temporal_tcount_transfn()
  */
 SkipList *
 temporal_tcount_transfn(SkipList *state, const Temporal *temp)
@@ -1290,9 +1343,7 @@ tnumberinst_transform_tavg(const TInstant *inst)
   double value = tnumberinst_double(inst);
   double2 dvalue;
   double2_set(value, 1, &dvalue);
-  TInstant *result = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2,
-    inst->t);
-  return result;
+  return tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst->t);
 }
 
 /**
@@ -1306,7 +1357,7 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
   for (int i = 0; i < count; i++)
   {
     TInstant *inst = instants[i];
-    double2 *value = (double2 *) DatumGetPointer(tinstant_value(inst));
+    double2 *value = (double2 *) DatumGetPointer(tinstant_val(inst));
     double tavg = value->a / value->b;
     newinstants[i] = tinstant_make(Float8GetDatum(tavg), T_TFLOAT, inst->t);
   }
@@ -1329,7 +1380,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-      double2 *value2 = (double2 *) DatumGetPointer(tinstant_value(inst));
+      double2 *value2 = (double2 *) DatumGetPointer(tinstant_val(inst));
       double value = value2->a / value2->b;
       instants[j] = tinstant_make(Float8GetDatum(value), T_TFLOAT, inst->t);
     }
@@ -1341,8 +1392,10 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup meos_temporal_agg
  * @brief Final function for temporal average aggregation
+ * @param[in] state Current aggregate state
+ * @csqlfn #Tnumber_tavg_finalfn()
  */
 Temporal *
 tnumber_tavg_finalfn(SkipList *state)
@@ -1367,8 +1420,11 @@ tnumber_tavg_finalfn(SkipList *state)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup meos_temporal_agg
  * @brief Transition function for temporal extent aggregate of temporal values
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Temporal_extent_transfn()
  */
 Span *
 temporal_extent_transfn(Span *state, const Temporal *temp)
@@ -1383,19 +1439,22 @@ temporal_extent_transfn(Span *state, const Temporal *temp)
   if (! state)
   {
     Span *result = palloc0(sizeof(Span));
-    temporal_set_period(temp, result);
+    temporal_set_tstzspan(temp, result);
     return result;
   }
 
   Span s;
-  temporal_set_period(temp, &s);
+  temporal_set_tstzspan(temp, &s);
   span_expand(&s, state);
   return state;
 }
 
 /**
- * @ingroup libmeos_temporal_agg
+ * @ingroup meos_temporal_agg
  * @brief Transition function for temporal extent aggregate of temporal numbers
+ * @param[in,out] state Current aggregate state
+ * @param[in] temp Temporal value to aggregate
+ * @csqlfn #Tnumber_extent_transfn()
  */
 TBox *
 tnumber_extent_transfn(TBox *state, const Temporal *temp)
@@ -1423,6 +1482,73 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
   temporal_set_bbox(temp, &b);
   tbox_expand(&b, state);
   return state;
+}
+
+/*****************************************************************************
+ * Append aggregate functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_agg
+ * @brief Transition function for append temporal instant aggregate
+ * @param[in,out] state Current aggregate state
+ * @param[in] inst Temporal value to aggregate
+ * @param[in] maxdist Maximum distance
+ * @param[in] maxt Maximum duration
+ * @csqlfn #Temporal_app_tinst_transfn()
+ */
+Temporal *
+temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
+  double maxdist, Interval *maxt)
+{
+  /* Null state: create a new temporal sequence with the instant */
+  if (! state)
+  {
+#if ! MEOS
+    MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
+#endif /* ! MEOS */
+    /* Default interpolation depending on the base type */
+    interpType interp = MEOS_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEP;
+    /* Arbitrary initialization to 64 elements */
+    Temporal *result = (Temporal *) tsequence_make_exp(
+      (const TInstant **) &inst, 1, 64, true, true, interp, NORMALIZE_NO);
+#if ! MEOS
+    unset_aggregation_context(ctx);
+#endif /* ! MEOS */
+    return result;
+  }
+
+  return temporal_append_tinstant(state, inst, maxdist, maxt, true);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_agg
+ * @brief Transition function for append temporal sequence aggregate
+ * @param[in,out] state Current aggregate state
+ * @param[in] seq Temporal value to aggregate
+ * @csqlfn #Temporal_app_tseq_transfn()
+ */
+Temporal *
+temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)
+{
+  /* Null state: create a new temporal sequence with the sequence */
+  if (! state)
+  {
+#if ! MEOS
+    MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
+#endif /* ! MEOS */
+    /* Arbitrary initialization to 64 elements */
+    Temporal *result = (Temporal *) tsequenceset_make_exp(
+      (const TSequence **) &seq, 1, 64, NORMALIZE_NO);
+#if ! MEOS
+    unset_aggregation_context(ctx);
+#endif /* ! MEOS */
+    return result;
+  }
+
+  return temporal_append_tsequence(state, seq, true);
 }
 
 /*****************************************************************************/

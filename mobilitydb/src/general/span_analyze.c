@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for gathering statistics from time type columns.
+ * @brief Functions for gathering statistics from span type columns
  *
  * These functions are based on those of the file rangetypes_typanalyze.c.
  * For a span type column, histograms of lower and upper bounds, and
@@ -66,7 +66,7 @@
 /**
  * @brief Comparison function for sorting float8 values, used for span lengths
  */
-int
+static int
 float8_qsort_cmp(const void *a1, const void *a2)
 {
   const float8 *f1 = (const float8 *) a1;
@@ -80,12 +80,12 @@ float8_qsort_cmp(const void *a1, const void *a2)
 }
 
 /**
- * @brief Compute statistics for time type columns and for the time dimension of
- * all temporal types whose subtype is not instant
+ * @brief Compute statistics for span type columns and for the time dimension
+ * of temporal types whose subtype is not instant
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] non_null_cnt Number of rows that are not null
- * @param[in] slot_idx Index of the slot where the statistics collected are stored
+ * @param[in] slot_idx Index of the slot where the statistics will be stored
  * @param[in] lowers,uppers Arrays of span bounds
  * @param[in] lengths Arrays of span lengths
  * @param[in] valuedim True for computing the histogram of the value dimension,
@@ -241,7 +241,7 @@ static void
 span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows __attribute__((unused)))
 {
-  int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
+  int null_cnt = 0, non_null_cnt = 0;
   double total_width = 0;
   meosType type = oid_type(stats->attrtypid);
 
@@ -315,7 +315,11 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Estimate that non-null values are unique */
     stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
 
-    /* The last argument determines the slot for number/time statistics */
+    /* Store the value/time statistics.
+     * Statistics for integer/float spans are stored in slots 0 and 1, while
+     * statistics for tstzspan are stored in the value in slots 2 and 3 */
+    bool value = numspan_type(type);
+    int slot_idx = value ? 0 : 2;
     span_compute_stats_generic(stats, non_null_cnt, &slot_idx, lowers, uppers,
       lengths, numspan_type(type));
   }
@@ -324,8 +328,8 @@ span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* We found only nulls; assume the column is entirely null */
     stats->stats_valid = true;
     stats->stanullfrac = 1.0;
-    stats->stawidth = 0;    /* "unknown" */
-    stats->stadistinct = 0.0;  /* "unknown" */
+    stats->stawidth = 0;       /* unknown */
+    stats->stadistinct = 0.0;  /* unknown */
   }
 
   pfree(lowers); pfree(uppers); pfree(lengths);

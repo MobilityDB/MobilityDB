@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -35,8 +35,43 @@
 #ifndef __DOUBLEN_H__
 #define __DOUBLEN_H__
 
-/* MEOS */
-#include "general/temporal.h"
+/* C */
+#include <stdbool.h>
+
+/*****************************************************************************/
+
+/**
+ * Structure to represent values of the internal type for computing aggregates
+ * for temporal number types
+ */
+typedef struct
+{
+  double a;
+  double b;
+} double2;
+
+/**
+ * Structure to represent values of the internal type for computing aggregates
+ * for 2D temporal points
+ */
+typedef struct
+{
+  double a;
+  double b;
+  double c;
+} double3;
+
+/**
+ * Structure to represent values of the internal type for computing aggregates
+ * for 3D temporal points
+ */
+typedef struct
+{
+  double a;
+  double b;
+  double c;
+  double d;
+} double4;
 
 /*****************************************************************************/
 

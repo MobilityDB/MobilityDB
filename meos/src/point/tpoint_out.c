@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,14 +29,11 @@
 
 /**
  * @file
- * @brief Output of temporal points in WKT, EWKT, and MF-JSON format.
+ * @brief Output of temporal points in WKT, EWKT, and MF-JSON format
  */
 
 #include "point/tpoint_out.h"
 
-/* C */
-#include <assert.h>
-#include <float.h>
 /* PostGIS */
 #include <liblwgeom_internal.h>
 /* MEOS */
@@ -45,16 +42,14 @@
 #include "general/tinstant.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
-#include "general/type_util.h"
-#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Output in WKT and EWKT format
  *****************************************************************************/
 
 /**
- * @brief Output a geometry in Well-Known Text (WKT) format.
- * @note The parameter `type` is not needed for temporal points
+ * @brief Output a geometry in the Well-Known Text (WKT) representation
+ * @note The parameter @p type is not needed for temporal points
  */
 char *
 wkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
@@ -65,15 +60,14 @@ wkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
   char *wkt = lwgeom_to_wkt(geom, WKT_ISO, maxdd, &len);
   char *result = palloc(len);
   strcpy(result, wkt);
-  lwgeom_free(geom);
-  pfree(wkt);
+  lwgeom_free(geom); pfree(wkt);
   return result;
 }
 
 /**
- * @brief Output a geometry in Extended Well-Known Text (EWKT) format, that is,
- * in WKT format prefixed with the SRID.
- * @note The parameter `type` is not needed for temporal points
+ * @brief Output a geometry in the Extended Well-Known Text (EWKT)
+ * representation, that is, in WKT representation prefixed with the SRID
+ * @note The parameter @p type is not needed for temporal points
  */
 char *
 ewkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
@@ -84,15 +78,16 @@ ewkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
   char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, maxdd, &len);
   char *result = palloc(len);
   strcpy(result, wkt);
-  lwgeom_free(geom);
-  pfree(wkt);
+  lwgeom_free(geom); pfree(wkt);
   return result;
 }
 
 /**
- * @ingroup libmeos_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal point.
- * @sqlfunc asText()
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal point
+ * @param[in] temp Temporal point
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Tpoint_as_text()
  */
 char *
 tpoint_as_text(const Temporal *temp, int maxdd)
@@ -102,22 +97,25 @@ tpoint_as_text(const Temporal *temp, int maxdd)
       ! ensure_not_negative(maxdd))
     return NULL;
 
-  char *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = tinstant_to_string((TInstant *) temp, maxdd, &wkt_out);
-  else if (temp->subtype == TSEQUENCE)
-    result = tsequence_to_string((TSequence *) temp, maxdd, false, &wkt_out);
-  else /* temp->subtype == TSEQUENCESET */
-    result = tsequenceset_to_string((TSequenceSet *) temp, maxdd, &wkt_out);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return tinstant_to_string((TInstant *) temp, maxdd, &wkt_out);
+    case TSEQUENCE:
+      return tsequence_to_string((TSequence *) temp, maxdd, false, &wkt_out);
+    default: /* TSEQUENCESET */
+      return tsequenceset_to_string((TSequenceSet *) temp, maxdd, &wkt_out);
+  }
 }
 
 /**
- * @ingroup libmeos_temporal_inout
- * @brief Return the Extended Well-Known Text (EWKT) representation a temporal
- * point.
- * @sqlfunc asEWKT()
+ * @ingroup meos_temporal_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a
+ * temporal point
+ * @param[in] temp Temporal point
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Tpoint_as_ewkt()
  */
 char *
 tpoint_as_ewkt(const Temporal *temp, int maxdd)
@@ -145,15 +143,14 @@ tpoint_as_ewkt(const Temporal *temp, int maxdd)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_internal_temporal_inout
- * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
- * representation of a geometry/geography array.
- *
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
+ * of a geometry/geography array
  * @param[in] geoarr Array of geometries/geographies
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Maximum number of decimal digits to output
  * @param[in] extended True if the output is in EWKT
- * @sqlfunc asText(), asEWKT()
+ * @csqlfn #Geoarr_as_text(), #Geoarr_as_ewkt()
  */
 char **
 geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
@@ -172,10 +169,14 @@ geoarr_as_text(const Datum *geoarr, int count, int maxdd, bool extended)
 }
 
 /**
- * @ingroup libmeos_internal_temporal_inout
- * @brief Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT)
- * representation of a temporal point array
- * @sqlfunc asText(), asEWKT()
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
+ * of an array of temporal points
+ * @param[in] temparr Array of temporal points
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Maximum number of decimal digits to output
+ * @param[in] extended True if the output is in EWKT
+ * @csqlfn #Tpointarr_as_text(), #Tpointarr_as_ewkt()
  */
 char **
 tpointarr_as_text(const Temporal **temparr, int count, int maxdd,

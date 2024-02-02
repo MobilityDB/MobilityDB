@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -77,8 +77,8 @@ CREATE AGGREGATE tcount(tgeompoint) (
   COMBINEFUNC = tcount_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -89,8 +89,8 @@ CREATE AGGREGATE tcount(tgeogpoint) (
   COMBINEFUNC = tcount_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -110,8 +110,8 @@ CREATE AGGREGATE wcount(tgeompoint, interval) (
   COMBINEFUNC = tint_tsum_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE wcount(tgeogpoint, interval) (
@@ -121,8 +121,8 @@ CREATE AGGREGATE wcount(tgeogpoint, interval) (
   COMBINEFUNC = tint_tsum_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -146,8 +146,8 @@ CREATE AGGREGATE tcentroid(tgeompoint) (
   COMBINEFUNC = tcentroid_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tcentroid_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -178,8 +178,8 @@ CREATE AGGREGATE merge(tgeompoint) (
   COMBINEFUNC = temporal_merge_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tgeompoint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE merge(tgeogpoint) (
@@ -189,8 +189,8 @@ CREATE AGGREGATE merge(tgeogpoint) (
   COMBINEFUNC = temporal_merge_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tgeogpoint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
 

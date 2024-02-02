@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -42,20 +42,36 @@
 
 /*****************************************************************************/
 
-extern Datum espatialrel_tnpoint_geo(const Temporal *temp, Datum geom,
-  Datum (*func)(Datum, Datum), bool invert);
-extern Datum espatialrel_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  Datum (*func)(Datum, Datum), bool invert);
-extern int espatialrel_tnpoint_tnpoint(const Temporal *temp1,
-  const Temporal *temp2, Datum (*func)(Datum, Datum));
+extern int ea_spatialrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
+  Datum (*func)(Datum, Datum), bool invert, bool ever);
+extern int ea_spatialrel_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+  Datum (*func)(Datum, Datum), bool invert, bool ever);
+extern int ea_spatialrel_tnpoint_tnpoint(const Temporal *temp1,
+  const Temporal *temp2, Datum (*func)(Datum, Datum), bool ever);
 
-extern int edwithin_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs,
-  double dist);
-extern Datum edwithin_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  double dist);
+extern int ea_contains_geo_tnpoint(const GSERIALIZED *gs, const Temporal *temp,
+  bool ever);
+extern int ea_contains_npoint_tnpoint(const Npoint *np, const Temporal *temp,
+  bool ever);
+extern int ea_disjoint_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever);
+extern int ea_disjoint_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+  bool ever);
+extern int ea_intersects_tnpoint_geo(const Temporal *temp,
+  const GSERIALIZED *gs, bool ever);
+extern int ea_intersects_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+  bool ever);
+extern int ea_touches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever);
+extern int ea_touches_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+  bool ever);
+extern int ea_dwithin_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs,
+  double dist, bool ever);
+extern int ea_dwithin_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+  double dist, bool ever);
 
-extern int edwithin_tnpoint_tnpoint(const Temporal *temp1,
-  const Temporal *temp2, double dist);
+extern int ea_dwithin_tnpoint_tnpoint(const Temporal *temp1,
+  const Temporal *temp2, double dist, bool ever);
 
 /*****************************************************************************/
 

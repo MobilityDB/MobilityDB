@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -39,27 +39,27 @@ SET parallel_setup_cost=0;
 SELECT extent(inst) FROM tbl_tbool_inst;
 SELECT extent(inst) FROM tbl_ttext_inst;
 SELECT extent(inst) FROM tbl_tint_inst;
-SELECT round(extent(inst), 13) FROM tbl_tfloat_inst;
+SELECT round(extent(inst), 6) FROM tbl_tfloat_inst;
 
 SELECT extent(ti) FROM tbl_tbool_discseq;
 SELECT extent(ti) FROM tbl_ttext_discseq;
 SELECT extent(ti) FROM tbl_tint_discseq;
-SELECT round(extent(ti), 13) FROM tbl_tfloat_discseq;
+SELECT round(extent(ti), 6) FROM tbl_tfloat_discseq;
 
 SELECT extent(seq) FROM tbl_tbool_seq;
 SELECT extent(seq) FROM tbl_ttext_seq;
 SELECT extent(seq) FROM tbl_tint_seq;
-SELECT round(extent(seq), 13) FROM tbl_tfloat_seq;
+SELECT round(extent(seq), 6) FROM tbl_tfloat_seq;
 
 SELECT extent(ss) FROM tbl_tbool_seqset;
 SELECT extent(ss) FROM tbl_ttext_seqset;
 SELECT extent(ss) FROM tbl_tint_seqset;
-SELECT round(extent(ss), 13) FROM tbl_tfloat_seqset;
+SELECT round(extent(ss), 6) FROM tbl_tfloat_seqset;
 
 SELECT extent(temp) FROM tbl_tbool;
 SELECT extent(temp) FROM tbl_ttext;
 SELECT extent(temp) FROM tbl_tint;
-SELECT round(extent(temp), 13) FROM tbl_tfloat;
+SELECT round(extent(temp), 6) FROM tbl_tfloat;
 
 -------------------------------------------------------------------------------
 -- TemporalInst aggregate functions

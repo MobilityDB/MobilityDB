@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -93,6 +93,94 @@ CREATE AGGREGATE extent(tfloat) (
 
 /*****************************************************************************/
 
+CREATE FUNCTION taggstate_serialize(internal)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Taggstate_serialize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION taggstate_deserialize(bytea, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Taggstate_deserialize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE FUNCTION tcount_transfn(internal, timestamptz)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Timestamptz_tcount_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_transfn(internal, tstzset)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Tstzset_tcount_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_transfn(internal, tstzspan)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Tstzspan_tcount_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_transfn(internal, tstzspanset)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Tstzspanset_tcount_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION tcount_combinefn(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tint_tagg_finalfn(internal)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE AGGREGATE tcount(timestamptz) (
+  SFUNC = tcount_transfn,
+  STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
+  PARALLEL = SAFE
+);
+
+CREATE AGGREGATE tcount(tstzset) (
+  SFUNC = tcount_transfn,
+  STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
+  PARALLEL = SAFE
+);
+
+CREATE AGGREGATE tcount(tstzspan) (
+  SFUNC = tcount_transfn,
+  STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
+  PARALLEL = SAFE
+);
+
+CREATE AGGREGATE tcount(tstzspanset) (
+  SFUNC = tcount_transfn,
+  STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = tcount_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
+  PARALLEL = SAFE
+);
+
+/*****************************************************************************/
+
 CREATE FUNCTION tcount_transfn(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
@@ -126,8 +214,8 @@ CREATE AGGREGATE tcount(tbool) (
   COMBINEFUNC = tcount_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -138,8 +226,8 @@ CREATE AGGREGATE tand(tbool) (
   COMBINEFUNC = tbool_tand_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tbool_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE tor(tbool) (
@@ -149,8 +237,8 @@ CREATE AGGREGATE tor(tbool) (
   COMBINEFUNC = tbool_tor_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tbool_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -206,8 +294,8 @@ CREATE AGGREGATE tcount(tint) (
   COMBINEFUNC = tcount_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -218,8 +306,8 @@ CREATE AGGREGATE tmin(tint) (
   COMBINEFUNC = tint_tmin_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE tmax(tint) (
@@ -229,8 +317,8 @@ CREATE AGGREGATE tmax(tint) (
   COMBINEFUNC = tint_tmax_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE tsum(tint) (
@@ -240,8 +328,8 @@ CREATE AGGREGATE tsum(tint) (
   COMBINEFUNC = tint_tsum_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE tavg(tint) (
@@ -251,8 +339,8 @@ CREATE AGGREGATE tavg(tint) (
   COMBINEFUNC = tavg_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tavg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -301,8 +389,8 @@ CREATE AGGREGATE tcount(tfloat) (
   COMBINEFUNC = tcount_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -313,8 +401,8 @@ CREATE AGGREGATE tmin(tfloat) (
   COMBINEFUNC = tfloat_tmin_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tfloat_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE tmax(tfloat) (
@@ -324,8 +412,8 @@ CREATE AGGREGATE tmax(tfloat) (
   COMBINEFUNC = tfloat_tmax_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tfloat_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE tsum(tfloat) (
@@ -335,8 +423,8 @@ CREATE AGGREGATE tsum(tfloat) (
   COMBINEFUNC = tfloat_tsum_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tfloat_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE tavg(tfloat) (
@@ -346,8 +434,8 @@ CREATE AGGREGATE tavg(tfloat) (
   COMBINEFUNC = tavg_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tavg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -386,8 +474,8 @@ CREATE AGGREGATE tcount(ttext) (
   COMBINEFUNC = tcount_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -398,8 +486,8 @@ CREATE AGGREGATE tmin(ttext) (
   COMBINEFUNC = ttext_tmin_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = ttext_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 CREATE AGGREGATE tmax(ttext) (
@@ -409,8 +497,8 @@ CREATE AGGREGATE tmax(ttext) (
   COMBINEFUNC = ttext_tmax_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = ttext_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
 
@@ -445,8 +533,8 @@ CREATE AGGREGATE merge(tbool) (
   COMBINEFUNC = temporal_merge_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tbool_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE merge(tint) (
@@ -456,8 +544,8 @@ CREATE AGGREGATE merge(tint) (
   COMBINEFUNC = temporal_merge_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE merge(tfloat) (
@@ -467,8 +555,8 @@ CREATE AGGREGATE merge(tfloat) (
   COMBINEFUNC = temporal_merge_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tfloat_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
 CREATE AGGREGATE merge(ttext) (
@@ -478,8 +566,8 @@ CREATE AGGREGATE merge(ttext) (
   COMBINEFUNC = temporal_merge_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = ttext_tagg_finalfn,
-  SERIALFUNC = tagg_serialize,
-  DESERIALFUNC = tagg_deserialize,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
 

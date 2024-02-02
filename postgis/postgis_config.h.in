@@ -82,7 +82,7 @@
 #define LT_OBJDIR ".libs/"
 
 /* Location of PostgreSQL locale directory */
-#define PGSQL_LOCALEDIR "/usr/local/pgsql/13/share/locale"
+#define PGSQL_LOCALEDIR @POSTGRESQL_SHARE_DIR@
 
 /* PostGIS build date */
 #define POSTGIS_BUILD_DATE "2021-06-26 08:21:14"

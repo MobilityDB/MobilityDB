@@ -32,7 +32,7 @@ else()
 endif()
 
 if(POSTGIS_LIBRARY STREQUAL "")
-  message(FATAL_ERROR "No PostGIS library have been found")
+  message(FATAL_ERROR "No PostGIS library have been found in ${POSTGRESQL_DYNLIB_DIR}")
 else()
   # If several versions of PostGIS found, choose the first one
   list(LENGTH POSTGIS_LIBRARY NO_POSTGIS_LIBRARIES)
@@ -67,6 +67,8 @@ if(POSTGIS_FOUND)
   mark_as_advanced(POSTGIS_LIBRARY POSTGIS_CONTROL POSTGIS_VERSION POSTGIS_VERSION_STR)
 endif()
 
+message(STATUS "POSTGRESQL_SHARE_DIR: ${POSTGRESQL_SHARE_DIR}")
+message(STATUS "POSTGRESQL_DYNLIB_DIR: ${POSTGRESQL_DYNLIB_DIR}")
 message(STATUS "POSTGIS_LIBRARY: ${POSTGIS_LIBRARY}")
 message(STATUS "POSTGIS_CONTROL: ${POSTGIS_CONTROL}")
 message(STATUS "POSTGIS_VERSION: ${POSTGIS_VERSION}")

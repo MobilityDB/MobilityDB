@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -37,6 +37,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
+#include <meos.h>
 #include "general/temporal.h"
 
 /* Compute either the tintersects or the tdisjoint relationship */
@@ -47,6 +48,9 @@
 
 extern Temporal *tinterrel_tpoint_geo(const Temporal *temp,
   const GSERIALIZED *gs, bool tinter, bool restr, bool atvalue);
+extern Temporal *tinterrel_tpoint_tpoint(const Temporal *temp1,
+  const Temporal *temp2, bool tinter, bool restr, bool atvalue);
+
 extern Temporal *tdwithin_tpoint_tpoint1(const Temporal *sync1,
   const Temporal *sync2, double dist, bool restr, bool atvalue);
 extern int tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2,

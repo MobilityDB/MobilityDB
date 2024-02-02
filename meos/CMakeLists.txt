@@ -23,6 +23,20 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 add_definitions(-DSYSTEMTZDIR="/usr/share/zoneinfo")
 message(STATUS "Directory of the time zone database: /usr/share/zoneinfo")
 
+# Option to show debug messages for analyzing the expandable data structures
+option(DEBUG_EXPAND
+  "Set DEBUG_EXPAND (default=OFF) to show debug messages for analyzing the
+  expandable data structures
+  "
+  OFF
+)
+
+if(DEBUG_EXPAND)
+  add_definitions(-DDEBUG_EXPAND=1)
+  message(STATUS "Showing debug messages for expandable data structures")
+endif()
+
+
 #-----------------------------------------
 # Set default PostgreSQL Version for MEOS
 #-----------------------------------------
@@ -48,30 +62,6 @@ set(POSTGIS_VERSION_NUMBER "30201")
 
 add_definitions(-DPOSTGIS_VERSION_STRING="${POSTGIS_VERSION_STRING}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
-
-#--------------------------------
-# Other dependencies
-#--------------------------------
-
-# GSL (GNU Scientific Library) (used for skiplists)
-find_package(GSL REQUIRED)
-include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
-
-# Proj reprojection library
-find_package(PROJ REQUIRED)
-include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
-math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
-message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
-
-# GEOS geometry library
-find_package(GEOS REQUIRED)
-include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
-math(EXPR POSTGIS_GEOS_VERSION "${GEOS_VERSION_MAJOR} * 10 + ${GEOS_VERSION_MINOR}")
-message(STATUS "POSTGIS_GEOS_VERSION: ${POSTGIS_GEOS_VERSION}")
-
-# JSON-C library (used for MF-JSON input/output)
-find_package(JSON-C REQUIRED)
-include_directories(SYSTEM ${JSON-C_INCLUDE_DIRS})
 
 #--------------------------------
 # MobilityDB directories
@@ -119,7 +109,7 @@ file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h" MEOS_INTERNAL_H)
 file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
 file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
 # Generate meos_export.h
-string(REGEX REPLACE "#include \"postgres_int_defs.h\"" "${POSTGRES_EXT_DEFS_IN_H}" MEOS_EXP_1_H "${MEOS_H}")
+string(REGEX REPLACE "#if MEOS\n#include \"postgres_int_defs.h\"\n#else\n#include <postgres.h>\n#include <utils/date.h>\n#include <utils/timestamp.h>\n#endif" "${POSTGRES_EXT_DEFS_IN_H}" MEOS_EXP_1_H "${MEOS_H}")
 string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_EXP_2_H "${MEOS_EXP_1_H}")
 file(WRITE "${CMAKE_BINARY_DIR}/meos_export.h" "${MEOS_EXP_2_H}")
 # Generate meos_internal_export.h
@@ -168,21 +158,38 @@ target_link_libraries(${MEOS_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 # Belongs to MEOS
 #--------------------------------
 
-install(
-  FILES "${CMAKE_BINARY_DIR}/meos_export.h"
-  DESTINATION "/usr/local/include"
-  RENAME "meos.h")
-install(
-  FILES "${CMAKE_BINARY_DIR}/meos_internal_export.h"
-  DESTINATION "/usr/local/include"
-  RENAME "meos_internal.h")
-install(
-  FILES "${CMAKE_SOURCE_DIR}/meos/include/general/meos_catalog.h"
-  DESTINATION "/usr/local/include")
-install(TARGETS ${MEOS_LIB_NAME} DESTINATION "/usr/local/lib")
-message(STATUS "Building MEOS:")
-message(STATUS "  Library file: '/usr/local/lib'")
-message(STATUS "  Include file: '/usr/local/include'")
+if(APPLE AND ${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+  install(FILES "${CMAKE_BINARY_DIR}/meos_export.h"
+    DESTINATION "/opt/homebrew/include"
+    RENAME "meos.h")
+  install(
+    FILES "${CMAKE_BINARY_DIR}/meos_internal_export.h"
+    DESTINATION "/opt/homebrew/include"
+    RENAME "meos_internal.h")
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/general/meos_catalog.h"
+    DESTINATION "/opt/homebrew/include")
+  install(TARGETS ${MEOS_LIB_NAME} DESTINATION "/opt/homebrew/lib")
+  message(STATUS "Building MEOS:")
+  message(STATUS "  Library file: '/opt/homebrew/lib'")
+  message(STATUS "  Include file: '/opt/homebrew/include'")
+else()
+  install(
+    FILES "${CMAKE_BINARY_DIR}/meos_export.h"
+    DESTINATION "/usr/local/include"
+    RENAME "meos.h")
+  install(
+    FILES "${CMAKE_BINARY_DIR}/meos_internal_export.h"
+    DESTINATION "/usr/local/include"
+    RENAME "meos_internal.h")
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/general/meos_catalog.h"
+    DESTINATION "/usr/local/include")
+  install(TARGETS ${MEOS_LIB_NAME} DESTINATION "/usr/local/lib")
+  message(STATUS "Building MEOS:")
+  message(STATUS "  Library file: '/usr/local/lib'")
+  message(STATUS "  Include file: '/usr/local/include'")
+endif()
 
 #-----------------------------------------------------------------------------
 # Documentation

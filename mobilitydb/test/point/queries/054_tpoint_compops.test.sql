@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -28,7 +28,76 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- Temporal eq
+-- Ever/always equal 
+-------------------------------------------------------------------------------
+
+SELECT geometry 'Point(1 1)' ?= tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1)' ?<> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1)' %= tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1)' %<> tgeompoint 'Point(1 1)@2000-01-01';
+
+--NULL
+SELECT geometry 'Polygon empty' ?= tgeompoint 'Point(1 1)@2000-01-01';
+
+SELECT geography 'Point(1 1)' ?= tgeogpoint 'Point(1 1)@2000-01-01';
+SELECT geography 'Point(1 1)' ?<> tgeogpoint 'Point(1 1)@2000-01-01';
+SELECT geography 'Point(1 1)' %= tgeogpoint 'Point(1 1)@2000-01-01';
+SELECT geography 'Point(1 1)' %<> tgeogpoint 'Point(1 1)@2000-01-01';
+
+-------------------------------------------------------------------------------
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %= tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %<> tgeompoint 'Point(1 1)@2000-01-01';
+
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' ?= tgeogpoint 'Point(1 1)@2000-01-01';
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' ?<> tgeogpoint 'Point(1 1)@2000-01-01';
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' %= tgeogpoint 'Point(1 1)@2000-01-01';
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' %<> tgeogpoint 'Point(1 1)@2000-01-01';
+
+-- NULL
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= tgeompoint 'Point(1 1)@2000-01-02';
+
+/* Errors */
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= tgeompoint 'SRID=5676;Point(1 1)@2000-01-01';
+
+-------------------------------------------------------------------------------
+
+-- Test index support function for ever/always equal and intersects<Time>
+
+CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING gist(temp);
+CREATE INDEX tbl_tgeogpoint_rtree_idx ON tbl_tgeogpoint USING gist(temp);
+
+-- EXPLAIN ANALYZE
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= geometry 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= geography 'Point(1.5 1.5)';
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= geometry 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= geography 'Point(1.5 1.5)';
+
+DROP INDEX tbl_tgeompoint_rtree_idx;
+DROP INDEX tbl_tgeogpoint_rtree_idx;
+
+-------------------------------------------------------------------------------
+
+-- Test index support function for ever/always equal and intersects<Time>
+
+CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING spgist(temp);
+CREATE INDEX tbl_tgeogpoint_quadtree_idx ON tbl_tgeogpoint USING spgist(temp);
+
+-- EXPLAIN ANALYZE
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= geometry 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= geography 'Point(1.5 1.5)';
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= geometry 'Point(1 1)';
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= geography 'Point(1.5 1.5)';
+
+DROP INDEX tbl_tgeompoint_quadtree_idx;
+DROP INDEX tbl_tgeogpoint_quadtree_idx;
+
+-------------------------------------------------------------------------------
+-- Temporal equal
 -------------------------------------------------------------------------------
 
 SELECT geometry 'Point(1 1)' #= tgeompoint 'Point(1 1)@2000-01-01';
@@ -125,37 +194,6 @@ SELECT tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02
 SELECT tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #= tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
 SELECT tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #= tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 SELECT tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #= tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
-
--- Additional parameter
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', true);
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', true);
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', true);
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', true);
-
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', false);
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', false);
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', false);
-SELECT tpoint_teq(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', false);
-
-SELECT tpoint_teq(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', true);
-SELECT tpoint_teq(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', true);
-SELECT tpoint_teq(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)', true);
-SELECT tpoint_teq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', true);
-
-SELECT tpoint_teq(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', false);
-SELECT tpoint_teq(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', false);
-SELECT tpoint_teq(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)', false);
-SELECT tpoint_teq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', false);
-
-SELECT tpoint_teq(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', true);
-SELECT tpoint_teq(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01', true);
-SELECT tpoint_teq(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01', true);
-SELECT tpoint_teq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01', true);
-
-SELECT tpoint_teq(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', false);
-SELECT tpoint_teq(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01', false);
-SELECT tpoint_teq(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01', false);
-SELECT tpoint_teq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01', false);
 
 -------------------------------------------------------------------------------
 
@@ -316,37 +354,6 @@ SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #<> tgeompoint '{[Point(1 1 1)@2000-
 SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #<> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #<> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #<> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
-
--- Additional parameter
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', true);
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', true);
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', true);
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', true);
-
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', false);
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', false);
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', false);
-SELECT tpoint_tne(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', false);
-
-SELECT tpoint_tne(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', true);
-SELECT tpoint_tne(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', true);
-SELECT tpoint_tne(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)', true);
-SELECT tpoint_tne(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', true);
-
-SELECT tpoint_tne(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)', false);
-SELECT tpoint_tne(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point(1 1)', false);
-SELECT tpoint_tne(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)', false);
-SELECT tpoint_tne(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)', false);
-
-SELECT tpoint_tne(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', true);
-SELECT tpoint_tne(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01', true);
-SELECT tpoint_tne(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01', true);
-SELECT tpoint_tne(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01', true);
-
-SELECT tpoint_tne(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', false);
-SELECT tpoint_tne(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01', false);
-SELECT tpoint_tne(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01', false);
-SELECT tpoint_tne(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01', false);
 
 -------------------------------------------------------------------------------
 

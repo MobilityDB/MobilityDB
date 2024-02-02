@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for selectivity estimation of time types operators.
+ * @brief Functions for selectivity estimation of span types
  *
  * These functions are based on those of the file `rangetypes_selfuncs.c`.
  * Estimates are based on histograms of lower and upper bounds.
@@ -39,27 +39,26 @@
 
 /* C */
 #include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <access/htup_details.h>
 #include "utils/syscache.h"
 #include <utils/lsyscache.h>
 #include <catalog/pg_statistic.h>
-#include <utils/timestamp.h>
-#include <math.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
+#include "general/span.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/span_analyze.h"
+#include "pg_general/temporal_selfuncs.h"
 
 /*****************************************************************************/
 
 /**
  * @brief Return a default selectivity estimate for given operator, when we
- * don't have statistics or cannot use them for some reason.
+ * don't have statistics or cannot use them for some reason
  */
 float8
 span_sel_default(meosOper oper __attribute__((unused)))
@@ -69,8 +68,8 @@ span_sel_default(meosOper oper __attribute__((unused)))
 }
 
 /**
- * @brief Return a default join selectivity estimate for given operator, when we
- * don't have statistics or cannot use them for some reason.
+ * @brief Return a default join selectivity estimate for given operator, when
+ * we don't have statistics or cannot use them for some reason
  */
 float8
 span_joinsel_default(meosOper oper __attribute__((unused)))
@@ -98,11 +97,12 @@ value_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
  * @brief Determine whether we can estimate selectivity for the operator
  */
 bool
-time_oper_sel(meosOper oper __attribute__((unused)), meosType ltype, meosType rtype)
+time_oper_sel(meosOper oper __attribute__((unused)), meosType ltype,
+  meosType rtype)
 {
-  if ((timespan_basetype(ltype) || timeset_type(ltype) || timespan_type(ltype) ||
+  if ((timeset_type(ltype) || timespan_basetype(ltype) || timespan_type(ltype) ||
         timespanset_type(ltype)) &&
-      (span_basetype(rtype) || timeset_type(rtype) || timespan_type(ltype) ||
+      (timeset_type(rtype) || timespan_basetype(rtype) || timespan_type(rtype) ||
         timespanset_type(rtype)))
     return true;
   return false;
@@ -111,7 +111,7 @@ time_oper_sel(meosOper oper __attribute__((unused)), meosType ltype, meosType rt
 /*****************************************************************************/
 
 /**
- * @brief Binary search on an array of span bounds.
+ * @brief Binary search on an array of span bounds
  *
  * Return the greatest index of span bound in array which is less (less or
  * equal) than given span bound. If all span bounds in array are greater or
@@ -169,7 +169,7 @@ span_position(const SpanBound *value, const SpanBound *hist1,
 
 /*****************************************************************************/
 /**
- * @brief Binary search on length histogram.
+ * @brief Binary search on length histogram
  *
  * Return greatest index of period length in histogram which is less than (less
  * than or equal) the given length value. If all lengths in the histogram are
@@ -194,8 +194,9 @@ length_hist_bsearch(Datum *hist_length, int hist_length_nvalues,
 }
 
 /**
- * @brief Get relative position of value in a length histogram bin in [0,1] range.
- * @note Function derived from PostgreSQL file rangetypes_selfuncs.c.
+ * @brief Get relative position of a value in a length histogram bin in a [0,1]
+ * range
+ * @note Function derived from PostgreSQL file `rangetypes_selfuncs.c`
  */
 double
 get_len_position(double value, double hist1, double hist2)
@@ -207,7 +208,7 @@ get_len_position(double value, double hist1, double hist2)
 /**
  * @brief Calculate the average of function P(x), in the interval
  * [length1, length2], where P(x) is the fraction of tuples with length < x
- * (or length <= x if 'equal' is true).
+ * (or length <= x if 'equal' is true)
  * @note Function derived from PostgreSQL file rangetypes_selfuncs.c.
  */
 double
@@ -363,7 +364,7 @@ calc_length_hist_frac(Datum *hist_length, int hist_length_nvalues,
 
 /**
  * @brief Estimate the fraction of values less than (or equal to, if 'equal'
- * argument is true) a given const in a histogram of span bounds.
+ * argument is true) a given const in a histogram of span bounds
  */
 static double
 span_sel_scalar(const SpanBound *constbound, const SpanBound *hist,
@@ -386,9 +387,9 @@ span_sel_scalar(const SpanBound *constbound, const SpanBound *hist,
 }
 
 /**
- * @brief Calculate selectivity of "var && const" operator, i.e., estimate the
- * fraction of spans that overlap the constant lower and upper bounds. This
- * uses the histograms of span lower and upper bounds.
+ * @brief Calculate the selectivity of "var && const" operator, i.e., estimate
+ * the fraction of spans that overlap the constant lower and upper bounds
+ * using the histograms of span lower and upper bounds
  *
  * Note that A && B <=> NOT (A <<# B OR A #>> B).
  *
@@ -429,7 +430,7 @@ span_sel_overlaps(const SpanBound *const_lower, const SpanBound *const_upper,
 
 /**
  * @brief Calculate selectivity of "var <@ const" operator, i.e., estimate the
- * fraction of spans that fall within the constant lower and upper bounds.
+ * fraction of spans that fall within the constant lower and upper bounds
  *
  * This uses the histograms of span lower bounds and span lengths, on the
  * assumption that the span lengths are independent of the lower bounds.
@@ -530,7 +531,7 @@ span_sel_contained(SpanBound *const_lower, SpanBound *const_upper,
 
 /**
  * @brief Calculate selectivity of "var @> const" operator, i.e., estimate the
- * fraction of spans that contain the constant lower and upper bounds.
+ * fraction of spans that contain the constant lower and upper bounds
  *
  * This uses the histograms of span lower bounds and span lengths, on the
  * assumption that the span lengths are independent of the lower bounds.
@@ -604,8 +605,8 @@ span_sel_contains(SpanBound *const_lower, SpanBound *const_upper,
 /*****************************************************************************/
 
 /**
- * @brief Calculate span operator selectivity using histograms of span bounds.
- * @note Used by the selectivity functions and the debugging functions.
+ * @brief Calculate span operator selectivity using histograms of span bounds
+ * @note Used by the selectivity functions
  */
 static double
 span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
@@ -686,8 +687,9 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
     selec = span_sel_default(InvalidOid);
   else
   {
-    elog(ERROR, "Unable to compute join selectivity for unknown span operator");
-    selec = -1.0;  /* keep compiler quiet */
+    // elog(NOTICE, "Unable to compute join selectivity for span operator: %d",
+      // oper);
+    selec = span_sel_default(InvalidOid);
   }
 
   pfree(hist_lower); pfree(hist_upper);
@@ -696,9 +698,8 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
 }
 
 /**
- * @brief Calculate span operator selectivity using histograms of span bounds.
- *
- * This estimate is for the portion of values that are not NULL.
+ * @brief Calculate span operator selectivity using histograms of span bounds
+ * @note This estimate is for the portion of values that are not NULL
  */
 double
 span_sel_hist(VariableStatData *vardata, const Span *constval, meosOper oper,
@@ -729,9 +730,9 @@ span_sel_hist(VariableStatData *vardata, const Span *constval, meosOper oper,
   {
     memset(&lslot, 0, sizeof(lslot));
 
-    stats_kind = value ?
-      STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM :
-      STATISTIC_KIND_TIME_LENGTH_HISTOGRAM;
+    // stats_kind = value ?
+      // STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM :
+      // STATISTIC_KIND_TIME_LENGTH_HISTOGRAM;
     if (!(HeapTupleIsValid(vardata->statsTuple) &&
         get_attstatsslot(&lslot, vardata->statsTuple,
           stats_kind, InvalidOid, ATTSTATSSLOT_VALUES)))
@@ -775,7 +776,8 @@ span_const_to_span(Node *other, Span *span)
     /* The right argument is a set or span base constant. We convert it into
      * a singleton span */
     Datum value = ((Const *) other)->constvalue;
-    span_set(value, value, true, true, type, span);
+    meosType spantype = basetype_spantype(type);
+    span_set(value, value, true, true, type, spantype, span);
   }
   else if (set_spantype(type))
   {
@@ -943,8 +945,8 @@ PGDLLEXPORT Datum _mobdb_span_sel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(_mobdb_span_sel);
 /**
  * @brief Utility function to read the calculated selectivity for a given
- * table/column, operator, and search span.
- * Used for debugging the selectivity code.
+ * table/column, operator, and search span
+ * @note Used for debugging the selectivity code
  */
 Datum
 _mobdb_span_sel(PG_FUNCTION_ARGS)
@@ -960,7 +962,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   if (table_name == NULL)
     ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
       errmsg("Oid %u does not refer to a table", table_oid)));
-  const char *att_name = text_to_cstring(att_text);
+  const char *att_name = text2cstring(att_text);
   AttrNumber att_num;
   /* We know the name? Look up the num */
   if (att_text)
@@ -1048,9 +1050,10 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
 /*
  * @brief Given two histograms of span bounds, estimate the fraction of values
  * in the first histogram that are less than (or equal to, if `equal` argument
- * is true) a value in the second histogram. The join selectivity estimation
- * for all span operators is expressed using this function. This estimation
- * is described in the following paper:
+ * is true) a value in the second histogram
+ *
+ * This function is used for estimating the join selectivity for all span
+ * operators. This estimation is described in the following paper:
  *
  * Diogo Repas, Zhicheng Luo, Maxime Schoemans, and Mahmoud Sakr, 2022
  * Selectivity Estimation of Inequality Joins In Databases
@@ -1104,8 +1107,8 @@ span_joinsel_scalar(const SpanBound *hist1, int nhist1, const SpanBound *hist2,
 
   /* Fast-forward i and j to start of iteration */
   int i, j;
-  for (i = 0; span_bound_cmp(&hist1[i], &hist2[0]) < 0; i++);
-  for (j = 0; span_bound_cmp(&hist2[j], &hist1[0]) < 0; j++);
+  for (i = 0; i < nhist1 && span_bound_cmp(&hist1[i], &hist2[0]) < 0; i++);
+  for (j = 0; j < nhist2 && span_bound_cmp(&hist2[j], &hist1[0]) < 0; j++);
 
   /* Do the estimation on overlapping regions */
   double selec = 0.0,  /* initialisation */
@@ -1184,7 +1187,7 @@ span_joinsel_oper(SpanBound *lower1, SpanBound *upper1, int nhist1,
 }
 
 /**
- * @brief Calculate span operator selectivity using histograms of span bounds.
+ * @brief Calculate span operator selectivity using histograms of span bounds
  */
 static double
 span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
@@ -1271,8 +1274,9 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
     selec = span_joinsel_default(InvalidOid);
   else
   {
-    elog(ERROR, "Unable to compute join selectivity for unknown span operator");
-    selec = -1.0;  /* keep compiler quiet */
+    // elog(ERROR, "Unable to compute join selectivity for span operator: %d",
+      // oper);
+    selec = span_sel_default(InvalidOid);
   }
 
   pfree(lower1); pfree(upper1); pfree(lower2); pfree(upper2);
@@ -1281,19 +1285,22 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
 }
 
 /**
- * @brief Calculate span operator selectivity using histograms of span bounds.
- *
- * This estimate is for the portion of values that are not NULL.
+ * @brief Calculate span operator selectivity using histograms of span bounds
+ * @note This estimate is for the portion of values that are not NULL
  */
 static double
 span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
-  meosOper oper)
+  bool value, meosOper oper)
 {
   /* There is only one lslot, see explanation below */
   AttStatsSlot hslot1, hslot2, lslot;
   Form_pg_statistic stats1 = NULL, stats2 = NULL;
   double selec;
   bool have_hist1 = false, have_hist2 = false;
+  int bounds_hist = value ? STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM :
+    STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM;
+  int lengths_hist = value ? STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM :
+    STATISTIC_KIND_TIME_LENGTH_HISTOGRAM;
 
   memset(&hslot1, 0, sizeof(hslot1));
   memset(&hslot2, 0, sizeof(hslot2));
@@ -1304,7 +1311,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
     stats1 = (Form_pg_statistic) GETSTRUCT(vardata1->statsTuple);
 
     have_hist1 = get_attstatsslot(&hslot1, vardata1->statsTuple,
-      STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM, InvalidOid,  // TODO
+      bounds_hist, InvalidOid,  // TODO
       ATTSTATSSLOT_VALUES);
     /* Check that it's a histogram, not just a dummy entry */
     if (hslot1.nvalues < 2)
@@ -1317,7 +1324,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   {
     stats2 = (Form_pg_statistic) GETSTRUCT(vardata2->statsTuple);
     have_hist2 = get_attstatsslot(&hslot2, vardata2->statsTuple,
-      STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM, InvalidOid, // TODO
+      bounds_hist, InvalidOid, // TODO
       ATTSTATSSLOT_VALUES);
     /* Check that it's a histogram, not just a dummy entry */
     if (hslot2.nvalues < 2)
@@ -1374,7 +1381,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
 
     if (!(HeapTupleIsValid(vardata2->statsTuple) &&
         get_attstatsslot(&lslot, vardata1->statsTuple,
-          STATISTIC_KIND_VALUE_LENGTH_HISTOGRAM, InvalidOid, // TODO
+          lengths_hist, InvalidOid, // TODO
           ATTSTATSSLOT_VALUES)))
     {
       free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
@@ -1406,7 +1413,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
  * @brief Estimate join selectivity for spans
  */
 float8
-span_joinsel(PlannerInfo *root, meosOper oper, List *args,
+span_joinsel(PlannerInfo *root, bool value, meosOper oper, List *args,
   JoinType jointype __attribute__((unused)), SpecialJoinInfo *sjinfo)
 {
   VariableStatData vardata1, vardata2;
@@ -1415,7 +1422,7 @@ span_joinsel(PlannerInfo *root, meosOper oper, List *args,
     &join_is_reversed);
 
   /* Estimate join selectivity */
-  float8 selec = span_joinsel_hist(&vardata1, &vardata2, oper);
+  float8 selec = span_joinsel_hist(&vardata1, &vardata2, value, oper);
 
   ReleaseVariableStats(vardata1);
   ReleaseVariableStats(vardata2);
@@ -1426,7 +1433,7 @@ span_joinsel(PlannerInfo *root, meosOper oper, List *args,
 PGDLLEXPORT Datum Span_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_joinsel);
 /**
- * @brief Join selectivity for spans.
+ * @brief Join selectivity for spans
  *
  * The selectivity is the ratio of the number of rows we think will be returned
  * divided the maximum number of rows the join could possibly return (the full
@@ -1459,6 +1466,7 @@ Span_joinsel(PG_FUNCTION_ARGS)
   /* TODO: handle t1 <op> expandX(t2) */
   if (!IsA(arg1, Var) || !IsA(arg2, Var))
     PG_RETURN_FLOAT8(span_joinsel_default(operid));
+
   /* Determine whether we can estimate selectivity for the operator */
   meosType ltype, rtype;
   meosOper oper = oid_oper(operid, &ltype, &rtype);
@@ -1471,7 +1479,7 @@ Span_joinsel(PG_FUNCTION_ARGS)
       PG_RETURN_FLOAT8(span_joinsel_default(operid));
   }
 
-  float8 selec = span_joinsel(root, oper, args, jointype, sjinfo);
+  float8 selec = span_joinsel(root, value, oper, args, jointype, sjinfo);
 
   PG_RETURN_FLOAT8(selec);
 }
@@ -1480,8 +1488,8 @@ PGDLLEXPORT Datum _mobdb_span_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(_mobdb_span_joinsel);
 /**
  * @brief Utility function to read the calculated selectivity for a given
- * couple of table/column, and operator.
- * @note Used for testing the selectivity code.
+ * couple of table/column, and operator
+ * @note Used for testing the selectivity code
  */
 Datum
 _mobdb_span_joinsel(PG_FUNCTION_ARGS)
@@ -1498,7 +1506,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   if (table1_name == NULL)
     ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
       errmsg("Oid %u does not refer to a table", table1_oid)));
-  const char *att1_name = text_to_cstring(att1_text);
+  const char *att1_name = text2cstring(att1_text);
   AttrNumber att1_num;
   /* Get the attribute number */
   att1_num = get_attnum(table1_oid, att1_name);
@@ -1511,7 +1519,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   if (table2_name == NULL)
     ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
       errmsg("Oid %u does not refer to a table", table2_oid)));
-  const char *att2_name = text_to_cstring(att2_text);
+  const char *att2_name = text2cstring(att2_text);
   AttrNumber att2_num;
   /* Get the attribute number */
   att2_num = get_attnum(table2_oid, att2_name);
@@ -1550,12 +1558,14 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   if (! get_attstatsslot(&hslot1, stats1_tuple, stats_kind, InvalidOid,
       ATTSTATSSLOT_VALUES))
     elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+
   /* Check that it's a histogram, not just a dummy entry */
   if (hslot1.nvalues < 2)
   {
     free_attstatsslot(&hslot1);
     elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
   }
+
   /* Second table */
   stats2_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table2_oid),
     Int16GetDatum(att2_num), BoolGetDatum(false));
@@ -1565,6 +1575,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   if (! get_attstatsslot(&hslot2, stats2_tuple, stats_kind, InvalidOid,
       ATTSTATSSLOT_VALUES))
     elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+
   /* Check that it's a histogram, not just a dummy entry */
   if (hslot2.nvalues < 2)
   {

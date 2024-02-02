@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -293,6 +293,9 @@ SELECT round(tfloat '1.55@2000-01-01',1);
 SELECT round(tfloat '{1.55@2000-01-01, 2.55@2000-01-02, 1.55@2000-01-03}',1);
 SELECT round(tfloat '[1.55@2000-01-01, 2.55@2000-01-02, 1.55@2000-01-03]',1);
 SELECT round(tfloat '{[1.55@2000-01-01, 2.55@2000-01-02, 1.55@2000-01-03],[3.55@2000-01-04, 3.55@2000-01-05]}',1);
+
+SELECT round(ARRAY[tfloat '[1.55@2000-01-01, 2.55@2000-01-02, 1.55@2000-01-03]', '[3.55@2000-01-04, 3.55@2000-01-05]'],1);
+SELECT round(ARRAY[]::tfloat[]);
 
 SELECT degrees(-5 * pi(), true);
 

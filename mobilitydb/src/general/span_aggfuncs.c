@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Aggregate function for span types.
+ * @brief Aggregate function for span types
  */
 
 /* C */
@@ -41,10 +41,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal.h"
-#include "general/type_util.h"
 #include "general/set.h"
 #include "general/span.h"
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 
@@ -53,7 +52,9 @@
 PGDLLEXPORT Datum Span_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_extent_transfn);
 /**
- * @brief Transition function for extent aggregation of span values
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for extent aggregation of spans
+ * @sqlfn extent()
  */
 Datum
 Span_extent_transfn(PG_FUNCTION_ARGS)
@@ -63,13 +64,15 @@ Span_extent_transfn(PG_FUNCTION_ARGS)
   Span *result = span_extent_transfn(s1, s2);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(result);
 }
 
 PGDLLEXPORT Datum Span_extent_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_extent_combinefn);
 /**
- * @brief Combine function for temporal extent aggregation
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Combine function for extent aggregation of spans
+ * @sqlfn extent()
  */
 Datum
 Span_extent_combinefn(PG_FUNCTION_ARGS)
@@ -79,13 +82,11 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
   if (! s2 && ! s1)
     PG_RETURN_NULL();
   if (s1 && ! s2)
-    PG_RETURN_POINTER(s1);
+    PG_RETURN_SPAN_P(s1);
   if (s2 && ! s1)
-    PG_RETURN_POINTER(s2);
+    PG_RETURN_SPAN_P(s2);
   /* Non-strict union */
-  Span *result = palloc(sizeof(Span));
-  bbox_union_span_span(s1, s2, result);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPAN_P(super_union_span_span(s1, s2));
 }
 
 /*****************************************************************************/
@@ -93,7 +94,9 @@ Span_extent_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Spanbase_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanbase_extent_transfn);
 /**
- * @brief Transition function for extent aggregation of base values of span types
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for extent aggregation of span base values
+ * @sqlfn extent()
  */
 Datum
 Spanbase_extent_transfn(PG_FUNCTION_ARGS)
@@ -102,17 +105,18 @@ Spanbase_extent_transfn(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   Span *s = PG_ARGISNULL(0) ? NULL : PG_GETARG_SPAN_P(0);
   if (PG_ARGISNULL(1))
-    PG_RETURN_POINTER(s);
-  Datum d = PG_GETARG_DATUM(1);
+    PG_RETURN_SPAN_P(s);
+  Datum value = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  s = spanbase_extent_transfn(s, d, basetype);
-  PG_RETURN_POINTER(s);
+  PG_RETURN_SPAN_P(spanbase_extent_transfn(s, value, basetype));
 }
 
 PGDLLEXPORT Datum Set_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_extent_transfn);
 /**
- * @brief Transition function for extent aggregation of set values
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for extent aggregation of sets
+ * @sqlfn extent()
  */
 Datum
 Set_extent_transfn(PG_FUNCTION_ARGS)
@@ -123,13 +127,15 @@ Set_extent_transfn(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(set, 1);
   if (! span)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(span);
+  PG_RETURN_SPAN_P(span);
 }
 
 PGDLLEXPORT Datum Spanset_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_extent_transfn);
 /**
- * @brief Transition function for extent aggregation of span set values
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for extent aggregation of span sets
+ * @sqlfn extent()
  */
 Datum
 Spanset_extent_transfn(PG_FUNCTION_ARGS)
@@ -140,52 +146,30 @@ Spanset_extent_transfn(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ss, 1);
   if (! s)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(s);
+  PG_RETURN_SPAN_P(s);
 }
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Span_union_transfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_union_transfn);
 /*
- * @brief Transition function for aggregating spans
- *
- * All we do here is gather the input spans into an array
- * so that the finalfn can sort and combine them.
+ * The transition and combine functions for span_union are, respectively,
+ * PostgreSQL's array_agg_transfn and array_agg_combinefn. Similarly, the
+ * combine function for spanset_union is PostgreSQL's array_agg_combinefn.
+ * The idea is that all the component spans are simply appened to an array
+ * without any processing and thus are not sorted. The final function then
+ * extract the spans, sort them, and performs the normalization.
+ * Reusing PostgreSQL array function enables us to leverage parallel aggregates
+ * (introduced in PostgreSQL version 16) and other built-in optimizations.
  */
-Datum
-Span_union_transfn(PG_FUNCTION_ARGS)
-{
-  MemoryContext aggContext;
-  if (! AggCheckCallContext(fcinfo, &aggContext))
-    elog(ERROR, "span_union_transfn called in non-aggregate context");
-
-  Oid spanoid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-#if DEBUG_BUILD
-  meosType spantype = oid_type(spanoid);
-  assert(span_type(spantype));
-#endif /* DEBUG_BUILD */
-
-  ArrayBuildState *state;
-  if (PG_ARGISNULL(0))
-    state = initArrayResult(spanoid, aggContext, false);
-  else
-    state = (ArrayBuildState *) PG_GETARG_POINTER(0);
-
-  /* Skip NULLs */
-  if (! PG_ARGISNULL(1))
-    accumArrayResult(state, PG_GETARG_DATUM(1), false, spanoid, aggContext);
-
-  PG_RETURN_POINTER(state);
-}
 
 PGDLLEXPORT Datum Spanset_union_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_union_transfn);
-/*
- * @brief Transition function for aggregating spans
- *
- * All we do here is gather the input span sets' spans into an array so
- * that the finalfn can sort and combine them.
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Transition function for union aggregation of span sets
+ * @note We simply gather the input values into an array so that the final
+ * function can sort and combine them
+ * @sqlfn union()
  */
 Datum
 Spanset_union_transfn(PG_FUNCTION_ARGS)
@@ -206,31 +190,33 @@ Spanset_union_transfn(PG_FUNCTION_ARGS)
   else
     state = (ArrayBuildState *) PG_GETARG_POINTER(0);
 
-  /* skip NULLs */
-  if (! PG_ARGISNULL(1) )
+  /* Skip NULLs */
+  if (! PG_ARGISNULL(1))
   {
     SpanSet *ss = PG_GETARG_SPANSET_P(1);
-    const Span **spans = spanset_spans(ss);
     for (int i = 0; i < ss->count; i++)
-      accumArrayResult(state, SpanPGetDatum(spans[i]), false, spanoid,
-        aggContext);
-    pfree(spans);
+      accumArrayResult(state, SpanPGetDatum(SPANSET_SP_N(ss, i)), false,
+        spanoid, aggContext);
   }
   PG_RETURN_POINTER(state);
 }
 
 PGDLLEXPORT Datum Span_union_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_union_finalfn);
-/*
- * @brief use our internal array to merge overlapping/touching spans.
- * @note Shared by Span_union_finalfn() and Spanset_union_finalfn().
+/**
+ * @ingroup mobilitydb_setspan_agg
+ * @brief Final function for union aggregation of spans.
+ * @note Shared for both spans and span sets
+ * @sqlfn union()
  */
 Datum
 Span_union_finalfn(PG_FUNCTION_ARGS)
 {
-  MemoryContext aggContext;
-  if (! AggCheckCallContext(fcinfo, &aggContext))
-    elog(ERROR, "Span_union_finalfn called in non-aggregate context");
+  /* cannot be called directly because of internal-type argument */
+  Assert(AggCheckCallContext(fcinfo, NULL));
+  // MemoryContext aggContext;
+  // if (! AggCheckCallContext(fcinfo, &aggContext))
+    // elog(ERROR, "Span_union_finalfn called in non-aggregate context");
 
   ArrayBuildState *state = PG_ARGISNULL(0) ? NULL :
     (ArrayBuildState *) PG_GETARG_POINTER(0);
@@ -244,17 +230,18 @@ Span_union_finalfn(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   Span *spans = palloc0(sizeof(Span) * count);
+  int k = 0;
   for (int i = 0; i < count; i++)
-    spans[i] = *(DatumGetSpanP(state->dvalues[i]));
+  {
+    if (! state->dnulls[i])
+      spans[k++] = *(DatumGetSpanP(state->dvalues[i]));
+  }
 
-  int newcount;
-  Span *normspans = spanarr_normalize(spans, count, true, &newcount);
-  SpanSet *result = spanset_make_free(normspans, newcount, NORMALIZE_NO);
+  /* Also return NULL if we had only null inputs */
+  if (k == 0)
+    PG_RETURN_NULL();
 
-  /* Free memory */
-  pfree(spans);
-
-  PG_RETURN_POINTER(result);
+  PG_RETURN_SPANSET_P(spanset_make_free(spans, k, NORMALIZE, ORDERED_NO));
 }
 
 /*****************************************************************************/

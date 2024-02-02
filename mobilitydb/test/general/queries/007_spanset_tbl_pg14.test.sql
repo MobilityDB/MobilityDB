@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -37,6 +37,7 @@
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE i <> (i::int4multirange)::intspanset;
-SELECT COUNT(*) FROM tbl_tstzspanset WHERE ps <> (ps::tstzmultirange)::tstzspanset;
+SELECT COUNT(*) FROM tbl_datespanset WHERE d <> (d::datemultirange)::datespanset;
+SELECT COUNT(*) FROM tbl_tstzspanset WHERE t <> (t::tstzmultirange)::tstzspanset;
 
 -------------------------------------------------------------------------------

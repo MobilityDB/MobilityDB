@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -67,18 +67,7 @@ extern float8 pg_datan2(float8 arg1, float8 arg2);
 
 /* Functions adadpted from timestamp.c */
 
-extern TimestampTz pg_timestamptz_in(const char *str, int32 typmod);
-extern char *pg_timestamptz_out(TimestampTz dt);
-
-extern Interval *pg_interval_pl(const Interval *span1, const Interval *span2);
-extern TimestampTz pg_timestamp_pl_interval(TimestampTz timestamp,
-  const Interval *span);
-extern TimestampTz pg_timestamp_mi_interval(TimestampTz timestamp,
-  const Interval *span);
 extern Interval *pg_interval_justify_hours(const Interval *span);
-extern Interval *pg_timestamp_mi(TimestampTz dt1, TimestampTz dt2);
-extern int pg_interval_cmp(const Interval *interval1,
-  const Interval *interval2);
 
 /* Functions adapted from hashfn.h and hashfn.c */
 

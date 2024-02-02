@@ -446,200 +446,200 @@ SELECT COUNT(*) FROM Temp;
      5
 (1 row)
 
-SELECT dynamicTimeWarp(tint '1@2000-01-01', tint '1@2000-01-01');
- dynamictimewarp 
------------------
-               0
+SELECT dynTimeWarpDistance(tint '1@2000-01-01', tint '1@2000-01-01');
+ dyntimewarpdistance 
+---------------------
+                   0
 (1 row)
 
-SELECT dynamicTimeWarp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '1@2000-01-01');
- dynamictimewarp 
------------------
-               1
+SELECT dynTimeWarpDistance(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '1@2000-01-01');
+ dyntimewarpdistance 
+---------------------
+                   1
 (1 row)
 
-SELECT dynamicTimeWarp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '1@2000-01-01');
- dynamictimewarp 
------------------
-               1
+SELECT dynTimeWarpDistance(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '1@2000-01-01');
+ dyntimewarpdistance 
+---------------------
+                   1
 (1 row)
 
-SELECT dynamicTimeWarp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '1@2000-01-01');
- dynamictimewarp 
------------------
-               5
+SELECT dynTimeWarpDistance(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '1@2000-01-01');
+ dyntimewarpdistance 
+---------------------
+                   5
 (1 row)
 
-SELECT dynamicTimeWarp(tint '1@2000-01-01', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
- dynamictimewarp 
------------------
-               1
+SELECT dynTimeWarpDistance(tint '1@2000-01-01', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ dyntimewarpdistance 
+---------------------
+                   1
 (1 row)
 
-SELECT dynamicTimeWarp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
- dynamictimewarp 
------------------
-               0
+SELECT dynTimeWarpDistance(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ dyntimewarpdistance 
+---------------------
+                   0
 (1 row)
 
-SELECT dynamicTimeWarp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
- dynamictimewarp 
------------------
-               0
+SELECT dynTimeWarpDistance(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ dyntimewarpdistance 
+---------------------
+                   0
 (1 row)
 
-SELECT dynamicTimeWarp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
- dynamictimewarp 
------------------
-               4
+SELECT dynTimeWarpDistance(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ dyntimewarpdistance 
+---------------------
+                   4
 (1 row)
 
-SELECT dynamicTimeWarp(tint '1@2000-01-01', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
- dynamictimewarp 
------------------
-               1
+SELECT dynTimeWarpDistance(tint '1@2000-01-01', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ dyntimewarpdistance 
+---------------------
+                   1
 (1 row)
 
-SELECT dynamicTimeWarp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
- dynamictimewarp 
------------------
-               0
+SELECT dynTimeWarpDistance(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ dyntimewarpdistance 
+---------------------
+                   0
 (1 row)
 
-SELECT dynamicTimeWarp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
- dynamictimewarp 
------------------
-               0
+SELECT dynTimeWarpDistance(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ dyntimewarpdistance 
+---------------------
+                   0
 (1 row)
 
-SELECT dynamicTimeWarp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
- dynamictimewarp 
------------------
-               4
+SELECT dynTimeWarpDistance(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ dyntimewarpdistance 
+---------------------
+                   4
 (1 row)
 
-SELECT dynamicTimeWarp(tint '1@2000-01-01', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
- dynamictimewarp 
------------------
-               5
+SELECT dynTimeWarpDistance(tint '1@2000-01-01', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ dyntimewarpdistance 
+---------------------
+                   5
 (1 row)
 
-SELECT dynamicTimeWarp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
- dynamictimewarp 
------------------
-               4
+SELECT dynTimeWarpDistance(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ dyntimewarpdistance 
+---------------------
+                   4
 (1 row)
 
-SELECT dynamicTimeWarp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
- dynamictimewarp 
------------------
-               4
+SELECT dynTimeWarpDistance(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ dyntimewarpdistance 
+---------------------
+                   4
 (1 row)
 
-SELECT dynamicTimeWarp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
- dynamictimewarp 
------------------
-               0
+SELECT dynTimeWarpDistance(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ dyntimewarpdistance 
+---------------------
+                   0
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '1.5@2000-01-01', tfloat '1.5@2000-01-01');
- dynamictimewarp 
------------------
-               0
+SELECT dynTimeWarpDistance(tfloat '1.5@2000-01-01', tfloat '1.5@2000-01-01');
+ dyntimewarpdistance 
+---------------------
+                   0
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '1.5@2000-01-01');
- dynamictimewarp 
------------------
-               1
+SELECT dynTimeWarpDistance(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '1.5@2000-01-01');
+ dyntimewarpdistance 
+---------------------
+                   1
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '1.5@2000-01-01');
- dynamictimewarp 
------------------
-               1
+SELECT dynTimeWarpDistance(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '1.5@2000-01-01');
+ dyntimewarpdistance 
+---------------------
+                   1
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '1.5@2000-01-01');
- dynamictimewarp 
------------------
-               5
+SELECT dynTimeWarpDistance(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '1.5@2000-01-01');
+ dyntimewarpdistance 
+---------------------
+                   5
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '1.5@2000-01-01', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
- dynamictimewarp 
------------------
-               1
+SELECT dynTimeWarpDistance(tfloat '1.5@2000-01-01', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+ dyntimewarpdistance 
+---------------------
+                   1
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
- dynamictimewarp 
------------------
-               0
+SELECT dynTimeWarpDistance(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+ dyntimewarpdistance 
+---------------------
+                   0
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
- dynamictimewarp 
------------------
-               0
+SELECT dynTimeWarpDistance(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+ dyntimewarpdistance 
+---------------------
+                   0
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
- dynamictimewarp 
------------------
-               4
+SELECT dynTimeWarpDistance(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+ dyntimewarpdistance 
+---------------------
+                   4
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '1.5@2000-01-01', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- dynamictimewarp 
------------------
-               1
+SELECT dynTimeWarpDistance(tfloat '1.5@2000-01-01', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ dyntimewarpdistance 
+---------------------
+                   1
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- dynamictimewarp 
------------------
-               0
+SELECT dynTimeWarpDistance(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ dyntimewarpdistance 
+---------------------
+                   0
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- dynamictimewarp 
------------------
-               0
+SELECT dynTimeWarpDistance(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ dyntimewarpdistance 
+---------------------
+                   0
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- dynamictimewarp 
------------------
-               4
+SELECT dynTimeWarpDistance(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ dyntimewarpdistance 
+---------------------
+                   4
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '1.5@2000-01-01', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
- dynamictimewarp 
------------------
-               5
+SELECT dynTimeWarpDistance(tfloat '1.5@2000-01-01', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+ dyntimewarpdistance 
+---------------------
+                   5
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
- dynamictimewarp 
------------------
-               4
+SELECT dynTimeWarpDistance(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+ dyntimewarpdistance 
+---------------------
+                   4
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
- dynamictimewarp 
------------------
-               4
+SELECT dynTimeWarpDistance(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+ dyntimewarpdistance 
+---------------------
+                   4
 (1 row)
 
-SELECT dynamicTimeWarp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
- dynamictimewarp 
------------------
-               0
+SELECT dynTimeWarpDistance(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+ dyntimewarpdistance 
+---------------------
+                   0
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '1@2000-01-01', tint '1@2000-01-01') )
+  SELECT dynTimeWarpPath(tint '1@2000-01-01', tint '1@2000-01-01') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -647,7 +647,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '1@2000-01-01') )
+  SELECT dynTimeWarpPath(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '1@2000-01-01') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -655,7 +655,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '1@2000-01-01') )
+  SELECT dynTimeWarpPath(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '1@2000-01-01') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -663,7 +663,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '1@2000-01-01') )
+  SELECT dynTimeWarpPath(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '1@2000-01-01') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -671,7 +671,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '1@2000-01-01', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
+  SELECT dynTimeWarpPath(tint '1@2000-01-01', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -679,7 +679,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
+  SELECT dynTimeWarpPath(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -687,7 +687,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
+  SELECT dynTimeWarpPath(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -695,7 +695,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
+  SELECT dynTimeWarpPath(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -703,7 +703,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '1@2000-01-01', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
+  SELECT dynTimeWarpPath(tint '1@2000-01-01', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -711,7 +711,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
+  SELECT dynTimeWarpPath(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -719,7 +719,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
+  SELECT dynTimeWarpPath(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -727,7 +727,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
+  SELECT dynTimeWarpPath(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -735,7 +735,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '1@2000-01-01', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
+  SELECT dynTimeWarpPath(tint '1@2000-01-01', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -743,7 +743,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
+  SELECT dynTimeWarpPath(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -751,7 +751,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
+  SELECT dynTimeWarpPath(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -759,7 +759,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
+  SELECT dynTimeWarpPath(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -767,7 +767,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '1.5@2000-01-01', tfloat '1.5@2000-01-01') )
+  SELECT dynTimeWarpPath(tfloat '1.5@2000-01-01', tfloat '1.5@2000-01-01') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -775,7 +775,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '1.5@2000-01-01') )
+  SELECT dynTimeWarpPath(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '1.5@2000-01-01') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -783,7 +783,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '1.5@2000-01-01') )
+  SELECT dynTimeWarpPath(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '1.5@2000-01-01') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -791,7 +791,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '1.5@2000-01-01') )
+  SELECT dynTimeWarpPath(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '1.5@2000-01-01') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -799,7 +799,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '1.5@2000-01-01', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}') )
+  SELECT dynTimeWarpPath(tfloat '1.5@2000-01-01', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -807,7 +807,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}') )
+  SELECT dynTimeWarpPath(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -815,7 +815,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}') )
+  SELECT dynTimeWarpPath(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -823,7 +823,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}') )
+  SELECT dynTimeWarpPath(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -831,7 +831,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '1.5@2000-01-01', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]') )
+  SELECT dynTimeWarpPath(tfloat '1.5@2000-01-01', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -839,7 +839,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]') )
+  SELECT dynTimeWarpPath(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -847,7 +847,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]') )
+  SELECT dynTimeWarpPath(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -855,7 +855,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]') )
+  SELECT dynTimeWarpPath(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -863,7 +863,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '1.5@2000-01-01', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}') )
+  SELECT dynTimeWarpPath(tfloat '1.5@2000-01-01', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -871,7 +871,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}') )
+  SELECT dynTimeWarpPath(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -879,7 +879,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}') )
+  SELECT dynTimeWarpPath(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------
@@ -887,7 +887,7 @@ SELECT COUNT(*) FROM Temp;
 (1 row)
 
 WITH Temp AS (
-  SELECT dynamicTimeWarpPath(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}') )
+  SELECT dynTimeWarpPath(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}') )
 SELECT COUNT(*) FROM Temp;
  count 
 -------

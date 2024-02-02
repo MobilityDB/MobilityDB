@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,18 +30,16 @@
 /**
  * @file
  * @brief Internal types used in particular for computing the average and
- * centroid temporal aggregates.
+ * centroid temporal aggregates
  */
 #include "general/doublen.h"
 
-/* C */
-#include <float.h>
 /* PostgreSQL */
+#include <postgres.h>
 #include <libpq/pqformat.h>
 #include <utils/float.h>
 /* MEOS */
 #include <meos.h>
-#include "general/type_util.h"
 
 /*****************************************************************************
  * Send/receive functions
@@ -112,7 +110,7 @@ double4_recv(StringInfo buf)
 }
 
 /**
- * @brief Send function for double3 values
+ * @brief Send function for double4 values
  */
 bytea *
 double4_send(double4 *d)

@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -28,7 +28,7 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- Tests for span data type.
+-- Tests for span data type
 -- File span.c
 -------------------------------------------------------------------------------
 
@@ -56,8 +56,23 @@ SELECT span(timestamptz '2000-01-01', '2000-01-01');
 SELECT span(timestamptz '2000-01-02', '2000-01-01');
 
 -------------------------------------------------------------------------------
--- Casting
+-- Conversion
 -------------------------------------------------------------------------------
+
+SELECT range(datespan '[2000-01-01,2000-01-01]');
+SELECT range(datespan '[2000-01-01,2000-01-02]');
+SELECT range(datespan '(2000-01-01,2000-01-02]');
+SELECT range(datespan '[2000-01-01,2000-01-02)');
+SELECT range(datespan '(2000-01-01,2000-01-03)');
+
+SELECT span(daterange '[2000-01-01,2000-01-01]');
+SELECT span(daterange '[2000-01-01,2000-01-02]');
+SELECT span(daterange '(2000-01-01,2000-01-02]');
+SELECT span(daterange '[2000-01-01,2000-01-02)');
+SELECT span(daterange'(2000-01-01,2000-01-03)');
+
+SELECT span(date '2000-01-01');
+SELECT date '2000-01-01'::datespan;
 
 SELECT range(tstzspan '[2000-01-01,2000-01-01]');
 SELECT range(tstzspan '[2000-01-01,2000-01-02]');
@@ -73,34 +88,11 @@ SELECT span(tstzrange'(2000-01-01,2000-01-02)');
 
 SELECT span(timestamptz '2000-01-01');
 SELECT timestamptz '2000-01-01'::tstzspan;
+
 /* Errors */
 SELECT tstzrange '[2000-01-01,]'::tstzspan;
 SELECT tstzrange '[,2000-01-01]'::tstzspan;
 SELECT tstzrange 'empty'::tstzspan;
-
--------------------------------------------------------------------------------
--- Transformation functions
--------------------------------------------------------------------------------
-
-SELECT shift(intspan '[1,2)', 2);
-
-SELECT shift(tstzspan '[2000-01-01,2000-01-01]', '5 min');
-SELECT shift(tstzspan '[2000-01-01,2000-01-02]', '5 min');
-SELECT shift(tstzspan '(2000-01-01,2000-01-02]', '5 min');
-SELECT shift(tstzspan '[2000-01-01,2000-01-02)', '5 min');
-SELECT shift(tstzspan '(2000-01-01,2000-01-02)', '5 min');
-
-SELECT scale(tstzspan '[2000-01-01,2000-01-01]', '1 hour');
-SELECT scale(tstzspan '[2000-01-01,2000-01-02]', '1 hour');
-SELECT scale(tstzspan '(2000-01-01,2000-01-02]', '1 hour');
-SELECT scale(tstzspan '[2000-01-01,2000-01-02)', '1 hour');
-SELECT scale(tstzspan '(2000-01-01,2000-01-02)', '1 hour');
-
-SELECT shiftScale(tstzspan '[2000-01-01,2000-01-01]', '5 min', '1 hour');
-SELECT shiftScale(tstzspan '[2000-01-01,2000-01-02]', '5 min', '1 hour');
-SELECT shiftScale(tstzspan '(2000-01-01,2000-01-02]', '5 min', '1 hour');
-SELECT shiftScale(tstzspan '[2000-01-01,2000-01-02)', '5 min', '1 hour');
-SELECT shiftScale(tstzspan '(2000-01-01,2000-01-02)', '5 min', '1 hour');
 
 -------------------------------------------------------------------------------
 -- Accessor functions
@@ -157,11 +149,46 @@ SELECT span_hash_extended(tstzspan '[2000-01-01,2000-01-02]', 1) <> span_hash_ex
 -- canonicalize
 SELECT intspan '[1,2]';
 SELECT intspan '(1,2]';
+SELECT datespan '[2000-01-01,2000-01-02]';
+SELECT datespan '(2000-01-01,2000-01-02]';
+
+-------------------------------------------------------------------------------
+-- Transformation functions
+-------------------------------------------------------------------------------
+
+SELECT shift(intspan '[1,2)', 2);
+SELECT shift(datespan '[2000-01-01,2000-01-02)', 2);
+
+SELECT shift(tstzspan '[2000-01-01,2000-01-01]', '5 min');
+SELECT shift(tstzspan '[2000-01-01,2000-01-02]', '5 min');
+SELECT shift(tstzspan '(2000-01-01,2000-01-02]', '5 min');
+SELECT shift(tstzspan '[2000-01-01,2000-01-02)', '5 min');
+SELECT shift(tstzspan '(2000-01-01,2000-01-02)', '5 min');
+
+SELECT scale(intspan '[1,2)', 4);
+SELECT scale(datespan '[2000-01-01,2000-01-02)', 4);
+
+SELECT scale(tstzspan '[2000-01-01,2000-01-01]', '1 hour');
+SELECT scale(tstzspan '[2000-01-01,2000-01-02]', '1 hour');
+SELECT scale(tstzspan '(2000-01-01,2000-01-02]', '1 hour');
+SELECT scale(tstzspan '[2000-01-01,2000-01-02)', '1 hour');
+SELECT scale(tstzspan '(2000-01-01,2000-01-02)', '1 hour');
+
+SELECT shiftScale(intspan '[1,2)', 4, 4);
+SELECT shiftScale(datespan '[2000-01-01,2000-01-02)', 4, 4);
+
+SELECT shiftScale(tstzspan '[2000-01-01,2000-01-01]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '[2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '(2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '[2000-01-01,2000-01-02)', '5 min', '1 hour');
+SELECT shiftScale(tstzspan '(2000-01-01,2000-01-02)', '5 min', '1 hour');
 
 SELECT round(floatspan '[1.123456789,2.123456789]',6);
 SELECT round(floatspan '[-inf,2.123456789]',6);
-select round(floatspan '[1.123456789,inf]',6);
+SELECT round(floatspan '[1.123456789,inf]',6);
 
+-------------------------------------------------------------------------------
+-- Position functions
 -------------------------------------------------------------------------------
 
 SELECT intspan '[3,5)' << 5;
@@ -195,5 +222,22 @@ SELECT 5.5 &> floatspan '[3.5, 5.5]';
 
 SELECT floatspan '[3.5, 5.5]' -|- 5.5;
 SELECT 5.5 -|- floatspan '[3.5, 5.5]';
+
+-------------------------------------------------------------------------------
+
+SELECT datespan '[2000-01-03,2000-01-05)' <<# date '2000-01-05';
+SELECT date '2000-01-05' <<# datespan '[2000-01-03,2000-01-05)';
+
+SELECT datespan '[2000-01-03,2000-01-05)' #>> date '2000-01-05';
+SELECT date '2000-01-05' #>> datespan '[2000-01-03,2000-01-05)';
+
+SELECT datespan '[2000-01-03,2000-01-05)' &<# date '2000-01-05';
+SELECT date '2000-01-05' &<# datespan '[2000-01-03,2000-01-05)';
+
+SELECT datespan '[2000-01-03,2000-01-05)' #&> date '2000-01-05';
+SELECT date '2000-01-05' #&> datespan '[2000-01-03,2000-01-05)';
+
+SELECT datespan '[2000-01-03,2000-01-05)' -|- date '2000-01-05';
+SELECT date '2000-01-05' -|- datespan '[2000-01-03,2000-01-05)';
 
 -------------------------------------------------------------------------------

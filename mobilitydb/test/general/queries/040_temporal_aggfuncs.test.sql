@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -25,6 +25,19 @@
 -- AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
 -- PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 --
+-------------------------------------------------------------------------------
+
+SELECT merge(inst) FROM (VALUES
+(tfloat '1@2000-01-01'),(tfloat '2@2000-01-02')) t(inst);
+SELECT merge(seq) FROM (VALUES
+(tfloat '[1@2000-01-01]'),(tfloat '[2@2000-01-02]')) t(seq);
+
+/* Errors */
+SELECT merge(inst) FROM (VALUES
+(tfloat '1@2000-01-01'),(tfloat '2@2000-01-01')) t(inst);
+SELECT merge(seq) FROM (VALUES
+(tfloat '[1@2000-01-01]'),(tfloat '[2@2000-01-01]')) t(seq);
+
 -------------------------------------------------------------------------------
 
 SELECT tand(temp) FROM (VALUES

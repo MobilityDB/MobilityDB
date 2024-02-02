@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -43,9 +43,9 @@ SELECT COUNT(*) FROM tbl_float WHERE f::tbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_intspan WHERE i::tbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_floatspan WHERE f::tbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_timestamptz WHERE t::tbox IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tstzspan WHERE p::tbox IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzspan WHERE t::tbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tstzset WHERE t::tbox IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tstzspanset WHERE ps::tbox IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tstzspanset WHERE t::tbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tint WHERE temp::tbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp::tbox IS NOT NULL;
 
@@ -53,9 +53,9 @@ SELECT COUNT(*) FROM tbl_int, tbl_timestamptz WHERE tbox(i, t) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_intspan, tbl_timestamptz WHERE tbox(i, t) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_float, tbl_timestamptz WHERE tbox(f, t) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_floatspan, tbl_timestamptz WHERE tbox(f, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_int, tbl_tstzspan WHERE tbox(i, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_intspan, tbl_tstzspan WHERE tbox(i, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_float, tbl_tstzspan WHERE tbox(f, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_floatspan, tbl_tstzspan WHERE tbox(f, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_int, tbl_tstzspan WHERE tbox(i, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_intspan, tbl_tstzspan WHERE tbox(i, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_float, tbl_tstzspan WHERE tbox(f, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_floatspan, tbl_tstzspan WHERE tbox(f, t) IS NOT NULL;
 
 -------------------------------------------------------------------------------

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Aggregate functions for set types.
+ * @brief Aggregate functions for set types
  */
 
 /* C */
@@ -43,8 +43,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
+#include "general/temporal.h"
 #include "general/type_util.h"
-#include "npoint/tnpoint_boxops.h"
+#if NPOINT
+  #include "npoint/tnpoint_boxops.h"
+#endif
 
 /*****************************************************************************
  * Aggregate functions for set types
@@ -52,12 +56,12 @@
 
 /**
  * @brief Expand a bounding box with a value
- * @param[in] d Value to append to the set
+ * @param[in] value Value to append to the set
  * @param[in] basetype Type of the value
  * @param[out] box Bounding box
  */
 void
-set_expand_bbox(Datum d, meosType basetype, void *box)
+set_expand_bbox(Datum value, meosType basetype, void *box)
 {
   /* Currently, only spatial set types have bounding box */
   assert(set_basetype(basetype));
@@ -65,38 +69,34 @@ set_expand_bbox(Datum d, meosType basetype, void *box)
   if (geo_basetype(basetype))
   {
     STBox box1;
-    geo_set_stbox(DatumGetGserializedP(d), &box1);
+    geo_set_stbox(DatumGetGserializedP(value), &box1);
     stbox_expand(&box1, (STBox *) box);
   }
 #if NPOINT
   else if (basetype == T_NPOINT)
   {
     STBox box1;
-    npoint_set_stbox(DatumGetNpointP(d), &box1);
+    npoint_set_stbox(DatumGetNpointP(value), &box1);
     stbox_expand(&box1, (STBox *) box);
   }
 #endif
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "unknown set type for expanding bounding box: %d", basetype);
-    return;
+      "Unknown set type for expanding bounding box: %d", basetype);
   }
   return;
 }
 
 /**
- * @ingroup libmeos_internal_temporal_transf
  * @brief Append a value to a set
  * @param[in,out] set Set
- * @param[in] d Value
- * @param[in] basetype Base type
+ * @param[in] value Value
  */
 Set *
-set_append_value(Set *set, Datum d, meosType basetype)
+set_append_value_exp(Set *set, Datum value)
 {
   assert(set);
-  assert(set->basetype == basetype);
 
   /* Account for expandable structures
    * A while is used instead of an if to enable to break the loop if there is
@@ -106,16 +106,16 @@ set_append_value(Set *set, Datum d, meosType basetype)
     /* If passed by value, set datum in the offsets array */
     if (MEOS_FLAGS_GET_BYVAL(set->flags))
     {
-      (SET_OFFSETS_PTR(set))[set->count++] = d;
+      (SET_OFFSETS_PTR(set))[set->count++] = value;
       return set;
     }
 
     /* Determine whether there is enough available space */
     size_t size_elem;
-    int16 typlen = basetype_length(basetype);
+    int16 typlen = basetype_length(set->basetype);
     if (typlen == -1)
       /* VARSIZE_ANY is used for oblivious data alignment, see postgres.h */
-      size_elem = VARSIZE_ANY(DatumGetPointer(d));
+      size_elem = VARSIZE_ANY(DatumGetPointer(value));
     else
       size_elem = typlen;
 
@@ -132,11 +132,11 @@ set_append_value(Set *set, Datum d, meosType basetype)
     size_t pdata = DOUBLE_PAD(sizeof(Set)) + DOUBLE_PAD(set->bboxsize) +
       sizeof(size_t) * set->maxcount;
     size_t pos = (SET_OFFSETS_PTR(set))[set->count - 1] + DOUBLE_PAD(size_last);
-    memcpy(((char *) set) + pdata + pos, DatumGetPointer(d), size_elem);
+    memcpy(((char *) set) + pdata + pos, DatumGetPointer(value), size_elem);
     (SET_OFFSETS_PTR(set))[set->count++] = pos;
     /* Expand the bounding box and return */
     if (set->bboxsize != 0)
-      set_expand_bbox(d, basetype, SET_BBOX_PTR(set));
+      set_expand_bbox(value, set->basetype, SET_BBOX_PTR(set));
     return set;
   }
 
@@ -145,149 +145,183 @@ set_append_value(Set *set, Datum d, meosType basetype)
   Datum *values = palloc(sizeof(Datum) * (set->count + 1));
   for (int i = 0; i < set->count; i++)
     values[i] = SET_VAL_N(set, i);
-  values[set->count] = d;
+  values[set->count] = value;
   int maxcount = (set->count < set->maxcount) ?
     set->maxcount : set->maxcount * 2;
-#ifdef DEBUG_BUILD
-  printf(" set -> %d\n", maxcount);
-#endif /* DEBUG_BUILD */
+#ifdef DEBUG_EXPAND
+  printf(" Set -> %d\n", maxcount);
+#endif /* DEBUG_EXPAND */
 
   Set *result = set_make_exp(values, set->count + 1, maxcount, set->basetype,
     ORDERED_NO);
-  pfree(values);
-  pfree(set);
+  pfree(values); pfree(set);
   return result;
 }
 
 /**
- * @ingroup libmeos_internal_setspan_agg
+ * @ingroup meos_internal_setspan_agg
  * @brief Transition function for set union aggregate of values
+ * @param[in,out] state Current aggregate state
+ * @param[in] value Value
+ * @param[in] basetype Type of the value
  */
 Set *
-value_union_transfn(Set *state, Datum d, meosType basetype)
+value_union_transfn(Set *state, Datum value, meosType basetype)
 {
   /* Null state: create a new state with the value */
   if (! state)
-  {
     /* Arbitrary initialization to 64 elements */
-    Set *result = set_make_exp(&d, 1, 64, basetype, ORDERED_NO);
-    return result;
-  }
+    return set_make_exp(&value, 1, 64, basetype, ORDERED_NO);
 
-  return set_append_value(state, d, basetype);
+  return set_append_value_exp(state, value);
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for set union aggregate of integers
+ * @param[in,out] state Current aggregate state
+ * @param[in] i Value
  */
 Set *
 int_union_transfn(Set *state, int32 i)
 {
   /* Ensure validity of the arguments */
-  if (state && ! ensure_set_has_type(state, T_INTSET))
+  if (state && ! ensure_set_isof_type(state, T_INTSET))
     return NULL;
   return value_union_transfn(state, Int32GetDatum(i), T_INT4);
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for set union aggregate of big integers
+ * @param[in,out] state Current aggregate state
+ * @param[in] i Value
  */
 Set *
 bigint_union_transfn(Set *state, int64 i)
 {
   /* Ensure validity of the arguments */
-  if (state && ! ensure_set_has_type(state, T_BIGINTSET))
+  if (state && ! ensure_set_isof_type(state, T_BIGINTSET))
     return NULL;
   return value_union_transfn(state, Int64GetDatum(i), T_INT8);
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for set union aggregate of floats
+ * @param[in,out] state Current aggregate state
+ * @param[in] d Value
  */
 Set *
 float_union_transfn(Set *state, double d)
 {
   /* Ensure validity of the arguments */
-  if (state && ! ensure_set_has_type(state, T_FLOATSET))
+  if (state && ! ensure_set_isof_type(state, T_FLOATSET))
     return NULL;
   return value_union_transfn(state, Float8GetDatum(d), T_FLOAT8);
 }
 
 /**
- * @ingroup libmeos_setspan_agg
- * @brief Transition function for set union aggregate of timestamps
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of dates
+ * @param[in,out] state Current aggregate state
+ * @param[in] d Value
  */
 Set *
-timestamp_union_transfn(Set *state, TimestampTz t)
+date_union_transfn(Set *state, DateADT d)
 {
   /* Ensure validity of the arguments */
-  if (state && ! ensure_set_has_type(state, T_TSTZSET))
+  if (state && ! ensure_set_isof_type(state, T_DATESET))
+    return NULL;
+  return value_union_transfn(state, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of timestamptz
+ * @param[in,out] state Current aggregate state
+ * @param[in] t Value
+ */
+Set *
+timestamptz_union_transfn(Set *state, TimestampTz t)
+{
+  /* Ensure validity of the arguments */
+  if (state && ! ensure_set_isof_type(state, T_TSTZSET))
     return NULL;
   return value_union_transfn(state, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for set union aggregate of texts
+ * @param[in,out] state Current aggregate state
+ * @param[in] txt Value
  */
 Set *
 text_union_transfn(Set *state, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) txt) ||
-      (state && ! ensure_set_has_type(state, T_TEXTSET)))
+      (state && ! ensure_set_isof_type(state, T_TEXTSET)))
     return NULL;
   return value_union_transfn(state, PointerGetDatum(txt), T_TEXT);
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Transition function for set union aggregate of sets
+ * @param[in,out] state Current aggregate state
+ * @param[in] s Set to aggregate
  */
 Set *
-set_union_transfn(Set *state, Set *set)
+set_union_transfn(Set *state, Set *s)
 {
   /* Null set: return state */
-  if (! set)
+  if (! s)
     return state;
-  int start = 0;
-  Datum d;
   /* Null state: create a new state with the first value of the set */
   if (! state)
   {
-    start = 1;
-    d = SET_VAL_N(set, 0);
+    Datum value = SET_VAL_N(s, 0);
     /* Arbitrary initialization to 64 elements */
-    state = set_make_exp(&d, 1, 64, set->basetype, ORDERED_NO);
+    state = set_make_exp(&value, 1, 64, s->basetype, ORDERED_NO);
   }
 
   /* Ensure validity of the arguments */
-  if (! ensure_same_set_type(state, set))
+  if (! ensure_same_set_type(state, s))
     return NULL;
 
-  for (int i = start; i < set->count; i++)
-  {
-    d = SET_VAL_N(set, i);
-    state = set_append_value(state, d, set->basetype);
-  }
+  for (int i = 0; i < s->count; i++)
+    state = set_append_value_exp(state, SET_VAL_N(s, i));
   return state;
 }
 
 /**
- * @ingroup libmeos_setspan_agg
+ * @ingroup meos_setspan_agg
  * @brief Final function for set union aggregate
- * @note The input state is NOT freed, this should be done by the calling
- * function
+ * @param[in,out] state Current aggregate state
+ * @note The input state must be free by the calling function
  */
 Set *
 set_union_finalfn(Set *state)
 {
   if (! state)
     return NULL;
-  return set_compact(state);
+
+  Datum *values = palloc0(sizeof(Datum) * state->count);
+  for (int i = 0; i < state->count; i++)
+    values[i] = SET_VAL_N(state, i);
+  meosType basetype = settype_basetype(state->settype);
+  Set *result = set_make_exp(values, state->count, state->count, basetype,
+    ORDERED_NO);
+
+  /* Free memory */
+  if (basetype_byvalue(basetype))
+    pfree(values);
+  else
+    pfree_array((void **) values, state->count);
+
+  return result;
 }
 
 /*****************************************************************************/

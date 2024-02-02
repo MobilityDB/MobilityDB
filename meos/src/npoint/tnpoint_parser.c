@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,22 +29,20 @@
 
 /**
  * @file
- * @brief Functions for parsing static network types.
+ * @brief Functions for parsing static network types
  */
 
 #include "npoint/tnpoint_parser.h"
 
 /* MEOS */
-#include "general/temporaltypes.h"
+#include <meos.h>
 #include "general/type_parser.h"
-#include "general/type_util.h"
-#include "npoint/tnpoint.h"
 #include "npoint/tnpoint_static.h"
 
 /*****************************************************************************/
 
 /**
- * @brief Parse a network point from its string representation.
+ * @brief Parse a network point from its string representation
  */
 Npoint *
 npoint_parse(const char **str, bool end)
@@ -96,7 +94,7 @@ npoint_parse(const char **str, bool end)
 }
 
 /**
- * @brief Parse a network segment from its string representation.
+ * @brief Parse a network segment from its string representation
  */
 Nsegment *
 nsegment_parse(const char **str)

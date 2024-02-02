@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Constructors for the 2D geometric operations.
+ * @brief Constructors for the 2D geometric operations
  *
  * This module implements the constructors  for the following geometric
  * types: `point`, `line`, `lseg` (line segment), `box`, `circle`, `path`,
@@ -57,10 +57,9 @@ PG_FUNCTION_INFO_V1(point_constructor);
 Datum
 point_constructor(PG_FUNCTION_ARGS)
 {
-  double    x = PG_GETARG_FLOAT8(0);
-  double    y = PG_GETARG_FLOAT8(1);
-  Point     *point = palloc(sizeof(Point));
-
+  double x = PG_GETARG_FLOAT8(0);
+  double y = PG_GETARG_FLOAT8(1);
+  Point *point = palloc(sizeof(Point));
   point->x = x;
   point->y = y;
   PG_RETURN_POINT_P(point);
@@ -74,11 +73,10 @@ PG_FUNCTION_INFO_V1(line_constructor);
 Datum
 line_constructor(PG_FUNCTION_ARGS)
 {
-  double    A = PG_GETARG_FLOAT8(0);
-  double    B = PG_GETARG_FLOAT8(1);
-  double    C = PG_GETARG_FLOAT8(2);
-  LINE     *line = palloc(sizeof(LINE));
-
+  double A = PG_GETARG_FLOAT8(0);
+  double B = PG_GETARG_FLOAT8(1);
+  double C = PG_GETARG_FLOAT8(2);
+  LINE *line = palloc(sizeof(LINE));
   line->A = A;
   line->B = B;
   line->C = C;
@@ -93,10 +91,9 @@ PG_FUNCTION_INFO_V1(lseg_constructor);
 Datum
 lseg_constructor(PG_FUNCTION_ARGS)
 {
-  Point     *point1 = PG_GETARG_POINT_P(0);
-  Point     *point2 = PG_GETARG_POINT_P(1);
-  LSEG     *lseg = palloc(sizeof(LSEG));
-
+  Point *point1 = PG_GETARG_POINT_P(0);
+  Point *point2 = PG_GETARG_POINT_P(1);
+  LSEG *lseg = palloc(sizeof(LSEG));
   lseg->p[0].x = point1->x;
   lseg->p[0].y = point1->y;
   lseg->p[1].x = point2->x;
@@ -112,10 +109,9 @@ PG_FUNCTION_INFO_V1(box_constructor);
 Datum
 box_constructor(PG_FUNCTION_ARGS)
 {
-  Point     *high = PG_GETARG_POINT_P(0);
-  Point     *low = PG_GETARG_POINT_P(1);
-  BOX       *box = palloc(sizeof(BOX));
-
+  Point *high = PG_GETARG_POINT_P(0);
+  Point *low = PG_GETARG_POINT_P(1);
+  BOX *box = palloc(sizeof(BOX));
   box->high.x = high->x;
   box->high.y = high->y;
   box->low.x = low->x;
@@ -131,10 +127,9 @@ PG_FUNCTION_INFO_V1(circle_constructor);
 Datum
 circle_constructor(PG_FUNCTION_ARGS)
 {
-  Point     *center = PG_GETARG_POINT_P(0);
-  double    radius = PG_GETARG_FLOAT8(1);
-  CIRCLE   *circle = palloc(sizeof(CIRCLE));
-
+  Point *center = PG_GETARG_POINT_P(0);
+  double radius = PG_GETARG_FLOAT8(1);
+  CIRCLE *circle = palloc(sizeof(CIRCLE));
   circle->center.x = center->x;
   circle->center.y = center->y;
   circle->radius = radius;
@@ -163,9 +158,9 @@ path_constructor(PG_FUNCTION_ARGS)
   deconstruct_array(array, array->elemtype, typlen, byval, align,
     (Datum **) &points, NULL, &npts);
 
-  PATH     *path;
-  int      size;
-  int      base_size;
+  PATH *path;
+  int size;
+  int base_size;
   base_size = sizeof(path->p[0]) * npts;
   size = offsetof(PATH, p) + base_size;
 
@@ -200,11 +195,8 @@ path_constructor(PG_FUNCTION_ARGS)
 static void
 make_bound_box(POLYGON *poly)
 {
-  int      i;
-  float8    x1,
-        y1,
-        x2,
-        y2;
+  int i;
+  float8 x1, y1, x2, y2;
 
   Assert(poly->npts > 0);
 
@@ -251,9 +243,9 @@ poly_constructor(PG_FUNCTION_ARGS)
   deconstruct_array(array, array->elemtype, typlen, byval, align,
     (Datum **) &points, NULL, &npts);
 
-  POLYGON    *poly;
-  int      size;
-  int      base_size;
+  POLYGON *poly;
+  int size;
+  int base_size;
   base_size = sizeof(poly->p[0]) * npts;
   size = offsetof(POLYGON, p) + base_size;
 

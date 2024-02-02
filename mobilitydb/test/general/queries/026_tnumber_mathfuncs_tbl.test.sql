@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -94,7 +94,7 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE round(temp, 1) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_float WHERE degrees(f, true) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE degrees(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE radians(temp) IS NOT NULL;
-SELECT round(MAX(maxValue(derivative(temp)))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(maxValue(derivative(temp)))::numeric, 6) FROM tbl_tfloat WHERE interp(temp) = 'Linear';
 
 SELECT round(array_agg(inst ORDER BY k), 2) FROM tbl_tfloat_inst WHERE inst IS NOT NULL AND k % 20 = 1;
 

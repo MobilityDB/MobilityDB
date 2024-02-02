@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -39,8 +39,8 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
-#include "general/temporal.h"
-#include "point/stbox.h"
+#include <meos.h>
+#include "general/meos_catalog.h"
 
 /*****************************************************************************
  * Macros for manipulating the 'typmod' int. An int32_t used as follows:
@@ -74,15 +74,15 @@
 
 /* General functions */
 
-extern void temporalgeom_init(void);
-extern GSERIALIZED * gserialized_copy(const GSERIALIZED *g);
+extern void mobilitydb_init(void);
+extern GSERIALIZED *geo_copy(const GSERIALIZED *g);
 
 /* Temporal comparisons */
 
-extern Temporal *tcomp_tpoint_point_int(const Temporal *temp,
-  const GSERIALIZED *gs, Datum (*func)(Datum, Datum, meosType), bool invert);
-extern Temporal * tcomp_tpoint_tpoint_int(const Temporal *temp1,
-  const Temporal *temp2, Datum (*func)(Datum, Datum, meosType));
+extern Temporal *tcomp_point_tpoint(const GSERIALIZED *gs,
+  const Temporal *temp, Datum (*func)(Datum, Datum, meosType));
+extern Temporal *tcomp_tpoint_point(const Temporal *temp,
+  const GSERIALIZED *gs, Datum (*func)(Datum, Datum, meosType));
 
 /*****************************************************************************/
 

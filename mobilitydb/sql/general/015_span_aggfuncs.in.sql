@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -61,7 +61,14 @@ CREATE FUNCTION span_extent_combinefn(floatspan, floatspan)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
+CREATE FUNCTION span_extent_transfn(datespan, datespan)
+  RETURNS datespan
+  AS 'MODULE_PATHNAME', 'Span_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION span_extent_combinefn(datespan, datespan)
+  RETURNS datespan
+  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION span_extent_transfn(tstzspan, tstzspan)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_extent_transfn'
@@ -95,6 +102,14 @@ CREATE AGGREGATE extent(floatspan) (
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
+CREATE AGGREGATE extent(datespan) (
+  SFUNC = span_extent_transfn,
+  STYPE = datespan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = span_extent_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
+  PARALLEL = safe
+);
 CREATE AGGREGATE extent(tstzspan) (
   SFUNC = span_extent_transfn,
   STYPE = tstzspan,
@@ -107,7 +122,7 @@ CREATE AGGREGATE extent(tstzspan) (
 /*****************************************************************************/
 -- span + base
 
-CREATE FUNCTION span_extent_transfn(intspan, int)
+CREATE FUNCTION span_extent_transfn(intspan, integer)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -119,12 +134,16 @@ CREATE FUNCTION span_extent_transfn(floatspan, float)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION span_extent_transfn(datespan, date)
+  RETURNS datespan
+  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION span_extent_transfn(tstzspan, timestamptz)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE extent(int) (
+CREATE AGGREGATE extent(integer) (
   SFUNC = span_extent_transfn,
   STYPE = intspan,
 #if POSTGRESQL_VERSION_NUMBER >= 130000
@@ -143,6 +162,14 @@ CREATE AGGREGATE extent(bigint) (
 CREATE AGGREGATE extent(float) (
   SFUNC = span_extent_transfn,
   STYPE = floatspan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = span_extent_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
+  PARALLEL = safe
+);
+CREATE AGGREGATE extent(date) (
+  SFUNC = span_extent_transfn,
+  STYPE = datespan,
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = span_extent_combinefn,
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
@@ -170,6 +197,10 @@ CREATE FUNCTION set_extent_transfn(bigintspan, bigintset)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION set_extent_transfn(floatspan, floatset)
   RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Set_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_extent_transfn(datespan, dateset)
+  RETURNS datespan
   AS 'MODULE_PATHNAME', 'Set_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION set_extent_transfn(tstzspan, tstzset)
@@ -201,6 +232,14 @@ CREATE AGGREGATE extent(floatset) (
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
+CREATE AGGREGATE extent(dateset) (
+  SFUNC = set_extent_transfn,
+  STYPE = datespan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = span_extent_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
+  PARALLEL = safe
+);
 CREATE AGGREGATE extent(tstzset) (
   SFUNC = set_extent_transfn,
   STYPE = tstzspan,
@@ -220,6 +259,10 @@ CREATE FUNCTION spanset_extent_transfn(bigintspan, bigintspanset)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION spanset_extent_transfn(floatspan, floatspanset)
   RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION spanset_extent_transfn(datespan, datespanset)
+  RETURNS datespan
   AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION spanset_extent_transfn(tstzspan, tstzspanset)
@@ -251,6 +294,14 @@ CREATE AGGREGATE extent(floatspanset) (
 #endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
+CREATE AGGREGATE extent(datespanset) (
+  SFUNC = spanset_extent_transfn,
+  STYPE = datespan,
+#if POSTGRESQL_VERSION_NUMBER >= 130000
+  COMBINEFUNC = span_extent_combinefn,
+#endif //POSTGRESQL_VERSION_NUMBER >= 130000
+  PARALLEL = safe
+);
 CREATE AGGREGATE extent(tstzspanset) (
   SFUNC = spanset_extent_transfn,
   STYPE = tstzspan,
@@ -262,59 +313,81 @@ CREATE AGGREGATE extent(tstzspanset) (
 
 /*****************************************************************************/
 
-CREATE FUNCTION span_union_transfn(internal, intspan)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Span_union_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_union_transfn(internal, bigintspan)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Span_union_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_union_transfn(internal, floatspan)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Span_union_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_union_transfn(internal, tstzspan)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Span_union_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
 CREATE FUNCTION intspan_union_finalfn(internal)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION bigintspan_union_finalfn(internal)
   RETURNS bigintspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION floatspan_union_finalfn(internal)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION datespan_union_finalfn(internal)
+  RETURNS datespanset
+  AS 'MODULE_PATHNAME', 'Span_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tstzspan_union_finalfn(internal)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE span_union(intspan) (
-  SFUNC = span_union_transfn,
+  SFUNC = array_agg_transfn,
   STYPE = internal,
-  FINALFUNC = intspan_union_finalfn
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
+  FINALFUNC = intspan_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE span_union(bigintspan) (
-  SFUNC = span_union_transfn,
+  SFUNC = array_agg_transfn,
   STYPE = internal,
-  FINALFUNC = bigintspan_union_finalfn
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
+  FINALFUNC = bigintspan_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE span_union(floatspan) (
-  SFUNC = span_union_transfn,
+  SFUNC = array_agg_transfn,
   STYPE = internal,
-  FINALFUNC = floatspan_union_finalfn
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
+  FINALFUNC = floatspan_union_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE span_union(datespan) (
+  SFUNC = array_agg_transfn,
+  STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
+  FINALFUNC = datespan_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE span_union(tstzspan) (
-  SFUNC = span_union_transfn,
+  SFUNC = array_agg_transfn,
   STYPE = internal,
-  FINALFUNC = tstzspan_union_finalfn
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
+  FINALFUNC = tstzspan_union_finalfn,
+  PARALLEL = safe
 );
 
 /*****************************************************************************/
@@ -331,6 +404,10 @@ CREATE FUNCTION spanset_union_transfn(internal, floatspanset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Spanset_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION spanset_union_transfn(internal, datespanset)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION spanset_union_transfn(internal, tstzspanset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Spanset_union_transfn'
@@ -339,22 +416,57 @@ CREATE FUNCTION spanset_union_transfn(internal, tstzspanset)
 CREATE AGGREGATE span_union(intspanset) (
   SFUNC = spanset_union_transfn,
   STYPE = internal,
-  FINALFUNC = intspan_union_finalfn
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
+  FINALFUNC = intspan_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE span_union(bigintspanset) (
   SFUNC = spanset_union_transfn,
   STYPE = internal,
-  FINALFUNC = bigintspan_union_finalfn
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
+  FINALFUNC = bigintspan_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE span_union(floatspanset) (
   SFUNC = spanset_union_transfn,
   STYPE = internal,
-  FINALFUNC = floatspan_union_finalfn
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
+  FINALFUNC = floatspan_union_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE span_union(datespanset) (
+  SFUNC = spanset_union_transfn,
+  STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
+  FINALFUNC = datespan_union_finalfn,
+  PARALLEL = safe
 );
 CREATE AGGREGATE span_union(tstzspanset) (
   SFUNC = spanset_union_transfn,
   STYPE = internal,
-  FINALFUNC = tstzspan_union_finalfn
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
+  FINALFUNC = tstzspan_union_finalfn,
+  PARALLEL = safe
 );
 
 /*****************************************************************************/

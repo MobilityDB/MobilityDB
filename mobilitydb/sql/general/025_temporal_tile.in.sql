@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -49,12 +49,12 @@ CREATE TYPE index_floatspan AS (
 CREATE FUNCTION bucketList(bounds intspan, size integer,
   origin integer DEFAULT 0)
   RETURNS SETOF index_intspan
-  AS 'MODULE_PATHNAME', 'Span_bucket_list'
+  AS 'MODULE_PATHNAME', 'Numberspan_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bucketList(bounds floatspan, size float,
   origin float DEFAULT 0.0)
   RETURNS SETOF index_floatspan
-  AS 'MODULE_PATHNAME', 'Span_bucket_list'
+  AS 'MODULE_PATHNAME', 'Numberspan_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueBucket("value" integer, size integer,
@@ -71,12 +71,12 @@ CREATE FUNCTION valueBucket("value" float, size float,
 CREATE FUNCTION spanBucket("value" integer, size integer,
   origin integer DEFAULT 0)
   RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Span_bucket'
+  AS 'MODULE_PATHNAME', 'Valuespan_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanBucket("value" float, size float,
   origin float DEFAULT 0.0)
   RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Span_bucket'
+  AS 'MODULE_PATHNAME', 'Valuespan_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -88,7 +88,7 @@ CREATE TYPE index_tstzspan AS (
 
 CREATE FUNCTION bucketList(tstzspan, interval, timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_tstzspan
-  AS 'MODULE_PATHNAME', 'Period_bucket_list'
+  AS 'MODULE_PATHNAME', 'Tstzspan_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- bucketing of timestamptz happens at UTC time
@@ -109,7 +109,7 @@ CREATE FUNCTION timeBucket("time" timestamptz, duration interval,
 CREATE FUNCTION periodBucket(timestamptz, interval,
   timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Period_bucket'
+  AS 'MODULE_PATHNAME', 'Tstzspan_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

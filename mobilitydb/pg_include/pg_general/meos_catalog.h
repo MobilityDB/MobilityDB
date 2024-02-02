@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -45,11 +45,14 @@
 /* MobilityDB functions */
 
 extern Oid type_oid(meosType t);
-extern const char *oper_name(meosOper oper);
-extern meosOper name_oper(const char *name);
 extern Oid oper_oid(meosOper op, meosType lt, meosType rt);
 extern meosType oid_type(Oid typid);
 extern meosOper oid_oper(Oid operOid, meosType *ltype, meosType *rtype);
+
+extern bool range_basetype(meosType type);
+extern bool ensure_range_basetype(meosType type);
+extern meosType basetype_rangetype(meosType type);
+extern meosType basetype_multirangetype(meosType type);
 
 /*****************************************************************************/
 

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -38,11 +38,11 @@
 #include <postgres.h>
 #include <access/stratnum.h>
 /* MEOS */
-#include "general/span.h"
+#include <meos.h>
 
 /*****************************************************************************/
 
-extern int span_common_entry_cmp(const void *i1, const void *i2);
+extern int common_entry_cmp(const void *i1, const void *i2);
 
 extern bool span_index_consistent_leaf(const Span *key, const Span *query,
   StrategyNumber strategy);

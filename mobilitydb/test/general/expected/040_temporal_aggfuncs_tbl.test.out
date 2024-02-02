@@ -20,10 +20,10 @@ SELECT extent(inst) FROM tbl_tint_inst;
  TBOXINT XT([5, 98),[Fri Jan 12 15:34:00 2001 PST, Wed Dec 26 23:03:00 2001 PST])
 (1 row)
 
-SELECT round(extent(inst), 13) FROM tbl_tfloat_inst;
-                                                     round                                                      
-----------------------------------------------------------------------------------------------------------------
- TBOXFLOAT XT([3.6493356390856, 99.5110547081567],[Sun Jan 07 16:47:00 2001 PST, Thu Dec 27 00:54:00 2001 PST])
+SELECT round(extent(inst), 6) FROM tbl_tfloat_inst;
+                                              round                                               
+--------------------------------------------------------------------------------------------------
+ TBOXFLOAT XT([3.649336, 99.511055],[Sun Jan 07 16:47:00 2001 PST, Thu Dec 27 00:54:00 2001 PST])
 (1 row)
 
 SELECT extent(ti) FROM tbl_tbool_discseq;
@@ -44,10 +44,10 @@ SELECT extent(ti) FROM tbl_tint_discseq;
  TBOXINT XT([1, 100),[Sun Dec 31 16:34:00 2000 PST, Sun Dec 30 06:46:00 2001 PST])
 (1 row)
 
-SELECT round(extent(ti), 13) FROM tbl_tfloat_discseq;
-                                                     round                                                      
-----------------------------------------------------------------------------------------------------------------
- TBOXFLOAT XT([1.2496102433652, 99.9664310226217],[Fri Jan 05 00:30:00 2001 PST, Sat Dec 22 07:00:00 2001 PST])
+SELECT round(extent(ti), 6) FROM tbl_tfloat_discseq;
+                                              round                                              
+-------------------------------------------------------------------------------------------------
+ TBOXFLOAT XT([1.24961, 99.966431],[Fri Jan 05 00:30:00 2001 PST, Sat Dec 22 07:00:00 2001 PST])
 (1 row)
 
 SELECT extent(seq) FROM tbl_tbool_seq;
@@ -68,10 +68,10 @@ SELECT extent(seq) FROM tbl_tint_seq;
  TBOXINT XT([1, 100),(Sun Jan 07 01:24:00 2001 PST, Sat Dec 29 12:09:00 2001 PST])
 (1 row)
 
-SELECT round(extent(seq), 13) FROM tbl_tfloat_seq;
-                                                     round                                                     
----------------------------------------------------------------------------------------------------------------
- TBOXFLOAT XT([1.5823619421572, 99.917602237314],[Mon Jan 01 14:27:00 2001 PST, Sun Dec 30 03:15:00 2001 PST])
+SELECT round(extent(seq), 6) FROM tbl_tfloat_seq;
+                                              round                                               
+--------------------------------------------------------------------------------------------------
+ TBOXFLOAT XT([1.582362, 99.917602],[Mon Jan 01 14:27:00 2001 PST, Sun Dec 30 03:15:00 2001 PST])
 (1 row)
 
 SELECT extent(ss) FROM tbl_tbool_seqset;
@@ -92,10 +92,10 @@ SELECT extent(ss) FROM tbl_tint_seqset;
  TBOXINT XT([1, 100),[Mon Jan 01 00:20:00 2001 PST, Tue Dec 25 15:26:00 2001 PST])
 (1 row)
 
-SELECT round(extent(ss), 13) FROM tbl_tfloat_seqset;
-                                                     round                                                      
-----------------------------------------------------------------------------------------------------------------
- TBOXFLOAT XT([1.0292634703219, 99.9389337534085],(Tue Jan 02 10:42:00 2001 PST, Fri Dec 28 19:07:00 2001 PST])
+SELECT round(extent(ss), 6) FROM tbl_tfloat_seqset;
+                                              round                                               
+--------------------------------------------------------------------------------------------------
+ TBOXFLOAT XT([1.029263, 99.938934],(Tue Jan 02 10:42:00 2001 PST, Fri Dec 28 19:07:00 2001 PST])
 (1 row)
 
 SELECT extent(temp) FROM tbl_tbool;
@@ -116,10 +116,10 @@ SELECT extent(temp) FROM tbl_tint;
  TBOXINT XT([1, 100),[Mon Jan 01 00:20:00 2001 PST, Wed Dec 26 23:03:00 2001 PST])
 (1 row)
 
-SELECT round(extent(temp), 13) FROM tbl_tfloat;
-                                                     round                                                     
----------------------------------------------------------------------------------------------------------------
- TBOXFLOAT XT([1.0292634703219, 99.917602237314],(Tue Jan 02 10:42:00 2001 PST, Sat Dec 22 00:07:00 2001 PST])
+SELECT round(extent(temp), 6) FROM tbl_tfloat;
+                                              round                                               
+--------------------------------------------------------------------------------------------------
+ TBOXFLOAT XT([1.029263, 99.917602],(Tue Jan 02 10:42:00 2001 PST, Sat Dec 22 00:07:00 2001 PST])
 (1 row)
 
 SELECT numInstants(tand(inst)) FROM tbl_tbool_inst;

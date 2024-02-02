@@ -1,12 +1,12 @@
 /*****************************************************************************
  * @brief
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal text functions: `textcat`, `lower`, `upper`.
+ * @brief Temporal text functions: `textcat`, `lower`, `upper`
  */
 
 /* PostgreSQL */
@@ -37,9 +37,7 @@
 #include <fmgr.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal.h"
 #include "general/ttext_textfuncs.h"
-#include "general/type_util.h"
 
 /*****************************************************************************
  * Text concatenation
@@ -49,8 +47,8 @@ PGDLLEXPORT Datum Textcat_text_ttext(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textcat_text_ttext);
 /**
  * @ingroup mobilitydb_temporal_text
- * @brief Return the concatenation of the text and the temporal text values
- * @sqlfunc textcat()
+ * @brief Return the concatenation of a text and a temporal text
+ * @sqlfn textcat()
  * @sqlop @p ||
  */
 Datum
@@ -60,15 +58,15 @@ Textcat_text_ttext(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Textcat_ttext_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textcat_ttext_text);
 /**
  * @ingroup mobilitydb_temporal_text
- * @brief Return the concatenation of the temporal text and the text values
- * @sqlfunc textcat()
+ * @brief Return the concatenation of a temporal text and a text
+ * @sqlfn textcat()
  * @sqlop @p ||
  */
 Datum
@@ -78,15 +76,15 @@ Textcat_ttext_text(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_DATUM(1);
   Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Textcat_ttext_ttext(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textcat_ttext_ttext);
 /**
  * @ingroup mobilitydb_temporal_text
- * @brief Return the concatenation of the two temporal text values
- * @sqlfunc textcat()
+ * @brief Return the concatenation of the two temporal texts
+ * @sqlfn textcat()
  * @sqlop @p ||
  */
 Datum
@@ -99,33 +97,17 @@ Textcat_ttext_ttext(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
-
-PGDLLEXPORT Datum Ttext_upper(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Ttext_upper);
-/**
- * @ingroup mobilitydb_temporal_text
- * @brief Transform the temporal text value into uppercase
- * @sqlfunc upper()
- */
-Datum
-Ttext_upper(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = textfunc_ttext(temp, &datum_upper);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
 
 PGDLLEXPORT Datum Ttext_lower(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttext_lower);
 /**
  * @ingroup mobilitydb_temporal_text
- * @brief Transform the temporal text value into lowercase
- * @sqlfunc lower()
+ * @brief Return a temporal text transformed to lowercase
+ * @sqlfn lower()
  */
 Datum
 Ttext_lower(PG_FUNCTION_ARGS)
@@ -133,7 +115,39 @@ Ttext_lower(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = textfunc_ttext(temp, &datum_lower);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Ttext_upper(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ttext_upper);
+/**
+ * @ingroup mobilitydb_temporal_text
+ * @brief Return a temporal text transformed to uppercase
+ * @sqlfn upper()
+ */
+Datum
+Ttext_upper(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = textfunc_ttext(temp, &datum_upper);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Ttext_initcap(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ttext_initcap);
+/**
+ * @ingroup mobilitydb_temporal_text
+ * @brief Return a temporal text transformed to uppercase
+ * @sqlfn upper()
+ */
+Datum
+Ttext_initcap(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = textfunc_ttext(temp, &datum_initcap);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

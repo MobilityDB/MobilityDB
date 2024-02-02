@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -239,7 +239,7 @@ CREATE OPERATOR CLASS tbool_quadtree_ops
   OPERATOR  31    #&> (tbool, tstzspan),
   OPERATOR  31    #&> (tbool, tbool),
   -- functions
-  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  1  tstzspan_spgist_config(internal, internal),
   FUNCTION  2  span_quadtree_choose(internal, internal),
   FUNCTION  3  span_quadtree_picksplit(internal, internal),
   FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
@@ -278,7 +278,7 @@ CREATE OPERATOR CLASS tbool_kdtree_ops
   OPERATOR  31    #&> (tbool, tstzspan),
   OPERATOR  31    #&> (tbool, tbool),
   -- functions
-  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  1  tstzspan_spgist_config(internal, internal),
   FUNCTION  2  span_kdtree_choose(internal, internal),
   FUNCTION  3  span_kdtree_picksplit(internal, internal),
   FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
@@ -605,7 +605,7 @@ CREATE OPERATOR CLASS ttext_quadtree_ops
   OPERATOR  31    #&> (ttext, tstzspan),
   OPERATOR  31    #&> (ttext, ttext),
   -- functions
-  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  1  tstzspan_spgist_config(internal, internal),
   FUNCTION  2  span_quadtree_choose(internal, internal),
   FUNCTION  3  span_quadtree_picksplit(internal, internal),
   FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
@@ -644,7 +644,7 @@ CREATE OPERATOR CLASS ttext_kdtree_ops
   OPERATOR  31    #&> (ttext, tstzspan),
   OPERATOR  31    #&> (ttext, ttext),
   -- functions
-  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  1  tstzspan_spgist_config(internal, internal),
   FUNCTION  2  span_kdtree_choose(internal, internal),
   FUNCTION  3  span_kdtree_picksplit(internal, internal),
   FUNCTION  4  span_kdtree_inner_consistent(internal, internal),

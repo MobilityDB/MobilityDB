@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -117,7 +117,7 @@ CREATE OPERATOR <-> (
 /* integer |=| <TYPE> */
 
 CREATE FUNCTION nearestApproachDistance(integer, tint)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'NAD_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -151,7 +151,7 @@ CREATE FUNCTION nearestApproachDistance(tbox, tbox)
   AS 'MODULE_PATHNAME', 'NAD_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tbox, tint)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'NAD_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tbox, tfloat)
@@ -179,15 +179,15 @@ CREATE OPERATOR |=| (
 /* tint |=| <TYPE> */
 
 CREATE FUNCTION nearestApproachDistance(tint, integer)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'NAD_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tint, tbox)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'NAD_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tint, tint)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'NAD_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

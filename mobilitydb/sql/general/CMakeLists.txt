@@ -9,7 +9,6 @@ SET(LOCAL_FILES
   012_spanset_indexes
   013_set_indexes
   015_span_aggfuncs
-  017_time_aggfuncs
   019_geo_constructors
   021_tbox
   022_temporal

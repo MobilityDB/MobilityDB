@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -77,9 +77,9 @@ typedef struct
 
 /* General functions */
 
-extern bool ensure_span_has_type(const Span *s, meosType spantype);
+extern bool ensure_span_isof_type(const Span *s, meosType spantype);
+extern bool ensure_span_isof_basetype(const Span *s, meosType basetype);
 extern bool ensure_same_span_type(const Span *s1, const Span *s2);
-extern bool ensure_same_span_basetype(const Span *s, meosType basetype);
 extern void span_deserialize(const Span *s, SpanBound *lower,
   SpanBound *upper);
 extern Span *span_serialize(SpanBound *lower, SpanBound *upper);
@@ -87,7 +87,8 @@ extern int span_bound_cmp(const SpanBound *b1, const SpanBound *b2);
 extern int span_bound_qsort_cmp(const void *s1, const void *s2);
 extern int span_lower_cmp(const Span *s1, const Span *s2);
 extern int span_upper_cmp(const Span *s1, const Span *s2);
-extern Datum span_canon_upper(const Span *s);
+extern Datum span_decr_bound(Datum upper, meosType basetype);
+extern Datum span_incr_bound(Datum upper, meosType basetype);
 extern Span *spanarr_normalize(Span *spans, int count, bool sort,
   int *newcount);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);
@@ -97,19 +98,20 @@ extern void lower_upper_shift_scale_time(const Interval *shift,
   const Interval *duration, TimestampTz *lower, TimestampTz *upper);
 extern void numspan_delta_scale_iter(Span *s, Datum origin, Datum delta,
   bool hasdelta, double scale);
-extern void period_delta_scale_iter(Span *s, TimestampTz origin,
+extern void tstzspan_delta_scale_iter(Span *s, TimestampTz origin,
   TimestampTz delta, double scale);
 extern void numspan_shift_scale1(Span *s, Datum shift, Datum width,
   bool hasshift, bool haswidth, Datum *delta, double *scale);
-extern void period_shift_scale1(Span *s, const Interval *shift,
+extern void tstzspan_shift_scale1(Span *s, const Interval *shift,
   const Interval *duration, TimestampTz *delta, double *scale);
 
 extern size_t span_to_wkb_size(const Span *s);
 extern uint8_t *span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant);
 
-extern int minus_span_span_iter(const Span *s1, const Span *s2, Span *result);
-extern int minus_span_value_iter(const Span *s, Datum d, meosType basetype,
-  Span *result);
+extern int mi_span_span(const Span *s1, const Span *s2, Span *result);
+extern int mi_span_value(const Span *s, Datum value, Span *result);
+
+extern double dist_double_value_value(Datum l, Datum r, meosType type);
 
 /*****************************************************************************/
 

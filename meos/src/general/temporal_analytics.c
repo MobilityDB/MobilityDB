@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -46,19 +46,138 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
-#include "general/temporaltypes.h"
+#include "general/set.h"
+#include "general/span.h"
+#include "general/spanset.h"
 #include "general/temporal_tile.h"
+#include "general/tsequence.h"
 #include "general/type_util.h"
 #include "point/tpoint_distance.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint_spatialfuncs.h"
+
+/*****************************************************************************
+ * Time precision functions for time values
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz with the precision set to a time bucket
+ * @param[in] t Time value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+TimestampTz
+timestamptz_tprecision(TimestampTz t, const Interval *duration,
+  TimestampTz torigin)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) duration) ||
+      ! ensure_valid_duration(duration))
+    return DT_NOEND;
+  return timestamptz_bucket(t, duration, torigin);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz set with the precision set to a time bucket
+ * @param[in] s Timestamptz set
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+Set *
+tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
+      ! ensure_set_isof_type(s, T_TSTZSET) ||
+      ! ensure_valid_duration(duration))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  /* Loop for each value */
+  for (int i = 0; i < s->count; i++)
+    values[i] = timestamptz_bucket(SET_VAL_N(s, i), duration, torigin);
+  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDERED_NO);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span with the precision set to a time bucket
+ * @param[in] s Time value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+Span *
+tstzspan_tprecision(const Span *s, const Interval *duration,
+  TimestampTz torigin)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
+      ! ensure_span_isof_type(s, T_TSTZSPAN) ||
+      ! ensure_valid_duration(duration))
+    return NULL;
+
+  int64 tunits = interval_units(duration);
+  TimestampTz lower = DatumGetTimestampTz(s->lower);
+  TimestampTz upper = DatumGetTimestampTz(s->upper);
+  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamptz of the last bucket */
+  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+    tunits;
+  return span_make(TimestampTzGetDatum(lower_bucket),
+    TimestampTzGetDatum(upper_bucket), true, false, T_TIMESTAMPTZ);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span set with the precision set to a time bucket
+ * @param[in] ss Time value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ */
+SpanSet *
+tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
+  TimestampTz torigin)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) duration) ||
+      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET) ||
+      ! ensure_valid_duration(duration))
+    return NULL;
+
+  int64 tunits = interval_units(duration);
+  TimestampTz lower = DatumGetTimestampTz(ss->span.lower);
+  TimestampTz upper = DatumGetTimestampTz(ss->span.upper);
+  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamptz of the last bucket */
+  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+    tunits;
+  /* Number of buckets */
+  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
+  Span *spans = palloc(sizeof(Span) * count);
+  lower = lower_bucket;
+  upper = lower_bucket + tunits;
+  int nspans = 0;
+  /* Loop for each bucket */
+  for (int i = 0; i < count; i++)
+  {
+    Span s;
+    span_set(TimestampTzGetDatum(lower),TimestampTzGetDatum(upper),
+      true, false, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
+    if (overlaps_spanset_span(ss, &s))
+      spans[nspans++] = s;
+    lower += tunits;
+    upper += tunits;
+  }
+  return spanset_make_free(spans, nspans, NORMALIZE, ORDERED);
+}
 
 /*****************************************************************************
  * Time precision functions for temporal values
  *****************************************************************************/
 
 /**
- * @brief Set the precision of a temporal value according to time buckets.
+ * @brief Return a temporal instant with the precision set to a time bucket
  * @param[in] inst Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -70,13 +189,12 @@ tinstant_tprecision(const TInstant *inst, const Interval *duration,
   assert(inst); assert(duration);
   assert(valid_duration(duration));
   TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
-  Datum value = tinstant_value(inst);
-  TInstant *result = tinstant_make(value, inst->temptype, lower);
-  return result;
+  Datum value = tinstant_val(inst);
+  return tinstant_make(value, inst->temptype, lower);
 }
 
 /**
- * @brief Set the precision of a temporal value according to period buckets.
+ * @brief Return a temporal sequence with the precision set to a time bucket
  * @param[in] seq Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -110,7 +228,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   /* New instants computing the value at the beginning/end of the bucket */
   TInstant *start = NULL, *end = NULL;
   /* Sequence for computing the twAvg/twCentroid of each bucket */
-  TSequence *seq1;  
+  TSequence *seq1;
   Datum value;
   int i = 0;   /* Instant of the input sequence being processed */
   int k = 0;   /* Number of instants for computing the twAvg/twCentroid */
@@ -135,7 +253,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       if (interp != DISCRETE &&
           timestamptz_cmp_internal(ininsts[k - 1]->t, upper) < 0)
       {
-        tsequence_value_at_timestamp(seq, upper, false, &value);
+        tsequence_value_at_timestamptz(seq, upper, false, &value);
         ininsts[k++] = end = tinstant_make(value, seq->temptype, upper);
       }
       seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
@@ -158,7 +276,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       }
       if (interp != DISCRETE)
       {
-        /* The instant at the end of the current bucket is the start of the next  
+        /* The instant at the end of the current bucket is the start of the next
          * one excepted when the last bucket is empty */
         if (i < seq->count || seq->period.upper_inc)
         {
@@ -183,7 +301,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
     if (! twavg)
       pfree(DatumGetPointer(value));
   }
-  /* The lower and upper bounds are both true since the tprecision operation 
+  /* The lower and upper bounds are both true since the tprecision operation
    * amounts to a granularity change */
   TSequence *result = tsequence_make_free(outinsts, l, true, true, interp,
     NORMALIZE);
@@ -194,7 +312,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
 }
 
 /**
- * @brief Set the precision of a temporal value according to period buckets.
+ * @brief Return a temporal sequence set with the precision set to a time bucket
  * @param[in] ss Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -232,8 +350,8 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   {
     Span p;
     span_set(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
-      true, false, T_TIMESTAMPTZ, &p);
-    TSequenceSet *proj = tsequenceset_restrict_period(ss, &p, REST_AT);
+      true, false, T_TIMESTAMPTZ, T_TSTZSPAN, &p);
+    TSequenceSet *proj = tsequenceset_restrict_tstzspan(ss, &p, REST_AT);
     if (proj)
     {
       Datum value = twavg ? Float8GetDatum(tnumber_twavg((Temporal *) proj)) :
@@ -248,7 +366,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
       /* Close the previous sequence if any and start a new one */
       if (ninsts > 0)
       {
-        /* The lower and upper bounds are both true since the tprecision 
+        /* The lower and upper bounds are both true since the tprecision
          * operation amounts to a granularity change */
         sequences[nseqs++] = tsequence_make((const TInstant **) instants,
           ninsts, true, true, interp, NORMALIZE);
@@ -263,7 +381,7 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   /* Close the last sequence if any */
   if (ninsts > 0)
   {
-    /* The lower and upper bounds are both true since the tprecision 
+    /* The lower and upper bounds are both true since the tprecision
      * operation amounts to a granularity change */
     sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
       true, true, interp, NORMALIZE);
@@ -274,9 +392,12 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
 }
 
 /**
- * @ingroup libmeos_temporal_analytics_reduction
- * @brief Set the precision of a temporal value according to period buckets.
- * @sqlfunc tprecision()
+ * @ingroup meos_temporal_analytics_reduction
+ * @brief Return a temporal value with the precision set to period buckets
+ * @param[in] temp Temporal value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ * @csqlfn #Temporal_tprecision()
  */
 Temporal *
 temporal_tprecision(const Temporal *temp, const Interval *duration,
@@ -287,18 +408,19 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
       ! ensure_valid_duration(duration))
     return NULL;
 
-  Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_tprecision((TInstant *) temp, duration,
-      torigin);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_tprecision((TSequence *) temp, duration,
-      torigin);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_tprecision((TSequenceSet *) temp,
-      duration, torigin);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tinstant_tprecision((TInstant *) temp, duration,
+        torigin);
+    case TSEQUENCE:
+      return (Temporal *) tsequence_tprecision((TSequence *) temp, duration,
+        torigin);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_tprecision((TSequenceSet *) temp,
+        duration, torigin);
+  }
 }
 
 /*****************************************************************************
@@ -306,7 +428,7 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
  *****************************************************************************/
 
 /**
- * @brief Sample the temporal value according to period buckets.
+ * @brief Return a temporal value sampled at period buckets
  * @param[in] inst Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -325,7 +447,7 @@ tinstant_tsample(const TInstant *inst, const Interval *duration,
 
 
 /**
- * @brief Sample the temporal value according to period buckets.
+ * @brief Return a temporal value sampled according to period buckets
  * @param[in] seq Temporal value
  * @param[in] lower_bucket,upper_bucket First and last buckets
  * @param[in] tunits Time size of the tiles in PostgreSQL time units
@@ -386,7 +508,7 @@ tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bucket,
       if ((cmp1 < 0 || (cmp1 == 0 && lower_inc)) &&
           (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
       {
-        Datum value = tsegment_value_at_timestamp(start, end, interp, lower);
+        Datum value = tsegment_value_at_timestamptz(start, end, interp, lower);
         result[ninsts++] = tinstant_make(value, seq->temptype, lower);
         /* Advance the bucket */
         lower += tunits;
@@ -409,7 +531,7 @@ tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bucket,
 }
 
 /**
- * @brief Sample the temporal value according to period buckets.
+ * @brief Return a temporal value sampled according to period buckets
  * @param[in] seq Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -433,11 +555,12 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   int ninsts = tsequence_tsample_iter(seq, lower_bucket, upper_bucket, tunits,
     &instants[0]);
-  return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
+  return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 /**
- * @brief Sample the temporal value according to period buckets.
+ * @brief Return a temporal value sampled according to period buckets
  * @param[in] ss Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
@@ -446,11 +569,10 @@ TSequence *
 tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(ss); assert(duration);
-  assert(valid_duration(duration));
+  assert(ss); assert(duration); assert(valid_duration(duration));
   int64 tunits = interval_units(duration);
-  TimestampTz lower = tsequenceset_start_timestamp(ss);
-  TimestampTz upper = tsequenceset_end_timestamp(ss);
+  TimestampTz lower = tsequenceset_start_timestamptz(ss);
+  TimestampTz upper = tsequenceset_end_timestamptz(ss);
   TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
   /* We need to add tunits to obtain the end timestamp of the last bucket */
   TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
@@ -462,39 +584,44 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
   int ninsts = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    ninsts += tsequence_tsample_iter(seq, lower_bucket, upper_bucket, tunits,
-      &instants[ninsts]);
+    ninsts += tsequence_tsample_iter(TSEQUENCESET_SEQ_N(ss, i), lower_bucket,
+      upper_bucket, tunits, &instants[ninsts]);
   }
-  return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
+  return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 /**
- * @ingroup libmeos_temporal_analytics_reduction
- * @brief Sample the temporal value according to period buckets.
- * @sqlfunc tsample()
+ * @ingroup meos_temporal_analytics_reduction
+ * @brief Return a temporal value sampled according to period buckets
+ * @param[in] temp Temporal value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ * @csqlfn #Temporal_tsample()
  */
 Temporal *
 temporal_tsample(const Temporal *temp, const Interval *duration,
   TimestampTz torigin)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) duration) ||
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_not_null((void *) duration) ||
       ! ensure_valid_duration(duration))
     return NULL;
 
-  Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_tsample((TInstant *) temp, duration,
-      torigin);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_tsample((TSequence *) temp, duration,
-      torigin);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_tsample((TSequenceSet *) temp,
-      duration, torigin);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tinstant_tsample((TInstant *) temp, duration,
+        torigin);
+    case TSEQUENCE:
+      return (Temporal *) tsequence_tsample((TSequence *) temp, duration,
+        torigin);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_tsample((TSequenceSet *) temp,
+        duration, torigin);
+  }
 }
 
 /*****************************************************************************
@@ -503,11 +630,12 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
 
 /**
  * @brief Linear space computation of the similarity distance between two
- * temporal values. Only two rows of the full matrix are used.
+ * temporal values
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
  * @param[out] dist Array keeping the distances
+ * @note Only two rows of the full matrix are used
  */
 static double
 tinstarr_similarity1(double *dist, const TInstant **instants1, int count1,
@@ -568,11 +696,12 @@ tinstarr_similarity1(double *dist, const TInstant **instants1, int count1,
 }
 
 /**
- * @brief Linear space computation of the similarity distance between two temporal
- * values. Only two rows of the full matrix are used.
+ * @brief Linear space computation of the similarity distance between two
+ * temporal values
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
+ * @note Only two rows of the full matrix are used
  */
 static double
 tinstarr_similarity(const TInstant **instants1, int count1,
@@ -592,7 +721,7 @@ tinstarr_similarity(const TInstant **instants1, int count1,
 }
 
 /**
- * @brief Compute the similarity distance between two temporal values.
+ * @brief Return the similarity distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
  */
@@ -604,8 +733,8 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
   assert(temp1->temptype == temp2->temptype);
   double result;
   int count1, count2;
-  const TInstant **instants1 = temporal_instants(temp1, &count1);
-  const TInstant **instants2 = temporal_instants(temp2, &count2);
+  const TInstant **instants1 = temporal_insts(temp1, &count1);
+  const TInstant **instants2 = temporal_insts(temp2, &count2);
   result = count1 > count2 ?
     tinstarr_similarity(instants1, count1, instants2, count2, simfunc) :
     tinstarr_similarity(instants2, count2, instants1, count1, simfunc);
@@ -616,11 +745,11 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_analytics_similarity
- * @brief Compute the Frechet distance between two temporal values.
+ * @ingroup meos_temporal_analytics_similarity
+ * @brief Return the Frechet distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
- * @return On error return DBL_MAX
- * @sqlfunc frechetDistance()
+ * @return On error return @p DBL_MAX
+ * @csqlfn #Temporal_frechet_distance()
  */
 double
 temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
@@ -633,11 +762,11 @@ temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_analytics_similarity
- * @brief Compute the Dynamic Time Warp distance between two temporal values.
+ * @ingroup meos_temporal_analytics_similarity
+ * @brief Return the Dynamic Time Warp distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
- * @result On error return DBL_MAX
- * @sqlfunc dynamicTimeWarp()
+ * @result On error return @p DBL_MAX
+ * @csqlfn #Temporal_dyntimewarp_distance()
  */
 double
 temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
@@ -705,8 +834,8 @@ path_print(Match *path, int count)
 #endif
 
 /**
- * @brief Compute the similarity path between two temporal values based on the
- * distance matrix.
+ * @brief Return the similarity path between two temporal values based on the
+ * distance matrix
  * @param[in] dist Matrix keeping the distances
  * @param[in] count1,count2 Number of rows and columns of the matrix
  * @param[out] count Number of elements of the similarity path
@@ -749,8 +878,8 @@ tinstarr_similarity_path(double *dist, int count1, int count2, int *count)
 }
 
 /**
- * @brief Compute the similarity distance between two temporal values using a
- * full matrix.
+ * @brief Return the similarity distance between two temporal values using a
+ * full matrix
  * @param[in] instants1,instants2 Instants of the temporal values
  * @param[in] count1,count2 Number of instants of the temporal values
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
@@ -815,7 +944,7 @@ tinstarr_similarity_matrix1(const TInstant **instants1, int count1,
 }
 
 /**
- * @brief Compute the similarity distance between two temporal values.
+ * @brief Return the similarity distance between two temporal values
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
@@ -845,7 +974,7 @@ tinstarr_similarity_matrix(const TInstant **instants1, int count1,
  *****************************************************************************/
 
 /**
- * @brief Compute the similarity path between two temporal values
+ * @brief Return the similarity path between two temporal values
  */
 Match *
 temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
@@ -854,8 +983,8 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
   assert(temp1); assert(temp2); assert(count);
   assert(temp1->temptype == temp2->temptype);
   int count1, count2;
-  const TInstant **instants1 = temporal_instants(temp1, &count1);
-  const TInstant **instants2 = temporal_instants(temp2, &count2);
+  const TInstant **instants1 = temporal_insts(temp1, &count1);
+  const TInstant **instants2 = temporal_insts(temp2, &count2);
   Match *result = count1 > count2 ?
     tinstarr_similarity_matrix(instants1, count1, instants2, count2,
       simfunc, count) :
@@ -868,11 +997,11 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
 
 #if MEOS
 /**
- * @ingroup libmeos_temporal_analytics_similarity
- * @brief Compute the Frechet distance between two temporal values.
+ * @ingroup meos_temporal_analytics_similarity
+ * @brief Return the Frechet distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @param[out] count Number of elements of the output array
- * @sqlfunc frechetDistancePath()
+ * @csqlfn #Temporal_frechet_path()
  */
 Match *
 temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
@@ -886,11 +1015,11 @@ temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
 }
 
 /**
- * @ingroup libmeos_temporal_analytics_similarity
- * @brief Compute the Dynamic Time Warp distance between two temporal values.
+ * @ingroup meos_temporal_analytics_similarity
+ * @brief Return the Dynamic Time Warp distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @param[out] count Number of elements of the output array
- * @sqlfunc dynamicTimeWarpPath()
+ * @csqlfn #Temporal_dyntimewarp_path()
  */
 Match *
 temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
@@ -910,7 +1039,7 @@ temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * @brief Compute the discrete Hausdorff distance between two temporal values.
+ * @brief Return the discrete Hausdorff distance between two temporal values
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
  */
@@ -959,8 +1088,8 @@ tinstarr_hausdorff_distance(const TInstant **instants1, int count1,
 }
 
 /**
- * @ingroup libmeos_temporal_analytics_similarity
- * @brief Compute the Hausdorf distance between two temporal values.
+ * @ingroup meos_temporal_analytics_similarity
+ * @brief Return the Hausdorf distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @return On error return -1.0
  */
@@ -974,8 +1103,8 @@ temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
 
   double result;
   int count1, count2;
-  const TInstant **instants1 = temporal_instants(temp1, &count1);
-  const TInstant **instants2 = temporal_instants(temp2, &count2);
+  const TInstant **instants1 = temporal_insts(temp1, &count1);
+  const TInstant **instants2 = temporal_insts(temp2, &count2);
   result = tinstarr_hausdorff_distance(instants1, count1, instants2, count2);
   /* Free memory */
   pfree(instants1); pfree(instants2);
@@ -989,8 +1118,8 @@ temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
  ***********************************************************************/
 
 /**
- * @brief Simplify the temporal sequence float/point ensuring that consecutive
- * values are at least a certain distance apart.
+ * @brief Return a temporal sequence float/point simplified ensuring that
+ * consecutive values are at least a given distance apart
  * @param[in] seq Temporal value
  * @param[in] dist Minimum distance
  */
@@ -1028,8 +1157,8 @@ tsequence_simplify_min_dist(const TSequence *seq, double dist)
 }
 
 /**
- * @brief Simplify the temporal sequence float/point ensuring that consecutive
- * values are at least a certain distance apart.
+ * @brief Return a temporal sequence float/point simplified ensuring that
+ * consecutive values are at least a given distance apart
  * @param[in] ss Temporal value
  * @param[in] dist Distance
  */
@@ -1038,19 +1167,16 @@ tsequenceset_simplify_min_dist(const TSequenceSet *ss, double dist)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = tsequence_simplify_min_dist(seq, dist);
-  }
+    sequences[i] = tsequence_simplify_min_dist(TSEQUENCESET_SEQ_N(ss, i), dist);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
 /**
- * @ingroup libmeos_temporal_analytics_simplify
- * @brief Simplify the temporal sequence float/point ensuring that consecutive
- * values are at least a certain distance apart.
- *
- * This function is inspired from the Moving Pandas function MinDistanceGeneralizer
+ * @ingroup meos_temporal_analytics_simplify
+ * @brief Return a temporal sequence float/point simplified ensuring that
+ * consecutive values are at least a given distance apart
+ * @details This function is inspired from the Moving Pandas function
+ * MinDistanceGeneralizer
  * https://github.com/movingpandas/movingpandas/blob/main/movingpandas/trajectory_generalizer.py
  * @param[in] temp Temporal value
  * @param[in] dist Distance in the units of the values for temporal floats or
@@ -1058,7 +1184,7 @@ tsequenceset_simplify_min_dist(const TSequenceSet *ss, double dist)
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
  * value.
- * @sqlfunc minDistSimplify()
+ * @csqlfn #Temporal_simplify_min_dist()
  */
 Temporal *
 temporal_simplify_min_dist(const Temporal *temp, double dist)
@@ -1069,16 +1195,17 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
-  Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    result = temporal_copy(temp);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_simplify_min_dist((TSequence *) temp, dist);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_simplify_min_dist((TSequenceSet *) temp,
-      dist);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return temporal_cp(temp);
+    case TSEQUENCE:
+      return (Temporal *) tsequence_simplify_min_dist((TSequence *) temp, dist);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_simplify_min_dist((TSequenceSet *) temp,
+        dist);
+  }
 }
 
 /***********************************************************************
@@ -1088,8 +1215,8 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
  ***********************************************************************/
 
 /**
- * @brief Simplify the temporal sequence float/point ensuring that consecutive
- * values are at least a certain time interval apart.
+ * @brief Return a temporal sequence float/point simplified ensuring that
+ * consecutive values are at least a certain time interval apart
  * @param[in] seq Temporal value
  * @param[in] mint Minimum time interval
  */
@@ -1106,7 +1233,7 @@ tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Interval *duration = pg_timestamp_mi(inst2->t, inst1->t);
+    Interval *duration = minus_timestamptz_timestamptz(inst2->t, inst1->t);
     if (pg_interval_cmp(duration, mint) > 0)
     {
       /* Add instant to output sequence */
@@ -1127,8 +1254,8 @@ tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
 }
 
 /**
- * @brief Simplify the temporal sequence float/point ensuring that consecutive
- * values are at least a certain time interval apart.
+ * @brief Return a temporal sequence float/point simplified ensuring that
+ * consecutive values are at least a certain time interval apart
  * @param[in] ss Temporal value
  * @param[in] mint Minimum time interval
  */
@@ -1137,26 +1264,23 @@ tsequenceset_simplify_min_tdelta(const TSequenceSet *ss, const Interval *mint)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = tsequence_simplify_min_tdelta(seq, mint);
-  }
+    sequences[i] = tsequence_simplify_min_tdelta(TSEQUENCESET_SEQ_N(ss, i), mint);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
 /**
- * @ingroup libmeos_temporal_analytics_simplify
- * @brief Simplify the temporal sequence float/point ensuring that consecutive
- * values are at least a certain time interval apart.
- *
- * This function is inspired from the Moving Pandas function MinTimeDeltaGeneralizer
+ * @ingroup meos_temporal_analytics_simplify
+ * @brief Return a temporal sequence float/point simplified ensuring that
+ * consecutive values are at least a certain time interval apart
+ * @details This function is inspired from the Moving Pandas function
+ * MinTimeDeltaGeneralizer
  * https://github.com/movingpandas/movingpandas/blob/main/movingpandas/trajectory_generalizer.py
  * @param[in] temp Temporal value
  * @param[in] mint Minimum time interval
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
  * value.
- * @sqlfunc minTimeDeltaSimplify()
+ * @csqlfn #Temporal_simplify_min_tdelta()
  */
 Temporal *
 temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
@@ -1167,17 +1291,19 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
       ! ensure_valid_duration(mint))
     return NULL;
 
-  Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    result = temporal_copy(temp);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_simplify_min_tdelta((TSequence *) temp,
-      mint);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_simplify_min_tdelta((TSequenceSet *) temp,
-      mint);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return temporal_cp(temp);
+    case TSEQUENCE:
+      return ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
+        temporal_cp(temp) :
+        (Temporal *) tsequence_simplify_min_tdelta((TSequence *) temp, mint);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_simplify_min_tdelta((TSequenceSet *) temp,
+        mint);
+  }
 }
 
 /***********************************************************************
@@ -1186,7 +1312,7 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
 
 /**
  * @brief Find a split when simplifying the temporal sequence float using the
- * Douglas-Peucker line simplification algorithm.
+ * Douglas-Peucker line simplification algorithm
  * @param[in] seq Temporal sequence
  * @param[in] i1,i2 Indexes of the reference instants
  * @param[out] split Location of the split
@@ -1204,17 +1330,17 @@ tfloatseq_findsplit(const TSequence *seq, int i1, int i2, int *split,
 
   const TInstant *start = TSEQUENCE_INST_N(seq, i1);
   const TInstant *end = TSEQUENCE_INST_N(seq, i2);
-  double startval = DatumGetFloat8(tinstant_value(start));
-  double endval = DatumGetFloat8(tinstant_value(end));
+  double startval = DatumGetFloat8(tinstant_val(start));
+  double endval = DatumGetFloat8(tinstant_val(end));
   double duration2 = (double) (end->t - start->t);
   /* Loop for every instant between i1 and i2 */
   for (int idx = i1 + 1; idx < i2; idx++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, idx);
-    double value = DatumGetFloat8(tinstant_value(inst));
+    double value = DatumGetFloat8(tinstant_val(inst));
     /*
      * The following is equivalent to
-     * tsegment_value_at_timestamp(start, end, LINEAR, inst->t);
+     * #tsegment_value_at_timestamptz(start, end, LINEAR, inst->t);
      */
     double duration1 = (double) (inst->t - start->t);
     double ratio = duration1 / duration2;
@@ -1325,7 +1451,7 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
 
 /**
  * @brief Find a split when simplifying the temporal sequence point using the
- * Douglas-Peucker line simplification algorithm.
+ * Douglas-Peucker line simplification algorithm
  * @param[in] seq Temporal sequence
  * @param[in] i1,i2 Indexes of the reference instants
  * @param[in] syncdist True when using the Synchronized Euclidean Distance
@@ -1352,13 +1478,13 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   const TInstant *end = TSEQUENCE_INST_N(seq, i2);
   if (hasz)
   {
-    p3a = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value(start));
-    p3b = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value(end));
+    p3a = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_val(start));
+    p3b = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_val(end));
   }
   else
   {
-    p2a = (POINT2D *) DATUM_POINT2D_P(tinstant_value(start));
-    p2b = (POINT2D *) DATUM_POINT2D_P(tinstant_value(end));
+    p2a = (POINT2D *) DATUM_POINT2D_P(tinstant_val(start));
+    p2b = (POINT2D *) DATUM_POINT2D_P(tinstant_val(end));
   }
 
   /* Loop for every instant between i1 and i2 */
@@ -1368,10 +1494,10 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
     const TInstant *inst = TSEQUENCE_INST_N(seq, idx);
     if (hasz)
     {
-      p3k = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value(inst));
+      p3k = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_val(inst));
       if (syncdist)
       {
-        value = tsegment_value_at_timestamp(start, end, interp, inst->t);
+        value = tsegment_value_at_timestamptz(start, end, interp, inst->t);
         p3_sync = (POINT3DZ *) DATUM_POINT3DZ_P(value);
         d_tmp = dist3d_pt_pt(p3k, p3_sync);
         pfree(DatumGetPointer(value));
@@ -1381,10 +1507,10 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
     }
     else
     {
-      p2k = (POINT2D *) DATUM_POINT2D_P(tinstant_value(inst));
+      p2k = (POINT2D *) DATUM_POINT2D_P(tinstant_val(inst));
       if (syncdist)
       {
-        value = tsegment_value_at_timestamp(start, end, interp, inst->t);
+        value = tsegment_value_at_timestamptz(start, end, interp, inst->t);
         p2_sync = (POINT2D *) DATUM_POINT2D_P(value);
         d_tmp = dist2d_pt_pt(p2k, p2_sync);
         pfree(DatumGetPointer(value));
@@ -1406,9 +1532,9 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
 /*****************************************************************************/
 
 /**
- * @brief Simplify the temporal sequence float/point using a single-pass
+ * @brief Return a temporal sequence float/point simplified using a single-pass
  * implementation of the Douglas-Peucker line simplification algorithm that
- * checks whether the provided distance threshold is exceeded.
+ * checks whether the provided distance threshold is exceeded
  * @param[in] seq Temporal value
  * @param[in] dist Minimum distance
  * @param[in] syncdist True when computing the Synchronized Euclidean
@@ -1459,8 +1585,8 @@ tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
 }
 
 /**
- * @brief Simplify the temporal sequence set float/point using a single-pass
- * Douglas-Peucker line simplification algorithm.
+ * @brief Return a temporal sequence set float/point simplified using a
+ * single-pass Douglas-Peucker line simplification algorithm
  * @param[in] ss Temporal point
  * @param[in] dist Distance
  * @param[in] syncdist True when computing the Synchronized Euclidean
@@ -1473,17 +1599,15 @@ tsequenceset_simplify_max_dist(const TSequenceSet *ss, double dist,
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = tsequence_simplify_max_dist(seq, dist, syncdist, minpts);
-  }
+    sequences[i] = tsequence_simplify_max_dist(TSEQUENCESET_SEQ_N(ss, i), dist,
+      syncdist, minpts);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
 /**
- * @ingroup libmeos_temporal_analytics_simplify
- * @brief Simplify the temporal float/point using a single-pass Douglas-Peucker
- * line simplification algorithm.
+ * @ingroup meos_temporal_analytics_simplify
+ * @brief Return a temporal float/point simplified using a single-pass
+ * Douglas-Peucker line simplification algorithm
  * @param[in] temp Temporal value
  * @param[in] dist Distance in the units of the values for temporal floats or
  * the units of the coordinate system for temporal points.
@@ -1492,7 +1616,7 @@ tsequenceset_simplify_max_dist(const TSequenceSet *ss, double dist,
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
  * value.
- * @sqlfunc maxDistSimplify()
+ * @csqlfn #Temporal_simplify_max_dist()
  */
 Temporal *
 temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
@@ -1503,17 +1627,20 @@ temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
-  Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    result = temporal_copy(temp);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_simplify_max_dist((TSequence *) temp, dist,
-      syncdist, 2);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_simplify_max_dist((TSequenceSet *) temp,
-      dist, syncdist, 2);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return temporal_cp(temp);
+    case TSEQUENCE:
+      return ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
+        temporal_cp(temp) :
+        (Temporal *) tsequence_simplify_max_dist((TSequence *) temp, dist,
+          syncdist, 2);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_simplify_max_dist((TSequenceSet *) temp,
+        dist, syncdist, 2);
+  }
 }
 
 /*****************************************************************************/
@@ -1535,8 +1662,8 @@ int_cmp(const void *a, const void *b)
 #define DP_STACK_SIZE 256
 
 /**
- * @brief Simplify the temporal sequence set float/point using the
- * Douglas-Peucker line simplification algorithm.
+ * @brief Return a temporal sequence set float/point simplified using the
+ * Douglas-Peucker line simplification algorithm
  */
 static TSequence *
 tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
@@ -1611,8 +1738,8 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
 }
 
 /**
- * @brief Simplify the temporal sequence set float/point using the
- * Douglas-Peucker line simplification algorithm.
+ * @brief Return a temporal sequence set float/point simplified using the
+ * Douglas-Peucker line simplification algorithm
  * @param[in] ss Temporal point
  * @param[in] dist Distance
  * @param[in] syncdist True when computing the Synchronized Euclidean
@@ -1625,17 +1752,15 @@ tsequenceset_simplify_dp(const TSequenceSet *ss, double dist, bool syncdist,
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = tsequence_simplify_dp(seq, dist, syncdist, minpts);
-  }
+    sequences[i] = tsequence_simplify_dp(TSEQUENCESET_SEQ_N(ss, i), dist,
+      syncdist, minpts);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
 /**
- * @ingroup libmeos_temporal_analytics_simplify
- * @brief Simplify the temporal float/point using the Douglas-Peucker line
- * simplification algorithm.
+ * @ingroup meos_temporal_analytics_simplify
+ * @brief Return a temporal float/point simplified using the Douglas-Peucker
+ * line simplification algorithm
  * @param[in] temp Temporal value
  * @param[in] dist Distance in the units of the values for temporal floats or
  * the units of the coordinate system for temporal points.
@@ -1644,7 +1769,7 @@ tsequenceset_simplify_dp(const TSequenceSet *ss, double dist, bool syncdist,
  * @note The funcion applies only for temporal sequences or sequence sets with
  * linear interpolation. In all other cases, it returns a copy of the temporal
  * value.
- * @sqlfunc DouglasPeuckerSimplify()
+ * @csqlfn #Temporal_simplify_dp()
  */
 Temporal *
 temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
@@ -1655,17 +1780,19 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
-  Temporal *result;
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || ! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    result = temporal_copy(temp);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_simplify_dp((TSequence *) temp, dist,
-      syncdist, 2);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_simplify_dp((TSequenceSet *) temp, dist,
-      syncdist, 2);
-  return result;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return temporal_cp(temp);
+    case TSEQUENCE:
+      return ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
+        temporal_cp(temp) :
+        (Temporal *) tsequence_simplify_dp((TSequence *) temp, dist, syncdist, 2);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_simplify_dp((TSequenceSet *) temp, dist,
+        syncdist, 2);
+  }
 }
 
 /*****************************************************************************/

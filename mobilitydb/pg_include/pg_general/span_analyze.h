@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -54,8 +54,6 @@
 #define STATISTIC_KIND_TIME_LENGTH_HISTOGRAM   11
 
 /*****************************************************************************/
-
-extern int float8_qsort_cmp(const void *a1, const void *a2);
 
 extern void span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt,
   int *slot_idx, SpanBound *lowers, SpanBound *uppers, float8 *lengths,

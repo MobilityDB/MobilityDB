@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -39,24 +39,23 @@
 #include <utils/palloc.h>
 #include <fmgr.h>
 /* MEOS */
-#include "general/temporal.h"
-#include "npoint/tnpoint.h"
+#include <meos.h>
 
 /*****************************************************************************/
 
-extern Datum boxop_geo_tnpoint_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_geo_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_tnpoint_geo_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tnpoint_geo(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_stbox_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tnpoint_stbox(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_npoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tnpoint_npoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
-extern Datum boxop_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
+extern Datum Boxop_tnpoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBox *, const STBox *));
 
 /*****************************************************************************/

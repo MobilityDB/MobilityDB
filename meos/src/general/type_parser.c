@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,21 +30,18 @@
 /**
  * @file
  * @brief Functions for parsing base, set, span, tbox, and temporal types
- * @note Many functions make two passes for parsing, the first one to obtain
- * the number of elements in order to do memory allocation with `palloc`, the
+ * @details Many functions make two passes for parsing, the first one to obtain
+ * the number of elements in order to do memory allocation with @p palloc, the
  * second one to create the type. This is the only approach we can see at the
  * moment which is both correct and simple.
  */
 
 #include "general/type_parser.h"
 
-/* C */
-#include <float.h>
-#include <limits.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
+#include "general/temporal.h"
 #include "general/type_util.h"
 
 /*****************************************************************************/
@@ -245,6 +242,7 @@ p_comma(const char **str)
 
 /**
  * @brief Input a double from the buffer
+ * @return On error return false
  */
 bool
 double_parse(const char **str, double *result)
@@ -258,11 +256,12 @@ double_parse(const char **str, double *result)
     return false;
   }
   *str = nextstr;
-  return result;
+  return true;
 }
 
 /**
  * @brief Parse a base value from the buffer
+ * @return On error return false
  */
 bool
 temporal_basetype_parse(const char **str, meosType basetype,
@@ -289,7 +288,7 @@ temporal_basetype_parse(const char **str, meosType basetype,
   }
   if ((*str)[delim] == '\0')
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse temporal value: %s", origstr);
     return false;
   }
@@ -308,7 +307,8 @@ temporal_basetype_parse(const char **str, meosType basetype,
 /*****************************************************************************/
 
 /**
- * @brief Parse a temporal box value from the buffer.
+ * @brief Parse a temporal box value from the buffer
+ * @return On error return @p NULL
  */
 TBox *
 tbox_parse(const char **str)
@@ -401,8 +401,8 @@ tbox_parse(const char **str)
 /* Time Types */
 
 /**
- * @brief Parse a timestamp value from the buffer.
- * @brief On error return DT_NOEND
+ * @brief Parse a timestamp value from the buffer
+ * @return On error return DT_NOEND
  */
 TimestampTz
 timestamp_parse(const char **str)
@@ -427,7 +427,8 @@ timestamp_parse(const char **str)
 /* Set and Span Types */
 
 /**
- * @brief Parse a element value from the buffer.
+ * @brief Parse a element value from the buffer
+ * @return On error return false
  */
 bool
 elem_parse(const char **str, meosType basetype, Datum *result)
@@ -455,25 +456,52 @@ elem_parse(const char **str, meosType basetype, Datum *result)
   str1[delim] = '\0';
   bool success = basetype_in(str1, basetype, false, result);
   pfree(str1);
-  if (! success) 
+  if (! success)
     return false;
   *str += delim + dquote;
   return true;
 }
 
 /**
- * @brief Parse a set value from the buffer.
+ * @brief Parse a set value from the buffer
+ * @return On error return @p NULL
  */
 Set *
 set_parse(const char **str, meosType settype)
 {
   const char *type_str = "set";
+  int set_srid = 0;
+  p_whitespace(str);
+  
+  /* Starts with "SRID=". The SRID specification must be gobbled. We cannot use 
+   * the atoi() function because this requires a string terminated by '\0' 
+   * and we cannot modify the string. */
+  if (pg_strncasecmp(*str, "SRID=", 5) == 0)
+  {
+    if (! ensure_geoset_type(settype))
+      return NULL;
+    /* Move str to the start of the number part */
+    *str += 5;
+    int delim = 0;
+    set_srid = 0;
+    /* Delimiter will be either ',' or ';' depending on whether interpolation
+       is given after */
+    while ((*str)[delim] != ',' && (*str)[delim] != ';' && (*str)[delim] != '\0')
+    {
+      set_srid = set_srid * 10 + (*str)[delim] - '0';
+      delim++;
+    }
+    /* Set str to the start of the temporal point */
+    *str += delim + 1;
+  }
+  /* For the second pass we start after the SRID=xxx;{ including the '{' */
+  const char *bak = *str + 1;
+
   if (! ensure_obrace(str, type_str))
     return NULL;
   meosType basetype = settype_basetype(settype);
 
   /* First parsing */
-  const char *bak = *str;
   Datum d;
   if (! elem_parse(str, basetype, &d))
     return NULL;
@@ -497,11 +525,17 @@ set_parse(const char **str, meosType settype)
     elem_parse(str, basetype, &values[i]);
   }
   p_cbrace(str);
-  return set_make_free(values, count, basetype, ORDERED);
+  if (set_srid != SRID_UNKNOWN)
+  {
+    for (int i = 0; i < count; i++)
+      gserialized_set_srid(DatumGetGserializedP(values[i]), set_srid);
+  }
+  return set_make_free(values, count, basetype, ORDERED_NO);
 }
 
 /**
  * @brief Parse a bound value from the buffer
+ * @return On error return false
  */
 bool
 bound_parse(const char **str, meosType basetype, Datum *result)
@@ -519,11 +553,12 @@ bound_parse(const char **str, meosType basetype, Datum *result)
   if (! success)
     return false;
   *str += delim;
-  return result;
+  return true;
 }
 
 /**
  * @brief Parse a span value from the buffer
+ * @return On error return false
  */
 bool
 span_parse(const char **str, meosType spantype, bool end, Span *span)
@@ -542,10 +577,10 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
   meosType basetype = spantype_basetype(spantype);
   Datum lower, upper;
   if (! bound_parse(str, basetype, &lower))
-    return NULL;
+    return false;
   p_comma(str);
   if (! bound_parse(str, basetype, &upper))
-    return NULL;
+    return false;
 
   if (p_cbracket(str))
     upper_inc = true;
@@ -563,12 +598,13 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
 
   if (! span)
     return true;
-  span_set(lower, upper, lower_inc, upper_inc, basetype, span);
+  span_set(lower, upper, lower_inc, upper_inc, basetype, spantype, span);
   return true;
 }
 
 /**
  * @brief Parse a span set value from the buffer
+ * @return On error return @p NULL
  */
 SpanSet *
 spanset_parse(const char **str, meosType spansettype)
@@ -601,8 +637,7 @@ spanset_parse(const char **str, meosType spansettype)
     span_parse(str, spantype, false, &spans[i]);
   }
   p_cbrace(str);
-  SpanSet *result = spanset_make_free(spans, count, NORMALIZE);
-  return result;
+  return spanset_make_free(spans, count, NORMALIZE, ORDERED);
 }
 
 /*****************************************************************************/
@@ -615,9 +650,10 @@ spanset_parse(const char **str, meosType spansettype)
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no more input after the instant
  * @param[out] result New instant, may be NULL
+ * @return On error return false
  */
-bool 
-tinstant_parse(const char **str, meosType temptype, bool end, 
+bool
+tinstant_parse(const char **str, meosType temptype, bool end,
   TInstant **result)
 {
   p_whitespace(str);
@@ -633,7 +669,7 @@ tinstant_parse(const char **str, meosType temptype, bool end,
   if (end && ! ensure_end_input(str, "temporal"))
     return false;
   if (result)
-    *result = tinstant_make(elem, temptype, t);
+    *result = tinstant_make_free(elem, temptype, t);
   return true;
 }
 
@@ -641,8 +677,9 @@ tinstant_parse(const char **str, meosType temptype, bool end,
  * @brief Parse a temporal discrete sequence from the buffer
  * @param[in] str Input string
  * @param[in] temptype Base type
+ * @return On error return @p NULL
  */
-TSequence * 
+TSequence *
 tdiscseq_parse(const char **str, meosType temptype)
 {
   const char *type_str = "temporal";
@@ -686,8 +723,9 @@ tdiscseq_parse(const char **str, meosType temptype)
  * @param[in] end Set to true when reading a single sequence to ensure there is
  * no more input after the sequence
  * @param[out] result New sequence, may be NULL
+ * @return On error return false
  */
-bool 
+bool
 tcontseq_parse(const char **str, meosType temptype, interpType interp,
   bool end, TSequence **result)
 {
@@ -746,6 +784,7 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp,
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
+ * @return On error return @p NULL
  */
 TSequenceSet *
 tsequenceset_parse(const char **str, meosType temptype, interpType interp)
@@ -786,6 +825,7 @@ tsequenceset_parse(const char **str, meosType temptype, interpType interp)
  * @brief Parse a temporal value from the buffer (dispatch function)
  * @param[in] str Input string
  * @param[in] temptype Temporal type
+ * @return On error return @p NULL
  */
 Temporal *
 temporal_parse(const char **str, meosType temptype)

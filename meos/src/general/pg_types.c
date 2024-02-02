@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,10 +30,10 @@
 /**
  * @file
  * @brief Functions for base and time types borrowed from PostgreSQL
- * version 14.2 source code.
+ * version 14.2 source code
  * @note The MobilityDB functions pg_func(...) correspond to external
  * PostgreSQL functions func(PG_FUNCTION_ARGS). This enables bypassing the
- * function manager fmgr.c.
+ * function manager @p fmgr.c.
  */
 
 #include "general/pg_types.h"
@@ -60,16 +60,17 @@
 
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
-#include "general/type_util.h"
+#include "general/temporal.h"
 
 #if ! MEOS
   extern Datum call_function1(PGFunction func, Datum arg1);
   extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3);
-  extern Datum timestamptz_in(PG_FUNCTION_ARGS);
+  extern Datum date_in(PG_FUNCTION_ARGS);
   extern Datum timestamp_in(PG_FUNCTION_ARGS);
-  extern Datum timestamptz_out(PG_FUNCTION_ARGS);
+  extern Datum timestamptz_in(PG_FUNCTION_ARGS);
+  extern Datum date_out(PG_FUNCTION_ARGS);
   extern Datum timestamp_out(PG_FUNCTION_ARGS);
+  extern Datum timestamptz_out(PG_FUNCTION_ARGS);
   extern Datum interval_out(PG_FUNCTION_ARGS);
 #endif /* ! MEOS */
 
@@ -86,39 +87,9 @@ extern int32 pg_strtoint32(const char *s);
   extern int pg_ulltoa_n(uint64 l, char *a);
 #endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
 
-/*****************************************************************************/
-
-/* Definitions taken from miscadmin.h */
-
-/* valid DateStyle values */
-#define USE_POSTGRES_DATES 0
-#define USE_ISO_DATES      1
-#define USE_SQL_DATES      2
-#define USE_GERMAN_DATES   3
-#define USE_XSD_DATES      4
-
-/* valid DateOrder values taken */
-#define DATEORDER_YMD      0
-#define DATEORDER_DMY      1
-#define DATEORDER_MDY      2
-
-/*
- * IntervalStyles
- *   INTSTYLE_POSTGRES         Like Postgres < 8.4 when DateStyle = 'iso'
- *   INTSTYLE_POSTGRES_VERBOSE     Like Postgres < 8.4 when DateStyle != 'iso'
- *   INTSTYLE_SQL_STANDARD       SQL standard interval literals
- *   INTSTYLE_ISO_8601         ISO-8601-basic formatted intervals
- */
-#define INTSTYLE_POSTGRES      0
-#define INTSTYLE_POSTGRES_VERBOSE  1
-#define INTSTYLE_SQL_STANDARD    2
-#define INTSTYLE_ISO_8601      3
-
-/* Definitions from globals.c */
-
-int DateStyle = USE_ISO_DATES;
-int DateOrder = DATEORDER_MDY;
-int IntervalStyle = INTSTYLE_POSTGRES;
+/* To avoid including varlena.h */
+extern int varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
+  Oid collid);
 
 /*****************************************************************************
  * Functions adapted from bool.c
@@ -207,14 +178,13 @@ parse_bool_with_len(const char *value, size_t len, bool *result)
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Convert "t" or "f" to 1 or 0
- *
- * Check explicitly for "true/false" and TRUE/FALSE, 1/0, YES/NO, ON/OFF.
- * Reject other values.
- *
- * In the switch statement, check the most-used possibilities first.
- * @note PostgreSQL function: Datum boolin(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return a boolean from its string representation
+ * @details Convert @p "t" or @p "f" to 1 or 0.
+ * Check explicitly for @p "true/false" and @p TRUE/FALSE, @p 1/0, @p YES/NO,
+ * @p ON/OFF and reject other values. In the @p switch statement, check the
+ * most-used possibilities first.
+ * @note PostgreSQL function: @p boolin(PG_FUNCTION_ARGS)
  */
 bool
 bool_in(const char *in_str)
@@ -249,9 +219,10 @@ bool_in(const char *in_str)
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Convert 1 or 0 to "t" or "f"
- * @note PostgreSQL function: Datum boolout(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return the string representation of a boolean
+ * @details Convert 1 or 0 to @p "t" or @p "f"
+ * @note PostgreSQL function: @p boolout(PG_FUNCTION_ARGS)
  */
 char *
 bool_out(bool b)
@@ -268,7 +239,7 @@ bool_out(bool b)
 
 /**
  * @brief Return an int4 from a string
- * @note PostgreSQL function: Datum int4in(PG_FUNCTION_ARGS)
+ * @note PostgreSQL function: @p int4in(PG_FUNCTION_ARGS)
  */
 int32
 int4_in(const char *str)
@@ -291,23 +262,23 @@ int4_in(const char *str)
 static int
 mobdb_ltoa(int32 value, char *a)
 {
-	uint32		uvalue = (uint32) value;
-	int			len = 0;
+  uint32 uvalue = (uint32) value;
+  int len = 0;
 
-	if (value < 0)
-	{
-		uvalue = (uint32) 0 - uvalue;
-		a[len++] = '-';
-	}
-	len += pg_ultoa_n(uvalue, a + len);
-	a[len] = '\0';
-	return len;
+  if (value < 0)
+  {
+    uvalue = (uint32) 0 - uvalue;
+    a[len++] = '-';
+  }
+  len += pg_ultoa_n(uvalue, a + len);
+  a[len] = '\0';
+  return len;
 }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
 
 /**
  * @brief Return a string from an int4
- * @note PostgreSQL function: Datum int4out(PG_FUNCTION_ARGS)
+ * @note PostgreSQL function: @p int4out(PG_FUNCTION_ARGS)
  */
 char *
 int4_out(int32 val)
@@ -330,8 +301,8 @@ int4_out(int32 val)
 
 /**
  * @brief Return an int8 from a string
- * @return On error return PG_INT64_MAX;
- * @note PostgreSQL function: Datum int8in(PG_FUNCTION_ARGS)
+ * @return On error return @p PG_INT64_MAX;
+ * @note PostgreSQL function: @p int8in(PG_FUNCTION_ARGS)
  */
 int64
 int8_in(const char *str)
@@ -375,8 +346,8 @@ mobdb_lltoa(int64 value, char *a)
 #endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
 
 /**
- * @brief Return a string from an int8
- * @note PostgreSQL function: Datum int8out(PG_FUNCTION_ARGS)
+ * @brief Return a string from an @p int8
+ * @note PostgreSQL function: @p int8out(PG_FUNCTION_ARGS)
  */
 char *
 int8_out(int64 val)
@@ -404,7 +375,7 @@ int8_out(int64 val)
 
 /**
  * float8in_internal_opt_error - guts of float8in()
- * @return On error return DBL_MAX
+ * @return On error return @p DBL_MAX
  *
  * This is exposed for use by functions that want a reasonably
  * platform-independent way of inputting doubles.  The behavior is
@@ -563,8 +534,8 @@ float8_out(double num, int maxdd)
 
 /**
  * @brief Return the sine of arg1 (radians)
- * @return On error return DBL_MAX
- * @note PostgreSQL function: Datum dsin(PG_FUNCTION_ARGS)
+ * @return On error return @p DBL_MAX
+ * @note PostgreSQL function: @p dsin(PG_FUNCTION_ARGS)
  */
 float8
 pg_dsin(float8 arg1)
@@ -591,8 +562,8 @@ pg_dsin(float8 arg1)
 
 /**
  * @brief Return the cosine of arg1 (radians)
- * @return On error return DBL_MAX
- * @note PostgreSQL function: Datum dcos(PG_FUNCTION_ARGS)
+ * @return On error return @p DBL_MAX
+ * @note PostgreSQL function: @p dcos(PG_FUNCTION_ARGS)
  */
 float8
 pg_dcos(float8 arg1)
@@ -632,8 +603,8 @@ pg_dcos(float8 arg1)
 }
 
 /**
- * @brief Return the arctan of arg1 (radians)
- * @note PostgreSQL function: Datum datan(PG_FUNCTION_ARGS)
+ * @brief Return the arctan of a double (radians)
+ * @note PostgreSQL function: @p datan(PG_FUNCTION_ARGS)
  */
 float8
 pg_datan(float8 arg1)
@@ -657,14 +628,12 @@ pg_datan(float8 arg1)
 }
 
 /**
- * @brief Return the arctan of arg1/arg2 (radians)
- * @note PostgreSQL function: Datum datan2d(PG_FUNCTION_ARGS)
+ * @brief Return the arctan of two doubles (radians)
+ * @note PostgreSQL function: @p datan2d(PG_FUNCTION_ARGS)
  */
 float8
 pg_datan2(float8 arg1, float8 arg2)
 {
-  float8 result;
-
   /* Per the POSIX spec, return NaN if either input is NaN */
   if (isnan(arg1) || isnan(arg2))
     return get_float8_nan();
@@ -673,7 +642,7 @@ pg_datan2(float8 arg1, float8 arg2)
    * atan2 maps all inputs to values in the range [-Pi, Pi], so the result
    * should always be finite, even if the inputs are infinite.
    */
-  result = atan2(arg1, arg2);
+  float8 result = atan2(arg1, arg2);
   if (unlikely(isinf(result)))
     float_overflow_error();
 
@@ -684,12 +653,25 @@ pg_datan2(float8 arg1, float8 arg2)
  * Functions adapted from date.c
  *****************************************************************************/
 
-#if MEOS
+#if ! MEOS
 /**
- * @ingroup libmeos_pg_types
- * @brief Convert a string to a date in internal date format.
- * @return On error return DATEVAL_NOEND
- * @note PostgreSQL function: Datum date_in(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return a date from its string representation
+ * @return On error return @p DATEVAL_NOEND
+ * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
+ */
+DateADT
+pg_date_in(const char *str)
+{
+  Datum arg = CStringGetDatum(str);
+  return DatumGetTimestampTz(call_function1(date_in, arg));
+}
+#else
+/**
+ * @ingroup meos_pg_types
+ * @brief Return a date from its string representation
+ * @return On error return @p DATEVAL_NOEND
+ * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
  */
 DateADT
 pg_date_in(const char *str)
@@ -773,19 +755,28 @@ pg_date_in(const char *str)
 
   return date;
 }
+#endif /* MEOS */
 
-/* date_out()
- * Given internal format date, convert to text string.
- */
+#if ! MEOS
 /**
- * @ingroup libmeos_pg_types
- * @brief Convert a date in internal date format to a string.
- * @note PostgreSQL function: Datum date_in(PG_FUNCTION_ARGS)
+ * @brief Return a string converted to a date
+ * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
  */
 char *
 pg_date_out(DateADT date)
 {
-  char *result;
+  Datum d = DateADTGetDatum(date);
+  return DatumGetCString(call_function1(date_out, d));
+}
+#else
+/**
+ * @ingroup meos_pg_types
+ * @brief Return the string representation of a date
+ * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
+ */
+char *
+pg_date_out(DateADT date)
+{
   struct pg_tm tt, *tm = &tt;
   char buf[MAXDATELEN + 1];
 
@@ -798,10 +789,173 @@ pg_date_out(DateADT date)
     EncodeDateOnly(tm, DateStyle, buf);
   }
 
-  result = pstrdup(buf);
-  return result;
+  return pstrdup(buf);
 }
 #endif /* MEOS */
+
+#if MEOS || POSTGRESQL_VERSION_NUMBER < 130000
+/*
+ * Promote date to timestamp with time zone.
+ *
+ * On successful conversion, *overflow is set to zero if it's not NULL.
+ *
+ * If the date is finite but out of the valid range for timestamptz, then:
+ * if overflow is NULL, we throw an out-of-range error.
+ * if overflow is not NULL, we store +1 or -1 there to indicate the sign
+ * of the overflow, and return the appropriate timestamptz infinity.
+ */
+TimestampTz
+date2timestamptz_opt_overflow(DateADT dateVal, int *overflow)
+{
+  TimestampTz result;
+  struct pg_tm tt, *tm = &tt;
+  int tz;
+
+  if (overflow)
+    *overflow = 0;
+
+  if (DATE_IS_NOBEGIN(dateVal))
+    TIMESTAMP_NOBEGIN(result);
+  else if (DATE_IS_NOEND(dateVal))
+    TIMESTAMP_NOEND(result);
+  else
+  {
+    /*
+     * Since dates have the same minimum values as timestamps, only upper
+     * boundary need be checked for overflow.
+     */
+    if (dateVal >= (TIMESTAMP_END_JULIAN - POSTGRES_EPOCH_JDATE))
+    {
+      if (overflow)
+      {
+        *overflow = 1;
+        TIMESTAMP_NOEND(result);
+        return result;
+      }
+      else
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "date out of range for timestamp");
+        return 0;
+      }
+    }
+
+    j2date(dateVal + POSTGRES_EPOCH_JDATE,
+         &(tm->tm_year), &(tm->tm_mon), &(tm->tm_mday));
+    tm->tm_hour = 0;
+    tm->tm_min = 0;
+    tm->tm_sec = 0;
+    tz = DetermineTimeZoneOffset(tm, session_timezone);
+
+    result = dateVal * USECS_PER_DAY + tz * USECS_PER_SEC;
+
+    /*
+     * Since it is possible to go beyond allowed timestamptz range because
+     * of time zone, check for allowed timestamp range after adding tz.
+     */
+    if (!IS_VALID_TIMESTAMP(result))
+    {
+      if (overflow)
+      {
+        if (result < MIN_TIMESTAMP)
+        {
+          *overflow = -1;
+          TIMESTAMP_NOBEGIN(result);
+        }
+        else
+        {
+          *overflow = 1;
+          TIMESTAMP_NOEND(result);
+        }
+      }
+      else
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "date out of range for timestamp");
+        return 0;
+      }
+    }
+  }
+  return result;
+}
+#endif /* MEOS || POSTGRESQL_VERSION_NUMBER < 130000 */
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return a timestamptz converted to a date
+ */
+TimestampTz
+date_to_timestamptz(DateADT d)
+{
+  return date2timestamptz_opt_overflow(d, NULL);
+}
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return the addition of a date and a number of days
+ * @details Must handle both positive and negative numbers of days.
+ * @note PostgreSQL function: @p date_pli(PG_FUNCTION_ARGS)
+ */
+DateADT
+add_date_int(DateADT d, int32 days)
+{
+  DateADT result;
+
+  if (DATE_NOT_FINITE(d))
+    return d; /* can't change infinity */
+
+  result = d + days;
+
+  /* Check for integer overflow and out-of-allowed-range */
+  if ((days >= 0 ? (result < d) : (result > d)) || !IS_VALID_DATE(result))
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "date out of range");
+    return DATEVAL_NOEND;
+  }
+
+  return result;
+}
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return the subtraction of a date and a number of days
+ */
+DateADT
+minus_date_int(DateADT d, int32 days)
+{
+  DateADT result;
+
+  if (DATE_NOT_FINITE(d))
+    return d; /* can't change infinity */
+
+  result = d - days;
+
+  /* Check for integer overflow and out-of-allowed-range */
+  if ((days >= 0 ? (result > d) : (result < d)) || !IS_VALID_DATE(result))
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "date out of range");
+    return DATEVAL_NOEND;
+  }
+
+  return result;
+}
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return the subtraction of two dates
+ * @note PostgreSQL function: @p date_mi(PG_FUNCTION_ARGS)
+ */
+Interval *
+minus_date_date(DateADT d1, DateADT d2)
+{
+  if (DATE_NOT_FINITE(d1) || DATE_NOT_FINITE(d2))
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "cannot subtract infinite dates");
+
+  Interval *result = palloc0(sizeof(Interval));
+  result->day = (int32) (d1 - d2);
+  return result;
+}
 
 /*****************************************************************************
  *   Time ADT
@@ -847,12 +1001,13 @@ MEOSAdjustTimeForTypmod(TimeADT *time, int32 typmod)
       *time = -((((-*time) + TimeOffsets[typmod]) / TimeScales[typmod]) *
             TimeScales[typmod]);
   }
+  return;
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Convert a string to a time.
- * @note PostgreSQL function: Datum time_in(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return a time from its string representation
+ * @note PostgreSQL function: @p time_in(PG_FUNCTION_ARGS)
  */
 TimeADT
 pg_time_in(const char *str, int32 typmod)
@@ -893,14 +1048,13 @@ pg_time_in(const char *str, int32 typmod)
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Convert a time to a string.
- * @note PostgreSQL function: Datum time_out(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return the string representation of a time
+ * @note PostgreSQL function: @p time_out(PG_FUNCTION_ARGS)
  */
 char *
 pg_time_out(TimeADT time)
 {
-  char *result;
   struct pg_tm tt, *tm = &tt;
   fsec_t fsec;
   char buf[MAXDATELEN + 1];
@@ -908,8 +1062,7 @@ pg_time_out(TimeADT time)
   time2tm(time, tm, &fsec);
   EncodeTimeOnly(tm, fsec, false, 0, DateStyle, buf);
 
-  result = pstrdup(buf);
-  return result;
+  return pstrdup(buf);
 }
 #endif /* MEOS */
 
@@ -919,8 +1072,8 @@ pg_time_out(TimeADT time)
 
 #if ! MEOS
 /**
- * @brief Convert a string into a timestamp with timezone.
- * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
+ * @brief Return a string converted to a timestamp with timezone.
+ * @note PostgreSQL function: @p timestamptz_in(PG_FUNCTION_ARGS)
  */
 TimestampTz
 pg_timestamptz_in(const char *str, int32 typmod)
@@ -995,11 +1148,13 @@ void
 MEOSAdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 {
   (void) MEOSAdjustTimestampForTypmodError(time, typmod, NULL);
+  return;
 }
 
 /**
- * @brief Convert a string to a either timestamp or a timestamp with timezone.
- * @brief On error return DT_NOEND
+ * @brief Return a string converted to a either timestamp or a timestamp with
+ * timezone
+ * @result On error return DT_NOEND
  * @note The function returns a TimestampTz that must be cast to a Timestamp
  * when calling the function with the last argument to false
  */
@@ -1084,51 +1239,50 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Convert a string to a timestamp with time zone.
- * @return On error return DT_NOEND
- * @note PostgreSQL function: Datum timestamptz_in(PG_FUNCTION_ARGS)
- */
-TimestampTz
-pg_timestamptz_in(const char *str, int32 typmod)
-{
-  return timestamp_in_common(str, typmod, true);
-}
-
-/**
- * @ingroup libmeos_pg_types
- * @brief Convert a string to a timestamp without time zone.
- * @return On error return DT_NOEND
- * @note PostgreSQL function: Datum timestamp_in(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return a timestamp without time zone from its string representation
+ * @return On error return @p DT_NOEND
+ * @note PostgreSQL function: @p timestamp_in(PG_FUNCTION_ARGS)
  */
 Timestamp
 pg_timestamp_in(const char *str, int32 typmod)
 {
   return (Timestamp) timestamp_in_common(str, typmod, false);
 }
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return the string representation of a timestamp with time zone
+ * @return On error return @p DT_NOEND
+ * @note PostgreSQL function: @p timestamptz_in(PG_FUNCTION_ARGS)
+ */
+TimestampTz
+pg_timestamptz_in(const char *str, int32 typmod)
+{
+  return timestamp_in_common(str, typmod, true);
+}
 #endif /* MEOS */
 
 #if ! MEOS
 /**
- * @brief Convert a timestamp with timezone to a string.
- * @return On error return NULL
- * @note PostgreSQL function: Datum timestamptz_out(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return a timestamp with timezone converted to a string
+ * @return On error return @p NULL
+ * @note PostgreSQL function: @p timestamptz_out(PG_FUNCTION_ARGS)
  */
 char *
-pg_timestamptz_out(TimestampTz dt)
+pg_timestamptz_out(TimestampTz t)
 {
-  Datum d = TimestampTzGetDatum(dt);
-  char *result = DatumGetCString(call_function1(timestamptz_out, d));
-  return result;
+  Datum d = TimestampTzGetDatum(t);
+  return DatumGetCString(call_function1(timestamptz_out, d));
 }
 #else
 /**
- * @brief Convert either a timestamp or a timestamp to a string.
+ * @brief Return either a timestamp or a timestamptz converted to a string
  */
 char *
-timestamp_out_common(TimestampTz dt, bool withtz)
+timestamp_out_common(TimestampTz t, bool withtz)
 {
-  char *result;
   int tz;
   struct pg_tm tt,
          *tm = &tt;
@@ -1136,11 +1290,11 @@ timestamp_out_common(TimestampTz dt, bool withtz)
   const char *tzn;
   char buf[MAXDATELEN + 1];
 
-  if (TIMESTAMP_NOT_FINITE(dt))
-    EncodeSpecialTimestamp(dt, buf);
-  else if (withtz && timestamp2tm(dt, &tz, tm, &fsec, &tzn, NULL) == 0)
+  if (TIMESTAMP_NOT_FINITE(t))
+    EncodeSpecialTimestamp(t, buf);
+  else if (withtz && timestamp2tm(t, &tz, tm, &fsec, &tzn, NULL) == 0)
     EncodeDateTime(tm, fsec, true, tz, tzn, DateStyle, buf);
-  else if (! withtz && timestamp2tm(dt, NULL, tm, &fsec, NULL, NULL) == 0)
+  else if (! withtz && timestamp2tm(t, NULL, tm, &fsec, NULL, NULL) == 0)
     EncodeDateTime(tm, fsec, false, 0, NULL, DateStyle, buf);
   else
   {
@@ -1148,48 +1302,74 @@ timestamp_out_common(TimestampTz dt, bool withtz)
     return NULL;
   }
 
-  result = pstrdup(buf);
-  return result;
+  return pstrdup(buf);
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Convert a timestamp with timezone to a string.
- * @note PostgreSQL function: Datum timestamptz_out(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return the string representation of a timestamp with timezone
+ * @note PostgreSQL function: @p timestamptz_out(PG_FUNCTION_ARGS)
  */
 char *
-pg_timestamptz_out(TimestampTz dt)
+pg_timestamptz_out(TimestampTz t)
 {
-  return timestamp_out_common(dt, true);
+  return timestamp_out_common(t, true);
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Convert a timestamp without timezone to a string.
- * @note PostgreSQL function: Datum timestamp_out(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return the string representation of a timestamp without timezone
+ * @note PostgreSQL function: @p timestamp_out(PG_FUNCTION_ARGS)
  */
 char *
-pg_timestamp_out(Timestamp dt)
+pg_timestamp_out(Timestamp t)
 {
-  return timestamp_out_common((Timestamp) dt, false);
+  return timestamp_out_common((Timestamp) t, false);
 }
 #endif /* MEOS */
 
-/*****************************************************************************/
+/**
+ * @ingroup meos_pg_types
+ * @brief Return a timestamp with time zone converted to a date
+ * @note PostgreSQL function timestamptz_date()
+ */
+DateADT
+timestamptz_to_date(TimestampTz t)
+{
+  DateADT result;
+  struct pg_tm tt, *tm = &tt;
+  fsec_t fsec;
+  int tz;
 
+  if (TIMESTAMP_IS_NOBEGIN(t))
+    DATE_NOBEGIN(result);
+  else if (TIMESTAMP_IS_NOEND(t))
+    DATE_NOEND(result);
+  else
+  {
+    if (timestamp2tm(t, &tz, tm, &fsec, NULL, NULL) != 0)
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+
+    result = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) - POSTGRES_EPOCH_JDATE;
+  }
+
+  return result;
+}
+
+/*****************************************************************************/
 
 #if ! MEOS
 /**
- * @brief Convert an interval to a string.
- * @return On error return NULL
- * @note PostgreSQL function: Datum interval_out(PG_FUNCTION_ARGS)
+ * @brief Return the string representation of an interval
+ * @return On error return @p NULL
+ * @note PostgreSQL function: @p interval_out(PG_FUNCTION_ARGS)
  */
 char *
 pg_interval_out(const Interval *interval)
 {
   Datum d = PointerGetDatum(interval);
-  char *result = DatumGetCString(call_function1(interval_out, d));
-  return result;
+  return DatumGetCString(call_function1(interval_out, d));
 }
 #else /*if MEOS */
 /*
@@ -1364,12 +1544,13 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod)
       }
     }
   }
+  return;
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Convert a string to an interval.
- * @note PostgreSQL function: Datum interval_in(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return an interval from its string representation
+ * @note PostgreSQL function: @p interval_in(PG_FUNCTION_ARGS)
  */
 Interval *
 pg_interval_in(const char *str, int32 typmod)
@@ -1451,9 +1632,9 @@ pg_interval_in(const char *str, int32 typmod)
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Interval constructor
- * @note PostgreSQL function: Datum make_interval(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return an interval constructed from its arguments
+ * @note PostgreSQL function: @p make_interval(PG_FUNCTION_ARGS)
  */
 Interval *
 pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours,
@@ -1483,23 +1664,22 @@ pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Convert a time span to external form.
- * @note PostgreSQL function: Datum interval_out(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return the string representation of an interval
+ * @note PostgreSQL function: @p interval_out(PG_FUNCTION_ARGS)
  */
 char *
-pg_interval_out(const Interval *span)
+pg_interval_out(const Interval *interv)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) span))
+  if (! ensure_not_null((void *) interv))
     return NULL;
 
-  char *result;
   struct pg_tm tt, *tm = &tt;
   fsec_t fsec;
   char buf[MAXDATELEN + 1];
 
-  if (interval2tm(*span, tm, &fsec) != 0)
+  if (interval2tm(*interv, tm, &fsec) != 0)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
       "could not convert interval to tm");
@@ -1508,30 +1688,29 @@ pg_interval_out(const Interval *span)
 
   EncodeInterval(tm, fsec, IntervalStyle, buf);
 
-  result = pstrdup(buf);
-  return result;
+  return pstrdup(buf);
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Multiply an interval by a scalar.
- * @note PostgreSQL function: Datum interval_mul(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return the multiplication of an interval and a factor
+ * @note PostgreSQL function: @p interval_mul(PG_FUNCTION_ARGS)
  */
 Interval *
-pg_interval_mul(const Interval *span, double factor)
+mult_interval_double(const Interval *interv, double factor)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) span))
+  if (! ensure_not_null((void *) interv))
     return NULL;
 
   double month_remainder_days, sec_remainder, result_double;
-  int32 orig_month = span->month,
-    orig_day = span->day;
+  int32 orig_month = interv->month,
+    orig_day = interv->day;
   Interval *result;
 
   result = (Interval *) palloc(sizeof(Interval));
 
-  result_double = span->month * factor;
+  result_double = interv->month * factor;
   if (isnan(result_double) ||
     result_double > INT_MAX || result_double < INT_MIN)
   {
@@ -1540,7 +1719,7 @@ pg_interval_mul(const Interval *span, double factor)
   }
   result->month = (int32) result_double;
 
-  result_double = span->day * factor;
+  result_double = interv->day * factor;
   if (isnan(result_double) ||
     result_double > INT_MAX || result_double < INT_MIN)
   {
@@ -1586,7 +1765,7 @@ pg_interval_mul(const Interval *span, double factor)
 
   /* cascade units down */
   result->day += (int32) month_remainder_days;
-  result_double = rint(span->time * factor + sec_remainder * USECS_PER_SEC);
+  result_double = rint(interv->time * factor + sec_remainder * USECS_PER_SEC);
   if (isnan(result_double) || !FLOAT8_FITS_IN_INT64(result_double))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
@@ -1603,41 +1782,41 @@ pg_interval_mul(const Interval *span, double factor)
 #define SAMESIGN(a,b) (((a) < 0) == ((b) < 0))
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Add an interval to a timestamp data type.
- * @note PostgreSQL function: Datum interval_pl(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return the addition of two intervals
+ * @note PostgreSQL function: @p interval_pl(PG_FUNCTION_ARGS)
  */
 Interval *
-pg_interval_pl(const Interval *span1, const Interval *span2)
+add_interval_interval(const Interval *interv1, const Interval *interv2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) span1) || ! ensure_not_null((void *) span2))
+  if (! ensure_not_null((void *) interv1) || ! ensure_not_null((void *) interv2))
     return NULL;
 
   Interval *result = palloc(sizeof(Interval));
 
-  result->month = span1->month + span2->month;
+  result->month = interv1->month + interv2->month;
   /* overflow check copied from int4pl */
-  if (SAMESIGN(span1->month, span2->month) &&
-    ! SAMESIGN(result->month, span1->month))
+  if (SAMESIGN(interv1->month, interv2->month) &&
+    ! SAMESIGN(result->month, interv1->month))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
     pfree(result);
     return NULL;
   }
 
-  result->day = span1->day + span2->day;
-  if (SAMESIGN(span1->day, span2->day) &&
-    ! SAMESIGN(result->day, span1->day))
+  result->day = interv1->day + interv2->day;
+  if (SAMESIGN(interv1->day, interv2->day) &&
+    ! SAMESIGN(result->day, interv1->day))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
     pfree(result);
     return NULL;
   }
 
-  result->time = span1->time + span2->time;
-  if (SAMESIGN(span1->time, span2->time) &&
-    ! SAMESIGN(result->time, span1->time))
+  result->time = interv1->time + interv2->time;
+  if (SAMESIGN(interv1->time, interv2->time) &&
+    ! SAMESIGN(result->time, interv1->time))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "interval out of range");
     pfree(result);
@@ -1648,46 +1827,45 @@ pg_interval_pl(const Interval *span1, const Interval *span2)
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Add an interval to a timestamp data type.
- * @return On error return DT_NOEND
- *
- * Note that interval has provisions for qualitative year/month and day
- * units, so try to do the right thing with them.
+ * @ingroup meos_pg_types
+ * @brief Return the addition of a timestamp and an interval
+ * @details Note that interval has provisions for qualitative year/month and
+ * day units, so try to do the right thing with them.
  * To add a month, increment the month, and use the same day of month.
  * Then, if the next month has fewer days, set the day of month
  * to the last day of month.
  * To add a day, increment the mday, and use the same time of day.
  * Lastly, add in the "quantitative time".
- * @note PostgreSQL function: Datum timestamp_pl_interval(PG_FUNCTION_ARGS)
+ * @return On error return DT_NOEND
+ * @note PostgreSQL function: @p timestamp_pl_interval(PG_FUNCTION_ARGS)
  */
 TimestampTz
-pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
+add_timestamptz_interval(TimestampTz t, const Interval *interv)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) span))
+  if (! ensure_not_null((void *) interv))
     return DT_NOEND;
 
   Timestamp result;
 
-  if (TIMESTAMP_NOT_FINITE(timestamp))
-    result = timestamp;
+  if (TIMESTAMP_NOT_FINITE(t))
+    result = t;
   else
   {
-    if (span->month != 0)
+    if (interv->month != 0)
     {
       struct pg_tm tt,
              *tm = &tt;
       fsec_t    fsec;
 
-      if (timestamp2tm(timestamp, NULL, tm, &fsec, NULL, NULL) != 0)
+      if (timestamp2tm(t, NULL, tm, &fsec, NULL, NULL) != 0)
       {
         meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
           "timestamp out of range");
         return DT_NOEND;
       }
 
-      tm->tm_mon += span->month;
+      tm->tm_mon += interv->month;
       if (tm->tm_mon > MONTHS_PER_YEAR)
       {
         tm->tm_year += (tm->tm_mon - 1) / MONTHS_PER_YEAR;
@@ -1703,7 +1881,7 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
       if (tm->tm_mday > day_tab[isleap(tm->tm_year)][tm->tm_mon - 1])
         tm->tm_mday = (day_tab[isleap(tm->tm_year)][tm->tm_mon - 1]);
 
-      if (tm2timestamp(tm, fsec, NULL, &timestamp) != 0)
+      if (tm2timestamp(tm, fsec, NULL, &t) != 0)
       {
         meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
           "timestamp out of range");
@@ -1711,14 +1889,14 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
       }
     }
 
-    if (span->day != 0)
+    if (interv->day != 0)
     {
       struct pg_tm tt,
              *tm = &tt;
       fsec_t    fsec;
       int      julian;
 
-      if (timestamp2tm(timestamp, NULL, tm, &fsec, NULL, NULL) != 0)
+      if (timestamp2tm(t, NULL, tm, &fsec, NULL, NULL) != 0)
       {
         meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
           "timestamp out of range");
@@ -1726,10 +1904,10 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
       }
 
       /* Add days by converting to and from Julian */
-      julian = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) + span->day;
+      julian = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) + interv->day;
       j2date(julian, &tm->tm_year, &tm->tm_mon, &tm->tm_mday);
 
-      if (tm2timestamp(tm, fsec, NULL, &timestamp) != 0)
+      if (tm2timestamp(tm, fsec, NULL, &t) != 0)
       {
         meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
           "timestamp out of range");
@@ -1737,56 +1915,54 @@ pg_timestamp_pl_interval(TimestampTz timestamp, const Interval *span)
       }
     }
 
-    timestamp += span->time;
+    t += interv->time;
 
-    if (!IS_VALID_TIMESTAMP(timestamp))
+    if (!IS_VALID_TIMESTAMP(t))
     {
       meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "timestamp out of range");
       return DT_NOEND;
     }
 
-    result = timestamp;
+    result = t;
   }
 
   return result;
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Add an interval to a timestamp data type.
- * @note PostgreSQL function: Datum timestamp_pl_interval(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return the subtraction of a timestamptz and an interval
+ * @note PostgreSQL function: @p timestamp_mi_interval(PG_FUNCTION_ARGS)
  */
 TimestampTz
-pg_timestamp_mi_interval(TimestampTz timestamp, const Interval *span)
+minus_timestamptz_interval(TimestampTz t, const Interval *interv)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) span))
+  if (! ensure_not_null((void *) interv))
     return DT_NOEND;
 
-  Interval tspan;
-  tspan.month = -span->month;
-  tspan.day = -span->day;
-  tspan.time = -span->time;
-  return pg_timestamp_pl_interval(timestamp, &tspan);
+  Interval tinterv;
+  tinterv.month = -interv->month;
+  tinterv.day = -interv->day;
+  tinterv.time = -interv->time;
+  return add_timestamptz_interval(t, &tinterv);
 }
 
 /**
  * @brief Add an interval to a timestamp data type.
- *
- *  Adjust interval so 'time' contains less than a whole day, adding
- *  the excess to 'day'.  This is useful for
- *  situations (such as non-TZ) where '1 day' = '24 hours' is valid,
- *  e.g. interval subtraction and division.
- * @note PostgreSQL function: Datum interval_justify_hours(PG_FUNCTION_ARGS)
+ * @details Adjust interval so 'time' contains less than a whole day, adding
+ *  the excess to 'day'.  This is useful for  situations (such as non-TZ) where
+ * '1 day' = '24 hours' is valid, e.g. interval subtraction and division.
+ * @note PostgreSQL function: @p interval_justify_hours(PG_FUNCTION_ARGS)
  */
 Interval *
-pg_interval_justify_hours(const Interval *span)
+pg_interval_justify_hours(const Interval *interv)
 {
   Interval *result = palloc(sizeof(Interval));
-  result->month = span->month;
-  result->day = span->day;
-  result->time = span->time;
+  result->month = interv->month;
+  result->day = interv->day;
+  result->time = interv->time;
 
   TimeOffset wholeday = 0; /* make compiler quiet */
   TMODULO(result->time, wholeday, USECS_PER_DAY);
@@ -1807,28 +1983,27 @@ pg_interval_justify_hours(const Interval *span)
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Compute the difference of two timestamps
- * @note PostgreSQL function: Datum timestamp_mi(PG_FUNCTION_ARGS)
- * The original code from PostgreSQL has `Timestamp` as arguments
+ * @ingroup meos_pg_types
+ * @brief Return the subtraction of two timestamptz values
+ * @note PostgreSQL function: @p timestamp_mi(PG_FUNCTION_ARGS). Notice that
+ * the original code from PostgreSQL has @p Timestamp as arguments
  */
 Interval *
-pg_timestamp_mi(TimestampTz dt1, TimestampTz dt2)
+minus_timestamptz_timestamptz(TimestampTz t1, TimestampTz t2)
 {
   /* Ensure validity of the arguments */
-  if (TIMESTAMP_NOT_FINITE(dt1) || TIMESTAMP_NOT_FINITE(dt2))
+  if (TIMESTAMP_NOT_FINITE(t1) || TIMESTAMP_NOT_FINITE(t2))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "cannot subtract infinite timestamps");
     return NULL;
   }
 
-  Interval interval;
-  interval.time = dt1 - dt2;
-  interval.month = 0;
-  interval.day = 0;
-  Interval *result = pg_interval_justify_hours(&interval);
-  return result;
+  Interval interv;
+  interv.time = t1 - t2;
+  interv.month = 0;
+  interv.day = 0;
+  return pg_interval_justify_hours(&interv);
 }
 
 /*
@@ -1864,9 +2039,9 @@ interval_cmp_value(const Interval *interval)
 }
 
 /**
- * @ingroup libmeos_pg_types
- * @brief Compare the two intervals
- * @note PostgreSQL function: Datum interval_cmp(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return the comparison of two intervals
+ * @note PostgreSQL function: @p interval_cmp(PG_FUNCTION_ARGS)
  */
 int
 pg_interval_cmp(const Interval *interval1, const Interval *interval2)
@@ -1879,6 +2054,111 @@ pg_interval_cmp(const Interval *interval1, const Interval *interval2)
   INT128 span1 = interval_cmp_value(interval1);
   INT128 span2 = interval_cmp_value(interval2);
   return int128_compare(span1, span2);
+}
+
+/*****************************************************************************
+ * Text and binary string functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a C binary string converted to a bytea
+ */
+bytea *
+bstring2bytea(const uint8_t *wkb, size_t size)
+{
+  bytea *result = palloc(size + VARHDRSZ);
+  memcpy(VARDATA(result), wkb, size);
+  SET_VARSIZE(result, size + VARHDRSZ);
+  return result;
+}
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return a C string converted to a text
+ * @param[in] str String
+ * @note We don't include `<utils/builtins.h>` to avoid collisions with
+ * `json-c/json.h`
+ * @note Function taken from PostGIS file `lwgeom_in_geojson.c`
+ */
+text *
+cstring2text(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+
+  size_t len = strlen(str);
+  text *result = palloc(len + VARHDRSZ);
+  SET_VARSIZE(result, len + VARHDRSZ);
+  memcpy(VARDATA(result), str, len);
+  return result;
+}
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return a text converted to a C string
+ * @param[in] txt Text
+ * @note We don't include @p <utils/builtins.h> to avoid collisions with
+ * @p json-c/json.h
+ * @note Function taken from PostGIS file @p lwgeom_in_geojson.c
+ */
+char *
+text2cstring(const text *txt)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) txt))
+    return NULL;
+
+  size_t size = VARSIZE_ANY_EXHDR(txt);
+  char *str = palloc(size + 1);
+  memcpy(str, VARDATA(txt), size);
+  str[size] = '\0';
+  return str;
+}
+
+#if MEOS
+/* Simplified version of the function in varlena.c where LC_COLLATE is C */
+int
+varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
+  Oid collid __attribute__((unused)))
+{
+  int result = memcmp(arg1, arg2, Min(len1, len2));
+  if ((result == 0) && (len1 != len2))
+    result = (len1 < len2) ? -1 : 1;
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Comparison function for text values
+ * @param[in] txt1,txt2 Text values
+ * @note Function derived from PostgreSQL since it is declared static. Notice 
+ * that the third attribute collid of the original function has been removed
+ * while waiting for a proper localization management
+ */
+int
+text_cmp(const text *txt1, const text *txt2)
+{
+  char *t1p = VARDATA_ANY(txt1);
+  char *t2p = VARDATA_ANY(txt2);
+  int len1 = (int) VARSIZE_ANY_EXHDR(txt1);
+  int len2 = (int) VARSIZE_ANY_EXHDR(txt2);
+  return varstr_cmp(t1p, len1, t2p, len2, DEFAULT_COLLATION_OID);
+}
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Copy a text value
+ * @param[in] txt Text
+ */
+text *
+text_copy(const text *txt)
+{
+  assert(txt);
+  text *result = palloc(VARSIZE(txt));
+  memcpy(result, txt, VARSIZE(txt));
+  return result;
 }
 
 /*****************************************************************************
@@ -1964,7 +2244,7 @@ hash_bytes_uint32_extended(uint32 k, uint64 seed)
 
 /**
  * @brief Get the 32-bit hash value of an int64 value.
- * @note PostgreSQL function: Datum hashint8(PG_FUNCTION_ARGS)
+ * @note PostgreSQL function: @p hashint8(PG_FUNCTION_ARGS)
  */
 uint32
 pg_hashint8(int64 val)
@@ -1985,7 +2265,7 @@ pg_hashint8(int64 val)
 
 /**
  * @brief Get the 64-bit hash value of an int64 value.
- * @note PostgreSQL function: Datum hashint8extended(PG_FUNCTION_ARGS)
+ * @note PostgreSQL function: @p hashint8extended(PG_FUNCTION_ARGS)
  */
 uint64
 pg_hashint8extended(int64 val, uint64 seed)
@@ -1999,7 +2279,7 @@ pg_hashint8extended(int64 val, uint64 seed)
 
 /**
  * @brief Get the 32-bit hash value of an float64 value.
- * @note PostgreSQL function: Datum hashfloat8(PG_FUNCTION_ARGS)
+ * @note PostgreSQL function: @p hashfloat8(PG_FUNCTION_ARGS)
  */
 uint32
 pg_hashfloat8(float8 key)
@@ -2022,8 +2302,8 @@ pg_hashfloat8(float8 key)
 }
 
 /**
- * @brief Get the 64-bit hash value of a float64 value.
- * @note PostgreSQL function: Datum hashfloat8extended(PG_FUNCTION_ARGS)
+ * @brief Get the 64-bit hash value of a @p float64 value
+ * @note PostgreSQL function: @p hashfloat8extended(PG_FUNCTION_ARGS)
  */
 uint64
 pg_hashfloat8extended(float8 key, uint64 seed)
@@ -2039,28 +2319,26 @@ pg_hashfloat8extended(float8 key, uint64 seed)
 
 /**
  * @brief Get the 32-bit hash value of an text value.
- * @note PostgreSQL function: Datum hashtext(PG_FUNCTION_ARGS)
- * We simulate what would happen using DEFAULT_COLLATION_OID
+ * @note PostgreSQL function: @p hashtext(PG_FUNCTION_ARGS).
+ * We simulate what would happen using @p DEFAULT_COLLATION_OID
  */
 uint32
 pg_hashtext(text *key)
 {
-  uint32 result = DatumGetUInt32(hash_any((unsigned char *) VARDATA_ANY(key),
+  return DatumGetUInt32(hash_any((unsigned char *) VARDATA_ANY(key),
     VARSIZE_ANY_EXHDR(key)));
-  return result;
 }
 
 /**
  * @brief Get the 32-bit hash value of an text value.
- * @note PostgreSQL function: Datum hashtext(PG_FUNCTION_ARGS)
- * We simulate what would happen using DEFAULT_COLLATION_OID
+ * @note PostgreSQL function: @p hashtext(PG_FUNCTION_ARGS).
+ * We simulate what would happen using @p DEFAULT_COLLATION_OID
  */
 uint64
 pg_hashtextextended(text *key, uint64 seed)
 {
-  uint64 result = DatumGetUInt64(hash_any_extended(
+  return DatumGetUInt64(hash_any_extended(
     (unsigned char *) VARDATA_ANY(key), VARSIZE_ANY_EXHDR(key), seed));
-  return result;
 }
 
 /*****************************************************************************/

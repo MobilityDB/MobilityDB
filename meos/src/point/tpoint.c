@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief General functions for temporal points.
+ * @brief General functions for temporal points
  */
 
 #include "point/tpoint.h"
@@ -43,22 +43,19 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
-#include "general/lifting.h"
-#include "general/temporal_compops.h"
-#include "point/tpoint_parser.h"
-#include "point/tpoint_boxops.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "general/temporal.h"
 
 /*****************************************************************************
  * General functions
  *****************************************************************************/
 
 /**
- * @brief Copy a GSERIALIZED. This function is not available anymore in PostGIS 3
+ * @brief Copy a geometry
+ * @note The @p gserialized_copy function is not available anymore in
+ * PostGIS 3
  */
 GSERIALIZED *
-gserialized_copy(const GSERIALIZED *g)
+geo_copy(const GSERIALIZED *g)
 {
   assert(g);
   GSERIALIZED *result = palloc(VARSIZE(g));
@@ -71,16 +68,16 @@ gserialized_copy(const GSERIALIZED *g)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_conversion
- * @brief Return the bounding box of a temporal point
- * @sqlfunc stbox()
- * @sqlop @p ::
+ * @ingroup meos_box_conversion
+ * @brief Return a temporal point converted to a spatiotemporal box
+ * @param[in] temp Temporal point
+ * @csqlfn #Tpoint_to_stbox()
  */
 STBox *
 tpoint_to_stbox(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || 
+  if (! ensure_not_null((void *) temp) ||
       ! ensure_tspatial_type(temp->temptype))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
@@ -93,10 +90,12 @@ tpoint_to_stbox(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_transf
- * @brief Return the bounding box of a temporal point expanded on the
- * spatial dimension
- * @sqlfunc expandSpace()
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Return the bounding box of a geometry expanded on the spatial
+ * dimension
+ * @param[in] gs Geometry
+ * @param[in] d Value
+ * @csqlfn #Geo_expand_space()
  */
 STBox *
 geo_expand_space(const GSERIALIZED *gs, double d)
@@ -107,16 +106,17 @@ geo_expand_space(const GSERIALIZED *gs, double d)
 
   STBox box;
   geo_set_stbox(gs, &box);
-  STBox *result = stbox_expand_space(&box, d);
-  return result;
+  return stbox_expand_space(&box, d);
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_transf
- * @brief Return the bounding box of a temporal point expanded on the
- * spatial dimension
- * @return On error return NULL
- * @sqlfunc expandSpace()
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Return the bounding box of a temporal point expanded on the spatial
+ * dimension
+ * @param[in] temp Temporal point
+ * @param[in] d Value
+ * @return On error return @p NULL
+ * @csqlfn #Tpoint_expand_space()
  */
 STBox *
 tpoint_expand_space(const Temporal *temp, double d)
@@ -129,8 +129,7 @@ tpoint_expand_space(const Temporal *temp, double d)
 
   STBox box;
   temporal_set_bbox(temp, &box);
-  STBox *result = stbox_expand_space(&box, d);
-  return result;
+  return stbox_expand_space(&box, d);
 }
 
 /*****************************************************************************/

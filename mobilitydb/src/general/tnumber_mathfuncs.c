@@ -2,12 +2,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,20 +30,16 @@
 
 /**
  * @file
- * @brief Mathematical operators (+, -, *, /) and functions (round, degrees, ...)
- * for temporal number.
+ * @brief Mathematical operators (+, -, *, /) and functions (round, degrees,
+ * ...) for temporal numbers
  */
 
-/* C */
-#include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/float.h>
 /* MEOS */
 #include <meos.h>
-#include "general/lifting.h"
-#include "general/temporaltypes.h"
+#include "general/temporal.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_util.h"
 /* MobilityDB */
@@ -56,22 +52,22 @@
  *****************************************************************************/
 
 /**
- * @brief Generic arithmetic operator on a number an a temporal number
+ * @brief Generic arithmetic operator on a number and a temporal number
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Arithmetic function
  * @param[in] oper Enumeration that states the arithmetic operator
  */
 static Datum
-arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
+Arithop_number_tnumber(FunctionCallInfo fcinfo, TArithmetic oper,
   Datum (*func)(Datum, Datum, meosType))
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Temporal *result = arithop_tnumber_number(temp, value, basetype, oper,
-    func, INVERT);
+  Temporal *result = arithop_tnumber_number(temp, value, basetype, oper, func,
+    INVERT);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -81,27 +77,27 @@ arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
  * @param[in] oper Enumeration that states the arithmetic operator
  */
 static Datum
-arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
+Arithop_tnumber_number(FunctionCallInfo fcinfo, TArithmetic oper,
   Datum (*func)(Datum, Datum, meosType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Temporal *result = arithop_tnumber_number(temp, value, basetype, oper,
-    func, INVERT_NO);
+  Temporal *result = arithop_tnumber_number(temp, value, basetype, oper, func,
+    INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
- * @brief Generic arithmetic operator on a temporal numbers
+ * @brief Generic arithmetic operator on two temporal numbers
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] func Arithmetic function
  * @param[in] tpfunc Function determining the turning point
  */
 static Datum
-arithop_tnumber_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
+Arithop_tnumber_tnumber(FunctionCallInfo fcinfo, TArithmetic oper,
   Datum (*func)(Datum, Datum, meosType),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
@@ -113,7 +109,7 @@ arithop_tnumber_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -125,13 +121,13 @@ PG_FUNCTION_INFO_V1(Add_number_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal addition of a number and a temporal number
- * @sqlfunc tnumber_add()
+ * @sqlfn tnumber_add()
  * @sqlop @p +
  */
 Datum
 Add_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_number_tnumber_ext(fcinfo, ADD, &datum_add);
+  return Arithop_number_tnumber(fcinfo, ADD, &datum_add);
 }
 
 PGDLLEXPORT Datum Add_tnumber_number(PG_FUNCTION_ARGS);
@@ -139,27 +135,27 @@ PG_FUNCTION_INFO_V1(Add_tnumber_number);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal addition of a temporal number and a number
- * @sqlfunc tnumber_add()
+ * @sqlfn tnumber_add()
  * @sqlop @p +
  */
 Datum
 Add_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_number_ext(fcinfo, ADD, &datum_add);
+  return Arithop_tnumber_number(fcinfo, ADD, &datum_add);
 }
 
 PGDLLEXPORT Datum Add_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Add_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Return the temporal addition of the temporal numbers
- * @sqlfunc tnumber_add()
+ * @brief Return the temporal addition of two temporal numbers
+ * @sqlfn tnumber_add()
  * @sqlop @p +
  */
 Datum
 Add_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_tnumber_ext(fcinfo, ADD, &datum_add, NULL);
+  return Arithop_tnumber_tnumber(fcinfo, ADD, &datum_add, NULL);
 }
 
 /*****************************************************************************
@@ -171,13 +167,13 @@ PG_FUNCTION_INFO_V1(Sub_number_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal subtraction of a number and a temporal number
- * @sqlfunc tnumber_sub()
+ * @sqlfn tnumber_sub()
  * @sqlop @p -
  */
 Datum
 Sub_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_number_tnumber_ext(fcinfo, SUB, &datum_sub);
+  return Arithop_number_tnumber(fcinfo, SUB, &datum_sub);
 }
 
 PGDLLEXPORT Datum Sub_tnumber_number(PG_FUNCTION_ARGS);
@@ -185,27 +181,27 @@ PG_FUNCTION_INFO_V1(Sub_tnumber_number);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal subtraction of a temporal number and a number
- * @sqlfunc tnumber_sub()
+ * @sqlfn tnumber_sub()
  * @sqlop @p -
  */
 Datum
 Sub_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_number_ext(fcinfo, SUB, &datum_sub);
+  return Arithop_tnumber_number(fcinfo, SUB, &datum_sub);
 }
 
 PGDLLEXPORT Datum Sub_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Sub_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Return the temporal subtraction of the temporal numbers
- * @sqlfunc tnumber_sub()
+ * @brief Return the temporal subtraction of two temporal numbers
+ * @sqlfn tnumber_sub()
  * @sqlop @p -
  */
 Datum
 Sub_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_tnumber_ext(fcinfo, SUB, &datum_sub, NULL);
+  return Arithop_tnumber_tnumber(fcinfo, SUB, &datum_sub, NULL);
 }
 
 /*****************************************************************************
@@ -217,13 +213,13 @@ PG_FUNCTION_INFO_V1(Mult_number_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal multiplication of a number and a temporal number
- * @sqlfunc tnumber_mult()
+ * @sqlfn tnumber_mult()
  * @sqlop @p *
  */
 Datum
 Mult_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_number_tnumber_ext(fcinfo, MULT, &datum_mult);
+  return Arithop_number_tnumber(fcinfo, MULT, &datum_mult);
 }
 
 PGDLLEXPORT Datum Mult_tnumber_number(PG_FUNCTION_ARGS);
@@ -231,28 +227,28 @@ PG_FUNCTION_INFO_V1(Mult_tnumber_number);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal multiplication of a temporal number and a number
- * @sqlfunc tnumber_mult()
+ * @sqlfn tnumber_mult()
  * @sqlop @p *
  */
 Datum
 Mult_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_number_ext(fcinfo, MULT, &datum_mult);
+  return Arithop_tnumber_number(fcinfo, MULT, &datum_mult);
 }
 
 PGDLLEXPORT Datum Mult_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Mult_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Return the temporal multiplication of the temporal numbers
- * @sqlfunc tnumber_mult()
+ * @brief Return the temporal multiplication of two temporal numbers
+ * @sqlfn tnumber_mult()
  * @sqlop @p *
  */
 Datum
 Mult_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_tnumber_ext(fcinfo, MULT, &datum_mult,
-    &tnumber_mult_tp_at_timestamp);
+  return Arithop_tnumber_tnumber(fcinfo, MULT, &datum_mult,
+    &tnumber_mult_tp_at_timestamptz);
 }
 
 /*****************************************************************************
@@ -264,13 +260,13 @@ PG_FUNCTION_INFO_V1(Div_number_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal division of a number and a temporal number
- * @sqlfunc tnumber_div()
+ * @sqlfn tnumber_div()
  * @sqlop @p /
  */
 Datum
 Div_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_number_tnumber_ext(fcinfo, DIV, &datum_div);
+  return Arithop_number_tnumber(fcinfo, DIV, &datum_div);
 }
 
 PGDLLEXPORT Datum Div_tnumber_number(PG_FUNCTION_ARGS);
@@ -278,106 +274,40 @@ PG_FUNCTION_INFO_V1(Div_tnumber_number);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the temporal division of a temporal number and a number
- * @sqlfunc tnumber_div()
+ * @sqlfn tnumber_div()
  * @sqlop @p /
  */
 Datum
 Div_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_number_ext(fcinfo, DIV, &datum_div);
+  return Arithop_tnumber_number(fcinfo, DIV, &datum_div);
 }
 
 PGDLLEXPORT Datum Div_tnumber_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Div_tnumber_tnumber);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Return the temporal multiplication of the temporal numbers
- * @sqlfunc tnumber_div()
+ * @brief Return the temporal multiplication of two temporal numbers
+ * @sqlfn tnumber_div()
  * @sqlop @p /
  */
 Datum
 Div_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_tnumber_ext(fcinfo, DIV, &datum_div,
-    &tnumber_div_tp_at_timestamp);
+  return Arithop_tnumber_tnumber(fcinfo, DIV, &datum_div,
+    &tnumber_div_tp_at_timestamptz);
 }
 
 /*****************************************************************************
- * Miscellaneous temporal functions
+ * Miscellaneous functions
  *****************************************************************************/
-
-/**
- * @brief Round a number to a given number of decimal places
- */
-Datum
-datum_round_float(Datum value, Datum size)
-{
-  Datum result = value;
-  double d = DatumGetFloat8(value);
-  double inf = get_float8_infinity();
-  if (d != -1 * inf && d != inf)
-  {
-    Datum number = call_function1(float8_numeric, value);
-    Datum roundnumber = call_function2(numeric_round, number, size);
-    result = call_function1(numeric_float8, roundnumber);
-  }
-  return result;
-}
-
-PGDLLEXPORT Datum Tfloat_round(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tfloat_round);
-/**
- * @ingroup mobilitydb_temporal_math
- * @brief Round a temporal number to a given number of decimal places
- * @sqlfunc round()
- */
-Datum
-Tfloat_round(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int size = PG_GETARG_INT32(1);
-  Temporal *result = tfloat_round(temp, size);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
-PGDLLEXPORT Datum Tfloatarr_round(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tfloatarr_round);
-/**
- * @ingroup mobilitydb_temporal_inout
- * @brief Output a temporal point array in Well-Known Text (WKT) format
- * @sqlfunc asText()
- */
-Datum
-Tfloatarr_round(PG_FUNCTION_ARGS)
-{
-  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  /* Return NULL on empty array */
-  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-  if (count == 0)
-  {
-    PG_FREE_IF_COPY(array, 0);
-    PG_RETURN_NULL();
-  }
-  int maxdd = PG_GETARG_INT32(1);
-
-  Temporal **temparr = temporalarr_extract(array, &count);
-  Temporal **result_arr = tfloatarr_round((const Temporal **) temparr, count,
-      maxdd);
-
-  ArrayType *result = temporalarr_to_array((const Temporal **) result_arr,
-    count);
-  pfree(temparr);
-  PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_ARRAYTYPE_P(result);
-}
 
 PGDLLEXPORT Datum Tnumber_abs(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_abs);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Get the absolute value of a temporal number
- * @sqlfunc abs()
+ * @brief Return the absolute value of a temporal number
+ * @sqlfn abs()
  */
 Datum
 Tnumber_abs(PG_FUNCTION_ARGS)
@@ -385,15 +315,15 @@ Tnumber_abs(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tnumber_abs(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tnumber_delta_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_delta_value);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Get the delta value of a temporal number
- * @sqlfunc deltaValue()
+ * @brief Return the delta value of a temporal number
+ * @sqlfn deltaValue()
  */
 Datum
 Tnumber_delta_value(PG_FUNCTION_ARGS)
@@ -403,15 +333,15 @@ Tnumber_delta_value(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Float_degrees(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Float_degrees);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Convert a number from radians to degrees
- * @sqlfunc degrees()
+ * @brief Return a number transformed from radians to degrees
+ * @sqlfn degrees()
  */
 Datum
 Float_degrees(PG_FUNCTION_ARGS)
@@ -420,16 +350,15 @@ Float_degrees(PG_FUNCTION_ARGS)
   bool normalize = false;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     normalize = PG_GETARG_BOOL(1);
-  double result = float_degrees(value, normalize);
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_FLOAT8(float_degrees(value, normalize));
 }
 
 PGDLLEXPORT Datum Tfloat_degrees(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_degrees);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Convert a temporal number from radians to degrees
- * @sqlfunc degrees()
+ * @brief Return a temporal number transformed from radians to degrees
+ * @sqlfn degrees()
  */
 Datum
 Tfloat_degrees(PG_FUNCTION_ARGS)
@@ -440,15 +369,15 @@ Tfloat_degrees(PG_FUNCTION_ARGS)
     normalize = PG_GETARG_BOOL(1);
   Temporal *result = tfloat_degrees(temp, normalize);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tfloat_radians(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_radians);
 /**
  * @ingroup mobilitydb_temporal_math
- * @brief Convert a temporal number from degrees to radians
- * @sqlfunc radians()
+ * @brief Return a temporal number transformed from degrees to radians
+ * @sqlfn radians()
  */
 Datum
 Tfloat_radians(PG_FUNCTION_ARGS)
@@ -456,7 +385,7 @@ Tfloat_radians(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tfloat_radians(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -468,8 +397,7 @@ PG_FUNCTION_INFO_V1(Tfloat_derivative);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the derivative of a temporal number
- * @sqlfunc derivative()
- * @sqlop @p
+ * @sqlfn derivative()
  */
 Datum
 Tfloat_derivative(PG_FUNCTION_ARGS)
@@ -479,7 +407,7 @@ Tfloat_derivative(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

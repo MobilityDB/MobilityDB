@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -65,19 +65,6 @@ CREATE OPERATOR #= (
   COMMUTATOR = #=
 );
 
-CREATE FUNCTION temporal_teq(npoint, tnpoint, atvalue bool)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_teq(tnpoint, npoint, atvalue bool)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_teq(tnpoint, tnpoint, atvalue bool)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /*****************************************************************************
  * Temporal not equal
  *****************************************************************************/
@@ -110,18 +97,5 @@ CREATE OPERATOR #<> (
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
   COMMUTATOR = #<>
 );
-
-CREATE FUNCTION temporal_tne(npoint, tnpoint, atvalue bool)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_tne(tnpoint, npoint, atvalue bool)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_tne(tnpoint, tnpoint, atvalue bool)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

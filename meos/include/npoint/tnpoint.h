@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -38,7 +38,6 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal.h"
 
 /*****************************************************************************
  * Struct definitions
@@ -75,6 +74,7 @@ typedef struct
 #define DatumGetNsegmentP(X)       ((Nsegment *) DatumGetPointer(X))
 #define NsegmentPGetDatum(X)       PointerGetDatum(X)
 #define PG_GETARG_NSEGMENT_P(X)    DatumGetNsegmentP(PG_GETARG_DATUM(X))
+#define PG_RETURN_NSEGMENT_P(X)    PG_RETURN_POINTER(X)
 
 /*****************************************************************************/
 
@@ -97,8 +97,6 @@ extern TSequence *tgeompointdiscseq_tnpointdiscseq(const TSequence *is);
 extern TSequence *tgeompointseq_tnpointseq(const TSequence *seq);
 extern TSequenceSet *tgeompointseqset_tnpointseqset(const TSequenceSet *ss);
 extern Temporal *tgeompoint_tnpoint(const Temporal *temp);
-
-/* Transformation functions */
 
 /* Accessor functions */
 

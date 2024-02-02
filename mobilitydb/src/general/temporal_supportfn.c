@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,40 +29,43 @@
 
 /**
  * @file
- * @brief Index support functions for temporal types.
+ * @brief Index support functions for temporal types
  */
-
-#include "pg_general/temporal_supportfn.h"
 
 /* C */
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <funcapi.h>
-#include <access/htup_details.h>
-#include <access/stratnum.h>
-#include <catalog/namespace.h>
 #include <catalog/pg_opfamily.h>
-#include <catalog/pg_type_d.h>
 #include <catalog/pg_am_d.h>
 #include <nodes/supportnodes.h>
 #include <nodes/nodeFuncs.h>
 #include <nodes/makefuncs.h>
 #include <optimizer/optimizer.h>
 #include <parser/parse_func.h>
-#include <utils/array.h>
-#include <utils/builtins.h>
-#include <utils/lsyscache.h>
-#include <utils/numeric.h>
 #include <utils/syscache.h>
 /* MEOS */
 #include <meos.h>
-#include "general/meos_catalog.h"
 #include "general/temporal_boxops.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal_selfuncs.h"
-#include "pg_point/tpoint_selfuncs.h"
+
+/*****************************************************************************/
+
+/*
+* Depending on the function, we will deploy different index enhancement
+* strategies. Containment functions can use a more strict index strategy
+* than overlapping functions. We store the metadata to drive these choices
+* in the IndexableFunctions array.
+*/
+typedef struct
+{
+  const char *fn_name;  /* Name of the function */
+  uint16_t index;       /* Position of the strategy in the arrays */
+  uint8_t nargs;        /* Expected number of function arguments */
+  uint8_t expand_arg;   /* Radius argument for "within distance" search */
+} IndexableFunction;
 
 enum TEMPORAL_FUNCTION_IDX
 {
@@ -70,11 +73,17 @@ enum TEMPORAL_FUNCTION_IDX
   EVER_EQ_IDX                    = 1,
   ALWAYS_EQ_IDX                  = 2,
   /* Ever spatial relationships */
-  ECONTAINS_IDX                   = 3,
-  EDISJOINT_IDX                   = 4,
-  EINTERSECTS_IDX                 = 5,
-  ETOUCHES_IDX                    = 6,
-  EDWITHIN_IDX                    = 7,
+  ECONTAINS_IDX                  = 3,
+  EDISJOINT_IDX                  = 4,
+  EINTERSECTS_IDX                = 5,
+  ETOUCHES_IDX                   = 6,
+  EDWITHIN_IDX                   = 7,
+  /* Always spatial relationships */
+  ACONTAINS_IDX                  = 8,
+  ADISJOINT_IDX                  = 9,
+  AINTERSECTS_IDX                = 10,
+  ATOUCHES_IDX                   = 11,
+  ADWITHIN_IDX                   = 12,
 };
 
 static const int16 TNumberStrategies[] =
@@ -95,6 +104,12 @@ static const int16 TPointStrategies[] =
   [EINTERSECTS_IDX]               = RTOverlapStrategyNumber,
   [ETOUCHES_IDX]                  = RTOverlapStrategyNumber,
   [EDWITHIN_IDX]                  = RTOverlapStrategyNumber,
+  /* Always spatial relationships */
+  [ACONTAINS_IDX]                 = RTOverlapStrategyNumber,
+  [ADISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [AINTERSECTS_IDX]               = RTOverlapStrategyNumber,
+  [ATOUCHES_IDX]                  = RTOverlapStrategyNumber,
+  [ADWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
 
 #if NPOINT
@@ -106,6 +121,12 @@ static const int16 TNPointStrategies[] =
   [EINTERSECTS_IDX]               = RTOverlapStrategyNumber,
   [ETOUCHES_IDX]                  = RTOverlapStrategyNumber,
   [EDWITHIN_IDX]                  = RTOverlapStrategyNumber,
+  /* Always spatial relationships */
+  [ACONTAINS_IDX]                 = RTOverlapStrategyNumber,
+  [ADISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [AINTERSECTS_IDX]               = RTOverlapStrategyNumber,
+  [ATOUCHES_IDX]                  = RTOverlapStrategyNumber,
+  [ADWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
 #endif /* NPOINT */
 
@@ -136,6 +157,12 @@ static const IndexableFunction TPointIndexableFunctions[] = {
   {"eintersects", EINTERSECTS_IDX, 2, 0},
   {"etouches", ETOUCHES_IDX, 2, 0},
   {"edwithin", EDWITHIN_IDX, 3, 3},
+  /* Ever spatial relationships */
+  {"acontains", ECONTAINS_IDX, 2, 0},
+  {"adisjoint", EDISJOINT_IDX, 2, 0},
+  {"aintersects", EINTERSECTS_IDX, 2, 0},
+  {"atouches", ETOUCHES_IDX, 2, 0},
+  {"adwithin", EDWITHIN_IDX, 3, 3},
   {NULL, 0, 0, 0}
 };
 
@@ -147,6 +174,12 @@ static const IndexableFunction TNPointIndexableFunctions[] = {
   {"eintersects", EINTERSECTS_IDX, 2, 0},
   {"etouches", ETOUCHES_IDX, 2, 0},
   {"edwithin", EDWITHIN_IDX, 3, 3},
+  /* Always spatial relationships */
+  {"acontains", ECONTAINS_IDX, 2, 0},
+  {"adisjoint", EDISJOINT_IDX, 2, 0},
+  {"aintersects", EINTERSECTS_IDX, 2, 0},
+  {"atouches", ETOUCHES_IDX, 2, 0},
+  {"adwithin", EDWITHIN_IDX, 3, 3},
   {NULL, 0, 0, 0}
 };
 #endif /* NPOINT */
@@ -198,7 +231,7 @@ func_needs_index(Oid funcid, const IndexableFunction *idxfns,
  * searches like the && operator), so only implementations based on GIST
  * and SPGIST.
 */
-Oid
+static Oid
 opFamilyAmOid(Oid opfamilyoid)
 {
   Form_pg_opfamily familyform;
@@ -320,15 +353,15 @@ type_to_bbox(meosType type)
  * @code
  * CREATE OR REPLACE FUNCTION ever_eq(tfloat, float)
  *   RETURNS boolean
- *   AS 'MODULE_PATHNAME','temporal_ever_eq'
+ *   AS 'MODULE_PATHNAME','ever_eq_temporal_base'
  *   SUPPORT temporal_supportfn
  *   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
  * @endcode
  * The function must also have an entry above in the IndexableFunctions array
  * so that we know what index search strategy we want to apply.
  */
-Datum
-temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+static Datum
+Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   Node *rawreq = (Node *) PG_GETARG_POINTER(0);
   Node *ret = NULL;
@@ -594,7 +627,7 @@ PG_FUNCTION_INFO_V1(Tnumber_supportfn);
 Datum
 Tnumber_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_ext(fcinfo, TNUMBERTYPE);
+  return Temporal_supportfn(fcinfo, TNUMBERTYPE);
 }
 
 PGDLLEXPORT Datum Tpoint_supportfn(PG_FUNCTION_ARGS);
@@ -605,7 +638,7 @@ PG_FUNCTION_INFO_V1(Tpoint_supportfn);
 Datum
 Tpoint_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_ext(fcinfo, TPOINTTYPE);
+  return Temporal_supportfn(fcinfo, TPOINTTYPE);
 }
 
 #if NPOINT
@@ -617,7 +650,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_supportfn);
 Datum
 Tnpoint_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_ext(fcinfo, TNPOINTTYPE);
+  return Temporal_supportfn(fcinfo, TNPOINTTYPE);
 }
 #endif /* NPOINT */
 

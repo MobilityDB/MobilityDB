@@ -1,6 +1,6 @@
-if(NOT MEOS)
-  set(lwgeom_transform.c lwgeom_transform.c)
-endif()
+# if(NOT MEOS)
+  # set(lwgeom_transform.c lwgeom_transform.c)
+# endif()
 
 add_library(liblwgeom OBJECT
   bytebuffer.c
@@ -30,7 +30,7 @@ add_library(liblwgeom OBJECT
   lwgeom_geos_split.c
   lwgeom_median.c
   lwgeom_topo.c
-  ${lwgeom_transform.c}
+  lwgeom_transform.c
   lwgeom_wrapx.c
   lwhomogenize.c
   lwin_encoded_polyline.c

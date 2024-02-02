@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -38,15 +38,8 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include "general/doublen.h"
 #include "general/meos_catalog.h"
-#include "general/span.h"
-#include "general/set.h"
-#include "general/tbox.h"
-#include "point/stbox.h"
-
-/* To avoid including builtins.h */
-extern text *cstring_to_text(const char *s);
-extern char *text_to_cstring(const text *t);
 
 /* To avoid including pg_collation_d */
 #define DEFAULT_COLLATION_OID 100
@@ -79,7 +72,7 @@ extern char *text_to_cstring(const text *t);
 #define DISCONTINUOUS   true
 #define CONTINUOUS      false
 
-/** Symbolic constants for sets */
+/** Symbolic constants for sets and for normalizing spans */
 #define ORDERED         true
 #define ORDERED_NO      false
 
@@ -126,10 +119,6 @@ extern char *text_to_cstring(const text *t);
 #define NORMALIZE       true
 #define NORMALIZE_NO    false
 
-/** Symbolic constants for the normalizing spans */
-#define SORT            true
-#define SORT_NO         false
-
 /** Symbolic constants for spatial relationships */
 #define WITH_Z          true
 #define NO_Z            false
@@ -171,12 +160,13 @@ typedef enum
  *****************************************************************************/
 
 /* Data type size */
-#define MEOS_WKB_TIMESTAMP_SIZE   8
-#define MEOS_WKB_DOUBLE_SIZE      8
+#define MEOS_WKB_BYTE_SIZE        1
 #define MEOS_WKB_INT2_SIZE        2
 #define MEOS_WKB_INT4_SIZE        4
 #define MEOS_WKB_INT8_SIZE        8
-#define MEOS_WKB_BYTE_SIZE        1
+#define MEOS_WKB_DOUBLE_SIZE      8
+#define MEOS_WKB_DATE_SIZE        4
+#define MEOS_WKB_TIMESTAMP_SIZE   8
 
 /* Temporal subtype */
 enum MEOS_WKB_TSUBTYPE
@@ -244,39 +234,6 @@ typedef union bboxunion
   STBox g;     /**< Spatiotemporal box */
 } bboxunion;
 
-/**
- * Structure to represent values of the internal type for computing aggregates
- * for temporal number types
- */
-typedef struct
-{
-  double a;
-  double b;
-} double2;
-
-/**
- * Structure to represent values of the internal type for computing aggregates
- * for 2D temporal point types
- */
-typedef struct
-{
-  double a;
-  double b;
-  double c;
-} double3;
-
-/**
- * Structure to represent values of the internal type for computing aggregates
- * for 3D temporal point types
- */
-typedef struct
-{
-  double a;
-  double b;
-  double c;
-  double d;
-} double4;
-
 /*****************************************************************************
  * Miscellaneous
  *****************************************************************************/
@@ -315,10 +272,20 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
   #define DatumGetTemporalP(X)       ((Temporal *) PG_DETOAST_DATUM(X))
 #endif /* MEOS */
 
-#define PG_GETARG_TEMPORAL_P(X)    ((Temporal *) PG_GETARG_VARLENA_P(X))
-#define PG_GETARG_TINSTANT_P(X)    ((TInstant *) PG_GETARG_VARLENA_P(X))
-#define PG_GETARG_TSEQUENCE_P(X)    ((TSequence *) PG_GETARG_VARLENA_P(X))
-#define PG_GETARG_TSEQUENCESET_P(X)    ((TSequenceSet *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TEMPORAL_P(X)      ((Temporal *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TINSTANT_P(X)      ((TInstant *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TSEQUENCE_P(X)     ((TSequence *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TSEQUENCESET_P(X)  ((TSequenceSet *) PG_GETARG_VARLENA_P(X))
+
+#define PG_RETURN_TEMPORAL_P(X)      PG_RETURN_POINTER(X)
+#define PG_RETURN_TINSTANT_P(X)      PG_RETURN_POINTER(X)
+#define PG_RETURN_TSEQUENCE_P(X)     PG_RETURN_POINTER(X)
+#define PG_RETURN_TSEQUENCESET_P(X)  PG_RETURN_POINTER(X)
+
+#define TemporalPGetDatum(X)         PointerGetDatum(X)
+#define TInstantPGetDatum(X)         PointerGetDatum(X)
+#define TSequencePGetDatum(X)        PointerGetDatum(X)
+#define TSequenceSetPGetDatum(X)     PointerGetDatum(X)
 
 #define DATUM_FREE(value, basetype) \
   do { \
@@ -352,27 +319,27 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 
 /* Parameter tests */
 
-extern bool temptype_subtype(int16 subtype);
-extern bool temptype_subtype_all(int16 subtype);
-extern const char *tempsubtype_name(int8 subtype);
-extern const char *interptype_name(int8 interpType);
-extern interpType interptype_from_string(const char *interp_str);
 extern bool ensure_not_null(void *ptr);
 extern bool ensure_one_not_null(void *ptr1, void *ptr2);
-extern bool ensure_one_shift_width(bool hasshift, bool haswidth);
-extern bool ensure_valid_interpolation(meosType temptype, interpType interp);
+extern bool ensure_one_true(bool hasshift, bool haswidth);
+extern bool ensure_valid_interp(meosType temptype, interpType interp);
 extern bool ensure_continuous(const Temporal *temp);
-extern bool ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2);
-extern bool ensure_same_continuous_interpolation(int16 flags1, int16 flags2);
-extern bool ensure_nonlinear_interpolation(int16 flags);
+extern bool ensure_same_interp(const Temporal *temp1, const Temporal *temp2);
+extern bool ensure_same_continuous_interp(int16 flags1, int16 flags2);
+extern bool ensure_linear_interp(int16 flags);
+extern bool ensure_nonlinear_interp(int16 flags);
 extern bool ensure_common_dimension(int16 flags1, int16 flags2);
-extern bool ensure_temporal_has_type(const Temporal *temp, meosType temptype);
+extern bool ensure_temporal_isof_type(const Temporal *temp, meosType type);
+extern bool ensure_temporal_isof_basetype(const Temporal *temp,
+  meosType basetype);
+extern bool ensure_temporal_isof_subtype(const Temporal *temp,
+  tempSubtype type);
 extern bool ensure_same_temporal_type(const Temporal *temp1,
   const Temporal *temp2);
-extern bool ensure_same_temporal_basetype(const Temporal *temp,
-  meosType basetype);
+
 extern bool ensure_valid_tnumber_span(const Temporal *temp, const Span *s);
-extern bool ensure_valid_tnumber_spanset(const Temporal *temp, const SpanSet *ss);
+extern bool ensure_valid_tnumber_spanset(const Temporal *temp,
+  const SpanSet *ss);
 extern bool ensure_valid_tnumber_tbox(const Temporal *temp, const TBox *box);
 extern bool ensure_not_negative(int i);
 extern bool ensure_positive(int i);
@@ -387,10 +354,9 @@ extern bool ensure_valid_duration(const Interval *duration);
 /* General functions */
 
 extern void *temporal_bbox_ptr(const Temporal *temp);
-extern void temporal_bbox_slice(Datum tempdatum, void *box);
 
 extern bool intersection_temporal_temporal(const Temporal *temp1,
-  const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);
+const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);
 
 /* Version functions */
 
@@ -399,10 +365,8 @@ extern char *mobilitydb_full_version(void);
 
 /* Ever/always equal operators */
 
-extern bool temporal_bbox_ev_al_eq(const Temporal *temp, Datum value,
-  bool ever);
-extern bool temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value,
-  bool ever);
+extern bool ea_eq_bbox_temp_base(const Temporal *temp, Datum value, bool ever);
+extern bool ea_lt_bbox_temp_base(const Temporal *temp, Datum value, bool ever);
 
 /* Restriction functions */
 

@@ -466,7 +466,7 @@ SELECT round(tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-0
 SELECT appendInstant(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.7)@2000-01-02');
                                       appendinstant                                       
 ------------------------------------------------------------------------------------------
- {NPoint(1,0.5)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.7)@Sun Jan 02 00:00:00 2000 PST}
+ [NPoint(1,0.5)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.7)@Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
 SELECT appendInstant(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint 'Npoint(1, 0.7)@2000-01-04');

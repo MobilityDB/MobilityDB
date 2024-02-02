@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -37,6 +37,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
+#include <meos.h>
 #include "general/temporal.h"
 
 /*****************************************************************************/
@@ -53,15 +54,19 @@ extern Datum geom_dwithin2d(Datum geom1, Datum geom2, Datum dist);
 extern Datum geom_dwithin3d(Datum geom1, Datum geom2, Datum dist);
 extern Datum geog_dwithin(Datum geog1, Datum geog2, Datum dist);
 
+extern datum_func2 get_disjoint_fn_gs(int16 flags1, uint8_t flags2);
+extern datum_func2 get_intersects_fn_gs(int16 flags1, uint8_t flags2);
 extern datum_func3 get_dwithin_fn(int16 flags1, int16 flags2);
 
 /*****************************************************************************/
 
-extern int espatialrel_tpoint_tpoint(const Temporal *temp1,
-  const Temporal *temp2, Datum (*func)(Datum, Datum));
+extern Datum ea_disjoint_tpoint_geo(const Temporal *temp,
+  const GSERIALIZED *gs, bool ever);
+extern int ea_spatialrel_tpoint_tpoint(const Temporal *temp1,
+  const Temporal *temp2, Datum (*func)(Datum, Datum), bool ever);
 
-extern int edwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
-  double dist);
+extern int ea_dwithin_tpoint_tpoint1(const Temporal *sync1,
+  const Temporal *sync2, double dist, bool ever);
 
 /*****************************************************************************/
 

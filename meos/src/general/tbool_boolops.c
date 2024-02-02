@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal Boolean operators: and, or, not.
+ * @brief Temporal Boolean operators: and, or, not
  */
 
 #include "general/tbool_boolops.h"
@@ -39,7 +39,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporaltypes.h"
 #include "general/lifting.h"
 
 /*****************************************************************************
@@ -65,7 +64,7 @@ datum_or(Datum l, Datum r)
 }
 
 /**
- * @brief Return the Boolean not of a value.
+ * @brief Return the Boolean not of a value
  */
 Datum
 datum_not(Datum d)
@@ -78,16 +77,17 @@ datum_not(Datum d)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bool
- * @brief Return the boolean not of a temporal boolean.
- * @sqlop @p ~
+ * @ingroup meos_temporal_bool
+ * @brief Return the boolean not of a temporal boolean
+ * @param[in] temp Temporal value
+ * @csqlfn #Tnot_tbool()
  */
 Temporal *
 tnot_tbool(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_has_type(temp, T_TBOOL))
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
 
   LiftedFunctionInfo lfinfo;
@@ -102,7 +102,7 @@ tnot_tbool(const Temporal *temp)
 }
 
 /**
- * @brief Return the boolean operator of a temporal boolean and a boolean.
+ * @brief Return the boolean operator of a temporal boolean and a boolean
  */
 Temporal *
 boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
@@ -121,7 +121,7 @@ boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
 }
 
 /**
- * @brief Return the boolean operator of two temporal booleans.
+ * @brief Return the boolean operator of two temporal booleans
  */
 Temporal *
 boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
@@ -145,21 +145,24 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_bool
- * @brief Return the time when the temporal boolean has value true.
+ * @ingroup meos_temporal_bool
+ * @brief Return the time when the temporal boolean has value true
+ * @param[in] temp Temporal value
+ * @csqlfn #Tbool_when_true()
  */
 SpanSet *
 tbool_when_true(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_has_type(temp, T_TBOOL))
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
 
   Temporal *temp1 = temporal_restrict_value(temp, BoolGetDatum(true), REST_AT);
   if (! temp1)
     return NULL;
   SpanSet *result = temporal_time(temp1);
+  pfree(temp1);
   return result;
 }
 

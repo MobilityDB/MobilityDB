@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -36,23 +36,15 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <catalog/pg_type_d.h> /* for TIMESTAMPTZOID and similar */
 #include <lib/stringinfo.h>
+#include <utils/array.h>
+#include <utils/lsyscache.h>
 /* MEOS */
-#include "general/meos_catalog.h"
-#include "general/span.h"
-#include "general/set.h"
-#include "general/tbox.h"
-#include "point/stbox.h"
+#include <meos.h>
 
 /*****************************************************************************/
 
-#include <c.h>
-#include <utils/palloc.h>
-#include <utils/elog.h>
-#include <utils/array.h>
-#include <utils/lsyscache.h>
-#include <catalog/pg_type_d.h> /* for TIMESTAMPTZOID and similar */
-#include "pg_point/postgis.h"
 
 // #if POSTGRESQL_VERSION_NUMBER < 130000
 // #if USE_FLOAT4_BYVAL
@@ -167,20 +159,8 @@ typedef enum
  * Typmod definitions
  *****************************************************************************/
 
-#define TYPMOD_GET_SUBTYPE(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
-
-/**
- * Structure to represent the temporal subtype array
- */
-struct tempsubtype_struct
-{
-  char *subtypeName;   /**< string representing the temporal type */
-  int16 subtype;       /**< subtype */
-};
-
-#define TEMPSUBTYPE_STRUCT_ARRAY_LEN \
-  (sizeof tempsubtype_struct_array/sizeof(struct tempsubtype_struct))
-#define TEMPSUBTYPE_MAX_LEN   13
+#define TYPMOD_GET_SUBTYPE(typmod) \
+  ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
 
 /* Initialization function */
 
@@ -195,10 +175,6 @@ extern uint32_t time_max_header_size(void);
 extern FunctionCallInfo fetch_fcinfo(void);
 extern void store_fcinfo(FunctionCallInfo fcinfo);
 
-/* Typmod functions */
-
-extern bool tempsubtype_from_string(const char *str, int16 *subtype);
-
 /* Send/receive functions */
 
 extern Temporal *temporal_recv(StringInfo buf);
@@ -207,6 +183,10 @@ extern void temporal_write(const Temporal *temp, StringInfo buf);
 /* Parameter tests */
 
 extern bool ensure_not_empty_array(ArrayType *array);
+
+/* Indexing functions */
+
+extern void temporal_bbox_slice(Datum tempdatum, void *box);
 
 /*****************************************************************************/
 

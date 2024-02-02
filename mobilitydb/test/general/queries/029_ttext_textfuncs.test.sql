@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -60,14 +60,19 @@ SELECT ttext '{[AA@2000-01-01, BB@2000-01-02, AA@2000-01-03],[CC@2000-01-04, CC@
 
 -------------------------------------------------------------------------------
 
+SELECT lower(ttext 'AA@2000-01-01');
+SELECT lower(ttext '{AA@2000-01-01, BB@2000-01-02, AA@2000-01-03}');
+SELECT lower(ttext '[AA@2000-01-01, BB@2000-01-02, AA@2000-01-03]');
+SELECT lower(ttext '{[AA@2000-01-01, BB@2000-01-02, AA@2000-01-03],[CC@2000-01-04, CC@2000-01-05]}');
+
 SELECT upper(ttext 'AA@2000-01-01');
 SELECT upper(ttext '{AA@2000-01-01, BB@2000-01-02, AA@2000-01-03}');
 SELECT upper(ttext '[AA@2000-01-01, BB@2000-01-02, AA@2000-01-03]');
 SELECT upper(ttext '{[AA@2000-01-01, BB@2000-01-02, AA@2000-01-03],[CC@2000-01-04, CC@2000-01-05]}');
 
-SELECT lower(ttext 'AA@2000-01-01');
-SELECT lower(ttext '{AA@2000-01-01, BB@2000-01-02, AA@2000-01-03}');
-SELECT lower(ttext '[AA@2000-01-01, BB@2000-01-02, AA@2000-01-03]');
-SELECT lower(ttext '{[AA@2000-01-01, BB@2000-01-02, AA@2000-01-03],[CC@2000-01-04, CC@2000-01-05]}');
+SELECT initcap(ttext 'AA@2000-01-01');
+SELECT initcap(ttext '{AA@2000-01-01, BB@2000-01-02, AA@2000-01-03}');
+SELECT initcap(ttext '[AA@2000-01-01, BB@2000-01-02, AA@2000-01-03]');
+SELECT initcap(ttext '{[AA@2000-01-01, BB@2000-01-02, AA@2000-01-03],[CC@2000-01-04, CC@2000-01-05]}');
 
 -------------------------------------------------------------------------------

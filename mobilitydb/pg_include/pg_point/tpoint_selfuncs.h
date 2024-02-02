@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief Selectivity functions for temporal point types.
+ * @brief Selectivity functions for temporal points.
  */
 
 #ifndef __TPOINT_SELFUNCS_H__
@@ -40,7 +40,6 @@
 #include <utils/selfuncs.h>
 /* MEOS */
 #include "general/meos_catalog.h"
-#include "point/tpoint.h"
 /* MobilityDB */
 #include "pg_point/tpoint_analyze.h"
 

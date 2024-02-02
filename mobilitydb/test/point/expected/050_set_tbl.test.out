@@ -53,7 +53,7 @@ SELECT MAX(length(asEWKT(g))) FROM tbl_geomset;
 SELECT MAX(length(asEWKT(g))) FROM tbl_geogset;
  max 
 -----
- 570
+ 480
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromBinary(asBinary(g)) <> g;
@@ -113,32 +113,20 @@ SELECT MAX(memSize(set(g))) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST
 DROP TABLE IF EXISTS test;
 NOTICE:  table "test" does not exist, skipping
 DROP TABLE
-CREATE TABLE test(ps) AS
-WITH test(ps) AS (
+CREATE TABLE test(t) AS
+WITH test(t) AS (
   SELECT span(day, day + interval '1 hour')
   FROM generate_series(timestamptz '2000-01-01', timestamptz '2000-04-01', '1 day') AS day )
-SELECT spanset(array_agg(ps)) FROM test;
+SELECT spanset(array_agg(t)) FROM test;
 SELECT 1
-SELECT ps::stbox FROM test;
-                                  ps                                   
+SELECT t::stbox FROM test;
+                                   t                                   
 -----------------------------------------------------------------------
  STBOX T([Sat Jan 01 00:00:00 2000 PST, Sat Apr 01 01:00:00 2000 PST))
 (1 row)
 
 DROP TABLE test;
 DROP TABLE
-SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
-    min     
-------------
- -96.535171
-(1 row)
-
-SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
-   min    
-----------
- 0.432515
-(1 row)
-
 SELECT MAX(memSize(g)) FROM tbl_geomset;
  max 
 -----
@@ -151,19 +139,19 @@ SELECT MIN(numValues(g)) FROM tbl_geomset;
    5
 (1 row)
 
-SELECT MIN(ST_X(startValue(g))) FROM tbl_geomset;
+SELECT MIN(round(ST_X(startValue(g))::numeric, 6)) FROM tbl_geomset;
     min     
 ------------
  -96.535171
 (1 row)
 
-SELECT MIN(ST_X(endValue(g))) FROM tbl_geomset;
+SELECT MIN(round(ST_X(endValue(g))::numeric, 6)) FROM tbl_geomset;
     min     
 ------------
  -94.408967
 (1 row)
 
-SELECT MIN(ST_X(valueN(g, 1))) FROM tbl_geomset;
+SELECT MIN(round(ST_X(valueN(g, 1))::numeric, 6)) FROM tbl_geomset;
     min     
 ------------
  -96.535171
@@ -187,19 +175,19 @@ SELECT MIN(numValues(g)) FROM tbl_geogset;
    5
 (1 row)
 
-SELECT MIN(ST_X(startValue(g)::geometry)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(startValue(g)::geometry)::numeric, 6)) FROM tbl_geogset;
    min    
 ----------
  0.432515
 (1 row)
 
-SELECT MIN(ST_X(endValue(g)::geometry)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(endValue(g)::geometry)::numeric, 6)) FROM tbl_geogset;
    min    
 ----------
  0.806752
 (1 row)
 
-SELECT MIN(ST_X(valueN(g, 1)::geometry)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(valueN(g, 1)::geometry)::numeric, 6)) FROM tbl_geogset;
    min    
 ----------
  0.432515
@@ -209,6 +197,18 @@ SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
  min 
 -----
    5
+(1 row)
+
+SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
+    min     
+------------
+ -96.535171
+(1 row)
+
+SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
+   min    
+----------
+ 0.432515
 (1 row)
 
 SELECT numValues(set_union(g)) FROM tbl_geom_point3D WHERE NOT ST_IsEmpty(g);

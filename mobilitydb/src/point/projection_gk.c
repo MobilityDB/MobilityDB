@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -45,10 +45,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/meos_catalog.h"
-#include "general/temporaltypes.h"
 #include "general/lifting.h"
-#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_point/postgis.h"
@@ -292,9 +289,7 @@ Datum
 Geometry_transform_gk(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  GSERIALIZED *result = NULL;
-  result = geometry_transform_gk(gs);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(geometry_transform_gk(gs));
 }
 
 PGDLLEXPORT Datum Tgeompoint_transform_gk(PG_FUNCTION_ARGS);
@@ -309,7 +304,7 @@ Tgeompoint_transform_gk(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tgeompoint_transform_gk(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

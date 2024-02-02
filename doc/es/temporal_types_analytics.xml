@@ -22,22 +22,22 @@
 				<para><varname>minTimeDeltaSimplify({tfloat,tpoint},mint interval) → {tfloat,tpoint}</varname></para>
 				<para>En el caso de puntos temporales la distancia se especifica en las unidades del sistema de coordenadas. Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT minDistSimplify(tfloat '[1@2000-01-01,2@2000-01-02,3@2000-01-04,4@2000-01-05]', 1);
--- [1@2000-01-01, 3@2000-01-04]
-SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2000-01-01,
-  Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-04, Point(5 5 5)@2000-01-05)', sqrt(3)));
--- [POINT Z (1 1 1)@2000-01-01, POINT Z (3 3 3)@2000-01-04, POINT Z (5 5 5)@2000-01-05)
-SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2000-01-01,
-  Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-04, Point(4 4 4)@2000-01-05)', sqrt(3)));
--- [POINT Z (1 1 1)@2000-01-01, POINT Z (3 3 3)@2000-01-04]
+SELECT minDistSimplify(tfloat '[1@2001-01-01,2@2001-01-02,3@2001-01-04,4@2001-01-05]', 1);
+-- [1@2001-01-01, 3@2001-01-04, 4@2001-01-05]
+SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2001-01-01,
+  Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-04, Point(5 5 5)@2001-01-05)', sqrt(3)));
+-- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04, POINT Z (5 5 5)@2001-01-05)
+SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2001-01-01,
+  Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-04, Point(4 4 4)@2001-01-05)', sqrt(3)));
+-- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04, POINT Z (4 4 4)@2001-01-05]
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
-SELECT minTimeDeltaSimplify(tfloat '[1@2000-01-01, 2@2000-01-02, 3@2000-01-04,
-  4@2000-01-05]', '1 day');
--- [1@2000-01-01, 3@2000-01-04]
-SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2000-01-01,
-  Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-04, Point(5 5 5)@2000-01-05)', '1 day'));
--- [POINT Z (1 1 1)@2000-01-01, POINT Z (3 3 3)@2000-01-04]
+SELECT minTimeDeltaSimplify(tfloat '[1@2001-01-01, 2@2001-01-02, 3@2001-01-04,
+  4@2001-01-05]', '1 day');
+-- [1@2001-01-01, 3@2001-01-04, 4@2001-01-05]
+SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2001-01-01,
+  Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-04, Point(5 5 5)@2001-01-05)', '1 day'));
+-- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04, POINT Z (5 5 5)@2001-01-05]
 </programlisting>
 			</listitem>
 
@@ -53,31 +53,31 @@ SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2000-01-01,
 				<para>La función elimina los valores or los puntos cuya distancia es menor que la distancia pasada como segundo argumento. En el caso de puntos temporales la distancia se especifica en las unidades del sistema de coordenadas. El tercer argumento se aplica solo a puntos temporales y especifica si se utiliza la distancia espacial o la distancia  sincronizada. Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
 				<programlisting language="sql" xml:space="preserve">
 -- Only synchronous distance for temporal floats
-SELECT maxDistSimplify(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 3@2000-01-04,
-  1@2000-01-05]', 1, false);
--- [1@2000-01-01, 1@2000-01-03, 3@2000-01-04, 1@2000-01-05]
+SELECT maxDistSimplify(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 3@2001-01-04,
+  1@2001-01-05]', 1, false);
+-- [1@2001-01-01, 1@2001-01-03, 3@2001-01-04, 1@2001-01-05]
 -- Synchronous distance by default for temporal points
-SELECT asText(maxDistSimplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
-  Point(3 1)@2000-01-03, Point(3 3)@2000-01-05, Point(5 1)@2000-01-06]', 2));
--- [POINT(1 1)@2000-01-01, POINT(3 3)@2000-01-05, POINT(5 1)@2000-01-06]
+SELECT asText(maxDistSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(3 1)@2001-01-03, Point(3 3)@2001-01-05, Point(5 1)@2001-01-06]', 2));
+-- [POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-05, POINT(5 1)@2001-01-06]
 -- Spatial distance
-SELECT asText(maxDistSimplify(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
-  Point(3 1)@2000-01-03, Point(3 3)@2000-01-05, Point(5 1)@2000-01-06]', 2, false));
--- [POINT(1 1)@2000-01-01, POINT(5 1)@2000-01-06]
+SELECT asText(maxDistSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(3 1)@2001-01-03, Point(3 3)@2001-01-05, Point(5 1)@2001-01-06]', 2, false));
+-- [POINT(1 1)@2001-01-01, POINT(5 1)@2001-01-06]
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 -- Spatial vs synchronized distance
-SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2000-01-01, Point(6 1)@2000-01-06,
-  Point(7 4)@2000-01-07]', 2.3, false));
--- [POINT(1 1)@2000-01-01, POINT(7 4)@2000-01-07]
-SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2000-01-01, Point(6 1)@2000-01-06,
-  Point(7 4)@2000-01-07]', 2.3, true));
--- [POINT(1 1)@2000-01-01, POINT(6 1)@2000-01-06, POINT(7 4)@2000-01-07]
+SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(6 1)@2001-01-06,
+  Point(7 4)@2001-01-07]', 2.3, false));
+-- [POINT(1 1)@2001-01-01, POINT(7 4)@2001-01-07]
+SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(6 1)@2001-01-06,
+  Point(7 4)@2001-01-07]', 2.3, true));
+-- [POINT(1 1)@2001-01-01, POINT(6 1)@2001-01-06, POINT(7 4)@2001-01-07]
 </programlisting>
 			</listitem>
 		</itemizedlist>
 
-		<para>La diferencia entre la distancia espacial y la distancia sincronizada se ilustra en los dos últimos ejemplos anteriores y en la <xref linkend="dist_vs_sed" />. En el primer ejemplo, que usa la distancia espacial, se elimina el segundo instante ya que la distancia perperdicular entre <varname>POINT(2 2)</varname> y la línea definida por <varname>POINT(1 1)</varname> y <varname>POINT(7 4)</varname> es igual a 2.23. Por el contrario, en el segundo ejemplo se mantiene el segundo instante dado que la proyección de <varname>Point(6 2)</varname> en la marca de tiempo <varname >2000-01-06</varname> sobre el segmento de línea temporal da como resultado <varname>Point(6 3.5)</varname> y la distancia entre el punto original y su proyección es 2.5.</para>
+		<para>La diferencia entre la distancia espacial y la distancia sincronizada se ilustra en los dos últimos ejemplos anteriores y en la <xref linkend="dist_vs_sed" />. En el primer ejemplo, que usa la distancia espacial, se elimina el segundo instante ya que la distancia perperdicular entre <varname>POINT(2 2)</varname> y la línea definida por <varname>POINT(1 1)</varname> y <varname>POINT(7 4)</varname> es igual a 2.23. Por el contrario, en el segundo ejemplo se mantiene el segundo instante dado que la proyección de <varname>Point(6 2)</varname> en la marca de tiempo <varname >2001-01-06</varname> sobre el segmento de línea temporal da como resultado <varname>Point(6 3.5)</varname> y la distancia entre el punto original y su proyección es 2.5.</para>
 
 		<figure id="dist_vs_sed">
 			<title>Diferencia entre la distancia espacial y la distancia sincronizada.</title>
@@ -101,20 +101,20 @@ SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2000-01-01, Point(6
 				<para><varname>  {tnumber,tgeompoint}</varname></para>
 				<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. El intervalo dado debe ser estrictamente mayor que cero. Nótese que el resultado es un instante temporal o una secuencia temporal con interpolación discreta.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tsample(tint '{1@2000-01-01,5@2000-01-05}', '3 days', '2000-01-01');
--- {1@2000-01-01}
-SELECT tsample(tfloat '[1@2000-01-01,5@2000-01-05]', '1 day', '2000-01-01');
--- {1@2000-01-01, 2@2000-01-02, 3@2000-01-03, 4@2000-01-04, 5@2000-01-05}
-SELECT tsample(tfloat '[1@2000-01-01,5@2000-01-05]', '3 days', '2000-01-01');
--- {1@2000-01-01, 4@2000-01-04}
+SELECT tsample(tint '{1@2001-01-01,5@2001-01-05}', '3 days', '2001-01-01');
+-- {1@2001-01-01}
+SELECT tsample(tfloat '[1@2001-01-01,5@2001-01-05]', '1 day', '2001-01-01');
+-- {1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 4@2001-01-04, 5@2001-01-05}
+SELECT tsample(tfloat '[1@2001-01-01,5@2001-01-05]', '3 days', '2001-01-01');
+-- {1@2001-01-01, 4@2001-01-04}
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asText(tsample(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05]',
-  '2 days', '2000-01-01'));
--- {POINT(1 1)@2000-01-01, POINT(3 3)@2000-01-03, POINT(5 5)@2000-01-05}
-SELECT asText(tsample(tgeompoint '{[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05],
-  [Point(1 1)@2000-01-06, Point(5 5)@2000-01-08]}', '3 days', '2000-01-01'));
--- {POINT(1 1)@2000-01-01, POINT(4 4)@2000-01-04, POINT(3 3)@2000-01-07}
+SELECT asText(tsample(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]',
+  '2 days', '2001-01-01'));
+-- {POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03, POINT(5 5)@2001-01-05}
+SELECT asText(tsample(tgeompoint '{[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05],
+  [Point(1 1)@2001-01-06, Point(5 5)@2001-01-08]}', '3 days', '2001-01-01'));
+-- {POINT(1 1)@2001-01-01, POINT(4 4)@2001-01-04, POINT(3 3)@2001-01-07}
 </programlisting>
 				<para>La <xref linkend="fig_tsample" /> ilustra el muestreo para números flotantes temporales con varias interpolaciones. Como ilustra la figura, la operación de muestreo es más adecuada para valores temporales con interpolación continua.</para>
 			</listitem>
@@ -137,44 +137,42 @@ SELECT asText(tsample(tgeompoint '{[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05
 				<para><varname> → {tnumber,tgeompoint}</varname></para>
 				<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. El intervalo dado debe ser estrictamente mayor que cero.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tprecision(tint '[1@2000-01-01,5@2000-01-05,1@2000-01-09]','1 day',
-  '2000-01-01');
--- Interp=Step;[1@2000-01-01, 5@2000-01-05, 1@2000-01-09]
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-09)','1 day',
-  '2000-01-01');
--- [1.5@2000-01-01, 4.5@2000-01-04, 4.5@2000-01-05, 1.5@2000-01-08]
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-09]','1 day',
-  '2000-01-01');
--- [1.5@2000-01-01, 4.5@2000-01-04, 4.5@2000-01-05, 1.5@2000-01-08, 1@2000-01-09]
-SELECT tprecision(tfloat '[1@2000-01-01,5@2000-01-05,1@2000-01-09)','2 days',
-  '2000-01-01');
--- [2@2000-01-01, 4@2000-01-03, 4@2000-01-05, 2@2000-01-07]
+SELECT tprecision(tint '[1@2001-01-01,5@2001-01-05,1@2001-01-09]','1 day',
+  '2001-01-01');
+-- Interp=Step;[1@2001-01-01, 5@2001-01-05, 1@2001-01-09]
+SELECT tprecision(tfloat '[1@2001-01-01,5@2001-01-05,1@2001-01-09)','1 day',
+  '2001-01-01');
+-- [1.5@2001-01-01, 4.5@2001-01-04, 4.5@2001-01-05, 1.5@2001-01-08]
+SELECT tprecision(tfloat '[1@2001-01-01,5@2001-01-05,1@2001-01-09]','1 day',
+  '2001-01-01');
+-- [1.5@2001-01-01, 4.5@2001-01-04, 4.5@2001-01-05, 1.5@2001-01-08, 1@2001-01-09]
+SELECT tprecision(tfloat '[1@2001-01-01,5@2001-01-05,1@2001-01-09)','2 days',
+  '2001-01-01');
+-- [2@2001-01-01, 4@2001-01-03, 4@2001-01-05, 2@2001-01-07]
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-09)', '1 day', '2000-01-01'));
-/* [POINT(1.5 1.5)@2000-01-01, POINT(4.5 4.5)@2000-01-04, POINT(4.5 4.5)@2000-01-05,
-   POINT(1.5 1.5)@2000-01-08] */
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-09)', '2 days', '2000-01-01'));
-/* [POINT(2 2)@2000-01-01, POINT(4 4)@2000-01-03, POINT(4 4)@2000-01-05,
-   POINT(2 2)@2000-01-07] */
--- [POINT(1.5 1.5)@1999-12-31, POINT(3.5 3.5)@2000-01-02, POINT(3 3)@2000-01-04]
-SELECT asText(tprecision(tgeompoint '[Point(1 1)@2000-01-01, Point(5 5)@2000-01-05,
-  Point(1 1)@2000-01-09)', '4 days', '2000-01-01'));
--- [POINT(3 3)@2000-01-01, POINT(3 3)@2000-01-05]
+SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05,
+  Point(1 1)@2001-01-09)', '1 day', '2001-01-01'));
+/* [POINT(1.5 1.5)@2001-01-01, POINT(4.5 4.5)@2001-01-04, POINT(4.5 4.5)@2001-01-05,
+   POINT(1.5 1.5)@2001-01-08] */
+SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05,
+  Point(1 1)@2001-01-09)', '2 days', '2001-01-01'));
+/* [POINT(2 2)@2001-01-01, POINT(4 4)@2001-01-03, POINT(4 4)@2001-01-05,
+   POINT(2 2)@2001-01-07] */
+SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05,
+  Point(1 1)@2001-01-09)', '4 days', '2001-01-01'));
+-- [POINT(3 3)@2001-01-01, POINT(3 3)@2001-01-05]
 </programlisting>
 				<para>Cambiar la precisión de un valor temporal es similar a cambiar su <emphasis>granularidad temporal</emphasis>, por ejemplo, de marcas de tiempo a horas o días, aunque la precisión se puede establecer en un intervalo arbitrario, como 2 horas y 15 minutos. La <xref linkend="fig_tprecision" /> ilustra un cambio de precisión temporal para números flotantes temporales con varias interpolaciones.</para>
+				<figure id="fig_tprecision">
+					<title>Cambio de precisión de números flotantes temporales con interpolación discreta, escalonada y lineal.</title>
+					<mediaobject>
+						<imageobject><imagedata format="PDF" scale='75' fileref="../images/tprecision.pdf"/></imageobject>
+						<imageobject><imagedata format="SVG" scale='75' fileref="../images/tprecision.svg"/></imageobject>
+						<imageobject><imagedata format="PNG" scale='75' fileref="../images/tprecision.png"/></imageobject>
+					</mediaobject>
+				</figure>
 			</listitem>
-
-			<figure id="fig_tprecision">
-				<title>Cambio de precisión de números flotantes temporales con interpolación discreta, escalonada y lineal.</title>
-				<mediaobject>
-					<imageobject><imagedata format="PDF" scale='75' fileref="../images/tprecision.pdf"/></imageobject>
-					<imageobject><imagedata format="SVG" scale='75' fileref="../images/tprecision.svg"/></imageobject>
-					<imageobject><imagedata format="PNG" scale='75' fileref="../images/tprecision.png"/></imageobject>
-				</mediaobject>
-			</figure>
 		</itemizedlist>
 	</sect1>
 
@@ -240,37 +238,37 @@ SELECT frechetDistancePath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-0
 </programlisting>
 			</listitem>
 
-			<listitem id="dynamicTimeWarp">
-				<indexterm><primary><varname>dynamicTimeWarp</varname></primary></indexterm>
+			<listitem id="dynTimeWarpDistance">
+				<indexterm><primary><varname>dynTimeWarpDistance</varname></primary></indexterm>
 				<para>Obtener la distancia de distorsión de tiempo dinámica (<ulink url="https://en.wikipedia.org/wiki/Dynamic_time_warping">Dynamic Time Warp</ulink> o DTW) entre dos valores temporales &Z_support; &geography_support;</para>
-				<para><varname>dynamicTimeWarp({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
+				<para><varname>dynTimeWarpDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
 				<para>Esta función tiene una complejidad de espacio lineal ya que solo dos filas de la matriz de distancia son asignadas en la memoria. Sin embargo, su complejidad de tiempo es cuadrática en el número de instantes de los valores temporales. Por lo tanto, la función requerirá un tiempo considerable para valores temporales con gran número de instantes.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT dynamicTimeWarp(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
+SELECT dynTimeWarpDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
 -- 2
-SELECT round(dynamicTimeWarp(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
-  Point(1 1)@2001-01-05]', tgeompoint '[Point(1.1 1.1)@2001-01-01,
-  Point(2.5 2.5)@2001-01-02, Point(4 4)@2001-01-03, Point(3 3)@2001-01-04,
-  Point(1.5 2)@2001-01-05]')::numeric, 6);
+SELECT round(dynTimeWarpDistance(tgeompoint '[Point(1 1)@2001-01-01,
+  Point(3 3)@2001-01-03, Point(1 1)@2001-01-05]',
+  tgeompoint '[Point(1.1 1.1)@2001-01-01, Point(2.5 2.5)@2001-01-02,
+  Point(4 4)@2001-01-03, Point(3 3)@2001-01-04, Point(1.5 2)@2001-01-05]')::numeric, 6);
 -- 3.380776
 </programlisting>
 			</listitem>
 
-			<listitem id="dynamicTimeWarpPath">
-				<indexterm><primary><varname>dynamicTimeWarpPath</varname></primary></indexterm>
+			<listitem id="dynTimeWarpPath">
+				<indexterm><primary><varname>dynTimeWarpPath</varname></primary></indexterm>
 				<para>Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp o DTW) &Z_support; &geography_support; &SRF;</para>
-				<para><varname>dynamicTimeWarpPath({tnumber, tgeo}, {tnumber, tgeo}) → {(i,j)}</varname></para>
+				<para><varname>dynTimeWarpPath({tnumber, tgeo}, {tnumber, tgeo}) → {(i,j)}</varname></para>
 				<para>El resultado es un conjunto de pares <varname>(i,j)</varname>. Esta función requiere ubicar en memoria una matriz de distancias cuyo tamaño es cuadrático en el número de instantes de los valores temporales. Por tanto, la función fallará para valores temporales con gran número de instantes dependiendo de la memoria disponible.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT dynamicTimeWarpPath(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
+SELECT dynTimeWarpPath(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
 -- (0,0)
 -- (1,0)
 -- (2,1)
 -- (3,2)
 -- (4,2)
-SELECT dynamicTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
+SELECT dynTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
   Point(1 1)@2001-01-05]', tgeompoint '[Point(1.1 1.1)@2001-01-01,
   Point(2.5 2.5)@2001-01-02, Point(4 4)@2001-01-03, Point(3 3)@2001-01-04,
   Point(1.5 2)@2001-01-05]');
@@ -333,15 +331,15 @@ SELECT bucketList(floatspan '[-10, -1]', 2.5, -7);
 -- (3,"[-7, -4.5)")
 -- ...
 SELECT (bl).index, (bl).span
-FROM (SELECT bucketList(tstzspan '[2000-01-15, 2000-01-25]','2 days') AS bl) t;
--- 1 | [2000-01-15, 2000-01-17)
--- 2 | [2000-01-17, 2000-01-19)
--- 3 | [2000-01-19, 2000-01-21)
+FROM (SELECT bucketList(tstzspan '[2001-01-15, 2001-01-25]','2 days') AS bl) t;
+-- 1 | [2001-01-15, 2001-01-17)
+-- 2 | [2001-01-17, 2001-01-19)
+-- 3 | [2001-01-19, 2001-01-21)
 -- ...
-SELECT bucketList(tstzspan '[2000-01-15, 2000-01-25]', '2 days', '2000-01-02');
--- (1,"[2000-01-14, 2000-01-16)")
--- (2,"[2000-01-16, 2000-01-18)")
--- (3,"[2000-01-18, 2000-01-20)")
+SELECT bucketList(tstzspan '[2001-01-15, 2001-01-25]', '2 days', '2001-01-02');
+-- (1,"[2001-01-14, 2001-01-16)")
+-- (2,"[2001-01-16, 2001-01-18)")
+-- (3,"[2001-01-18, 2001-01-20)")
 -- ...
 </programlisting>
 				</listitem>
@@ -366,13 +364,13 @@ SELECT valueBucket(3.5, 2.5, 1.5);
 					<para>Si el origen no se especifica, su valor se establece por defecto en 0.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT spanBucket(2, 2);
--- [2,4)
+-- [2, 4)
 SELECT spanBucket(2, 2, 1);
--- [1,3)
+-- [1, 3)
 SELECT spanBucket(2, 2.5);
--- [0,2.5)
+-- [0, 2.5)
 SELECT spanBucket(2, 2.5, 1.5);
--- [1.5,4)
+-- [1.5, 4)
 </programlisting>
 				</listitem>
 
@@ -383,10 +381,10 @@ SELECT spanBucket(2, 2.5, 1.5);
 					<para><varname>  timestamptz</varname></para>
 					<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000.</para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT timeBucket(timestamptz '2020-05-01', interval '2 days');
--- 2020-04-29 01:00:00+02
-SELECT timeBucket(timestamptz '2020-05-01', interval '2 days', timestamptz '2020-01-01');
--- 2020-04-30 01:00:00+02
+SELECT timeBucket(timestamptz '2001-05-01', interval '2 days');
+-- 2001-04-29 01:00:00
+SELECT timeBucket(timestamptz '2001-05-01', interval '2 days', timestamptz '2001-01-01');
+-- 2001-04-30 01:00:00
 </programlisting>
 				</listitem>
 
@@ -394,13 +392,13 @@ SELECT timeBucket(timestamptz '2020-05-01', interval '2 days', timestamptz '2020
 					<indexterm><primary><varname>periodBucket</varname></primary></indexterm>
 					<para>Obtener el período en el espacio de intervalos que contiene la marca de tiempo de entrada</para>
 					<para><varname>periodBucket(time timestamptz,duration interval,origin timestamptz='2000-01-03') → </varname></para>
-					<para><varname>  period</varname></para>
+					<para><varname>  tstzspan</varname></para>
 					<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000.</para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT periodBucket('2000-01-04', interval '1 week');
--- [2000-01-03,2000-01-10)
-SELECT periodBucket('2000-01-04', interval '1 week', '2000-01-07');
--- [1999-12-31,2000-01-07)
+SELECT periodBucket('2001-01-04', interval '1 week');
+-- [2001-01-03, 2001-01-10)
+SELECT periodBucket('2001-01-04', interval '1 week', '2001-01-07');
+-- [2000-12-31, 2001-01-07)
 </programlisting>
 				</listitem>
 
@@ -419,51 +417,52 @@ SELECT periodBucket('2000-01-04', interval '1 week', '2000-01-07');
 					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,] </varname></para>
 					<para><varname>  sorigin geompoint='Point(0 0 0)') → {(index,tile)}</varname></para>
 					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,]duration interval,</varname></para>
-					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03') → {(index,tile)}</varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin='2000-01-03') → {(index,tile)}</varname></para>
 					<para>Si el origen de las dimensiones de valores y/o de tiempo no se especifican, su valor se establece por defecto en 0 o <varname>'Point (0 0 0)'</varname> para la dimensión de valores (según el tipo de cuadro delimitador) y en el lunes 3 de enero de 2000 para la dimensión de tiempo.</para>
 					<para>En el caso de una malla espacio-temporal, <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. El SRID de las coordenadas de los mosaicos está determinado por el del cuadro de entrada y el tamaño se da en las unidades del SRID. Si se especifica el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales al del cuadro delimitador, de lo contrario se genera un error.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT (gr).index, (gr).tile
-FROM (SELECT tileList(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.0, '2 days')
+FROM (SELECT tileList(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0, '2 days')
   AS gr) t;
--- 1 | TBOX XT([14,16),[2000-01-15,2000-01-17))
--- 2 | TBOX XT([16,18),[2000-01-15,2000-01-17))
--- 3 | TBOX XT([18,20),[2000-01-15,2000-01-17),)
+-- 1 | TBOX XT([14,16),[2001-01-15,2001-01-17))
+-- 2 | TBOX XT([16,18),[2001-01-15,2001-01-17))
+-- 3 | TBOX XT([18,20),[2001-01-15,2001-01-17),)
 -- ...
-SELECT tileList(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.0, '2 days', 11.5);
--- (1,"TBOX XT([13.5,15.5),[2000-01-15,2000-01-17))")
--- (2,"TBOX XT([15.5,17.5),[2000-01-15,2000-01-17))")
--- (3,"TBOX XT([17.5,19.5),[2000-01-15,2000-01-17))")
+SELECT tileList(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0, '2 days', 11.5);
+-- (1,"TBOX XT([13.5,15.5),[2001-01-15,2001-01-17))")
+-- (2,"TBOX XT([15.5,17.5),[2001-01-15,2001-01-17))")
+-- (3,"TBOX XT([17.5,19.5),[2001-01-15,2001-01-17))")
 -- ...
-SELECT tileList(tgeompoint '[Point(3 3)@2000-01-15,
-  Point(15 15)@2000-01-25]'::stbox, 2.0);
+SELECT tileList(tgeompoint '[Point(3 3)@2001-01-15,
+  Point(15 15)@2001-01-25]'::stbox, 2.0);
 -- (1,"STBOX X((2,2),(4,4))")
 -- (2,"STBOX X((4,2),(6,4))")
 -- (3,"STBOX X((6,2),(8,4))")
 -- ...
-SELECT tileList(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15,
-  Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
+SELECT tileList(tgeompoint 'SRID=3812;[Point(3 3)@2001-01-15,
+  Point(15 15)@2001-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
 -- (1,"SRID=3812;STBOX X((3,3),(5,5))")
 -- (2,"SRID=3812;STBOX X((5,3),(7,5))")
 -- (3,"SRID=3812;STBOX X((7,3),(9,5))")
 -- ...
-SELECT tileList(tgeompoint '[Point(3 3 3)@2000-01-15,
-  Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3 3)');
+SELECT tileList(tgeompoint '[Point(3 3 3)@2001-01-15,
+  Point(15 15 15)@2001-01-25]'::stbox, 2.0, geometry 'Point(3 3 3)');
 -- (1,"STBOX Z((3,3,3),(5,5,5))")
 -- (2,"STBOX Z((5,3,3),(7,5,5))")
 -- (3,"STBOX Z((7,3,3),(9,5,5))")
 -- ...
-SELECT tileList(tgeompoint '[Point(3 3)@2000-01-15,
-  Point(15 15)@2000-01-25]'::stbox, 2.0, interval '2 days');
--- (1,"STBOX XT(((2,2),(4,4)),[2000-01-15,2000-01-17))")
--- (2,"STBOX XT(((4,2),(6,4)),[2000-01-15,2000-01-17))")
--- (3,"STBOX XT(((6,2),(8,4)),[2000-01-15,2000-01-17))")
+SELECT tileList(tgeompoint '[Point(3 3)@2001-01-15,
+  Point(15 15)@2001-01-25]'::stbox, 2.0, interval '2 days');
+-- (1,"STBOX XT(((2,2),(4,4)),[2001-01-15,2001-01-17))")
+-- (2,"STBOX XT(((4,2),(6,4)),[2001-01-15,2001-01-17))")
+-- (3,"STBOX XT(((6,2),(8,4)),[2001-01-15,2001-01-17))")
 -- ...
-SELECT tileList(tgeompoint '[Point(3 3 3)@2000-01-15,
-  Point(15 15 15)@2000-01-25]'::stbox, 2.0, '2 days', 'Point(3 3 3)', '2000-01-15');
--- (1,"STBOX ZT(((3,3,3),(5,5,5)),[2000-01-15,2000-01-17))")
--- (2,"STBOX ZT(((5,3,3),(7,5,5)),[2000-01-15,2000-01-17))")
--- (3,"STBOX ZT(((7,3,3),(9,5,5)),[2000-01-15,2000-01-17))")
+SELECT tileList(tgeompoint '[Point(3 3 3)@2001-01-15,
+  Point(15 15 15)@2001-01-25]'::stbox, 2.0, interval '2 days',
+  'Point(3 3 3)', '2001-01-15');
+-- (1,"STBOX ZT(((3,3,3),(5,5,5)),[2001-01-15,2001-01-17))")
+-- (2,"STBOX ZT(((5,3,3),(7,5,5)),[2001-01-15,2001-01-17))")
+-- (3,"STBOX ZT(((7,3,3),(9,5,5)),[2001-01-15,2001-01-17))")
 -- ...
 </programlisting>
 				</listitem>
@@ -480,17 +479,17 @@ SELECT tileList(tgeompoint '[Point(3 3 3)@2000-01-15,
 					<para>Si el origen de las dimensiones de valores y/o de tiempo no se especifican, su valor se establece por defecto en 0 o <varname>'Point(0 0 0)'</varname> para la dimensión de valores y en el lunes 3 de enero de 2000 para la dimensión de tiempo, respectivamente.</para>
 					<para>En el caso de una malla espacio-temporal, <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. El SRID de las coordenadas de los mosaicos está determinado por el del cuadro de entrada y el tamaño se da en las unidades del SRID. Si se especifica el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales al del cuadro delimitador, de lo contrario se genera un error.</para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT tile(15, '2000-01-15', 2, interval '2 days');
--- TBOX XT([14,16),[2000-01-15,2000-01-17))
-SELECT tile(15, '2000-01-15', 2, interval '2 days', 1, '2000-01-02');
--- TBOX XT([15,17),[2000-01-14,2000-01-16))
+SELECT tile(15, '2001-01-15', 2, interval '2 days');
+-- TBOX XT([14,16),[2001-01-15,2001-01-17))
+SELECT tile(15, '2001-01-15', 2, interval '2 days', 1, '2001-01-02');
+-- TBOX XT([15,17),[2001-01-14,2001-01-16))
 SELECT tile(geometry 'Point(1 1 1)', 2.0);
 -- STBOX Z((0,0,0),(2,2,2))
-SELECT tile(geometry 'Point(1 1)', '2000-01-01', 2.0, interval '2 days');
--- STBOX XT((0,0),(2,2),[2000-01-01,2000-01-03))
-SELECT tile(geometry 'Point(1 1)', '2000-01-01', 2.0, interval '2 days',
-  'Point(1 1)', '2000-01-02');
--- STBOX XT(((1,1),(3,3)),[1999-12-31,2000-01-02))
+SELECT tile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days');
+-- STBOX XT((0,0),(2,2),[2001-01-01,2001-01-03))
+SELECT tile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days',
+  'Point(1 1)', '2001-01-02');
+-- STBOX XT(((1,1),(3,3)),[2000-12-31,2001-01-02))
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -530,22 +529,22 @@ SELECT valueSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 2.0, 1.0);
 					<para>El resultado es un conjunto de pares <varname>(time,temp)</varname>. Si el origen del tiempo no se especifica, su valor se establece por defecto en el lunes 3 de enero de 2000.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT (ts).time, (ts).temp
-FROM (SELECT timeSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', '2 days') AS ts) t;
--- 2011-12-31 | [1@2001-01-01, 2@2001-01-02)
--- 2001-01-02 | [2@2001-01-02, 4@2001-01-04)
--- 2001-01-04 | [4@2001-01-04, 6@2001-01-06)
+FROM (SELECT timeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', '2 days') AS ts) t;
+-- 2001-01-31 | [1@2001-02-01, 2@2001-02-02)
+-- 2001-02-02 | [2@2001-02-02, 4@2001-02-04)
+-- 2001-02-04 | [4@2001-02-04, 6@2001-02-06)
 -- ...
 SELECT (ts).time, astext((ts).temp) AS temp
-FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]',
-  '2 days', '2001-01-01') AS ts) AS t;
--- 2001-01-01 | [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-03)
--- 2001-01-03 | [POINT Z (3 3 3)@2001-01-03, POINT Z (5 5 5)@2001-01-05)
--- 2001-01-05 | [POINT Z (5 5 5)@2001-01-05, POINT Z (7 7 7)@2001-01-07)
+FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-02-01, Point(10 10)@2001-02-10]',
+  '2 days', '2001-02-01') AS ts) AS t;
+-- 2001-02-01 | [POINT(1 1)@2001-02-01, POINT(3 3)@2001-02-03)
+-- 2001-02-03 | [POINT(3 3)@2001-02-03, POINT(5 5)@2001-02-05)
+-- 2001-02-05 | [POINT(5 5)@2001-02-05, POINT(7 7)@2001-02-07)
 -- ...
 </programlisting>
 					<para>Observe que se puede fragmentar un valor temporal en intervalos de tiempo cíclicos (en lugar de lineales). Los siguientes dos ejemplos muestran cómo fragmentar un valor temporal por hora y por día de la semana.</para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT (ts).time::time as hour, merge((ts).temp) as temp
+SELECT (ts).time::time AS hour, merge((ts).temp) AS temp
 FROM (SELECT timeSplit(tfloat '[1@2001-01-01, 10@2001-01-03]', '1 hour') AS ts) t
 GROUP BY hour ORDER BY hour;
 /* 00:00:00 | {[1@2001-01-01 00:00:00+01, 1.1875@2001-01-01 01:00:00+01),
@@ -557,8 +556,8 @@ GROUP BY hour ORDER BY hour;
 /* 03:00:00 | {[1.5625@2001-01-01 03:00:00+01, 1.75@2001-01-01 04:00:00+01),
                [6.0625@2001-01-02 03:00:00+01, 6.25@2001-01-02 04:00:00+01)} */
 /* ... */
-SELECT EXTRACT(DOW FROM (ts).time) as dow_no, TO_CHAR((ts).time, 'Dy') as dow,
-  asText(round(merge((ts).temp), 2)) as temp
+SELECT EXTRACT(DOW FROM (ts).time) AS dow_no, TO_CHAR((ts).time, 'Dy') AS dow,
+  asText(round(merge((ts).temp), 2)) AS temp
 FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-14)',
   '1 hour') AS ts) t
 GROUP BY dow, dow_no ORDER BY dow_no;
@@ -580,14 +579,15 @@ GROUP BY dow, dow_no ORDER BY dow_no;
 					<para>El resultado es un conjunto de triples <varname>(number,time,tnumber)</varname>. Si el origen de los valores y/o el tiempo no se especifican, su valor se establece por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT (sp).number, (sp).time, (sp).tnumber
-FROM (SELECT valueTimeSplit(tint '[1@2001-01-01, 2@2001-01-02, 5@2001-01-05,
-  10@2001-01-10]', 5, '5 days') AS sp) t;
--- 0 | 2011-12-31 | [1@2001-01-01, 2@2001-01-02, 2@2001-01-05)
--- 5 | 2001-01-05 | [5@2001-01-05, 5@2001-01-10)
--- 10 | 2001-01-10 | [10@2001-01-10]
+FROM (SELECT valueTimeSplit(tint '[1@2001-02-01, 2@2001-02-02, 5@2001-02-05,
+  10@2001-02-10]', 5, '5 days') AS sp) t;
+--  0 | 2001-02-01 | {[1@2001-02-01, 2@2001-02-02, 2@2001-02-05)}
+--  5 | 2001-02-01 | {[5@2001-02-05, 5@2001-02-06)}
+--  5 | 2001-02-06 | {[5@2001-02-06, 5@2001-02-10)}
+-- 10 | 2001-02-06 | {[10@2001-02-10]}
 SELECT (sp).number, (sp).time, (sp).tnumber
-FROM (SELECT valueTimeSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 5.0, '5 days', 1.0,
-  '2001-01-01') AS sp) t;
+FROM (SELECT valueTimeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', 5.0, '5 days', 1.0,
+  '2001-02-01') AS sp) t;
 -- 1 | 2001-01-01 | [1@2001-01-01, 6@2001-01-06)
 -- 6 | 2001-01-06 | [6@2001-01-06, 10@2001-01-10)
 </programlisting>
@@ -597,22 +597,22 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 5.0, '5 days
 					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
 					<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial &SRF;</para>
 					<para><varname>spaceSplit(tgeompoint,xsize float,[ysize float,zsize float,]</varname></para>
-					<para><varname>  origin geompoint='Point(0 0 0)',bitmatrix=true) → {(point,tpoint)}</varname></para>
+					<para><varname>  origin geompoint='Point(0 0 0)',bitmatrix boolean=true) → {(point,tpoint)}</varname></para>
 					<para>El resultado es un conjunto de pares <varname>(point,tpoint)</varname>. Si el origen del espacio no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname>. Los argumentos <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
-FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2001-03-01, Point(10 10)@2001-03-10]',
   2.0) AS sp) t;
--- POINT(0 0) | {[POINT(1 1)@2020-03-01, POINT(2 2)@2020-03-02)}
--- POINT(2 2) | {[POINT(2 2)@2020-03-02, POINT(4 4)@2020-03-04)}
--- POINT(4 4) | {[POINT(4 4)@2020-03-04, POINT(6 6)@2020-03-06)}
+-- POINT(0 0) | {[POINT(1 1)@2001-03-01, POINT(2 2)@2001-03-02)}
+-- POINT(2 2) | {[POINT(2 2)@2001-03-02, POINT(4 4)@2001-03-04)}
+-- POINT(4 4) | {[POINT(4 4)@2001-03-04, POINT(6 6)@2001-03-06)}
 -- ...
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
-FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
-  Point(10 10 10)@2020-03-10]', 2.0, 'Point(1 1 1)') AS sp) t;
--- POINT Z(1 1 1) | {[POINT Z (1 1 1)@2020-03-01, POINT Z (3 3 3)@2020-03-03)}
--- POINT Z(3 3 3) | {[POINT Z (3 3 3)@2020-03-03, POINT Z (5 5 5)@2020-03-05)}
--- POINT Z(5 5 5) | {[POINT Z (5 5 5)@2020-03-05, POINT Z (7 7 7)@2020-03-07)}
+FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2001-03-01,
+  Point(10 10 10)@2001-03-10]', 2.0, geometry 'Point(1 1 1)') AS sp) t;
+-- POINT Z(1 1 1) | {[POINT Z (1 1 1)@2001-03-01, POINT Z (3 3 3)@2001-03-03)}
+-- POINT Z(3 3 3) | {[POINT Z (3 3 3)@2001-03-03, POINT Z (5 5 5)@2001-03-05)}
+-- POINT Z(5 5 5) | {[POINT Z (5 5 5)@2001-03-05, POINT Z (7 7 7)@2001-03-07)}
 -- ...
 </programlisting>
 				</listitem>
@@ -621,22 +621,23 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 					<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal &SRF;</para>
 					<para><varname>spaceTimeSplit(tgeompoint,xsize float,[ysize float,ysize float,]</varname></para>
 					<para><varname>  duration interval,sorigin geompoint='Point(0 0 0)',</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03',bitmatrix=true) → {(point,time,tpoint)}</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03',bitmatrix boolean=true) → {(point,time,tpoint)}</varname></para>
 					<para>El resultado es un conjunto de triples <varname>(point,time,tpoint)</varname>. Si el origen del espacio y/o el tiempo no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname> y en el lunes 3 de enero de 2000, respectivamente. Los argumentos <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. Si no se especifica el argumento <varname>bitmatrix</varname>, el cálculo utilizará una matriz de bits para acelerar el proceso.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
-FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',
-  2.0, '2 days') AS sp) t;
--- POINT(0 0) | 2020-03-01 | {[POINT(1 1)@2020-03-01, POINT(2 2)@2020-03-02)}
--- POINT(2 2) | 2020-03-01 | {[POINT(2 2)@2020-03-02, POINT(3 3)@2020-03-03]}
--- POINT(2 2) | 2020-03-03 | {[POINT(3 3)@2020-03-03, POINT(4 4)@2020-03-04)}
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2001-02-01, Point(10 10)@2001-02-10]',
+  2.0, interval '2 days') AS sp) t;
+-- POINT(0 0) | 2001-01-31 | {[POINT(1 1)@2001-02-01, POINT(2 2)@2001-02-02)}
+-- POINT(2 2) | 2001-01-31 | {[POINT(2 2)@2001-02-02]}
+-- POINT(2 2) | 2001-02-02 | {[POINT(2 2)@2001-02-02, POINT(4 4)@2001-02-04)}
 -- ...
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
-FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
-  Point(10 10 10)@2020-03-10]', 2.0, '2 days', 'Point(1 1)', '2020-03-01') AS sp) t;
--- POINT Z(1 1 1) | 2020-03-01 | {[POINT Z(1 1 1)@2020-03-01, POINT Z(3 3 3)@2020-03-03)}
--- POINT Z(3 3 3) | 2020-03-03 | {[POINT Z(3 3 3)@2020-03-03, POINT Z(5 5 5)@2020-03-05)}
--- POINT Z(5 5 5) | 2020-03-05 | {[POINT Z(5 5 5)@2020-03-05, POINT Z(7 7 7)@2020-03-07)}
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2001-02-01,
+  Point(10 10 10)@2001-02-10]', 2.0, interval '2 days', 'Point(1 1 1)',
+  '2001-03-01') AS sp) t;
+-- POINT Z(1 1 1) | 2001-02-01 | {[POINT Z(1 1 1)@2001-02-01, POINT Z(3 3 3)@2001-02-03)}
+-- POINT Z(3 3 3) | 2001-02-01 | {[POINT Z(3 3 3)@2001-02-03]}
+-- POINT Z(3 3 3) | 2001-02-03 | {[POINT Z(3 3 3)@2001-02-03, POINT Z (5 5 5)@2001-02-05)}
 -- ...
 </programlisting>
 				</listitem>

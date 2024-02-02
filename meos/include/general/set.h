@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -75,15 +75,17 @@ typedef struct
   Datum *values;   /* Values obtained by getValues(temp) */
 } SetUnnestState;
 
-
 /*****************************************************************************/
 
 /* General functions */
 
-extern bool ensure_set_has_type(const Set *s, meosType settype);
+extern bool ensure_set_isof_type(const Set *s, meosType settype);
+extern bool ensure_set_isof_basetype(const Set *s, meosType basetype);
 extern bool ensure_same_set_type(const Set *s1, const Set *s2);
-extern bool ensure_same_set_basetype(const Set *s, meosType basetype);
 extern bool set_find_value(const Set *s, Datum, int *loc);
+
+extern SetUnnestState *set_unnest_state_make(const Set *set);
+extern void set_unnest_state_next(SetUnnestState *state);
 
 /*****************************************************************************/
 

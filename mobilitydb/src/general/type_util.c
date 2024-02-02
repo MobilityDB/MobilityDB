@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief General utility functions for temporal types.
+ * @brief General utility functions for temporal types
  */
 
 #include "general/type_util.h"
@@ -39,18 +39,16 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/lsyscache.h>
-#include <catalog/pg_collation_d.h>
 #include <catalog/pg_type_d.h>
 #include <utils/array.h>
 #if POSTGRESQL_VERSION_NUMBER >= 140000
   #include <utils/multirangetypes.h>
 #endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 #include <utils/rangetypes.h>
-#include <utils/varlena.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/spanset.h"
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/doublen.h"
@@ -118,7 +116,8 @@ call_function1(PGFunction func, Datum arg1)
   memset(&flinfo, 0, sizeof(flinfo));
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
-  InitFunctionCallInfoData(*fcinfo, &flinfo, 1, DEFAULT_COLLATION_OID, NULL, NULL);
+  InitFunctionCallInfoData(*fcinfo, &flinfo, 1, DEFAULT_COLLATION_OID, NULL,
+    NULL);
   fcinfo->args[0].value = arg1;
   fcinfo->args[0].isnull = false;
   result = (*func) (fcinfo);
@@ -139,7 +138,8 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
   flinfo.fn_nargs = 2;
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
-  InitFunctionCallInfoData(*fcinfo, &flinfo, 2, DEFAULT_COLLATION_OID, NULL, NULL);
+  InitFunctionCallInfoData(*fcinfo, &flinfo, 2, DEFAULT_COLLATION_OID, NULL,
+    NULL);
   fcinfo->args[0].value = arg1;
   fcinfo->args[0].isnull = false;
   fcinfo->args[1].value = arg2;
@@ -161,7 +161,8 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
   memset(&flinfo, 0, sizeof(flinfo));
   flinfo.fn_mcxt = CurrentMemoryContext;
   Datum result;
-  InitFunctionCallInfoData(*fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL, NULL);
+  InitFunctionCallInfoData(*fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL,
+    NULL);
   fcinfo->args[0].value = arg1;
   fcinfo->args[0].isnull = false;
   fcinfo->args[1].value = arg2;
@@ -191,8 +192,8 @@ datumarr_extract(ArrayType *array, int *count)
   char align;
   get_typlenbyvalalign(array->elemtype, &typlen, &byval, &align);
   Datum *result;
-  deconstruct_array(array, array->elemtype, typlen, byval, align,
-    &result, NULL, count);
+  deconstruct_array(array, array->elemtype, typlen, byval, align, &result,
+    NULL, count);
   return result;
 }
 
@@ -214,18 +215,18 @@ spanarr_extract(ArrayType *array, int *count)
  * @brief Extract a C array from a PostgreSQL array containing temporal values
  */
 Temporal **
-temporalarr_extract(ArrayType *array, int *count)
+temparr_extract(ArrayType *array, int *count)
 {
   Temporal **result;
-  deconstruct_array(array, array->elemtype, -1, false, 'd',
-    (Datum **) &result, NULL, count);
+  deconstruct_array(array, array->elemtype, -1, false, 'd', (Datum **) &result,
+    NULL, count);
   return result;
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Convert a C array of datums into a PostgreSQL array.
+ * @brief Return a C array of datums converted into a PostgreSQL array.
  * @note The values will be copied into the object even if pass-by-ref type
  */
 ArrayType *
@@ -237,52 +238,67 @@ datumarr_to_array(Datum *values, int count, meosType type)
   assert(count > 0);
   Oid typid = type_oid(type);
   get_typlenbyvalalign(typid, &elmlen, &elmbyval, &elmalign);
-  ArrayType *result = construct_array(values, count, typid, elmlen, elmbyval,
-    elmalign);
+  return construct_array(values, count, typid, elmlen, elmbyval, elmalign);
+}
+
+/**
+ * @brief Return a C array of timestamps converted into a PostgreSQL array
+ */
+ArrayType *
+int64arr_to_array(int64 *values, int count)
+{
+  assert(count > 0);
+  Datum *dvalues = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+    dvalues[i] = Int64GetDatum(values[i]);
+  ArrayType *result = construct_array(dvalues, count, INT8OID, 8, true, 'd');
+  pfree(dvalues); pfree(values);
   return result;
 }
 
 /**
- * @brief Convert a C array of timestamps into a PostgreSQL array
+ * @brief Return a C array of dates converted into a PostgreSQL array
  */
 ArrayType *
-int64arr_to_array(const int64 *longints, int count)
+datearr_to_array(DateADT *dates, int count)
 {
   assert(count > 0);
   Datum *values = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; i++)
-    values[i] = Int64GetDatum(longints[i]);
-  ArrayType *result = construct_array(values, count, INT8OID, 8, true, 'd');
-  pfree(values);
+    values[i] = DateADTGetDatum(dates[i]);
+  ArrayType *result = construct_array(values, count, DATEOID, 4, true, 'i');
+  pfree(values); pfree(dates);
   return result;
 }
 
 /**
- * @brief Convert a C array of timestamps into a PostgreSQL array
+ * @brief Return a C array of timestamps converted into a PostgreSQL array
  */
 ArrayType *
-timestamparr_to_array(const TimestampTz *times, int count)
+tstzarr_to_array(TimestampTz *times, int count)
 {
   assert(count > 0);
   ArrayType *result = construct_array((Datum *) times, count, TIMESTAMPTZOID,
     8, true, 'd');
+  pfree(times);
   return result;
 }
 
 /**
- * @brief Convert a C array of spans into a PostgreSQL array
+ * @brief Return a C array of spans converted into a PostgreSQL array
  */
 ArrayType *
-spanarr_to_array(Span **spans, int count)
+spanarr_to_array(const Span **spans, int count)
 {
   assert(count > 0);
   ArrayType *result = construct_array((Datum *) spans, count,
     type_oid(spans[0]->spantype), sizeof(Span), false, 'd');
+  pfree(spans);
   return result;
 }
 
 /**
- * @brief Convert a C array of text values into a PostgreSQL array
+ * @brief Return a C array of text values converted into a PostgreSQL array
  */
 ArrayType *
 strarr_to_textarray(char **strarr, int count)
@@ -290,28 +306,16 @@ strarr_to_textarray(char **strarr, int count)
   assert(count > 0);
   text **textarr = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
-    textarr[i] = cstring_to_text(strarr[i]);
+    textarr[i] = cstring2text(strarr[i]);
   ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
     false, 'i');
-  pfree_array((void **)textarr, count);
+  for (int i = 0; i < count; i++)
+    pfree(strarr[i]);
   return result;
 }
 
 /**
- * @brief Convert a C array of temporal values into a PostgreSQL array
- */
-ArrayType *
-temporalarr_to_array(const Temporal **temporalarr, int count)
-{
-  assert(count > 0);
-  Oid temptypid = type_oid(temporalarr[0]->temptype);
-  ArrayType *result = construct_array((Datum *) temporalarr, count, temptypid,
-    -1, false, 'd');
-  return result;
-}
-
-/**
- * @brief Convert a C array of spatiotemporal boxes into a PostgreSQL array
+ * @brief Return a C array of spatiotemporal boxes converted into a PostgreSQL array
  */
 ArrayType *
 stboxarr_to_array(STBox *boxarr, int count)
@@ -326,25 +330,48 @@ stboxarr_to_array(STBox *boxarr, int count)
   return result;
 }
 
+/**
+ * @brief Return a C array of temporal values converted into a PostgreSQL array
+ */
+ArrayType *
+temparr_to_array(Temporal **temparr, int count, bool free_all)
+{
+  assert(count > 0);
+  Oid temptypid = type_oid(temparr[0]->temptype);
+  ArrayType *result = construct_array((Datum *) temparr, count, temptypid, -1,
+    false, 'd');
+  if (free_all)
+  {
+    for (int i = 0; i < count; i++)
+      pfree(temparr[i]);
+  }
+  pfree(temparr);
+  return result;
+}
+
 /*****************************************************************************
  * Range functions
  *****************************************************************************/
 
 /**
- * @brief Construct a range value from given arguments
+ * @brief Return a range value from given arguments
  */
 RangeType *
 range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
   meosType basetype)
 {
   Oid rangetypid = 0;
-  assert (basetype == T_INT4 || basetype == T_TIMESTAMPTZ);
+  assert(basetype == T_INT4 || basetype == T_DATE ||
+    basetype == T_TIMESTAMPTZ);
   if (basetype == T_INT4)
     rangetypid = type_oid(T_INT4RANGE);
+  else if (basetype == T_DATE)
+    rangetypid = type_oid(T_DATERANGE);
   else /* basetype == T_TIMESTAMPTZ */
     rangetypid = type_oid(T_TSTZRANGE);
 
-  TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
+  TypeCacheEntry* typcache = lookup_type_cache(rangetypid,
+    TYPECACHE_RANGE_INFO);
   RangeBound lower;
   RangeBound upper;
   lower.val = from;
@@ -364,29 +391,20 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
 
 #if POSTGRESQL_VERSION_NUMBER >= 140000
 /**
- * @brief Construct a range value from given arguments
+ * @brief Return a range value from given arguments
  */
 MultirangeType *
 multirange_make(const SpanSet *ss)
 {
   RangeType **ranges = palloc(sizeof(RangeType *) * ss->count);
-  const Span *s = spanset_sp_n(ss, 0);
-  Oid rangetypid = 0, mrangetypid = 0;
-  assert (s->basetype == T_INT4 || s->basetype == T_TIMESTAMPTZ);
-  if (s->basetype == T_INT4)
-  {
-    rangetypid = type_oid(T_INT4RANGE);
-    mrangetypid = type_oid(T_INT4MULTIRANGE);
-  }
-  else /* basetype == T_TIMESTAMPTZ */
-  {
-    rangetypid = type_oid(T_TSTZRANGE);
-    mrangetypid = type_oid(T_TSTZMULTIRANGE);
-  }
-  TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
+  const Span *s = SPANSET_SP_N(ss, 0);
+  Oid rangetypid = basetype_rangetype(ss->basetype);
+  Oid mrangetypid = basetype_multirangetype(ss->basetype);
+  TypeCacheEntry *typcache = lookup_type_cache(rangetypid,
+    TYPECACHE_RANGE_INFO);
   for (int i = 0; i < ss->count; i++)
   {
-    s = spanset_sp_n(ss, i);
+    s = SPANSET_SP_N(ss, i);
     RangeBound lower;
     RangeBound upper;
     lower.val = s->lower;

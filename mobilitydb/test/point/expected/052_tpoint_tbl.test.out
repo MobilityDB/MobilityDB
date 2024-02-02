@@ -484,28 +484,28 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
    100
 (1 row)
 
-SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint;
- max 
------
- 144
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeompoint;
+    max    
+-----------
+ 98.055514
 (1 row)
 
-SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint;
- max 
------
- 158
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeogpoint;
+    max    
+-----------
+ 30.050304
 (1 row)
 
-SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint3D;
- max 
------
- 178
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeompoint3D;
+   max    
+----------
+ 88.83362
 (1 row)
 
-SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint3D;
- max 
------
- 192
+SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeogpoint3D;
+    max    
+-----------
+ 31.711561
 (1 row)
 
 /* There is no st_memSize neither MAX for geography. */
@@ -1346,7 +1346,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= startValue(temp);
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= startValue(temp);
  count 
 -------
-    96
+    85
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp ?= startValue(temp);
@@ -1513,49 +1513,49 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzset WHERE temp != merge(atTime(te
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, p), minusTime(temp, p));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspan WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, ps), minusTime(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_tstzspanset WHERE temp != merge(atTime(temp, t), minusTime(temp, t));
  count 
 -------
      0
@@ -1753,67 +1753,3 @@ WHERE t1.temp >= t2.temp;
   5059
 (1 row)
 
-CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING gist(temp);
-CREATE INDEX
-CREATE INDEX tbl_tgeogpoint_rtree_idx ON tbl_tgeogpoint USING gist(temp);
-CREATE INDEX
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= 'Point(1 1)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
- count 
--------
-     0
-(1 row)
-
-DROP INDEX tbl_tgeompoint_rtree_idx;
-DROP INDEX
-DROP INDEX tbl_tgeogpoint_rtree_idx;
-DROP INDEX
-CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING spgist(temp);
-CREATE INDEX
-CREATE INDEX tbl_tgeogpoint_quadtree_idx ON tbl_tgeogpoint USING spgist(temp);
-CREATE INDEX
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= 'Point(1 1)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= 'Point(1.5 1.5)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= 'Point(1 1)';
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= 'Point(1.5 1.5)';
- count 
--------
-     0
-(1 row)
-
-DROP INDEX tbl_tgeompoint_quadtree_idx;
-DROP INDEX
-DROP INDEX tbl_tgeogpoint_quadtree_idx;
-DROP INDEX

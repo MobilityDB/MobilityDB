@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -38,36 +38,36 @@
 
 CREATE FUNCTION asGeometry(tgeompoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Tpoint_to_geo'
+  AS 'MODULE_PATHNAME', 'Tpoint_to_geomeas'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asGeometry(tgeompoint, boolean DEFAULT FALSE)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Tpoint_to_geo'
+  AS 'MODULE_PATHNAME', 'Tpoint_to_geomeas'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeompoint AS geometry) WITH FUNCTION asGeometry(tgeompoint);
 
 CREATE FUNCTION asGeography(tgeogpoint)
   RETURNS geography
-  AS 'MODULE_PATHNAME', 'Tpoint_to_geo'
+  AS 'MODULE_PATHNAME', 'Tpoint_to_geomeas'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asGeography(tgeogpoint, boolean DEFAULT FALSE)
   RETURNS geography
-  AS 'MODULE_PATHNAME', 'Tpoint_to_geo'
+  AS 'MODULE_PATHNAME', 'Tpoint_to_geomeas'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeogpoint AS geography) WITH FUNCTION asGeography(tgeogpoint);
 
 CREATE FUNCTION tgeompoint(geometry)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Geo_to_tpoint'
+  AS 'MODULE_PATHNAME', 'Geomeas_to_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (geometry AS tgeompoint) WITH FUNCTION tgeompoint(geometry);
 
 CREATE FUNCTION tgeogpoint(geography)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Geo_to_tpoint'
+  AS 'MODULE_PATHNAME', 'Geomeas_to_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (geography AS tgeogpoint) WITH FUNCTION tgeogpoint(geography);
@@ -76,12 +76,12 @@ CREATE CAST (geography AS tgeogpoint) WITH FUNCTION tgeogpoint(geography);
 
 CREATE FUNCTION geoMeasure(tgeompoint, tfloat, boolean DEFAULT FALSE)
 RETURNS geometry
-AS 'MODULE_PATHNAME', 'Tpoint_to_geo_meas'
+AS 'MODULE_PATHNAME', 'Tpoint_tfloat_to_geomeas'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geoMeasure(tgeogpoint, tfloat, boolean DEFAULT FALSE)
 RETURNS geography
-AS 'MODULE_PATHNAME', 'Tpoint_to_geo_meas'
+AS 'MODULE_PATHNAME', 'Tpoint_tfloat_to_geomeas'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

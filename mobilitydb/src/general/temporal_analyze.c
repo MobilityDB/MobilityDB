@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Functions for gathering statistics from temporal alphanumeric
- * columns.
+ * columns
  *
  * Various kind of statistics are collected for both the value and the time
  * dimension of temporal types. Please refer to the PostgreSQL file pg_statistic_d.h
@@ -57,35 +57,24 @@
  *     - `stavalues` stores the length of the histogram of periods for the time dimension.
  *     - `numvalues` contains the number of buckets in the histogram.
  *
- * In the case of temporal types having a Period as bounding box, that is,
- * tbool and ttext, no statistics are collected for the value dimension and
- * the statistics for the temporal part are stored in slots 1 and 2.
+ * In the case of temporal types having a timestamptz span as bounding box,
+ * that is, tbool and ttext, no statistics are collected for the value
+ * dimension and the statistics for the temporal dimension are stored in slots
+ * 1 and 2.
  */
 
 #include "pg_general/temporal_analyze.h"
 
 /* C */
 #include <assert.h>
-#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  #include <access/tuptoaster.h>
-#else
-  #include <access/heaptoast.h>
-#endif
-#include <catalog/pg_collation_d.h>
-#include <catalog/pg_operator_d.h>
-#include <commands/vacuum.h>
-#include <parser/parse_oper.h>
-#include <utils/datum.h>
-#include <utils/lsyscache.h>
-#include <utils/timestamp.h>
 #include <utils/typcache.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/span_analyze.h"
@@ -169,7 +158,7 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Remember bounds and length for further usage in histograms */
     if (tnumber)
     {
-      Span *span = tnumber_to_span(temp);
+      Span *span = tnumber_span(temp);
       SpanBound span_lower, span_upper;
       span_deserialize(span, &span_lower, &span_upper);
       value_lowers[non_null_cnt] = span_lower;
@@ -183,13 +172,13 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
           DatumGetFloat8(span_lower.val);
     }
     Span period;
-    temporal_set_period(temp, &period);
-    SpanBound period_lower, period_upper;
-    span_deserialize((Span *) &period, &period_lower, &period_upper);
-    time_lowers[non_null_cnt] = period_lower;
-    time_uppers[non_null_cnt] = period_upper;
-    time_lengths[non_null_cnt] = distance_value_value(period_upper.val,
-      period_lower.val, T_TIMESTAMPTZ);
+    temporal_set_tstzspan(temp, &period);
+    SpanBound tstzspan_lower, tstzspan_upper;
+    span_deserialize((Span *) &period, &tstzspan_lower, &tstzspan_upper);
+    time_lowers[non_null_cnt] = tstzspan_lower;
+    time_uppers[non_null_cnt] = tstzspan_upper;
+    time_lengths[non_null_cnt] = distance_value_value(tstzspan_upper.val,
+      tstzspan_lower.val, T_TIMESTAMPTZ);
 
     /* Increment non null count */
     non_null_cnt++;
@@ -222,8 +211,8 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* We found only nulls; assume the column is entirely null */
     stats->stats_valid = true;
     stats->stanullfrac = 1.0;
-    stats->stawidth = 0;    /* "unknown" */
-    stats->stadistinct = 0.0;  /* "unknown" */
+    stats->stawidth = 0;       /* unknown */
+    stats->stadistinct = 0.0;  /* unknown */
   }
 
   if (tnumber)
@@ -239,8 +228,8 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  *****************************************************************************/
 
 /**
- * @brief Collect extra information about the temporal type and its base and time
- * types.
+ * @brief Collect extra information about the temporal type and its base and
+ * time types
  */
 static void
 temporal_extra_info(VacAttrStats *stats)
@@ -302,6 +291,7 @@ temporal_extra_info(VacAttrStats *stats)
   stats->extra_data = extra_data;
 
   stats->minrows = 300 * attr->attstattarget;
+  return;
 }
 
 /*****************************************************************************/

@@ -21,6 +21,8 @@
 #include "utils/date.h"
 #include "utils/datetime.h"
 
+#include "../../include/meos.h"
+
 /*
  * gcc's -ffast-math switch breaks routines that expect exact results from
  * expressions like timeval / SECS_PER_HOUR, where timeval is double.

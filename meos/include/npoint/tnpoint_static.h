@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -48,10 +48,13 @@ extern GSERIALIZED *npointarr_geom(Npoint **points, int count);
 extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int count);
 extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
 
-/* Input/Output functions */
+/* Input/output functions */
 
 extern Npoint *npoint_in(const char *str, bool end);
 extern char *npoint_out(const Npoint *np, int maxdd);
+
+extern Nsegment *nsegment_in(const char *str);
+extern char *nsegment_out(const Nsegment *ns, int maxdd);
 
 /* Constructor functions */
 
@@ -63,11 +66,6 @@ extern void nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns);
 /* Conversion functions */
 
 extern Nsegment *npoint_to_nsegment(const Npoint *np);
-
-/* Input/output functions */
-
-extern Nsegment *nsegment_in(const char *str);
-extern char *nsegment_out(const Nsegment *ns, int maxdd);
 
 /* Accessor functions */
 

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -36,7 +36,7 @@
  * Temporal addition
  *****************************************************************************/
 
-/* int + <TYPE> */
+/* integer + <TYPE> */
 
 CREATE FUNCTION tnumber_add(integer, tint)
   RETURNS tint
@@ -114,7 +114,7 @@ CREATE OPERATOR + (
  * Temporal subtraction
  *****************************************************************************/
 
-/* int - <TYPE> */
+/* integer - <TYPE> */
 
 CREATE FUNCTION tnumber_sub(integer, tint)
   RETURNS tint
@@ -188,7 +188,7 @@ CREATE OPERATOR - (
  * Temporal multiplication
  *****************************************************************************/
 
-/* int * <TYPE> */
+/* integer * <TYPE> */
 
 CREATE FUNCTION tnumber_mult(integer, tint)
   RETURNS tint
@@ -266,7 +266,7 @@ CREATE OPERATOR * (
  * Temporal division
  *****************************************************************************/
 
-/* int / <TYPE> */
+/* integer / <TYPE> */
 
 CREATE FUNCTION tnumber_div(integer, tint)
   RETURNS tint

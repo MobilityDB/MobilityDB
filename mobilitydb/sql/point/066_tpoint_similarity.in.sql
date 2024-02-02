@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -54,22 +54,22 @@ CREATE FUNCTION frechetDistancePath(tgeogpoint, tgeogpoint)
 
 /*****************************************************************************/
 
-CREATE FUNCTION dynamicTimeWarp(tgeompoint, tgeompoint)
+CREATE FUNCTION dynTimeWarpDistance(tgeompoint, tgeompoint)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp'
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dynamicTimeWarp(tgeogpoint, tgeogpoint)
+CREATE FUNCTION dynTimeWarpDistance(tgeogpoint, tgeogpoint)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp'
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION dynamicTimeWarpPath(tgeompoint, tgeompoint)
+CREATE FUNCTION dynTimeWarpPath(tgeompoint, tgeompoint)
   RETURNS SETOF warp
-  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp_path'
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dynamicTimeWarpPath(tgeogpoint, tgeogpoint)
+CREATE FUNCTION dynTimeWarpPath(tgeogpoint, tgeogpoint)
   RETURNS SETOF warp
-  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp_path'
+  AS 'MODULE_PATHNAME', 'Temporal_dyntimewarp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -26,6 +26,159 @@
 -- PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 --
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Ever/always comparison functions
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ?= startValue(temp);
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?= startValue(temp);
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?= startValue(temp);
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?= startValue(temp);
+
+SELECT COUNT(*) FROM tbl_tbool WHERE startValue(temp) ?= temp;
+SELECT COUNT(*) FROM tbl_tint WHERE startValue(temp) ?= temp;
+SELECT COUNT(*) FROM tbl_tfloat WHERE startValue(temp) ?= temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE startValue(temp) ?= temp;
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp %= true;
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %= i;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %= f;
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %= t;
+
+SELECT COUNT(*) FROM tbl_tbool WHERE true %= temp;
+SELECT COUNT(*) FROM tbl_int, tbl_tint WHERE i %= temp;
+SELECT COUNT(*) FROM tbl_float, tbl_tfloat WHERE f %= temp;
+SELECT COUNT(*) FROM tbl_text, tbl_ttext WHERE t %= temp;
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ?<> startValue(temp);
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?<> startValue(temp);
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?<> startValue(temp);
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<> startValue(temp);
+
+SELECT COUNT(*) FROM tbl_tbool WHERE startValue(temp) ?<> temp;
+SELECT COUNT(*) FROM tbl_tint WHERE startValue(temp) ?<> temp;
+SELECT COUNT(*) FROM tbl_tfloat WHERE startValue(temp) ?<> temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE startValue(temp) ?<> temp;
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp %<> true;
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %<> i;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %<> f;
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<> t;
+
+SELECT COUNT(*) FROM tbl_tbool WHERE true %<> temp;
+SELECT COUNT(*) FROM tbl_int, tbl_tint WHERE i %<> temp;
+SELECT COUNT(*) FROM tbl_float, tbl_tfloat WHERE f %<> temp;
+SELECT COUNT(*) FROM tbl_text, tbl_ttext WHERE t %<> temp;
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?< startValue(temp);
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?< startValue(temp);
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?< startValue(temp);
+
+SELECT COUNT(*) FROM tbl_tint WHERE startValue(temp) ?< temp;
+SELECT COUNT(*) FROM tbl_tfloat WHERE startValue(temp) ?< temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE startValue(temp) ?< temp;
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %< i;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %< f;
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %< t;
+
+SELECT COUNT(*) FROM tbl_int, tbl_tint WHERE i %< temp;
+SELECT COUNT(*) FROM tbl_float, tbl_tfloat WHERE f %< temp;
+SELECT COUNT(*) FROM tbl_text, tbl_ttext WHERE t %< temp;
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?<= startValue(temp);
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?<= startValue(temp);
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<= startValue(temp);
+
+SELECT COUNT(*) FROM tbl_tint WHERE startValue(temp) ?<= temp;
+SELECT COUNT(*) FROM tbl_tfloat WHERE startValue(temp) ?<= temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE startValue(temp) ?<= temp;
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %<= i;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %<= f;
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<= t;
+
+SELECT COUNT(*) FROM tbl_int, tbl_tint WHERE i %<= temp;
+SELECT COUNT(*) FROM tbl_float, tbl_tfloat WHERE f %<= temp;
+SELECT COUNT(*) FROM tbl_text, tbl_ttext WHERE t %<= temp;
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?> startValue(temp);
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?> startValue(temp);
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?> startValue(temp);
+
+SELECT COUNT(*) FROM tbl_tint WHERE startValue(temp) ?> temp;
+SELECT COUNT(*) FROM tbl_tfloat WHERE startValue(temp) ?> temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE startValue(temp) ?> temp;
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %> i;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %> f;
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %> t;
+
+SELECT COUNT(*) FROM tbl_int, tbl_tint WHERE i %> temp;
+SELECT COUNT(*) FROM tbl_float, tbl_tfloat WHERE f %> temp;
+SELECT COUNT(*) FROM tbl_text, tbl_ttext WHERE t %> temp;
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?>= startValue(temp);
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?>= startValue(temp);
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?>= startValue(temp);
+
+SELECT COUNT(*) FROM tbl_tint WHERE startValue(temp) ?>= temp;
+SELECT COUNT(*) FROM tbl_tfloat WHERE startValue(temp) ?>= temp;
+SELECT COUNT(*) FROM tbl_ttext WHERE startValue(temp) ?>= temp;
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %>= i;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %>= f;
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %>= t;
+
+SELECT COUNT(*) FROM tbl_int, tbl_tint WHERE i %>= temp;
+SELECT COUNT(*) FROM tbl_float, tbl_tfloat WHERE temp %>= temp;
+SELECT COUNT(*) FROM tbl_text, tbl_ttext WHERE temp %>= temp;
+
+-------------------------------------------------------------------------------
+
+-- RESTRICTION SELECTIVITY
+-- Test index support function
+
+CREATE INDEX tbl_tbool_big_rtree_idx ON tbl_tbool_big USING gist(temp);
+CREATE INDEX tbl_tint_big_rtree_idx ON tbl_tint_big USING gist(temp);
+CREATE INDEX tbl_tfloat_big_rtree_idx ON tbl_tfloat_big USING gist(temp);
+CREATE INDEX tbl_ttext_rtree_idx ON tbl_ttext_big USING gist(temp);
+
+-- EXPLAIN ANALYZE
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp ?= 1;
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ?= 1.5;
+SELECT COUNT(*) FROM tbl_ttext_big WHERE temp ?= text 'AAA';
+
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1;
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;
+SELECT COUNT(*) FROM tbl_ttext_big WHERE temp %= text 'AAA';
+
+DROP INDEX tbl_tbool_big_rtree_idx;
+DROP INDEX tbl_tint_big_rtree_idx;
+DROP INDEX tbl_tfloat_big_rtree_idx;
+DROP INDEX tbl_ttext_rtree_idx;
+
+-------------------------------------------------------------------------------
+
+-- RESTRICTION SELECTIVITY
+-- Test index support function
+
+CREATE INDEX tbl_tbool_big_quadtree_idx ON tbl_tbool_big USING spgist(temp);
+CREATE INDEX tbl_tint_big_quadtree_idx ON tbl_tint_big USING spgist(temp);
+CREATE INDEX tbl_tfloat_big_quadtree_idx ON tbl_tfloat_big USING spgist(temp);
+CREATE INDEX tbl_ttext_quadtree_idx ON tbl_ttext_big USING spgist(temp);
+
+-- EXPLAIN ANALYZE
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp ?= 1;
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp ?= 1.5;
+SELECT COUNT(*) FROM tbl_tint_big WHERE temp %= 1;
+SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;
+
+DROP INDEX tbl_tbool_big_quadtree_idx;
+DROP INDEX tbl_tint_big_quadtree_idx;
+DROP INDEX tbl_tfloat_big_quadtree_idx;
+DROP INDEX tbl_ttext_quadtree_idx;
 
 -------------------------------------------------------------------------------
 -- Temporal eq

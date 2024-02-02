@@ -2089,12 +2089,9 @@ SELECT * FROM test_idxops
 WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx OR
   no_idx IS NULL OR rtree_idx IS NULL OR quadtree_idx IS NULL OR kdtree_idx IS NULL
 ORDER BY op, leftarg, rightarg;
- op  | leftarg | rightarg  | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
------+---------+-----------+--------+-----------+--------------+------------
- &>  | tfloat  | floatspan |    110 |       110 |          110 |         29
- &>  | tint    | intspan   |     94 |        94 |           94 |         30
- >>  | tfloat  | floatspan |      2 |         2 |            2 |          0
-(3 rows)
+ op | leftarg | rightarg | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
+----+---------+----------+--------+-----------+--------------+------------
+(0 rows)
 
 DROP TABLE test_idxops;
 DROP TABLE
@@ -2186,7 +2183,7 @@ DROP INDEX tbl_tint_big_quadtree_idx;
 DROP INDEX
 DROP INDEX tbl_tfloat_big_quadtree_idx;
 DROP INDEX
-CREATE TABLE tbl_tfloat_big_allthesame AS SELECT k, tfloat_seq(5.0, p) AS temp FROM tbl_tstzspan_big;
+CREATE TABLE tbl_tfloat_big_allthesame AS SELECT k, tfloat_seq(5.0, t) AS temp FROM tbl_tstzspan_big;
 SELECT 12500
 CREATE INDEX tbl_tfloat_big_allthesame_quadtree_idx ON tbl_tfloat_big_allthesame USING SPGIST(temp);
 CREATE INDEX

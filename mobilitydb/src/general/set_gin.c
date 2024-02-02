@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief GIN index functions for set types.
+ * @brief Functions for defining GIN indexes for set types
  */
 
 /* PostgreSQL */
@@ -58,7 +58,7 @@
 PGDLLEXPORT Datum Set_gin_extract_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_gin_extract_value);
 /**
- * @brief extractValue support function
+ * @brief GIN extractValue support function
  */
 Datum
 Set_gin_extract_value(PG_FUNCTION_ARGS)
@@ -66,11 +66,11 @@ Set_gin_extract_value(PG_FUNCTION_ARGS)
   Set *s = PG_GETARG_SET_P(0);
   int32 *nkeys = (int32 *) PG_GETARG_POINTER(1);
   bool **nullFlags = (bool **) PG_GETARG_POINTER(2);
-  Datum *elems = set_values(s);
+  Datum *result = set_values(s);
   *nkeys = s->count;
   *nullFlags = NULL;
   PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_POINTER(elems);
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Set_gin_extract_query(PG_FUNCTION_ARGS);
@@ -86,15 +86,15 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
   bool **nullFlags = (bool **) PG_GETARG_POINTER(5);
   int32 *searchMode = (int32 *) PG_GETARG_POINTER(6);
   Set *s;
-  Datum *elems = NULL;
+  Datum *result = NULL;
   *nullFlags = NULL;
   *searchMode = GIN_SEARCH_MODE_DEFAULT;
 
   switch (strategy)
   {
     case GinContainsStrategySetValue:
-      elems = palloc(sizeof(Datum));
-      elems[0] = PG_GETARG_DATUM(0);
+      result = palloc(sizeof(Datum));
+      result[0] = PG_GETARG_DATUM(0);
       *nkeys = 1;
       break;
     case GinOverlapStrategySetSet:
@@ -102,7 +102,7 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
     case GinContainedStrategySetSet:
     case GinEqualStrategySetSet:
       s = PG_GETARG_SET_P(0);
-      elems = set_values(s);
+      result = set_values(s);
       *nkeys = s->count;
       PG_FREE_IF_COPY(s, 0);
       break;
@@ -110,13 +110,13 @@ Set_gin_extract_query(PG_FUNCTION_ARGS)
       elog(ERROR, "Set_gin_extract_query: unknown strategy number: %d",
          strategy);
   }
-  PG_RETURN_POINTER(elems);
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Set_gin_triconsistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_gin_triconsistent);
 /**
- * @brief triconsistent support function
+ * @brief GIN triconsistent support function
  */
 Datum
 Set_gin_triconsistent(PG_FUNCTION_ARGS)
@@ -125,7 +125,7 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
   StrategyNumber strategy = PG_GETARG_UINT16(1);
   int32 nkeys = PG_GETARG_INT32(3);
   bool *nullFlags = (bool *) PG_GETARG_POINTER(6);
-  GinTernaryValue res;
+  GinTernaryValue result;
   int32 i;
   /* Use the generic strategy numbers independent of the argument types */
   StrategyNumber ginstrategy = strategy / 10;
@@ -134,42 +134,42 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
   {
     case GinOverlapStrategy:
       /* must have a match for at least one non-null element */
-      res = GIN_FALSE;
+      result = GIN_FALSE;
       for (i = 0; i < nkeys; i++)
       {
         if (!nullFlags[i])
         {
           if (check[i] == GIN_TRUE)
           {
-            res = GIN_TRUE;
+            result = GIN_TRUE;
             break;
           }
-          else if (check[i] == GIN_MAYBE && res == GIN_FALSE)
+          else if (check[i] == GIN_MAYBE && result == GIN_FALSE)
           {
-            res = GIN_MAYBE;
+            result = GIN_MAYBE;
           }
         }
       }
       break;
     case GinContainsStrategy:
       /* must have all elements in check[] true, and no nulls */
-      res = GIN_TRUE;
+      result = GIN_TRUE;
       for (i = 0; i < nkeys; i++)
       {
         if (check[i] == GIN_FALSE || nullFlags[i])
         {
-          res = GIN_FALSE;
+          result = GIN_FALSE;
           break;
         }
         if (check[i] == GIN_MAYBE)
         {
-          res = GIN_MAYBE;
+          result = GIN_MAYBE;
         }
       }
       break;
     case GinContainedStrategy:
       /* can't do anything else useful here */
-      res = GIN_MAYBE;
+      result = GIN_MAYBE;
       break;
     case GinEqualStrategy:
 
@@ -178,21 +178,23 @@ Set_gin_triconsistent(PG_FUNCTION_ARGS)
        * against nulls here.  This is because array_contain_compare and
        * array_eq handle nulls differently ...
        */
-      res = GIN_MAYBE;
+      result = GIN_MAYBE;
       for (i = 0; i < nkeys; i++)
       {
         if (check[i] == GIN_FALSE)
         {
-          res = GIN_FALSE;
+          result = GIN_FALSE;
           break;
         }
       }
       break;
     default:
-      elog(ERROR, "Set_gin_consistent: unknown strategy number: %d",
+      elog(ERROR, "Set_gin_triconsistent: unknown strategy number: %d",
          strategy);
-      res = false;
+      result = false;
   }
 
-  PG_RETURN_GIN_TERNARY_VALUE(res);
+  PG_RETURN_GIN_TERNARY_VALUE(result);
 }
+
+/*****************************************************************************/

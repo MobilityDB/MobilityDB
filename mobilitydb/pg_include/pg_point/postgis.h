@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -41,6 +41,28 @@
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeodetic_tree.h>
+/* MEOS */
+#include "general/temporal.h"
+
+/*****************************************************************************
+ * fmgr macros
+ *****************************************************************************/
+
+#define PG_GETARG_GSERIALIZED_P(varno) ((GSERIALIZED *)PG_DETOAST_DATUM(PG_GETARG_DATUM(varno)))
+#define PG_GETARG_GSERIALIZED_P_COPY(varno) ((GSERIALIZED *)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(varno)))
+#define PG_RETURN_GSERIALIZED_P(x)   return PointerGetDatum(x)
+
+/*****************************************************************************/
+
+/*****************************************************************************
+ * fmgr macros
+ *****************************************************************************/
+
+#define PG_GETARG_GSERIALIZED_P(varno) ((GSERIALIZED *)PG_DETOAST_DATUM(PG_GETARG_DATUM(varno)))
+#define PG_GETARG_GSERIALIZED_P_COPY(varno) ((GSERIALIZED *)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(varno)))
+#define PG_RETURN_GSERIALIZED_P(x)   return PointerGetDatum(x)
+
+/*****************************************************************************/
 
 int32_t getSRIDbySRS(FunctionCallInfo fcinfo, const char *srs);
 char *getSRSbySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs);
@@ -122,12 +144,6 @@ extern Datum geography_bestsrid(PG_FUNCTION_ARGS);
 
 extern Datum geography_eq(PG_FUNCTION_ARGS);
 extern Datum geography_lt(PG_FUNCTION_ARGS);
-
-#define PG_GETARG_GSERIALIZED_P(varno) ((GSERIALIZED *)PG_DETOAST_DATUM(PG_GETARG_DATUM(varno)))
-#define PG_GETARG_GSERIALIZED_P_COPY(varno) ((GSERIALIZED *)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(varno)))
-
-#include "general/temporal.h"
-#include <liblwgeom.h>
 
 /*****************************************************************************/
 

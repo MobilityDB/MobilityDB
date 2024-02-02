@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2023, PostGIS contributors
+-- Copyright (c) 2001-2024, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -110,12 +110,14 @@ SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpo
 
 SELECT MAX(ST_Area(convexHull(temp))) FROM tbl_tgeompoint;
 
-SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint;
-SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint WHERE interp(temp) = 'Linear';
+SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint3D WHERE interp(temp) = 'Linear';
 -- Tests intended to avoid floating point precision errors
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp))
+SELECT COUNT(*) FROM tbl_tgeogpoint
+WHERE interp(temp) = 'Linear' AND startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp))
 AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp))
+SELECT COUNT(*) FROM tbl_tgeogpoint3D
+WHERE interp(temp) = 'Linear' AND startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp))
 AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
 
 SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint;

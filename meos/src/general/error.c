@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2023, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2023, PostGIS contributors
+ * Copyright (c) 2001-2024, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -42,12 +42,14 @@
 /* MEOS */
 #include <meos.h>
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Global variables
+ *****************************************************************************/
 
 /**
- * @brief Global variable that keeps the last error number.
+ * @brief Global variable that keeps the last error number
  */
-int _meos_errno = 0;
+int _MEOS_ERRNO = 0;
 
 /**
  * @brief Read an error number
@@ -55,9 +57,10 @@ int _meos_errno = 0;
 int
 meos_errno(void)
 {
-  return _meos_errno;
+  return _MEOS_ERRNO;
 }
 
+#if MEOS
 /**
  * @brief Set an error number
  */
@@ -68,17 +71,16 @@ meos_errno_set(int err)
   if (err == 0)
     return 0;
 
-  _meos_errno = err;
+  _MEOS_ERRNO = err;
   return err;
 }
 
 /**
  * @brief Set an error number
- *
- * Use #meos_errno_restore when the current function succeeds, but the
- * error flag was set on entry, and stored/reset using #meos_errno_reset
- * in order to monitor for new errors.
- * See usage example under #meos_errno_reset()
+ * @details Use #meos_errno_restore when the current function succeeds, but the
+ * error flag was set on entry, and stored/reset using #meos_errno_reset in
+ * order to monitor for new errors.
+ * @see See usage example under #meos_errno_reset()
  */
 int
 meos_errno_restore(int err)
@@ -90,7 +92,7 @@ meos_errno_restore(int err)
 }
 
 /**
- * @brief Clears errno.
+ * @brief Clears an error number
  * @return Returns the previous value of the errno, for convenient reset/restore
  * operations
  *
@@ -125,13 +127,14 @@ int meos_errno_reset(void)
   errno = 0;
   return last_errno;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 
 /**
  * @brief Global variable that keeps the error handler function
  */
-void (*_error_handler)(int, int, char *) = NULL;
+void (*_ERROR_HANDLER)(int, int, char *) = NULL;
 
 #if MEOS
 /**
@@ -152,7 +155,7 @@ default_error_handler(int errlevel, int errcode, char *errmsg)
  * @brief Error handler function that sets the errcode and the error message
  */
 void
-error_handler_errno(int errlevel __attribute((__unused__)), int errcode,
+error_handler_errno(int errlevel __attribute__((__unused__)), int errcode,
   char *errmsg)
 {
   perror(errmsg);
@@ -167,9 +170,9 @@ void
 meos_initialize_error_handler(error_handler_fn err_handler)
 {
   if (err_handler)
-    _error_handler = err_handler;
+    _ERROR_HANDLER = err_handler;
   else
-    _error_handler = &default_error_handler;
+    _ERROR_HANDLER = &default_error_handler;
   return;
 }
 #endif /* MEOS */
@@ -188,8 +191,8 @@ meos_error(int errlevel, int errcode, char *format, ...)
   vsprintf(buffer, format, args);
   va_end(args);
   /* Execute the error handler function */
-  if (_error_handler)
-    _error_handler(errlevel, errcode, buffer);
+  if (_ERROR_HANDLER)
+    _ERROR_HANDLER(errlevel, errcode, buffer);
   else
 #if ! MEOS
     elog(errlevel, "%s", buffer);
@@ -202,30 +205,5 @@ meos_error(int errlevel, int errcode, char *format, ...)
 #endif /* ! MEOS */
   return;
 }
-
-/*****************************************************************************/
-
-#if MEOS
-/*
- * Initialize MEOS library
- */
-void
-meos_initialize(const char *tz_str, error_handler_fn err_handler)
-{
-  meos_initialize_timezone(tz_str);
-  meos_initialize_error_handler(err_handler);
-  return;
-}
-
-/*
- * Free the timezone cache
- */
-void
-meos_finalize(void)
-{
-  meos_finalize_timezone();
-  return;
-}
-#endif /* MEOS */
 
 /*****************************************************************************/
