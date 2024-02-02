@@ -647,7 +647,6 @@ extern Datum *temporal_values(const Temporal *temp, int *count);
 extern uint32 tinstant_hash(const TInstant *inst);
 extern const TInstant **tinstant_insts(const TInstant *inst, int *count);
 extern void tinstant_set_bbox(const TInstant *inst, void *box);
-extern void tinstant_set_tstzspan (const TInstant *inst, Span *s);
 extern SpanSet *tinstant_time(const TInstant *inst);
 extern TimestampTz *tinstant_timestamps(const TInstant *inst, int *count);
 extern Datum tinstant_val(const TInstant *inst);

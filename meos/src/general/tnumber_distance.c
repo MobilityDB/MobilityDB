@@ -346,6 +346,41 @@ nad_tfloat_tbox(const Temporal *temp, const TBox *box)
     return -1;
   return DatumGetFloat8(nad_tnumber_tbox(temp, box));
 }
+
+/**
+ * @ingroup meos_temporal_dist
+ * @brief Return the nearest approach distance between the int temporal boxes
+ * @param[in] box1,box2 Temporal boxes
+ * @return On error return -1
+ * @csqlfn #NAD_tbox_tbox()
+ */
+int
+nad_tboxint_tboxint(const TBox *box1, const TBox *box2)
+{
+  if (! ensure_span_isof_basetype(&box1->span, T_INT4) ||
+      ! ensure_span_isof_basetype(&box2->span, T_INT4))
+    return -1;
+
+  return DatumGetInt32(nad_tbox_tbox(box1, box2));
+}
+
+/**
+ * @ingroup meos_temporal_dist
+ * @brief Return the nearest approach distance between the float temporal boxes
+ * @param[in] box1,box2 Temporal boxes
+ * @return On error return -1
+ * @csqlfn #NAD_tbox_tbox()
+ */
+double
+nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2)
+{
+  if (! ensure_span_isof_basetype(&box1->span, T_FLOAT8) ||
+      ! ensure_span_isof_basetype(&box2->span, T_FLOAT8))
+    return -1;
+
+  return DatumGetFloat8(nad_tbox_tbox(box1, box2));
+}
+
 #endif /* MEOS */
 
 /**
