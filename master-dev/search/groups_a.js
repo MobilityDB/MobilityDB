@@ -1,0 +1,10 @@
+var searchData=
+[
+  ['set_20functions_0',['Set functions',['../group__meos__box__set.html',1,'(Global Namespace)'],['../group__meos__internal__box__set.html',1,'(Global Namespace)'],['../group__meos__internal__setspan__set.html',1,'(Global Namespace)'],['../group__meos__setspan__set.html',1,'(Global Namespace)'],['../group__mobilitydb__box__set.html',1,'(Global Namespace)'],['../group__mobilitydb__setspan__set.html',1,'(Global Namespace)']]],
+  ['similarity_20functions_1',['Similarity functions',['../group__meos__temporal__analytics__similarity.html',1,'(Global Namespace)'],['../group__mobilitydb__temporal__analytics__similarity.html',1,'(Global Namespace)']]],
+  ['simplification_20functions_2',['Simplification functions',['../group__meos__temporal__analytics__simplify.html',1,'(Global Namespace)'],['../group__mobilitydb__temporal__analytics__simplify.html',1,'(Global Namespace)']]],
+  ['spatial_20accessor_20functions_3',['Spatial accessor functions',['../group__meos__internal__temporal__spatial__accessor.html',1,'(Global Namespace)'],['../group__meos__temporal__spatial__accessor.html',1,'(Global Namespace)'],['../group__mobilitydb__temporal__spatial__accessor.html',1,'(Global Namespace)']]],
+  ['spatial_20functions_4',['Spatial functions',['../group__meos__internal__temporal__spatial.html',1,'(Global Namespace)'],['../group__meos__temporal__spatial.html',1,'(Global Namespace)'],['../group__mobilitydb__temporal__spatial.html',1,'(Global Namespace)']]],
+  ['spatial_20relationship_20functions_5',['Spatial relationship functions',['../group__meos__temporal__spatial__rel.html',1,'(Global Namespace)'],['../group__mobilitydb__temporal__spatial__rel.html',1,'(Global Namespace)']]],
+  ['spatial_20transformation_20functions_6',['Spatial transformation functions',['../group__meos__internal__temporal__spatial__transf.html',1,'(Global Namespace)'],['../group__meos__temporal__spatial__transf.html',1,'(Global Namespace)'],['../group__mobilitydb__temporal__spatial__transf.html',1,'(Global Namespace)']]]
+];
