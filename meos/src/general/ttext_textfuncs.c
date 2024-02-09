@@ -55,27 +55,16 @@
 text *
 text_catenate(const text *txt1, const text *txt2)
 {
-  text *result;
-  int len1, len2, len;
-  char *ptr;
-
-  len1 = VARSIZE_ANY_EXHDR(txt1);
-  len2 = VARSIZE_ANY_EXHDR(txt2);
-
-  /* paranoia ... probably should throw error instead? */
-  if (len1 < 0)
-    len1 = 0;
-  if (len2 < 0)
-    len2 = 0;
-
-  len = len1 + len2 + VARHDRSZ;
-  result = palloc(len);
+  size_t len1 = VARSIZE_ANY_EXHDR(txt1);
+  size_t len2 = VARSIZE_ANY_EXHDR(txt2);
+  size_t len = len1 + len2 + VARHDRSZ;
+  text *result = palloc(len);
 
   /* Set size of result string... */
   SET_VARSIZE(result, len);
 
   /* Fill data field of result string... */
-  ptr = VARDATA(result);
+  char *ptr = VARDATA(result);
   if (len1 > 0)
     memcpy(ptr, VARDATA_ANY(txt1), len1);
   if (len2 > 0)
@@ -98,7 +87,7 @@ char *
 pnstrdup(const char *in, Size size)
 {
   char *tmp;
-  int len;
+  size_t len;
 
   if (!in)
   {

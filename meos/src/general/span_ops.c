@@ -2262,7 +2262,7 @@ dist_double_value_value(Datum l, Datum r, meosType type)
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown types for distance between values: %s",
         meostype_name(type));
-      return (Datum) -1;
+      return -1;
   }
 }
 

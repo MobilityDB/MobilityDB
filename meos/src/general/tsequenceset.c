@@ -185,7 +185,7 @@ datum_distance(Datum value1, Datum value2, meosType type, int16 flags)
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown types for distance between values: %s", meostype_name(type));
-  return (Datum) -1;
+  return -1;
 }
 
 /*****************************************************************************

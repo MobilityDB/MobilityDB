@@ -350,7 +350,7 @@ check_datestyle(char **newval, void **extra)
   }
 
   /* Set up the "extra" struct actually used by assign_datestyle */
-  myextra = (int *) palloc(2 * sizeof(int));
+  myextra = (int *) palloc(sizeof(int) * 2);
   if (!myextra)
     return false;
 

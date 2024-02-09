@@ -416,7 +416,7 @@ PG_FUNCTION_INFO_V1(Stbox_to_tstzspan);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Return a spatiotemporal box converted to a timestamptz span
- * @sqlfn period()
+ * @sqlfn timeSpan()
  * @sqlop @p ::
  */
 Datum

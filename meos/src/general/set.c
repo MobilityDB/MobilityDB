@@ -740,7 +740,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
         values_size += DOUBLE_PAD(VARSIZE_ANY(DatumGetPointer(newvalues[i])));
     }
     else
-      values_size = DOUBLE_PAD(typlen) * newcount;
+      values_size = (size_t) DOUBLE_PAD(typlen) * newcount;
   }
 
 #if MEOS

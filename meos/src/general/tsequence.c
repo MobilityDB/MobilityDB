@@ -1466,7 +1466,7 @@ tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc,
     to < seq->count);
   /* General case */
   int count = to - from + 1;
-  const TInstant **instants = palloc (sizeof(TInstant *) * count);
+  const TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < to - from; i++)
     instants[i] = TSEQUENCE_INST_N(seq, i + from);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);

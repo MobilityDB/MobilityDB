@@ -370,7 +370,7 @@ PG_FUNCTION_INFO_V1(Tbox_to_tstzspan);
 /**
  * @ingroup mobilitydb_box_conversion
  * @brief Return a temporal box converted to a timestamptz span
- * @sqlfn period()
+ * @sqlfn timeSpan()
  */
 Datum
 Tbox_to_tstzspan(PG_FUNCTION_ARGS)

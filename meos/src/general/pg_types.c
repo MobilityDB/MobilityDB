@@ -1626,7 +1626,7 @@ pg_interval_in(const char *str, int32 prec)
     return NULL;
   }
 
-  result = (Interval *) palloc(sizeof(Interval));
+  result = palloc(sizeof(Interval));
 
   switch (dtype)
   {
@@ -1673,7 +1673,7 @@ pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours
     return NULL;
   }
 
-  result = (Interval *) palloc(sizeof(Interval));
+  result = palloc(sizeof(Interval));
   result->month = years * MONTHS_PER_YEAR + months;
   result->day = weeks * 7 + days;
 
@@ -1734,7 +1734,7 @@ mult_interval_double(const Interval *interv, double factor)
     orig_day = interv->day;
   Interval *result;
 
-  result = (Interval *) palloc(sizeof(Interval));
+  result = palloc(sizeof(Interval));
 
   result_double = interv->month * factor;
   if (isnan(result_double) ||

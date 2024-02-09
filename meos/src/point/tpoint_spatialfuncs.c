@@ -1909,8 +1909,10 @@ TInstant *
 tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 {
   assert(inst); assert(tgeo_type(inst->temptype));
+  int32 srid = tpointinst_srid(inst);
   GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
   LWGEOM *geom = lwgeom_from_gserialized(gs);
+  geom->srid = srid;
   /* Short circuit functions geography_from_geometry and
      geometry_from_geography since we know it is a point */
   if (oper == GEOM_TO_GEOG)
@@ -1919,12 +1921,10 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
     // srid_check_latlong(geom->srid);
     /* Coerce the coordinate values into [-180 -90, 180 90] for GEOGRAPHY */
     pt_force_geodetic((LWPOINT *) geom);
-    geom->srid = SRID_DEFAULT;
     lwgeom_set_geodetic(geom, true);
   }
   else
   {
-    geom->srid = 0;
     lwgeom_set_geodetic(geom, false);
   }
   GSERIALIZED *gs1 = geo_serialize(geom);

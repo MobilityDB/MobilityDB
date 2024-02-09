@@ -261,7 +261,7 @@ spannode_kdtree_next(const SpanNode *nodebox, const Span *centroid,
  * a corner of the box. This makes 4 quadrants in total.
  */
 static uint8
-get_quadrant2D(const Span *centroid, const Span *query)
+getQuadrant2D(const Span *centroid, const Span *query)
 {
   uint8 quadrant = 0;
   if (span_lower_cmp(query, centroid) > 0)
@@ -520,12 +520,12 @@ Span_quadtree_choose(PG_FUNCTION_ARGS)
 
   /* Get quadrant number */
   assert(in->hasPrefix);
-  int8 quadrant = get_quadrant2D(centroid, span);
+  uint8 quadrant = getQuadrant2D(centroid, span);
   assert(quadrant < in->nNodes);
 
   /* Select node matching to quadrant number */
   out->resultType = spgMatchNode;
-  out->result.matchNode.nodeN = quadrant;
+  out->result.matchNode.nodeN = (int) quadrant;
   out->result.matchNode.levelAdd = 1;
   out->result.matchNode.restDatum = SpanPGetDatum(span);
 
@@ -652,9 +652,8 @@ Span_quadtree_picksplit(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nTuples; i++)
   {
     Span *span = DatumGetSpanP(in->datums[i]);
-    int16 quadrant = get_quadrant2D(centroid, span);
     out->leafTupleDatums[i] = SpanPGetDatum(span);
-    out->mapTuplesToNodes[i] = quadrant;
+    out->mapTuplesToNodes[i] = (int) getQuadrant2D(centroid, span);
   }
 
   pfree(lowerBounds); pfree(upperBounds);
@@ -729,7 +728,6 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
   int i;
-  uint8 node;
   MemoryContext old_ctx;
   SpanNode *nodebox, infbox, next_nodespan;
   Span *centroid, *queries = NULL, *orderbys = NULL; /* make compiler quiet */
@@ -820,7 +818,7 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
 
   /* Loop for each child */
-  for (node = 0; node < in->nNodes; node++)
+  for (uint8 node = 0; node < (uint8) in->nNodes; node++)
   {
     /* Compute the bounding box of the child */
     if (idxtype == SPGIST_QUADTREE)

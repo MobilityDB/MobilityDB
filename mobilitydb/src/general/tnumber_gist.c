@@ -925,8 +925,8 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
    */
 
   /* Allocate vectors for results */
-  v->spl_left = palloc(nentries * sizeof(OffsetNumber));
-  v->spl_right = palloc(nentries * sizeof(OffsetNumber));
+  v->spl_left = palloc(sizeof(OffsetNumber) * nentries);
+  v->spl_right = palloc(sizeof(OffsetNumber) * nentries);
   v->spl_nleft = v->spl_nright = 0;
 
   /* Allocate bounding boxes of left and right groups */
@@ -938,7 +938,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
    * either group without affecting overlap along selected axis.
    */
   common_entries_count = 0;
-  common_entries = palloc(nentries * sizeof(CommonEntry));
+  common_entries = palloc(sizeof(CommonEntry) * nentries);
 
   /*
    * Distribute entries which can be distributed unambiguously, and collect
@@ -1033,7 +1033,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
      * Calculate delta between penalties of join "common entries" to
      * different groups.
      */
-    for (i = 0; i < common_entries_count; i++)
+    for (i = 0; i < (OffsetNumber) common_entries_count; i++)
     {
       box = DatumGetPointer(entryvec->vector[common_entries[i].index].key);
       common_entries[i].delta = fabs(bbox_penalty(leftBox, box) -
