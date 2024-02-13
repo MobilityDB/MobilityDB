@@ -65,9 +65,9 @@ uint8_t lwflags_get_g1flags(lwflags_t lwflags)
 static size_t gserialized1_box_size(const GSERIALIZED *g)
 {
 	if (G1FLAGS_GET_GEODETIC(g->gflags))
-		return sizeof(float) * 6; // MEOS
+		return sizeof(float) * 6;
 	else
-		return sizeof(float) * 2 * G1FLAGS_NDIMS(g->gflags); // MEOS
+		return sizeof(float) * 2 * G1FLAGS_NDIMS(g->gflags);
 }
 
 /* handle missaligned uint32_t data */
@@ -241,7 +241,7 @@ gserialized1_hash(const GSERIALIZED *g1)
 	/* Copy srid into front of combined buffer */
 	memcpy(b2, &srid, sizeof(int));
 	/* Copy type/coordinates into rest of combined buffer */
-	memcpy(sizeof(int) + b2, b1, bsz1); // MEOS
+	memcpy(sizeof(int) + b2, b1, bsz1);
 	/* Hash combined buffer */
 	hashlittle2(b2, bsz2, (uint32_t *)&pb, (uint32_t *)&pc);
 	lwfree(b2);
@@ -592,7 +592,7 @@ static size_t gserialized1_from_lwpoint_size(const LWPOINT *point)
 	assert(point);
 
 	size += 4; /* Number of points (one or zero (empty)). */
-	size += sizeof(double) * point->point->npoints * FLAGS_NDIMS(point->flags); // MEOS
+	size += sizeof(double) * point->point->npoints * FLAGS_NDIMS(point->flags);
 
 	LWDEBUGF(3, "point size = %d", size);
 
@@ -606,7 +606,7 @@ static size_t gserialized1_from_lwline_size(const LWLINE *line)
 	assert(line);
 
 	size += 4; /* Number of points (zero => empty). */
-	size += sizeof(double) * line->points->npoints * FLAGS_NDIMS(line->flags); // MEOS
+	size += sizeof(double) * line->points->npoints * FLAGS_NDIMS(line->flags);
 
 	LWDEBUGF(3, "linestring size = %d", size);
 
@@ -620,7 +620,7 @@ static size_t gserialized1_from_lwtriangle_size(const LWTRIANGLE *triangle)
 	assert(triangle);
 
 	size += 4; /* Number of points (zero => empty). */
-	size += sizeof(double) * triangle->points->npoints * FLAGS_NDIMS(triangle->flags); // MEOS
+	size += sizeof(double) * triangle->points->npoints * FLAGS_NDIMS(triangle->flags);
 
 	LWDEBUGF(3, "triangle size = %d", size);
 
@@ -641,7 +641,7 @@ static size_t gserialized1_from_lwpoly_size(const LWPOLY *poly)
 	for ( i = 0; i < poly->nrings; i++ )
 	{
 		size += 4; /* Number of points in ring. */
-		size += sizeof(double) * poly->rings[i]->npoints * FLAGS_NDIMS(poly->flags); // MEOS
+		size += sizeof(double) * poly->rings[i]->npoints * FLAGS_NDIMS(poly->flags);
 	}
 
 	LWDEBUGF(3, "polygon size = %d", size);
@@ -656,7 +656,7 @@ static size_t gserialized1_from_lwcircstring_size(const LWCIRCSTRING *curve)
 	assert(curve);
 
 	size += 4; /* Number of points (zero => empty). */
-	size += sizeof(double) * curve->points->npoints * FLAGS_NDIMS(curve->flags); // MEOS
+	size += sizeof(double) * curve->points->npoints * FLAGS_NDIMS(curve->flags);
 
 	LWDEBUGF(3, "circstring size = %d", size);
 
@@ -806,7 +806,7 @@ static size_t gserialized1_from_lwline(const LWLINE *line, uint8_t *buf)
 	/* Copy in the ordinates. */
 	if ( line->points->npoints > 0 )
 	{
-		size = (size_t) line->points->npoints * ptsize; // MEOS
+		size = (size_t) line->points->npoints * ptsize;
 		memcpy(loc, getPoint_internal(line->points, 0), size);
 		loc += size;
 	}
@@ -861,7 +861,7 @@ static size_t gserialized1_from_lwpoly(const LWPOLY *poly, uint8_t *buf)
 		if ( FLAGS_GET_ZM(poly->flags) != FLAGS_GET_ZM(pa->flags) )
 			lwerror("Dimensions mismatch in lwpoly");
 
-		pasize = (size_t) pa->npoints * ptsize; // MEOS
+		pasize = (size_t) pa->npoints * ptsize;
 		if ( pa->npoints > 0 )
 			memcpy(loc, getPoint_internal(pa, 0), pasize);
 		loc += pasize;
@@ -901,7 +901,7 @@ static size_t gserialized1_from_lwtriangle(const LWTRIANGLE *triangle, uint8_t *
 	/* Copy in the ordinates. */
 	if ( triangle->points->npoints > 0 )
 	{
-		size = (size_t) triangle->points->npoints * ptsize; // MEOS
+		size = (size_t) triangle->points->npoints * ptsize;
 		memcpy(loc, getPoint_internal(triangle->points, 0), size);
 		loc += size;
 	}
@@ -938,7 +938,7 @@ static size_t gserialized1_from_lwcircstring(const LWCIRCSTRING *curve, uint8_t 
 	/* Copy in the ordinates. */
 	if ( curve->points->npoints > 0 )
 	{
-		size = (size_t) curve->points->npoints * ptsize; // MEOS
+		size = (size_t) curve->points->npoints * ptsize;
 		memcpy(loc, getPoint_internal(curve->points, 0), size);
 		loc += size;
 	}
@@ -1184,7 +1184,7 @@ static LWPOINT* lwpoint_from_gserialized1_buffer(uint8_t *data_ptr, lwflags_t lw
 	else
 		point->point = ptarray_construct(FLAGS_GET_Z(lwflags), FLAGS_GET_M(lwflags), 0); /* Empty point */
 
-	data_ptr += sizeof(double) * npoints * FLAGS_NDIMS(lwflags); // MEOS
+	data_ptr += sizeof(double) * npoints * FLAGS_NDIMS(lwflags);
 
 	if ( size )
 		*size = data_ptr - start_ptr;
@@ -1216,7 +1216,7 @@ static LWLINE* lwline_from_gserialized1_buffer(uint8_t *data_ptr, lwflags_t lwfl
 	else
 		line->points = ptarray_construct(FLAGS_GET_Z(lwflags), FLAGS_GET_M(lwflags), 0); /* Empty linestring */
 
-	data_ptr += sizeof(double) * FLAGS_NDIMS(lwflags) * npoints; // MEOS
+	data_ptr += sizeof(double) * FLAGS_NDIMS(lwflags) * npoints;
 
 	if ( size )
 		*size = data_ptr - start_ptr;
@@ -1272,7 +1272,7 @@ static LWPOLY* lwpoly_from_gserialized1_buffer(uint8_t *data_ptr, lwflags_t lwfl
 		/* Make a point array for the ring, and move the ordinate pointer past the ring ordinates. */
 		poly->rings[i] = ptarray_construct_reference_data(FLAGS_GET_Z(lwflags), FLAGS_GET_M(lwflags), npoints, ordinate_ptr);
 
-		ordinate_ptr += sizeof(double) * FLAGS_NDIMS(lwflags) * npoints; // MEOS
+		ordinate_ptr += sizeof(double) * FLAGS_NDIMS(lwflags) * npoints;
 	}
 
 	if ( size )
@@ -1304,7 +1304,7 @@ static LWTRIANGLE* lwtriangle_from_gserialized1_buffer(uint8_t *data_ptr, lwflag
 	else
 		triangle->points = ptarray_construct(FLAGS_GET_Z(lwflags), FLAGS_GET_M(lwflags), 0); /* Empty triangle */
 
-	data_ptr += sizeof(double) * FLAGS_NDIMS(lwflags) * npoints; // MEOS
+	data_ptr += sizeof(double) * FLAGS_NDIMS(lwflags) * npoints;
 
 	if ( size )
 		*size = data_ptr - start_ptr;
@@ -1335,7 +1335,7 @@ static LWCIRCSTRING* lwcircstring_from_gserialized1_buffer(uint8_t *data_ptr, lw
 	else
 		circstring->points = ptarray_construct(FLAGS_GET_Z(lwflags), FLAGS_GET_M(lwflags), 0); /* Empty circularstring */
 
-	data_ptr += sizeof(double) * FLAGS_NDIMS(lwflags) * npoints; // MEOS
+	data_ptr += sizeof(double) * FLAGS_NDIMS(lwflags) * npoints;
 
 	if ( size )
 		*size = data_ptr - start_ptr;

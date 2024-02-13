@@ -1197,27 +1197,27 @@ ERROR:  Operation on mixed SRID
 SELECT tgeompoint_seqset(ARRAY[tgeompoint '[Point(1 1)@2001-01-01]', '[Point(2 2 2)@2001-01-02]']);
 ERROR:  The arguments must be of the same dimensionality
 SELECT asEWKT(tgeogpoint(tgeompoint 'Point(1 1)@2001-01-01'));
-                 asewkt                  
------------------------------------------
- POINT(1 1)@Mon Jan 01 00:00:00 2001 PST
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 1)@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT asEWKT(tgeogpoint(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02}'));
-                                       asewkt                                       
-------------------------------------------------------------------------------------
- {POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST}
+                                            asewkt                                            
+----------------------------------------------------------------------------------------------
+ SRID=4326;{POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(2 2)@Tue Jan 02 00:00:00 2001 PST}
 (1 row)
 
 SELECT asEWKT(tgeogpoint(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]'));
-                                       asewkt                                       
-------------------------------------------------------------------------------------
- [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Tue Jan 02 00:00:00 2001 PST]
+                                            asewkt                                            
+----------------------------------------------------------------------------------------------
+ SRID=4326;[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 SELECT asEWKT(tgeogpoint(tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02], [Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]}'));
-                                                                                  asewkt                                                                                  
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Tue Jan 02 00:00:00 2001 PST], [POINT(2 2)@Wed Jan 03 00:00:00 2001 PST, POINT(2 2)@Thu Jan 04 00:00:00 2001 PST]}
+                                                                                       asewkt                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 1)@Tue Jan 02 00:00:00 2001 PST], [POINT(2 2)@Wed Jan 03 00:00:00 2001 PST, POINT(2 2)@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
 SELECT asEWKT(tgeompoint_inst(tgeompoint 'Point(1 1)@2000-01-01'));
