@@ -175,45 +175,45 @@ SELECT tbox(tstzspan '[2001-01-01,2001-01-02)');
 
 		<itemizedlist>
 			<listitem id="stbox">
-				<indexterm><primary><varname>stbox_x</varname></primary></indexterm>
-				<indexterm><primary><varname>stbox_z</varname></primary></indexterm>
-				<indexterm><primary><varname>stbox_t</varname></primary></indexterm>
-				<indexterm><primary><varname>stbox_xt</varname></primary></indexterm>
-				<indexterm><primary><varname>stbox_zt</varname></primary></indexterm>
-				<indexterm><primary><varname>geodstbox_z</varname></primary></indexterm>
-				<indexterm><primary><varname>geodstbox_t</varname></primary></indexterm>
-				<indexterm><primary><varname>geodstbox_zt</varname></primary></indexterm>
+				<indexterm><primary><varname>stboxX</varname></primary></indexterm>
+				<indexterm><primary><varname>stboxZ</varname></primary></indexterm>
+				<indexterm><primary><varname>stboxT</varname></primary></indexterm>
+				<indexterm><primary><varname>stboxXT</varname></primary></indexterm>
+				<indexterm><primary><varname>stboxZT</varname></primary></indexterm>
+				<indexterm><primary><varname>geodstboxZ</varname></primary></indexterm>
+				<indexterm><primary><varname>geodstboxT</varname></primary></indexterm>
+				<indexterm><primary><varname>geodstboxZT</varname></primary></indexterm>
 				<para>Constructor for <varname>stbox</varname></para>
-				<para><varname>stbox_x(float,float,float,float,srid=0) → stbox</varname></para>
-				<para><varname>stbox_z(float,float,float,float,float,float,srid=0) → stbox</varname></para>
-				<para><varname>stbox_t({timestamptz,tstzspan}) → stbox</varname></para>
-				<para><varname>stbox_xt(float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</varname></para>
-				<para><varname>stbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</varname></para>
-				<para><varname>geodstbox_z(float,float,float,float,float,float,srid=4326) → stbox</varname></para>
-				<para><varname>geodstbox_t({timestamptz,tstzspan}) → stbox</varname></para>
-				<para><varname>geodstbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},srid=4326)</varname></para>
+				<para><varname>stboxX(float,float,float,float,srid=0) → stbox</varname></para>
+				<para><varname>stboxZ(float,float,float,float,float,float,srid=0) → stbox</varname></para>
+				<para><varname>stboxT({timestamptz,tstzspan}) → stbox</varname></para>
+				<para><varname>stboxXT(float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</varname></para>
+				<para><varname>stboxZT(float,float,float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</varname></para>
+				<para><varname>geodstboxZ(float,float,float,float,float,float,srid=4326) → stbox</varname></para>
+				<para><varname>geodstboxT({timestamptz,tstzspan}) → stbox</varname></para>
+				<para><varname>geodstboxZT(float,float,float,float,float,float,{timestamptz,tstzspan},srid=4326)</varname></para>
 				<para><varname>  → stbox</varname></para>
 				<para><varname>stbox(geo) → stbox</varname></para>
 				<para><varname>stbox(geo,{timestamptz,tstzspan}) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 -- Only value dimension with X and Y coordinates
-SELECT stbox_x(1.0,2.0,1.0,2.0);
+SELECT stboxX(1.0,2.0,1.0,2.0);
 -- Only value dimension with X, Y, and Z coordinates
-SELECT stbox_z(1.0,2.0,3.0,1.0,2.0,3.0);
+SELECT stboxZ(1.0,2.0,3.0,1.0,2.0,3.0);
 -- Only value dimension with X, Y, and Z coordinates and SRID
-SELECT stbox_z(1.0,2.0,3.0,1.0,2.0,3.0,5676);
+SELECT stboxZ(1.0,2.0,3.0,1.0,2.0,3.0,5676);
 -- Only time dimension
-SELECT stbox_t(tstzspan '[2001-01-03,2001-01-03]');
+SELECT stboxT(tstzspan '[2001-01-03,2001-01-03]');
 -- Both value (with X and Y coordinates) and time dimensions
-SELECT stbox_xt(1.0,2.0, 1.0,2.0, tstzspan '[2001-01-03,2001-01-03]');
+SELECT stboxXT(1.0,2.0, 1.0,2.0, tstzspan '[2001-01-03,2001-01-03]');
 -- Both value (with X, Y, and Z coordinates) and time dimensions
-SELECT stbox_zt(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-03]');
+SELECT stboxZT(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-03]');
 -- Only value dimension with X, Y, and Z geodetic coordinates
-SELECT geodstbox_z(1.0,2.0,3.0,1.0,2.0,3.0);
+SELECT geodstboxZ(1.0,2.0,3.0,1.0,2.0,3.0);
 -- Only time dimension for geodetic box
-SELECT geodstbox_t(tstzspan '[2001-01-03,2001-01-03]');
+SELECT geodstboxT(tstzspan '[2001-01-03,2001-01-03]');
 --  Both value (with X, Y, and Z geodetic coordinates) and time dimensions
-SELECT geodstbox_zt(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-04]');
+SELECT geodstboxZT(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-04]');
 -- Geometry and time dimension
 SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', tstzspan '[2001-01-03,2001-01-05]');
 -- Geography and time dimension
@@ -346,76 +346,76 @@ SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])
 </programlisting>
 			</listitem>
 
-			<listitem id="Xmin">
-				<indexterm><primary><varname>Xmin</varname></primary></indexterm>
-				<indexterm><primary><varname>Ymin</varname></primary></indexterm>
-				<indexterm><primary><varname>Zmin</varname></primary></indexterm>
-				<indexterm><primary><varname>Tmin</varname></primary></indexterm>
+			<listitem id="xMin">
+				<indexterm><primary><varname>xMin</varname></primary></indexterm>
+				<indexterm><primary><varname>yMin</varname></primary></indexterm>
+				<indexterm><primary><varname>zMin</varname></primary></indexterm>
+				<indexterm><primary><varname>tMin</varname></primary></indexterm>
 				<para>Return the minimum X/Y/Z/T value</para>
-				<para><varname>Xmin(box) → float</varname></para>
-				<para><varname>Ymin(stbox) → float</varname></para>
-				<para><varname>Zmin(stbox) → float</varname></para>
-				<para><varname>Tmin(box) → timestamptz</varname></para>
+				<para><varname>xMin(box) → float</varname></para>
+				<para><varname>yMin(stbox) → float</varname></para>
+				<para><varname>zMin(stbox) → float</varname></para>
+				<para><varname>tMin(box) → timestamptz</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT Xmin(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
+SELECT xMin(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- 1
-SELECT Ymin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
+SELECT yMin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 -- 2
-SELECT Zmin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
+SELECT zMin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 -- 3
-SELECT Tmin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
+SELECT tMin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-01
 </programlisting>
-				<para>Notice that for <varname>tbox</varname> the result value for <varname>Xmin</varname> and <varname>Ymin</varname> is converted to a <varname>float</varname> for the temporal boxes with an integer span.</para>
+				<para>Notice that for <varname>tbox</varname> the result value for <varname>xMin</varname> and <varname>xMin</varname> is converted to a <varname>float</varname> for the temporal boxes with an integer span.</para>
 			</listitem>
 
-			<listitem id="Xmax">
-				<indexterm><primary><varname>Xmax</varname></primary></indexterm>
-				<indexterm><primary><varname>Ymax</varname></primary></indexterm>
-				<indexterm><primary><varname>Zmax</varname></primary></indexterm>
-				<indexterm><primary><varname>Tmax</varname></primary></indexterm>
+			<listitem id="xMax">
+				<indexterm><primary><varname>xMax</varname></primary></indexterm>
+				<indexterm><primary><varname>yMax</varname></primary></indexterm>
+				<indexterm><primary><varname>zMax</varname></primary></indexterm>
+				<indexterm><primary><varname>tMax</varname></primary></indexterm>
 				<para>Return the maximum X/Y/Z/T value</para>
-				<para><varname>Xmax(box) → float</varname></para>
-				<para><varname>Ymax(stbox) → float</varname></para>
-				<para><varname>Zmax(stbox) → float</varname></para>
-				<para><varname>Tmax(box) → timestamptz</varname></para>
+				<para><varname>xMax(box) → float</varname></para>
+				<para><varname>yMax(stbox) → float</varname></para>
+				<para><varname>zMax(stbox) → float</varname></para>
+				<para><varname>tMax(box) → timestamptz</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT Xmax(tbox 'TBOXINT X([1,4))');
+SELECT xMax(tbox 'TBOXINT X([1,4))');
 -- 3
-SELECT Ymax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
+SELECT yMax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 -- 4
-SELECT Zmax(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
+SELECT zMax(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 -- 6
-SELECT Tmax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
+SELECT tMax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-03
 </programlisting>
-				<para>Notice that for <varname>tbox</varname> the result value for <varname>Xmin</varname> and <varname>Ymin</varname> is converted to a <varname>float</varname> for the temporal boxes with an integer span.</para>
+				<para>Notice that for <varname>tbox</varname> the result value for <varname>xMin</varname> and <varname>xMin</varname> is converted to a <varname>float</varname> for the temporal boxes with an integer span.</para>
 			</listitem>
 
-			<listitem id="Xmin_inc">
-				<indexterm><primary><varname>Xmin_inc</varname></primary></indexterm>
-				<indexterm><primary><varname>Tmin_inc</varname></primary></indexterm>
+			<listitem id="xMinInc">
+				<indexterm><primary><varname>xMinInc</varname></primary></indexterm>
+				<indexterm><primary><varname>tMinInc</varname></primary></indexterm>
 				<para>Is the minimum X/T value inclusive?</para>
-				<para><varname>Xmin_inc(tbox) → bool</varname></para>
-				<para><varname>Tmin_inc(box) → bool</varname></para>
+				<para><varname>xMinInc(tbox) → bool</varname></para>
+				<para><varname>tMinInc(box) → bool</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT Xmin_inc(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
+SELECT xMinInc(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- false
-SELECT Tmin_inc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
+SELECT tMinInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- true
 </programlisting>
 			</listitem>
 
-			<listitem id="Xmax_inc">
-				<indexterm><primary><varname>Xmax_inc</varname></primary></indexterm>
-				<indexterm><primary><varname>Tmax_inc</varname></primary></indexterm>
+			<listitem id="xMaxInc">
+				<indexterm><primary><varname>xMaxInc</varname></primary></indexterm>
+				<indexterm><primary><varname>tMaxInc</varname></primary></indexterm>
 				<para>Is the maximum X/T value inclusive?</para>
-				<para><varname>Xmax_inc(tbox) → bool</varname></para>
-				<para><varname>Tmax_inc(box) → bool</varname></para>
+				<para><varname>xMaxInc(tbox) → bool</varname></para>
+				<para><varname>tMaxInc(box) → bool</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT Xmax_inc(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
+SELECT xMaxInc(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- false
-SELECT Tmax_inc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
+SELECT tMaxInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- true
 </programlisting>
 			</listitem>

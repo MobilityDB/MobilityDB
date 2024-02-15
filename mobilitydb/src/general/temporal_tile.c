@@ -60,6 +60,7 @@ PG_FUNCTION_INFO_V1(Number_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the initial value of the bucket in which an integer value falls
+ * @sqlfn valueBucket()
  */
 Datum
 Number_bucket(PG_FUNCTION_ARGS)
@@ -80,6 +81,7 @@ PG_FUNCTION_INFO_V1(Timestamptz_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the initial timestamp of the bucket in which a timestamp falls
+ * @sqlfn timeBucket()
  */
 Datum
 Timestamptz_bucket(PG_FUNCTION_ARGS)
@@ -175,6 +177,7 @@ PG_FUNCTION_INFO_V1(Numberspan_bucket_list);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the bucket list of a number span
+ * @sqlfn bucketList()
  */
 Datum
 Numberspan_bucket_list(PG_FUNCTION_ARGS)
@@ -187,6 +190,7 @@ PG_FUNCTION_INFO_V1(Tstzspan_bucket_list);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the bucket list of a timestamptz span
+ * @sqlfn bucketList()
  */
 Datum
 Tstzspan_bucket_list(PG_FUNCTION_ARGS)
@@ -201,7 +205,8 @@ PG_FUNCTION_INFO_V1(Valuespan_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a span bucket in a bucket list for number spans
-*/
+ * @sqlfn spanBucket()
+ */
 Datum
 Valuespan_bucket(PG_FUNCTION_ARGS)
 {
@@ -218,7 +223,8 @@ PG_FUNCTION_INFO_V1(Tstzspan_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a bucket in a bucket list for timestamptz spans.
-*/
+ * @sqlfn periodBucket()
+ */
 Datum
 Tstzspan_bucket(PG_FUNCTION_ARGS)
 {
@@ -238,6 +244,7 @@ PG_FUNCTION_INFO_V1(Tbox_tile_list);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the tile list of a temporal box
+ * @sqlfn tileList()
  */
 Datum
 Tbox_tile_list(PG_FUNCTION_ARGS)
@@ -316,6 +323,7 @@ PG_FUNCTION_INFO_V1(Tbox_tile);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a tile in a multidimensional grid for temporal numbers
+ * @sqlfn tile()
  */
 Datum
 Tbox_tile(PG_FUNCTION_ARGS)
@@ -493,6 +501,7 @@ PG_FUNCTION_INFO_V1(Temporal_time_split);
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the fragments of a temporal value split according to
  * time buckets
+ * @sqlfn timeSplit()
  */
 Datum
 Temporal_time_split(PG_FUNCTION_ARGS)
@@ -506,6 +515,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_split);
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the fragments of a temporal number split according to value
  * buckets
+ * @sqlfn valueSplit()
  */
 Datum
 Tnumber_value_split(PG_FUNCTION_ARGS)
@@ -519,6 +529,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the fragments of a temporal number split according to value
  * and time buckets
+ * @sqlfn valueTimeSplit()
  */
 Datum
 Tnumber_value_time_split(PG_FUNCTION_ARGS)

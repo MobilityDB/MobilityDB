@@ -352,7 +352,7 @@ SELECT length(tgeompoint 'Interp=Step;[Point(0 0 0)@2001-01-01,
 			<listitem id="cumulativeLength">
 				<indexterm><primary><varname>cumulativeLength</varname></primary></indexterm>
 				<para>Obtener la longitud acumulada atravesada por el punto temporal &Z_support; &geography_support;</para>
-				<para><varname>cumulativeLength(tpoint) → tfloat_seq</varname></para>
+				<para><varname>cumulativeLength(tpoint) → tfloatSeq</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
   Point(1 0)@2001-01-03], [Point(1 0)@2001-01-04, Point(0 0)@2001-01-05]}'), 6);
@@ -367,7 +367,7 @@ SELECT cumulativeLength(tgeompoint 'Interp=Step;[Point(0 0 0)@2001-01-01,
 			<listitem id="speed">
 				<indexterm><primary><varname>speed</varname></primary></indexterm>
 				<para>Obtener la velocidad del punto temporal en unidades por segundo &Z_support; &geography_support;</para>
-				<para><varname>speed(tpoint) → tfloat_seqset</varname></para>
+				<para><varname>speed(tpoint) → tfloatSeqSet</varname></para>
 				<para>El punto temporal debe tener interpolación linear</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT speed(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,

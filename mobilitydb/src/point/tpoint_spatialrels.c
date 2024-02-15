@@ -36,7 +36,7 @@
  * purposes before applying the corresponding temporal spatial relationship.
  *
  * The following relationships are supported for geometries: `eContains`,
- * `aContains`, `eDisjoint`, `aDisjoint`, `eIntersects`, `aIntersects`, 
+ * `aContains`, `eDisjoint`, `aDisjoint`, `eIntersects`, `aIntersects`,
  * `eTouches`, aTouches`, `eDwithin`, and `aDwithin`.
  *
  * The following relationships are supported for geographies: `eDisjoint`,
@@ -168,7 +168,7 @@ EAdisjoint_geo_tpoint(FunctionCallInfo fcinfo, bool ever)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = ever ? edisjoint_tpoint_geo(temp, gs) : 
+  int result = ever ? edisjoint_tpoint_geo(temp, gs) :
     adisjoint_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 1);
   PG_FREE_IF_COPY(gs, 0);
@@ -217,7 +217,7 @@ EAdisjoint_tpoint_geo(FunctionCallInfo fcinfo, bool ever)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = ever ? edisjoint_tpoint_geo(temp, gs) : 
+  int result = ever ? edisjoint_tpoint_geo(temp, gs) :
     adisjoint_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -298,7 +298,7 @@ EAintersects_geo_tpoint(FunctionCallInfo fcinfo, bool ever)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = ever ? 
+  int result = ever ?
     eintersects_tpoint_geo(temp, gs) : aintersects_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -313,7 +313,7 @@ PG_FUNCTION_INFO_V1(Eintersects_geo_tpoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if a geometry/geography and a temporal point ever
  * intersect
- * @sqlfn eintersects()
+ * @sqlfn eIntersects()
  */
 Datum
 Eintersects_geo_tpoint(PG_FUNCTION_ARGS)
@@ -327,7 +327,7 @@ PG_FUNCTION_INFO_V1(Aintersects_geo_tpoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if a geometry/geography and a temporal point ever
  * intersect
- * @sqlfn eintersects()
+ * @sqlfn aIntersects()
  */
 Datum
 Aintersects_geo_tpoint(PG_FUNCTION_ARGS)
@@ -347,7 +347,7 @@ EAintersects_tpoint_geo(FunctionCallInfo fcinfo, bool ever)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  int result = ever ? 
+  int result = ever ?
     eintersects_tpoint_geo(temp, gs) : aintersects_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -362,7 +362,7 @@ PG_FUNCTION_INFO_V1(Eintersects_tpoint_geo);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if a temporal point and a geometry/geography ever
  * intersect
- * @sqlfn eintersects()
+ * @sqlfn eIntersects()
  */
 Datum
 Eintersects_tpoint_geo(PG_FUNCTION_ARGS)
@@ -376,7 +376,7 @@ PG_FUNCTION_INFO_V1(Aintersects_tpoint_geo);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if a temporal point and a geometry/geography always
  * intersect
- * @sqlfn aintersects()
+ * @sqlfn aIntersects()
  */
 Datum
 Aintersects_tpoint_geo(PG_FUNCTION_ARGS)
@@ -389,7 +389,7 @@ PG_FUNCTION_INFO_V1(Eintersects_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if two temporal points ever intersect
- * @sqlfn eintersects()
+ * @sqlfn eIntersects()
  */
 Datum
 Eintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
@@ -403,7 +403,7 @@ PG_FUNCTION_INFO_V1(Aintersects_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if two temporal points ever intersect
- * @sqlfn eintersects()
+ * @sqlfn aIntersects()
  */
 Datum
 Aintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
@@ -456,7 +456,7 @@ PG_FUNCTION_INFO_V1(Atouches_geo_tpoint);
 /**
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if a geometry and a temporal point ever touch
- * @sqlfn eTouches()
+ * @sqlfn aTouches()
  */
 Datum
 Atouches_geo_tpoint(PG_FUNCTION_ARGS)
@@ -558,7 +558,7 @@ PG_FUNCTION_INFO_V1(Adwithin_geo_tpoint);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if a geometry/geography and a temporal point are always
  * within a distance
- * @sqlfn eDwithin()
+ * @sqlfn aDwithin()
  */
 Datum
 Adwithin_geo_tpoint(PG_FUNCTION_ARGS)
@@ -608,7 +608,7 @@ PG_FUNCTION_INFO_V1(Adwithin_tpoint_geo);
  * @ingroup mobilitydb_temporal_spatial_rel_ever
  * @brief Return true if a temporal point and a geometry/geography are ever
  * within a distance
- * @sqlfn eDwithin()
+ * @sqlfn aDwithin()
  */
 Datum
 Adwithin_tpoint_geo(PG_FUNCTION_ARGS)

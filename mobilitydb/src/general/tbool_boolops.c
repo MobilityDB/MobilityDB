@@ -194,7 +194,7 @@ PG_FUNCTION_INFO_V1(Tbool_when_true);
  * @ingroup mobilitydb_temporal_bool
  * @brief Return the timestamptz span set in which a temporal boolean takes
  * value true
- * @sqlfn when()
+ * @sqlfn whenTrue()
  */
 Datum
 Tbool_when_true(PG_FUNCTION_ARGS)

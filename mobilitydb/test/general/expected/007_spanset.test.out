@@ -231,15 +231,15 @@ SELECT lower(floatspanset '{[1,2),[3,4),[5,6)}');
      1
 (1 row)
 
-SELECT lower_inc(intspanset '{[1,2),[3,4),[5,6)}');
- lower_inc 
------------
+SELECT lowerInc(intspanset '{[1,2),[3,4),[5,6)}');
+ lowerinc 
+----------
  t
 (1 row)
 
-SELECT lower_inc(floatspanset '{[1,2),[3,4),[5,6)}');
- lower_inc 
------------
+SELECT lowerInc(floatspanset '{[1,2),[3,4),[5,6)}');
+ lowerinc 
+----------
  t
 (1 row)
 
@@ -255,15 +255,15 @@ SELECT upper(floatspanset '{[1,2),[3,4),[5,6)}');
      6
 (1 row)
 
-SELECT upper_inc(intspanset '{[1,2),[3,4),[5,6)}');
- upper_inc 
------------
+SELECT upperInc(intspanset '{[1,2),[3,4),[5,6)}');
+ upperinc 
+----------
  f
 (1 row)
 
-SELECT upper_inc(floatspanset '{[1,2),[3,4),[5,6)}');
- upper_inc 
------------
+SELECT upperInc(floatspanset '{[1,2),[3,4),[5,6)}');
+ upperinc 
+----------
  f
 (1 row)
 

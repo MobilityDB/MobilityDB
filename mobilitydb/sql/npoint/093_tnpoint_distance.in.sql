@@ -32,53 +32,53 @@
  * Temporal distance for temporal network points.
  */
 
-CREATE FUNCTION temporal_distance(geometry(Point), tnpoint)
+CREATE FUNCTION tDistance(geometry(Point), tnpoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_point_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(npoint, tnpoint)
+CREATE FUNCTION tDistance(npoint, tnpoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(tnpoint, geometry(Point))
+CREATE FUNCTION tDistance(tnpoint, geometry(Point))
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tnpoint_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(tnpoint, npoint)
+CREATE FUNCTION tDistance(tnpoint, npoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(tnpoint, tnpoint)
+CREATE FUNCTION tDistance(tnpoint, tnpoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tDistance,
   LEFTARG = geometry,
   RIGHTARG = tnpoint,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tDistance,
   LEFTARG = npoint,
   RIGHTARG = tnpoint,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tDistance,
   LEFTARG = tnpoint,
   RIGHTARG = geometry,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tDistance,
   LEFTARG = tnpoint,
   RIGHTARG = npoint,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tDistance,
   LEFTARG = tnpoint,
   RIGHTARG = tnpoint,
   COMMUTATOR = <->

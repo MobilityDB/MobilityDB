@@ -476,44 +476,44 @@ CREATE FUNCTION upper(tstzspan)
   AS 'MODULE_PATHNAME', 'Span_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION lower_inc(intspan)
+CREATE FUNCTION lowerInc(intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION lower_inc(bigintspan)
+CREATE FUNCTION lowerInc(bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION lower_inc(floatspan)
+CREATE FUNCTION lowerInc(floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION lower_inc(datespan)
+CREATE FUNCTION lowerInc(datespan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION lower_inc(tstzspan)
+CREATE FUNCTION lowerInc(tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION upper_inc(intspan)
+CREATE FUNCTION upperInc(intspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION upper_inc(bigintspan)
+CREATE FUNCTION upperInc(bigintspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION upper_inc(floatspan)
+CREATE FUNCTION upperInc(floatspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION upper_inc(datespan)
+CREATE FUNCTION upperInc(datespan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION upper_inc(tstzspan)
+CREATE FUNCTION upperInc(tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -36,62 +36,62 @@
  * Distance functions
  *****************************************************************************/
 
-CREATE FUNCTION temporal_distance(geometry(Point), tgeompoint)
+CREATE FUNCTION tDistance(geometry(Point), tgeompoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_point_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(tgeompoint, geometry(Point))
+CREATE FUNCTION tDistance(tgeompoint, geometry(Point))
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tpoint_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(tgeompoint, tgeompoint)
+CREATE FUNCTION tDistance(tgeompoint, tgeompoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tDistance,
   LEFTARG = geometry, RIGHTARG = tgeompoint,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tDistance,
   LEFTARG = tgeompoint, RIGHTARG = geometry,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tDistance,
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   COMMUTATOR = <->
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_distance(geography(Point), tgeogpoint)
+CREATE FUNCTION tDistance(geography(Point), tgeogpoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_point_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(tgeogpoint, geography(Point))
+CREATE FUNCTION tDistance(tgeogpoint, geography(Point))
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tpoint_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_distance(tgeogpoint, tgeogpoint)
+CREATE FUNCTION tDistance(tgeogpoint, tgeogpoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tDistance,
   LEFTARG = geography, RIGHTARG = tgeogpoint,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tDistance,
   LEFTARG = tgeogpoint, RIGHTARG = geography,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = temporal_distance,
+  PROCEDURE = tDistance,
   LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
   COMMUTATOR = <->
 );
@@ -100,28 +100,28 @@ CREATE OPERATOR <-> (
  * Nearest approach instant/distance and shortest line functions
  *****************************************************************************/
 
-CREATE FUNCTION NearestApproachInstant(geometry, tgeompoint)
+CREATE FUNCTION nearestApproachInstant(geometry, tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'NAI_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION NearestApproachInstant(tgeompoint, geometry)
+CREATE FUNCTION nearestApproachInstant(tgeompoint, geometry)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'NAI_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION NearestApproachInstant(tgeompoint, tgeompoint)
+CREATE FUNCTION nearestApproachInstant(tgeompoint, tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'NAI_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION NearestApproachInstant(geography, tgeogpoint)
+CREATE FUNCTION nearestApproachInstant(geography, tgeogpoint)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'NAI_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION NearestApproachInstant(tgeogpoint, geography)
+CREATE FUNCTION nearestApproachInstant(tgeogpoint, geography)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'NAI_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION NearestApproachInstant(tgeogpoint, tgeogpoint)
+CREATE FUNCTION nearestApproachInstant(tgeogpoint, tgeogpoint)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'NAI_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

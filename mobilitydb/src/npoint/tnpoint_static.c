@@ -55,7 +55,7 @@
 /*****************************************************************************
  * Input/Output functions for network point
  *****************************************************************************/
- 
+
  /*****************************************************************************
  * Send/receive functions
  *****************************************************************************/
@@ -238,7 +238,7 @@ PG_FUNCTION_INFO_V1(Nsegment_send);
  * @ingroup mobilitydb_temporal_inout
  * @brief Return the Well-Known Binary (WKB) representation of a network
  * segment
- * @sqlfn nsegment_sent()
+ * @sqlfn nsegment_send()
  */
 Datum
 Nsegment_send(PG_FUNCTION_ARGS)
@@ -292,6 +292,7 @@ PG_FUNCTION_INFO_V1(Npoint_to_nsegment);
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return a network point converted to a network segment
  * @sqlfn nsegment()
+ * @sqlop @p ::
  */
 Datum
 Npoint_to_nsegment(PG_FUNCTION_ARGS)
@@ -420,6 +421,7 @@ PG_FUNCTION_INFO_V1(Npoint_to_geom);
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return a network point converted to a geometry
  * @sqlfn geometry()
+ * @sqlop @p ::
  */
 Datum
 Npoint_to_geom(PG_FUNCTION_ARGS)
@@ -434,6 +436,7 @@ PG_FUNCTION_INFO_V1(Geom_to_npoint);
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return a geometry converted to a network point
  * @sqlfn npoint()
+ * @sqlop @p ::
  */
 Datum
 Geom_to_npoint(PG_FUNCTION_ARGS)
@@ -451,6 +454,7 @@ PG_FUNCTION_INFO_V1(Nsegment_to_geom);
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return a network segment converted to a geometry
  * @sqlfn geometry()
+ * @sqlop @p ::
  */
 Datum
 Nsegment_to_geom(PG_FUNCTION_ARGS)
@@ -465,6 +469,7 @@ PG_FUNCTION_INFO_V1(Geom_to_nsegment);
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return a geometry converted to a network segment
  * @sqlfn nsegment()
+ * @sqlop @p ::
  */
 Datum
 Geom_to_nsegment(PG_FUNCTION_ARGS)

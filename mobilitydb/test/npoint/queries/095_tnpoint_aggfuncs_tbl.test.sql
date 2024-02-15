@@ -94,7 +94,7 @@ SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 -- Currently it does not expand the structure
 WITH temp(inst) AS (
-  SELECT tnpoint_inst(Npoint(1, abs(extract(epoch from d) / 1.0e9)), d)
+  SELECT tnpoint(Npoint(1, abs(extract(epoch from d) / 1.0e9)), d)
   FROM generate_series(timestamptz '1970-01-01', '2000-01-10', interval '1 day') AS d )
 SELECT numInstants(appendInstant(inst ORDER BY inst)) FROM temp;
 
@@ -138,7 +138,7 @@ SELECT astext(appendSequence(seq ORDER BY seq)) FROM temp2;
 
 WITH temp1(k, inst) AS (
   SELECT extract(day from d)::int % 2,
-    tnpoint_inst(Npoint(1, abs(extract(epoch from d) / 1.0e9)), d)
+    tnpoint(Npoint(1, abs(extract(epoch from d) / 1.0e9)), d)
   FROM generate_series(timestamptz '1970-01-01', '2000-01-10', interval '1 day') AS d ),
 temp2(seq) AS (
   SELECT appendInstant(inst ORDER BY inst)

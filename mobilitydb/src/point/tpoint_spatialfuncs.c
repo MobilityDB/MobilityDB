@@ -85,6 +85,7 @@ PG_FUNCTION_INFO_V1(Tgeompoint_to_tgeogpoint);
  * @brief Return a temporal geometry point converted to a temporal geography
  * point
  * @sqlfn tgeogpoint()
+ * @sqlop @p ::
  */
 Datum
 Tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
@@ -102,6 +103,7 @@ PG_FUNCTION_INFO_V1(Tgeogpoint_to_tgeompoint);
  * @brief Return a temporal geography point converted to a temporal geometry
  * point
  * @sqlfn tgeompoint()
+ * @sqlop @p ::
  */
 Datum
 Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
@@ -156,7 +158,7 @@ PGDLLEXPORT Datum Tpoint_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_round);
 /**
  * @ingroup mobilitydb_temporal_transf
- * @brief Return a temporal point with the precision of the coordinates set to 
+ * @brief Return a temporal point with the precision of the coordinates set to
  * a number of decimal places
  * @sqlfn round()
  */
@@ -208,6 +210,8 @@ PG_FUNCTION_INFO_V1(Tpoint_to_geomeas);
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return a temporal point converted to a geometry/geography with
  * M measure
+ * @sqlfn geometry(), geography()
+ * @sqlop @p ::
  */
 Datum
 Tpoint_to_geomeas(PG_FUNCTION_ARGS)
@@ -226,6 +230,8 @@ PG_FUNCTION_INFO_V1(Geomeas_to_tpoint);
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return a geometry/geography with M measure converted to a temporal
  * point
+ * @sqlfn tgeompoint(), tgeogpoint()
+ * @sqlop @p ::
  */
 Datum
 Geomeas_to_tpoint(PG_FUNCTION_ARGS)
@@ -242,6 +248,7 @@ PG_FUNCTION_INFO_V1(Tpoint_tfloat_to_geomeas);
  * @ingroup mobilitydb_temporal_conversion
  * @brief Return a geometry/geography with M measure converted from a temporal
  * point and a temporal float
+ * @sqlfn geoMeasure()
  */
 Datum
 Tpoint_tfloat_to_geomeas(PG_FUNCTION_ARGS)
@@ -268,6 +275,7 @@ PG_FUNCTION_INFO_V1(Tpoint_AsMVTGeom);
  * @ingroup mobilitydb_temporal_spatial_transf
  * @brief Return a temporal point transformed to the Mapbox Vector Tile
  * representation
+ * @sqlfn asMVTGeom()
  */
 Datum
 Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
@@ -480,7 +488,7 @@ PG_FUNCTION_INFO_V1(Tpoint_twcentroid);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Return the time-weighed centroid of a temporal geometry point
- * @sqlfn twcentroid()
+ * @sqlfn twCentroid()
  */
 Datum
 Tpoint_twcentroid(PG_FUNCTION_ARGS)
