@@ -49,19 +49,19 @@
 			</listitem>
 
 			<listitem>
-				<para><varname>ttype_inst</varname> representa cualquier tipo temporal con subtipo instante,</para>
+				<para><varname>ttypeInst</varname> representa cualquier tipo temporal con subtipo instante,</para>
 			</listitem>
 
 			<listitem>
-				<para><varname>ttype_discseq</varname> representa cualquier tipo temporal con subtipo secuencia e interpolación discreta,</para>
+				<para><varname>ttypeDiscSeq</varname> representa cualquier tipo temporal con subtipo secuencia e interpolación discreta,</para>
 			</listitem>
 
 			<listitem>
-				<para><varname>ttype_contseq</varname> representa cualquier tipo temporal con subtipo secuencia e interpolación contínua,</para>
+				<para><varname>ttypeContSeq</varname> representa cualquier tipo temporal con subtipo secuencia e interpolación contínua,</para>
 			</listitem>
 
 			<listitem>
-				<para><varname>ttype_seqset</varname> representa cualquier tipo temporal con subtipo conjunto de secuencias</para>
+				<para><varname>ttypeSeqSet</varname> representa cualquier tipo temporal con subtipo conjunto de secuencias</para>
 			</listitem>
 
 			<listitem>
@@ -97,7 +97,7 @@
 			</listitem>
 
 			<listitem>
-				<para><varname>&lt;type&gt;</varname> en el nombre de una función representa las funciones obtenidas al remplazar <varname>&lt;type&gt;</varname> por un <varname>type</varname> específico. Por ejemplo, <varname>tint_discseq</varname> o <varname>tfloat_discseq</varname> son representadas por <varname>ttype_discseq</varname>.</para>
+				<para><varname>&lt;type&gt;</varname> en el nombre de una función representa las funciones obtenidas al remplazar <varname>&lt;type&gt;</varname> por un <varname>type</varname> específico. Por ejemplo, <varname>tintDiscSeq</varname> o <varname>tfloatDiscSeq</varname> son representadas por <varname>ttypeDiscSeq</varname>.</para>
 			</listitem>
 		</itemizedlist>
 
@@ -340,21 +340,21 @@ SELECT asHexWKB(ttext 'AAA@2001-01-01');
 				<programlisting language="sql" xml:space="preserve">
 SELECT asMFJSON(tbool 't@2001-01-01 18:00:00', 1);
 /* {"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00+01",
-  "end":"2001-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
+  "end":"2001-01-01T18:00:00+01","lowerInc":true,"upperInc":true},
   "values":[true],"datetimes":["2001-01-01T18:00:00+01"],"interpolation":"None"} */
 SELECT asMFJSON(tint '{10@2001-01-01 18:00:00, 25@2001-01-01 18:10:00}', 1);
 /* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2001-01-01T18:00:00+01",
    "end":"2001-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2001-01-01T18:00:00+01",
-   "2001-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
+   "2001-01-01T18:10:00+01"],"lowerInc":true,"upperInc":true,
    "interpolation":"Discrete"} */
 SELECT asMFJSON(tfloat '[10.5@2001-01-01 18:00:00+02, 25.5@2001-01-01 18:10:00+02]');
 /* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2001-01-01T17:00:00+01",
-  "2001-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,"interpolation":"Linear"} */
+  "2001-01-01T17:10:00+01"],"lowerInc":true,"upperInc":true,"interpolation":"Linear"} */
 SELECT asMFJSON(ttext '{[walking@2001-01-01 18:00:00+02,
   driving@2001-01-01 18:10:00+02]}');
 /* {"type":"MovingText","sequences":[{"values":["walking","driving"],
   "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"],
-  "lower_inc":true,"upper_inc":true}],"interpolation":"Step"} */
+  "lowerInc":true,"upperInc":true}],"interpolation":"Step"} */
 </programlisting>
 			</listitem>
 
@@ -400,24 +400,24 @@ SELECT ttextFromHexWKB('01170001040000000000000041414100009C57D3C11C0000');
 				<programlisting language="sql" xml:space="preserve">
 SELECT tboolFromMFJSON(text
   '{"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00+01",
-  "end":"2001-01-01T18:00:00+01","lower_inc":true,"upper_inc":true},
+  "end":"2001-01-01T18:00:00+01","lowerInc":true,"upperInc":true},
   "values":[true],"datetimes":["2001-01-01T18:00:00+01"],"interpolation":"None"}');
 -- t@2001-01-01 18:00:00
 SELECT tintFromMFJSON(text
   '{"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2001-01-01T18:00:00+01",
    "end":"2001-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2001-01-01T18:00:00+01",
-   "2001-01-01T18:10:00+01"],"lower_inc":true,"upper_inc":true,
+   "2001-01-01T18:10:00+01"],"lowerInc":true,"upperInc":true,
    "interpolation":"Discrete"}');
 -- {10@2001-01-01 18:00:00, 25@2001-01-01 18:10:00}
 SELECT tfloatFromMFJSON(text
   '{"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2001-01-01T17:00:00+01",
-   "2001-01-01T17:10:00+01"],"lower_inc":true,"upper_inc":true,
+   "2001-01-01T17:10:00+01"],"lowerInc":true,"upperInc":true,
    "interpolation":"Linear"}');
 -- [10.5@2001-01-01 18:00:00, 25.5@2001-01-01 18:10:00]'
 SELECT ttextFromMFJSON(text
   '{"type":"MovingText","sequences":[{"values":["walking","driving"],
   "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"],
-  "lower_inc":true,"upper_inc":true}],"interpolation":"Step"}');
+  "lowerInc":true,"upperInc":true}],"interpolation":"Step"}');
 -- {["walking"@2001-01-01 18:00:00, "driving"@2001-01-01 18:10:00]}');
 </programlisting>
 			</listitem>
@@ -427,84 +427,78 @@ SELECT ttextFromMFJSON(text
 	<sect1 id="temporal_types_constructors">
 		<title>Constructores</title>
 
-		<para>
-			Cada tipo temporal tiene una función de constructor con el mismo nombre que el tipo y un sufijo para el subtipo, donde los sufijos &lsquo;<varname>_inst</varname>&rsquo;, &lsquo;<varname>_seq</varname>&rsquo;  y &lsquo;<varname>_seqset</varname>&rsquo; corresponden, respectivamente, a los subtipos instante, secuencia y conjunto de secuencias. Ejemplos son <varname>tint_inst</varname>, <varname>tfloat_seq</varname> o <varname>tgeompoint_seqset</varname>. El uso de la función de constructor suele ser más conveniente que escribir una constante literal.
-		</para>
-
-		<para>A continuación, damos las funciones de constructor para los distintos subtipos.</para>
+		<para>A continuación, damos las funciones de constructor para los distintos subtipos. El uso de la función de constructor suele ser más conveniente que escribir una constante literal.</para>
 
 		<itemizedlist>
 			<listitem id="ttype_const">
-				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype</varname></primary></indexterm>
 				<para>Constructores para tipos temporales que tienen un valor constante</para>
 				<para>Estos constructores tienen dos argumentos, un tipo base y un tipo de tiempo, donde el último es un valor de <varname>timestamptz</varname>, <varname>tstzset</varname>, <varname>tstzspan</varname> o <varname>tstzspanset</varname> para construir, respectivamente, un valor de subtipo instante, una secuencia con interpolación discreta, una secuencia con interpolación linear o escalonada o un conjunto de secuencias. Las funciones para valores de secuencia o de conjunto de secuencias con tipo de base continuo tienen además un tercer argumento opcional que indica si el valor temporal resultante tiene interpolación lineal o escalonada. Se asume por defecto una interpolación lineal si el argumento no se especifica.</para>
-				<para><varname>ttype_inst(base,timestamptz) → ttype_inst</varname></para>
-				<para><varname>ttype_seq(base,tstzset) → ttype_discseq</varname></para>
-				<para><varname>ttype_seq(base,tstzspan,interp='linear') → ttype_contseq</varname></para>
-				<para><varname>ttype_seqset(base,tstzspanset,interp='linear') → ttype_seqset</varname></para>
+				<para><varname>ttype(base,timestamptz) → ttypeInst</varname></para>
+				<para><varname>ttype(base,tstzset) → ttypeDiscSeq</varname></para>
+				<para><varname>ttype(base,tstzspan,interp='linear') → ttypeContSeq</varname></para>
+				<para><varname>ttype(base,tstzspanset,interp='linear') → ttypeSeqSet</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tbool_inst(true, timestamptz '2001-01-01');
-SELECT tint_inst(1, timestamptz '2001-01-01');
-SELECT tfloat_seq(1.5, tstzset '{2001-01-01, 2001-01-02}');
-SELECT ttext_seq('AAA', tstzset '{2001-01-01, 2001-01-02}');
-SELECT tfloat_seq(1.5, tstzspan '[2001-01-01, 2001-01-02]');
-SELECT tfloat_seq(1.5, tstzspan '[2001-01-01, 2001-01-02]', 'step');
-SELECT tgeompoint_seq('Point(0 0)', tstzspan '[2001-01-01, 2001-01-02]');
-SELECT tgeogpoint_seqset('SRID=7844;Point(0 0)', tstzspanset '{[2001-01-01, 2001-01-02],
+SELECT tbool(true, timestamptz '2001-01-01');
+SELECT tint(1, timestamptz '2001-01-01');
+SELECT tfloat(1.5, tstzset '{2001-01-01, 2001-01-02}');
+SELECT ttext('AAA', tstzset '{2001-01-01, 2001-01-02}');
+SELECT tfloat(1.5, tstzspan '[2001-01-01, 2001-01-02]');
+SELECT tfloat(1.5, tstzspan '[2001-01-01, 2001-01-02]', 'step');
+SELECT tgeompoint('Point(0 0)', tstzspan '[2001-01-01, 2001-01-02]');
+SELECT tgeogpoint('SRID=7844;Point(0 0)', tstzspanset '{[2001-01-01, 2001-01-02],
   [2001-01-03, 2001-01-04]}', 'step');
 </programlisting>
 			</listitem>
 
-			<listitem id="ttype_seq">
-				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
+			<listitem id="ttypeSeq">
+				<indexterm><primary><varname>ttypeSeq</varname></primary></indexterm>
 				<para>Constructores para tipos temporales de subtipo secuencia</para>
 				<para>Estos constructores tienen un primer argumento obligatorio, que es una matriz de valores de los valores instantáneos correspondientes y argumentos opcionales adicionales. El segundo argumento establece la interpolación. Si no se proporciona el argumento, es por defecto escalonada para los tipos de base base discretos como los enteros y es lineal para tipos de base continuous como los flotantes. Se genera un error cuando se establece la interpolación lineal para valores temporales con tipos de base discretos. Para secuencias continuas, el tercero y el cuarto argumentos son valores booleanos que indican, respectivamente, si los límites izquierdo y derecho son inclusivos o exclusivos. Se supone que estos argumentos son verdaderos de forma predeterminada si no se especifican.</para>
-				<para><varname>ttype_seq(ttype_inst[],interp={'step','linear'},left_inc bool=true,</varname></para>
-        <para><varname>  right_inc bool=true) → ttype_seq</varname></para>
+				<para><varname>ttypeSeq(ttypeInst[],interp={'step','linear'},leftInc bool=true,</varname></para>
+        <para><varname>  rightInc bool=true) → ttypeSeq</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tbool_seq(ARRAY[tbool 'true@2001-01-01 08:00:00','false@2001-01-01 08:05:00'],
+SELECT tboolSeq(ARRAY[tbool 'true@2001-01-01 08:00:00','false@2001-01-01 08:05:00'],
   'discrete');
-SELECT tint_seq(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
-SELECT tint_seq(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00'], 'linear');
+SELECT tintSeq(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
+SELECT tintSeq(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00'], 'linear');
 -- ERROR:  The temporal type cannot have linear interpolation
-SELECT tfloat_seq(ARRAY[tfloat '1.0@2001-01-01 08:00:00', '2.0@2001-01-01 08:05:00'],
+SELECT tfloatSeq(ARRAY[tfloat '1.0@2001-01-01 08:00:00', '2.0@2001-01-01 08:05:00'],
   'step', false, true);
-SELECT ttext_seq(ARRAY[ttext 'AAA@2001-01-01 08:00:00', 'BBB@2001-01-01 08:05:00']);
-SELECT tgeompoint_seq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
+SELECT ttextSeq(ARRAY[ttext 'AAA@2001-01-01 08:00:00', 'BBB@2001-01-01 08:05:00']);
+SELECT tgeompointSeq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
   'Point(0 1)@2001-01-01 08:05:00', 'Point(1 1)@2001-01-01 08:10:00'], 'discrete');
-SELECT tgeogpoint_seq(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
+SELECT tgeogpointSeq(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
   'Point(2 2)@2001-01-01 08:05:00']);
 </programlisting>
 			</listitem>
 
-			<listitem id="ttype_seqset">
+			<listitem id="ttypeSeqSet">
 				<para>Constructores para tipos temporales de subtipo conjunto de secuencias</para>
-				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_seqset_gaps</varname></primary></indexterm>
-				<para><varname>ttype_seqset(ttype_contseq[]) → ttype_seqset</varname></para>
-				<para><varname>ttype_seqset_gaps(ttype_inst[],maxt=NULL,maxdist=NULL,interp='linear') → ttype_seqset</varname></para>
+				<indexterm><primary><varname>ttypeSeqSet</varname></primary></indexterm>
+				<indexterm><primary><varname>ttypeSeqSetGaps</varname></primary></indexterm>
+				<para><varname>ttypeSeqSet(ttypeContSeq[]) → ttypeSeqSet</varname></para>
+				<para><varname>ttypeSeqSetGaps(ttypeInst[],maxt=NULL,maxdist=NULL,interp='linear') → ttypeSeqSet</varname></para>
 				<para>Un primer conjunto de constructores tiene un solo argumento, que es una matriz de valores de los valores de <emphasis>secuencia</emphasis> correspondientes. La interpolación del valor temporal resultante depende de la interpolación de las secuencias que lo componen. Se genera un error si las secuencias que componen la matriz tienen una interpolación diferente.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tbool_seqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
+SELECT tboolSeqSet(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
   '[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
-SELECT tint_seqset(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
+SELECT tintSeqSet(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
   2@2001-01-01 08:10:00, 2@2001-01-01 08:15:00)']);
-SELECT tfloat_seqset(ARRAY[tfloat '[1.0@2001-01-01 08:00:00, 2.0@2001-01-01 08:05:00,
+SELECT tfloatSeqSet(ARRAY[tfloat '[1.0@2001-01-01 08:00:00, 2.0@2001-01-01 08:05:00,
   2.0@2001-01-01 08:10:00]', '[2.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
-SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
+SELECT tfloatSeqSet(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
   2.0@2001-01-01 08:05:00, 2.0@2001-01-01 08:10:00]',
   'Interp=Step;[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
-SELECT ttext_seqset(ARRAY[ttext '[AAA@2001-01-01 08:00:00, AAA@2001-01-01 08:05:00)',
+SELECT ttextSeqSet(ARRAY[ttext '[AAA@2001-01-01 08:00:00, AAA@2001-01-01 08:05:00)',
   '[BBB@2001-01-01 08:10:00, BBB@2001-01-01 08:15:00)']);
-SELECT tgeompoint_seqset(ARRAY[tgeompoint '[Point(0 0)@2001-01-01 08:00:00,
+SELECT tgeompointSeqSet(ARRAY[tgeompoint '[Point(0 0)@2001-01-01 08:00:00,
   Point(0 1)@2001-01-01 08:05:00, Point(0 1)@2001-01-01 08:10:00)',
   '[Point(0 1)@2001-01-01 08:15:00, Point(0 0)@2001-01-01 08:20:00)']);
-SELECT tgeogpoint_seqset(ARRAY[tgeogpoint
+SELECT tgeogpointSeqSet(ARRAY[tgeogpoint
   'Interp=Step;[Point(0 0)@2001-01-01 08:00:00, Point(0 0)@2001-01-01 08:05:00)',
   'Interp=Step;[Point(1 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)']);
-SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
+SELECT tfloatSeqSet(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
   2.0@2001-01-01 08:05:00, 2.0@2001-01-01 08:10:00]',
   '[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
 -- ERROR:  The temporal values must have the same interpolation
@@ -512,13 +506,13 @@ SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Step;[1.0@2001-01-01 08:00:00,
 				<para>Otro conjunto de constructores para valores de conjunto de secuencias tiene como primer argumento una matriz de valores de <emphasis>instante</emphasis> correspondientes, y dos argumentos que establecen un intervalo de tiempo máximo y una distancia máxima tal que se introduce un espacio entre secuencias del resultado siempre que dos instantes de entrada consecutivos tengan un intervalo de tiempo o una distancia mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Estos dos argumentos de brechas son opcionales, pero al menos uno de ellos debe especificarse. Además, cuando el tipo base es continuo, un último argumento adicional establece si la interpolación es escalonada o lineal. Si no se especifica este argumento, se asume que es lineal por defecto.</para>
 				<para>Los parámetros de la función dependen del tipo temporal. Por ejemplo, el parámetro de interpolación no está permitido para tipos temporales con subtipos discretos como <varname>tint</varname>. De manera similar, el parámetro <varname>maxdist</varname> no está permitido para tipos escalares como <varname>ttext</varname> que no tienen una función de distancia estándar.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tint_seqset_gaps(ARRAY[tint '1@2001-01-01', '3@2001-01-02', '4@2001-01-03',
+SELECT tintSeqSetGaps(ARRAY[tint '1@2001-01-01', '3@2001-01-02', '4@2001-01-03',
   '5@2001-01-05'], '1 day', 1);
 -- {[1@2001-01-01], [3@2001-01-02, 4@2001-01-03], [5@2001-01-05]}
-SELECT ttext_seqset_gaps(ARRAY[ttext 'AA@2001-01-01', 'BB@2001-01-02', 'AA@2001-01-03',
+SELECT ttextSeqSetGaps(ARRAY[ttext 'AA@2001-01-01', 'BB@2001-01-02', 'AA@2001-01-03',
   'CC@2001-01-05'], '1 day');
 -- {["AA"@2001-01-01, "BB"@2001-01-02, "AA"@2001-01-03], ["CC"@2001-01-05]}
-SELECT asText(tgeompoint_seqset_gaps(ARRAY[tgeompoint 'Point(1 1)@2001-01-01',
+SELECT asText(tgeompointSeqSetGaps(ARRAY[tgeompoint 'Point(1 1)@2001-01-01',
   'Point(2 2)@2001-01-02', 'Point(3 2)@2001-01-03', 'Point(3 2)@2001-01-05'],
   '1 day', 1, 'step'));
 /* Interp=Step;{[POINT(1 1)@2001-01-01], [POINT(2 2)@2001-01-02, POINT(3 2)@2001-01-03],
@@ -692,8 +686,8 @@ SELECT interp(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01,
 				<indexterm><primary><varname>getValue</varname></primary></indexterm>
 				<indexterm><primary><varname>getTimestamp</varname></primary></indexterm>
 				<para>Obtener el valor o la marca de tiempo de un instantes</para>
-				<para><varname>getValue(ttype_inst) → base</varname></para>
-				<para><varname>getTimestamp(ttype_inst) → timestamptz</varname></para>
+				<para><varname>getValue(ttypeInst) → base</varname></para>
+				<para><varname>getTimestamp(ttypeInst) → timestamptz</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getValue(tint '1@2001-01-01');
 -- 1
@@ -848,16 +842,16 @@ SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-
 </programlisting>
 			</listitem>
 
-			<listitem id="lower_inc">
-				<indexterm><primary><varname>lower_inc</varname></primary></indexterm>
-				<indexterm><primary><varname>upper_inc</varname></primary></indexterm>
+			<listitem id="lowerInc">
+				<indexterm><primary><varname>lowerInc</varname></primary></indexterm>
+				<indexterm><primary><varname>upperInc</varname></primary></indexterm>
 				<para>¿Es el instante inicial/final inclusivo?</para>
-				<para><varname>lower_inc(ttype) → bool</varname></para>
-				<para><varname>upper_inc(ttype) → bool</varname></para>
+				<para><varname>lowerInc(ttype) → bool</varname></para>
+				<para><varname>upperInc(ttype) → bool</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT lower_inc(tint '[1@2001-01-01, 2@2001-01-02)');
+SELECT lowerInc(tint '[1@2001-01-01, 2@2001-01-02)');
 -- true
-SELECT upper_inc(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');
+SELECT upperInc(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');
 -- false
 </programlisting>
 			</listitem>
@@ -877,9 +871,9 @@ SELECT numInstants(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-
 				<indexterm><primary><varname>endInstant</varname></primary></indexterm>
 				<indexterm><primary><varname>instantN</varname></primary></indexterm>
 				<para>Obtener el instante inicial, final o enésimo</para>
-				<para><varname>startInstant(ttype) → ttype_inst</varname></para>
-				<para><varname>endInstant(ttype) → ttype_inst</varname></para>
-				<para><varname>instantN(ttype,integer) → ttype_inst</varname></para>
+				<para><varname>startInstant(ttype) → ttypeInst</varname></para>
+				<para><varname>endInstant(ttype) → ttypeInst</varname></para>
+				<para><varname>instantN(ttype,integer) → ttypeInst</varname></para>
 				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT startInstant(tfloat '{[1@2001-01-01, 2@2001-01-02), 
@@ -895,7 +889,7 @@ SELECT instantN(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-
 			<listitem id="instants">
 				<indexterm><primary><varname>instants</varname></primary></indexterm>
 				<para>Obtener los instantes diferentes</para>
-				<para><varname>instants(ttype) → ttype_inst[]</varname></para>
+				<para><varname>instants(ttype) → ttypeInst[]</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT instants(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');
 -- {"1@2001-01-01","2@2001-01-02","3@2001-01-03"}
@@ -947,7 +941,7 @@ SELECT timestamps(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-0
 			<listitem id="numSequences">
 				<indexterm><primary><varname>numSequences</varname></primary></indexterm>
 				<para>Obtener el número de secuencias</para>
-				<para><varname>numSequences({ttype_contseq,ttype_seqset}) → integer</varname></para>
+				<para><varname>numSequences({ttypeContSeq,ttypeSeqSet}) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT numSequences(tfloat '{[1@2001-01-01, 2@2001-01-03),
   [3@2001-01-03, 5@2001-01-05)}');
@@ -960,9 +954,9 @@ SELECT numSequences(tfloat '{[1@2001-01-01, 2@2001-01-03),
 				<indexterm><primary><varname>endSequence</varname></primary></indexterm>
 				<indexterm><primary><varname>sequenceN</varname></primary></indexterm>
 				<para>Obtener la secuencia inicial, final, o enésima</para>
-				<para><varname>startSequence({ttype_contseq,ttype_seqset}) → ttype_contseq</varname></para>
-				<para><varname>endSequence({ttype_contseq,ttype_seqset}) → ttype_contseq</varname></para>
-				<para><varname>sequenceN({ttype_contseq,ttype_seqset},integer) → ttype_contseq</varname></para>
+				<para><varname>startSequence({ttypeContSeq,ttypeSeqSet}) → ttypeContSeq</varname></para>
+				<para><varname>endSequence({ttypeContSeq,ttypeSeqSet}) → ttypeContSeq</varname></para>
+				<para><varname>sequenceN({ttypeContSeq,ttypeSeqSet},integer) → ttypeContSeq</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT startSequence(tfloat '{[1@2001-01-01, 2@2001-01-03),
   [3@2001-01-03, 5@2001-01-05)}');
@@ -978,7 +972,7 @@ SELECT sequenceN(tfloat '{[1@2001-01-01, 2@2001-01-03),
 			<listitem id="sequences">
 				<indexterm><primary><varname>sequences</varname></primary></indexterm>
 				<para>Obtener las secuencias</para>
-				<para><varname>sequences({ttype_contseq,ttype_seqset}) → ttype_contseq[]</varname></para>
+				<para><varname>sequences({ttypeContSeq,ttypeSeqSet}) → ttypeContSeq[]</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT sequences(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
 -- {"[1@2001-01-01, 2@2001-01-03)", "[3@2001-01-03, 5@2001-01-05)"}
@@ -988,7 +982,7 @@ SELECT sequences(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01
 			<listitem id="segments">
 				<indexterm><primary><varname>segments</varname></primary></indexterm>
 				<para>Obtener los segmentos</para>
-				<para><varname>segments({ttype_contseq,ttype_seqset}) → ttype_contseq[]</varname></para>
+				<para><varname>segments({ttypeContSeq,ttypeSeqSet}) → ttypeContSeq[]</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT segments(tint '{[1@2001-01-01, 3@2001-01-02, 2@2001-01-03],
   (3@2001-01-03, 5@2001-01-05]}');
@@ -1030,23 +1024,23 @@ SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)
 		<para>Un valor temporal se puede transformar en otro subtipo. Se genera un error si los subtipos son incompatibles.</para>
 		<itemizedlist>
 			<listitem id="ttype_subtype">
-				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
+				<indexterm><primary><varname>ttypeInst</varname></primary></indexterm>
+				<indexterm><primary><varname>ttypeSeq</varname></primary></indexterm>
+				<indexterm><primary><varname>ttypeSeqSet</varname></primary></indexterm>
 				<para>Transformar un tipo temporal a otro subtipo</para>
-				<para><varname>ttype_inst(ttype) → ttype_inst</varname></para>
-				<para><varname>ttype_seq(ttype) → ttype_seq</varname></para>
-				<para><varname>ttype_seqset(ttype) → ttype_seqset</varname></para>
+				<para><varname>ttypeInst(ttype) → ttypeInst</varname></para>
+				<para><varname>ttypeSeq(ttype) → ttypeSeq</varname></para>
+				<para><varname>ttypeSeqSet(ttype) → ttypeSeqSet</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tbool_inst(tbool '{[true@2001-01-01]}');
+SELECT tboolInst(tbool '{[true@2001-01-01]}');
 -- t@2001-01-01
-SELECT tbool_inst(tbool '{[true@2001-01-01, true@2001-01-02]}');
+SELECT tboolInst(tbool '{[true@2001-01-01, true@2001-01-02]}');
 -- ERROR: Cannot transform input value to a temporal instant
-SELECT tint_seq(tint '1@2001-01-01');
+SELECT tintSeq(tint '1@2001-01-01');
 -- [1@2001-01-01]
-SELECT tfloat_seqset(tfloat '2.5@2001-01-01');
+SELECT tfloatSeqSet(tfloat '2.5@2001-01-01');
 -- {[2.5@2001-01-01]}
-SELECT tfloat_seqset(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-03}');
+SELECT tfloatSeqSet(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-03}');
 -- {[2.5@2001-01-01],[1.5@2001-01-02],[3.5@2001-01-03]}
 </programlisting>
 			</listitem>
@@ -1160,7 +1154,7 @@ SELECT asText(shiftScaleTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@200
 			<listitem id="stops">
 				<indexterm><primary><varname>stops</varname></primary></indexterm>
 				<para>Extraer de un sequencia o un conjunto de secuencias temporales con interpolación linear los segmentos cuya distancia es menor o igual que el argumento dados y/o cuya duración es mayor o igual que el argumento dado &Z_support; &geography_support;</para>
-				<para><varname>stops({tcont_seq,ttype_seqset},maxDist=0.0,minDuration='0 minutes') → ttype_seqset</varname></para>
+				<para><varname>stops({ttypeContSeq,ttypeSeqSet},maxDist=0.0,minDuration='0 minutes') → ttypeSeqSet</varname></para>
 				<para>Para los tipos espaciales, el tamaño del área se calcula como la diagonal del rectángulo mínimamente girado de los puntos de la subsecuencia. Para los tipos escalares, el tamaño se calcula como el ancho del intervalo circundante. Si no se proporciona <varname>maxDist</varname>, se supone que es 0.0 y, por lo tanto, la función extrae los segmentos constantes del valor temporal dado. Para puntos temporales, la distancia se calcula en las unidades del sistema de coordenadas. Nótese que aunque la función acepta geometrías 3D, el cálculo siempre se realiza en 2D.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT stops(tfloat '[1@2001-01-01, 1@2001-01-02, 2@2001-01-03]');

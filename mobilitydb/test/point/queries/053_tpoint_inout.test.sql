@@ -77,7 +77,7 @@ SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]],"dateti
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinatess":[1,1],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"Discrete"}');
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"Discrete"}');
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"Linear"}');
-SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":{"coordinates":[[1,1]],"datetimes":["2000-01-01T00:00:00+01"],"lower_inc":true,"upper_inc":true},"interpolation":"Linear"}');
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":{"coordinates":[[1,1]],"datetimes":["2000-01-01T00:00:00+01"],"lowerInc":true,"upperInc":true},"interpolation":"Linear"}');
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":[],"interpolation":"Linear"}');
 
 -----------------------------------------------------------------------

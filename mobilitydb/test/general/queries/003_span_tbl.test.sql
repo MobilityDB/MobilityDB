@@ -122,13 +122,13 @@ SELECT MAX(upper(i)) FROM tbl_intspan;
 SELECT round(MAX(upper(f))::numeric, 6) FROM tbl_floatspan;
 SELECT MAX(upper(t)) FROM tbl_tstzspan;
 
-SELECT DISTINCT lower_inc(i) FROM tbl_intspan;
-SELECT DISTINCT lower_inc(f) FROM tbl_floatspan;
-SELECT DISTINCT lower_inc(t) FROM tbl_tstzspan;
+SELECT DISTINCT lowerInc(i) FROM tbl_intspan;
+SELECT DISTINCT lowerInc(f) FROM tbl_floatspan;
+SELECT DISTINCT lowerInc(t) FROM tbl_tstzspan;
 
-SELECT DISTINCT upper_inc(i) FROM tbl_intspan;
-SELECT DISTINCT upper_inc(f) FROM tbl_floatspan;
-SELECT DISTINCT upper_inc(t) FROM tbl_tstzspan;
+SELECT DISTINCT upperInc(i) FROM tbl_intspan;
+SELECT DISTINCT upperInc(f) FROM tbl_floatspan;
+SELECT DISTINCT upperInc(t) FROM tbl_tstzspan;
 
 SELECT SUM(width(i)) FROM tbl_intspan;
 SELECT round(SUM(width(f))::numeric, 6) FROM tbl_floatspan;

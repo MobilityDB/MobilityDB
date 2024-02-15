@@ -109,39 +109,39 @@ SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-
 -- Constructors
 -------------------------------------------------------------------------------
 
-SELECT tnpoint_inst('npoint(1,0)'::npoint, '2012-01-01'::timestamp);
+SELECT tnpoint('npoint(1,0)'::npoint, '2012-01-01'::timestamp);
 
-SELECT tnpoint_seq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(2,1)@2012-02-01'::tnpoint], 'discrete');
+SELECT tnpointSeq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(2,1)@2012-02-01'::tnpoint], 'discrete');
 
-SELECT tnpoint_seq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(1,1)@2012-02-01'::tnpoint], 'linear', true, false);
+SELECT tnpointSeq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(1,1)@2012-02-01'::tnpoint], 'linear', true, false);
 /* Error */
-SELECT tnpoint_seq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(2,1)@2012-02-01'::tnpoint], 'linear', true, false);
+SELECT tnpointSeq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(2,1)@2012-02-01'::tnpoint], 'linear', true, false);
 
-SELECT tnpoint_seqset(ARRAY[tnpoint '[npoint(1,0)@2012-01-01, npoint(1,1)@2012-02-01]', '[npoint(2,0)@2012-03-01, npoint(2,1)@2012-04-01]']);
+SELECT tnpointSeqSet(ARRAY[tnpoint '[npoint(1,0)@2012-01-01, npoint(1,1)@2012-02-01]', '[npoint(2,0)@2012-03-01, npoint(2,1)@2012-04-01]']);
 
 -------------------------------------------------------------------------------
 -- Transformation functions
 -------------------------------------------------------------------------------
 
-SELECT tnpoint_inst(tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tnpointInst(tnpoint 'Npoint(1, 0.5)@2000-01-01');
 SELECT setInterp(tnpoint 'Npoint(1, 0.5)@2000-01-01', 'discrete');
-SELECT tnpoint_seq(tnpoint 'Npoint(1, 0.5)@2000-01-01');
-SELECT tnpoint_seqset(tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tnpointSeq(tnpoint 'Npoint(1, 0.5)@2000-01-01');
+SELECT tnpointSeqSet(tnpoint 'Npoint(1, 0.5)@2000-01-01');
 
-SELECT tnpoint_inst(tnpoint '{Npoint(1, 0.3)@2000-01-01}');
+SELECT tnpointInst(tnpoint '{Npoint(1, 0.3)@2000-01-01}');
 SELECT setInterp(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 'discrete');
-SELECT tnpoint_seq(tnpoint '{Npoint(1, 0.3)@2000-01-01}');
-SELECT tnpoint_seqset(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+SELECT tnpointSeq(tnpoint '{Npoint(1, 0.3)@2000-01-01}');
+SELECT tnpointSeqSet(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
 
-SELECT tnpoint_inst(tnpoint '[Npoint(1, 0.3)@2000-01-01]');
+SELECT tnpointInst(tnpoint '[Npoint(1, 0.3)@2000-01-01]');
 SELECT setInterp(tnpoint '[Npoint(1, 0.3)@2000-01-01]', 'discrete');
-SELECT tnpoint_seq(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
-SELECT tnpoint_seqset(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT tnpointSeq(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT tnpointSeqSet(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
 
-SELECT tnpoint_inst(tnpoint '{[Npoint(1, 0.3)@2000-01-01]}');
+SELECT tnpointInst(tnpoint '{[Npoint(1, 0.3)@2000-01-01]}');
 SELECT setInterp(tnpoint '{[Npoint(1, 0.3)@2000-01-01], [Npoint(2, 0.6)@2000-01-04]}', 'discrete');
-SELECT tnpoint_seq(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]}');
-SELECT tnpoint_seqset(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+SELECT tnpointSeq(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]}');
+SELECT tnpointSeqSet(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
 
 SELECT setInterp(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'linear');
 SELECT setInterp(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 'linear');

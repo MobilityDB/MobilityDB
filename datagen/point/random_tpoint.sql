@@ -46,8 +46,7 @@
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D stbox
- *
+ * @brief Generate a random 2D stbox
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -80,7 +79,7 @@ BEGIN
   xmin = random_float(lowx, highx - maxdelta);
   ymin = random_float(lowy, highy - maxdelta);
   tmin = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
-  RETURN stbox_t(xmin, xmin + random_float(1, maxdelta), ymin,
+  RETURN stboxXT(xmin, xmin + random_float(1, maxdelta), ymin,
     ymin + random_float(1, maxdelta),
     span(tmin, tmin + random_minutes(1, maxminutes)), srid);
 END;
@@ -97,8 +96,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D stbox
- *
+ * @brief Generate a random 3D stbox
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -143,16 +141,16 @@ BEGIN
   tmin = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
   IF geodetic THEN
     IF geodZ THEN
-      RETURN geodstbox_zt(xmin, xmin + random_float(1, maxdelta), ymin,
+      RETURN geodstboxZT(xmin, xmin + random_float(1, maxdelta), ymin,
         ymin + random_float(1, maxdelta), zmin, zmin + random_float(1, maxdelta),
         span(tmin, tmin + random_minutes(1, maxminutes)), srid);
     ELSE
-      RETURN geodstbox_zt(xmin, xmin + random_float(1, maxdelta),ymin, zmin,
+      RETURN geodstboxZT(xmin, xmin + random_float(1, maxdelta),ymin, zmin,
         ymin + random_float(1, maxdelta), zmin + random_float(1, maxdelta),
         span(tmin, tmin + random_minutes(1, maxminutes)), srid);
     END IF;
   ELSE
-    RETURN stbox_zt(xmin, xmin + random_float(1, maxdelta), ymin,
+    RETURN stboxZT(xmin, xmin + random_float(1, maxdelta), ymin,
       ymin + random_float(1, maxdelta), zmin, zmin + random_float(1, maxdelta),
       span(tmin + random_minutes(1, maxminutes)), srid);
   END IF;
@@ -170,8 +168,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D geodetic stbox
- *
+ * @brief Generate a random 2D geodetic stbox
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -202,8 +199,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D geodetic stbox
- *
+ * @brief Generate a random 3D geodetic stbox
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -235,8 +231,7 @@ FROM generate_series(1,10) k;
 -- Geometry/Geography
 -------------------------------------------------------------------------------
 /**
- * Generate a random 2D geometric point
- *
+ * @brief Generate a random 2D geometric point
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] srid SRID of the coordinates
@@ -260,10 +255,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geom_point(-100, 100, -100, 100))
+SELECT k, st_asEWKT(random_geom_point(-100, 100, -100, 100))
 FROM generate_series(1,10) k;
 
-SELECT k, st_asewkt(random_geom_point(-100, 100, -100, 100, 3812))
+SELECT k, st_asEWKT(random_geom_point(-100, 100, -100, 100, 3812))
 FROM generate_series(1,10) k;
 
 SELECT k, random_geom_point(-100, 100, -100, 100) AS g
@@ -273,8 +268,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D geometric point
- *
+ * @brief Generate a random 3D geometric point
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -303,10 +297,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geom_point3D(-100, 100, -100, 100, 0, 100))
+SELECT k, st_asEWKT(random_geom_point3D(-100, 100, -100, 100, 0, 100))
 FROM generate_series(1,10) k;
 
-SELECT k, st_asewkt(random_geom_point3D(-100, 100, -100, 100, 0, 100, 3812))
+SELECT k, st_asEWKT(random_geom_point3D(-100, 100, -100, 100, 0, 100, 3812))
 FROM generate_series(1,10) k;
 
 SELECT k, random_geom_point3D(-100, 100, -100, 100, 0, 100) AS g
@@ -316,8 +310,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D geographic point
- *
+ * @brief Generate a random 2D geographic point
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] srid SRID of the coordinates
@@ -335,10 +328,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geog_point(-180, 180, 90, 90))
+SELECT k, st_asEWKT(random_geog_point(-180, 180, 90, 90))
 FROM generate_series(1,10) k;
 
-SELECT k, st_asewkt(random_geog_point(-180, 180, 90, 90, 7844))
+SELECT k, st_asEWKT(random_geog_point(-180, 180, 90, 90, 7844))
 FROM generate_series(1,10) k;
 
 SELECT k, random_geog_point(-180, 180, 90, 90) AS g
@@ -348,8 +341,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D geographic point
- *
+ * @brief Generate a random 3D geographic point
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -368,10 +360,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geog_point3D(0, 90, 0, 90, 0, 90))
+SELECT k, st_asEWKT(random_geog_point3D(0, 90, 0, 90, 0, 90))
 FROM generate_series(1,10) k;
 
-SELECT k, st_asewkt(random_geog_point3D(0, 90, 0, 90, 0, 90, 7844))
+SELECT k, st_asEWKT(random_geog_point3D(0, 90, 0, 90, 0, 90, 7844))
 FROM generate_series(1,10) k;
 
 SELECT k, random_geog_point3D(0, 90, 0, 90, 0, 90) AS g
@@ -381,8 +373,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random 2D geometric points
- *
+ * @brief Generate an array of random 2D geometric points
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -442,10 +433,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_geom_point_array(-100, 100, -100, 100, 10, 5, 10)) AS g
+SELECT k, asEWKT(random_geom_point_array(-100, 100, -100, 100, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asewkt(random_geom_point_array(-100, 100, -100, 100, 10, 5, 10, 3812)) AS g
+SELECT k, asEWKT(random_geom_point_array(-100, 100, -100, 100, 10, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_geom_point_array(-100, 100, -100, 100, 10, 5, 10) AS g
@@ -455,8 +446,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random 3D geometric points
- *
+ * @brief Generate an array of random 3D geometric points
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -531,10 +521,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_geom_point3D_array(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
+SELECT k, asEWKT(random_geom_point3D_array(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asewkt(random_geom_point3D_array(-100, 100, -100, 100, 0, 100, 10, 5, 10, 3812)) AS g
+SELECT k, asEWKT(random_geom_point3D_array(-100, 100, -100, 100, 0, 100, 10, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_geom_point3D_array(-100, 100, -100, 100, 0, 100, 10, 5, 10) AS g
@@ -544,8 +534,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random 2D geographic points
- *
+ * @brief Generate an array of random 2D geographic points
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -577,10 +566,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_geog_point_array(-180, 180, -90, 90, 10, 5, 10)) AS g
+SELECT k, asEWKT(random_geog_point_array(-180, 180, -90, 90, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asewkt(random_geog_point_array(-180, 180, -90, 90, 10, 5, 10, 7844)) AS g
+SELECT k, asEWKT(random_geog_point_array(-180, 180, -90, 90, 10, 5, 10, 7844)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_geog_point_array(-180, 180, -90, 90, 10, 5, 10) AS g
@@ -590,8 +579,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random 3D geographic points
- *
+ * @brief Generate an array of random 3D geographic points
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -625,7 +613,7 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_geog_point3D_array(-180, 180, -90, 90, 0, 10000, 10, 5, 10)) AS g
+SELECT k, asEWKT(random_geog_point3D_array(-180, 180, -90, 90, 0, 10000, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_geog_point3D_array(-180, 180, -90, 90, 0, 10000, 10, 5, 10) AS g
@@ -635,8 +623,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random 2D geometric points
- *
+ * @brief Generate an array of random 2D geometric points
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -656,10 +643,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_geom_point_set(-100, 100, -100, 100, 10, 5, 10)) AS g
+SELECT k, asEWKT(random_geom_point_set(-100, 100, -100, 100, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asewkt(random_geom_point_set(-100, 100, -100, 100, 10, 5, 10, 3812)) AS g
+SELECT k, asEWKT(random_geom_point_set(-100, 100, -100, 100, 10, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_geom_point_set(-100, 100, -100, 100, 10, 5, 10) AS g
@@ -669,8 +656,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random 2D geographic points
- *
+ * @brief Generate an array of random 2D geographic points
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -690,10 +676,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_geog_point_set(0, 80, 0, 80, 10, 5, 10)) AS g
+SELECT k, asEWKT(random_geog_point_set(0, 80, 0, 80, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asewkt(random_geog_point_set(0, 80, 0, 80, 10, 5, 10, 3812)) AS g
+SELECT k, asEWKT(random_geog_point_set(0, 80, 0, 80, 10, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_geog_point_set(0, 80, 0, 80, 10, 5, 10) AS g
@@ -703,8 +689,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D geometric linestring
- *
+ * @brief Generate a random 2D geometric linestring
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -722,10 +707,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geom_linestring(-100, 100, -100, 100, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geom_linestring(-100, 100, -100, 100, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geom_linestring(-100, 100, -100, 100, 10, 5, 10, 3812)) AS g
+SELECT k, st_asEWKT(random_geom_linestring(-100, 100, -100, 100, 10, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT distinct st_issimple(random_geom_linestring(-100, 100, -100, 100, 10, 5, 10)) AS g
@@ -741,8 +726,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D geometric linestring
- *
+ * @brief Generate a random 3D geometric linestring
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -762,10 +746,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geom_linestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geom_linestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geom_linestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 3812)) AS g
+SELECT k, st_asEWKT(random_geom_linestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT distinct st_issimple(random_geom_linestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
@@ -781,8 +765,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D geographic linestring
- *
+ * @brief Generate a random 2D geographic linestring
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -804,10 +787,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geog_linestring(0, 80, 0, 80, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geog_linestring(0, 80, 0, 80, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geog_linestring(0, 80, 0, 80, 10, 5, 10, 7844)) AS g
+SELECT k, st_asEWKT(random_geog_linestring(0, 80, 0, 80, 10, 5, 10, 7844)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, st_length(random_geog_linestring(0, 80, 0, 80, 10, 5, 10)) AS g
@@ -820,8 +803,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D geographic linestring
- *
+ * @brief Generate a random 3D geographic linestring
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -844,10 +826,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geog_linestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geog_linestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geog_linestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 7844)) AS g
+SELECT k, st_asEWKT(random_geog_linestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 7844)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, st_length(random_geog_linestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
@@ -860,8 +842,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D geometric polygon without holes
- *
+ * @brief Generate a random 2D geometric polygon without holes
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -891,10 +872,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geom_polygon(-100, 100, -100, 100, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geom_polygon(-100, 100, -100, 100, 10, 5, 10)) AS g
 FROM generate_series(1,10) k;
 
-SELECT k, st_asewkt(random_geom_polygon(-100, 100, -100, 100, 10, 5, 10, 3812)) AS g
+SELECT k, st_asEWKT(random_geom_polygon(-100, 100, -100, 100, 10, 5, 10, 3812)) AS g
 FROM generate_series(1,10) k;
 
 SELECT k, random_geom_polygon(-100, 100, -100, 100, 10, 5, 10) AS g
@@ -907,8 +888,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D geometric polygon without holes
- *
+ * @brief Generate a random 3D geometric polygon without holes
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -940,10 +920,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geom_polygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geom_polygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
 FROM generate_series(1,10) k;
 
-SELECT k, st_asewkt(random_geom_polygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 3812)) AS g
+SELECT k, st_asEWKT(random_geom_polygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 3812)) AS g
 FROM generate_series(1,10) k;
 
 SELECT k, random_geom_polygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10) AS g
@@ -956,8 +936,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D geographic polygon without holes
- *
+ * @brief Generate a random 2D geographic polygon without holes
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -979,10 +958,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geog_polygon(0, 80, 0, 80, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geog_polygon(0, 80, 0, 80, 10, 5, 10)) AS g
 FROM generate_series(1,10) k;
 
-SELECT k, st_asewkt(random_geog_polygon(0, 80, 0, 80, 10, 5, 10, 7844)) AS g
+SELECT k, st_asEWKT(random_geog_polygon(0, 80, 0, 80, 10, 5, 10, 7844)) AS g
 FROM generate_series(1,10) k;
 
 SELECT k, random_geog_polygon(0, 80, 0, 80, 10, 5, 10) AS g
@@ -995,8 +974,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D geographic polygon without holes
- *
+ * @brief Generate a random 3D geographic polygon without holes
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -1019,10 +997,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geog_polygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geog_polygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
 FROM generate_series(1,10) k;
 
-SELECT k, st_asewkt(random_geog_polygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 7844)) AS g
+SELECT k, st_asEWKT(random_geog_polygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 7844)) AS g
 FROM generate_series(1,10) k;
 
 SELECT k, random_geog_polygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10) AS g
@@ -1035,8 +1013,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D geometric multipoint
- *
+ * @brief Generate a random 2D geometric multipoint
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -1054,10 +1031,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geom_multipoint(-100, 100, -100, 100, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geom_multipoint(-100, 100, -100, 100, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geom_multipoint(-100, 100, -100, 100, 10, 5, 10, 3812)) AS g
+SELECT k, st_asEWKT(random_geom_multipoint(-100, 100, -100, 100, 10, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_geom_multipoint(-100, 100, -100, 100, 10, 5, 10) AS g
@@ -1067,8 +1044,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D geometric multipoint
- *
+ * @brief Generate a random 3D geometric multipoint
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -1088,10 +1064,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geom_multipoint3D(-100, 100, -100, 100, -100, 100, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geom_multipoint3D(-100, 100, -100, 100, -100, 100, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geom_multipoint3D(-100, 100, -100, 100, -100, 100, 10, 5, 10, 3812)) AS g
+SELECT k, st_asEWKT(random_geom_multipoint3D(-100, 100, -100, 100, -100, 100, 10, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_geom_multipoint3D(-100, 100, -100, 100, -100, 100, 10, 5, 10) AS g
@@ -1101,8 +1077,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D geographic multipoint
- *
+ * @brief Generate a random 2D geographic multipoint
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -1125,10 +1100,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geog_multipoint(0, 80, 0, 80, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geog_multipoint(0, 80, 0, 80, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geog_multipoint(0, 80, 0, 80, 10, 5, 10, 7844)) AS g
+SELECT k, st_asEWKT(random_geog_multipoint(0, 80, 0, 80, 10, 5, 10, 7844)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_geog_multipoint(0, 80, 0, 80, 10, 5, 10) AS g
@@ -1138,8 +1113,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D geographic multipoint
- *
+ * @brief Generate a random 3D geographic multipoint
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -1162,10 +1136,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geog_multipoint3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geog_multipoint3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geog_multipoint3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 7844)) AS g
+SELECT k, st_asEWKT(random_geog_multipoint3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 7844)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_geog_multipoint3D(0, 80, 0, 80, 0, 80, 10, 5, 10) AS g
@@ -1175,8 +1149,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D geometric multilinestring
- *
+ * @brief Generate a random 2D geometric multilinestring
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -1200,10 +1173,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geom_multilinestring(-100, 100, -100, 100, 10, 5, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geom_multilinestring(-100, 100, -100, 100, 10, 5, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geom_multilinestring(-100, 100, -100, 100, 10, 5, 10, 5, 10, 3812)) AS g
+SELECT k, st_asEWKT(random_geom_multilinestring(-100, 100, -100, 100, 10, 5, 10, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, st_length(random_geom_multilinestring(-100, 100, -100, 100, 10, 5, 10, 5, 10)) AS g
@@ -1216,8 +1189,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D geometric multilinestring
- *
+ * @brief Generate a random 3D geometric multilinestring
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -1242,10 +1214,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geom_multilinestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geom_multilinestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geom_multilinestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10, 3812)) AS g
+SELECT k, st_asEWKT(random_geom_multilinestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, st_length(random_geom_multilinestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10)) AS g
@@ -1258,8 +1230,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D geographic multilinestring
- *
+ * @brief Generate a random 2D geographic multilinestring
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -1282,10 +1253,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geog_multilinestring(0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geog_multilinestring(0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geog_multilinestring(0, 80, 0, 80, 10, 5, 10, 5, 10, 7844)) AS g
+SELECT k, st_asEWKT(random_geog_multilinestring(0, 80, 0, 80, 10, 5, 10, 5, 10, 7844)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, st_length(random_geog_multilinestring(0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
@@ -1298,8 +1269,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D geographic multilinestring
- *
+ * @brief Generate a random 3D geographic multilinestring
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -1323,10 +1293,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geog_multilinestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geog_multilinestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geog_multilinestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10, 7844)) AS g
+SELECT k, st_asEWKT(random_geog_multilinestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10, 7844)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, st_length(random_geog_multilinestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
@@ -1339,8 +1309,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D geometric multipolygon without holes
- *
+ * @brief Generate a random 2D geometric multipolygon without holes
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -1364,10 +1333,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geom_multipolygon(-100, 100, -100, 100, 10, 5, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geom_multipolygon(-100, 100, -100, 100, 10, 5, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geom_multipolygon(-100, 100, -100, 100, 10, 5, 10, 5, 10, 3812)) AS g
+SELECT k, st_asEWKT(random_geom_multipolygon(-100, 100, -100, 100, 10, 5, 10, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, st_area(random_geom_multipolygon(-100, 100, -100, 100, 10, 5, 10, 5, 10)) AS g
@@ -1380,8 +1349,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D geometric multipolygon without holes
- *
+ * @brief Generate a random 3D geometric multipolygon without holes
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -1406,10 +1374,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geom_multipolygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geom_multipolygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geom_multipolygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10, 3812)) AS g
+SELECT k, st_asEWKT(random_geom_multipolygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, st_area(random_geom_multipolygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10)) AS g
@@ -1422,8 +1390,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D geographic multipolygon without holes
- *
+ * @brief Generate a random 2D geographic multipolygon without holes
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] maxdelta Maximum difference between two consecutive coordinate values
@@ -1446,10 +1413,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geog_multipolygon(0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geog_multipolygon(0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geog_multipolygon(0, 80, 0, 80, 10, 5, 10, 5, 10, 7844)) AS g
+SELECT k, st_asEWKT(random_geog_multipolygon(0, 80, 0, 80, 10, 5, 10, 5, 10, 7844)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, st_area(random_geog_multipolygon(0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
@@ -1462,8 +1429,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D geographic multipolygon without holes
- *
+ * @brief Generate a random 3D geographic multipolygon without holes
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -1487,10 +1453,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, st_asewkt(random_geog_multipolygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
+SELECT k, st_asEWKT(random_geog_multipolygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, st_asewkt(random_geog_multipolygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10, 7844)) AS g
+SELECT k, st_asEWKT(random_geog_multipolygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10, 7844)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, st_area(random_geog_multipolygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
@@ -1505,8 +1471,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D tgeompoint instant
- *
+ * @brief Generate a random 2D tgeompoint instant
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -1521,24 +1486,23 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tgeompoint_inst(random_geom_point(lowx, highx, lowy, highy, srid),
+  RETURN tgeompoint(random_geom_point(lowx, highx, lowy, highy, srid),
     random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_tgeompoint_inst(-100, 100, -100, 100, '2001-01-01', '2002-01-01')) AS inst
+SELECT k, asEWKT(random_tgeompoint_inst(-100, 100, -100, 100, '2001-01-01', '2002-01-01')) AS inst
 FROM generate_series(1,10) k;
 
-SELECT k, asewkt(random_tgeompoint_inst(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 3812)) AS inst
+SELECT k, asEWKT(random_tgeompoint_inst(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 3812)) AS inst
 FROM generate_series(1,10) k;
 */
 
 ------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D tgeompoint instant
- *
+ * @brief Generate a random 3D tgeompoint instant
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -1555,24 +1519,23 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tgeompoint_inst(random_geom_point3D(lowx, highx, lowy, highy, lowz,
+  RETURN tgeompoint(random_geom_point3D(lowx, highx, lowy, highy, lowz,
     highz, srid), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_tgeompoint3D_inst(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01')) AS inst
+SELECT k, asEWKT(random_tgeompoint3D_inst(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01')) AS inst
 FROM generate_series(1,10) k;
 
-SELECT k, asewkt(random_tgeompoint3D_inst(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 3812)) AS inst
+SELECT k, asEWKT(random_tgeompoint3D_inst(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 3812)) AS inst
 FROM generate_series(1,10) k;
 */
 
 ------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D tgeogpoint instant
- *
+ * @brief Generate a random 2D tgeogpoint instant
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -1587,24 +1550,23 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tgeogpoint_inst(random_geog_point(lowx, highx, lowy, highy, srid),
+  RETURN tgeogpoint(random_geog_point(lowx, highx, lowy, highy, srid),
     random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoint_inst(0, 80, 0, 80, '2001-01-01', '2002-01-01')) AS inst
+SELECT k, asEWKT(random_tgeogpoint_inst(0, 80, 0, 80, '2001-01-01', '2002-01-01')) AS inst
 FROM generate_series(1,10) k;
 
-SELECT k, asEwkt(random_tgeogpoint_inst(0, 80, 0, 80, '2001-01-01', '2002-01-01', 7844)) AS inst
+SELECT k, asEWKT(random_tgeogpoint_inst(0, 80, 0, 80, '2001-01-01', '2002-01-01', 7844)) AS inst
 FROM generate_series(1,10) k;
 */
 
 ------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D tgeogpoint instant
- *
+ * @brief Generate a random 3D tgeogpoint instant
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -1621,16 +1583,16 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tgeogpoint_inst(random_geog_point3D(lowx, highx, lowy, highy, lowz,
+  RETURN tgeogpoint(random_geog_point3D(lowx, highx, lowy, highy, lowz,
     highz, srid), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoint3D_inst(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01')) AS inst
+SELECT k, asEWKT(random_tgeogpoint3D_inst(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01')) AS inst
 FROM generate_series(1,10) k;
 
-SELECT k, asEwkt(random_tgeogpoint3D_inst(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 7844)) AS inst
+SELECT k, asEWKT(random_tgeogpoint3D_inst(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 7844)) AS inst
 FROM generate_series(1,10) k;
 */
 
@@ -1639,8 +1601,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D tgeompoint discrete sequence
- *
+ * @brief Generate a random 2D tgeompoint discrete sequence
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -1668,17 +1629,17 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tgeompoint_inst(pointarr[i], tsarr[i]);
+    result[i] = tgeompoint(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeompoint_seq(result, 'Discrete');
+  RETURN tgeompointSeq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_tgeompoint_discseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+SELECT k, asEWKT(random_tgeompoint_discseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1,10) k;
 
-SELECT k, asewkt(random_tgeompoint_discseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 3812))
+SELECT k, asEWKT(random_tgeompoint_discseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 3812))
 FROM generate_series(1,10) k;
 
 SELECT k, random_tgeompoint_discseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
@@ -1688,8 +1649,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D tgeompoint discrete sequence
- *
+ * @brief Generate a random 3D tgeompoint discrete sequence
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -1719,17 +1679,17 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tgeompoint_inst(pointarr[i], tsarr[i]);
+    result[i] = tgeompoint(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeompoint_seq(result, 'Discrete');
+  RETURN tgeompointSeq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_tgeompoint3D_discseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10)) AS ti
+SELECT k, asEWKT(random_tgeompoint3D_discseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10)) AS ti
 FROM generate_series(1,10) k;
 
-SELECT k, asewkt(random_tgeompoint3D_discseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 3812)) AS ti
+SELECT k, asEWKT(random_tgeompoint3D_discseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 3812)) AS ti
 FROM generate_series(1,10) k;
 
 SELECT k, random_tgeompoint3D_discseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10)
@@ -1739,8 +1699,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D tgeogpoint discrete sequence
- *
+ * @brief Generate a random 2D tgeogpoint discrete sequence
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -1768,17 +1727,17 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
+    result[i] = tgeogpoint(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeogpoint_seq(result, 'Discrete');
+  RETURN tgeogpointSeq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoint_discseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+SELECT k, asEWKT(random_tgeogpoint_discseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1,10) k;
 
-SELECT k, asEwkt(random_tgeogpoint_discseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 7844))
+SELECT k, asEWKT(random_tgeogpoint_discseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 7844))
 FROM generate_series(1,10) k;
 
 SELECT k, random_tgeogpoint_discseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
@@ -1788,8 +1747,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D tgeogpoint discrete sequence
- *
+ * @brief Generate a random 3D tgeogpoint discrete sequence
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -1819,17 +1777,17 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
+    result[i] = tgeogpoint(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeogpoint_seq(result, 'Discrete');
+  RETURN tgeogpointSeq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoint3D_discseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+SELECT k, asEWKT(random_tgeogpoint3D_discseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1,10) k;
 
-SELECT k, asEwkt(random_tgeogpoint3D_discseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 7844))
+SELECT k, asEWKT(random_tgeogpoint3D_discseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 7844))
 FROM generate_series(1,10) k;
 
 SELECT k, random_tgeogpoint3D_discseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
@@ -1841,8 +1799,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D tgeompoint sequence
- *
+ * @brief Generate a random 2D tgeompoint sequence
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -1884,33 +1841,33 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tgeompoint_inst(pointarr[i], tsarr[i]);
+    result[i] = tgeompoint(pointarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tgeompoint_inst(pointarr[card - 1], tsarr[card]);
+    result[card] = tgeompoint(pointarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tgeompoint_inst(pointarr[card], tsarr[card]);
+    result[card] = tgeompoint(pointarr[card], tsarr[card]);
   END IF;
   IF linear THEN
     interp = 'Linear';
   ELSE
     interp = 'Step';
   END IF;
-  RETURN tgeompoint_seq(result, interp, lower_inc, upper_inc);
+  RETURN tgeompointSeq(result, interp, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_tgeompoint_contseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+SELECT k, asEWKT(random_tgeompoint_contseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1, 15) AS k;
 
 -- Step interpolation
-SELECT k, asewkt(random_tgeompoint_contseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
+SELECT k, asEWKT(random_tgeompoint_contseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asewkt(random_tgeompoint_contseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=3812))
+SELECT k, asEWKT(random_tgeompoint_contseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=3812))
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_tgeompoint_contseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
@@ -1920,8 +1877,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D tgeompoint sequence
- *
+ * @brief Generate a random 3D tgeompoint sequence
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -1964,33 +1920,33 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tgeompoint_inst(pointarr[i], tsarr[i]);
+    result[i] = tgeompoint(pointarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tgeompoint_inst(pointarr[card - 1], tsarr[card]);
+    result[card] = tgeompoint(pointarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tgeompoint_inst(pointarr[card], tsarr[card]);
+    result[card] = tgeompoint(pointarr[card], tsarr[card]);
   END IF;
   IF linear THEN
     interp = 'Linear';
   ELSE
     interp = 'Step';
   END IF;
-  RETURN tgeompoint_seq(result, interp, lower_inc, upper_inc);
+  RETURN tgeompointSeq(result, interp, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_tgeompoint3D_contseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+SELECT k, asEWKT(random_tgeompoint3D_contseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1, 15) AS k;
 
 -- Step interpolation
-SELECT k, asewkt(random_tgeompoint3D_contseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
+SELECT k, asEWKT(random_tgeompoint3D_contseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asewkt(random_tgeompoint3D_contseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=3812))
+SELECT k, asEWKT(random_tgeompoint3D_contseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=3812))
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_tgeompoint3D_contseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
@@ -2000,8 +1956,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D tgeogpoint sequence
- *
+ * @brief Generate a random 2D tgeogpoint sequence
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -2043,33 +1998,33 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
+    result[i] = tgeogpoint(pointarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tgeogpoint_inst(pointarr[card - 1], tsarr[card]);
+    result[card] = tgeogpoint(pointarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tgeogpoint_inst(pointarr[card], tsarr[card]);
+    result[card] = tgeogpoint(pointarr[card], tsarr[card]);
   END IF;
   IF linear THEN
     interp = 'Linear';
   ELSE
     interp = 'Step';
   END IF;
-  RETURN tgeogpoint_seq(result, interp, lower_inc, upper_inc);
+  RETURN tgeogpointSeq(result, interp, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoint_contseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+SELECT k, asEWKT(random_tgeogpoint_contseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1, 15) AS k;
 
 -- Step interpolation
-SELECT k, asEwkt(random_tgeogpoint_contseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
+SELECT k, asEWKT(random_tgeogpoint_contseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asEwkt(random_tgeogpoint_contseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=7844))
+SELECT k, asEWKT(random_tgeogpoint_contseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=7844))
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_tgeogpoint_contseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
@@ -2079,8 +2034,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D tgeogpoint sequence
- *
+ * @brief Generate a random 3D tgeogpoint sequence
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -2123,33 +2077,33 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
+    result[i] = tgeogpoint(pointarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tgeogpoint_inst(pointarr[card - 1], tsarr[card]);
+    result[card] = tgeogpoint(pointarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tgeogpoint_inst(pointarr[card], tsarr[card]);
+    result[card] = tgeogpoint(pointarr[card], tsarr[card]);
   END IF;
   IF linear THEN
     interp = 'Linear';
   ELSE
     interp = 'Step';
   END IF;
-  RETURN tgeogpoint_seq(result, interp, lower_inc, upper_inc);
+  RETURN tgeogpointSeq(result, interp, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoint3D_contseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+SELECT k, asEWKT(random_tgeogpoint3D_contseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1, 15) AS k;
 
 -- Step interpolation
-SELECT k, asEwkt(random_tgeogpoint3D_contseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
+SELECT k, asEWKT(random_tgeogpoint3D_contseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, false))
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asEwkt(random_tgeogpoint3D_contseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=7844))
+SELECT k, asEWKT(random_tgeogpoint3D_contseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10, srid:=7844))
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_tgeogpoint3D_contseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
@@ -2161,8 +2115,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D tgeompoint sequence set
- *
+ * @brief Generate a random 2D tgeompoint sequence set
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -2202,19 +2155,19 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN tgeompoint_seqset(result);
+  RETURN tgeompointSeqSet(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
+SELECT k, asEWKT(random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
 FROM generate_series(1, 15) AS k;
 
 -- Step interpolation
-SELECT k, asewkt(random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false)) AS ts
+SELECT k, asEWKT(random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false)) AS ts
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asewkt(random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, srid:=3812)) AS ts
+SELECT k, asEWKT(random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, srid:=3812)) AS ts
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
@@ -2224,8 +2177,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D tgeompoint sequence set
- *
+ * @brief Generate a random 3D tgeompoint sequence set
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -2267,19 +2219,19 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN tgeompoint_seqset(result);
+  RETURN tgeompointSeqSet(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
+SELECT k, asEWKT(random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
 FROM generate_series(1, 15) AS k;
 
 -- Step interpolation
-SELECT k, asewkt(random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false)) AS ts
+SELECT k, asEWKT(random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false)) AS ts
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asewkt(random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, srid:=3812)) AS ts
+SELECT k, asEWKT(random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, srid:=3812)) AS ts
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
@@ -2288,15 +2240,14 @@ FROM generate_series(1, 15) AS k;
 SELECT k, numSequences(random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10))
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asewkt(endSequence(random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10))) AS ts
+SELECT k, asEWKT(endSequence(random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10))) AS ts
 FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D tgeogpoint sequence set
- *
+ * @brief Generate a random 2D tgeogpoint sequence set
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -2336,19 +2287,19 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN tgeogpoint_seqset(result);
+  RETURN tgeogpointSeqSet(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoint_seqset(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
+SELECT k, asEWKT(random_tgeogpoint_seqset(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
 FROM generate_series(1, 15) AS k;
 
 -- Step interpolation
-SELECT k, asEwkt(random_tgeogpoint_seqset(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false)) AS ts
+SELECT k, asEWKT(random_tgeogpoint_seqset(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false)) AS ts
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asEwkt(random_tgeogpoint_seqset(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, srid:=7844)) AS ts
+SELECT k, asEWKT(random_tgeogpoint_seqset(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, srid:=7844)) AS ts
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_tgeogpoint_seqset(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
@@ -2358,8 +2309,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 3D tgeogpoint sequence set
- *
+ * @brief Generate a random 3D tgeogpoint sequence set
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] lowz, highz Inclusive bounds of the range for the z coordinates
@@ -2401,19 +2351,19 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN tgeogpoint_seqset(result);
+  RETURN tgeogpointSeqSet(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
+SELECT k, asEWKT(random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
 FROM generate_series(1, 15) AS k;
 
 -- Step interpolation
-SELECT k, asEwkt(random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false)) AS ts
+SELECT k, asEWKT(random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, false)) AS ts
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asEwkt(random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, srid:=7844)) AS ts
+SELECT k, asEWKT(random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10, srid:=7844)) AS ts
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
@@ -2422,7 +2372,7 @@ FROM generate_series(1, 15) AS k;
 SELECT k, numSequences(random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10))
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asewkt(endSequence(random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10))) AS ts
+SELECT k, asEWKT(endSequence(random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10))) AS ts
 FROM generate_series(1, 15) AS k;
 */
 

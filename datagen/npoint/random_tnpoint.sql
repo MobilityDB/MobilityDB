@@ -34,11 +34,26 @@
  */
 
 ------------------------------------------------------------------------------
+-- Ways table
+------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS ways;
+CREATE TABLE ways(
+  gid bigint PRIMARY KEY,
+  the_geom geometry,
+  length float);
+INSERT INTO ways
+SELECT k, random_geom_linestring(0, 100, 0, 100, 10, 2, 10, 0)
+FROM generate_series(1, 100) AS k;
+UPDATE ways
+SET length = ST_Length(the_geom);
+
+------------------------------------------------------------------------------
 -- Static Network Types
 ------------------------------------------------------------------------------
 
 /**
- * Generate a random fraction between in the range [0,1]
+ * @brief Generate a random fraction between in the range [0,1]
  */
 DROP FUNCTION IF EXISTS random_fraction;
 CREATE FUNCTION random_fraction()
@@ -54,8 +69,7 @@ FROM generate_series(1,10) k;
 */
 
 /**
- * Generate a random network point
- *
+ * @brief Generate a random network point
  * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
  */
@@ -73,8 +87,7 @@ FROM generate_series(1,10) k;
 */
 
 /**
- * Generate a random network segment
- *
+ * @brief Generate a random network segment
  * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
  */
@@ -105,8 +118,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random network points
- *
+ * @brief Generate an array of random network points
  * @param[in] lown, highn Inclusive bounds of the range for the rid
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  */
@@ -143,8 +155,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random network points
- *
+ * @brief Generate an array of random network points
  * @param[in] lown, highn Inclusive bounds of the range for the rid
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  */
@@ -160,10 +171,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, asewkt(random_npoint_set(1, 100, 5, 10)) AS g
+SELECT k, asEWKT(random_npoint_set(1, 100, 5, 10)) AS g
 FROM generate_series(1, 15) AS k;
 
-SELECT k, asewkt(random_npoint_set(1, 100, 5, 10, 3812)) AS g
+SELECT k, asEWKT(random_npoint_set(1, 100, 5, 10, 3812)) AS g
 FROM generate_series(1, 15) AS k;
 
 SELECT k, random_npoint_set(1, 100, 5, 10) AS g
@@ -175,8 +186,7 @@ FROM generate_series(1, 15) AS k;
 ------------------------------------------------------------------------------
 
 /**
- * Generate a random temporal network point of instant subtype
- *
+ * @brief Generate a random temporal network point of instant subtype
  * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -186,21 +196,20 @@ CREATE FUNCTION random_tnpoint_inst(lown integer, highn integer,
   lowtime timestamptz, hightime timestamptz)
   RETURNS tnpoint AS $$
 BEGIN
-  RETURN tnpoint_inst(random_npoint(lown, highn),
+  RETURN tnpoint(random_npoint(lown, highn),
     random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tnpoint_inst(0, 100, '2001-01-01', '2001-12-31') AS inst
+SELECT k, random_tnpoint_inst(1, 100, '2001-01-01', '2001-12-31') AS inst
 FROM generate_series(1,10) k;
 */
 
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random temporal network point of discrete sequence subtype
- *
+ * @brief Generate a random temporal network point of discrete sequence subtype
  * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -221,23 +230,22 @@ BEGIN
   t = random_timestamptz(lowtime, hightime);
   FOR i IN 1..card
   LOOP
-    result[i] = tnpoint_inst(random_npoint(lown, highn), t);
+    result[i] = tnpoint(random_npoint(lown, highn), t);
     t = t + random_minutes(1, maxminutes);
   END LOOP;
-  RETURN tnpoint_seq(result, 'Discrete');
+  RETURN tnpointSeq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tnpoint_discseq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 10) AS ti
+SELECT k, random_tnpoint_discseq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random temporal network point of sequence subtype
- *
+ * @brief Generate a random temporal network point of sequence subtype
  * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -275,37 +283,36 @@ BEGIN
   rid = random_int(lown, highn);
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tnpoint_inst(npoint(rid, random()), tsarr[i]);
+    result[i] = tnpoint(npoint(rid, random()), tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tnpoint_inst(getValue(result[card - 1]), tsarr[card]);
+    result[card] = tnpoint(getValue(result[card - 1]), tsarr[card]);
   ELSE
-    result[card] = tnpoint_inst(npoint(rid, random()), tsarr[card]);
+    result[card] = tnpoint(npoint(rid, random()), tsarr[card]);
   END IF;
   IF linear THEN
     interp = 'Linear';
   ELSE
     interp = 'Step';
   END IF;
-  RETURN tnpoint_seq(result, interp, lower_inc, upper_inc);
+  RETURN tnpointSeq(result, interp, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tnpoint_contseq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)
+SELECT k, random_tnpoint_contseq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10)
 FROM generate_series (1, 15) AS k;
 
-SELECT k, random_tnpoint_contseq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 10, false)
+SELECT k, random_tnpoint_contseq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10, false)
 FROM generate_series (1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random temporal network point of sequence set subtype
- *
+ * @brief Generate a random temporal network point of sequence set subtype
  * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
@@ -344,15 +351,15 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN tnpoint_seqset(result);
+  RETURN tnpointSeqSet(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tnpoint_seqset(0, 100, '2001-01-01', '2001-12-31', 10, 10, 10, 10, 10) AS ts
+SELECT k, random_tnpoint_seqset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10, 10, 10) AS ts
 FROM generate_series (1, 15) AS k;
 
-SELECT k, random_tnpoint_seqset(0, 100, '2001-01-01', '2001-12-31', 10, 10, 10, 10, 10, false) AS ts
+SELECT k, random_tnpoint_seqset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10, 10, 10, false) AS ts
 FROM generate_series (1, 15) AS k;
 */
 

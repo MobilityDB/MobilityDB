@@ -139,7 +139,7 @@ PG_FUNCTION_INFO_V1(Ttext_initcap);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Return a temporal text transformed to uppercase
- * @sqlfn upper()
+ * @sqlfn initcap()
  */
 Datum
 Ttext_initcap(PG_FUNCTION_ARGS)

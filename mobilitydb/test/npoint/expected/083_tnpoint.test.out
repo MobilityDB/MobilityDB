@@ -322,35 +322,35 @@ SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-
  Interp=Step;{[NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST], [NPoint(2,0.6)@Tue Jan 04 00:00:00 2000 PST, NPoint(2,0.6)@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tnpoint_inst('npoint(1,0)'::npoint, '2012-01-01'::timestamp);
-               tnpoint_inst               
+SELECT tnpoint('npoint(1,0)'::npoint, '2012-01-01'::timestamp);
+                 tnpoint                  
 ------------------------------------------
  NPoint(1,0)@Sun Jan 01 00:00:00 2012 PST
 (1 row)
 
-SELECT tnpoint_seq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(2,1)@2012-02-01'::tnpoint], 'discrete');
-                                     tnpoint_seq                                      
+SELECT tnpointSeq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(2,1)@2012-02-01'::tnpoint], 'discrete');
+                                      tnpointseq                                      
 --------------------------------------------------------------------------------------
  {NPoint(1,0)@Sun Jan 01 00:00:00 2012 PST, NPoint(2,1)@Wed Feb 01 00:00:00 2012 PST}
 (1 row)
 
-SELECT tnpoint_seq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(1,1)@2012-02-01'::tnpoint], 'linear', true, false);
-                                     tnpoint_seq                                      
+SELECT tnpointSeq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(1,1)@2012-02-01'::tnpoint], 'linear', true, false);
+                                      tnpointseq                                      
 --------------------------------------------------------------------------------------
  [NPoint(1,0)@Sun Jan 01 00:00:00 2012 PST, NPoint(1,1)@Wed Feb 01 00:00:00 2012 PST)
 (1 row)
 
 /* Error */
-SELECT tnpoint_seq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(2,1)@2012-02-01'::tnpoint], 'linear', true, false);
+SELECT tnpointSeq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(2,1)@2012-02-01'::tnpoint], 'linear', true, false);
 ERROR:  All network points composing a temporal sequence must have same route identifier
-SELECT tnpoint_seqset(ARRAY[tnpoint '[npoint(1,0)@2012-01-01, npoint(1,1)@2012-02-01]', '[npoint(2,0)@2012-03-01, npoint(2,1)@2012-04-01]']);
-                                                                                tnpoint_seqset                                                                                
+SELECT tnpointSeqSet(ARRAY[tnpoint '[npoint(1,0)@2012-01-01, npoint(1,1)@2012-02-01]', '[npoint(2,0)@2012-03-01, npoint(2,1)@2012-04-01]']);
+                                                                                tnpointseqset                                                                                 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[NPoint(1,0)@Sun Jan 01 00:00:00 2012 PST, NPoint(1,1)@Wed Feb 01 00:00:00 2012 PST], [NPoint(2,0)@Thu Mar 01 00:00:00 2012 PST, NPoint(2,1)@Sun Apr 01 00:00:00 2012 PDT]}
 (1 row)
 
-SELECT tnpoint_inst(tnpoint 'Npoint(1, 0.5)@2000-01-01');
-                tnpoint_inst                
+SELECT tnpointInst(tnpoint 'Npoint(1, 0.5)@2000-01-01');
+                tnpointinst                 
 --------------------------------------------
  NPoint(1,0.5)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
@@ -361,20 +361,20 @@ SELECT setInterp(tnpoint 'Npoint(1, 0.5)@2000-01-01', 'discrete');
  {NPoint(1,0.5)@Sat Jan 01 00:00:00 2000 PST}
 (1 row)
 
-SELECT tnpoint_seq(tnpoint 'Npoint(1, 0.5)@2000-01-01');
-                 tnpoint_seq                  
+SELECT tnpointSeq(tnpoint 'Npoint(1, 0.5)@2000-01-01');
+                  tnpointseq                  
 ----------------------------------------------
  [NPoint(1,0.5)@Sat Jan 01 00:00:00 2000 PST]
 (1 row)
 
-SELECT tnpoint_seqset(tnpoint 'Npoint(1, 0.5)@2000-01-01');
-                 tnpoint_seqset                 
+SELECT tnpointSeqSet(tnpoint 'Npoint(1, 0.5)@2000-01-01');
+                 tnpointseqset                  
 ------------------------------------------------
  {[NPoint(1,0.5)@Sat Jan 01 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tnpoint_inst(tnpoint '{Npoint(1, 0.3)@2000-01-01}');
-                tnpoint_inst                
+SELECT tnpointInst(tnpoint '{Npoint(1, 0.3)@2000-01-01}');
+                tnpointinst                 
 --------------------------------------------
  NPoint(1,0.3)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
@@ -385,20 +385,20 @@ SELECT setInterp(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02,
  {NPoint(1,0.3)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.5)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT tnpoint_seq(tnpoint '{Npoint(1, 0.3)@2000-01-01}');
-                 tnpoint_seq                  
+SELECT tnpointSeq(tnpoint '{Npoint(1, 0.3)@2000-01-01}');
+                  tnpointseq                  
 ----------------------------------------------
  {NPoint(1,0.3)@Sat Jan 01 00:00:00 2000 PST}
 (1 row)
 
-SELECT tnpoint_seqset(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
-                                                               tnpoint_seqset                                                               
+SELECT tnpointSeqSet(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+                                                               tnpointseqset                                                                
 --------------------------------------------------------------------------------------------------------------------------------------------
  {[NPoint(1,0.3)@Sat Jan 01 00:00:00 2000 PST], [NPoint(1,0.5)@Sun Jan 02 00:00:00 2000 PST], [NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tnpoint_inst(tnpoint '[Npoint(1, 0.3)@2000-01-01]');
-                tnpoint_inst                
+SELECT tnpointInst(tnpoint '[Npoint(1, 0.3)@2000-01-01]');
+                tnpointinst                 
 --------------------------------------------
  NPoint(1,0.3)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
@@ -409,20 +409,20 @@ SELECT setInterp(tnpoint '[Npoint(1, 0.3)@2000-01-01]', 'discrete');
  {NPoint(1,0.3)@Sat Jan 01 00:00:00 2000 PST}
 (1 row)
 
-SELECT tnpoint_seq(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
-                                                             tnpoint_seq                                                              
+SELECT tnpointSeq(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+                                                              tnpointseq                                                              
 --------------------------------------------------------------------------------------------------------------------------------------
  [NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tnpoint_seqset(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
-                                                             tnpoint_seqset                                                             
+SELECT tnpointSeqSet(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+                                                             tnpointseqset                                                              
 ----------------------------------------------------------------------------------------------------------------------------------------
  {[NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tnpoint_inst(tnpoint '{[Npoint(1, 0.3)@2000-01-01]}');
-                tnpoint_inst                
+SELECT tnpointInst(tnpoint '{[Npoint(1, 0.3)@2000-01-01]}');
+                tnpointinst                 
 --------------------------------------------
  NPoint(1,0.3)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
@@ -433,14 +433,14 @@ SELECT setInterp(tnpoint '{[Npoint(1, 0.3)@2000-01-01], [Npoint(2, 0.6)@2000-01-
  {NPoint(1,0.3)@Sat Jan 01 00:00:00 2000 PST, NPoint(2,0.6)@Tue Jan 04 00:00:00 2000 PST}
 (1 row)
 
-SELECT tnpoint_seq(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]}');
-                                                             tnpoint_seq                                                              
+SELECT tnpointSeq(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]}');
+                                                              tnpointseq                                                              
 --------------------------------------------------------------------------------------------------------------------------------------
  [NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT tnpoint_seqset(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
-                                                                                                          tnpoint_seqset                                                                                                          
+SELECT tnpointSeqSet(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+                                                                                                          tnpointseqset                                                                                                           
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST], [NPoint(2,0.6)@Tue Jan 04 00:00:00 2000 PST, NPoint(2,0.6)@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)

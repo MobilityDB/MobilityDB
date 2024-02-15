@@ -365,9 +365,9 @@ SELECT Xmin(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
     1
 (1 row)
 
-SELECT Xmin_inc(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
- xmin_inc 
-----------
+SELECT XminInc(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ xmininc 
+---------
  t
 (1 row)
 
@@ -377,9 +377,9 @@ SELECT Xmax(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
     2
 (1 row)
 
-SELECT Xmax_inc(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
- xmax_inc 
-----------
+SELECT XmaxInc(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ xmaxinc 
+---------
  t
 (1 row)
 
@@ -389,9 +389,9 @@ SELECT Tmin(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
  Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT Tmin_inc(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
- tmin_inc 
-----------
+SELECT TminInc(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ tmininc 
+---------
  t
 (1 row)
 
@@ -401,9 +401,9 @@ SELECT Tmax(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
  Sun Jan 02 00:00:00 2000 PST
 (1 row)
 
-SELECT Tmax_inc(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
- tmax_inc 
-----------
+SELECT TmaxInc(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ tmaxinc 
+---------
  t
 (1 row)
 
@@ -425,9 +425,9 @@ SELECT Tmin(tbox 'TBOXFLOAT X([1.0, 2.0])');
  
 (1 row)
 
-SELECT Tmin_inc(tbox 'TBOXFLOAT X([1.0, 2.0])');
- tmin_inc 
-----------
+SELECT TminInc(tbox 'TBOXFLOAT X([1.0, 2.0])');
+ tmininc 
+---------
  
 (1 row)
 
@@ -437,9 +437,9 @@ SELECT Tmax(tbox 'TBOXFLOAT X([1.0, 2.0])');
  
 (1 row)
 
-SELECT Tmax_inc(tbox 'TBOXFLOAT X([1.0, 2.0])');
- tmax_inc 
-----------
+SELECT TmaxInc(tbox 'TBOXFLOAT X([1.0, 2.0])');
+ tmaxinc 
+---------
  
 (1 row)
 
@@ -449,9 +449,9 @@ SELECT Xmin(tbox 'TBOX T([2000-01-01,2000-01-02])');
      
 (1 row)
 
-SELECT Xmin_inc(tbox 'TBOX T([2000-01-01,2000-01-02])');
- xmin_inc 
-----------
+SELECT XminInc(tbox 'TBOX T([2000-01-01,2000-01-02])');
+ xmininc 
+---------
  
 (1 row)
 
@@ -461,9 +461,9 @@ SELECT Xmax(tbox 'TBOX T([2000-01-01,2000-01-02])');
      
 (1 row)
 
-SELECT Xmax_inc(tbox 'TBOX T([2000-01-01,2000-01-02])');
- xmax_inc 
-----------
+SELECT XmaxInc(tbox 'TBOX T([2000-01-01,2000-01-02])');
+ xmaxinc 
+---------
  
 (1 row)
 

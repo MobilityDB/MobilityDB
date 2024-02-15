@@ -133,8 +133,8 @@ SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2001-01-01,
 			<listitem id="appendInstant">
 				<indexterm><primary><varname>appendInstant</varname></primary></indexterm>
 				<para>Anexar un instante temporal a un valor temporal</para>
-				<para><varname>appendInstant(ttype,ttype_inst) → ttype</varname></para>
-				<para><varname>appendInstant(ttype_inst,maxdist=NULL,maxt=NULL) → ttype_seq</varname></para>
+				<para><varname>appendInstant(ttype,ttypeInst) → ttype</varname></para>
+				<para><varname>appendInstant(ttypeInst,maxdist=NULL,maxt=NULL) → ttypeSeq</varname></para>
 				<para>La primera versión de la función devuelve el resultado de agregar el segundo argumento al primero. Si cualquiera de las entradas es NULL, se devuelve NULL.</para>
 				<para>La segunda versión de la función anterior es una función de <emphasis>agregación</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL. Dos argumentos opcionales establecen una distancia máxima y un intervalo de tiempo máximo de modo que se introduce una brecha de tiempo cada vez que dos instantes consecutivos tienen una distancia o un intervalo de tiempo mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Si uno de estos argumentos no se dan, no se tiene en cuenta para determinar las brechas.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -193,8 +193,8 @@ SELECT asText(appendInstant(inst, sqrt(2), '1 day' ORDER BY inst)) FROM temp;
 			<listitem id="appendSequence">
 				<indexterm><primary><varname>appendSequence</varname></primary></indexterm>
 				<para>Anexar una secuencia temporal a un valor temporal</para>
-				<para><varname>appendSequence(ttype,ttype_seq) → {ttype_seq, ttype_seqset}</varname></para>
-				<para><varname>appendSequence(ttype_seq) → {ttype_seq,ttype_seqset}</varname></para>
+				<para><varname>appendSequence(ttype,ttypeSeq) → {ttypeSeq, ttypeSeqSet}</varname></para>
+				<para><varname>appendSequence(ttypeSeq) → {ttypeSeq,ttypeSeqSet}</varname></para>
 				<para>La primera versión de la función devuelve el resultado de agregar el segundo argumento al primero. Si cualquiera de las entradas es NULL, se devuelve NULL.</para>
 				<para>La segunda versión de la función anterior es una función de <emphasis>agregación</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL.</para>
 				<programlisting language="sql" xml:space="preserve">

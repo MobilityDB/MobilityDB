@@ -412,7 +412,7 @@ PG_FUNCTION_INFO_V1(Tpointinst_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Return a temporal instant point from a point and a timestamptz
- * @sqlfn tgeompoint_inst(), tgeogpoint_inst()
+ * @sqlfn tgeompoint(), tgeogpoint()
  */
 Datum
 Tpointinst_constructor(PG_FUNCTION_ARGS)

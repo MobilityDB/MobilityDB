@@ -149,42 +149,42 @@ SELECT MIN(startValue(radians(f))) FROM tbl_floatset;
 -------------------------------------------------------------------------------
 -- Set_union and unnest functions
 
-SELECT numValues(set_union(i)) FROM tbl_int;
-SELECT numValues(set_union(b)) FROM tbl_bigint;
-SELECT numValues(set_union(f)) FROM tbl_float;
-SELECT numValues(set_union(d)) FROM tbl_date;
-SELECT numValues(set_union(t)) FROM tbl_timestamptz;
-SELECT numValues(set_union(t)) FROM tbl_text;
+SELECT numValues(setUnion(i)) FROM tbl_int;
+SELECT numValues(setUnion(b)) FROM tbl_bigint;
+SELECT numValues(setUnion(f)) FROM tbl_float;
+SELECT numValues(setUnion(d)) FROM tbl_date;
+SELECT numValues(setUnion(t)) FROM tbl_timestamptz;
+SELECT numValues(setUnion(t)) FROM tbl_text;
 
 WITH test1(k, i) AS (
   SELECT k, unnest(i) FROM tbl_intset ),
 test2 (k, i) AS (
-  SELECT k, set_union(i) FROM test1 GROUP BY k )
+  SELECT k, setUnion(i) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_intset t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
 WITH test1(k, b) AS (
   SELECT k, unnest(b) FROM tbl_bigintset ),
 test2 (k, b) AS (
-  SELECT k, set_union(b) FROM test1 GROUP BY k )
+  SELECT k, setUnion(b) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_bigintset t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
 WITH test1(k, f) AS (
   SELECT k, unnest(f) FROM tbl_floatset ),
 test2 (k, f) AS (
-  SELECT k, set_union(f) FROM test1 GROUP BY k )
+  SELECT k, setUnion(f) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_floatset t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
 WITH test1(k, t) AS (
   SELECT k, unnest(t) FROM tbl_textset ),
 test2 (k, t) AS (
-  SELECT k, set_union(t) FROM test1 GROUP BY k )
+  SELECT k, setUnion(t) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_textset t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
 WITH test1(k, d) AS (
   SELECT k, unnest(d) FROM tbl_dateset ),
 test2 (k, d) AS (
-  SELECT k, set_union(d) FROM test1 GROUP BY k )
+  SELECT k, setUnion(d) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_dateset t2 WHERE t1.k = t2.k AND t1.d <> t2.d;
 WITH test1(k, t) AS (
   SELECT k, unnest(t) FROM tbl_tstzset ),
 test2 (k, t) AS (
-  SELECT k, set_union(t) FROM test1 GROUP BY k )
+  SELECT k, setUnion(t) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_tstzset t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
 
 -------------------------------------------------------------------------------
@@ -215,16 +215,16 @@ SELECT MAX(set_hash_extended(t, 1)) FROM tbl_tstzset;
 -------------------------------------------------------------------------------
 -- Aggregation functions
 
-SELECT numValues(set_union(i)) FROM tbl_int;
-SELECT numValues(set_union(b)) FROM tbl_bigint;
-SELECT numValues(set_union(f)) FROM tbl_float;
-SELECT numValues(set_union(t)) FROM tbl_text;
-SELECT numValues(set_union(d)) FROM tbl_date;
+SELECT numValues(setUnion(i)) FROM tbl_int;
+SELECT numValues(setUnion(b)) FROM tbl_bigint;
+SELECT numValues(setUnion(f)) FROM tbl_float;
+SELECT numValues(setUnion(t)) FROM tbl_text;
+SELECT numValues(setUnion(d)) FROM tbl_date;
 
-SELECT k%2, numValues(set_union(i)) FROM tbl_intset GROUP BY k%2 ORDER BY k%2;
-SELECT k%2, numValues(set_union(b)) FROM tbl_bigintset GROUP BY k%2 ORDER BY k%2;
-SELECT k%2, numValues(set_union(f)) FROM tbl_floatset GROUP BY k%2 ORDER BY k%2;
-SELECT k%2, numValues(set_union(t)) FROM tbl_textset GROUP BY k%2 ORDER BY k%2;
-SELECT k%2, numValues(set_union(d)) FROM tbl_dateset GROUP BY k%2 ORDER BY k%2;
+SELECT k%2, numValues(setUnion(i)) FROM tbl_intset GROUP BY k%2 ORDER BY k%2;
+SELECT k%2, numValues(setUnion(b)) FROM tbl_bigintset GROUP BY k%2 ORDER BY k%2;
+SELECT k%2, numValues(setUnion(f)) FROM tbl_floatset GROUP BY k%2 ORDER BY k%2;
+SELECT k%2, numValues(setUnion(t)) FROM tbl_textset GROUP BY k%2 ORDER BY k%2;
+SELECT k%2, numValues(setUnion(d)) FROM tbl_dateset GROUP BY k%2 ORDER BY k%2;
 
 -------------------------------------------------------------------------------

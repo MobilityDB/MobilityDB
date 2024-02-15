@@ -303,7 +303,7 @@ SELECT set(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
 			<listitem id="span">
 				<indexterm><primary><varname>span</varname></primary></indexterm>
 				<para>Constructor para tipos de rango</para>
-				<para><varname>span(lower base,upper base,left_inc bool=true,right_inc bool=false) → span</varname></para>
+				<para><varname>span(lower base,upper base,leftInc bool=true,rightInc bool=false) → span</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT span(20.5, 25);
 -- [20.5, 25)
@@ -494,26 +494,26 @@ SELECT upper(tstzspan '[2001-01-01, 2001-01-05)');
 </programlisting>
 			</listitem>
 
-			<listitem id="setspan_lower_inc">
-				<indexterm><primary><varname>lower_inc</varname></primary></indexterm>
-				<indexterm><primary><varname>upper_inc</varname></primary></indexterm>
+			<listitem id="setspan_lowerInc">
+				<indexterm><primary><varname>lowerInc</varname></primary></indexterm>
+				<indexterm><primary><varname>upperInc</varname></primary></indexterm>
 				<para>¿Es el límite inferior or superior inclusivo?</para>
-				<para><varname>lower_inc(spans) → boolean</varname></para>
-				<para><varname>upper_inc(spans) → boolean</varname></para>
+				<para><varname>lowerInc(spans) → boolean</varname></para>
+				<para><varname>upperInc(spans) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT lower_inc(datespan '[2001-01-01, 2001-01-05)');
+SELECT lowerInc(datespan '[2001-01-01, 2001-01-05)');
 -- true
-SELECT lower_inc(intspanset '{[1,2],[4,5]}');
+SELECT lowerInc(intspanset '{[1,2],[4,5]}');
 -- true
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
-SELECT lower_inc(tstzspan '[2001-01-01, 2001-01-05)');
+SELECT lowerInc(tstzspan '[2001-01-01, 2001-01-05)');
 -- true
-SELECT upper_inc(intspanset '{[1,2],[4,5]}');
+SELECT upperInc(intspanset '{[1,2],[4,5]}');
 -- false
 SELECT upper(floatspan '[20.5, 25.3]');
 -- true
-SELECT upper_inc(tstzspan '[2001-01-01, 2001-01-05)');
+SELECT upperInc(tstzspan '[2001-01-01, 2001-01-05)');
 -- false
 </programlisting>
 			</listitem>
@@ -1270,7 +1270,7 @@ SELECT tstzspan '[2001-01-03, 2001-01-05)' &gt;= tstzspan '[2001-01-03, 2001-01-
 		<itemizedlist>
 			<listitem><para>La función <varname>extent</varname> devuelve el rango o período delimitador que engloba un conjunto de valores de rango o de tiempo.</para></listitem>
 			<listitem><para>La unión es una operación muy útil para los tipos de conjunto y de rango. Como hemos visto en la <xref linkend="setspan_set_operators" />, podemos calcular la unión de dos valores de conjunto o de rango usando el operador <varname>+</varname>. Sin embargo, también es muy útil tener una versión agregada del operador de unión para combinar un número arbitrario de valores. Las funciones <varname>set_union</varname> y <varname>span_union</varname> se pueden utilizar para este propósito.</para></listitem>
-			<listitem><para>La función <varname>tcount</varname> generaliza la función de agregación tradicional <varname>count</varname>. El conteo temporal se puede utilizar para calcular en cada momento el número de objetos disponibles (por ejemplo, el número of períodos). La función <varname>tcount</varname> devuelve un entero temporal (ver el <xref linkend="temporal_types" />). La función tiene dos parámetros opcionales que especifican la granularidad (un <varname>interval</varname>) y el origen del tiempo (un <varname>timestamptz</varname>). Cuando se dan estos parámetros, el conteo temporal se calcula en intervalos de tiempo de la granularidad dada (ver <xref linkend="temporal_types_tiling" />)</para></listitem>
+			<listitem><para>La función <varname>tCount</varname> generaliza la función de agregación tradicional <varname>count</varname>. El conteo temporal se puede utilizar para calcular en cada momento el número de objetos disponibles (por ejemplo, el número of períodos). La función <varname>tCount</varname> devuelve un entero temporal (ver el <xref linkend="temporal_types" />). La función tiene dos parámetros opcionales que especifican la granularidad (un <varname>interval</varname>) y el origen del tiempo (un <varname>timestamptz</varname>). Cuando se dan estos parámetros, el conteo temporal se calcula en intervalos de tiempo de la granularidad dada (ver <xref linkend="temporal_types_tiling" />)</para></listitem>
 		</itemizedlist>
 
 		<itemizedlist>
@@ -1304,56 +1304,48 @@ SELECT extent(ps) FROM periods;
 			</listitem>
 
 			<listitem id="setspan_union_agg">
-				<indexterm><primary><varname>set_union</varname></primary></indexterm>
-				<indexterm><primary><varname>span_union</varname></primary></indexterm>
+				<indexterm><primary><varname>setUnion</varname></primary></indexterm>
+				<indexterm><primary><varname>spanUnion</varname></primary></indexterm>
 				<para>Unión agregada</para>
-				<para><varname>set_union({value,set}) → set</varname></para>
-				<para><varname>span_union(spans) → spanset</varname></para>
+				<para><varname>setUnion({value,set}) → set</varname></para>
+				<para><varname>spanUnion(spans) → spanset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 WITH times(ts) AS (
   SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' UNION
   SELECT tstzset '{2001-01-02, 2001-01-04, 2001-01-06}' UNION
   SELECT tstzset '{2001-01-01, 2001-01-02}'
 )
-SELECT tunion(ts) FROM times;
+SELECT setUnion(ts) FROM times;
 -- {2001-01-01, 2001-01-02, 2001-01-03, 2001-01-04, 2001-01-05, 2001-01-06}
 WITH periods(ps) AS (
   SELECT tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}' UNION
   SELECT tstzspanset '{[2001-01-02, 2001-01-03], [2001-01-05, 2001-01-06]}' UNION
   SELECT tstzspanset '{[2001-01-07, 2001-01-08]}'
 )
-SELECT tunion(ps) FROM periods;
+SELECT spanUnion(ps) FROM periods;
 -- {[2001-01-01, 2001-01-04], [2001-01-05, 2001-01-06], [2001-01-07, 2001-01-08]}
 </programlisting>
 			</listitem>
 
-			<listitem id="setspan_tcount">
-				<indexterm><primary><varname>tcount</varname></primary></indexterm>
+			<listitem id="setspan_tCount">
+				<indexterm><primary><varname>tCount</varname></primary></indexterm>
 				<para>Conteo temporal</para>
-				<para><varname>tcount(times) → {tint_seq,tint_seqset}</varname></para>
-				<para><varname>tcount(times,interval,timestamptz) → {tint_seq,tint_seqset}</varname></para>
+				<para><varname>tCount(times) → {tintSeq,tintSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 WITH times(ts) AS (
   SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' UNION
   SELECT tstzset '{2001-01-02, 2001-01-04, 2001-01-06}' UNION
   SELECT tstzset '{2001-01-01, 2001-01-02}'
 )
-SELECT tcount(ts) FROM times;
+SELECT tCount(ts) FROM times;
 -- {2@2001-01-01, 2@2001-01-02, 1@2001-01-03, 1@2001-01-04, 1@2001-01-05, 1@2001-01-06}
 WITH periods(ps) AS (
   SELECT tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}' UNION
   SELECT tstzspanset '{[2001-01-01, 2001-01-04), [2001-01-05, 2001-01-06)}' UNION
   SELECT tstzspanset '{[2001-01-02, 2001-01-06)}'
 )
-SELECT tcount(ps) FROM tstzspans;
+SELECT tCount(ps) FROM periods;
 -- {[2@2001-01-01, 3@2001-01-03, 1@2001-01-04, 2@2001-01-05, 2@2001-01-06)}
-WITH periods(ps) AS (
-  SELECT tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}' UNION
-  SELECT tstzspanset '{[2001-01-01, 2001-01-04), [2001-01-05, 2001-01-06)}' UNION
-  SELECT tstzspanset '{[2001-01-02, 2001-01-06)}'
-)
-SELECT tcount(ps, '2 days', '2001-01-01') FROM periods;
--- {[3@2001-01-01, 2@2001-01-05, 2@2001-01-07)}
 </programlisting>
 			</listitem>
 		</itemizedlist>

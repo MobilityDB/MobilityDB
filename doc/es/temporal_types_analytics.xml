@@ -41,15 +41,15 @@ SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2001-01-01,
 </programlisting>
 			</listitem>
 
-			<listitem id="DouglasPeuckerSimplify">
+			<listitem id="douglasPeuckerSimplify">
 				<indexterm><primary><varname>maxDistSimplify</varname></primary></indexterm>
-				<indexterm><primary><varname>DouglasPeuckerSimplify</varname></primary></indexterm>
+				<indexterm><primary><varname>douglasPeuckerSimplify</varname></primary></indexterm>
 				<para>Simplificar un flotante o un punto temporal usando el <ulink url="https://es.wikipedia.org/wiki/Algoritmo_de_Ramer%E2%80%93Douglas%E2%80%93Peucker">algoritmo de Douglas-Peucker</ulink> &Z_support;</para>
 				<para><varname>maxDistSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
 				<para><varname>  {tfloat,tgeompoint}</varname></para>
-				<para><varname>DouglasPeuckerSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
+				<para><varname>douglasPeuckerSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
 				<para><varname>  {tfloat,tgeompoint}</varname></para>
-				<para>La diferencia entre las dos funciones es que <varname>maxDistSimplify</varname> usa una versión del algoritmo de un solo recorrido, mientras que <varname>DouglasPeuckerSimplify</varname> usa el algoritmo recursivo estándar.</para>
+				<para>La diferencia entre las dos funciones es que <varname>maxDistSimplify</varname> usa una versión del algoritmo de un solo recorrido, mientras que <varname>douglasPeuckerSimplify</varname> usa el algoritmo recursivo estándar.</para>
 				<para>La función elimina los valores or los puntos cuya distancia es menor que la distancia pasada como segundo argumento. En el caso de puntos temporales la distancia se especifica en las unidades del sistema de coordenadas. El tercer argumento se aplica solo a puntos temporales y especifica si se utiliza la distancia espacial o la distancia  sincronizada. Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
 				<programlisting language="sql" xml:space="preserve">
 -- Only synchronous distance for temporal floats
@@ -67,10 +67,10 @@ SELECT asText(maxDistSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@200
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 -- Spatial vs synchronized distance
-SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(6 1)@2001-01-06,
+SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(6 1)@2001-01-06,
   Point(7 4)@2001-01-07]', 2.3, false));
 -- [POINT(1 1)@2001-01-01, POINT(7 4)@2001-01-07]
-SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(6 1)@2001-01-06,
+SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(6 1)@2001-01-06,
   Point(7 4)@2001-01-07]', 2.3, true));
 -- [POINT(1 1)@2001-01-01, POINT(6 1)@2001-01-06, POINT(7 4)@2001-01-07]
 </programlisting>
@@ -88,7 +88,7 @@ SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(6
 			</mediaobject>
 		</figure>
 
-		<para>Un uso típico de la función <varname>DouglasPeuckerSimplify</varname> es reducir el tamaño de un conjunto de datos, en particular con fines de visualización. Si la visualización es estática, se debe preferir la distancia espacial; si la visualización es dinámica o animada, se debe preferir la distancia sincronizada.</para>
+		<para>Un uso típico de la función <varname>douglasPeuckerSimplify</varname> es reducir el tamaño de un conjunto de datos, en particular con fines de visualización. Si la visualización es estática, se debe preferir la distancia espacial; si la visualización es dinámica o animada, se debe preferir la distancia sincronizada.</para>
 	</sect1>
 
 	<sect1 id="temporal_types_reduction">

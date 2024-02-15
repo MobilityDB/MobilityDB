@@ -256,63 +256,63 @@ SELECT upper(tstzspan '(2000-01-01,2000-01-02)');
  Sun Jan 02 00:00:00 2000 PST
 (1 row)
 
-SELECT lower_inc(tstzspan '[2000-01-01,2000-01-01]');
- lower_inc 
------------
+SELECT lowerInc(tstzspan '[2000-01-01,2000-01-01]');
+ lowerinc 
+----------
  t
 (1 row)
 
-SELECT lower_inc(tstzspan '[2000-01-01,2000-01-02]');
- lower_inc 
------------
+SELECT lowerInc(tstzspan '[2000-01-01,2000-01-02]');
+ lowerinc 
+----------
  t
 (1 row)
 
-SELECT lower_inc(tstzspan '(2000-01-01,2000-01-02]');
- lower_inc 
------------
+SELECT lowerInc(tstzspan '(2000-01-01,2000-01-02]');
+ lowerinc 
+----------
  f
 (1 row)
 
-SELECT lower_inc(tstzspan '[2000-01-01,2000-01-02)');
- lower_inc 
------------
+SELECT lowerInc(tstzspan '[2000-01-01,2000-01-02)');
+ lowerinc 
+----------
  t
 (1 row)
 
-SELECT lower_inc(tstzspan '(2000-01-01,2000-01-02)');
- lower_inc 
------------
+SELECT lowerInc(tstzspan '(2000-01-01,2000-01-02)');
+ lowerinc 
+----------
  f
 (1 row)
 
-SELECT upper_inc(tstzspan '[2000-01-01,2000-01-01]');
- upper_inc 
------------
+SELECT upperInc(tstzspan '[2000-01-01,2000-01-01]');
+ upperinc 
+----------
  t
 (1 row)
 
-SELECT upper_inc(tstzspan '[2000-01-01,2000-01-02]');
- upper_inc 
------------
+SELECT upperInc(tstzspan '[2000-01-01,2000-01-02]');
+ upperinc 
+----------
  t
 (1 row)
 
-SELECT upper_inc(tstzspan '(2000-01-01,2000-01-02]');
- upper_inc 
------------
+SELECT upperInc(tstzspan '(2000-01-01,2000-01-02]');
+ upperinc 
+----------
  t
 (1 row)
 
-SELECT upper_inc(tstzspan '[2000-01-01,2000-01-02)');
- upper_inc 
------------
+SELECT upperInc(tstzspan '[2000-01-01,2000-01-02)');
+ upperinc 
+----------
  f
 (1 row)
 
-SELECT upper_inc(tstzspan '(2000-01-01,2000-01-02)');
- upper_inc 
------------
+SELECT upperInc(tstzspan '(2000-01-01,2000-01-02)');
+ upperinc 
+----------
  f
 (1 row)
 

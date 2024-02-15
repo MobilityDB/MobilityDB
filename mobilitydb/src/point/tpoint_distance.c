@@ -53,9 +53,9 @@ PGDLLEXPORT Datum Distance_point_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_point_tpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
- * @brief Return the temporal distance between a geometry/geography and a 
+ * @brief Return the temporal distance between a geometry/geography and a
  * temporal point
- * @sqlfn temporal_distance()
+ * @sqlfn tDistance()
  * @sqlop @p <->
  */
 Datum
@@ -79,7 +79,7 @@ PG_FUNCTION_INFO_V1(Distance_tpoint_point);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the temporal distance between a temporal point and a
  * geometry/geography
- * @sqlfn temporal_distance()
+ * @sqlfn tDistance()
  * @sqlop @p <->
  */
 Datum
@@ -102,7 +102,7 @@ PG_FUNCTION_INFO_V1(Distance_tpoint_tpoint);
 /**
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the temporal distance between two temporal points
- * @sqlfn temporal_distance()
+ * @sqlfn tDistance()
  * @sqlop @p <->
  */
 Datum

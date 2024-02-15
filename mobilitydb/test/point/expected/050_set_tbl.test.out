@@ -86,13 +86,13 @@ SELECT asText(geomsetFromHexWKB(asHexWKB(geomset '{"Point(1 1 1)"}')));
  {"POINT Z (1 1 1)"}
 (1 row)
 
-SELECT memSize(set_union(g)) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
+SELECT memSize(setUnion(g)) FROM tbl_geom_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g);
  memsize 
 ---------
     4856
 (1 row)
 
-SELECT memSize(set_union(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
+SELECT memSize(setUnion(g)) FROM tbl_geog_point3D WHERE g IS NOT NULL AND NOT ST_IsEmpty(g::geometry);
  memsize 
 ---------
     4856
@@ -211,13 +211,13 @@ SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
  0.432515
 (1 row)
 
-SELECT numValues(set_union(g)) FROM tbl_geom_point3D WHERE NOT ST_IsEmpty(g);
+SELECT numValues(setUnion(g)) FROM tbl_geom_point3D WHERE NOT ST_IsEmpty(g);
  numvalues 
 -----------
         99
 (1 row)
 
-SELECT numValues(set_union(g)) FROM tbl_geog_point3D WHERE NOT ST_IsEmpty(g::geometry);
+SELECT numValues(setUnion(g)) FROM tbl_geog_point3D WHERE NOT ST_IsEmpty(g::geometry);
  numvalues 
 -----------
         99
@@ -226,7 +226,7 @@ SELECT numValues(set_union(g)) FROM tbl_geog_point3D WHERE NOT ST_IsEmpty(g::geo
 WITH test1(k, g) AS (
   SELECT k, unnest(g) FROM tbl_geomset ),
 test2 (k, g) AS (
-  SELECT k, set_union(g) FROM test1 GROUP BY k )
+  SELECT k, setUnion(g) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_geomset t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
  count 
 -------
@@ -236,7 +236,7 @@ SELECT COUNT(*) FROM test2 t1, tbl_geomset t2 WHERE t1.k = t2.k AND t1.g <> t2.g
 WITH test1(k, g) AS (
   SELECT k, unnest(g) FROM tbl_geogset ),
 test2 (k, g) AS (
-  SELECT k, set_union(g) FROM test1 GROUP BY k )
+  SELECT k, setUnion(g) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_geogset t2 WHERE t1.k = t2.k AND t1.g <> t2.g;
  count 
 -------
@@ -339,7 +339,7 @@ SELECT MAX(set_hash(g)) FROM tbl_geogset;
  2135464549
 (1 row)
 
-SELECT numValues(set_union(g)) FROM tbl_geom_point WHERE NOT ST_IsEmpty(g);
+SELECT numValues(setUnion(g)) FROM tbl_geom_point WHERE NOT ST_IsEmpty(g);
  numvalues 
 -----------
         99

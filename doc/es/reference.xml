@@ -195,7 +195,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: ¿Es el límite inferior o superior inclusivo?</para>
+					<para><link linkend="setspan_lowerInc"><varname>lowerInc</varname>, <varname>upperInc</varname></link>: ¿Es el límite inferior o superior inclusivo?</para>
 				</listitem>
 
 				<listitem>
@@ -415,7 +415,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_tcount"><varname>tcount</varname></link>: Conteo temporal</para>
+					<para><link linkend="setspan_tCount"><varname>tCount</varname></link>: Conteo temporal</para>
 				</listitem>
 
 				<listitem>
@@ -423,7 +423,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_union_agg"><varname>set_union</varname>, <varname>span_union</varname></link>: Unión agregada</para>
+					<para><link linkend="setspan_union_agg"><varname>setUnion</varname>, <varname>spanUnion</varname></link>: Unión agregada</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -465,7 +465,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox"><varname>stbox_x, stbox_z, stbox_t, stbox_xt, stbox_zt, geodstbox_z, geodstbox_t, geodstbox_zt</varname></link>: Constructor para <varname>stbox</varname></para>
+					<para><link linkend="stbox"><varname>stboxX, stboxZ, stboxT, stboxXT, stboxZY, geodstboxZ, geodstboxT, geodstboxZT</varname></link>: Constructor para <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -505,19 +505,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Xmin"><varname>Xmin</varname>, <varname>Ymin</varname>, <varname>Zmin</varname>, <varname>Tmin</varname></link>: Obtener el valor mínimo de X/Y/Z/T</para>
+					<para><link linkend="xMin"><varname>xMin</varname>, <varname>yMin</varname>, <varname>zMin</varname>, <varname>tMin</varname></link>: Obtener el valor mínimo de X/Y/Z/T</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Xmax"><varname>Xmax</varname>, <varname>Ymax</varname>, <varname>Zmax</varname>, <varname>Tmax</varname></link>: Obtener el valor máximo de X/Y/Z/T</para>
+					<para><link linkend="xMax"><varname>xMax</varname>, <varname>yMax</varname>, <varname>zMax</varname>, <varname>tMax</varname></link>: Obtener el valor máximo de X/Y/Z/T</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Xmin_inc"><varname>Xmin_inc</varname>, <varname>Tmin_inc</varname></link>: Es el mínimo valor X/T inclusivo?</para>
+					<para><link linkend="xMinInc"><varname>xMinInc</varname>, <varname>tMinInc</varname></link>: Es el mínimo valor X/T inclusivo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Xmax_inc"><varname>Xmax_inc</varname>, <varname>Tmax_inc</varname></link>: Es el máximo valor X/T inclusivo?</para>
+					<para><link linkend="xMaxInc"><varname>xMaxInc</varname>, <varname>tMaxInc</varname></link>: Es el máximo valor X/T inclusivo?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -526,11 +526,11 @@
 			<title>Transformaciones</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="box_shift"><varname>shiftValue</varname>, <varname>shiftTime</varname></link>: Desplazar el rango de valores o período del cuadro delimitador con un valor o intervalo</para>
+					<para><link linkend="box_shift"><varname>shiftValue</varname>, <varname>shiftTime</varname></link>: Desplazar el rango de valores o el período de un cuadro delimitador con un valor o intervalo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_scale"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Escalar el rango de valores o el período del cuadro delimitador a un valor o intervalo</para>
+					<para><link linkend="box_scale"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Escalar el rango de valores o el período de un cuadro delimitador a un valor o intervalo</para>
 				</listitem>
 
 				<listitem>
@@ -538,23 +538,23 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="getSpace"><varname>getSpace</varname></link>: Obtener la dimensión espacial del cuadro delimitador, eliminando la dimensión temporal, si existe</para>
+					<para><link linkend="getSpace"><varname>getSpace</varname></link>: Obtener la dimensión espacial de un cuadro delimitador, eliminando la dimensión temporal, si existe</para>
 					</listitem>
 
 				<listitem>
-					<para><link linkend="expandValue"><varname>expandValue</varname></link>: Extender la dimensión numérica del cuadro delimitador con un valor flotante</para>
+					<para><link linkend="expandValue"><varname>expandValue</varname></link>: Extender la dimensión numérica de un cuadro delimitador con un valor flotante</para>
 					</listitem>
 
 				<listitem>
-					<para><link linkend="expandSpace"><varname>expandSpace</varname></link>: Extender la dimensión espacial del cuadro delimitador con un valor flotante</para>
+					<para><link linkend="expandSpace"><varname>expandSpace</varname></link>: Extender la dimensión espacial de un cuadro delimitador con un valor flotante</para>
 					</listitem>
 
 				<listitem>
-					<para><link linkend="expandTime"><varname>expandTime</varname></link>: Extender la dimensión temporal del cuadro delimitador con un intervalo de tiempo</para>
+					<para><link linkend="expandTime"><varname>expandTime</varname></link>: Extender la dimensión temporal de un cuadro delimitador con un intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir a grados o radianes</para>
+					<para><link linkend="box_round"><varname>round</varname></link>: Redondear el valor o las coordenadas de un cuadro delimitador a un número de posiciones decimales</para>
 				</listitem>
 
 			</itemizedlist>
@@ -752,11 +752,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_seq"><varname>ttype_seq</varname></link>: Constructor para tipos temporales de subtipo secuencia</para>
+					<para><link linkend="ttypeSeq"><varname>ttypeSeq</varname></link>: Constructor para tipos temporales de subtipo secuencia</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_seqset"><varname>ttype_seqset</varname>, <varname>ttype_seqset_gaps</varname></link>: Constructor para tipos temporales de subtipo conjunto de secuencias</para>
+					<para><link linkend="ttypeSeqSet"><varname>ttypeSeqSet</varname>, <varname>ttypeSeqSetGaps</varname></link>: Constructor para tipos temporales de subtipo conjunto de secuencias</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -835,7 +835,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: ¿Es el instante inicial/final inclusivo?</para>
+					<para><link linkend="lowerInc"><varname>lowerInc</varname>, <varname>upperInc</varname></link>: ¿Es el instante inicial/final inclusivo?</para>
 				</listitem>
 
 				<listitem>
@@ -893,7 +893,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_subtype"><varname>ttype_inst, ttype_seq, ttype_seqset</varname></link>: Transformar un valor temporal en otro subtipo</para>
+				<para><link linkend="ttype_subtype"><varname>ttypeInst, ttypeSeq, ttypeSeqSet</varname></link>: Transformar un valor temporal en otro subtipo</para>
 				</listitem>
 
 				<listitem>
@@ -1127,7 +1127,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="round"><varname>round</varname></link>: Redondear los valores a un número de posiciones decimales </para>
+					<para><link linkend="round"><varname>round</varname></link>: Redondear los valores a un número de posiciones decimales</para>
 				</listitem>
 
 				<listitem>
@@ -1421,7 +1421,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="DouglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>DouglasPeuckerSimplify</varname></link>: Simplificar un flotante o un punto temporal usando el algoritmo de Douglas-Peucker</para>
+					<para><link linkend="douglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>douglasPeuckerSimplify</varname></link>: Simplificar un flotante o un punto temporal usando el algoritmo de Douglas-Peucker</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1544,7 +1544,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tcount"><varname>tcount</varname></link>: Conteo temporal</para>
+					<para><link linkend="tCount"><varname>tCount</varname></link>: Conteo temporal</para>
 				</listitem>
 
 				<listitem>
@@ -1552,51 +1552,51 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tand"><varname>tand</varname></link>: Y temporal</para>
+					<para><link linkend="tAnd"><varname>tAnd</varname></link>: Y temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tor"><varname>tor</varname></link>: O temporal</para>
+					<para><link linkend="tOr"><varname>tOr</varname></link>: O temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tmin"><varname>tmin</varname></link>: Mínimo temporal</para>
+					<para><link linkend="tMin"><varname>tMin</varname></link>: Mínimo temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tmax"><varname>tmax</varname></link>: Máximo temporal</para>
+					<para><link linkend="tMax"><varname>tMax</varname></link>: Máximo temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tsum"><varname>tsum</varname></link>: Suma temporal</para>
+					<para><link linkend="tSum"><varname>tSum</varname></link>: Suma temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tavg"><varname>tavg</varname></link>: Promedio temporal</para>
+					<para><link linkend="tAvg"><varname>tAvg</varname></link>: Promedio temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="wmin"><varname>wmin</varname></link>: Mínimo de ventana</para>
+					<para><link linkend="wMin"><varname>wMin</varname></link>: Mínimo de ventana</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="wmax"><varname>wmax</varname></link>: Máximo de ventana</para>
+					<para><link linkend="wMax"><varname>wMax</varname></link>: Máximo de ventana</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="wcount"><varname>wcount</varname></link>: Conteo de ventana</para>
+					<para><link linkend="wCount"><varname>wCount</varname></link>: Conteo de ventana</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="wsum"><varname>wsum</varname></link>: Suma de ventana</para>
+					<para><link linkend="wSum"><varname>wSum</varname></link>: Suma de ventana</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="wavg"><varname>wavg</varname></link>: Promedio de ventana</para>
+					<para><link linkend="wAvg"><varname>wAvg</varname></link>: Promedio de ventana</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tcentroid"><varname>tcentroid</varname></link>: Centroide temporal</para>
+					<para><link linkend="tCentroid"><varname>tCentroid</varname></link>: Centroide temporal</para>
 				</listitem>
 
 			</itemizedlist>
@@ -1705,15 +1705,15 @@
 				<title>Constructores</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_const"><varname>tnpoint_inst</varname>, <varname>tnpoint_seq</varname>, <varname>tnpoint_seqset</varname></link>: Constructor para puntos de red temporal a partir de un valor base y un valor de tiempo</para>
+						<para><link linkend="tnpoint_const"><varname>tnpoint</varname></link>: Constructor para puntos de red temporal a partir de un valor base y un valor de tiempo</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_seq"><varname>tnpoint_seq</varname></link>: Constructor para puntos de red temporal de subtipo secuencia</para>
+						<para><link linkend="tnpointSeq"><varname>tnpointSeq</varname></link>: Constructor para puntos de red temporal de subtipo secuencia</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_seqset"><varname>tnpoint_seqset</varname></link>: Constructor para puntos de red temporal de subtipo conjunto de secuencias</para>
+						<para><link linkend="tnpointSeqSet"><varname>tnpointSeqSet</varname></link>: Constructor para puntos de red temporal de subtipo conjunto de secuencias</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1735,7 +1735,7 @@
 				<title>Operaciones</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_subtype"><varname>tnpoint_inst, tnpoint_seq, tnpoint_seqset</varname></link>: Transformar un punto de red temporal en otro subtipo</para>
+						<para><link linkend="tnpoint_subtype"><varname>tnpointInst, tnpointSeq, tnpointSeqSet</varname></link>: Transformar un punto de red temporal en otro subtipo</para>
 					</listitem>
 
 					<listitem>
@@ -1845,15 +1845,15 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_tcount"><varname>tcount</varname></link>: Conteo temporal</para>
+						<para><link linkend="tnpoint_tCount"><varname>tCount</varname></link>: Conteo temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_wcount"><varname>wcount</varname></link>: Conteo de ventana</para>
+						<para><link linkend="tnpoint_wCount"><varname>wCount</varname></link>: Conteo de ventana</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_tcentroid"><varname>tcentroid</varname></link>: Centroide temporal</para>
+						<para><link linkend="tnpoint_tCentroid"><varname>tCentroid</varname></link>: Centroide temporal</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

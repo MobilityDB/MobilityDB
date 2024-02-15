@@ -41,15 +41,15 @@ SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2001-01-01,
 </programlisting>
 			</listitem>
 
-			<listitem id="DouglasPeuckerSimplify">
+			<listitem id="douglasPeuckerSimplify">
 				<indexterm><primary><varname>maxDistSimplify</varname></primary></indexterm>
-				<indexterm><primary><varname>DouglasPeuckerSimplify</varname></primary></indexterm>
+				<indexterm><primary><varname>douglasPeuckerSimplify</varname></primary></indexterm>
 				<para>Return a temporal float or a temporal point simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink> &Z_support;</para>
 				<para><varname>maxDistSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
 				<para><varname>  {tfloat,tgeompoint}</varname></para>
-				<para><varname>DouglasPeuckerSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
+				<para><varname>douglasPeuckerSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
 				<para><varname>  {tfloat,tgeompoint}</varname></para>
-				<para>The difference between the two functions is that <varname>maxDistSimplify</varname> uses a single-pass version of the algorithm whereas <varname>DouglasPeuckerSimplify</varname> uses the standard recursive algorithm.</para>
+				<para>The difference between the two functions is that <varname>maxDistSimplify</varname> uses a single-pass version of the algorithm whereas <varname>douglasPeuckerSimplify</varname> uses the standard recursive algorithm.</para>
 				<para>The function removes values or points that are less than or equal to the distance passed as second argument. In the case of temporal points, the distance is specified in the units of the coordinate system. The third argument applies only for temporal points and specifies whether the spatial or the synchronized distance is used. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal value is returned.</para>
 				<programlisting language="sql" xml:space="preserve">
 -- Only synchronous distance for temporal floats
@@ -67,10 +67,10 @@ SELECT asText(maxDistSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@200
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 -- Spatial vs synchronized Euclidean distance
-SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
+SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
   Point(6 1)@2001-01-06, Point(7 4)@2001-01-07]', 2.3, false));
 -- [POINT(1 1)@2001-01-01, POINT(7 4)@2001-01-07]
-SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
+SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
   Point(6 1)@2001-01-06, Point(7 4)@2001-01-07]', 2.3, true));
 -- [POINT(1 1)@2001-01-01, POINT(6 1)@2001-01-06, POINT(7 4)@2001-01-07]
 </programlisting>
@@ -83,7 +83,7 @@ SELECT asText(DouglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
 						<imageobject><imagedata scale='100' fileref='images/dist_vs_sed.png' /></imageobject>
 					</mediaobject>
 				</figure>
-				<para>A typical use for the <varname>DouglasPeuckerSimplify</varname> function is to reduce the size of a dataset, in particular for visualization purposes. If the visualization is static, then the spatial distance should be preferred, if the visualization is dynamic or animated, the synchronized distance should be preferred.</para>
+				<para>A typical use for the <varname>douglasPeuckerSimplify</varname> function is to reduce the size of a dataset, in particular for visualization purposes. If the visualization is static, then the spatial distance should be preferred, if the visualization is dynamic or animated, the synchronized distance should be preferred.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>

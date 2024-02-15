@@ -78,7 +78,7 @@ PG_FUNCTION_INFO_V1(Tpoint_tcentroid_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal centroid aggregation of temporal
  * points
- * @sqlfn tcentroid()
+ * @sqlfn tCentroid()
  */
 Datum
 Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
@@ -99,7 +99,7 @@ PG_FUNCTION_INFO_V1(Tpoint_tcentroid_combinefn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Combine function for temporal centroid aggregation of temporal points
- * @sqlfn tcentroid()
+ * @sqlfn tCentroid()
  */
 Datum
 Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
@@ -112,7 +112,7 @@ Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   if (! ensure_geoaggstate_state(state1, state2))
     return PointerGetDatum(NULL);
-  
+
   struct GeoAggregateState *extra = NULL;
   if (state1 && state1->extra)
     extra = state1->extra;
@@ -130,7 +130,7 @@ PG_FUNCTION_INFO_V1(Tpoint_tcentroid_finalfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Final function for temporal centroid aggregation of temporal points
- * @sqlfn tcentroid()
+ * @sqlfn tCentroid()
  */
 Datum
 Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)

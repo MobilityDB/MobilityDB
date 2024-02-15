@@ -1903,7 +1903,7 @@ pt_force_geodetic(LWPOINT *point)
  * @param[in] inst Temporal point instant
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
- * @sqlop ::
+ * @sqlop @p ::
  */
 TInstant *
 tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
@@ -1941,7 +1941,7 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
  * @param[in] seq Temporal sequence point
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
- * @sqlop ::
+ * @sqlop @p ::
  */
 TSequence *
 tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
@@ -1961,7 +1961,7 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
  * @param[in] ss Temporal point sequence set
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
- * @sqlop ::
+ * @sqlop @p ::
  */
 TSequenceSet *
 tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper)
@@ -1985,7 +1985,7 @@ tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper)
  * @see #tgeompointinst_tgeogpointinst
  * @see #tgeompointseq_tgeogpointseq
  * @see #tgeompointseqset_tgeogpointseqset
- * @sqlop ::
+ * @sqlop @p ::
  */
 Temporal *
 tgeompoint_tgeogpoint(const Temporal *temp, bool oper)

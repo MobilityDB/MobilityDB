@@ -46,7 +46,7 @@
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random boolean
+ * @brief Generate a random boolean
  */
 DROP FUNCTION IF EXISTS random_bool;
 CREATE FUNCTION random_bool()
@@ -64,8 +64,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random integer in a range
- *
+ * @brief Generate a random integer in a range
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  */
 DROP FUNCTION IF EXISTS random_int;
@@ -90,8 +89,7 @@ ORDER BY 1;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random bigint in a range
- *
+ * @brief Generate a random bigint in a range
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  */
 DROP FUNCTION IF EXISTS random_bigint;
@@ -116,8 +114,7 @@ ORDER BY 1;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random float in a range
- *
+ * @brief Generate a random float in a range
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  */
 DROP FUNCTION IF EXISTS random_float;
@@ -140,7 +137,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random ASCII character
+ * @brief Generate a random ASCII character
  */
 DROP FUNCTION IF EXISTS random_ascii;
 CREATE FUNCTION random_ascii()
@@ -159,8 +156,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random text value
- *
+ * @brief Generate a random text value
  * @param[in] maxlength Maximum length of the text value
  */
 DROP FUNCTION IF EXISTS random_text;
@@ -184,8 +180,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random date in a period
- *
+ * @brief Generate a random date in a period
  * @param[in] lowdate, higdate Inclusive bounds of the period
  */
 DROP FUNCTION IF EXISTS random_date;
@@ -208,8 +203,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random timestamptz in a period
- *
+ * @brief Generate a random timestamptz in a period
  * @param[in] lowtime, hightime Inclusive bounds of the period
  */
 DROP FUNCTION IF EXISTS random_timestamptz;
@@ -233,8 +227,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random interval of minutes
- *
+ * @brief Generate a random interval of minutes
  * @param[in] lowvalue, highvalue Inclusive bounds of the number of minutes
  */
 DROP FUNCTION IF EXISTS random_minutes;
@@ -255,8 +248,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random integers in a range
- *
+ * @brief Generate an array of random integers in a range
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between two consecutive values
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -301,8 +293,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random floats in a range
- *
+ * @brief Generate an array of random floats in a range
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between two consecutive values
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -347,8 +338,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random text values
- *
+ * @brief Generate an array of random text values
  * @param[in] maxlength Maximum length of the text value
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  */
@@ -372,8 +362,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an ordered array of random date in a datespan
- *
+ * @brief Generate an ordered array of random date in a datespan
  * @param[in] lowtime, hightime Inclusive bounds of the datespan
  * @param[in] maxdays Maximum number of minutes between two consecutive
  *    timestamps
@@ -424,14 +413,13 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an ordered array of random timestamptz in a tstzspan
- *
+ * @brief Generate an ordered array of random timestamptz in a tstzspan
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxminutes Maximum number of minutes between two consecutive
- *    timestamps
+ * timestamps
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  * @param[in] fixstart True when this function is called for generating a
- *    sequence set value and in this case the start timestamp is already fixed
+ * sequence set value and in this case the start timestamp is already fixed
  */
 DROP FUNCTION IF EXISTS random_timestamptz_array;
 CREATE FUNCTION random_timestamptz_array(lowtime timestamptz,
@@ -480,8 +468,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an ordered set of random integers in a range
- *
+ * @brief Generate an ordered set of random integers in a range
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between two consecutive values
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the set
@@ -526,8 +513,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an ordered set of random bigint in a range
- *
+ * @brief Generate an ordered set of random bigint in a range
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between two consecutive values
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the set
@@ -572,8 +558,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an ordered set of random floats in a range
- *
+ * @brief Generate an ordered set of random floats in a range
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between two consecutive values
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the set
@@ -618,8 +603,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a set of random text values
- *
+ * @brief Generate a set of random text values
  * @param[in] maxlength Maximum length of the text value
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  */
@@ -644,8 +628,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random dateset within a datespan
- *
+ * @brief Generate a random dateset within a datespan
  * @param[in] lowtime, hightime Inclusive bounds of the maximal tstzspan
  * @param[in] maxdays Maximum number of days between two consecutive days
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -667,8 +650,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tstzset within a tstzspan
- *
+ * @brief Generate a random tstzset within a tstzspan
  * @param[in] lowtime, hightime Inclusive bounds of the maximal tstzspan
  * @param[in] maxminutes Maximum number of minutes between two consecutive timestamps
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -693,8 +675,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random integer span
- *
+ * @brief Generate a random integer span
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between the lower and upper bounds
  */
@@ -721,8 +702,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random bigint span
- *
+ * @brief Generate a random bigint span
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between the lower and upper bounds
  */
@@ -749,8 +729,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random float span
- *
+ * @brief Generate a random float span
  * @param[in] lowvalue, highvalue Inclusive bounds of the span
  * @param[in] maxdelta Maximum difference between two consecutive values
  */
@@ -777,12 +756,11 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random datespan within a datespan
- *
+ * @brief Generate a random datespan within a datespan
  * @param[in] lowdate, highdate Inclusive bounds of the maximal datespan
  * @param[in] maxdays Maximum number of days between the dates
  * @param[in] fixstart True when this function is called for generating
- *   a datespan set and in this case the start date is already fixed
+ * a datespan set and in this case the start date is already fixed
  * @note The date spans are generated canonicalized
  */
 DROP FUNCTION IF EXISTS random_datespan;
@@ -820,8 +798,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tstzspan within a tstzspan
- *
+ * @brief Generate a random tstzspan within a tstzspan
  * @param[in] lowtime, hightime Inclusive bounds of the maximal tstzspan
  * @param[in] maxminutes Maximum number of minutes between the timestamps
  * @param[in] fixstart True when this function is called for generating
@@ -866,8 +843,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random intspans within a span
- *
+ * @brief Generate an array of random intspans within a span
  * @param[in] lowvalue, highvalue Inclusive bounds of the maximal span
  * @param[in] maxdelta Maximum value difference between consecutive values
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -908,8 +884,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random bigintspans within a span
- *
+ * @brief Generate an array of random bigintspans within a span
  * @param[in] lowvalue, highvalue Inclusive bounds of the maximal span
  * @param[in] maxdelta Maximum value difference between consecutive values
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -950,8 +925,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random floatspans within a span
- *
+ * @brief Generate an array of random floatspans within a span
  * @param[in] lowvalue, highvalue Inclusive bounds of the maximal span
  * @param[in] maxdelta Maximum value difference between consecutive values
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -992,8 +966,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random periods within a datespan
- *
+ * @brief Generate an array of random periods within a datespan
  * @param[in] lowtime, hightime Inclusive bounds of the maximal datespan
  * @param[in] maxdays Maximum number of dates between the timestamps
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -1034,8 +1007,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate an array of random periods within a tstzspan
- *
+ * @brief Generate an array of random periods within a tstzspan
  * @param[in] lowtime, hightime Inclusive bounds of the maximal tstzspan
  * @param[in] maxminutes Maximum number of minutes between the timestamps
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -1079,8 +1051,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random integer spanset
- *
+ * @brief Generate a random integer spanset
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between the lower and upper bounds
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -1103,8 +1074,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random bigint span
- *
+ * @brief Generate a random bigint span
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between the lower and upper bounds
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -1127,8 +1097,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random float spanset
- *
+ * @brief Generate a random float spanset
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between the lower and upper bounds
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -1153,8 +1122,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random datespanset within a datespan
- *
+ * @brief Generate a random datespanset within a datespan
  * @param[in] lowtime, hightime Inclusive bounds of the maximal datespan
  * @param[in] maxdays Maximum number of minutes between two consecutive timestamps
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -1177,8 +1145,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tstzspanset within a tstzspan
- *
+ * @brief Generate a random tstzspanset within a tstzspan
  * @param[in] lowtime, hightime Inclusive bounds of the maximal tstzspan
  * @param[in] maxminutes Maximum number of minutes between two consecutive timestamps
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -1203,8 +1170,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random integer range
- *
+ * @brief Generate a random integer range
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between the lower and upper bounds
  */
@@ -1231,13 +1197,12 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 CREATE TYPE float8range AS RANGE (
-    subtype = float8,
-    subtype_diff = float8mi
+  subtype = float8,
+  subtype_diff = float8mi
 );
 
 /**
- * Generate a random float range
- *
+ * @brief Generate a random float range
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between the lower and upper bounds
  */
@@ -1252,7 +1217,7 @@ BEGIN
       lowvalue, highvalue, maxdelta;
   END IF;
   v = random_float(lowvalue, highvalue - maxdelta);
-  RETURN floatrange(v, v + random_float(1, maxdelta));
+  RETURN float8range(v, v + random_float(1, maxdelta));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1264,8 +1229,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random daterange within a datespan
- *
+ * @brief Generate a random daterange within a datespan
  * @param[in] lowtime, hightime Inclusive bounds of the maximal datespan
  * @param[in] maxdays Maximum number of days between the dates
  */
@@ -1285,8 +1249,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tstzrange within a tstzspan
- *
+ * @brief Generate a random tstzrange within a tstzspan
  * @param[in] lowtime, hightime Inclusive bounds of the maximal tstzspan
  * @param[in] maxminutes Maximum number of minutes between the timestamps
  */
@@ -1309,8 +1272,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tboxint within a range and a tstzspan
- *
+ * @brief Generate a random tboxint within a range and a tstzspan
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value between the bounds
@@ -1347,8 +1309,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tboxfloat within a range and a tstzspan
- *
+ * @brief Generate a random tboxfloat within a range and a tstzspan
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value between the bounds
@@ -1387,8 +1348,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tbool instant
- *
+ * @brief Generate a random tbool instant
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  */
 DROP FUNCTION IF EXISTS random_tbool_inst;
@@ -1399,7 +1359,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tbool_inst(random_bool(), random_timestamptz(lowtime, hightime));
+  RETURN tbool(random_bool(), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1411,8 +1371,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tint instant
- *
+ * @brief Generate a random tint instant
  * @param[in] lowvalue, highvalue Inclusive bounds of the range of values
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  */
@@ -1429,7 +1388,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tint_inst(random_int(lowvalue, highvalue),
+  RETURN tint(random_int(lowvalue, highvalue),
     random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1442,8 +1401,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tfloat instant
- *
+ * @brief Generate a random tfloat instant
  * @param[in] lowvalue, highvalue Inclusive bounds of the range of values
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  */
@@ -1460,7 +1418,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tfloat_inst(random_float(lowvalue, highvalue),
+  RETURN tfloat(random_float(lowvalue, highvalue),
     random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -1473,8 +1431,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random ttext instant
- *
+ * @brief Generate a random ttext instant
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxlength Maximum length of the text value
  */
@@ -1487,7 +1444,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN ttext_inst(random_text(maxlength), random_timestamptz(lowtime, hightime));
+  RETURN ttext(random_text(maxlength), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1501,8 +1458,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tbool discrete sequence
- *
+ * @brief Generate a random tbool discrete sequence
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
@@ -1521,9 +1477,9 @@ BEGIN
   card = array_length(tsarr, 1);
   FOR i IN 1..card
   LOOP
-    result[i] = tbool_inst(random_bool(), tsarr[i]);
+    result[i] = tbool(random_bool(), tsarr[i]);
   END LOOP;
-  RETURN tbool_seq(result, 'Discrete');
+  RETURN tboolSeq(result, text 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1535,8 +1491,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tint discrete sequence
- *
+ * @brief Generate a random tint discrete sequence
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
@@ -1559,9 +1514,9 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tint_inst(intarr[i], tsarr[i]);
+    result[i] = tint(intarr[i], tsarr[i]);
   END LOOP;
-  RETURN tint_seq(result, 'Discrete');
+  RETURN tintSeq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1573,8 +1528,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tfloat discrete sequence
- *
+ * @brief Generate a random tfloat discrete sequence
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
@@ -1599,9 +1553,9 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tfloat_inst(floatarr[i], tsarr[i]);
+    result[i] = tfloat(floatarr[i], tsarr[i]);
   END LOOP;
-  RETURN tfloat_seq(result, 'Discrete');
+  RETURN tfloatSeq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1613,8 +1567,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random ttext discrete sequence
- *
+ * @brief Generate a random ttext discrete sequence
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxlength Maximum length of the text value
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
@@ -1634,9 +1587,9 @@ BEGIN
   card = array_length(tsarr, 1);
   FOR i IN 1..card
   LOOP
-    result[i] = ttext_inst(random_text(maxlength), tsarr[i]);
+    result[i] = ttext(random_text(maxlength), tsarr[i]);
   END LOOP;
-  RETURN ttext_seq(result, 'Discrete');
+  RETURN ttextSeq(result, 'Discrete');
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1650,8 +1603,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tbool sequence
- *
+ * @brief Generate a random tbool sequence
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -1684,7 +1636,7 @@ BEGIN
   v = random_bool();
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tbool_inst(v, tsarr[i]);
+    result[i] = tbool(v, tsarr[i]);
     v = NOT v;
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
@@ -1692,8 +1644,8 @@ BEGIN
   IF card <> 1 AND NOT upper_inc THEN
     v = NOT v;
   END IF;
-  result[card] = tbool_inst(v, tsarr[card]);
-  RETURN tbool_seq(result, 'step', lower_inc, upper_inc);
+  result[card] = tbool(v, tsarr[card]);
+  RETURN tboolSeq(result, 'step', lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1705,8 +1657,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tint sequence
- *
+ * @brief Generate a random tint sequence
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
@@ -1742,16 +1693,16 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tint_inst(intarr[i], tsarr[i]);
+    result[i] = tint(intarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc THEN
-    result[card] = tint_inst(intarr[card - 1], tsarr[card]);
+    result[card] = tint(intarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tint_inst(intarr[card], tsarr[card]);
+    result[card] = tint(intarr[card], tsarr[card]);
   END IF;
-  RETURN tint_seq(result, 'step', lower_inc, upper_inc);
+  RETURN tintSeq(result, 'step', lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1763,8 +1714,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tfloat sequence
- *
+ * @brief Generate a random tfloat sequence
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
@@ -1802,21 +1752,21 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tfloat_inst(floatarr[i], tsarr[i]);
+    result[i] = tfloat(floatarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tfloat_inst(floatarr[card - 1], tsarr[card]);
+    result[card] = tfloat(floatarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tfloat_inst(floatarr[card], tsarr[card]);
+    result[card] = tfloat(floatarr[card], tsarr[card]);
   END IF;
   IF linear THEN
     interp = 'Linear';
   ELSE
     interp = 'Step';
   END IF;
-  RETURN tfloat_seq(result, interp, lower_inc, upper_inc);
+  RETURN tfloatSeq(result, interp, lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1832,8 +1782,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random ttext sequence
- *
+ * @brief Generate a random ttext sequence
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxlength Maximum length of the text value
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
@@ -1867,15 +1816,15 @@ BEGIN
   FOR i IN 1..card - 1
   LOOP
     v = random_text(maxlength);
-    result[i] = ttext_inst(v, tsarr[i]);
+    result[i] = ttext(v, tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card = 1 OR upper_inc THEN
     v = random_text(maxlength);
   END IF;
-  result[card] = ttext_inst(v, tsarr[card]);
-  RETURN ttext_seq(result, 'step', lower_inc, upper_inc);
+  result[card] = ttext(v, tsarr[card]);
+  RETURN ttextSeq(result, 'step', lower_inc, upper_inc);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1889,12 +1838,11 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Function ensuring that the duration defined by hightime - lowtime is enough
+ * @brief Function ensuring that the duration defined by hightime - lowtime is enough
  * for generating the sequence set given the other parameters
  * lowtime must be less than hightime -
  * ( (maxminutes * cardseq * card) + (card * maxminutes) ) minutes
  * where cardseq = (maxcardseq - mincardseq) and card = (maxcard - mincard)
- *
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
@@ -1928,8 +1876,7 @@ $$ LANGUAGE PLPGSQL STRICT;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tbool sequence set
- *
+ * @brief Generate a random tbool sequence set
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
@@ -1962,7 +1909,7 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN tbool_seqset(result);
+  RETURN tboolSeqSet(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -1974,8 +1921,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tint sequence set
- *
+ * @brief Generate a random tint sequence set
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
@@ -2015,7 +1961,7 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN tint_seqset(result);
+  RETURN tintSeqSet(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -2027,8 +1973,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random tfloat sequence set
- *
+ * @brief Generate a random tfloat sequence set
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxdelta Maximum value difference between consecutive instants
@@ -2069,7 +2014,7 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN tfloat_seqset(result);
+  RETURN tfloatSeqSet(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -2085,8 +2030,7 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random ttext sequence set
- *
+ * @brief Generate a random ttext sequence set
  * @param[in] lowtime, hightime Inclusive bounds of the tstzspan
  * @param[in] maxlength Maximum length of the text value
  * @param[in] maxdelta Maximum value difference between consecutive instants
@@ -2122,7 +2066,7 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN ttext_seqset(result);
+  RETURN ttextSeqSet(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 

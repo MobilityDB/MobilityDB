@@ -76,12 +76,12 @@ SELECT MIN(array_length(getValues(n), 1)) FROM tbl_npointset;
 -------------------------------------------------------------------------------
 -- Set_union and unnest functions
 
-SELECT numValues(set_union(np)) FROM tbl_npoint;
+SELECT numValues(setUnion(np)) FROM tbl_npoint;
 
 WITH test1(k, n) AS (
   SELECT k, unnest(n) FROM tbl_npointset ),
 test2 (k, n) AS (
-  SELECT k, set_union(n) FROM test1 GROUP BY k )
+  SELECT k, setUnion(n) FROM test1 GROUP BY k )
 SELECT COUNT(*) FROM test2 t1, tbl_npointset t2 WHERE t1.k = t2.k AND t1.n <> t2.n;
 
 -------------------------------------------------------------------------------
@@ -102,6 +102,6 @@ SELECT MAX(set_hash_extended(n, 1)) FROM tbl_npointset;
 -------------------------------------------------------------------------------
 -- Aggregation functions
 
-SELECT numValues(set_union(np)) FROM tbl_npoint;
+SELECT numValues(setUnion(np)) FROM tbl_npoint;
 
 -------------------------------------------------------------------------------
