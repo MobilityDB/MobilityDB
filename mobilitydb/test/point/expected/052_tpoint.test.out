@@ -952,126 +952,126 @@ ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT asEWKT(tgeogpoint(SequenceSet, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
   [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal point has Z dimension but column does not
-SELECT asEWKT(tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'));
+SELECT asEWKT(tgeompoint(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'));
                  asewkt                  
 -----------------------------------------
  POINT(1 1)@Sun Jan 01 08:00:00 2012 PST
 (1 row)
 
-SELECT asEWKT(tgeogpoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'));
+SELECT asEWKT(tgeogpoint(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'));
                       asewkt                       
 ---------------------------------------------------
  SRID=4326;POINT(1 1)@Sun Jan 01 08:00:00 2012 PST
 (1 row)
 
-SELECT asEWKT(tgeompoint_inst(NULL, timestamptz '2012-01-01 08:00:00'));
+SELECT asEWKT(tgeompoint(NULL, timestamptz '2012-01-01 08:00:00'));
  asewkt 
 --------
  
 (1 row)
 
-SELECT asEWKT(tgeogpoint_inst(NULL, timestamptz '2012-01-01 08:00:00'));
+SELECT asEWKT(tgeogpoint(NULL, timestamptz '2012-01-01 08:00:00'));
  asewkt 
 --------
  
 (1 row)
 
 /* Errors */
-SELECT asEWKT(tgeompoint_inst(geometry 'point empty', timestamptz '2000-01-01'));
+SELECT asEWKT(tgeompoint(geometry 'point empty', timestamptz '2000-01-01'));
 ERROR:  Only non-empty geometries accepted
-SELECT asEWKT(tgeogpoint_inst(geography 'point empty', timestamptz '2000-01-01'));
+SELECT asEWKT(tgeogpoint(geography 'point empty', timestamptz '2000-01-01'));
 ERROR:  Only non-empty geometries accepted
-SELECT asEWKT(tgeompoint_seq(ST_Point(1,1), tstzset '{2012-01-01, 2012-01-02, 2012-01-03}'));
+SELECT asEWKT(tgeompoint(ST_Point(1,1), tstzset '{2012-01-01, 2012-01-02, 2012-01-03}'));
                                                            asewkt                                                            
 -----------------------------------------------------------------------------------------------------------------------------
  {POINT(1 1)@Sun Jan 01 00:00:00 2012 PST, POINT(1 1)@Mon Jan 02 00:00:00 2012 PST, POINT(1 1)@Tue Jan 03 00:00:00 2012 PST}
 (1 row)
 
-SELECT asEWKT(tgeogpoint_seq(ST_Point(1,1), tstzset '{2012-01-01, 2012-01-02, 2012-01-03}'));
+SELECT asEWKT(tgeogpoint(ST_Point(1,1), tstzset '{2012-01-01, 2012-01-02, 2012-01-03}'));
                                                                 asewkt                                                                 
 ---------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{POINT(1 1)@Sun Jan 01 00:00:00 2012 PST, POINT(1 1)@Mon Jan 02 00:00:00 2012 PST, POINT(1 1)@Tue Jan 03 00:00:00 2012 PST}
 (1 row)
 
-SELECT asEWKT(tgeompoint_seq(NULL, tstzset '{2012-01-01, 2012-01-02, 2012-01-03}'));
+SELECT asEWKT(tgeompoint(NULL, tstzset '{2012-01-01, 2012-01-02, 2012-01-03}'));
  asewkt 
 --------
  
 (1 row)
 
-SELECT asEWKT(tgeompoint_seq(NULL, tstzset '{2012-01-01, 2012-01-02, 2012-01-03}'));
+SELECT asEWKT(tgeompoint(NULL, tstzset '{2012-01-01, 2012-01-02, 2012-01-03}'));
  asewkt 
 --------
  
 (1 row)
 
-SELECT asEWKT(tgeompoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]'));
+SELECT asEWKT(tgeompoint(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]'));
                                        asewkt                                       
 ------------------------------------------------------------------------------------
  [POINT(1 1)@Sun Jan 01 00:00:00 2012 PST, POINT(1 1)@Tue Jan 03 00:00:00 2012 PST]
 (1 row)
 
-SELECT asEWKT(tgeogpoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]'));
+SELECT asEWKT(tgeogpoint(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]'));
                                             asewkt                                            
 ----------------------------------------------------------------------------------------------
  SRID=4326;[POINT(1 1)@Sun Jan 01 00:00:00 2012 PST, POINT(1 1)@Tue Jan 03 00:00:00 2012 PST]
 (1 row)
 
-SELECT asEWKT(tgeompoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', 'step'));
+SELECT asEWKT(tgeompoint(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', 'step'));
                                              asewkt                                             
 ------------------------------------------------------------------------------------------------
  Interp=Step;[POINT(1 1)@Sun Jan 01 00:00:00 2012 PST, POINT(1 1)@Tue Jan 03 00:00:00 2012 PST]
 (1 row)
 
-SELECT asEWKT(tgeogpoint_seq(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', 'step'));
+SELECT asEWKT(tgeogpoint(ST_Point(1,1), tstzspan '[2012-01-01, 2012-01-03]', 'step'));
                                                   asewkt                                                  
 ----------------------------------------------------------------------------------------------------------
  SRID=4326,Interp=Step;[POINT(1 1)@Sun Jan 01 00:00:00 2012 PST, POINT(1 1)@Tue Jan 03 00:00:00 2012 PST]
 (1 row)
 
-SELECT asEWKT(tgeompoint_seq(NULL, tstzspan '[2012-01-01, 2012-01-03]'));
+SELECT asEWKT(tgeompoint(NULL, tstzspan '[2012-01-01, 2012-01-03]'));
  asewkt 
 --------
  
 (1 row)
 
-SELECT asEWKT(tgeogpoint_seq(NULL, tstzspan '[2012-01-01, 2012-01-03]'));
+SELECT asEWKT(tgeogpoint(NULL, tstzspan '[2012-01-01, 2012-01-03]'));
  asewkt 
 --------
  
 (1 row)
 
-SELECT asEWKT(tgeompoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}'));
+SELECT asEWKT(tgeompoint(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}'));
                                         asewkt                                        
 --------------------------------------------------------------------------------------
  {[POINT(1 1)@Sun Jan 01 00:00:00 2012 PST, POINT(1 1)@Tue Jan 03 00:00:00 2012 PST]}
 (1 row)
 
-SELECT asEWKT(tgeogpoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}'));
+SELECT asEWKT(tgeogpoint(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}'));
                                              asewkt                                             
 ------------------------------------------------------------------------------------------------
  SRID=4326;{[POINT(1 1)@Sun Jan 01 00:00:00 2012 PST, POINT(1 1)@Tue Jan 03 00:00:00 2012 PST]}
 (1 row)
 
-SELECT asEWKT(tgeompoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', 'step'));
+SELECT asEWKT(tgeompoint(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', 'step'));
                                               asewkt                                              
 --------------------------------------------------------------------------------------------------
  Interp=Step;{[POINT(1 1)@Sun Jan 01 00:00:00 2012 PST, POINT(1 1)@Tue Jan 03 00:00:00 2012 PST]}
 (1 row)
 
-SELECT asEWKT(tgeogpoint_seqset(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', 'step'));
+SELECT asEWKT(tgeogpoint(ST_Point(1,1), tstzspanset '{[2012-01-01, 2012-01-03]}', 'step'));
                                                    asewkt                                                   
 ------------------------------------------------------------------------------------------------------------
  SRID=4326,Interp=Step;{[POINT(1 1)@Sun Jan 01 00:00:00 2012 PST, POINT(1 1)@Tue Jan 03 00:00:00 2012 PST]}
 (1 row)
 
-SELECT asEWKT(tgeompoint_seqset(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
+SELECT asEWKT(tgeompoint(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
  asewkt 
 --------
  
 (1 row)
 
-SELECT asEWKT(tgeompoint_seqset(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
+SELECT asEWKT(tgeompoint(NULL, tstzspanset '{[2012-01-01, 2012-01-03]}'));
  asewkt 
 --------
  
@@ -1110,9 +1110,9 @@ SELECT MAX(numSequences) FROM temp;
 DROP TABLE tbl_tgeogpointinst_test;
 DROP TABLE
 SELECT asEWKT(tgeompoint_seq(ARRAY[
-tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
-tgeompoint_inst(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
-tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
+tgeompoint(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
+tgeompoint(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
+tgeompoint(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
 ], 'discrete'));
                                                            asewkt                                                            
 -----------------------------------------------------------------------------------------------------------------------------
@@ -1120,9 +1120,9 @@ tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
 (1 row)
 
 SELECT asEWKT(tgeogpoint_seq(ARRAY[
-tgeogpoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
-tgeogpoint_inst(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
-tgeogpoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
+tgeogpoint(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
+tgeogpoint(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
+tgeogpoint(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
 ], 'discrete'));
                                                                 asewkt                                                                 
 ---------------------------------------------------------------------------------------------------------------------------------------
@@ -1135,9 +1135,9 @@ ERROR:  Operation on mixed SRID
 SELECT tgeompoint_seq(ARRAY[tgeompoint 'Point(1 1)@2001-01-01', 'Point(2 2 2)@2001-01-02'], 'discrete');
 ERROR:  The arguments must be of the same dimensionality
 SELECT asEWKT(tgeompoint_seq(ARRAY[
-tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
-tgeompoint_inst(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
-tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
+tgeompoint(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
+tgeompoint(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
+tgeompoint(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
 ]));
                                                            asewkt                                                            
 -----------------------------------------------------------------------------------------------------------------------------
@@ -1145,9 +1145,9 @@ tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
 (1 row)
 
 SELECT asEWKT(tgeogpoint_seq(ARRAY[
-tgeogpoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
-tgeogpoint_inst(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
-tgeogpoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
+tgeogpoint(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
+tgeogpoint(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
+tgeogpoint(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
 ]));
                                                                 asewkt                                                                 
 ---------------------------------------------------------------------------------------------------------------------------------------
@@ -1161,14 +1161,14 @@ SELECT tgeompoint_seq(ARRAY[tgeompoint 'Point(1 1)@2001-01-01', 'Point(2 2 2)@20
 ERROR:  The arguments must be of the same dimensionality
 SELECT asEWKT(tgeompoint_seqset(ARRAY[
 tgeompoint_seq(ARRAY[
-tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
-tgeompoint_inst(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
-tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
+tgeompoint(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
+tgeompoint(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
+tgeompoint(ST_Point(1,1), timestamptz '2012-01-01 08:20:00')
 ]),
 tgeompoint_seq(ARRAY[
-tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 09:00:00'),
-tgeompoint_inst(ST_Point(2,2), timestamptz '2012-01-01 09:10:00'),
-tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 09:20:00')
+tgeompoint(ST_Point(1,1), timestamptz '2012-01-01 09:00:00'),
+tgeompoint(ST_Point(2,2), timestamptz '2012-01-01 09:10:00'),
+tgeompoint(ST_Point(1,1), timestamptz '2012-01-01 09:20:00')
 ])]));
                                                                                                                            asewkt                                                                                                                           
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1177,14 +1177,14 @@ tgeompoint_inst(ST_Point(1,1), timestamptz '2012-01-01 09:20:00')
 
 SELECT asEWKT(tgeogpoint_seqset(ARRAY[
 tgeogpoint_seq(ARRAY[
-tgeogpoint_inst(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
-tgeogpoint_inst(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
-tgeogpoint_inst(ST_Point(3,3), timestamptz '2012-01-01 08:20:00')
+tgeogpoint(ST_Point(1,1), timestamptz '2012-01-01 08:00:00'),
+tgeogpoint(ST_Point(2,2), timestamptz '2012-01-01 08:10:00'),
+tgeogpoint(ST_Point(3,3), timestamptz '2012-01-01 08:20:00')
 ]),
 tgeogpoint_seq(ARRAY[
-tgeogpoint_inst(ST_Point(1,1), timestamptz '2012-01-01 09:00:00'),
-tgeogpoint_inst(ST_Point(2,2), timestamptz '2012-01-01 09:10:00'),
-tgeogpoint_inst(ST_Point(1,1), timestamptz '2012-01-01 09:20:00')
+tgeogpoint(ST_Point(1,1), timestamptz '2012-01-01 09:00:00'),
+tgeogpoint(ST_Point(2,2), timestamptz '2012-01-01 09:10:00'),
+tgeogpoint(ST_Point(1,1), timestamptz '2012-01-01 09:20:00')
 ])]));
                                                                                                                                 asewkt                                                                                                                                
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

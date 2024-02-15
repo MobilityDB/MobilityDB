@@ -115,19 +115,19 @@ CREATE FUNCTION asHexWKB(tnpoint, endianenconding text DEFAULT '')
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION tnpoint_inst(npoint, timestamptz)
+CREATE FUNCTION tnpoint(npoint, timestamptz)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seq(npoint, tstzset)
+CREATE FUNCTION tnpoint(npoint, tstzset)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seq(npoint, tstzspan, text DEFAULT 'linear')
+CREATE FUNCTION tnpoint(npoint, tstzspan, text DEFAULT 'linear')
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seqset(npoint, tstzspanset, text DEFAULT 'linear')
+CREATE FUNCTION tnpoint(npoint, tstzspanset, text DEFAULT 'linear')
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

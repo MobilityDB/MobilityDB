@@ -322,8 +322,8 @@ SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-
  Interp=Step;{[NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sun Jan 02 00:00:00 2000 PST, NPoint(1,0.5)@Mon Jan 03 00:00:00 2000 PST], [NPoint(2,0.6)@Tue Jan 04 00:00:00 2000 PST, NPoint(2,0.6)@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tnpoint_inst('npoint(1,0)'::npoint, '2012-01-01'::timestamp);
-               tnpoint_inst               
+SELECT tnpoint('npoint(1,0)'::npoint, '2012-01-01'::timestamp);
+                 tnpoint                  
 ------------------------------------------
  NPoint(1,0)@Sun Jan 01 00:00:00 2012 PST
 (1 row)

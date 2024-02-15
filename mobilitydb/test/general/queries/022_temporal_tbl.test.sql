@@ -418,7 +418,7 @@ WITH test1(k, value, time) AS (
   SELECT k, (rec).value, (rec).time
   FROM (SELECT k, unnest(temp) AS rec FROM tbl_tint) AS T ),
 test2(k, temp) AS (
-  SELECT k, merge(tint_seqset(value, time)) FROM test1
+  SELECT k, merge(tint(value, time)) FROM test1
   GROUP BY k )
 SELECT COUNT(*) FROM tbl_tint t1, test2 t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
 
@@ -426,7 +426,7 @@ WITH test1(k, value, time) AS (
   SELECT k, (rec).value, (rec).time
   FROM (SELECT k, unnest(temp) AS rec FROM tbl_ttext) AS T ),
 test2(k, temp) AS (
-  SELECT k, merge(ttext_seqset(value, time)) FROM test1
+  SELECT k, merge(ttext(value, time)) FROM test1
   GROUP BY k )
 SELECT COUNT(*) FROM tbl_ttext t1, test2 t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
 

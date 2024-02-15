@@ -42,7 +42,7 @@ DROP TABLE tbl_tnpoint_tmp;
 --  Constructors
 -------------------------------------------------------------------------------
 
-SELECT MAX(getPosition(startValue(tnpoint_inst(t1.np, t2.t)))) FROM tbl_npoint t1, tbl_timestamptz t2;
+SELECT MAX(getPosition(startValue(tnpoint(t1.np, t2.t)))) FROM tbl_npoint t1, tbl_timestamptz t2;
 
 WITH test(temp) AS (
 SELECT tnpoint_seq(array_agg(t.inst ORDER BY getTimestamp(t.inst)), 'discrete') FROM tbl_tnpoint_inst t GROUP BY k%10 )

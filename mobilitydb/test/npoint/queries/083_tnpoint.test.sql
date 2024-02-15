@@ -109,7 +109,7 @@ SELECT tnpointFromHexWKB(asHexWKB(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-
 -- Constructors
 -------------------------------------------------------------------------------
 
-SELECT tnpoint_inst('npoint(1,0)'::npoint, '2012-01-01'::timestamp);
+SELECT tnpoint('npoint(1,0)'::npoint, '2012-01-01'::timestamp);
 
 SELECT tnpoint_seq(ARRAY['npoint(1,0)@2012-01-01'::tnpoint, 'npoint(2,1)@2012-02-01'::tnpoint], 'discrete');
 
