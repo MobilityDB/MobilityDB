@@ -133,10 +133,9 @@ int main(void)
         INITIAL_INSTANTS_SEQ, true, true, STEP, false);
     else
     {
-      int maxcount;
       if (seq->count < MAX_INSTANTS_SEQ)
       {
-        maxcount = seq->maxcount;
+        int maxcount = seq->maxcount;
         /* We are sure that the result is a temporal sequence */
         seq = (TSequence *) tsequence_append_tinstant(seq, inst, 0.0, NULL,
           true);

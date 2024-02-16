@@ -694,7 +694,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
   void *box, *leftBox, *rightBox;
   SplitInterval *intervalsLower, *intervalsUpper;
   CommonEntry *common_entries;
-  int j, nentries, common_entries_count, dim;
+  int nentries, common_entries_count, dim;
   assert(bboxtype == T_TBOX || bboxtype == T_STBOX);
 
   int maxdims = bbox_max_dims(bboxtype);
@@ -1028,6 +1028,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
      * groups, to reach LIMIT_RATIO.
      */
     int m = (int) ceil(LIMIT_RATIO * (double) nentries);
+    int j;
 
     /*
      * Calculate delta between penalties of join "common entries" to
