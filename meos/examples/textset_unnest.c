@@ -91,7 +91,7 @@ int main(void)
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%d,'%[^']'\n", &rec.k, set_buffer);
+    int read = fscanf(file, "%10d,'%1023[^']'\n", &rec.k, set_buffer);
 
     if (read != 2 && ! feof(file))
     {
