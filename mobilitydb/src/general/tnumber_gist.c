@@ -1050,7 +1050,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
     /*
      * Distribute "common entries" between groups.
      */
-    for (i = 0; i < common_entries_count; i++)
+    for (i = 0; i < (OffsetNumber) common_entries_count; i++)
     {
       OffsetNumber idx = (OffsetNumber) (common_entries[i].index);
       box = DatumGetPointer(entryvec->vector[idx].key);
@@ -1092,6 +1092,7 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
   return bbox_gist_picksplit(fcinfo, T_TBOX, &tbox_adjust, &tbox_penalty);
 }
+
 /*****************************************************************************
  * GiST same method
  *****************************************************************************/
