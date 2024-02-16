@@ -694,7 +694,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
   void *box, *leftBox, *rightBox;
   SplitInterval *intervalsLower, *intervalsUpper;
   CommonEntry *common_entries;
-  int nentries, common_entries_count, dim;
+  int j, nentries, common_entries_count, dim;
   assert(bboxtype == T_TBOX || bboxtype == T_STBOX);
 
   int maxdims = bbox_max_dims(bboxtype);
@@ -1033,10 +1033,10 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
      * Calculate delta between penalties of join "common entries" to
      * different groups.
      */
-    for (i = 0; i < (OffsetNumber) common_entries_count; i++)
+    for (j = 0; j < common_entries_count; j++)
     {
-      box = DatumGetPointer(entryvec->vector[common_entries[i].index].key);
-      common_entries[i].delta = fabs(bbox_penalty(leftBox, box) -
+      box = DatumGetPointer(entryvec->vector[common_entries[j].index].key);
+      common_entries[j].delta = fabs(bbox_penalty(leftBox, box) -
         bbox_penalty(rightBox, box));
     }
 
@@ -1050,18 +1050,18 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
     /*
      * Distribute "common entries" between groups.
      */
-    for (i = 0; i < (OffsetNumber) common_entries_count; i++)
+    for (j = 0; j < common_entries_count; j++)
     {
-      OffsetNumber idx = (OffsetNumber) (common_entries[i].index);
+      OffsetNumber idx = (OffsetNumber) (common_entries[j].index);
       box = DatumGetPointer(entryvec->vector[idx].key);
 
       /*
        * Check if we have to place this entry in either group to achieve
        * LIMIT_RATIO.
        */
-      if (v->spl_nleft + (common_entries_count - i) <= m)
+      if (v->spl_nleft + (common_entries_count - j) <= m)
         PLACE_LEFT(box, idx);
-      else if (v->spl_nright + (common_entries_count - i) <= m)
+      else if (v->spl_nright + (common_entries_count - j) <= m)
         PLACE_RIGHT(box, idx);
       else
       {
