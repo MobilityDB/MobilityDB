@@ -1438,6 +1438,8 @@ extern Temporal *tint_shift_value(const Temporal *temp, int shift);
 extern Temporal *tpoint_round(const Temporal *temp, int maxdd);
 extern Temporal *tpoint_transform(const Temporal *temp, int32 srid);
 extern Temporal *tpoint_transform_pipeline(const Temporal *temp, char *pipelinestr, int32 srid, bool is_forward);
+extern Temporal *tpoint_transform_pj(const Temporal *temp, int32 srid, const LWPROJ* pj);
+extern LWPROJ *lwproj_transform(int32 srid_from, int32 srid_to);
 extern Temporal **tpointarr_round(const Temporal **temp, int count, int maxdd);
 
 /*****************************************************************************

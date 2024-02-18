@@ -408,4 +408,21 @@ extern double lwpoint_get_m(const LWPOINT *point);
 extern int lwgeom_has_z(const LWGEOM *geom);
 extern int lwgeom_has_m(const LWGEOM *geom);
 
+#include "proj.h"
+
+typedef struct LWPROJ
+{
+    PJ* pj;
+
+    /* for pipeline transforms, whether to do a forward or inverse */
+    bool pipeline_is_forward;
+
+    /* Source crs is geographic: Used in geography calls (source srid == dst srid) */
+    uint8_t source_is_latlong;
+    /* Source ellipsoid parameters */
+    double source_semi_major_metre;
+    double source_semi_minor_metre;
+} LWPROJ;
+
+
 #endif              /* _LIBLWGEOM_H */
