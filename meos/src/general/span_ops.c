@@ -1541,7 +1541,7 @@ union_value_span(Datum value, const Span *s)
   return union_span_value(s, value);
 }
 
-#if MEOS  
+#if MEOS
 /**
  * @ingroup meos_setspan_set
  * @brief Return the union of a span and an integer
@@ -1844,7 +1844,7 @@ intersection_span_timestamptz(const Span *s, TimestampTz t)
 /**
  * @ingroup meos_internal_setspan_set
  * @brief Return the last argument initialized with the intersection of two
- * spans 
+ * spans
  * @param[in] s1,s2 Spans
  * @param[out] result Resulting span
  * @note This function is equivalent to #intersection_span_span without
@@ -2262,7 +2262,7 @@ dist_double_value_value(Datum l, Datum r, meosType type)
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown types for distance between values: %s",
         meostype_name(type));
-      return (Datum) -1;
+      return -1;
   }
 }
 
@@ -2473,7 +2473,7 @@ int
 distance_intspan_intspan(const Span *s1, const Span *s2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) || 
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_span_isof_basetype(s1, T_INT4) ||
       ! ensure_span_isof_basetype(s2, T_INT4))
     return -1;
@@ -2491,7 +2491,7 @@ int64
 distance_bigintspan_bigintspan(const Span *s1, const Span *s2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) || 
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_span_isof_basetype(s1, T_INT8) ||
       ! ensure_span_isof_basetype(s2, T_INT8))
     return -1;
@@ -2509,7 +2509,7 @@ double
 distance_floatspan_floatspan(const Span *s1, const Span *s2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) || 
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_span_isof_basetype(s1, T_FLOAT8) ||
       ! ensure_span_isof_basetype(s2, T_FLOAT8))
     return -1.0;
@@ -2527,7 +2527,7 @@ int
 distance_datespan_datespan(const Span *s1, const Span *s2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) || 
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
      ! ensure_span_isof_basetype(s1, T_DATE) ||
      ! ensure_span_isof_basetype(s2, T_DATE))
     return -1;
@@ -2545,7 +2545,7 @@ double
 distance_tstzspan_tstzspan(const Span *s1, const Span *s2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) || 
+  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_span_isof_basetype(s1, T_TIMESTAMPTZ) ||
       ! ensure_span_isof_basetype(s2, T_TIMESTAMPTZ))
     return -1.0;

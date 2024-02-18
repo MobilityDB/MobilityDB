@@ -649,9 +649,9 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
  * @brief Return a temporal sequence point with linear interpolation
  * restricted to (the complement of) a geometry and possibly a Z span and a
  * timestamptz span
- * @details The function first filters the temporal point wrt the time 
- * dimension to reduce the number of instants before computing the restriction 
- * to the geometry, which is an expensive operation. Notice that we need to 
+ * @details The function first filters the temporal point wrt the time
+ * dimension to reduce the number of instants before computing the restriction
+ * to the geometry, which is an expensive operation. Notice that we need to
  * filter wrt the Z dimension after that since while doing this, the subtype of
  * the temporal point may change from a sequence to a sequence set.
  * @param[in] seq Temporal point

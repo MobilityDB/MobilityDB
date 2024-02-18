@@ -961,11 +961,6 @@ extern TSequenceSet *tpointseqset_set_srid(const TSequenceSet *ss, int32 srid);
 
 /*****************************************************************************/
 
-/* Spatial relationship functions for temporal points */
-
-
-/*****************************************************************************/
-
 /* Local aggregate functions for temporal types */
 
 extern double tnumberseq_integral(const TSequence *seq);
@@ -990,12 +985,6 @@ extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
 extern void skiplist_free(SkipList *list);
 extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, double maxdist, Interval *maxt);
 extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
-extern double tnumberseq_integral(const TSequence *seq);
-extern double tnumberseq_twavg(const TSequence *seq);
-extern double tnumberseqset_integral(const TSequenceSet *ss);
-extern double tnumberseqset_twavg(const TSequenceSet *ss);
-extern GSERIALIZED *tpointseq_twcentroid(const TSequence *seq);
-extern GSERIALIZED *tpointseqset_twcentroid(const TSequenceSet *ss);
 
 /*****************************************************************************/
 

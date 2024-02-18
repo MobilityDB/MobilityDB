@@ -29,7 +29,7 @@
 
 /**
  * @brief A simple program that uses the MEOS library for input and output
- * GSERIALIZED values.
+ * geometry values.
  *
  * The program can be build as follows
  * @code

@@ -925,8 +925,8 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
    */
 
   /* Allocate vectors for results */
-  v->spl_left = palloc(nentries * sizeof(OffsetNumber));
-  v->spl_right = palloc(nentries * sizeof(OffsetNumber));
+  v->spl_left = palloc(sizeof(OffsetNumber) * nentries);
+  v->spl_right = palloc(sizeof(OffsetNumber) * nentries);
   v->spl_nleft = v->spl_nright = 0;
 
   /* Allocate bounding boxes of left and right groups */
@@ -938,7 +938,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
    * either group without affecting overlap along selected axis.
    */
   common_entries_count = 0;
-  common_entries = palloc(nentries * sizeof(CommonEntry));
+  common_entries = palloc(sizeof(CommonEntry) * nentries);
 
   /*
    * Distribute entries which can be distributed unambiguously, and collect
@@ -1028,15 +1028,16 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
      * groups, to reach LIMIT_RATIO.
      */
     int m = (int) ceil(LIMIT_RATIO * (double) nentries);
+    int j;
 
     /*
      * Calculate delta between penalties of join "common entries" to
      * different groups.
      */
-    for (i = 0; i < common_entries_count; i++)
+    for (j = 0; j < common_entries_count; j++)
     {
-      box = DatumGetPointer(entryvec->vector[common_entries[i].index].key);
-      common_entries[i].delta = fabs(bbox_penalty(leftBox, box) -
+      box = DatumGetPointer(entryvec->vector[common_entries[j].index].key);
+      common_entries[j].delta = fabs(bbox_penalty(leftBox, box) -
         bbox_penalty(rightBox, box));
     }
 
@@ -1050,18 +1051,18 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
     /*
      * Distribute "common entries" between groups.
      */
-    for (i = 0; i < common_entries_count; i++)
+    for (j = 0; j < common_entries_count; j++)
     {
-      OffsetNumber idx = (OffsetNumber) (common_entries[i].index);
+      OffsetNumber idx = (OffsetNumber) (common_entries[j].index);
       box = DatumGetPointer(entryvec->vector[idx].key);
 
       /*
        * Check if we have to place this entry in either group to achieve
        * LIMIT_RATIO.
        */
-      if (v->spl_nleft + (common_entries_count - i) <= m)
+      if (v->spl_nleft + (common_entries_count - j) <= m)
         PLACE_LEFT(box, idx);
-      else if (v->spl_nright + (common_entries_count - i) <= m)
+      else if (v->spl_nright + (common_entries_count - j) <= m)
         PLACE_RIGHT(box, idx);
       else
       {
@@ -1092,6 +1093,7 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
   return bbox_gist_picksplit(fcinfo, T_TBOX, &tbox_adjust, &tbox_penalty);
 }
+
 /*****************************************************************************
  * GiST same method
  *****************************************************************************/

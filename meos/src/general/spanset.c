@@ -1627,7 +1627,7 @@ spanset_compact(const SpanSet *ss)
   assert(ss);
   /* Create the final value reusing the array of spans in the span set */
   return spanset_make_exp((Span *) &ss->elems, ss->count, ss->count,
-    NORMALIZE, ORDERED);
+    NORMALIZE, ORDERED_NO);
 }
 #endif /* MEOS */
 

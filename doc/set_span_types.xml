@@ -464,16 +464,22 @@ SELECT memSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
 				<para><varname>lower(spans) → base</varname></para>
 				<para><varname>upper(spans) → base</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT lower(intspan '[20, 25)');
--- 20
-SELECT lower(intspanset '{[1,2],[4,5]}');
---  1
 SELECT lower(tstzspan '[2001-01-01, 2001-01-05)');
 -- 2001-01-01
+SELECT lower(intspanset '{[1,2],[4,5]}');
+--  1
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
+SELECT lower(tstzspan '[2001-01-01, 2001-01-05)');
+-- 2001-01-01
 SELECT upper(intspanset '{[1,2],[4,5]}');
 --  6
+SELECT lower(tstzspan '[2001-01-01, 2001-01-05)');
+-- 2001-01-01
+SELECT lower(intspanset '{[1,2],[4,5]}');
+--  1
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
 SELECT upper(floatspan '[20.5, 25.3)');
 -- 25.3
 SELECT upper(tstzspan '[2001-01-01, 2001-01-05)');

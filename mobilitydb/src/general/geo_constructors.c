@@ -159,10 +159,8 @@ path_constructor(PG_FUNCTION_ARGS)
     (Datum **) &points, NULL, &npts);
 
   PATH *path;
-  int size;
-  int base_size;
-  base_size = sizeof(path->p[0]) * npts;
-  size = offsetof(PATH, p) + base_size;
+  size_t base_size = sizeof(path->p[0]) * npts;
+  size_t size = offsetof(PATH, p) + base_size;
 
   /* Check for integer overflow */
   if (base_size / npts != sizeof(path->p[0]) || size <= base_size)

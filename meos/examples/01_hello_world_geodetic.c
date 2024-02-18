@@ -37,7 +37,7 @@
  * @endcode
  */
 
-#include <stdio.h>  /* for printf */
+#include <stdio.h>    /* for printf */
 #include <stdlib.h>   /* for free */
 /* Include the MEOS API header */
 #include <meos.h>
@@ -47,14 +47,15 @@ int main()
   /* Initialize MEOS */
   meos_initialize(NULL, NULL);
 
+  char *srs = "EPSG:4326";
   /* Input temporal points in WKT format */
-  char *inst_wkt = "SRID=4326;POINT(1 1)@2000-01-01";
-  char *seq_disc_wkt = "SRID=4326;{POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02}";
-  char *seq_linear_wkt = "SRID=4326;[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]";
-  char *seq_step_wkt = "SRID=4326,Interp=Step;[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]";
-  char *ss_linear_wkt = "SRID=4326;{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],"
+  char *inst_wkt = "POINT(1 1)@2000-01-01";
+  char *seq_disc_wkt = "{POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02}";
+  char *seq_linear_wkt = "[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]";
+  char *seq_step_wkt = "Interp=Step;[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]";
+  char *ss_linear_wkt = "{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],"
     "[POINT(3 3)@2000-01-03, POINT(3 3)@2000-01-04]}";
-  char *ss_step_wkt = "SRID=4326,Interp=Step;{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],"
+  char *ss_step_wkt = "Interp=Step;{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02],"
     "[POINT(3 3)@2000-01-03, POINT(3 3)@2000-01-04]}";
 
   /* Read WKT into temporal point object */
@@ -66,7 +67,7 @@ int main()
   Temporal *ss_step = tgeogpoint_in(ss_step_wkt);
 
   /* Convert result to MF-JSON */
-  char *inst_mfjson = temporal_as_mfjson(inst, true, 3, 6, NULL);
+  char *inst_mfjson = temporal_as_mfjson(inst, true, 3, 6, srs);
   printf("\n"
     "--------------------\n"
     "| Temporal Instant |\n"
@@ -75,7 +76,7 @@ int main()
     "----\n%s\n\n"
     "MF-JSON:\n"
     "--------\n%s\n", inst_wkt, inst_mfjson);
-  char *seq_disc_mfjson = temporal_as_mfjson(seq_disc, true, 3, 6, NULL);
+  char *seq_disc_mfjson = temporal_as_mfjson(seq_disc, true, 3, 6, srs);
   printf("\n"
     "-------------------------------------------------\n"
     "| Temporal Sequence with Discrete Interpolation |\n"
@@ -84,7 +85,7 @@ int main()
     "----\n%s\n\n"
     "MF-JSON:\n"
     "--------\n%s\n", seq_disc_wkt, seq_disc_mfjson);
-  char *seq_linear_mfjson = temporal_as_mfjson(seq_linear, true, 3, 6, NULL);
+  char *seq_linear_mfjson = temporal_as_mfjson(seq_linear, true, 3, 6, srs);
   printf("\n"
     "-----------------------------------------------\n"
     "| Temporal Sequence with Linear Interpolation |\n"
@@ -93,7 +94,7 @@ int main()
     "----\n%s\n\n"
     "MF-JSON:\n"
     "--------\n%s\n", seq_linear_wkt, seq_linear_mfjson);
-  char *seq_step_mfjson = temporal_as_mfjson(seq_step, true, 3, 6, NULL);
+  char *seq_step_mfjson = temporal_as_mfjson(seq_step, true, 3, 6, srs);
   printf("\n"
     "--------------------------------------------\n"
     "| Temporal Sequence with Step Interpolation |\n"
@@ -102,7 +103,7 @@ int main()
     "----\n%s\n\n"
     "MF-JSON:\n"
     "--------\n%s\n", seq_step_wkt, seq_step_mfjson);
-  char *ss_linear_mfjson = temporal_as_mfjson(ss_linear, true, 3, 6, NULL);
+  char *ss_linear_mfjson = temporal_as_mfjson(ss_linear, true, 3, 6, srs);
   printf("\n"
     "---------------------------------------------------\n"
     "| Temporal Sequence Set with Linear Interpolation |\n"
@@ -111,7 +112,7 @@ int main()
     "----\n%s\n\n"
     "MF-JSON:\n"
     "--------\n%s\n", ss_linear_wkt, ss_linear_mfjson);
-  char *ss_step_mfjson = temporal_as_mfjson(ss_step, true, 3, 6, NULL);
+  char *ss_step_mfjson = temporal_as_mfjson(ss_step, true, 3, 6, srs);
   printf("\n"
     "------------------------------------------------\n"
     "| Temporal Sequence Set with Step Interpolation |\n"

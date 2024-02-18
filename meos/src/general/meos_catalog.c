@@ -442,7 +442,7 @@ temptype_basetype(meosType type)
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "type %s is not a temporal type", meostype_name(type));
+    "type %d is not a temporal type", type);
   return T_UNKNOWN;
 }
 
@@ -1227,7 +1227,7 @@ tnumber_spansettype(meosType type)
 
 /**
  * @brief Return true if the type is a spatiotemporal type
- * @details This function is used for features common to all spatiotemporal 
+ * @details This function is used for features common to all spatiotemporal
  * types, in particular, all of them use the same bounding box @ STBox.
  * Therefore, it is used for the indexes and selectivity functions.
  */
@@ -1261,7 +1261,7 @@ ensure_tspatial_type(meosType type)
 
 /**
  * @brief Return true if the type is a base type of a spatiotemporal type
- * @details This function is used for features common to all spatiotemporal 
+ * @details This function is used for features common to all spatiotemporal
  * types, in particular, all of them use the same bounding box @p STBox
  */
 bool

@@ -64,7 +64,6 @@
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
-  #include "npoint/tnpoint_distance.h"
 #endif
 
 /*****************************************************************************
@@ -771,7 +770,7 @@ TSEQUENCE_OFFSETS_PTR(const TSequence *seq)
 const TInstant *
 TSEQUENCE_INST_N(const TSequence *seq, int i)
 {
-  return (TInstant *)(
+  return (const TInstant *)(
     ((char *) &seq->period) + seq->bboxsize +
     sizeof(size_t) * seq->maxcount + (TSEQUENCE_OFFSETS_PTR(seq))[i] );
 }
@@ -1397,8 +1396,8 @@ tsequence_compact(const TSequence *seq)
     insts_size += DOUBLE_PAD(VARSIZE(TSEQUENCE_INST_N(seq, i)));
   size_t seqsize = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
     sizeof(size_t) * seq->count;
+  /* Create the sequence */
   TSequence *result = palloc0(seqsize + insts_size);
-
   /* Copy until the last used element of the offsets array */
   memcpy(result, seq, seqsize);
   /* Set the size and maxcount of the compacted sequence */
@@ -1407,6 +1406,9 @@ tsequence_compact(const TSequence *seq)
   /* Copy the instants */
   memcpy(((char *) result) + seqsize, (char *) TSEQUENCE_INST_N(seq, 0),
     insts_size);
+#if DEBUG_EXPAND
+  meos_error(WARNING, 0, " Sequence -> %d ", seq->count);
+#endif
   return result;
 }
 
@@ -1464,7 +1466,7 @@ tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc,
     to < seq->count);
   /* General case */
   int count = to - from + 1;
-  const TInstant **instants = palloc (sizeof(TInstant *) * count);
+  const TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < to - from; i++)
     instants[i] = TSEQUENCE_INST_N(seq, i + from);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);

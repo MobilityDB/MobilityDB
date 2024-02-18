@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that uses the MEOS library for creating integer and
- * float spanset values and convert them between float and integer spansets
+ * @brief A simple program that creates integer and float spanset values and
+ * converts them between float and integer spansets
  *
  * The program can be build as follows
  * @code
@@ -60,8 +60,8 @@ int main()
   printf("Input float span set: %s\n", fss_out);
 
   /* Convert from int <-> float*/
-  SpanSet *iss_conv = intspanset_floatspanset(iss);
-  SpanSet *fss_conv = floatspanset_intspanset(fss);
+  SpanSet *iss_conv = intspanset_to_floatspanset(iss);
+  SpanSet *fss_conv = floatspanset_to_intspanset(fss);
   char *iss_conv_out = floatspanset_out(iss_conv, 3);
   char *fss_conv_out = intspanset_out(fss_conv);
   printf("Integer span set converted to float span set: %s\n", iss_conv_out);

@@ -1321,15 +1321,12 @@ span_upper_inc(const Span *s)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return the width of a span
  * @param[in] s Span
- * @return On error return -1
  * @csqlfn #Numspan_width()
  */
 Datum
 numspan_width(const Span *s)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s))
-    return (Datum) -1;
+  assert(s);
   return distance_value_value(s->upper, s->lower, s->basetype);
 }
 

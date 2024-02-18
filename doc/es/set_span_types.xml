@@ -487,7 +487,6 @@ SELECT lower(intspanset '{[1,2],[4,5]}');
 --  1
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
->>>>>>> Improve documentation
 SELECT upper(floatspan '[20.5, 25.3)');
 -- 25.3
 SELECT upper(tstzspan '[2001-01-01, 2001-01-05)');

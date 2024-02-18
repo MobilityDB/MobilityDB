@@ -28,9 +28,13 @@
  *****************************************************************************/
 
 /**
- * @brief A simple program that transform an AIS trip obtained from the file
- * `aisdk-2023-08-01.csv` with MMSI 205718000 that only constains a few points 
- * from SRID 4326 to SRID 25832
+ * @brief A simple program that transform an AIS trip with MMSI 205718000
+ * obtained from the file `aisdk-2023-08-01.csv` provided by the Danish
+ * Maritime Authority in https://web.ais.dk/aisdata/, and transform a few
+ * points from SRID 4326 to SRID 25832
+ *
+ * Please notice that the `data` directory DOES NOT contain the input CSV file,
+ * you must download it from the website above.
  *
  * The program can be build as follows
  * @code
@@ -62,7 +66,7 @@ int main(void)
     "POINT(6.367535 55.212192)@2023-01-08 18:23:44+01,"
     "POINT(6.36672 55.21301)@2023-01-08 18:24:05+01,"
     "POINT(6.355373 55.22781)@2023-01-08 18:30:15+01,"
-    "POINT(6.35513 55.228128)@2023-01-08 18:30:25+01," 
+    "POINT(6.35513 55.228128)@2023-01-08 18:30:25+01,"
     "POINT(6.352437 55.23207)@2023-01-08 18:32:54+01,"
     "POINT(6.352097 55.232548)@2023-01-08 18:33:15+01,"
     "POINT(6.351793 55.23299)@2023-01-08 18:33:34+01]";

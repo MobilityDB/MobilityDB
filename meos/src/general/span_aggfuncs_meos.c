@@ -76,7 +76,7 @@ spanset_append_span(SpanSet *ss, const Span *span, bool expand)
   spans[ss->count] = *span;
   int maxcount = ss->maxcount * 2;
 #ifdef DEBUG_EXPAND
-  printf(" Spanset -> %d\n", maxcount);
+  meos_error(WARNING, " Spanset -> %d\n", maxcount);
 #endif /* DEBUG_EXPAND */
 
   SpanSet *result = spanset_make_exp(spans, ss->count + 1, maxcount,
@@ -123,7 +123,7 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
   while (maxcount < count)
     maxcount *= 2;
 #ifdef DEBUG_EXPAND
-  printf(" Spanset -> %d\n", maxcount);
+  meos_error(WARNING, " Spanset -> %d\n", maxcount);
 #endif /* DEBUG_EXPAND */
 
   SpanSet *result = spanset_make_exp(spans, count, maxcount, NORMALIZE_NO,

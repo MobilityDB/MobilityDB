@@ -760,7 +760,7 @@ Stbox_quadtree_choose(PG_FUNCTION_ARGS)
 
   /* nodeN will be set by core, when allTheSame. */
   if (!in->allTheSame)
-    out->result.matchNode.nodeN = getOctant8D(centroid, box);
+    out->result.matchNode.nodeN = (int) getOctant8D(centroid, box);
 
   PG_RETURN_VOID();
 }
@@ -1042,7 +1042,7 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
     box = DatumGetSTboxP(in->datums[i]);
     uint8 quadrant = getOctant8D(centroid, box);
     out->leafTupleDatums[i] = STboxPGetDatum(box);
-    out->mapTuplesToNodes[i] = quadrant;
+    out->mapTuplesToNodes[i] = (int) quadrant;
   }
 
   pfree(lowXs); pfree(highXs);
@@ -1137,7 +1137,6 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
   int i;
-  uint16 node;
   MemoryContext old_ctx;
   STBox *centroid, *queries = NULL, *orderbys = NULL; /* make compiler quiet */
   STboxNode *nodebox, infbox, next_nodebox;
@@ -1235,7 +1234,7 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
 
   /* Loop for each child */
-  for (node = 0; node < in->nNodes; node++)
+  for (uint16 node = 0; node < (uint16) in->nNodes; node++)
   {
     /* Compute the bounding box of the child */
     if (idxtype == SPGIST_QUADTREE)
@@ -1322,7 +1321,7 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
     {
       /* Pass traversalValue and node */
       out->traversalValues[out->nNodes] = stboxnode_copy(&next_nodebox);
-      out->nodeNumbers[out->nNodes] = node;
+      out->nodeNumbers[out->nNodes] = (int) node;
       /* Increase level */
       out->levelAdds[out->nNodes] = 1;
       /* Pass distances */
