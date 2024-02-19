@@ -158,7 +158,7 @@ SELECT MAX(numTimestamps(t)) FROM tbl_tstzspanset;
 SELECT MAX(startTimestamp(t)) FROM tbl_tstzspanset;
 SELECT MAX(endTimestamp(t)) FROM tbl_tstzspanset;
 SELECT MAX(timestampN(t, 0)) FROM tbl_tstzspanset;
-SELECT MAX((timestamps(t))[1]) FROM tbl_tstzspanset;
+SELECT MAX(startValue(timestamps(t))) FROM tbl_tstzspanset;
 
 SELECT MAX(lower(shift(i, 5))) FROM tbl_intspanset;
 SELECT MAX(lower(shift(b, 5))) FROM tbl_bigintspanset;

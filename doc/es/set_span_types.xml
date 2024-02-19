@@ -687,9 +687,9 @@ SELECT timestampN(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 			<listitem id="setspan_timestamps">
 				<indexterm><primary><varname>dates</varname></primary></indexterm>
 				<indexterm><primary><varname>timestamps</varname></primary></indexterm>
-				<para>Obtener las fechas o marcas de tiempo diferentes</para>
-				<para><varname>dates(datespanset) → date[]</varname></para>
-				<para><varname>timestamps(tstzspanset) → timestamptz[]</varname></para>
+				<para>Obtener el conjunto de fechas o marcas de tiempo diferentes</para>
+				<para><varname>dates(datespanset) → dateset</varname></para>
+				<para><varname>timestamps(tstzspanset) → tstzset</varname></para>
 				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT dates(datespanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');

@@ -550,7 +550,7 @@ extern Interval *datespan_duration(const Span *s);
 extern DateADT datespan_lower(const Span *s);
 extern DateADT datespan_upper(const Span *s);
 extern bool datespanset_date_n(const SpanSet *ss, int n, DateADT *result);
-extern DateADT *datespanset_dates(const SpanSet *ss, int *count);
+extern Set *datespanset_dates(const SpanSet *ss);
 extern Interval *datespanset_duration(const SpanSet *ss, bool boundspan);
 extern DateADT datespanset_end_date(const SpanSet *ss);
 extern int datespanset_num_dates(const SpanSet *ss);
@@ -615,7 +615,7 @@ extern TimestampTz tstzspanset_lower(const SpanSet *ss);
 extern int tstzspanset_num_timestamps(const SpanSet *ss);
 extern TimestampTz tstzspanset_start_timestamptz(const SpanSet *ss);
 extern bool tstzspanset_timestamptz_n(const SpanSet *ss, int n, TimestampTz *result);
-extern TimestampTz *tstzspanset_timestamps(const SpanSet *ss, int *count);
+extern Set *tstzspanset_timestamps(const SpanSet *ss);
 extern TimestampTz tstzspanset_upper(const SpanSet *ss);
 
 /*****************************************************************************

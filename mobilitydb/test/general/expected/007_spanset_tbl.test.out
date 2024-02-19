@@ -475,7 +475,7 @@ SELECT MAX(timestampN(t, 0)) FROM tbl_tstzspanset;
  
 (1 row)
 
-SELECT MAX((timestamps(t))[1]) FROM tbl_tstzspanset;
+SELECT MAX(startValue(timestamps(t))) FROM tbl_tstzspanset;
              max              
 ------------------------------
  Sun Dec 30 04:01:00 2001 PST

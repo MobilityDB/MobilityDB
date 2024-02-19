@@ -738,7 +738,7 @@ CREATE FUNCTION dateN(datespanset, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION dates(datespanset)
-  RETURNS date[]
+  RETURNS dateset
   AS 'MODULE_PATHNAME', 'Datespanset_dates'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -763,7 +763,7 @@ CREATE FUNCTION timestampN(tstzspanset, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestamps(tstzspanset)
-  RETURNS timestamptz[]
+  RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Tstzspanset_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
