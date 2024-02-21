@@ -23,19 +23,19 @@ SELECT upper(floatspan '[20.5, 25.3)');
 -- 25.3
 SELECT upper(tstzspan '[2001-01-01, 2001-01-05)');
 -- 2001-01-05
-</pre></li><li class="listitem"><a name="setspan_lower_inc"></a><a class="indexterm" name="idm892"></a><a class="indexterm" name="idm895"></a><p>¿Es el límite inferior or superior inclusivo?</p><p><code class="varname">lower_inc(spans) → boolean</code></p><p><code class="varname">upper_inc(spans) → boolean</code></p><pre class="programlisting">
-SELECT lower_inc(datespan '[2001-01-01, 2001-01-05)');
+</pre></li><li class="listitem"><a name="setspan_lowerInc"></a><a class="indexterm" name="idm892"></a><a class="indexterm" name="idm895"></a><p>¿Es el límite inferior or superior inclusivo?</p><p><code class="varname">lowerInc(spans) → boolean</code></p><p><code class="varname">upperInc(spans) → boolean</code></p><pre class="programlisting">
+SELECT lowerInc(datespan '[2001-01-01, 2001-01-05)');
 -- true
-SELECT lower_inc(intspanset '{[1,2],[4,5]}');
+SELECT lowerInc(intspanset '{[1,2],[4,5]}');
 -- true
 </pre><pre class="programlisting">
-SELECT lower_inc(tstzspan '[2001-01-01, 2001-01-05)');
+SELECT lowerInc(tstzspan '[2001-01-01, 2001-01-05)');
 -- true
-SELECT upper_inc(intspanset '{[1,2],[4,5]}');
+SELECT upperInc(intspanset '{[1,2],[4,5]}');
 -- false
 SELECT upper(floatspan '[20.5, 25.3]');
 -- true
-SELECT upper_inc(tstzspan '[2001-01-01, 2001-01-05)');
+SELECT upperInc(tstzspan '[2001-01-01, 2001-01-05)');
 -- false
 </pre></li><li class="listitem"><a name="width"></a><a class="indexterm" name="idm906"></a><p>Obtener el ancho del rango como un número de punto flotante</p><p><code class="varname">width(numspan) → float</code></p><p><code class="varname">width(numspanset,boundspan=false) → float</code></p><p>Se puede establecer a verdadero un parámetro adicional para calcular el ancho del rango delimitador, ignorando así las posibles brechas de valors</p><pre class="programlisting">
 SELECT width(floatspan '[1, 3)');
@@ -106,7 +106,7 @@ SELECT endTimestamp(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01
 -- 2001-01-05
 SELECT timestampN(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}', 3);
 -- 2001-01-05
-</pre></li><li class="listitem"><a name="setspan_timestamps"></a><a class="indexterm" name="idm1045"></a><a class="indexterm" name="idm1048"></a><p>Obtener las fechas o marcas de tiempo diferentes</p><p><code class="varname">dates(datespanset) → date[]</code></p><p><code class="varname">timestamps(tstzspanset) → timestamptz[]</code></p><p>La función no tiene en cuenta si los límites son inclusivos o no.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_timestamps"></a><a class="indexterm" name="idm1045"></a><a class="indexterm" name="idm1048"></a><p>Obtener el conjunto de fechas o marcas de tiempo diferentes</p><p><code class="varname">dates(datespanset) → dateset</code></p><p><code class="varname">timestamps(tstzspanset) → tstzset</code></p><p>La función no tiene en cuenta si los límites son inclusivos o no.</p><pre class="programlisting">
 SELECT dates(datespanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
 -- {2001-01-01, 2001-01-02, 2001-01-03, 2001-01-04}
 SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}');
