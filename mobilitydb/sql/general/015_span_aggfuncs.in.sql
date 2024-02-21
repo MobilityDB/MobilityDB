@@ -334,7 +334,7 @@ CREATE FUNCTION tstzspan_union_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Span_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE span_union(intspan) (
+CREATE AGGREGATE spanUnion(intspan) (
   SFUNC = array_agg_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -345,7 +345,7 @@ CREATE AGGREGATE span_union(intspan) (
   FINALFUNC = intspan_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE span_union(bigintspan) (
+CREATE AGGREGATE spanUnion(bigintspan) (
   SFUNC = array_agg_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -356,7 +356,7 @@ CREATE AGGREGATE span_union(bigintspan) (
   FINALFUNC = bigintspan_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE span_union(floatspan) (
+CREATE AGGREGATE spanUnion(floatspan) (
   SFUNC = array_agg_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -367,7 +367,7 @@ CREATE AGGREGATE span_union(floatspan) (
   FINALFUNC = floatspan_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE span_union(datespan) (
+CREATE AGGREGATE spanUnion(datespan) (
   SFUNC = array_agg_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -378,7 +378,7 @@ CREATE AGGREGATE span_union(datespan) (
   FINALFUNC = datespan_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE span_union(tstzspan) (
+CREATE AGGREGATE spanUnion(tstzspan) (
   SFUNC = array_agg_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -413,7 +413,7 @@ CREATE FUNCTION spanset_union_transfn(internal, tstzspanset)
   AS 'MODULE_PATHNAME', 'Spanset_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE span_union(intspanset) (
+CREATE AGGREGATE spanUnion(intspanset) (
   SFUNC = spanset_union_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -424,7 +424,7 @@ CREATE AGGREGATE span_union(intspanset) (
   FINALFUNC = intspan_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE span_union(bigintspanset) (
+CREATE AGGREGATE spanUnion(bigintspanset) (
   SFUNC = spanset_union_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -435,7 +435,7 @@ CREATE AGGREGATE span_union(bigintspanset) (
   FINALFUNC = bigintspan_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE span_union(floatspanset) (
+CREATE AGGREGATE spanUnion(floatspanset) (
   SFUNC = spanset_union_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -446,7 +446,7 @@ CREATE AGGREGATE span_union(floatspanset) (
   FINALFUNC = floatspan_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE span_union(datespanset) (
+CREATE AGGREGATE spanUnion(datespanset) (
   SFUNC = spanset_union_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -457,7 +457,7 @@ CREATE AGGREGATE span_union(datespanset) (
   FINALFUNC = datespan_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE span_union(tstzspanset) (
+CREATE AGGREGATE spanUnion(tstzspanset) (
   SFUNC = spanset_union_transfn,
   STYPE = internal,
 #if POSTGRESQL_VERSION_NUMBER >= 160000

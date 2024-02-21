@@ -183,12 +183,12 @@ CREATE FUNCTION npointset_union_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE set_union(npoint) (
+CREATE AGGREGATE setUnion(npoint) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = npointset_union_finalfn
 );
-CREATE AGGREGATE set_union(npointset) (
+CREATE AGGREGATE setUnion(npointset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = npointset_union_finalfn

@@ -208,98 +208,98 @@ SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromHexWKB(asHexWKB(b)) <> b;
      0
 (1 row)
 
-SELECT stbox_t(timestamptz '2001-01-03');
-                                stbox_t                                
+SELECT stboxT(timestamptz '2001-01-03');
+                                stboxt                                 
 -----------------------------------------------------------------------
  STBOX T([Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
 (1 row)
 
-SELECT stbox_t(tstzspan '[2001-01-03,2001-01-06]');
-                                stbox_t                                
+SELECT stboxT(tstzspan '[2001-01-03,2001-01-06]');
+                                stboxt                                 
 -----------------------------------------------------------------------
  STBOX T([Wed Jan 03 00:00:00 2001 PST, Sat Jan 06 00:00:00 2001 PST])
 (1 row)
 
-SELECT stbox_x(1,2,3,4);
-       stbox_x        
+SELECT stboxX(1,2,3,4);
+        stboxx        
 ----------------------
  STBOX X((1,2),(3,4))
 (1 row)
 
-SELECT stbox_z(1,2,3,4,5,6);
-         stbox_z          
+SELECT stboxZ(1,2,3,4,5,6);
+          stboxz          
 --------------------------
  STBOX Z((1,2,3),(4,5,6))
 (1 row)
 
-SELECT stbox_xt(1,2,3,4,timestamptz '2001-01-03');
-                                       stbox_xt                                       
+SELECT stboxXT(1,2,3,4,timestamptz '2001-01-03');
+                                       stboxxt                                        
 --------------------------------------------------------------------------------------
  STBOX XT(((1,2),(3,4)),[Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
 (1 row)
 
-SELECT stbox_xt(1,2,3,4,tstzspan '[2001-01-03,2001-01-06]');
-                                       stbox_xt                                       
+SELECT stboxXT(1,2,3,4,tstzspan '[2001-01-03,2001-01-06]');
+                                       stboxxt                                        
 --------------------------------------------------------------------------------------
  STBOX XT(((1,2),(3,4)),[Wed Jan 03 00:00:00 2001 PST, Sat Jan 06 00:00:00 2001 PST])
 (1 row)
 
-SELECT stbox_zt(1,2,3,4,5,6,timestamptz '2001-01-04');
-                                         stbox_zt                                         
+SELECT stboxZT(1,2,3,4,5,6,timestamptz '2001-01-04');
+                                         stboxzt                                          
 ------------------------------------------------------------------------------------------
  STBOX ZT(((1,2,3),(4,5,6)),[Thu Jan 04 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])
 (1 row)
 
-SELECT stbox_zt(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
-                                         stbox_zt                                         
+SELECT stboxZT(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
+                                         stboxzt                                          
 ------------------------------------------------------------------------------------------
  STBOX ZT(((1,2,3),(4,5,6)),[Thu Jan 04 00:00:00 2001 PST, Mon Jan 08 00:00:00 2001 PST])
 (1 row)
 
-SELECT geodstbox_t(timestamptz '2001-01-03');
-                                geodstbox_t                                
+SELECT geodstboxT(timestamptz '2001-01-03');
+                                geodstboxt                                 
 ---------------------------------------------------------------------------
  GEODSTBOX T([Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
 (1 row)
 
-SELECT geodstbox_t(tstzspan '[2001-01-03,2001-01-06]');
-                                geodstbox_t                                
+SELECT geodstboxT(tstzspan '[2001-01-03,2001-01-06]');
+                                geodstboxt                                 
 ---------------------------------------------------------------------------
  GEODSTBOX T([Wed Jan 03 00:00:00 2001 PST, Sat Jan 06 00:00:00 2001 PST])
 (1 row)
 
-SELECT geodstbox_z(1,2,3,4,5,6);
-              geodstbox_z               
+SELECT geodstboxZ(1,2,3,4,5,6);
+               geodstboxz               
 ----------------------------------------
  SRID=4326;GEODSTBOX Z((1,2,3),(4,5,6))
 (1 row)
 
-SELECT geodstbox_zt(1,2,3,4,5,6,timestamptz '2001-01-04');
-                                              geodstbox_zt                                              
+SELECT geodstboxZT(1,2,3,4,5,6,timestamptz '2001-01-04');
+                                              geodstboxzt                                               
 --------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT(((1,2,3),(4,5,6)),[Thu Jan 04 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])
 (1 row)
 
-SELECT geodstbox_zt(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
-                                              geodstbox_zt                                              
+SELECT geodstboxZT(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
+                                              geodstboxzt                                               
 --------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT(((1,2,3),(4,5,6)),[Thu Jan 04 00:00:00 2001 PST, Mon Jan 08 00:00:00 2001 PST])
 (1 row)
 
-SELECT stbox_xt(4,3,2,1,tstzspan '[2001-01-01,2001-01-04]');
-                                       stbox_xt                                       
+SELECT stboxXT(4,3,2,1,tstzspan '[2001-01-01,2001-01-04]');
+                                       stboxxt                                        
 --------------------------------------------------------------------------------------
  STBOX XT(((2,1),(4,3)),[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])
 (1 row)
 
-SELECT stbox_zt(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
-                                         stbox_zt                                         
+SELECT stboxZT(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
+                                         stboxzt                                          
 ------------------------------------------------------------------------------------------
  STBOX ZT(((3,2,1),(6,5,4)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])
 (1 row)
 
-SELECT geodstbox_zt(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
-                                              geodstbox_zt                                              
+SELECT geodstboxZT(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
+                                              geodstboxzt                                               
 --------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT(((3,2,1),(6,5,4)),[Mon Jan 01 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])
 (1 row)
@@ -489,9 +489,9 @@ SELECT tmin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
  
 (1 row)
 
-SELECT tmin_inc(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
- tmin_inc 
-----------
+SELECT tminInc(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
+ tmininc 
+---------
  
 (1 row)
 
@@ -519,9 +519,9 @@ SELECT tmax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
  
 (1 row)
 
-SELECT tmax_inc(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
- tmax_inc 
-----------
+SELECT tmaxInc(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
+ tmaxinc 
+---------
  
 (1 row)
 
@@ -597,9 +597,9 @@ SELECT tmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
  Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT tmin_inc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
- tmin_inc 
-----------
+SELECT tminInc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+ tmininc 
+---------
  t
 (1 row)
 
@@ -627,9 +627,9 @@ SELECT tmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
  Sun Jan 02 00:00:00 2000 PST
 (1 row)
 
-SELECT tmax_inc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
- tmax_inc 
-----------
+SELECT tmaxInc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+ tmaxinc 
+---------
  t
 (1 row)
 

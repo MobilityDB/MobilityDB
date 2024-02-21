@@ -275,45 +275,45 @@ SELECT MAX(upper(t)) FROM tbl_tstzspan;
  Sat Dec 29 13:00:00 2001 PST
 (1 row)
 
-SELECT DISTINCT lower_inc(i) FROM tbl_intspan;
- lower_inc 
------------
+SELECT DISTINCT lowerInc(i) FROM tbl_intspan;
+ lowerinc 
+----------
  
  t
 (2 rows)
 
-SELECT DISTINCT lower_inc(f) FROM tbl_floatspan;
- lower_inc 
------------
+SELECT DISTINCT lowerInc(f) FROM tbl_floatspan;
+ lowerinc 
+----------
  
  t
 (2 rows)
 
-SELECT DISTINCT lower_inc(t) FROM tbl_tstzspan;
- lower_inc 
------------
+SELECT DISTINCT lowerInc(t) FROM tbl_tstzspan;
+ lowerinc 
+----------
  
  f
  t
 (3 rows)
 
-SELECT DISTINCT upper_inc(i) FROM tbl_intspan;
- upper_inc 
------------
+SELECT DISTINCT upperInc(i) FROM tbl_intspan;
+ upperinc 
+----------
  f
  
 (2 rows)
 
-SELECT DISTINCT upper_inc(f) FROM tbl_floatspan;
- upper_inc 
------------
+SELECT DISTINCT upperInc(f) FROM tbl_floatspan;
+ upperinc 
+----------
  f
  
 (2 rows)
 
-SELECT DISTINCT upper_inc(t) FROM tbl_tstzspan;
- upper_inc 
------------
+SELECT DISTINCT upperInc(t) FROM tbl_tstzspan;
+ upperinc 
+----------
  
  f
  t

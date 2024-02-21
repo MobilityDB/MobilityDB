@@ -38,13 +38,13 @@
 
 /* integer <-> <TYPE> */
 
-CREATE FUNCTION tnumber_distance(integer, tint)
+CREATE FUNCTION tDistance(integer, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Distance_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
+  PROCEDURE = tDistance,
   LEFTARG = integer, RIGHTARG = tint,
   COMMUTATOR = <->
 );
@@ -53,13 +53,13 @@ CREATE OPERATOR <-> (
 
 /* float <-> <TYPE> */
 
-CREATE FUNCTION tnumber_distance(float, tfloat)
+CREATE FUNCTION tDistance(float, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
+  PROCEDURE = tDistance,
   LEFTARG = float, RIGHTARG = tfloat,
   COMMUTATOR = <->
 );
@@ -67,22 +67,22 @@ CREATE OPERATOR <-> (
 /*****************************************************************************/
 /* tint <-> <TYPE> */
 
-CREATE FUNCTION tnumber_distance(tint, integer)
+CREATE FUNCTION tDistance(tint, integer)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Distance_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnumber_distance(tint, tint)
+CREATE FUNCTION tDistance(tint, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Distance_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
+  PROCEDURE = tDistance,
   LEFTARG = tint, RIGHTARG = integer,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
+  PROCEDURE = tDistance,
   LEFTARG = tint, RIGHTARG = tint,
   COMMUTATOR = <->
 );
@@ -90,22 +90,22 @@ CREATE OPERATOR <-> (
 /*****************************************************************************/
 /* tfloat <-> <TYPE> */
 
-CREATE FUNCTION tnumber_distance(tfloat, float)
+CREATE FUNCTION tDistance(tfloat, float)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnumber_distance(tfloat, tfloat)
+CREATE FUNCTION tDistance(tfloat, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Distance_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
+  PROCEDURE = tDistance,
   LEFTARG = tfloat, RIGHTARG = float,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
+  PROCEDURE = tDistance,
   LEFTARG = tfloat, RIGHTARG = tfloat,
   COMMUTATOR = <->
 );

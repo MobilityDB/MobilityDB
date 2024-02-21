@@ -217,7 +217,7 @@ CREATE FUNCTION speed(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Tpoint_speed'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION twcentroid(tgeompoint)
+CREATE FUNCTION twCentroid(tgeompoint)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Tpoint_twcentroid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -110,17 +110,17 @@ SELECT upper(tstzspan '(2000-01-01,2000-01-02]');
 SELECT upper(tstzspan '[2000-01-01,2000-01-02)');
 SELECT upper(tstzspan '(2000-01-01,2000-01-02)');
 
-SELECT lower_inc(tstzspan '[2000-01-01,2000-01-01]');
-SELECT lower_inc(tstzspan '[2000-01-01,2000-01-02]');
-SELECT lower_inc(tstzspan '(2000-01-01,2000-01-02]');
-SELECT lower_inc(tstzspan '[2000-01-01,2000-01-02)');
-SELECT lower_inc(tstzspan '(2000-01-01,2000-01-02)');
+SELECT lowerInc(tstzspan '[2000-01-01,2000-01-01]');
+SELECT lowerInc(tstzspan '[2000-01-01,2000-01-02]');
+SELECT lowerInc(tstzspan '(2000-01-01,2000-01-02]');
+SELECT lowerInc(tstzspan '[2000-01-01,2000-01-02)');
+SELECT lowerInc(tstzspan '(2000-01-01,2000-01-02)');
 
-SELECT upper_inc(tstzspan '[2000-01-01,2000-01-01]');
-SELECT upper_inc(tstzspan '[2000-01-01,2000-01-02]');
-SELECT upper_inc(tstzspan '(2000-01-01,2000-01-02]');
-SELECT upper_inc(tstzspan '[2000-01-01,2000-01-02)');
-SELECT upper_inc(tstzspan '(2000-01-01,2000-01-02)');
+SELECT upperInc(tstzspan '[2000-01-01,2000-01-01]');
+SELECT upperInc(tstzspan '[2000-01-01,2000-01-02]');
+SELECT upperInc(tstzspan '(2000-01-01,2000-01-02]');
+SELECT upperInc(tstzspan '[2000-01-01,2000-01-02)');
+SELECT upperInc(tstzspan '(2000-01-01,2000-01-02)');
 
 SELECT duration(tstzspan '[2000-01-01,2000-01-01]');
 SELECT duration(tstzspan '[2000-01-01,2000-01-02]');

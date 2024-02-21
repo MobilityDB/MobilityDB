@@ -560,18 +560,16 @@ PGDLLEXPORT Datum Datespanset_dates(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Datespanset_dates);
 /**
  * @ingroup mobilitydb_setspan_accessor
- * @brief Return the array of dates of a span set
+ * @brief Return the set of dates of a span set
  * @sqlfn dates()
  */
 Datum
 Datespanset_dates(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  int count;
-  DateADT *dates = datespanset_dates(ss, &count);
-  ArrayType *result = datearr_to_array(dates, count);
+  Set *result = datespanset_dates(ss);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_ARRAYTYPE_P(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Tstzspanset_num_timestamps(PG_FUNCTION_ARGS);
@@ -653,11 +651,9 @@ Datum
 Tstzspanset_timestamps(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  int count;
-  TimestampTz *times = tstzspanset_timestamps(ss, &count);
-  ArrayType *result = tstzarr_to_array(times, count);
+  Set *result = tstzspanset_timestamps(ss);
   PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_ARRAYTYPE_P(result);
+  PG_RETURN_SET_P(result);
 }
 
 PGDLLEXPORT Datum Spanset_num_spans(PG_FUNCTION_ARGS);

@@ -115,36 +115,36 @@ CREATE FUNCTION asHexWKB(tnpoint, endianenconding text DEFAULT '')
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION tnpoint_inst(npoint, timestamptz)
+CREATE FUNCTION tnpoint(npoint, timestamptz)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seq(npoint, tstzset)
+CREATE FUNCTION tnpoint(npoint, tstzset)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seq(npoint, tstzspan, text DEFAULT 'linear')
+CREATE FUNCTION tnpoint(npoint, tstzspan, text DEFAULT 'linear')
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seqset(npoint, tstzspanset, text DEFAULT 'linear')
+CREATE FUNCTION tnpoint(npoint, tstzspanset, text DEFAULT 'linear')
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
 
-CREATE FUNCTION tnpoint_seq(tnpoint[], text DEFAULT 'linear',
+CREATE FUNCTION tnpointSeq(tnpoint[], text DEFAULT 'linear',
     lower_inc boolean DEFAULT true, upper_inc boolean DEFAULT true)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequence_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnpoint_seqset(tnpoint[])
+CREATE FUNCTION tnpointSeqSet(tnpoint[])
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], maxt interval DEFAULT NULL,
+CREATE FUNCTION tnpointSeqSetGaps(tnpoint[], maxt interval DEFAULT NULL,
     maxdist float DEFAULT NULL, text DEFAULT 'linear')
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
@@ -175,29 +175,29 @@ CREATE CAST (tnpoint AS tstzspan) WITH FUNCTION timeSpan(tnpoint);
  * Transformation functions
  ******************************************************************************/
 
-CREATE FUNCTION tnpoint_inst(tnpoint)
+CREATE FUNCTION tnpointInst(tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tnpoint_seq(tnpoint, text)
+CREATE FUNCTION tnpointSeq(tnpoint, text)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tnpoint_seq(tnpoint)
+CREATE FUNCTION tnpointSeq(tnpoint)
   RETURNS tnpoint
-  AS 'SELECT @extschema@.tnpoint_seq($1, NULL)'
+  AS 'SELECT @extschema@.tnpointSeq($1, NULL)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tnpoint_seqset(tnpoint, text)
+CREATE FUNCTION tnpointSeqSet(tnpoint, text)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tnpoint_seqset(tnpoint)
+CREATE FUNCTION tnpointSeqSet(tnpoint)
   RETURNS tnpoint
-  AS 'SELECT @extschema@.tnpoint_seqset($1, NULL)'
+  AS 'SELECT @extschema@.tnpointSeqSet($1, NULL)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tnpoint, text)
@@ -304,12 +304,12 @@ CREATE FUNCTION duration(tnpoint, boundspan boolean DEFAULT FALSE)
   AS 'MODULE_PATHNAME', 'Temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION lower_inc(tnpoint)
+CREATE FUNCTION lowerInc(tnpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION upper_inc(tnpoint)
+CREATE FUNCTION upperInc(tnpoint)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -812,74 +812,74 @@ CREATE FUNCTION textset_union_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE set_union(integer) (
+CREATE AGGREGATE setUnion(integer) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = intset_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_union(bigint) (
+CREATE AGGREGATE setUnion(bigint) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = bigintset_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_union(float) (
+CREATE AGGREGATE setUnion(float) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = floatset_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_union(text) (
+CREATE AGGREGATE setUnion(text) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = textset_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_union(date) (
+CREATE AGGREGATE setUnion(date) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = dateset_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_union(timestamptz) (
+CREATE AGGREGATE setUnion(timestamptz) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = tstzset_union_finalfn,
   PARALLEL = safe
 );
 
-CREATE AGGREGATE set_union(intset) (
+CREATE AGGREGATE setUnion(intset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = intset_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_union(bigintset) (
+CREATE AGGREGATE setUnion(bigintset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = bigintset_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_union(floatset) (
+CREATE AGGREGATE setUnion(floatset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = floatset_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_union(textset) (
+CREATE AGGREGATE setUnion(textset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = textset_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_union(dateset) (
+CREATE AGGREGATE setUnion(dateset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = dateset_union_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE set_union(tstzset) (
+CREATE AGGREGATE setUnion(tstzset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = tstzset_union_finalfn,

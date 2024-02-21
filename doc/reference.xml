@@ -194,7 +194,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: Is the lower or upper bound inclusive?</para>
+					<para><link linkend="setspan_lowerInc"><varname>lowerInc</varname>, <varname>upperInc</varname></link>: Is the lower or upper bound inclusive?</para>
 				</listitem>
 
 				<listitem>
@@ -412,7 +412,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_tcount"><varname>tcount</varname></link>: Temporal count</para>
+					<para><link linkend="setspan_tCount"><varname>tCount</varname></link>: Temporal count</para>
 				</listitem>
 
 				<listitem>
@@ -420,7 +420,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_union_agg"><varname>set_union</varname>, <varname>span_union</varname></link>: Aggregate union</para>
+					<para><link linkend="setspan_union_agg"><varname>setUnion</varname>, <varname>spanUnion</varname></link>: Aggregate union</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -462,7 +462,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox"><varname>stbox_x, stbox_z, stbox_t, stbox_xt, stbox_zt, geodstbox_z, geodstbox_t, geodstbox_zt</varname></link>: Constructor for <varname>stbox</varname></para>
+					<para><link linkend="stbox"><varname>stboxX, stboxZ, stboxT, stboxXT, stboxZT, geodstboxZ, geodstboxT, geodstboxZT</varname></link>: Constructor for <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -502,19 +502,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Xmin"><varname>Xmin</varname>, <varname>Ymin</varname>, <varname>Zmin</varname>, <varname>Tmin</varname></link>: Return the minimum X/Y/Z/T value</para>
+					<para><link linkend="xMin"><varname>xMin</varname>, <varname>yMin</varname>, <varname>zMin</varname>, <varname>tMin</varname></link>: Return the minimum X/Y/Z/T value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Xmax"><varname>Xmax</varname>, <varname>Ymax</varname>, <varname>Zmax</varname>, <varname>Tmax</varname></link>: Return the maximum X/Y/Z/T value</para>
+					<para><link linkend="xMax"><varname>xMax</varname>, <varname>yMax</varname>, <varname>zMax</varname>, <varname>tMax</varname></link>: Return the maximum X/Y/Z/T value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Xmin_inc"><varname>Xmin_inc</varname>, <varname>Tmin_inc</varname></link>: Is the minimum X/T value inclusive?</para>
+					<para><link linkend="xMinInc"><varname>xMinInc</varname>, <varname>tMinInc</varname></link>: Is the minimum X/T value inclusive?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Xmax_inc"><varname>Xmax_inc</varname>, <varname>Tmax_inc</varname></link>: Is the maximum X/T value inclusive?</para>
+					<para><link linkend="xMaxInc"><varname>xMaxInc</varname>, <varname>tMaxInc</varname></link>: Is the maximum X/T value inclusive?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -731,11 +731,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_seq"><varname>ttype_discseq</varname></link>: Constructor for temporal types of sequence subtype</para>
+					<para><link linkend="ttypeSeq"><varname>ttypeSeq</varname></link>: Constructor for temporal types of sequence subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_seqset"><varname>ttype_seqset</varname>, <varname>ttype_seqset_gaps</varname></link>: Constructor for temporal types of sequence set subtype</para>
+					<para><link linkend="ttypeSeqSet"><varname>ttypeSeqSet</varname>, <varname>ttypeSeqSetGaps</varname></link>: Constructor for temporal types of sequence set subtype</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -815,7 +815,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="lower_inc"><varname>lower_inc</varname>, <varname>upper_inc</varname></link>: Is the start/end instant inclusive?</para>
+					<para><link linkend="lowerInc"><varname>lowerInc</varname>, <varname>upperInc</varname></link>: Is the start/end instant inclusive?</para>
 				</listitem>
 
 				<listitem>
@@ -873,7 +873,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_subtype"><varname>ttype_inst, ttype_seq, ttype_seqset</varname></link>: Transform a temporal value to another subtype</para>
+				<para><link linkend="ttype_subtype"><varname>ttypeInst, ttypeSeq, ttypeSeqSet</varname></link>: Transform a temporal value to another subtype</para>
 				</listitem>
 
 				<listitem>
@@ -1391,7 +1391,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="DouglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>DouglasPeuckerSimplify</varname></link>: Return a temporal float or a temporal point simplified using the Douglas-Peucker algorithm</para>
+					<para><link linkend="douglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>douglasPeuckerSimplify</varname></link>: Return a temporal float or a temporal point simplified using the Douglas-Peucker algorithm</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1512,7 +1512,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tcount"><varname>tcount</varname></link>: Temporal count</para>
+					<para><link linkend="tCount"><varname>tCount</varname></link>: Temporal count</para>
 				</listitem>
 
 				<listitem>
@@ -1520,51 +1520,51 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tand"><varname>tand</varname></link>: Temporal and</para>
+					<para><link linkend="tAnd"><varname>tAnd</varname></link>: Temporal and</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tor"><varname>tor</varname></link>: Temporal or</para>
+					<para><link linkend="tOr"><varname>tOr</varname></link>: Temporal or</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tmin"><varname>tmin</varname></link>: Temporal minimum</para>
+					<para><link linkend="tMin"><varname>tMin</varname></link>: Temporal minimum</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tmax"><varname>tmax</varname></link>: Temporal maximum</para>
+					<para><link linkend="tMax"><varname>tMax</varname></link>: Temporal maximum</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tsum"><varname>tsum</varname></link>: Temporal sum</para>
+					<para><link linkend="tSum"><varname>tSum</varname></link>: Temporal sum</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tavg"><varname>tavg</varname></link>: Temporal average</para>
+					<para><link linkend="tAvg"><varname>tAvg</varname></link>: Temporal average</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="wmin"><varname>wmin</varname></link>: Window minimum</para>
+					<para><link linkend="wMin"><varname>wMin</varname></link>: Window minimum</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="wmax"><varname>wmax</varname></link>: Window maximum</para>
+					<para><link linkend="wMax"><varname>wMax</varname></link>: Window maximum</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="wcount"><varname>wcount</varname></link>: Window count</para>
+					<para><link linkend="wCount"><varname>wCount</varname></link>: Window count</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="wsum"><varname>wsum</varname></link>: Window sum</para>
+					<para><link linkend="wSum"><varname>wSum</varname></link>: Window sum</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="wavg"><varname>wavg</varname></link>: Window average</para>
+					<para><link linkend="wAvg"><varname>wAvg</varname></link>: Window average</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tcentroid"><varname>tcentroid</varname></link>: Temporal centroid</para>
+					<para><link linkend="tCentroid"><varname>tCentroid</varname></link>: Temporal centroid</para>
 				</listitem>
 
 			</itemizedlist>
@@ -1688,15 +1688,15 @@
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_const"><varname>tnpoint_inst</varname>, <varname>tnpoint_seq</varname>, <varname>tnpoint_seqset</varname></link>: Constructor for temporal network points from a base value and a time value</para>
+						<para><link linkend="tnpoint_const"><varname>tnpoint</varname></link>: Constructor for temporal network points from a base value and a time value</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_seq"><varname>tnpoint_seq</varname></link>: Constructors for temporal network points of sequence subtype</para>
+						<para><link linkend="tnpointSeq"><varname>tnpointSeq</varname></link>: Constructors for temporal network points of sequence subtype</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_seqset"><varname>tnpoint_seqset</varname></link>: Constructor for temporal network points of sequence set subtype</para>
+						<para><link linkend="tnpointSeqSet"><varname>tnpointSeqSet</varname></link>: Constructor for temporal network points of sequence set subtype</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1718,7 +1718,7 @@
 				<title>Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_subtype"><varname>tnpoint_inst, tnpoint_discseq, tnpoint_contseq, tnpoint_seqset</varname></link>: Transform a temporal network to another subtype</para>
+						<para><link linkend="tnpoint_subtype"><varname>tnpointInst</varname>, <varname>tnpointSeq</varname>, <varname>tnpointSeqSet</varname></link>: Transform a temporal network to another subtype</para>
 					</listitem>
 
 					<listitem>
@@ -1828,15 +1828,15 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_tcount"><varname>tcount</varname></link>: Temporal count</para>
+						<para><link linkend="tnpoint_tCount"><varname>tCount</varname></link>: Temporal count</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_wcount"><varname>tcount</varname></link>: Window count</para>
+						<para><link linkend="tnpoint_wCount"><varname>wCount</varname></link>: Window count</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_tcentroid"><varname>tcentroid</varname></link>: Temporal centroid</para>
+						<para><link linkend="tnpoint_tCentroid"><varname>tCentroid</varname></link>: Temporal centroid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

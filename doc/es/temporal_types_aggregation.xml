@@ -18,22 +18,22 @@
 
 		<para>Las funciones agregadas temporales son las siguientes:</para>
 		<itemizedlist>
-			<listitem><para>Para todos los tipos temporales, la función <varname>tcount</varname> generaliza la función traditional <varname>count</varname>. El conteo temporal se puede utilizar para calcular en cada momento el número de objetos disponibles (por ejemplo, el número de coches en un área).</para></listitem>
+			<listitem><para>Para todos los tipos temporales, la función <varname>tCount</varname> generaliza la función traditional <varname>count</varname>. El conteo temporal se puede utilizar para calcular en cada momento el número de objetos disponibles (por ejemplo, el número de coches en un área).</para></listitem>
 			<listitem><para>Para todos los tipos temporales, la función <varname>extent</varname> devuelve un cuadro delimitador que engloba un conjunto de valores temporales. Dependiendo del tipo de base, el resultado de esta función puede ser un <varname>tstzspan</varname>, un <varname>tbox</varname> o un <varname>stbox</varname>.</para></listitem>
-			<listitem><para>Para el tipo booleano temporal, las funciones <varname>tand</varname> y <varname>tor</varname> generalizan las funciones traditionales <varname>and</varname> y <varname>or</varname>.</para></listitem>
-			<listitem><para>Para los tipos numéricos temporales hay dos tipos de funciones agregadas temporales. Las funciones <varname>tmin</varname>, <varname>tmax</varname>, <varname>tsum</varname> y <varname>tavg</varname> generalizan las funciones traditionales <varname>min</varname>, <varname>max</varname>, <varname>sum</varname> y <varname>avg</varname>. Además, las funciones <varname>wmin</varname>, <varname>wmax</varname>, <varname>wcount</varname>, <varname>wsum</varname> y <varname>wavg</varname> son versiones de ventana (o acumulativas) de las funciones tradicionales que, dado un intervalo de tiempo w, calculan el valor de la función en un instante t considerando los valores durante el intervalo [t-w, t]. Todas las funciones agregadas de ventana están disponibles para enteros temporales, mientras que para flotantes temporales sólo son significativos el mínimo y el máximo de ventana.</para></listitem>
-			<listitem><para>Para el tipo texto temporal, las funciones <varname>tmin</varname> y <varname>tmax</varname> generalizan las funciones traditionales <varname>min</varname> y <varname>max</varname>.</para></listitem>
-			<listitem><para>Finalmente, para puntos temporales, la función <varname>tcentroid</varname> generaliza la función <varname>ST_Centroid</varname> proporcionada por PostGIS. Por ejemplo, dado un conjunto de objetos que se mueven juntos (es decir, un convoy o una bandada), el centroide temporal producirá un punto temporal que representa en cada instante el centro geométrico (o el centro de masa) de todos los objetos en movimiento.</para></listitem>
+			<listitem><para>Para el tipo booleano temporal, las funciones <varname>tAnd</varname> y <varname>tOr</varname> generalizan las funciones traditionales <varname>and</varname> y <varname>or</varname>.</para></listitem>
+			<listitem><para>Para los tipos numéricos temporales hay dos tipos de funciones agregadas temporales. Las funciones <varname>tmin</varname>, <varname>tMax</varname>, <varname>tSum</varname> y <varname>tAvg</varname> generalizan las funciones traditionales <varname>min</varname>, <varname>max</varname>, <varname>sum</varname> y <varname>avg</varname>. Además, las funciones <varname>wMin</varname>, <varname>wMax</varname>, <varname>wCount</varname>, <varname>wSum</varname> y <varname>wAvg</varname> son versiones de ventana (o acumulativas) de las funciones tradicionales que, dado un intervalo de tiempo w, calculan el valor de la función en un instante t considerando los valores durante el intervalo [t-w, t]. Todas las funciones agregadas de ventana están disponibles para enteros temporales, mientras que para flotantes temporales sólo son significativos el mínimo y el máximo de ventana.</para></listitem>
+			<listitem><para>Para el tipo texto temporal, las funciones <varname>tMin</varname> y <varname>tMax</varname> generalizan las funciones traditionales <varname>min</varname> y <varname>max</varname>.</para></listitem>
+			<listitem><para>Finalmente, para puntos temporales, la función <varname>tCentroid</varname> generaliza la función <varname>ST_Centroid</varname> proporcionada por PostGIS. Por ejemplo, dado un conjunto de objetos que se mueven juntos (es decir, un convoy o una bandada), el centroide temporal producirá un punto temporal que representa en cada instante el centro geométrico (o el centro de masa) de todos los objetos en movimiento.</para></listitem>
 		</itemizedlist>
 
 		<para>En los ejemplos que siguen, suponemos que las tablas <varname>Department</varname> y <varname>Trip</varname> contienen las dos tuplas introducidas en la <xref linkend="temporal_types_examples" />.</para>
 		<itemizedlist>
-			<listitem id="tcount">
-				<indexterm><primary><varname>tcount</varname></primary></indexterm>
+			<listitem id="tCount">
+				<indexterm><primary><varname>tCount</varname></primary></indexterm>
 				<para>Conteo temporal</para>
-				<para><varname>tcount(ttype) → {tint_seq,tint_seqset}</varname></para>
+				<para><varname>tCount(ttype) → {tintSeq,tintSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tcount(NoEmps) FROM Department;
+SELECT tCount(NoEmps) FROM Department;
 -- {[1@2001-01-01, 2@2001-02-01, 1@2001-08-01, 1@2001-10-01)}
 </programlisting>
 			</listitem>
@@ -50,117 +50,117 @@ SELECT extent(Trip) FROM Trips;
 </programlisting>
 			</listitem>
 
-			<listitem id="tand">
-				<indexterm><primary><varname>tand</varname></primary></indexterm>
+			<listitem id="tAnd">
+				<indexterm><primary><varname>tAnd</varname></primary></indexterm>
 				<para>Y temporal</para>
-				<para><varname>tand(tbool) → tbool</varname></para>
+				<para><varname>tAnd(tbool) → tbool</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tand(NoEmps #&gt; 6) FROM Department;
+SELECT tAnd(NoEmps #&gt; 6) FROM Department;
 -- {[t@2001-01-01, f@2001-04-01, f@2001-10-01)}
 </programlisting>
 			</listitem>
 
-			<listitem id="tor">
-				<indexterm><primary><varname>tor</varname></primary></indexterm>
+			<listitem id="tOr">
+				<indexterm><primary><varname>tOr</varname></primary></indexterm>
 				<para>O temporal</para>
-				<para><varname>tor(tbool) → tbool</varname></para>
+				<para><varname>tOr(tbool) → tbool</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tor(NoEmps #&gt; 6) FROM Department;
+SELECT tOr(NoEmps #&gt; 6) FROM Department;
 -- {[t@2001-01-01, f@2001-08-01, f@2001-10-01)}
 </programlisting>
 			</listitem>
 
-			<listitem id="tmin">
-				<indexterm><primary><varname>tmin</varname></primary></indexterm>
+			<listitem id="tMin">
+				<indexterm><primary><varname>tMin</varname></primary></indexterm>
 				<para>Mínimo temporal</para>
-				<para><varname>tmin(ttype) → tmin(ttype)</varname></para>
+				<para><varname>tMin(ttype) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tmin(NoEmps) FROM Department;
+SELECT tMin(NoEmps) FROM Department;
 -- {[10@2001-01-01, 4@2001-02-01, 6@2001-06-01, 6@2001-10-01)}
 </programlisting>
 			</listitem>
 
-			<listitem id="tmax">
-				<indexterm><primary><varname>tmax</varname></primary></indexterm>
+			<listitem id="tMax">
+				<indexterm><primary><varname>tMax</varname></primary></indexterm>
 				<para>Máximo temporal</para>
-				<para><varname>tmax(ttype) → tmin(ttype)</varname></para>
+				<para><varname>tMax(ttype) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tmax(NoEmps) FROM Department;
+SELECT tMax(NoEmps) FROM Department;
 -- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-01, 6@2001-10-01)}
 </programlisting>
 			</listitem>
 
-			<listitem id="tsum">
-				<indexterm><primary><varname>tsum</varname></primary></indexterm>
+			<listitem id="tSum">
+				<indexterm><primary><varname>tSum</varname></primary></indexterm>
 				<para>Suma temporal</para>
-				<para><varname>tsum(tnumber) → {tnumber_seq,tnumber_seqset}</varname></para>
+				<para><varname>tSum(tnumber) → {tnumberSeq,tnumberSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tsum(NoEmps) FROM Department;
+SELECT tSum(NoEmps) FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 16@2001-04-01, 18@2001-06-01, 6@2001-08-01,
    6@2001-10-01)} */
 </programlisting>
 			</listitem>
 
-			<listitem id="tavg">
-				<indexterm><primary><varname>tavg</varname></primary></indexterm>
+			<listitem id="tAvg">
+				<indexterm><primary><varname>tAvg</varname></primary></indexterm>
 				<para>Promedio temporal</para>
-				<para><varname>tavg(tnumber) → {tfloat_seq,tfloat_seqset}</varname></para>
+				<para><varname>tAvg(tnumber) → {tfloatSeq,tfloatSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tavg(NoEmps) FROM Department;
+SELECT tAvg(NoEmps) FROM Department;
 /* {[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
    [8@2001-04-01, 8@2001-06-01), [9@2001-06-01, 9@2001-08-01),
    [6@2001-08-01, 6@2001-10-01) */
 </programlisting>
 			</listitem>
 
-			<listitem id="wmin">
-				<indexterm><primary><varname>wmin</varname></primary></indexterm>
+			<listitem id="wMin">
+				<indexterm><primary><varname>wMin</varname></primary></indexterm>
 				<para>Mínimo de ventana</para>
-				<para><varname>wmin(tnumber,interval) → {tnumber_seq,tnumber_seqset}</varname></para>
+				<para><varname>wMin(tnumber,interval) → {tnumberSeq,tnumberSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT wmin(NoEmps, interval '2 days') FROM Department;
+SELECT wMin(NoEmps, interval '2 days') FROM Department;
 -- {[10@2001-01-01, 4@2001-04-01, 6@2001-06-03, 6@2001-10-03)}
 </programlisting>
 			</listitem>
 
-			<listitem id="wmax">
-				<indexterm><primary><varname>wmax</varname></primary></indexterm>
+			<listitem id="wMax">
+				<indexterm><primary><varname>wMax</varname></primary></indexterm>
 				<para>Máximo de ventana</para>
-				<para><varname>wmax(tnumber,interval) → {tnumber_seq,tnumber_seqset}</varname></para>
+				<para><varname>wMax(tnumber,interval) → {tnumberSeq,tnumberSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT wmax(NoEmps, interval '2 days') FROM Department;
+SELECT wMax(NoEmps, interval '2 days') FROM Department;
 -- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-03, 6@2001-10-03)}
 </programlisting>
 			</listitem>
 
-			<listitem id="wcount">
-				<indexterm><primary><varname>wcount</varname></primary></indexterm>
+			<listitem id="wCount">
+				<indexterm><primary><varname>wCount</varname></primary></indexterm>
 				<para>Conteo de ventana</para>
-				<para><varname>wcount(tnumber,interval) → {tint_seq,tint_seqset}</varname></para>
+				<para><varname>wCount(tnumber,interval) → {tintSeq,tintSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT wcount(NoEmps, interval '2 days') FROM Department;
+SELECT wCount(NoEmps, interval '2 days') FROM Department;
 /* {[1@2001-01-01, 2@2001-02-01, 3@2001-04-01, 2@2001-04-03, 3@2001-06-01, 2@2001-06-03,
    1@2001-08-03, 1@2001-10-03)} */
 </programlisting>
 			</listitem>
 
-			<listitem id="wsum">
-				<indexterm><primary><varname>wsum</varname></primary></indexterm>
+			<listitem id="wSum">
+				<indexterm><primary><varname>wSum</varname></primary></indexterm>
 				<para>Suma de ventana</para>
-				<para><varname>wsum(tint,interval) → {tint_seq,tint_seqset}</varname></para>
+				<para><varname>wSum(tint,interval) → {tintSeq,tintSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT wsum(NoEmps, interval '2 days') FROM Department;
+SELECT wSum(NoEmps, interval '2 days') FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 26@2001-04-01, 16@2001-04-03, 22@2001-06-01,
    18@2001-06-03, 6@2001-08-03, 6@2001-10-03)} */
 </programlisting>
 			</listitem>
 
-			<listitem id="wavg">
-				<indexterm><primary><varname>wavg</varname></primary></indexterm>
+			<listitem id="wAvg">
+				<indexterm><primary><varname>wAvg</varname></primary></indexterm>
 				<para>Promedio de ventana</para>
-				<para><varname>wavg(tint,interval) → {tfloat_discseq,tfloat_seqset}</varname></para>
+				<para><varname>wAvg(tint,interval) → {tfloatDiscSeq,tfloatSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT wavg(NoEmps, interval '2 days') FROM Department;
+SELECT wAvg(NoEmps, interval '2 days') FROM Department;
 /* {[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
    [8.66666666666667@2001-04-01, 8.66666666666667@2001-04-03),
    [8@2001-04-03, 8@2001-06-01),
@@ -169,12 +169,12 @@ SELECT wavg(NoEmps, interval '2 days') FROM Department;
 </programlisting>
 			</listitem>
 
-			<listitem id="tcentroid">
-				<indexterm><primary><varname>tcentroid</varname></primary></indexterm>
+			<listitem id="tCentroid">
+				<indexterm><primary><varname>tCentroid</varname></primary></indexterm>
 				<para>Centroide temporal</para>
-				<para><varname>tcentroid(tgeompoint) → tgeompoint</varname></para>
+				<para><varname>tCentroid(tgeompoint) → tgeompoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tcentroid(Trip) FROM Trips;
+SELECT tCentroid(Trip) FROM Trips;
 /* {[POINT(0 0)@2001-01-01 08:00:00+00, POINT(1 0)@2001-01-01 08:05:00+00),
    [POINT(0.5 0)@2001-01-01 08:05:00+00, POINT(1.5 0.5)@2001-01-01 08:10:00+00,
    POINT(2 1.5)@2001-01-01 08:15:00+00),

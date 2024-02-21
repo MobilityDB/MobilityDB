@@ -1302,30 +1302,28 @@ datespanset_date_n(const SpanSet *ss, int n, DateADT *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Return the array of dates of a span set
+ * @brief Return the set of dates of a span set
  * @param[in] ss Span set
- * @param[out] count Number of values of the resulting array
  * @return On error return @p NULL
  * @csqlfn #Datespanset_dates()
  */
-DateADT *
-datespanset_dates(const SpanSet *ss, int *count)
+Set *
+datespanset_dates(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count) ||
+  if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return NULL;
 
-  DateADT *result = palloc(sizeof(DateADT) * 2 * ss->count);
+  Datum *dates = palloc(sizeof(Datum) * 2 * ss->count);
   int ndates = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const Span *s = SPANSET_SP_N(ss, i);
-    result[ndates++] = DatumGetDateADT(s->lower);
-    result[ndates++] = DatumGetDateADT(s->upper);
+    dates[ndates++] = s->lower;
+    dates[ndates++] = s->upper;
   }
-  *count = ndates;
-  return result;
+  return set_make_free(dates, ndates, T_DATE, ORDERED);
 }
 
 /**
@@ -1471,36 +1469,35 @@ tstzspanset_timestamptz_n(const SpanSet *ss, int n, TimestampTz *result)
 
 /**
  * @ingroup meos_setspan_accessor
- * @brief Return the array of timestamps of a span set
+ * @brief Return the set of timestamps of a span set
  * @param[in] ss Span set
- * @param[out] count Number of values of the resulting array
  * @return On error return @p NULL
  * @csqlfn #Tstzspanset_timestamps()
  */
-TimestampTz *
-tstzspanset_timestamps(const SpanSet *ss, int *count)
+Set *
+tstzspanset_timestamps(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count) ||
-      ! ensure_timespanset_type(ss->spansettype))
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
 
-  TimestampTz *result = palloc(sizeof(TimestampTz) * 2 * ss->count);
+  Datum *times = palloc(sizeof(Datum) * 2 * ss->count);
   const Span *s = SPANSET_SP_N(ss, 0);
-  result[0] = s->lower;
+  times[0] = s->lower;
   int ntimes = 1;
   if (s->lower != s->upper)
-    result[ntimes++] = s->upper;
+    times[ntimes++] = s->upper;
   for (int i = 1; i < ss->count; i++)
   {
     s = SPANSET_SP_N(ss, i);
-    if (result[ntimes - 1] != DatumGetTimestampTz(s->lower))
-      result[ntimes++] = s->lower;
-    if (result[ntimes - 1] != DatumGetTimestampTz(s->upper))
-      result[ntimes++] = s->upper;
+    /* Notice that we are comparing the Datum corresponding to timestamptz */
+    if (times[ntimes - 1] != s->lower)
+      times[ntimes++] = s->lower;
+    if (times[ntimes - 1] != s->upper)
+      times[ntimes++] = s->upper;
   }
-  *count = ntimes;
-  return result;
+  return set_make_free(times, ntimes, T_TIMESTAMPTZ, ORDERED);
 }
 
 /**

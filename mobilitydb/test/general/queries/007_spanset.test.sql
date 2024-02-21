@@ -99,12 +99,12 @@ SELECT span(floatspanset '{[1,2),[3,4),[5,6)}');
 
 SELECT lower(intspanset '{[1,2),[3,4),[5,6)}');
 SELECT lower(floatspanset '{[1,2),[3,4),[5,6)}');
-SELECT lower_inc(intspanset '{[1,2),[3,4),[5,6)}');
-SELECT lower_inc(floatspanset '{[1,2),[3,4),[5,6)}');
+SELECT lowerInc(intspanset '{[1,2),[3,4),[5,6)}');
+SELECT lowerInc(floatspanset '{[1,2),[3,4),[5,6)}');
 SELECT upper(intspanset '{[1,2),[3,4),[5,6)}');
 SELECT upper(floatspanset '{[1,2),[3,4),[5,6)}');
-SELECT upper_inc(intspanset '{[1,2),[3,4),[5,6)}');
-SELECT upper_inc(floatspanset '{[1,2),[3,4),[5,6)}');
+SELECT upperInc(intspanset '{[1,2),[3,4),[5,6)}');
+SELECT upperInc(floatspanset '{[1,2),[3,4),[5,6)}');
 
 SELECT span(datespanset '{[2000-01-01,2000-01-01]}');
 SELECT span(datespanset '{[2000-01-01,2000-01-02),[2000-01-02,2000-01-03),[2000-01-03,2000-01-04)}');

@@ -292,7 +292,7 @@ SELECT set(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
 			<listitem id="span">
 				<indexterm><primary><varname>span</varname></primary></indexterm>
 				<para>Constructor for span types</para>
-				<para><varname>span(lower base,upper base,left_inc bool=true,right_inc bool=false) → span</varname></para>
+				<para><varname>span(lower base,upper base,leftInc bool=true,rightInc bool=false) → span</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT span(20.5, 25);
 -- [20.5, 25)
@@ -487,22 +487,22 @@ SELECT upper(tstzspan '[2001-01-01, 2001-01-05)');
 </programlisting>
 			</listitem>
 
-			<listitem id="setspan_lower_inc">
-				<indexterm><primary><varname>lower_inc</varname></primary></indexterm>
-				<indexterm><primary><varname>upper_inc</varname></primary></indexterm>
+			<listitem id="setspan_lowerInc">
+				<indexterm><primary><varname>lowerInc</varname></primary></indexterm>
+				<indexterm><primary><varname>upperInc</varname></primary></indexterm>
 				<para>Is the lower or upper bound inclusive?</para>
-				<para><varname>lower_inc(spans) → boolean</varname></para>
-				<para><varname>upper_inc(spans) → boolean</varname></para>
+				<para><varname>lowerInc(spans) → boolean</varname></para>
+				<para><varname>upperInc(spans) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT lower_inc(datespan '[2001-01-01, 2001-01-05)');
+SELECT lowerInc(datespan '[2001-01-01, 2001-01-05)');
 -- true
-SELECT lower_inc(intspanset '{[1,2],[4,5]}');
+SELECT lowerInc(intspanset '{[1,2],[4,5]}');
 -- true
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 SELECT upper(floatspan '[20.5, 25.3]');
 -- true
-SELECT upper_inc(tstzspan '[2001-01-01, 2001-01-05)');
+SELECT upperInc(tstzspan '[2001-01-01, 2001-01-05)');
 -- false
 </programlisting>
 			</listitem>
@@ -675,9 +675,9 @@ SELECT timestampN(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 			<listitem id="setspan_timestamps">
 				<indexterm><primary><varname>dates</varname></primary></indexterm>
 				<indexterm><primary><varname>timestamps</varname></primary></indexterm>
-				<para>Return the different dates or timestamps</para>
-				<para><varname>dates(datespanset) → date[]</varname></para>
-				<para><varname>timestamps(tstzspanset) → timestamptz[]</varname></para>
+				<para>Return the set of distinct dates or timestamps</para>
+				<para><varname>dates(datespanset) → dateset</varname></para>
+				<para><varname>timestamps(tstzspanset) → tstzset</varname></para>
 				<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT dates(datespanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}');
@@ -1254,8 +1254,8 @@ SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
 
 		<itemizedlist>
 			<listitem><para>Function <varname>extent</varname> returns a bounding span that encloses a set of set or span values.</para></listitem>
-			<listitem><para>Union is a very useful operation for set and span types. As we have seen in <xref linkend="setspan_set_operators" />, we can compute the union of two set or span values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Functions <varname>set_union</varname> and <varname>span_union</varname> can be used for this purpose.</para></listitem>
-			<listitem><para>Function <varname>tcount</varname> generalizes the traditional aggregate function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of spans). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />). The function has two optional parameters that specify the granularity (an <varname>interval</varname>) and the origin of time (a <varname>timestamptz</varname>). When these parameters are given, the temporal count is computed at time buckets of the given granularity (see <xref linkend="temporal_types_tiling" />).</para></listitem>
+			<listitem><para>Union is a very useful operation for set and span types. As we have seen in <xref linkend="setspan_set_operators" />, we can compute the union of two set or span values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Functions <varname>setUnion</varname> and <varname>spanUnion</varname> can be used for this purpose.</para></listitem>
+			<listitem><para>Function <varname>tCount</varname> generalizes the traditional aggregate function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of spans). Function <varname>tCount</varname> returns a temporal integer (see <xref linkend="temporal_types" />). The function has two optional parameters that specify the granularity (an <varname>interval</varname>) and the origin of time (a <varname>timestamptz</varname>). When these parameters are given, the temporal count is computed at time buckets of the given granularity (see <xref linkend="temporal_types_tiling" />).</para></listitem>
 		</itemizedlist>
 
 		<itemizedlist>
@@ -1289,55 +1289,47 @@ SELECT extent(ps) FROM periods;
 			</listitem>
 
 			<listitem id="setspan_union_agg">
-				<indexterm><primary><varname>set_union</varname></primary></indexterm>
-				<indexterm><primary><varname>span_union</varname></primary></indexterm>
+				<indexterm><primary><varname>setUnion</varname></primary></indexterm>
+				<indexterm><primary><varname>spanUnion</varname></primary></indexterm>
 				<para>Aggregate union</para>
-				<para><varname>set_union({value,set}) → set</varname></para>
-				<para><varname>span_union(spans) → spanset</varname></para>
+				<para><varname>setUnion({value,set}) → set</varname></para>
+				<para><varname>spanUnion(spans) → spanset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 WITH times(ts) AS (
   SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' UNION
   SELECT tstzset '{2001-01-02, 2001-01-04, 2001-01-06}' UNION
   SELECT tstzset '{2001-01-01, 2001-01-02}'
 )
-SELECT set_union(ts) FROM times;
+SELECT setUnion(ts) FROM times;
 -- {2001-01-01, 2001-01-02, 2001-01-03, 2001-01-04, 2001-01-05, 2001-01-06}
 WITH periods(ps) AS (
   SELECT tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}' UNION
   SELECT tstzspanset '{[2001-01-02, 2001-01-03], [2001-01-05, 2001-01-06]}' UNION
   SELECT tstzspanset '{[2001-01-07, 2001-01-08]}'
 )
-SELECT span_union(ps) FROM periods;
+SELECT spanUnion(ps) FROM periods;
 -- {[2001-01-01, 2001-01-04], [2001-01-05, 2001-01-06], [2001-01-07, 2001-01-08]}
 </programlisting>
 			</listitem>
 
-			<listitem id="setspan_tcount">
-				<indexterm><primary><varname>tcount</varname></primary></indexterm>
+			<listitem id="setspan_tCount">
+				<indexterm><primary><varname>tCount</varname></primary></indexterm>
 				<para>Temporal count</para>
-				<para><varname>tcount(times) → {tint_seq,tint_seqset}</varname></para>
-				<para><varname>tcount(times,interval,timestamptz) → {tint_seq,tint_seqset}</varname></para>
+				<para><varname>tCount(times) → {tintSeq,tintSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 WITH times(ts) AS (
   SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' UNION
   SELECT tstzset '{2001-01-02, 2001-01-04, 2001-01-06}' UNION
   SELECT tstzset '{2001-01-01, 2001-01-02}'
 )
-SELECT tcount(ts) FROM times;
+SELECT tCount(ts) FROM times;
 -- {2@2001-01-01, 2@2001-01-02, 1@2001-01-03, 1@2001-01-04, 1@2001-01-05, 1@2001-01-06}
 WITH periods(ps) AS (
   SELECT tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}' UNION
   SELECT tstzspanset '{[2001-01-01, 2001-01-04), [2001-01-05, 2001-01-06)}' UNION
   SELECT tstzspanset '{[2001-01-02, 2001-01-06)}'
 )
-SELECT tcount(ps) FROM periods;
--- {[2@2001-01-01, 3@2001-01-03, 1@2001-01-04, 2@2001-01-05, 2@2001-01-06)}
-WITH periods(ps) AS (
-  SELECT tstzspanset '{[2001-01-01, 2001-01-02), [2001-01-03, 2001-01-04)}' UNION
-  SELECT tstzspanset '{[2001-01-01, 2001-01-04), [2001-01-05, 2001-01-06)}' UNION
-  SELECT tstzspanset '{[2001-01-02, 2001-01-06)}'
-)
-SELECT tcount(ps) FROM periods;
+SELECT tCount(ps) FROM periods;
 -- {[2@2001-01-01, 3@2001-01-03, 1@2001-01-04, 2@2001-01-05, 2@2001-01-06)}
 </programlisting>
 			</listitem>
