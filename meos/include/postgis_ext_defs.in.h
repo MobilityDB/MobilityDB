@@ -408,7 +408,10 @@ extern double lwpoint_get_m(const LWPOINT *point);
 extern int lwgeom_has_z(const LWGEOM *geom);
 extern int lwgeom_has_m(const LWGEOM *geom);
 
-#include "proj.h"
+/* PROJ */
+
+struct PJconsts;
+typedef struct PJconsts PJ;
 
 typedef struct LWPROJ
 {
