@@ -108,7 +108,7 @@ ensure_same_skiplist_subtype(SkipList *state, uint8 subtype)
 
 /* Global variable for skip lists which require the gsl random generator */
 
-gsl_rng *_AGGREGATION_RNG = NULL;
+static gsl_rng *_AGGREGATION_RNG = NULL;
 
 #ifdef NO_FFSL
 static int

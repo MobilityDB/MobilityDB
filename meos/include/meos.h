@@ -410,7 +410,7 @@ extern GSERIALIZED *geography_from_hexewkb(const char *wkt);
 extern GSERIALIZED *geography_from_text(char *wkt, int srid);
 extern GSERIALIZED *geometry_from_hexewkb(const char *wkt);
 extern GSERIALIZED *geometry_from_text(char *wkt, int srid);
-extern GSERIALIZED *pgis_geography_in(char *str, int32 geog_typmod);
+extern GSERIALIZED *pgis_geography_in(char *str, int32 typmod);
 extern GSERIALIZED *pgis_geometry_in(char *str, int32 typmod);
 
 /*===========================================================================*

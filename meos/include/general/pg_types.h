@@ -28,9 +28,9 @@
  *****************************************************************************/
 
 /**
- * @brief MobilityDB functions `pg_func(...)` corresponding to external
- * PostgreSQL functions `func(PG_FUNCTION_ARGS)`. This avoids bypassing the
- * function manager `fmgr.c`.
+ * @file
+ * @brief Functions for base and time types corresponding to external
+ * PostgreSQL functions in order to bypass the function manager @p fmgr.c.
  */
 
 #ifndef PG_CALL_H
@@ -39,11 +39,6 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
-
-/* Functions adadpted from bool.c */
-
-extern bool bool_in(const char *in_str);
-extern char *bool_out(bool b);
 
 /* Functions adapted from int.c */
 

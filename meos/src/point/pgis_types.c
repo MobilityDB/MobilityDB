@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief MobilityDB functions corresponding to external PostGIS functions
- * @note This avoids bypassing the function manager in @p fmgr.c
+ * @brief Functions for geometry types corresponding to external PostGIS
+ * functions in order to bypass the function manager in @p fmgr.c
  */
 
 #include "point/pgis_types.h"
@@ -71,8 +71,7 @@ void srid_check_latlong(int32_t srid);
   #include <lwgeom_pg.h>
 #endif
 
-GSERIALIZED *
-geography_from_lwgeom(LWGEOM *geom, int32 geog_typmod);
+extern GSERIALIZED *geography_from_lwgeom(LWGEOM *geom, int32 typmod);
 
 /*****************************************************************************
  * Functions adapted from lwgeom_box.c
@@ -1136,7 +1135,7 @@ lwgeom_isfinite(const LWGEOM *lwgeom)
 }
 
 /**
- * @brief Return a @p POLYGON or a @p MULTIPOLYGON that represents all points 
+ * @brief Return a @p POLYGON or a @p MULTIPOLYGON that represents all points
  * whose distance from a geometry/geography is less than or equal to a given
  * distance
  * @param[in] gs Geometry
@@ -2121,7 +2120,7 @@ geography_valid_type(uint8_t type)
 }
 
 GSERIALIZED *
-geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod)
+geography_from_lwgeom(LWGEOM *lwgeom, int32 typmod)
 {
   GSERIALIZED *g_ser = NULL;
 
@@ -2133,14 +2132,14 @@ geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod)
 
   /* Force the geometry to have valid geodetic coordinate range. */
   lwgeom_nudge_geodetic(lwgeom);
-  if ( lwgeom_force_geodetic(lwgeom) == LW_TRUE )
+  if (lwgeom_force_geodetic(lwgeom) == LW_TRUE)
   {
     meos_error(NOTICE, MEOS_ERR_TEXT_INPUT,
       "Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY");
   }
 
   /* Force default SRID to the default */
-  if ( (int)lwgeom->srid <= 0 )
+  if ((int) lwgeom->srid <= 0)
     lwgeom->srid = SRID_DEFAULT;
 
   /*
@@ -2150,8 +2149,8 @@ geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod)
   g_ser = geo_serialize(lwgeom);
 
   /* Check for typmod agreement */
-  if ( geog_typmod >= 0 )
-    g_ser = postgis_valid_typmod(g_ser, geog_typmod);
+  if (typmod >= 0)
+    g_ser = postgis_valid_typmod(g_ser, typmod);
 
   return g_ser;
 }
@@ -2161,11 +2160,11 @@ geography_from_lwgeom(LWGEOM *lwgeom, int32 geog_typmod)
  * @brief Return a geography from its Well-Known Text or Binary (WKT or Binary)
  * representation
  * @param[in] str String
- * @param[in] geog_typmod Typmod
+ * @param[in] typmod Typmod
  * @note PostGIS function: @p geography_in(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-pgis_geography_in(char *str, int32 geog_typmod)
+pgis_geography_in(char *str, int32 typmod)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) str))
@@ -2212,7 +2211,7 @@ pgis_geography_in(char *str, int32 geog_typmod)
 #endif /* ! MEOS */
 
   /* Convert to gserialized */
-  g_ser = geography_from_lwgeom(lwgeom, geog_typmod);
+  g_ser = geography_from_lwgeom(lwgeom, typmod);
 
   /* Clean up temporary object */
   lwgeom_free(lwgeom);
@@ -2320,7 +2319,7 @@ gserialized_geom_from_geog(GSERIALIZED *geom)
 
 /**
  * @brief Get a geometry from a geography
- * @pre The argument @p fraction is in [0,1] and the type of the geometry is 
+ * @pre The argument @p fraction is in [0,1] and the type of the geometry is
  * @p LINETYPE
  * @note PostGIS function: @p LWGEOM_line_interpolate_point(PG_FUNCTION_ARGS)
  */

@@ -51,9 +51,9 @@
 
 /* Global variables */
 
-bool _GSL_INITIALIZED = false;
-const gsl_rng_type *_RNG_TYPE;
-gsl_rng *_RNG;
+static bool _GSL_INITIALIZED = false;
+static const gsl_rng_type *_RNG_TYPE;
+static gsl_rng *_RNG;
 
 /**
  * @brief Initialize the Gnu Scientific Library
@@ -76,7 +76,7 @@ gsl_get_rng(void)
 {
   return _RNG;
 }
-  
+
 /**
  * @brief Return the angle in degrees between 3 points
  */
@@ -303,7 +303,7 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
             else
             {
               /* Apply deceleration event */
-              curSpeed = curSpeed * gsl_ran_binomial(gsl_get_rng(), 0.5, 20) / 
+              curSpeed = curSpeed * gsl_ran_binomial(gsl_get_rng(), 0.5, 20) /
                 20.0;
               noDecel++;
               if (verbosity == 3)
