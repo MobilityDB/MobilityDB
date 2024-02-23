@@ -74,6 +74,19 @@ void srid_check_latlong(int32_t srid);
 GSERIALIZED *
 geography_from_lwgeom(LWGEOM *geom, int32 geog_typmod);
 
+/*****************************************************************************/
+
+/**
+ * @brief Return the srid of a geometry
+ * @note PostGIS function: @p gserialized_get_srid(const GSERIALIZED *g).
+ */
+int32
+geo_get_srid(const GSERIALIZED *g)
+{
+  return gserialized_get_srid(g);
+}
+
+
 /*****************************************************************************
  * Functions adapted from lwgeom_box.c
  *****************************************************************************/
