@@ -39,9 +39,10 @@
 #include <access/gist.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/span.h"
 /* MobilityDB */
-#include "pg_general/temporal.h" /* For temporal_bbox_slice */
+#include "pg_general/temporal.h" /* For temporal_slice */
 
 /*****************************************************************************
  * GiST compress method for temporal values
@@ -60,7 +61,8 @@ Temporal_gist_compress(PG_FUNCTION_ARGS)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
     Span *s = palloc(sizeof(Span));
-    temporal_bbox_slice(entry->key, s);
+    Temporal *temp = temporal_slice(entry->key);
+    temporal_set_bbox(temp, s);
     gistentryinit(*retval, PointerGetDatum(s), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
@@ -81,8 +83,9 @@ Datum
 Temporal_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
+  Temporal *temp = temporal_slice(tempdatum);
   Span *result = palloc(sizeof(Span));
-  temporal_bbox_slice(tempdatum, result);
+  temporal_set_bbox(temp, result);
   PG_RETURN_SPAN_P(result);
 }
 

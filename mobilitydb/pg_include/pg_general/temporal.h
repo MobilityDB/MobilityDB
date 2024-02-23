@@ -186,7 +186,7 @@ extern bool ensure_not_empty_array(ArrayType *array);
 
 /* Indexing functions */
 
-extern void temporal_bbox_slice(Datum tempdatum, void *box);
+extern Temporal *temporal_slice(Datum tempdatum);
 
 /*****************************************************************************/
 
