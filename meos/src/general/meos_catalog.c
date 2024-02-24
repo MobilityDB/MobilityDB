@@ -60,7 +60,7 @@
  * @brief Global array containing the type names corresponding to the
  * enumeration meosType defined in file `meos_catalog.h`
  */
-const char *_MEOSTYPE_NAMES[] =
+static const char *_MEOSTYPE_NAMES[] =
 {
   [T_UNKNOWN] = "",
   [T_BOOL] = "bool",
@@ -120,7 +120,7 @@ const char *_MEOSTYPE_NAMES[] =
  * @brief Global array containing the operator names corresponding to the
  * enumeration meosOper defined in file `meos_catalog.h`
  */
-const char *_MEOSOPER_NAMES[] =
+static const char *_MEOSOPER_NAMES[] =
 {
   [UNKNOWN_OP] = "",
   [EQ_OP] = "=",
@@ -173,7 +173,7 @@ const char *_MEOSOPER_NAMES[] =
  * @brief Global array storing the string representation of the concrete
  * subtypes of temporal types
  */
-static char *_TEMPSUBTYPE_NAMES[] =
+static const char *_TEMPSUBTYPE_NAMES[] =
 {
   [ANYTEMPSUBTYPE] = "Any subtype",
   [TINSTANT] = "Instant",
@@ -189,7 +189,7 @@ static char *_TEMPSUBTYPE_NAMES[] =
  * enumeration interpType defined in file `meos_catalog.h`
  * @note The names are in lowercase since they are used in error messages
  */
-char * _INTERPTYPE_NAMES[] =
+static const char * _INTERPTYPE_NAMES[] =
 {
   [INTERP_NONE] = "None",
   [DISCRETE] = "Discrete",
@@ -202,7 +202,7 @@ char * _INTERPTYPE_NAMES[] =
 /**
  * @brief Global array that keeps type information for the defined set types
  */
-settype_catalog_struct _SETTYPE_CATALOG[] =
+static settype_catalog_struct _SETTYPE_CATALOG[] =
 {
   /* settype        basetype */
   {T_INTSET,        T_INT4},
@@ -219,7 +219,7 @@ settype_catalog_struct _SETTYPE_CATALOG[] =
 /**
  * @brief Global array that keeps type information for the defined span types
  */
-spantype_catalog_struct _SPANTYPE_CATALOG[] =
+static spantype_catalog_struct _SPANTYPE_CATALOG[] =
 {
   /* spantype       basetype */
   {T_INTSPAN,       T_INT4},
@@ -232,7 +232,7 @@ spantype_catalog_struct _SPANTYPE_CATALOG[] =
 /**
  * @brief Global array that keeps type information for the defined span set types
  */
-spansettype_catalog_struct _SPANSETTYPE_CATALOG[] =
+static spansettype_catalog_struct _SPANSETTYPE_CATALOG[] =
 {
   /* spansettype    spantype */
   {T_INTSPANSET,    T_INTSPAN},
@@ -245,7 +245,7 @@ spansettype_catalog_struct _SPANSETTYPE_CATALOG[] =
 /**
  * @brief Global array that keeps type information for the defined temporal types
  */
-temptype_catalog_struct _TEMPTYPE_CATALOG[] =
+static temptype_catalog_struct _TEMPTYPE_CATALOG[] =
 {
   /* temptype    basetype */
   {T_TDOUBLE2,   T_DOUBLE2},

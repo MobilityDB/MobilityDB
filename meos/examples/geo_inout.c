@@ -33,7 +33,7 @@
  *
  * The program can be build as follows
  * @code
- * gcc -Wall -g -I/usr/local/include -o gserialized_inout gserialized_inout.c -L/usr/local/lib -lmeos
+ * gcc -Wall -g -I/usr/local/include -o geo_inout geo_inout.c -L/usr/local/lib -lmeos
  * @endcode
  */
 

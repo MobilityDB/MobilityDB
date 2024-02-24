@@ -86,7 +86,7 @@ typedef struct
 } oid_oper_entry;
 
 /**
- * @brief Define a hashtable mapping operator Oids to a structure containing 
+ * @brief Define a hashtable mapping operator Oids to a structure containing
  * operator and type numbers
  */
 #define SH_PREFIX opertable
@@ -108,12 +108,12 @@ typedef struct
  * @brief Global variable that states whether the type and operator Oid caches
  * have been initialized
  */
-bool _OID_CACHE_READY = false;
+static bool _OID_CACHE_READY = false;
 
 /**
  * @brief Global array that keeps the type Oids used in MobilityDB
  */
-Oid _TYPE_OIDS[NO_MEOS_TYPES];
+static Oid _TYPE_OIDS[NO_MEOS_TYPES];
 
 /**
  * @brief Global hash table that keeps the operator Oids used in MobilityDB
@@ -123,13 +123,13 @@ struct opertable_hash *_OID_OPER = NULL;
 /**
  * @brief Global 3-dimensional array that keeps the operator Oids used in
  * MobilityDB
- * 
+ *
  * The first dimension corresponds to the operator class (e.g., <=), the second
  * and third dimensions correspond, respectively, to the left and right
  * arguments of the operator. A value 0 is stored in the cell of the array if
  * the operator class is not defined for the left and right types.
  */
-Oid _OPER_OID[NO_MEOS_TYPES][NO_MEOS_TYPES][NO_MEOS_TYPES];
+static Oid _OPER_OID[NO_MEOS_TYPES][NO_MEOS_TYPES][NO_MEOS_TYPES];
 
 /*****************************************************************************
  * Catalog functions

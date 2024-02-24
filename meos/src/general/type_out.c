@@ -1468,7 +1468,7 @@ datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
 /**
  * @brief Look-up table for hex writer
  */
-static char *HEXCHR = "0123456789ABCDEF";
+static const char HEXCHR[] = "0123456789ABCDEF";
 
 /**
  * @brief Return true if the bytes must be swaped dependng of the variant
