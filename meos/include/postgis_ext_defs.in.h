@@ -393,20 +393,9 @@ typedef struct
 }
 LWTIN;
 
-extern LWPOINT *lwpoint_make(int32_t srid, int hasz, int hasm, const POINT4D *p);
+/* Functions */
 
-extern LWGEOM *lwgeom_from_gserialized(const GSERIALIZED *g);
-extern GSERIALIZED *geo_from_lwgeom(LWGEOM *geom, size_t *size);
-
-extern int32_t lwgeom_get_srid(const LWGEOM *geom);
-
-extern double lwpoint_get_x(const LWPOINT *point);
-extern double lwpoint_get_y(const LWPOINT *point);
-extern double lwpoint_get_z(const LWPOINT *point);
-extern double lwpoint_get_m(const LWPOINT *point);
-
-extern int lwgeom_has_z(const LWGEOM *geom);
-extern int lwgeom_has_m(const LWGEOM *geom);
+extern int32 geo_get_srid(const GSERIALIZED *g);
 
 /* PROJ */
 

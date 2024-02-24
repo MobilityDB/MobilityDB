@@ -5,3 +5,6 @@ add_library(port OBJECT
   qsort_arg.c
   snprintf.c
   )
+
+set_property(TARGET liblwgeom PROPERTY C_VISIBILITY_PRESET hidden)
+set_property(TARGET liblwgeom PROPERTY POSITION_INDEPENDENT_CODE ON)
