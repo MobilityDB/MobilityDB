@@ -65,71 +65,61 @@ CREATE TABLE test_spanops(
 -------------------------------------------------------------------------------
 
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'intspan', 'int', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i @> t2.i;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i @> t2.i;
-
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b @> t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'bigintspan', 'bigintspan', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b @> t2.b;
-
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f @> t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f @> t2.f;
-
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'datespan', 'date', COUNT(*) FROM tbl_datespan t1, tbl_date t2 WHERE t1.d @> t2.d;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'datespan', 'datespan', COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d @> t2.d;
-
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tstzspan', 'timestamptz', COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.t @> t2.t;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '@>', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t @> t2.t;
 
 -------------------------------------------------------------------------------
 
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'int', 'intspan', COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i <@ t2.i;
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i <@ t2.i;
-
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'bigint', 'bigintspan', COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b <@ t2.b;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'bigintspan', 'bigintspan', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b <@ t2.b;
-
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'float', 'floatspan', COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f <@ t2.f;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f <@ t2.f;
-
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'date', 'datespan', COUNT(*) FROM tbl_date t1, tbl_datespan t2 WHERE t1.d <@ t2.d;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'datespan', 'datespan', COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d <@ t2.d;
-
-INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'timestamptz', 'tstzspan', COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '<@', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t;
 
 ------------------------------------------------------------------------------
 
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i && t2.i;
+SELECT '&&', 'intspan', 'int', COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i && t2.i;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'bigintspan', 'bigint', COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b && t2.b;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f && t2.f;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'datespan', 'date', COUNT(*) FROM tbl_datespan t1, tbl_date t2 WHERE t1.d && t2.d;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'tstzspan', 'timestamptz', COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.t && t2.t;
 
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'int', 'intspan', COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i && t2.i;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'bigint', 'bigintspan', COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b && t2.b;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'float', 'floatspan', COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f && t2.f;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'date', 'datespan', COUNT(*) FROM tbl_date t1, tbl_datespan t2 WHERE t1.d && t2.d;
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'timestamptz', 'tstzspan', COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t && t2.t;
+
+INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
+SELECT '&&', 'intspan', 'intspan', COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i && t2.i;
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'bigintspan', 'bigintspan', COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b && t2.b;
-
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f && t2.f;
-
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'datespan', 'datespan', COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d && t2.d;
-
 INSERT INTO test_spanops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t && t2.t;
 
@@ -329,36 +319,17 @@ CREATE INDEX tbl_tstzspan_rtree_idx ON tbl_tstzspan USING GIST(t);
 -------------------------------------------------------------------------------
 
 UPDATE test_spanops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i @> t2.i )
-WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'int';
-UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_spanops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b @> t2.b )
-WHERE op = '@>' AND leftarg = 'bigintspan' AND rightarg = 'bigint';
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b @> t2.b )
 WHERE op = '@>' AND leftarg = 'bigintspan' AND rightarg = 'bigintspan';
-
-UPDATE test_spanops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f @> t2.f )
-WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'float';
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f @> t2.f )
 WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
-UPDATE test_spanops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_date t2 WHERE t1.d @> t2.d )
-WHERE op = '@>' AND leftarg = 'datespan' AND rightarg = 'date';
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d @> t2.d )
 WHERE op = '@>' AND leftarg = 'datespan' AND rightarg = 'datespan';
-
-UPDATE test_spanops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.t @> t2.t )
-WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t @> t2.t )
 WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
@@ -366,36 +337,17 @@ WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 -------------------------------------------------------------------------------
 
 UPDATE test_spanops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i <@ t2.i )
-WHERE op = '<@' AND leftarg = 'int' AND rightarg = 'intspan';
-UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_spanops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b <@ t2.b )
-WHERE op = '<@' AND leftarg = 'bigint' AND rightarg = 'bigintspan';
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b <@ t2.b )
 WHERE op = '<@' AND leftarg = 'bigintspan' AND rightarg = 'bigintspan';
-
-UPDATE test_spanops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f <@ t2.f )
-WHERE op = '<@' AND leftarg = 'float' AND rightarg = 'floatspan';
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f <@ t2.f )
 WHERE op = '<@' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
-UPDATE test_spanops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_date t1, tbl_datespan t2 WHERE t1.d <@ t2.d )
-WHERE op = '<@' AND leftarg = 'date' AND rightarg = 'datespan';
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d <@ t2.d )
 WHERE op = '<@' AND leftarg = 'datespan' AND rightarg = 'datespan';
-
-UPDATE test_spanops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t )
-WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'tstzspan';
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t )
 WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
@@ -403,21 +355,49 @@ WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 -------------------------------------------------------------------------------
 
 UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i && t2.i )
+WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigintspan' AND rightarg = 'bigint';
+UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f && t2.f )
+WHERE op = '&&' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_date t2 WHERE t1.d && t2.d )
+WHERE op = '&&' AND leftarg = 'datespan' AND rightarg = 'date';
+UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.t && t2.t )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
+
+UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i && t2.i )
+WHERE op = '&&' AND leftarg = 'int' AND rightarg = 'intspan';
+UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigint' AND rightarg = 'bigintspan';
+UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f && t2.f )
+WHERE op = '&&' AND leftarg = 'float' AND rightarg = 'floatspan';
+UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_date t1, tbl_datespan t2 WHERE t1.d && t2.d )
+WHERE op = '&&' AND leftarg = 'date' AND rightarg = 'datespan';
+UPDATE test_spanops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t && t2.t )
+WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'tstzspan';
+
+UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i && t2.i )
 WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b && t2.b )
 WHERE op = '&&' AND leftarg = 'bigintspan' AND rightarg = 'bigintspan';
-
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f && t2.f )
 WHERE op = '&&' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d && t2.d )
 WHERE op = '&&' AND leftarg = 'datespan' AND rightarg = 'datespan';
-
 UPDATE test_spanops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t && t2.t )
 WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
@@ -701,36 +681,17 @@ CREATE INDEX tbl_tstzspan_quadtree_idx ON tbl_tstzspan USING SPGIST(t);
 -------------------------------------------------------------------------------
 
 UPDATE test_spanops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i @> t2.i )
-WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'int';
-UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_spanops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b @> t2.b )
-WHERE op = '@>' AND leftarg = 'bigintspan' AND rightarg = 'bigint';
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b @> t2.b )
 WHERE op = '@>' AND leftarg = 'bigintspan' AND rightarg = 'bigintspan';
-
-UPDATE test_spanops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f @> t2.f )
-WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'float';
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f @> t2.f )
 WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
-UPDATE test_spanops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_date t2 WHERE t1.d @> t2.d )
-WHERE op = '@>' AND leftarg = 'datespan' AND rightarg = 'date';
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d @> t2.d )
 WHERE op = '@>' AND leftarg = 'datespan' AND rightarg = 'datespan';
-
-UPDATE test_spanops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.t @> t2.t )
-WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t @> t2.t )
 WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
@@ -738,36 +699,17 @@ WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 -------------------------------------------------------------------------------
 
 UPDATE test_spanops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i <@ t2.i )
-WHERE op = '<@' AND leftarg = 'int' AND rightarg = 'intspan';
-UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_spanops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b <@ t2.b )
-WHERE op = '<@' AND leftarg = 'bigint' AND rightarg = 'bigintspan';
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b <@ t2.b )
 WHERE op = '<@' AND leftarg = 'bigintspan' AND rightarg = 'bigintspan';
-
-UPDATE test_spanops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f <@ t2.f )
-WHERE op = '<@' AND leftarg = 'float' AND rightarg = 'floatspan';
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f <@ t2.f )
 WHERE op = '<@' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
-UPDATE test_spanops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_date t1, tbl_datespan t2 WHERE t1.d <@ t2.d )
-WHERE op = '<@' AND leftarg = 'date' AND rightarg = 'datespan';
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d <@ t2.d )
 WHERE op = '<@' AND leftarg = 'datespan' AND rightarg = 'datespan';
-
-UPDATE test_spanops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t )
-WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'tstzspan';
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t )
 WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
@@ -775,21 +717,49 @@ WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 -------------------------------------------------------------------------------
 
 UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i && t2.i )
+WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigintspan' AND rightarg = 'bigint';
+UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f && t2.f )
+WHERE op = '&&' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_date t2 WHERE t1.d && t2.d )
+WHERE op = '&&' AND leftarg = 'datespan' AND rightarg = 'date';
+UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.t && t2.t )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
+
+UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i && t2.i )
+WHERE op = '&&' AND leftarg = 'int' AND rightarg = 'intspan';
+UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigint' AND rightarg = 'bigintspan';
+UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f && t2.f )
+WHERE op = '&&' AND leftarg = 'float' AND rightarg = 'floatspan';
+UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_date t1, tbl_datespan t2 WHERE t1.d && t2.d )
+WHERE op = '&&' AND leftarg = 'date' AND rightarg = 'datespan';
+UPDATE test_spanops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t && t2.t )
+WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'tstzspan';
+
+UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i && t2.i )
 WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b && t2.b )
 WHERE op = '&&' AND leftarg = 'bigintspan' AND rightarg = 'bigintspan';
-
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f && t2.f )
 WHERE op = '&&' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d && t2.d )
 WHERE op = '&&' AND leftarg = 'datespan' AND rightarg = 'datespan';
-
 UPDATE test_spanops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t && t2.t )
 WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
@@ -1073,36 +1043,17 @@ CREATE INDEX tbl_tstzspan_kdtree_idx ON tbl_tstzspan USING SPGIST(t tstzspan_kdt
 -------------------------------------------------------------------------------
 
 UPDATE test_spanops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i @> t2.i )
-WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'int';
-UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i @> t2.i )
 WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_spanops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b @> t2.b )
-WHERE op = '@>' AND leftarg = 'bigintspan' AND rightarg = 'bigint';
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b @> t2.b )
 WHERE op = '@>' AND leftarg = 'bigintspan' AND rightarg = 'bigintspan';
-
-UPDATE test_spanops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f @> t2.f )
-WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'float';
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f @> t2.f )
 WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
-UPDATE test_spanops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_date t2 WHERE t1.d @> t2.d )
-WHERE op = '@>' AND leftarg = 'datespan' AND rightarg = 'date';
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d @> t2.d )
 WHERE op = '@>' AND leftarg = 'datespan' AND rightarg = 'datespan';
-
-UPDATE test_spanops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.t @> t2.t )
-WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t @> t2.t )
 WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
@@ -1110,36 +1061,17 @@ WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 -------------------------------------------------------------------------------
 
 UPDATE test_spanops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i <@ t2.i )
-WHERE op = '<@' AND leftarg = 'int' AND rightarg = 'intspan';
-UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i <@ t2.i )
 WHERE op = '<@' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
-UPDATE test_spanops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b <@ t2.b )
-WHERE op = '<@' AND leftarg = 'bigint' AND rightarg = 'bigintspan';
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b <@ t2.b )
 WHERE op = '<@' AND leftarg = 'bigintspan' AND rightarg = 'bigintspan';
-
-UPDATE test_spanops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f <@ t2.f )
-WHERE op = '<@' AND leftarg = 'float' AND rightarg = 'floatspan';
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f <@ t2.f )
 WHERE op = '<@' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
-UPDATE test_spanops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_date t1, tbl_datespan t2 WHERE t1.d <@ t2.d )
-WHERE op = '<@' AND leftarg = 'date' AND rightarg = 'datespan';
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d <@ t2.d )
 WHERE op = '<@' AND leftarg = 'datespan' AND rightarg = 'datespan';
-
-UPDATE test_spanops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t )
-WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'tstzspan';
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <@ t2.t )
 WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
@@ -1147,21 +1079,49 @@ WHERE op = '<@' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 -------------------------------------------------------------------------------
 
 UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_int t2 WHERE t1.i && t2.i )
+WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'int';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigintspan' AND rightarg = 'bigint';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_float t2 WHERE t1.f && t2.f )
+WHERE op = '&&' AND leftarg = 'floatspan' AND rightarg = 'float';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_date t2 WHERE t1.d && t2.d )
+WHERE op = '&&' AND leftarg = 'datespan' AND rightarg = 'date';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_timestamptz t2 WHERE t1.t && t2.t )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
+
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_int t1, tbl_intspan t2 WHERE t1.i && t2.i )
+WHERE op = '&&' AND leftarg = 'int' AND rightarg = 'intspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigint t1, tbl_bigintspan t2 WHERE t1.b && t2.b )
+WHERE op = '&&' AND leftarg = 'bigint' AND rightarg = 'bigintspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_float t1, tbl_floatspan t2 WHERE t1.f && t2.f )
+WHERE op = '&&' AND leftarg = 'float' AND rightarg = 'floatspan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_date t1, tbl_datespan t2 WHERE t1.d && t2.d )
+WHERE op = '&&' AND leftarg = 'date' AND rightarg = 'datespan';
+UPDATE test_spanops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_timestamptz t1, tbl_tstzspan t2 WHERE t1.t && t2.t )
+WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'tstzspan';
+
+UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan t2 WHERE t1.i && t2.i )
 WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'intspan';
-
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan t2 WHERE t1.b && t2.b )
 WHERE op = '&&' AND leftarg = 'bigintspan' AND rightarg = 'bigintspan';
-
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan t2 WHERE t1.f && t2.f )
 WHERE op = '&&' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
-
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan t2 WHERE t1.d && t2.d )
 WHERE op = '&&' AND leftarg = 'datespan' AND rightarg = 'datespan';
-
 UPDATE test_spanops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t && t2.t )
 WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';

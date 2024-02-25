@@ -18,7 +18,7 @@ CREATE INDEX tbl_intspanset_rtree_idx ON tbl_intspanset USING GIST(i);
 CREATE INDEX
 CREATE INDEX tbl_floatspanset_rtree_idx ON tbl_floatspanset USING GIST(f);
 CREATE INDEX
-SELECT COUNT(*) FROM tbl_intspanset WHERE i @> 50;
+SELECT COUNT(*) FROM tbl_intspanset WHERE i && 50;
  count 
 -------
     26
@@ -118,7 +118,7 @@ SELECT i <-> intspan '[101,105]' FROM tbl_intspanset ORDER BY 1 LIMIT 3;
         2
 (3 rows)
 
-SELECT COUNT(*) FROM tbl_floatspanset WHERE f @> 50.0;
+SELECT COUNT(*) FROM tbl_floatspanset WHERE f && 50.0;
  count 
 -------
     20
@@ -220,7 +220,7 @@ CREATE INDEX tbl_intspanset_quadtree_idx ON tbl_intspanset USING SPGIST(i);
 CREATE INDEX
 CREATE INDEX tbl_floatspanset_quadtree_idx ON tbl_floatspanset USING SPGIST(f);
 CREATE INDEX
-SELECT COUNT(*) FROM tbl_intspanset WHERE i @> 50;
+SELECT COUNT(*) FROM tbl_intspanset WHERE i && 50;
  count 
 -------
     26
@@ -320,7 +320,7 @@ SELECT i <-> intspan '[101,105]' FROM tbl_intspanset ORDER BY 1 LIMIT 3;
         2
 (3 rows)
 
-SELECT COUNT(*) FROM tbl_floatspanset WHERE f @> 50.0;
+SELECT COUNT(*) FROM tbl_floatspanset WHERE f && 50.0;
  count 
 -------
     20

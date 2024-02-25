@@ -154,7 +154,7 @@ spanset_find_value(const SpanSet *ss, Datum v, int *loc)
   {
     middle = (first + last)/2;
     s = SPANSET_SP_N(ss, middle);
-    if (contains_span_value(s, v))
+    if (overlaps_span_value(s, v))
     {
       *loc = middle;
       return true;

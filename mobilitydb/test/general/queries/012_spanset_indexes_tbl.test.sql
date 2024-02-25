@@ -46,7 +46,7 @@ DROP INDEX IF EXISTS tbl_floatspanset_quadtree_idx;
 CREATE INDEX tbl_intspanset_rtree_idx ON tbl_intspanset USING GIST(i);
 CREATE INDEX tbl_floatspanset_rtree_idx ON tbl_floatspanset USING GIST(f);
 
-SELECT COUNT(*) FROM tbl_intspanset WHERE i @> 50;
+SELECT COUNT(*) FROM tbl_intspanset WHERE i && 50;
 SELECT COUNT(*) FROM tbl_intspanset WHERE i -|- 50;
 SELECT COUNT(*) FROM tbl_intspanset WHERE i << 15;
 SELECT COUNT(*) FROM tbl_intspanset WHERE i &< 15;
@@ -65,7 +65,7 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE i &> intspan '[85, 95]';
 SELECT i <-> 101 FROM tbl_intspanset ORDER BY 1 LIMIT 3;
 SELECT i <-> intspan '[101,105]' FROM tbl_intspanset ORDER BY 1 LIMIT 3;
 
-SELECT COUNT(*) FROM tbl_floatspanset WHERE f @> 50.0;
+SELECT COUNT(*) FROM tbl_floatspanset WHERE f && 50.0;
 SELECT COUNT(*) FROM tbl_floatspanset WHERE f -|- 50.0;
 SELECT COUNT(*) FROM tbl_floatspanset WHERE f << 15.0;
 SELECT COUNT(*) FROM tbl_floatspanset WHERE f &< 15.0;
@@ -91,7 +91,7 @@ DROP INDEX IF EXISTS tbl_floatspanset_rtree_idx;
 CREATE INDEX tbl_intspanset_quadtree_idx ON tbl_intspanset USING SPGIST(i);
 CREATE INDEX tbl_floatspanset_quadtree_idx ON tbl_floatspanset USING SPGIST(f);
 
-SELECT COUNT(*) FROM tbl_intspanset WHERE i @> 50;
+SELECT COUNT(*) FROM tbl_intspanset WHERE i && 50;
 SELECT COUNT(*) FROM tbl_intspanset WHERE i -|- 50;
 SELECT COUNT(*) FROM tbl_intspanset WHERE i << 15;
 SELECT COUNT(*) FROM tbl_intspanset WHERE i &< 15;
@@ -110,7 +110,7 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE i &> intspan '[85, 95]';
 SELECT i <-> 101 FROM tbl_intspanset ORDER BY 1 LIMIT 3;
 SELECT i <-> intspan '[101,105]' FROM tbl_intspanset ORDER BY 1 LIMIT 3;
 
-SELECT COUNT(*) FROM tbl_floatspanset WHERE f @> 50.0;
+SELECT COUNT(*) FROM tbl_floatspanset WHERE f && 50.0;
 SELECT COUNT(*) FROM tbl_floatspanset WHERE f -|- 50.0;
 SELECT COUNT(*) FROM tbl_floatspanset WHERE f << 15.0;
 SELECT COUNT(*) FROM tbl_floatspanset WHERE f &< 15.0;

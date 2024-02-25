@@ -102,20 +102,6 @@ Boolop_set_set(FunctionCallInfo fcinfo,
 /*****************************************************************************/
 /* contains? */
 
-PGDLLEXPORT Datum Contains_set_value(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Contains_set_value);
-/**
- * @ingroup mobilitydb_setspan_topo
- * @brief Return true if a set contains a value
- * @sqlfn set_contains()
- * @sqlop @p \@>
- */
-Datum
-Contains_set_value(PG_FUNCTION_ARGS)
-{
-  return Boolop_set_base(fcinfo, &contains_set_value);
-}
-
 PGDLLEXPORT Datum Contains_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_set_set);
 /**
@@ -133,20 +119,6 @@ Contains_set_set(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* contained? */
 
-PGDLLEXPORT Datum Contained_value_set(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Contained_value_set);
-/**
- * @ingroup mobilitydb_setspan_topo
- * @brief Return true if a value is contained in a set
- * @sqlfn set_contained()
- * @sqlop @p <@
- */
-Datum
-Contained_value_set(PG_FUNCTION_ARGS)
-{
-  return Boolop_base_set(fcinfo, &contained_value_set);
-}
-
 PGDLLEXPORT Datum Contained_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_set_set);
 /**
@@ -163,6 +135,34 @@ Contained_set_set(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 /* overlaps? */
+
+PGDLLEXPORT Datum Overlaps_set_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_set_value);
+/**
+ * @ingroup mobilitydb_setspan_topo
+ * @brief Return true if a set overlaps a value
+ * @sqlfn set_overlaps()
+ * @sqlop @p \@>
+ */
+Datum
+Overlaps_set_value(PG_FUNCTION_ARGS)
+{
+  return Boolop_set_base(fcinfo, &overlaps_set_value);
+}
+
+PGDLLEXPORT Datum Overlaps_value_set(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_value_set);
+/**
+ * @ingroup mobilitydb_setspan_topo
+ * @brief Return true if a value overlaps a set
+ * @sqlfn set_overlaps()
+ * @sqlop @p <@
+ */
+Datum
+Overlaps_value_set(PG_FUNCTION_ARGS)
+{
+  return Boolop_base_set(fcinfo, &overlaps_value_set);
+}
 
 PGDLLEXPORT Datum Overlaps_set_set(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_set_set);

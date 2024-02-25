@@ -85,7 +85,7 @@ bbox_contains_set_set(const Set *s1, const Set *s2)
  * @brief Return true if the bounding box of the first set contains the value
  */
 bool
-bbox_contains_set_value(const Set *s, Datum value)
+bbox_overlaps_set_value(const Set *s, Datum value)
 {
   assert(s);
   Datum min = SET_VAL_N(s, MINIDX);
@@ -175,141 +175,6 @@ setop_set_set(const Set *s1, const Set *s2, SetOper op)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_setspan_topo
- * @brief Return true if a set contains a value
- * @param[in] s Set
- * @param[in] value Value
- */
-bool
-contains_set_value(const Set *s, Datum value)
-{
-  assert(s);
-  /* Bounding box test */
-  if (! bbox_contains_set_value(s, value))
-    return false;
-  int loc;
-  return set_find_value(s, value, &loc);
-}
-
-#if MEOS
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a set contains an integer
- * @param[in] s Set
- * @param[in] i Value
- * @csqlfn #Contains_set_value()
- */
-bool
-contains_set_int(const Set *s, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
-    return false;
-  return contains_set_value(s, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a set contains a big integer
- * @param[in] s Set
- * @param[in] i Value
- * @csqlfn #Contains_set_value()
- */
-bool
-contains_set_bigint(const Set *s, int64 i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
-    return false;
-  return contains_set_value(s, Int64GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a set contains a float
- * @param[in] s Set
- * @param[in] d Value
- * @csqlfn #Contains_set_value()
- */
-bool
-contains_set_float(const Set *s, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
-    return false;
-  return contains_set_value(s, Float8GetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a set contains a text
- * @param[in] s Set
- * @param[in] txt Value
- * @csqlfn #Contains_set_value()
- */
-bool
-contains_set_text(const Set *s, text *txt)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-      ! ensure_set_isof_basetype(s, T_TEXT))
-    return false;
-  return contains_set_value(s, PointerGetDatum(txt));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a set contains a date
- * @param[in] s Set
- * @param[in] d Value
- * @csqlfn #Contains_set_value()
- */
-bool
-contains_set_date(const Set *s, DateADT d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
-    return false;
-  return contains_set_value(s, DateADTGetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a set contains a timestamptz
- * @param[in] s Set
- * @param[in] t Value
- * @csqlfn #Contains_set_value()
- */
-bool
-contains_set_timestamptz(const Set *s, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
-    return false;
-  return contains_set_value(s, TimestampTzGetDatum(t));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a set contains a geometry/geography
- * @param[in] s Set
- * @param[in] gs Value
- * @csqlfn #Contains_set_value()
- */
-bool
-contains_set_geo(const Set *s, GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
-      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
-      ! ensure_point_type(gs) )
-    return false;
-  return contains_set_value(s, PointerGetDatum(gs));
-}
-#endif /* MEOS */
-
-/**
  * @ingroup meos_setspan_topo
  * @brief Return true if the first set contains the second one
  * @param[in] s1,s2 Sets
@@ -348,136 +213,6 @@ contains_set_set(const Set *s1, const Set *s2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_setspan_topo
- * @brief Return true if a value is contained in a set
- * @param[in] value Value
- * @param[in] s Set
- */
-bool
-contained_value_set(Datum value, const Set *s)
-{
-  return contains_set_value(s, value);
-}
-
-#if MEOS
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if an integer is contained in a set
- * @param[in] i Value
- * @param[in] s Set
- * @csqlfn #Contained_value_set()
- */
-bool
-contained_int_set(int i, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
-    return false;
-  return contained_value_set(Int32GetDatum(i), s);
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a big integer is contained in a set
- * @param[in] i Value
- * @param[in] s Set
- * @csqlfn #Contained_value_set()
- */
-bool
-contained_bigint_set(int64 i, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
-    return false;
-  return contained_value_set(Int64GetDatum(i), s);
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a float is contained in a set
- * @param[in] d Value
- * @param[in] s Set
- * @csqlfn #Contained_value_set()
- */
-bool
-contained_float_set(double d, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
-    return false;
-  return contained_value_set(Float8GetDatum(d), s);
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a text is contained in a set
- * @param[in] txt Value
- * @param[in] s Set
- * @csqlfn #Contained_value_set()
- */
-bool
-contained_text_set(text *txt, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-      ! ensure_set_isof_basetype(s, T_TEXT))
-    return false;
-  return contained_value_set(PointerGetDatum(txt), s);
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a date is contained in a set
- * @param[in] d Value
- * @param[in] s Set
- * @csqlfn #Contained_value_set()
- */
-bool
-contained_date_set(DateADT d, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
-    return false;
-  return contains_set_value(s, DateADTGetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a timestamptz is contained in a set
- * @param[in] t Value
- * @param[in] s Set
- * @csqlfn #Contained_value_set()
- */
-bool
-contained_timestamptz_set(TimestampTz t, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
-    return false;
-  return contains_set_value(s, TimestampTzGetDatum(t));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a geometry/geography is contained in a set
- * @param[in] gs Value
- * @param[in] s Set
- * @csqlfn #Contained_value_set()
- */
-bool
-contained_geo_set(GSERIALIZED *gs, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
-      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
-      ! ensure_point_type(gs))
-    return false;
-  return contained_value_set(PointerGetDatum(gs), s);
-}
-#endif /* MEOS */
-
-/**
  * @ingroup meos_setspan_topo
  * @brief Return true if the first set is contained in the second one
  * @param[in] s1,s2 Sets
@@ -492,6 +227,275 @@ contained_set_set(const Set *s1, const Set *s2)
 /*****************************************************************************
  * Overlaps
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_setspan_topo
+ * @brief Return true if a set overlaps a value
+ * @param[in] s Set
+ * @param[in] value Value
+ */
+bool
+overlaps_set_value(const Set *s, Datum value)
+{
+  assert(s);
+  /* Bounding box test */
+  if (! bbox_overlaps_set_value(s, value))
+    return false;
+  int loc;
+  return set_find_value(s, value, &loc);
+}
+
+#if MEOS
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a set overlaps an integer
+ * @param[in] s Set
+ * @param[in] i Value
+ * @csqlfn #Overlaps_set_value()
+ */
+bool
+overlaps_set_int(const Set *s, int i)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
+    return false;
+  return overlaps_set_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a set overlaps a big integer
+ * @param[in] s Set
+ * @param[in] i Value
+ * @csqlfn #Overlaps_set_value()
+ */
+bool
+overlaps_set_bigint(const Set *s, int64 i)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
+    return false;
+  return overlaps_set_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a set overlaps a float
+ * @param[in] s Set
+ * @param[in] d Value
+ * @csqlfn #Overlaps_set_value()
+ */
+bool
+overlaps_set_float(const Set *s, double d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
+    return false;
+  return overlaps_set_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a set overlaps a text
+ * @param[in] s Set
+ * @param[in] txt Value
+ * @csqlfn #Overlaps_set_value()
+ */
+bool
+overlaps_set_text(const Set *s, text *txt)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_set_isof_basetype(s, T_TEXT))
+    return false;
+  return overlaps_set_value(s, PointerGetDatum(txt));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a set overlaps a date
+ * @param[in] s Set
+ * @param[in] d Value
+ * @csqlfn #Overlaps_set_value()
+ */
+bool
+overlaps_set_date(const Set *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+  return overlaps_set_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a set overlaps a timestamptz
+ * @param[in] s Set
+ * @param[in] t Value
+ * @csqlfn #Overlaps_set_value()
+ */
+bool
+overlaps_set_timestamptz(const Set *s, TimestampTz t)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return overlaps_set_value(s, TimestampTzGetDatum(t));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a set overlaps a geometry/geography
+ * @param[in] s Set
+ * @param[in] gs Value
+ * @csqlfn #Overlaps_set_value()
+ */
+bool
+overlaps_set_geo(const Set *s, GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
+      ! ensure_point_type(gs) )
+    return false;
+  return overlaps_set_value(s, PointerGetDatum(gs));
+}
+#endif /* MEOS */
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_setspan_topo
+ * @brief Return true if a value overlaps a set
+ * @param[in] value Value
+ * @param[in] s Set
+ */
+bool
+overlaps_value_set(Datum value, const Set *s)
+{
+  return overlaps_set_value(s, value);
+}
+
+#if MEOS
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if an integer overlaps a set
+ * @param[in] i Value
+ * @param[in] s Set
+ * @csqlfn #Overlaps_value_set()
+ */
+bool
+overlaps_int_set(int i, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
+    return false;
+  return overlaps_value_set(Int32GetDatum(i), s);
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a big integer overlaps a set
+ * @param[in] i Value
+ * @param[in] s Set
+ * @csqlfn #Overlaps_value_set()
+ */
+bool
+overlaps_bigint_set(int64 i, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
+    return false;
+  return overlaps_value_set(Int64GetDatum(i), s);
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a float overlaps a set
+ * @param[in] d Value
+ * @param[in] s Set
+ * @csqlfn #Overlaps_value_set()
+ */
+bool
+overlaps_float_set(double d, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
+    return false;
+  return overlaps_value_set(Float8GetDatum(d), s);
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a text overlaps a set
+ * @param[in] txt Value
+ * @param[in] s Set
+ * @csqlfn #Overlaps_value_set()
+ */
+bool
+overlaps_text_set(text *txt, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
+      ! ensure_set_isof_basetype(s, T_TEXT))
+    return false;
+  return overlaps_value_set(PointerGetDatum(txt), s);
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a date overlaps a set
+ * @param[in] d Value
+ * @param[in] s Set
+ * @csqlfn #Overlaps_value_set()
+ */
+bool
+overlaps_date_set(DateADT d, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+    return false;
+  return overlaps_set_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a timestamptz overlaps a set
+ * @param[in] t Value
+ * @param[in] s Set
+ * @csqlfn #Overlaps_value_set()
+ */
+bool
+overlaps_timestamptz_set(TimestampTz t, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return overlaps_set_value(s, TimestampTzGetDatum(t));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a geometry/geography overlaps a set
+ * @param[in] gs Value
+ * @param[in] s Set
+ * @csqlfn #Overlaps_value_set()
+ */
+bool
+overlaps_geo_set(GSERIALIZED *gs, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs) ||
+      ! ensure_point_type(gs))
+    return false;
+  return overlaps_value_set(PointerGetDatum(gs), s);
+}
+#endif /* MEOS */
+
+/*****************************************************************************/
 
 /**
  * @ingroup meos_setspan_topo
@@ -1823,7 +1827,7 @@ Set *
 intersection_set_value(const Set *s, Datum value)
 {
   assert(s);
-  if (! contains_set_value(s, value))
+  if (! overlaps_set_value(s, value))
     return NULL;
   return value_to_set(value, s->basetype);
 }
@@ -2107,7 +2111,7 @@ Set *
 minus_value_set(Datum value, const Set *s)
 {
   assert(s);
-  if (contains_set_value(s, value))
+  if (overlaps_set_value(s, value))
     return NULL;
   return value_to_set(value, s->basetype);
 }
@@ -2241,7 +2245,7 @@ minus_set_value(const Set *s, Datum value)
 {
   assert(s);
   /* Bounding box test */
-  if (! bbox_contains_set_value(s, value))
+  if (! bbox_overlaps_set_value(s, value))
     return set_cp(s);
 
   Datum *values = palloc(sizeof(TimestampTz) * s->count);

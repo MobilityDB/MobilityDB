@@ -31,15 +31,15 @@
 -- File time_ops.c
 -------------------------------------------------------------------------------
 
-SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-03}' @> timestamptz '2000-01-01';
+SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-03}' && timestamptz '2000-01-01';
 SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-03}' @> tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
 SELECT tstzset '{2000-01-01, 2000-01-03, 2000-01-05}' @> tstzset '{2000-01-02, 2000-01-04}';
 
-SELECT tstzspan '[2000-01-01, 2000-01-02]' @> timestamptz '2000-01-01';
+SELECT tstzspan '[2000-01-01, 2000-01-02]' && timestamptz '2000-01-01';
 SELECT tstzspan '[2000-01-01, 2000-01-02]' @> tstzspan '[2000-01-01, 2000-01-02]';
 SELECT tstzspan '[2000-01-01, 2000-01-02]' @> tstzspanset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}';
 
-SELECT tstzspanset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' @> timestamptz '2000-01-01';
+SELECT tstzspanset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' && timestamptz '2000-01-01';
 SELECT tstzspanset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' @> tstzspan '[2000-01-01, 2000-01-02]';
 SELECT tstzspanset '{[2000-01-02, 2000-01-04],(2000-01-05, 2000-01-06),[2000-01-07, 2000-01-08]}' @> tstzspan '(2000-01-05, 2000-01-06)';
 SELECT tstzspanset '{[2000-01-01, 2000-01-02],[2000-01-03, 2000-01-04]}' @> tstzspanset '{[2000-01-02, 2000-01-06]}';
@@ -53,9 +53,9 @@ SELECT tstzspanset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' @> tst
 
 -------------------------------------------------------------------------------
 
-SELECT timestamptz '2000-01-01' <@ tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
-SELECT timestamptz '2000-01-01' <@ tstzspan '[2000-01-01, 2000-01-02]';
-SELECT timestamptz '2000-01-01' <@ tstzspanset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}';
+SELECT timestamptz '2000-01-01' && tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT timestamptz '2000-01-01' && tstzspan '[2000-01-01, 2000-01-02]';
+SELECT timestamptz '2000-01-01' && tstzspanset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}';
 
 SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-03}' <@ tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
 
@@ -401,9 +401,9 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspanset '{[2001-06-01, 2001
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> timestamptz '2001-06-01';
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> timestamptz '2001-06-01';
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> timestamptz '2001-06-01';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE t && timestamptz '2001-06-01';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && timestamptz '2001-06-01';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && timestamptz '2001-06-01';
 
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> tstzset '{2001-06-01, 2001-07-01}';
 
@@ -414,9 +414,9 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> tstzspanset '{[2001-06-01, 2001
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> tstzspanset '{[2001-06-01, 2001-07-01]}';
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' <@ t;
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' <@ t;
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' <@ t;
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' && t;
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' && t;
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' && t;
 
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE tstzset '{2001-06-01, 2001-07-01}' <@ t;
 
@@ -485,9 +485,9 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && tstzspanset '{[2001-06-01, 2001
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && tstzspanset '{[2001-06-01, 2001-07-01]}';
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> timestamptz '2001-06-01';
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> timestamptz '2001-06-01';
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> timestamptz '2001-06-01';
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE t && timestamptz '2001-06-01';
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && timestamptz '2001-06-01';
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t && timestamptz '2001-06-01';
 
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE t @> tstzset '{2001-06-01, 2001-07-01}';
 
@@ -498,9 +498,9 @@ SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> tstzspanset '{[2001-06-01, 2001
 SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE t @> tstzspanset '{[2001-06-01, 2001-07-01]}';
 
 -- EXPLAIN ANALYZE
-SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' <@ t;
-SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' <@ t;
-SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' <@ t;
+SELECT COUNT(*) FROM tbl_tstzset_big WHERE timestamptz '2001-06-01' && t;
+SELECT COUNT(*) FROM tbl_tstzspan_big WHERE timestamptz '2001-06-01' && t;
+SELECT COUNT(*) FROM tbl_tstzspanset_big WHERE timestamptz '2001-06-01' && t;
 
 SELECT COUNT(*) FROM tbl_tstzset_big WHERE tstzset '{2001-06-01, 2001-07-01}' <@ t;
 

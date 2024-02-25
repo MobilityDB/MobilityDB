@@ -112,7 +112,7 @@ tpointinst_restrict_geom_time_iter(const TInstant *inst, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
   /* Restrict to the T dimension */
-  if (period && ! contains_span_value(period, TimestampTzGetDatum(inst->t)))
+  if (period && ! overlaps_span_value(period, TimestampTzGetDatum(inst->t)))
     return ! atfunc;
 
   /* Restrict to the Z dimension */
@@ -120,7 +120,7 @@ tpointinst_restrict_geom_time_iter(const TInstant *inst, const GSERIALIZED *gs,
   if (zspan)
   {
     const POINT3DZ *p = DATUM_POINT3DZ_P(value);
-    if (! contains_span_value(zspan, Float8GetDatum(p->z)))
+    if (! overlaps_span_value(zspan, Float8GetDatum(p->z)))
       return ! atfunc;
   }
 
@@ -1174,7 +1174,7 @@ tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
   bool hast = MEOS_FLAGS_GET_T(box->flags);
 
   /* Restrict to the T dimension */
-  if (hast && ! contains_span_value(&box->period, DatumGetTimestampTz(inst->t)))
+  if (hast && ! overlaps_span_value(&box->period, DatumGetTimestampTz(inst->t)))
     return ! atfunc;
 
   /* Restrict to the XY(Z) dimension */

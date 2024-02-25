@@ -61,6 +61,7 @@ CREATE OPERATOR CLASS intset_rtree_ops
   OPERATOR  2     &< (intset, integer),
   OPERATOR  2     &< (intset, intset),
   -- overlaps
+  OPERATOR  3     && (intset, integer),
   OPERATOR  3     && (intset, intset),
   -- overlaps or right
   OPERATOR  4     &> (intset, integer),
@@ -69,7 +70,6 @@ CREATE OPERATOR CLASS intset_rtree_ops
   OPERATOR  5     >> (intset, integer),
   OPERATOR  5     >> (intset, intset),
   -- contains
-  OPERATOR  7     @> (intset, integer),
   OPERATOR  7     @> (intset, intset),
   -- contained by
   OPERATOR  8     <@ (intset, intset),
@@ -110,6 +110,7 @@ CREATE OPERATOR CLASS bigintset_rtree_ops
   OPERATOR  2     &< (bigintset, bigint),
   OPERATOR  2     &< (bigintset, bigintset),
   -- overlaps
+  OPERATOR  3     && (bigintset, bigint),
   OPERATOR  3     && (bigintset, bigintset),
   -- overlaps or right
   OPERATOR  4     &> (bigintset, bigint),
@@ -118,7 +119,6 @@ CREATE OPERATOR CLASS bigintset_rtree_ops
   OPERATOR  5     >> (bigintset, bigint),
   OPERATOR  5     >> (bigintset, bigintset),
   -- contains
-  OPERATOR  7     @> (bigintset, bigint),
   OPERATOR  7     @> (bigintset, bigintset),
   -- contained by
   OPERATOR  8     <@ (bigintset, bigintset),
@@ -159,6 +159,7 @@ CREATE OPERATOR CLASS floatset_rtree_ops
   OPERATOR  2     &< (floatset, float),
   OPERATOR  2     &< (floatset, floatset),
   -- overlaps
+  OPERATOR  3     && (floatset, float),
   OPERATOR  3     && (floatset, floatset),
   -- overlaps or right
   OPERATOR  4     &> (floatset, float),
@@ -167,7 +168,6 @@ CREATE OPERATOR CLASS floatset_rtree_ops
   OPERATOR  5     >> (floatset, float),
   OPERATOR  5     >> (floatset, floatset),
   -- contains
-  OPERATOR  7     @> (floatset, float),
   OPERATOR  7     @> (floatset, floatset),
   -- contained by
   OPERATOR  8     <@ (floatset, floatset),
@@ -198,9 +198,9 @@ CREATE OPERATOR CLASS dateset_rtree_ops
   DEFAULT FOR TYPE dateset USING gist AS
   STORAGE datespan,
   -- overlaps
+  OPERATOR  3    && (dateset, date),
   OPERATOR  3    && (dateset, dateset),
   -- contains
-  OPERATOR  7    @> (dateset, date),
   OPERATOR  7    @> (dateset, dateset),
   -- contained by
   OPERATOR  8    <@ (dateset, dateset),
@@ -242,9 +242,9 @@ CREATE OPERATOR CLASS tstzset_rtree_ops
   DEFAULT FOR TYPE tstzset USING gist AS
   STORAGE tstzspan,
   -- overlaps
+  OPERATOR  3    && (tstzset, timestamptz),
   OPERATOR  3    && (tstzset, tstzset),
   -- contains
-  OPERATOR  7    @> (tstzset, timestamptz),
   OPERATOR  7    @> (tstzset, tstzset),
   -- contained by
   OPERATOR  8    <@ (tstzset, tstzset),
@@ -305,6 +305,7 @@ CREATE OPERATOR CLASS intset_quadtree_ops
   OPERATOR  2     &< (intset, integer),
   OPERATOR  2     &< (intset, intset),
   -- overlaps
+  OPERATOR  3     && (intset, integer),
   OPERATOR  3     && (intset, intset),
   -- overlaps or right
   OPERATOR  4     &> (intset, integer),
@@ -313,7 +314,6 @@ CREATE OPERATOR CLASS intset_quadtree_ops
   OPERATOR  5     >> (intset, integer),
   OPERATOR  5     >> (intset, intset),
   -- contains
-  OPERATOR  7     @> (intset, integer),
   OPERATOR  7     @> (intset, intset),
   -- contained by
   OPERATOR  8     <@ (intset, intset),
@@ -341,6 +341,7 @@ CREATE OPERATOR CLASS bigintset_quadtree_ops
   OPERATOR  2     &< (bigintset, bigint),
   OPERATOR  2     &< (bigintset, bigintset),
   -- overlaps
+  OPERATOR  3     && (bigintset, bigint),
   OPERATOR  3     && (bigintset, bigintset),
   -- overlaps or right
   OPERATOR  4     &> (bigintset, bigint),
@@ -349,7 +350,6 @@ CREATE OPERATOR CLASS bigintset_quadtree_ops
   OPERATOR  5     >> (bigintset, bigint),
   OPERATOR  5     >> (bigintset, bigintset),
   -- contains
-  OPERATOR  7     @> (bigintset, bigint),
   OPERATOR  7     @> (bigintset, bigintset),
   -- contained by
   OPERATOR  8     <@ (bigintset, bigintset),
@@ -377,6 +377,7 @@ CREATE OPERATOR CLASS floatset_quadtree_ops
   OPERATOR  2     &< (floatset, float),
   OPERATOR  2     &< (floatset, floatset),
   -- overlaps
+  OPERATOR  3     && (floatset, float),
   OPERATOR  3     && (floatset, floatset),
   -- overlaps or right
   OPERATOR  4     &> (floatset, float),
@@ -385,7 +386,6 @@ CREATE OPERATOR CLASS floatset_quadtree_ops
   OPERATOR  5     >> (floatset, float),
   OPERATOR  5     >> (floatset, floatset),
   -- contains
-  OPERATOR  7     @> (floatset, float),
   OPERATOR  7     @> (floatset, floatset),
   -- contained by
   OPERATOR  8     <@ (floatset, floatset),
@@ -407,9 +407,9 @@ CREATE OPERATOR CLASS floatset_quadtree_ops
 CREATE OPERATOR CLASS dateset_quadtree_ops
   DEFAULT FOR TYPE dateset USING spgist AS
   -- overlaps
+  OPERATOR  3    && (dateset, date),
   OPERATOR  3    && (dateset, dateset),
   -- contains
-  OPERATOR  7    @> (dateset, date),
   OPERATOR  7    @> (dateset, dateset),
   -- contained by
   OPERATOR  8    <@ (dateset, dateset),
@@ -443,9 +443,9 @@ CREATE OPERATOR CLASS dateset_quadtree_ops
 CREATE OPERATOR CLASS tstzset_quadtree_ops
   DEFAULT FOR TYPE tstzset USING spgist AS
   -- overlaps
+  OPERATOR  3    && (tstzset, timestamptz),
   OPERATOR  3    && (tstzset, tstzset),
   -- contains
-  OPERATOR  7    @> (tstzset, timestamptz),
   OPERATOR  7    @> (tstzset, tstzset),
   -- contained by
   OPERATOR  8    <@ (tstzset, tstzset),
@@ -487,6 +487,7 @@ CREATE OPERATOR CLASS intset_kdtree_ops
   OPERATOR  2     &< (intset, integer),
   OPERATOR  2     &< (intset, intset),
   -- overlaps
+  OPERATOR  3     && (intset, integer),
   OPERATOR  3     && (intset, intset),
   -- overlaps or right
   OPERATOR  4     &> (intset, integer),
@@ -495,7 +496,6 @@ CREATE OPERATOR CLASS intset_kdtree_ops
   OPERATOR  5     >> (intset, integer),
   OPERATOR  5     >> (intset, intset),
   -- contains
-  OPERATOR  7     @> (intset, integer),
   OPERATOR  7     @> (intset, intset),
   -- contained by
   OPERATOR  8     <@ (intset, intset),
@@ -523,6 +523,7 @@ CREATE OPERATOR CLASS bigintset_kdtree_ops
   OPERATOR  2     &< (bigintset, bigint),
   OPERATOR  2     &< (bigintset, bigintset),
   -- overlaps
+  OPERATOR  3     && (bigintset, bigint),
   OPERATOR  3     && (bigintset, bigintset),
   -- overlaps or right
   OPERATOR  4     &> (bigintset, bigint),
@@ -531,7 +532,6 @@ CREATE OPERATOR CLASS bigintset_kdtree_ops
   OPERATOR  5     >> (bigintset, bigint),
   OPERATOR  5     >> (bigintset, bigintset),
   -- contains
-  OPERATOR  7     @> (bigintset, bigint),
   OPERATOR  7     @> (bigintset, bigintset),
   -- contained by
   OPERATOR  8     <@ (bigintset, bigintset),
@@ -559,6 +559,7 @@ CREATE OPERATOR CLASS floatset_kdtree_ops
   OPERATOR  2     &< (floatset, float),
   OPERATOR  2     &< (floatset, floatset),
   -- overlaps
+  OPERATOR  3     && (floatset, float),
   OPERATOR  3     && (floatset, floatset),
   -- overlaps or right
   OPERATOR  4     &> (floatset, float),
@@ -567,7 +568,6 @@ CREATE OPERATOR CLASS floatset_kdtree_ops
   OPERATOR  5     >> (floatset, float),
   OPERATOR  5     >> (floatset, floatset),
   -- contains
-  OPERATOR  7     @> (floatset, float),
   OPERATOR  7     @> (floatset, floatset),
   -- contained by
   OPERATOR  8     <@ (floatset, floatset),
@@ -589,9 +589,9 @@ CREATE OPERATOR CLASS floatset_kdtree_ops
 CREATE OPERATOR CLASS dateset_kdtree_ops
   FOR TYPE dateset USING spgist AS
   -- overlaps
+  OPERATOR  3    && (dateset, date),
   OPERATOR  3    && (dateset, dateset),
   -- contains
-  OPERATOR  7    @> (dateset, date),
   OPERATOR  7    @> (dateset, dateset),
   -- contained by
   OPERATOR  8    <@ (dateset, dateset),
@@ -625,9 +625,9 @@ CREATE OPERATOR CLASS dateset_kdtree_ops
 CREATE OPERATOR CLASS tstzset_kdtree_ops
   FOR TYPE tstzset USING spgist AS
   -- overlaps
+  OPERATOR  3    && (tstzset, timestamptz),
   OPERATOR  3    && (tstzset, tstzset),
   -- contains
-  OPERATOR  7    @> (tstzset, timestamptz),
   OPERATOR  7    @> (tstzset, tstzset),
   -- contained by
   OPERATOR  8    <@ (tstzset, tstzset),
@@ -680,11 +680,11 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE OPERATOR CLASS intset_gin_ops
   DEFAULT FOR TYPE intset USING gin AS
   STORAGE integer,
-  -- overlaps
+  -- overlaps set
   OPERATOR  10    && (intset, intset),
-  -- contains value
-  OPERATOR  20    @> (intset, integer),
-  -- contains set
+  -- overlaps value
+  OPERATOR  20    && (intset, integer),
+  -- contains
   OPERATOR  21    @> (intset, intset),
   -- contained
   OPERATOR  30    <@ (intset, intset),
@@ -717,11 +717,11 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE OPERATOR CLASS bigintset_gin_ops
   DEFAULT FOR TYPE bigintset USING gin AS
   STORAGE bigint,
-  -- overlaps
+  -- overlaps set
   OPERATOR  10    && (bigintset, bigintset),
-  -- contains value
-  OPERATOR  20    @> (bigintset, bigint),
-  -- contains set
+  -- overlaps value
+  OPERATOR  20    && (bigintset, bigint),
+  -- contains
   OPERATOR  21    @> (bigintset, bigintset),
   -- contained
   OPERATOR  30    <@ (bigintset, bigintset),
@@ -754,11 +754,11 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE OPERATOR CLASS dateset_gin_ops
   DEFAULT FOR TYPE dateset USING gin AS
   STORAGE date,
-  -- overlaps
+  -- overlaps set
   OPERATOR  10    && (dateset, dateset),
-  -- contains value
-  OPERATOR  20    @> (dateset, date),
-  -- contains set
+  -- overlaps value
+  OPERATOR  20    && (dateset, date),
+  -- contains
   OPERATOR  21    @> (dateset, dateset),
   -- contained
   OPERATOR  30    <@ (dateset, dateset),

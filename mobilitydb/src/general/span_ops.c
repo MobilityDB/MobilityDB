@@ -46,22 +46,6 @@
  * Contains
  *****************************************************************************/
 
-PGDLLEXPORT Datum Contains_span_value(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Contains_span_value);
-/**
- * @ingroup mobilitydb_setspan_topo
- * @brief Return true if a span contains a value
- * @sqlfn span_contains()
- * @sqlop @p \@>
- */
-Datum
-Contains_span_value(PG_FUNCTION_ARGS)
-{
-  Span *s = PG_GETARG_SPAN_P(0);
-  Datum value = PG_GETARG_DATUM(1);
-  PG_RETURN_BOOL(contains_span_value(s, value));
-}
-
 PGDLLEXPORT Datum Contains_span_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_span_span);
 /**
@@ -82,22 +66,6 @@ Contains_span_span(PG_FUNCTION_ARGS)
  * Contained
  *****************************************************************************/
 
-PGDLLEXPORT Datum Contained_value_span(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Contained_value_span);
-/**
- * @ingroup mobilitydb_setspan_topo
- * @brief Return true if a value is contained in a span
- * @sqlfn span_contained()
- * @sqlop @p <@
- */
-Datum
-Contained_value_span(PG_FUNCTION_ARGS)
-{
-  Datum value = PG_GETARG_DATUM(0);
-  Span *s = PG_GETARG_SPAN_P(1);
-  PG_RETURN_BOOL(contained_value_span(value, s));
-}
-
 PGDLLEXPORT Datum Contained_span_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_span_span);
 /**
@@ -117,6 +85,38 @@ Contained_span_span(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Overlaps
  *****************************************************************************/
+
+PGDLLEXPORT Datum Overlaps_span_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_span_value);
+/**
+ * @ingroup mobilitydb_setspan_topo
+ * @brief Return true if a span overlaps a value
+ * @sqlfn set_overlaps()
+ * @sqlop @p &&
+ */
+Datum
+Overlaps_span_value(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Datum value = PG_GETARG_DATUM(1);
+  PG_RETURN_BOOL(overlaps_span_value(s, value));
+}
+
+PGDLLEXPORT Datum Overlaps_value_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_value_span);
+/**
+ * @ingroup mobilitydb_setspan_topo
+ * @brief Return true if a value overlaps a span
+ * @sqlfn set_overlaps()
+ * @sqlop @p &&
+ */
+Datum
+Overlaps_value_span(PG_FUNCTION_ARGS)
+{
+  Datum value = PG_GETARG_DATUM(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(overlaps_value_span(value, s));
+}
 
 PGDLLEXPORT Datum Overlaps_span_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_span_span);

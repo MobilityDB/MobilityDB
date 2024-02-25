@@ -70,7 +70,7 @@ CREATE TABLE test_idxops(
 -------------------------------------------------------------------------------
 
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'intspan', 'int', COUNT(*) FROM tbl_intspan_big WHERE i @> 50;
+SELECT '&&', 'intspan', 'int', COUNT(*) FROM tbl_intspan_big WHERE i && 50;
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'intspan', 'int', COUNT(*) FROM tbl_intspan_big WHERE i -|- 50;
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
@@ -103,7 +103,7 @@ SELECT i <-> 101 FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
 SELECT i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
 
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0;
+SELECT '&&', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan_big WHERE f && 50.0;
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'floatspan', 'float', COUNT(*) FROM tbl_floatspan_big WHERE f -|- 50.0;
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
@@ -136,7 +136,7 @@ SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 
 SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
 
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'datespan', 'date', COUNT(*) FROM tbl_datespan_big WHERE d @> date '2001-06-01';
+SELECT '&&', 'datespan', 'date', COUNT(*) FROM tbl_datespan_big WHERE d && date '2001-06-01';
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'datespan', 'date', COUNT(*) FROM tbl_datespan_big WHERE d -|- date '2001-06-01';
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
@@ -169,7 +169,7 @@ SELECT d <-> date '2000-06-01' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
 SELECT d <-> datespan '[2000-06-01,2000-07-01]' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
 
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tstzspan', 'timestamptz', COUNT(*) FROM tbl_tstzspan_big WHERE t @> timestamptz '2001-06-01';
+SELECT '&&', 'tstzspan', 'timestamptz', COUNT(*) FROM tbl_tstzspan_big WHERE t && timestamptz '2001-06-01';
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tstzspan', 'timestamptz', COUNT(*) FROM tbl_tstzspan_big WHERE t -|- timestamptz '2001-06-01';
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
@@ -211,8 +211,8 @@ CREATE INDEX tbl_datespan_big_rtree_idx ON tbl_datespan_big USING GIST(d);
 CREATE INDEX tbl_tstzspan_big_rtree_idx ON tbl_tstzspan_big USING GIST(t);
 
 UPDATE test_idxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> 50 )
-WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'int';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i && 50 )
+WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'int';
 UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- 50 )
 WHERE op = '-|-' AND leftarg = 'intspan' AND rightarg = 'int';
@@ -258,8 +258,8 @@ SELECT i <-> 101 FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
 SELECT i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
 
 UPDATE test_idxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0 )
-WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'float';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f && 50.0 )
+WHERE op = '&&' AND leftarg = 'floatspan' AND rightarg = 'float';
 UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- 50.0 )
 WHERE op = '-|-' AND leftarg = 'floatspan' AND rightarg = 'float';
@@ -305,8 +305,8 @@ SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 
 SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
 
 UPDATE test_idxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_datespan_big WHERE d @> date '2001-06-01' )
-WHERE op = '@>' AND leftarg = 'datespan' AND rightarg = 'date';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_datespan_big WHERE d && date '2001-06-01' )
+WHERE op = '&&' AND leftarg = 'datespan' AND rightarg = 'date';
 UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_datespan_big WHERE d -|- date '2001-06-01' )
 WHERE op = '-|-' AND leftarg = 'datespan' AND rightarg = 'date';
@@ -352,8 +352,8 @@ SELECT d <-> date '2000-06-01' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
 SELECT d <-> datespan '[2000-06-01,2000-07-01]' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
 
 UPDATE test_idxops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> timestamptz '2001-06-01' )
-WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && timestamptz '2001-06-01' )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
 UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t -|- timestamptz '2001-06-01' )
 WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
@@ -413,8 +413,8 @@ CREATE INDEX tbl_datespan_big_quadtree_idx ON tbl_datespan_big USING SPGIST(d);
 CREATE INDEX tbl_tstzspan_big_quadtree_idx ON tbl_tstzspan_big USING SPGIST(t);
 
 UPDATE test_idxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> 50 )
-WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'int';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i && 50 )
+WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'int';
 UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- 50 )
 WHERE op = '-|-' AND leftarg = 'intspan' AND rightarg = 'int';
@@ -460,8 +460,8 @@ SELECT i <-> 101 FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
 SELECT i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
 
 UPDATE test_idxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0 )
-WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'float';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f && 50.0 )
+WHERE op = '&&' AND leftarg = 'floatspan' AND rightarg = 'float';
 UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- 50.0 )
 WHERE op = '-|-' AND leftarg = 'floatspan' AND rightarg = 'float';
@@ -507,8 +507,8 @@ SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 
 SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
 
 UPDATE test_idxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_datespan_big WHERE d @> date '2001-06-01' )
-WHERE op = '@>' AND leftarg = 'datespan' AND rightarg = 'date';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_datespan_big WHERE d && date '2001-06-01' )
+WHERE op = '&&' AND leftarg = 'datespan' AND rightarg = 'date';
 UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_datespan_big WHERE d -|- date '2001-06-01' )
 WHERE op = '-|-' AND leftarg = 'datespan' AND rightarg = 'date';
@@ -554,8 +554,8 @@ SELECT d <-> date '2000-06-01' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
 SELECT d <-> datespan '[2000-06-01,2000-07-01]' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
 
 UPDATE test_idxops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> timestamptz '2001-06-01' )
-WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && timestamptz '2001-06-01' )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
 UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t -|- timestamptz '2001-06-01' )
 WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
@@ -615,8 +615,8 @@ CREATE INDEX tbl_datespan_big_kdtree_idx ON tbl_datespan_big USING SPGIST(d date
 CREATE INDEX tbl_tstzspan_big_kdtree_idx ON tbl_tstzspan_big USING SPGIST(t tstzspan_kdtree_ops);
 
 UPDATE test_idxops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i @> 50 )
-WHERE op = '@>' AND leftarg = 'intspan' AND rightarg = 'int';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i && 50 )
+WHERE op = '&&' AND leftarg = 'intspan' AND rightarg = 'int';
 UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_intspan_big WHERE i -|- 50 )
 WHERE op = '-|-' AND leftarg = 'intspan' AND rightarg = 'int';
@@ -662,8 +662,8 @@ SELECT i <-> 101 FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
 SELECT i <-> intspan '[101,105]' FROM tbl_intspan_big ORDER BY 1 LIMIT 3;
 
 UPDATE test_idxops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f @> 50.0 )
-WHERE op = '@>' AND leftarg = 'floatspan' AND rightarg = 'float';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f && 50.0 )
+WHERE op = '&&' AND leftarg = 'floatspan' AND rightarg = 'float';
 UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f -|- 50.0 )
 WHERE op = '-|-' AND leftarg = 'floatspan' AND rightarg = 'float';
@@ -709,8 +709,8 @@ SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 
 SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
 
 UPDATE test_idxops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_datespan_big WHERE d @> date '2001-06-01' )
-WHERE op = '@>' AND leftarg = 'datespan' AND rightarg = 'date';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_datespan_big WHERE d && date '2001-06-01' )
+WHERE op = '&&' AND leftarg = 'datespan' AND rightarg = 'date';
 UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_datespan_big WHERE d -|- date '2001-06-01' )
 WHERE op = '-|-' AND leftarg = 'datespan' AND rightarg = 'date';
@@ -756,8 +756,8 @@ SELECT d <-> date '2000-06-01' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
 SELECT d <-> datespan '[2000-06-01,2000-07-01]' FROM tbl_datespan_big ORDER BY 1 LIMIT 3;
 
 UPDATE test_idxops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t @> timestamptz '2001-06-01' )
-WHERE op = '@>' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t && timestamptz '2001-06-01' )
+WHERE op = '&&' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';
 UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t -|- timestamptz '2001-06-01' )
 WHERE op = '-|-' AND leftarg = 'tstzspan' AND rightarg = 'timestamptz';

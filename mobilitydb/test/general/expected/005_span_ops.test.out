@@ -1,4 +1,4 @@
-SELECT floatspan '[1, 2]' @> 1.0;
+SELECT floatspan '[1, 2]' && 1.0;
  ?column? 
 ----------
  t
@@ -10,7 +10,7 @@ SELECT floatspan '[1, 2]' @> floatspan '[1, 2]';
  t
 (1 row)
 
-SELECT 1.0 <@ floatspan '[1, 2]';
+SELECT 1.0 && floatspan '[1, 2]';
  ?column? 
 ----------
  t

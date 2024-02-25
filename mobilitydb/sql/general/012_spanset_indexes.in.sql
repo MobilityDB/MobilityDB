@@ -75,6 +75,7 @@ CREATE OPERATOR CLASS intspanset_rtree_ops
   OPERATOR  2     &< (intspanset, intspan),
   OPERATOR  2     &< (intspanset, intspanset),
   -- overlaps
+  OPERATOR  3     && (intspanset, integer),
   OPERATOR  3     && (intspanset, intspan),
   OPERATOR  3     && (intspanset, intspanset),
   -- overlaps or right
@@ -86,7 +87,6 @@ CREATE OPERATOR CLASS intspanset_rtree_ops
   OPERATOR  5     >> (intspanset, intspan),
   OPERATOR  5     >> (intspanset, intspanset),
   -- contains
-  OPERATOR  7     @> (intspanset, integer),
   OPERATOR  7     @> (intspanset, intspan),
   OPERATOR  7     @> (intspanset, intspanset),
   -- contained by
@@ -124,6 +124,7 @@ CREATE OPERATOR CLASS bigintspanset_rtree_ops
   OPERATOR  2     &< (bigintspanset, bigintspan),
   OPERATOR  2     &< (bigintspanset, bigintspanset),
   -- overlaps
+  OPERATOR  3     && (bigintspanset, bigint),
   OPERATOR  3     && (bigintspanset, bigintspan),
   OPERATOR  3     && (bigintspanset, bigintspanset),
   -- overlaps or right
@@ -135,7 +136,6 @@ CREATE OPERATOR CLASS bigintspanset_rtree_ops
   OPERATOR  5     >> (bigintspanset, bigintspan),
   OPERATOR  5     >> (bigintspanset, bigintspanset),
   -- contains
-  OPERATOR  7     @> (bigintspanset, bigint),
   OPERATOR  7     @> (bigintspanset, bigintspan),
   OPERATOR  7     @> (bigintspanset, bigintspanset),
   -- contained by
@@ -173,6 +173,7 @@ CREATE OPERATOR CLASS floatspanset_rtree_ops
   OPERATOR  2     &< (floatspanset, floatspan),
   OPERATOR  2     &< (floatspanset, floatspanset),
   -- overlaps
+  OPERATOR  3     && (floatspanset, float),
   OPERATOR  3     && (floatspanset, floatspan),
   OPERATOR  3     && (floatspanset, floatspanset),
   -- overlaps or right
@@ -184,7 +185,6 @@ CREATE OPERATOR CLASS floatspanset_rtree_ops
   OPERATOR  5     >> (floatspanset, floatspan),
   OPERATOR  5     >> (floatspanset, floatspanset),
   -- contains
-  OPERATOR  7     @> (floatspanset, float),
   OPERATOR  7     @> (floatspanset, floatspan),
   OPERATOR  7     @> (floatspanset, floatspanset),
   -- contained by
@@ -214,10 +214,10 @@ CREATE OPERATOR CLASS datespanset_rtree_ops
   DEFAULT FOR TYPE datespanset USING gist AS
   STORAGE datespan,
   -- overlaps
+  OPERATOR  3    && (datespanset, date),
   OPERATOR  3    && (datespanset, datespan),
   OPERATOR  3    && (datespanset, datespanset),
   -- contains
-  OPERATOR  7    @> (datespanset, date),
   OPERATOR  7    @> (datespanset, datespan),
   OPERATOR  7    @> (datespanset, datespanset),
   -- contained by
@@ -262,10 +262,10 @@ CREATE OPERATOR CLASS tstzspanset_rtree_ops
   DEFAULT FOR TYPE tstzspanset USING gist AS
   STORAGE tstzspan,
   -- overlaps
+  OPERATOR  3    && (tstzspanset, timestamptz),
   OPERATOR  3    && (tstzspanset, tstzspan),
   OPERATOR  3    && (tstzspanset, tstzspanset),
   -- contains
-  OPERATOR  7    @> (tstzspanset, timestamptz),
   OPERATOR  7    @> (tstzspanset, tstzspan),
   OPERATOR  7    @> (tstzspanset, tstzspanset),
   -- contained by
@@ -326,6 +326,7 @@ CREATE OPERATOR CLASS intspanset_quadtree_ops
   OPERATOR  2     &< (intspanset, intspan),
   OPERATOR  2     &< (intspanset, intspanset),
   -- overlaps
+  OPERATOR  3     && (intspanset, integer),
   OPERATOR  3     && (intspanset, intspan),
   OPERATOR  3     && (intspanset, intspanset),
   -- overlaps or right
@@ -337,7 +338,6 @@ CREATE OPERATOR CLASS intspanset_quadtree_ops
   OPERATOR  5     >> (intspanset, intspan),
   OPERATOR  5     >> (intspanset, intspanset),
   -- contains
-  OPERATOR  7     @> (intspanset, integer),
   OPERATOR  7     @> (intspanset, intspan),
   OPERATOR  7     @> (intspanset, intspanset),
   -- contained by
@@ -373,6 +373,7 @@ CREATE OPERATOR CLASS bigintspanset_quadtree_ops
   OPERATOR  2     &< (bigintspanset, bigintspan),
   OPERATOR  2     &< (bigintspanset, bigintspanset),
   -- overlaps
+  OPERATOR  7     && (bigintspanset, bigint),
   OPERATOR  3     && (bigintspanset, bigintspan),
   OPERATOR  3     && (bigintspanset, bigintspanset),
   -- overlaps or right
@@ -384,7 +385,6 @@ CREATE OPERATOR CLASS bigintspanset_quadtree_ops
   OPERATOR  5     >> (bigintspanset, bigintspan),
   OPERATOR  5     >> (bigintspanset, bigintspanset),
   -- contains
-  OPERATOR  7     @> (bigintspanset, bigint),
   OPERATOR  7     @> (bigintspanset, bigintspan),
   OPERATOR  7     @> (bigintspanset, bigintspanset),
   -- contained by
@@ -420,6 +420,7 @@ CREATE OPERATOR CLASS floatspanset_quadtree_ops
   OPERATOR  2     &< (floatspanset, floatspan),
   OPERATOR  2     &< (floatspanset, floatspanset),
   -- overlaps
+  OPERATOR  3     && (floatspanset, float),
   OPERATOR  3     && (floatspanset, floatspan),
   OPERATOR  3     && (floatspanset, floatspanset),
   -- overlaps or right
@@ -431,7 +432,6 @@ CREATE OPERATOR CLASS floatspanset_quadtree_ops
   OPERATOR  5     >> (floatspanset, floatspan),
   OPERATOR  5     >> (floatspanset, floatspanset),
   -- contains
-  OPERATOR  7     @> (floatspanset, float),
   OPERATOR  7     @> (floatspanset, floatspan),
   OPERATOR  7     @> (floatspanset, floatspanset),
   -- contained by
@@ -459,10 +459,10 @@ CREATE OPERATOR CLASS floatspanset_quadtree_ops
 CREATE OPERATOR CLASS datespanset_quadtree_ops
   DEFAULT FOR TYPE datespanset USING spgist AS
   -- overlaps
+  OPERATOR  3    && (datespanset, date),
   OPERATOR  3    && (datespanset, datespan),
   OPERATOR  3    && (datespanset, datespanset),
   -- contains
-  OPERATOR  7    @> (datespanset, date),
   OPERATOR  7    @> (datespanset, datespan),
   OPERATOR  7    @> (datespanset, datespanset),
   -- contained by
@@ -506,10 +506,10 @@ CREATE OPERATOR CLASS datespanset_quadtree_ops
 CREATE OPERATOR CLASS tstzspanset_quadtree_ops
   DEFAULT FOR TYPE tstzspanset USING spgist AS
   -- overlaps
+  OPERATOR  3    && (tstzspanset, timestamptz),
   OPERATOR  3    && (tstzspanset, tstzspan),
   OPERATOR  3    && (tstzspanset, tstzspanset),
   -- contains
-  OPERATOR  7    @> (tstzspanset, timestamptz),
   OPERATOR  7    @> (tstzspanset, tstzspan),
   OPERATOR  7    @> (tstzspanset, tstzspanset),
   -- contained by
@@ -563,6 +563,7 @@ CREATE OPERATOR CLASS intspanset_kdtree_ops
   OPERATOR  2     &< (intspanset, intspan),
   OPERATOR  2     &< (intspanset, intspanset),
   -- overlaps
+  OPERATOR  3     && (intspanset, integer),
   OPERATOR  3     && (intspanset, intspan),
   OPERATOR  3     && (intspanset, intspanset),
   -- overlaps or right
@@ -574,7 +575,6 @@ CREATE OPERATOR CLASS intspanset_kdtree_ops
   OPERATOR  5     >> (intspanset, intspan),
   OPERATOR  5     >> (intspanset, intspanset),
   -- contains
-  OPERATOR  7     @> (intspanset, integer),
   OPERATOR  7     @> (intspanset, intspan),
   OPERATOR  7     @> (intspanset, intspanset),
   -- contained by
@@ -610,6 +610,7 @@ CREATE OPERATOR CLASS bigintspanset_kdtree_ops
   OPERATOR  2     &< (bigintspanset, bigintspan),
   OPERATOR  2     &< (bigintspanset, bigintspanset),
   -- overlaps
+  OPERATOR  7     && (bigintspanset, bigint),
   OPERATOR  3     && (bigintspanset, bigintspan),
   OPERATOR  3     && (bigintspanset, bigintspanset),
   -- overlaps or right
@@ -621,7 +622,6 @@ CREATE OPERATOR CLASS bigintspanset_kdtree_ops
   OPERATOR  5     >> (bigintspanset, bigintspan),
   OPERATOR  5     >> (bigintspanset, bigintspanset),
   -- contains
-  OPERATOR  7     @> (bigintspanset, bigint),
   OPERATOR  7     @> (bigintspanset, bigintspan),
   OPERATOR  7     @> (bigintspanset, bigintspanset),
   -- contained by
@@ -657,6 +657,7 @@ CREATE OPERATOR CLASS floatspanset_kdtree_ops
   OPERATOR  2     &< (floatspanset, floatspan),
   OPERATOR  2     &< (floatspanset, floatspanset),
   -- overlaps
+  OPERATOR  3     && (floatspanset, float),
   OPERATOR  3     && (floatspanset, floatspan),
   OPERATOR  3     && (floatspanset, floatspanset),
   -- overlaps or right
@@ -668,7 +669,6 @@ CREATE OPERATOR CLASS floatspanset_kdtree_ops
   OPERATOR  5     >> (floatspanset, floatspan),
   OPERATOR  5     >> (floatspanset, floatspanset),
   -- contains
-  OPERATOR  7     @> (floatspanset, float),
   OPERATOR  7     @> (floatspanset, floatspan),
   OPERATOR  7     @> (floatspanset, floatspanset),
   -- contained by
@@ -696,10 +696,10 @@ CREATE OPERATOR CLASS floatspanset_kdtree_ops
 CREATE OPERATOR CLASS datespanset_kdtree_ops
   FOR TYPE datespanset USING spgist AS
   -- overlaps
+  OPERATOR  3    && (datespanset, date),
   OPERATOR  3    && (datespanset, datespan),
   OPERATOR  3    && (datespanset, datespanset),
   -- contains
-  OPERATOR  7    @> (datespanset, date),
   OPERATOR  7    @> (datespanset, datespan),
   OPERATOR  7    @> (datespanset, datespanset),
   -- contained by
@@ -743,10 +743,10 @@ CREATE OPERATOR CLASS datespanset_kdtree_ops
 CREATE OPERATOR CLASS tstzspanset_kdtree_ops
   FOR TYPE tstzspanset USING spgist AS
   -- overlaps
+  OPERATOR  3    && (tstzspanset, timestamptz),
   OPERATOR  3    && (tstzspanset, tstzspan),
   OPERATOR  3    && (tstzspanset, tstzspanset),
   -- contains
-  OPERATOR  7    @> (tstzspanset, timestamptz),
   OPERATOR  7    @> (tstzspanset, tstzspan),
   OPERATOR  7    @> (tstzspanset, tstzspanset),
   -- contained by

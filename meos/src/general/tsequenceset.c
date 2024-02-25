@@ -97,7 +97,7 @@ tsequenceset_find_timestamptz(const TSequenceSet *ss, TimestampTz t, int *loc)
   {
     middle = (first + last)/2;
     seq = TSEQUENCESET_SEQ_N(ss, middle);
-    if (contains_span_timestamptz(&seq->period, t))
+    if (overlaps_span_timestamptz(&seq->period, t))
     {
       *loc = middle;
       return true;
@@ -1324,7 +1324,7 @@ tsequenceset_value_at_timestamptz(const TSequenceSet *ss, TimestampTz t,
       if (inst->t == t)
         return tinstant_value_at_timestamptz(inst, t, result);
       /* Call the function on the sequence with strict set to true */
-      if (contains_span_timestamptz(&seq->period, t))
+      if (overlaps_span_timestamptz(&seq->period, t))
         return tsequence_value_at_timestamptz(seq, t, true, result);
     }
     /* Since this function is always called with a timestamp that appears
@@ -1950,7 +1950,7 @@ intersection_tsequenceset_tdiscseq(const TSequenceSet *ss,
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, i);
     const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-    if (contains_span_timestamptz(&seq1->period, inst->t))
+    if (overlaps_span_timestamptz(&seq1->period, inst->t))
     {
       instants1[ninsts] = tsequence_at_timestamptz(seq1, inst->t);
       instants2[ninsts++] = inst;

@@ -815,7 +815,7 @@ tfunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   for (int i = 0; i < seq2->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq2, i);
-    if (contains_span_timestamptz(&seq1->period, inst->t))
+    if (overlaps_span_timestamptz(&seq1->period, inst->t))
     {
       Datum value;
       tsequence_value_at_timestamptz(seq1, inst->t, true, &value);
@@ -859,7 +859,7 @@ tfunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, i);
     const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-    if (contains_span_timestamptz(&seq1->period, inst->t))
+    if (overlaps_span_timestamptz(&seq1->period, inst->t))
     {
       Datum value;
       tsequenceset_value_at_timestamptz(ss, inst->t, true, &value);
@@ -1966,7 +1966,7 @@ eafunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   for (int i = 0; i < seq2->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq2, i);
-    if (contains_span_timestamptz(&seq1->period, inst->t))
+    if (overlaps_span_timestamptz(&seq1->period, inst->t))
     {
       Datum value1;
       tsequence_value_at_timestamptz(seq1, inst->t, true, &value1);
@@ -2015,7 +2015,7 @@ eafunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
   {
     const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, i);
     const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-    if (contains_span_timestamptz(&seq1->period, inst->t))
+    if (overlaps_span_timestamptz(&seq1->period, inst->t))
     {
       Datum value1;
       tsequenceset_value_at_timestamptz(ss, inst->t, true, &value1);

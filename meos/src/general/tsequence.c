@@ -2367,7 +2367,7 @@ tsequence_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict,
   }
 
   /* Bounding box test */
-  if (! contains_span_timestamptz(&seq->period, t))
+  if (! overlaps_span_timestamptz(&seq->period, t))
     return false;
 
   /* Instantaneous sequence */
@@ -2611,7 +2611,7 @@ intersection_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   for (int i = 0; i < seq2->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq2, i);
-    if (contains_span_timestamptz(&seq1->period, inst->t))
+    if (overlaps_span_timestamptz(&seq1->period, inst->t))
     {
       instants1[ninsts] = tsequence_at_timestamptz(seq1, inst->t);
       instants2[ninsts++] = inst;

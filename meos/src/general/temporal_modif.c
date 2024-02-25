@@ -634,7 +634,7 @@ tcontseq_delete_timestamptz(const TSequence *seq, TimestampTz t)
 {
   assert(seq);
   /* Bounding box test */
-  if (! contains_span_timestamptz(&seq->period, t))
+  if (! overlaps_span_timestamptz(&seq->period, t))
     return tsequence_copy(seq);
 
   /* Instantaneous sequence */
@@ -723,7 +723,7 @@ tcontseq_delete_tstzset(const TSequence *seq, const Set *s)
   if (seq->count == 1)
   {
     inst = TSEQUENCE_INST_N(seq, 0);
-    if (contains_set_value(s, TimestampTzGetDatum(inst->t)))
+    if (overlaps_set_value(s, TimestampTzGetDatum(inst->t)))
       return NULL;
     return tsequence_copy(seq);
   }
@@ -824,7 +824,7 @@ tcontseq_delete_tstzspan(const TSequence *seq, const Span *s)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    if (! contains_span_timestamptz(s, inst->t))
+    if (! overlaps_span_timestamptz(s, inst->t))
       instants[ninsts++] = (TInstant *) inst;
     else /* instant is inside the period */
     {
@@ -882,7 +882,7 @@ tcontseq_delete_tstzspanset(const TSequence *seq, const SpanSet *ss)
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    if (contains_spanset_timestamptz(ss, TSEQUENCE_INST_N(seq, 0)->t))
+    if (overlaps_spanset_timestamptz(ss, TSEQUENCE_INST_N(seq, 0)->t))
       return NULL;
     return tsequence_copy(seq);
   }
@@ -899,7 +899,7 @@ tcontseq_delete_tstzspanset(const TSequence *seq, const SpanSet *ss)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    if (! contains_spanset_timestamptz(ss, inst->t))
+    if (! overlaps_spanset_timestamptz(ss, inst->t))
       instants[ninsts++] = (TInstant *) inst;
     else /* instant is inside the span set */
     {
@@ -1125,7 +1125,7 @@ tsequenceset_delete_timestamptz(const TSequenceSet *ss, TimestampTz t)
 {
   assert(ss);
   /* Bounding box test */
-  if (! contains_span_timestamptz(&ss->period, t))
+  if (! overlaps_span_timestamptz(&ss->period, t))
     return tsequenceset_copy(ss);
 
   TSequence *seq;

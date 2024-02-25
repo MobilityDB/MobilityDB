@@ -1,25 +1,25 @@
+SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t && t2.t;
+ count 
+-------
+     6
+(1 row)
+
+SELECT COUNT(*) FROM tbl_text t1, tbl_textset t2 WHERE t1.t && t2.t;
+ count 
+-------
+     6
+(1 row)
+
 SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t && t2.t;
  count 
 -------
    191
 (1 row)
 
-SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t @> t2.t;
- count 
--------
-     6
-(1 row)
-
 SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t @> t2.t;
  count 
 -------
     99
-(1 row)
-
-SELECT COUNT(*) FROM tbl_text t1, tbl_textset t2 WHERE t1.t <@ t2.t;
- count 
--------
-     6
 (1 row)
 
 SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t <@ t2.t;

@@ -372,14 +372,14 @@ extern bool adjacent_span_value(const Span *s, Datum value);
 extern bool adjacent_spanset_value(const SpanSet *ss, Datum value);
 extern bool adjacent_value_spanset(Datum value, const SpanSet *ss);
 extern bool cont_span_span(const Span *s1, const Span *s2);
-extern bool contained_value_set(Datum value, const Set *s);
-extern bool contained_value_span(Datum value, const Span *s);
-extern bool contained_value_spanset(Datum value, const SpanSet *ss);
-extern bool contains_set_value(const Set *s, Datum value);
-extern bool contains_span_value(const Span *s, Datum value);
-extern bool contains_spanset_value(const SpanSet *ss, Datum value);
 extern bool ovadj_span_span(const Span *s1, const Span *s2);
 extern bool over_span_span(const Span *s1, const Span *s2);
+extern bool overlaps_set_value(const Set *s, Datum value);
+extern bool overlaps_span_value(const Span *s, Datum value);
+extern bool overlaps_spanset_value(const SpanSet *ss, Datum value);
+extern bool overlaps_value_set(Datum value, const Set *s);
+extern bool overlaps_value_span(Datum value, const Span *s);
+extern bool overlaps_value_spanset(Datum value, const SpanSet *ss);
 
 /*****************************************************************************/
 

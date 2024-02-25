@@ -112,110 +112,6 @@ span_max_value(Datum l, Datum r, meosType type)
 
 /**
  * @ingroup meos_internal_setspan_topo
- * @brief Return true if a span contains a value
- * @param[in] s Span
- * @param[in] value Value
- */
-bool
-contains_span_value(const Span *s, Datum value)
-{
-  assert(s);
-  int cmp = datum_cmp(s->lower, value, s->basetype);
-  if (cmp > 0 || (cmp == 0 && ! s->lower_inc))
-    return false;
-
-  cmp = datum_cmp(s->upper, value, s->basetype);
-  if (cmp < 0 || (cmp == 0 && ! s->upper_inc))
-    return false;
-
-  return true;
-}
-
-#if MEOS
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span contains an integer
- * @param[in] s Span
- * @param[in] i Value
- * @csqlfn #Contains_span_value()
- */
-bool
-contains_span_int(const Span *s, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
-    return false;
-  return contains_span_value(s, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span contains a big integer
- * @param[in] s Span
- * @param[in] i Value
- * @csqlfn #Contains_span_value()
- */
-bool
-contains_span_bigint(const Span *s, int64 i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
-    return false;
-  return contains_span_value(s, Int64GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span contains a float
- * @param[in] s Span
- * @param[in] d Value
- * @csqlfn #Contains_span_value()
- */
-bool
-contains_span_float(const Span *s, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
-    return false;
-  return contains_span_value(s, Float8GetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span contains a date
- * @param[in] s Span
- * @param[in] d Value
- * @csqlfn #Contains_span_value()
- */
-bool
-contains_span_date(const Span *s, DateADT d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
-    return false;
-  return contains_span_value(s, DateADTGetDatum(d));
-}
-#endif /* MEOS */
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span contains a timestamptz
- * @param[in] s Span
- * @param[in] t Value
- * @csqlfn #Contains_span_value()
- */
-bool
-contains_span_timestamptz(const Span *s, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
-    return false;
-  return contains_span_value(s, TimestampTzGetDatum(t));
-}
-
-/**
- * @ingroup meos_internal_setspan_topo
  * @brief Return true if the first span contains the second one
  * @param[in] s1,s2 Spans
  */
@@ -253,101 +149,6 @@ contains_span_span(const Span *s1, const Span *s2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_setspan_topo
- * @brief Return true if a value is contained in a span
- * @param[in] value Value
- * @param[in] s Span
- */
-bool
-contained_value_span(Datum value, const Span *s)
-{
-  return contains_span_value(s, value);
-}
-
-#if MEOS
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if an integer is contained in a span
- * @param[in] i Value
- * @param[in] s Span
- * @csqlfn #Contained_value_span()
- */
-bool
-contained_int_span(int i, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
-    return false;
-  return contains_span_value(s, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a big integer is contained in a span
- * @param[in] i Value
- * @param[in] s Span
- * @csqlfn #Contained_value_span()
- */
-bool
-contained_bigint_span(int64 i, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
-    return false;
-  return contains_span_value(s, Int64GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a float is contained in a span
- * @param[in] d Value
- * @param[in] s Span
- * @csqlfn #Contained_value_span()
- */
-bool
-contained_float_span(double d, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
-    return false;
-  return contains_span_value(s, Float8GetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a date is contained in a span
- * @param[in] d Value
- * @param[in] s Span
- * @csqlfn #Contained_value_span()
- */
-bool
-contained_date_span(DateADT d, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
-    return false;
-  return contains_span_value(s, DateADTGetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a timestamp is contained in a span
- * @param[in] t Value
- * @param[in] s Span
- * @csqlfn #Contained_value_span()
- */
-bool
-contained_timestamptz_span(TimestampTz t, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
-    return false;
-  return contains_span_value(s, TimestampTzGetDatum(t));
-}
-#endif /* MEOS */
-
-/**
  * @ingroup meos_setspan_topo
  * @brief Return true if the first span is contained in the second one
  * @param[in] s1,s2 Spans
@@ -362,6 +163,209 @@ contained_span_span(const Span *s1, const Span *s2)
 /*****************************************************************************
  * Overlaps
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_setspan_topo
+ * @brief Return true if a span overlaps a value
+ * @param[in] s Span
+ * @param[in] value Value
+ */
+bool
+overlaps_span_value(const Span *s, Datum value)
+{
+  assert(s);
+  int cmp = datum_cmp(s->lower, value, s->basetype);
+  if (cmp > 0 || (cmp == 0 && ! s->lower_inc))
+    return false;
+
+  cmp = datum_cmp(s->upper, value, s->basetype);
+  if (cmp < 0 || (cmp == 0 && ! s->upper_inc))
+    return false;
+
+  return true;
+}
+
+#if MEOS
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span overlaps an integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Overlaps_span_value()
+ */
+bool
+overlaps_span_int(const Span *s, int i)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
+    return false;
+  return overlaps_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span overlaps a big integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Overlaps_span_value()
+ */
+bool
+overlaps_span_bigint(const Span *s, int64 i)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
+    return false;
+  return overlaps_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span overlaps a float
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Overlaps_span_value()
+ */
+bool
+overlaps_span_float(const Span *s, double d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
+    return false;
+  return overlaps_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span overlaps a date
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Overlaps_span_value()
+ */
+bool
+overlaps_span_date(const Span *s, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
+    return false;
+  return overlaps_span_value(s, DateADTGetDatum(d));
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span overlaps a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
+ * @csqlfn #Overlaps_span_value()
+ */
+bool
+overlaps_span_timestamptz(const Span *s, TimestampTz t)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return overlaps_span_value(s, TimestampTzGetDatum(t));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_setspan_topo
+ * @brief Return true if a value overlaps a span
+ * @param[in] value Value
+ * @param[in] s Span
+ */
+bool
+overlaps_value_span(Datum value, const Span *s)
+{
+  return overlaps_span_value(s, value);
+}
+
+#if MEOS
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if an integer overlaps a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Overlaps_value_span()
+ */
+bool
+overlaps_int_span(int i, const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT4))
+    return false;
+  return overlaps_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a big integer overlaps a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Overlaps_value_span()
+ */
+bool
+overlaps_bigint_span(int64 i, const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_INT8))
+    return false;
+  return overlaps_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a float overlaps a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Overlaps_value_span()
+ */
+bool
+overlaps_float_span(double d, const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_FLOAT8))
+    return false;
+  return overlaps_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a date overlaps a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Overlaps_value_span()
+ */
+bool
+overlaps_date_span(DateADT d, const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_basetype(s, T_DATE))
+    return false;
+  return overlaps_span_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a timestamp overlaps a span
+ * @param[in] t Value
+ * @param[in] s Span
+ * @csqlfn #Overlaps_value_span()
+ */
+bool
+overlaps_timestamptz_span(TimestampTz t, const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
+    return false;
+  return overlaps_span_value(s, TimestampTzGetDatum(t));
+}
+#endif /* MEOS */
+
+/*****************************************************************************/
 
 /**
  * @ingroup meos_internal_setspan_topo
@@ -1741,7 +1745,7 @@ Span *
 intersection_span_value(const Span *s, Datum value)
 {
   assert(s);
-  if (! contains_span_value(s, value))
+  if (! overlaps_span_value(s, value))
     return NULL;
   return value_to_span(value, s->basetype);
 }
@@ -1902,7 +1906,7 @@ SpanSet *
 minus_value_span(Datum value, const Span *s)
 {
   assert(s);
-  if (contains_span_value(s, value))
+  if (overlaps_span_value(s, value))
     return NULL;
   return value_to_spanset(value, s->basetype);
 }
@@ -2004,7 +2008,7 @@ mi_span_value(const Span *s, Datum value, Span *result)
 {
   assert(s);
   /* The span does not contain the value */
-  if (! contains_span_value(s, value))
+  if (! overlaps_span_value(s, value))
   {
     result[0] = *s;
     return 1;
@@ -2311,7 +2315,7 @@ distance_span_value(const Span *s, Datum value)
 {
   assert(s);
   /* If the span contains the value return 0 */
-  if (contains_span_value(s, value))
+  if (overlaps_span_value(s, value))
     return (Datum) 0;
 
   /* If the span is to the right of the value return the distance

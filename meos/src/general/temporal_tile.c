@@ -955,7 +955,7 @@ tsequence_time_split_iter(const TSequence *seq, TimestampTz start,
       upper += tunits;
       /* The second condition is needed for filtering unnecesary buckets for the
        * sequences composing a sequence set */
-      if (lower >= end || ! contains_span_timestamptz(&seq->period, lower))
+      if (lower >= end || ! overlaps_span_timestamptz(&seq->period, lower))
         break;
       /* Reuse the end value of the previous bucket for the beginning of the bucket */
       if (lower < inst->t)

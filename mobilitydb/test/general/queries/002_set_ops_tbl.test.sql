@@ -32,10 +32,10 @@
 -- Tests of operators that do not involve indexes for set types.
 -------------------------------------------------------------------------------
 
+SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t && t2.t;
+SELECT COUNT(*) FROM tbl_text t1, tbl_textset t2 WHERE t1.t && t2.t;
 SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t && t2.t;
-SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t @> t2.t;
 SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t @> t2.t;
-SELECT COUNT(*) FROM tbl_text t1, tbl_textset t2 WHERE t1.t <@ t2.t;
 SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t <@ t2.t;
 SELECT COUNT(*) FROM tbl_textset t1, tbl_text t2 WHERE t1.t << t2.t;
 SELECT COUNT(*) FROM tbl_textset t1, tbl_textset t2 WHERE t1.t << t2.t;

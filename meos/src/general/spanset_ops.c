@@ -50,113 +50,6 @@
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_setspan_topo
- * @brief Return true if a span set contains a value
- * @param[in] ss Span set
- * @param[in] value Value
- */
-bool
-contains_spanset_value(const SpanSet *ss, Datum value)
-{
-  assert(ss);
-  /* Bounding box test */
-  if (! contains_span_value(&ss->span, value))
-    return false;
-
-  int loc;
-  if (! spanset_find_value(ss, value, &loc))
-    return false;
-  return true;
-}
-
-#if MEOS
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set contains an integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Contains_spanset_value()
- */
-bool
-contains_spanset_int(const SpanSet *ss, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return false;
-  return contains_spanset_value(ss, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set contains a big integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Contains_spanset_value()
- */
-bool
-contains_spanset_bigint(const SpanSet *ss, int64 i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return false;
-  return contains_spanset_value(ss, Int64GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set contains a float
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Contains_spanset_value()
- */
-bool
-contains_spanset_float(const SpanSet *ss, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return false;
-  return contains_spanset_value(ss, Float8GetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set contains a date
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Contains_spanset_value()
- */
-bool
-contains_spanset_date(const SpanSet *ss, DateADT d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return false;
-  return contains_spanset_value(ss, DateADTGetDatum(d));
-}
-#endif /* MEOS */
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set contains a timestamptz
- * @param[in] ss Span set
- * @param[in] t Value
- * @csqlfn #Contains_spanset_value()
- */
-bool
-contains_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return false;
-  return contains_spanset_value(ss, TimestampTzGetDatum(t));
-}
-
-/**
  * @ingroup meos_setspan_topo
  * @brief Return true if a span set contains a span
  * @param[in] ss Span set
@@ -256,105 +149,6 @@ contains_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_setspan_topo
- * @brief Return true if a value is contained in a span set
- * @param[in] value Value
- * @param[in] ss Span set
- */
-bool
-contained_value_spanset(Datum value, const SpanSet *ss)
-{
-  return contains_spanset_value(ss, value);
-}
-
-#if MEOS
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if an integer is contained in a span set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Contained_value_spanset()
- */
-bool
-contained_int_spanset(int i, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return false;
-  return contained_value_spanset(Int32GetDatum(i), ss);
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a big integer is contained in a span set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Contained_value_spanset()
- */
-bool
-contained_bigint_spanset(int64 i, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return false;
-  return contained_value_spanset(Int64GetDatum(i), ss);
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a float is contained in a span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Contained_value_spanset()
- */
-bool
-contained_float_spanset(double d, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return false;
-  return contained_value_spanset(Float8GetDatum(d), ss);
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a date is contained in a span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Contained_value_spanset()
- */
-bool
-contained_date_spanset(DateADT d, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return false;
-  return contained_value_spanset(DateADTGetDatum(d), ss);
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a timestamptz is contained in a span set
- * @param[in] t Value
- * @param[in] ss Span set
- * @csqlfn #Contained_value_spanset()
- */
-bool
-contained_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return false;
-  return contained_value_spanset(TimestampTzGetDatum(t), ss);
-}
-#endif /* MEOS */
-
-/**
  * @ingroup meos_setspan_topo
  * @brief Return true if a span is contained in a span set
  * @param[in] s Span
@@ -395,6 +189,216 @@ contained_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 /*****************************************************************************
  * Overlaps
  *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_setspan_topo
+ * @brief Return true if a span set overlaps a value
+ * @param[in] ss Span set
+ * @param[in] value Value
+ */
+bool
+overlaps_spanset_value(const SpanSet *ss, Datum value)
+{
+  assert(ss);
+  /* Bounding box test */
+  if (! overlaps_span_value(&ss->span, value))
+    return false;
+
+  int loc;
+  if (! spanset_find_value(ss, value, &loc))
+    return false;
+  return true;
+}
+
+#if MEOS
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span set overlaps an integer
+ * @param[in] ss Span set
+ * @param[in] i Value
+ * @csqlfn #Overlaps_spanset_value()
+ */
+bool
+overlaps_spanset_int(const SpanSet *ss, int i)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_INT4))
+    return false;
+  return overlaps_spanset_value(ss, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span set overlaps a big integer
+ * @param[in] ss Span set
+ * @param[in] i Value
+ * @csqlfn #Overlaps_spanset_value()
+ */
+bool
+overlaps_spanset_bigint(const SpanSet *ss, int64 i)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_INT8))
+    return false;
+  return overlaps_spanset_value(ss, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span set overlaps a float
+ * @param[in] ss Span set
+ * @param[in] d Value
+ * @csqlfn #Overlaps_spanset_value()
+ */
+bool
+overlaps_spanset_float(const SpanSet *ss, double d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
+    return false;
+  return overlaps_spanset_value(ss, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span set overlaps a date
+ * @param[in] ss Span set
+ * @param[in] d Value
+ * @csqlfn #Overlaps_spanset_value()
+ */
+bool
+overlaps_spanset_date(const SpanSet *ss, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_DATE))
+    return false;
+  return overlaps_spanset_value(ss, DateADTGetDatum(d));
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span set overlaps a timestamptz
+ * @param[in] ss Span set
+ * @param[in] t Value
+ * @csqlfn #Overlaps_spanset_value()
+ */
+bool
+overlaps_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
+    return false;
+  return overlaps_spanset_value(ss, TimestampTzGetDatum(t));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_setspan_topo
+ * @brief Return true if a value overlaps a span set
+ * @param[in] value Value
+ * @param[in] ss Span set
+ */
+bool
+overlaps_value_spanset(Datum value, const SpanSet *ss)
+{
+  return overlaps_spanset_value(ss, value);
+}
+
+#if MEOS
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if an integer overlaps a span set
+ * @param[in] i Value
+ * @param[in] ss Span set
+ * @csqlfn #Overlaps_value_spanset()
+ */
+bool
+overlaps_int_spanset(int i, const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_INT4))
+    return false;
+  return overlaps_value_spanset(Int32GetDatum(i), ss);
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a big integer overlaps a span set
+ * @param[in] i Value
+ * @param[in] ss Span set
+ * @csqlfn #Overlaps_value_spanset()
+ */
+bool
+overlaps_bigint_spanset(int64 i, const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_INT8))
+    return false;
+  return overlaps_value_spanset(Int64GetDatum(i), ss);
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a float overlaps a span set
+ * @param[in] d Value
+ * @param[in] ss Span set
+ * @csqlfn #Overlaps_value_spanset()
+ */
+bool
+overlaps_float_spanset(double d, const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
+    return false;
+  return overlaps_value_spanset(Float8GetDatum(d), ss);
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a date overlaps a span set
+ * @param[in] d Value
+ * @param[in] ss Span set
+ * @csqlfn #Overlaps_value_spanset()
+ */
+bool
+overlaps_date_spanset(DateADT d, const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_DATE))
+    return false;
+  return overlaps_value_spanset(DateADTGetDatum(d), ss);
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a timestamptz overlaps a span set
+ * @param[in] t Value
+ * @param[in] ss Span set
+ * @csqlfn #Overlaps_value_spanset()
+ */
+bool
+overlaps_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
+    return false;
+  return overlaps_value_spanset(TimestampTzGetDatum(t), ss);
+}
+#endif /* MEOS */
+
+/*****************************************************************************/
 
 /**
  * @ingroup meos_setspan_topo
@@ -2047,7 +2051,7 @@ SpanSet *
 intersection_spanset_value(const SpanSet *ss, Datum value)
 {
   assert(ss);
-  if (! contains_spanset_value(ss, value))
+  if (! overlaps_spanset_value(ss, value))
     return NULL;
   return value_to_spanset(value, ss->basetype);
 }
@@ -2278,7 +2282,7 @@ SpanSet *
 minus_value_spanset(Datum value, const SpanSet *ss)
 {
   assert(ss);
-  if (contains_spanset_value(ss, value))
+  if (overlaps_spanset_value(ss, value))
     return NULL;
   return value_to_spanset(value, ss->basetype);
 }
@@ -2451,7 +2455,7 @@ minus_spanset_value(const SpanSet *ss, Datum value)
 {
   assert(ss);
   /* Bounding box test */
-  if (! contains_span_value(&ss->span, value))
+  if (! overlaps_span_value(&ss->span, value))
     return spanset_cp(ss);
 
   /* At most one composing span can be split into two */

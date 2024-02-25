@@ -60,7 +60,7 @@ contains_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
   bool invert __attribute__((unused)))
 {
   Set *routes = tnpoint_routes(temp);
-  bool result = contains_set_value(routes, Int64GetDatum(rid));
+  bool result = overlaps_set_value(routes, Int64GetDatum(rid));
   pfree(routes);
   return result;
 }
@@ -158,7 +158,7 @@ contains_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   bool invert __attribute__((unused)))
 {
   Set *routes = tnpoint_routes(temp);
-  bool result = contains_set_value(routes, Int64GetDatum(np->rid));
+  bool result = overlaps_set_value(routes, Int64GetDatum(np->rid));
   pfree(routes);
   return result;
 }

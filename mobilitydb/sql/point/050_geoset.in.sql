@@ -573,17 +573,9 @@ CREATE OPERATOR CLASS geogset_hash_ops
  * Operators
  ******************************************************************************/
 
-CREATE FUNCTION set_contains(geomset, geometry)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_set_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_contains(geomset, geomset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(geogset, geography)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contains_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_contains(geogset, geogset)
   RETURNS boolean
@@ -592,19 +584,7 @@ CREATE FUNCTION set_contains(geogset, geogset)
 
 CREATE OPERATOR @> (
   PROCEDURE = set_contains,
-  LEFTARG = geomset, RIGHTARG = geometry,
-  COMMUTATOR = <@
-  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
-);
-CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
   LEFTARG = geomset, RIGHTARG = geomset,
-  COMMUTATOR = <@
-  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
-);
-CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
-  LEFTARG = geogset, RIGHTARG = geography,
   COMMUTATOR = <@
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
@@ -617,17 +597,9 @@ CREATE OPERATOR @> (
 
 /******************************************************************************/
 
-CREATE FUNCTION set_contained(geometry, geomset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_value_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_contained(geomset, geomset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(geography, geogset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Contained_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION set_contained(geogset, geogset)
   RETURNS boolean
@@ -636,19 +608,7 @@ CREATE FUNCTION set_contained(geogset, geogset)
 
 CREATE OPERATOR <@ (
   PROCEDURE = set_contained,
-  LEFTARG = geometry, RIGHTARG = geomset,
-  COMMUTATOR = @>
-  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
-);
-CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
   LEFTARG = geomset, RIGHTARG = geomset,
-  COMMUTATOR = @>
-  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
-);
-CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
-  LEFTARG = geography, RIGHTARG = geogset,
   COMMUTATOR = @>
   -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
 );
@@ -660,6 +620,50 @@ CREATE OPERATOR <@ (
 );
 
 /******************************************************************************/
+
+CREATE FUNCTION set_overlaps(geomset, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_overlaps(geogset, geography)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (
+  PROCEDURE = set_overlaps,
+  LEFTARG = geomset, RIGHTARG = geometry,
+  COMMUTATOR = &&
+  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = set_overlaps,
+  LEFTARG = geogset, RIGHTARG = geography,
+  COMMUTATOR = &&
+  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
+);
+
+CREATE FUNCTION set_overlaps(geometry, geomset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION set_overlaps(geography, geogset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (
+  PROCEDURE = set_overlaps,
+  LEFTARG = geometry, RIGHTARG = geomset,
+  COMMUTATOR = &&
+  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = set_overlaps,
+  LEFTARG = geography, RIGHTARG = geogset,
+  COMMUTATOR = &&
+  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
+);
 
 CREATE FUNCTION set_overlaps(geomset, geomset)
   RETURNS boolean

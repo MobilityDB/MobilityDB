@@ -707,8 +707,8 @@ bool
 tnumberinst_restrict_span_test(const TInstant *inst, const Span *s,
   bool atfunc)
 {
-  bool contains = contains_span_value(s, tinstant_val(inst));
-  return atfunc ? contains : ! contains;
+  bool overlaps = overlaps_span_value(s, tinstant_val(inst));
+  return atfunc ? overlaps : ! overlaps;
 }
 
 /**
@@ -742,7 +742,7 @@ tnumberinst_restrict_spanset_test(const TInstant *inst, const SpanSet *ss,
   Datum value = tinstant_val(inst);
   for (int i = 0; i < ss->count; i++)
   {
-    if (contains_span_value(SPANSET_SP_N(ss, i), value))
+    if (overlaps_span_value(SPANSET_SP_N(ss, i), value))
       return atfunc ? true : false;
   }
   return atfunc ? false : true;
@@ -830,8 +830,8 @@ TInstant *
 tinstant_restrict_tstzspan(const TInstant *inst, const Span *s, bool atfunc)
 {
   assert(inst); assert(s);
-  bool contains = contains_span_timestamptz(s, inst->t);
-  if ((atfunc && ! contains) || (! atfunc && contains))
+  bool overlaps = overlaps_span_timestamptz(s, inst->t);
+  if ((atfunc && ! overlaps) || (! atfunc && overlaps))
     return NULL;
   return tinstant_copy(inst);
 }
@@ -847,7 +847,7 @@ tinstant_restrict_tstzspanset_test(const TInstant *inst, const SpanSet *ss,
   bool atfunc)
 {
   for (int i = 0; i < ss->count; i++)
-    if (contains_span_timestamptz(SPANSET_SP_N(ss, i), inst->t))
+    if (overlaps_span_timestamptz(SPANSET_SP_N(ss, i), inst->t))
       return atfunc ? true : false;
   return atfunc ? false : true;
 }
@@ -1367,7 +1367,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   /* Constant segment (step or linear interpolation) */
   if (datum_eq(value1, value2, basetype))
   {
-    found = contains_span_value(s, value1);
+    found = overlaps_span_value(s, value1);
     if ((atfunc && ! found) || (! atfunc && found))
       return 0;
     instants[0] = (TInstant *) inst1;
@@ -1381,7 +1381,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   if (interp == STEP)
   {
     int nseqs = 0;
-    found = contains_span_value(s, value1);
+    found = overlaps_span_value(s, value1);
     if ((atfunc && found) || (! atfunc && ! found))
     {
       instants[0] = (TInstant *) inst1;
@@ -1390,7 +1390,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
         lower_inc, false, interp, NORMALIZE_NO);
       pfree(instants[1]);
     }
-    found = contains_span_value(s, value2);
+    found = overlaps_span_value(s, value2);
     if (upper_inc &&
       ((atfunc && found) || (! atfunc && ! found)))
     {
@@ -1800,7 +1800,7 @@ tdiscseq_at_timestamptz(const TSequence *seq, TimestampTz t)
 {
   assert(seq);
   /* Bounding box test */
-  if (! contains_span_timestamptz(&seq->period, t))
+  if (! overlaps_span_timestamptz(&seq->period, t))
     return NULL;
 
   /* Instantenous sequence */
@@ -1828,7 +1828,7 @@ tdiscseq_minus_timestamptz(const TSequence *seq, TimestampTz t)
 {
   assert(seq);
   /* Bounding box test */
-  if (! contains_span_timestamptz(&seq->period, t))
+  if (! overlaps_span_timestamptz(&seq->period, t))
     return tsequence_copy(seq);
 
   /* Instantenous sequence */
@@ -1950,8 +1950,8 @@ tdiscseq_restrict_tstzspan(const TSequence *seq, const Span *s, bool atfunc)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    bool contains = contains_span_timestamptz(s, inst->t);
-    if ((atfunc && contains) || (! atfunc && ! contains))
+    bool overlaps = overlaps_span_timestamptz(s, inst->t);
+    if ((atfunc && overlaps) || (! atfunc && ! overlaps))
       instants[count++] = inst;
   }
   TSequence *result = (count == 0) ? NULL :
@@ -1994,8 +1994,8 @@ tdiscseq_restrict_tstzspanset(const TSequence *seq, const SpanSet *ss,
   for (int i = 0; i < seq->count; i++)
   {
     inst = TSEQUENCE_INST_N(seq, i);
-    bool contains = contains_spanset_timestamptz(ss, inst->t);
-    if ((atfunc && contains) || (! atfunc && ! contains))
+    bool overlaps = overlaps_spanset_timestamptz(ss, inst->t);
+    if ((atfunc && overlaps) || (! atfunc && ! overlaps))
       instants[count++] = inst;
   }
   TSequence *result = (count == 0) ? NULL :
@@ -2030,7 +2030,7 @@ tcontseq_at_timestamptz(const TSequence *seq, TimestampTz t)
 {
   assert(seq);
   /* Bounding box test */
-  if (! contains_span_timestamptz(&seq->period, t))
+  if (! overlaps_span_timestamptz(&seq->period, t))
     return NULL;
 
   /* Instantaneous sequence */
@@ -2083,7 +2083,7 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
   TSequence **result)
 {
   /* Bounding box test */
-  if (! contains_span_timestamptz(&seq->period, t))
+  if (! overlaps_span_timestamptz(&seq->period, t))
   {
     result[0] = tsequence_copy(seq);
     return 1;
@@ -2205,7 +2205,7 @@ tcontseq_at_tstzset(const TSequence *seq, const Set *s)
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    if (! contains_set_value(s, TimestampTzGetDatum(inst->t)))
+    if (! overlaps_set_value(s, TimestampTzGetDatum(inst->t)))
       return NULL;
     return tinstant_to_tsequence((const TInstant *) inst, DISCRETE);
   }
@@ -2260,7 +2260,7 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    if (contains_set_value(s,
+    if (overlaps_set_value(s,
           TimestampTzGetDatum(TSEQUENCE_INST_N(seq, 0)->t)))
       return 0;
     result[0] = tsequence_copy(seq);
@@ -2544,7 +2544,7 @@ tcontseq_at_tstzspanset1(const TSequence *seq, const SpanSet *ss,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    if (! contains_spanset_timestamptz(ss, TSEQUENCE_INST_N(seq, 0)->t))
+    if (! overlaps_spanset_timestamptz(ss, TSEQUENCE_INST_N(seq, 0)->t))
       return 0;
     result[0] = tsequence_copy(seq);
     return 1;
@@ -2622,7 +2622,7 @@ tcontseq_restrict_tstzspanset(const TSequence *seq, const SpanSet *ss,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    if (contains_spanset_timestamptz(ss, TSEQUENCE_INST_N(seq, 0)->t))
+    if (overlaps_spanset_timestamptz(ss, TSEQUENCE_INST_N(seq, 0)->t))
       return atfunc ? tsequence_to_tsequenceset(seq) : NULL;
     return atfunc ? NULL : tsequence_to_tsequenceset(seq);
   }
@@ -2836,7 +2836,7 @@ tsequenceset_restrict_timestamptz(const TSequenceSet *ss, TimestampTz t,
 {
   assert(ss);
   /* Bounding box test */
-  if (! contains_span_timestamptz(&ss->period, t))
+  if (! overlaps_span_timestamptz(&ss->period, t))
     return atfunc ? NULL : (Temporal *) tsequenceset_copy(ss);
 
   /* Singleton sequence set */
@@ -2932,7 +2932,7 @@ tsequenceset_restrict_tstzset(const TSequenceSet *ss, const Set *s,
     {
       seq = TSEQUENCESET_SEQ_N(ss, j);
       TimestampTz t = DatumGetTimestampTz(SET_VAL_N(s, i));
-      if (contains_span_timestamptz(&seq->period, t))
+      if (overlaps_span_timestamptz(&seq->period, t))
       {
         instants[count++] = tsequence_at_timestamptz(seq, t);
         i++;
