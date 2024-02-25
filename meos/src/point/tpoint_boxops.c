@@ -91,7 +91,7 @@ tpointinst_set_stbox(const TInstant *inst, STBox *box)
  * points
  */
 void
-tpointseq_set_stbox(const TSequence *seq, STBox *box)
+tspatialseq_set_stbox(const TSequence *seq, STBox *box)
 {
   assert(seq); assert(box); assert(tspatial_type(seq->temptype));
   memcpy(box, TSEQUENCE_BBOX_PTR(seq), sizeof(STBox));
@@ -108,7 +108,7 @@ tpointseq_set_stbox(const TSequence *seq, STBox *box)
  * points
  */
 void
-tpointseqset_set_stbox(const TSequenceSet *ss, STBox *box)
+tspatialseqset_set_stbox(const TSequenceSet *ss, STBox *box)
 {
   assert(ss); assert(box); assert(tspatial_type(ss->temptype));
   memcpy(box, TSEQUENCESET_BBOX_PTR(ss), sizeof(STBox));

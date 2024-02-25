@@ -764,10 +764,10 @@ extern TSequenceSet *tsequenceset_merge_array(const TSequenceSet **seqsets, int 
 
 /* Bounding box functions for temporal types */
 
-extern void tpoint_set_stbox(const Temporal *temp, STBox *box);
+extern void tspatial_set_stbox(const Temporal *temp, STBox *box);
 extern void tpointinst_set_stbox(const TInstant *inst, STBox *box);
-extern void tpointseq_set_stbox(const TSequence *seq, STBox *box);
-extern void tpointseqset_set_stbox(const TSequenceSet *ss, STBox *box);
+extern void tspatialseq_set_stbox(const TSequence *seq, STBox *box);
+extern void tspatialseqset_set_stbox(const TSequenceSet *ss, STBox *box);
 extern void tsequence_expand_bbox(TSequence *seq, const TInstant *inst);
 extern void tsequence_set_bbox(const TSequence *seq, void *box);
 extern void tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq);

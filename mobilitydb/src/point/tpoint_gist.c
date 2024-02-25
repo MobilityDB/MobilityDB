@@ -292,7 +292,7 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, meosType type)
       return false;
     Datum tempdatum = PG_GETARG_DATUM(1);
     Temporal *temp = temporal_slice(tempdatum);
-    tpoint_set_stbox(temp, result);
+    tspatial_set_stbox(temp, result);
   }
   else
     elog(ERROR, "Unsupported type for indexing: %d", type);
@@ -394,7 +394,7 @@ Tpoint_gist_compress(PG_FUNCTION_ARGS)
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
     STBox *box = palloc(sizeof(STBox));
     Temporal *temp = temporal_slice(entry->key);
-    tpoint_set_stbox(temp, box);
+    tspatial_set_stbox(temp, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_STBOX_P(retval);

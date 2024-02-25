@@ -442,7 +442,7 @@ Tpoint_to_stbox(PG_FUNCTION_ARGS)
   Datum tempdatum = PG_GETARG_DATUM(0);
   Temporal *temp = temporal_slice(tempdatum);
   STBox *result = palloc(sizeof(STBox));
-  tpoint_set_stbox(temp, result);
+  tspatial_set_stbox(temp, result);
   PG_RETURN_STBOX_P(result);
 }
 

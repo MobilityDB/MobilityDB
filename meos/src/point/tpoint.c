@@ -76,7 +76,7 @@ geo_copy(const GSERIALIZED *g)
  * @param[out] box Temporal box
  */
 void
-tpoint_set_stbox(const Temporal *temp, STBox *box)
+tspatial_set_stbox(const Temporal *temp, STBox *box)
 {
   assert(temp); assert(box); assert(tspatial_type(temp->temptype));
   assert(temptype_subtype(temp->subtype));
@@ -94,10 +94,10 @@ tpoint_set_stbox(const Temporal *temp, STBox *box)
           "Unknown temporal point type: %u", temp->temptype);
       break;
     case TSEQUENCE:
-      tpointseq_set_stbox((TSequence *) temp, box);
+      tspatialseq_set_stbox((TSequence *) temp, box);
       break;
     default: /* TSEQUENCESET */
-      tpointseqset_set_stbox((TSequenceSet *) temp, box);
+      tspatialseqset_set_stbox((TSequenceSet *) temp, box);
   }
   return;
 }
@@ -116,7 +116,7 @@ tpoint_to_stbox(const Temporal *temp)
       ! ensure_tspatial_type(temp->temptype))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
-  tpoint_set_stbox(temp, result);
+  tspatial_set_stbox(temp, result);
   return result;
 }
 
