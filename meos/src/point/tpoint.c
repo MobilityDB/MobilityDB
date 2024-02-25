@@ -44,6 +44,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal.h"
+#include "npoint/tnpoint_boxops.h"
 
 /*****************************************************************************
  * General functions
@@ -68,6 +69,40 @@ geo_copy(const GSERIALIZED *g)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return the last argument initialized with the spatiotemporal box of a
+ * temporal point
+ * @param[in] temp Temporal point
+ * @param[out] box Temporal box
+ */
+void
+tpoint_set_stbox(const Temporal *temp, STBox *box)
+{
+  assert(temp); assert(box); assert(tspatial_type(temp->temptype));
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      if (tgeo_type(temp->temptype))
+        tpointinst_set_stbox((TInstant *) temp, box);
+#if NPOINT
+      else if (temp->temptype == T_TNPOINT)
+        tnpointinst_set_stbox((TInstant *) temp, box);
+#endif
+      else
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "Unknown temporal point type: %u", temp->temptype);
+      break;
+    case TSEQUENCE:
+      tpointseq_set_stbox((TSequence *) temp, box);
+      break;
+    default: /* TSEQUENCESET */
+      tpointseqset_set_stbox((TSequenceSet *) temp, box);
+  }
+  return;
+}
+
+/**
  * @ingroup meos_box_conversion
  * @brief Return a temporal point converted to a spatiotemporal box
  * @param[in] temp Temporal point
@@ -81,7 +116,7 @@ tpoint_to_stbox(const Temporal *temp)
       ! ensure_tspatial_type(temp->temptype))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
-  temporal_set_bbox(temp, result);
+  tpoint_set_stbox(temp, result);
   return result;
 }
 

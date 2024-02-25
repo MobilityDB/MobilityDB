@@ -227,7 +227,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
       return false;
     Datum tempdatum = PG_GETARG_DATUM(1);
     Temporal *temp = temporal_slice(tempdatum);
-    temporal_set_bbox(temp, result);
+    tnumber_set_tbox(temp, result);
   }
   else
     elog(ERROR, "Unsupported type for indexing: %d", type);
@@ -337,7 +337,7 @@ Tnumber_gist_compress(PG_FUNCTION_ARGS)
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
     TBox *box = palloc(sizeof(TBox));
     Temporal *temp = temporal_slice(entry->key);
-    temporal_set_bbox(temp, box);
+    tnumber_set_tbox(temp, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);

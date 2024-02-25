@@ -62,7 +62,7 @@ Temporal_gist_compress(PG_FUNCTION_ARGS)
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
     Span *s = palloc(sizeof(Span));
     Temporal *temp = temporal_slice(entry->key);
-    temporal_set_bbox(temp, s);
+    temporal_set_tstzspan(temp, s);
     gistentryinit(*retval, PointerGetDatum(s), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
@@ -85,7 +85,7 @@ Temporal_spgist_compress(PG_FUNCTION_ARGS)
   Datum tempdatum = PG_GETARG_DATUM(0);
   Temporal *temp = temporal_slice(tempdatum);
   Span *result = palloc(sizeof(Span));
-  temporal_set_bbox(temp, result);
+  temporal_set_tstzspan(temp, result);
   PG_RETURN_SPAN_P(result);
 }
 

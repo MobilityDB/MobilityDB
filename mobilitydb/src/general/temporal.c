@@ -807,7 +807,7 @@ Tnumber_to_tbox(PG_FUNCTION_ARGS)
   Datum tempdatum = PG_GETARG_DATUM(0);
   Temporal *temp = temporal_slice(tempdatum);
   TBox *result =  palloc(sizeof(TBox));
-  temporal_set_bbox(temp, result);
+  tnumber_set_tbox(temp, result);
   PG_RETURN_TBOX_P(result);
 }
 

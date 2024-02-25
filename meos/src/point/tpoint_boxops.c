@@ -64,8 +64,11 @@ extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return the last argument initialized with the spatiotemporal box from
  * a temporal point instant
+ * @param[in] inst Temporal instant
+ * @param[in] box Spatiotemporal box
  */
 void
 tpointinst_set_stbox(const TInstant *inst, STBox *box)
@@ -75,6 +78,40 @@ tpointinst_set_stbox(const TInstant *inst, STBox *box)
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
+  return;
+}
+
+/**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return the last argument initialized with the spatiotemporal box of a
+ * temporal point sequence
+ * @param[in] seq Temporal sequence
+ * @param[in] box Spatiotemporal box
+ * @note The function copes with both temporal points and temporal network
+ * points
+ */
+void
+tpointseq_set_stbox(const TSequence *seq, STBox *box)
+{
+  assert(seq); assert(box); assert(tspatial_type(seq->temptype));
+  memcpy(box, TSEQUENCE_BBOX_PTR(seq), sizeof(STBox));
+  return;
+}
+
+/**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return the last argument initialized with the spatiotemporal box of a
+ * temporal point sequence set
+ * @param[in] ss Temporal sequence set
+ * @param[in] box Spatiotemporal box
+ * @note The function copes with both temporal points and temporal network
+ * points
+ */
+void
+tpointseqset_set_stbox(const TSequenceSet *ss, STBox *box)
+{
+  assert(ss); assert(box); assert(tspatial_type(ss->temptype));
+  memcpy(box, TSEQUENCESET_BBOX_PTR(ss), sizeof(STBox));
   return;
 }
 

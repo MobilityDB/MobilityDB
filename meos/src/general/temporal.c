@@ -1274,7 +1274,7 @@ tnumber_to_tbox(const Temporal *temp)
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
-  temporal_set_bbox(temp, result);
+  tnumber_set_tbox(temp, result);
   return result;
 }
 #endif

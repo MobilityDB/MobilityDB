@@ -197,7 +197,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
   {
     Datum tempdatum = PG_GETARG_DATUM(1);
     Temporal *temp = temporal_slice(tempdatum);
-    temporal_set_bbox(temp, result);
+    temporal_set_tstzspan(temp, result);
   }
   else
     elog(ERROR, "Unsupported type for indexing: %d", type);
