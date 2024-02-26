@@ -376,7 +376,8 @@ span_spgist_get_span(const ScanKeyData *scankey, Span *result)
   /* For temporal types whose bounding box is a timestamptz span */
   else if (temporal_type(type))
   {
-    temporal_bbox_slice(scankey->sk_argument, result);
+    Temporal *temp = temporal_slice(scankey->sk_argument);
+    temporal_set_tstzspan(temp, result);
   }
   else
     elog(ERROR, "Unsupported type for indexing: %d", type);

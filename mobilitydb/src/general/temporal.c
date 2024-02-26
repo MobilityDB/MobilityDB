@@ -268,24 +268,23 @@ Temporal_enforce_typmod(PG_FUNCTION_ARGS)
  * @note If the datum needs to be detoasted, extract only the header and not
  * the full object
  */
-void
-temporal_bbox_slice(Datum tempdatum, void *box)
+Temporal *
+temporal_slice(Datum tempdatum)
 {
-  Temporal *tempslice = NULL;
+  Temporal *result = NULL;
   int need_detoast = PG_DATUM_NEEDS_DETOAST((struct varlena *) tempdatum);
   if (need_detoast)
-    tempslice = (Temporal *) PG_DETOAST_DATUM_SLICE(tempdatum, 0,
+    result = (Temporal *) PG_DETOAST_DATUM_SLICE(tempdatum, 0,
       temporal_max_header_size());
   else
-    tempslice = (Temporal *) tempdatum;
-  if (need_detoast && tempslice->subtype == TINSTANT)
+    result = (Temporal *) tempdatum;
+  if (need_detoast && result->subtype == TINSTANT)
   {
     /* TInstant subtype of Temporal DOES NOT keep the bounding box, so
      * we now detoast it completely */
-    tempslice = (Temporal *) PG_DETOAST_DATUM(tempdatum);
+    result = (Temporal *) PG_DETOAST_DATUM(tempdatum);
   }
-  temporal_set_bbox(tempslice, box);
-  return;
+  return result;
 }
 
 /*****************************************************************************
@@ -771,8 +770,9 @@ Datum
 Temporal_to_tstzspan(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
+  Temporal *temp = temporal_slice(tempdatum);
   Span *result = palloc(sizeof(Span));
-  temporal_bbox_slice(tempdatum, result);
+  temporal_set_tstzspan(temp, result);
   PG_RETURN_SPAN_P(result);
 }
 
@@ -805,8 +805,9 @@ Datum
 Tnumber_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
-  TBox *result = palloc(sizeof(TBox));
-  temporal_bbox_slice(tempdatum, result);
+  Temporal *temp = temporal_slice(tempdatum);
+  TBox *result =  palloc(sizeof(TBox));
+  tnumber_set_tbox(temp, result);
   PG_RETURN_TBOX_P(result);
 }
 

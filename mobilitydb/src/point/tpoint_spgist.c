@@ -709,7 +709,8 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
   }
   else if (tspatial_type(type))
   {
-    temporal_bbox_slice(scankey->sk_argument, result);
+    Temporal *temp = temporal_slice(scankey->sk_argument);
+    tspatial_set_stbox(temp, result);
   }
   else
     elog(ERROR, "Unsupported type for indexing: %d", type);
@@ -1442,8 +1443,9 @@ Datum
 Tpoint_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
+  Temporal *temp = temporal_slice(tempdatum);
   STBox *result = palloc(sizeof(STBox));
-  temporal_bbox_slice(tempdatum, result);
+  tspatial_set_stbox(temp, result);
   PG_RETURN_STBOX_P(result);
 }
 
