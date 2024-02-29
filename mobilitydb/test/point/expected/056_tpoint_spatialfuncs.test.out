@@ -2926,18 +2926,6 @@ SELECT asText(makeSimple(tgeompoint
  {"[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST)","[POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST)","[POINT(1 1)@Mon Jan 03 00:00:00 2000 PST, POINT(2 2)@Tue Jan 04 00:00:00 2000 PST]"}
 (1 row)
 
-SELECT asText(atGeometry(NULL::tgeompoint, geometry 'Linestring(0 0,3 3)'));
- astext 
---------
- 
-(1 row)
-
-SELECT asText(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', NULL::geometry));
- astext 
---------
- 
-(1 row)
-
 SELECT asText(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
                  astext                  
 -----------------------------------------
@@ -3131,13 +3119,13 @@ SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 1)@2000
  
 (1 row)
 
-SELECT asText(atGeometryTime(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0, 2 2)', NULL, tstzspan '[2000-01-01, 2000-01-02]'));
+SELECT asText(atGeometryTime(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0, 2 2)', tstzspan '[2000-01-01, 2000-01-02]'));
                          astext                          
 ---------------------------------------------------------
  Interp=Step;{[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST]}
 (1 row)
 
-SELECT asText(atGeometryTime(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02, Point(2 2)@2000-01-03]', geometry 'Linestring(0 0, 2 2)', NULL, tstzspan '[2000-01-01, 2000-01-02]'));
+SELECT asText(atGeometryTime(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02, Point(2 2)@2000-01-03]', geometry 'Linestring(0 0, 2 2)', tstzspan '[2000-01-01, 2000-01-02]'));
                                               astext                                              
 --------------------------------------------------------------------------------------------------
  Interp=Step;{[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(1 1)@Sun Jan 02 00:00:00 2000 PST)}
@@ -3394,8 +3382,8 @@ FROM temp;
 WITH temp(trip, geo, period) AS (
   SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(5 1)@2000-01-05, Point(1 1)@2000-01-09]',
     geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', tstzspan '[2000-01-03, 2000-01-05]' )
-SELECT trip = merge(atGeometryTime(trip, geo, NULL::floatspan, period),
-  minusGeometryTime(trip, geo, NULL::floatspan, period)) FROM temp;
+SELECT trip = merge(atGeometryTime(trip, geo, period),
+  minusGeometryTime(trip, geo, period)) FROM temp;
  ?column? 
 ----------
  t

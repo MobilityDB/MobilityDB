@@ -132,10 +132,10 @@ SELECT asText(transformPipeline(transformPipeline(box, pipeline, 4326), pipeline
 FROM test;
 
 -- This test ensure correctness between PostGIS and MobilityDB results.
--- However, it was commented out since not all installations have the latest 
+-- However, it was commented out since not all installations have the latest
 -- PostGIS version 3.4
 -- SELECT startValue(transformPipeline(tgeompoint 'SRID=4326;Point(1 2 3)@2000-01-01',
-  -- 'urn:ogc:def:coordinateOperation:EPSG::16031', 5676, true)) = 
+  -- 'urn:ogc:def:coordinateOperation:EPSG::16031', 5676, true)) =
   -- st_transformpipeline(geometry 'SRID=4326;Point(1 2 3)', 'urn:ogc:def:coordinateOperation:EPSG::16031', 5676);
 
 SELECT asText(transformPipeline(tgeompoint 'SRID=4326;POINT(2 49)@2000-01-01',
@@ -797,10 +797,6 @@ SELECT asText(makeSimple(tgeompoint
 
 --------------------------------------------------------
 
--- Test for NULL inputs since the function is not STRICT
-SELECT asText(atGeometry(NULL::tgeompoint, geometry 'Linestring(0 0,3 3)'));
-SELECT asText(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', NULL::geometry));
-
 -- 2D
 SELECT asText(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
 SELECT asText(atGeometry(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Linestring(0 0,3 3)'));
@@ -842,8 +838,8 @@ SELECT asText(atGeometry(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Poin
 SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 1)@2000-01-02]', geometry 'Linestring(0 0,0 2,2 2)'));
 
 -- Period
-SELECT asText(atGeometryTime(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0, 2 2)', NULL, tstzspan '[2000-01-01, 2000-01-02]'));
-SELECT asText(atGeometryTime(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02, Point(2 2)@2000-01-03]', geometry 'Linestring(0 0, 2 2)', NULL, tstzspan '[2000-01-01, 2000-01-02]'));
+SELECT asText(atGeometryTime(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0, 2 2)', tstzspan '[2000-01-01, 2000-01-02]'));
+SELECT asText(atGeometryTime(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02, Point(2 2)@2000-01-03]', geometry 'Linestring(0 0, 2 2)', tstzspan '[2000-01-01, 2000-01-02]'));
 
 --3D Zspan
 SELECT asText(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0, 2 2)', floatspan '[0, 2]'));
@@ -912,8 +908,8 @@ FROM temp;
 WITH temp(trip, geo, period) AS (
   SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(5 1)@2000-01-05, Point(1 1)@2000-01-09]',
     geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', tstzspan '[2000-01-03, 2000-01-05]' )
-SELECT trip = merge(atGeometryTime(trip, geo, NULL::floatspan, period),
-  minusGeometryTime(trip, geo, NULL::floatspan, period)) FROM temp;
+SELECT trip = merge(atGeometryTime(trip, geo, period),
+  minusGeometryTime(trip, geo, period)) FROM temp;
 
 WITH temp(trip, geo, zspan, period) AS (
   SELECT tgeompoint '[Point(1 1 1)@2000-01-01,
