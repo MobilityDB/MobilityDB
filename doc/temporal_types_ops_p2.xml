@@ -393,7 +393,7 @@ SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(atGeometryTime(tgeompoint '[Point(1 1)@2001-01-01,
   Point(5 1)@2001-01-05, Point(1 1)@2001-01-09]',
-  geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', NULL::floatspan,
+  geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))',
   tstzspan '[2001-01-03, 2001-01-05]'));
 -- {[POINT(3 1)@2001-01-03, POINT(4 1)@2001-01-04]}
 SELECT asText(atGeometryTime(tgeompoint '[Point(1 1 1)@2001-01-01,
@@ -419,7 +419,7 @@ SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(minusGeometryTime(tgeompoint '[Point(1 1)@2001-01-01,
   Point(5 1)@2001-01-05, Point(1 1)@2001-01-09]',
-  geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', NULL::floatspan,
+  geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))',
   tstzspan '[2001-01-03, 2001-01-05]'));
 /* {[POINT(1 1)@2001-01-01, POINT(3 1)@2001-01-03), (POINT(4 1)@2001-01-04,
      POINT(5 1)@2001-01-05, POINT(1 1)@2001-01-09]} */
