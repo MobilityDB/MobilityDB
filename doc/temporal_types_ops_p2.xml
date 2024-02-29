@@ -374,10 +374,10 @@ SELECT minusMax(tfloat '{[1@2001-01-01, 3@2001-01-03), (3@2001-01-03, 1@2001-01-
 				<indexterm><primary><varname>atGeometry</varname></primary></indexterm>
 				<indexterm><primary><varname>minusGeometry</varname></primary></indexterm>
 				<para>Restrict to (the complement of) a geometry, a Z span, and/or a period &Z_support;</para>
-				<para><varname>atGeometry(tgeompoint,geometry,zspan=NULL) → tgeompoint</varname></para>
-				<para><varname>minusGeometry(tgeompoint,geometry,zspan=NULL) → tgeompoint</varname></para>
-				<para><varname>atGeometryTime(tgeompoint,geometry,zspan=NULL,period) → tgeompoint</varname></para>
-				<para><varname>minusGeometryTime(tgeompoint,geometry,zspan=NULL,period) → tgeompoint</varname></para>
+				<para><varname>atGeometry(tgeompoint,geometry[,zspan]) → tgeompoint</varname></para>
+				<para><varname>minusGeometry(tgeompoint,geometry[,zspan]) → tgeompoint</varname></para>
+				<para><varname>atGeometryTime(tgeompoint,geometry[,zspan],period) → tgeompoint</varname></para>
+				<para><varname>minusGeometryTime(tgeompoint,geometry[,zspan],period) → tgeompoint</varname></para>
 				<para>The geometry must be in 2D and the computation with respect to it is done in 2D. The result preserves the Z dimension of the temporal point, if it exists.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
@@ -393,7 +393,7 @@ SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(atGeometryTime(tgeompoint '[Point(1 1)@2001-01-01,
   Point(5 1)@2001-01-05, Point(1 1)@2001-01-09]',
-  geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', NULL::floatspan,
+  geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))',
   tstzspan '[2001-01-03, 2001-01-05]'));
 -- {[POINT(3 1)@2001-01-03, POINT(4 1)@2001-01-04]}
 SELECT asText(atGeometryTime(tgeompoint '[Point(1 1 1)@2001-01-01,
@@ -419,7 +419,7 @@ SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(minusGeometryTime(tgeompoint '[Point(1 1)@2001-01-01,
   Point(5 1)@2001-01-05, Point(1 1)@2001-01-09]',
-  geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', NULL::floatspan,
+  geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))',
   tstzspan '[2001-01-03, 2001-01-05]'));
 /* {[POINT(1 1)@2001-01-01, POINT(3 1)@2001-01-03), (POINT(4 1)@2001-01-04,
      POINT(5 1)@2001-01-05, POINT(1 1)@2001-01-09]} */

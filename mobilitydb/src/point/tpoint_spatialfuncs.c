@@ -694,16 +694,28 @@ Tpoint_make_simple(PG_FUNCTION_ARGS)
 static Datum
 Tpoint_restrict_geom_time(FunctionCallInfo fcinfo, bool atfunc, bool resttime)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1)|| (resttime && PG_ARGISNULL(3)))
-    PG_RETURN_NULL();
+  /*
+  CREATE FUNCTION at/minusGeometry(tgeompoint, geometry)
+  CREATE FUNCTION at/minusGeometry(tgeompoint, geometry, floatspan)
+  CREATE FUNCTION at/minusGeometryTime(tgeompoint, geometry, tstzspan)
+  CREATE FUNCTION at/minusGeometryTime(tgeompoint, geometry, floatspan, tstzspan)
+  */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
   Span *zspan = NULL;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-    zspan = PG_GETARG_SPAN_P(2);
   Span *period = NULL;
-  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
+  if (PG_NARGS() == 3)
+  {
+    if (resttime)
+      period = PG_GETARG_SPAN_P(2);
+    else
+      zspan = PG_GETARG_SPAN_P(2);
+  }
+  else if (PG_NARGS() == 4)
+  {
+    zspan = PG_GETARG_SPAN_P(2);
     period = PG_GETARG_SPAN_P(3);
+  }
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = tpoint_restrict_geom_time(temp, geo, zspan, period,
