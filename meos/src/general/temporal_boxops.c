@@ -33,7 +33,7 @@
  *
  * The bounding box of temporal values are
  * - a @p Span for temporal Booleans
- * - a @p TBox for temporal integers and floats, where the @p x coordinate is 
+ * - a @p TBox for temporal integers and floats, where the @p x coordinate is
  *   for the value dimension and the @p t coordinate is for the time dimension.
  * The following operators are defined: @p overlaps, @p contains, @p contained,
  * @p same, and @p adjacent.
@@ -183,6 +183,31 @@ temporal_bbox_size(meosType temptype)
  * @param[out] box Result
  */
 void
+tnumberinst_set_tbox(const TInstant *inst, TBox *box)
+{
+  assert(inst); assert(temporal_type(inst->temptype)); assert(box);
+  assert(tnumber_type(inst->temptype));
+  meosType basetype = temptype_basetype(inst->temptype);
+  meosType spantype = basetype_spantype(basetype);
+    Datum value = tinstant_val(inst);
+  Datum time = TimestampTzGetDatum(inst->t);
+  TBox *tbox = (TBox *) box;
+  memset(tbox, 0, sizeof(TBox));
+  span_set(value, value, true, true, basetype, spantype, &tbox->span);
+  span_set(time, time, true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &tbox->period);
+  MEOS_FLAGS_SET_X(tbox->flags, true);
+  MEOS_FLAGS_SET_T(tbox->flags, true);
+  return;
+}
+
+/**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return the last argument initialized with the bounding box of a
+ * temporal instant
+ * @param[in] inst Temporal value
+ * @param[out] box Result
+ */
+void
 tinstant_set_bbox(const TInstant *inst, void *box)
 {
   assert(inst); assert(temporal_type(inst->temptype)); assert(box);
@@ -190,18 +215,7 @@ tinstant_set_bbox(const TInstant *inst, void *box)
     span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
       true, true, T_TIMESTAMPTZ, T_TSTZSPAN, (Span *) box);
   else if (tnumber_type(inst->temptype))
-  {
-    meosType basetype = temptype_basetype(inst->temptype);
-    meosType spantype = basetype_spantype(basetype);
-      Datum value = tinstant_val(inst);
-    Datum time = TimestampTzGetDatum(inst->t);
-    TBox *tbox = (TBox *) box;
-    memset(tbox, 0, sizeof(TBox));
-    span_set(value, value, true, true, basetype, spantype, &tbox->span);
-    span_set(time, time, true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &tbox->period);
-    MEOS_FLAGS_SET_X(tbox->flags, true);
-    MEOS_FLAGS_SET_T(tbox->flags, true);
-  }
+    tnumberinst_set_tbox(inst, (TBox *) box);
   else if (tgeo_type(inst->temptype))
     tpointinst_set_stbox(inst, (STBox *) box);
 #if NPOINT
@@ -211,6 +225,21 @@ tinstant_set_bbox(const TInstant *inst, void *box)
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Unknown temporal type for bounding box function: %d", inst->temptype);
+  return;
+}
+
+/**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return the last argument initialized with the temporal box of a
+ * temporal sequence number
+ * @param[in] seq Temporal sequence
+ * @param[out] box Temporal box
+ */
+void
+tnumberseq_set_tbox(const TSequence *seq, TBox *box)
+{
+  assert(seq); assert(box); assert(tnumber_type(seq->temptype));
+  memcpy(box, TSEQUENCE_BBOX_PTR(seq), sizeof(TBox));
   return;
 }
 
@@ -231,6 +260,21 @@ tsequence_set_bbox(const TSequence *seq, void *box)
 }
 
 /**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return the last argument initialized with the temporal box of a
+ * temporal sequence number
+ * @param[in] seq Temporal sequence
+ * @param[out] box Temporal box
+ */
+void
+tnumberseqset_set_tbox(const TSequenceSet *ss, TBox *box)
+{
+  assert(ss); assert(box); assert(tnumber_type(ss->temptype));
+  memcpy(box, TSEQUENCESET_BBOX_PTR(ss), sizeof(TBox));
+  return;
+}
+
+/**
  * @ingroup meos_internal_temporal_bbox
  * @brief Return the last argument initialized with the bounding box of a
  * temporal sequence set
@@ -243,6 +287,32 @@ tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
   assert(ss); assert(box);
   memset(box, 0, ss->bboxsize);
   memcpy(box, TSEQUENCESET_BBOX_PTR(ss), ss->bboxsize);
+  return;
+}
+
+/**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return the last argument initialized with the temporal box of a
+ * temporal number
+ * @param[in] temp Temporal number
+ * @param[out] box Temporal box
+ */
+void
+tnumber_set_tbox(const Temporal *temp, TBox *box)
+{
+  assert(temp); assert(box); assert(tnumber_type(temp->temptype));
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      tnumberinst_set_tbox((TInstant *) temp, box);
+      break;
+    case TSEQUENCE:
+      tnumberseq_set_tbox((TSequence *) temp, box);
+      break;
+    default: /* TSEQUENCESET */
+      tnumberseqset_set_tbox((TSequenceSet *) temp, box);
+  }
   return;
 }
 

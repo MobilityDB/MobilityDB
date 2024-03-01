@@ -96,24 +96,24 @@ SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromHexWKB(asHexWKB(b)) <> b;
 -- Constructors
 -------------------------------------------------------------------------------
 
-SELECT stbox_t(timestamptz '2001-01-03');
-SELECT stbox_t(tstzspan '[2001-01-03,2001-01-06]');
-SELECT stbox_x(1,2,3,4);
-SELECT stbox_z(1,2,3,4,5,6);
-SELECT stbox_xt(1,2,3,4,timestamptz '2001-01-03');
-SELECT stbox_xt(1,2,3,4,tstzspan '[2001-01-03,2001-01-06]');
-SELECT stbox_zt(1,2,3,4,5,6,timestamptz '2001-01-04');
-SELECT stbox_zt(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
+SELECT stboxT(timestamptz '2001-01-03');
+SELECT stboxT(tstzspan '[2001-01-03,2001-01-06]');
+SELECT stboxX(1,2,3,4);
+SELECT stboxZ(1,2,3,4,5,6);
+SELECT stboxXT(1,2,3,4,timestamptz '2001-01-03');
+SELECT stboxXT(1,2,3,4,tstzspan '[2001-01-03,2001-01-06]');
+SELECT stboxZT(1,2,3,4,5,6,timestamptz '2001-01-04');
+SELECT stboxZT(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
 
-SELECT geodstbox_t(timestamptz '2001-01-03');
-SELECT geodstbox_t(tstzspan '[2001-01-03,2001-01-06]');
-SELECT geodstbox_z(1,2,3,4,5,6);
-SELECT geodstbox_zt(1,2,3,4,5,6,timestamptz '2001-01-04');
-SELECT geodstbox_zt(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
+SELECT geodstboxT(timestamptz '2001-01-03');
+SELECT geodstboxT(tstzspan '[2001-01-03,2001-01-06]');
+SELECT geodstboxZ(1,2,3,4,5,6);
+SELECT geodstboxZT(1,2,3,4,5,6,timestamptz '2001-01-04');
+SELECT geodstboxZT(1,2,3,4,5,6,tstzspan '[2001-01-04,2001-01-08]');
 -- Ordering the coordinates
-SELECT stbox_xt(4,3,2,1,tstzspan '[2001-01-01,2001-01-04]');
-SELECT stbox_zt(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
-SELECT geodstbox_zt(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
+SELECT stboxXT(4,3,2,1,tstzspan '[2001-01-01,2001-01-04]');
+SELECT stboxZT(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
+SELECT geodstboxZT(6,5,4,3,2,1,tstzspan '[2001-01-01,2001-01-05]');
 
 -------------------------------------------------------------------------------
 -- Conversions
@@ -166,12 +166,12 @@ SELECT xmin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT ymin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT zmin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT tmin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
-SELECT tmin_inc(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
+SELECT tminInc(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT xmax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT ymax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT zmax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 SELECT tmax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
-SELECT tmax_inc(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
+SELECT tmaxInc(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 
 SELECT xmin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 SELECT ymin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
@@ -186,12 +186,12 @@ SELECT xmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT ymin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT zmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT tmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT tmin_inc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT tminInc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT xmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT ymax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT zmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 SELECT tmax(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
-SELECT tmax_inc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+SELECT tmaxInc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
 
 SELECT xmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
 SELECT ymin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');

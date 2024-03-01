@@ -120,13 +120,13 @@ SELECT MAX(upper(i)) FROM tbl_intspanset;
 SELECT round(MAX(upper(f))::numeric, 6) FROM tbl_floatspanset;
 SELECT MAX(upper(t)) FROM tbl_tstzspanset;
 
-SELECT DISTINCT lower_inc(i) FROM tbl_intspanset;
-SELECT DISTINCT lower_inc(f) FROM tbl_floatspanset;
-SELECT DISTINCT lower_inc(t) FROM tbl_tstzspanset;
+SELECT DISTINCT lowerInc(i) FROM tbl_intspanset;
+SELECT DISTINCT lowerInc(f) FROM tbl_floatspanset;
+SELECT DISTINCT lowerInc(t) FROM tbl_tstzspanset;
 
-SELECT DISTINCT upper_inc(i) FROM tbl_intspanset;
-SELECT DISTINCT upper_inc(f) FROM tbl_floatspanset;
-SELECT DISTINCT upper_inc(t) FROM tbl_tstzspanset;
+SELECT DISTINCT upperInc(i) FROM tbl_intspanset;
+SELECT DISTINCT upperInc(f) FROM tbl_floatspanset;
+SELECT DISTINCT upperInc(t) FROM tbl_tstzspanset;
 
 SELECT MAX(width(i)) FROM tbl_intspanset;
 SELECT MAX(width(f)) FROM tbl_floatspanset;
@@ -158,7 +158,7 @@ SELECT MAX(numTimestamps(t)) FROM tbl_tstzspanset;
 SELECT MAX(startTimestamp(t)) FROM tbl_tstzspanset;
 SELECT MAX(endTimestamp(t)) FROM tbl_tstzspanset;
 SELECT MAX(timestampN(t, 0)) FROM tbl_tstzspanset;
-SELECT MAX((timestamps(t))[1]) FROM tbl_tstzspanset;
+SELECT MAX(startValue(timestamps(t))) FROM tbl_tstzspanset;
 
 SELECT MAX(lower(shift(i, 5))) FROM tbl_intspanset;
 SELECT MAX(lower(shift(b, 5))) FROM tbl_bigintspanset;

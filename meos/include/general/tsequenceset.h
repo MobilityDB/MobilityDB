@@ -44,8 +44,12 @@
 
 /* General functions */
 
-extern bool tsequenceset_find_timestamptz(const TSequenceSet *ss, TimestampTz t,
-  int *loc);
+extern bool tsequenceset_find_timestamptz(const TSequenceSet *ss,
+  TimestampTz t, int *loc);
+extern TSequence **tseqarr_normalize(const TSequence **sequences, int count,
+  int *newcount);
+extern double datum_distance(Datum value1, Datum value2, meosType basetype,
+  int16 flags);
 
 /* Synchronize functions */
 

@@ -25,6 +25,19 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
   add_definitions(-DDEBUG_BUILD)
 endif()
 
+# Option to show debug messages for analyzing the selectivity estimation
+option(DEBUG_SELECTIVITY
+  "Set DEBUG_SELECTIVITY (default=OFF) to show debug messages for analyzing the
+  selectivity estimation
+  "
+  OFF
+)
+
+if(DEBUG_SELECTIVITY)
+  add_definitions(-DDEBUG_SELECTIVITY=1)
+  message(STATUS "Showing debug messages for selectivity estimation")
+endif()
+
 #-------------------------------------
 # Get PostgreSQL Version
 #-------------------------------------
@@ -124,7 +137,7 @@ endif()
 # Build the library
 add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
 if(APPLE)
-  If(${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm") 
+  If(${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
     message(STATUS "Building for arm architecture")
     set_target_properties(${MOBILITYDB_LIB_NAME} PROPERTIES
     LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /opt/homebrew/bin/postgres")

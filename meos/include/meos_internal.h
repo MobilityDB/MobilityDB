@@ -624,7 +624,11 @@ extern TSequenceSet *tsequenceset_make_free(TSequence **sequences, int count, bo
 
 extern void temporal_set_tstzspan(const Temporal *temp, Span *s);
 extern void tinstant_set_tstzspan(const TInstant *inst, Span *s);
+extern void tnumber_set_tbox(const Temporal *temp, TBox *box);
 extern Span *tnumber_span(const Temporal *temp);
+extern void tnumberinst_set_tbox(const TInstant *inst, TBox *box);
+extern void tnumberseq_set_tbox(const TSequence *seq, TBox *box);
+extern void tnumberseqset_set_tbox(const TSequenceSet *ss, TBox *box);
 extern void tsequence_set_tstzspan(const TSequence *seq, Span *s);
 extern void tsequenceset_set_tstzspan(const TSequenceSet *ss, Span *s);
 
@@ -760,6 +764,10 @@ extern TSequenceSet *tsequenceset_merge_array(const TSequenceSet **seqsets, int 
 
 /* Bounding box functions for temporal types */
 
+extern void tspatial_set_stbox(const Temporal *temp, STBox *box);
+extern void tpointinst_set_stbox(const TInstant *inst, STBox *box);
+extern void tspatialseq_set_stbox(const TSequence *seq, STBox *box);
+extern void tspatialseqset_set_stbox(const TSequenceSet *ss, STBox *box);
 extern void tsequence_expand_bbox(TSequence *seq, const TInstant *inst);
 extern void tsequence_set_bbox(const TSequence *seq, void *box);
 extern void tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq);
@@ -961,11 +969,6 @@ extern TSequenceSet *tpointseqset_set_srid(const TSequenceSet *ss, int32 srid);
 
 /*****************************************************************************/
 
-/* Spatial relationship functions for temporal points */
-
-
-/*****************************************************************************/
-
 /* Local aggregate functions for temporal types */
 
 extern double tnumberseq_integral(const TSequence *seq);
@@ -990,12 +993,6 @@ extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
 extern void skiplist_free(SkipList *list);
 extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, double maxdist, Interval *maxt);
 extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
-extern double tnumberseq_integral(const TSequence *seq);
-extern double tnumberseq_twavg(const TSequence *seq);
-extern double tnumberseqset_integral(const TSequenceSet *ss);
-extern double tnumberseqset_twavg(const TSequenceSet *ss);
-extern GSERIALIZED *tpointseq_twcentroid(const TSequence *seq);
-extern GSERIALIZED *tpointseqset_twcentroid(const TSequenceSet *ss);
 
 /*****************************************************************************/
 

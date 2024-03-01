@@ -48,17 +48,17 @@ SELECT ST_Extent(round((temp::geography)::geometry, 6)) FROM tbl_tgeogpoint3D;
 
 --------------------------------------------------------
 
-SELECT ST_Extent(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint;
-SELECT ST_Extent(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint3D;
+SELECT ST_Extent(round(geometry(temp, true), 6)) FROM tbl_tgeompoint;
+SELECT ST_Extent(round(geometry(temp, true), 6)) FROM tbl_tgeompoint3D;
 
-SELECT ST_Extent(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint;
-SELECT ST_Extent(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint3D;
+SELECT ST_Extent(round(geometry(temp, true), 6)) FROM tbl_tgeompoint;
+SELECT ST_Extent(round(geometry(temp, true), 6)) FROM tbl_tgeompoint3D;
 
-SELECT ST_Extent(round(asGeography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
-SELECT ST_Extent(round(asGeography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
+SELECT ST_Extent(round(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
 
-SELECT ST_Extent(round(asGeography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
-SELECT ST_Extent(round(asGeography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
+SELECT ST_Extent(round(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint;
+SELECT ST_Extent(round(geography(temp, true)::geometry, 6)) FROM tbl_tgeogpoint3D;
 
 -------------------------------------------------------------------------------
 

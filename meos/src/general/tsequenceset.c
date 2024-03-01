@@ -55,6 +55,7 @@
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
+  #include "npoint/tnpoint_distance.h"
 #endif
 
 /*****************************************************************************
@@ -110,6 +111,81 @@ tsequenceset_find_timestamptz(const TSequenceSet *ss, TimestampTz t, int *loc)
     middle++;
   *loc = middle;
   return false;
+}
+
+/**
+ * @brief Normalize the array of temporal sequences
+ * @details The input sequences may be non-contiguous but must ordered and
+ * either (1) are non-overlapping, or (2) share the same last/first
+ * instant in the case we are merging temporal sequences.
+ * @param[in] sequences Array of temporal sequences
+ * @param[in] count Number of elements in the input array
+ * @param[out] newcount Number of elements in the output array
+ * @result Array of normalized temporal sequences values
+ * @pre Each sequence in the input array is normalized.
+ * When merging sequences, the test whether the value is the same
+ * at the common instant should be ensured by the calling function.
+ * @note The function creates new sequences and does not free the original
+ * ones
+ */
+TSequence **
+tseqarr_normalize(const TSequence **sequences, int count, int *newcount)
+{
+  assert(sequences); assert(newcount); assert(count > 0);
+  TSequence **result = palloc(sizeof(TSequence *) * count);
+  /* seq1 is the sequence to which we try to join subsequent seq2 */
+  TSequence *seq1 = (TSequence *) sequences[0];
+  /* newseq is the result of joining seq1 and seq2 */
+  bool isnew = false;
+  int nseqs = 0;
+  for (int i = 1; i < count; i++)
+  {
+    TSequence *seq2 = (TSequence *) sequences[i];
+    bool removelast, removefirst;
+    if (tsequence_join_test(seq1, seq2, &removelast, &removefirst))
+    {
+      TSequence *newseq1 = tsequence_join(seq1, seq2, removelast, removefirst);
+      if (isnew)
+        pfree(seq1);
+      seq1 = newseq1;
+      isnew = true;
+    }
+    else
+    {
+      result[nseqs++] = isnew ? seq1 : tsequence_copy(seq1);
+      seq1 = seq2;
+      isnew = false;
+    }
+  }
+  result[nseqs++] = isnew ? seq1 : tsequence_copy(seq1);
+  *newcount = nseqs;
+  return result;
+}
+
+/**
+ * @brief Return the distance between two datums
+ * @param[in] value1,value2 Values
+ * @param[in] type Type of the values
+ * @param[in] flags Flags
+ * @return On error return -1.0
+ */
+double
+datum_distance(Datum value1, Datum value2, meosType type, int16 flags)
+{
+  if (tnumber_basetype(type))
+    return datum_double(distance_value_value(value1, value2, type), type);
+  else if (geo_basetype(type))
+  {
+    datum_func2 point_distance = pt_distance_fn(flags);
+    return DatumGetFloat8(point_distance(value1, value2));
+  }
+#if NPOINT
+  else if (type == T_NPOINT)
+    return DatumGetFloat8(npoint_distance(value1, value2));
+#endif
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Unknown types for distance between values: %s", meostype_name(type));
+  return -1;
 }
 
 /*****************************************************************************
@@ -204,7 +280,7 @@ TSEQUENCESET_OFFSETS_PTR(const TSequenceSet *ss)
 const TSequence *
 TSEQUENCESET_SEQ_N(const TSequenceSet *ss, int i)
 {
-  return (TSequence *)(
+  return (const TSequence *)(
     ((char *) &ss->period) + ss->bboxsize +
     (sizeof(size_t) * ss->maxcount) + (TSEQUENCESET_OFFSETS_PTR(ss))[i] );
 }
@@ -248,7 +324,7 @@ tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
     normseqs = tseqarr_normalize(sequences, count, &newcount);
 
   /* Get the bounding box size */
-  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(sequences[0]->temptype));
+  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(normseqs[0]->temptype));
   /* The period component of the bbox is already declared in the struct */
   size_t bboxsize_extra = bboxsize - sizeof(Span);
 
@@ -279,20 +355,20 @@ tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
   result->count = newcount;
   result->maxcount = maxcount;
   result->totalcount = totalcount;
-  result->temptype = sequences[0]->temptype;
+  result->temptype = normseqs[0]->temptype;
   result->subtype = TSEQUENCESET;
   result->bboxsize = (int16) bboxsize;
   MEOS_FLAGS_SET_CONTINUOUS(result->flags,
-    MEOS_FLAGS_GET_CONTINUOUS(sequences[0]->flags));
+    MEOS_FLAGS_GET_CONTINUOUS(normseqs[0]->flags));
   MEOS_FLAGS_SET_INTERP(result->flags,
-    MEOS_FLAGS_GET_INTERP(sequences[0]->flags));
+    MEOS_FLAGS_GET_INTERP(normseqs[0]->flags));
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_T(result->flags, true);
-  if (tgeo_type(sequences[0]->temptype))
+  if (tgeo_type(normseqs[0]->temptype))
   {
-    MEOS_FLAGS_SET_Z(result->flags, MEOS_FLAGS_GET_Z(sequences[0]->flags));
+    MEOS_FLAGS_SET_Z(result->flags, MEOS_FLAGS_GET_Z(normseqs[0]->flags));
     MEOS_FLAGS_SET_GEODETIC(result->flags,
-      MEOS_FLAGS_GET_GEODETIC(sequences[0]->flags));
+      MEOS_FLAGS_GET_GEODETIC(normseqs[0]->flags));
   }
   /* Initialization of the variable-length part */
   /* Compute the bounding box */
@@ -1285,10 +1361,65 @@ TSequenceSet *
 tsequenceset_compact(const TSequenceSet *ss)
 {
   assert(ss);
-  TSequence **sequences = palloc0(sizeof(TSequence *) * ss->count);
+  /* Extra size needed for the bounding box of each sequence */
+  size_t bboxsize_extra = ss->bboxsize - sizeof(Span);
+  /* Size of the fixed-length part of a sequence (set) */
+  size_t seqheader = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra;
+  size_t ssheader = DOUBLE_PAD(sizeof(TSequenceSet)) + bboxsize_extra;
+  /* Total size of the composing sequences */
+  size_t seqs_size = 0;
+  /* Array keeping the total size of the instants of each composing sequence */
+  size_t *insts_size = palloc0(sizeof(size_t) * ss->count);
+  const TSequence *seq;
   for (int i = 0; i < ss->count; i++)
-    sequences[i] = tsequence_compact(TSEQUENCESET_SEQ_N(ss, i));
-  return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
+  {
+    seq = TSEQUENCESET_SEQ_N(ss, i);
+    for (int j = 0; j < seq->count; j++)
+      insts_size[i] += DOUBLE_PAD(VARSIZE(TSEQUENCE_INST_N(seq, j)));
+    seqs_size += seqheader + sizeof(size_t) * seq->count + insts_size[i];
+  }
+  /* Compute the total size of the sequence set */
+  size_t ss_size = ssheader + sizeof(size_t) * ss->count + seqs_size;
+
+  /* Create the sequence set */
+  TSequenceSet *result = palloc0(ss_size);
+  /* Copy the fix part of the sequence set */
+  memcpy(result, ss, ssheader);
+  /* Update the size and the maxcount */
+  SET_VARSIZE(result, ss_size);
+  result->maxcount = ss->count;
+  /* Copy the composing sequences */
+  size_t pdata_ss = ssheader + sizeof(size_t) * ss->count;
+  size_t pos = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    seq = TSEQUENCESET_SEQ_N(ss, i);
+    size_t pdata_seq = seqheader + sizeof(size_t) * seq->count;
+    /* Copy the entire sequence if it has no extra space */
+    if (seq->count == seq->maxcount)
+      memcpy(((char *) result) + pdata_ss + pos, seq, VARSIZE(seq));
+    else
+    {
+      /* Copy until the last used element of the offsets array */
+      memcpy(((char *) result) + pdata_ss + pos, seq, pdata_seq);
+      /* Set the size and maxcount of the compacted sequence */
+      TSequence *resultseq = (TSequence *) ((char *) result + pdata_ss + pos);
+      SET_VARSIZE(resultseq, pdata_seq + insts_size[i]);
+      resultseq->maxcount = seq->count;
+      /* Copy the instants */
+      memcpy(((char *) result) + pdata_ss + pos + pdata_seq,
+        ((char *) seq) + seqheader + sizeof(size_t) * seq->maxcount,
+        insts_size[i]);
+#if DEBUG_EXPAND
+      meos_error(WARNING, 0, " Sequence -> %d ", seq->count);
+#endif
+    }
+    /* Set the offset */
+    (TSEQUENCESET_OFFSETS_PTR(result))[i] = pos;
+    pos += pdata_seq + insts_size[i];
+  }
+  pfree(insts_size);
+  return result;
 }
 
 #if MEOS
@@ -1654,6 +1785,7 @@ tsequenceset_shift_scale_time(const TSequenceSet *ss, const Interval *shift,
  * temporal sequence
  * @details The resulting values are composed of denormalized sequences
  * covering the intersection of their time spans
+ *
  * @param[in] ss,seq Input values
  * @param[in] mode Enumeration for either intersect or synchronize
  * @param[out] inter1, inter2 Output values

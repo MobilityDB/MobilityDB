@@ -114,7 +114,7 @@ time_max_header_size(void)
  * in PostGIS functions such as #transform, #geography_distance, or
  * #geography_azimuth that need to access the proj cache
  */
-FunctionCallInfo _FCINFO;
+static FunctionCallInfo _FCINFO;
 
 /**
  * @brief Fetch from the cache the fcinfo of the external function
@@ -268,24 +268,23 @@ Temporal_enforce_typmod(PG_FUNCTION_ARGS)
  * @note If the datum needs to be detoasted, extract only the header and not
  * the full object
  */
-void
-temporal_bbox_slice(Datum tempdatum, void *box)
+Temporal *
+temporal_slice(Datum tempdatum)
 {
-  Temporal *tempslice = NULL;
+  Temporal *result = NULL;
   int need_detoast = PG_DATUM_NEEDS_DETOAST((struct varlena *) tempdatum);
   if (need_detoast)
-    tempslice = (Temporal *) PG_DETOAST_DATUM_SLICE(tempdatum, 0,
+    result = (Temporal *) PG_DETOAST_DATUM_SLICE(tempdatum, 0,
       temporal_max_header_size());
   else
-    tempslice = (Temporal *) tempdatum;
-  if (need_detoast && tempslice->subtype == TINSTANT)
+    result = (Temporal *) tempdatum;
+  if (need_detoast && result->subtype == TINSTANT)
   {
     /* TInstant subtype of Temporal DOES NOT keep the bounding box, so
      * we now detoast it completely */
-    tempslice = (Temporal *) PG_DETOAST_DATUM(tempdatum);
+    result = (Temporal *) PG_DETOAST_DATUM(tempdatum);
   }
-  temporal_set_bbox(tempslice, box);
-  return;
+  return result;
 }
 
 /*****************************************************************************
@@ -417,7 +416,7 @@ PG_FUNCTION_INFO_V1(Temporal_in);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Return a temporal value from its Well-Known Text (WKT) representation
- * @sqlfn int_in(), tfloat_in(), ...
+ * @sqlfn tint_in(), tfloat_in(), ...
  */
 Datum
 Temporal_in(PG_FUNCTION_ARGS)
@@ -507,7 +506,7 @@ Temporal_recv(PG_FUNCTION_ARGS)
 
 PGDLLEXPORT Datum Temporal_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_send);
-/*
+/**
  * @ingroup mobilitydb_temporal_inout
  * @brief Return the Well-Known Binary (WKB) representation of a temporal value
  * @sqlfn tint_send(), tfloat_send(), ...
@@ -535,7 +534,7 @@ PG_FUNCTION_INFO_V1(Tinstant_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Return a temporal instant from a value and a timestamptz
- * @sqlfn tint_inst(), tfloat_inst(), ...
+ * @sqlfn tint(), tfloat(), ...
  */
 Datum
 Tinstant_constructor(PG_FUNCTION_ARGS)
@@ -551,7 +550,7 @@ PG_FUNCTION_INFO_V1(Tsequence_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Return a temporal sequence from an array of temporal instants
- * @sqlfn tint_seq(), tfloat_seq(), ...
+ * @sqlfn tintSeq(), tfloatSeq(), ...
  */
 Datum
 Tsequence_constructor(PG_FUNCTION_ARGS)
@@ -586,7 +585,7 @@ PG_FUNCTION_INFO_V1(Tsequenceset_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Return a temporal sequence set from an array of temporal sequences
- * @sqlfn tint_seqset(), tfloat_seqset(), ...
+ * @sqlfn tintSeqSet(), tfloatSeqSet(), ...
  */
 Datum
 Tsequenceset_constructor(PG_FUNCTION_ARGS)
@@ -609,7 +608,7 @@ PG_FUNCTION_INFO_V1(Tsequenceset_constructor_gaps);
  * @brief Return a temporal sequence set from an array of temporal instants
  * accounting for potential gaps
  * @note The SQL function is not strict
- * @sqlfn tint_seqset_gaps(), tfloat_seqset_gaps(), ...
+ * @sqlfn tintSeqSetGaps(), tfloatSeqSetGaps(), ...
  */
 Datum
 Tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
@@ -655,7 +654,7 @@ PG_FUNCTION_INFO_V1(Tsequence_from_base_tstzset);
  * @ingroup mobilitydb_temporal_constructor
  * @brief Return a temporal discrete sequence from a base value and a
  * timestamptz set
- * @sqlfn tint_discseq(), tfloat_discseq(), ...
+ * @sqlfn tint(), tfloat(), ...
  */
 Datum
 Tsequence_from_base_tstzset(PG_FUNCTION_ARGS)
@@ -673,7 +672,7 @@ PG_FUNCTION_INFO_V1(Tsequence_from_base_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Return a temporal sequence from a base value and a timestamptz span
- * @sqlfn tint_seq(), tfloat_seq(), ...
+ * @sqlfn tint(), tfloat(), ...
  */
 Datum
 Tsequence_from_base_tstzspan(PG_FUNCTION_ARGS)
@@ -699,7 +698,7 @@ PG_FUNCTION_INFO_V1(Tsequenceset_from_base_tstzspanset);
  * @ingroup mobilitydb_temporal_constructor
  * @brief Return a temporal sequence set from a base value and a
  * timestamptz set
- * @sqlfn tint_seqset(), tfloat_seqset(), ...
+ * @sqlfn tint(), tfloat(), ...
  */
 Datum
 Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS)
@@ -771,8 +770,9 @@ Datum
 Temporal_to_tstzspan(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
+  Temporal *temp = temporal_slice(tempdatum);
   Span *result = palloc(sizeof(Span));
-  temporal_bbox_slice(tempdatum, result);
+  temporal_set_tstzspan(temp, result);
   PG_RETURN_SPAN_P(result);
 }
 
@@ -805,8 +805,9 @@ Datum
 Tnumber_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
-  TBox *result = palloc(sizeof(TBox));
-  temporal_bbox_slice(tempdatum, result);
+  Temporal *temp = temporal_slice(tempdatum);
+  TBox *result =  palloc(sizeof(TBox));
+  tnumber_set_tbox(temp, result);
   PG_RETURN_TBOX_P(result);
 }
 
@@ -1197,7 +1198,7 @@ PG_FUNCTION_INFO_V1(Temporal_lower_inc);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return true if the start instant of a temporal value is inclusive
- * @sqlfn startInstant()
+ * @sqlfn lowerInc()
  */
 Datum
 Temporal_lower_inc(PG_FUNCTION_ARGS)
@@ -1213,7 +1214,7 @@ PG_FUNCTION_INFO_V1(Temporal_upper_inc);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return true if the end instant of a temporal value is inclusive
- * @sqlfn startInstant()
+ * @sqlfn upperInc()
  */
 Datum
 Temporal_upper_inc(PG_FUNCTION_ARGS)
@@ -1482,7 +1483,7 @@ PG_FUNCTION_INFO_V1(Temporal_to_tinstant);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value transformed to a temporal instant
- * @sqlfn  tint_inst(), tfloat_inst(), ...
+ * @sqlfn  tintInst(), tfloatInst(), ...
  */
 Datum
 Temporal_to_tinstant(PG_FUNCTION_ARGS)
@@ -1499,7 +1500,7 @@ PG_FUNCTION_INFO_V1(Temporal_to_tsequence);
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value transformed to a temporal sequence
  * @note The SQL function is not strict
- * @sqlfn tint_seq(), tfloat_seq(), ...
+ * @sqlfn tintSeq(), tfloatSeq(), ...
  */
 Datum
 Temporal_to_tsequence(PG_FUNCTION_ARGS)
@@ -1525,7 +1526,7 @@ PG_FUNCTION_INFO_V1(Temporal_to_tsequenceset);
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value transformed to a temporal sequence set
  * @note The SQL function is not strict
- * @sqlfn tint_seqset(), tfloat_seqset(), ...
+ * @sqlfn tintSeqSet(), tfloatSeqSet(), ...
  */
 Datum
 Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
@@ -1716,6 +1717,7 @@ PG_FUNCTION_INFO_V1(Temporal_unnest);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return the list of values and associated span sets of a temporal value
+ * @sqlfn unnest()
  */
 Datum
 Temporal_unnest(PG_FUNCTION_ARGS)
@@ -1890,7 +1892,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_value);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal value restricted to a base value
- * @sqlfn atValue()
+ * @sqlfn atValues()
  */
 Datum
 Temporal_at_value(PG_FUNCTION_ARGS)
@@ -1903,7 +1905,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_value);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal value restricted to the complement of a base value
- * @sqlfn minusValue()
+ * @sqlfn minusValues()
  */
 Datum
 Temporal_minus_value(PG_FUNCTION_ARGS)
@@ -2052,7 +2054,7 @@ Tnumber_minus_spanset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Generic function for restricting a temporal value to its 
+ * @brief Generic function for restricting a temporal value to its
  * minimum/maximum base value
  * @sqlfn atMin(), minusMin(), atMax(), minusMax(),
  */
@@ -2478,7 +2480,7 @@ Temporal_delete_tstzspanset(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_integral(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_integral);
 /**
- * @ingroup mobilitydb_temporal_agg
+ * @ingroup mobilitydb_temporal_accessor
  * @brief Return the integral (area under the curve) of a temporal number
  * @sqlfn integral()
  */

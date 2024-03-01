@@ -119,7 +119,7 @@ span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
     if (num_hist > num_bins)
       num_hist = num_bins + 1;
 
-    bound_hist_values = palloc(num_hist * sizeof(Datum));
+    bound_hist_values = palloc(sizeof(Datum) * num_hist);
 
     /*
      * The object of this loop is to construct spans from first and
@@ -175,7 +175,7 @@ span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
     if (num_hist > num_bins)
       num_hist = num_bins + 1;
 
-    length_hist_values = palloc(num_hist * sizeof(Datum));
+    length_hist_values = palloc(sizeof(Datum) * num_hist);
 
     /*
      * The object of this loop is to copy the first and last lengths[]

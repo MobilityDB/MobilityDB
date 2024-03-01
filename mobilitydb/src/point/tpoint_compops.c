@@ -114,6 +114,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_point_tpoint);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is ever equal to a point
  * @sqlfn ever_eq()
+ * @sqlop @p ?=
  */
 Datum
 Ever_eq_point_tpoint(PG_FUNCTION_ARGS)
@@ -127,6 +128,7 @@ PG_FUNCTION_INFO_V1(Always_eq_point_tpoint);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is always equal to a point
  * @sqlfn always_eq()
+ * @sqlop @p %=
  */
 Datum
 Always_eq_point_tpoint(PG_FUNCTION_ARGS)
@@ -140,6 +142,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_point_tpoint);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is ever different from a point
  * @sqlfn ever_ne()
+ * @sqlop @p ?<>
  */
 Datum
 Ever_ne_point_tpoint(PG_FUNCTION_ARGS)
@@ -153,6 +156,7 @@ PG_FUNCTION_INFO_V1(Always_ne_point_tpoint);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is always different from a point
  * @sqlfn always_ne()
+ * @sqlop @p %<>
  */
 Datum
 Always_ne_point_tpoint(PG_FUNCTION_ARGS)
@@ -168,6 +172,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tpoint_point);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is ever equal to a point
  * @sqlfn ever_eq()
+ * @sqlop @p ?=
  */
 Datum
 Ever_eq_tpoint_point(PG_FUNCTION_ARGS)
@@ -181,6 +186,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tpoint_point);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is always equal to a point
  * @sqlfn always_eq()
+ * @sqlop @p %=
  */
 Datum
 Always_eq_tpoint_point(PG_FUNCTION_ARGS)
@@ -194,6 +200,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tpoint_point);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is ever different from a point
  * @sqlfn ever_ne()
+ * @sqlop @p ?<>
  */
 Datum
 Ever_ne_tpoint_point(PG_FUNCTION_ARGS)
@@ -207,6 +214,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tpoint_point);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal point is always different from a point
  * @sqlfn always_ne()
+ * @sqlop @p %<>
  */
 Datum
 Always_ne_tpoint_point(PG_FUNCTION_ARGS)
@@ -222,6 +230,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tpoint_tpoint);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if two temporal points are ever equal
  * @sqlfn ever_eq()
+ * @sqlop @p ?=
  */
 Datum
 Ever_eq_tpoint_tpoint(PG_FUNCTION_ARGS)
@@ -235,6 +244,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tpoint_tpoint);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if two temporal points are always equal
  * @sqlfn always_eq()
+ * @sqlop @p %=
  */
 Datum
 Always_eq_tpoint_tpoint(PG_FUNCTION_ARGS)
@@ -248,6 +258,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tpoint_tpoint);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if two temporal points are ever different
  * @sqlfn ever_ne()
+ * @sqlop @p ?<>
  */
 Datum
 Ever_ne_tpoint_tpoint(PG_FUNCTION_ARGS)
@@ -261,6 +272,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tpoint_tpoint);
  * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if two temporal points are always different
  * @sqlfn always_ne()
+ * @sqlop @p %<>
  */
 Datum
 Always_ne_tpoint_tpoint(PG_FUNCTION_ARGS)
@@ -288,7 +300,7 @@ Tcomp_point_tpoint(FunctionCallInfo fcinfo,
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -307,7 +319,7 @@ Tcomp_tpoint_point(FunctionCallInfo fcinfo,
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
@@ -326,7 +338,7 @@ Tcomp_tpoint_tpoint(FunctionCallInfo fcinfo,
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/
@@ -334,9 +346,10 @@ Tcomp_tpoint_tpoint(FunctionCallInfo fcinfo,
 PGDLLEXPORT Datum Teq_point_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_point_tpoint);
 /**
- * @ingroup mobilitydb_temporal_comp_ever
+ * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return true if a temporal point is ever equal to a point
- * @sqlfn teq()
+ * @sqlfn temporal_teq()
+ * @sqlop @p #=
  */
 Datum
 Teq_point_tpoint(PG_FUNCTION_ARGS)
@@ -347,9 +360,10 @@ Teq_point_tpoint(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tne_point_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_point_tpoint);
 /**
- * @ingroup mobilitydb_temporal_comp_ever
+ * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return true if a temporal point is ever different from a point
- * @sqlfn tne()
+ * @sqlfn temporal_tne()
+ * @sqlop @p #<>
  */
 Datum
 Tne_point_tpoint(PG_FUNCTION_ARGS)
@@ -362,9 +376,10 @@ Tne_point_tpoint(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Teq_tpoint_point(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_tpoint_point);
 /**
- * @ingroup mobilitydb_temporal_comp_ever
+ * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return true if a temporal point is ever equal to a point
- * @sqlfn teq()
+ * @sqlfn temporal_teq()
+ * @sqlop @p #=
  */
 Datum
 Teq_tpoint_point(PG_FUNCTION_ARGS)
@@ -375,9 +390,10 @@ Teq_tpoint_point(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tne_tpoint_point(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_tpoint_point);
 /**
- * @ingroup mobilitydb_temporal_comp_ever
+ * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return true if a temporal point is ever different from a point
- * @sqlfn tne()
+ * @sqlfn temporal_tne()
+ * @sqlop @p #<>
  */
 Datum
 Tne_tpoint_point(PG_FUNCTION_ARGS)
@@ -390,9 +406,10 @@ Tne_tpoint_point(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Teq_tpoint_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_tpoint_tpoint);
 /**
- * @ingroup mobilitydb_temporal_comp_ever
+ * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return true if two temporal points are ever equal
- * @sqlfn teq()
+ * @sqlfn temporal_teq()
+ * @sqlop @p #=
  */
 Datum
 Teq_tpoint_tpoint(PG_FUNCTION_ARGS)
@@ -403,9 +420,10 @@ Teq_tpoint_tpoint(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tne_tpoint_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_tpoint_tpoint);
 /**
- * @ingroup mobilitydb_temporal_comp_ever
+ * @ingroup mobilitydb_temporal_comp_temp
  * @brief Return true if two temporal points are ever different
- * @sqlfn tne()
+ * @sqlfn temporal_tne()
+ * @sqlop @p #<>
  */
 Datum
 Tne_tpoint_tpoint(PG_FUNCTION_ARGS)

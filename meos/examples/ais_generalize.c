@@ -28,36 +28,15 @@
  *****************************************************************************/
 
 /**
- * @brief A program that reads AIS data from a CSV file containing the temporal
- * values for trip and SOG for the longest 10 trips of ships extracted from one
- * day of observations (aisdk-2023-08-01.csv) provided by the Danish Maritime
- * Authority in https://web.ais.dk/aisdata/, and outputs the size in (KB) and
- * number of instants for various simplification algorithms.
+ * @brief A program that reads AIS data from the file `ais_trips_longest.csv`
+ * containing the temporal values for trip and SOG for the longest 10 trips of
+ * ships extracted from one day of observations (aisdk-2023-08-01.csv) provided
+ * by the Danish Maritime Authority in https://web.ais.dk/aisdata/, and outputs
+ * the size in KB and number of instants for various simplification algorithms.
  *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o ais_generalize ais_generalize.c -L/usr/local/lib -lmeos
- * @endcode
- * The output of the program is as follows
- * @code
- * Processing records
- *   one '*' marker every record
- * **********
- * 10 trips read.
- * Generalizing trips
- *   one '*' marker every trip
- * **********
-  ---------------------------------------------------------------------------------
-  Total size comparison (in KB:#instants) between various generalization algorithms
-  ---------------------------------------------------------------------------------
-  Original 10346:189174
-  DP-ED 1 1266:23139, DP-ED 10 176:3204, DP-SED 1 3905:71401, DP-SED 10 1037:18959
-  MaxD-ED 1 1519:27764, MaxD-ED 10 227:4140, MaxD-SED 1 3988:72909, MaxD-SED 10 1141:20846
-  MinD 1 8032:146861, MinD 10 5817:106363, MinTD 1 9632:176111, MinTD 10 2963:54169
-  Tprec 1 19913:364118, Tprec 10 4312:78844
-  -------------------------------------------------------------------------------
-
-  The program took 11.921875 seconds to execute 
  * @endcode
  */
 
@@ -104,7 +83,7 @@ int main(void)
    * Open the input file
    * Substitute the full file path in the first argument of fopen
    */
-  FILE *file = fopen("data/ships_10.csv", "r");
+  FILE *file = fopen("data/ais_trips_longest.csv", "r");
   if (! file)
   {
     printf("Error opening input file\n");
@@ -258,13 +237,13 @@ int main(void)
   printf("---------------------------------------------------------------------------------\n");
   printf("Original %zu:%d\n", orig / 1024, no_orig);
   printf("DP-ED 1 %zu:%d, DP-ED 10 %zu:%d, DP-SED 1 %zu:%d, DP-SED 10 %zu:%d\n",
-    dp_ed_1 / 1024, no_dp_ed_1, dp_ed_10 / 1024, no_dp_ed_10, 
+    dp_ed_1 / 1024, no_dp_ed_1, dp_ed_10 / 1024, no_dp_ed_10,
     dp_sed_1 / 1024, no_dp_sed_1, dp_sed_10 / 1024, no_dp_sed_10);
   printf("MaxD-ED 1 %zu:%d, MaxD-ED 10 %zu:%d, MaxD-SED 1 %zu:%d, MaxD-SED 10 %zu:%d\n",
-    max_dist_ed_1 / 1024, no_max_dist_ed_1, max_dist_ed_10 / 1024, no_max_dist_ed_10, 
+    max_dist_ed_1 / 1024, no_max_dist_ed_1, max_dist_ed_10 / 1024, no_max_dist_ed_10,
     max_dist_sed_1 / 1024, no_max_dist_sed_1, max_dist_sed_10 / 1024, no_max_dist_sed_10);
   printf("MinD 1 %zu:%d, MinD 10 %zu:%d, MinTD 1 %zu:%d, MinTD 10 %zu:%d\n",
-    min_dist_1 / 1024, no_min_dist_1, min_dist_10 / 1024, no_min_dist_10, 
+    min_dist_1 / 1024, no_min_dist_1, min_dist_10 / 1024, no_min_dist_10,
     min_tdelta_1 / 1024, no_min_tdelta_1, min_tdelta_10 / 1024, no_min_tdelta_10);
   printf("Tprec 1 %zu:%d, Tprec 10 %zu:%d\n",
     tprec_1s / 1024, no_tprec_1s, tprec_10s / 1024, no_tprec_10s);

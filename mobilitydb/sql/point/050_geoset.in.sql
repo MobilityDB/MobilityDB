@@ -345,23 +345,23 @@ CREATE FUNCTION geogset_union_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE set_union(geometry) (
+CREATE AGGREGATE setUnion(geometry) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = geomset_union_finalfn
 );
-CREATE AGGREGATE set_union(geography) (
+CREATE AGGREGATE setUnion(geography) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = geogset_union_finalfn
 );
 
-CREATE AGGREGATE set_union(geomset) (
+CREATE AGGREGATE setUnion(geomset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = geomset_union_finalfn
 );
-CREATE AGGREGATE set_union(geogset) (
+CREATE AGGREGATE setUnion(geogset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
   FINALFUNC = geogset_union_finalfn

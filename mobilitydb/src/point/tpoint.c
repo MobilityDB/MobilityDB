@@ -412,7 +412,7 @@ PG_FUNCTION_INFO_V1(Tpointinst_constructor);
 /**
  * @ingroup mobilitydb_temporal_constructor
  * @brief Return a temporal instant point from a point and a timestamptz
- * @sqlfn tgeompoint_inst(), tgeogpoint_inst()
+ * @sqlfn tgeompoint(), tgeogpoint()
  */
 Datum
 Tpointinst_constructor(PG_FUNCTION_ARGS)
@@ -440,8 +440,9 @@ Datum
 Tpoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
+  Temporal *temp = temporal_slice(tempdatum);
   STBox *result = palloc(sizeof(STBox));
-  temporal_bbox_slice(tempdatum, result);
+  tspatial_set_stbox(temp, result);
   PG_RETURN_STBOX_P(result);
 }
 

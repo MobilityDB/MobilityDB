@@ -393,19 +393,28 @@ typedef struct
 }
 LWTIN;
 
-extern LWPOINT *lwpoint_make(int32_t srid, int hasz, int hasm, const POINT4D *p);
+/* Functions */
 
-extern LWGEOM *lwgeom_from_gserialized(const GSERIALIZED *g);
-extern GSERIALIZED *geo_from_lwgeom(LWGEOM *geom, size_t *size);
+extern int32 geo_get_srid(const GSERIALIZED *g);
 
-extern int32_t lwgeom_get_srid(const LWGEOM *geom);
+/* PROJ */
 
-extern double lwpoint_get_x(const LWPOINT *point);
-extern double lwpoint_get_y(const LWPOINT *point);
-extern double lwpoint_get_z(const LWPOINT *point);
-extern double lwpoint_get_m(const LWPOINT *point);
+struct PJconsts;
+typedef struct PJconsts PJ;
 
-extern int lwgeom_has_z(const LWGEOM *geom);
-extern int lwgeom_has_m(const LWGEOM *geom);
+typedef struct LWPROJ
+{
+    PJ* pj;
+
+    /* for pipeline transforms, whether to do a forward or inverse */
+    bool pipeline_is_forward;
+
+    /* Source crs is geographic: Used in geography calls (source srid == dst srid) */
+    uint8_t source_is_latlong;
+    /* Source ellipsoid parameters */
+    double source_semi_major_metre;
+    double source_semi_minor_metre;
+} LWPROJ;
+
 
 #endif              /* _LIBLWGEOM_H */

@@ -1274,7 +1274,7 @@ tnumber_to_tbox(const Temporal *temp)
     return NULL;
 
   TBox *result = palloc(sizeof(TBox));
-  temporal_set_bbox(temp, result);
+  tnumber_set_tbox(temp, result);
   return result;
 }
 #endif
@@ -1378,8 +1378,6 @@ tfloat_radians(const Temporal *temp)
   lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
-
-/*****************************************************************************/
 
 /**
  * @ingroup meos_internal_temporal_transf
@@ -1823,7 +1821,9 @@ temporal_scale_time(const Temporal *temp, const Interval *duration)
  * Accessor functions
  *****************************************************************************/
 
-#if MEOS
+#define MEOS_INTERP_STR_MAXLEN 9
+
+#if MEOS || DEBUG_BUILD
 /**
  * @ingroup meos_internal_temporal_accessor
  * @brief Return the size in bytes of a temporal value
@@ -1836,7 +1836,7 @@ temporal_mem_size(const Temporal *temp)
   assert(temp);
   return VARSIZE(temp);
 }
-#endif /* MEOS */
+#endif /* MEOS || DEBUG_BUILD */
 
 /**
  * @ingroup meos_temporal_accessor

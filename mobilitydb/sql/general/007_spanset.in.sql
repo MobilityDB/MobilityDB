@@ -548,44 +548,44 @@ CREATE FUNCTION upper(tstzspanset)
   AS 'MODULE_PATHNAME', 'Spanset_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION lower_inc(intspanset)
+CREATE FUNCTION lowerInc(intspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION lower_inc(bigintspanset)
+CREATE FUNCTION lowerInc(bigintspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION lower_inc(floatspanset)
+CREATE FUNCTION lowerInc(floatspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION lower_inc(datespanset)
+CREATE FUNCTION lowerInc(datespanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION lower_inc(tstzspanset)
+CREATE FUNCTION lowerInc(tstzspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION upper_inc(intspanset)
+CREATE FUNCTION upperInc(intspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION upper_inc(bigintspanset)
+CREATE FUNCTION upperInc(bigintspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION upper_inc(floatspanset)
+CREATE FUNCTION upperInc(floatspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION upper_inc(datespanset)
+CREATE FUNCTION upperInc(datespanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION upper_inc(tstzspanset)
+CREATE FUNCTION upperInc(tstzspanset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -738,7 +738,7 @@ CREATE FUNCTION dateN(datespanset, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION dates(datespanset)
-  RETURNS date[]
+  RETURNS dateset
   AS 'MODULE_PATHNAME', 'Datespanset_dates'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -763,7 +763,7 @@ CREATE FUNCTION timestampN(tstzspanset, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestamps(tstzspanset)
-  RETURNS timestamptz[]
+  RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Tstzspanset_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

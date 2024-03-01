@@ -201,7 +201,7 @@ tboxnode_copy(const TboxNode *box)
  * a corner of the box. This makes 16 quadrants in total.
  */
 static uint8
-get_quadrant4D(const TBox *centroid, const TBox *inBox)
+getQuadrant4D(const TBox *centroid, const TBox *inBox)
 {
   uint8 quadrant = 0;
 
@@ -477,7 +477,8 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBox *result)
   }
   else if (tnumber_type(type))
   {
-    temporal_bbox_slice(scankey->sk_argument, result);
+    Temporal *temp = temporal_slice(scankey->sk_argument);
+    tnumber_set_tbox(temp, result);
   }
   else
     elog(ERROR, "Unsupported type for indexing: %d", type);
@@ -593,7 +594,7 @@ Tbox_quadtree_choose(PG_FUNCTION_ARGS)
 
   /* nodeN will be set by core, when allTheSame. */
   if (!in->allTheSame)
-    out->result.matchNode.nodeN = get_quadrant4D(centroid, box);
+    out->result.matchNode.nodeN = (int) getQuadrant4D(centroid, box);
 
   PG_RETURN_VOID();
 }
@@ -766,7 +767,7 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nTuples; i++)
   {
     TBox *box = DatumGetTboxP(in->datums[i]);
-    uint8 quadrant = get_quadrant4D(centroid, box);
+    uint8 quadrant = getQuadrant4D(centroid, box);
     out->leafTupleDatums[i] = PointerGetDatum(box);
     out->mapTuplesToNodes[i] = quadrant;
   }
@@ -852,7 +853,6 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
   int i;
-  uint8 node;
   MemoryContext old_ctx;
   TBox *centroid, *queries = NULL, *orderbys = NULL; /* make compiler quiet */
   TboxNode *nodebox, infbox, next_nodebox;
@@ -938,12 +938,12 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   /*
    * Switch memory context to allocate memory for new traversal values
    * (next_nodebox) and pass these pieces of memory to further calls of
-   * this function  
+   * this function
    */
   old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
 
   /* Loop for each child */
-  for (node = 0; node < in->nNodes; node++)
+  for (uint8 node = 0; node < (uint8) in->nNodes; node++)
   {
     /* Compute the bounding box of the child */
     if (idxtype == SPGIST_QUADTREE)
@@ -1122,8 +1122,9 @@ Datum
 Tnumber_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
+  Temporal *temp = temporal_slice(tempdatum);
   TBox *result = palloc(sizeof(TBox));
-  temporal_bbox_slice(tempdatum, result);
+  tnumber_set_tbox(temp, result);
   PG_RETURN_TBOX_P(result);
 }
 

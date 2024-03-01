@@ -217,7 +217,7 @@ CREATE FUNCTION speed(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Tpoint_speed'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION twcentroid(tgeompoint)
+CREATE FUNCTION twCentroid(tgeompoint)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Tpoint_twcentroid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -301,27 +301,39 @@ CREATE FUNCTION makeSimple(tgeompoint)
 
 /*****************************************************************************/
 
--- These functions are not STRICT
-CREATE FUNCTION atGeometry(tgeompoint, geometry, floatspan DEFAULT NULL)
+CREATE FUNCTION atGeometry(tgeompoint, geometry)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpoint_at_geom'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION atGeometryTime(tgeompoint, geometry, floatspan DEFAULT NULL,
-  tstzspan DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atGeometry(tgeompoint, geometry, floatspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tpoint_at_geom'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atGeometryTime(tgeompoint, geometry, tstzspan)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpoint_at_geom_time'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atGeometryTime(tgeompoint, geometry, floatspan, tstzspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tpoint_at_geom_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- These functions are not STRICT
-CREATE FUNCTION minusGeometry(tgeompoint, geometry, floatspan DEFAULT NULL)
+CREATE FUNCTION minusGeometry(tgeompoint, geometry)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpoint_minus_geom'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION minusGeometryTime(tgeompoint, geometry, floatspan DEFAULT NULL,
-  tstzspan DEFAULT NULL)
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusGeometry(tgeompoint, geometry, floatspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tpoint_minus_geom'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusGeometryTime(tgeompoint, geometry, tstzspan)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpoint_minus_geom_time'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusGeometryTime(tgeompoint, geometry, floatspan, tstzspan)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tpoint_minus_geom_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atStbox(tgeompoint, stbox)
   RETURNS tgeompoint

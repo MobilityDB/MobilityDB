@@ -43,20 +43,6 @@
 
 /**
  * @ingroup meos_temporal_text
- * @brief Return the concatenation of two texts
- * @param[in] txt1,txt2 Values
- */
-text *
-textcat_text_text(const text *txt1, const text *txt2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) txt1) || ! ensure_not_null((void *) txt2))
-    return NULL;
-  return text_catenate(txt1, txt2);
-}
-
-/**
- * @ingroup meos_temporal_text
  * @brief Return the concatenation of a text and a temporal text
  * @param[in] txt Value
  * @param[in] temp Temporal value

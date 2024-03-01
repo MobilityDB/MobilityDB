@@ -95,7 +95,7 @@ PG_FUNCTION_INFO_V1(Npoint_same);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return true if two network points are spatially equal
- * @sqlfn equals()
+ * @sqlfn same()
  */
 Datum
 Npoint_same(PG_FUNCTION_ARGS)
@@ -172,7 +172,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_twcentroid);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Return the time-weighed centroid of a temporal network point
- * @sqlfn twcentroid()
+ * @sqlfn twCentroid()
  */
 Datum
 Tnpoint_twcentroid(PG_FUNCTION_ARGS)
@@ -281,7 +281,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_minus_geom_time);
  * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal network point restricted to the complement of a
  * geometry
- * @sqlfn minusGeometry()
+ * @sqlfn minusGeometryTime()
  */
 Datum
 Tnpoint_minus_geom_time(PG_FUNCTION_ARGS)

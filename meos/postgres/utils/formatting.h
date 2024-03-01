@@ -17,6 +17,7 @@
 #ifndef _FORMATTING_H_
 #define _FORMATTING_H_
 
+#include "utils/date.h"
 
 // extern char *str_tolower(const char *buff, size_t nbytes, Oid collid);
 // extern char *str_toupper(const char *buff, size_t nbytes, Oid collid);

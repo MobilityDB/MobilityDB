@@ -133,8 +133,8 @@ SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2001-01-01,
 			<listitem id="appendInstant">
 				<indexterm><primary><varname>appendInstant</varname></primary></indexterm>
 				<para>Anexar un instante temporal a un valor temporal</para>
-				<para><varname>appendInstant(ttype,ttype_inst) → ttype</varname></para>
-				<para><varname>appendInstant(ttype_inst,maxdist=NULL,maxt=NULL) → ttype_seq</varname></para>
+				<para><varname>appendInstant(ttype,ttypeInst) → ttype</varname></para>
+				<para><varname>appendInstant(ttypeInst,maxdist=NULL,maxt=NULL) → ttypeSeq</varname></para>
 				<para>La primera versión de la función devuelve el resultado de agregar el segundo argumento al primero. Si cualquiera de las entradas es NULL, se devuelve NULL.</para>
 				<para>La segunda versión de la función anterior es una función de <emphasis>agregación</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL. Dos argumentos opcionales establecen una distancia máxima y un intervalo de tiempo máximo de modo que se introduce una brecha de tiempo cada vez que dos instantes consecutivos tienen una distancia o un intervalo de tiempo mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Si uno de estos argumentos no se dan, no se tiene en cuenta para determinar las brechas.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -193,8 +193,8 @@ SELECT asText(appendInstant(inst, sqrt(2), '1 day' ORDER BY inst)) FROM temp;
 			<listitem id="appendSequence">
 				<indexterm><primary><varname>appendSequence</varname></primary></indexterm>
 				<para>Anexar una secuencia temporal a un valor temporal</para>
-				<para><varname>appendSequence(ttype,ttype_seq) → {ttype_seq, ttype_seqset}</varname></para>
-				<para><varname>appendSequence(ttype_seq) → {ttype_seq,ttype_seqset}</varname></para>
+				<para><varname>appendSequence(ttype,ttypeSeq) → {ttypeSeq, ttypeSeqSet}</varname></para>
+				<para><varname>appendSequence(ttypeSeq) → {ttypeSeq,ttypeSeqSet}</varname></para>
 				<para>La primera versión de la función devuelve el resultado de agregar el segundo argumento al primero. Si cualquiera de las entradas es NULL, se devuelve NULL.</para>
 				<para>La segunda versión de la función anterior es una función de <emphasis>agregación</emphasis> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <varname>SUM()</varname> y <varname>AVG()</varname> y, como la mayoría de los agregados, también ignora los valores NULL.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -376,10 +376,10 @@ SELECT minusMax(tfloat '{[1@2001-01-01, 3@2001-01-03), (3@2001-01-03, 1@2001-01-
 				<indexterm><primary><varname>atGeometry</varname></primary></indexterm>
 				<indexterm><primary><varname>minusGeometry</varname></primary></indexterm>
 				<para>Restringir a (al complemento de) una geometría, un rango de Z y/o un período &Z_support;</para>
-				<para><varname>atGeometry(tgeompoint,geometry,zspan=NULL) → tgeompoint</varname></para>
-				<para><varname>minusGeometry(tgeompoint,geometry,zspan=NULL) → tgeompoint</varname></para>
-				<para><varname>atGeometryTime(tgeompoint,geometry,zspan=NULL,period) → tgeompoint</varname></para>
-				<para><varname>minusGeometryTime(tgeompoint,geometry,zspan=NULL,period) → tgeompoint</varname></para>
+				<para><varname>atGeometry(tgeompoint,geometry[,zspan]) → tgeompoint</varname></para>
+				<para><varname>minusGeometry(tgeompoint,geometry[,zspan]) → tgeompoint</varname></para>
+				<para><varname>atGeometryTime(tgeompoint,geometry[,zspan],period) → tgeompoint</varname></para>
+				<para><varname>minusGeometryTime(tgeompoint,geometry[,zspan],period) → tgeompoint</varname></para>
 				<para>La geometría debe estar en 2D y el cálculo con respecto a ella se realiza en 2D. El resultado conserva la dimensión Z del punto temporal, si existe.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
@@ -395,7 +395,7 @@ SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(atGeometryTime(tgeompoint '[Point(1 1)@2001-01-01,
   Point(5 1)@2001-01-05, Point(1 1)@2001-01-09]',
-  'Polygon((2 0,2 2,4 2,4 0,2 0))', NULL::floatspan,
+  'Polygon((2 0,2 2,4 2,4 0,2 0))',
   tstzspan '[2001-01-03, 2001-01-05]'));
 -- {[POINT(3 1)@2001-01-03, POINT(4 1)@2001-01-04]}
 SELECT asText(atGeometryTime(tgeompoint '[Point(1 1 1)@2001-01-01,
@@ -421,7 +421,7 @@ SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(minusGeometryTime(tgeompoint '[Point(1 1)@2001-01-01,
   Point(5 1)@2001-01-05, Point(1 1)@2001-01-09]',
-  geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))', NULL::floatspan,
+  geometry 'Polygon((2 0,2 2,4 2,4 0,2 0))',
   tstzspan '[2001-01-03, 2001-01-05]'));
 /* {[POINT(1 1)@2001-01-01, POINT(3 1)@2001-01-03), (POINT(4 1)@2001-01-04,
      POINT(5 1)@2001-01-05, POINT(1 1)@2001-01-09]} */

@@ -43,34 +43,28 @@
 
 /*****************************************************************************/
 
-extern bool
-tsequence_norm_test(Datum value1, Datum value2, Datum value3, meosType basetype,
-  interpType interp, TimestampTz t1, TimestampTz t2, TimestampTz t3);
-  
+/* Normalization functions */
+
+extern bool tsequence_norm_test(Datum value1, Datum value2, Datum value3,
+  meosType basetype, interpType interp, TimestampTz t1, TimestampTz t2,
+  TimestampTz t3);
+extern bool tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
+  bool *removelast, bool *removefirst);
+extern TSequence *tsequence_join(const TSequence *seq1, const TSequence *seq2,
+  bool removelast, bool removefirst);
+
 /* General functions */
 
 extern int tcontseq_find_timestamptz(const TSequence *seq, TimestampTz t);
 extern int tdiscseq_find_timestamptz(const TSequence *seq, TimestampTz t);
+extern TSequence **tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs,
+  int count, int totalseqs);
+
 extern bool ensure_valid_tinstarr_common(const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp);
 extern TSequence *tsequence_make_exp1(const TInstant **instants, int count,
   int maxcount, bool lower_inc, bool upper_inc, interpType interp,
   bool normalize, void *bbox);
-extern TSequence **tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs,
-  int count, int totalseqs);
-
-/* Append and merge functions */
-
-extern double datum_distance(Datum value1, Datum value2, meosType basetype,
-  int16 flags);
-extern bool tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
-  bool *removelast, bool *removefirst);
-extern TSequence *tsequence_join(const TSequence *seq1, const TSequence *seq2,
-  bool removelast, bool removefirst);
-extern TSequence **tseqarr_normalize(const TSequence **sequences, int count,
-  int *newcount);
-extern TSequence **tsequence_merge_array1(const TSequence **sequences,
-  int count, int *totalcount);
 
 /* Synchronization functions */
 
@@ -117,6 +111,8 @@ extern bool ensure_valid_tinstarr(const TInstant **instants, int count,
 
 /* Transformation functions */
 
+extern void tsequence_compact_iter(const TSequence *seq, size_t seqsize,
+  size_t insts_size, TSequence *result);
 extern void tnumberseq_shift_scale_value_iter(TSequence *seq, Datum origin,
   Datum delta, bool hasdelta, double scale);
 extern void tsequence_shift_scale_time_iter(TSequence *seq, TimestampTz delta,

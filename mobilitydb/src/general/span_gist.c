@@ -196,7 +196,8 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
   else if (talpha_type(type))
   {
     Datum tempdatum = PG_GETARG_DATUM(1);
-    temporal_bbox_slice(tempdatum, result);
+    Temporal *temp = temporal_slice(tempdatum);
+    temporal_set_tstzspan(temp, result);
   }
   else
     elog(ERROR, "Unsupported type for indexing: %d", type);
@@ -376,7 +377,7 @@ span_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 
   maxoff = (OffsetNumber) (entryvec->n - 1);
   /* Split entries before this to left page, after to right: */
-  split_idx = (OffsetNumber) ((maxoff - FirstOffsetNumber) / 
+  split_idx = (OffsetNumber) ((maxoff - FirstOffsetNumber) /
     2 + FirstOffsetNumber);
 
   v->spl_nleft = 0;
@@ -725,8 +726,8 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
    */
 
   /* Allocate vectors for results */
-  v->spl_left = palloc(nentries * sizeof(OffsetNumber));
-  v->spl_right = palloc(nentries * sizeof(OffsetNumber));
+  v->spl_left = palloc(sizeof(OffsetNumber) * nentries);
+  v->spl_right = palloc(sizeof(OffsetNumber) * nentries);
   v->spl_nleft = 0;
   v->spl_nright = 0;
 
@@ -735,7 +736,7 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
    * either group without affecting overlap along selected axis.
    */
   common_entries_count = 0;
-  common_entries = palloc(nentries * sizeof(CommonEntry));
+  common_entries = palloc(sizeof(CommonEntry) * nentries);
 
   /*
    * Distribute entries which can be distributed unambiguously, and collect
@@ -743,12 +744,11 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
    */
   for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
   {
-    SpanBound  lower,
-          upper;
     /*
      * Get upper and lower bounds along selected axis.
      */
     Span *span = DatumGetSpanP(entryvec->vector[i].key);
+    SpanBound lower, upper;
     span_deserialize(span, &lower, &upper);
 
     if (span_bound_cmp(&upper, &context.left_upper) <= 0)
@@ -802,7 +802,7 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
     /*
      * Distribute "common entries" between groups according to sorting.
      */
-    for (i = 0; i < common_entries_count; i++)
+    for (i = 0; i < (OffsetNumber) common_entries_count; i++)
     {
       OffsetNumber idx = (OffsetNumber) (common_entries[i].index);
       Span *span = DatumGetSpanP(entryvec->vector[idx].key);
@@ -820,7 +820,7 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 
   v->spl_ldatum = PointerGetDatum(left_span);
   v->spl_rdatum = PointerGetDatum(right_span);
-  
+
   pfree(common_entries);
 
   return;

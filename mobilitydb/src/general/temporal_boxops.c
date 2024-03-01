@@ -65,7 +65,7 @@
 size_t
 temporal_max_header_size(void)
 {
-  size_t sz = Max(Max(sizeof(TInstant), sizeof(TSequence)), 
+  size_t sz = Max(Max(sizeof(TInstant), sizeof(TSequence)),
     sizeof(TSequenceSet));
   return DOUBLE_PAD(sz) + DOUBLE_PAD(sizeof(bboxunion));
 }

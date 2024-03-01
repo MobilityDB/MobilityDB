@@ -410,7 +410,7 @@ extern GSERIALIZED *geography_from_hexewkb(const char *wkt);
 extern GSERIALIZED *geography_from_text(char *wkt, int srid);
 extern GSERIALIZED *geometry_from_hexewkb(const char *wkt);
 extern GSERIALIZED *geometry_from_text(char *wkt, int srid);
-extern GSERIALIZED *pgis_geography_in(char *str, int32 geog_typmod);
+extern GSERIALIZED *pgis_geography_in(char *str, int32 typmod);
 extern GSERIALIZED *pgis_geometry_in(char *str, int32 typmod);
 
 /*===========================================================================*
@@ -550,7 +550,7 @@ extern Interval *datespan_duration(const Span *s);
 extern DateADT datespan_lower(const Span *s);
 extern DateADT datespan_upper(const Span *s);
 extern bool datespanset_date_n(const SpanSet *ss, int n, DateADT *result);
-extern DateADT *datespanset_dates(const SpanSet *ss, int *count);
+extern Set *datespanset_dates(const SpanSet *ss);
 extern Interval *datespanset_duration(const SpanSet *ss, bool boundspan);
 extern DateADT datespanset_end_date(const SpanSet *ss);
 extern int datespanset_num_dates(const SpanSet *ss);
@@ -615,7 +615,7 @@ extern TimestampTz tstzspanset_lower(const SpanSet *ss);
 extern int tstzspanset_num_timestamps(const SpanSet *ss);
 extern TimestampTz tstzspanset_start_timestamptz(const SpanSet *ss);
 extern bool tstzspanset_timestamptz_n(const SpanSet *ss, int n, TimestampTz *result);
-extern TimestampTz *tstzspanset_timestamps(const SpanSet *ss, int *count);
+extern Set *tstzspanset_timestamps(const SpanSet *ss);
 extern TimestampTz tstzspanset_upper(const SpanSet *ss);
 
 /*****************************************************************************
@@ -1438,6 +1438,8 @@ extern Temporal *tint_shift_value(const Temporal *temp, int shift);
 extern Temporal *tpoint_round(const Temporal *temp, int maxdd);
 extern Temporal *tpoint_transform(const Temporal *temp, int32 srid);
 extern Temporal *tpoint_transform_pipeline(const Temporal *temp, char *pipelinestr, int32 srid, bool is_forward);
+extern Temporal *tpoint_transform_pj(const Temporal *temp, int32 srid, const LWPROJ* pj);
+extern LWPROJ *lwproj_transform(int32 srid_from, int32 srid_to);
 extern Temporal **tpointarr_round(const Temporal **temp, int count, int maxdd);
 
 /*****************************************************************************

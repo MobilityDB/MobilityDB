@@ -51,6 +51,7 @@
 #include "general/tbool_boolops.h"
 #include "general/tinstant.h"
 #include "general/tsequence.h"
+#include "general/tsequenceset.h"
 #include "general/type_util.h"
 
 #if ! MEOS

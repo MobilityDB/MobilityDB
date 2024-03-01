@@ -220,7 +220,7 @@ PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
  * @ingroup mobilitydb_temporal_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation an array of
  * temporal points
- * @note IThe output is the WKT representation prefixed with the SRID
+ * @note The output is the WKT representation prefixed with the SRID
  * @sqlfn asEWKT()
  */
 Datum

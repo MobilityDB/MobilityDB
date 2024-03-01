@@ -664,7 +664,7 @@ geo_sel(VariableStatData *vardata, const STBox *box, meosOper oper)
     cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
 
     /* Add the pro-rated count for this cell to the overall total */
-    total_count += cell_count * ratio;
+    total_count += (double) cell_count * ratio;
   }
   while (nd_increment(&search_ibox, (int) ndims, at));
 
@@ -798,9 +798,9 @@ geo_joinsel(const ND_STATS *s1, const ND_STATS *s2)
 
   /* Q: What's the largest possible join size these relations can create? */
   /* A: The product of the # of non-null rows in each relation. */
-  ntuples_not_null1 = s1->table_features *
+  ntuples_not_null1 = (double) s1->table_features *
     (s1->not_null_features / s1->sample_features);
-  ntuples_not_null2 = s2->table_features *
+  ntuples_not_null2 = (double) s2->table_features *
     (s2->not_null_features / s2->sample_features);
   ntuples_max = ntuples_not_null1 * ntuples_not_null2;
 

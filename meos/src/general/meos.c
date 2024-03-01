@@ -156,7 +156,7 @@ split_to_stringlist(const char *s, const char *delim, _stringlist **listhead)
 /**
  * @brief Global array containing the datestyle strings
  */
-char * _DATESTYLE_STRINGS[] =
+static const char * _DATESTYLE_STRINGS[] =
 {
   [USE_POSTGRES_DATES] = "Postgres",
   [USE_ISO_DATES] = "ISO",
@@ -168,7 +168,7 @@ char * _DATESTYLE_STRINGS[] =
 /**
  * @brief Global array containing the dateorder strings
  */
-char * _DATEORDER_STRINGS[] =
+static const char * _DATEORDER_STRINGS[] =
 {
   [DATEORDER_YMD] = "YMD",
   [DATEORDER_DMY] = "DMY",
@@ -178,7 +178,7 @@ char * _DATEORDER_STRINGS[] =
 /**
  * @brief Global array containing the intervalstyle string
  */
-char * _INTERVALSTYLE_STRINGS[] =
+static const char * _INTERVALSTYLE_STRINGS[] =
 {
   [INTSTYLE_POSTGRES] = "postgres",
   [INTSTYLE_POSTGRES_VERBOSE] = "postgres_verbose",
@@ -350,7 +350,7 @@ check_datestyle(char **newval, void **extra)
   }
 
   /* Set up the "extra" struct actually used by assign_datestyle */
-  myextra = (int *) palloc(2 * sizeof(int));
+  myextra = (int *) palloc(sizeof(int) * 2);
   if (!myextra)
     return false;
 

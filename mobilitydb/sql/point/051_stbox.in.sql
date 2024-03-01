@@ -95,81 +95,81 @@ CREATE FUNCTION asHexWKB(stbox, endianenconding text DEFAULT '')
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION stbox_x(float, float, float, float, srid integer DEFAULT 0)
+CREATE FUNCTION stboxX(float, float, float, float, srid integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_x'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_z(float, float, float, float, float, float,
+CREATE FUNCTION stboxZ(float, float, float, float, float, float,
     srid integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_t(timestamptz)
+CREATE FUNCTION stboxT(timestamptz)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_t(tstzspan)
+CREATE FUNCTION stboxT(tstzspan)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_xt(float, float, float, float, timestamptz,
+CREATE FUNCTION stboxXT(float, float, float, float, timestamptz,
     srid integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_xt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_xt(float, float, float, float, tstzspan,
+CREATE FUNCTION stboxXT(float, float, float, float, tstzspan,
     srid integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_xt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_zt(float, float, float, float, float, float,
+CREATE FUNCTION stboxZT(float, float, float, float, float, float,
     timestamptz, srid integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_zt(float, float, float, float, float, float,
+CREATE FUNCTION stboxZT(float, float, float, float, float, float,
     tstzspan, srid integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geodstbox_t(timestamptz)
+CREATE FUNCTION geodstboxT(timestamptz)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geodstbox_t(tstzspan)
+CREATE FUNCTION geodstboxT(tstzspan)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geodstbox_z(float, float, float, float, float, float,
+CREATE FUNCTION geodstboxZ(float, float, float, float, float, float,
     srid integer DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geodstbox_zt(float, float, float, float, float, float,
+CREATE FUNCTION geodstboxZT(float, float, float, float, float, float,
     timestamptz, srid integer DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geodstbox_zt(float, float, float, float, float, float,
+CREATE FUNCTION geodstboxZT(float, float, float, float, float, float,
     tstzspan, srid integer DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geodstbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
- 
+
 CREATE FUNCTION stbox(geometry, timestamptz)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Geo_timestamptz_to_stbox'
@@ -309,7 +309,7 @@ CREATE FUNCTION Tmin(stbox)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Stbox_tmin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Tmin_inc(stbox)
+CREATE FUNCTION TminInc(stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_tmin_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -330,7 +330,7 @@ CREATE FUNCTION Tmax(stbox)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Stbox_tmax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Tmax_inc(stbox)
+CREATE FUNCTION TmaxInc(stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_tmax_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

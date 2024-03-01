@@ -29,11 +29,8 @@
 
 /**
  * @file
- * @brief Functions for base and time types borrowed from PostgreSQL
- * version 14.2 source code
- * @note The MobilityDB functions pg_func(...) correspond to external
- * PostgreSQL functions func(PG_FUNCTION_ARGS). This enables bypassing the
- * function manager @p fmgr.c.
+ * @brief Functions for base and time types corresponding to external
+ * PostgreSQL functions in order to bypass the function manager @p fmgr.c.
  */
 
 #include "general/pg_types.h"
@@ -47,6 +44,7 @@
 #include <common/int128.h>
 #include <utils/datetime.h>
 #include <utils/float.h>
+#include "utils/formatting.h"
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <common/hashfn.h>
 #else
@@ -180,6 +178,7 @@ parse_bool_with_len(const char *value, size_t len, bool *result)
 /**
  * @ingroup meos_pg_types
  * @brief Return a boolean from its string representation
+ * @param[in] str String
  * @details Convert @p "t" or @p "f" to 1 or 0.
  * Check explicitly for @p "true/false" and @p TRUE/FALSE, @p 1/0, @p YES/NO,
  * @p ON/OFF and reject other values. In the @p switch statement, check the
@@ -187,32 +186,29 @@ parse_bool_with_len(const char *value, size_t len, bool *result)
  * @note PostgreSQL function: @p boolin(PG_FUNCTION_ARGS)
  */
 bool
-bool_in(const char *in_str)
+bool_in(const char *str)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) in_str))
+  if (! ensure_not_null((void *) str))
     return false;
-
-  const char *str;
-  size_t len;
-  bool result;
 
   /*
    * Skip leading and trailing whitespace
    */
-  str = in_str;
-  while (isspace((unsigned char) *str))
-    str++;
+  const char *str1 = str;
+  while (isspace((unsigned char) *str1))
+    str1++;
 
-  len = strlen(str);
-  while (len > 0 && isspace((unsigned char) str[len - 1]))
+  size_t len = strlen(str1);
+  while (len > 0 && isspace((unsigned char) str1[len - 1]))
     len--;
 
-  if (parse_bool_with_len(str, len, &result))
+  bool result;
+  if (parse_bool_with_len(str1, len, &result))
     return result;
 
   meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-    "invalid input syntax for type %s: \"%s\"", "boolean", in_str);
+    "invalid input syntax for type %s: \"%s\"", "boolean", str);
 
   /* not reached */
   return false;
@@ -221,6 +217,7 @@ bool_in(const char *in_str)
 /**
  * @ingroup meos_pg_types
  * @brief Return the string representation of a boolean
+ * @param[in] b Boolean value
  * @details Convert 1 or 0 to @p "t" or @p "f"
  * @note PostgreSQL function: @p boolout(PG_FUNCTION_ARGS)
  */
@@ -657,6 +654,7 @@ pg_datan2(float8 arg1, float8 arg2)
 /**
  * @ingroup meos_pg_types
  * @brief Return a date from its string representation
+ * @param[in] str String
  * @return On error return @p DATEVAL_NOEND
  * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
  */
@@ -670,6 +668,7 @@ pg_date_in(const char *str)
 /**
  * @ingroup meos_pg_types
  * @brief Return a date from its string representation
+ * @param[in] str String
  * @return On error return @p DATEVAL_NOEND
  * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
  */
@@ -759,32 +758,35 @@ pg_date_in(const char *str)
 
 #if ! MEOS
 /**
- * @brief Return a string converted to a date
- * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
+ * @ingroup meos_pg_types
+ * @brief Return the string representation of a date
+ * @param[in] d Date
+ * @note PostgreSQL function: @p date_out(PG_FUNCTION_ARGS)
  */
 char *
-pg_date_out(DateADT date)
+pg_date_out(DateADT d)
 {
-  Datum d = DateADTGetDatum(date);
-  return DatumGetCString(call_function1(date_out, d));
+  Datum d1 = DateADTGetDatum(d);
+  return DatumGetCString(call_function1(date_out, d1));
 }
 #else
 /**
  * @ingroup meos_pg_types
  * @brief Return the string representation of a date
+ * @param[in] d Date
  * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
  */
 char *
-pg_date_out(DateADT date)
+pg_date_out(DateADT d)
 {
   struct pg_tm tt, *tm = &tt;
   char buf[MAXDATELEN + 1];
 
-  if (DATE_NOT_FINITE(date))
-    EncodeSpecialDate(date, buf);
+  if (DATE_NOT_FINITE(d))
+    EncodeSpecialDate(d, buf);
   else
   {
-    j2date(date + POSTGRES_EPOCH_JDATE,
+    j2date(d + POSTGRES_EPOCH_JDATE,
          &(tm->tm_year), &(tm->tm_mon), &(tm->tm_mday));
     EncodeDateOnly(tm, DateStyle, buf);
   }
@@ -882,7 +884,9 @@ date2timestamptz_opt_overflow(DateADT dateVal, int *overflow)
 
 /**
  * @ingroup meos_pg_types
- * @brief Return a timestamptz converted to a date
+ * @brief Return a date converted to a timestamptz
+ * @param[in] d Date
+ * @note PostgreSQL function: @p date_timestamptz(PG_FUNCTION_ARGS)
  */
 TimestampTz
 date_to_timestamptz(DateADT d)
@@ -894,6 +898,8 @@ date_to_timestamptz(DateADT d)
  * @ingroup meos_pg_types
  * @brief Return the addition of a date and a number of days
  * @details Must handle both positive and negative numbers of days.
+ * @param[in] d Date
+ * @param[in] days Number of days to add
  * @note PostgreSQL function: @p date_pli(PG_FUNCTION_ARGS)
  */
 DateADT
@@ -919,6 +925,9 @@ add_date_int(DateADT d, int32 days)
 /**
  * @ingroup meos_pg_types
  * @brief Return the subtraction of a date and a number of days
+ * @param[in] d Date
+ * @param[in] days Number of days to subtract
+ * @note PostgreSQL function: @p date_mii(PG_FUNCTION_ARGS)
  */
 DateADT
 minus_date_int(DateADT d, int32 days)
@@ -943,6 +952,7 @@ minus_date_int(DateADT d, int32 days)
 /**
  * @ingroup meos_pg_types
  * @brief Return the subtraction of two dates
+ * @param[in] d1,d2 Dates
  * @note PostgreSQL function: @p date_mi(PG_FUNCTION_ARGS)
  */
 Interval *
@@ -962,12 +972,15 @@ minus_date_date(DateADT d1, DateADT d2)
  *****************************************************************************/
 
 #if MEOS
-/* MEOSAdjustTimeForTypmod()
- * Force the precision of the time value to a specified value.
- * Uses *exactly* the same code as in MEOSAdjustTimestampForTypmod()
+/**
+ * @brief Force the precision of the time value to a specified value
+ * @details Uses *exactly* the same code as in MEOSAdjustTimestampForTypmod()
  * but we make a separate copy because those types do not
  * have a fundamental tie together but rather a coincidence of
  * implementation. - thomas
+ * @param[in] time Time
+ * @param[in] typmod Precision
+ * @note PostgreSQL function: AdjustTimeForTypmod()
  */
 void
 MEOSAdjustTimeForTypmod(TimeADT *time, int32 typmod)
@@ -1007,10 +1020,12 @@ MEOSAdjustTimeForTypmod(TimeADT *time, int32 typmod)
 /**
  * @ingroup meos_pg_types
  * @brief Return a time from its string representation
+ * @param[in] str String
+ * @param[in] prec Precision
  * @note PostgreSQL function: @p time_in(PG_FUNCTION_ARGS)
  */
 TimeADT
-pg_time_in(const char *str, int32 typmod)
+pg_time_in(const char *str, int32 prec)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) str))
@@ -1042,7 +1057,7 @@ pg_time_in(const char *str, int32 typmod)
   }
 
   tm2time(tm, fsec, &result);
-  MEOSAdjustTimeForTypmod(&result, typmod);
+  MEOSAdjustTimeForTypmod(&result, prec);
 
   return result;
 }
@@ -1050,16 +1065,17 @@ pg_time_in(const char *str, int32 typmod)
 /**
  * @ingroup meos_pg_types
  * @brief Return the string representation of a time
+ * @param[in] t Time value
  * @note PostgreSQL function: @p time_out(PG_FUNCTION_ARGS)
  */
 char *
-pg_time_out(TimeADT time)
+pg_time_out(TimeADT t)
 {
   struct pg_tm tt, *tm = &tt;
   fsec_t fsec;
   char buf[MAXDATELEN + 1];
 
-  time2tm(time, tm, &fsec);
+  time2tm(t, tm, &fsec);
   EncodeTimeOnly(tm, fsec, false, 0, DateStyle, buf);
 
   return pstrdup(buf);
@@ -1072,14 +1088,19 @@ pg_time_out(TimeADT time)
 
 #if ! MEOS
 /**
+ * @ingroup meos_pg_types
  * @brief Return a string converted to a timestamp with timezone.
+ * @param[in] str String
+ * @param[in] prec Precision, that is, the number of fractional digits retained
+ * in the seconds field. When precision is -1, there is no explicit bound on
+ * precision. The allowed precision range is from 0 to 6.
  * @note PostgreSQL function: @p timestamptz_in(PG_FUNCTION_ARGS)
  */
 TimestampTz
-pg_timestamptz_in(const char *str, int32 typmod)
+pg_timestamptz_in(const char *str, int32 prec)
 {
   Datum arg1 = CStringGetDatum(str);
-  Datum arg3 = Int32GetDatum(typmod);
+  Datum arg3 = Int32GetDatum(prec);
   TimestampTz result = DatumGetTimestampTz(call_function3(timestamptz_in, arg1,
     (Datum) 0, arg3));
   return result;
@@ -1154,6 +1175,9 @@ MEOSAdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 /**
  * @brief Return a string converted to a either timestamp or a timestamp with
  * timezone
+ * @param[in] str String
+ * @param[in] typmod Precision
+ * @param[in] withtz True when using timezone
  * @result On error return DT_NOEND
  * @note The function returns a TimestampTz that must be cast to a Timestamp
  * when calling the function with the last argument to false
@@ -1241,25 +1265,33 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
 /**
  * @ingroup meos_pg_types
  * @brief Return a timestamp without time zone from its string representation
+ * @param[in] str String
+ * @param[in] prec Precision, that is, the number of fractional digits retained
+ * in the seconds field. When precision is -1, there is no explicit bound on
+ * precision. The allowed precision range is from 0 to 6.
  * @return On error return @p DT_NOEND
  * @note PostgreSQL function: @p timestamp_in(PG_FUNCTION_ARGS)
  */
 Timestamp
-pg_timestamp_in(const char *str, int32 typmod)
+pg_timestamp_in(const char *str, int32 prec)
 {
-  return (Timestamp) timestamp_in_common(str, typmod, false);
+  return (Timestamp) timestamp_in_common(str, prec, false);
 }
 
 /**
  * @ingroup meos_pg_types
  * @brief Return the string representation of a timestamp with time zone
+ * @param[in] str String
+ * @param[in] prec Precision, that is, the number of fractional digits retained
+ * in the seconds field. When precision is -1, there is no explicit bound on
+ * precision. The allowed precision range is from 0 to 6.
  * @return On error return @p DT_NOEND
  * @note PostgreSQL function: @p timestamptz_in(PG_FUNCTION_ARGS)
  */
 TimestampTz
-pg_timestamptz_in(const char *str, int32 typmod)
+pg_timestamptz_in(const char *str, int32 prec)
 {
-  return timestamp_in_common(str, typmod, true);
+  return timestamp_in_common(str, prec, true);
 }
 #endif /* MEOS */
 
@@ -1267,6 +1299,7 @@ pg_timestamptz_in(const char *str, int32 typmod)
 /**
  * @ingroup meos_pg_types
  * @brief Return a timestamp with timezone converted to a string
+ * @param[in] t Timestamp
  * @return On error return @p NULL
  * @note PostgreSQL function: @p timestamptz_out(PG_FUNCTION_ARGS)
  */
@@ -1307,7 +1340,20 @@ timestamp_out_common(TimestampTz t, bool withtz)
 
 /**
  * @ingroup meos_pg_types
+ * @brief Return the string representation of a timestamp without timezone
+ * @param[in] t Timestamp
+ * @note PostgreSQL function: @p timestamp_out(PG_FUNCTION_ARGS)
+ */
+char *
+pg_timestamp_out(Timestamp t)
+{
+  return timestamp_out_common((TimestampTz) t, false);
+}
+
+/**
+ * @ingroup meos_pg_types
  * @brief Return the string representation of a timestamp with timezone
+ * @param[in] t Timestamp
  * @note PostgreSQL function: @p timestamptz_out(PG_FUNCTION_ARGS)
  */
 char *
@@ -1315,23 +1361,13 @@ pg_timestamptz_out(TimestampTz t)
 {
   return timestamp_out_common(t, true);
 }
-
-/**
- * @ingroup meos_pg_types
- * @brief Return the string representation of a timestamp without timezone
- * @note PostgreSQL function: @p timestamp_out(PG_FUNCTION_ARGS)
- */
-char *
-pg_timestamp_out(Timestamp t)
-{
-  return timestamp_out_common((Timestamp) t, false);
-}
 #endif /* MEOS */
 
 /**
  * @ingroup meos_pg_types
  * @brief Return a timestamp with time zone converted to a date
- * @note PostgreSQL function timestamptz_date()
+ * @param[in] t Timestamp
+ * @note PostgreSQL function @p timestamptz_date(PG_FUNCTION_ARGS)
  */
 DateADT
 timestamptz_to_date(TimestampTz t)
@@ -1366,9 +1402,9 @@ timestamptz_to_date(TimestampTz t)
  * @note PostgreSQL function: @p interval_out(PG_FUNCTION_ARGS)
  */
 char *
-pg_interval_out(const Interval *interval)
+pg_interval_out(const Interval *interv)
 {
-  Datum d = PointerGetDatum(interval);
+  Datum d = PointerGetDatum(interv);
   return DatumGetCString(call_function1(interval_out, d));
 }
 #else /*if MEOS */
@@ -1550,10 +1586,15 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod)
 /**
  * @ingroup meos_pg_types
  * @brief Return an interval from its string representation
+ * @param[in] str String
+ * @param[in] prec Precision
  * @note PostgreSQL function: @p interval_in(PG_FUNCTION_ARGS)
+ * @note Please refer to the PostgreSQL documentation
+ * https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-INTERVAL-INPUT
+ * for a detailed account of the input syntax and the precision
  */
 Interval *
-pg_interval_in(const char *str, int32 typmod)
+pg_interval_in(const char *str, int32 prec)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) str))
@@ -1578,8 +1619,8 @@ pg_interval_in(const char *str, int32 typmod)
   tm->tm_sec = 0;
   fsec = 0;
 
-  if (typmod >= 0)
-    range = INTERVAL_RANGE(typmod);
+  if (prec >= 0)
+    range = INTERVAL_RANGE(prec);
   else
     range = INTERVAL_FULL_RANGE;
 
@@ -1605,7 +1646,7 @@ pg_interval_in(const char *str, int32 typmod)
     return NULL;
   }
 
-  result = (Interval *) palloc(sizeof(Interval));
+  result = palloc(sizeof(Interval));
 
   switch (dtype)
   {
@@ -1626,7 +1667,7 @@ pg_interval_in(const char *str, int32 typmod)
       return NULL;
   }
 
-  AdjustIntervalForTypmod(result, typmod);
+  AdjustIntervalForTypmod(result, prec);
 
   return result;
 }
@@ -1634,6 +1675,13 @@ pg_interval_in(const char *str, int32 typmod)
 /**
  * @ingroup meos_pg_types
  * @brief Return an interval constructed from its arguments
+ * @param[in] years Years
+ * @param[in] months Months
+ * @param[in] weeks Weeks
+ * @param[in] days Days
+ * @param[in] hours Hours
+ * @param[in] mins Minutes
+ * @param[in] secs Seconds
  * @note PostgreSQL function: @p make_interval(PG_FUNCTION_ARGS)
  */
 Interval *
@@ -1652,7 +1700,7 @@ pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours
     return NULL;
   }
 
-  result = (Interval *) palloc(sizeof(Interval));
+  result = palloc(sizeof(Interval));
   result->month = years * MONTHS_PER_YEAR + months;
   result->day = weeks * 7 + days;
 
@@ -1666,7 +1714,13 @@ pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours
 /**
  * @ingroup meos_pg_types
  * @brief Return the string representation of an interval
+ * @param[in] interv Interval
  * @note PostgreSQL function: @p interval_out(PG_FUNCTION_ARGS)
+ * @note Please refer to the PostgreSQL documentation
+ * https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-INTERVAL-OUTPUT
+ * for a detailed account of the output format, which depends on the interval
+ * style specified at the initialization of the MEOS library (`postgres` by
+ * default)
  */
 char *
 pg_interval_out(const Interval *interv)
@@ -1694,6 +1748,8 @@ pg_interval_out(const Interval *interv)
 /**
  * @ingroup meos_pg_types
  * @brief Return the multiplication of an interval and a factor
+ * @param[in] interv Interval
+ * @param[in] factor Factor
  * @note PostgreSQL function: @p interval_mul(PG_FUNCTION_ARGS)
  */
 Interval *
@@ -1708,7 +1764,7 @@ mult_interval_double(const Interval *interv, double factor)
     orig_day = interv->day;
   Interval *result;
 
-  result = (Interval *) palloc(sizeof(Interval));
+  result = palloc(sizeof(Interval));
 
   result_double = interv->month * factor;
   if (isnan(result_double) ||
@@ -1784,6 +1840,7 @@ mult_interval_double(const Interval *interv, double factor)
 /**
  * @ingroup meos_pg_types
  * @brief Return the addition of two intervals
+ * @param[in] interv1,interv2 Intervals
  * @note PostgreSQL function: @p interval_pl(PG_FUNCTION_ARGS)
  */
 Interval *
@@ -1836,6 +1893,8 @@ add_interval_interval(const Interval *interv1, const Interval *interv2)
  * to the last day of month.
  * To add a day, increment the mday, and use the same time of day.
  * Lastly, add in the "quantitative time".
+ * @param[in] t Timestamp
+ * @param[in] interv Interval
  * @return On error return DT_NOEND
  * @note PostgreSQL function: @p timestamp_pl_interval(PG_FUNCTION_ARGS)
  */
@@ -1933,6 +1992,8 @@ add_timestamptz_interval(TimestampTz t, const Interval *interv)
 /**
  * @ingroup meos_pg_types
  * @brief Return the subtraction of a timestamptz and an interval
+ * @param[in] t Timestamp
+ * @param[in] interv Interval
  * @note PostgreSQL function: @p timestamp_mi_interval(PG_FUNCTION_ARGS)
  */
 TimestampTz
@@ -1985,6 +2046,7 @@ pg_interval_justify_hours(const Interval *interv)
 /**
  * @ingroup meos_pg_types
  * @brief Return the subtraction of two timestamptz values
+ * @param[in] t1,t2 Timestamps
  * @note PostgreSQL function: @p timestamp_mi(PG_FUNCTION_ARGS). Notice that
  * the original code from PostgreSQL has @p Timestamp as arguments
  */
@@ -2041,18 +2103,19 @@ interval_cmp_value(const Interval *interval)
 /**
  * @ingroup meos_pg_types
  * @brief Return the comparison of two intervals
+ * @param[in] interv1,interv2 Intervals
  * @note PostgreSQL function: @p interval_cmp(PG_FUNCTION_ARGS)
  */
 int
-pg_interval_cmp(const Interval *interval1, const Interval *interval2)
+pg_interval_cmp(const Interval *interv1, const Interval *interv2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) interval1) ||
-      ! ensure_not_null((void *) interval2))
+  if (! ensure_not_null((void *) interv1) ||
+      ! ensure_not_null((void *) interv2))
     return INT_MAX;
 
-  INT128 span1 = interval_cmp_value(interval1);
-  INT128 span2 = interval_cmp_value(interval2);
+  INT128 span1 = interval_cmp_value(interv1);
+  INT128 span2 = interval_cmp_value(interv2);
   return int128_compare(span1, span2);
 }
 
@@ -2076,8 +2139,6 @@ bstring2bytea(const uint8_t *wkb, size_t size)
  * @ingroup meos_pg_types
  * @brief Return a C string converted to a text
  * @param[in] str String
- * @note We don't include `<utils/builtins.h>` to avoid collisions with
- * `json-c/json.h`
  * @note Function taken from PostGIS file `lwgeom_in_geojson.c`
  */
 text *
@@ -2098,8 +2159,6 @@ cstring2text(const char *str)
  * @ingroup meos_pg_types
  * @brief Return a text converted to a C string
  * @param[in] txt Text
- * @note We don't include @p <utils/builtins.h> to avoid collisions with
- * @p json-c/json.h
  * @note Function taken from PostGIS file @p lwgeom_in_geojson.c
  */
 char *
@@ -2117,7 +2176,10 @@ text2cstring(const text *txt)
 }
 
 #if MEOS
-/* Simplified version of the function in varlena.c where LC_COLLATE is C */
+/**
+ * @brief Simplified version of the function in varlena.c where
+ * LC_COLLATE is C
+ */
 int
 varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
   Oid collid __attribute__((unused)))
@@ -2133,9 +2195,9 @@ varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
  * @ingroup meos_pg_types
  * @brief Comparison function for text values
  * @param[in] txt1,txt2 Text values
- * @note Function derived from PostgreSQL since it is declared static. Notice 
- * that the third attribute collid of the original function has been removed
- * while waiting for a proper localization management
+ * @note Function derived from PostgreSQL since it is declared static. Notice
+ * that the third attribute @p collid of the original function has been removed
+ * while waiting for locale management in MEOS
  */
 int
 text_cmp(const text *txt1, const text *txt2)
@@ -2159,6 +2221,167 @@ text_copy(const text *txt)
   text *result = palloc(VARSIZE(txt));
   memcpy(result, txt, VARSIZE(txt));
   return result;
+}
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return the concatenation of the two text values
+ * @param[in] txt1,txt2 Text values
+ * @note Function adapted from the external function @p text_catenate in file
+ * @p varlena.c
+ */
+text *
+textcat_text_text(const text *txt1, const text *txt2)
+{
+  size_t len1 = VARSIZE_ANY_EXHDR(txt1);
+  size_t len2 = VARSIZE_ANY_EXHDR(txt2);
+  size_t len = len1 + len2 + VARHDRSZ;
+  text *result = palloc(len);
+
+  /* Set size of result string... */
+  SET_VARSIZE(result, len);
+
+  /* Fill data field of result string... */
+  char *ptr = VARDATA(result);
+  if (len1 > 0)
+    memcpy(ptr, VARDATA_ANY(txt1), len1);
+  if (len2 > 0)
+    memcpy(ptr + len1, VARDATA_ANY(txt2), len2);
+
+  return result;
+}
+
+/**
+ * @brief Return the concatenation of the two text values
+ */
+Datum
+datum_textcat(Datum l, Datum r)
+{
+  return PointerGetDatum(textcat_text_text(DatumGetTextP(l), DatumGetTextP(r)));
+}
+
+#if MEOS
+/**
+ * @brief Return a copy of the string value
+ */
+char *
+pnstrdup(const char *in, Size size)
+{
+  char *tmp;
+  size_t len;
+
+  if (!in)
+  {
+    fprintf(stderr, "cannot duplicate null pointer (internal error)\n");
+    exit(EXIT_FAILURE);
+  }
+
+  len = strnlen(in, size);
+  tmp = palloc(len + 1);
+  if (tmp == NULL)
+  {
+    fprintf(stderr, "out of memory\n");
+    exit(EXIT_FAILURE);
+  }
+
+  memcpy(tmp, in, len);
+  tmp[len] = '\0';
+
+  return tmp;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return the text value transformed to lowercase
+ * @param[in] txt Text value
+ * @note PostgreSQL function: @p lower() in file @p varlena.c.
+ * Notice that @p DEFAULT_COLLATION_OID is used instead of
+ * @p PG_GET_COLLATION()
+ */
+text *
+text_lower(const text *txt)
+{
+#if MEOS
+  char *out_string = asc_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
+#else /* ! MEOS */
+  char *out_string = str_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
+    DEFAULT_COLLATION_OID);
+#endif /* MEOS */
+  text *result = cstring2text(out_string);
+  pfree(out_string);
+  return result;
+}
+
+/**
+ * @brief Return the text value transformed to lowercase
+ */
+Datum
+datum_lower(Datum value)
+{
+  return PointerGetDatum(text_lower(DatumGetTextP(value)));
+}
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return the text value transformed to uppercase
+ * @param[in] txt Text value
+ * @note PostgreSQL function: @p upper() in file @p varlena.c.
+ * Notice that @p DEFAULT_COLLATION_OID is used instead of
+ * @p PG_GET_COLLATION()
+ */
+text *
+text_upper(const text *txt)
+{
+#if MEOS
+  char *out_string = asc_toupper(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
+#else /* ! MEOS */
+  char *out_string = str_toupper(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
+    DEFAULT_COLLATION_OID);
+#endif /* MEOS */
+  text *result = cstring2text(out_string);
+  pfree(out_string);
+  return result;
+}
+
+/**
+ * @brief Return the text value transformed to uppercase
+ */
+Datum
+datum_upper(Datum value)
+{
+  return PointerGetDatum(text_upper(DatumGetTextP(value)));
+}
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Convert the text value to initcap
+ * @param[in] txt Text value
+ * @note PostgreSQL function: @p initcap() in file @p varlena.c.
+ * Notice that @p DEFAULT_COLLATION_OID is used instead of
+ * @p PG_GET_COLLATION()
+ */
+text *
+text_initcap(const text *txt)
+{
+#if MEOS
+  char *out_string = asc_initcap(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
+#else /* ! MEOS */
+  char *out_string = str_initcap(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
+    DEFAULT_COLLATION_OID);
+#endif /* MEOS */
+  text *result = cstring2text(out_string);
+  pfree(out_string);
+  return result;
+}
+
+/**
+ * @brief Convert the text value to uppercase
+ */
+Datum
+datum_initcap(Datum value)
+{
+  return PointerGetDatum(text_initcap(DatumGetTextP(value)));
 }
 
 /*****************************************************************************
