@@ -5,7 +5,7 @@ SELECT set(ARRAY['highway', 'primary', 'secondary']);
 SELECT set(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
 -- {2001-01-01 08:00:00+00, 2001-01-03 09:30:00+00}
 </pre></li></ul></div><p>The unit span types have a constructor function that accepts four arguments. The first two arguments specify, respectively, the lower and upper bound, and the last two arguments are Boolean values stating, respectively, whether the lower and upper bounds are inclusive or not. The last two arguments are assumed to be, respectively, true and false if not specified. Notice that integer spans are transformed into <span class="emphasis"><em>normal form</em></span>, that is, with inclusive lower bound and exclusive upper bound.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="span"></a><a class="indexterm" name="idm718"></a><p>Constructor for span types</p><p><code class="varname">span(lower base,upper base,left_inc bool=true,right_inc bool=false) → span</code></p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="span"></a><a class="indexterm" name="idm718"></a><p>Constructor for span types</p><p><code class="varname">span(lower base,upper base,leftInc bool=true,rightInc bool=false) → span</code></p><pre class="programlisting">
 SELECT span(20.5, 25);
 -- [20.5, 25)
 SELECT span(20, 25, false, true);

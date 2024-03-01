@@ -5,7 +5,7 @@ SELECT set(ARRAY['highway', 'primary', 'secondary']);
 SELECT set(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
 -- {2001-01-01 08:00:00+00, 2001-01-03 09:30:00+00}
 </pre></li></ul></div><p>Los tipos de rango unitarios tienen una función constructora que acepta cuatro argumentos, donde los dos últimos son opcionales. Los primeros dos argumentos especifican, respectivamente, el límite inferior y el superior, y los dos últimos argumentos son valores booleanos que indican, respectivamente, si los límites inferior y el superior son inclusivos o no. Se supone que los dos últimos argumentos son, respectivamente, verdadero y falso si no se especifican. Nótese que los rangos de enteros se transforman en <span class="emphasis"><em>forma normal</em></span>, es decir, con límite inferior inclusivo y límite superior exclusivo.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="span"></a><a class="indexterm" name="idm748"></a><p>Constructor para tipos de rango</p><p><code class="varname">span(lower base,upper base,left_inc bool=true,right_inc bool=false) → span</code></p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="span"></a><a class="indexterm" name="idm748"></a><p>Constructor para tipos de rango</p><p><code class="varname">span(lower base,upper base,leftInc bool=true,rightInc bool=false) → span</code></p><pre class="programlisting">
 SELECT span(20.5, 25);
 -- [20.5, 25)
 SELECT span(20, 25, false, true);

@@ -1,6 +1,6 @@
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Constructors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 User's Manual"><link rel="up" href="ch03.html" title="Chapter 3. Bounding Box Types"><link rel="prev" href="ch03.html" title="Chapter 3. Bounding Box Types"><link rel="next" href="ch03s03.html" title="Conversions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Constructors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Bounding Box Types</th><td width="20%" align="right"> <a accesskey="n" href="ch03s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="box_types_constructors"></a>Constructors</h2></div></div></div><p>
 			Type <code class="varname">tbox</code> has several constructor functions depending on whether the value and/or the time extent are given. The value extent can be specified by a number or a span, while the time extent can be specified by a time type.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox"></a><a class="indexterm" name="idm1536"></a><p>Constructor for <code class="varname">tbox</code></p><p><code class="varname">tbox({number,numspan}) → tbox</code></p><p><code class="varname">tbox({timestamptz,tstzspan}) → tbox</code></p><p><code class="varname">tbox({number,numspan},{timestamptz,tstzspan}) → tbox</code></p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tbox"></a><a class="indexterm" name="idm1535"></a><p>Constructor for <code class="varname">tbox</code></p><p><code class="varname">tbox({number,numspan}) → tbox</code></p><p><code class="varname">tbox({timestamptz,tstzspan}) → tbox</code></p><p><code class="varname">tbox({number,numspan},{timestamptz,tstzspan}) → tbox</code></p><pre class="programlisting">
 -- Both value and time dimensions
 SELECT tbox(1.0, timestamptz '2001-01-01');
 SELECT tbox(floatspan '[1.0, 2.0)', tstzspan '[2001-01-01,2001-01-02)');
@@ -10,25 +10,25 @@ SELECT tbox(floatspan '[1.0,2.0)');
 SELECT tbox(tstzspan '[2001-01-01,2001-01-02)');
 </pre></li></ul></div><p>
 			Type <code class="varname">stbox</code> has several constructor functions depending on whether the space and/or the time extent are given. The coordinates for the spatial extent can be 2D or 3D and can be either Cartesian or geodetic. The spatial extent can be specified by the minimum and maximum coordinate values. The SRID can be specified in an optional last argument. If not given, a value 0 (respectively 4326) is assumed by default for planar (respectively geodetic) boxes. The spatial extent can also be specified by a geometry or a geography. The temporal extent can be specified by a time type.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="stbox"></a><a class="indexterm" name="idm1552"></a><a class="indexterm" name="idm1555"></a><a class="indexterm" name="idm1558"></a><a class="indexterm" name="idm1561"></a><a class="indexterm" name="idm1564"></a><a class="indexterm" name="idm1567"></a><a class="indexterm" name="idm1570"></a><a class="indexterm" name="idm1573"></a><p>Constructor for <code class="varname">stbox</code></p><p><code class="varname">stbox_x(float,float,float,float,srid=0) → stbox</code></p><p><code class="varname">stbox_z(float,float,float,float,float,float,srid=0) → stbox</code></p><p><code class="varname">stbox_t({timestamptz,tstzspan}) → stbox</code></p><p><code class="varname">stbox_xt(float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</code></p><p><code class="varname">stbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</code></p><p><code class="varname">geodstbox_z(float,float,float,float,float,float,srid=4326) → stbox</code></p><p><code class="varname">geodstbox_t({timestamptz,tstzspan}) → stbox</code></p><p><code class="varname">geodstbox_zt(float,float,float,float,float,float,{timestamptz,tstzspan},srid=4326)</code></p><p><code class="varname">  → stbox</code></p><p><code class="varname">stbox(geo) → stbox</code></p><p><code class="varname">stbox(geo,{timestamptz,tstzspan}) → stbox</code></p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="stbox"></a><a class="indexterm" name="idm1551"></a><a class="indexterm" name="idm1554"></a><a class="indexterm" name="idm1557"></a><a class="indexterm" name="idm1560"></a><a class="indexterm" name="idm1563"></a><a class="indexterm" name="idm1566"></a><a class="indexterm" name="idm1569"></a><a class="indexterm" name="idm1572"></a><p>Constructor for <code class="varname">stbox</code></p><p><code class="varname">stboxX(float,float,float,float,srid=0) → stbox</code></p><p><code class="varname">stboxZ(float,float,float,float,float,float,srid=0) → stbox</code></p><p><code class="varname">stboxT({timestamptz,tstzspan}) → stbox</code></p><p><code class="varname">stboxXT(float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</code></p><p><code class="varname">stboxZT(float,float,float,float,float,float,{timestamptz,tstzspan},srid=0) → stbox</code></p><p><code class="varname">geodstboxZ(float,float,float,float,float,float,srid=4326) → stbox</code></p><p><code class="varname">geodstboxT({timestamptz,tstzspan}) → stbox</code></p><p><code class="varname">geodstboxZT(float,float,float,float,float,float,{timestamptz,tstzspan},srid=4326)</code></p><p><code class="varname">  → stbox</code></p><p><code class="varname">stbox(geo) → stbox</code></p><p><code class="varname">stbox(geo,{timestamptz,tstzspan}) → stbox</code></p><pre class="programlisting">
 -- Only value dimension with X and Y coordinates
-SELECT stbox_x(1.0,2.0,1.0,2.0);
+SELECT stboxX(1.0,2.0,1.0,2.0);
 -- Only value dimension with X, Y, and Z coordinates
-SELECT stbox_z(1.0,2.0,3.0,1.0,2.0,3.0);
+SELECT stboxZ(1.0,2.0,3.0,1.0,2.0,3.0);
 -- Only value dimension with X, Y, and Z coordinates and SRID
-SELECT stbox_z(1.0,2.0,3.0,1.0,2.0,3.0,5676);
+SELECT stboxZ(1.0,2.0,3.0,1.0,2.0,3.0,5676);
 -- Only time dimension
-SELECT stbox_t(tstzspan '[2001-01-03,2001-01-03]');
+SELECT stboxT(tstzspan '[2001-01-03,2001-01-03]');
 -- Both value (with X and Y coordinates) and time dimensions
-SELECT stbox_xt(1.0,2.0, 1.0,2.0, tstzspan '[2001-01-03,2001-01-03]');
+SELECT stboxXT(1.0,2.0, 1.0,2.0, tstzspan '[2001-01-03,2001-01-03]');
 -- Both value (with X, Y, and Z coordinates) and time dimensions
-SELECT stbox_zt(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-03]');
+SELECT stboxZT(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-03]');
 -- Only value dimension with X, Y, and Z geodetic coordinates
-SELECT geodstbox_z(1.0,2.0,3.0,1.0,2.0,3.0);
+SELECT geodstboxZ(1.0,2.0,3.0,1.0,2.0,3.0);
 -- Only time dimension for geodetic box
-SELECT geodstbox_t(tstzspan '[2001-01-03,2001-01-03]');
+SELECT geodstboxT(tstzspan '[2001-01-03,2001-01-03]');
 --  Both value (with X, Y, and Z geodetic coordinates) and time dimensions
-SELECT geodstbox_zt(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-04]');
+SELECT geodstboxZT(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-04]');
 -- Geometry and time dimension
 SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', tstzspan '[2001-01-03,2001-01-05]');
 -- Geography and time dimension
