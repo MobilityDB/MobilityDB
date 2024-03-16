@@ -54,17 +54,24 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <miscadmin.h> /* For CHECK_FOR_INTERRUPTS */
+#include <access/genam.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
 #include <access/tableam.h>
+#if POSTGRESQL_VERSION_NUMBER < 140000
+#include <catalog/indexing.h>
+#endif
 #include <catalog/namespace.h>
+#include <catalog/pg_extension.h>
+#include <catalog/pg_type.h>
 #include <commands/extension.h>
-#include <utils/syscache.h>
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <common/hashfn.h>
 #else
   #include <access/hash.h>
 #endif
+#include <utils/fmgroids.h>
+#include <utils/syscache.h>
 #include <utils/rel.h>
 /* MEOS */
 #include <meos.h>
@@ -165,9 +172,52 @@ TypenameNspGetTypid(const char *typname, Oid nsp_oid)
 static Oid
 RelnameNspGetRelid(const char *relname, Oid nsp_oid)
 {
-  return GetSysCacheOid2(RELNAMENSP, Anum_pg_type_oid,
+  return GetSysCacheOid2(RELNAMENSP, Anum_pg_class_oid,
     PointerGetDatum(relname), ObjectIdGetDatum(nsp_oid));
 }
+
+#if POSTGRESQL_VERSION_NUMBER < 160000
+
+/*
+ * get_extension_schema - given an extension OID, fetch its extnamespace
+ *
+ * Returns InvalidOid if no such extension.
+ */
+static Oid
+get_extension_schema(Oid ext_oid)
+{
+  Oid     result;
+  Relation  rel;
+  SysScanDesc scandesc;
+  HeapTuple tuple;
+  ScanKeyData entry[1];
+
+  rel = table_open(ExtensionRelationId, AccessShareLock);
+
+  ScanKeyInit(&entry[0],
+        Anum_pg_extension_oid,
+        BTEqualStrategyNumber, F_OIDEQ,
+        ObjectIdGetDatum(ext_oid));
+
+  scandesc = systable_beginscan(rel, ExtensionOidIndexId, true,
+                  NULL, 1, entry);
+
+  tuple = systable_getnext(scandesc);
+
+  /* We assume that there can be at most one matching tuple */
+  if (HeapTupleIsValid(tuple))
+    result = ((Form_pg_extension) GETSTRUCT(tuple))->extnamespace;
+  else
+    result = InvalidOid;
+
+  systable_endscan(scandesc);
+
+  table_close(rel, AccessShareLock);
+
+  return result;
+}
+
+#endif
 
 /**
  * @brief Return namespace Oid for the extension
