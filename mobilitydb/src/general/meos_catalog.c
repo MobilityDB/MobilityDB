@@ -108,12 +108,13 @@ typedef struct
  * @brief Global variable that states whether the type and operator Oid caches
  * have been initialized
  */
-static bool _OID_CACHE_READY = false;
+static bool _TYPEOID_CACHE_READY = false;
+static bool _OPEROID_CACHE_READY = false;
 
 /**
  * @brief Global array that keeps the type Oids used in MobilityDB
  */
-static Oid _TYPE_OIDS[NO_MEOS_TYPES];
+static Oid _TYPE_OID[NO_MEOS_TYPES];
 
 /**
  * @brief Global hash table that keeps the operator Oids used in MobilityDB
@@ -152,9 +153,11 @@ internal_type(const char *typname)
 static void
 populate_typeoid_cache()
 {
-  /* Return if the cache has been already filled */
-  if (_OID_CACHE_READY)
-    return;
+  Oid namespaceId = LookupNamespaceNoError("public");
+  OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
+  overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
+  PushOverrideSearchPath(overridePath);
+
   /* Fill the cache */
   for (int i = 0; i < NO_MEOS_TYPES; i++)
   {
@@ -162,9 +165,12 @@ populate_typeoid_cache()
      * multirangetype) and in this case _MEOSTYPE_NAMES[i] will be equal to 0 */
     const char *name = meostype_name(i);
     if (name && ! internal_type(name))
-      _TYPE_OIDS[i] = TypenameGetTypid(name);
+      _TYPE_OID[i] = TypenameGetTypid(name);
   }
-  return;
+  /* Mark that the cache has been initialized */
+  _TYPEOID_CACHE_READY = true;
+
+  PopOverrideSearchPath();
 }
 
 /**
@@ -188,7 +194,6 @@ populate_operoid_cache()
 
   PG_TRY();
   {
-    populate_typeoid_cache();
     /* Initialize the operator array */
     memset(_OPER_OID, 0, sizeof(_OPER_OID));
     /* Fetch the rows of the table containing the MobilityDB operator cache */
@@ -232,7 +237,7 @@ populate_operoid_cache()
 #endif
     PopOverrideSearchPath();
     /* Mark that the cache has been initialized */
-    _OID_CACHE_READY = true;
+    _OPEROID_CACHE_READY = true;
   }
   PG_CATCH();
   {
@@ -251,9 +256,9 @@ populate_operoid_cache()
 Oid
 type_oid(meosType type)
 {
-  if (!_OID_CACHE_READY)
-    populate_operoid_cache();
-  Oid result = _TYPE_OIDS[type];
+  if (!_TYPEOID_CACHE_READY)
+    populate_typeoid_cache();
+  Oid result = _TYPE_OID[type];
   if (! result)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Unknown MEOS type; %d", type)));
@@ -270,11 +275,11 @@ type_oid(meosType type)
 meosType
 oid_type(Oid typid)
 {
-  if (!_OID_CACHE_READY)
-    populate_operoid_cache();
+  if (!_TYPEOID_CACHE_READY)
+    populate_typeoid_cache();
   for (int i = 0; i < NO_MEOS_TYPES; i++)
   {
-    if (_TYPE_OIDS[i] == typid)
+    if (_TYPE_OID[i] == typid)
       return i;
   }
   return T_UNKNOWN;
@@ -291,7 +296,7 @@ oid_type(Oid typid)
 Oid
 oper_oid(meosOper oper, meosType lt, meosType rt)
 {
-  if (!_OID_CACHE_READY)
+  if (!_OPEROID_CACHE_READY)
     populate_operoid_cache();
   Oid result = _OPER_OID[oper][lt][rt];
   if (! result)
@@ -311,7 +316,7 @@ oper_oid(meosOper oper, meosType lt, meosType rt)
 meosOper
 oid_oper(Oid oproid, meosType *ltype, meosType *rtype)
 {
-  if (!_OID_CACHE_READY)
+  if (!_OPEROID_CACHE_READY)
     populate_operoid_cache();
   oid_oper_entry *entry = opertable_lookup(_OID_OPER, oproid);
   if (! entry)
