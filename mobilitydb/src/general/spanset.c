@@ -341,6 +341,10 @@ Multirange_to_spanset(PG_FUNCTION_ARGS)
   TypeCacheEntry *typcache = multirange_get_typcache(fcinfo,
     MultirangeTypeGetOid(mrange));
 
+  if (MultirangeIsEmpty(mrange))
+    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
+      errmsg("Multirange cannot be empty")));
+
   Span *spans = palloc(sizeof(Span) * mrange->rangeCount);
   for (uint32 i = 0; i < mrange->rangeCount; i++)
   {
