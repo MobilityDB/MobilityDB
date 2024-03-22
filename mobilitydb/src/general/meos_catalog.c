@@ -54,15 +54,24 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <miscadmin.h> /* For CHECK_FOR_INTERRUPTS */
+#include <access/genam.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
 #include <access/tableam.h>
+#if POSTGRESQL_VERSION_NUMBER < 140000
+#include <catalog/indexing.h>
+#endif
 #include <catalog/namespace.h>
+#include <catalog/pg_extension.h>
+#include <catalog/pg_type.h>
+#include <commands/extension.h>
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <common/hashfn.h>
 #else
   #include <access/hash.h>
 #endif
+#include <utils/fmgroids.h>
+#include <utils/syscache.h>
 #include <utils/rel.h>
 /* MEOS */
 #include <meos.h>
@@ -108,12 +117,13 @@ typedef struct
  * @brief Global variable that states whether the type and operator Oid caches
  * have been initialized
  */
-static bool _OID_CACHE_READY = false;
+static bool _TYPEOID_CACHE_READY = false;
+static bool _OPEROID_CACHE_READY = false;
 
 /**
  * @brief Global array that keeps the type Oids used in MobilityDB
  */
-static Oid _TYPE_OIDS[NO_MEOS_TYPES];
+static Oid _TYPE_OID[NO_MEOS_TYPES];
 
 /**
  * @brief Global hash table that keeps the operator Oids used in MobilityDB
@@ -147,24 +157,111 @@ internal_type(const char *typname)
 }
 
 /**
+ * @brief Utility call to lookup type oid given name and nspoid
+ */
+static Oid
+TypenameNspGetTypid(const char *typname, Oid nsp_oid)
+{
+  return GetSysCacheOid2(TYPENAMENSP, Anum_pg_type_oid,
+    PointerGetDatum(typname), ObjectIdGetDatum(nsp_oid));
+}
+
+/**
+ * @brief Utility call to lookup relation oid given name and nspoid
+ */
+static Oid
+RelnameNspGetRelid(const char *relname, Oid nsp_oid)
+{
+  return GetSysCacheOid2(RELNAMENSP, Anum_pg_class_oid,
+    PointerGetDatum(relname), ObjectIdGetDatum(nsp_oid));
+}
+
+#if POSTGRESQL_VERSION_NUMBER < 160000
+
+/*
+ * get_extension_schema - given an extension OID, fetch its extnamespace
+ *
+ * Returns InvalidOid if no such extension.
+ */
+static Oid
+get_extension_schema(Oid ext_oid)
+{
+  Oid     result;
+  Relation  rel;
+  SysScanDesc scandesc;
+  HeapTuple tuple;
+  ScanKeyData entry[1];
+
+  rel = table_open(ExtensionRelationId, AccessShareLock);
+
+  ScanKeyInit(&entry[0],
+        Anum_pg_extension_oid,
+        BTEqualStrategyNumber, F_OIDEQ,
+        ObjectIdGetDatum(ext_oid));
+
+  scandesc = systable_beginscan(rel, ExtensionOidIndexId, true,
+                  NULL, 1, entry);
+
+  tuple = systable_getnext(scandesc);
+
+  /* We assume that there can be at most one matching tuple */
+  if (HeapTupleIsValid(tuple))
+    result = ((Form_pg_extension) GETSTRUCT(tuple))->extnamespace;
+  else
+    result = InvalidOid;
+
+  systable_endscan(scandesc);
+
+  table_close(rel, AccessShareLock);
+
+  return result;
+}
+
+#endif
+
+/**
+ * @brief Return namespace Oid for the extension
+ */
+static Oid
+mobilitydb_nsp_oid()
+{
+  Oid nsp_oid = InvalidOid;
+  Oid ext_oid = get_extension_oid("mobilitydb", true);
+  if (ext_oid != InvalidOid)
+    nsp_oid = get_extension_schema(ext_oid);
+
+  /* early exit if we cannot lookup nsp_name */
+  if (nsp_oid == InvalidOid)
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Unable to determine 'mobilitydb' install schema");
+
+  return nsp_oid;
+}
+
+/**
  * @brief Populate the type Oid cache
  */
 static void
 populate_typeoid_cache()
 {
-  /* Return if the cache has been already filled */
-  if (_OID_CACHE_READY)
-    return;
   /* Fill the cache */
+  Oid nsp_oid = mobilitydb_nsp_oid();
   for (int i = 0; i < NO_MEOS_TYPES; i++)
   {
     /* Depending on the PG version some types may not exist (e.g.,
      * multirangetype) and in this case _MEOSTYPE_NAMES[i] will be equal to 0 */
     const char *name = meostype_name(i);
     if (name && ! internal_type(name))
-      _TYPE_OIDS[i] = TypenameGetTypid(name);
+    {
+      /* Search for type oid in extension namespace */
+      _TYPE_OID[i] = TypenameNspGetTypid(name, nsp_oid);
+      /* If not found, search default namespace */
+      if (_TYPE_OID[i] == InvalidOid)
+        _TYPE_OID[i] = TypenameGetTypid(name);
+    }
   }
-  return;
+  /* Mark that the cache has been initialized */
+  _TYPEOID_CACHE_READY = true;
 }
 
 /**
@@ -178,68 +275,53 @@ populate_typeoid_cache()
 static void
 populate_operoid_cache()
 {
-  Oid namespaceId = LookupNamespaceNoError("public");
-  OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
-  overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
-  PushOverrideSearchPath(overridePath);
-
   /* Create the operator hash table */
   _OID_OPER = opertable_create(CacheMemoryContext, 2048, NULL);
 
-  PG_TRY();
-  {
-    populate_typeoid_cache();
-    /* Initialize the operator array */
-    memset(_OPER_OID, 0, sizeof(_OPER_OID));
-    /* Fetch the rows of the table containing the MobilityDB operator cache */
-    Oid catalog = RelnameGetRelid("mobilitydb_opcache");
+  /* Initialize the operator array */
+  memset(_OPER_OID, 0, sizeof(_OPER_OID));
+  /* Fetch the rows of the table containing the MobilityDB operator cache */
+  Oid nsp_oid = mobilitydb_nsp_oid();
+  Oid catalog = RelnameNspGetRelid("mobilitydb_opcache", nsp_oid);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-    Relation rel = heap_open(catalog, AccessShareLock);
+  Relation rel = heap_open(catalog, AccessShareLock);
 #else
-    Relation rel = table_open(catalog, AccessShareLock);
+  Relation rel = table_open(catalog, AccessShareLock);
 #endif
-    TupleDesc tupDesc = rel->rd_att;
-    ScanKeyData scandata;
-    TableScanDesc scan = table_beginscan_catalog(rel, 0, &scandata);
-    HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
-    while (HeapTupleIsValid(tuple))
+  TupleDesc tupDesc = rel->rd_att;
+  ScanKeyData scandata;
+  TableScanDesc scan = table_beginscan_catalog(rel, 0, &scandata);
+  HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
+  while (HeapTupleIsValid(tuple))
+  {
+    bool isnull = false;
+    int32 i = DatumGetInt32(heap_getattr(tuple, 1, tupDesc, &isnull));
+    int32 j = DatumGetInt32(heap_getattr(tuple, 2, tupDesc, &isnull));
+    int32 k = DatumGetInt32(heap_getattr(tuple, 3, tupDesc, &isnull));
+    Oid oproid = DatumGetObjectId(heap_getattr(tuple, 4, tupDesc, &isnull));
+    /* Fill the struct to be added to the hash table */
+    bool found;
+    oid_oper_entry *entry = opertable_insert(_OID_OPER, oproid, &found);
+    if (! found)
     {
-      bool isnull = false;
-      int32 i = DatumGetInt32(heap_getattr(tuple, 1, tupDesc, &isnull));
-      int32 j = DatumGetInt32(heap_getattr(tuple, 2, tupDesc, &isnull));
-      int32 k = DatumGetInt32(heap_getattr(tuple, 3, tupDesc, &isnull));
-      Oid oproid = DatumGetObjectId(heap_getattr(tuple, 4, tupDesc, &isnull));
-      /* Fill the struct to be added to the hash table */
-      bool found;
-      oid_oper_entry *entry = opertable_insert(_OID_OPER, oproid, &found);
-      if (! found)
-      {
-        entry->oproid = oproid;
-        entry->oper = i;
-        entry->ltype = j;
-        entry->rtype = k;
-      }
-      /* Fill the operator Oid array */
-      _OPER_OID[i][j][k] = oproid;
-      /* Read next tuple from table */
-      tuple = heap_getnext(scan, ForwardScanDirection);
+      entry->oproid = oproid;
+      entry->oper = i;
+      entry->ltype = j;
+      entry->rtype = k;
     }
-    heap_endscan(scan);
+    /* Fill the operator Oid array */
+    _OPER_OID[i][j][k] = oproid;
+    /* Read next tuple from table */
+    tuple = heap_getnext(scan, ForwardScanDirection);
+  }
+  heap_endscan(scan);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-    heap_close(rel, AccessShareLock);
+  heap_close(rel, AccessShareLock);
 #else
-    table_close(rel, AccessShareLock);
+  table_close(rel, AccessShareLock);
 #endif
-    PopOverrideSearchPath();
-    /* Mark that the cache has been initialized */
-    _OID_CACHE_READY = true;
-  }
-  PG_CATCH();
-  {
-    PopOverrideSearchPath();
-    PG_RE_THROW();
-  }
-  PG_END_TRY();
+  /* Mark that the cache has been initialized */
+  _OPEROID_CACHE_READY = true;
 }
 
 /*****************************************************************************/
@@ -251,9 +333,9 @@ populate_operoid_cache()
 Oid
 type_oid(meosType type)
 {
-  if (!_OID_CACHE_READY)
-    populate_operoid_cache();
-  Oid result = _TYPE_OIDS[type];
+  if (!_TYPEOID_CACHE_READY)
+    populate_typeoid_cache();
+  Oid result = _TYPE_OID[type];
   if (! result)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Unknown MEOS type; %d", type)));
@@ -270,11 +352,11 @@ type_oid(meosType type)
 meosType
 oid_type(Oid typid)
 {
-  if (!_OID_CACHE_READY)
-    populate_operoid_cache();
+  if (!_TYPEOID_CACHE_READY)
+    populate_typeoid_cache();
   for (int i = 0; i < NO_MEOS_TYPES; i++)
   {
-    if (_TYPE_OIDS[i] == typid)
+    if (_TYPE_OID[i] == typid)
       return i;
   }
   return T_UNKNOWN;
@@ -291,7 +373,7 @@ oid_type(Oid typid)
 Oid
 oper_oid(meosOper oper, meosType lt, meosType rt)
 {
-  if (!_OID_CACHE_READY)
+  if (!_OPEROID_CACHE_READY)
     populate_operoid_cache();
   Oid result = _OPER_OID[oper][lt][rt];
   if (! result)
@@ -311,7 +393,7 @@ oper_oid(meosOper oper, meosType lt, meosType rt)
 meosOper
 oid_oper(Oid oproid, meosType *ltype, meosType *rtype)
 {
-  if (!_OID_CACHE_READY)
+  if (!_OPEROID_CACHE_READY)
     populate_operoid_cache();
   oid_oper_entry *entry = opertable_lookup(_OID_OPER, oproid);
   if (! entry)
