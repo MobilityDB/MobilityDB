@@ -4400,7 +4400,7 @@ FetchDynamicTimeZone(TimeZoneAbbrevTable *tbl, const datetkn *tp)
      */
     if (dtza->tz == NULL)
     {
-      meos_error(ERROR, "time zone \"%s\" not recognized", dtza->zone);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "time zone \"%s\" not recognized", dtza->zone);
       return NULL;
     }
   }
