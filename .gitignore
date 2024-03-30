@@ -1,2 +1,4 @@
 build/
 .vscode
+
+meos/postgres/pg_config.h

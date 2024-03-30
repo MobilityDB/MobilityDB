@@ -50,6 +50,13 @@ set(POSTGRESQL_VERSION_MINOR "2")
 add_definitions(-DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
 add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER})
 
+#---------------------------------------------
+# Configure PostgreSQL configuration for MEOS
+#---------------------------------------------
+
+include(PostgresConfig)
+config_pg()
+
 #--------------------------------------
 # Set default PostGIS Version for MEOS
 #--------------------------------------
