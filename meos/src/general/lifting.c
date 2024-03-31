@@ -271,15 +271,8 @@ tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
   /* Lifted functions may have from 0 to MAX_PARAMS parameters */
   assert(lfinfo->numparam >= 0 && lfinfo->numparam <= 1);
   if (lfinfo->numparam == 0)
-  {
-    if (lfinfo->args)
-      return lfinfo->invert ?
-        (*lfinfo->func)(value2, value1, lfinfo->argtype[1], lfinfo->argtype[0]) :
-        (*lfinfo->func)(value1, value2, lfinfo->argtype[0], lfinfo->argtype[1]);
-    else
-      return lfinfo->invert ?
-        (*lfinfo->func)(value2, value1) : (*lfinfo->func)(value1, value2);
-  }
+    return lfinfo->invert ?
+      (*lfinfo->func)(value2, value1) : (*lfinfo->func)(value1, value2);
   else /* if (lfinfo->numparam == 1) */
     return lfinfo->invert ?
       (*lfinfo->func)(value2, value1, lfinfo->param[0]) :

@@ -1344,7 +1344,6 @@ tfloat_degrees(const Temporal *temp, bool normalize)
   lfinfo.func = (varfunc) &datum_degrees;
   lfinfo.numparam = 1;
   lfinfo.param[0] = BoolGetDatum(normalize);
-  lfinfo.args = true;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
   lfinfo.tpfunc_base = NULL;
@@ -1371,7 +1370,6 @@ tfloat_radians(const Temporal *temp)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_radians;
   lfinfo.numparam = 0;
-  lfinfo.args = true;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
   lfinfo.tpfunc_base = NULL;

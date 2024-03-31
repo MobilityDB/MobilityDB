@@ -56,7 +56,6 @@ typedef struct
   Datum (*func)(Datum, ...); /**< Variadic function that is lifted */
   int numparam;              /**< Number of parameters of the function */
   Datum param[MAX_PARAMS];   /**< Datum array for the parameters of the function */
-  bool args;                 /**< True if the lifted function requires arguments */
   meosType argtype[2];       /**< Base type of the arguments */
   meosType restype;          /**< Temporal type of the result of the function */
   bool reslinear;            /**< True if the result has linear interpolation */

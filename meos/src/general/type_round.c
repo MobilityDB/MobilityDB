@@ -375,7 +375,6 @@ tfloat_round(const Temporal *temp, int maxdd)
   lfinfo.func = (varfunc) &datum_round_float;
   lfinfo.numparam = 1;
   lfinfo.param[0] = Int32GetDatum(maxdd);
-  lfinfo.args = true;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.argtype[1] = T_INT4;
   lfinfo.restype = T_TFLOAT;

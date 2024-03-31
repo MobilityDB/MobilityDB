@@ -63,9 +63,7 @@ Arithop_number_tnumber(FunctionCallInfo fcinfo, TArithmetic oper,
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Temporal *result = arithop_tnumber_number(temp, value, basetype, oper, func,
-    INVERT);
+  Temporal *result = arithop_tnumber_number(temp, value, oper, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -82,9 +80,7 @@ Arithop_tnumber_number(FunctionCallInfo fcinfo, TArithmetic oper,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
-  meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Temporal *result = arithop_tnumber_number(temp, value, basetype, oper, func,
-    INVERT_NO);
+  Temporal *result = arithop_tnumber_number(temp, value, oper, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }

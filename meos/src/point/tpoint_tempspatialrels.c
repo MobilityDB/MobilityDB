@@ -1273,7 +1273,6 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
         lfinfo.func = (varfunc) func;
         lfinfo.numparam = 1;
         lfinfo.param[0] = Float8GetDatum(dist);
-        lfinfo.args = true;
         lfinfo.argtype[0] = lfinfo.argtype[1] = temptype_basetype(temp->temptype);
         lfinfo.restype = T_TBOOL;
         lfinfo.invert = INVERT_NO;

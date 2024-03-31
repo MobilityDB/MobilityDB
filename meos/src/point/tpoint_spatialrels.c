@@ -301,7 +301,6 @@ ea_spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
-  lfinfo.args = true;
   lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
