@@ -1273,7 +1273,8 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
         lfinfo.func = (varfunc) func;
         lfinfo.numparam = 1;
         lfinfo.param[0] = Float8GetDatum(dist);
-        lfinfo.argtype[0] = lfinfo.argtype[1] = temptype_basetype(temp->temptype);
+        lfinfo.argtype[0] = temp->temptype;
+        lfinfo.argtype[1] = temptype_basetype(temp->temptype);
         lfinfo.restype = T_TBOOL;
         lfinfo.invert = INVERT_NO;
         result = (Temporal *) tfunc_tsequence_base((TSequence *) temp,
@@ -1334,6 +1335,7 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
         lfinfo.func = (varfunc) func;
         lfinfo.numparam = 1;
         lfinfo.param[0] = Float8GetDatum(dist);
+        lfinfo.argtype[0] = lfinfo.argtype[1] = sync1->temptype;
         lfinfo.restype = T_TBOOL;
         if (interp1 == DISCRETE)
           result = (Temporal *) tfunc_tdiscseq_tdiscseq((TSequence *) sync1,
@@ -1359,6 +1361,7 @@ tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
         lfinfo.func = (varfunc) func;
         lfinfo.numparam = 1;
         lfinfo.param[0] = Float8GetDatum(dist);
+        lfinfo.argtype[0] = lfinfo.argtype[1] = sync1->temptype;
         lfinfo.restype = T_TBOOL;
         result = (Temporal *) tfunc_tsequenceset_tsequenceset(
           (TSequenceSet *) sync1, (TSequenceSet *) sync2, &lfinfo);

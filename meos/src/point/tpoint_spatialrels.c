@@ -296,12 +296,11 @@ ea_spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
     return -1;
 
   /* Fill the lifted structure */
-  meosType basetype = temptype_basetype(temp1->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
-  lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;

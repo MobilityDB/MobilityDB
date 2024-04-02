@@ -375,9 +375,8 @@ tfloat_round(const Temporal *temp, int maxdd)
   lfinfo.func = (varfunc) &datum_round_float;
   lfinfo.numparam = 1;
   lfinfo.param[0] = Int32GetDatum(maxdd);
-  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
-  lfinfo.argtype[1] = T_INT4;
-  lfinfo.restype = T_TFLOAT;
+  lfinfo.argtype[0]= temp->temptype;
+  lfinfo.restype = temp->temptype;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
@@ -784,6 +783,7 @@ tpoint_round(const Temporal *temp, int maxdd)
   lfinfo.func = (varfunc) &datum_round_geo;
   lfinfo.numparam = 1;
   lfinfo.param[0] = Int32GetDatum(maxdd);
+  lfinfo.argtype[0]= temp->temptype;
   lfinfo.restype = temp->temptype;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
@@ -877,6 +877,7 @@ tnpoint_round(const Temporal *temp, Datum size)
   lfinfo.func = (varfunc) &datum_npoint_round;
   lfinfo.numparam = 1;
   lfinfo.param[0] = size;
+  lfinfo.argtype[0]= temp->temptype;
   lfinfo.restype = temp->temptype;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;

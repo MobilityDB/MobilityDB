@@ -76,7 +76,9 @@ eacomp_base_temporal(Datum value, const Temporal *temp,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
-  lfinfo.param[0] = lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.argtype[1] = basetype;
   lfinfo.restype = T_BOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT;
@@ -106,7 +108,9 @@ eacomp_temporal_base(const Temporal *temp, Datum value,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
-  lfinfo.param[0] = lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.argtype[1] = basetype;
   lfinfo.restype = T_BOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
@@ -128,13 +132,15 @@ eacomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
   assert(temp1); assert(temp2); assert(func);
+  assert(temp1->temptype == temp2->temptype);
   /* Fill the lifted structure */
   meosType basetype = temptype_basetype(temp1->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
-  lfinfo.param[0] = lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_BOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
@@ -651,7 +657,9 @@ tcomp_base_temporal(Datum value, const Temporal *temp,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
-  lfinfo.param[0] = lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.argtype[1] = basetype;
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT;
@@ -679,7 +687,9 @@ tcomp_temporal_base(const Temporal *temp, Datum value,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
-  lfinfo.param[0] = lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.argtype[1] = basetype;
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
@@ -700,13 +710,15 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, meosType))
 {
   assert(temp1); assert(temp2); assert(func);
+  assert(temp1->temptype == temp2->temptype);
   /* Fill the lifted structure */
   meosType basetype = temptype_basetype(temp1->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
-  lfinfo.param[0] = lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;

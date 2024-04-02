@@ -94,6 +94,7 @@ tnot_tbool(const Temporal *temp)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_not;
   lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TBOOL;
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
@@ -113,6 +114,8 @@ boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TBOOL;
+  lfinfo.argtype[1] = T_BOOL;
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = invert;
@@ -134,6 +137,7 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = T_TBOOL;
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;

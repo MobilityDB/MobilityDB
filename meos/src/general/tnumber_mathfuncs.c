@@ -188,10 +188,10 @@ arithop_tnumber_number(const Temporal *temp, Datum value, TArithmetic oper,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
-  lfinfo.param[0] = lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = temp->temptype;
   lfinfo.argtype[1] = basetype;
-  lfinfo.restype = (temp->temptype == T_TINT && basetype == T_INT4) ?
-    T_TINT : T_TFLOAT;
+  lfinfo.restype = temp->temptype;
   /* This parameter is not used for temp <op> base */
   lfinfo.reslinear = false;
   lfinfo.invert = invert;
@@ -241,9 +241,9 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
-  lfinfo.param[0] = lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
-  lfinfo.restype = (temp1->temptype == T_TINT && temp2->temptype == T_TINT) ?
-    T_TINT : T_TFLOAT;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
+  lfinfo.restype = temp1->temptype;
   lfinfo.reslinear = linear1 || linear2;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
