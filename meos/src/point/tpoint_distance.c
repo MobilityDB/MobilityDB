@@ -439,7 +439,8 @@ distance_tpoint_point(const Temporal *temp, const GSERIALIZED *gs)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) distance_fn(temp->flags);
   lfinfo.numparam = 0;
-  lfinfo.argtype[0] = lfinfo.argtype[1] = temptype_basetype(temp->temptype);
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.argtype[1] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = INVERT_NO;
@@ -468,6 +469,7 @@ distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) pt_distance_fn(temp1->flags);
   lfinfo.numparam = 0;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);

@@ -58,8 +58,8 @@ add_int_tint(int i, const Temporal *temp)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
-  return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, ADD,
-    &datum_add, INVERT);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), ADD, &datum_add,
+    INVERT);
 }
 
 /**
@@ -76,8 +76,8 @@ add_float_tfloat(double d, const Temporal *temp)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
-  return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, ADD,
-    &datum_add, INVERT);
+  return arithop_tnumber_number(temp, Float8GetDatum(d), ADD, &datum_add,
+    INVERT);
 }
 
 /**
@@ -94,8 +94,8 @@ add_tint_int(const Temporal *temp, int i)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
-  return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, ADD,
-    &datum_add, INVERT_NO);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), ADD, &datum_add,
+    INVERT_NO);
 }
 
 /**
@@ -112,8 +112,8 @@ add_tfloat_float(const Temporal *temp, double d)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
-  return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, ADD,
-    &datum_add, INVERT_NO);
+  return arithop_tnumber_number(temp, Float8GetDatum(d), ADD, &datum_add,
+    INVERT_NO);
 }
 
 /**
@@ -151,8 +151,8 @@ sub_int_tint(int i, const Temporal *temp)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
-  return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, SUB,
-    &datum_sub, INVERT);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), SUB, &datum_sub,
+    INVERT);
 }
 
 /**
@@ -169,8 +169,8 @@ sub_float_tfloat(double d, const Temporal *temp)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
-  return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, SUB,
-    &datum_sub, INVERT);
+  return arithop_tnumber_number(temp, Float8GetDatum(d), SUB, &datum_sub,
+    INVERT);
 }
 
 /**
@@ -187,8 +187,8 @@ sub_tint_int(const Temporal *temp, int i)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
-  return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, SUB,
-    &datum_sub, INVERT_NO);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), SUB, &datum_sub,
+    INVERT_NO);
 }
 
 /**
@@ -205,8 +205,8 @@ sub_tfloat_float(const Temporal *temp, double d)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
-  return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, SUB,
-    &datum_sub, INVERT_NO);
+  return arithop_tnumber_number(temp, Float8GetDatum(d), SUB, &datum_sub,
+    INVERT_NO);
 }
 
 /**
@@ -245,8 +245,8 @@ mult_int_tint(int i, const Temporal *temp)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
-  return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, MULT,
-    &datum_mult, INVERT);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), MULT, &datum_mult,
+    INVERT);
 }
 
 /**
@@ -263,8 +263,8 @@ mult_float_tfloat(double d, const Temporal *temp)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
-  return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, MULT,
-    &datum_mult, INVERT);
+  return arithop_tnumber_number(temp, Float8GetDatum(d), MULT, &datum_mult,
+    INVERT);
 }
 
 /**
@@ -282,8 +282,8 @@ mult_tint_int(const Temporal *temp, int i)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
-  return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, MULT,
-    &datum_mult, INVERT_NO);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), MULT, &datum_mult,
+    INVERT_NO);
 }
 
 /**
@@ -300,8 +300,8 @@ mult_tfloat_float(const Temporal *temp, double d)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
-  return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, MULT,
-    &datum_mult, INVERT_NO);
+  return arithop_tnumber_number(temp, Float8GetDatum(d), MULT, &datum_mult,
+    INVERT_NO);
 }
 
 /**
@@ -340,8 +340,8 @@ div_int_tint(int i, const Temporal *temp)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
-  return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, DIV,
-    &datum_div, INVERT);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), DIV, &datum_div,
+    INVERT);
 }
 
 /**
@@ -358,8 +358,8 @@ div_float_tfloat(double d, const Temporal *temp)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
-  return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, DIV,
-    &datum_div, INVERT);
+  return arithop_tnumber_number(temp, Float8GetDatum(d), DIV, &datum_div,
+    INVERT);
 }
 
 /**
@@ -375,8 +375,8 @@ div_tint_int(const Temporal *temp, int i)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
-  return arithop_tnumber_number(temp, Int32GetDatum(i), T_INT4, DIV,
-    &datum_div, INVERT_NO);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), DIV, &datum_div,
+    INVERT_NO);
 }
 
 /**
@@ -393,8 +393,8 @@ div_tfloat_float(const Temporal *temp, double d)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
-  return arithop_tnumber_number(temp, Float8GetDatum(d), T_FLOAT8, DIV,
-    &datum_div, INVERT_NO);
+  return arithop_tnumber_number(temp, Float8GetDatum(d), DIV, &datum_div,
+    INVERT_NO);
 }
 
 /**

@@ -318,7 +318,7 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
   /* Initialize fixed-size values */
   result->temptype = temptype;
   result->subtype = TINSTANT;
-    result->t = t;
+  result->t = t;
   SET_VARSIZE(result, size);
   MEOS_FLAGS_SET_BYVAL(result->flags, typbyval);
   MEOS_FLAGS_SET_CONTINUOUS(result->flags, temptype_continuous(temptype));
@@ -345,7 +345,7 @@ TInstant *
 tinstant_make_free(Datum value, meosType temptype, TimestampTz t)
 {
   TInstant *result = tinstant_make(value, temptype, t);
-  DATUM_FREE(value,temptype_basetype(temptype));
+  DATUM_FREE(value, temptype_basetype(temptype));
   return result;
 }
 

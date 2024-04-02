@@ -89,6 +89,7 @@ tpoint_force2d(const Temporal *temp)
   lfinfo.numparam = 1;
   int32 srid = tpoint_srid(temp);
   lfinfo.param[0] = Int32GetDatum(srid);
+  lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = T_TGEOMPOINT;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;

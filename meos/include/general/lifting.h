@@ -50,19 +50,19 @@
  */
 
 #define MAX_PARAMS 1
+#define MAX_ARGS   2
 
 typedef struct
 {
-  Datum (*func)(Datum, ...); /**< Variadic function that is lifted */
-  int numparam;              /**< Number of parameters of the function */
-  Datum param[MAX_PARAMS];   /**< Datum array for the parameters of the function */
-  bool args;                 /**< True if the lifted function requires arguments */
-  meosType argtype[2];       /**< Base type of the arguments */
-  meosType restype;          /**< Temporal type of the result of the function */
-  bool reslinear;            /**< True if the result has linear interpolation */
-  bool invert;               /**< True if the arguments of the function must be inverted */
-  bool discont;              /**< True if the function has instantaneous discontinuities */
-  bool ever;                 /**< True/false when computing the ever/always semantics */
+  Datum (*func)(Datum, ...);  /**< Variadic function that is lifted */
+  int numparam;               /**< Number of parameters of the function */
+  Datum param[MAX_PARAMS];    /**< Datum array for the parameters of the function */
+  meosType argtype[MAX_ARGS]; /**< Type of the arguments of the function */
+  meosType restype;           /**< Type of the result of the function */
+  bool reslinear;             /**< True if the result has linear interpolation */
+  bool invert;                /**< True if the arguments of the function must be inverted */
+  bool discont;               /**< True if the function has instantaneous discontinuities */
+  bool ever;                  /**< True/false when computing the ever/always semantics */
   bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, meosType,
     Datum *, TimestampTz *); /**< Turning point function for temporal and base types*/
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
