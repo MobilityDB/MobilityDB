@@ -98,6 +98,13 @@
  * the calling function and is passed through the dispatch functions.
  * To avoid code redundancy when coping with functions with 2, 3, and 4
  * arguments, variadic function pointers are used. The idea is sketched next.
+ *
+ * @note Before calling the function, we must cast it back to a fixed-parameter
+ * function pointer. This is necessary because arm64 handles fixed and
+ * variadic parameters differently.
+ * See: https://developer.apple.com/documentation/apple-silicon/addressing-architectural-differences-in-your-macos-code#Dont-Redeclare-a-Function-to-Have-Variable-Parameters
+ * and: https://developer.apple.com/documentation/apple-silicon/addressing-architectural-differences-in-your-macos-code#Enable-Strict-Type-Enforcement-for-Dynamic-Method-Dispatching
+ *
  * @code
  * typedef Datum (*varfunc)    (Datum, ...);
  *
@@ -105,11 +112,16 @@
  * tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
  * {
  *   Datum resvalue;
- *   if (lfinfo->numparam == 1)
- *     resvalue = (*lfinfo->func)(temporalinst_value(inst));
- *   else if (lfinfo->numparam == 2)
- *     resvalue = (*lfinfo->func)(temporalinst_value(inst), lfinfo->param[0]);
- *     resvalue = (*lfinfo->func)(temporalinst_value(inst), lfinfo->param[0]);
+ *   if (lfinfo->numparam == 0)
+ *   {
+ *     Datum (* noParamFunc)(Datum) = (Datum(*)(Datum))(*lfinfo->func);
+ *     resvalue = noParamFunc(temporalinst_value(inst));
+ *   }
+ *   else if (lfinfo->numparam == 1)
+ *   {
+ *     Datum (* oneParamFunc)(Datum, Datum) = (Datum(*)(Datum, Datum))(*lfinfo->func);
+ *     resvalue = oneParamFunc(temporalinst_value(inst), lfinfo->param[0]);
+ *   }
  *   else
  *   {
  *     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
@@ -175,6 +187,8 @@
 /**
  * @brief Apply the variadic function with the optional arguments to a base
  * value
+ * @note We must cast the function pointer to a fixed-parameter function pointer
+ * before calling it. See the note at the beginning of the file.
  */
 static Datum
 tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
@@ -183,19 +197,14 @@ tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
   assert(lfinfo->numparam >= 0 && lfinfo->numparam <= MAX_PARAMS);
   if (lfinfo->numparam == 0)
   {
-    /* Declare a type-safe function pointer.
-     * The cast is necessary because arm64 handles fixed and variadic function differently.
-     * See: https://developer.apple.com/documentation/apple-silicon/addressing-architectural-differences-in-your-macos-code#Dont-Redeclare-a-Function-to-Have-Variable-Parameters
-     * and: https://developer.apple.com/documentation/apple-silicon/addressing-architectural-differences-in-your-macos-code#Enable-Strict-Type-Enforcement-for-Dynamic-Method-Dispatching */
     Datum (* noParamFunc)(Datum) =
-       (Datum(*)(Datum))(*lfinfo->func);
+      (Datum(*)(Datum))(*lfinfo->func);
     return noParamFunc(value);
   }
   else /* if (lfinfo->numparam == 1) */
   {
-    /* Declare a type-safe function pointer. See above */
     Datum (* oneParamFunc)(Datum, Datum) =
-       (Datum(*)(Datum, Datum))(*lfinfo->func);
+      (Datum(*)(Datum, Datum))(*lfinfo->func);
     return oneParamFunc(value, lfinfo->param[0]);
   }
 }
@@ -270,6 +279,8 @@ tfunc_temporal(const Temporal *temp, LiftedFunctionInfo *lfinfo)
 /*
  * Apply the variadic function with the optional arguments to the base values
  * taking into account that their type may be different
+ * @note We must cast the function pointer to a fixed-parameter function pointer
+ * before calling it. See the note at the beginning of the file.
  */
 static Datum
 tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
@@ -278,20 +289,15 @@ tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
   assert(lfinfo->numparam >= 0 && lfinfo->numparam <= MAX_PARAMS);
   if (lfinfo->numparam == 0)
   {
-    /* Declare a type-safe function pointer.
-     * The cast is necessary because arm64 handles fixed and variadic function differently.
-     * See: https://developer.apple.com/documentation/apple-silicon/addressing-architectural-differences-in-your-macos-code#Dont-Redeclare-a-Function-to-Have-Variable-Parameters
-     * and: https://developer.apple.com/documentation/apple-silicon/addressing-architectural-differences-in-your-macos-code#Enable-Strict-Type-Enforcement-for-Dynamic-Method-Dispatching */
     Datum (* noParamFunc)(Datum, Datum) =
-       (Datum(*)(Datum, Datum))(*lfinfo->func);
+      (Datum(*)(Datum, Datum))(*lfinfo->func);
     return lfinfo->invert ?
       noParamFunc(value2, value1) : noParamFunc(value1, value2);
   }
   else /* if (lfinfo->numparam == 1) */
   {
-    /* Declare a type-safe function pointer. See above */
     Datum (* oneParamFunc)(Datum, Datum, Datum) =
-       (Datum(*)(Datum, Datum, Datum))(*lfinfo->func);
+      (Datum(*)(Datum, Datum, Datum))(*lfinfo->func);
     return lfinfo->invert ?
       oneParamFunc(value2, value1, lfinfo->param[0]) :
       oneParamFunc(value1, value2, lfinfo->param[0]);
@@ -1545,14 +1551,14 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
               return (Temporal *) tfunc_tdiscseq_tdiscseq(seq1, seq2, lfinfo);
             else /* interp2 != DISCRETE */
               return (Temporal *) tfunc_tdiscseq_tcontseq(seq1, seq2, lfinfo);
-           }
-         else /* interp1 != DISCRETE */
-         {
-           if (interp2 == DISCRETE)
+          }
+          else /* interp1 != DISCRETE */
+          {
+            if (interp2 == DISCRETE)
               return (Temporal *) tfunc_tcontseq_tdiscseq(seq1, seq2, lfinfo);
             else /* interp2 = DISCRETE */
               return (Temporal *) tfunc_tcontseq_tcontseq(seq1, seq2, lfinfo);
-         }
+          }
         }
         default: /* TSEQUENCESET */
           return MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
