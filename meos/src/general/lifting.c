@@ -180,18 +180,24 @@ static Datum
 tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
 {
   /* Lifted functions may have from 0 to MAX_PARAMS parameters */
-  assert(lfinfo->numparam >= 0 && lfinfo->numparam <= 1);
+  assert(lfinfo->numparam >= 0 && lfinfo->numparam <= MAX_PARAMS);
   if (lfinfo->numparam == 0)
-    return (*lfinfo->func)(value);
+  {
+    /* Declare a type-safe function pointer.
+     * The cast is necessary because arm64 handles fixed and variadic function differently.
+     * See: https://developer.apple.com/documentation/apple-silicon/addressing-architectural-differences-in-your-macos-code#Dont-Redeclare-a-Function-to-Have-Variable-Parameters
+     * and: https://developer.apple.com/documentation/apple-silicon/addressing-architectural-differences-in-your-macos-code#Enable-Strict-Type-Enforcement-for-Dynamic-Method-Dispatching */
+    Datum (* noParamFunc)(Datum) =
+       (Datum(*)(Datum))(*lfinfo->func);
+    return noParamFunc(value);
+  }
   else /* if (lfinfo->numparam == 1) */
-    return (*lfinfo->func)(value, lfinfo->param[0]);
-#if 0 /* not used */
-  else if (lfinfo->numparam == 2)
-    return (*lfinfo->func)(value, lfinfo->param[0], lfinfo->param[1]);
-  else /* lfinfo->numparam == 3 */
-    return (*lfinfo->func)(value, lfinfo->param[0], lfinfo->param[1],
-      lfinfo->param[2]);
-#endif /* not used */
+  {
+    /* Declare a type-safe function pointer. See above */
+    Datum (* oneParamFunc)(Datum, Datum) =
+       (Datum(*)(Datum, Datum))(*lfinfo->func);
+    return oneParamFunc(value, lfinfo->param[0]);
+  }
 }
 
 /**
@@ -269,26 +275,27 @@ static Datum
 tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
 {
   /* Lifted functions may have from 0 to MAX_PARAMS parameters */
-  assert(lfinfo->numparam >= 0 && lfinfo->numparam <= 1);
+  assert(lfinfo->numparam >= 0 && lfinfo->numparam <= MAX_PARAMS);
   if (lfinfo->numparam == 0)
+  {
+    /* Declare a type-safe function pointer.
+     * The cast is necessary because arm64 handles fixed and variadic function differently.
+     * See: https://developer.apple.com/documentation/apple-silicon/addressing-architectural-differences-in-your-macos-code#Dont-Redeclare-a-Function-to-Have-Variable-Parameters
+     * and: https://developer.apple.com/documentation/apple-silicon/addressing-architectural-differences-in-your-macos-code#Enable-Strict-Type-Enforcement-for-Dynamic-Method-Dispatching */
+    Datum (* noParamFunc)(Datum, Datum) =
+       (Datum(*)(Datum, Datum))(*lfinfo->func);
     return lfinfo->invert ?
-      (*lfinfo->func)(value2, value1) : (*lfinfo->func)(value1, value2);
+      noParamFunc(value2, value1) : noParamFunc(value1, value2);
+  }
   else /* if (lfinfo->numparam == 1) */
+  {
+    /* Declare a type-safe function pointer. See above */
+    Datum (* oneParamFunc)(Datum, Datum, Datum) =
+       (Datum(*)(Datum, Datum, Datum))(*lfinfo->func);
     return lfinfo->invert ?
-      (*lfinfo->func)(value2, value1, lfinfo->param[0]) :
-      (*lfinfo->func)(value1, value2, lfinfo->param[0]);
-#if 0 /* not used */
-  else if (lfinfo->numparam == 2)
-    return lfinfo->invert ?
-      (*lfinfo->func)(value2, value1, lfinfo->param[0], lfinfo->param[1]) :
-      (*lfinfo->func)(value1, value2, lfinfo->param[0], lfinfo->param[1]);
-  else /* lfinfo->numparam == 3 */
-    return lfinfo->invert ?
-      (*lfinfo->func)(value2, value1, lfinfo->param[0], lfinfo->param[1],
-        lfinfo->param[2]) :
-      (*lfinfo->func)(value1, value2, lfinfo->param[0], lfinfo->param[1],
-        lfinfo->param[2]);
-#endif /* not used */
+      oneParamFunc(value2, value1, lfinfo->param[0]) :
+      oneParamFunc(value1, value2, lfinfo->param[0]);
+  }
 }
 
 /**
