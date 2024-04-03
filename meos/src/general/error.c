@@ -188,7 +188,8 @@ meos_error(int errlevel, int errcode, char *format, ...)
   char buffer[1024];
   va_list args;
   va_start(args, format);
-  vsprintf(buffer, format, args);
+  /* TODO: maybe check if the error message was truncated */
+  vsnprintf(buffer, 1024, format, args);
   va_end(args);
   /* Execute the error handler function */
   if (_ERROR_HANDLER)
