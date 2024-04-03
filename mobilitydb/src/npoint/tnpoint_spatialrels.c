@@ -68,8 +68,6 @@ EAspatialrel_geo_tnpoint(FunctionCallInfo fcinfo,
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   int result = func(temp, gs, ever);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -88,8 +86,6 @@ EAspatialrel_tnpoint_geo(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   int result = func(temp, gs, ever);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -108,8 +104,6 @@ EAspatialrel_npoint_tnpoint(FunctionCallInfo fcinfo,
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   int result = func(temp, np, ever);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
@@ -127,8 +121,6 @@ EAspatialrel_tnpoint_npoint(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   int result = func(temp, np, ever);
   PG_FREE_IF_COPY(temp, 0);
   if (result < 0)
@@ -509,8 +501,6 @@ EAdwithin_geo_tnpoint(FunctionCallInfo fcinfo, bool ever)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   int result = ea_dwithin_tnpoint_geom(temp, gs, dist, ever);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -529,8 +519,6 @@ EAdwithin_npoint_tnpoint(FunctionCallInfo fcinfo, bool ever)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   double dist = PG_GETARG_FLOAT8(2);
   Datum result = ea_dwithin_tnpoint_npoint(temp, np, dist, ever);
   PG_FREE_IF_COPY(temp, 1);
@@ -548,8 +536,6 @@ EAdwithin_tnpoint_geo(FunctionCallInfo fcinfo, bool ever)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   int result = DatumGetInt32(ea_dwithin_tnpoint_geom(temp, gs, dist, ever));
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -568,8 +554,6 @@ EAdwithin_tnpoint_npoint(FunctionCallInfo fcinfo, bool ever)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Npoint *np = PG_GETARG_NPOINT_P(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   double dist = PG_GETARG_FLOAT8(2);
   Datum result = ea_dwithin_tnpoint_npoint(temp, np, dist, ever);
   PG_FREE_IF_COPY(temp, 0);
@@ -587,8 +571,6 @@ EAdwithin_tnpoint_tnpoint(FunctionCallInfo fcinfo, bool ever)
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   int result = ea_dwithin_tnpoint_tnpoint(temp1, temp2, dist, ever);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);

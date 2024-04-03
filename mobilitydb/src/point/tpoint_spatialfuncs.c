@@ -404,8 +404,6 @@ Datum
 Tpoint_cumulative_length(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = tpoint_cumulative_length(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
@@ -422,8 +420,6 @@ Datum
 Tpoint_convex_hull(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   GSERIALIZED *result = tpoint_convex_hull(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_GSERIALIZED_P(result);
@@ -444,8 +440,6 @@ Datum
 Tpoint_speed(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = tpoint_speed(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
@@ -469,8 +463,6 @@ Datum
 Tpoint_direction(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   double result;
   bool found = tpoint_direction(temp, &result);
   PG_FREE_IF_COPY(temp, 0);
@@ -514,8 +506,6 @@ Datum
 Tpoint_azimuth(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = tpoint_azimuth(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
@@ -538,8 +528,6 @@ Datum
 Tpoint_angular_difference(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = tpoint_angular_difference(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
@@ -564,8 +552,6 @@ Bearing_point_point(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *geo1 = PG_GETARG_GSERIALIZED_P(0);
   GSERIALIZED *geo2 = PG_GETARG_GSERIALIZED_P(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   double result;
   bool found = bearing_point_point(geo1, geo2, &result);
   PG_FREE_IF_COPY(geo1, 0);
@@ -588,8 +574,6 @@ Bearing_point_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = bearing_tpoint_point(temp, gs, INVERT);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -611,8 +595,6 @@ Bearing_tpoint_point(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = bearing_tpoint_point(temp, gs, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -633,8 +615,6 @@ Bearing_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = bearing_tpoint_tpoint(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -716,8 +696,6 @@ Tpoint_restrict_geom_time(FunctionCallInfo fcinfo, bool atfunc, bool resttime)
     zspan = PG_GETARG_SPAN_P(2);
     period = PG_GETARG_SPAN_P(3);
   }
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = tpoint_restrict_geom_time(temp, geo, zspan, period,
     atfunc);
   PG_FREE_IF_COPY(temp, 0);
