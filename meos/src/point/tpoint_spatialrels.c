@@ -269,9 +269,15 @@ spatialrel_tpoint_traj_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum traj = PointerGetDatum(tpoint_trajectory(temp));
   Datum result;
   if (numparam == 2)
-    result = invert ? func(geo, traj) : func(traj, geo);
+  {
+    datum_func2 func2 = (datum_func2) func;
+    result = invert ? func2(geo, traj) : func2(traj, geo);
+  }
   else /* numparam == 3 */
-    result = invert ? func(geo, traj, param) : func(traj, geo, param);
+  {
+    datum_func3 func3 = (datum_func3) func;
+    result = invert ? func3(geo, traj, param) : func3(traj, geo, param);
+  }
   pfree(DatumGetPointer(traj));
   return result ? 1 : 0;
 }
@@ -381,7 +387,7 @@ acontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
  */
 bool
 ea_disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
-  Datum (*func)(Datum, ...))
+  datum_func2 func)
 {
   return DatumGetBool(func(tinstant_val(inst), geo));
 }
@@ -396,7 +402,7 @@ ea_disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
  */
 bool
 ea_disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
-  Datum (*func)(Datum, ...), bool ever)
+  datum_func2 func, bool ever)
 {
   bool ret_loop = ever ? true : false;
   for (int i = 0; i < seq->count; i++)
@@ -418,7 +424,7 @@ ea_disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
  */
 bool
 ea_disjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
-  Datum (*func)(Datum, ...), bool ever)
+  datum_func2 func, bool ever)
 {
   bool ret_loop = ever ? true : false;
   for (int i = 0; i < ss->count; i++)
@@ -447,7 +453,7 @@ ea_disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
     return Int32GetDatum(-1);
 
-  varfunc func = (varfunc) get_disjoint_fn_gs(temp->flags, gs->gflags);
+  datum_func2 func = get_disjoint_fn_gs(temp->flags, gs->gflags);
   bool result;
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
