@@ -176,6 +176,7 @@ typedef enum
   INTERSECTS =     0,
   CONTAINS =       1,
   TOUCHES =        2,
+  COVERS =         3,
 } spatialRel;
 
 /**

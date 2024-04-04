@@ -43,6 +43,7 @@
 /*****************************************************************************/
 
 extern Datum geom_contains(Datum geom1, Datum geom2);
+extern Datum geom_covers(Datum geom1, Datum geom2);
 extern Datum geom_disjoint2d(Datum geom1, Datum geom2);
 extern Datum geom_disjoint3d(Datum geom1, Datum geom2);
 extern Datum geog_disjoint(Datum geog1, Datum geog2);

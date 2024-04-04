@@ -813,8 +813,8 @@ meos_call_geos2(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 }
 
 /**
- * @brief Return true if two geometries intersect or the first contains
- * the other, where the function called depend on the third argument
+ * @brief Return true if two geometries satisfy a given spatial relationship,
+ * where the function called depend on the third argument
  * @param[in] gs1,gs2 Geometries
  * @param[in] rel Spatial relationship
  * @note PostGIS functions: @p ST_Intersects(PG_FUNCTION_ARGS),
@@ -857,7 +857,8 @@ geometry_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   }
 
   /* Call GEOS function */
-  assert(rel == INTERSECTS || rel == CONTAINS || rel == TOUCHES);
+  assert(rel == INTERSECTS || rel == CONTAINS || rel == TOUCHES ||
+    rel == COVERS);
   switch (rel)
   {
     case INTERSECTS:
@@ -866,6 +867,8 @@ geometry_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
       return (bool) meos_call_geos2(gs1, gs2, &GEOSContains);
     case TOUCHES:
       return (bool) meos_call_geos2(gs1, gs2, &GEOSTouches);
+    case COVERS:
+      return (bool) meos_call_geos2(gs1, gs2, &GEOSCovers);
     default:
       /* keep compiler quiet */
       return false;
