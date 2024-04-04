@@ -96,11 +96,11 @@ CREATE FUNCTION tIntersects(tgeogpoint, tgeogpoint, atvalue bool DEFAULT NULL)
 CREATE FUNCTION tTouches(geometry, tgeompoint, atvalue bool DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Ttouches_geo_tpoint'
-  LANGUAGE C IMMUTABLE  PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tTouches(tgeompoint, geometry, atvalue bool DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Ttouches_tpoint_geo'
-  LANGUAGE C IMMUTABLE  PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************
  * tDwithin

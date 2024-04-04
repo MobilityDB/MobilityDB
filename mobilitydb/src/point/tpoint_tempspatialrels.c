@@ -75,8 +75,6 @@ Tinterrel_geo_tpoint(FunctionCallInfo fcinfo, bool tinter)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_geo(temp, gs, tinter, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
@@ -104,8 +102,6 @@ Tinterrel_tpoint_geo(FunctionCallInfo fcinfo, bool tinter)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_geo(temp, gs, tinter, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
@@ -133,8 +129,6 @@ Tinterrel_tpoint_tpoint(FunctionCallInfo fcinfo, bool tinter)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_tpoint(temp1, temp2, tinter, restr,
     atvalue);
@@ -171,8 +165,6 @@ Tcontains_geo_tpoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = tcontains_geo_tpoint(gs, temp, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -300,8 +292,6 @@ Ttouches_geo_tpoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = ttouches_tpoint_geo(temp, gs, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -332,8 +322,6 @@ Ttouches_tpoint_geo(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = ttouches_tpoint_geo(temp, gs, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -370,8 +358,6 @@ Tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = tdwithin_tpoint_geo(temp, gs, dist, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -403,8 +389,6 @@ Tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = tdwithin_tpoint_geo(temp, gs, dist, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -438,8 +422,6 @@ Tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = tdwithin_tpoint_tpoint(temp1, temp2, dist, restr,
     atvalue);
   PG_FREE_IF_COPY(temp1, 0);

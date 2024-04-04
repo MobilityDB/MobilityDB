@@ -75,6 +75,7 @@ extern GSERIALIZED *geography_from_lwgeom(LWGEOM *geom, int32 typmod);
 
 /*****************************************************************************/
 
+#if MEOS
 /**
  * @brief Return the srid of a geometry
  * @note PostGIS function: @p gserialized_get_srid(const GSERIALIZED *g).
@@ -84,7 +85,7 @@ geo_get_srid(const GSERIALIZED *g)
 {
   return gserialized_get_srid(g);
 }
-
+#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_box.c
@@ -1420,7 +1421,7 @@ pgis_geography_dwithin(GSERIALIZED *gs1, GSERIALIZED *gs2, double tolerance,
   spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
   /* Set to sphere if requested */
-  if (!  use_spheroid )
+  if (! use_spheroid)
     s.a = s.b = s.radius;
 
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(gs1);
@@ -1432,7 +1433,7 @@ pgis_geography_dwithin(GSERIALIZED *gs1, GSERIALIZED *gs2, double tolerance,
   lwgeom_free(lwgeom2);
 
   /* Something went wrong... should already be eloged, return FALSE */
-  if ( distance < 0.0 )
+  if (distance < 0.0)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "lwgeom_distance_spheroid returned negative!");

@@ -56,10 +56,6 @@
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tempspatialrels.h"
 
-/* Function calling PostGIS ST_Intersects to reuse their cache */
-
-extern Datum pgis_intersects2d(Datum geom1, Datum geom2);
-
 /*****************************************************************************
  * Spatial relationship functions
  * disjoint and intersects are inverse to each other
@@ -108,12 +104,8 @@ geog_disjoint(Datum geog1, Datum geog2)
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
-#if MEOS
   return BoolGetDatum(geometry_spatialrel(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), INTERSECTS));
-#else
-  return pgis_intersects2d(geom1, geom2);
-#endif /* MEOS */
 }
 
 /**
@@ -133,7 +125,7 @@ Datum
 geog_intersects(Datum geog1, Datum geog2)
 {
   return BoolGetDatum(pgis_geography_dwithin(DatumGetGserializedP(geog1),
-    DatumGetGserializedP(geog2), 0.0, true));
+    DatumGetGserializedP(geog2), 0.00001, true));
 }
 
 #if 0 /* not used */
@@ -181,7 +173,7 @@ geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 /*****************************************************************************/
 
 /**
- * @brief Select the appropriate disjoint function 
+ * @brief Select the appropriate disjoint function
  * @note We need two parameters to cope with mixed 2D/3D arguments
  */
 datum_func2
@@ -553,8 +545,8 @@ eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
     return -1;
 
   datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
-  return spatialrel_tpoint_traj_geo(temp, gs, (Datum) NULL,
-    (varfunc) func, 2, INVERT_NO);
+  return spatialrel_tpoint_traj_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
+    INVERT_NO);
 }
 
 /**
@@ -622,13 +614,13 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
+      ! ensure_not_geodetic(temp->flags) || gserialized_is_empty(gs) ||
+      ! ensure_valid_tpoint_geo(temp, gs))
     return -1;
 
   /* There is no need to do a bounding box test since this is done in
    * the SQL function definition */
-  varfunc func = (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)) ?
-    (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
+  datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
   GSERIALIZED *traj = tpoint_trajectory(temp);
   GSERIALIZED *gsbound = geometry_boundary(gs);
   bool result = false;
