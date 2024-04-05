@@ -27,6 +27,8 @@ endif()
 # Specify search path for CMake modules to be loaded
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)
+include(CheckCXXSymbolExists)
+include(CheckCSourceRuns)
 
 #-------------------------------------
 # RPATH settings
@@ -192,8 +194,10 @@ else()
 endif()
 
 # check for needed Header files and functions
-check_symbol_exists(strchrnul string.h HAVE_STRCHRNUL)
-check_symbol_exists(__get_cpuid cpuid.h HAVE__GET_CPUID)
+set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
+check_symbol_exists(strchrnul "string.h" HAVE_STRCHRNUL)
+unset(CMAKE_REQUIRED_DEFINITIONS)
+check_symbol_exists(__get_cpuid "cpuid.h" HAVE__GET_CPUID)
 check_c_source_runs("
 #include <stdint.h>
 int main() {
