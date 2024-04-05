@@ -52,34 +52,10 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE eDisjoint(t1
   9876
 (1 row)
 
-SELECT COUNT(*) FROM tbl_geography, tbl_tgeogpoint WHERE eDisjoint(g, temp);
- count 
--------
-  9209
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geography WHERE eDisjoint(temp, g);
- count 
--------
-  9209
-(1 row)
-
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE eDisjoint(t1.temp, t2.temp);
  count 
 -------
   9874
-(1 row)
-
-SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE eDisjoint(g, temp);
- count 
--------
-  9270
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE eDisjoint(temp, g);
- count 
--------
-  9270
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eDisjoint(t1.temp, t2.temp);
@@ -260,18 +236,6 @@ SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE aIntersects(t1.t
  count 
 -------
    118
-(1 row)
-
-SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE aIntersects(g, temp);
- count 
--------
-   162
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE aIntersects(temp, g);
- count 
--------
-   162
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aIntersects(t1.temp, t2.temp);

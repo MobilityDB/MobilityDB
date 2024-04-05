@@ -47,6 +47,7 @@ WHERE geometrytype(trajectory(temp)) <> 'GEOMETRYCOLLECTION' AND aContains(g, te
 
 -------------------------------------------------------------------------------
 -- eDisjoint, aDisjoint
+-- eDisjoint is not provided for geography
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE eDisjoint(g, temp);
@@ -57,12 +58,8 @@ SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE eDisjoint(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE eDisjoint(temp, g);
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE eDisjoint(t1.temp, t2.temp);
 -- Geography
-SELECT COUNT(*) FROM tbl_geography, tbl_tgeogpoint WHERE eDisjoint(g, temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geography WHERE eDisjoint(temp, g);
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE eDisjoint(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE eDisjoint(g, temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE eDisjoint(temp, g);
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eDisjoint(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
@@ -85,6 +82,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aDisjoint(t1
 
 -------------------------------------------------------------------------------
 -- eIntersects, aIntersects
+-- aIntersects is not provided for geography
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE eIntersects(g, temp);
@@ -115,14 +113,8 @@ SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE aIntersects(g, temp)
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE aIntersects(temp, g);
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE aIntersects(t1.temp, t2.temp);
 -- Geography
--- The following two queries return different number result (3302 vs 3300)
--- depending on PostGIS version. For this reason they are commented out
--- SELECT COUNT(*) FROM tbl_geography, tbl_tgeogpoint WHERE aIntersects(g, temp);
--- SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geography WHERE aIntersects(temp, g);
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE aIntersects(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE aIntersects(g, temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE aIntersects(temp, g);
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aIntersects(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------

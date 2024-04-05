@@ -377,7 +377,7 @@ acontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 }
 
 /*****************************************************************************
- * Ever/always disjoint (for both geometry and geography)
+ * Ever/always disjoint (only always works for both geometry and geography)
  *****************************************************************************/
 
 /**
@@ -387,13 +387,16 @@ acontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @note eDisjoint(tpoint, geo) is equivalent to NOT covers(geo, traj(tpoint))
+ * @note The function does not accept geography since it is based on the
+ * PostGIS ST_Covers function provided by GEOS
  * @csqlfn #Edisjoint_tpoint_geo()
  */
 int
 edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_not_geodetic(temp->flags) || gserialized_is_empty(gs) ||
+      ! ensure_valid_tpoint_geo(temp, gs))
     return -1;
   datum_func2 func = &geom_covers;
   int result = spatialrel_tpoint_traj_geo(temp, gs, (Datum) NULL,
@@ -414,12 +417,7 @@ int
 adisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   int result = eintersects_tpoint_geo(temp, gs);
-  if (result < 0)
-    return result;
-  else if (result == 0)
-    return 1;
-  else /* result = 1 */
-    return 0;
+  return result < 0 ? result : (result == 1 ? 0 : 1);
 }
 
 #if MEOS
@@ -484,12 +482,16 @@ eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
+ * @note aIntersects(tpoint, geo) is equivalent to NOT eDisjoint(tpoint, geo)
+ * @note The function does not accept geography since the eDisjoint function
+ * is based on the PostGIS ST_Covers function provided by GEOS
  * @csqlfn #Aintersects_tpoint_geo()
  */
 int
 aintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ! edisjoint_tpoint_geo(temp, gs);
+  int result = edisjoint_tpoint_geo(temp, gs);
+  return result < 0 ? result : (result == 1 ? 0 : 1);
 }
 
 #if MEOS
@@ -656,7 +658,7 @@ adwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
   int result = spatialrel_tpoint_traj_geo(temp, buffer, (Datum) NULL,
     (varfunc) func, 2, INVERT);
   pfree(buffer);
-  return result ? 1 : 0;
+  return result;
 }
 
 /*****************************************************************************/
