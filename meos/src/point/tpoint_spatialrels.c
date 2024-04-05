@@ -395,10 +395,9 @@ edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   /* Ensure validity of the arguments */
   if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  GSERIALIZED *traj = tpoint_trajectory(temp);
-  bool result = DatumGetBool(geom_covers(PointerGetDatum(gs),
-    PointerGetDatum(traj)));
-  pfree(traj);
+  datum_func2 func = &geom_covers;
+  int result = spatialrel_tpoint_traj_geo(temp, gs, (Datum) NULL,
+    (varfunc) func, 2, INVERT);
   return result ? 0 : 1;
 }
 
@@ -652,11 +651,10 @@ adwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
-  GSERIALIZED *traj = tpoint_trajectory(temp);
   GSERIALIZED *buffer = geometry_buffer(gs, dist, "");
-  bool result = DatumGetBool(geom_covers(PointerGetDatum(buffer),
-    PointerGetDatum(traj)));
-  pfree(traj);
+  datum_func2 func = &geom_covers;
+  int result = spatialrel_tpoint_traj_geo(temp, buffer, (Datum) NULL,
+    (varfunc) func, 2, INVERT);
   pfree(buffer);
   return result ? 1 : 0;
 }
