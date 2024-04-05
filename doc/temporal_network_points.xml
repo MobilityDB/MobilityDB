@@ -847,7 +847,7 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt
 				<indexterm><primary><varname>aTouches</varname></primary></indexterm>
 				<indexterm><primary><varname>eDwithin</varname></primary></indexterm>
 				<indexterm><primary><varname>aDwithin</varname></primary></indexterm>
-				<para>Ever spatial relationships</para>
+				<para>Ever and always spatial relationships</para>
 				<para><varname>eContains(geometry,tnpoint) → boolean</varname></para>
 				<para><varname>aContains(geometry,tnpoint) → boolean</varname></para>
 				<para><varname>eDisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</varname></para>
