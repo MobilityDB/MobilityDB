@@ -184,12 +184,23 @@ TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if(IS_BIG_ENDIAN)
   message(STATUS "BIG_ENDIAN")
   add_definitions(-DMEOS_IS_BIG_ENDIAN=1)
-  set(DEF_WORDS_BIGENDIAN "undef")
+  set(DEF_WORDS_BIGENDIAN ON)
 else()
   message(STATUS "LITTLE_ENDIAN")
   add_definitions(-DMEOS_IS_BIG_ENDIAN=0)
-  set(DEF_WORDS_BIGENDIAN "#undef")
+  unset(DEF_WORDS_BIGENDIAN)
 endif()
+
+# check for needed Header files and functions
+check_symbol_exists(strchrnul string.h HAVE_STRCHRNUL)
+check_symbol_exists(__get_cpuid cpuid.h HAVE__GET_CPUID)
+check_c_source_runs("
+#include <stdint.h>
+int main() {
+    uint64_t x = 1, r;
+    __asm__ (\"popcntq %1, %0\" : \"=r\"(r) : \"r\"(x));
+    return 0;
+}" HAVE_X86_64_POPCNTQ)
 
 #--------------------------------
 # Other dependencies
