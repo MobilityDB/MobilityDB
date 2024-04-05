@@ -67,6 +67,12 @@ add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 # MobilityDB directories
 #--------------------------------
 
+# PostGIS
+configure_file(${CMAKE_SOURCE_DIR}/postgis/postgis_config.h.in ${CMAKE_SOURCE_DIR}/postgis/postgis_config.h)
+include_directories("${CMAKE_SOURCE_DIR}/postgis/liblwgeom")
+include_directories("${CMAKE_SOURCE_DIR}/postgis")
+add_subdirectory("${CMAKE_SOURCE_DIR}/postgis" "postgis")
+
 # PostgreSQL
 configure_file(${CMAKE_SOURCE_DIR}/meos/postgres/pg_config.h.in ${CMAKE_SOURCE_DIR}/meos/postgres/pg_config.h)
 include_directories("postgres")
@@ -76,12 +82,6 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
   target_compile_options(timezone PRIVATE "-w")
   target_compile_options(utils PRIVATE "-w")
 endif()
-
-# PostGIS
-configure_file(${CMAKE_SOURCE_DIR}/postgis/postgis_config.h.in ${CMAKE_SOURCE_DIR}/postgis/postgis_config.h)
-include_directories("${CMAKE_SOURCE_DIR}/postgis/liblwgeom")
-include_directories("${CMAKE_SOURCE_DIR}/postgis")
-add_subdirectory("${CMAKE_SOURCE_DIR}/postgis" "postgis")
 
 # MEOS
 include_directories("include")
