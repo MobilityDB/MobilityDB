@@ -43,11 +43,11 @@
 /*****************************************************************************/
 
 extern int ea_spatialrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
-  Datum (*func)(Datum, Datum), bool invert, bool ever);
+  datum_func2 func, bool invert, bool ever);
 extern int ea_spatialrel_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  Datum (*func)(Datum, Datum), bool invert, bool ever);
+  datum_func2 func, bool invert, bool ever);
 extern int ea_spatialrel_tnpoint_tnpoint(const Temporal *temp1,
-  const Temporal *temp2, Datum (*func)(Datum, Datum), bool ever);
+  const Temporal *temp2, datum_func2 func, bool ever);
 
 extern int ea_contains_geo_tnpoint(const GSERIALIZED *gs, const Temporal *temp,
   bool ever);

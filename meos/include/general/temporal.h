@@ -248,6 +248,7 @@ typedef int (*qsort_comparator) (const void *a, const void *b);
 typedef Datum (*varfunc) (Datum, ...);
 
 /* Definition of a binary function with two or three Datum arguments */
+typedef Datum (*datum_func1) (Datum);
 typedef Datum (*datum_func2) (Datum, Datum);
 typedef Datum (*datum_func3) (Datum, Datum, Datum);
 

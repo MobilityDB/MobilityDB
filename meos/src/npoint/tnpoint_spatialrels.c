@@ -63,7 +63,7 @@
  */
 int
 ea_spatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum), bool ever)
+  datum_func2 func, bool ever)
 {
   assert(tnpoint_srid(temp1) == tnpoint_srid(temp2));
   /* Transform the temporal network points */
