@@ -44,7 +44,7 @@
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   #include <common/hashfn.h>
 #else
-  #include <access/hash.h>
+  #include "general/pg_types.h"
 #endif
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
