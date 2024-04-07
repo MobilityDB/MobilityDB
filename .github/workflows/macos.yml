@@ -29,6 +29,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ macos-13, macos-14 ]
+        include:
+          - os: macos-13
+            pg_path: "/usr/local/var/postgres"
+          - os: macos-14
+            pg_path: "/opt/homebrew/var/postgres"
 
     steps:
       - name: Checkout repository
@@ -52,9 +57,9 @@ jobs:
 
       - name: test install
         run: |
-          mkdir /usr/local/var/postgres
-          initdb -D /usr/local/var/postgres
-          pg_ctl -D /usr/local/var/postgres start
+          mkdir ${{ matrix.pg_path }}
+          initdb -D ${{ matrix.pg_path }}
+          pg_ctl -D ${{ matrix.pg_path }} start
           createdb ___mobdb___test___
           psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE;  SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
 
