@@ -56,6 +56,8 @@
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tempspatialrels.h"
 
+#define INVERT_RESULT(result) (result < 0 ? -1 : (result > 0) ? 0 : 1)
+
 /*****************************************************************************
  * Spatial relationship functions
  * disjoint and intersects are inverse to each other
@@ -69,6 +71,16 @@ geom_contains(Datum geom1, Datum geom2)
 {
   return BoolGetDatum(geometry_spatialrel(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), CONTAINS));
+}
+
+/**
+ * @brief Return a Datum true if the first geometry covers the second one
+ */
+Datum
+geom_covers(Datum geom1, Datum geom2)
+{
+  return BoolGetDatum(geometry_spatialrel(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2), COVERS));
 }
 
 /**
@@ -367,103 +379,8 @@ acontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 }
 
 /*****************************************************************************
- * Ever/always disjoint (for both geometry and geography)
+ * Ever/always disjoint (only always works for both geometry and geography)
  *****************************************************************************/
-
-/**
- * @brief Return true if a temporal instant point and a geometry are
- * ever/always disjoint
- * @param[in] inst Temporal point
- * @param[in] geo Geometry
- * @param[in] func PostGIS function to be called
- */
-bool
-ea_disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
-  datum_func2 func)
-{
-  return DatumGetBool(func(tinstant_val(inst), geo));
-}
-
-/**
- * @brief Return true if a temporal sequence point and a geometry are
- * ever/always disjoint
- * @param[in] seq Temporal point
- * @param[in] geo Geometry
- * @param[in] func PostGIS function to be called
- * @param[in] ever True for the ever semantics, false for the always semantics
- */
-bool
-ea_disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
-  datum_func2 func, bool ever)
-{
-  bool ret_loop = ever ? true : false;
-  for (int i = 0; i < seq->count; i++)
-  {
-    bool res = DatumGetBool(func(tinstant_val(TSEQUENCE_INST_N(seq, i)), geo));
-    if ((ever && res) || (! ever && ! res))
-      return ret_loop;
-  }
-  return ! ret_loop;
-}
-
-/**
- * @brief Return true if a temporal sequence set point and a geometry are ever
- * disjoint
- * @param[in] ss Temporal point
- * @param[in] geo Geometry
- * @param[in] func PostGIS function to be used for instantaneous sequences
- * @param[in] ever True for the ever semantics, false for the always semantics
- */
-bool
-ea_disjoint_tpointseqset_geo(const TSequenceSet *ss, Datum geo,
-  datum_func2 func, bool ever)
-{
-  bool ret_loop = ever ? true : false;
-  for (int i = 0; i < ss->count; i++)
-  {
-    bool res = ea_disjoint_tpointseq_geo(TSEQUENCESET_SEQ_N(ss, i), geo, func,
-      ever);
-    if ((ever && res) || (! ever && ! res))
-      return ret_loop;
-  }
-  return ! ret_loop;
-}
-
-/**
- * @ingroup meos_internal_temporal_spatial_rel_ever
- * @brief Return 1 if a temporal point and a geometry are ever disjoint,
- * 0 if not, and -1 on error or if the geometry is empty
- * @param[in] temp Temporal point
- * @param[in] gs Geometry
- * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Edisjoint_tpoint_geo()
- */
-Datum
-ea_disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
-    return Int32GetDatum(-1);
-
-  datum_func2 func = get_disjoint_fn_gs(temp->flags, gs->gflags);
-  bool result;
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      result = ea_disjoint_tpointinst_geo((TInstant *) temp, PointerGetDatum(gs),
-        func);
-      break;
-    case TSEQUENCE:
-      result = ea_disjoint_tpointseq_geo((TSequence *) temp, PointerGetDatum(gs),
-        func, ever);
-      break;
-    default: /* TSEQUENCESET */
-      result = ea_disjoint_tpointseqset_geo((TSequenceSet *) temp,
-        PointerGetDatum(gs), func, ever);
-  }
-  return result ? Int32GetDatum(1) : Int32GetDatum(0);
-}
 
 /**
  * @ingroup meos_temporal_spatial_rel_ever
@@ -471,12 +388,21 @@ ea_disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
+ * @note eDisjoint(tpoint, geo) is equivalent to NOT covers(geo, traj(tpoint))
+ * @note The function does not accept geography since it is based on the
+ * PostGIS ST_Covers function provided by GEOS
  * @csqlfn #Edisjoint_tpoint_geo()
  */
 int
 edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return DatumGetInt32(ea_disjoint_tpoint_geo(temp, gs, EVER));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_geodetic(temp->flags))
+    return -1;
+  datum_func2 func = &geom_covers;
+  int result = spatialrel_tpoint_traj_geo(temp, gs, (Datum) NULL,
+    (varfunc) func, 2, INVERT);
+  return INVERT_RESULT(result);
 }
 
 /**
@@ -485,12 +411,14 @@ edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
+ * @note aDisjoint(a, b) is equivalent to NOT eIntersects(a, b)
  * @csqlfn #Adisjoint_tpoint_geo()
  */
 int
 adisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return DatumGetInt32(ea_disjoint_tpoint_geo(temp, gs, ALWAYS));
+  int result = eintersects_tpoint_geo(temp, gs);
+  return INVERT_RESULT(result);
 }
 
 #if MEOS
@@ -540,10 +468,6 @@ adisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 int
 eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1;
-
   datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
   return spatialrel_tpoint_traj_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
     INVERT_NO);
@@ -555,12 +479,16 @@ eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
+ * @note aIntersects(tpoint, geo) is equivalent to NOT eDisjoint(tpoint, geo)
+ * @note The function does not accept geography since the eDisjoint function
+ * is based on the PostGIS ST_Covers function provided by GEOS
  * @csqlfn #Aintersects_tpoint_geo()
  */
 int
 aintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ! edisjoint_tpoint_geo(temp, gs);
+  int result = edisjoint_tpoint_geo(temp, gs);
+  return INVERT_RESULT(result);
 }
 
 #if MEOS
@@ -691,11 +619,8 @@ int
 edwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+  if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
-
   datum_func3 func = get_dwithin_fn_gs(temp->flags, gs->gflags);
   return spatialrel_tpoint_traj_geo(temp, gs, Float8GetDatum(dist),
     (varfunc) func, 3, INVERT_NO);
@@ -716,16 +641,14 @@ int
 adwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_not_geodetic(temp->flags) || ! ensure_has_not_Z(temp->flags) ||
-      ! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_not_geodetic(temp->flags) || ! ensure_has_not_Z(temp->flags) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
   GSERIALIZED *buffer = geometry_buffer(gs, dist, "");
-  datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
-  int result = spatialrel_tpoint_traj_geo(temp, buffer, Float8GetDatum(dist),
-    (varfunc) func, 3, INVERT_NO);
+  datum_func2 func = &geom_covers;
+  int result = spatialrel_tpoint_traj_geo(temp, buffer, (Datum) NULL,
+    (varfunc) func, 2, INVERT);
   pfree(buffer);
   return result;
 }
