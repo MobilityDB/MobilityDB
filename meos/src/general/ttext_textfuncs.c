@@ -51,7 +51,7 @@
  * @brief Apply the function to transform the temporal text value
  */
 Temporal *
-textfunc_ttext(const Temporal *temp, Datum (*func)(Datum value))
+textfunc_ttext(const Temporal *temp, datum_func1 func)
 {
   /* Ensure validity of the arguments */
   assert(temp); assert(func);

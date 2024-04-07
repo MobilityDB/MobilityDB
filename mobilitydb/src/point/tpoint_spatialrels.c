@@ -70,7 +70,7 @@
  */
 static Datum
 EAspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo,
-  Datum (*func1)(Datum, Datum), Datum (*func2)(Datum, Datum), bool ever)
+  datum_func2 func1, datum_func2 func2, bool ever)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);

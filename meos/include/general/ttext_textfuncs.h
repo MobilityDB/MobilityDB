@@ -49,7 +49,7 @@ extern Datum datum_upper(Datum value);
 extern Datum datum_initcap(Datum value);
 
 extern Temporal *textfunc_ttext(const Temporal *temp,
-  Datum (*func)(Datum value));
+  datum_func1 func);
 extern Temporal *textfunc_ttext_text(const Temporal *temp, Datum value,
   datum_func2 func, bool invert);
 extern Temporal *textfunc_ttext_ttext(const Temporal *temp1,

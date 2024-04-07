@@ -261,7 +261,7 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
  */
 static int
 spatialrel_tpoint_traj_geo(const Temporal *temp, const GSERIALIZED *gs,
-  Datum param, Datum (*func)(Datum, ...), int numparam, bool invert)
+  Datum param, varfunc func, int numparam, bool invert)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
@@ -297,7 +297,7 @@ spatialrel_tpoint_traj_geo(const Temporal *temp, const GSERIALIZED *gs,
  */
 int
 ea_spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum), bool ever)
+  datum_func2 func, bool ever)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||

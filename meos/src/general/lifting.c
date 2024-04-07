@@ -108,18 +108,21 @@
  * @code
  * typedef Datum (*varfunc)    (Datum, ...);
  *
+ * typedef Datum (*datum_func1)(Datum);
+ * typedef Datum (*datum_func2)(Datum, Datum);
+ *
  * TInstant *
  * tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
  * {
  *   Datum resvalue;
  *   if (lfinfo->numparam == 0)
  *   {
- *     Datum (* noParamFunc)(Datum) = (Datum(*)(Datum))(*lfinfo->func);
+ *     datum_func1 noParamFunc = (datum_func1)(*lfinfo->func);
  *     resvalue = noParamFunc(temporalinst_value(inst));
  *   }
  *   else if (lfinfo->numparam == 1)
  *   {
- *     Datum (* oneParamFunc)(Datum, Datum) = (Datum(*)(Datum, Datum))(*lfinfo->func);
+ *     datum_func2 oneParamFunc = (datum_func2)(*lfinfo->func);
  *     resvalue = oneParamFunc(temporalinst_value(inst), lfinfo->param[0]);
  *   }
  *   else
@@ -197,14 +200,12 @@ tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
   assert(lfinfo->numparam >= 0 && lfinfo->numparam <= MAX_PARAMS);
   if (lfinfo->numparam == 0)
   {
-    Datum (* noParamFunc)(Datum) =
-      (Datum(*)(Datum))(*lfinfo->func);
+    datum_func1 noParamFunc = (datum_func1)(*lfinfo->func);
     return noParamFunc(value);
   }
   else /* if (lfinfo->numparam == 1) */
   {
-    Datum (* oneParamFunc)(Datum, Datum) =
-      (Datum(*)(Datum, Datum))(*lfinfo->func);
+    datum_func2 oneParamFunc = (datum_func2)(*lfinfo->func);
     return oneParamFunc(value, lfinfo->param[0]);
   }
 }
@@ -289,15 +290,13 @@ tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
   assert(lfinfo->numparam >= 0 && lfinfo->numparam <= MAX_PARAMS);
   if (lfinfo->numparam == 0)
   {
-    Datum (* noParamFunc)(Datum, Datum) =
-      (Datum(*)(Datum, Datum))(*lfinfo->func);
+    datum_func2 noParamFunc = (datum_func2)(*lfinfo->func);
     return lfinfo->invert ?
       noParamFunc(value2, value1) : noParamFunc(value1, value2);
   }
   else /* if (lfinfo->numparam == 1) */
   {
-    Datum (* oneParamFunc)(Datum, Datum, Datum) =
-      (Datum(*)(Datum, Datum, Datum))(*lfinfo->func);
+    datum_func3 oneParamFunc = (datum_func3)(*lfinfo->func);
     return lfinfo->invert ?
       oneParamFunc(value2, value1, lfinfo->param[0]) :
       oneParamFunc(value1, value2, lfinfo->param[0]);
