@@ -56,6 +56,8 @@
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tempspatialrels.h"
 
+#define INVERT_RESULT(result) (result < 0 ? -1 : (result > 0) ? 0 : 1)
+
 /*****************************************************************************
  * Spatial relationship functions
  * disjoint and intersects are inverse to each other
@@ -395,13 +397,12 @@ int
 edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_geodetic(temp->flags) || gserialized_is_empty(gs) ||
-      ! ensure_valid_tpoint_geo(temp, gs))
+  if (! ensure_not_geodetic(temp->flags))
     return -1;
   datum_func2 func = &geom_covers;
   int result = spatialrel_tpoint_traj_geo(temp, gs, (Datum) NULL,
     (varfunc) func, 2, INVERT);
-  return result ? 0 : 1;
+  return INVERT_RESULT(result);
 }
 
 /**
@@ -417,7 +418,7 @@ int
 adisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   int result = eintersects_tpoint_geo(temp, gs);
-  return result < 0 ? result : (result == 1 ? 0 : 1);
+  return INVERT_RESULT(result);
 }
 
 #if MEOS
@@ -467,10 +468,6 @@ adisjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 int
 eintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1;
-
   datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
   return spatialrel_tpoint_traj_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
     INVERT_NO);
@@ -491,7 +488,7 @@ int
 aintersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   int result = edisjoint_tpoint_geo(temp, gs);
-  return result < 0 ? result : (result == 1 ? 0 : 1);
+  return INVERT_RESULT(result);
 }
 
 #if MEOS
@@ -622,11 +619,8 @@ int
 edwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+  if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
-
   datum_func3 func = get_dwithin_fn_gs(temp->flags, gs->gflags);
   return spatialrel_tpoint_traj_geo(temp, gs, Float8GetDatum(dist),
     (varfunc) func, 3, INVERT_NO);
@@ -647,9 +641,7 @@ int
 adwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_not_geodetic(temp->flags) || ! ensure_has_not_Z(temp->flags) ||
-      ! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_not_geodetic(temp->flags) || ! ensure_has_not_Z(temp->flags) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
