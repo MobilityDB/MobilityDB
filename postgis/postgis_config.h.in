@@ -22,7 +22,7 @@
 #define HAVE_GETTEXT 1
 
 /* Define if the build is big endian */
-/* @DEF_WORDS_BIGENDIAN@ WORDS_BIGENDIAN */
+#cmakedefine WORDS_BIGENDIAN @WORDS_BIGENDIAN@
 
 /* Define if you have the iconv() function and it works. */
 #define HAVE_ICONV 1
