@@ -63,20 +63,18 @@
  */
 int
 ea_spatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
-  Datum (*func)(Datum, Datum), bool ever)
+  datum_func2 func, bool ever)
 {
   assert(tnpoint_srid(temp1) == tnpoint_srid(temp2));
   /* Transform the temporal network points */
   Temporal *tpoint1 = tnpoint_tgeompoint(temp1);
   Temporal *tpoint2 = tnpoint_tgeompoint(temp2);
   /* Fill the lifted structure */
-  meosType basetype = temptype_basetype(tpoint1->temptype);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
-  lfinfo.args = true;
-  lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = tpoint1->temptype;
   lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;

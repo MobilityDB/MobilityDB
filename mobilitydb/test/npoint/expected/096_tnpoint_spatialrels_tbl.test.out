@@ -341,7 +341,7 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE eDwithin(temp, tnpoint '[NPoint(1, 0.0)@2
 SELECT COUNT(*) FROM tbl_tnpoint WHERE aDwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
  count 
 -------
-     3
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE aDwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
@@ -453,7 +453,7 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE eDwithin(temp, tnpoint '[NPoint(1, 0.0)@2
 SELECT COUNT(*) FROM tbl_tnpoint WHERE aDwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
  count 
 -------
-     3
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE aDwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);

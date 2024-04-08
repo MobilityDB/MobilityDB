@@ -43,6 +43,7 @@
 /*****************************************************************************/
 
 extern Datum geom_contains(Datum geom1, Datum geom2);
+extern Datum geom_covers(Datum geom1, Datum geom2);
 extern Datum geom_disjoint2d(Datum geom1, Datum geom2);
 extern Datum geom_disjoint3d(Datum geom1, Datum geom2);
 extern Datum geog_disjoint(Datum geog1, Datum geog2);
@@ -63,7 +64,7 @@ extern datum_func3 get_dwithin_fn(int16 flags1, int16 flags2);
 extern Datum ea_disjoint_tpoint_geo(const Temporal *temp,
   const GSERIALIZED *gs, bool ever);
 extern int ea_spatialrel_tpoint_tpoint(const Temporal *temp1,
-  const Temporal *temp2, Datum (*func)(Datum, Datum), bool ever);
+  const Temporal *temp2, datum_func2 func, bool ever);
 
 extern int ea_dwithin_tpoint_tpoint1(const Temporal *sync1,
   const Temporal *sync2, double dist, bool ever);

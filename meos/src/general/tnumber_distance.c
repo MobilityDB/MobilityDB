@@ -64,9 +64,9 @@ distance_tnumber_number(const Temporal *temp, Datum value)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &distance_value_value;
-  lfinfo.numparam = 0;
-  lfinfo.args = true;
-  lfinfo.argtype[0] = basetype;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = temp->temptype;
   lfinfo.argtype[1] = basetype;
   lfinfo.restype = temp->temptype;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
@@ -157,9 +157,9 @@ distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &distance_value_value;
-  lfinfo.numparam = 0;
-  lfinfo.args = true;
-  lfinfo.argtype[0] = lfinfo.argtype[1] = basetype;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = basetype;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = temp1->temptype;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);

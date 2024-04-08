@@ -3,5 +3,5 @@ add_library(common OBJECT
   pgfnames.c
   )
 
-set_property(TARGET liblwgeom PROPERTY C_VISIBILITY_PRESET hidden)
-set_property(TARGET liblwgeom PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_property(TARGET common PROPERTY C_VISIBILITY_PRESET hidden)
+set_property(TARGET common PROPERTY POSITION_INDEPENDENT_CODE ON)

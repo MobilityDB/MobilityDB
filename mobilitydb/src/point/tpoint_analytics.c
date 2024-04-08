@@ -53,8 +53,6 @@ Temporal_simplify_min_dist(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double dist = PG_GETARG_FLOAT8(1);
-  /* Store fcinfo to compute the geodetic distance */
-  store_fcinfo(fcinfo);
   Temporal *result = temporal_simplify_min_dist(temp, dist);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);

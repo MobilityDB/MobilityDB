@@ -57,9 +57,9 @@ extern Datum datum_sum_double4(Datum l, Datum r);
 /* Generic aggregation functions */
 
 extern TInstant **tinstant_tagg(TInstant **instants1, int count1,
-  TInstant **instants2, int count2, Datum (*func)(Datum, Datum), int *newcount);
+  TInstant **instants2, int count2, datum_func2 func, int *newcount);
 extern TSequence **tsequence_tagg(TSequence **sequences1, int count1,
-  TSequence **sequences2, int count2, Datum (*func)(Datum, Datum),
+  TSequence **sequences2, int count2, datum_func2 func,
   bool crossings, int *newcount);
 extern SkipList *tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
   datum_func2 func, bool interpoint);

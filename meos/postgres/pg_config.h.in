@@ -528,7 +528,7 @@
 #define HAVE_STDLIB_H 1
 
 /* Define to 1 if you have the `strchrnul' function. */
-#define HAVE_STRCHRNUL 1
+#cmakedefine HAVE_STRCHRNUL @HAVE_STRCHRNUL@
 
 /* Define to 1 if you have the `strerror_r' function. */
 #define HAVE_STRERROR_R 1
@@ -720,7 +720,7 @@
 /* #undef HAVE_X509_GET_SIGNATURE_NID */
 
 /* Define to 1 if the assembler supports X86_64's POPCNTQ instruction. */
-#define HAVE_X86_64_POPCNTQ 1
+#cmakedefine HAVE_X86_64_POPCNTQ @HAVE_X86_64_POPCNTQ@
 
 /* Define to 1 if the system has the type `_Bool'. */
 #define HAVE__BOOL 1
@@ -762,7 +762,7 @@
 /* #undef HAVE__CPUID */
 
 /* Define to 1 if you have __get_cpuid. */
-#define HAVE__GET_CPUID 1
+#cmakedefine HAVE__GET_CPUID @HAVE__GET_CPUID@
 
 /* Define to 1 if your compiler understands _Static_assert. */
 #define HAVE__STATIC_ASSERT 1

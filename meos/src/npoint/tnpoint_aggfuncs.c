@@ -61,7 +61,7 @@ tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
   if (! ensure_geoaggstate(state, tnpoint_srid(temp), hasz))
     return NULL;
   Temporal *temp1 = tnpoint_tgeompoint(temp);
-  Datum (*func)(Datum, Datum) = MEOS_FLAGS_GET_Z(temp1->flags) ?
+  datum_func2 func = MEOS_FLAGS_GET_Z(temp1->flags) ?
     &datum_sum_double4 : &datum_sum_double3;
 
   int count;

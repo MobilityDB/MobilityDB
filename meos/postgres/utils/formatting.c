@@ -3288,6 +3288,7 @@ pg_interval_to_char(Interval *it, text *fmt)
  */
 /**
  * @brief Input a timestamp from date text.
+ * @return On error return @p DT_NOEND
  */
 TimestampTz
 pg_to_timestamp(text *date_txt, text *fmt)
@@ -3310,7 +3311,7 @@ pg_to_timestamp(text *date_txt, text *fmt)
     if (dterr)
     {
       DateTimeParseError(dterr, text2cstring(date_txt), "timestamptz");
-      return NULL;
+      return DT_NOEND;
     }
   }
   else
@@ -3319,7 +3320,7 @@ pg_to_timestamp(text *date_txt, text *fmt)
   if (tm2timestamp(&tm, fsec, &tz, &result) != 0)
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "timestamp out of range");
-    return NULL;
+    return DT_NOEND;
   }
 
   /* Use the specified fractional precision, if any. */

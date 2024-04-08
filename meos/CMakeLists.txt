@@ -74,9 +74,10 @@ include_directories("${CMAKE_SOURCE_DIR}/postgis")
 add_subdirectory("${CMAKE_SOURCE_DIR}/postgis" "postgis")
 
 # PostgreSQL
+configure_file(${CMAKE_SOURCE_DIR}/meos/postgres/pg_config.h.in ${CMAKE_SOURCE_DIR}/meos/postgres/pg_config.h)
 include_directories("postgres")
 add_subdirectory("postgres")
-# Disable all warnings on embeded code from PostgreSQL
+# Disable all warnings on embedded code from PostgreSQL
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
   target_compile_options(timezone PRIVATE "-w")
   target_compile_options(utils PRIVATE "-w")
@@ -88,7 +89,7 @@ add_subdirectory("src")
 
 # Must be after add_library
 if(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
-  # Disable all warnings on embeded code from PostgreSQL and PostGIS
+  # Disable all warnings on embedded code from PostgreSQL and PostGIS
   target_compile_options(liblwgeom PRIVATE "/W0")
   target_compile_options(libpgcommon PRIVATE "/W0")
   target_compile_options(ryu PRIVATE "/W0")

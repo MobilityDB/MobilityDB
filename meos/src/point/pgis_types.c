@@ -75,6 +75,7 @@ extern GSERIALIZED *geography_from_lwgeom(LWGEOM *geom, int32 typmod);
 
 /*****************************************************************************/
 
+#if MEOS
 /**
  * @brief Return the srid of a geometry
  * @note PostGIS function: @p gserialized_get_srid(const GSERIALIZED *g).
@@ -84,7 +85,7 @@ geo_get_srid(const GSERIALIZED *g)
 {
   return gserialized_get_srid(g);
 }
-
+#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_box.c
@@ -812,8 +813,8 @@ meos_call_geos2(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 }
 
 /**
- * @brief Return true if two geometries intersect or the first contains
- * the other, where the function called depend on the third argument
+ * @brief Return true if two geometries satisfy a given spatial relationship,
+ * where the function called depend on the third argument
  * @param[in] gs1,gs2 Geometries
  * @param[in] rel Spatial relationship
  * @note PostGIS functions: @p ST_Intersects(PG_FUNCTION_ARGS),
@@ -856,7 +857,8 @@ geometry_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   }
 
   /* Call GEOS function */
-  assert(rel == INTERSECTS || rel == CONTAINS || rel == TOUCHES);
+  assert(rel == INTERSECTS || rel == CONTAINS || rel == TOUCHES ||
+    rel == COVERS);
   switch (rel)
   {
     case INTERSECTS:
@@ -865,6 +867,8 @@ geometry_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
       return (bool) meos_call_geos2(gs1, gs2, &GEOSContains);
     case TOUCHES:
       return (bool) meos_call_geos2(gs1, gs2, &GEOSTouches);
+    case COVERS:
+      return (bool) meos_call_geos2(gs1, gs2, &GEOSCovers);
     default:
       /* keep compiler quiet */
       return false;
@@ -1420,7 +1424,7 @@ pgis_geography_dwithin(GSERIALIZED *gs1, GSERIALIZED *gs2, double tolerance,
   spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
   /* Set to sphere if requested */
-  if (!  use_spheroid )
+  if (! use_spheroid)
     s.a = s.b = s.radius;
 
   LWGEOM *lwgeom1 = lwgeom_from_gserialized(gs1);
@@ -1432,7 +1436,7 @@ pgis_geography_dwithin(GSERIALIZED *gs1, GSERIALIZED *gs2, double tolerance,
   lwgeom_free(lwgeom2);
 
   /* Something went wrong... should already be eloged, return FALSE */
-  if ( distance < 0.0 )
+  if (distance < 0.0)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "lwgeom_distance_spheroid returned negative!");
