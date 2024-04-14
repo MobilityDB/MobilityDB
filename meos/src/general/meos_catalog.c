@@ -167,7 +167,7 @@ static const char *_MEOSOPER_NAMES[] =
   [ALWAYSGE_OP] = "%>=",
 };
 
-#define TEMPSUBTYPE_STR_MAX_LEN 12
+#define TEMPSUBTYPE_STR_MAXLEN 12
 
 /**
  * @brief Global array storing the string representation of the concrete
@@ -181,7 +181,7 @@ static const char *_TEMPSUBTYPE_NAMES[] =
   [TSEQUENCESET] = "SequenceSet"
 };
 
-#define INTERP_STR_MAX_LEN 8
+#define INTERP_STR_MAXLEN 8
 
 /**
 
@@ -325,8 +325,8 @@ tempsubtype_from_string(const char *str, int16 *subtype)
   size_t n = sizeof(_TEMPSUBTYPE_NAMES) / sizeof(char *);
   for (i = 0; i < n; i++)
   {
-    if (len == strnlen(_TEMPSUBTYPE_NAMES[i], TEMPSUBTYPE_STR_MAX_LEN) &&
-      ! pg_strncasecmp(tmpstr, _TEMPSUBTYPE_NAMES[i], TEMPSUBTYPE_STR_MAX_LEN))
+    if (len == strnlen(_TEMPSUBTYPE_NAMES[i], TEMPSUBTYPE_STR_MAXLEN) &&
+      ! pg_strncasecmp(tmpstr, _TEMPSUBTYPE_NAMES[i], TEMPSUBTYPE_STR_MAXLEN))
     {
       *subtype = i;
       pfree(tmpstr);
@@ -415,7 +415,7 @@ interptype_from_string(const char *str)
   for (int i = 0; i < n; i++)
   {
     if (pg_strncasecmp(str, _INTERPTYPE_NAMES[i],
-      INTERP_STR_MAX_LEN) == 0)
+      INTERP_STR_MAXLEN) == 0)
       return i;
   }
   /* Error */

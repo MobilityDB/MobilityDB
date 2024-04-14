@@ -230,8 +230,7 @@ PG_FUNCTION_INFO_V1(Temporal_typmod_out);
 Datum
 Temporal_typmod_out(PG_FUNCTION_ARGS)
 {
-  char *s = palloc(64);
-  char *str = s;
+  char *str = palloc(TYPMOD_MAXLEN);
   int32 typmod = PG_GETARG_INT32(0);
   int16 subtype = TYPMOD_GET_SUBTYPE(typmod);
   /* No type? Then no typmod at all. Return empty string.  */
@@ -240,8 +239,8 @@ Temporal_typmod_out(PG_FUNCTION_ARGS)
     *str = '\0';
     PG_RETURN_CSTRING(str);
   }
-  sprintf(str, "(%s)", tempsubtype_name(subtype));
-  PG_RETURN_CSTRING(s);
+  snprintf(str, TYPMOD_MAXLEN, "(%s)", tempsubtype_name(subtype));
+  PG_RETURN_CSTRING(str);
 }
 
 PGDLLEXPORT Datum Temporal_enforce_typmod(PG_FUNCTION_ARGS);

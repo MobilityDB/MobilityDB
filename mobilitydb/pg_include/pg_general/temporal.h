@@ -159,6 +159,8 @@ typedef enum
  * Typmod definitions
  *****************************************************************************/
 
+#define TYPMOD_MAXLEN 64
+
 #define TYPMOD_GET_SUBTYPE(typmod) \
   ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
 

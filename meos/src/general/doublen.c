@@ -79,8 +79,9 @@ double2_out(const double2 *d, int maxdd)
 
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);
-  char *result = palloc(strlen(astr) + strlen(bstr) + 4);
-  sprintf(result, "(%s,%s)", astr, bstr);
+  size_t size = strlen(astr) + strlen(bstr) + 4;
+  char *result = palloc(size);
+  snprintf(result, size, "(%s,%s)", astr, bstr);
   pfree(astr); pfree(bstr);
   return result;
 }
@@ -164,8 +165,9 @@ double3_out(const double3 *d, int maxdd)
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);
   char *cstr = float8_out(d->c, maxdd);
-  char *result = palloc(strlen(astr) + strlen(bstr) + strlen(cstr) + 5);
-  sprintf(result, "(%s,%s,%s)", astr, bstr, cstr);
+  size_t size = strlen(astr) + strlen(bstr) + strlen(cstr) + 5;
+  char *result = palloc(size);
+  snprintf(result, size, "(%s,%s,%s)", astr, bstr, cstr);
   pfree(astr); pfree(bstr); pfree(cstr);
   return result;
 }
@@ -256,9 +258,9 @@ double4_out(const double4 *d, int maxdd)
   char *bstr = float8_out(d->b, maxdd);
   char *cstr = float8_out(d->c, maxdd);
   char *dstr = float8_out(d->d, maxdd);
-  char *result = palloc(strlen(astr) + strlen(bstr) + strlen(cstr) +
-    strlen(dstr) + 6);
-  sprintf(result, "(%s,%s,%s,%s)", astr, bstr, cstr, dstr);
+  size_t size = strlen(astr) + strlen(bstr) + strlen(cstr) + strlen(dstr) + 6;
+  char *result = palloc(size);
+  snprintf(result, size, "(%s,%s,%s,%s)", astr, bstr, cstr, dstr);
   pfree(astr); pfree(bstr); pfree(cstr); pfree(dstr);
   return result;
 }

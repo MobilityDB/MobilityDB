@@ -1001,8 +1001,9 @@ text_out(const text *txt)
 {
   assert(txt != NULL);
   char *str = text2cstring(txt);
-  char *result = palloc(strlen(str) + 4);
-  sprintf(result, "\"%s\"", str);
+  size_t size = strlen(str) + 4;
+  char *result = palloc(size);
+  snprintf(result, size, "\"%s\"", str);
   pfree(str);
   return result;
 }

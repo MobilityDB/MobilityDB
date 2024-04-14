@@ -358,14 +358,15 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
 
   /* Get the SRID if it is a geo set  */
   int32 srid;
-  char str1[20];
+  char str1[13];
   str1[0] = '\0';
   outfunc value_out1 = value_out;
   if (geoset_type(s->settype) && value_out == ewkt_out)
   {
     srid = geoset_srid(s);
     if (srid > 0)
-      sprintf(str1, "SRID=%d;", srid);
+      /* SRID_MAXIMUM is defined by PostGIS as 999999 */
+      snprintf(str1, sizeof(str1), "SRID=%d;", srid);
     /* Since the SRID is output at the begining it is not output for the
      * elements */
     value_out1 = wkt_out;

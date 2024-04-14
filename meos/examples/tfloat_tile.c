@@ -90,10 +90,11 @@ int main(void)
     char *time_str = timesplit ? pg_timestamptz_out(time_buckets[i]) : "";
     char *temp_str = tfloat_out(result[i], 3);
     if (valuesplit)
-      sprintf(output_buffer, "%f, %s%s%s\n", value_buckets[i],
-        time_str, timesplit ? ", " : "", temp_str);
+      snprintf(output_buffer, sizeof(output_buffer), "%f, %s%s%s\n",
+        value_buckets[i], time_str, timesplit ? ", " : "", temp_str);
     else
-      sprintf(output_buffer, "%s, %s\n", time_str, temp_str);
+      snprintf(output_buffer, sizeof(output_buffer), "%s, %s\n", time_str,
+        temp_str);
     printf("%s", output_buffer);
     if (timesplit) free(time_str);
     free(temp_str);

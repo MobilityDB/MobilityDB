@@ -234,6 +234,8 @@ bool_out(bool b)
  * Functions adapted from int.c
  *****************************************************************************/
 
+#define MAXINT4LEN 10
+
 /**
  * @brief Return an int4 from a string
  * @note PostgreSQL function: @p int4in(PG_FUNCTION_ARGS)
@@ -284,7 +286,7 @@ int4_out(int32 val)
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   mobdb_ltoa(val, result);
 #else
-  sprintf(result, "%d", val);
+  snprintf(result, 12, "%d", val);
 #endif
   return result;
 }
@@ -361,7 +363,7 @@ int8_out(int64 val)
   memcpy(result, buf, len);
 #else
   result = palloc(MAXINT8LEN + 1);
-  sprintf(result, "%ld", val);
+  snprintf(result, sizeof(result), "%ld", val);
 #endif
   return result;
 }
