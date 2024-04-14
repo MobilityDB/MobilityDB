@@ -126,9 +126,10 @@ tpoint_as_ewkt(const Temporal *temp, int maxdd)
     return NULL;
 
   int srid = tpoint_srid(temp);
-  char str1[20];
+  char str1[13];
   if (srid > 0)
-    sprintf(str1, "SRID=%d%c", srid,
+    /* SRID_MAXIMUM is defined by PostGIS as 999999 */
+    snprintf(str1, sizeof(str1), "SRID=%d%c", srid,
       (MEOS_FLAGS_GET_INTERP(temp->flags) == STEP) ? ',' : ';');
   else
     str1[0] = '\0';

@@ -2130,10 +2130,10 @@ tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
 
   char **strings = palloc(sizeof(char *) * ss->count);
   size_t outlen = 0;
-  char prefix[20];
+  char prefix[13];
   if (MEOS_FLAGS_GET_CONTINUOUS(ss->flags) &&
       ! MEOS_FLAGS_LINEAR_INTERP(ss->flags))
-    sprintf(prefix, "Interp=Step;");
+    snprintf(prefix, sizeof(prefix), "Interp=Step;");
   else
     prefix[0] = '\0';
   for (int i = 0; i < ss->count; i++)

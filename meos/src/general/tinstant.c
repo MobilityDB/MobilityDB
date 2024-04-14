@@ -246,8 +246,9 @@ tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
   char *t = pg_timestamptz_out(inst->t);
   meosType basetype = temptype_basetype(inst->temptype);
   char *value = value_out(tinstant_val(inst), basetype, maxdd);
-  char *result = palloc(strlen(value) + strlen(t) + 2);
-  sprintf(result, "%s@%s", value, t);
+  size_t size = strlen(value) + strlen(t) + 2;
+  char *result = palloc(size);
+  snprintf(result, size, "%s@%s", value, t);
   pfree(t); pfree(value);
   return result;
 }

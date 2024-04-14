@@ -187,9 +187,10 @@ stbox_out(const STBox *box, int maxdd)
   assert(hasx || hast);
 
   char *str = palloc(size);
-  char srid[20];
+  char srid[13];
   if (hasx && box->srid > 0)
-    sprintf(srid, "SRID=%d;", box->srid);
+    /* SRID_MAXIMUM is defined by PostGIS as 999999 */
+    snprintf(srid, sizeof(srid), "SRID=%d;", box->srid);
   else
     srid[0] = '\0';
   char *boxtype = geodetic ? "GEODSTBOX" : "STBOX";

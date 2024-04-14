@@ -52,7 +52,7 @@
 #include "general/type_util.h"
 
 /** Buffer size for input and output of TBox values */
-#define MAXTBOXLEN    128
+#define TBOX_MAXLEN    128
 
 /*****************************************************************************
  * Parameter tests
@@ -148,7 +148,7 @@ tbox_out(const TBox *box, int maxdd)
   if (! ensure_not_null((void *) box) || ! ensure_not_negative(maxdd))
     return NULL;
 
-  static size_t size = MAXTBOXLEN + 1;
+  static size_t size = TBOX_MAXLEN + 1;
   char *result = palloc(size);
   char *span = NULL, *period = NULL;
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
