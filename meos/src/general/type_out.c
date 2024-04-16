@@ -590,8 +590,7 @@ tinstant_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
   bool hasz = MEOS_FLAGS_GET_Z(inst->flags);
   size_t size = tinstant_mfjson_size(inst, isgeo, hasz, precision, bbox, srs);
   char *output = palloc(size);
-  size_t writesize = tinstant_mfjson_buf(inst, isgeo, hasz, precision, bbox, srs, output);
-  assert(writesize <= size);
+  tinstant_mfjson_buf(inst, isgeo, hasz, precision, bbox, srs, output);
   return output;
 }
 
@@ -759,8 +758,7 @@ tsequence_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   size_t size = tsequence_mfjson_size(seq, isgeo, hasz, precision, bbox, srs);
   char *output = palloc(size);
-  size_t writesize = tsequence_mfjson_buf(seq, isgeo, hasz, precision, bbox, srs, output);
-  assert(writesize <= size);
+  tsequence_mfjson_buf(seq, isgeo, hasz, precision, bbox, srs, output);
   return output;
 }
 
@@ -941,8 +939,7 @@ tsequenceset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision,
   size_t size = tsequenceset_mfjson_size(ss, isgeo, hasz, precision, bbox,
     srs);
   char *output = palloc(size);
-  size_t writesize = tsequenceset_mfjson_buf(ss, isgeo, hasz, precision, bbox, srs, output);
-  assert(writesize <= size);
+  tsequenceset_mfjson_buf(ss, isgeo, hasz, precision, bbox, srs, output);
   return output;
 }
 
