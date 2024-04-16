@@ -590,7 +590,8 @@ tinstant_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
   bool hasz = MEOS_FLAGS_GET_Z(inst->flags);
   size_t size = tinstant_mfjson_size(inst, isgeo, hasz, precision, bbox, srs);
   char *output = palloc(size);
-  tinstant_mfjson_buf(inst, isgeo, hasz, precision, bbox, srs, output);
+  size_t writesize = tinstant_mfjson_buf(inst, isgeo, hasz, precision, bbox, srs, output);
+  assert(writesize <= size);
   return output;
 }
 
@@ -758,7 +759,8 @@ tsequence_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   size_t size = tsequence_mfjson_size(seq, isgeo, hasz, precision, bbox, srs);
   char *output = palloc(size);
-  tsequence_mfjson_buf(seq, isgeo, hasz, precision, bbox, srs, output);
+  size_t writesize = tsequence_mfjson_buf(seq, isgeo, hasz, precision, bbox, srs, output);
+  assert(writesize <= size);
   return output;
 }
 
@@ -848,7 +850,7 @@ tsequenceset_mfjson_size(const TSequenceSet *ss, bool isgeo, bool hasz,
   size += ( isgeo ? sizeof("{'coordinates':[],") : sizeof("{'values':[],") ) * ss->count;
   size += sizeof("'datetimes':[],'lower_inc':false,'upper_inc':false},") * ss->count;
   if (isgeo)
-    size = coordinates_mfjson_size(ss->totalcount, hasz, precision);
+    size += coordinates_mfjson_size(ss->totalcount, hasz, precision);
   else
   {
     for (int i = 0; i < ss->count; i++)
@@ -939,7 +941,8 @@ tsequenceset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision,
   size_t size = tsequenceset_mfjson_size(ss, isgeo, hasz, precision, bbox,
     srs);
   char *output = palloc(size);
-  tsequenceset_mfjson_buf(ss, isgeo, hasz, precision, bbox, srs, output);
+  size_t writesize = tsequenceset_mfjson_buf(ss, isgeo, hasz, precision, bbox, srs, output);
+  assert(writesize <= size);
   return output;
 }
 
