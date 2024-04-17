@@ -485,13 +485,13 @@ nd_box_from_stbox(const STBox *box, ND_BOX *nd_box)
  * @note This function generalizes PostGIS function estimate_selectivity in
  * file gserialized_estimate.c
  */
-float8
+Selectivity
 geo_sel(VariableStatData *vardata, const STBox *box, meosOper oper)
 {
   ND_STATS *nd_stats;
   AttStatsSlot sslot;
   int d; /* counter */
-  float8 selec;
+  Selectivity selec;
   ND_BOX nd_box;
   ND_IBOX nd_ibox, search_ibox;
   int at[ND_DIMS];
