@@ -848,7 +848,7 @@ tsequenceset_mfjson_size(const TSequenceSet *ss, bool isgeo, bool hasz,
   size += ( isgeo ? sizeof("{'coordinates':[],") : sizeof("{'values':[],") ) * ss->count;
   size += sizeof("'datetimes':[],'lower_inc':false,'upper_inc':false},") * ss->count;
   if (isgeo)
-    size = coordinates_mfjson_size(ss->totalcount, hasz, precision);
+    size += coordinates_mfjson_size(ss->totalcount, hasz, precision);
   else
   {
     for (int i = 0; i < ss->count; i++)
