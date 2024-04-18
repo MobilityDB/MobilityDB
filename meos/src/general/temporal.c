@@ -874,6 +874,26 @@ tpoint_out(const Temporal *temp, int maxdd)
 }
 #endif /* MEOS */
 
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of an array of
+ * temporal values
+ * @param[in] temparr Array of temporal value
+ * @param[in] count Number of elements in the input array
+ * @param[in] maxdd Number of decimal digits
+ */
+char **
+temparr_out(const Temporal **temparr, int count, int maxdd)
+{
+  assert(temparr); assert(count > 0); assert(maxdd >=0);
+  char **result = palloc(sizeof(text *) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = temporal_out(temparr[i], maxdd);
+  return result;
+}
+
 /*****************************************************************************
  * Constructor functions
  ****************************************************************************/

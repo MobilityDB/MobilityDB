@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Output of types in WKT, WKB, EWKB, HexWKB, and MF-JSON representation
+ * @brief Output of types in WKB, EWKB, HexWKB, and MF-JSON representation
  */
 
 /* C */
@@ -42,6 +42,7 @@
 #endif
 /* PostGIS */
 #include <liblwgeom_internal.h>
+#include <stringbuffer.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -68,509 +69,305 @@
 /**
  * @brief Write into the buffer an integer in the MF-JSON representation
  */
-static size_t
-bool_mfjson_buf(char *output, bool b)
+static void
+bool_as_mfjson_sb(stringbuffer_t *sb, bool b)
 {
-  char *ptr = output;
-  ptr += sprintf(ptr, "%s", b ? "true" : "false");
-  return (ptr - output);
+  stringbuffer_aprintf(sb, "%s", b ? "true" : "false");
+  return;
 }
 
 /**
  * @brief Write into the buffer an integer in the MF-JSON representation
  */
-static size_t
-int32_mfjson_buf(char *output, int i)
+static void
+int32_as_mfjson_sb(stringbuffer_t *sb, int i)
 {
-  char *ptr = output;
-  ptr += sprintf(ptr, "%d", i);
-  return (ptr - output);
+  stringbuffer_aprintf(sb, "%d", i);
+  return;
 }
 
 /**
- * @brief Write into the buffer the double value in the MF-JSON representation
+ * @brief Write into the buffer a double in the MF-JSON representation
  */
-static size_t
-double_mfjson_buf(char *output, double d, int precision)
+static void
+double_as_mfjson_sb(stringbuffer_t *sb, double d, int precision)
 {
   assert(precision <= OUT_MAX_DOUBLE_PRECISION);
-  char *ptr = output;
-  ptr += lwprint_double(d, precision, ptr);
-  return (ptr - output);
+  stringbuffer_append_double(sb, d, precision);
+  return;
 }
 
 /**
- * @brief Write into the buffer a text value in the MF-JSON representation
+ * @brief Write into the buffer a text in the MF-JSON representation
  */
-static size_t
-text_mfjson_buf(char *output, text *txt)
+static void
+text_as_mfjson_sb(stringbuffer_t *sb, const text *txt)
 {
-  char *ptr = output;
   char *str = text2cstring(txt);
-  ptr += sprintf(ptr, "\"%s\"", str);
+  stringbuffer_aprintf(sb, "\"%s\"", str);
   pfree(str);
-  return (ptr - output);
+  return;
 }
 
 /**
  * @brief Write into the buffer a base value in the MF-JSON representation
  */
-static size_t
-temporal_basevalue_mfjson_size(Datum value, meosType temptype, int precision)
+static void
+temporal_basevalue_as_mfjson_sb(stringbuffer_t *sb, Datum value,
+  meosType temptype, int precision)
 {
   assert(talphanum_type(temptype));
-  if (temptype == T_TBOOL)
-    return MEOS_WKT_BOOL_SIZE;
-  if (temptype == T_TINT)
-    return MEOS_WKT_INT4_SIZE;
-  if (temptype == T_TFLOAT)
+  switch (temptype)
   {
-    assert(precision <= OUT_MAX_DOUBLE_PRECISION);
-    return (OUT_MAX_DIGS_DOUBLE + precision);
+    case T_TBOOL:
+      bool_as_mfjson_sb(sb, DatumGetBool(value));
+      break;
+    case T_TINT:
+      int32_as_mfjson_sb(sb, DatumGetInt32(value));
+      break;
+    case T_TFLOAT:
+      double_as_mfjson_sb(sb, DatumGetFloat8(value), precision);
+      break;
+    case T_TTEXT:
+      text_as_mfjson_sb(sb, DatumGetTextP(value));
+      break;
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
+        "Unknown temporal type in MFJSON output: %d", temptype);
   }
-  else /* temptype == T_TTEXT */
-    return VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + sizeof("''") + 1;
-}
-
-/**
- * @brief Write into the buffer a base value in the MF-JSON representation
- */
-static size_t
-temporal_basevalue_mfjson_buf(char *output, Datum value, meosType temptype,
-  int precision)
-{
-  assert(talphanum_type(temptype));
-  if (temptype == T_TBOOL)
-    return bool_mfjson_buf(output, DatumGetBool(value));
-  if (temptype == T_TINT)
-    return int32_mfjson_buf(output, DatumGetInt32(value));
-  if (temptype == T_TFLOAT)
-    return double_mfjson_buf(output, DatumGetFloat8(value), precision);
-  else /* temptype == T_TTEXT */
-    return text_mfjson_buf(output, DatumGetTextP(value));
+  return;
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Return the maximum size in bytes of the coordinate array in the
- * MF-JSON representation
- */
-static size_t
-coordinates_mfjson_size(int npoints, bool hasz, int precision)
-{
-  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
-  if (hasz)
-    return (OUT_MAX_DIGS_DOUBLE + precision + sizeof(",")) * 3 * npoints +
-      sizeof(",[]");
-  else
-    return (OUT_MAX_DIGS_DOUBLE + precision + sizeof(",")) * 2 * npoints +
-      sizeof(",[]");
-}
-
-/**
- * @brief Write into the buffer the coordinate array in the MF-JSON
+ * @brief Write into the buffer a coordinate array in the MF-JSON
  * representation
  */
-static size_t
-coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
+static void
+coordinates_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision)
 {
   assert(precision <= OUT_MAX_DOUBLE_PRECISION);
-  char *ptr = output;
-  ptr += sprintf(ptr, "[");
+  stringbuffer_append_char(sb, '[');
   if (MEOS_FLAGS_GET_Z(inst->flags))
   {
     const POINT3DZ *pt = DATUM_POINT3DZ_P(tinstant_val(inst));
-    ptr += lwprint_double(pt->x, precision, ptr);
-    ptr += sprintf(ptr, ",");
-    ptr += lwprint_double(pt->y, precision, ptr);
-    ptr += sprintf(ptr, ",");
-    ptr += lwprint_double(pt->z, precision, ptr);
+    stringbuffer_append_double(sb, pt->x, precision);
+    stringbuffer_append_char(sb, ',');
+    stringbuffer_append_double(sb, pt->y, precision);
+    stringbuffer_append_char(sb, ',');
+    stringbuffer_append_double(sb, pt->z, precision);
   }
   else
   {
     const POINT2D *pt = DATUM_POINT2D_P(tinstant_val(inst));
-    ptr += lwprint_double(pt->x, precision, ptr);
-    ptr += sprintf(ptr, ",");
-    ptr += lwprint_double(pt->y, precision, ptr);
+    stringbuffer_append_double(sb, pt->x, precision);
+    stringbuffer_append_char(sb, ',');
+    stringbuffer_append_double(sb, pt->y, precision);
   }
-  ptr += sprintf(ptr, "]");
-  return (ptr - output);
+  stringbuffer_append_char(sb, ']');
+  return;
 }
 
 /**
- * @brief Return the maximum size in bytes of the datetimes array in the
- * MF-JSON representation
- * @details For example
- * @code
- * `"datetimes":["2019-08-06T18:35:48.021455+02:30","2019-08-06T18:45:18.476983+02:30"]`
- * @endcode
- * will return 2 enclosing brackets + 1 comma + for each timestamptz 32
- * characters + 2 double quotes + 1 comma.
+ * @brief Write into the buffer a timestamptz in the MF-JSON representation
  */
-static size_t
-datetimes_mfjson_size(int count)
+static void
+datetimes_as_mfjson_sb(stringbuffer_t *sb, TimestampTz t)
 {
-  return MEOS_WKT_TIMESTAMPTZ_SIZE * count + sizeof("[],");
-}
-
-/**
- * @brief Write into the buffer the datetimes array in the MF-JSON
- * representation
- */
-static size_t
-datetimes_mfjson_buf(char *output, TimestampTz t)
-{
-  char *ptr = output;
   char *tstr = pg_timestamptz_out(t);
   /* Replace ' ' by 'T' as separator between date and time parts */
   tstr[10] = 'T';
-  ptr += sprintf(ptr, "\"%s\"", tstr);
+  stringbuffer_aprintf(sb, "\"%s\"", tstr);
   pfree(tstr);
-  return (ptr - output);
+  return;
 }
 
 /**
- * @brief Return the maximum size in bytes of the SRS in the MF-JSON
+ * @brief Write into the buffer an SRS in the MF-JSON representation
+ */
+static void
+srs_as_mfjson_sb(stringbuffer_t *sb, char *srs)
+{
+  stringbuffer_append_len(sb, "\"crs\":{\"type\":\"Name\",", 21);
+  stringbuffer_aprintf(sb, "\"properties\":{\"name\":\"%s\"}},", srs);
+  return;
+}
+
+/**
+ * @brief Write into the buffer a period bounding box in the MF-JSON
  * representation
  */
-static size_t
-srs_mfjson_size(char *srs)
+static void
+tstzspan_as_mfjson_sb(stringbuffer_t *sb, const Span *s)
 {
-  size_t size = sizeof("'crs':{'type':'Name',");
-  size += sizeof("'properties':{'name':''}},");
-  size += strlen(srs) * sizeof(char);
-  return size;
-}
-
-/**
- * @brief Write into the buffer the SRS in the MF-JSON representation
- */
-static size_t
-srs_mfjson_buf(char *output, char *srs)
-{
-  char *ptr = output;
-  ptr += sprintf(ptr, "\"crs\":{\"type\":\"Name\",");
-  ptr += sprintf(ptr, "\"properties\":{\"name\":\"%s\"}},", srs);
-  return (ptr - output);
-}
-
-/**
- * @brief Return the maximum size in bytes of the period bounding box in the
- * MF-JSON representation
- */
-static size_t
-tstzspan_mfjson_size(void)
-{
-  /* The maximum size of a timestamptz is 35 characters, e.g.,
-   * "2019-08-06 23:18:16.195062-09:30" */
-  size_t size = sizeof("'period':{'begin':,'end':,'lower_inc':false,'upper_inc':false},") +
-    MEOS_WKT_TIMESTAMPTZ_SIZE * 2;
-  size += sizeof("'bbox':[,],");
-  return size;
-}
-
-/**
- * @brief Write into the buffer the period bounding box in the MF-JSON
- * representation
- */
-static size_t
-tstzspan_mfjson_buf(char *output, const Span *s)
-{
-  char *ptr = output;
-  ptr += sprintf(ptr, "\"period\":{\"begin\":");
-  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(s->lower));
-  ptr += sprintf(ptr, ",\"end\":");
-  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(s->upper));
-  ptr += sprintf(ptr, ",\"lower_inc\":%s,\"upper_inc\":%s},",
+  stringbuffer_append_len(sb, "\"period\":{\"begin\":", 18);
+  datetimes_as_mfjson_sb(sb, DatumGetTimestampTz(s->lower));
+  stringbuffer_append_len(sb, ",\"end\":", 7);
+  datetimes_as_mfjson_sb(sb, DatumGetTimestampTz(s->upper));
+  stringbuffer_aprintf(sb, ",\"lower_inc\":%s,\"upper_inc\":%s},",
     s->lower_inc ? "true" : "false", s->upper_inc ? "true" : "false");
-  return (ptr - output);
+  return;
 }
 
 /**
- * @brief Return the maximum size in bytes of the temporal bounding box in the
- * MF-JSON representation
- */
-static size_t
-tbox_mfjson_size(int precision)
-{
-  /* The maximum size of a timestamptz is 35 characters, e.g.,
-   * "2019-08-06 23:18:16.195062-09:30" */
-  size_t size = sizeof("'period':{'begin':,'end':,'lower_inc':false,'upper_inc':false},") +
-    MEOS_WKT_TIMESTAMPTZ_SIZE * 2;
-  size += sizeof("'bbox':[,],");
-  size +=  2 * (OUT_MAX_DIGS_DOUBLE + precision);
-  return size;
-}
-
-/**
- * @brief Write into the buffer the temporal bounding box in the MF-JSON
+ * @brief Write into the buffer a temporal bounding box in the MF-JSON
  * representation
  */
-static size_t
-tbox_mfjson_buf(char *output, const TBox *bbox, int precision)
+static void
+tbox_as_mfjson_sb(stringbuffer_t *sb, const TBox *bbox, int precision)
 {
   assert(precision <= OUT_MAX_DOUBLE_PRECISION);
   bool intbox = bbox->span.basetype == T_INT4;
-  char *ptr = output;
-  ptr += sprintf(ptr, "\"bbox\":[");
-  ptr += intbox ? sprintf(ptr, "%d", DatumGetInt32(bbox->span.lower)) :
-    lwprint_double(DatumGetFloat8(bbox->span.lower), precision, ptr);
-  ptr += sprintf(ptr, ",");
-  ptr += intbox ? sprintf(ptr, "%d", DatumGetInt32(bbox->span.upper) - 1) :
-    lwprint_double(DatumGetFloat8(bbox->span.upper), precision, ptr);
-  ptr += sprintf(ptr, "],\"period\":{\"begin\":");
-  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.lower));
-  ptr += sprintf(ptr, ",\"end\":");
-  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.upper));
-  ptr += sprintf(ptr, ",\"lower_inc\":%s,\"upper_inc\":%s},",
-    bbox->period.lower_inc ? "true" : "false",
-  bbox->period.upper_inc ? "true" : "false");
-  return (ptr - output);
-}
-
-/**
- * @brief Return the maximum size in bytes of the spatiotemporal bounding box
- * in the MF-JSON representation
- */
-static size_t
-stbox_mfjson_size(bool hasz, int precision)
-{
-  /* The maximum size of a timestamptz is 35 characters,
-   * e.g., "2019-08-06 23:18:16.195062-09:30" */
-  size_t size = sizeof("'period':{'begin':,'end':,'lower_inc':false,'upper_inc':false},") +
-    sizeof("\"2019-08-06T18:35:48.021455+02:30\",") * 2;
-  if (! hasz)
-  {
-    size += sizeof("'bbox':[[,],[,]],");
-    size +=  2 * 2 * (OUT_MAX_DIGS_DOUBLE + precision);
-  }
+  stringbuffer_append_len(sb, "\"bbox\":[", 8);
+  if (intbox)
+    stringbuffer_aprintf(sb, "%d", DatumGetInt32(bbox->span.lower));
   else
-  {
-    size += sizeof("\"bbox\":[[,,],[,,]],");
-    size +=  2 * 3 * (OUT_MAX_DIGS_DOUBLE + precision);
-  }
-  return size;
+    stringbuffer_append_double(sb, DatumGetFloat8(bbox->span.lower), precision);
+  stringbuffer_append_char(sb, ',');
+  if (intbox)
+    stringbuffer_aprintf(sb, "%d", DatumGetInt32(bbox->span.upper) - 1);
+  else
+    stringbuffer_append_double(sb, DatumGetFloat8(bbox->span.upper), precision);
+  stringbuffer_append_len(sb, "],\"period\":{\"begin\":", 20);
+  datetimes_as_mfjson_sb(sb, DatumGetTimestampTz(bbox->period.lower));
+  stringbuffer_append_len(sb, ",\"end\":", 7);
+  datetimes_as_mfjson_sb(sb, DatumGetTimestampTz(bbox->period.upper));
+  stringbuffer_aprintf(sb, ",\"lower_inc\":%s,\"upper_inc\":%s},",
+    bbox->period.lower_inc ? "true" : "false",
+    bbox->period.upper_inc ? "true" : "false");
+  return;
 }
 
 /**
- * @brief Write into the buffer the spatiotemporal bounding box in the
+ * @brief Write into the buffer a spatiotemporal bounding box in the
  * MF-JSON representation
  */
-static size_t
-stbox_mfjson_buf(char *output, const STBox *bbox, bool hasz, int precision)
+static void
+stbox_as_mfjson_sb(stringbuffer_t *sb, const STBox *bbox, bool hasz,
+  int precision)
 {
   assert(precision <= OUT_MAX_DOUBLE_PRECISION);
-  char *ptr = output;
-  ptr += sprintf(ptr, "\"bbox\":[[");
-  ptr += lwprint_double(bbox->xmin, precision, ptr);
-  ptr += sprintf(ptr, ",");
-  ptr += lwprint_double(bbox->ymin, precision, ptr);
+  stringbuffer_append_len(sb, "\"bbox\":[[", 9);
+  stringbuffer_append_double(sb, bbox->xmin, precision);
+  stringbuffer_append_char(sb, ',');
+  stringbuffer_append_double(sb, bbox->ymin, precision);
   if (hasz)
   {
-    ptr += sprintf(ptr, ",");
-    ptr += lwprint_double(bbox->zmin, precision, ptr);
+    stringbuffer_append_char(sb, ',');
+    stringbuffer_append_double(sb, bbox->zmin, precision);
   }
-  ptr += sprintf(ptr, "],[");
-  ptr += lwprint_double(bbox->xmax, precision, ptr);
-  ptr += sprintf(ptr, ",");
-  ptr += lwprint_double(bbox->ymax, precision, ptr);
+  stringbuffer_append_len(sb, "],[", 3);
+  stringbuffer_append_double(sb, bbox->xmax, precision);
+  stringbuffer_append_char(sb, ',');
+  stringbuffer_append_double(sb, bbox->ymax, precision);
   if (hasz)
   {
-    ptr += sprintf(ptr, ",");
-    ptr += lwprint_double(bbox->zmax, precision, ptr);
+    stringbuffer_append_char(sb, ',');
+    stringbuffer_append_double(sb, bbox->zmax, precision);
   }
-  ptr += sprintf(ptr, "]],\"period\":{\"begin\":");
-  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.lower));
-  ptr += sprintf(ptr, ",\"end\":");
-  ptr += datetimes_mfjson_buf(ptr, DatumGetTimestampTz(bbox->period.upper));
-  ptr += sprintf(ptr, ",\"lower_inc\":%s,\"upper_inc\":%s},",
+  stringbuffer_append_len(sb, "]],\"period\":{\"begin\":", 21);
+  datetimes_as_mfjson_sb(sb, DatumGetTimestampTz(bbox->period.lower));
+  stringbuffer_append_len(sb, ",\"end\":", 7);
+  datetimes_as_mfjson_sb(sb, DatumGetTimestampTz(bbox->period.upper));
+  stringbuffer_aprintf(sb, ",\"lower_inc\":%s,\"upper_inc\":%s},",
     bbox->period.lower_inc ? "true" : "false",
-	bbox->period.upper_inc ? "true" : "false");
-  return (ptr - output);
+    bbox->period.upper_inc ? "true" : "false");
+  return;
 }
 
 /**
- * @brief Return the maximum size in bytes of the bounding box corresponding
- * to the temporal type in the MF-JSON representation
- * @return On error return SIZE_MAX
- */
-static size_t
-bbox_mfjson_size(meosType temptype, bool hasz, int precision)
-{
-  size_t size;
-  switch (temptype)
-  {
-    case T_TBOOL:
-    case T_TTEXT:
-      size = tstzspan_mfjson_size();
-      break;
-    case T_TINT:
-    case T_TFLOAT:
-      size = tbox_mfjson_size(precision);
-      break;
-    case T_TGEOMPOINT:
-    case T_TGEOGPOINT:
-      size = stbox_mfjson_size(hasz, precision);
-      break;
-    default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
-        "Unknown temporal type in MFJSON output: %d", temptype);
-      return SIZE_MAX;
-  }
-  return size;
-}
-
-/**
- * @brief Write into the buffer the bounding box corresponding to the temporal
+ * @brief Write into the buffer a bounding box corresponding to the temporal
  * type in the MF-JSON representation
- * @return On error return SIZE_MAX
  */
-static size_t
-bbox_mfjson_buf(meosType temptype, char *output, const bboxunion *bbox,
+static void
+bbox_as_mfjson_sb(stringbuffer_t *sb, meosType temptype, const bboxunion *bbox,
   bool hasz, int precision)
 {
   switch (temptype)
   {
     case T_TBOOL:
     case T_TTEXT:
-      return tstzspan_mfjson_buf(output, (Span *) bbox);
+      tstzspan_as_mfjson_sb(sb, (Span *) bbox);
+      break;
     case T_TINT:
     case T_TFLOAT:
-      return tbox_mfjson_buf(output, (TBox *) bbox, precision);
+      tbox_as_mfjson_sb(sb, (TBox *) bbox, precision);
+      break;
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
-      return stbox_mfjson_buf(output, (STBox *) bbox, hasz, precision);
+      stbox_as_mfjson_sb(sb, (STBox *) bbox, hasz, precision);
+      break;
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal type in MFJSON output: %d", temptype);
-      return SIZE_MAX;
   }
+  return;
 }
 
 /**
- * @brief Return the maximum size in bytes of the temporal type in the
- * MF-JSON representation
- * @return On error return SIZE_MAX
+ * @brief Write into the buffer a temporal type in the MF-JSON representation
  */
-static size_t
-temptype_mfjson_size(meosType temptype)
+static void
+temptype_as_mfjson_sb(stringbuffer_t *sb, meosType temptype)
 {
-  size_t size;
   assert(temporal_type(temptype));
   switch (temptype)
   {
     case T_TBOOL:
-      size = sizeof("{'type':'MovingBoolean',");
+      stringbuffer_append_len(sb, "{\"type\":\"MovingBoolean\",", 24);
       break;
     case T_TINT:
-      size = sizeof("{'type':'MovingInteger',");
+      stringbuffer_append_len(sb, "{\"type\":\"MovingInteger\",", 24);
       break;
     case T_TFLOAT:
-      size = sizeof("{'type':'MovingFloat',");
+      stringbuffer_append_len(sb, "{\"type\":\"MovingFloat\",", 22);
       break;
     case T_TTEXT:
-      size = sizeof("{'type':'MovingText',");
+      stringbuffer_append_len(sb, "{\"type\":\"MovingText\",", 21);
       break;
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
-      size = sizeof("{'type':'MovingPoint',");
+      stringbuffer_append_len(sb, "{\"type\":\"MovingPoint\",", 22);
       break;
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal type in MFJSON output: %d", temptype);
-      size = SIZE_MAX;
-      break;
   }
-  return size;
-}
-
-/**
- * @brief Write into the buffer the temporal type in the MF-JSON representation
- * @return On error return SIZE_MAX
- */
-static size_t
-temptype_mfjson_buf(char *output, meosType temptype)
-{
-  char *ptr = output;
-  assert(temporal_type(temptype));
-  switch (temptype)
-  {
-    case T_TBOOL:
-      ptr += sprintf(ptr, "{\"type\":\"MovingBoolean\",");
-      break;
-    case T_TINT:
-      ptr += sprintf(ptr, "{\"type\":\"MovingInteger\",");
-      break;
-    case T_TFLOAT:
-      ptr += sprintf(ptr, "{\"type\":\"MovingFloat\",");
-      break;
-    case T_TTEXT:
-      ptr += sprintf(ptr, "{\"type\":\"MovingText\",");
-      break;
-    case T_TGEOMPOINT:
-    case T_TGEOGPOINT:
-      ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
-      break;
-    default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
-        "Unknown temporal type in MFJSON output: %d", temptype);
-      return SIZE_MAX;
-      break;
-  }
-  return (ptr - output);
+  return;
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Return the maximum size in bytes of a temporal instant in the MF-JSON
+ * @brief Write into the buffer a temporal instant in the MF-JSON
  * representation
  */
-static size_t
-tinstant_mfjson_size(const TInstant *inst, bool isgeo, bool hasz,
-  int precision, const bboxunion *bbox, char *srs)
+static void
+tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, bool isgeo,
+  bool hasz, const bboxunion *bbox, int precision, char *srs)
 {
-  Datum value = tinstant_val(inst);
-  size_t size = isgeo ? coordinates_mfjson_size(1, hasz, precision) :
-    temporal_basevalue_mfjson_size(value, inst->temptype, precision);
-  size += datetimes_mfjson_size(1);
-  size += temptype_mfjson_size(inst->temptype);
-  size += isgeo ? sizeof("'coordinates':[],") : sizeof("'values':[],");
-  size += sizeof("'datetimes':,'interpolation':'None'}");
-  if (srs) size += srs_mfjson_size(srs);
-  if (bbox) size += bbox_mfjson_size(inst->temptype, hasz, precision);
-  return size;
-}
-
-/**
- * @brief Write into the buffer the temporal instant in the MF-JSON
- * representation
- */
-static size_t
-tinstant_mfjson_buf(const TInstant *inst, bool isgeo, bool hasz,
-  int precision, const bboxunion *bbox, char *srs, char *output)
-{
-  char *ptr = output;
-  ptr += temptype_mfjson_buf(ptr, inst->temptype);
-  if (srs) ptr += srs_mfjson_buf(ptr, srs);
-  if (bbox) ptr += bbox_mfjson_buf(inst->temptype, ptr, bbox, hasz, precision);
-  ptr += sprintf(ptr, "\"%s\":[", isgeo ? "coordinates" : "values");
-  ptr += isgeo ? coordinates_mfjson_buf(ptr, inst, precision) :
-    temporal_basevalue_mfjson_buf(ptr, tinstant_val(inst), inst->temptype,
+  temptype_as_mfjson_sb(sb, inst->temptype);
+  if (srs) srs_as_mfjson_sb(sb, srs);
+  if (bbox) bbox_as_mfjson_sb(sb, inst->temptype, bbox, hasz, precision);
+  stringbuffer_aprintf(sb, "\"%s\":[", isgeo ? "coordinates" : "values");
+  if (isgeo)
+    coordinates_as_mfjson_sb(sb, inst, precision);
+  else
+    temporal_basevalue_as_mfjson_sb(sb, tinstant_val(inst), inst->temptype,
       precision);
-  ptr += sprintf(ptr, "],\"datetimes\":[");
-  ptr += datetimes_mfjson_buf(ptr, inst->t);
-  ptr += sprintf(ptr, "],\"interpolation\":\"None\"}");
-  return (ptr - output);
+  stringbuffer_append_len(sb, "],\"datetimes\":[", 15);
+  datetimes_as_mfjson_sb(sb, inst->t);
+  stringbuffer_append_len(sb, "],\"interpolation\":\"None\"}", 25);
+  return;
 }
 
 /**
  * @ingroup meos_internal_temporal_inout
  * @brief Return the MF-JSON representation of a temporal instant
  * @param[in] inst Temporal instant
- * @param[in] precision Number of decimal digits
  * @param[in] with_bbox True when the output value has bounding box
+ * @param[in] precision Number of decimal digits
  * @param[in] srs Spatial reference system
  * @csqlfn #Temporal_as_mfjson()
  */
@@ -588,10 +385,13 @@ tinstant_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
   }
   bool isgeo = tgeo_type(inst->temptype);
   bool hasz = MEOS_FLAGS_GET_Z(inst->flags);
-  size_t size = tinstant_mfjson_size(inst, isgeo, hasz, precision, bbox, srs);
-  char *output = palloc(size);
-  tinstant_mfjson_buf(inst, isgeo, hasz, precision, bbox, srs, output);
-  return output;
+  stringbuffer_t *sb = stringbuffer_create();
+  tinstant_as_mfjson_sb(sb, inst, isgeo, hasz, bbox, precision, srs);
+  /* Convert the string buffer to a C string */
+  char *result = (stringbuffer_getstring(sb) == NULL) ? NULL :
+    stringbuffer_getstringcopy(sb);
+  stringbuffer_destroy(sb);
+  return result;
 }
 
 #if MEOS
@@ -668,77 +468,48 @@ tpointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
 /*****************************************************************************/
 
 /**
- * @brief Return the maximum size in bytes of a temporal sequence in the
- * MF-JSON representation
- */
-static size_t
-tsequence_mfjson_size(const TSequence *seq, bool isgeo, bool hasz,
-  int precision, const bboxunion *bbox, char *srs)
-{
-  size_t size = 0;
-  if (isgeo)
-    size = coordinates_mfjson_size(seq->count, hasz, precision);
-  else
-  {
-    for (int i = 0; i < seq->count; i++)
-    {
-      Datum value = tinstant_val(TSEQUENCE_INST_N(seq, i));
-      size += temporal_basevalue_mfjson_size(value, seq->temptype, precision) +
-        sizeof(",");
-    }
-  }
-  size += datetimes_mfjson_size(seq->count);
-  size += temptype_mfjson_size(seq->temptype);
-  /* We reserve space for the largest strings, i.e., 'false' and "Step" */
-  size += isgeo ? sizeof("'coordinates':[],") : sizeof("'values':[],");
-  size += sizeof("'datetimes':[],'lower_inc':false,'upper_inc':false,interpolation':'Step'}");
-  if (srs) size += srs_mfjson_size(srs);
-  if (bbox) size += bbox_mfjson_size(seq->temptype, hasz, precision);
-  return size;
-}
-
-/**
- * @brief Write into the buffer the temporal sequence in the MF-JSON
+ * @brief Write into the buffer a temporal sequence in the MF-JSON
  * representation
  */
-static size_t
-tsequence_mfjson_buf(const TSequence *seq, bool isgeo, bool hasz,
-  int precision, const bboxunion *bbox, char *srs, char *output)
+static void
+tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq, bool isgeo,
+  bool hasz, const bboxunion *bbox, int precision, char *srs)
 {
-  char *ptr = output;
-  ptr += temptype_mfjson_buf(ptr, seq->temptype);
-  if (srs) ptr += srs_mfjson_buf(ptr, srs);
-  if (bbox) ptr += bbox_mfjson_buf(seq->temptype, ptr, bbox, hasz, precision);
-  ptr += sprintf(ptr, "\"%s\":[", isgeo ? "coordinates" : "values");
+  temptype_as_mfjson_sb(sb, seq->temptype);
+  if (srs) srs_as_mfjson_sb(sb, srs);
+  if (bbox) bbox_as_mfjson_sb(sb, seq->temptype, bbox, hasz, precision);
+  stringbuffer_aprintf(sb, "\"%s\":[", isgeo ? "coordinates" : "values");
   const TInstant *inst;
   for (int i = 0; i < seq->count; i++)
   {
-    if (i) ptr += sprintf(ptr, ",");
+    if (i) stringbuffer_append_char(sb, ',');
     inst = TSEQUENCE_INST_N(seq, i);
-    ptr += isgeo ? coordinates_mfjson_buf(ptr, inst, precision) :
-      temporal_basevalue_mfjson_buf(ptr, tinstant_val(inst), inst->temptype,
-      precision);
+    if (isgeo)
+      coordinates_as_mfjson_sb(sb, inst, precision);
+    else
+      temporal_basevalue_as_mfjson_sb(sb, tinstant_val(inst), inst->temptype,
+       precision);
   }
-  ptr += sprintf(ptr, "],\"datetimes\":[");
+  stringbuffer_append_len(sb, "],\"datetimes\":[", 15);
   for (int i = 0; i < seq->count; i++)
   {
-    if (i) ptr += sprintf(ptr, ",");
+    if (i) stringbuffer_append_char(sb, ',');
     inst = TSEQUENCE_INST_N(seq, i);
-    ptr += datetimes_mfjson_buf(ptr, inst->t);
+    datetimes_as_mfjson_sb(sb, inst->t);
   }
-  ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolation\":\"%s\"}",
+  stringbuffer_aprintf(sb, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolation\":\"%s\"}",
     seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false",
     MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ? "Discrete" :
     ( MEOS_FLAGS_LINEAR_INTERP(seq->flags) ? "Linear" : "Step" ) );
-  return (ptr - output);
+  return;
 }
 
 /**
  * @ingroup meos_internal_temporal_inout
  * @brief Return the MF-JSON representation of a temporal sequence
  * @param[in] seq Temporal sequence
- * @param[in] precision Number of decimal digits
  * @param[in] with_bbox True when the output value has bounding box
+ * @param[in] precision Number of decimal digits
  * @param[in] srs Spatial reference system
  * @csqlfn #Temporal_as_mfjson()
  */
@@ -756,10 +527,13 @@ tsequence_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
   }
   bool isgeo = tgeo_type(seq->temptype);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
-  size_t size = tsequence_mfjson_size(seq, isgeo, hasz, precision, bbox, srs);
-  char *output = palloc(size);
-  tsequence_mfjson_buf(seq, isgeo, hasz, precision, bbox, srs, output);
-  return output;
+  stringbuffer_t *sb = stringbuffer_create();
+  tsequence_as_mfjson_sb(sb, seq, isgeo, hasz, bbox, precision, srs);
+  /* Convert the string buffer to a C string */
+  char *result = (stringbuffer_getstring(sb) == NULL) ? NULL :
+    stringbuffer_getstringcopy(sb);
+  stringbuffer_destroy(sb);
+  return result;
 }
 
 #if MEOS
@@ -793,8 +567,8 @@ tintseq_as_mfjson(const TSequence *seq, bool with_bbox)
  * @ingroup meos_internal_temporal_inout
  * @brief Return the MF-JSON representation of a temporal sequence float
  * @param[in] seq Temporal sequence
- * @param[in] precision Number of decimal digits
  * @param[in] with_bbox True when the output value has bounding box
+ * @param[in] precision Number of decimal digits
  * @csqlfn #Temporal_as_mfjson()
  */
 char *
@@ -836,89 +610,55 @@ tpointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
 /*****************************************************************************/
 
 /**
- * @brief Return the maximum size in bytes of a temporal sequence set in the
- * MF-JSON representation
- */
-static size_t
-tsequenceset_mfjson_size(const TSequenceSet *ss, bool isgeo, bool hasz,
-  int precision, const bboxunion *bbox, char *srs)
-{
-  size_t size = temptype_mfjson_size(ss->temptype);
-  size += sizeof("'sequences':[],") * ss->count;
-  size += ( isgeo ? sizeof("{'coordinates':[],") : sizeof("{'values':[],") ) * ss->count;
-  size += sizeof("'datetimes':[],'lower_inc':false,'upper_inc':false},") * ss->count;
-  if (isgeo)
-    size += coordinates_mfjson_size(ss->totalcount, hasz, precision);
-  else
-  {
-    for (int i = 0; i < ss->count; i++)
-    {
-      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-      for (int j = 0; j < seq->count; j++)
-      {
-        Datum value = tinstant_val(TSEQUENCE_INST_N(seq, j));
-        size += temporal_basevalue_mfjson_size(value, seq->temptype, precision) +
-          sizeof(",");
-      }
-    }
-  }
-  size += datetimes_mfjson_size(ss->totalcount);
-  /* We reserve space for the largest interpolation string, i.e., "Discrete" */
-  size += sizeof(",interpolation':'Discrete'}");
-  if (srs) size += srs_mfjson_size(srs);
-  if (bbox) size += bbox_mfjson_size(ss->temptype, hasz, precision);
-  return size;
-}
-
-/**
- * @brief Write into the buffer the temporal sequence set in the MF-JSON
+ * @brief Write into the buffer a temporal sequence set in the MF-JSON
  * representation
  */
-static size_t
-tsequenceset_mfjson_buf(const TSequenceSet *ss, bool isgeo, bool hasz,
-  int precision, const bboxunion *bbox, char *srs, char *output)
+static void
+tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss, bool isgeo,
+  bool hasz, const bboxunion *bbox, int precision, char *srs)
 {
-  char *ptr = output;
-  ptr += temptype_mfjson_buf(ptr, ss->temptype);
-  if (srs) ptr += srs_mfjson_buf(ptr, srs);
-  if (bbox) ptr += bbox_mfjson_buf(ss->temptype, ptr, bbox, hasz, precision);
-  ptr += sprintf(ptr, "\"sequences\":[");
+  temptype_as_mfjson_sb(sb, ss->temptype);
+  if (srs) srs_as_mfjson_sb(sb, srs);
+  if (bbox) bbox_as_mfjson_sb(sb, ss->temptype, bbox, hasz, precision);
+  stringbuffer_append_len(sb, "\"sequences\":[", 13);
   const TInstant *inst;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    if (i) ptr += sprintf(ptr, ",");
-    ptr += sprintf(ptr, "{\"%s\":[", isgeo ? "coordinates" : "values");
+    if (i) stringbuffer_append_char(sb, ',');
+    stringbuffer_aprintf(sb, "{\"%s\":[", isgeo ? "coordinates" : "values");
     for (int j = 0; j < seq->count; j++)
     {
-      if (j) ptr += sprintf(ptr, ",");
+      if (j) stringbuffer_append_char(sb, ',');
       inst = TSEQUENCE_INST_N(seq, j);
-      ptr += isgeo ? coordinates_mfjson_buf(ptr, inst, precision) :
-        temporal_basevalue_mfjson_buf(ptr, tinstant_val(inst),
+      if (isgeo)
+        coordinates_as_mfjson_sb(sb, inst, precision);
+      else
+        temporal_basevalue_as_mfjson_sb(sb, tinstant_val(inst),
           inst->temptype, precision);
     }
-    ptr += sprintf(ptr, "],\"datetimes\":[");
+    stringbuffer_append_len(sb, "],\"datetimes\":[", 15);
     for (int j = 0; j < seq->count; j++)
     {
-      if (j) ptr += sprintf(ptr, ",");
+      if (j) stringbuffer_append_char(sb, ',');
       inst = TSEQUENCE_INST_N(seq, j);
-      ptr += datetimes_mfjson_buf(ptr, inst->t);
+      datetimes_as_mfjson_sb(sb, inst->t);
     }
-    ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s}",
+    stringbuffer_aprintf(sb, "],\"lower_inc\":%s,\"upper_inc\":%s}",
       seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ?
         "true" : "false");
   }
-  ptr += sprintf(ptr, "],\"interpolation\":\"%s\"}",
+  stringbuffer_aprintf(sb, "],\"interpolation\":\"%s\"}",
     MEOS_FLAGS_LINEAR_INTERP(ss->flags) ? "Linear" : "Step");
-  return (ptr - output);
+  return;
 }
 
 /**
  * @ingroup meos_internal_temporal_inout
  * @brief Return the MF-JSON representation of a temporal sequence set
  * @param[in] ss Temporal sequence set
- * @param[in] precision Number of decimal digits
  * @param[in] with_bbox True when the output value has bounding box
+ * @param[in] precision Number of decimal digits
  * @param[in] srs Spatial reference system
  * @csqlfn #Temporal_as_mfjson()
  */
@@ -936,11 +676,13 @@ tsequenceset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision,
   }
   bool isgeo = tgeo_type(ss->temptype);
   bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
-  size_t size = tsequenceset_mfjson_size(ss, isgeo, hasz, precision, bbox,
-    srs);
-  char *output = palloc(size);
-  tsequenceset_mfjson_buf(ss, isgeo, hasz, precision, bbox, srs, output);
-  return output;
+  stringbuffer_t *sb = stringbuffer_create();
+  tsequenceset_as_mfjson_sb(sb, ss, isgeo, hasz, bbox, precision, srs);
+  /* Convert the string buffer to a C string */
+  char *result = (stringbuffer_getstring(sb) == NULL) ? NULL :
+    stringbuffer_getstringcopy(sb);
+  stringbuffer_destroy(sb);
+  return result;
 }
 
 #if MEOS
@@ -1007,8 +749,8 @@ ttextseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
  * @csqlfn #Temporal_as_mfjson()
  */
 char *
-tpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox,
-  int precision, char *srs)
+tpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision,
+  char *srs)
 {
   return tsequenceset_as_mfjson(ss, with_bbox, precision, srs);
 }
@@ -1038,47 +780,41 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
   if (! ensure_not_null((void *) temp))
     return NULL;
 
-  char *result;
+  /* Get bounding box if needed */
+  bboxunion *bbox = NULL, tmp;
+  if (with_bbox)
+  {
+    temporal_set_bbox(temp, &tmp);
+    bbox = &tmp;
+  }
+  bool isgeo = tgeo_type(temp->temptype);
+  bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
+
+  /* Create the string buffer */
+  stringbuffer_t *sb = stringbuffer_create();
+
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      result = tinstant_as_mfjson((TInstant *) temp, with_bbox, precision, srs);
+      tinstant_as_mfjson_sb(sb, (TInstant *) temp, isgeo, hasz, bbox, precision, srs);
       break;
     case TSEQUENCE:
-      result = tsequence_as_mfjson((TSequence *) temp, with_bbox, precision,
-        srs);
+      tsequence_as_mfjson_sb(sb, (TSequence *) temp, isgeo, hasz, bbox, precision, srs);
       break;
     default: /* TSEQUENCESET */
-      result = tsequenceset_as_mfjson((TSequenceSet *) temp, with_bbox,
-        precision, srs);
+      tsequenceset_as_mfjson_sb(sb, (TSequenceSet *) temp, isgeo, hasz, bbox, precision, srs);
   }
+  /* Convert the string buffer to a C string */
+  char *result = stringbuffer_getstringcopy(sb);
+  stringbuffer_destroy(sb);
+
   if (flags == 0)
     return result;
 
   struct json_object *jobj = json_tokener_parse(result);
   pfree(result);
   return (char *) json_object_to_json_string_ext(jobj, flags);
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of an array of
- * temporal values
- * @param[in] temparr Array of temporal value
- * @param[in] count Number of elements in the input array
- * @param[in] maxdd Number of decimal digits
- */
-char **
-temparr_out(const Temporal **temparr, int count, int maxdd)
-{
-  assert(temparr); assert(count > 0); assert(maxdd >=0);
-  char **result = palloc(sizeof(text *) * count);
-  for (int i = 0; i < count; i++)
-    result[i] = temporal_out(temparr[i], maxdd);
-  return result;
 }
 
 /*****************************************************************************
