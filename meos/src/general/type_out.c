@@ -134,6 +134,7 @@ temporal_basevalue_as_mfjson_sb(stringbuffer_t *sb, Datum value,
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal type in MFJSON output: %d", temptype);
+      stringbuffer_clear(sb);
   }
   return;
 }
@@ -284,6 +285,7 @@ static void
 bbox_as_mfjson_sb(stringbuffer_t *sb, meosType temptype, const bboxunion *bbox,
   bool hasz, int precision)
 {
+  assert(temporal_type(temptype));
   switch (temptype)
   {
     case T_TBOOL:
@@ -301,6 +303,7 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, meosType temptype, const bboxunion *bbox,
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal type in MFJSON output: %d", temptype);
+      stringbuffer_clear(sb);
   }
   return;
 }
@@ -333,6 +336,7 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, meosType temptype)
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal type in MFJSON output: %d", temptype);
+      stringbuffer_clear(sb);
   }
   return;
 }
@@ -348,14 +352,23 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, bool isgeo,
   bool hasz, const bboxunion *bbox, int precision, char *srs)
 {
   temptype_as_mfjson_sb(sb, inst->temptype);
+  /* Propagate errors up */
+  if (stringbuffer_getlength(sb) == 0)
+    return;
   if (srs) srs_as_mfjson_sb(sb, srs);
   if (bbox) bbox_as_mfjson_sb(sb, inst->temptype, bbox, hasz, precision);
+  /* Propagate errors up */
+  if (stringbuffer_getlength(sb) == 0)
+    return;
   stringbuffer_aprintf(sb, "\"%s\":[", isgeo ? "coordinates" : "values");
   if (isgeo)
     coordinates_as_mfjson_sb(sb, inst, precision);
   else
     temporal_basevalue_as_mfjson_sb(sb, tinstant_val(inst), inst->temptype,
       precision);
+  /* Propagate errors up */
+  if (stringbuffer_getlength(sb) == 0)
+    return;
   stringbuffer_append_len(sb, "],\"datetimes\":[", 15);
   datetimes_as_mfjson_sb(sb, inst->t);
   stringbuffer_append_len(sb, "],\"interpolation\":\"None\"}", 25);
@@ -476,8 +489,14 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq, bool isgeo,
   bool hasz, const bboxunion *bbox, int precision, char *srs)
 {
   temptype_as_mfjson_sb(sb, seq->temptype);
+  /* Propagate errors up */
+  if (stringbuffer_getlength(sb) == 0)
+    return;
   if (srs) srs_as_mfjson_sb(sb, srs);
   if (bbox) bbox_as_mfjson_sb(sb, seq->temptype, bbox, hasz, precision);
+  /* Propagate errors up */
+  if (stringbuffer_getlength(sb) == 0)
+    return;
   stringbuffer_aprintf(sb, "\"%s\":[", isgeo ? "coordinates" : "values");
   const TInstant *inst;
   for (int i = 0; i < seq->count; i++)
@@ -618,8 +637,14 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss, bool isgeo
   bool hasz, const bboxunion *bbox, int precision, char *srs)
 {
   temptype_as_mfjson_sb(sb, ss->temptype);
+  /* Propagate errors up */
+  if (stringbuffer_getlength(sb) == 0)
+    return;
   if (srs) srs_as_mfjson_sb(sb, srs);
   if (bbox) bbox_as_mfjson_sb(sb, ss->temptype, bbox, hasz, precision);
+  /* Propagate errors up */
+  if (stringbuffer_getlength(sb) == 0)
+    return;
   stringbuffer_append_len(sb, "\"sequences\":[", 13);
   const TInstant *inst;
   for (int i = 0; i < ss->count; i++)
@@ -806,7 +831,13 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
       tsequenceset_as_mfjson_sb(sb, (TSequenceSet *) temp, isgeo, hasz, bbox, precision, srs);
   }
   /* Convert the string buffer to a C string */
-  char *result = stringbuffer_getstringcopy(sb);
+  char *result;
+  if (stringbuffer_getlength(sb) == 0)
+    /* Propagate errors up */
+    result = NULL;
+  else
+    /* Convert the string buffer to a C string */
+    result = stringbuffer_getstringcopy(sb);
   stringbuffer_destroy(sb);
 
   if (flags == 0)
@@ -868,7 +899,7 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 #endif /* NPOINT */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
-        "Unknown temporal base type in MFJSON output: %s",
+        "Unknown temporal base type in WKB output: %s",
           meostype_name(basetype));
       return SIZE_MAX;
   }
