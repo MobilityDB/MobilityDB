@@ -1035,16 +1035,16 @@ wkb_parse_state_check(wkb_parse_state *s, size_t next)
 /**
  * @brief Read a byte and advance the parse state forward
  */
-char
+uint8_t
 byte_from_wkb_state(wkb_parse_state *s)
 {
-  char char_value = 0;
+  uint8_t byte_value = 0;
   /* Does the data we want to read exist? */
   wkb_parse_state_check(s, MEOS_WKB_BYTE_SIZE);
   /* Get the data */
-  char_value = s->pos[0];
+  byte_value = s->pos[0];
   s->pos += MEOS_WKB_BYTE_SIZE;
-  return char_value;
+  return byte_value;
 }
 
 /**
@@ -1739,7 +1739,7 @@ datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
   s.wkb = s.pos = wkb;
   s.wkb_size = size;
   /* Fail when handed incorrect starting byte */
-  char wkb_little_endian = byte_from_wkb_state(&s);
+  uint8_t wkb_little_endian = byte_from_wkb_state(&s);
   if (wkb_little_endian != 1 && wkb_little_endian != 0)
   {
     meos_error(ERROR, MEOS_ERR_WKB_INPUT,
