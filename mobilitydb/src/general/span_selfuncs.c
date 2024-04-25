@@ -366,7 +366,7 @@ calc_length_hist_frac(Datum *hist_length, int hist_length_nvalues,
  * @brief Estimate the fraction of values less than (or equal to, if 'equal'
  * argument is true) a given const in a histogram of span bounds
  */
-static double
+static Selectivity
 span_sel_scalar(const SpanBound *constbound, const SpanBound *hist,
   int nhist, bool equal)
 {
@@ -400,7 +400,7 @@ span_sel_scalar(const SpanBound *constbound, const SpanBound *hist,
  * The caller already constructed the singular span from the element
  * constant, so just treat it the same as &&.
  */
-static double
+static Selectivity
 span_sel_overlaps(const SpanBound *const_lower, const SpanBound *const_upper,
   const SpanBound *hist_lower, const SpanBound *hist_upper, int nhist)
 {
@@ -418,11 +418,11 @@ span_sel_overlaps(const SpanBound *const_lower, const SpanBound *const_upper,
    * Sel = 1.0 - ( Sel(upper(A) < lower(B)) + ( 1 - Sel(lower(A) <= upper(B)) ) )
    */
   //EZ
-  // double selec = span_sel_scalar(const_upper, hist_lower, nhist, false);
+  // Selectivity selec = span_sel_scalar(const_upper, hist_lower, nhist, false);
   // selec += (1.0 - span_sel_scalar(const_lower, hist_upper, nhist, true));
   // selec = 1.0 - selec;
 
-  double selec = span_sel_scalar(const_lower, hist_upper, nhist, false);
+  Selectivity selec = span_sel_scalar(const_lower, hist_upper, nhist, false);
   selec += (1.0 - span_sel_scalar(const_upper, hist_lower, nhist, true));
   selec = 1.0 - selec;
   return selec;
@@ -608,13 +608,13 @@ span_sel_contains(SpanBound *const_lower, SpanBound *const_upper,
  * @brief Calculate span operator selectivity using histograms of span bounds
  * @note Used by the selectivity functions
  */
-static double
+static Selectivity
 span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
   meosOper oper)
 {
   SpanBound *hist_lower, *hist_upper;
   SpanBound const_lower, const_upper;
-  double selec;
+  Selectivity selec;
   int nhist, i;
 
   /*
@@ -687,13 +687,13 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
     selec = span_sel_default(InvalidOid);
   else
   {
-    // elog(NOTICE, "Unable to compute join selectivity for span operator: %d",
-      // oper);
+#if DEBUG_SELECTIVITY
+    elog(WARNING, "Using default selectivity for operator: %d", oper);
+#endif
     selec = span_sel_default(InvalidOid);
   }
 
   pfree(hist_lower); pfree(hist_upper);
-
   return selec;
 }
 
@@ -701,12 +701,12 @@ span_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot, const Span *constval,
  * @brief Calculate span operator selectivity using histograms of span bounds
  * @note This estimate is for the portion of values that are not NULL
  */
-double
+Selectivity
 span_sel_hist(VariableStatData *vardata, const Span *constval, meosOper oper,
   bool value)
 {
   AttStatsSlot hslot, lslot;
-  double selec;
+  Selectivity selec;
 
   memset(&hslot, 0, sizeof(hslot));
 
@@ -754,8 +754,6 @@ span_sel_hist(VariableStatData *vardata, const Span *constval, meosOper oper,
   free_attstatsslot(&hslot);
   if (oper == CONTAINS_OP || oper == CONTAINED_OP)
     free_attstatsslot(&lslot);
-
-  // elog(WARNING, "Selectivity: %lf", selec);
   return selec;
 }
 
@@ -806,7 +804,7 @@ span_const_to_span(Node *other, Span *span)
 /**
  * @brief Restriction selectivity for span operators
  */
-float8
+Selectivity
 span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
 {
   VariableStatData vardata;
@@ -939,7 +937,7 @@ Span_sel(PG_FUNCTION_ARGS)
   Oid operid = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   int varRelid = PG_GETARG_INT32(3);
-  float8 selec = span_sel(root, operid, args, varRelid);
+  Selectivity selec = span_sel(root, operid, args, varRelid);
   PG_RETURN_FLOAT8((float8) selec);
 }
 
@@ -959,7 +957,6 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
   text *att_text = PG_GETARG_TEXT_P(1);
   Oid operid = PG_GETARG_OID(2);
   Span *s = PG_GETARG_SPAN_P(3);
-  float8 selec = 0.0;
 
   /* Test input parameters */
   char *relname = get_rel_name(relid);
@@ -1037,14 +1034,13 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
     }
   }
 
-  selec = span_sel_hist1(&hslot, &lslot, s, oper);
+  Selectivity selec = span_sel_hist1(&hslot, &lslot, s, oper);
 
   ReleaseSysCache(stats_tuple);
   free_attstatsslot(&hslot);
   if (oper == CONTAINS_OP || oper == CONTAINED_OP)
     free_attstatsslot(&lslot);
-
-  PG_RETURN_FLOAT8(selec);
+  PG_RETURN_FLOAT8((float8) selec);
 }
 
 /*****************************************************************************
@@ -1101,7 +1097,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
  * code reuse, since the CDF is computed using the `span_sel_scalar` function,
  * which is used for restriction (non-join) selectivity estimation.
  */
-static double
+static Selectivity
 span_joinsel_scalar(const SpanBound *hist1, int nhist1, const SpanBound *hist2,
   int nhist2, bool equal __attribute__((unused)))
 {
@@ -1115,7 +1111,7 @@ span_joinsel_scalar(const SpanBound *hist1, int nhist1, const SpanBound *hist2,
   for (j = 0; j < nhist2 && span_bound_cmp(&hist2[j], &hist1[0]) < 0; j++);
 
   /* Do the estimation on overlapping regions */
-  double selec = 0.0,  /* initialisation */
+  Selectivity selec = 0.0,  /* initialisation */
     prev_sel1 = -1.0,  /* to skip the first iteration */
     prev_sel2 = 0.0;   /* make compiler quiet */
   while (i < nhist1 && j < nhist2)
@@ -1156,7 +1152,7 @@ span_joinsel_scalar(const SpanBound *hist1, int nhist1, const SpanBound *hist2,
  * @brief Look up the fraction of values in the first histogram that satisfy an
  * operator with respect to a value in the second histogram
  */
-static double
+static Selectivity
 span_joinsel_oper(SpanBound *lower1, SpanBound *upper1, int nhist1,
   SpanBound *lower2, SpanBound *upper2, int nhist2, Datum *length,
   int length_nvalues, meosOper oper)
@@ -1166,7 +1162,7 @@ span_joinsel_oper(SpanBound *lower1, SpanBound *upper1, int nhist1,
       span_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
     return 0.0;
 
-  double selec = 0.0; /* make compiler quiet */
+  Selectivity selec = 0.0; /* make compiler quiet */
   if (oper == OVERLAPS_OP)
   {
     selec = 1.0;
@@ -1193,14 +1189,14 @@ span_joinsel_oper(SpanBound *lower1, SpanBound *upper1, int nhist1,
 /**
  * @brief Calculate span operator selectivity using histograms of span bounds
  */
-static double
+static Selectivity
 span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
   AttStatsSlot *lslot, meosOper oper)
 {
   int nhist1, nhist2;
   SpanBound *lower1, *upper1, *lower2, *upper2;
   int i;
-  double selec;
+  Selectivity selec;
 
   /*
    * Convert histogram of spans into histograms of its lower and upper
@@ -1278,13 +1274,13 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
     selec = span_joinsel_default(InvalidOid);
   else
   {
-    // elog(ERROR, "Unable to compute join selectivity for span operator: %d",
-      // oper);
+#if DEBUG_SELECTIVITY
+    elog(WARNING, "Using default join selectivity for operator: %d", oper);
+#endif
     selec = span_sel_default(InvalidOid);
   }
 
   pfree(lower1); pfree(upper1); pfree(lower2); pfree(upper2);
-
   return selec;
 }
 
@@ -1292,14 +1288,14 @@ span_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
  * @brief Calculate span operator selectivity using histograms of span bounds
  * @note This estimate is for the portion of values that are not NULL
  */
-static double
+static Selectivity
 span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   bool value, meosOper oper)
 {
   /* There is only one lslot, see explanation below */
   AttStatsSlot hslot1, hslot2, lslot;
   Form_pg_statistic stats1 = NULL, stats2 = NULL;
-  double selec;
+  Selectivity selec;
   bool have_hist1 = false, have_hist2 = false;
   int bounds_hist = value ? STATISTIC_KIND_VALUE_BOUNDS_HISTOGRAM :
     STATISTIC_KIND_TIME_BOUNDS_HISTOGRAM;
@@ -1405,9 +1401,6 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
   if (oper == CONTAINS_OP || oper == CONTAINED_OP)
     free_attstatsslot(&lslot);
-
-  // elog(WARNING, "Join selectivity: %lf", selec);
-
   return selec;
 }
 
@@ -1416,7 +1409,7 @@ span_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
 /**
  * @brief Estimate join selectivity for spans
  */
-float8
+Selectivity
 span_joinsel(PlannerInfo *root, bool value, meosOper oper, List *args,
   JoinType jointype __attribute__((unused)), SpecialJoinInfo *sjinfo)
 {
@@ -1426,7 +1419,7 @@ span_joinsel(PlannerInfo *root, bool value, meosOper oper, List *args,
     &join_is_reversed);
 
   /* Estimate join selectivity */
-  float8 selec = span_joinsel_hist(&vardata1, &vardata2, value, oper);
+  Selectivity selec = span_joinsel_hist(&vardata1, &vardata2, value, oper);
 
   ReleaseVariableStats(vardata1);
   ReleaseVariableStats(vardata2);
@@ -1483,12 +1476,12 @@ Span_joinsel(PG_FUNCTION_ARGS)
       PG_RETURN_FLOAT8(span_joinsel_default(operid));
   }
 
-  float8 selec = span_joinsel(root, value, oper, args, jointype, sjinfo);
+  Selectivity selec = span_joinsel(root, value, oper, args, jointype, sjinfo);
 #if DEBUG_SELECTIVITY
   elog(WARNING, "Join selectivity: %lf, Operator: %s, Left: %s, Right: %s\n",
     selec, meosoper_name(oper), meostype_name(ltype), meostype_name(rtype));
 #endif
-  PG_RETURN_FLOAT8(selec);
+  PG_RETURN_FLOAT8((float8) selec);
 }
 
 PGDLLEXPORT Datum _mobdb_span_joinsel(PG_FUNCTION_ARGS);
@@ -1506,7 +1499,6 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   Oid table2_oid = PG_GETARG_OID(2);
   text *att2_text = PG_GETARG_TEXT_P(3);
   Oid operid = PG_GETARG_OID(4);
-  float8 selec = 0.0;
 
   /* Test input parameters */
   char *table1_name = get_rel_name(table1_oid);
@@ -1618,14 +1610,14 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   }
 
   /* Compute selectivity */
-  selec = span_joinsel_hist1(&hslot1, &hslot2, &lslot, oper);
+  Selectivity selec = span_joinsel_hist1(&hslot1, &hslot2, &lslot, oper);
 
   ReleaseSysCache(stats1_tuple); ReleaseSysCache(stats2_tuple);
   free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
   if (oper == CONTAINS_OP || oper == CONTAINED_OP)
     free_attstatsslot(&lslot);
 
-  PG_RETURN_FLOAT8(selec);
+  PG_RETURN_FLOAT8((float8) selec);
 }
 
 /*****************************************************************************/
