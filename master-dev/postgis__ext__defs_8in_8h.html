@@ -121,6 +121,8 @@ Data Structures</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLWPOLY.html">LWPOLY</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLWPROJ.html">LWPROJ</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLWPSURFACE.html">LWPSURFACE</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLWTIN.html">LWTIN</a></td></tr>
@@ -214,29 +216,16 @@ Macros</h2></td></tr>
 Typedefs</h2></td></tr>
 <tr class="memitem:a4f088265c50fb586dd2f7e9d6e6a7784"><td class="memItemLeft" align="right" valign="top">typedef uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_a4f088265c50fb586dd2f7e9d6e6a7784.html#a4f088265c50fb586dd2f7e9d6e6a7784">lwflags_t</a></td></tr>
 <tr class="separator:a4f088265c50fb586dd2f7e9d6e6a7784"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adce5f7e0704787473194ee1396d08bfa"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structLWPROJ.html">LWPROJ</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_adce5f7e0704787473194ee1396d08bfa.html#adce5f7e0704787473194ee1396d08bfa">LWPROJ</a></td></tr>
+<tr class="separator:adce5f7e0704787473194ee1396d08bfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9e12e60c5b4709ce4667e10ee008480"><td class="memItemLeft" align="right" valign="top">typedef struct PJconsts&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_ab9e12e60c5b4709ce4667e10ee008480.html#ab9e12e60c5b4709ce4667e10ee008480">PJ</a></td></tr>
+<tr class="separator:ab9e12e60c5b4709ce4667e10ee008480"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a5dd10644e09bd3511cb902a3748a1018"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_a5dd10644e09bd3511cb902a3748a1018.html#a5dd10644e09bd3511cb902a3748a1018">geo_from_lwgeom</a> (<a class="el" href="structLWGEOM.html">LWGEOM</a> *geom, size_t *size)</td></tr>
-<tr class="separator:a5dd10644e09bd3511cb902a3748a1018"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a394f272242e0b6104aa1ac4e6e3c70e4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_a394f272242e0b6104aa1ac4e6e3c70e4.html#a394f272242e0b6104aa1ac4e6e3c70e4">lwgeom_from_gserialized</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *g)</td></tr>
-<tr class="separator:a394f272242e0b6104aa1ac4e6e3c70e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a172575cff44f4597964eaaac8fa53091"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_a172575cff44f4597964eaaac8fa53091.html#a172575cff44f4597964eaaac8fa53091">lwgeom_get_srid</a> (const <a class="el" href="structLWGEOM.html">LWGEOM</a> *geom)</td></tr>
-<tr class="separator:a172575cff44f4597964eaaac8fa53091"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc1508992ed9d2fee96220dec385a5b1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_adc1508992ed9d2fee96220dec385a5b1.html#adc1508992ed9d2fee96220dec385a5b1">lwgeom_has_m</a> (const <a class="el" href="structLWGEOM.html">LWGEOM</a> *geom)</td></tr>
-<tr class="separator:adc1508992ed9d2fee96220dec385a5b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7347935fa71180a806f8a9f1f0556a41"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_a7347935fa71180a806f8a9f1f0556a41.html#a7347935fa71180a806f8a9f1f0556a41">lwgeom_has_z</a> (const <a class="el" href="structLWGEOM.html">LWGEOM</a> *geom)</td></tr>
-<tr class="separator:a7347935fa71180a806f8a9f1f0556a41"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27801805a13d7aeffb415a23fbc0a2bc"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_a27801805a13d7aeffb415a23fbc0a2bc.html#a27801805a13d7aeffb415a23fbc0a2bc">lwpoint_get_m</a> (const <a class="el" href="structLWPOINT.html">LWPOINT</a> *point)</td></tr>
-<tr class="separator:a27801805a13d7aeffb415a23fbc0a2bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5bd30f4a6b7fb87338b77dad2cd98c67"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_a5bd30f4a6b7fb87338b77dad2cd98c67.html#a5bd30f4a6b7fb87338b77dad2cd98c67">lwpoint_get_x</a> (const <a class="el" href="structLWPOINT.html">LWPOINT</a> *point)</td></tr>
-<tr class="separator:a5bd30f4a6b7fb87338b77dad2cd98c67"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af69e289906873dc1839857083a2fb836"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_af69e289906873dc1839857083a2fb836.html#af69e289906873dc1839857083a2fb836">lwpoint_get_y</a> (const <a class="el" href="structLWPOINT.html">LWPOINT</a> *point)</td></tr>
-<tr class="separator:af69e289906873dc1839857083a2fb836"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad0ba4f7ab98f0a0705e0561c4a92dd42"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_ad0ba4f7ab98f0a0705e0561c4a92dd42.html#ad0ba4f7ab98f0a0705e0561c4a92dd42">lwpoint_get_z</a> (const <a class="el" href="structLWPOINT.html">LWPOINT</a> *point)</td></tr>
-<tr class="separator:ad0ba4f7ab98f0a0705e0561c4a92dd42"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abdde76b7844e90ac5e95a7603c2f5483"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLWPOINT.html">LWPOINT</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_abdde76b7844e90ac5e95a7603c2f5483.html#abdde76b7844e90ac5e95a7603c2f5483">lwpoint_make</a> (int32_t srid, int hasz, int hasm, const <a class="el" href="structPOINT4D.html">POINT4D</a> *p)</td></tr>
-<tr class="separator:abdde76b7844e90ac5e95a7603c2f5483"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ce9fb1694cd53b2912c733fca3bd47e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43d43196463bde49cb067f5c20ab8481.html#a43d43196463bde49cb067f5c20ab8481">int32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="postgis__ext__defs_8in_8h_a9ce9fb1694cd53b2912c733fca3bd47e.html#a9ce9fb1694cd53b2912c733fca3bd47e">geo_get_srid</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *g)</td></tr>
+<tr class="memdesc:a9ce9fb1694cd53b2912c733fca3bd47e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the srid of a geometry.  <a href="postgis__ext__defs_8in_8h_a9ce9fb1694cd53b2912c733fca3bd47e.html#a9ce9fb1694cd53b2912c733fca3bd47e">More...</a><br /></td></tr>
+<tr class="separator:a9ce9fb1694cd53b2912c733fca3bd47e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->

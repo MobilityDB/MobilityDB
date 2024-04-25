@@ -129,10 +129,13 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry @csqlfn <a class="el" href="group__mobilitydb__temporal__spatial__rel__ever_ga969ae64e59e38275a0dc6d8cd2622696.html#ga969ae64e59e38275a0dc6d8cd2622696" title="Return true if a temporal point and a geometry/geography always intersect @sqlfn aintersects()">Aintersects_tpoint_geo()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>aIntersects(tpoint, geo) is equivalent to NOT eDisjoint(tpoint, geo) </dd>
+<dd>
+The function does not accept geography since the eDisjoint function is based on the PostGIS ST_Covers function provided by GEOS @csqlfn <a class="el" href="group__mobilitydb__temporal__spatial__rel__ever_ga969ae64e59e38275a0dc6d8cd2622696.html#ga969ae64e59e38275a0dc6d8cd2622696" title="Return true if a temporal point and a geometry/geography always intersect @sqlfn aIntersects()">Aintersects_tpoint_geo()</a> </dd></dl>
 
 </div>
 </div>

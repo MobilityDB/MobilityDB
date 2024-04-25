@@ -16,7 +16,8 @@ var searchData=
   ['lwmsurface_13',['LWMSURFACE',['../structLWMSURFACE.html',1,'']]],
   ['lwpoint_14',['LWPOINT',['../structLWPOINT.html',1,'']]],
   ['lwpoly_15',['LWPOLY',['../structLWPOLY.html',1,'']]],
-  ['lwpsurface_16',['LWPSURFACE',['../structLWPSURFACE.html',1,'']]],
-  ['lwtin_17',['LWTIN',['../structLWTIN.html',1,'']]],
-  ['lwtriangle_18',['LWTRIANGLE',['../structLWTRIANGLE.html',1,'']]]
+  ['lwproj_16',['LWPROJ',['../structLWPROJ.html',1,'']]],
+  ['lwpsurface_17',['LWPSURFACE',['../structLWPSURFACE.html',1,'']]],
+  ['lwtin_18',['LWTIN',['../structLWTIN.html',1,'']]],
+  ['lwtriangle_19',['LWTRIANGLE',['../structLWTRIANGLE.html',1,'']]]
 ];

@@ -79,8 +79,10 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
+          <tr><td class="navtab"><a class="navtab" href="ttext__expand_8c_a01fa66b89ffeecb1c172bc490622d411.html#a01fa66b89ffeecb1c172bc490622d411">COMPACT_COMP_SEQS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ttext__expand_8c_accc65d8dc3b6c9d7b9dd81f43f2538bb.html#accc65d8dc3b6c9d7b9dd81f43f2538bb">EXPAND_SEQ</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="ttext__expand_8c_a0435f8ce4367a37c651eaf3765d7a033.html#a0435f8ce4367a37c651eaf3765d7a033">EXPAND_SEQSET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="ttext__expand_8c_ac720a5a4e6c88dfd610589432ff18cf6.html#ac720a5a4e6c88dfd610589432ff18cf6">INITIAL_INSTANTS_SEQ</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="ttext__expand_8c_a2f477c84962a50fe1d8ed029757a79eb.html#a2f477c84962a50fe1d8ed029757a79eb">INITIAL_SEQUENCES_SEQSET</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ttext__expand_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="ttext__expand_8c_a977775e72d7693b4ecda60c53646ac62.html#a977775e72d7693b4ecda60c53646ac62">MAX_INSTANTS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ttext__expand_8c_ad420c8d289b7ad9f06e28366c90f6758.html#ad420c8d289b7ad9f06e28366c90f6758">MAX_INSTANTS_SEQ</a></td></tr>
@@ -106,7 +108,7 @@ $(function() {
 <p >The program outputs the number of sequences and, for the last sequence, the number of instants and the last value.</p>
 <p >The instants are generated so they are not redundant, that is, all input instants will appear in the final sequence.</p>
 <p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o ttext_expand ttext_expand.c -L/usr/local/lib -lmeos</div>
-</div><!-- fragment --><p >The output of the program when MEOS is built with the flag -DDEBUG_EXPAND=1 to show debug messages pertaining to the expandable data structures is as follows </p><div class="fragment"><div class="line">Total number of instants generated: 50000</div>
+</div><!-- fragment --><p >The output of the program when MEOS is built with the flag -DDEBUG_EXPAND=1 to show debug messages for the expandable data structures is as follows </p><div class="fragment"><div class="line">Total number of instants generated: 50000</div>
 <div class="line">Maximum number of instants in a sequence: 500</div>
 <div class="line">Generating the instants (one <span class="charliteral">&#39;*&#39;</span> marker every 100 instants)</div>
 <div class="line">* Seq -&gt; 128 * Seq -&gt; 256 * Seq -&gt; 512 *************************************</div>

@@ -119,6 +119,27 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
+<p>Restrict a temporal point to a tile defined by a spatiotemporal box. </p>
+<p >In addition to applying the atStbox() function we must remove the upper bound for each dimension. The following figure shows the borders that are removed (represented by x) for a 2D tile and 3D tile</p>
+<div class="fragment"><div class="line">xxxxxxxxxxxxxxxxx</div>
+<div class="line">|               x</div>
+<div class="line">|               x</div>
+<div class="line">|---------------x</div>
+<div class="line"> </div>
+<div class="line">  xxxxxxxxxxxxxxxxx</div>
+<div class="line"> xxxxxxxxxxxxxxxxxx</div>
+<div class="line">xxxxxxxxxxxxxxxxxxx</div>
+<div class="line">|               xxx</div>
+<div class="line">|               xx</div>
+<div class="line">|---------------x</div>
+</div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Spatiotemporal box </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
     </td>
