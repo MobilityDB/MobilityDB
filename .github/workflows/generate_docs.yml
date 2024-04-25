@@ -10,7 +10,6 @@ on:
       - 'doc/**'
     branches:
       - master
-      - develop
 
 jobs:
   build:
@@ -89,13 +88,6 @@ jobs:
         run: |
           rm -rf master
           mv docs-temp master
-
-      # Rename the directory to develop
-      - name: Rename the directory to develop
-        if: ${{ github.ref == 'refs/heads/develop' }}
-        run: |
-          rm -rf develop
-          mv docs-temp develop
 
       # add, commit and push to gh-pages
       - name: Commit changes

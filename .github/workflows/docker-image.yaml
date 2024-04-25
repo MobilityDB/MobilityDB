@@ -2,7 +2,7 @@ name: Docker image
 on:
   push:
     branches:
-      - 'develop'
+      - 'master'
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
@@ -24,6 +24,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.0.0
 
+      - name: Extract highest version
+        id: extract-highest-version
+        if: ${{ matrix.psql == '16' && github.ref_type == 'tag' }}
+        run: |
+          # List tags and store the result in a variable
+          TAGS=$(git ls-remote --tags origin)
+
+          # Extract major.minor version numbers from tags and store them in an array
+          VERSIONS=()
+          while read -r line; do
+            tag=$(echo "$line" | cut -d"/" -f3)
+            version=$(echo "$tag" | cut -d"v" -f2)
+            major=$(echo "$version" | cut -d"." -f1)
+            minor=$(echo "$version" | cut -d"." -f2)
+            VERSIONS+=("$major.$minor")
+          done <<< "$TAGS"
+
+          # Sort the array to find the highest version
+          IFS=$'\n' sorted=($(sort -rV <<<"${VERSIONS[*]}"))
+
+          # Output the highest version
+          echo "highest-version=v${sorted[0]}" >> "$GITHUB_OUTPUT"
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -32,7 +55,7 @@ jobs:
           images: mobilitydb/mobilitydb
           # generate Docker tags based on the following events/attributes
           flavor: |
-            latest=${{ matrix.psql == '16' && github.ref_type == 'tag' }}
+            latest=${{ matrix.psql == '16' && github.ref_type == 'tag' && contains(github.ref_name, steps.extract-highest-version.outputs.highest-version}}
             prefix=${{ matrix.psql }}-${{ matrix.postgis }}-
           tags: |
             type=ref,event=branch
