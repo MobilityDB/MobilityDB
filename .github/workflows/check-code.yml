@@ -11,9 +11,7 @@ on:
       - 'mobilitydb/**'
       - 'postgis/**'
       - 'LICENSE.txt'
-    branch:
-      - master
-      - develop
+    branch_ignore: gh-pages
 
 jobs:
   license_check:

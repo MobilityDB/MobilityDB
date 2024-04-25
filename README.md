@@ -1,5 +1,5 @@
 ![Build Status](https://github.com/MobilityDB/MobilityDB/actions/workflows/pgversion.yml/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/MobilityDB/MobilityDB/badge.svg?branch=develop)](https://coveralls.io/github/MobilityDB/MobilityDB?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/github/MobilityDB/MobilityDB/badge.svg?branch=master)](https://coveralls.io/github/MobilityDB/MobilityDB?branch=master)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/833ae1093bab48cda7450e2eea456084)](https://www.codacy.com/gh/MobilityDB/MobilityDB?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MobilityDB/MobilityDB&amp;utm_campaign=Badge_Grade)
 [![Gitter](https://badges.gitter.im/MobilityDBProject/MobilityDB.svg)](https://gitter.im/MobilityDBProject/MobilityDB?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
@@ -18,6 +18,13 @@ MobilityDB is developed by the Computer & Decision Engineering Department of the
 The MobilityDB project is managed by a [steering committee](https://github.com/MobilityDB/MobilityDB/wiki/MobilityDB-Project-Steering-Committe).
 
 More information about MobilityDB, including publications, presentations, etc., can be found in the MobilityDB [website](https://mobilitydb.com).
+
+Documentation
+--------
+
+The pregenerated user and developer documentation can be found [here](https://mobilitydb.github.io/MobilityDB/).
+
+To generate the documentation locally, refer to our [documentation generation section](#generating-the-documentation)
 
 Benefits
 --------
@@ -84,15 +91,10 @@ For general questions and topics about how to use MobilityDB, please write to th
 Branches
 --------
 
-*   The `master` branch has the latest release
-*   The `develop` branch has the development of the next release. The complete list of releases is available [here](https://github.com/MobilityDB/MobilityDB/releases)
+*   The `master` branch has the development of the next release.
+*   The `stable-major.minor` branches have the patch releases of the correspong `major.minor` release.
 
-Status
-------
-
-The current pre-release version is 1.1. We plan to release 1.1 when the currently ongoing packaging for Debian and YUM is finished. For more information, please refer to the mailing lists [pgsql-pkg-debian](https://www.postgresql.org/list/pgsql-pkg-debian/) and [pgsql-pkg-yum](https://www.postgresql.org/list/pgsql-pkg-yum/).
-
-MobilityDB is part of the PostGIS bundle for Windows.
+The complete list of releases is available [here](https://github.com/MobilityDB/MobilityDB/releases)
 
 Requirements
 ------------
@@ -124,10 +126,7 @@ cmake ..
 make
 sudo make install
 ```
-The above commands install the `master` branch. If you want to install another branch, for example, `develop`, you can replace the first command above as follows
-```bash
-git clone --branch develop https://github.com/MobilityDB/MobilityDB
-```
+
 You should also set the following in `postgresql.conf` depending on the version of PostGIS you have installed (below we use PostGIS 3):
 ```bash
 shared_preload_libraries = 'postgis-3'
@@ -180,8 +179,10 @@ Issues
 
 Please report any [issues](https://github.com/MobilityDB/MobilityDB/issues) you may have.
 
-Documentation
+Generating the Documentation
 -------------
+
+Pregenerated versions of the user and developer documentation can be found [here](https://mobilitydb.github.io/MobilityDB/).
 
 ### User's Manual
 
@@ -206,18 +207,6 @@ make doc
 ```
 The resulting documentation will be generated in the `doc` directory of the build directory.
 
-In addition, pregenerated versions are available for the master and develop branches.
-
-*   HTML: [master](https://mobilitydb.github.io/MobilityDB/master/), [develop](https://mobilitydb.github.io/MobilityDB/develop/)
-*   PDF: [master](https://mobilitydb.github.io/MobilityDB/master/mobilitydb-manual.pdf), [develop](https://mobilitydb.github.io/MobilityDB/develop/mobilitydb-manual.pdf)
-*   EPUB: [master](https://mobilitydb.github.io/MobilityDB/master/mobilitydb-manual.epub), [develop](https://mobilitydb.github.io/MobilityDB/develop/mobilitydb-manual.epub)
-
-The documentation is also avaible in Spanish.
-
-*   HTML: [master](https://mobilitydb.github.io/MobilityDB/master/es/), [develop](https://mobilitydb.github.io/MobilityDB/develop/es/)
-*   PDF: [master](https://mobilitydb.github.io/MobilityDB/master/es/mobilitydb-manual.pdf), [develop](https://mobilitydb.github.io/MobilityDB/develop/es/mobilitydb-manual.pdf)
-*   EPUB: [master](https://mobilitydb.github.io/MobilityDB/master/es/mobilitydb-manual.epub), [develop](https://mobilitydb.github.io/MobilityDB/develop/es/mobilitydb-manual.epub)
-
 ### Developer's Documentation
 
 You can generate the English developer's documentation in HTML format. For this, it is necessary to the option `DOC_DEV` in the `cmake` command as follows:
@@ -228,10 +217,6 @@ make doc_dev
 ```
 
 The resulting HTML documentation will be generated in the `doxygen` directory of the build directory.
-
-In addition, pregenerated versions are available for the master and develop branches.
-
-*   HTML: [master](https://mobilitydb.github.io/MobilityDB/master-dev/), [develop](https://mobilitydb.github.io/MobilityDB/develop-dev/)
 
 Licenses
 --------

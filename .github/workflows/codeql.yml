@@ -2,7 +2,9 @@ name: "CodeQL"
 
 on:
   push:
+    branch_ignore: gh-pages
   pull_request:
+    branch_ignore: gh-pages
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
