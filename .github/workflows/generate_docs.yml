@@ -9,7 +9,8 @@ on:
       - '.github/workflows/generate_docs.yml'
       - 'doc/**'
     branches:
-      - master
+      - 'master'
+      - 'stable-[0-9]+.[0-9]+'
 
 jobs:
   build:
@@ -82,12 +83,11 @@ jobs:
           name: doc-files
           path: docs-temp
 
-      # Rename the directory to master
-      - name: Rename the directory to master
-        if: ${{ github.ref == 'refs/heads/master' }}
+      # Rename the directory to branch name
+      - name: Rename the directory to branch name
         run: |
-          rm -rf master
-          mv docs-temp master
+          rm -rf ${{ github.ref_name }}
+          mv docs-temp ${{ github.ref_name }}
 
       # add, commit and push to gh-pages
       - name: Commit changes
