@@ -10,7 +10,8 @@ on:
       - './mobilitydb/**'
       - './doxygen/**'
     branches:
-      - master
+      - 'master'
+      - 'stable-[0-9]+.[0-9]+'
 
 jobs:
   build:
@@ -54,19 +55,11 @@ jobs:
           name: devdocs-files
           path: devdocs-temp
 
-      # Rename the directory to master
-      - name: Rename the directory to master
-        if: ${{ github.ref == 'refs/heads/master' }}
+      # Rename the directory to branch name
+      - name: Rename the directory to branch name
         run: |
-          rm -rf master-dev
-          mv devdocs-temp master-dev
-
-      # Rename the directory to develop
-      - name: Rename the directory to develop
-        if: ${{ github.ref == 'refs/heads/develop' }}
-        run: |
-          rm -rf develop-dev
-          mv devdocs-temp develop-dev
+          rm -rf ${{ github.ref_name }}-dev
+          mv devdocs-temp ${{ github.ref_name }}-dev
 
       # add, commit and push to gh-pages
       - name: Commit changes
