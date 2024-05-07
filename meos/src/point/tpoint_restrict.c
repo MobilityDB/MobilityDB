@@ -1051,7 +1051,7 @@ clipt(double p, double q, double *t0, double *t1)
  * the upper border is assumed as outside of the box.
  * @param[out] point3,point4 Output points
  * @param[out] p3_inc,p4_inc Are the points included or not in the box?
- * These are only written/returned when @p border_inc is true
+ * These are only written/returned when @p border_inc is false
  * @result True if the line segment defined by p1,p2 intersects the bounding
  * box, false otherwise.
  * @note It is possible to mix 2D/3D geometries, the Z dimension is only
@@ -1425,6 +1425,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     GSERIALIZED *p2 = DatumGetGserializedP(tinstant_val(inst2));
     GSERIALIZED *p3, *p4;
+    TInstant *inst1_2d, *inst2_2d;
     bool makeseq = false;
     if (geopoint_eq(p1, p2))
     {
@@ -1442,29 +1443,15 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     else
     {
       /* Clip the segment */
-      bool p3_inc, p4_inc;
+      bool p3_inc = true, p4_inc = true;
       bool found = liangBarskyClip(p1, p2, box, hasz, border_inc, &p3, &p4,
         &p3_inc, &p4_inc);
       if (found)
       {
-        if (! border_inc)
-        {
-          /* Restart a sequence when p3 is not inclusive and it is not the
-           * first instant */
-          if (! p3_inc)
-          {
-            if (ninsts > 0)
-            {
-              sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-                (ninsts == 1) ? true : lower_inc, (ninsts == 1) ? true : false,
-                LINEAR, NORMALIZE_NO);
-              ninsts = 0;
-            }
-            lower_inc = false;
-          }
-          /* Update the upper_inc flag of the current instant */
-          upper_inc &= p4_inc;
-        }
+        /* If p2 != p4, we exit the box,
+         * so end the previous sequence and start a new one */
+        if (! geopoint_eq(p2, p4))
+          makeseq = true;
         /* To reduce roundoff errors, (1) find the timestamps at which the
          * segment take the points returned by the clipping function and
          * (2) project the temporal points to the timestamps instead  */
@@ -1474,22 +1461,38 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         if (hasz_seq && ! hasz)
         {
           /* Force the computation at 2D */
-          TInstant *inst1_2d = (TInstant *) tpoint_force2d((Temporal *) inst1);
-          TInstant *inst2_2d = (TInstant *) tpoint_force2d((Temporal *) inst2);
-          tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d3, &t1);
-          if (geopoint_eq(p3, p4))
-            t2 = t1;
-          else
-            tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d4, &t2);
-          pfree(inst1_2d); pfree(inst2_2d);
+          inst1_2d = (TInstant *) tpoint_force2d((Temporal *) inst1);
+          inst2_2d = (TInstant *) tpoint_force2d((Temporal *) inst2);
+          p1 = DatumGetGserializedP(tinstant_val(inst1_2d));
+          p2 = DatumGetGserializedP(tinstant_val(inst2_2d));
         }
-        else
+        /* Compute timestamp t1 of point p3 */
+        if (geopoint_eq(p1, p3))
+          t1 = inst1->t;
+        else if (geopoint_eq(p2, p3))
+          t1 = inst2->t;
+        else /* inst1->t < t1(p3) < inst2->t */
         {
-          tpointsegm_timestamp_at_value1_iter(inst1, inst2, d3, &t1);
-          if (geopoint_eq(p3, p4))
-            t2 = t1;
+          if (hasz_seq && ! hasz)
+            tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d3, &t1);
+          else
+            tpointsegm_timestamp_at_value1_iter(inst1, inst2, d3, &t1);
+        }
+        /* Compute timestamp t2 of point p4  */
+        if (geopoint_eq(p2, p4))
+          t2 = inst2->t;
+        else if (geopoint_eq(p3, p4))
+          t2 = t1;
+        else /* inst1->t < t2(p4) < inst2->t */
+        {
+          if (hasz_seq && ! hasz)
+            tpointsegm_timestamp_at_value1_iter(inst1_2d, inst2_2d, d4, &t2);
           else
             tpointsegm_timestamp_at_value1_iter(inst1, inst2, d4, &t2);
+        }
+        if (hasz_seq && ! hasz)
+        {
+          pfree(inst1_2d); pfree(inst2_2d);
         }
         pfree(p3); pfree(p4);
         /* Project the segment to the timestamps if necessary and add the
@@ -1502,30 +1505,42 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           if (t1 != inst1->t)
           {
             inter1 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, t1);
+            free1 = true;
             instants[ninsts] = tinstant_make(inter1, inst1->temptype, t1);
             tofree[nfree++] = instants[ninsts++];
-            free1 = true;
+            lower_inc = p3_inc;
           }
           else
+          {
             instants[ninsts++] = (TInstant *) inst1;
+            lower_inc &= p3_inc;
+          }
         }
-        if (t1 != t2)
+        if (t1 == t2)
+          upper_inc = lower_inc;
+        else
         {
           if (t2 != inst2->t)
           {
             inter2 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, t2);
+            free2 = true;
+            /* Add the instant only if it is different from the previous one
+             * Otherwise, assume that t1 == t2 and skip t2 */
             if (! free1 || ! geopoint_eq(DatumGetGserializedP(inter1),
                   DatumGetGserializedP(inter2)))
             {
               instants[ninsts] = tinstant_make(inter2, inst1->temptype, t2);
               tofree[nfree++] = instants[ninsts++];
+              upper_inc = p4_inc;
             }
             else
-              instants[ninsts++] = (TInstant *) inst2;
-            free2 = true;
+              upper_inc = lower_inc;
           }
           else
+          {
             instants[ninsts++] = (TInstant *) inst2;
+            upper_inc &= p4_inc;
+          }
         }
         if (free1)
           pfree(DatumGetPointer(inter1));
@@ -1537,23 +1552,20 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     }
     if (makeseq)
     {
-      upper_inc = false;
       if (ninsts > 0)
       {
         sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-          (ninsts == 1) ? true : lower_inc, (ninsts == 1) ? true : upper_inc,
-          LINEAR, NORMALIZE_NO);
+          lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
         ninsts = 0;
       }
       lower_inc = true;
     }
     inst1 = inst2;
-    p1 = p2;
+    p1 = DatumGetGserializedP(tinstant_val(inst2));
   }
   if (ninsts > 0)
     sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-      (ninsts == 1) ? true : lower_inc, (ninsts == 1) ? true : upper_inc,
-      LINEAR, NORMALIZE_NO);
+      lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
   pfree_array((void **) tofree, nfree);
   pfree(instants);
   if (nseqs == 0)
