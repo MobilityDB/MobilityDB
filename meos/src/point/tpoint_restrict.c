@@ -1448,9 +1448,9 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         &p3_inc, &p4_inc);
       if (found)
       {
-        /* If p2 != p4, we exit the box,
+        /* If p2 != p4 or p4_inc is false, we exit the box,
          * so end the previous sequence and start a new one */
-        if (! geopoint_eq(p2, p4))
+        if (! geopoint_eq(p2, p4) || ! p4_inc)
           makeseq = true;
         /* To reduce roundoff errors, (1) find the timestamps at which the
          * segment take the points returned by the clipping function and
@@ -1550,14 +1550,11 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
       else
         makeseq = true;
     }
-    if (makeseq)
+    if (makeseq && ninsts > 0)
     {
-      if (ninsts > 0)
-      {
-        sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-          lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
-        ninsts = 0;
-      }
+      sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
+        lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
+      ninsts = 0;
       lower_inc = true;
     }
     inst1 = inst2;
