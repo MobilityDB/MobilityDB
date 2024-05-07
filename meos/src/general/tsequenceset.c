@@ -542,6 +542,8 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
   {
     seq = tsequence_make_exp((const TInstant **) instants, count, count, true,
       true, interp, NORMALIZE);
+    if (! seq)
+      return NULL;
     result = tsequenceset_make_exp((const TSequence **) &seq, 1, 1,
       NORMALIZE_NO);
     pfree(seq);
