@@ -366,11 +366,12 @@ TSequenceSet *
 tnumberseqset_abs(const TSequenceSet *ss)
 {
   assert(ss); assert(tnumber_type(ss->temptype));
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->flags);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = MEOS_FLAGS_LINEAR_INTERP(ss->flags) ?
+    sequences[i] = linear ?
       tnumberseq_linear_abs(seq) : tnumberseq_iter_abs(seq);
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);

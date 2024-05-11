@@ -43,6 +43,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/temporal.h"
 #include "general/temporal_tile.h"
 #include "point/stbox.h"
 #include "point/tpoint_spatialfuncs.h"
@@ -401,7 +402,8 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double xsize,
  * units
  * @param[in] sorigin Spatial origin of the tiles
  * @param[in] torigin Time origin of the tiles
- *
+ * @param[in] border_inc True when the box contains the upper border, otherwise
+ * the upper border is assumed as outside of the box.
  * @pre The size argument must be greater to 0.
  * @note The tunits argument may be equal to 0. In that case only the spatial
  * dimension is tiled.
@@ -409,48 +411,73 @@ stbox_tile_set(double x, double y, double z, TimestampTz t, double xsize,
 STboxGridState *
 stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
   double ysize, double zsize, int64 tunits, POINT3DZ sorigin,
-  TimestampTz torigin)
+  TimestampTz torigin, bool border_inc)
 {
   assert(MEOS_FLAGS_GET_X(box->flags) && xsize > 0 && ysize > 0);
+  /* When zsize is greater than 0, verify that the box has Z dimension */
+  assert(zsize <= 0 || MEOS_FLAGS_GET_Z(box->flags));
   /* When tunits is greater than 0, verify that the box has T dimension */
   assert(tunits <= 0 || MEOS_FLAGS_GET_T(box->flags));
   /* palloc0 to initialize the missing dimensions to 0 */
   STboxGridState *state = palloc0(sizeof(STboxGridState));
   /* Fill in state */
-  state->done = false;
-  state->hasz = zsize && MEOS_FLAGS_GET_Z(box->flags);
-  state->hast = tunits && MEOS_FLAGS_GET_T(box->flags);
   state->i = 1;
+  state->ntiles = 1;
   state->xsize = xsize;
   state->ysize = ysize;
-  state->zsize = zsize;
-  state->tunits = tunits;
   state->box.xmin = float_bucket(box->xmin, xsize, sorigin.x);
   state->box.xmax = float_bucket(box->xmax, xsize, sorigin.x);
+  state->max_coords[0] = ceil((state->box.xmax - state->box.xmin) / xsize);
+  if (border_inc)
+    state->max_coords[0] += 1;
+  state->ntiles *= (state->max_coords[0] + 1);
   state->box.ymin = float_bucket(box->ymin, ysize, sorigin.y);
   state->box.ymax = float_bucket(box->ymax, ysize, sorigin.y);
-  if (state->hasz)
-  {
-    state->box.zmin = float_bucket(box->zmin, zsize, sorigin.z);
-    state->box.zmax = float_bucket(box->zmax, zsize, sorigin.z);
-  }
-  if (state->hast)
-  {
-    state->box.period.lower = TimestampTzGetDatum(timestamptz_bucket1(
-      DatumGetTimestampTz(box->period.lower), tunits, torigin));
-    state->box.period.upper = TimestampTzGetDatum(timestamptz_bucket1(
-      DatumGetTimestampTz(box->period.upper), tunits, torigin));
-  }
+  state->max_coords[1] = ceil((state->box.ymax - state->box.ymin) / ysize);
+  if (border_inc)
+    state->max_coords[1] += 1;
+  state->ntiles *= (state->max_coords[1] + 1);
   state->box.srid = box->srid;
   state->box.flags = box->flags;
-  MEOS_FLAGS_SET_T(state->box.flags,
-    MEOS_FLAGS_GET_T(box->flags) && tunits > 0);
   state->x = state->box.xmin;
   state->y = state->box.ymin;
-  if (state->hasz)
-    state->z = state->box.zmin;
-  if (state->hast)
-    state->t = DatumGetTimestampTz(state->box.period.lower);
+  if (MEOS_FLAGS_GET_Z(box->flags))
+  {
+    if (zsize > 0)
+    {
+      state->hasz = true;
+      state->zsize = zsize;
+      state->box.zmin = float_bucket(box->zmin, zsize, sorigin.z);
+      state->box.zmax = float_bucket(box->zmax, zsize, sorigin.z);
+      state->max_coords[2] = ceil((state->box.zmax - state->box.zmin) / zsize);
+      if (border_inc)
+        state->max_coords[2] += 1;
+      state->ntiles *= (state->max_coords[2] + 1);
+      state->z = state->box.zmin;
+    }
+    else
+      MEOS_FLAGS_SET_Z(state->box.flags, false);
+  }
+  if (MEOS_FLAGS_GET_T(box->flags))
+  {
+    if (tunits > 0)
+    {
+      state->hast = true;
+      state->tunits = tunits;
+      state->box.period.lower = TimestampTzGetDatum(timestamptz_bucket1(
+        DatumGetTimestampTz(box->period.lower), tunits, torigin));
+      state->box.period.upper = TimestampTzGetDatum(timestamptz_bucket1(
+        DatumGetTimestampTz(box->period.upper), tunits, torigin));
+      state->max_coords[3] =
+        ceil((state->box.period.upper - state->box.period.lower) / tunits);
+      if (border_inc)
+        state->max_coords[3] += 1;
+      state->ntiles *= (state->max_coords[3] + 1);
+      state->t = DatumGetTimestampTz(state->box.period.lower);
+    }
+    else
+      MEOS_FLAGS_SET_T(state->box.flags, false);
+  }
   state->temp = temp;
   return state;
 }
@@ -463,20 +490,20 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
 void
 stbox_tile_state_next(STboxGridState *state)
 {
-  if (!state || state->done)
+  if (! state || state->done)
     return;
   /* Move to the next cell. We need to take into account whether
    * hasz and/or hast and thus there are 4 possible cases */
   state->i++;
   state->x += state->xsize;
   state->coords[0]++;
-  if (state->x > state->box.xmax)
+  if (state->coords[0] >= state->max_coords[0])
   {
     state->x = state->box.xmin;
     state->coords[0] = 0;
     state->y += state->ysize;
     state->coords[1]++;
-    if (state->y > state->box.ymax)
+    if (state->coords[1] >= state->max_coords[1])
     {
       if (state->hasz)
       {
@@ -485,7 +512,7 @@ stbox_tile_state_next(STboxGridState *state)
         state->coords[1] = 0;
         state->z += state->zsize;
         state->coords[2]++;
-        if (state->z > state->box.zmax)
+        if (state->coords[2] >= state->max_coords[2])
         {
           if (state->hast)
           {
@@ -494,7 +521,7 @@ stbox_tile_state_next(STboxGridState *state)
             state->coords[2] = 0;
             state->t += state->tunits;
             state->coords[3]++;
-            if (state->t > DatumGetTimestampTz(state->box.period.upper))
+            if (state->coords[3] >= state->max_coords[3])
             {
               state->done = true;
               return;
@@ -516,8 +543,8 @@ stbox_tile_state_next(STboxGridState *state)
           state->y = state->box.ymin;
           state->coords[1] = 0;
           state->t += state->tunits;
-          state->coords[2]++;
-          if (state->t > DatumGetTimestampTz(state->box.period.upper))
+          state->coords[3]++;
+          if (state->coords[3] >= state->max_coords[3])
           {
             state->done = true;
             return;
@@ -557,11 +584,9 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
         return false;
     }
   }
-  bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
-  bool hast = MEOS_FLAGS_GET_T(state->box.flags);
   stbox_tile_set(state->x, state->y, state->z, state->t, state->xsize,
-    state->ysize, state->zsize, state->tunits, hasz, hast, state->box.srid,
-    box);
+    state->ysize, state->zsize, state->tunits, state->hasz, state->hast,
+    state->box.srid, box);
   return true;
 }
 
@@ -574,13 +599,15 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
  * @param[in] duration Duration
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
+ * @param[in] border_inc True when the box contains the upper border, otherwise
+ * the upper border is assumed as outside of the box.
  * @param[out] count Number of values in the output array
  * @csqlfn #Stbox_tile_list()
  */
 STBox *
 stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
-  int *count)
+  bool border_inc, int *count)
 {
   /* Ensure validity of the arguments
    * Since we pass by default Point(0 0 0) as origin independently of the input
@@ -623,10 +650,13 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
     const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
     pt.x = p2d->x;
     pt.y = p2d->y;
+    /* Since when zsize is not given we pass by default xsize, if the box does
+     * not have Z dimension we set zsize to 0 */
+    zsize = 0;
   }
 
   STboxGridState *state = stbox_tile_state_make(NULL, bounds, xsize, ysize,
-    zsize, tunits, pt, torigin);
+    zsize, tunits, pt, torigin, border_inc);
   bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
   bool hast = MEOS_FLAGS_GET_T(state->box.flags);
   int *cellcount = palloc0(sizeof(int) * MAXDIMS);
@@ -812,28 +842,6 @@ tpointinst_get_coords_eps(const TInstant *inst, bool hasz, bool hast,
 
 /**
  * @brief Set the bit corresponding to the tiles intersecting a temporal point
- * instant
- * @param[in] inst Temporal point
- * @param[in] hasz Whether the tile has Z dimension
- * @param[in] hast Whether the tile has T dimension
- * @param[in] state Grid definition
- * @param[out] bm Bit matrix
- */
-static int
-tpointinst_set_tiles(const TInstant *inst, bool hasz, bool hast,
-  const STboxGridState *state, BitMatrix *bm)
-{
-  /* Transform the point into tile coordinates */
-  int coords[MAXDIMS];
-  memset(coords, 0, sizeof(coords));
-  tpointinst_get_coords_eps(inst, hasz, hast, state, coords, NULL);
-  /* Set the corresponding bit in the matix */
-  bitmatrix_set_cell(bm, coords, true);
-  return 1;
-}
-
-/**
- * @brief Set the bit corresponding to the tiles intersecting a temporal point
  * sequence
  * @param[in] seq Temporal point
  * @param[in] hasz Whether the tile has Z dimension
@@ -938,18 +946,15 @@ int
 tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
   BitMatrix *bm)
 {
+  /* The usage of bitmatrix is disallowed for instantaneous temporal values */
+  assert(temporal_num_instants(temp) > 1);
   bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
   bool hast = (state->tunits > 0);
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return tpointinst_set_tiles((TInstant *) temp, hasz, hast, state, bm);
-    case TSEQUENCE:
-      return tpointseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);
-    default: /* TSEQUENCESET */
-      return tpointseqset_set_tiles((TSequenceSet *) temp, hasz, hast, state, bm);
-  }
+  assert(temp->subtype == TSEQUENCE || temp->subtype == TSEQUENCESET);
+  if (temp->subtype == TSEQUENCE)
+    return tpointseq_set_tiles((TSequence *) temp, hasz, hast, state, bm);
+  else
+    return tpointseqset_set_tiles((TSequenceSet *) temp, hasz, hast, state, bm);
 }
 
 /*****************************************************************************/
@@ -962,20 +967,20 @@ tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
+ * @param[in] border_inc True when the box contains the upper border, otherwise
+ * the upper border is assumed as outside of the box.
  * @param[out] ntiles Number of tiles
  */
 STboxGridState *
 tpoint_space_time_split_init(Temporal *temp, float xsize, float ysize,
   float zsize, Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
-  bool bitmatrix, int *ntiles)
+  bool bitmatrix, bool border_inc, int *ntiles)
 {
+  /* The usage of bitmatrix is disallowed for instantaneous temporal values */
+  assert(! bitmatrix || temporal_num_instants(temp) > 1);
   /* Set bounding box */
   STBox bounds;
   temporal_set_bbox(temp, &bounds);
-  bool timesplit = (duration != NULL);
-  if (! timesplit)
-    /* Disallow T dimension for generating a spatial only grid */
-    MEOS_FLAGS_SET_T(bounds.flags, false);
 
   /* Ensure parameter validity */
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
@@ -1005,45 +1010,35 @@ tpoint_space_time_split_init(Temporal *temp, float xsize, float ysize,
     const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
     pt.x = p2d->x;
     pt.y = p2d->y;
+    /* Since when zsize is not given we pass by default xsize, if temp does
+     * not have Z dimension we set zsize to 0 */
+    zsize = 0;
   }
+
   int64 tunits = 0;
+  bool timesplit = (duration != NULL);
   if (timesplit)
   {
     ensure_valid_duration(duration);
     tunits = interval_units(duration);
   }
+  else
+    /* Disallow T dimension for generating a spatial only grid */
+    MEOS_FLAGS_SET_T(bounds.flags, false);
 
   /* Create function state */
   STboxGridState *state = stbox_tile_state_make(temp, &bounds, xsize, ysize,
-    zsize, tunits, pt, torigin);
-  int nbuckets[MAXDIMS];
-  memset(&nbuckets, 0, sizeof(nbuckets));
-  int ndims = 2;
-  /* We need to add 1 to take into account the last bucket for each dimension */
-  nbuckets[0] = (int) ((state->box.xmax - state->box.xmin) / state->xsize) + 1;
-  nbuckets[1] = (int) ((state->box.ymax - state->box.ymin) / state->ysize) + 1;
-  if (MEOS_FLAGS_GET_Z(state->box.flags))
-    nbuckets[ndims++] = (int) ((state->box.zmax - state->box.zmin) /
-      state->zsize) + 1;
-  if (state->tunits)
-    nbuckets[ndims++] = (int) ((DatumGetTimestampTz(state->box.period.upper) -
-      DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
+    zsize, tunits, pt, torigin, border_inc);
+  int ndims = 2 + hasz ? 1 : 0 + state->tunits ? 1 : 0;
   /* If a bit matrix is used to speed up the process */
   if (bitmatrix)
   {
     /* Create the bit matrix and set the tiles traversed by the temporal point */
-    state->bm = bitmatrix_make(nbuckets, ndims);
+    state->bm = bitmatrix_make(state->max_coords, ndims);
     *ntiles = tpoint_set_tiles(temp, state, state->bm);
   }
   else
-  {
-    *ntiles = nbuckets[0] * nbuckets[1];
-    int j = 2;
-    if (MEOS_FLAGS_GET_Z(state->box.flags))
-      *ntiles *= nbuckets[j++];
-    if (state->tunits)
-      *ntiles *= nbuckets[j++];
-  }
+    *ntiles = state->ntiles;
   return state;
 }
 
@@ -1061,11 +1056,11 @@ tpoint_space_time_split_init(Temporal *temp, float xsize, float ysize,
  */
 Temporal **
 tpoint_space_split(Temporal *temp, float xsize, float ysize, float zsize,
-  GSERIALIZED *sorigin, bool bitmatrix, GSERIALIZED ***space_buckets,
-  int *count)
+  GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
+  GSERIALIZED ***space_buckets, int *count)
 {
   return tpoint_space_time_split(temp, xsize, ysize, zsize, NULL, sorigin, 0,
-    bitmatrix, space_buckets, NULL, count);
+    bitmatrix, border_inc, space_buckets, NULL, count);
 }
 
 /**
@@ -1078,6 +1073,8 @@ tpoint_space_split(Temporal *temp, float xsize, float ysize, float zsize,
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
+ * @param[in] border_inc True when the box contains the upper border, otherwise
+ * the upper border is assumed as outside of the box.
  * @param[out] space_buckets Array of space buckets
  * @param[out] time_buckets Array of time buckets
  * @param[out] count Number of elements in the output arrays
@@ -1085,13 +1082,13 @@ tpoint_space_split(Temporal *temp, float xsize, float ysize, float zsize,
 Temporal **
 tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize,
   Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
-  bool bitmatrix, GSERIALIZED ***space_buckets, TimestampTz **time_buckets,
-  int *count)
+  bool bitmatrix, bool border_inc, GSERIALIZED ***space_buckets,
+  TimestampTz **time_buckets, int *count)
 {
   /* Initialize state */
   int ntiles;
   STboxGridState *state = tpoint_space_time_split_init(temp, xsize, ysize,
-    zsize, duration, sorigin, torigin, bitmatrix, &ntiles);
+    zsize, duration, sorigin, torigin, bitmatrix, border_inc, &ntiles);
   if (! state)
     return NULL;
 

@@ -496,8 +496,8 @@ SELECT minusValues(minusTime(temp, box::tstzspan), box::floatspan) FROM temp;
 			<listitem id="atStbox">
 				<indexterm><primary><varname>atStbox</varname></primary></indexterm>
 				<para>Restrict to (the complement of) an <varname>stbox</varname> &Z_support;</para>
-				<para><varname>atStbox(tgeompoint,stbox,borderInc=true) → tgeompoint</varname></para>
-				<para><varname>minusStbox(tgeompoint,stbox,borderInc=true) → tgeompoint</varname></para>
+				<para><varname>atStbox(tgeompoint,stbox,borderInc bool=true) → tgeompoint</varname></para>
+				<para><varname>minusStbox(tgeompoint,stbox,borderInc bool=true) → tgeompoint</varname></para>
 				<para>The third optional argument is used for multidimensional tiling (see <xref linkend="temporal_types_tiling" />) to exclude the upper border of the tiles when a temporal value is split in multiple tiles, so that all fragments of the temporal point are exclusive.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asText(atStbox(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',

@@ -42,38 +42,38 @@ CREATE TYPE index_stbox AS (
 );
 
 CREATE FUNCTION tileList(bounds stbox, xsize float, ysize float, zsize float,
-    sorigin geometry DEFAULT 'Point(0 0 0)')
+    sorigin geometry DEFAULT 'Point(0 0 0)', borderIinc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
   AS 'MODULE_PATHNAME', 'Stbox_tile_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tileList(bounds stbox, size float,
-    sorigin geometry DEFAULT 'Point(0 0 0)')
+    sorigin geometry DEFAULT 'Point(0 0 0)', borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
-  AS 'SELECT @extschema@.tileList($1, $2, $2, $2, $3)'
+  AS 'SELECT @extschema@.tileList($1, $2, $2, $2, $3, $4)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION tileList(bounds stbox, xsize float, ysize float,
-    sorigin geometry DEFAULT 'Point(0 0 0)')
+    sorigin geometry DEFAULT 'Point(0 0 0)', borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
-  AS 'SELECT @extschema@.tileList($1, $2, $3, $2, $4)'
+  AS 'SELECT @extschema@.tileList($1, $2, $3, $2, $4, $5)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
 CREATE FUNCTION tileList(bounds stbox, xsize float, ysize float, zsize float,
   duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
-  timestamptz DEFAULT '2000-01-03')
+  timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
   AS 'MODULE_PATHNAME', 'Stbox_tile_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tileList(bounds stbox, size float,
   duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
-  timestamptz DEFAULT '2000-01-03')
+  timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
-  AS 'SELECT @extschema@.tileList($1, $2, $2, $2, $3, $4, $5)'
+  AS 'SELECT @extschema@.tileList($1, $2, $2, $2, $3, $4, $5, $6)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION tileList(bounds stbox, xsize float, ysize float,
   duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
-  timestamptz DEFAULT '2000-01-03')
+  timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
-  AS 'SELECT @extschema@.tileList($1, $2, $3, $2, $4, $5, $6)'
+  AS 'SELECT @extschema@.tileList($1, $2, $3, $2, $4, $5, $6, $7)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
 CREATE FUNCTION tile(point geometry, xsize float, ysize float, zsize float,
@@ -120,17 +120,20 @@ CREATE TYPE point_tpoint AS (
 );
 
 CREATE FUNCTION spaceSplit(tgeompoint, xsize float, ysize float, zsize float,
-    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE)
+    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF point_tpoint
   AS 'MODULE_PATHNAME', 'Tpoint_space_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION spaceSplit(tgeompoint, size float,
-    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE)
+    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF point_tpoint
   AS 'SELECT @extschema@.spaceSplit($1, $2, $2, $2, $3, $4)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION spaceSplit(tgeompoint, sizeX float, sizeY float,
-    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE)
+    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF point_tpoint
   AS 'SELECT @extschema@.spaceSplit($1, $2, $3, $2, $4, $5)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
@@ -143,19 +146,22 @@ CREATE TYPE point_time_tpoint AS (
 
 CREATE FUNCTION spaceTimeSplit(tgeompoint, xsize float, ysize float,
     zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',
-    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE)
+    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF point_time_tpoint
   AS 'MODULE_PATHNAME', 'Tpoint_space_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION spaceTimeSplit(tgeompoint, size float, interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
-    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE)
+    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF point_time_tpoint
   AS 'SELECT @extschema@.spaceTimeSplit($1, $2, $2, $2, $3, $4, $5, $6)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 CREATE FUNCTION spaceTimeSplit(tgeompoint, xsize float, ysize float, interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
-    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE)
+    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
   RETURNS SETOF point_time_tpoint
   AS 'SELECT @extschema@.spaceTimeSplit($1, $2, $3, $2, $4, $5, $6, $7)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
