@@ -74,12 +74,12 @@ CREATE FUNCTION minusGeometryTime(tnpoint, geometry, tstzspan)
   AS 'MODULE_PATHNAME', 'Tnpoint_minus_geom_time'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION atStbox(tnpoint, stbox)
+CREATE FUNCTION atStbox(tnpoint, stbox, bool DEFAULT TRUE)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tnpoint_at_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusStbox(tnpoint, stbox)
+CREATE FUNCTION minusStbox(tnpoint, stbox, bool DEFAULT TRUE)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tnpoint_minus_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

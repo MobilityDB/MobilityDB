@@ -363,6 +363,9 @@ CREATE FUNCTION getValue(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- There is no getValues() function for temporal points, 
+-- it is called trajectory() for temporal points
+
 CREATE FUNCTION getTimestamp(tgeompoint)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
