@@ -161,7 +161,7 @@ WITH temp(temp, box) AS (
 SELECT minusValues(minusTime(temp, box::tstzspan), box::floatspan) FROM temp;
 -- {[1@2001-01-01], [2@2001-01-02, 3@2001-01-03)}
 </pre><p>Notice that when the bounding box has both value and time dimensions, the difference is computed by restricting the temporal number to the box using the function <code class="varname">atTbox</code>, computing the time extent of this restriction, and restricting the temporal number to the difference of the time extent. This is required to ensure that <code class="varname">tnumber = merge(atTbox(tnumber,tbox), minusTbox(tnumber,tbox))</code> (see the function <a class="link" href="ch06.html#merge"><code class="varname">merge</code></a>). In other words, while the function <code class="varname">atTbox</code> restricts the temporal number with respect to the span <span class="emphasis"><em>and</em></span> the period defining the bounding box, the function <code class="varname">minusTbox</code> restricts the temporal number with respect to the span <span class="emphasis"><em>or</em></span> the period. To obtain the restriction using an <span class="emphasis"><em>and</em></span> semantics, both the <code class="varname">minusValues</code> and <code class="varname">minusTime</code> functions must be applied.</p></li><li class="listitem"><a name="atStbox"></a><a class="indexterm" name="idm3402"></a><p>Restrict to (the complement of) an <code class="varname">stbox</code> <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
-</p><p><code class="varname">atStbox(tgeompoint,stbox) → tgeompoint</code></p><p><code class="varname">minusStbox(tgeompoint,stbox) → tgeompoint</code></p><pre class="programlisting">
+</p><p><code class="varname">atStbox(tgeompoint,stbox,borderInc=true) → tgeompoint</code></p><p><code class="varname">minusStbox(tgeompoint,stbox,borderInc=true) → tgeompoint</code></p><p>The third optional argument is used for multidimensional tiling (see <a class="xref" href="ch09s04.html" title="Multidimensional Tiling">the section called “Multidimensional Tiling”</a>) to exclude the upper border of the tiles when a temporal value is split in multiple tiles, so that all fragments of the temporal point are exclusive.</p><pre class="programlisting">
 SELECT asText(atStbox(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
   stbox 'STBOX XT(((0,0),(2,2)),[2001-01-02, 2001-01-04])'));
 -- {[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-03]}
@@ -169,6 +169,17 @@ SELECT asText(atStbox(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01
   Point(3 3 2)@2001-01-04, Point(3 3 7)@2001-01-09]', stbox 'STBOX Z((2,2,2),(3,3,3))'));
 /* {[POINT Z (2 2 2)@2001-01-02, POINT Z (3 3 3)@2001-01-03, POINT Z (3 3 2)@2001-01-04,
   POINT Z (3 3 3)@2001-01-05]} */
+</pre><pre class="programlisting">
+SELECT asText(atStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-02, 
+  Point(0 0)@2001-01-03, Point(0 1)@2001-01-04, Point(1 1)@2001-01-05]',
+  stbox 'STBOX X((0,0),(2,2))', false));
+/* {Point(1 1)@2001-01-01, Point(1 0)@2001-01-02, Point(0 0)@2001-01-03, 
+  Point(0 1)@2001-01-04, Point(1 1)@2001-01-05} */
+SELECT asText(atStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02, 
+  Point(2 2)@2001-01-03, Point(2 1)@2001-01-04, Point(1 1)@2001-01-05]',
+  stbox 'STBOX X((0,0),(2,2))', false));
+/* {[POINT(1 1)@2001-01-01, POINT(1 2)@2001-01-02), 
+   (POINT(2 1)@2001-01-04, POINT(1 1)@2001-01-05]} */
 </pre><pre class="programlisting">
 SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-04)',
   stbox 'STBOX XT(((1,1),(4,4)),[2001-01-03,2001-01-04])'));

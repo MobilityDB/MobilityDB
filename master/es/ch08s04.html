@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 Manual de usuario"><link rel="up" href="ch08.html" title="Capítulo 8. Tipos temporales: Operaciones espaciales"><link rel="prev" href="ch08s03.html" title="Operaciones de cuadro delimitador"><link rel="next" href="ch08s05.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 8. Tipos temporales: Operaciones espaciales</th><td width="20%" align="right"> <a accesskey="n" href="ch08s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpoint_spatial_accessors"></a>Accessores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trajectory"></a><a class="indexterm" name="idm4345"></a><p>Obtenir la trayectoria <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessores</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 Manual de usuario"><link rel="up" href="ch08.html" title="Capítulo 8. Tipos temporales: Operaciones espaciales"><link rel="prev" href="ch08s03.html" title="Operaciones de cuadro delimitador"><link rel="next" href="ch08s05.html" title="Transformaciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessores</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 8. Tipos temporales: Operaciones espaciales</th><td width="20%" align="right"> <a accesskey="n" href="ch08s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpoint_spatial_accessors"></a>Accessores</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="trajectory"></a><a class="indexterm" name="idm4348"></a><p>Obtenir la trayectoria <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">trajectory(tpoint) → geo</code></p><p>Esta función es equivalente a <a class="link" href="ch05s05.html#getValues"><code class="varname">getValues</code></a> para los valores temporales alphanuméricos</p><pre class="programlisting">
 SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
@@ -13,7 +13,7 @@ SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001
   [Point(1 1)@2001-01-03, Point(1 1)@2001-01-04),
   [Point(2 1)@2001-01-05, Point(2 2)@2001-01-06)}'));
 -- GEOMETRYCOLLECTION(POINT(1 1),MULTILINESTRING((0 0,0 1),(2 1,2 2)))
-</pre></li><li class="listitem"><a name="getX"></a><a class="indexterm" name="idm4370"></a><a class="indexterm" name="idm4373"></a><a class="indexterm" name="idm4376"></a><p>Obtener los valores de las coordenadas X/Y/Z como un número flotante temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="getX"></a><a class="indexterm" name="idm4373"></a><a class="indexterm" name="idm4376"></a><a class="indexterm" name="idm4379"></a><p>Obtener los valores de las coordenadas X/Y/Z como un número flotante temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">getX(tpoint) → tfloat</code></p><p><code class="varname">getY(tpoint) → tfloat</code></p><p><code class="varname">getZ(tpoint) → tfloat</code></p><pre class="programlisting">
 SELECT getX(tgeompoint '{Point(1 2)@2001-01-01, Point(3 4)@2001-01-02,
@@ -34,7 +34,7 @@ SELECT getZ(tgeompoint '{Point(1 2)@2001-01-01, Point(3 4)@2001-01-02,
 SELECT getZ(tgeogpoint 'Interp=Step;[Point(1 2 3)@2001-01-01, Point(4 5 6)@2001-01-02,
   Point(7 8 9)@2001-01-03]');
 -- Interp=Step;[3@2001-01-01, 6@2001-01-02, 9@2001-01-03]
-</pre></li><li class="listitem"><a name="isSimple"></a><a class="indexterm" name="idm4402"></a><p>Obtener verdadero si el punto temporal no se auto-intersecta espacialmente <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="isSimple"></a><a class="indexterm" name="idm4405"></a><p>Obtener verdadero si el punto temporal no se auto-intersecta espacialmente <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><p><code class="varname">isSimple(tpoint) → boolean</code></p><p>Nótese que un punto temporal de conjunto de secuencias es simple si cada una de las secuencias que lo componen es simple.</p><pre class="programlisting">
 SELECT isSimple(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
   Point(0 0)@2001-01-03]');
@@ -45,7 +45,7 @@ SELECT isSimple(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02,
 SELECT isSimple(tgeompoint '{[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02],
   [Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-04]}');
 -- true
-</pre></li><li class="listitem"><a name="length"></a><a class="indexterm" name="idm4418"></a><p>Obtener la longitud atravesada por el punto temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="length"></a><a class="indexterm" name="idm4421"></a><p>Obtener la longitud atravesada por el punto temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">length(tpoint) → float</code></p><pre class="programlisting">
 SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02]');
@@ -56,7 +56,7 @@ SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02,
 SELECT length(tgeompoint 'Interp=Step;[Point(0 0 0)@2001-01-01,
   Point(1 1 1)@2001-01-02, Point(0 0 0)@2001-01-03]');
 -- 0
-</pre></li><li class="listitem"><a name="cumulativeLength"></a><a class="indexterm" name="idm4440"></a><p>Obtener la longitud acumulada atravesada por el punto temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="cumulativeLength"></a><a class="indexterm" name="idm4443"></a><p>Obtener la longitud acumulada atravesada por el punto temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">cumulativeLength(tpoint) → tfloatSeq</code></p><pre class="programlisting">
 SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
@@ -66,7 +66,7 @@ SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@20
 SELECT cumulativeLength(tgeompoint 'Interp=Step;[Point(0 0 0)@2001-01-01,
   Point(1 1 1)@2001-01-02, Point(0 0 0)@2001-01-03]');
 -- Interp=Step;[0@2001-01-01, 0@2001-01-03]
-</pre></li><li class="listitem"><a name="speed"></a><a class="indexterm" name="idm4462"></a><p>Obtener la velocidad del punto temporal en unidades por segundo <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="speed"></a><a class="indexterm" name="idm4465"></a><p>Obtener la velocidad del punto temporal en unidades por segundo <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">speed(tpoint) → tfloatSeqSet</code></p><p>El punto temporal debe tener interpolación linear</p><pre class="programlisting">
 SELECT speed(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
@@ -76,12 +76,12 @@ SELECT speed(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
 SELECT speed(tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
   Point(1 0)@2001-01-03]');
 -- ERROR:  The temporal value must have linear interpolation
-</pre></li><li class="listitem"><a name="twCentroid"></a><a class="indexterm" name="idm4485"></a><p>Obtener el centroide ponderado en el tiempo <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="twCentroid"></a><a class="indexterm" name="idm4488"></a><p>Obtener el centroide ponderado en el tiempo <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><p><code class="varname">twCentroid(tgeompoint) → point</code></p><pre class="programlisting">
 SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2001-01-01,
   Point(0 1 1)@2001-01-02, Point(0 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)}'));
 -- POINT Z (0 0.666666666666667 0.666666666666667)
-</pre></li><li class="listitem"><a name="direction"></a><a class="indexterm" name="idm4500"></a><p>Obtener la dirección, es decir, el acimut entre las ubicaciones inicial y final <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="direction"></a><a class="indexterm" name="idm4503"></a><p>Obtener la dirección, es decir, el acimut entre las ubicaciones inicial y final <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">direction(tpoint) → float</code></p><p>El resultado se expresa en radianes. Es NULL si solo hay una ubicación o si las ubicaciones inicial y final son iguales.</p><pre class="programlisting">
 SELECT round(degrees(direction(tgeompoint '[Point(0 0)@2001-01-01,
@@ -90,13 +90,13 @@ SELECT round(degrees(direction(tgeompoint '[Point(0 0)@2001-01-01,
 SELECT direction(tgeompoint '{[Point(0 0 0)@2001-01-01,
   Point(0 1 1)@2001-01-02, Point(0 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)}');
 -- NULL
-</pre></li><li class="listitem"><a name="azimuth"></a><a class="indexterm" name="idm4523"></a><p>Obtener el acimut temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="azimuth"></a><a class="indexterm" name="idm4526"></a><p>Obtener el acimut temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">azimuth(tpoint) → tfloat</code></p><p>El resultado se expresa en radianes. El azimut es indefinido cuando dos localizaciones sucesivas son iguales y en este caso se añade una brecha de tempo.</p><pre class="programlisting">
 SELECT round(degrees(azimuth(tgeompoint '[Point(0 0 0)@2001-01-01,
   Point(1 1 1)@2001-01-02, Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)')));
 -- Interp=Step;{[45@2001-01-01, 45@2001-01-02], [225@2001-01-03, 225@2001-01-04)}
-</pre></li><li class="listitem"><a name="angularDifference"></a><a class="indexterm" name="idm4546"></a><p>Obtener la diferencia angular temporal <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="angularDifference"></a><a class="indexterm" name="idm4549"></a><p>Obtener la diferencia angular temporal <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">angularDifference(tpoint) → tfloat</code></p><p>El resultado se expresa en grados.</p><pre class="programlisting">
 SELECT round(angularDifference(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
   Point(1 1)@2001-01-03]'), 3);
@@ -104,7 +104,7 @@ SELECT round(angularDifference(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@20
 SELECT round(degrees(angularDifference(tgeompoint '{[Point(1 1)@2001-01-01,
   Point(2 2)@2001-01-02], [Point(2 2)@2001-01-03, Point(1 1)@2001-01-04]}')), 3);
 -- {0@2001-01-01, 0@2001-01-02, 0@2001-01-03, 0@2001-01-04}
-</pre></li><li class="listitem"><a name="bearing"></a><a class="indexterm" name="idm4562"></a><p>Obtener el rumbo temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="bearing"></a><a class="indexterm" name="idm4565"></a><p>Obtener el rumbo temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">bearing({tpoint, point}, {tpoint, point}) → tfloat</code></p><p>Nótese que esta función no acepta dos puntos geográficos temporales.</p><pre class="programlisting">
 SELECT degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]',

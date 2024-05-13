@@ -161,7 +161,7 @@ WITH temp(temp, box) AS (
 SELECT minusValues(minusTime(temp, box::tstzspan), box::floatspan) FROM temp;
 -- {[1@2001-01-01], [2@2001-01-02, 3@2001-01-03)}
 </pre><p>Observe que cuando el cuadro delimitador tiene dimensiones de valor y de tiempo, la diferencia se calcula restringiendo el número temporal al cuadro usando la función <code class="varname">atTbox</code>, calculando la extensión de tiempo de esta restricción, y restringiendo el número temporal a la diferencia de la extensión del tiempo. Esto es necesario para garantizar que <code class="varname">tnumber = merge(atTbox(tnumber,tbox), minusTbox(tnumber,tbox))</code> (ver la función <a class="link" href="ch06.html#merge"><code class="varname">merge</code></a>). En otras palabras, mientras que la función <code class="varname">atTbox</code> restringe el número temporal con respecto al rango <span class="emphasis"><em>y</em></span> al período que definen el cuadro delimitador, la función <code class="varname">minusTbox</code> restringe el número temporal con respecto al rango <span class="emphasis"><em>o</em></span> al período. Para obtener la restricción usando una semántica <span class="emphasis"><em>y</em></span>, deben aplicarse las dos funciones <code class="varname">minusValues</code> y <code class="varname">minusTime</code>.</p></li><li class="listitem"><a name="atStbox"></a><a class="indexterm" name="idm3428"></a><a class="indexterm" name="idm3431"></a><p>Restringir a (al complemento de) un <code class="varname">stbox</code> <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
-</p><p><code class="varname">atStbox(tgeompoint,stbox) → tgeompoint</code></p><p><code class="varname">minusStbox(tgeompoint,stbox) → tgeompoint</code></p><pre class="programlisting">
+</p><p><code class="varname">atStbox(tgeompoint,stbox,borderInc=true) → tgeompoint</code></p><p><code class="varname">minusStbox(tgeompoint,stbox,borderInc=true) → tgeompoint</code></p><p>El tercer argumento opcional se utiliza para hacer mosaicos multidimensionales (ver <a class="xref" href="ch09s04.html" title="Mosaicos multidimensionales">“Mosaicos multidimensionales”</a>) de manera a excluir el borde superior de los mosaicos cuando un valor temporal se divide en varios mosaicos, de modo que todos los fragmentos del punto temporal sean exclusivos.</p><pre class="programlisting">
 SELECT asText(atStbox(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
   stbox 'STBOX XT(((0,0),(2,2)),[2001-01-02, 2001-01-04])'));
 -- {[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-03]}
@@ -169,6 +169,17 @@ SELECT asText(atStbox(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01
   Point(3 3 2)@2001-01-04, Point(3 3 7)@2001-01-09]', stbox 'STBOX Z((2,2,2),(3,3,3))'));
 /* {[POINT Z (2 2 2)@2001-01-02, POINT Z (3 3 3)@2001-01-03, POINT Z (3 3 2)@2001-01-04,
   POINT Z (3 3 3)@2001-01-05]} */
+</pre><pre class="programlisting">
+SELECT asText(atStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-02, 
+  Point(0 0)@2001-01-03, Point(0 1)@2001-01-04, Point(1 1)@2001-01-05]',
+  stbox 'STBOX X((0,0),(2,2))', false));
+/* {Point(1 1)@2001-01-01, Point(1 0)@2001-01-02, Point(0 0)@2001-01-03, 
+  Point(0 1)@2001-01-04, Point(1 1)@2001-01-05} */
+SELECT asText(atStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02, 
+  Point(2 2)@2001-01-03, Point(2 1)@2001-01-04, Point(1 1)@2001-01-05]',
+  stbox 'STBOX X((0,0),(2,2))', false));
+/* {[POINT(1 1)@2001-01-01, POINT(1 2)@2001-01-02), 
+   (POINT(2 1)@2001-01-04, POINT(1 1)@2001-01-05]} */
 </pre><pre class="programlisting">
 SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-04)',
   stbox 'STBOX XT(((1,1),(4,4)),[2001-01-03,2001-01-04])'));
