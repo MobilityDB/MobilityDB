@@ -234,7 +234,7 @@ bool_out(bool b)
  * Functions adapted from int.c
  *****************************************************************************/
 
-#define MAXINT4LEN 10
+#define MAXINT4LEN 12
 
 /**
  * @brief Return an int4 from a string
@@ -282,11 +282,11 @@ mobdb_ltoa(int32 value, char *a)
 char *
 int4_out(int32 val)
 {
-  char *result = palloc(12);  /* sign, 10 digits, '\0' */
+  char *result = palloc(MAXINT4LEN);  /* sign, 10 digits, '\0' */
 #if POSTGRESQL_VERSION_NUMBER >= 130000
   mobdb_ltoa(val, result);
 #else
-  snprintf(result, 12, "%d", val);
+  snprintf(result, MAXINT4LEN, "%d", val);
 #endif
   return result;
 }
@@ -363,7 +363,7 @@ int8_out(int64 val)
   memcpy(result, buf, len);
 #else
   result = palloc(MAXINT8LEN + 1);
-  snprintf(result, sizeof(result), "%ld", val);
+  snprintf(result, MAXINT8LEN + 1, "%ld", val);
 #endif
   return result;
 }

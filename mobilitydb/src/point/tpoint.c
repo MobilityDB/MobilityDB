@@ -67,8 +67,8 @@
 static void
 pg_error(const char *fmt, va_list ap)
 {
-  char errmsg[PGC_ERRMSG_MAXLEN];
-  vsnprintf (errmsg, sizeof(errmsg), fmt, ap);
+  char errmsg[PGC_ERRMSG_MAXLEN + 1];
+  vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
   errmsg[PGC_ERRMSG_MAXLEN]='\0';
   ereport(ERROR, (errmsg_internal("%s", errmsg)));
   return;
@@ -80,8 +80,8 @@ pg_error(const char *fmt, va_list ap)
 static void
 pg_notice(const char *fmt, va_list ap)
 {
-  char errmsg[PGC_ERRMSG_MAXLEN];
-  vsnprintf (errmsg, sizeof(errmsg), fmt, ap);
+  char errmsg[PGC_ERRMSG_MAXLEN + 1];
+  vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
   errmsg[PGC_ERRMSG_MAXLEN]='\0';
   ereport(NOTICE, (errmsg_internal("%s", errmsg)));
   return;
