@@ -141,6 +141,7 @@ if(TEST_OPER MATCHES "test_setup")
   #------------------------------------------
 
   # Explanation of the parameters
+  # -X do not read startup file (~/.psqlrc)
   # -h <host> Host name of the machine on which the server is running.
   #   If the value begins with a slash, it is used as the directory for the
   #   Unix-domain socket.
@@ -150,7 +151,7 @@ if(TEST_OPER MATCHES "test_setup")
   # -d <database> Name of the database to connect to.
   # -c <command> Specifies that psql is to execute the given command string
   execute_process(
-    COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
+    COMMAND ${POSTGRESQL_BIN_DIR}/psql -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
     OUTPUT_FILE ${TEST_DIR_LOG}/create_ext.log
     ERROR_FILE ${TEST_DIR_LOG}/create_ext.log
     ERROR_VARIABLE TEST_ERROR
@@ -179,7 +180,7 @@ elseif(TEST_OPER MATCHES "run_compare")
   # Execute the test
   # Explanation of the parameters for psql (see above)
   execute_process(
-    COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres
+    COMMAND ${POSTGRESQL_BIN_DIR}/psql -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres
     INPUT_FILE ${TEST_FILE}
     OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
     ERROR_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
@@ -239,14 +240,14 @@ elseif(TEST_OPER MATCHES "run_passfail")
     get_filename_component(TEST_FILE_NAME ${TEST_FILE} NAME_WLE)
     execute_process(
       COMMAND ${XZCAT_EXECUTABLE} ${TEST_FILE}
-      COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres
+      COMMAND ${POSTGRESQL_BIN_DIR}/psql -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres
       OUTPUT_QUIET
       ERROR_VARIABLE TEST_ERROR
       RESULT_VARIABLE TEST_RESULT
     )
   else()
     execute_process(
-      COMMAND ${POSTGRESQL_BIN_DIR}/psql -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres
+      COMMAND ${POSTGRESQL_BIN_DIR}/psql -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres
       INPUT_FILE ${TEST_FILE}
       OUTPUT_FILE ${TEST_DIR_OUT}/${TESTNAME}.out
       ERROR_FILE ${TEST_DIR_OUT}/${TESTNAME}.out
