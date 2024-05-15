@@ -266,7 +266,9 @@ ToastCacheGetGeometry(FunctionCallInfo fcinfo, uint32_t argnum)
  * Could return SRS as short one (i.e EPSG:4326)
  * or as long one: (i.e urn:ogc:def:crs:EPSG::4326)
  */
-static char *
+// MEOS
+// static
+char *
 getSRSbySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
 {
 	static const uint16_t max_query_size = 512;
@@ -370,8 +372,10 @@ GetSRSCacheBySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
  * Require valid spatial_ref_sys table entry
  *
  */
-static int32_t
-getSRIDbySRS(FunctionCallInfo fcinfo, const char *srs)
+// MEOS: removed static and added __attribute__((unused))
+// static
+int32_t
+getSRIDbySRS(FunctionCallInfo fcinfo __attribute__((unused)), const char *srs)
 {
 	static const int16_t max_query_size = 512;
 	char query[512];

@@ -2,4 +2,5 @@ build/
 .vscode
 
 meos/postgres/pg_config.h
+postgis/liblwgeom/liblwgeom.h
 postgis/postgis_config.h

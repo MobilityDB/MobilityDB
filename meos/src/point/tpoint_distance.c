@@ -48,6 +48,9 @@
 #include "point/geography_funcs.h"
 #include "point/tpoint_spatialfuncs.h"
 
+/* Function not exported by PostGIS */
+double circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, double threshold, double* min_dist, double* max_dist, GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2);
+
 /*****************************************************************************
  * Compute the distance between two instants depending on their type
  *****************************************************************************/
@@ -96,7 +99,7 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2,
 
 /**
  * @brief Return the distance between two geometries
- * @details When the first geometry is a segment it also computes a value 
+ * @details When the first geometry is a segment it also computes a value
  * between 0 and 1 that represents the location in the segment of the closest
  * point to the second geometry, as a fraction of total segment length.
  * @note Function inspired by PostGIS function lw_dist2d_distancepoint
@@ -745,7 +748,7 @@ nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return NULL;
 
-  /* Compute the temporal distance, it may be NULL if the points do not 
+  /* Compute the temporal distance, it may be NULL if the points do not
    * intersect on time */
   Temporal *dist = distance_tpoint_tpoint(temp1, temp2);
   if (dist == NULL)
@@ -918,53 +921,6 @@ nad_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Return the shortest line between two geographies
- */
-static LWGEOM *
-geography_tree_shortestline(const GSERIALIZED* g1, const GSERIALIZED* g2,
-  double threshold, const SPHEROID *spheroid)
-{
-  CIRC_NODE* circ_tree1 = NULL;
-  CIRC_NODE* circ_tree2 = NULL;
-  LWGEOM* lwgeom1 = NULL;
-  LWGEOM* lwgeom2 = NULL;
-  double min_dist = FLT_MAX;
-  double max_dist = FLT_MAX;
-  GEOGRAPHIC_POINT closest1, closest2;
-  LWGEOM *geoms[2];
-  LWGEOM *result;
-  POINT4D p1, p2;
-
-  lwgeom1 = lwgeom_from_gserialized(g1);
-  lwgeom2 = lwgeom_from_gserialized(g2);
-  circ_tree1 = lwgeom_calculate_circ_tree(lwgeom1);
-  circ_tree2 = lwgeom_calculate_circ_tree(lwgeom2);
-
-  /* Quietly decrease the threshold just a little to avoid cases where */
-  /* the actual spheroid distance is larger than the sphere distance */
-  /* causing the return value to be larger than the threshold value */
-  // double threshold_radians = 0.95 * threshold / spheroid->radius;
-  double threshold_radians = threshold / spheroid->radius;
-
-  circ_tree_distance_tree_internal(circ_tree1, circ_tree2, threshold_radians,
-      &min_dist, &max_dist, &closest1, &closest2);
-
-  p1.x = rad2deg(closest1.lon);
-  p1.y = rad2deg(closest1.lat);
-  p2.x = rad2deg(closest2.lon);
-  p2.y = rad2deg(closest2.lat);
-
-  geoms[0] = (LWGEOM *)lwpoint_make2d(gserialized_get_srid(g1), p1.x, p1.y);
-  geoms[1] = (LWGEOM *)lwpoint_make2d(gserialized_get_srid(g1), p2.x, p2.y);
-  result = (LWGEOM *)lwline_from_lwgeom_array(geoms[0]->srid, 2, geoms);
-
-  lwgeom_free(geoms[0]); lwgeom_free(geoms[1]);
-  circ_tree_free(circ_tree1); circ_tree_free(circ_tree2);
-  lwgeom_free(lwgeom1); lwgeom_free(lwgeom2);
-  return result;
-}
-
-/**
  * @brief Return the point in first input geography that is closest to the
  * second input geography in 2D
  */
@@ -989,9 +945,11 @@ geography_shortestline_internal(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   if ( ! use_spheroid )
     s.a = s.b = s.radius;
 
-  LWGEOM *line = geography_tree_shortestline(gs1, gs2, FP_TOLERANCE, &s);
+  LWGEOM *lwgeom1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *lwgeom2 = lwgeom_from_gserialized(gs2);
+  LWGEOM *line = geography_tree_shortestline(lwgeom1, lwgeom2, FP_TOLERANCE, &s);
   GSERIALIZED *result = geo_serialize(line);
-  lwgeom_free(line);
+  lwgeom_free(line); lwgeom_free(lwgeom1); lwgeom_free(lwgeom2);
   return result;
 }
 

@@ -159,7 +159,9 @@ assvg_line(stringbuffer_t* sb, const LWLINE *line, int relative, int precision)
 		pointArray_svg_abs(sb, line->points, 1, precision, 0);
 }
 
-static void pointArray_svg_arc(stringbuffer_t* sb, const POINTARRAY *pa, int close_ring, int relative,  int precision)
+// MEOS: added __attribute__((unused))
+static void pointArray_svg_arc(stringbuffer_t* sb, const POINTARRAY *pa,
+  int close_ring __attribute__((unused)), int relative,  int precision)
 {
 	uint32_t i; //, end;
 	char sx[OUT_DOUBLE_BUFFER_SIZE];

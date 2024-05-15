@@ -70,17 +70,25 @@ add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER})
 
 find_package(POSTGIS REQUIRED)
 
-# PostGIS definitions for PostgreSQL and PostGIS version-dependent code
-# use POSTGRESQL_VERSION_NUMBER instead of the original POSTGIS_PGSQL_VERSION
+# POSTGIS_PGSQL_VERSION is used in PostGIS for PostgreSQL version-dependent code
+# Note that we cannot add ${POSTGRESQL_VERSION_MINOR} since, e.g., for version
+# 13.13 it will yield 143 which is not intended
+math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10")
+message(STATUS "POSTGIS_PGSQL_VERSION=${POSTGIS_PGSQL_VERSION}")
 
 add_definitions(-DPOSTGIS_VERSION_STRING="${POSTGIS_VERSION_STR}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
+add_definitions(-DPOSTGIS_PGSQL_VERSION=${POSTGIS_PGSQL_VERSION})
 
 #--------------------------------
 # MobilityDB directories
 #--------------------------------
 
+set(SRID_MAX "999999")
+set(SRID_USR_MAX "998999")
+
 # Embed PostGIS 3
+configure_file(${CMAKE_SOURCE_DIR}/postgis/liblwgeom/liblwgeom.h.in ${CMAKE_SOURCE_DIR}/postgis/liblwgeom/liblwgeom.h)
 configure_file(${CMAKE_SOURCE_DIR}/postgis/postgis_config.h.in ${CMAKE_SOURCE_DIR}/postgis/postgis_config.h)
 include_directories("${CMAKE_SOURCE_DIR}/postgis/liblwgeom")
 include_directories("${CMAKE_SOURCE_DIR}/postgis/libpgcommon")
