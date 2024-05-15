@@ -119,7 +119,7 @@ findMemberByName(json_object *poObj, const char *pszName)
 
 /**
  * @brief Return a single point from its MF-JSON coordinates
- * @details In this case the coordinate array is a single array of cordinations 
+ * @details In this case the coordinate array is a single array of cordinations
  * such as `"coordinates":[1,1]`.
  */
 static Datum
@@ -801,7 +801,7 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
   if (jstok->err != json_tokener_success)
   {
     char err[256];
-    snprintf(err, 256, "%s (at offset %d)",
+    snprintf(err, sizeof(err), "%s (at offset %d)",
       json_tokener_error_desc(jstok->err), jstok->char_offset);
     json_tokener_free(jstok);
     json_object_put(poObj);
@@ -1607,7 +1607,7 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
 
 /**
  * @brief Return a temporal instant from its WKB representation
- * @details The function reads the base type value and the timestamp and 
+ * @details The function reads the base type value and the timestamp and
  * advances the parse state forward appropriately. It starts reading it just
  * after the endian byte, the temporal type (an @p int16), and the temporal
  * flags byte.

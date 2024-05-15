@@ -59,7 +59,7 @@
  * General functions
  *****************************************************************************/
 
-#define PGC_ERRMSG_MAX_LEN 2048
+#define PGC_ERRMSG_MAXLEN 2048
 
 /**
  * @brief Output an error message
@@ -67,9 +67,8 @@
 static void
 pg_error(const char *fmt, va_list ap)
 {
-  char errmsg[PGC_ERRMSG_MAX_LEN + 1];
-  vsnprintf (errmsg, PGC_ERRMSG_MAX_LEN, fmt, ap);
-  errmsg[PGC_ERRMSG_MAX_LEN]='\0';
+  char errmsg[PGC_ERRMSG_MAXLEN];
+  vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
   ereport(ERROR, (errmsg_internal("%s", errmsg)));
   return;
 }
@@ -80,9 +79,8 @@ pg_error(const char *fmt, va_list ap)
 static void
 pg_notice(const char *fmt, va_list ap)
 {
-  char errmsg[PGC_ERRMSG_MAX_LEN + 1];
-  vsnprintf (errmsg, PGC_ERRMSG_MAX_LEN, fmt, ap);
-  errmsg[PGC_ERRMSG_MAX_LEN]='\0';
+  char errmsg[PGC_ERRMSG_MAXLEN];
+  vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
   ereport(NOTICE, (errmsg_internal("%s", errmsg)));
   return;
 }

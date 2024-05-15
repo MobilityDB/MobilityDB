@@ -58,7 +58,8 @@
 #include "npoint/tnpoint_parser.h"
 
 /** Buffer size for input and output of npoint and nsegment values */
-#define MAXNPOINTLEN    128
+#define NPOINT_MAXLEN    128
+#define NSEGMENT_MAXLEN    128
 
 /*****************************************************************************
  * General functions
@@ -269,10 +270,10 @@ npoint_out(const Npoint *np, int maxdd)
   if (! ensure_not_null((void *) np) || ! ensure_not_negative(maxdd))
     return NULL;
 
-  char *result = palloc(MAXNPOINTLEN);
+  char *result = palloc(NPOINT_MAXLEN);
   char *rid = int8_out(np->rid);
   char *pos = float8_out(np->pos, maxdd);
-  snprintf(result, MAXNPOINTLEN - 1, "NPoint(%s,%s)", rid, pos);
+  snprintf(result, NPOINT_MAXLEN, "NPoint(%s,%s)", rid, pos);
   pfree(rid); pfree(pos);
   return result;
 }
@@ -298,11 +299,11 @@ nsegment_out(const Nsegment *ns, int maxdd)
   if (! ensure_not_null((void *) ns) || ! ensure_not_negative(maxdd))
     return NULL;
 
-  char *result = palloc(MAXNPOINTLEN);
+  char *result = palloc(NSEGMENT_MAXLEN);
   char *rid = int8_out(ns->rid);
   char *pos1 = float8_out(ns->pos1, maxdd);
   char *pos2 = float8_out(ns->pos2, maxdd);
-  snprintf(result, MAXNPOINTLEN - 1, "NSegment(%s,%s,%s)", rid, pos1, pos2);
+  snprintf(result, NSEGMENT_MAXLEN, "NSegment(%s,%s,%s)", rid, pos1, pos2);
   pfree(rid); pfree(pos1); pfree(pos2);
   return result;
 }
@@ -457,11 +458,14 @@ nsegment_end_position(const Nsegment *ns)
  * @brief Return true if the edge table contains a route with the route
  * identifier
  */
+#define SQL_ROUTE_MAXLEN 64
+
 bool
 route_exists(int64 rid)
 {
-  char sql[64];
-  sprintf(sql, "SELECT true FROM public.ways WHERE gid = %ld", rid);
+  char sql[SQL_ROUTE_MAXLEN];
+  snprintf(sql, sizeof(sql),
+    "SELECT true FROM public.ways WHERE gid = %ld", rid);
   bool isNull = true;
   bool result = false;
   SPI_connect();
@@ -485,8 +489,9 @@ route_exists(int64 rid)
 double
 route_length(int64 rid)
 {
-  char sql[64];
-  sprintf(sql, "SELECT length FROM public.ways WHERE gid = %ld", rid);
+  char sql[SQL_ROUTE_MAXLEN];
+  snprintf(sql, sizeof(sql),
+    "SELECT length FROM public.ways WHERE gid = %ld", rid);
   bool isNull = true;
   double result = 0;
   SPI_connect();
@@ -517,8 +522,9 @@ route_length(int64 rid)
 GSERIALIZED *
 route_geom(int64 rid)
 {
-  char sql[64];
-  sprintf(sql, "SELECT the_geom FROM public.ways WHERE gid = %ld", rid);
+  char sql[SQL_ROUTE_MAXLEN];
+  snprintf(sql, sizeof(sql),
+    "SELECT the_geom FROM public.ways WHERE gid = %ld", rid);
   bool isNull = true;
   GSERIALIZED *result = NULL;
   SPI_connect();
@@ -564,8 +570,10 @@ rid_from_geom(Datum geom)
 {
   char *geomstr = ewkt_out(geom, 0, OUT_DEFAULT_DECIMAL_DIGITS);
   char sql[128];
-  sprintf(sql, "SELECT gid FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "
-    "ORDER BY ST_Distance(the_geom, '%s') LIMIT 1", geomstr, DIST_EPSILON, geomstr);
+  snprintf(sql, sizeof(sql),
+    "SELECT gid FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "
+    "ORDER BY ST_Distance(the_geom, '%s') LIMIT 1", geomstr, DIST_EPSILON,
+    geomstr);
   pfree(geomstr);
   bool isNull = true;
   int64 result = 0; /* make compiler quiet */
@@ -575,7 +583,8 @@ rid_from_geom(Datum geom)
   if (ret > 0 && proc > 0 && SPI_tuptable != NULL)
   {
     SPITupleTable *tuptable = SPI_tuptable;
-    result = DatumGetInt64(SPI_getbinval(tuptable->vals[0], tuptable->tupdesc, 1, &isNull));
+    result = DatumGetInt64(SPI_getbinval(tuptable->vals[0], tuptable->tupdesc,
+      1, &isNull));
   }
   SPI_finish();
   if (isNull)
@@ -604,6 +613,9 @@ npoint_geom(const Npoint *np)
 /**
  * @brief Transform a geometry into a network point
  */
+
+#define SQL_MAXLEN 1024
+
 Npoint *
 geom_npoint(const GSERIALIZED *gs)
 {
@@ -617,8 +629,9 @@ geom_npoint(const GSERIALIZED *gs)
     return NULL;
 
   char *geomstr = ewkt_out(PointerGetDatum(gs), 0, OUT_DEFAULT_DECIMAL_DIGITS);
-  char sql[512];
-  sprintf(sql, "SELECT npoint(gid, ST_LineLocatePoint(the_geom, '%s')) "
+  char sql[SQL_MAXLEN];
+  snprintf(sql, sizeof(sql),
+    "SELECT npoint(gid, ST_LineLocatePoint(the_geom, '%s')) "
     "FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "
     "ORDER BY ST_Distance(the_geom, '%s') LIMIT 1", geomstr, geomstr,
     DIST_EPSILON, geomstr);

@@ -153,6 +153,9 @@ split_to_stringlist(const char *s, const char *delim, _stringlist **listhead)
  * DATESTYLE, DATEORDER, INTERVALSTYLE
  */
 
+#define DATESTYLE_STR_MAXLEN 32
+#define INTERVALSTYLE_STR_MAXLEN 32
+
 /**
  * @brief Global array containing the datestyle strings
  */
@@ -382,10 +385,10 @@ meos_set_datestyle(char *newval, void *extra)
 char *
 meos_get_datestyle(void)
 {
-  char *result = palloc(32);
+  char *result = palloc(DATESTYLE_STR_MAXLEN);
   if (! result)
     return NULL;
-  sprintf(result, "%s, %s", datestyle_string(DateStyle),
+  snprintf(result, DATESTYLE_STR_MAXLEN, "%s, %s", datestyle_string(DateStyle),
     dateorder_string(DateStyle));
   return result;
 }
@@ -439,10 +442,11 @@ meos_set_intervalstyle(char *newval, int extra)
 char *
 meos_get_intervalstyle(void)
 {
-  char *result = palloc(32);
+  char *result = palloc(INTERVALSTYLE_STR_MAXLEN);
   if (! result)
     return NULL;
-  sprintf(result, "%s", intervalstyle_string(IntervalStyle));
+  snprintf(result, INTERVALSTYLE_STR_MAXLEN, "%s", 
+    intervalstyle_string(IntervalStyle));
   return result;
 }
 

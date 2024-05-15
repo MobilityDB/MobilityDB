@@ -680,11 +680,11 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
 
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
-  char prefix[20];
+  char prefix[13];
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   if (! component && MEOS_FLAGS_GET_CONTINUOUS(seq->flags) &&
       interp == STEP)
-    sprintf(prefix, "Interp=Step;");
+    snprintf(prefix, sizeof(prefix), "Interp=Step;");
   else
     prefix[0] = '\0';
   for (int i = 0; i < seq->count; i++)

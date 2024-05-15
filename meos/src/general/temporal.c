@@ -442,11 +442,11 @@ ensure_not_negative_datum(Datum size, meosType basetype)
     assert(basetype == T_INT4 || basetype == T_FLOAT8 ||
       basetype == T_TIMESTAMPTZ);
     if (basetype == T_INT4)
-      sprintf(str, "%d", DatumGetInt32(size));
+      snprintf(str, sizeof(str), "%d", DatumGetInt32(size));
     else if (basetype == T_FLOAT8)
-      sprintf(str, "%f", DatumGetFloat8(size));
+      snprintf(str, sizeof(str), "%f", DatumGetFloat8(size));
     else /* basetype == T_TIMESTAMPTZ */
-      sprintf(str, INT64_FORMAT, DatumGetInt64(size));
+      snprintf(str, sizeof(str), INT64_FORMAT, DatumGetInt64(size));
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The value cannot be negative: %s", str);
     return false;
@@ -487,14 +487,14 @@ ensure_positive_datum(Datum size, meosType basetype)
   {
     char str[256];
     if (basetype == T_INT4)
-      sprintf(str, "%d", DatumGetInt32(size));
+      snprintf(str, sizeof(str), "%d", DatumGetInt32(size));
     else if (basetype == T_FLOAT8)
-      sprintf(str, "%f", DatumGetFloat8(size));
+      snprintf(str, sizeof(str), "%f", DatumGetFloat8(size));
 #if 0 /* not used */
     else if (basetype == T_INT8)
-      sprintf(str, "%ld", DatumGetInt64(size));
+      snprintf(str, sizeof(str), "%ld", DatumGetInt64(size));
     else /* basetype == T_TIMESTAMPTZ */
-      sprintf(str, INT64_FORMAT, DatumGetInt64(size));
+      snprintf(str, sizeof(str), INT64_FORMAT, DatumGetInt64(size));
 #endif /* not used */
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The value must be strictly positive: %s", str);
@@ -652,7 +652,7 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * Version functions
  *****************************************************************************/
 
-#define MOBDB_VERSION_STR_MAX_LEN 256
+#define MOBDB_VERSION_STR_MAXLEN 256
 /**
  * @ingroup meos_misc
  * @brief Return the version of the MobilityDB extension
@@ -677,11 +677,11 @@ mobilitydb_full_version(void)
   PJ_INFO pji = proj_info();
   proj_vers = pji.version;
 #endif
-  const char* geos_vers = GEOSversion();
-  const char* json_c_vers = json_c_version();
+  const char *geos_vers = GEOSversion();
+  const char *json_c_vers = json_c_version();
 
-  char *result = palloc(sizeof(char) * MOBDB_VERSION_STR_MAX_LEN);
-  int len = snprintf(result, MOBDB_VERSION_STR_MAX_LEN,
+  char *result = palloc(MOBDB_VERSION_STR_MAXLEN);
+  int len = snprintf(result, MOBDB_VERSION_STR_MAXLEN,
     "%s, %s, %s, GEOS %s, PROJ %s, JSON-C %s, GSL %s",
     MOBILITYDB_VERSION_STRING, POSTGRESQL_VERSION_STRING,
     POSTGIS_VERSION_STRING, geos_vers, proj_vers, json_c_vers,

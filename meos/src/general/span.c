@@ -477,8 +477,9 @@ span_out(const Span *s, int maxdd)
   char *upper = unquote(basetype_out(s->upper, s->basetype, maxdd));
   char open = s->lower_inc ? (char) '[' : (char) '(';
   char close = s->upper_inc ? (char) ']' : (char) ')';
-  char *result = palloc(strlen(lower) + strlen(upper) + 5);
-  sprintf(result, "%c%s, %s%c", open, lower, upper, close);
+  size_t size = strlen(lower) + strlen(upper) + 5;
+  char *result = palloc(size);
+  snprintf(result, size, "%c%s, %s%c", open, lower, upper, close);
   pfree(lower); pfree(upper);
   return result;
 }
