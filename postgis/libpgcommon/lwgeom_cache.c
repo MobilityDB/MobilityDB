@@ -20,7 +20,7 @@
 #include "../postgis_config.h"
 
 /* Include for VARATT_EXTERNAL_GET_POINTER */
-#if POSTGRESQL_VERSION_NUMBER < 130000
+#if POSTGIS_PGSQL_VERSION < 130
 #include "access/tuptoaster.h"
 #else
 #include "access/detoast.h"
@@ -266,8 +266,7 @@ ToastCacheGetGeometry(FunctionCallInfo fcinfo, uint32_t argnum)
  * Could return SRS as short one (i.e EPSG:4326)
  * or as long one: (i.e urn:ogc:def:crs:EPSG::4326)
  */
-// static
-char *
+static char *
 getSRSbySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
 {
 	static const uint16_t max_query_size = 512;
@@ -298,7 +297,7 @@ getSRSbySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
 			 postgis_spatial_ref_sys(),
 			 srid);
 
-	err = SPI_exec(query, 1);
+	err = SPI_execute(query, true, 1);
 	if (err < 0)
 	{
 		elog(NOTICE, "%s: error executing query %d", __func__, err);
@@ -371,9 +370,8 @@ GetSRSCacheBySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
  * Require valid spatial_ref_sys table entry
  *
  */
-// static
-int32_t
-getSRIDbySRS(FunctionCallInfo fcinfo __attribute__((unused)), const char *srs)
+static int32_t
+getSRIDbySRS(FunctionCallInfo fcinfo, const char *srs)
 {
 	static const int16_t max_query_size = 512;
 	char query[512];

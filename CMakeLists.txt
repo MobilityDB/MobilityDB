@@ -27,8 +27,6 @@ endif()
 # Specify search path for CMake modules to be loaded
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)
-include(CheckCXXSymbolExists)
-include(CheckCSourceRuns)
 
 #-------------------------------------
 # RPATH settings
@@ -187,25 +185,12 @@ TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if(IS_BIG_ENDIAN)
   message(STATUS "BIG_ENDIAN")
   add_definitions(-DMEOS_IS_BIG_ENDIAN=1)
-  set(DEF_WORDS_BIGENDIAN ON)
+  set(DEF_WORDS_BIGENDIAN "undef")
 else()
   message(STATUS "LITTLE_ENDIAN")
   add_definitions(-DMEOS_IS_BIG_ENDIAN=0)
-  unset(DEF_WORDS_BIGENDIAN)
+  set(DEF_WORDS_BIGENDIAN "#undef")
 endif()
-
-# check for needed Header files and functions
-set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
-check_symbol_exists(strchrnul "string.h" HAVE_STRCHRNUL)
-unset(CMAKE_REQUIRED_DEFINITIONS)
-check_symbol_exists(__get_cpuid "cpuid.h" HAVE__GET_CPUID)
-check_c_source_runs("
-#include <stdint.h>
-int main() {
-    uint64_t x = 1, r;
-    __asm__ (\"popcntq %1, %0\" : \"=r\"(r) : \"r\"(x));
-    return 0;
-}" HAVE_X86_64_POPCNTQ)
 
 #--------------------------------
 # Other dependencies
@@ -214,7 +199,7 @@ int main() {
 # GEOS geometry library
 find_package(GEOS REQUIRED)
 include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
-math(EXPR POSTGIS_GEOS_VERSION "${GEOS_VERSION_MAJOR} * 10 + ${GEOS_VERSION_MINOR}")
+math(EXPR POSTGIS_GEOS_VERSION "${GEOS_VERSION_MAJOR} * 10000 + ${GEOS_VERSION_MINOR} * 100 + ${GEOS_VERSION_MICRO}")
 message(STATUS "POSTGIS_GEOS_VERSION: ${POSTGIS_GEOS_VERSION}")
 
 # Proj reprojection library
@@ -222,17 +207,105 @@ find_package(PROJ REQUIRED)
 include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
 math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
 message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
-add_definitions(-DPROJ_VERSION_STRING="${POSTGIS_PROJ_VERSION}")
 
 # JSON-C library (used for MF-JSON input/output)
 find_package(JSON-C REQUIRED)
 include_directories(SYSTEM ${JSON-C_INCLUDE_DIRS})
+message(STATUS "JSON-C_INCLUDE_DIRS: ${JSON-C_INCLUDE_DIRS}")
+message(STATUS "JSON-C_LIBRARIES: ${JSON-C_LIBRARIES}")
 
 # GSL (GNU Scientific Library) (used for skiplists)
 find_package(GSL REQUIRED)
 include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
 message(STATUS "GSL_VERSION: ${GSL_VERSION}")
 add_definitions(-DGSL_VERSION_STRING="${GSL_VERSION}")
+
+#----------------------------------------------
+# Configure PostGIS with optional dependencies
+#----------------------------------------------
+
+macro(configure_postgis)
+  file(READ ${CMAKE_SOURCE_DIR}/postgis/postgis_config.h.in POSTGIS_CONFIG)
+  # GETTEXT
+  if(GETTEXT_FOUND)
+    string(REPLACE "#undef HAVE_GETTEXT" "#define HAVE_GETTEXT 1" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
+  else()
+    string(REPLACE "#undef HAVE_GETTEXT" "/* #undef HAVE_GETTEXT */" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
+  endif()
+  # GDAL
+  if(GDAL_FOUND)
+    string(REPLACE "#undef POSTGIS_GDAL_VERSION" "#define POSTGIS_GDAL_VERSION ${POSTGIS_GDAL_VERSION}" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
+  else()
+    string(REPLACE "#undef POSTGIS_GDAL_VERSION" "/* #undef POSTGIS_GDAL_VERSION */" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
+  endif()
+  # LIBXML2
+  if(LibXml2_FOUND)
+    string(REPLACE "#undef HAVE_LIBXML2" "#define HAVE_LIBXML2 1" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
+    string(REPLACE "#undef POSTGIS_LIBXML2_VERSION" "#define POSTGIS_LIBXML2_VERSION \"${LIBXML2_VERSION_STRING}\"" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
+  else()
+    string(REPLACE "#undef HAVE_LIBXML2" "/* #undef HAVE_LIBXML2 */" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
+    string(REPLACE "#undef POSTGIS_LIBXML2_VERSION" "\* #undef POSTGIS_LIBXML2_VERSION */" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
+  endif()
+  # Protobuf
+  if(Protobuf_FOUND)
+    string(REPLACE "#undef HAVE_LIBPROTOBUF" "#define HAVE_LIBPROTOBUF 1" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
+    string(REPLACE "#undef LIBPROTOBUF_VERSION" "#define LIBPROTOBUF_VERSION ${Protobuf_VERSION}" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
+  else()
+    string(REPLACE "#undef HAVE_LIBPROTOBUF" "/* #undef HAVE_LIBPROTOBUF */" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
+    string(REPLACE "#undef LIBPROTOBUF_VERSION" "\* #undef LIBPROTOBUF_VERSION */" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
+  endif()
+  # Write the configuration file
+  file(WRITE ${CMAKE_SOURCE_DIR}/postgis/postgis_config.h "${POSTGIS_CONFIG}")
+endmacro()
+
+find_package(GDAL QUIET)
+if(GDAL_FOUND)
+  message(STATUS "GDAL version '${GDAL_VERSION}' found")
+else()
+  message(STATUS "GDAL not found")
+endif()
+
+find_package(LibXml2)
+if(LibXml2_FOUND)
+  message(STATUS "LibXml2 version ${LIBXML2_VERSION_STRING} found")
+else()
+  message(STATUS "LibXml2 not found")
+endif()
+
+# find_package(Protobuf REQUIRED)
+find_package(Protobuf QUIET)
+if(Protobuf_FOUND)
+  # Note that ${Protobuf_VERSION_STRING} is not set
+  if (Protobuf_INCLUDE_DIR AND EXISTS "${Protobuf_INCLUDE_DIR}/google/protobuf/stubs/common.h")
+      set(_Protobuf_VERSION_REGEX "^#define[ \t]+GOOGLE_PROTOBUF_VERSION[ \t]+([0-9]+).*$")
+      file(STRINGS "${Protobuf_INCLUDE_DIR}/google/protobuf/stubs/common.h" Protobuf_VERSION REGEX "${_Protobuf_VERSION_REGEX}")
+      if(Protobuf_VERSION MATCHES ${_Protobuf_VERSION_REGEX})
+          set(Protobuf_VERSION "${CMAKE_MATCH_1}")
+          math(EXPR Protobuf_VERSION_MAJOR "${Protobuf_VERSION} / 1000000")
+          math(EXPR Protobuf_VERSION_MINOR "${Protobuf_VERSION} / 1000 % 1000")
+          math(EXPR Protobuf_VERSION_PATCH "${Protobuf_VERSION} % 1000")
+          set(Protobuf_VERSION_STRING "${Protobuf_VERSION_MAJOR}.${Protobuf_VERSION_MINOR}.${Protobuf_VERSION_PATCH}")
+      endif()
+      message(STATUS "Protobuf version '${Protobuf_VERSION_STRING}' found")
+      unset(_Protobuf_VERSION_REGEX)
+  endif()
+else()
+  message(STATUS "Protobuf not found")
+endif()
+
+find_package(Gettext QUIET)
+if(GETTEXT_FOUND)
+  message(STATUS "GETTEXT version '${GETTEXT_VERSION_STRING}' found")
+else()
+  message(STATUS "GETTEXT not found")
+endif()
+
+find_package(ICU QUIET)
+if(ICU_FOUND)
+  message(STATUS "ICU Version '${ICU_VERSION}' found")
+else()
+  message(STATUS "ICU NOT found")
+endif()
 
 #-------------------------------------
 # Build either MobilityDB or MEOS

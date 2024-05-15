@@ -1,1 +1,1 @@
-#define POSTGIS_REVISION 008d2db
+#define POSTGIS_REVISION c19ce56

@@ -74,6 +74,7 @@ ELSE(WIN32)
           ENDIF (NOT GEOS_VERSION)
           STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+)(dev)?" "\\1" GEOS_VERSION_MAJOR "${GEOS_VERSION}")
           STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+)(dev)?" "\\2" GEOS_VERSION_MINOR "${GEOS_VERSION}")
+          STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+)(dev)?" "\\3" GEOS_VERSION_MICRO "${GEOS_VERSION}")
           IF (GEOS_VERSION_MAJOR LESS 3)
             MESSAGE (FATAL_ERROR "GEOS version is too old (${GEOS_VERSION}). Use 3.0.0 or higher.")
           ENDIF (GEOS_VERSION_MAJOR LESS 3)
@@ -98,22 +99,25 @@ ELSE(WIN32)
       #MESSAGE("DBG GEOS_CONFIG ${GEOS_CONFIG}")
 
       IF (GEOS_CONFIG)
-
-        EXEC_PROGRAM(${GEOS_CONFIG}
-            ARGS --version
+        execute_process(
+          COMMAND ${GEOS_CONFIG} --version
             OUTPUT_VARIABLE GEOS_VERSION)
+        # Remove trailing newline
+        STRING(REGEX REPLACE "\n$" "" GEOS_VERSION "${GEOS_VERSION}")
         STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+)(dev)?" "\\1" GEOS_VERSION_MAJOR "${GEOS_VERSION}")
         STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+)(dev)?" "\\2" GEOS_VERSION_MINOR "${GEOS_VERSION}")
+        STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+)(dev)?" "\\3" GEOS_VERSION_MICRO "${GEOS_VERSION}")
 
         IF (GEOS_VERSION_MAJOR LESS 3 OR (GEOS_VERSION_MAJOR EQUAL 3 AND GEOS_VERSION_MINOR LESS 3) )
           MESSAGE (FATAL_ERROR "GEOS version is too old (${GEOS_VERSION}). Use 3.3.0 or higher.")
         ENDIF (GEOS_VERSION_MAJOR LESS 3 OR (GEOS_VERSION_MAJOR EQUAL 3 AND GEOS_VERSION_MINOR LESS 3) )
 
         # set INCLUDE_DIR to prefix+include
-        EXEC_PROGRAM(${GEOS_CONFIG}
-            ARGS --prefix
+        execute_process(
+          COMMAND ${GEOS_CONFIG} --prefix
             OUTPUT_VARIABLE GEOS_PREFIX)
-
+        # Remove trailing newline
+        STRING(REGEX REPLACE "\n$" "" GEOS_PREFIX "${GEOS_PREFIX}")
         FIND_PATH(GEOS_INCLUDE_DIR
             geos_c.h
             ${GEOS_PREFIX}/include
@@ -122,9 +126,11 @@ ELSE(WIN32)
             )
 
         ## extract link dirs for rpath
-        EXEC_PROGRAM(${GEOS_CONFIG}
-            ARGS --libs
-            OUTPUT_VARIABLE GEOS_CONFIG_LIBS )
+        execute_process(
+          COMMAND ${GEOS_CONFIG} --libs
+            OUTPUT_VARIABLE GEOS_CONFIG_LIBS)
+        # Remove trailing newline
+        STRING(REGEX REPLACE "\n$" "" GEOS_CONFIG_LIBS "${GEOS_CONFIG_LIBS}")
 
         ## split off the link dirs (for rpath)
         ## use regular expression to match wildcard equivalent "-L*<endchar>"
@@ -183,6 +189,7 @@ IF(GEOS_INCLUDE_DIR AND NOT GEOS_VERSION)
   STRING(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" GEOS_VERSION ${GEOS_VERSION})
   STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+)(dev)?" "\\1" GEOS_VERSION_MAJOR "${GEOS_VERSION}")
   STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+)(dev)?" "\\2" GEOS_VERSION_MINOR "${GEOS_VERSION}")
+  STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+)(dev)?" "\\3" GEOS_VERSION_MICRO "${GEOS_VERSION}")
 ENDIF(GEOS_INCLUDE_DIR AND NOT GEOS_VERSION)
 
 IF (GEOS_INCLUDE_DIR AND GEOS_LIBRARY)
@@ -208,3 +215,4 @@ message(STATUS "GEOS_LIBRARY: ${GEOS_LIBRARY}")
 message(STATUS "GEOS_VERSION: ${GEOS_VERSION}")
 message(STATUS "GEOS_VERSION_MAJOR: ${GEOS_VERSION_MAJOR}")
 message(STATUS "GEOS_VERSION_MINOR: ${GEOS_VERSION_MINOR}")
+message(STATUS "GEOS_VERSION_MICRO: ${GEOS_VERSION_MICRO}")

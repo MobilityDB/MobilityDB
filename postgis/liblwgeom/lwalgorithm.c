@@ -31,28 +31,25 @@
 int
 p4d_same(const POINT4D *p1, const POINT4D *p2)
 {
-	if( FP_EQUALS(p1->x,p2->x) && FP_EQUALS(p1->y,p2->y) && FP_EQUALS(p1->z,p2->z) && FP_EQUALS(p1->m,p2->m) )
-		return LW_TRUE;
-	else
-		return LW_FALSE;
+	return FP_EQUALS(p1->x, p2->x)
+	    && FP_EQUALS(p1->y, p2->y)
+	    && FP_EQUALS(p1->z, p2->z)
+	    && FP_EQUALS(p1->m, p2->m);
 }
 
 int
 p3d_same(const POINT3D *p1, const POINT3D *p2)
 {
-	if( FP_EQUALS(p1->x,p2->x) && FP_EQUALS(p1->y,p2->y) && FP_EQUALS(p1->z,p2->z) )
-		return LW_TRUE;
-	else
-		return LW_FALSE;
+	return FP_EQUALS(p1->x, p2->x)
+	    && FP_EQUALS(p1->y, p2->y)
+	    && FP_EQUALS(p1->z, p2->z);
 }
 
 int
 p2d_same(const POINT2D *p1, const POINT2D *p2)
 {
-	if( FP_EQUALS(p1->x,p2->x) && FP_EQUALS(p1->y,p2->y) )
-		return LW_TRUE;
-	else
-		return LW_FALSE;
+	return FP_EQUALS(p1->x, p2->x)
+	    && FP_EQUALS(p1->y, p2->y);
 }
 
 /**
@@ -479,6 +476,11 @@ int lwline_crossing_direction(const LWLINE *l1, const LWLINE *l2)
 	if ( pa1->npoints < 2 || pa2->npoints < 2 )
 		return LINE_NO_CROSS;
 
+	/* Zero length lines don't have a side. */
+	if ( ptarray_length_2d(pa1) == 0 || ptarray_length_2d(pa2) == 0 )
+		return LINE_NO_CROSS;
+
+
 #if POSTGIS_DEBUG_LEVEL >= 4
 	geom_ewkt = lwgeom_to_ewkt((LWGEOM*)l1);
 	LWDEBUGF(4, "l1 = %s", geom_ewkt);
@@ -523,7 +525,7 @@ int lwline_crossing_direction(const LWLINE *l1, const LWLINE *l2)
 				LWDEBUG(4,"this_cross == SEG_CROSS_RIGHT");
 				cross_right++;
 				if ( ! first_cross )
-					first_cross = SEG_CROSS_LEFT;
+					first_cross = SEG_CROSS_RIGHT;
 			}
 
 			/*

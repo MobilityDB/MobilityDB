@@ -54,8 +54,8 @@ add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER})
 # Set default PostGIS Version for MEOS
 #--------------------------------------
 
-set(POSTGIS_VERSION_STRING "PostGIS 3.2.1")
-set(POSTGIS_VERSION_NUMBER "30201")
+set(POSTGIS_VERSION_STRING "PostGIS 3.4.2")
+set(POSTGIS_VERSION_NUMBER "30402")
 
 # PostGIS definitions for PostgreSQL and PostGIS version-dependent code
 # use POSTGRESQL_VERSION_NUMBER instead of the original POSTGIS_PGSQL_VERSION

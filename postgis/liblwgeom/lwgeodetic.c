@@ -403,10 +403,8 @@ static int gbox_check_poles(GBOX *gbox)
 */
 void geog2cart(const GEOGRAPHIC_POINT *g, POINT3D *p)
 {
-	/* MEOS: Modified to avoid computing twice cos(g->lat) */
-	double cos_lat = cos(g->lat);
-	p->x = cos_lat * cos(g->lon);
-	p->y = cos_lat * sin(g->lon);
+	p->x = cos(g->lat) * cos(g->lon);
+	p->y = cos(g->lat) * sin(g->lon);
 	p->z = sin(g->lat);
 }
 
@@ -949,17 +947,21 @@ int edge_contains_coplanar_point(const GEOGRAPHIC_EDGE *e, const GEOGRAPHIC_POIN
 */
 double sphere_distance(const GEOGRAPHIC_POINT *s, const GEOGRAPHIC_POINT *e)
 {
-	double d_lon = e->lon - s->lon;
-	double cos_d_lon = cos(d_lon);
-	double cos_lat_e = cos(e->lat);
-	double sin_lat_e = sin(e->lat);
-	double cos_lat_s = cos(s->lat);
-	double sin_lat_s = sin(s->lat);
+	double d_lon, cos_d_lon, cos_lat_e, sin_lat_e, cos_lat_s, sin_lat_s;
+	double a1, a2, a, b;
 
-	double a1 = POW2(cos_lat_e * sin(d_lon));
-	double a2 = POW2(cos_lat_s * sin_lat_e - sin_lat_s * cos_lat_e * cos_d_lon);
-	double a = sqrt(a1 + a2);
-	double b = sin_lat_s * sin_lat_e + cos_lat_s * cos_lat_e * cos_d_lon;
+	if (FP_EQUALS(s->lat, e->lat) && FP_EQUALS(s->lon, e->lon)) return 0.0;
+	d_lon = e->lon - s->lon;
+	cos_d_lon = cos(d_lon);
+	cos_lat_e = cos(e->lat);
+	sin_lat_e = sin(e->lat);
+	cos_lat_s = cos(s->lat);
+	sin_lat_s = sin(s->lat);
+
+	a1 = POW2(cos_lat_e * sin(d_lon));
+	a2 = POW2(cos_lat_s * sin_lat_e - sin_lat_s * cos_lat_e * cos_d_lon);
+	a = sqrt(a1 + a2);
+	b = sin_lat_s * sin_lat_e + cos_lat_s * cos_lat_e * cos_d_lon;
 	return atan2(a, b);
 }
 
@@ -1226,7 +1228,9 @@ double edge_distance_to_point(const GEOGRAPHIC_EDGE *e, const GEOGRAPHIC_POINT *
 	/* Zero length edge, */
 	if ( geographic_point_equals(&(e->start), &(e->end)) )
 	{
-		*closest = e->start;
+		if (closest)
+			*closest = e->start;
+
 		return sphere_distance(&(e->start), gp);
 	}
 
@@ -1237,7 +1241,7 @@ double edge_distance_to_point(const GEOGRAPHIC_EDGE *e, const GEOGRAPHIC_POINT *
 	vector_difference(&p, &n, &k);
 	normalize(&k);
 	cart2geog(&k, &gk);
-	if ( edge_contains_point(e, &gk) )
+	if ( edge_point_in_cone(e, &gk) )
 	{
 		d1 = sphere_distance(gp, &gk);
 	}
@@ -1913,7 +1917,7 @@ static double ptarray_distance_spheroid(const POINTARRAY *pa1, const POINTARRAY 
 				nearest2 = g2;
 			}
 			/* We've gotten closer than the tolerance... */
-			if ( d < tolerance )
+			if ( d <= tolerance )
 			{
 				/* Working on a sphere? The answer is correct, return */
 				if ( use_sphere )
@@ -1921,7 +1925,7 @@ static double ptarray_distance_spheroid(const POINTARRAY *pa1, const POINTARRAY 
 					return d;
 				}
 				/* Far enough past the tolerance that the spheroid calculation won't change things */
-				else if ( d < tolerance * 0.95 )
+				else if ( d <= tolerance * 0.95 )
 				{
 					return d;
 				}
@@ -1930,7 +1934,7 @@ static double ptarray_distance_spheroid(const POINTARRAY *pa1, const POINTARRAY 
 				{
 					d = spheroid_distance(&g1, &nearest2, s);
 					/* Yes, closer than tolerance, return! */
-					if ( d < tolerance )
+					if ( d <= tolerance )
 						return d;
 				}
 			}
@@ -1991,7 +1995,7 @@ static double ptarray_distance_spheroid(const POINTARRAY *pa1, const POINTARRAY 
 				nearest1 = g1;
 				nearest2 = g2;
 			}
-			if ( d < tolerance )
+			if ( d <= tolerance )
 			{
 				if ( use_sphere )
 				{
@@ -2000,7 +2004,7 @@ static double ptarray_distance_spheroid(const POINTARRAY *pa1, const POINTARRAY 
 				else
 				{
 					d = spheroid_distance(&nearest1, &nearest2, s);
-					if ( d < tolerance )
+					if ( d <= tolerance )
 						return d;
 				}
 			}
@@ -2103,8 +2107,8 @@ LWPOINT* lwgeom_project_spheroid(const LWPOINT *r, const SPHEROID *spheroid, dou
 	GEOGRAPHIC_POINT geo_source, geo_dest;
 	POINT4D pt_dest;
 	double x, y;
-	POINTARRAY *pa;
 	LWPOINT *lwp;
+	int has_z, has_m;
 
 	/* Normalize distance to be positive*/
 	if ( distance < 0.0 ) {
@@ -2125,6 +2129,8 @@ LWPOINT* lwgeom_project_spheroid(const LWPOINT *r, const SPHEROID *spheroid, dou
 	/* Convert to ta geodetic point */
 	x = lwpoint_get_x(r);
 	y = lwpoint_get_y(r);
+	has_z = lwgeom_has_z(lwpoint_as_lwgeom(r));
+	has_m = lwgeom_has_m(lwpoint_as_lwgeom(r));
 	geographic_point_init(x, y, &geo_source);
 
 	/* Try the projection */
@@ -2136,20 +2142,26 @@ LWPOINT* lwgeom_project_spheroid(const LWPOINT *r, const SPHEROID *spheroid, dou
 	}
 
 	/* Build the output LWPOINT */
-	pa = ptarray_construct(0, 0, 1);
 	pt_dest.x = rad2deg(longitude_radians_normalize(geo_dest.lon));
 	pt_dest.y = rad2deg(latitude_radians_normalize(geo_dest.lat));
-	pt_dest.z = pt_dest.m = 0.0;
-	ptarray_set_point4d(pa, 0, &pt_dest);
-	lwp = lwpoint_construct(r->srid, NULL, pa);
+	pt_dest.z = has_z ? lwpoint_get_z(r) : 0.0;
+	pt_dest.m = has_m ? lwpoint_get_m(r) : 0.0;
+	lwp = lwpoint_make(r->srid, has_z, has_m, &pt_dest);
 	lwgeom_set_geodetic(lwpoint_as_lwgeom(lwp), LW_TRUE);
+	return lwp;
+}
+
+LWPOINT* lwgeom_project_spheroid_lwpoint(const LWPOINT *from, const LWPOINT *to, const SPHEROID *spheroid, double distance)
+{
+	double azimuth = lwgeom_azumith_spheroid(from, to, spheroid);
+	LWPOINT *lwp = lwgeom_project_spheroid(to, spheroid, distance, azimuth);
 	return lwp;
 }
 
 
 /**
 * Calculate a bearing (azimuth) given a source and destination point.
-* @param r - location of first point.
+https://accesd.desjardins.ca/coast* @param r - location of first point.
 * @param s - location of second point.
 * @param spheroid - spheroid definition.
 * @return azimuth - azimuth in radians.
@@ -2282,7 +2294,7 @@ double lwgeom_distance_spheroid(const LWGEOM *lwgeom1, const LWGEOM *lwgeom2, co
 			double ring_distance = ptarray_distance_spheroid(lwpoly->rings[i], lwpt->point, spheroid, tolerance, check_intersection);
 			if ( ring_distance < distance )
 				distance = ring_distance;
-			if ( distance < tolerance )
+			if ( distance <= tolerance )
 				return distance;
 		}
 		return distance;
@@ -2325,7 +2337,7 @@ double lwgeom_distance_spheroid(const LWGEOM *lwgeom1, const LWGEOM *lwgeom2, co
 			LWDEBUGF(4, "ring[%d] ring_distance = %.8g", i, ring_distance);
 			if ( ring_distance < distance )
 				distance = ring_distance;
-			if ( distance < tolerance )
+			if ( distance <= tolerance )
 				return distance;
 		}
 		LWDEBUGF(4, "all rings checked, returning distance = %.8g", distance);
@@ -2365,7 +2377,7 @@ double lwgeom_distance_spheroid(const LWGEOM *lwgeom1, const LWGEOM *lwgeom2, co
 					check_intersection);
 				if (ring_distance < distance)
 					distance = ring_distance;
-				if (distance < tolerance) return distance;
+				if (distance <= tolerance) return distance;
 			}
 		}
 		return distance;
@@ -2384,7 +2396,7 @@ double lwgeom_distance_spheroid(const LWGEOM *lwgeom1, const LWGEOM *lwgeom2, co
 			    col->geoms[i], lwgeom2, spheroid, tolerance);
 			if ( geom_distance < distance )
 				distance = geom_distance;
-			if ( distance < tolerance )
+			if ( distance <= tolerance )
 				return distance;
 		}
 		return distance;
@@ -2402,7 +2414,7 @@ double lwgeom_distance_spheroid(const LWGEOM *lwgeom1, const LWGEOM *lwgeom2, co
 			double geom_distance = lwgeom_distance_spheroid(lwgeom1, col->geoms[i], spheroid, tolerance);
 			if ( geom_distance < distance )
 				distance = geom_distance;
-			if ( distance < tolerance )
+			if ( distance <= tolerance )
 				return distance;
 		}
 		return distance;
@@ -2625,23 +2637,10 @@ int lwpoly_covers_lwpoly(const LWPOLY *poly1, const LWPOLY *poly2)
 	/* check if all vertices of poly2 are inside poly1 */
 	for (i = 0; i < poly2->nrings; i++)
 	{
-
-		/* every other ring is a hole, check if point is inside the actual polygon */
-		if ( i % 2 == 0)
+		if (LW_FALSE == lwpoly_covers_pointarray(poly1, poly2->rings[i]))
 		{
-			if (LW_FALSE == lwpoly_covers_pointarray(poly1, poly2->rings[i]))
-			{
-				LWDEBUG(4,"returning false, geometry2 has point outside of geometry1");
-				return LW_FALSE;
-			}
-		}
-		else
-		{
-			if (LW_TRUE == lwpoly_covers_pointarray(poly1, poly2->rings[i]))
-			{
-				LWDEBUG(4,"returning false, geometry2 has point inside a hole of geometry1");
-				return LW_FALSE;
-			}
+			LWDEBUG(4,"returning false, geometry2 has point outside of geometry1");
+			return LW_FALSE;
 		}
 	}
 
@@ -2872,24 +2871,6 @@ int lwline_covers_lwline(const LWLINE* lwline1, const LWLINE* lwline2)
 	/* no uncovered point found */
 	return LW_TRUE;
 }
-
-/**
-* This function can only be used on LWGEOM that is built on top of
-* GSERIALIZED, otherwise alignment errors will ensue.
-*/
-int getPoint2d_p_ro(const POINTARRAY *pa, uint32_t n, POINT2D **point)
-{
-	uint8_t *pa_ptr = NULL;
-	assert(pa);
-	assert(n < pa->npoints);
-
-	pa_ptr = getPoint_internal(pa, n);
-	/* printf( "pa_ptr[0]: %g\n", *((double*)pa_ptr)); */
-	*point = (POINT2D*)pa_ptr;
-
-	return LW_SUCCESS;
-}
-
 
 int ptarray_calculate_gbox_geodetic(const POINTARRAY *pa, GBOX *gbox)
 {
@@ -3369,22 +3350,22 @@ ptarray_nudge_geodetic(POINTARRAY *pa)
 	for(i = 0; i < pa->npoints; i++ )
 	{
 		getPoint4d_p(pa, i, &p);
-		if ( p.x < -180.0 && (-180.0 - p.x < tolerance) )
+		if ( p.x < -180.0 && (-180.0 - p.x <= tolerance) )
 		{
 			p.x = -180.0;
 			altered = LW_TRUE;
 		}
-		if ( p.x > 180.0 && (p.x - 180.0 < tolerance) )
+		if ( p.x > 180.0 && (p.x - 180.0 <= tolerance) )
 		{
 			p.x = 180.0;
 			altered = LW_TRUE;
 		}
-		if ( p.y < -90.0 && (-90.0 - p.y < tolerance) )
+		if ( p.y < -90.0 && (-90.0 - p.y <= tolerance) )
 		{
 			p.y = -90.0;
 			altered = LW_TRUE;
 		}
-		if ( p.y > 90.0 && (p.y - 90.0 < tolerance) )
+		if ( p.y > 90.0 && (p.y - 90.0 <= tolerance) )
 		{
 			p.y = 90.0;
 			altered = LW_TRUE;
