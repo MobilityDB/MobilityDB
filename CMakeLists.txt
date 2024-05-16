@@ -27,6 +27,8 @@ endif()
 # Specify search path for CMake modules to be loaded
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)
+include(CheckCXXSymbolExists)
+include(CheckCSourceRuns)
 
 #-------------------------------------
 # RPATH settings
@@ -185,12 +187,25 @@ TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if(IS_BIG_ENDIAN)
   message(STATUS "BIG_ENDIAN")
   add_definitions(-DMEOS_IS_BIG_ENDIAN=1)
-  set(DEF_WORDS_BIGENDIAN "undef")
+  set(DEF_WORDS_BIGENDIAN ON)
 else()
   message(STATUS "LITTLE_ENDIAN")
   add_definitions(-DMEOS_IS_BIG_ENDIAN=0)
-  set(DEF_WORDS_BIGENDIAN "#undef")
+  unset(DEF_WORDS_BIGENDIAN)
 endif()
+
+# check for needed Header files and functions
+set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
+check_symbol_exists(strchrnul "string.h" HAVE_STRCHRNUL)
+unset(CMAKE_REQUIRED_DEFINITIONS)
+check_symbol_exists(__get_cpuid "cpuid.h" HAVE__GET_CPUID)
+check_c_source_runs("
+#include <stdint.h>
+int main() {
+    uint64_t x = 1, r;
+    __asm__ (\"popcntq %1, %0\" : \"=r\"(r) : \"r\"(x));
+    return 0;
+}" HAVE_X86_64_POPCNTQ)
 
 #--------------------------------
 # Other dependencies
@@ -223,40 +238,6 @@ add_definitions(-DGSL_VERSION_STRING="${GSL_VERSION}")
 #----------------------------------------------
 # Configure PostGIS with optional dependencies
 #----------------------------------------------
-
-macro(configure_postgis)
-  file(READ ${CMAKE_SOURCE_DIR}/postgis/postgis_config.h.in POSTGIS_CONFIG)
-  # GETTEXT
-  if(GETTEXT_FOUND)
-    string(REPLACE "#undef HAVE_GETTEXT" "#define HAVE_GETTEXT 1" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
-  else()
-    string(REPLACE "#undef HAVE_GETTEXT" "/* #undef HAVE_GETTEXT */" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
-  endif()
-  # GDAL
-  if(GDAL_FOUND)
-    string(REPLACE "#undef POSTGIS_GDAL_VERSION" "#define POSTGIS_GDAL_VERSION ${POSTGIS_GDAL_VERSION}" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
-  else()
-    string(REPLACE "#undef POSTGIS_GDAL_VERSION" "/* #undef POSTGIS_GDAL_VERSION */" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
-  endif()
-  # LIBXML2
-  if(LibXml2_FOUND)
-    string(REPLACE "#undef HAVE_LIBXML2" "#define HAVE_LIBXML2 1" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
-    string(REPLACE "#undef POSTGIS_LIBXML2_VERSION" "#define POSTGIS_LIBXML2_VERSION \"${LIBXML2_VERSION_STRING}\"" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
-  else()
-    string(REPLACE "#undef HAVE_LIBXML2" "/* #undef HAVE_LIBXML2 */" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
-    string(REPLACE "#undef POSTGIS_LIBXML2_VERSION" "\* #undef POSTGIS_LIBXML2_VERSION */" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
-  endif()
-  # Protobuf
-  if(Protobuf_FOUND)
-    string(REPLACE "#undef HAVE_LIBPROTOBUF" "#define HAVE_LIBPROTOBUF 1" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
-    string(REPLACE "#undef LIBPROTOBUF_VERSION" "#define LIBPROTOBUF_VERSION ${Protobuf_VERSION}" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
-  else()
-    string(REPLACE "#undef HAVE_LIBPROTOBUF" "/* #undef HAVE_LIBPROTOBUF */" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
-    string(REPLACE "#undef LIBPROTOBUF_VERSION" "\* #undef LIBPROTOBUF_VERSION */" POSTGIS_CONFIG "${POSTGIS_CONFIG}")
-  endif()
-  # Write the configuration file
-  file(WRITE ${CMAKE_SOURCE_DIR}/postgis/postgis_config.h "${POSTGIS_CONFIG}")
-endmacro()
 
 find_package(GDAL QUIET)
 if(GDAL_FOUND)

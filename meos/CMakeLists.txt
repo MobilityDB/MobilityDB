@@ -55,10 +55,10 @@ add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER})
 
 set(POSTGIS_VERSION_STRING "PostGIS 3.4.2")
 set(POSTGIS_VERSION_NUMBER "30402")
-set(POSTGIS_MAJOR_VERSION "3")
-set(POSTGIS_MINOR_VERSION "4")
-set(POSTGIS_MICRO_VERSION "0")
-set(POSTGIS_LIB_VERSION "3.4.0")
+set(POSTGIS_VERSION_MAJOR "3")
+set(POSTGIS_VERSION_MINOR "4")
+set(POSTGIS_VERSION_MICRO "2")
+set(POSTGIS_VERSION "3.4.2")
 
 set(SRID_MAX "999999")
 set(SRID_USR_MAX "998999")
@@ -72,14 +72,6 @@ message(STATUS "POSTGIS_PGSQL_VERSION=${POSTGIS_PGSQL_VERSION}")
 add_definitions(-DPOSTGIS_VERSION_STRING="${POSTGIS_VERSION_STRING}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 add_definitions(-DPOSTGIS_PGSQL_VERSION=${POSTGIS_PGSQL_VERSION})
-add_definitions(-DSRID_MAXIMUM=${SRID_MAXIMUM})
-add_definitions(-DSRID_USR_MAXIMUM=${SRID_USR_MAXIMUM})
-
-# Configure PostGIS with optional dependencies
-configure_postgis()
-# Configure PostGIS with required dependencies
-configure_file(${CMAKE_SOURCE_DIR}/postgis/postgis_config.h ${CMAKE_SOURCE_DIR}/postgis/postgis_config.h)
-configure_file(${CMAKE_SOURCE_DIR}/postgis/liblwgeom/liblwgeom.h.in ${CMAKE_SOURCE_DIR}/postgis/liblwgeom/liblwgeom.h)
 
 #--------------------------------
 # MobilityDB directories
