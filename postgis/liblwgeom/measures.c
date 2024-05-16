@@ -299,7 +299,7 @@ lw_dist2d_recursive(const LWGEOM *lwg1, const LWGEOM *lwg2, DISTPTS *dl)
 			g1 = (LWGEOM *)lwg1;
 
 		if (lwgeom_is_empty(g1))
-			return LW_TRUE;
+			continue;
 
 		if (lw_dist2d_is_collection(g1))
 		{
@@ -329,10 +329,9 @@ lw_dist2d_recursive(const LWGEOM *lwg1, const LWGEOM *lwg2, DISTPTS *dl)
 			if (!g2->bbox)
 				lwgeom_add_bbox(g2);
 
-			/* If one of geometries is empty, return. True here only means continue searching. False would
-			 * have stopped the process*/
+			/* If one of geometries is empty, skip */
 			if (lwgeom_is_empty(g1) || lwgeom_is_empty(g2))
-				return LW_TRUE;
+				continue;
 
 			if ((dl->mode != DIST_MAX) && (!lw_dist2d_check_overlap(g1, g2)) &&
 			    (g1->type == LINETYPE || g1->type == POLYGONTYPE || g1->type == TRIANGLETYPE) &&
@@ -743,7 +742,7 @@ lw_dist2d_line_poly(LWLINE *line, LWPOLY *poly, DISTPTS *dl)
 	const POINT2D *pt = getPoint2d_cp(pa, 0);
 
 	/* Line has a pount outside poly. Check distance to outer ring only. */
-	if (ptarray_contains_point(poly->rings[0], pt) == LW_OUTSIDE)
+	if (ptarray_contains_point(poly->rings[0], pt) == LW_OUTSIDE || dl->mode == DIST_MAX)
 		return lw_dist2d_ptarray_ptarray(pa, poly->rings[0], dl);
 
 	for (uint32_t i = 1; i < poly->nrings; i++)
@@ -2466,3 +2465,49 @@ azimuth_pt_pt(const POINT2D *A, const POINT2D *B, double *d)
 	*d = fmod(2 * M_PI + M_PI / 2 - atan2(B->y - A->y, B->x - A->x), 2 * M_PI);
 	return LW_TRUE;
 }
+
+/**
+ * Azimuth is angle in radians from vertical axis
+ *
+ */
+int
+project_pt(const POINT2D *P, double distance, double azimuth, POINT2D *R)
+{
+	const double TWOPI = 2.0 * M_PI;
+	double slope;
+	/* Deal with azimuth out of (-360,360) range */
+	int orbits = floor(azimuth / TWOPI);
+	azimuth -= TWOPI * orbits;
+	/* Convert from azimuth to conventional slope */
+	slope = TWOPI - azimuth + M_PI_2;
+	if (slope > 0 && slope >  TWOPI) slope -= TWOPI;
+	if (slope < 0 && slope < -TWOPI) slope += TWOPI;
+
+	double dx = cos(slope) * distance;
+	double dy = sin(slope) * distance;
+	R->x = P->x + dx;
+	R->y = P->y + dy;
+	return LW_TRUE;
+}
+
+/**
+ * Azimuth is angle in radians from vertical axis
+ *
+ */
+int
+project_pt_pt(const POINT4D *A, const POINT4D *B, double distance, POINT4D *R)
+{
+	/* Convert from azimuth to conventional slope */
+	double len = distance2d_pt_pt((const POINT2D *)A, (const POINT2D *)B);
+	double prop = distance / len;
+	double dx = (B->x - A->x) * prop;
+	double dy = (B->y - A->y) * prop;
+	double dz = (B->z - A->z) * prop;
+	double dm = (B->m - A->m) * prop;
+	R->x = B->x + dx;
+	R->y = B->y + dy;
+	if (isfinite(dz)) R->z = B->z + dz;
+	if (isfinite(dm)) R->m = B->m + dm;
+	return LW_TRUE;
+}
+

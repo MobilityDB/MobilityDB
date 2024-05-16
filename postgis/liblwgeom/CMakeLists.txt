@@ -18,6 +18,7 @@ add_library(liblwgeom OBJECT
   lwcompound.c
   lwcurvepoly.c
   lwgeodetic.c
+  lwgeodetic_measures.c
   lwgeodetic_tree.c
   lwgeom.c
   lwgeom_api.c
@@ -73,7 +74,9 @@ add_library(liblwgeom OBJECT
   lwutil.c
   measures.c
   measures3d.c
+  optionlist.c
   ptarray.c
+  stringlist.c
   stringbuffer.c
   varint.c
   )

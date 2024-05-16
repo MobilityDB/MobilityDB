@@ -260,7 +260,7 @@ static uint8_t* double_nan_to_wkb_buf(uint8_t *buf, uint8_t variant)
 	{
 		for (int i = 0; i < NAN_SIZE; i++)
 		{
-			buf[i] = (variant & WKB_NDR) ? ndr_nan[i] : xdr_nan[i];
+			buf[i] = (variant & WKB_NDR) ? ndr_nan[i] : xdr_nan[i];;
 		}
 		return buf + NAN_SIZE;
 	}
@@ -390,7 +390,7 @@ static size_t ptarray_to_wkb_size(const POINTARRAY *pa, uint8_t variant)
 		size += WKB_INT_SIZE;
 
 	/* size of the double list */
-	size += (size_t) pa->npoints * dims * WKB_DOUBLE_SIZE;
+	size += pa->npoints * dims * WKB_DOUBLE_SIZE;
 
 	return size;
 }
@@ -414,7 +414,7 @@ static uint8_t* ptarray_to_wkb_buf(const POINTARRAY *pa, uint8_t *buf, uint8_t v
 	/* is not hex, and output endian matches internal endian. */
 	if ( pa->npoints && (dims == pa_dims) && ! wkb_swap_bytes(variant) && ! (variant & WKB_HEX)  )
 	{
-		size_t size = (size_t) pa->npoints * dims * WKB_DOUBLE_SIZE;
+		size_t size = pa->npoints * dims * WKB_DOUBLE_SIZE;
 		memcpy(buf, getPoint_internal(pa, 0), size);
 		buf += size;
 	}
@@ -457,8 +457,7 @@ static size_t lwpoint_to_wkb_size(const LWPOINT *pt, uint8_t variant)
 	return size;
 }
 
-static  // MOBDB
-uint8_t* lwpoint_to_wkb_buf(const LWPOINT *pt, uint8_t *buf, uint8_t variant)
+static uint8_t* lwpoint_to_wkb_buf(const LWPOINT *pt, uint8_t *buf, uint8_t variant)
 {
 	/* Only process empty at this level in the EXTENDED case */
 	if ( (variant & WKB_EXTENDED) && lwgeom_is_empty((LWGEOM*)pt) )

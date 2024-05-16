@@ -23,9 +23,6 @@
  **********************************************************************/
 
 #include "lwgeom_cache.h"
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
 
 SHARED_GSERIALIZED *
 shared_gserialized_new_nocache(Datum d)
@@ -50,7 +47,7 @@ shared_gserialized_new_cached(FunctionCallInfo fcinfo, Datum d)
 SHARED_GSERIALIZED *
 shared_gserialized_ref(FunctionCallInfo fcinfo, SHARED_GSERIALIZED *ref)
 {
-#if POSTGRESQL_VERSION_NUMBER >= 160000
+#if POSTGIS_PGSQL_VERSION >= 160
 /** MemoryContextContains was removed in PG16 **/
 	if ( PostgisCacheContext(fcinfo) == GetMemoryChunkContext(ref) )
 #else
@@ -73,7 +70,7 @@ shared_gserialized_ref(FunctionCallInfo fcinfo, SHARED_GSERIALIZED *ref)
 void
 shared_gserialized_unref(FunctionCallInfo fcinfo, SHARED_GSERIALIZED *ref)
 {
-#if POSTGRESQL_VERSION_NUMBER >= 160000
+#if POSTGIS_PGSQL_VERSION >= 160
 /** MemoryContextContains was removed in PG16 **/
 	if ( PostgisCacheContext(fcinfo) == GetMemoryChunkContext(ref) )
 #else

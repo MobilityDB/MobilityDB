@@ -18,26 +18,47 @@
  *
  **********************************************************************
  *
- * Copyright 2012-2013 Oslandia <infos@oslandia.com>
+ * Copyright 2021 Paul Ramsey <pramsey@cleverelephant.ca>
  *
  **********************************************************************/
 
+
+#ifndef _STRINGLIST_H
+#define _STRINGLIST_H 1
+
 #include "liblwgeom_internal.h"
-#include <SFCGAL/capi/sfcgal_c.h>
 
-/* return SFCGAL version string */
-const char *lwgeom_sfcgal_version(void);
 
-/* return SFCGAL full version string */
-const char *lwgeom_sfcgal_full_version(void);
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <stdio.h>
 
-/* Convert SFCGAL structure to lwgeom PostGIS */
-LWGEOM *SFCGAL2LWGEOM(const sfcgal_geometry_t *geom, int force3D, int32_t SRID);
+#define STRINGLIST_STARTSIZE 8
 
-/* Convert lwgeom PostGIS to SFCGAL structure */
-sfcgal_geometry_t *LWGEOM2SFCGAL(const LWGEOM *geom);
+typedef struct
+{
+	size_t capacity;
+	size_t length;
+	char **data;
+}
+stringlist_t;
 
-/* No Operation SFCGAL function, used (only) for cunit tests
- * Take a PostGIS geometry, send it to SFCGAL and return it unchanged
- */
-LWGEOM *lwgeom_sfcgal_noop(const LWGEOM *geom_in);
+
+extern stringlist_t * stringlist_create_with_size(size_t size);
+extern stringlist_t * stringlist_create(void);
+extern void stringlist_destroy(stringlist_t *s);
+
+extern void stringlist_init(stringlist_t *s);
+extern void stringlist_release(stringlist_t *s);
+
+extern void stringlist_add_string(stringlist_t *s, const char* string);
+extern void stringlist_add_string_nosort(stringlist_t *s, const char* string);
+extern void stringlist_sort(stringlist_t *s);
+extern const char * stringlist_find(stringlist_t *s, const char *key);
+extern size_t stringlist_length(stringlist_t *s);
+extern const char * stringlist_get(stringlist_t *s, size_t i);
+
+
+#endif
+

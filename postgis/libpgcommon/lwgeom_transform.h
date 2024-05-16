@@ -56,7 +56,7 @@ typedef struct srs_precision
 	int precision_m;
 } srs_precision;
 
-#if POSTGIS_PROJ_VERSION < 60
+#if POSTGIS_PROJ_VERSION < 61
 /* Needs to call postgis_initialize_cache first */
 char *GetProj4String(int32_t srid);
 #endif
@@ -64,7 +64,8 @@ char *GetProj4String(int32_t srid);
 
 /* Prototypes */
 PROJSRSCache* GetPROJSRSCache();
-int GetLWPROJ(int32_t srid_from, int32_t srid_to, LWPROJ **pj);
+int lwproj_lookup(int32_t srid_from, int32_t srid_to, LWPROJ **pj);
+int lwproj_is_latlong(const LWPROJ *pj);
 int spheroid_init_from_srid(int32_t srid, SPHEROID *s);
 void srid_check_latlong(int32_t srid);
 srs_precision srid_axis_precision(int32_t srid, int precision);

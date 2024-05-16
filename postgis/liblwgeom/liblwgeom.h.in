@@ -32,20 +32,10 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "../postgis_config.h"
 
-#if POSTGIS_PROJ_VERSION < 60
-#include "proj_api.h"
-typedef struct PJ
-{
-    projPJ pj_from;
-    projPJ pj_to;
-} PJ;
-
-typedef PJ LWPROJ;
-
-#else
 #include "proj.h"
 
 /* For PROJ6 we cache several extra values to avoid calls to proj_get_source_crs
@@ -53,26 +43,22 @@ typedef PJ LWPROJ;
  */
 typedef struct LWPROJ
 {
-	PJ* pj;
-        /* CRSs are swapped: Used in transformation calls */
-	uint8_t source_swapped;
-	uint8_t target_swapped;
-        /* Source crs is geographic: Used in geography calls (source srid == dst srid) */
-        uint8_t source_is_latlong;
+    PJ* pj;
 
-        /* Source ellipsoid parameters */
-        double source_semi_major_metre;
-        double source_semi_minor_metre;
+	/* for pipeline transforms, whether to do a forward or inverse */
+	bool pipeline_is_forward;
+
+    /* Source crs is geographic: Used in geography calls (source srid == dst srid) */
+    uint8_t source_is_latlong;
+    /* Source ellipsoid parameters */
+    double source_semi_major_metre;
+    double source_semi_minor_metre;
 } LWPROJ;
-#endif
 
-#if POSTGIS_PROJ_VERSION < 49
-/* Use the old (pre-2.2) geodesic functions */
-#undef PROJ_GEODESIC
-#else
+
+
 /* Enable new geodesic functions API */
 #define PROJ_GEODESIC
-#endif
 
 /**
 * @file liblwgeom.h
@@ -830,7 +816,7 @@ extern GSERIALIZED* gserialized_from_lwgeom(LWGEOM *geom, size_t *size);
 
 /**
 * Allocate a new #LWGEOM from a #GSERIALIZED. The resulting #LWGEOM will have coordinates
-* that are double aligned and suitable for direct reading using getPoint2d_p_ro
+* that are double aligned and suitable for direct reading using getPoint2d_cp
 */
 extern LWGEOM* lwgeom_from_gserialized(const GSERIALIZED *g);
 
@@ -911,6 +897,12 @@ extern const GBOX *lwgeom_get_bbox(const LWGEOM *lwgeom);
 * Determine whether a LWGEOM can contain sub-geometries or not
 */
 extern int lwgeom_is_collection(const LWGEOM *lwgeom);
+
+/**
+* Check if a LWGEOM has any non-finite (NaN or Inf) coordinates.
+*/
+extern int lwgeom_isfinite(const LWGEOM *lwgeom);
+
 
 /******************************************************************/
 /* Functions that work on type numbers */
@@ -1089,6 +1081,25 @@ extern POINTARRAY* ptarray_flip_coordinates(POINTARRAY *pa);
 extern POINTARRAY *ptarray_substring(POINTARRAY *pa, double d1, double d2,
                                                           double tolerance);
 
+/**
+ * @param pa the subject pointarray
+ * @param qp the query point
+ * @param dist optional output for actual distance from vertex
+ */
+extern int ptarray_closest_vertex_2d(const POINTARRAY *pa,
+                                     const POINT2D *qp, double *dist);
+
+/**
+ * @param pa the subject pointarray
+ * @param qp the query point
+ * @param dist optional output for actual distance from segment
+ * @return 0-based segment index for the closest segment
+ *         (earliest segment in case of same distance)
+ */
+extern int ptarray_closest_segment_2d(const POINTARRAY *pa,
+                                      const POINT2D *qp, double *dist);
+
+
 
 /**
 * Strip out the Z/M components of an #LWGEOM
@@ -1142,6 +1153,11 @@ extern POINTARRAY* lwline_interpolate_points(const LWLINE *line, double length_f
  */
 extern LWPOINT* lwline_interpolate_point_3d(const LWLINE *line, double distance);
 
+/**
+ * Extend the ends of a line
+ */
+extern LWLINE* lwline_extend(const LWLINE *line, double distance_forward, double distance_backward);
+
 /******************************************************************
  * LWPOLY functions
  ******************************************************************/
@@ -1184,10 +1200,7 @@ extern LWCURVEPOLY* lwcurvepoly_construct_from_lwpoly(LWPOLY *lwpoly);
 extern int lwcollection_ngeoms(const LWCOLLECTION *col);
 
 /* Given a generic geometry/collection, return the "simplest" form.
- * The elements of the homogenized collection are references to the
- * input geometry; a deep clone is not performed.
- * TODO: consider returning a geometry that does not reference the
- * input
+ * The elements of the homogenized collection are deeply cloned
  * */
 extern LWGEOM *lwgeom_homogenize(const LWGEOM *geom);
 
@@ -1331,6 +1344,8 @@ extern LWPOINT* lwcompound_get_lwpoint(const LWCOMPOUND *lwcmp, uint32_t where);
 extern double ptarray_length_2d(const POINTARRAY *pts);
 extern int pt_in_ring_2d(const POINT2D *p, const POINTARRAY *ring);
 extern int azimuth_pt_pt(const POINT2D *p1, const POINT2D *p2, double *ret);
+extern LWPOINT* lwpoint_project_lwpoint(const LWPOINT* lwpoint1, const LWPOINT* lwpoint2, double distance);
+extern LWPOINT* lwpoint_project(const LWPOINT* lwpoint1, double distance, double azimuth);
 extern int lwpoint_inside_circle(const LWPOINT *p, double cx, double cy, double rad);
 
 extern LWGEOM* lwgeom_reverse(const LWGEOM *lwgeom);
@@ -1737,6 +1752,11 @@ extern double lwgeom_distance_spheroid(const LWGEOM *lwgeom1, const LWGEOM *lwge
 extern LWPOINT* lwgeom_project_spheroid(const LWPOINT *r, const SPHEROID *spheroid, double distance, double azimuth);
 
 /**
+* Calculate the location of a point on a spheroid, give a start point, end point and distance.
+*/
+extern LWPOINT* lwgeom_project_spheroid_lwpoint(const LWPOINT *from, const LWPOINT *to, const SPHEROID *spheroid, double distance);
+
+/**
 * Derive a new geometry with vertices added to ensure no vertex is more
 * than max_seg_length (in radians) from any other vertex.
 */
@@ -1770,6 +1790,27 @@ extern double lwgeom_length_spheroid(const LWGEOM *geom, const SPHEROID *s);
 * only handles point-in-polygon.
 */
 extern int lwgeom_covers_lwgeom_sphere(const LWGEOM *lwgeom1, const LWGEOM *lwgeom2);
+
+
+extern LWGEOM * geography_substring(const LWLINE *line,
+    const SPHEROID *s,
+    double from, double to,
+    double tolerance);
+
+extern LWGEOM * geography_interpolate_points(
+    const LWLINE *line,
+    double length_fraction,
+    const SPHEROID *s, char repeat);
+
+extern double
+ptarray_locate_point_spheroid(
+    const POINTARRAY *pa,
+    const POINT4D *p4d,
+    const SPHEROID *s,
+    double tolerance,
+    double *mindistout,
+    POINT4D *proj4d);
+
 
 typedef struct {
 	POINT2D* center;
@@ -1909,12 +1950,6 @@ extern int lwgeom_calculate_gbox_cartesian(const LWGEOM *lwgeom, GBOX *gbox);
 * whether it is cartesian or geodetic.
 */
 extern int lwgeom_calculate_gbox(const LWGEOM *lwgeom, GBOX *gbox);
-
-/**
-* New function to read doubles directly from the double* coordinate array
-* of an aligned lwgeom #POINTARRAY (built by de-serializing a #GSERIALIZED).
-*/
-extern int getPoint2d_p_ro(const POINTARRAY *pa, uint32_t n, POINT2D **point);
 
 /**
 * Calculate geodetic (x/y/z) box and add values to gbox. Return #LW_SUCCESS on success.
@@ -2274,6 +2309,8 @@ extern lwvarlena_t* lwgeom_to_twkb_with_idlist(const LWGEOM *geom, int64_t *idli
  */
 extern void lwgeom_trim_bits_in_place(LWGEOM *geom, int32_t prec_x, int32_t prec_y, int32_t prec_z, int32_t prec_m);
 
+extern LWGEOM* lwgeom_boundary(LWGEOM* lwgeom);
+
 /*******************************************************************************
  * SQLMM internal functions
  ******************************************************************************/
@@ -2371,6 +2408,7 @@ extern LWGEOM* lwcurve_linearize(const LWGEOM *geom, double tol, LW_LINEARIZE_TO
 
 /** Return GEOS version string (not to be freed) */
 const char* lwgeom_geos_version(void);
+const char* lwgeom_geos_compiled_version(void);
 
 /** Convert an LWGEOM to a GEOS Geometry and convert back -- for debug only */
 LWGEOM* lwgeom_geos_noop(const LWGEOM *geom) ;
@@ -2388,6 +2426,7 @@ LWGEOM *lwgeom_centroid(const LWGEOM* geom);
 LWGEOM *lwgeom_union(const LWGEOM *geom1, const LWGEOM *geom2);
 LWGEOM *lwgeom_union_prec(const LWGEOM *geom1, const LWGEOM *geom2, double gridSize);
 LWGEOM *lwgeom_linemerge(const LWGEOM *geom1);
+LWGEOM *lwgeom_linemerge_directed(const LWGEOM *geom1, int directed);
 LWGEOM *lwgeom_unaryunion(const LWGEOM *geom1);
 LWGEOM *lwgeom_unaryunion_prec(const LWGEOM *geom1, double gridSize);
 LWGEOM *lwgeom_clip_by_rect(const LWGEOM *geom1, double x0, double y0, double x1, double y1);
@@ -2439,34 +2478,46 @@ int lwgeom_is_simple(const LWGEOM *lwgeom);
  ******************************************************************************/
 
 int lwgeom_transform_from_str(LWGEOM *geom, const char* instr, const char* outstr);
-
-#if POSTGIS_PROJ_VERSION < 60
-/**
- * Get a projection from a string representation
- *
- * Eg: "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
- */
-projPJ projpj_from_string(const char* txt);
-
-#endif
 /**
  * Transform (reproject) a geometry in-place.
  * @param geom the geometry to transform
- * @param pj the input and output
+ * @param pj the transformation
  */
 int lwgeom_transform(LWGEOM *geom, LWPROJ* pj);
 int ptarray_transform(POINTARRAY *pa, LWPROJ* pj);
-
-#if POSTGIS_PROJ_VERSION >= 60
+int box3d_transform(GBOX *box, LWPROJ *pj);
 
 /**
  * Allocate a new LWPROJ containing the reference to the PROJ's PJ
  * If extra_geography_data is true, it will generate the following values for
  * the source srs: is_latlong (geometric or not) and spheroid values
  */
-LWPROJ *lwproj_from_PJ(PJ *pj, int8_t extra_geography_data);
+LWPROJ *lwproj_from_str(const char* str_in, const char* str_out);
 
-#endif
+/**
+ * Transform (reproject) a geometry in-place using a PROJ pipeline.
+ * @param geom the geometry to transform
+ * @param pipeline the coordinate operation pipeline string. Either:
+ *        - `urn:ogc:def:coordinateOperation:AUTHORITY::CODE`
+ *        - a PROJ pipeline string: `+proj=pipeline ...`
+ *        - concatenated operations: `urn:ogc:def:coordinateOperation,coordinateOperation:EPSG::3895,coordinateOperation:EPSG::1618`
+ * @param is_forward whether to execute the pipeline in a forward or inverse
+ * 		  direction.
+ */
+int lwgeom_transform_pipeline(LWGEOM *geom, const char* pipeline, bool is_forward);
+
+/**
+ * Allocate a new LWPROJ containing the reference to the PROJ's PJ using a
+ * PROJ pipeline definition:
+ * @param str_pipeline the coordinate operation pipeline string. Either:
+ *        - `urn:ogc:def:coordinateOperation:AUTHORITY::CODE`
+ *        - a PROJ pipeline: `+proj=pipeline ...`
+ *        - concatenated operations: `urn:ogc:def:coordinateOperation,coordinateOperation:EPSG::3895,coordinateOperation:EPSG::1618`
+ *        - any other coordinate operation accepted via `proj_create()`
+ * @param is_foward whether to execute the the pipeline in a forward or inverse
+ *        direction.
+ */
+LWPROJ *lwproj_from_str_pipeline(const char* str_pipeline, bool is_forward);
 
 
 /*******************************************************************************
@@ -2486,6 +2537,7 @@ LWGEOM* lwgeom_buildarea(const LWGEOM *geom) ;
  * Attempts to make an invalid geometries valid w/out losing points.
  */
 LWGEOM* lwgeom_make_valid(LWGEOM* geom);
+LWGEOM* lwgeom_make_valid_params(LWGEOM* geom, char *make_valid_params);
 
 /*
  * Split (multi)polygon by line; (multi)line by (multi)line,
@@ -2513,6 +2565,7 @@ LWGEOM* lwgeom_node(const LWGEOM* lwgeom_in);
  */
 LWGEOM* lwgeom_delaunay_triangulation(const LWGEOM *geom, double tolerance, int32_t edgeOnly);
 
+
 /**
  * Take vertices of a geometry and build the Voronoi diagram
  *
@@ -2524,6 +2577,42 @@ LWGEOM* lwgeom_delaunay_triangulation(const LWGEOM *geom, double tolerance, int3
  */
 LWGEOM* lwgeom_voronoi_diagram(const LWGEOM* g, const GBOX* env, double tolerance, int output_edges);
 
+#if POSTGIS_GEOS_VERSION >= 31100
+/**
+ * Take a geometry and build the concave hull. The concave
+ * hull is smaller than the convex hull, but still encompasses all the points
+ * of the input. For polygon input the hull encompasses all the input
+ * area. For line input the hull encompasses all the input lines.
+ *
+ * @param g the input geometry
+ * @param ratio proportion of output vs input
+ * @param allow_holes can there be holes in the output. large performance penalty.
+ */
+LWGEOM* lwgeom_concavehull(const LWGEOM* geom, double ratio, uint32_t allow_holes);
+
+/**
+ * Computes a boundary-respecting hull of a polygonal geometry,
+ * with hull shape determined by a target parameter
+ * specifying the fraction of the input vertices retained in the result.
+ * Larger values produce less concave results.
+ *
+ * @param geom the input geometry
+ * @param vertex_fraction proportion of vertices in output vs input.
+ * @param is_outer expand geometry while removing edges.
+ */
+LWGEOM*
+lwgeom_simplify_polygonal(const LWGEOM* geom, double vertex_fraction, uint32_t is_outer);
+
+/**
+ * Take vertices of a polygon and build a constrained triangulation
+ * that respects the boundary of the polygon.
+ *
+ * @param geom the input geometry
+ */
+LWGEOM* lwgeom_triangulate_polygon(const LWGEOM* geom);
+
+#endif
+
 /**
 * Take a list of LWGEOMs and a number of clusters and return an integer
 * array indicating which cluster each geometry is in.
@@ -2531,8 +2620,9 @@ LWGEOM* lwgeom_voronoi_diagram(const LWGEOM* g, const GBOX* env, double toleranc
 * @param geoms the input array of LWGEOM pointers
 * @param ngeoms the number of elements in the array
 * @param k the number of clusters to calculate
+* @param max_radius maxmimum radius of cluster before it's split
 */
-int * lwgeom_cluster_kmeans(const LWGEOM **geoms, uint32_t ngeoms, uint32_t k);
+int * lwgeom_cluster_kmeans(const LWGEOM **geoms, uint32_t n, uint32_t k, double max_radius);
 
 #include "lwinline.h"
 

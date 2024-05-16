@@ -18,7 +18,7 @@
  *
  **********************************************************************
  *
- * Copyright (C) 2011-2012 Sandro Santilli <strk@kbt.io>
+ * Copyright (C) 2011-2021 Sandro Santilli <strk@kbt.io>
  * Copyright (C) 2011 Paul Ramsey <pramsey@cleverelephant.ca>
  * Copyright (C) 2007-2008 Mark Cave-Ayland
  * Copyright (C) 2001-2006 Refractions Research Inc.
@@ -67,6 +67,10 @@
 #define FP_CONTAINS_INCL(A, X, B) (FP_LTEQ(A, X) && FP_LTEQ(X, B))
 #define FP_CONTAINS_EXCL(A, X, B) (FP_LT(A, X) && FP_LT(X, B))
 #define FP_CONTAINS(A, X, B) FP_CONTAINS_EXCL(A, X, B)
+
+#define STR_EQUALS(A, B) strcmp((A), (B)) == 0
+#define STR_IEQUALS(A, B) (strcasecmp((A), (B)) == 0)
+#define STR_ISTARTS(A, B) (strncasecmp((A), (B), strlen((B))) == 0)
 
 
 /*
@@ -192,9 +196,9 @@ int lwpoint_is_empty(const LWPOINT *point);
 /*
 * Number of vertices?
 */
-uint32_t lwline_count_vertices(LWLINE *line);
-uint32_t lwpoly_count_vertices(LWPOLY *poly);
-uint32_t lwcollection_count_vertices(LWCOLLECTION *col);
+uint32_t lwline_count_vertices(const LWLINE *line);
+uint32_t lwpoly_count_vertices(const LWPOLY *poly);
+uint32_t lwcollection_count_vertices(const LWCOLLECTION *col);
 
 /*
 * DP simplification
@@ -209,13 +213,13 @@ void ptarray_simplify_in_place(POINTARRAY *pa, double tolerance, uint32_t minpts
 * The possible ways a pair of segments can interact. Returned by lw_segment_intersects
 */
 enum CG_SEGMENT_INTERSECTION_TYPE {
-    SEG_ERROR = -1,
-    SEG_NO_INTERSECTION = 0,
-    SEG_COLINEAR = 1,
-    SEG_CROSS_LEFT = 2,
-    SEG_CROSS_RIGHT = 3,
-    SEG_TOUCH_LEFT = 4,
-    SEG_TOUCH_RIGHT = 5
+		SEG_ERROR = -1,
+		SEG_NO_INTERSECTION = 0,
+		SEG_COLINEAR = 1,
+		SEG_CROSS_LEFT = 2,
+		SEG_CROSS_RIGHT = 3,
+		SEG_TOUCH_LEFT = 4,
+		SEG_TOUCH_RIGHT = 5
 };
 
 /*
@@ -248,6 +252,12 @@ void decode_geohash_bbox(char *geohash, double *lat, double *lon, int precision)
 int p4d_same(const POINT4D *p1, const POINT4D *p2);
 int p3d_same(const POINT3D *p1, const POINT3D *p2);
 int p2d_same(const POINT2D *p1, const POINT2D *p2);
+
+/*
+* Projections
+*/
+int project_pt(const POINT2D *P, double distance, double azimuth, POINT2D *R);
+int project_pt_pt(const POINT4D *A, const POINT4D *B, double distance, POINT4D *R);
 
 /*
 * Area calculations
@@ -308,6 +318,11 @@ void affine_invert(AFFINE *affine);
 void ptarray_scale(POINTARRAY *pa, const POINT4D *factor);
 
 /*
+* Scroll
+*/
+int ptarray_scroll_in_place(POINTARRAY *pa, const POINT4D *newbase);
+
+/*
 * PointArray
 */
 int ptarray_has_z(const POINTARRAY *pa);
@@ -347,7 +362,9 @@ int ptarray_isccw(const POINTARRAY *pa);
 /*
 * Same
 */
+char ptarray_same2d(const POINTARRAY *pa1, const POINTARRAY *pa2);
 char ptarray_same(const POINTARRAY *pa1, const POINTARRAY *pa2);
+char lwpoint_same2d(const LWPOINT *p1, const LWPOINT *p2);
 char lwpoint_same(const LWPOINT *p1, const LWPOINT *p2);
 char lwline_same(const LWLINE *p1, const LWLINE *p2);
 char lwpoly_same(const LWPOLY *p1, const LWPOLY *p2);
@@ -457,14 +474,14 @@ extern uint8_t MULTITYPE[NUMTYPES];
 extern lwinterrupt_callback *_lwgeom_interrupt_callback;
 extern int _lwgeom_interrupt_requested;
 #define LW_ON_INTERRUPT(x) { \
-  if ( _lwgeom_interrupt_callback ) { \
-    (*_lwgeom_interrupt_callback)(); \
-  } \
-  if ( _lwgeom_interrupt_requested ) { \
-    _lwgeom_interrupt_requested = 0; \
-    lwnotice("liblwgeom code interrupted"); \
-    x; \
-  } \
+	if ( _lwgeom_interrupt_callback ) { \
+		(*_lwgeom_interrupt_callback)(); \
+	} \
+	if ( _lwgeom_interrupt_requested ) { \
+		_lwgeom_interrupt_requested = 0; \
+		lwnotice("liblwgeom code interrupted"); \
+		x; \
+	} \
 }
 
 int ptarray_npoints_in_rect(const POINTARRAY *pa, const GBOX *gbox);

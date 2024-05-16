@@ -18,9 +18,7 @@
 #include "postgres.h"
 #include "fmgr.h"
 #include "catalog/namespace.h" /* For TypenameGetTypid */
-#if POSTGRESQL_VERSION_NUMBER > 100000
 #include "catalog/pg_type_d.h" /* For TypenameGetTypid */
-#endif
 #include "utils/geo_decls.h"
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
@@ -29,6 +27,9 @@
 #include "liblwgeom.h"
 #include "pgsql_compat.h"
 
+#if POSTGIS_PGSQL_VERSION > 150
+#include "varatt.h"
+#endif
 
 /****************************************************************************************/
 
@@ -255,10 +256,6 @@ void lwpgerror(const char *fmt, ...);
 void lwpgnotice(const char *fmt, ...);
 void lwpgwarning(const char *fmt, ...);
 
-#if POSTGRESQL_VERSION_NUMBER < 100000
-Datum CallerFInfoFunctionCall1(PGFunction func, FmgrInfo *flinfo, Oid collation, Datum arg1);
-Datum CallerFInfoFunctionCall2(PGFunction func, FmgrInfo *flinfo, Oid collation, Datum arg1, Datum arg2);
-#endif
 Datum CallerFInfoFunctionCall3(PGFunction func, FmgrInfo *flinfo, Oid collation, Datum arg1, Datum arg2, Datum arg3);
 
 

@@ -56,6 +56,15 @@ stringbuffer_init(stringbuffer_t *s)
 	stringbuffer_init_with_size(s, STRINGBUFFER_STARTSIZE);
 }
 
+void
+stringbuffer_init_varlena(stringbuffer_t *s)
+{
+	stringbuffer_init_with_size(s, STRINGBUFFER_STARTSIZE + LWVARHDRSZ);
+	/* Zero out LWVARHDRSZ bytes at the front of the buffer */
+	stringbuffer_append_len(s, "\0\0\0\0\0\0\0\0", LWVARHDRSZ);
+}
+
+
 /**
 * Allocate a new stringbuffer_t. Use stringbuffer_destroy to free.
 */
@@ -131,6 +140,14 @@ stringbuffer_getstringcopy(stringbuffer_t *s)
 }
 
 lwvarlena_t *
+stringbuffer_getvarlena(stringbuffer_t *s)
+{
+	lwvarlena_t *output = (lwvarlena_t *)(s->str_start);
+	LWSIZE_SET(output->size, (s->str_end - s->str_start));
+	return output;
+}
+
+lwvarlena_t *
 stringbuffer_getvarlenacopy(stringbuffer_t *s)
 {
 	size_t size = (s->str_end - s->str_start);
@@ -191,7 +208,9 @@ stringbuffer_avprintf(stringbuffer_t *s, const char *fmt, va_list ap)
 	/* Propogate errors up */
 	if ( len < 0 )
 		#if defined(__MINGW64_VERSION_MAJOR)
+		va_copy(ap2, ap);
 		len = _vscprintf(fmt, ap2);/**Assume windows flaky vsnprintf that returns -1 if initial buffer to small and add more space **/
+		va_end(ap2);
 		#else
 		return len;
 		#endif

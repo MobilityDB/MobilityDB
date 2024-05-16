@@ -18,23 +18,29 @@
 # *
 # **********************************************************************
 # *
+# * Copyright 2022 Sandro Santilli <strk@kbt.io>
 # * Copyright 2008 Mark Cave-Ayland
 # *
 # **********************************************************************/
 
-CC = @CC@
-RYU_INCLUDE = -I../deps/ryu/..
-CPPFLAGS =  $(RYU_INCLUDE) @CPPFLAGS@
-CFLAGS = @CFLAGS@ @PICFLAGS@
-LDFLAGS = @LDFLAGS@ @GEOS_LDFLAGS@ @PROJ_LDFLAGS@ @JSON_LDFLAGS@
+srcdir = @srcdir@
+builddir = @builddir@
 top_builddir = @top_builddir@
 prefix = @prefix@
-exec_prefix = @exec_prefix@
 libdir = @libdir@
 includedir = @includedir@
+exec_prefix = @exec_prefix@
+
+CC = @CC@
+CPPFLAGS =  $(RYU_INCLUDE) @CPPFLAGS@ -I$(builddir) -I$(srcdir)
+CFLAGS = @CFLAGS@ @PICFLAGS@
+LDFLAGS = @LDFLAGS@ @GEOS_LDFLAGS@ @PROJ_LDFLAGS@ @JSON_LDFLAGS@
 SHELL = @SHELL@
 INSTALL = @INSTALL@
 LIBTOOL = @LIBTOOL@
+
+VPATH = $(srcdir):$(builddir)
+RYU_INCLUDE = -I$(srcdir)/../deps/ryu/..
 
 SOVER = @POSTGIS_MAJOR_VERSION@.@POSTGIS_MINOR_VERSION@
 
@@ -51,6 +57,8 @@ LEX=@LEX@
 # Standalone LWGEOM objects
 SA_OBJS = \
 	stringbuffer.o \
+	optionlist.o \
+	stringlist.o \
 	bytebuffer.o \
 	measures.o \
 	measures3d.o \
@@ -97,6 +105,7 @@ SA_OBJS = \
 	gserialized1.o \
 	gserialized2.o \
 	lwgeodetic.o \
+	lwgeodetic_measures.o \
 	lwgeodetic_tree.o \
 	lwrandom.o \
 	lwtree.o \
@@ -218,14 +227,14 @@ lwin_wkt_parse.c lwin_wkt_parse.h: lwin_wkt_parse.y
 			echo "No yacc found, cannot build parser" >&2; \
 			false; \
 	}
-	$(YACC) -p wkt_yy -o'lwin_wkt_parse.c' -d lwin_wkt_parse.y
+	$(YACC) -p wkt_yy -o'lwin_wkt_parse.c' -d $<
 
 lwin_wkt_lex.c: lwin_wkt_lex.l
 	@test -n "$(LEX)" || { \
 			echo "No lex found, cannot build parser" >&2; \
 			false; \
 	}
-	$(LEX) -i lwin_wkt_lex.l
+	$(LEX) -i $<
 
 liblwgeom.h: liblwgeom.h.in
-	cd .. && ./config.status
+	cd $(top_builddir) && ./config.status

@@ -30,6 +30,7 @@ static inline uint32_t decimalLength9(const uint32_t v) {
   // Function precondition: v is not a 10-digit number.
   // (f2s: 9 digits are sufficient for round-tripping.)
   // (d2fixed: We print 9-digit blocks.)
+  // MobilityDB: commented out to avoid warning
   // assert(v >= 0);
   assert(v < 1000000000);
   if (v >= 100000000) { return 9; }
