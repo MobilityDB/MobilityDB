@@ -337,6 +337,16 @@ SELECT MAX(startTimestamp(tsample(ti, '15 minutes'))) FROM tbl_tgeompoint_discse
 SELECT MAX(startTimestamp(tsample(seq, '15 minutes'))) FROM tbl_tgeompoint_seq;
 SELECT MAX(startTimestamp(tsample(ss, '15 minutes'))) FROM tbl_tgeompoint_seqset;
 
+SELECT MAX(numInstants(tsample(inst, '15 minutes', interp := 'step'))) FROM tbl_tgeompoint_inst;
+SELECT MAX(numInstants(tsample(ti, '15 minutes', interp := 'step'))) FROM tbl_tgeompoint_discseq;
+SELECT MAX(numInstants(tsample(seq, '15 minutes', interp := 'step'))) FROM tbl_tgeompoint_seq;
+SELECT MAX(numInstants(tsample(ss, '15 minutes', interp := 'step'))) FROM tbl_tgeompoint_seqset;
+
+SELECT MAX(numInstants(tsample(inst, '15 minutes', interp := 'linear'))) FROM tbl_tgeompoint_inst;
+SELECT MAX(numInstants(tsample(ti, '15 minutes', interp := 'linear'))) FROM tbl_tgeompoint_discseq;
+SELECT MAX(numInstants(tsample(seq, '15 minutes', interp := 'linear'))) FROM tbl_tgeompoint_seq;
+SELECT MAX(numInstants(tsample(ss, '15 minutes', interp := 'linear'))) FROM tbl_tgeompoint_seqset;
+
 -------------------------------------------------------------------------------
 -- Stop function
 

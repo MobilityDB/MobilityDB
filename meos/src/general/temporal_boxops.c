@@ -263,7 +263,7 @@ tsequence_set_bbox(const TSequence *seq, void *box)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return the last argument initialized with the temporal box of a
  * temporal sequence number
- * @param[in] seq Temporal sequence
+ * @param[in] ss Temporal sequence set
  * @param[out] box Temporal box
  */
 void

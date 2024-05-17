@@ -535,11 +535,11 @@ tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bucket,
  * @param[in] seq Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
- * @note The result is an temporal sequence with discrete interpolation
+ * @param[in] interp Interpolation
  */
 TSequence *
 tsequence_tsample(const TSequence *seq, const Interval *duration,
-  TimestampTz torigin)
+  TimestampTz torigin, interpType interp)
 {
   assert(seq); assert(duration);
   assert(valid_duration(duration));
@@ -555,8 +555,7 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   int ninsts = tsequence_tsample_iter(seq, lower_bucket, upper_bucket, tunits,
     &instants[0]);
-  return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
-    NORMALIZE_NO);
+  return tsequence_make_free(instants, ninsts, true, true, interp, NORMALIZE);
 }
 
 /**
@@ -566,7 +565,7 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
  * @param[in] torigin Time origin of the buckets
  */
 TSequence *
-tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
+tsequenceset_disc_tsample(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
   assert(ss); assert(duration); assert(valid_duration(duration));
@@ -588,7 +587,47 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
       upper_bucket, tunits, &instants[ninsts]);
   }
   return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
-    NORMALIZE_NO);
+    NORMALIZE);
+}
+
+/**
+ * @brief Return a temporal value sampled according to period buckets
+ * @param[in] ss Temporal value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ * @param[in] interp Interpolation
+ */
+TSequenceSet *
+tsequenceset_cont_tsample(const TSequenceSet *ss, const Interval *duration,
+  TimestampTz torigin, interpType interp)
+{
+  assert(interp != DISCRETE);
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  int nseqs = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    TSequence *seq = tsequence_tsample(TSEQUENCESET_SEQ_N(ss, i), duration,
+      torigin, interp);
+    if (seq)
+      sequences[nseqs++] = seq;
+  }
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+}
+
+/**
+ * @brief Return a temporal value sampled according to period buckets
+ * @param[in] ss Temporal value
+ * @param[in] duration Size of the time buckets
+ * @param[in] torigin Time origin of the buckets
+ * @param[in] interp Interpolation
+ */
+Temporal *
+tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
+  TimestampTz torigin, interpType interp)
+{
+  return (interp == DISCRETE) ?
+    (Temporal *) tsequenceset_disc_tsample(ss, duration, torigin) :
+    (Temporal *) tsequenceset_cont_tsample(ss, duration, torigin, interp);
 }
 
 /**
@@ -597,11 +636,12 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
  * @param[in] temp Temporal value
  * @param[in] duration Size of the time buckets
  * @param[in] torigin Time origin of the buckets
+ * @param[in] interp Interpolation
  * @csqlfn #Temporal_tsample()
  */
 Temporal *
 temporal_tsample(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin)
+  TimestampTz torigin, interpType interp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
@@ -617,10 +657,10 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
         torigin);
     case TSEQUENCE:
       return (Temporal *) tsequence_tsample((TSequence *) temp, duration,
-        torigin);
+        torigin, interp);
     default: /* TSEQUENCESET */
       return (Temporal *) tsequenceset_tsample((TSequenceSet *) temp,
-        duration, torigin);
+        duration, torigin, interp);
   }
 }
 
