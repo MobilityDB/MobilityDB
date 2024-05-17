@@ -150,14 +150,13 @@ tnumber_div_tp_at_timestamptz(const TInstant *start1, const TInstant *end1,
  * @brief Generic arithmetic operator on a temporal number and a number
  * @param[in] temp Temporal number
  * @param[in] value Number
- * @param[in] basetype Type of the value
  * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] func Arithmetic function
  * @param[in] invert True if the base value is the first argument of the
  * function
  */
 Temporal *
-arithop_tnumber_number(const Temporal *temp, Datum value, TArithmetic oper, 
+arithop_tnumber_number(const Temporal *temp, Datum value, TArithmetic oper,
   Datum (*func)(Datum, Datum, meosType), bool invert)
 {
   assert(tnumber_type(temp->temptype));
