@@ -539,7 +539,7 @@ tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bucket,
  */
 TSequence *
 tsequence_tsample(const TSequence *seq, const Interval *duration,
-  TimestampTz torigin)
+  TimestampTz torigin, interpType interp)
 {
   assert(seq); assert(duration);
   assert(valid_duration(duration));
@@ -555,8 +555,8 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   int ninsts = tsequence_tsample_iter(seq, lower_bucket, upper_bucket, tunits,
     &instants[0]);
-  return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
-    NORMALIZE_NO);
+  return tsequence_make_free(instants, ninsts, true, true, interp,
+    NORMALIZE);
 }
 
 /**
@@ -567,7 +567,7 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
  */
 TSequence *
 tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
-  TimestampTz torigin)
+  TimestampTz torigin, interpType interp)
 {
   assert(ss); assert(duration); assert(valid_duration(duration));
   int64 tunits = interval_units(duration);
@@ -587,8 +587,8 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
     ninsts += tsequence_tsample_iter(TSEQUENCESET_SEQ_N(ss, i), lower_bucket,
       upper_bucket, tunits, &instants[ninsts]);
   }
-  return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
-    NORMALIZE_NO);
+  return tsequence_make_free(instants, ninsts, true, true, interp,
+    NORMALIZE);
 }
 
 /**
@@ -601,7 +601,7 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
  */
 Temporal *
 temporal_tsample(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin)
+  TimestampTz torigin, interpType interp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
@@ -617,10 +617,10 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
         torigin);
     case TSEQUENCE:
       return (Temporal *) tsequence_tsample((TSequence *) temp, duration,
-        torigin);
+        torigin, interp);
     default: /* TSEQUENCESET */
       return (Temporal *) tsequenceset_tsample((TSequenceSet *) temp,
-        duration, torigin);
+        duration, torigin, interp);
   }
 }
 
