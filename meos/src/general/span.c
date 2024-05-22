@@ -1418,6 +1418,61 @@ tstzspan_duration(const Span *s)
  *****************************************************************************/
 
 /**
+ * @brief Round down a span to the nearest integer
+ */
+void
+floatspan_floor_ceil_iter(Span *s, datum_func1 func)
+{
+  assert(s);
+  Datum lower = func(s->lower);
+  Datum upper = func(s->upper);
+  bool lower_inc = s->lower_inc;
+  bool upper_inc = s->upper_inc;
+  if (datum_eq(lower, upper, s->basetype))
+  {
+    lower_inc = upper_inc = true;
+  }
+  span_set(lower, upper, lower_inc, upper_inc, s->basetype, s->spantype, s);
+  return;
+}
+
+/**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return a float span rounded down to the nearest integer
+ * @csqlfn #Floatspan_floor()
+ */
+Span *
+floatspan_floor(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
+    return NULL;
+
+  Span *result = span_cp(s);
+  floatspan_floor_ceil_iter(result, &datum_floor);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return a float span rounded up to the nearest integer
+ * @csqlfn #Floatspan_ceil()
+ */
+Span *
+floatspan_ceil(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
+    return NULL;
+
+  Span *result = span_cp(s);
+  floatspan_floor_ceil_iter(result, &datum_ceil);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
  * @ingroup meos_internal_setspan_transf
  * @brief Return the second span expanded with the first one
  * @param[in] s1,s2 Spans

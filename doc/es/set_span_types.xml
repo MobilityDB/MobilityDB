@@ -707,7 +707,7 @@ SELECT timestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 		<itemizedlist>
 			<listitem id="setspan_shift">
 				<indexterm><primary><varname>shift</varname></primary></indexterm>
-				<para>Desplazar un conjunto o un span con un valor o intervalo de tiempo</para>
+				<para>Desplazar con un valor o intervalo de tiempo</para>
 				<para><varname>shift(numbers,base) → numbers</varname></para>
 				<para><varname>shift(dates,integer) → dates</varname></para>
 				<para><varname>shift(times,interval) → times</varname></para>
@@ -728,7 +728,7 @@ SELECT shift(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 
 			<listitem id="setspan_scale">
 				<indexterm><primary><varname>scale</varname></primary></indexterm>
-				<para>Escalear un conjunto o un rango con un valor o intervalo de tiempo</para>
+				<para>Escalear con un valor o intervalo de tiempo</para>
 				<para><varname>scale(numbers,base) → numbers</varname></para>
 				<para><varname>scale(dates,integer) → dates</varname></para>
 				<para><varname>scale(times,interval) → times</varname></para>
@@ -756,7 +756,7 @@ SELECT scale(tstzset '{2001-01-01}', '-1 day');
 
 			<listitem id="setspan_shiftScale">
 				<indexterm><primary><varname>shiftScale</varname></primary></indexterm>
-				<para>Desplazar y escalear un conjunto o un rango con los valores o intervalos de tiempo</para>
+				<para>Desplazar y escalear con los valores o intervalos de tiempo</para>
 				<para><varname>shiftScale(numbers,base,base) → numbers</varname></para>
 				<para><varname>shiftScale(dates,integer,integer) → dates</varname></para>
 				<para><varname>shiftScale(times,interval,interval) → times</varname></para>
@@ -781,9 +781,27 @@ SELECT shiftScale(tstzspanset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-0
 </programlisting>
 			</listitem>
 
-			<listitem id="floatspan_round">
+			<listitem id="floatsetspan_floor">
+				<indexterm><primary><varname>floor</varname></primary></indexterm>
+				<indexterm><primary><varname>ceil</varname></primary></indexterm>
+				<para>Redondear al entero inferior o superior</para>
+				<para><varname>floor({floatset,floatspans}) → {floatset,floatspans}</varname></para>
+				<para><varname>ceil({floatset,floatspans}) → {floatset,floatspans}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT floor(floatset '{1.5,2.5}');
+-- {1, 2}
+SELECT ceil(floatspan '[1.5,2.5)');
+-- [2, 3)
+SELECT floor(floatspan '(1.5, 1.6)');
+-- [1, 1]
+SELECT ceil(floatspanset '{[1.5, 2.5],[3.5,4.5]}');
+-- {[2, 3], [4, 5]}
+</programlisting>
+			</listitem>
+
+			<listitem id="floatsetspan_round">
 				<indexterm><primary><varname>round</varname></primary></indexterm>
-				<para>Redondear un conjunto o un rango flotante a un número de decimales</para>
+				<para>Redondear a un número de decimales</para>
 				<para><varname>round({floatset,floatspans},integer=0) → {floatset,floatspans}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT round(floatset '{1.123456789,2.123456789}', 3);
@@ -800,7 +818,7 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 			<listitem id="floatset_degrees">
 				<indexterm><primary><varname>degrees</varname></primary></indexterm>
 				<indexterm><primary><varname>radians</varname></primary></indexterm>
-				<para>Convertir un conjunto flotante a grados o radianes</para>
+				<para>Convertir a grados o radianes</para>
 				<para><varname>degrees(floatset, normalize=false) → floatset</varname></para>
 				<para><varname>radians(floatset) → floatset</varname></para>
 				<para>El parámetro adicional en la función <varname>degrees</varname> puede ser utilizado para normalizar los valores entre 0 y 360 grados.</para>

@@ -1956,6 +1956,42 @@ set_compact(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_transf
+ * @brief Return a float set rounded down to the nearest integer
+ * @csqlfn #Floatset_floor()
+ */
+Set *
+floatset_floor(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = datum_floor(SET_VAL_N(s, i));
+  return set_make_exp(values, s->count, s->count, T_FLOAT8, ORDERED_NO);
+}
+
+/**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return a float set rounded up to the nearest integer
+ * @csqlfn #Floatset_ceil()
+ */
+Set *
+floatset_ceil(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = datum_ceil(SET_VAL_N(s, i));
+  return set_make_exp(values, s->count, s->count, T_FLOAT8, ORDERED_NO);
+}
+
+/**
+ * @ingroup meos_internal_setspan_transf
  * @brief Return a float set with the values converted to degrees
  * @param[in] s Set
  * @param[in] normalize True when the result must be normalized

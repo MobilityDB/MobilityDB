@@ -1632,6 +1632,48 @@ spanset_compact(const SpanSet *ss)
 
 /**
  * @ingroup meos_internal_setspan_transf
+ * @brief Return a float span set rounded down to the nearest integer
+ * @csqlfn #Floatspanset_floor()
+ */
+SpanSet *
+floatspanset_floor(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
+    return NULL;
+
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  memcpy(spans, ss->elems, sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    floatspan_floor_ceil_iter(&spans[i], &datum_floor);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
+}
+
+/**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return a float span set rounded up to the nearest integer
+ * @csqlfn #Floatset_ceil()
+ */
+SpanSet *
+floatspanset_ceil(const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
+    return NULL;
+
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  memcpy(spans, ss->elems, sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    floatspan_floor_ceil_iter(&spans[i], &datum_ceil);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_setspan_transf
  * @brief Return a number set shifted and/or scaled by two intervals
  * @param[in] ss Span set
  * @param[in] shift Value for shifting the span set

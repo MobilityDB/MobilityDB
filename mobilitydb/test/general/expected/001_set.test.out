@@ -520,6 +520,30 @@ SELECT shiftScale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 ho
  {"Sun Jan 02 00:00:00 2000 PST", "Sun Jan 02 00:30:00 2000 PST", "Sun Jan 02 01:00:00 2000 PST"}
 (1 row)
 
+SELECT floor(floatset '{0.5, 1.5, 2.5}');
+   floor   
+-----------
+ {0, 1, 2}
+(1 row)
+
+SELECT floor(floatset '{0.5, 1.5, 1.6}');
+ floor  
+--------
+ {0, 1}
+(1 row)
+
+SELECT ceil(floatset '{0.5, 1.5, 2.5}');
+   ceil    
+-----------
+ {1, 2, 3}
+(1 row)
+
+SELECT ceil(floatset '{0.5, 1.5, 1.6}');
+  ceil  
+--------
+ {1, 2}
+(1 row)
+
 SELECT round(floatset '{0.12345, 1.12345, 2.12345}', 3);
          round         
 -----------------------

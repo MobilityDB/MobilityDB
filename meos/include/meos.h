@@ -629,12 +629,18 @@ extern SpanSet *bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 
 extern Set *dateset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth);
 extern Span *datespan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth);
 extern SpanSet *datespanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift, bool haswidth);
+extern Set *floatset_ceil(const Set *s);
+extern Set *floatset_floor(const Set *s);
 extern Set *floatset_degrees(const Set *s, bool normalize);
 extern Set *floatset_radians(const Set *s);
 extern Set *floatset_round(const Set *s, int maxdd);
 extern Set *floatset_shift_scale(const Set *s, double shift, double width, bool hasshift, bool haswidth);
+extern Span *floatspan_ceil(const Span *s);
+extern Span *floatspan_floor(const Span *s);
 extern Span *floatspan_round(const Span *s, int maxdd);
 extern Span *floatspan_shift_scale(const Span *s, double shift, double width, bool hasshift, bool haswidth);
+extern SpanSet *floatspanset_ceil(const SpanSet *ss);
+extern SpanSet *floatspanset_floor(const SpanSet *ss);
 extern SpanSet *floatspanset_round(const SpanSet *ss, int maxdd);
 extern SpanSet *floatspanset_shift_scale(const SpanSet *ss, double shift, double width, bool hasshift, bool haswidth);
 extern Set *geoset_round(const Set *s, int maxdd);
@@ -1426,6 +1432,8 @@ extern Temporal *temporal_shift_time(const Temporal *temp, const Interval *shift
 extern TInstant *temporal_to_tinstant(const Temporal *temp);
 extern TSequence *temporal_to_tsequence(const Temporal *temp, char *interp_str);
 extern TSequenceSet *temporal_to_tsequenceset(const Temporal *temp, char *interp_str);
+extern Temporal *tfloat_floor(const Temporal *temp);
+extern Temporal *tfloat_ceil(const Temporal *temp);
 extern Temporal *tfloat_degrees(const Temporal *temp, bool normalize);
 extern Temporal *tfloat_radians(const Temporal *temp);
 extern Temporal *tfloat_round(const Temporal *temp, int maxdd);

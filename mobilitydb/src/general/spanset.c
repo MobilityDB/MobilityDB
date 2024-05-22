@@ -860,6 +860,38 @@ Tstzspanset_shift_scale(PG_FUNCTION_ARGS)
   PG_RETURN_SPANSET_P(result);
 }
 
+PGDLLEXPORT Datum Floatspanset_floor(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatspanset_floor);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a float span set rounded down to the nearest integer
+ * @sqlfn floor()
+ */
+Datum
+Floatspanset_floor(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  SpanSet *result = floatspanset_floor(ss);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_SPANSET_P(result);
+}
+
+PGDLLEXPORT Datum Floatspanset_ceil(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatspanset_ceil);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a float span set rounded up to the nearest integer
+ * @sqlfn ceil()
+ */
+Datum
+Floatspanset_ceil(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  SpanSet *result = floatspanset_ceil(ss);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_SPANSET_P(result);
+}
+
 PGDLLEXPORT Datum Floatspanset_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspanset_round);
 /**

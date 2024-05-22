@@ -574,6 +574,30 @@ SELECT shiftScale(tstzspan '(2000-01-01,2000-01-02)', '5 min', '1 hour');
  (Sat Jan 01 00:05:00 2000 PST, Sat Jan 01 01:05:00 2000 PST)
 (1 row)
 
+SELECT floor(floatspan '[1.5,2.5]');
+ floor  
+--------
+ [1, 2]
+(1 row)
+
+SELECT ceil(floatspan '[1.5,2.5]');
+  ceil  
+--------
+ [2, 3]
+(1 row)
+
+SELECT floor(floatspan '(1.5,1.6)');
+ floor  
+--------
+ [1, 1]
+(1 row)
+
+SELECT ceil(floatspan '(1.5,1.6)');
+  ceil  
+--------
+ [2, 2]
+(1 row)
+
 SELECT round(floatspan '[1.123456789,2.123456789]',6);
         round         
 ----------------------

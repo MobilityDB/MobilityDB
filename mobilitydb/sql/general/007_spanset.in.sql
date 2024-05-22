@@ -834,6 +834,15 @@ CREATE FUNCTION shiftScale(tstzspanset, interval, interval)
   AS 'MODULE_PATHNAME', 'Tstzspanset_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION floor(floatspanset)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Floatspanset_floor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ceil(floatspanset)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Floatspanset_ceil'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION round(floatspanset, integer DEFAULT 0)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Floatspanset_round'

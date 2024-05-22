@@ -39,6 +39,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include "general/temporal.h"
 #include "general/meos_catalog.h"
 
 /*****************************************************************************/
@@ -92,6 +93,7 @@ extern Datum span_incr_bound(Datum upper, meosType basetype);
 extern Span *spanarr_normalize(Span *spans, int count, bool sort,
   int *newcount);
 extern void span_bounds(const Span *s, double *xmin, double *xmax);
+extern void floatspan_floor_ceil_iter(Span *s, datum_func1 func);
 extern void lower_upper_shift_scale_value(Datum shift, Datum width,
   meosType type, bool hasshift, bool haswidth, Datum *lower, Datum *upper);
 extern void lower_upper_shift_scale_time(const Interval *shift,

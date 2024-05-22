@@ -165,6 +165,8 @@
 #define DatumGetTimestampTz(X)((TimestampTz) DatumGetInt64(X))
 #endif /* MEOS */
 
+extern Datum datum_floor(Datum d);
+extern Datum datum_ceil(Datum d);
 extern Datum datum_degrees(Datum d, Datum normalize);
 extern Datum datum_radians(Datum d);
 extern uint32 datum_hash(Datum d, meosType basetype);
