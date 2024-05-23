@@ -488,7 +488,7 @@ extern Span *intspan_make(int lower, int upper, bool lower_inc, bool upper_inc);
 extern Set *set_copy(const Set *s);
 extern Span *span_copy(const Span *s);
 extern SpanSet *spanset_copy(const SpanSet *ss);
-extern SpanSet *spanset_make(Span *spans, int count, bool normalize, bool ordered);
+extern SpanSet *spanset_make(Span *spans, int count, bool normalize, bool order);
 extern Set *textset_make(const text **values, int count);
 extern Set *tstzset_make(const TimestampTz *values, int count);
 extern Span *tstzspan_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc);

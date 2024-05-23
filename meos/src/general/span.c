@@ -304,16 +304,16 @@ span_decr_bound(Datum lower, meosType basetype)
  * The normalized spans are new spans that must be freed.
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the input array
- * @param[in] ordered True if the spans are ordered
+ * @param[in] order True if the spans should be ordered
  * @param[out] newcount Number of elements in the output array
  * @pre @p count is greater than 0
  */
 Span *
-spanarr_normalize(Span *spans, int count, bool ordered, int *newcount)
+spanarr_normalize(Span *spans, int count, bool order, int *newcount)
 {
   assert(spans); assert(count > 0); assert(newcount);
   /* Sort the spans if they are not ordered */
-  if (! ordered)
+  if (order)
     spanarr_sort(spans, count);
   int nspans = 0;
   Span *result = palloc(sizeof(Span) * count);

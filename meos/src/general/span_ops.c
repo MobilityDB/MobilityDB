@@ -1724,7 +1724,7 @@ union_span_span(const Span *s1, const Span *s2)
     spans[0] = *s2;
     spans[1] = *s1;
   }
-  return spanset_make_exp(spans, 2, 2, NORMALIZE_NO, ORDERED);
+  return spanset_make_exp(spans, 2, 2, NORMALIZE_NO, ORDER_NO);
 }
 
 /*****************************************************************************
@@ -2052,7 +2052,7 @@ minus_span_value(const Span *s, Datum value)
   int count = mi_span_value(s, value, spans);
   if (count == 0)
     return NULL;
-  return spanset_make_exp(spans, count, count, NORMALIZE_NO, ORDERED);
+  return spanset_make_exp(spans, count, count, NORMALIZE_NO, ORDER_NO);
 }
 
 #if MEOS
@@ -2226,7 +2226,7 @@ minus_span_span(const Span *s1, const Span *s2)
   int count = mi_span_span(s1, s2, spans);
   if (count == 0)
     return NULL;
-  return spanset_make_exp(spans, count, count, NORMALIZE_NO, ORDERED);
+  return spanset_make_exp(spans, count, count, NORMALIZE_NO, ORDER_NO);
 }
 
 /******************************************************************************

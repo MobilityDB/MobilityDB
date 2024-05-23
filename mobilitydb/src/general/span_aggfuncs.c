@@ -241,7 +241,7 @@ Span_union_finalfn(PG_FUNCTION_ARGS)
   if (k == 0)
     PG_RETURN_NULL();
 
-  PG_RETURN_SPANSET_P(spanset_make_free(spans, k, NORMALIZE, ORDERED_NO));
+  PG_RETURN_SPANSET_P(spanset_make_free(spans, k, NORMALIZE, ORDER));
 }
 
 /*****************************************************************************/

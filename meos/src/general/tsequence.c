@@ -1886,7 +1886,7 @@ tnumberseq_valuespans(const TSequence *seq)
   Span *spans = palloc(sizeof(Span) * count);
   for (int i = 0; i < count; i++)
     span_set(values[i], values[i], true, true, basetype, spantype, &spans[i]);
-  SpanSet *result = spanset_make_free(spans, count, NORMALIZE, ORDERED);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE, ORDER_NO);
   pfree(values);
   return result;
 }
@@ -1912,7 +1912,7 @@ tsequence_time(const TSequence *seq)
     TimestampTz t = TSEQUENCE_INST_N(seq, i)->t;
     span_set(t, t, true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &periods[i]);
   }
-  return spanset_make_free(periods, seq->count, NORMALIZE_NO, ORDERED);
+  return spanset_make_free(periods, seq->count, NORMALIZE_NO, ORDER_NO);
 }
 
 /**

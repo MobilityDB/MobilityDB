@@ -818,7 +818,7 @@ tnumberseqset_valuespans(const TSequenceSet *ss)
       TBox *box = TSEQUENCE_BBOX_PTR(TSEQUENCESET_SEQ_N(ss, i));
       memcpy(&spans[i], &box->span, sizeof(Span));
     }
-    return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED_NO);
+    return spanset_make_free(spans, ss->count, NORMALIZE, ORDER);
   }
 
   /* Temporal sequence number with discrete or step interpolation */
@@ -828,7 +828,7 @@ tnumberseqset_valuespans(const TSequenceSet *ss)
   spans = palloc(sizeof(Span) * count);
   for (i = 0; i < count; i++)
     span_set(values[i], values[i], true, true, basetype, spantype, &spans[i]);
-  SpanSet *result = spanset_make_free(spans, count, NORMALIZE, ORDERED_NO);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE, ORDER);
   pfree(values);
   return result;
 }
@@ -972,7 +972,7 @@ tsequenceset_time(const TSequenceSet *ss)
   Span *periods = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     periods[i] = (TSEQUENCESET_SEQ_N(ss, i))->period;
-  return spanset_make_free(periods, ss->count, NORMALIZE_NO, ORDERED);
+  return spanset_make_free(periods, ss->count, NORMALIZE_NO, ORDER_NO);
 }
 
 /**

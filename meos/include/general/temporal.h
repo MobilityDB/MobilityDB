@@ -73,8 +73,8 @@
 #define CONTINUOUS      false
 
 /** Symbolic constants for sets and for normalizing spans */
-#define ORDERED         true
-#define ORDERED_NO      false
+#define ORDER           true
+#define ORDER_NO        false
 
 /** Symbolic constants for the output of string elements */
 #define QUOTES          true

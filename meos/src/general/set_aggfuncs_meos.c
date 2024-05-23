@@ -153,7 +153,7 @@ set_append_value_exp(Set *set, Datum value)
 #endif /* DEBUG_EXPAND */
 
   Set *result = set_make_exp(values, set->count + 1, maxcount, set->basetype,
-    ORDERED_NO);
+    ORDER);
   pfree(values); pfree(set);
   return result;
 }
@@ -171,7 +171,7 @@ value_union_transfn(Set *state, Datum value, meosType basetype)
   /* Null state: create a new state with the value */
   if (! state)
     /* Arbitrary initialization to 64 elements */
-    return set_make_exp(&value, 1, 64, basetype, ORDERED_NO);
+    return set_make_exp(&value, 1, 64, basetype, ORDER);
 
   return set_append_value_exp(state, value);
 }
@@ -284,7 +284,7 @@ set_union_transfn(Set *state, Set *s)
   {
     Datum value = SET_VAL_N(s, 0);
     /* Arbitrary initialization to 64 elements */
-    state = set_make_exp(&value, 1, 64, s->basetype, ORDERED_NO);
+    state = set_make_exp(&value, 1, 64, s->basetype, ORDER);
   }
 
   /* Ensure validity of the arguments */
@@ -313,7 +313,7 @@ set_union_finalfn(Set *state)
     values[i] = SET_VAL_N(state, i);
   meosType basetype = settype_basetype(state->settype);
   Set *result = set_make_exp(values, state->count, state->count, basetype,
-    ORDERED_NO);
+    ORDER);
 
   /* Free memory */
   pfree(values);

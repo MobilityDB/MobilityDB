@@ -148,7 +148,7 @@ Set_constructor(PG_FUNCTION_ARGS)
   int count;
   Datum *values = datumarr_extract(array, &count);
   meosType basetype = settype_basetype(settype);
-  Set *result = set_make_free(values, count, basetype, ORDERED_NO);
+  Set *result = set_make_free(values, count, basetype, ORDER);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_SET_P(result);
 }

@@ -419,15 +419,15 @@ tstzspanset_out(const SpanSet *ss)
  * @param[in] count Number of elements in the array
  * @param[in] maxcount Maximum number of elements in the array
  * @param[in] normalize True when the resulting value should be normalized
- * @param[in] ordered True when the input spans are ordered
+ * @param[in] order True when the input spans should should be ordered
  */
 SpanSet *
 spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
-  bool ordered)
+  bool order)
 {
   assert(spans); assert(count > 0); assert(count <= maxcount);
   /* Test the validity of the spans */
-  if (ordered)
+  if (! order)
   {
     for (int i = 0; i < count - 1; i++)
     {
@@ -450,7 +450,7 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
   int newcount = count;
   if (normalize && count > 1)
     /* Sort the values and remove duplicates */
-    newspans = spanarr_normalize(spans, count, ordered, &newcount);
+    newspans = spanarr_normalize(spans, count, order, &newcount);
 
   /* The first element span is already declared in the struct */
   size_t memsize = DOUBLE_PAD(sizeof(SpanSet)) +
@@ -483,16 +483,16 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized
- * @param[in] ordered True if the input spans are ordered
+ * @param[in] order True if the input spans should be ordered
  * @csqlfn #Spanset_constructor()
  */
 SpanSet *
-spanset_make(Span *spans, int count, bool normalize, bool ordered)
+spanset_make(Span *spans, int count, bool normalize, bool order)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) spans) || ! ensure_positive(count))
     return NULL;
-  return spanset_make_exp(spans, count, count, normalize, ordered);
+  return spanset_make_exp(spans, count, count, normalize, order);
 }
 #endif /* MEOS */
 
@@ -503,16 +503,16 @@ spanset_make(Span *spans, int count, bool normalize, bool ordered)
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the array
  * @param[in] normalize True if the resulting value should be normalized.
- * @param[in] ordered True if the input spans are ordered
+ * @param[in] order True if the input spans should be ordered
  * @see #spanset_make
  */
 SpanSet *
-spanset_make_free(Span *spans, int count, bool normalize, bool ordered)
+spanset_make_free(Span *spans, int count, bool normalize, bool order)
 {
   assert(spans); assert(count >= 0);
   SpanSet *result = NULL;
   if (count > 0)
-    result = spanset_make_exp(spans, count, count, normalize, ordered);
+    result = spanset_make_exp(spans, count, count, normalize, order);
   pfree(spans);
   return result;
 }
@@ -564,7 +564,7 @@ value_to_spanset(Datum value, meosType basetype)
   meosType spantype = basetype_spantype(basetype);
   Span s;
   span_set(value, value, true, true, basetype, spantype, &s);
-  return spanset_make_exp(&s, 1, 1, NORMALIZE_NO, ORDERED);
+  return spanset_make_exp(&s, 1, 1, NORMALIZE_NO, ORDER_NO);
 }
 
 #if MEOS
@@ -646,7 +646,7 @@ set_spanset(const Set *s)
     Datum value = SET_VAL_N(s, i);
     span_set(value, value, true, true, s->basetype, spantype, &spans[i]);
   }
-  return spanset_make_free(spans, s->count, NORMALIZE, ORDERED);
+  return spanset_make_free(spans, s->count, NORMALIZE, ORDER_NO);
 }
 
 #if MEOS
@@ -676,7 +676,7 @@ SpanSet *
 span_spanset(const Span *s)
 {
   assert(s);
-  return spanset_make_exp((Span *) s, 1, 1, NORMALIZE_NO, ORDERED);
+  return spanset_make_exp((Span *) s, 1, 1, NORMALIZE_NO, ORDER_NO);
 }
 
 #if MEOS
@@ -714,7 +714,7 @@ intspanset_floatspanset(const SpanSet *ss)
   Span *spans = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     intspan_set_floatspan(SPANSET_SP_N(ss, i), &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDER_NO);
 }
 
 #if MEOS
@@ -750,7 +750,7 @@ floatspanset_intspanset(const SpanSet *ss)
   Span *spans = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     floatspan_set_intspan(SPANSET_SP_N(ss, i), &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDER_NO);
 }
 
 #if MEOS
@@ -786,7 +786,7 @@ datespanset_tstzspanset(const SpanSet *ss)
   Span *spans = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     datespan_set_tstzspan(SPANSET_SP_N(ss, i), &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDER_NO);
 }
 
 #if MEOS
@@ -822,7 +822,7 @@ tstzspanset_datespanset(const SpanSet *ss)
   Span *spans = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     tstzspan_set_datespan(SPANSET_SP_N(ss, i), &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED_NO);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDER);
 }
 
 #if MEOS
@@ -1323,7 +1323,7 @@ datespanset_dates(const SpanSet *ss)
     dates[ndates++] = s->lower;
     dates[ndates++] = s->upper;
   }
-  return set_make_free(dates, ndates, T_DATE, ORDERED);
+  return set_make_free(dates, ndates, T_DATE, ORDER_NO);
 }
 
 /**
@@ -1497,7 +1497,7 @@ tstzspanset_timestamps(const SpanSet *ss)
     if (times[ntimes - 1] != s->upper)
       times[ntimes++] = s->upper;
   }
-  return set_make_free(times, ntimes, T_TIMESTAMPTZ, ORDERED);
+  return set_make_free(times, ntimes, T_TIMESTAMPTZ, ORDER_NO);
 }
 
 /**
@@ -1624,7 +1624,7 @@ spanset_compact(const SpanSet *ss)
   assert(ss);
   /* Create the final value reusing the array of spans in the span set */
   return spanset_make_exp((Span *) &ss->elems, ss->count, ss->count,
-    NORMALIZE, ORDERED_NO);
+    NORMALIZE, ORDER);
 }
 #endif /* MEOS */
 
@@ -1647,7 +1647,7 @@ floatspanset_floor(const SpanSet *ss)
   memcpy(spans, ss->elems, sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     floatspan_floor_ceil_iter(&spans[i], &datum_floor);
-  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDER_NO);
 }
 
 /**
@@ -1667,7 +1667,7 @@ floatspanset_ceil(const SpanSet *ss)
   memcpy(spans, ss->elems, sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     floatspan_floor_ceil_iter(&spans[i], &datum_ceil);
-  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDER_NO);
 }
 
 /*****************************************************************************/
