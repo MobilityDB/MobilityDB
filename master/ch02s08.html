@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Bounding Box Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 User's Manual"><link rel="up" href="ch02.html" title="Chapter 2. Set and Span Types"><link rel="prev" href="ch02s07.html" title="Set Operations"><link rel="next" href="ch02s09.html" title="Distance Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bounding Box Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s07.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Set and Span Types</th><td width="20%" align="right"> <a accesskey="n" href="ch02s09.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="setspan_topo_pos"></a>Bounding Box Operations</h2></div></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm1203"></a>Topological Operations</h3></div></div></div><p>The topological operations available for the set and span types are given next.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_overlaps"></a><a class="indexterm" name="idm1208"></a><p>Do the values overlap (have values in common)?</p><p><code class="varname">{set,spans} &amp;&amp; {set,spans} → boolean</code></p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Bounding Box Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 User's Manual"><link rel="up" href="ch02.html" title="Chapter 2. Set and Span Types"><link rel="prev" href="ch02s07.html" title="Set Operations"><link rel="next" href="ch02s09.html" title="Distance Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bounding Box Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s07.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Set and Span Types</th><td width="20%" align="right"> <a accesskey="n" href="ch02s09.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="setspan_topo_pos"></a>Bounding Box Operations</h2></div></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm1216"></a>Topological Operations</h3></div></div></div><p>The topological operations available for the set and span types are given next.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_overlaps"></a><a class="indexterm" name="idm1221"></a><p>Do the values overlap (have values in common)?</p><p><code class="varname">{set,spans} &amp;&amp; {set,spans} → boolean</code></p><pre class="programlisting">
 SELECT intset '{1, 3}' &amp;&amp; intset '{2, 3, 4}';
 -- true
 SELECT floatspan '[1, 3)' &amp;&amp; floatspan '[3, 4)';
@@ -7,14 +7,14 @@ SELECT tstzspan '[2001-01-01, 2001-01-05)' &amp;&amp; tstzspan '[2001-01-02, 200
 -- true
 SELECT floatspanset '{[1, 5),[6, 8)}' &amp;&amp; floatspan '[1, 6)';
 -- true
-</pre></li><li class="listitem"><a name="setspan_contains"></a><a class="indexterm" name="idm1216"></a><p>Does the first value contain the second one?</p><p><code class="varname">{set,spans} @&gt; {base,set,spans} → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_contains"></a><a class="indexterm" name="idm1229"></a><p>Does the first value contain the second one?</p><p><code class="varname">{set,spans} @&gt; {base,set,spans} → boolean</code></p><pre class="programlisting">
 SELECT floatset '{1.5, 2.5}' @&gt; 2.5;
 -- true
 SELECT tstzspan '[2001-01-01, 2001-05-01)' @&gt; timestamptz '2001-02-01';
 -- true
 SELECT floatspanset '{[1, 2),(2, 3)}' @&gt; 2.0;
 -- false
-</pre></li><li class="listitem"><a name="setspan_containedby"></a><a class="indexterm" name="idm1224"></a><p>Is the first value contained by the second one?</p><p><code class="varname">{base,set,spans} &lt;@ {set,spans} → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_containedby"></a><a class="indexterm" name="idm1237"></a><p>Is the first value contained by the second one?</p><p><code class="varname">{base,set,spans} &lt;@ {set,spans} → boolean</code></p><pre class="programlisting">
 SELECT timestamptz '2001-01-10' &lt;@ tstzspan '[2001-01-01, 2001-05-01)';
 -- true
 SELECT floatspan '[2, 5]' &lt;@ floatspan '[1, 5)';
@@ -23,7 +23,7 @@ SELECT tstzspan '[2001-02-01, 2001-03-01)' &lt;@ tstzspan '[2001-01-01, 2001-05-
 -- true
 SELECT floatspanset '{[1,2],[3,4]}' &lt;@ floatspan '[1, 6]';
 -- true
-</pre></li><li class="listitem"><a name="setspan_adjacent"></a><a class="indexterm" name="idm1232"></a><p>Is the first value adjacent to the second one?</p><p><code class="varname">spans -|- spans → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_adjacent"></a><a class="indexterm" name="idm1245"></a><p>Is the first value adjacent to the second one?</p><p><code class="varname">spans -|- spans → boolean</code></p><pre class="programlisting">
 SELECT intspan '[2, 6)' -|- intspan '[6, 7)';
 -- true
 SELECT floatspan '[2, 5)' -|- floatspan '(5, 6)';
@@ -32,7 +32,7 @@ SELECT floatspanset '{[2, 3],[4, 5)}' -|- floatspan '(5, 6)';
 -- true
 SELECT tstzspanset '{[2001-01-01, 2001-01-02]}' -|- tstzspan '[2001-01-02, 2001-01-03)';
 -- false
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm1239"></a>Position Operations</h3></div></div></div><p>The position operations available for set and span types are given next. Notice that the operators for time types have an additional <code class="varname">#</code> to distinguish them from the operators for number types.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_left"></a><a class="indexterm" name="idm1245"></a><a class="indexterm" name="idm1248"></a><p>Is the first value strictly left of the second one?</p><p><code class="varname">numbers &lt;&lt; numbers → boolean</code></p><p><code class="varname">times &lt;&lt;# times → boolean</code></p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm1252"></a>Position Operations</h3></div></div></div><p>The position operations available for set and span types are given next. Notice that the operators for time types have an additional <code class="varname">#</code> to distinguish them from the operators for number types.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_left"></a><a class="indexterm" name="idm1258"></a><a class="indexterm" name="idm1261"></a><p>Is the first value strictly left of the second one?</p><p><code class="varname">numbers &lt;&lt; numbers → boolean</code></p><p><code class="varname">times &lt;&lt;# times → boolean</code></p><pre class="programlisting">
 SELECT intspan '[15, 20)' &lt;&lt; 20;
 -- true
 SELECT intspanset '{[15, 17],[18, 20)}' &lt;&lt; 20;
@@ -41,7 +41,7 @@ SELECT floatspan '[15, 20)' &lt;&lt; floatspan '(15, 20)';
 -- false
 SELECT dateset '{2001-01-01, 2001-01-02}' &lt;&lt;# dateset '{2001-01-03, 2001-01-05}';
 -- true
-</pre></li><li class="listitem"><a name="setspan_right"></a><a class="indexterm" name="idm1258"></a><a class="indexterm" name="idm1261"></a><p>Is the first value strictly to the right of the second one?</p><p><code class="varname">numbers &gt;&gt; numbers → boolean</code></p><p><code class="varname">times #&gt;&gt; times → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_right"></a><a class="indexterm" name="idm1271"></a><a class="indexterm" name="idm1274"></a><p>Is the first value strictly to the right of the second one?</p><p><code class="varname">numbers &gt;&gt; numbers → boolean</code></p><p><code class="varname">times #&gt;&gt; times → boolean</code></p><pre class="programlisting">
 SELECT intspan '[15, 20)' &gt;&gt; 10;
 -- true
 SELECT floatspan '[15, 20)' &gt;&gt; floatspan '[5, 10]';
@@ -51,7 +51,7 @@ SELECT floatspanset '{[15, 17], [18, 20)}' &gt;&gt; floatspan '[5, 10]';
 SELECT tstzspan '[2001-01-04, 2001-01-05)' #&gt;&gt;
   tstzspanset '{[2001-01-01, 2001-01-04), [2001-01-05, 2001-01-06)}';
 -- true
-</pre></li><li class="listitem"><a name="setspan_overleft"></a><a class="indexterm" name="idm1271"></a><a class="indexterm" name="idm1274"></a><p>Is the first value not to the right of the second one?</p><p><code class="varname">numbers &amp;&lt; numbers → boolean</code></p><p><code class="varname">times &amp;&lt;# times → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_overleft"></a><a class="indexterm" name="idm1284"></a><a class="indexterm" name="idm1287"></a><p>Is the first value not to the right of the second one?</p><p><code class="varname">numbers &amp;&lt; numbers → boolean</code></p><p><code class="varname">times &amp;&lt;# times → boolean</code></p><pre class="programlisting">
 SELECT intspan '[15, 20)' &amp;&lt; 18;
 -- false
 SELECT intspanset '{[15, 16],[17, 18)}' &amp;&lt; 18;
@@ -60,7 +60,7 @@ SELECT floatspan '[15, 20)' &amp;&lt; floatspan '[10, 20]';
 -- true
 SELECT dateset '{2001-01-02, 2001-01-05}' &amp;&lt;# dateset '{2001-01-01, 2001-01-04}';
 -- false
-</pre></li><li class="listitem"><a name="setspan_overright"></a><a class="indexterm" name="idm1284"></a><a class="indexterm" name="idm1287"></a><p>Is the first value not to the left of the second one?</p><p><code class="varname">numbers &amp;&gt; numbers → boolean</code></p><p><code class="varname">times #&amp;&gt; times → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_overright"></a><a class="indexterm" name="idm1297"></a><a class="indexterm" name="idm1300"></a><p>Is the first value not to the left of the second one?</p><p><code class="varname">numbers &amp;&gt; numbers → boolean</code></p><p><code class="varname">times #&amp;&gt; times → boolean</code></p><pre class="programlisting">
 SELECT intspan '[15, 20)' &amp;&gt; 30;
 -- true
 SELECT floatspan '[1, 6]' &amp;&gt; floatspan '(1, 3)';

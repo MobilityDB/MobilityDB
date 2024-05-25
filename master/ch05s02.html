@@ -92,10 +92,10 @@ SELECT tgeogpoint 'Interp=Step;[SRID=4326;Point(0 0)@2001-01-01,
   SRID=4326;Point(0 1)@2001-01-02]';
 </pre><p>
 			We give below the input and output functions in Well-Known Text (WKT), Well-Known Binary (WKB), and Moving Features JSON (MF-JSON) format for temporal alphanumeric types. The corresponding functions for temporal points are detailed in <a class="xref" href="ch08.html#tpoint_inout" title="Input and Output">the section called “Input and Output”</a>.  The default output format of all temporal alphanumeric types is the Well-Known Text format. The function <code class="varname">asText</code> given next enables to determine the output of temporal float values.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="temporal_asText"></a><a class="indexterm" name="idm2551"></a><p>Return the Well-Known Text (WKT) representation</p><p><code class="varname">asText(tfloat,maxdecdigits=15) → text</code></p><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
+		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="temporal_asText"></a><a class="indexterm" name="idm2564"></a><p>Return the Well-Known Text (WKT) representation</p><p><code class="varname">asText(tfloat,maxdecdigits=15) → text</code></p><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
 SELECT asText(tfloat '[10.55@2001-01-01, 25.55@2001-01-02]', 0);
 -- [11@2001-01-01, 26@2001-01-02]
-</pre></li><li class="listitem"><a name="temporal_asBinary"></a><a class="indexterm" name="idm2561"></a><p>Return the Well-Known Binary (WKB) representation</p><p><code class="varname">asBinary(ttype,endian text='') → bytea</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="temporal_asBinary"></a><a class="indexterm" name="idm2574"></a><p>Return the Well-Known Binary (WKB) representation</p><p><code class="varname">asBinary(ttype,endian text='') → bytea</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
 SELECT asBinary(tbool 'true@2001-01-01');
 -- \x011a000101009c57d3c11c0000
 SELECT asBinary(tint '1@2001-01-01', 'XDR');
@@ -104,7 +104,7 @@ SELECT asBinary(tfloat '1.5@2001-01-01');
 -- \x01210001000000000000f83f009c57d3c11c0000
 SELECT asBinary(ttext 'AAA@2001-01-01');
 -- \x01290001040000000000000041414100009c57d3c11c0000
-</pre></li><li class="listitem"><a name="temporal_asHexWKB"></a><a class="indexterm" name="idm2570"></a><p>Return the Hexadecimal Well-Known Binary (WKB) representation as text</p><p><code class="varname">asHexWKB(ttype,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="temporal_asHexWKB"></a><a class="indexterm" name="idm2583"></a><p>Return the Hexadecimal Well-Known Binary (WKB) representation as text</p><p><code class="varname">asHexWKB(ttype,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
 SELECT asHexWKB(tbool 'true@2001-01-01');
 -- 011A000101009C57D3C11C0000
 SELECT asHexWKB(tint '1@2001-01-01', 'XDR');
@@ -113,7 +113,7 @@ SELECT asHexWKB(tfloat '1.5@2001-01-01');
 -- 01210001000000000000F83F009C57D3C11C0000
 SELECT asHexWKB(ttext 'AAA@2001-01-01');
 -- 01290001040000000000000041414100009C57D3C11C0000
-</pre></li><li class="listitem"><a name="temporal_asMFJSON"></a><a class="indexterm" name="idm2579"></a><p>Return the Moving Features JSON (MF-JSON) representation</p><p><code class="varname">asMFJSON(ttype,options=0,flags=0,maxdecdigits=15) → bytea</code></p><p>The <code class="varname">options</code> argument can be used to add a bounding box in the MFJSON output:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: MFJSON BBOX</p></li></ul></div><p>The <code class="varname">flags</code> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Refer to the documentation of the <code class="varname">json-c</code> library for the possible values. Typical values are as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: JSON_C_TO_STRING_SPACED</p></li><li class="listitem"><p>2: JSON_C_TO_STRING_PRETTY</p></li></ul></div><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="temporal_asMFJSON"></a><a class="indexterm" name="idm2592"></a><p>Return the Moving Features JSON (MF-JSON) representation</p><p><code class="varname">asMFJSON(ttype,options=0,flags=0,maxdecdigits=15) → bytea</code></p><p>The <code class="varname">options</code> argument can be used to add a bounding box in the MFJSON output:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: MFJSON BBOX</p></li></ul></div><p>The <code class="varname">flags</code> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Refer to the documentation of the <code class="varname">json-c</code> library for the possible values. Typical values are as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: JSON_C_TO_STRING_SPACED</p></li><li class="listitem"><p>2: JSON_C_TO_STRING_PRETTY</p></li></ul></div><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
 SELECT asMFJSON(tbool 't@2001-01-01 18:00:00', 1);
 /* {"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00+01",
   "end":"2001-01-01T18:00:00+01","lowerInc":true,"upperInc":true},
@@ -131,7 +131,7 @@ SELECT asMFJSON(ttext '{[walking@2001-01-01 18:00:00+02,
 /* {"type":"MovingText","sequences":[{"values":["walking","driving"],
   "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"],
   "lowerInc":true,"upperInc":true}],"interpolation":"Step"} */
-</pre></li><li class="listitem"><a name="temporal_FromBinary"></a><a class="indexterm" name="idm2606"></a><p>Input a temporal value from its Well-Known Binary (WKB) representation</p><p><code class="varname">ttypeFromBinary(bytea) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="temporal_FromBinary"></a><a class="indexterm" name="idm2619"></a><p>Input a temporal value from its Well-Known Binary (WKB) representation</p><p><code class="varname">ttypeFromBinary(bytea) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
 SELECT tboolFromBinary('\x011a000101009c57d3c11c0000');
 -- t@2001-01-01
 SELECT tintFromBinary('\x000023010000000100001cc1d3579c00');
@@ -140,7 +140,7 @@ SELECT tfloatFromBinary('\x01210001000000000000f83f009c57d3c11c0000');
 -- 1.5@2001-01-01
 SELECT ttextFromBinary('\x01290001040000000000000041414100009c57d3c11c0000');
 -- "AAA"@2001-01-01
-</pre></li><li class="listitem"><a name="temporal_FromHexWKB"></a><a class="indexterm" name="idm2617"></a><p>Input a temporal value from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><p><code class="varname">ttypeFromHexWKB(text) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="temporal_FromHexWKB"></a><a class="indexterm" name="idm2630"></a><p>Input a temporal value from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><p><code class="varname">ttypeFromHexWKB(text) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
 SELECT tboolFromHexWKB('011A000101009C57D3C11C0000');
 -- t@2001-01-01
 SELECT tintFromHexWKB('000023010000000100001CC1D3579C00');
@@ -149,7 +149,7 @@ SELECT tfloatFromHexWKB('01210001000000000000F83F009C57D3C11C0000');
 -- 1.5@2001-01-01
 SELECT ttextFromHexWKB('01290001040000000000000041414100009C57D3C11C0000');
 -- "AAA"@2001-01-01
-</pre></li><li class="listitem"><a name="temporal_FromMFJSON"></a><a class="indexterm" name="idm2628"></a><p>Input a temporal value from its Moving Features JSON (MF-JSON) representation</p><p><code class="varname">ttypeFromMFJSON(bytea) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="temporal_FromMFJSON"></a><a class="indexterm" name="idm2641"></a><p>Input a temporal value from its Moving Features JSON (MF-JSON) representation</p><p><code class="varname">ttypeFromMFJSON(bytea) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
 SELECT tboolFromMFJSON(text
   '{"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00+01",
   "end":"2001-01-01T18:00:00+01","lowerInc":true,"upperInc":true},

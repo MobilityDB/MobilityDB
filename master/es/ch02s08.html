@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Operaciones de cuadro delimitador</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 Manual de usuario"><link rel="up" href="ch02.html" title="Capítulo 2. Tipos de conjunto y de rango"><link rel="prev" href="ch02s07.html" title="Operaciones de conjuntos"><link rel="next" href="ch02s09.html" title="Operaciones de distancia"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Operaciones de cuadro delimitador</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s07.html">Anterior</a> </td><th width="60%" align="center">Capítulo 2. Tipos de conjunto y de rango</th><td width="20%" align="right"> <a accesskey="n" href="ch02s09.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="setspan_topo_pos"></a>Operaciones de cuadro delimitador</h2></div></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm1233"></a>Operaciones topológicas</h3></div></div></div><p>A continuación se presentan los operadores topológicos disponibles para los tipos de conjunto y de rango.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_overlaps"></a><a class="indexterm" name="idm1238"></a><p>¿Se superponen los valores (tienen valores en común)?</p><p><code class="varname">{set,spans} &amp;&amp; {set,spans} → boolean</code></p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Operaciones de cuadro delimitador</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 Manual de usuario"><link rel="up" href="ch02.html" title="Capítulo 2. Tipos de conjunto y de rango"><link rel="prev" href="ch02s07.html" title="Operaciones de conjuntos"><link rel="next" href="ch02s09.html" title="Operaciones de distancia"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Operaciones de cuadro delimitador</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s07.html">Anterior</a> </td><th width="60%" align="center">Capítulo 2. Tipos de conjunto y de rango</th><td width="20%" align="right"> <a accesskey="n" href="ch02s09.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="setspan_topo_pos"></a>Operaciones de cuadro delimitador</h2></div></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm1246"></a>Operaciones topológicas</h3></div></div></div><p>A continuación se presentan los operadores topológicos disponibles para los tipos de conjunto y de rango.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_overlaps"></a><a class="indexterm" name="idm1251"></a><p>¿Se superponen los valores (tienen valores en común)?</p><p><code class="varname">{set,spans} &amp;&amp; {set,spans} → boolean</code></p><pre class="programlisting">
 SELECT intset '{1, 3}' &amp;&amp; intset '{2, 3, 4}';
 -- true
 SELECT floatspan '[1, 3)' &amp;&amp; floatspan '[3, 4)';
@@ -7,14 +7,14 @@ SELECT floatspanset '{[1, 5),[6, 8)}' &amp;&amp; floatspan '[1, 6)';
 -- true
 SELECT tstzspan '[2001-01-01, 2001-01-05)' &amp;&amp; tstzspan '[2001-01-02, 2001-01-07)';
 -- true
-</pre></li><li class="listitem"><a name="setspan_contains"></a><a class="indexterm" name="idm1246"></a><p>¿Contiene el primer valor el segundo?</p><p><code class="varname">{set,spans} @&gt; {base,set,span} → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_contains"></a><a class="indexterm" name="idm1259"></a><p>¿Contiene el primer valor el segundo?</p><p><code class="varname">{set,spans} @&gt; {base,set,span} → boolean</code></p><pre class="programlisting">
 SELECT floatset '{1.5, 2.5}' @&gt; 2.5;
 -- true
 SELECT tstzspan '[2001-01-01, 2001-05-01)' @&gt; timestamptz '2001-02-01';
 -- true
 SELECT floatspanset '{[1, 2),(2, 3)}' @&gt; 2.0;
 -- false
-</pre></li><li class="listitem"><a name="setspan_containedby"></a><a class="indexterm" name="idm1254"></a><p>¿Está el primer valor contenido en el segundo?</p><p><code class="varname">{base,set,spans} &lt;@ {set,spans} → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_containedby"></a><a class="indexterm" name="idm1267"></a><p>¿Está el primer valor contenido en el segundo?</p><p><code class="varname">{base,set,spans} &lt;@ {set,spans} → boolean</code></p><pre class="programlisting">
 SELECT timestamptz '2001-01-10' &lt;@ tstzspan '[2001-01-01, 2001-05-01)';
 -- true
 SELECT floatspan '[2, 5]' &lt;@ floatspan '[1, 5)';
@@ -23,7 +23,7 @@ SELECT floatspanset '{[1,2],[3,4]}' &lt;@ floatspan '[1, 6]';
 -- true
 SELECT tstzspan '[2001-02-01, 2001-03-01)' &lt;@ tstzspan '[2001-01-01, 2001-05-01)';
 -- true
-</pre></li><li class="listitem"><a name="setspan_adjacent"></a><a class="indexterm" name="idm1262"></a><p>¿Es el primer valor adyacente al segundo?</p><p><code class="varname">spans -|- spans → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_adjacent"></a><a class="indexterm" name="idm1275"></a><p>¿Es el primer valor adyacente al segundo?</p><p><code class="varname">spans -|- spans → boolean</code></p><pre class="programlisting">
 SELECT intspan '[2, 6)' -|- intspan '[6, 7)';
 -- true
 SELECT floatspan '[2, 5)' -|- floatspan '(5, 6)';
@@ -34,7 +34,7 @@ SELECT tstzspan '[2001-01-01, 2001-01-05)' -|- tstzset '{2001-01-05, 2001-01-07}
 -- true
 SELECT tstzspanset '{[2001-01-01, 2001-01-02]}' -|- tstzspan '[2001-01-02, 2001-01-03)';
 -- false
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm1269"></a>Operaciones de posición</h3></div></div></div><p>Los operadores de posición disponibles para los tipos de conjunto y de rango se dan a continuación. Observe que los operadores para tipos de tiempo tienen un <code class="varname">#</code> adicional para distinguirlos de los operadores para tipos de números.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_left"></a><a class="indexterm" name="idm1275"></a><a class="indexterm" name="idm1278"></a><p>¿Está el primer valor estrictamente a la izquierda del segundo?</p><p><code class="varname">numbers &lt;&lt; numbers → boolean</code></p><p><code class="varname">times &lt;&lt;# times → boolean</code></p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm1282"></a>Operaciones de posición</h3></div></div></div><p>Los operadores de posición disponibles para los tipos de conjunto y de rango se dan a continuación. Observe que los operadores para tipos de tiempo tienen un <code class="varname">#</code> adicional para distinguirlos de los operadores para tipos de números.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="setspan_left"></a><a class="indexterm" name="idm1288"></a><a class="indexterm" name="idm1291"></a><p>¿Está el primer valor estrictamente a la izquierda del segundo?</p><p><code class="varname">numbers &lt;&lt; numbers → boolean</code></p><p><code class="varname">times &lt;&lt;# times → boolean</code></p><pre class="programlisting">
 SELECT intspan '[15, 20)' &lt;&lt; 20;
 -- true
 SELECT intspanset '{[15, 17],[18, 20)}' &lt;&lt; 20;
@@ -43,7 +43,7 @@ SELECT floatspan '[15, 20)' &lt;&lt; floatspan '(15, 20)';
 -- false
 SELECT dateset '{2001-01-01, 2001-01-02}' &lt;&lt;# dateset '{2001-01-03, 2001-01-05}';
 -- true
-</pre></li><li class="listitem"><a name="setspan_right"></a><a class="indexterm" name="idm1288"></a><a class="indexterm" name="idm1291"></a><p>¿Está el primer valor estrictamente a la derecha del segundo?</p><p><code class="varname">numbers &gt;&gt; numbers → boolean</code></p><p><code class="varname">times #&gt;&gt; times → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_right"></a><a class="indexterm" name="idm1301"></a><a class="indexterm" name="idm1304"></a><p>¿Está el primer valor estrictamente a la derecha del segundo?</p><p><code class="varname">numbers &gt;&gt; numbers → boolean</code></p><p><code class="varname">times #&gt;&gt; times → boolean</code></p><pre class="programlisting">
 SELECT intspan '[15, 20)' &gt;&gt; 10;
 -- true
 SELECT floatspan '[15, 20)' &gt;&gt; floatspan '[5, 10]';
@@ -53,7 +53,7 @@ SELECT floatspanset '{[15, 17], [18, 20)}' &gt;&gt; floatspan '[5, 10]';
 SELECT tstzspan '[2001-01-04, 2001-01-05)' #&gt;&gt;
   tstzspanset '{[2001-01-01, 2001-01-04), [2001-01-05, 2001-01-06)}';
 -- true
-</pre></li><li class="listitem"><a name="setspan_overleft"></a><a class="indexterm" name="idm1301"></a><a class="indexterm" name="idm1304"></a><p>¿No está el primer valor a la derecha del segundo?</p><p><code class="varname">numbers &amp;&lt; numbers → boolean</code></p><p><code class="varname">times &amp;&lt;# times → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_overleft"></a><a class="indexterm" name="idm1314"></a><a class="indexterm" name="idm1317"></a><p>¿No está el primer valor a la derecha del segundo?</p><p><code class="varname">numbers &amp;&lt; numbers → boolean</code></p><p><code class="varname">times &amp;&lt;# times → boolean</code></p><pre class="programlisting">
 SELECT intspan '[15, 20)' &amp;&lt; 18;
 -- false
 SELECT intspanset '{[15, 16],[17, 18)}' &amp;&lt; 18;
@@ -62,7 +62,7 @@ SELECT floatspan '[15, 20)' &amp;&lt; floatspan '[10, 20]';
 -- true
 SELECT dateset '{2001-01-02, 2001-01-05}' &amp;&lt;# dateset '{2001-01-01, 2001-01-04}';
 -- false
-</pre></li><li class="listitem"><a name="setspan_overright"></a><a class="indexterm" name="idm1314"></a><a class="indexterm" name="idm1317"></a><p>¿No está el primer valor a la izquierda del segundo?</p><p><code class="varname">numbers &amp;&gt; numbers → boolean</code></p><p><code class="varname">times #&amp;&gt; times → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_overright"></a><a class="indexterm" name="idm1327"></a><a class="indexterm" name="idm1330"></a><p>¿No está el primer valor a la izquierda del segundo?</p><p><code class="varname">numbers &amp;&gt; numbers → boolean</code></p><p><code class="varname">times #&amp;&gt; times → boolean</code></p><pre class="programlisting">
 SELECT intspan '[15, 20)' &amp;&gt; 30;
 -- true
 SELECT floatspan '[1, 6]' &amp;&gt; floatspan '(1, 3)';
