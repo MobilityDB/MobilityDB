@@ -165,6 +165,10 @@ SELECT shiftScale(dateset '{2000-01-01, 2000-01-02, 2000-01-03}', 4, 4);
 SELECT shiftScale(tstzset '{2000-01-01}', '1 day', '1 hour');
 SELECT shiftScale(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 day', '1 hour');
 
+SELECT floor(floatset '{0.5, 1.5, 2.5}');
+SELECT floor(floatset '{0.5, 1.5, 1.6}');
+SELECT ceil(floatset '{0.5, 1.5, 2.5}');
+SELECT ceil(floatset '{0.5, 1.5, 1.6}');
 SELECT round(floatset '{0.12345, 1.12345, 2.12345}', 3);
 SELECT degrees(floatset '{0, 0.5, 1}');
 SELECT degrees(floatset '{0, 0.5, 1}', true);

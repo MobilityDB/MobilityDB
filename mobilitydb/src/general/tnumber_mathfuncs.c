@@ -332,6 +332,38 @@ Tnumber_delta_value(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tfloat_floor(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloat_floor);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return a temporal number rounded down to the nearest integer
+ * @sqlfn floor()
+ */
+Datum
+Tfloat_floor(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tfloat_floor(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tfloat_ceil(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloat_ceil);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return a temporal number rounded up to the nearest integer
+ * @sqlfn ceil()
+ */
+Datum
+Tfloat_ceil(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tfloat_ceil(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Float_degrees(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Float_degrees);
 /**

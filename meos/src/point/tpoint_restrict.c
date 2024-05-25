@@ -516,7 +516,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
   }
 
   int newcount;
-  result = spanarr_normalize(periods, npers, ORDERED_NO, &newcount);
+  result = spanarr_normalize(periods, npers, ORDER, &newcount);
   *count = newcount;
   pfree(periods);
   return result;
@@ -638,8 +638,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   }
   /* Compute the periodset */
   assert(totalpers > 0);
-  SpanSet *ss = spanset_make_free(allperiods, totalpers, NORMALIZE,
-    ORDERED_NO);
+  SpanSet *ss = spanset_make_free(allperiods, totalpers, NORMALIZE, ORDER);
   /* Recover the Z values from the original sequence */
   result = tcontseq_restrict_tstzspanset(seq, ss, REST_AT);
   pfree(ss);

@@ -107,7 +107,7 @@ set_round(const Set *s, int maxdd, datum_func2 func)
   Datum size = Int32GetDatum(maxdd);
   for (int i = 0; i < s->count; i++)
     values[i] = func(SET_VAL_N(s, i), size);
-  return set_make_free(values, s->count, s->basetype, ORDERED_NO);
+  return set_make_free(values, s->count, s->basetype, ORDER);
 }
 
 /**
@@ -267,7 +267,7 @@ floatspanset_rnd(const SpanSet *ss, int maxdd)
   Span *spans = palloc(sizeof(Span) * ss->count);
   for (int i = 0; i < ss->count; i++)
     floatspan_rnd_set(SPANSET_SP_N(ss, i), maxdd, &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE, ORDERED);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDER_NO);
 }
 
 

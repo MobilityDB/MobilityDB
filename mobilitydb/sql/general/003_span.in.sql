@@ -607,6 +607,15 @@ CREATE FUNCTION shiftScale(tstzspan, interval, interval)
   AS 'MODULE_PATHNAME', 'Tstzspan_shift_scale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION floor(floatspan)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Floatspan_floor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ceil(floatspan)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Floatspan_ceil'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION round(floatspan, integer DEFAULT 0)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Floatspan_round'

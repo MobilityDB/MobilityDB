@@ -183,6 +183,10 @@ SELECT shiftScale(tstzspan '(2000-01-01,2000-01-02]', '5 min', '1 hour');
 SELECT shiftScale(tstzspan '[2000-01-01,2000-01-02)', '5 min', '1 hour');
 SELECT shiftScale(tstzspan '(2000-01-01,2000-01-02)', '5 min', '1 hour');
 
+SELECT floor(floatspan '[1.5,2.5]');
+SELECT ceil(floatspan '[1.5,2.5]');
+SELECT floor(floatspan '(1.5,1.6)');
+SELECT ceil(floatspan '(1.5,1.6)');
 SELECT round(floatspan '[1.123456789,2.123456789]',6);
 SELECT round(floatspan '[-inf,2.123456789]',6);
 SELECT round(floatspan '[1.123456789,inf]',6);

@@ -903,7 +903,7 @@ Temporal_valueset(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(temp, 0);
     PG_RETURN_ARRAYTYPE_P(result);
   }
-  Set *result = set_make_free(values, count, basetype, ORDERED);
+  Set *result = set_make_free(values, count, basetype, ORDER_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_SET_P(result);
 }

@@ -167,7 +167,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper op)
     while (j < s2->count)
       values[nvals++] = SET_VAL_N(s2, j++);
   }
-  return set_make_free(values, nvals, basetype, ORDERED);
+  return set_make_free(values, nvals, basetype, ORDER_NO);
 }
 
 /*****************************************************************************
@@ -1541,7 +1541,7 @@ union_set_value(const Set *s, Datum value)
   }
   if (! found)
     values[nvals++] = value;
-  return set_make_free(values, nvals, s->basetype, ORDERED);
+  return set_make_free(values, nvals, s->basetype, ORDER_NO);
 }
 
 /**
@@ -2252,7 +2252,7 @@ minus_set_value(const Set *s, Datum value)
     if (datum_ne(value, value1, s->basetype))
       values[nvals++] = value1;
   }
-  return set_make_free(values, nvals, s->basetype, ORDERED);
+  return set_make_free(values, nvals, s->basetype, ORDER_NO);
 }
 
 #if MEOS

@@ -1286,6 +1286,78 @@ tnumber_to_tbox(const Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @brief Return a number rounded down to the nearest integer
+ */
+Datum
+datum_floor(Datum value)
+{
+  return Float8GetDatum(floor(DatumGetFloat8(value)));
+}
+
+/**
+ * @brief Return a number rounded up to the nearest integer
+ */
+Datum
+datum_ceil(Datum value)
+{
+  return Float8GetDatum(ceil(DatumGetFloat8(value)));
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal number rounded down to the nearest integer
+ * @param[in] temp Temporal value
+ * @csqlfn #Tfloat_floor()
+ */
+Temporal *
+tfloat_floor(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_floor;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TFLOAT;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal number rounded up to the nearest integer
+ * @param[in] temp Temporal value
+ * @csqlfn #Tfloat_ceil()
+ */
+Temporal *
+tfloat_ceil(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_ceil;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TFLOAT;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************/
+
+/**
  * @ingroup meos_temporal_transf
  * @brief Return a float value converted from radians to degrees
  * @param[in] value Value

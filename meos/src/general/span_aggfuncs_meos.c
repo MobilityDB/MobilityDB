@@ -80,7 +80,7 @@ spanset_append_span(SpanSet *ss, const Span *span, bool expand)
 #endif /* DEBUG_EXPAND */
 
   SpanSet *result = spanset_make_exp(spans, ss->count + 1, maxcount,
-    NORMALIZE_NO, ORDERED_NO);
+    NORMALIZE_NO, ORDER);
   pfree(spans);
   // pfree(ss);
   return result;
@@ -127,7 +127,7 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
 #endif /* DEBUG_EXPAND */
 
   SpanSet *result = spanset_make_exp(spans, count, maxcount, NORMALIZE_NO,
-    ORDERED_NO);
+    ORDER);
   pfree(spans);
   return result;
 }
@@ -147,7 +147,7 @@ span_union_transfn(SpanSet *state, const Span *s)
   /* Null state: create a new span set with the input span */
   if (! state)
     /* Arbitrary initialization to 64 elements */
-    return spanset_make_exp((Span *) s, 1, 64, NORMALIZE_NO, ORDERED_NO);
+    return spanset_make_exp((Span *) s, 1, 64, NORMALIZE_NO, ORDER);
 
   /* Ensure validity of the arguments */
   if (! ensure_same_span_type(&state->elems[0], s))
@@ -173,7 +173,7 @@ spanset_union_transfn(SpanSet *state, const SpanSet *ss)
     int count = ((ss->count / 64) + 1) * 64;
     /* Arbitrary initialization to next multiple of 64 elements */
     return spanset_make_exp((Span *) &ss->elems, ss->count, count,
-      NORMALIZE_NO, ORDERED_NO);
+      NORMALIZE_NO, ORDER);
   }
 
   /* Ensure validity of the arguments */

@@ -165,6 +165,8 @@
 #define DatumGetTimestampTz(X)((TimestampTz) DatumGetInt64(X))
 #endif /* MEOS */
 
+extern Datum datum_floor(Datum d);
+extern Datum datum_ceil(Datum d);
 extern Datum datum_degrees(Datum d, Datum normalize);
 extern Datum datum_radians(Datum d);
 extern uint32 datum_hash(Datum d, meosType basetype);
@@ -276,15 +278,15 @@ extern char *spanset_out(const SpanSet *ss, int maxdd);
 /* Constructor functions for set and span types */
 
 extern Set *set_cp(const Set *s);
-extern Set *set_make(const Datum *values, int count, meosType basetype, bool ordered);
-extern Set *set_make_exp(const Datum *values, int count, int maxcount, meosType basetype, bool ordered);
-extern Set *set_make_free(Datum *values, int count, meosType basetype, bool ordered);
+extern Set *set_make(const Datum *values, int count, meosType basetype, bool order);
+extern Set *set_make_exp(const Datum *values, int count, int maxcount, meosType basetype, bool order);
+extern Set *set_make_free(Datum *values, int count, meosType basetype, bool order);
 extern Span *span_cp(const Span *s);
 extern Span *span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc, meosType basetype);
 extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, meosType basetype, meosType spantype, Span *s);
 extern SpanSet *spanset_cp(const SpanSet *ss);
-extern SpanSet *spanset_make_exp(Span *spans, int count, int maxcount, bool normalize, bool ordered);
-extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize, bool ordered);
+extern SpanSet *spanset_make_exp(Span *spans, int count, int maxcount, bool normalize, bool order);
+extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize, bool order);
 
 /*****************************************************************************/
 

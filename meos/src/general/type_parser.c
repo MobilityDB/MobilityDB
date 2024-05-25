@@ -472,9 +472,9 @@ set_parse(const char **str, meosType settype)
   const char *type_str = "set";
   int set_srid = 0;
   p_whitespace(str);
-  
-  /* Starts with "SRID=". The SRID specification must be gobbled. We cannot use 
-   * the atoi() function because this requires a string terminated by '\0' 
+
+  /* Starts with "SRID=". The SRID specification must be gobbled. We cannot use
+   * the atoi() function because this requires a string terminated by '\0'
    * and we cannot modify the string. */
   if (pg_strncasecmp(*str, "SRID=", 5) == 0)
   {
@@ -530,7 +530,7 @@ set_parse(const char **str, meosType settype)
     for (int i = 0; i < count; i++)
       gserialized_set_srid(DatumGetGserializedP(values[i]), set_srid);
   }
-  return set_make_free(values, count, basetype, ORDERED_NO);
+  return set_make_free(values, count, basetype, ORDER);
 }
 
 /**
@@ -637,7 +637,7 @@ spanset_parse(const char **str, meosType spansettype)
     span_parse(str, spantype, false, &spans[i]);
   }
   p_cbrace(str);
-  return spanset_make_free(spans, count, NORMALIZE, ORDERED);
+  return spanset_make_free(spans, count, NORMALIZE, ORDER_NO);
 }
 
 /*****************************************************************************/

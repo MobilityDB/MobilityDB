@@ -527,6 +527,34 @@ Tstzspan_shift_scale(PG_FUNCTION_ARGS)
   PG_RETURN_SPAN_P(tstzspan_shift_scale(s, shift, duration));
 }
 
+PGDLLEXPORT Datum Floatspan_floor(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatspan_floor);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a float span rounded down to the nearest integer
+ * @sqlfn floor()
+ */
+Datum
+Floatspan_floor(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  PG_RETURN_SPAN_P(floatspan_floor(s));
+}
+
+PGDLLEXPORT Datum Floatspan_ceil(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatspan_ceil);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a float span rounded up to the nearest integer
+ * @sqlfn ceil()
+ */
+Datum
+Floatspan_ceil(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  PG_RETURN_SPAN_P(floatspan_ceil(s));
+}
+
 PGDLLEXPORT Datum Floatspan_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspan_round);
 /**

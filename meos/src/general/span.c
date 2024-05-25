@@ -304,16 +304,16 @@ span_decr_bound(Datum lower, meosType basetype)
  * The normalized spans are new spans that must be freed.
  * @param[in] spans Array of spans
  * @param[in] count Number of elements in the input array
- * @param[in] ordered True if the spans are ordered
+ * @param[in] order True if the spans should be ordered
  * @param[out] newcount Number of elements in the output array
  * @pre @p count is greater than 0
  */
 Span *
-spanarr_normalize(Span *spans, int count, bool ordered, int *newcount)
+spanarr_normalize(Span *spans, int count, bool order, int *newcount)
 {
   assert(spans); assert(count > 0); assert(newcount);
   /* Sort the spans if they are not ordered */
-  if (! ordered)
+  if (order)
     spanarr_sort(spans, count);
   int nspans = 0;
   Span *result = palloc(sizeof(Span) * count);
@@ -1416,6 +1416,61 @@ tstzspan_duration(const Span *s)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+/**
+ * @brief Round down a span to the nearest integer
+ */
+void
+floatspan_floor_ceil_iter(Span *s, datum_func1 func)
+{
+  assert(s);
+  Datum lower = func(s->lower);
+  Datum upper = func(s->upper);
+  bool lower_inc = s->lower_inc;
+  bool upper_inc = s->upper_inc;
+  if (datum_eq(lower, upper, s->basetype))
+  {
+    lower_inc = upper_inc = true;
+  }
+  span_set(lower, upper, lower_inc, upper_inc, s->basetype, s->spantype, s);
+  return;
+}
+
+/**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return a float span rounded down to the nearest integer
+ * @csqlfn #Floatspan_floor()
+ */
+Span *
+floatspan_floor(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
+    return NULL;
+
+  Span *result = span_cp(s);
+  floatspan_floor_ceil_iter(result, &datum_floor);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return a float span rounded up to the nearest integer
+ * @csqlfn #Floatspan_ceil()
+ */
+Span *
+floatspan_ceil(const Span *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
+    return NULL;
+
+  Span *result = span_cp(s);
+  floatspan_floor_ceil_iter(result, &datum_ceil);
+  return result;
+}
+
+/*****************************************************************************/
 
 /**
  * @ingroup meos_internal_setspan_transf

@@ -670,11 +670,12 @@ SET_VAL_N(const Set *s, int index)
  * @param[in] count Number of elements in the array
  * @param[in] maxcount Maximum number of elements in the array
  * @param[in] basetype Type of the values
- * @param[in] ordered True when the values are ordered and without duplicates
+ * @param[in] order True when the values should be ordered and duplicates
+ * should be removed
  */
 Set *
 set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
-  bool ordered)
+  bool order)
 {
   assert(values); assert(count > 0); assert(count <= maxcount);
   bool hasz = false;
@@ -702,7 +703,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   /* Sort the values and remove duplicates */
   Datum *newvalues;
   int newcount;
-  if (! ordered && count > 1)
+  if (order && count > 1)
   {
   /* Sort the values and remove duplicates */
     newvalues = palloc(sizeof(Datum) * count);
@@ -762,7 +763,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   Set *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   MEOS_FLAGS_SET_BYVAL(result->flags, typbyval);
-  MEOS_FLAGS_SET_ORDERED(result->flags, ordered);
+  MEOS_FLAGS_SET_ORDERED(result->flags, ! order);
   if (geo_basetype(basetype))
   {
     MEOS_FLAGS_SET_X(result->flags, true);
@@ -802,7 +803,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   if (bboxsize != 0)
     valuearr_compute_bbox(newvalues, basetype, newcount, SET_BBOX_PTR(result));
 
-  if (! ordered && count > 1)
+  if (order && count > 1)
     pfree(newvalues);
   return result;
 }
@@ -814,14 +815,15 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] basetype Type of the values
- * @param[in] ordered True when the values are ordered and without duplicates
+ * @param[in] order True when the values should be ordered and duplicates
+ * should be removed
  * @csqlfn #Set_constructor()
  */
 Set *
-set_make(const Datum *values, int count, meosType basetype, bool ordered)
+set_make(const Datum *values, int count, meosType basetype, bool order)
 {
   assert(values); assert(count > 0);
-  return set_make_exp(values, count, count, basetype, ordered);
+  return set_make_exp(values, count, count, basetype, order);
 }
 
 /**
@@ -841,7 +843,7 @@ intset_make(const int *values, int count)
   Datum *datums = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = Int32GetDatum(values[i]);
-  return set_make_free(datums, count, T_INT4, ORDERED_NO);
+  return set_make_free(datums, count, T_INT4, ORDER);
 }
 
 /**
@@ -861,7 +863,7 @@ bigintset_make(const int64 *values, int count)
   Datum *datums = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = Int64GetDatum(values[i]);
-  return set_make_free(datums, count, T_INT8, ORDERED_NO);
+  return set_make_free(datums, count, T_INT8, ORDER);
 }
 
 /**
@@ -881,7 +883,7 @@ floatset_make(const double *values, int count)
   Datum *datums = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = Float8GetDatum(values[i]);
-  return set_make_free(datums, count, T_FLOAT8, ORDERED_NO);
+  return set_make_free(datums, count, T_FLOAT8, ORDER);
 }
 
 /**
@@ -901,7 +903,7 @@ textset_make(const text **values, int count)
   Datum *datums = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = PointerGetDatum(values[i]);
-  return set_make_free(datums, count, T_TEXT, ORDERED_NO);
+  return set_make_free(datums, count, T_TEXT, ORDER);
 }
 
 /**
@@ -921,7 +923,7 @@ dateset_make(const DateADT *values, int count)
   Datum *datums = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = DateADTGetDatum(values[i]);
-  return set_make_free(datums, count, T_DATE, ORDERED_NO);
+  return set_make_free(datums, count, T_DATE, ORDER);
 }
 
 /**
@@ -941,7 +943,7 @@ tstzset_make(const TimestampTz *values, int count)
   Datum *datums = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = TimestampTzGetDatum(values[i]);
-  return set_make_free(datums, count, T_TIMESTAMPTZ, ORDERED_NO);
+  return set_make_free(datums, count, T_TIMESTAMPTZ, ORDER);
 }
 
 /**
@@ -963,7 +965,7 @@ geoset_make(const GSERIALIZED **values, int count)
     datums[i] = PointerGetDatum(values[i]);
   meosType geotype = FLAGS_GET_GEODETIC(values[0]->gflags) ?
     T_GEOMETRY : T_GEOGRAPHY;
-  return set_make_free(datums, count, geotype, ORDERED_NO);
+  return set_make_free(datums, count, geotype, ORDER);
 }
 #endif /* MEOS */
 
@@ -974,15 +976,16 @@ geoset_make(const GSERIALIZED **values, int count)
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
  * @param[in] basetype Type of the values
- * @param[in] ordered True when the values are ordered and without duplicates
+ * @param[in] order True when the values should be ordered and duplicates
+ * should be removed
  */
 Set *
-set_make_free(Datum *values, int count, meosType basetype, bool ordered)
+set_make_free(Datum *values, int count, meosType basetype, bool order)
 {
   assert(values); assert(count >= 0);
   Set *result = NULL;
   if (count > 0)
-    result = set_make_exp(values, count, count, basetype, ordered);
+    result = set_make_exp(values, count, count, basetype, order);
   pfree(values);
   return result;
 }
@@ -1031,7 +1034,7 @@ set_copy(const Set *s)
 Set *
 value_to_set(Datum value, meosType basetype)
 {
-  return set_make_exp(&value, 1, 1, basetype, ORDERED);
+  return set_make_exp(&value, 1, 1, basetype, ORDER_NO);
 }
 
 #if MEOS
@@ -1045,7 +1048,7 @@ Set *
 int_to_set(int i)
 {
   Datum v = Int32GetDatum(i);
-  return set_make_exp(&v, 1, 1, T_INT4, ORDERED);
+  return set_make_exp(&v, 1, 1, T_INT4, ORDER_NO);
 }
 
 /**
@@ -1058,7 +1061,7 @@ Set *
 bigint_to_set(int64 i)
 {
   Datum v = Int64GetDatum(i);
-  return set_make_exp(&v, 1, 1, T_INT8, ORDERED);
+  return set_make_exp(&v, 1, 1, T_INT8, ORDER_NO);
 }
 
 /**
@@ -1071,7 +1074,7 @@ Set *
 float_to_set(double d)
 {
   Datum v = Float8GetDatum(d);
-  return set_make_exp(&v, 1, 1, T_FLOAT8, ORDERED);
+  return set_make_exp(&v, 1, 1, T_FLOAT8, ORDER_NO);
 }
 
 /**
@@ -1087,7 +1090,7 @@ text_to_set(text *txt)
   if (! ensure_not_null((void *) txt))
     return NULL;
   Datum v = PointerGetDatum(txt);
-  return set_make_exp(&v, 1, 1, T_TEXT, ORDERED);
+  return set_make_exp(&v, 1, 1, T_TEXT, ORDER_NO);
 }
 
 /**
@@ -1100,7 +1103,7 @@ Set *
 date_to_set(DateADT d)
 {
   Datum v = DateADTGetDatum(d);
-  return set_make_exp(&v, 1, 1, T_DATE, ORDERED);
+  return set_make_exp(&v, 1, 1, T_DATE, ORDER_NO);
 }
 
 /**
@@ -1113,7 +1116,7 @@ Set *
 timestamptz_to_set(TimestampTz t)
 {
   Datum v = TimestampTzGetDatum(t);
-  return set_make_exp(&v, 1, 1, T_TIMESTAMPTZ, ORDERED);
+  return set_make_exp(&v, 1, 1, T_TIMESTAMPTZ, ORDER_NO);
 }
 
 /**
@@ -1130,7 +1133,7 @@ geo_to_set(GSERIALIZED *gs)
     return NULL;
   Datum v = PointerGetDatum(gs);
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  return set_make_exp(&v, 1, 1, geotype, ORDERED);
+  return set_make_exp(&v, 1, 1, geotype, ORDER_NO);
 }
 #endif /* MEOS */
 
@@ -1153,7 +1156,7 @@ intset_floatset(const Set *s)
   for (int i = 0; i < s->count; i++)
     values[i] = Float8GetDatum((double) DatumGetInt32(SET_VAL_N(s, i)));
   /* All distinct integers will yield distinct floats */
-  return set_make_free(values, s->count, T_FLOAT8, ORDERED);
+  return set_make_free(values, s->count, T_FLOAT8, ORDER_NO);
 }
 
 #if MEOS
@@ -1190,7 +1193,7 @@ floatset_intset(const Set *s)
   for (int i = 0; i < s->count; i++)
     values[i] = Int32GetDatum((int) DatumGetFloat8(SET_VAL_N(s, i)));
   /* Two distinct floats can yield the same integer */
-  return set_make_free(values, s->count, T_INT4, ORDERED_NO);
+  return set_make_free(values, s->count, T_INT4, ORDER);
 }
 
 #if MEOS
@@ -1228,7 +1231,7 @@ dateset_tstzset(const Set *s)
     values[i] = TimestampTzGetDatum(date_to_timestamptz(DatumGetDateADT(
       SET_VAL_N(s, i))));
   /* All distinct dates will yield distinct timestamptz */
-  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDERED);
+  return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDER_NO);
 }
 
 #if MEOS
@@ -1266,7 +1269,7 @@ tstzset_dateset(const Set *s)
     values[i] = DateADTGetDatum(timestamptz_to_date(DatumGetTimestampTz(
       SET_VAL_N(s, i))));
   /* Two distinct timestamptz can yield the same date */
-  return set_make_free(values, s->count, T_DATE, ORDERED_NO);
+  return set_make_free(values, s->count, T_DATE, ORDER);
 }
 
 #if MEOS
@@ -1943,16 +1946,52 @@ Set *
 set_compact(const Set *s)
 {
   assert(s);
-  /* Collect the values which may be UNORDERED */
+  /* Collect the values which may be not ordered */
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = SET_VAL_N(s, i);
 
-  Set *result = set_make_exp(values, s->count, s->count, s->basetype, ORDERED);
+  Set *result = set_make_exp(values, s->count, s->count, s->basetype, ORDER_NO);
   pfree(values);
   return result;
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return a float set rounded down to the nearest integer
+ * @csqlfn #Floatset_floor()
+ */
+Set *
+floatset_floor(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = datum_floor(SET_VAL_N(s, i));
+  return set_make_exp(values, s->count, s->count, T_FLOAT8, ORDER);
+}
+
+/**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return a float set rounded up to the nearest integer
+ * @csqlfn #Floatset_ceil()
+ */
+Set *
+floatset_ceil(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
+    return NULL;
+
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = datum_ceil(SET_VAL_N(s, i));
+  return set_make_exp(values, s->count, s->count, T_FLOAT8, ORDER);
+}
 
 /**
  * @ingroup meos_internal_setspan_transf
@@ -2038,7 +2077,7 @@ textset_lower(const Set *s)
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = datum_lower(SET_VAL_N(s, i));
-  return set_make_free(values, s->count, T_TEXT, ORDERED);
+  return set_make_free(values, s->count, T_TEXT, ORDER_NO);
 }
 
 /**
@@ -2057,7 +2096,7 @@ textset_upper(const Set *s)
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = datum_upper(SET_VAL_N(s, i));
-  return set_make_free(values, s->count, T_TEXT, ORDERED);
+  return set_make_free(values, s->count, T_TEXT, ORDER_NO);
 }
 
 /**
@@ -2076,7 +2115,7 @@ textset_initcap(const Set *s)
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = datum_initcap(SET_VAL_N(s, i));
-  return set_make_free(values, s->count, T_TEXT, ORDERED);
+  return set_make_free(values, s->count, T_TEXT, ORDER_NO);
 }
 
 /**
@@ -2094,7 +2133,7 @@ textcat_textset_text_int(const Set *s, const text *txt, bool invert)
     values[i] = invert ?
       datum_textcat(PointerGetDatum(txt), SET_VAL_N(s, i)) :
       datum_textcat(SET_VAL_N(s, i), PointerGetDatum(txt));
-  return set_make_free(values, s->count, T_TEXT, ORDERED);
+  return set_make_free(values, s->count, T_TEXT, ORDER_NO);
 }
 
 #if MEOS

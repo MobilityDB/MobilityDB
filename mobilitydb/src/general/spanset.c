@@ -148,7 +148,7 @@ Spanset_constructor(PG_FUNCTION_ARGS)
   ensure_not_empty_array(array);
   int count;
   Span *spans = spanarr_extract(array, &count);
-  SpanSet *result = spanset_make_free(spans, count, NORMALIZE, ORDERED);
+  SpanSet *result = spanset_make_free(spans, count, NORMALIZE, ORDER_NO);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_SPANSET_P(result);
 }
@@ -352,7 +352,7 @@ Multirange_to_spanset(PG_FUNCTION_ARGS)
     range_set_span(range, typcache->rngtype, &spans[i]);
   }
   SpanSet *result = spanset_make_free(spans, mrange->rangeCount, NORMALIZE,
-    ORDERED);
+    ORDER_NO);
   PG_FREE_IF_COPY(mrange, 0);
   PG_RETURN_SPANSET_P(result);
 }
@@ -856,6 +856,38 @@ Tstzspanset_shift_scale(PG_FUNCTION_ARGS)
   Interval *shift = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
   SpanSet *result = tstzspanset_shift_scale(ss, shift, duration);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_SPANSET_P(result);
+}
+
+PGDLLEXPORT Datum Floatspanset_floor(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatspanset_floor);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a float span set rounded down to the nearest integer
+ * @sqlfn floor()
+ */
+Datum
+Floatspanset_floor(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  SpanSet *result = floatspanset_floor(ss);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_SPANSET_P(result);
+}
+
+PGDLLEXPORT Datum Floatspanset_ceil(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatspanset_ceil);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a float span set rounded up to the nearest integer
+ * @sqlfn ceil()
+ */
+Datum
+Floatspanset_ceil(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  SpanSet *result = floatspanset_ceil(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_SPANSET_P(result);
 }

@@ -253,23 +253,27 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Desplazar un conjunto o un rango con un valor o intervalo de tiempo</para>
+					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Desplazar con un valor o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_scale"><varname>scale</varname></link>: Escalar un conjunto o un rango con un valor o intervalo de tiempo</para>
+					<para><link linkend="setspan_scale"><varname>scale</varname></link>: Escalar con un valor o intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_shiftScale"><varname>shiftScale</varname></link>: Desplazar y escalar un conjunto o un rango con los valores o intervalos de tiempo</para>
+					<para><link linkend="setspan_shiftScale"><varname>shiftScale</varname></link>: Desplazar y escalar con los valores o intervalos de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatspan_round"><varname>round</varname></link>: Redondear un conjunto o un rango flotante a un número de decimales</para>
+					<para><link linkend="floatsetspan_floor"><varname>floor</varname>, <varname>ceil</varname></link>: Redondear al entero inferior o superior</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatset_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir un conjunto flotante a grados o radianes</para>
+					<para><link linkend="floatspan_round"><varname>round</varname></link>: Redondear a un número de decimales</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="floatset_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convertir a grados o radianes</para>
 				</listitem>
 
 				<listitem>
@@ -281,7 +285,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_tprecision"><varname>tprecision</varname></link>: Establecer la precisión temporal del valor de tiempo al intervalo con respecto al origen</para>
+					<para><link linkend="time_tprecision"><varname>tprecision</varname></link>: Establecer la precisión temporal al intervalo con respecto al origen</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1127,7 +1131,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="round"><varname>round</varname></link>: Redondear los valores a un número de posiciones decimales</para>
+					<para><link linkend="floor"><varname>floor</varname>, <varname>ceil</varname></link>: Redondear al entero inferior o superior</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="round"><varname>round</varname></link>: Redondear a un número de posiciones decimales</para>
 				</listitem>
 
 				<listitem>

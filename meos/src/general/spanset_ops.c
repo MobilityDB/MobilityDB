@@ -1931,7 +1931,7 @@ union_spanset_span(const SpanSet *ss, const Span *s)
   /* Add the remaining component spans if any are left */
   while (i < ss->count)
     spans[nspans++] = *SPANSET_SP_N(ss, i++);
-  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDER_NO);
 }
 
 /**
@@ -2030,7 +2030,7 @@ union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     spans[nspans++] = *SPANSET_SP_N(ss1, i++);
   while (j < ss2->count)
     spans[nspans++] = *SPANSET_SP_N(ss2, j++);
-  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDER_NO);
 }
 
 /*****************************************************************************
@@ -2167,7 +2167,7 @@ intersection_spanset_span(const SpanSet *ss, const Span *s)
     Span s1;
     if (! inter_span_span(SPANSET_SP_N(ss, 0), s, &s1))
       return NULL;
-    return spanset_make_exp((Span *) &s1, 1, 1, NORMALIZE_NO, ORDERED);
+    return spanset_make_exp((Span *) &s1, 1, 1, NORMALIZE_NO, ORDER_NO);
   }
 
   /* Ensure validity of the arguments */
@@ -2197,7 +2197,7 @@ intersection_spanset_span(const SpanSet *ss, const Span *s)
     if (s->upper < s1->upper)
       break;
   }
-  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDER_NO);
 }
 
 /**
@@ -2260,7 +2260,7 @@ intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     else
       j++;
   }
-  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDER_NO);
 }
 
 /*****************************************************************************
@@ -2437,7 +2437,7 @@ minus_span_spanset(const Span *s, const SpanSet *ss)
 
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
   int count = mi_span_spanset(s, ss, 0, ss->count, spans);
-  return spanset_make_free(spans, count, NORMALIZE_NO, ORDERED);
+  return spanset_make_free(spans, count, NORMALIZE_NO, ORDER_NO);
 }
 
 /**
@@ -2459,7 +2459,7 @@ minus_spanset_value(const SpanSet *ss, Datum value)
   int nspans = 0;
   for (int i = 0; i < ss->count; i++)
     nspans += mi_span_value(SPANSET_SP_N(ss, i), value, &spans[nspans]);
-  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDER_NO);
 }
 
 #if MEOS
@@ -2580,7 +2580,7 @@ minus_spanset_span(const SpanSet *ss, const Span *s)
     const Span *s1 = SPANSET_SP_N(ss, i);
     nspans += mi_span_span(s1, s, &spans[nspans]);
   }
-  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDER_NO);
 }
 
 /**
@@ -2644,7 +2644,7 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   /* Copy the sequences after the span set */
   while (i < ss1->count)
     spans[nspans++] = *SPANSET_SP_N(ss1, i++);
-  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDERED);
+  return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDER_NO);
 }
 
 /******************************************************************************

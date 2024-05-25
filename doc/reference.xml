@@ -252,23 +252,27 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Shift the set or span by a value or interval</para>
+					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Shift by a value or interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_scale"><varname>scale</varname></link>: Scale the set or span by a value or interval</para>
+					<para><link linkend="setspan_scale"><varname>scale</varname></link>: Scale by a value or interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_shiftScale"><varname>shiftScale</varname></link>: Shift and scale the set or span by the values or intervals</para>
+					<para><link linkend="setspan_shiftScale"><varname>shiftScale</varname></link>: Shift and scale by the values or intervals</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatspan_round"><varname>round</varname></link>: Round the bounds of a float set or span to a number of decimal places</para>
+					<para><link linkend="floatsetspan_floor"><varname>floor</varname>, <varname>ceil</varname></link>: Round down or up to the lowest integer</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatset_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Convert a float set to degrees or radians</para>
+					<para><link linkend="floatsetspan_round"><varname>round</varname></link>: Round to a number of decimal places</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="floatset_degrees"><varname>degrees</varname>, <varname>radians</varname></link>: Transform to degrees or radians</para>
 				</listitem>
 
 				<listitem>
@@ -280,7 +284,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_tprecision"><varname>tprecision</varname></link>: Set the temporal precision of the time value to the interval with respect to the origin</para>
+					<para><link linkend="time_tprecision"><varname>tprecision</varname></link>: Set the temporal precision to the interval with respect to the origin</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1092,6 +1096,10 @@
 
 				<listitem>
 					<para><link linkend="deltaValue"><varname>deltaValue</varname></link>: Return the value difference between consecutive instants of the temporal number</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="floor"><varname>floor</varname>, <varname>ceil</varname></link>: Round down or up to the nearest integer</para>
 				</listitem>
 
 				<listitem>
