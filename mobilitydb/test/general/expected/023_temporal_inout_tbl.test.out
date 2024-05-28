@@ -64,6 +64,30 @@ SELECT asText(ARRAY[ttext 'ABC@2000-01-01']);
  {"\"ABC\"@Sat Jan 01 00:00:00 2000 PST"}
 (1 row)
 
+SELECT tintFromMFJSON(asMFJSON(tint '1@2000-01-01', 1, 3));
+         tintfrommfjson         
+--------------------------------
+ 1@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tintFromMFJSON(asMFJSON(tint '{1@2000-01-01, 2@2000-01-02}', 1, 3));
+                          tintfrommfjson                          
+------------------------------------------------------------------
+ {1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT tintFromMFJSON(asMFJSON(tint '[1@2000-01-01, 2@2000-01-02]', 1, 3));
+                          tintfrommfjson                          
+------------------------------------------------------------------
+ [1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT tintFromMFJSON(asMFJSON(tint '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 3@2000-01-04]}', 1, 3));
+                                                            tintfrommfjson                                                            
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST], [3@Mon Jan 03 00:00:00 2000 PST, 3@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
 SELECT tfloatFromMFJSON(asMFJSON(tfloat '1@2000-01-01', 1, 3, 15));
         tfloatfrommfjson        
 --------------------------------
