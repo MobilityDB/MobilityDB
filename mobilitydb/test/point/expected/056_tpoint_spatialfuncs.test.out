@@ -3603,6 +3603,42 @@ select astext(atStbox(tgeompoint '[Point(-2 1)@2000-01-01, Point(2 1)@2000-01-02
  {[POINT(0 1)@Sat Jan 01 12:00:00 2000 PST, POINT(1 1)@Sat Jan 01 18:00:00 2000 PST]}
 (1 row)
 
+select astext(atStbox(tgeompoint '(Point(2 1)@2000-01-01, Point(3 1)@2000-01-02)', stbox 'STBOX X((0,0),(2 2))'));
+ astext 
+--------
+ 
+(1 row)
+
+select astext(atStbox(tgeompoint '(Point(3 1)@2000-01-01, Point(2 1)@2000-01-02)', stbox 'STBOX X((0,0),(2 2))'));
+ astext 
+--------
+ 
+(1 row)
+
+select astext(atStbox(tgeompoint '(Point(1 1)@2000-01-01, Point(2 1)@2000-01-02, Point(3 1)@2000-01-04)', stbox 'STBOX X((0,0),(2 2))'));
+                                        astext                                        
+--------------------------------------------------------------------------------------
+ {(POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 1)@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+select astext(atStbox(tgeompoint '(Point(3 1)@2000-01-01, Point(2 1)@2000-01-02, Point(1 1)@2000-01-04)', stbox 'STBOX X((0,0),(2 2))'));
+                                        astext                                        
+--------------------------------------------------------------------------------------
+ {[POINT(2 1)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Tue Jan 04 00:00:00 2000 PST)}
+(1 row)
+
+select astext(atStbox(tgeompoint '(Point(1 1)@2000-01-01, Point(1 1)@2000-01-02, Point(3 1)@2000-01-04)', stbox 'STBOX X((0,0),(2 2))'));
+                                                            astext                                                             
+-------------------------------------------------------------------------------------------------------------------------------
+ {(POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(1 1)@Sun Jan 02 00:00:00 2000 PST, POINT(2 1)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+select astext(atStbox(tgeompoint '(Point(3 1)@2000-01-01, Point(3 1)@2000-01-02, Point(1 1)@2000-01-04)', stbox 'STBOX X((0,0),(2 2))'));
+                                        astext                                        
+--------------------------------------------------------------------------------------
+ {[POINT(2 1)@Mon Jan 03 00:00:00 2000 PST, POINT(1 1)@Tue Jan 04 00:00:00 2000 PST)}
+(1 row)
+
 /* Errors */
 SELECT asText(atStbox(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01', 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
 ERROR:  Operation on mixed planar and geodetic coordinates

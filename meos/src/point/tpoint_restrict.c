@@ -1501,7 +1501,12 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         /* If ninsts > 0 the instant was added in the previous iteration */
         if (ninsts == 0)
         {
-          if (t1 != inst1->t)
+          if (t1 == inst1->t)
+          {
+            instants[ninsts++] = (TInstant *) inst1;
+            lower_inc &= p3_inc;
+          }
+          else if (t1 != inst2->t)
           {
             inter1 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, t1);
             free1 = true;
@@ -1509,14 +1514,33 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
             tofree[nfree++] = instants[ninsts++];
             lower_inc = p3_inc;
           }
-          else
+          else if (t1 == inst2->t)
           {
-            instants[ninsts++] = (TInstant *) inst1;
-            lower_inc &= p3_inc;
+            /* We have t1 == t2 == inst2->t and since found = true, we know
+             * that we are on an inclusive border (p3_inc == p4_inc == true).
+             * Thus, lower_inc is only false if we are at the last segment
+             * and seq->period.upper_inc is false. */
+            instants[ninsts++] = (TInstant *) inst2;
+            lower_inc = (i == seq->count - 1) ? seq->period.upper_inc : true;
           }
         }
         if (t1 == t2)
-          upper_inc = lower_inc;
+        {
+          /* If we are here: p3_inc == p4_inc == true, otherwise found would be false.
+           * And we also know that p1 != p2, so segment has nonzero length.
+           * Thus, we are in 1 of 3 cases: */
+          if (t1 == inst1->t)
+            /* We are exiting the box at the start of a segment
+             * Start of segments are assumed inclusive except for the first one */
+            upper_inc = (i == 1) ? seq->period.lower_inc : true;
+          else if (t1 == inst2->t)
+            /* We are entering the box at the end of a segment
+             * End of segments are assumed exclusive except for the last one */
+            upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+          else
+            /* We clip the box at one of its inclusive corners */
+            upper_inc = true;
+        }
         else
         {
           if (t2 != inst2->t)
@@ -1551,15 +1575,21 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     }
     if (makeseq && ninsts > 0)
     {
-      sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-        lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
+      /* We can occasionally have ninsts == 1 and lower_inc == upper_inc == false
+       * These are cases where the sequence starts / ends on an inclusive border
+       * and we have seq->lower_inc / seq->upper_inc being false.
+       * Don't create a sequence, but still reset ninsts and lower_inc */
+      if (ninsts > 1 || lower_inc || upper_inc)
+        sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
+          lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
       ninsts = 0;
       lower_inc = true;
     }
     inst1 = inst2;
     p1 = DatumGetGserializedP(tinstant_val(inst2));
   }
-  if (ninsts > 0)
+  /* See above for explanation of condition */
+  if (ninsts > 0 && (ninsts > 1 || lower_inc || upper_inc))
     sequences[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
       lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
   pfree_array((void **) tofree, nfree);
