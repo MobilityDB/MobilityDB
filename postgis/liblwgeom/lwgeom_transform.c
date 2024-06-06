@@ -58,7 +58,11 @@ lwproj_from_str(const char* str_in, const char* str_out)
 
 	PJ* pj = proj_create_crs_to_crs(PJ_DEFAULT_CTX, str_in, str_out, NULL);
 	if (!pj)
+  {
+    int er = proj_context_errno(PJ_DEFAULT_CTX);
+    const char *er_str = proj_errno_string(er);
 		return NULL;
+  }
 
 	/* Fill in geodetic parameter information when a null-transform */
 	/* is passed, because that's how we signal we want to store */

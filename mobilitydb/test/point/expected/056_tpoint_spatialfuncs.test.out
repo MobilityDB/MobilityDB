@@ -24,6 +24,22 @@ SELECT asEWKT(transform(geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 
  SRID=4326;{"POINT Z (1 2 3)", "POINT Z (4 5 6)"}
 (1 row)
 
+WITH test(geoset) AS (
+  SELECT geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )
+SELECT asEWKT(transform(transform(geoset, 102004), 4326), 6) FROM test;
+                      asewkt                      
+--------------------------------------------------
+ SRID=4326;{"POINT Z (1 2 3)", "POINT Z (4 5 6)"}
+(1 row)
+
+WITH test(geoset) AS (
+  SELECT geomset 'SRID=909090;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )
+SELECT asEWKT(transform(transform(geoset, 102004), 909090), 6) FROM test;
+ERROR:  Transform: Could not form projection from 'srid=909090'
+WITH test(geoset) AS (
+  SELECT geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )
+SELECT asEWKT(transform(transform(geoset, 909090), 4326), 6) FROM test;
+ERROR:  Transform: Could not form projection to 'srid=909090'
 SELECT SRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
  srid 
 ------
@@ -3455,7 +3471,7 @@ SELECT asText(atStbox(tgeompoint '(Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]
  
 (1 row)
 
-SELECT asText(atStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-02, 
+SELECT asText(atStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-02,
   Point(0 0)@2001-01-03, Point(0 1)@2001-01-04, Point(1 1)@2001-01-05]',
   stbox 'STBOX X((0,0),(2,2))', false));
                                                                                                      astext                                                                                                      
@@ -3463,7 +3479,7 @@ SELECT asText(atStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-02,
  {[POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(1 0)@Tue Jan 02 00:00:00 2001 PST, POINT(0 0)@Wed Jan 03 00:00:00 2001 PST, POINT(0 1)@Thu Jan 04 00:00:00 2001 PST, POINT(1 1)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
-SELECT asText(atStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02, 
+SELECT asText(atStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02,
   Point(2 2)@2001-01-03, Point(2 1)@2001-01-04, Point(1 1)@2001-01-05]',
   stbox 'STBOX X((0,0),(2,2))', false));
                                                                                   astext                                                                                  
@@ -3507,7 +3523,7 @@ SELECT asText(minusStbox(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(
  Interp=Step;{(POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST], [POINT(3 3)@Tue Jan 04 00:00:00 2000 PST, POINT(3 3)@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-02, 
+SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-02,
   Point(0 0)@2001-01-03, Point(0 1)@2001-01-04, Point(1 1)@2001-01-05]',
   stbox 'STBOX X((0,0),(2,2))', false));
  astext 
@@ -3515,7 +3531,7 @@ SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-
  
 (1 row)
 
-SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02, 
+SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02,
   Point(2 2)@2001-01-03, Point(2 1)@2001-01-04, Point(1 1)@2001-01-05]',
   stbox 'STBOX X((0,0),(2,2))', false));
                                                             astext                                                             

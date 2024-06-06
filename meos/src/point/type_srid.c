@@ -52,7 +52,7 @@
  * Maximum length of an ESPG string to lookup
  * Notice that SRID_MAXIMUM is defined by PostGIS as 999999
  */
-#define MAX_EPSG_STR 12 /* EPSG:999999 */
+#define MAX_AUTH_SRID_STR 12 /* EPSG:999999 */
 
 /*****************************************************************************
  * Functions for spatial reference systems
@@ -390,16 +390,49 @@ to_dec(POINT4D *pt)
 /**
  * @brief Return a structure with the information to perform a transformation
  * @param[in] srid_from,srid_to SRIDs
+ * @note We are avoiding to have a list of recognized SRIDs cached as done in
+ * PostGIS. We didn't find a way to get the authority name from an SRID.
+ * Given that all (but one) entries in PostGIS spatial_ref_sys table have
+ * either authority name equal to 'EPSG' or 'ESRI', we try finding the two
+ * combinations for the input and output SRIDs.
  */
 LWPROJ *
 lwproj_transform(int32 srid_from, int32 srid_to)
 {
-  char srid_from_str[MAX_EPSG_STR];
-  char srid_to_str[MAX_EPSG_STR];
-  int len = snprintf(srid_from_str, MAX_EPSG_STR, "EPSG:%d", srid_from);
-  srid_from_str[len] = '\0';
-  len = snprintf(srid_to_str, MAX_EPSG_STR, "EPSG:%d", srid_to);
-  srid_to_str[len] = '\0';
+  char srid_from_str[MAX_AUTH_SRID_STR];
+  char srid_to_str[MAX_AUTH_SRID_STR];
+  /* From SRID */
+  snprintf(srid_from_str, MAX_AUTH_SRID_STR, "EPSG:%d", srid_from);
+  PJ *pj1 = proj_create(PJ_DEFAULT_CTX, srid_from_str);
+  if (! pj1)
+  {
+    snprintf(srid_from_str, MAX_AUTH_SRID_STR, "ESRI:%d", srid_from);
+    pj1 = proj_create(PJ_DEFAULT_CTX, srid_from_str);
+    if (! pj1)
+    {
+      /* Error */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "Transform: Could not form projection from 'srid=%d'", srid_from);
+      return NULL;
+    }
+  }
+  proj_destroy(pj1);
+  /* To SRID */
+  snprintf(srid_to_str, MAX_AUTH_SRID_STR, "EPSG:%d", srid_to);
+  PJ *pj2 = proj_create(PJ_DEFAULT_CTX, srid_to_str);
+  if (! pj2)
+  {
+    snprintf(srid_to_str, MAX_AUTH_SRID_STR, "ESRI:%d", srid_to);
+    pj2 = proj_create(PJ_DEFAULT_CTX, srid_to_str);
+    if (! pj2)
+    {
+      /* Error */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "Transform: Could not form projection to 'srid=%d'", srid_to);
+      return NULL;
+    }
+  }
+  proj_destroy(pj2);
   LWPROJ *result = lwproj_from_str(srid_from_str, srid_to_str);
   if (result)
     return result;
