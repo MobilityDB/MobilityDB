@@ -799,7 +799,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Return the start or end value</para>
+					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Return the start, end, or n-th value</para>
 				</listitem>
 
 				<listitem>

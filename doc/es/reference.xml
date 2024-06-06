@@ -215,7 +215,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener el valor inicial, final o enésimp</para>
+					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener el valor inicial, final o enésimo</para>
 				</listitem>
 
 				<listitem>
@@ -239,7 +239,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startTimestamp"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname>, <varname>startTimestamp</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener la fecha or marca de tiempo inicial, final o enésima</para>
+					<para><link linkend="setspan_startTimestamp"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname>, <varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Obtener la fecha or marca de tiempo inicial, final o enésima</para>
 				</listitem>
 
 				<listitem>
@@ -819,7 +819,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname></link>: Obtener el valor inicial o final</para>
+					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener el valor inicial, final o enésimo</para>
 				</listitem>
 
 				<listitem>

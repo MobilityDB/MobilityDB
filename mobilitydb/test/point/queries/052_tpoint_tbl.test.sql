@@ -164,26 +164,31 @@ SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeogpoint;
 SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeompoint3D;
 SELECT MAX(Xmin(round(stbox(temp), 6))) FROM tbl_tgeogpoint3D;
 
-/* There is no st_memSize neither MAX for geography. */
-SELECT MAX(st_memSize(getValue(inst))) FROM tbl_tgeompoint_inst;
-SELECT MAX(st_memSize(getValue(inst)::geometry)) FROM tbl_tgeogpoint_inst;
-SELECT MAX(st_memSize(getValue(inst))) FROM tbl_tgeompoint3D_inst;
-SELECT MAX(st_memSize(getValue(inst)::geometry)) FROM tbl_tgeogpoint3D_inst;
+/* There is no ST_MemSize neither MAX for geography. */
+SELECT MAX(ST_MemSize(getValue(inst))) FROM tbl_tgeompoint_inst;
+SELECT MAX(ST_MemSize(getValue(inst)::geometry)) FROM tbl_tgeogpoint_inst;
+SELECT MAX(ST_MemSize(getValue(inst))) FROM tbl_tgeompoint3D_inst;
+SELECT MAX(ST_MemSize(getValue(inst)::geometry)) FROM tbl_tgeogpoint3D_inst;
 
 SELECT MAX(memSize(valueSet(temp))) FROM tbl_tgeompoint;
 SELECT MAX(memSize(valueSet(temp))) FROM tbl_tgeogpoint;
 SELECT MAX(memSize(valueSet(temp))) FROM tbl_tgeompoint3D;
 SELECT MAX(memSize(valueSet(temp))) FROM tbl_tgeogpoint3D;
 
-SELECT MAX(st_memSize(startValue(temp))) FROM tbl_tgeompoint;
-SELECT MAX(st_memSize(startValue(temp)::geometry)) FROM tbl_tgeogpoint;
-SELECT MAX(st_memSize(startValue(temp))) FROM tbl_tgeompoint3D;
-SELECT MAX(st_memSize(startValue(temp)::geometry)) FROM tbl_tgeogpoint3D;
+SELECT MAX(ST_MemSize(startValue(temp))) FROM tbl_tgeompoint;
+SELECT MAX(ST_MemSize(startValue(temp)::geometry)) FROM tbl_tgeogpoint;
+SELECT MAX(ST_MemSize(startValue(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(ST_MemSize(startValue(temp)::geometry)) FROM tbl_tgeogpoint3D;
 
-SELECT MAX(st_memSize(endValue(temp))) FROM tbl_tgeompoint;
-SELECT MAX(st_memSize(endValue(temp)::geometry)) FROM tbl_tgeogpoint;
-SELECT MAX(st_memSize(endValue(temp))) FROM tbl_tgeompoint3D;
-SELECT MAX(st_memSize(endValue(temp)::geometry)) FROM tbl_tgeogpoint3D;
+SELECT MAX(ST_MemSize(endValue(temp))) FROM tbl_tgeompoint;
+SELECT MAX(ST_MemSize(endValue(temp)::geometry)) FROM tbl_tgeogpoint;
+SELECT MAX(ST_MemSize(endValue(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(ST_MemSize(endValue(temp)::geometry)) FROM tbl_tgeogpoint3D;
+
+SELECT MAX(ST_MemSize(valueN(temp, 1))) FROM tbl_tgeompoint;
+SELECT MAX(ST_MemSize(valueN(temp, 1)::geometry)) FROM tbl_tgeogpoint;
+SELECT MAX(ST_MemSize(valueN(temp, 1))) FROM tbl_tgeompoint3D;
+SELECT MAX(ST_MemSize(valueN(temp, 1)::geometry)) FROM tbl_tgeogpoint3D;
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tgeompoint_inst;
 SELECT MAX(getTimestamp(inst)) FROM tbl_tgeogpoint_inst;
@@ -432,8 +437,8 @@ SELECT SUM(numInstants(update(t1.temp, t2.temp))) FROM tbl_tgeogpoint t1, tbl_tg
 -- Local aggregate functions
 ------------------------------------------------------------------------------
 
-SELECT MAX(st_memsize(twCentroid(temp))) FROM tbl_tgeompoint;
-SELECT MAX(st_memsize(twCentroid(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(ST_memsize(twCentroid(temp))) FROM tbl_tgeompoint;
+SELECT MAX(ST_memsize(twCentroid(temp))) FROM tbl_tgeompoint3D;
 
 ------------------------------------------------------------------------------
 -- Comparison functions and B-tree indexing

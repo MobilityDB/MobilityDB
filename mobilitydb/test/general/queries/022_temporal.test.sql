@@ -947,6 +947,33 @@ SELECT maxValue(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT maxValue(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT maxValue(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
+SELECT valueN(tbool 't@2000-01-01', 1);
+SELECT valueN(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', 1);
+SELECT valueN(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', 1);
+SELECT valueN(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', 1);
+SELECT valueN(tint '1@2000-01-01', 1);
+SELECT valueN(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
+SELECT valueN(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
+SELECT valueN(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 1);
+SELECT valueN(tfloat '1.5@2000-01-01', 1);
+SELECT valueN(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 1);
+SELECT valueN(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 1);
+SELECT valueN(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 1);
+SELECT valueN(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 1);
+SELECT valueN(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 1);
+SELECT valueN(ttext 'AAA@2000-01-01', 1);
+SELECT valueN(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 1);
+SELECT valueN(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 1);
+SELECT valueN(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 1);
+
+SELECT valueN(tfloat '{[1@2000-01-01, 2@2000-01-02),(2@2000-01-02, 3@2000-01-03]}', 3);
+SELECT valueN(tfloat '{[1@2000-01-01, 2@2000-01-02),(2@2000-01-02, 3@2000-01-03]}', 4);
+-- NULL
+SELECT valueN(tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]', 4);
+SELECT valueN(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 4);
+SELECT valueN(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 4);
+SELECT valueN(ttext '[AA@2000-01-01, BB@2000-01-02, AA@2000-01-03]', 4);
+
 SELECT minInstant(tint '1@2000-01-01');
 SELECT minInstant(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
 SELECT minInstant(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');

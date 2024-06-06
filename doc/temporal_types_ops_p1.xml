@@ -779,15 +779,19 @@ SELECT asText(valueSet(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-0
 			<listitem id="startValue">
 				<indexterm><primary><varname>startValue</varname></primary></indexterm>
 				<indexterm><primary><varname>endValue</varname></primary></indexterm>
-				<para>Return the start or end value</para>
+				<indexterm><primary><varname>valueN</varname></primary></indexterm>
+				<para>Return the start, end, or n-th  value</para>
 				<para><varname>startValue(ttype) → base</varname></para>
 				<para><varname>endValue(ttype) → base</varname></para>
+				<para><varname>valueN(ttype,int) → base</varname></para>
 				<para>The functions do not take into account whether the bounds are inclusive or not.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT startValue(tfloat '(1@2001-01-01, 2@2001-01-03)');
 -- 1
 SELECT endValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
 -- 5
+SELECT valueN(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}', 3);
+-- 3
 </programlisting>
 			</listitem>
 

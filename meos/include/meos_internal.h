@@ -649,6 +649,7 @@ extern void temporal_set_tstzspan(const Temporal *temp, Span *s);
 extern const TSequence **temporal_seqs(const Temporal *temp, int *count);
 extern Datum temporal_start_value (const Temporal *temp);
 extern Datum *temporal_vals(const Temporal *temp, int *count);
+extern bool temporal_value_n(const Temporal *temp, int n, Datum *result);
 extern Datum *temporal_values(const Temporal *temp, int *count);
 extern uint32 tinstant_hash(const TInstant *inst);
 extern const TInstant **tinstant_insts(const TInstant *inst, int *count);
@@ -700,6 +701,7 @@ extern Interval *tsequenceset_timespan(const TSequenceSet *ss);
 extern bool tsequenceset_timestamptz_n(const TSequenceSet *ss, int n, TimestampTz *result);
 extern TimestampTz *tsequenceset_timestamps(const TSequenceSet *ss, int *count);
 extern bool tsequenceset_value_at_timestamptz(const TSequenceSet *ss, TimestampTz t, bool strict, Datum *result);
+extern bool tsequenceset_value_n(const TSequenceSet *ss, int n, Datum *result);
 extern Datum *tsequenceset_vals(const TSequenceSet *ss, int *count);
 
 /*****************************************************************************/

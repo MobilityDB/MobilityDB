@@ -725,6 +725,15 @@ SELECT ST_AsEWKT(endValue(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)
 SELECT ST_AsEWKT(endValue(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
 SELECT ST_AsEWKT(endValue(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
 
+SELECT ST_AsEWKT(valueN(tgeompoint 'Point(1 1)@2000-01-01', 1));
+SELECT ST_AsEWKT(valueN(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 1));
+SELECT ST_AsEWKT(valueN(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 1));
+SELECT ST_AsEWKT(valueN(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 1));
+SELECT ST_AsEWKT(valueN(tgeogpoint 'Point(1.5 1.5)@2000-01-01', 1));
+SELECT ST_AsEWKT(valueN(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 1));
+SELECT ST_AsEWKT(valueN(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 1));
+SELECT ST_AsEWKT(valueN(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 1));
+
 SELECT getTimestamp(tgeompoint 'Point(1 1)@2000-01-01');
 SELECT getTimestamp(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
 /* Errors */

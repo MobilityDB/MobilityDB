@@ -258,6 +258,10 @@ SELECT MAX(minValue(temp)) FROM tbl_tint;
 SELECT round(MAX(minValue(temp))::numeric, 6) FROM tbl_tfloat;
 SELECT MAX(minValue(temp)) FROM tbl_ttext;
 
+SELECT MAX(valueN(temp, numInstants(temp))) FROM tbl_tint;
+SELECT round(MAX(valueN(temp, numInstants(temp)))::numeric, 6) FROM tbl_tfloat;
+SELECT MAX(valueN(temp, numInstants(temp))) FROM tbl_ttext;
+
 SELECT MAX(maxValue(temp)) FROM tbl_tint;
 SELECT round(MAX(maxValue(temp))::numeric, 6) FROM tbl_tfloat;
 SELECT MAX(maxValue(temp)) FROM tbl_ttext;
