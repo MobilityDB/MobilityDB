@@ -978,6 +978,15 @@ select astext(atStbox(tgeompoint '[Point(0 2)@2000-01-01, Point(2 0)@2000-01-02]
 select astext(atStbox(tgeompoint '[Point(0 0)@2000-01-01, Point(2 2)@2000-01-02]', stbox 'STBOX X((0,0),(1 1))'));
 select astext(atStbox(tgeompoint '[Point(-2 1)@2000-01-01, Point(2 1)@2000-01-02]', stbox 'STBOX X((0,0),(1 1))'));
 
+-- Edge cases with lower_inc / upper_inc = false
+select astext(atStbox(tgeompoint '(Point(2 1)@2000-01-01, Point(3 1)@2000-01-02)', stbox 'STBOX X((0,0),(2 2))'));
+select astext(atStbox(tgeompoint '(Point(3 1)@2000-01-01, Point(2 1)@2000-01-02)', stbox 'STBOX X((0,0),(2 2))'));
+select astext(atStbox(tgeompoint '(Point(1 1)@2000-01-01, Point(2 1)@2000-01-02, Point(3 1)@2000-01-04)', stbox 'STBOX X((0,0),(2 2))'));
+select astext(atStbox(tgeompoint '(Point(3 1)@2000-01-01, Point(2 1)@2000-01-02, Point(1 1)@2000-01-04)', stbox 'STBOX X((0,0),(2 2))'));
+select astext(atStbox(tgeompoint '(Point(1 1)@2000-01-01, Point(1 1)@2000-01-02, Point(3 1)@2000-01-04)', stbox 'STBOX X((0,0),(2 2))'));
+select astext(atStbox(tgeompoint '(Point(3 1)@2000-01-01, Point(3 1)@2000-01-02, Point(1 1)@2000-01-04)', stbox 'STBOX X((0,0),(2 2))'));
+
+
 /* Errors */
 SELECT asText(atStbox(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01', 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])'));
 SELECT asText(atStbox(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
