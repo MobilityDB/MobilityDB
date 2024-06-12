@@ -279,6 +279,9 @@ float_bucket(double value, double size, double origin)
     }
     value -= origin;
   }
+  /* Notice that by using the floor function above we remove the need to
+   * add the additional if needed for the integer case to take into account
+   * that integer division truncates toward 0 in C99 */
   double result = floor(value / size) * size;
   result += origin;
   return result;
