@@ -4323,7 +4323,7 @@ tpoint_geo_min_bearing_at_timestamptz(const TInstant *start,
     proj = tsegment_value_at_timestamptz(start, end, LINEAR, *t);
   q = DATUM_POINT2D_P(proj);
   /* We add a turning point only if p is to the North of q */
-  bool result = FP_GTEQ(p->y, q->y) ? true : false;
+  bool result = MEOS_FP_GE(p->y, q->y) ? true : false;
   pfree(DatumGetPointer(proj));
   return result;
 }

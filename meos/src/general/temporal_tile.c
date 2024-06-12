@@ -218,7 +218,6 @@ int_bucket(int value, int size, int origin)
      * value is at least the minimum integer value (PG_INT32_MIN) and when
      * negative that it is less than the maximum integer value (PG_INT32_MAX)
      */
-    origin = origin % size;
     if ((origin > 0 && value < PG_INT32_MIN + origin) ||
         (origin < 0 && value > PG_INT32_MAX + origin))
     {
@@ -269,10 +268,9 @@ float_bucket(double value, double size, double origin)
     /*
      * We need to ensure that the value is in span _after_ the origin is
      * applied: when the origin is positive we need to make sure the resultant
-     * value is at least the minimum integer value (PG_INT32_MIN) and when
-     * negative that it is less than the maximum integer value (PG_INT32_MAX)
+     * value is at least the minimum double value (-1 * DBL_MAX) and when
+     * negative that it is less than the maximum double value (DBL_MAX)
      */
-    origin = fmod(origin, size);
     if ((origin > 0 && value < -1 * DBL_MAX + origin) ||
         (origin < 0 && value > DBL_MAX + origin))
     {
@@ -281,10 +279,10 @@ float_bucket(double value, double size, double origin)
     }
     value -= origin;
   }
-  double result = floor(value / size) * size;
   /* Notice that by using the floor function above we remove the need to
    * add the additional if needed for the integer case to take into account
    * that integer division truncates toward 0 in C99 */
+  double result = floor(value / size) * size;
   result += origin;
   return result;
 }
@@ -321,7 +319,6 @@ timestamptz_bucket1(TimestampTz t, int64 size, TimestampTz origin)
      * time is at least the minimum time value value (DT_NOBEGIN) and when
      * negative that it is less than the maximum time value (DT_NOEND)
      */
-    origin = origin % size;
     if ((origin > 0 && t < DT_NOBEGIN + origin) ||
         (origin < 0 && t > DT_NOEND + origin))
     {
@@ -1616,10 +1613,11 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
   TSequence **bucketseqs = palloc(sizeof(TSequence *) * ss->totalcount * count);
   /* palloc0 to initialize the counters to 0 */
   int *nseqs = palloc0(sizeof(int) * count);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->flags);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    if (MEOS_FLAGS_LINEAR_INTERP(ss->flags))
+    if (linear)
       tnumberseq_linear_value_split(seq, start_bucket, size, count, bucketseqs,
         nseqs, ss->totalcount);
     else

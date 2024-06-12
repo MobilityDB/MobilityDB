@@ -414,10 +414,11 @@ SELECT periodBucket('2001-01-04', interval '1 week', '2001-01-07');
 					<para><varname>tileList(bounds tbox,size float,duration interval,vorigin float=0,</varname></para>
 					<para><varname>  torigin timestamptz='2000-01-03') → {(index,tile)}</varname></para>
 					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,] </varname></para>
-					<para><varname>  sorigin geompoint='Point(0 0 0)') → {(index,tile)}</varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)',borderInc bool=true) → {(index,tile)}</varname></para>
 					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,]duration interval,</varname></para>
-					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03') → {(index,tile)}</varname></para>
-					<para>The result is a set of pairs <varname>(index,tile)</varname>. If the origin of the value and/or time dimensions are not specified, they are set by default to 0 or <varname>'Point(0 0 0)'</varname> for the value dimension (depending on the box type) and to Monday, January 3, 2000 for the time dimension.</para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03',</varname></para>
+					<para><varname>  borderInc bool=true) → {(index,tile)}</varname></para>
+					<para>The result is a set of pairs <varname>(index,tile)</varname>. If the origin of the value and/or time dimensions are not specified, they are set by default to 0 or <varname>'Point(0 0 0)'</varname> for the value dimension (depending on the box type) and to Monday, January 3, 2000 for the time dimension. The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus, extra tiles containing the border are generated.</para>
 					<para>In the case of a spatiotemporal grid, <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. The SRID of the tile coordinates is determined by the input box and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT (gr).index, (gr).tile
@@ -596,8 +597,9 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', 5.0, '5 days
 					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
 					<para>Fragment the temporal point with respect to the tiles in a spatial grid &Z_support; &SRF;</para>
 					<para><varname>spaceSplit(tgeompoint,xsize float,[ysize float,zsize float,]</varname></para>
-					<para><varname>  origin geompoint='Point(0 0 0)',bitmatrix boolean=true) → {(point,tpoint)}</varname></para>
-					<para>The result is a set of pairs <varname>(point,tpoint)</varname>. If the origin of the space dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname>. The arguments <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
+					<para><varname>  origin geompoint='Point(0 0 0)',bitmatrix boolean=true,borderInc bool=true) →</varname></para>
+					<para><varname>  {(point,tpoint)}</varname></para>
+					<para>The result is a set of pairs <varname>(point,tpoint)</varname>. If the origin of the space dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname>. The arguments <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process. The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus, extra tiles containing the border are generated.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2001-03-01, Point(10 10)@2001-03-10]',
@@ -620,8 +622,9 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2001-03-01,
 					<para>Fragment the temporal point with respect to the tiles in a spatiotemporal grid &Z_support; &SRF;</para>
 					<para><varname>spaceTimeSplit(tgeompoint,xsize float,[ysize float,ysize float,]</varname></para>
 					<para><varname>  duration interval,sorigin geompoint='Point(0 0 0)',</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03',bitmatrix boolean=true) → {(point,time,tpoint)}</varname></para>
-					<para>The result is a set of triples <varname>(point,time,tpoint)</varname>. If the origin of the space and time dimensions are not specified, they are set by default to <varname>'Point(0 0 0)'</varname> and Monday, January 3, 2000, respectively. The arguments <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
+					<para><varname>  torigin timestamptz='2000-01-03',bitmatrix boolean=true,borderInc boolean=true) →</varname></para>
+					<para><varname>  {(point,time,tpoint)}</varname></para>
+					<para>The result is a set of triples <varname>(point,time,tpoint)</varname>. If the origin of the space and time dimensions are not specified, they are set by default to <varname>'Point(0 0 0)'</varname> and Monday, January 3, 2000, respectively. The arguments <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process. The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus extra tiles containing the border are generated.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2001-02-01, Point(10 10)@2001-02-10]',

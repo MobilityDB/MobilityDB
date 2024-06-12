@@ -29,7 +29,7 @@
 
 /**
  * @brief A simple program that applies multidimensional tiling to a temporal
- * point according to value and/or time buckets. 
+ * point according to value and/or time buckets.
  *
  * The program can be build as follows
  * @code
@@ -61,6 +61,8 @@ int main(void)
   bool spacesplit = true; /* Set this parameter to enable/disable space split */
   bool timesplit = true; /* Set this parameter to enable/disable time split */
   bool bitmatrix = true; /* Set this parameter to enable/disable the bit matrix */
+  bool border_inc = true; /* Set this parameter to include/exclude the upper
+                             border of the extent */
 
   GSERIALIZED **space_buckets = NULL;
   TimestampTz *time_buckets = NULL;
@@ -68,7 +70,7 @@ int main(void)
   int count;
   if (spacesplit)
     result = tpoint_space_time_split(tpoint, 2.0, 2.0, 2.0,
-      timesplit ? interv : NULL, sorigin, torigin, bitmatrix,
+      timesplit ? interv : NULL, sorigin, torigin, bitmatrix, border_inc,
       &space_buckets, &time_buckets, &count);
   else
     result = temporal_time_split(tpoint, interv, torigin, &time_buckets,

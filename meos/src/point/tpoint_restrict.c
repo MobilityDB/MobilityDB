@@ -1145,8 +1145,8 @@ liangBarskyClip(GSERIALIZED *point1, GSERIALIZED *point2, const STBox *box,
           if (max_code1 & max_code2)
             return false;
           /* Point is included if its max_code is 0 */
-          *p3_inc = ! max_code1;
-          *p4_inc = ! max_code2;
+          *p3_inc = (max_code1 == 0);
+          *p4_inc = (max_code2 == 0);
         }
         *point3 = geopoint_make(x1, y1, z1, hasz, false, srid);
         *point4 = geopoint_make(x2, y2, z2, hasz, false, srid);

@@ -1353,7 +1353,8 @@ tfunc_tcontseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
     count = (seq1->count + seq2->count) * 3;
   else
   {
-    if (MEOS_FLAGS_LINEAR_INTERP(seq1->flags) == MEOS_FLAGS_LINEAR_INTERP(seq2->flags))
+    if (MEOS_FLAGS_LINEAR_INTERP(seq1->flags) == 
+        MEOS_FLAGS_LINEAR_INTERP(seq2->flags))
       count = 1;
     else
       count = (seq1->count + seq2->count) * 2;
@@ -1403,7 +1404,8 @@ tfunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
     count = (ss->totalcount + seq->count) * 3;
   else
   {
-    if (MEOS_FLAGS_LINEAR_INTERP(ss->flags) == MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+    if (MEOS_FLAGS_LINEAR_INTERP(ss->flags) == 
+        MEOS_FLAGS_LINEAR_INTERP(seq->flags))
       count = ss->count - loc;
     else
       count = (ss->totalcount + seq->count) * 2;
@@ -1453,7 +1455,8 @@ tfunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
     count *= 3;
   else
   {
-    if (MEOS_FLAGS_LINEAR_INTERP(ss1->flags) != MEOS_FLAGS_LINEAR_INTERP(ss2->flags))
+    if (MEOS_FLAGS_LINEAR_INTERP(ss1->flags) != 
+        MEOS_FLAGS_LINEAR_INTERP(ss2->flags))
       count *= 2;
   }
   TSequence **sequences = palloc(sizeof(TSequence *) * count);

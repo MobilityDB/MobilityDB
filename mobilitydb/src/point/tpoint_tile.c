@@ -85,10 +85,14 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
     GSERIALIZED *sorigin;
     int64 tunits = 0; /* make compiler quiet */
     TimestampTz torigin = 0; /* make compiler quiet */
-    assert(PG_NARGS() == 5 || PG_NARGS() == 7);
-    if (PG_NARGS() == 5)
+    assert(PG_NARGS() == 6 || PG_NARGS() == 8);
+    bool border_inc;
+    if (PG_NARGS() == 6)
+    {
       sorigin = PG_GETARG_GSERIALIZED_P(4);
-    else /* PG_NARGS() == 7 */
+      border_inc = PG_GETARG_BOOL(5);
+    }
+    else /* PG_NARGS() == 8 */
     {
       /* If time arguments are given */
       ensure_has_T_stbox(bounds);
@@ -97,13 +101,18 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
       tunits = interval_units(duration);
       sorigin = PG_GETARG_GSERIALIZED_P(5);
       torigin = PG_GETARG_TIMESTAMPTZ(6);
+      border_inc = PG_GETARG_BOOL(7);
     }
     ensure_not_empty(sorigin);
     ensure_point_type(sorigin);
-    /* Since we pass by default Point(0 0 0) as origin independently of the input
-     * STBox, we test the same spatial dimensionality only for STBox Z */
+    /* Since we pass by default Point(0 0 0) as origin independently of the
+     * input STBox, we test the same spatial dimensionality only for STBox Z.
+     * Also, since when zsize is not given we pass by default xsize, if we
+     * don't have an STBox Z we set zsize to 0 */
     if (MEOS_FLAGS_GET_Z(bounds->flags))
       ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin);
+    else
+      zsize = 0;
     int32 srid = bounds->srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)
@@ -124,6 +133,9 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
       const POINT2D *p2d = GSERIALIZED_POINT2D_P(sorigin);
       pt.x = p2d->x;
       pt.y = p2d->y;
+      /* Since when zsize is not given we pass by default xsize, if the box does
+       * not have Z dimension we set zsize to 0 */
+      zsize = 0;
     }
 
     /* Initialize the FuncCallContext */
@@ -133,7 +145,7 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
     funcctx->user_fctx = stbox_tile_state_make(NULL, bounds, xsize, ysize,
-      zsize, tunits, pt, torigin);
+      zsize, tunits, pt, torigin, border_inc);
     /* Build a tuple description for a multidim_grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -209,7 +221,7 @@ Stbox_tile(PG_FUNCTION_ARGS)
     hast = true;
   }
 
-  PG_RETURN_STBOX_P(stbox_tile(point, t, xsize, ysize, zsize, duration, 
+  PG_RETURN_STBOX_P(stbox_tile(point, t, xsize, ysize, zsize, duration,
     sorigin, torigin, hast));
 }
 
@@ -255,11 +267,14 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     if (timesplit)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
     bool bitmatrix = PG_GETARG_BOOL(i++);
+    if (temporal_num_instants(temp) == 1)
+      bitmatrix = false;
+    bool border_inc = PG_GETARG_BOOL(i++);
 
     /* Initialize state and verify parameter validity */
     int ntiles;
     STboxGridState *state = tpoint_space_time_split_init(temp, xsize, ysize,
-      zsize, duration, sorigin, torigin, bitmatrix, &ntiles);
+      zsize, duration, sorigin, torigin, bitmatrix, border_inc, &ntiles);
 
     /* Create function state */
     funcctx->user_fctx = state;
