@@ -41,6 +41,19 @@ SELECT asEWKT(transform(transform(geoset, 5676), 4326), 6) FROM test;
 -- Noop
 SELECT asEWKT(transform(geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}', 4326));
 
+-- Transform to ESRI:102004
+WITH test(geoset) AS (
+  SELECT geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )
+SELECT asEWKT(transform(transform(geoset, 102004), 4326), 6) FROM test;
+
+-- Coverage for erroneous from/to SRID
+WITH test(geoset) AS (
+  SELECT geomset 'SRID=909090;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )
+SELECT asEWKT(transform(transform(geoset, 102004), 909090), 6) FROM test;
+WITH test(geoset) AS (
+  SELECT geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )
+SELECT asEWKT(transform(transform(geoset, 909090), 4326), 6) FROM test;
+
 -------------------------------------------------------------------------------
 -- STBOX
 
@@ -933,10 +946,10 @@ SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX T([2000-01-01,2
 SELECT asText(atStbox(tgeompoint '(Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]', 'STBOX T([2000-01-01,2000-01-02])'));
 
 -- borderInc set to false
-SELECT asText(atStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-02, 
+SELECT asText(atStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-02,
   Point(0 0)@2001-01-03, Point(0 1)@2001-01-04, Point(1 1)@2001-01-05]',
   stbox 'STBOX X((0,0),(2,2))', false));
-SELECT asText(atStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02, 
+SELECT asText(atStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02,
   Point(2 2)@2001-01-03, Point(2 1)@2001-01-04, Point(1 1)@2001-01-05]',
   stbox 'STBOX X((0,0),(2,2))', false));
 
@@ -948,10 +961,10 @@ SELECT asText(minusStbox(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2
 SELECT asText(minusStbox(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])'));
 
 -- borderInc set to false
-SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-02, 
+SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 0)@2001-01-02,
   Point(0 0)@2001-01-03, Point(0 1)@2001-01-04, Point(1 1)@2001-01-05]',
   stbox 'STBOX X((0,0),(2,2))', false));
-SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02, 
+SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02,
   Point(2 2)@2001-01-03, Point(2 1)@2001-01-04, Point(1 1)@2001-01-05]',
   stbox 'STBOX X((0,0),(2,2))', false));
 
