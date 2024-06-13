@@ -66,25 +66,27 @@ SELECT valueSet(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 4@2001-01-
 SELECT asText(valueSet(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
   [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04)}'));
 -- {"POINT(0 0)", "POINT(1 1)", "POINT(0 1)"}
-</pre></li><li class="listitem"><a name="startValue"></a><a class="indexterm" name="idm2868"></a><a class="indexterm" name="idm2871"></a><p>Obtener el valor inicial o final</p><p><code class="varname">startValue(ttype) → base</code></p><p><code class="varname">endValue(ttype) → base</code></p><p>La función no tiene en cuenta si los límites son inclusivos o no.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="startValue"></a><a class="indexterm" name="idm2868"></a><a class="indexterm" name="idm2871"></a><a class="indexterm" name="idm2874"></a><p>Obtener el valor inicial, final, o enésimo</p><p><code class="varname">startValue(ttype) → base</code></p><p><code class="varname">endValue(ttype) → base</code></p><p><code class="varname">valueN(ttype,int) → base</code></p><p>La función no tiene en cuenta si los límites son inclusivos o no.</p><pre class="programlisting">
 SELECT startValue(tfloat '(1@2001-01-01, 2@2001-01-03)');
 -- 1
 SELECT endValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
 -- 5
-</pre></li><li class="listitem"><a name="minValue"></a><a class="indexterm" name="idm2882"></a><a class="indexterm" name="idm2885"></a><p>Obtener el valor mínimo o máximo</p><p><code class="varname">minValue(torder) → base</code></p><p><code class="varname">maxValue(torder) → base</code></p><p>La función no tiene en cuenta si los límites son inclusivos o no.</p><pre class="programlisting">
+SELECT valueN(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}', 3);
+-- 3
+</pre></li><li class="listitem"><a name="minValue"></a><a class="indexterm" name="idm2887"></a><a class="indexterm" name="idm2890"></a><p>Obtener el valor mínimo o máximo</p><p><code class="varname">minValue(torder) → base</code></p><p><code class="varname">maxValue(torder) → base</code></p><p>La función no tiene en cuenta si los límites son inclusivos o no.</p><pre class="programlisting">
 SELECT minValue(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
 -- 1
 SELECT maxValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
 -- 5
-</pre></li><li class="listitem"><a name="minInstant"></a><a class="indexterm" name="idm2896"></a><a class="indexterm" name="idm2899"></a><p>Obtener el instante con el valor mínimo o máximo</p><p><code class="varname">minInstant(torder) → base</code></p><p><code class="varname">maxInstant(torder) → base</code></p><p>La función no tiene en cuenta si los límites son inclusivos o no. Si varios instantes tienen el valor mínimo, se devuelve el primero.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="minInstant"></a><a class="indexterm" name="idm2901"></a><a class="indexterm" name="idm2904"></a><p>Obtener el instante con el valor mínimo o máximo</p><p><code class="varname">minInstant(torder) → base</code></p><p><code class="varname">maxInstant(torder) → base</code></p><p>La función no tiene en cuenta si los límites son inclusivos o no. Si varios instantes tienen el valor mínimo, se devuelve el primero.</p><pre class="programlisting">
 SELECT minInstant(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
 -- 1@2001-01-01
 SELECT maxInstant(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
 -- 5@2001-01-05
-</pre></li><li class="listitem"><a name="valueAtTimestamp"></a><a class="indexterm" name="idm2910"></a><p>Obtener el valor en una marca de tiempo</p><p><code class="varname">valueAtTimestamp(ttype,timestamptz) → base</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="valueAtTimestamp"></a><a class="indexterm" name="idm2915"></a><p>Obtener el valor en una marca de tiempo</p><p><code class="varname">valueAtTimestamp(ttype,timestamptz) → base</code></p><pre class="programlisting">
 SELECT valueAtTimestamp(tfloat '[1@2001-01-01, 4@2001-01-04)', '2001-01-02');
 -- 2
-</pre></li><li class="listitem"><a name="ttype_duration"></a><a class="indexterm" name="idm2918"></a><p>Obtener el intervalo de tiempo</p><p><code class="varname">duration(ttype,boundspan=false) → interval</code></p><p>Se puede poner en verdadero un parámetro adicional para calcular la duración del período limitador, ignorando así los posibles intervalos de tiempo</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_duration"></a><a class="indexterm" name="idm2923"></a><p>Obtener el intervalo de tiempo</p><p><code class="varname">duration(ttype,boundspan=false) → interval</code></p><p>Se puede poner en verdadero un parámetro adicional para calcular la duración del período limitador, ignorando así los posibles intervalos de tiempo</p><pre class="programlisting">
 SELECT duration(tfloat '{1@2001-01-01, 2@2001-01-03, 2@2001-01-05}');
 -- 00:00:00
 SELECT duration(tfloat '{1@2001-01-01, 2@2001-01-03, 2@2001-01-05}', true);
@@ -96,15 +98,15 @@ SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-
 SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-05)}',
   true);
 -- 4 days
-</pre></li><li class="listitem"><a name="lowerInc"></a><a class="indexterm" name="idm2927"></a><a class="indexterm" name="idm2930"></a><p>¿Es el instante inicial/final inclusivo?</p><p><code class="varname">lowerInc(ttype) → bool</code></p><p><code class="varname">upperInc(ttype) → bool</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="lowerInc"></a><a class="indexterm" name="idm2932"></a><a class="indexterm" name="idm2935"></a><p>¿Es el instante inicial/final inclusivo?</p><p><code class="varname">lowerInc(ttype) → bool</code></p><p><code class="varname">upperInc(ttype) → bool</code></p><pre class="programlisting">
 SELECT lowerInc(tint '[1@2001-01-01, 2@2001-01-02)');
 -- true
 SELECT upperInc(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');
 -- false
-</pre></li><li class="listitem"><a name="numInstants"></a><a class="indexterm" name="idm2940"></a><p>Obtener el número de instantes diferentes</p><p><code class="varname">numInstants(ttype) → integer</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="numInstants"></a><a class="indexterm" name="idm2945"></a><p>Obtener el número de instantes diferentes</p><p><code class="varname">numInstants(ttype) → integer</code></p><pre class="programlisting">
 SELECT numInstants(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');
 -- 3
-</pre></li><li class="listitem"><a name="startInstant"></a><a class="indexterm" name="idm2948"></a><a class="indexterm" name="idm2951"></a><a class="indexterm" name="idm2954"></a><p>Obtener el instante inicial, final o enésimo</p><p><code class="varname">startInstant(ttype) → ttypeInst</code></p><p><code class="varname">endInstant(ttype) → ttypeInst</code></p><p><code class="varname">instantN(ttype,integer) → ttypeInst</code></p><p>La función no tiene en cuenta si los límites son inclusivos o no.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="startInstant"></a><a class="indexterm" name="idm2953"></a><a class="indexterm" name="idm2956"></a><a class="indexterm" name="idm2959"></a><p>Obtener el instante inicial, final o enésimo</p><p><code class="varname">startInstant(ttype) → ttypeInst</code></p><p><code class="varname">endInstant(ttype) → ttypeInst</code></p><p><code class="varname">instantN(ttype,integer) → ttypeInst</code></p><p>La función no tiene en cuenta si los límites son inclusivos o no.</p><pre class="programlisting">
 SELECT startInstant(tfloat '{[1@2001-01-01, 2@2001-01-02), 
   (2@2001-01-02, 3@2001-01-03)}');
 -- 1@2001-01-01
@@ -112,14 +114,14 @@ SELECT endInstant(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-0
 -- 3@2001-01-03
 SELECT instantN(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}', 3);
 -- 3@2001-01-03
-</pre></li><li class="listitem"><a name="instants"></a><a class="indexterm" name="idm2967"></a><p>Obtener los instantes diferentes</p><p><code class="varname">instants(ttype) → ttypeInst[]</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="instants"></a><a class="indexterm" name="idm2972"></a><p>Obtener los instantes diferentes</p><p><code class="varname">instants(ttype) → ttypeInst[]</code></p><pre class="programlisting">
 SELECT instants(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');
 -- {"1@2001-01-01","2@2001-01-02","3@2001-01-03"}
-</pre></li><li class="listitem"><a name="ttype_numTimestamps"></a><a class="indexterm" name="idm2975"></a><p>Obtener el número de marcas de tiempo diferentes</p><p><code class="varname">numTimestamps(ttype) → integer</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_numTimestamps"></a><a class="indexterm" name="idm2980"></a><p>Obtener el número de marcas de tiempo diferentes</p><p><code class="varname">numTimestamps(ttype) → integer</code></p><pre class="programlisting">
 SELECT numTimestamps(tfloat '{[1@2001-01-01, 2@2001-01-03),
   [3@2001-01-03, 5@2001-01-05)}');
 -- 3
-</pre></li><li class="listitem"><a name="ttype_startTimestamp"></a><a class="indexterm" name="idm2983"></a><a class="indexterm" name="idm2986"></a><a class="indexterm" name="idm2989"></a><p>Obtener la marca de tiempo inicial, final o enésima</p><p><code class="varname">startTimestamp(ttype) → timestamptz</code></p><p><code class="varname">endTimestamp(ttype) → timestamptz</code></p><p><code class="varname">timestampN(ttype,integer) → timestamptz</code></p><p>La función no tiene en cuenta si los límites son inclusivos o no.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_startTimestamp"></a><a class="indexterm" name="idm2988"></a><a class="indexterm" name="idm2991"></a><a class="indexterm" name="idm2994"></a><p>Obtener la marca de tiempo inicial, final o enésima</p><p><code class="varname">startTimestamp(ttype) → timestamptz</code></p><p><code class="varname">endTimestamp(ttype) → timestamptz</code></p><p><code class="varname">timestampN(ttype,integer) → timestamptz</code></p><p>La función no tiene en cuenta si los límites son inclusivos o no.</p><pre class="programlisting">
 SELECT startTimestamp(tfloat '[1@2001-01-01, 2@2001-01-03)');
 -- 2001-01-01
 SELECT endTimestamp(tfloat '{[1@2001-01-01, 2@2001-01-03),
@@ -128,14 +130,14 @@ SELECT endTimestamp(tfloat '{[1@2001-01-01, 2@2001-01-03),
 SELECT timestampN(tfloat '{[1@2001-01-01, 2@2001-01-03),
   [3@2001-01-03, 5@2001-01-05)}', 3);
 -- 2001-01-05
-</pre></li><li class="listitem"><a name="ttype_timestamps"></a><a class="indexterm" name="idm3002"></a><p>Obtener las marcas de tiempo diferentes</p><p><code class="varname">timestamps(ttype) → timestamptz[]</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_timestamps"></a><a class="indexterm" name="idm3007"></a><p>Obtener las marcas de tiempo diferentes</p><p><code class="varname">timestamps(ttype) → timestamptz[]</code></p><pre class="programlisting">
 SELECT timestamps(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
 -- {"2001-01-01", "2001-01-03", "2001-01-05"}
-</pre></li><li class="listitem"><a name="numSequences"></a><a class="indexterm" name="idm3010"></a><p>Obtener el número de secuencias</p><p><code class="varname">numSequences({ttypeContSeq,ttypeSeqSet}) → integer</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="numSequences"></a><a class="indexterm" name="idm3015"></a><p>Obtener el número de secuencias</p><p><code class="varname">numSequences({ttypeContSeq,ttypeSeqSet}) → integer</code></p><pre class="programlisting">
 SELECT numSequences(tfloat '{[1@2001-01-01, 2@2001-01-03),
   [3@2001-01-03, 5@2001-01-05)}');
 -- 2
-</pre></li><li class="listitem"><a name="startSequence"></a><a class="indexterm" name="idm3018"></a><a class="indexterm" name="idm3021"></a><a class="indexterm" name="idm3024"></a><p>Obtener la secuencia inicial, final, o enésima</p><p><code class="varname">startSequence({ttypeContSeq,ttypeSeqSet}) → ttypeContSeq</code></p><p><code class="varname">endSequence({ttypeContSeq,ttypeSeqSet}) → ttypeContSeq</code></p><p><code class="varname">sequenceN({ttypeContSeq,ttypeSeqSet},integer) → ttypeContSeq</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="startSequence"></a><a class="indexterm" name="idm3023"></a><a class="indexterm" name="idm3026"></a><a class="indexterm" name="idm3029"></a><p>Obtener la secuencia inicial, final, o enésima</p><p><code class="varname">startSequence({ttypeContSeq,ttypeSeqSet}) → ttypeContSeq</code></p><p><code class="varname">endSequence({ttypeContSeq,ttypeSeqSet}) → ttypeContSeq</code></p><p><code class="varname">sequenceN({ttypeContSeq,ttypeSeqSet},integer) → ttypeContSeq</code></p><pre class="programlisting">
 SELECT startSequence(tfloat '{[1@2001-01-01, 2@2001-01-03),
   [3@2001-01-03, 5@2001-01-05)}');
 -- [1@2001-01-01, 2@2001-01-03)
@@ -144,10 +146,10 @@ SELECT endSequence(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-
 SELECT sequenceN(tfloat '{[1@2001-01-01, 2@2001-01-03),
   [3@2001-01-03, 5@2001-01-05)}', 2);
 -- [3@2001-01-03, 5@2001-01-05)
-</pre></li><li class="listitem"><a name="sequences"></a><a class="indexterm" name="idm3036"></a><p>Obtener las secuencias</p><p><code class="varname">sequences({ttypeContSeq,ttypeSeqSet}) → ttypeContSeq[]</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="sequences"></a><a class="indexterm" name="idm3041"></a><p>Obtener las secuencias</p><p><code class="varname">sequences({ttypeContSeq,ttypeSeqSet}) → ttypeContSeq[]</code></p><pre class="programlisting">
 SELECT sequences(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
 -- {"[1@2001-01-01, 2@2001-01-03)", "[3@2001-01-03, 5@2001-01-05)"}
-</pre></li><li class="listitem"><a name="segments"></a><a class="indexterm" name="idm3044"></a><p>Obtener los segmentos</p><p><code class="varname">segments({ttypeContSeq,ttypeSeqSet}) → ttypeContSeq[]</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="segments"></a><a class="indexterm" name="idm3049"></a><p>Obtener los segmentos</p><p><code class="varname">segments({ttypeContSeq,ttypeSeqSet}) → ttypeContSeq[]</code></p><pre class="programlisting">
 SELECT segments(tint '{[1@2001-01-01, 3@2001-01-02, 2@2001-01-03],
   (3@2001-01-03, 5@2001-01-05]}');
 /* {"[1@2001-01-01, 1@2001-01-02)","[3@2001-01-02, 3@2001-01-03)","[2@2001-01-03]",
@@ -156,12 +158,12 @@ SELECT segments(tfloat '{[1@2001-01-01, 3@2001-01-02, 2@2001-01-03],
   (3@2001-01-03, 5@2001-01-05]}');
 /* {"[1@2001-01-01, 3@2001-01-02)","[3@2001-01-02, 2@2001-01-03]",
    "(3@2001-01-03, 5@2001-01-05]"} */
-</pre></li><li class="listitem"><a name="integral"></a><a class="indexterm" name="idm3052"></a><p>Obtener el área bajo la curva</p><p><code class="varname">integral(tnumber) → float</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="integral"></a><a class="indexterm" name="idm3057"></a><p>Obtener el área bajo la curva</p><p><code class="varname">integral(tnumber) → float</code></p><pre class="programlisting">
 SELECT  integral(tint '[1@2001-01-01,2@2001-01-02]') / (24 * 3600 * 1e6);
 -- 1
 SELECT integral(tfloat '[1@2001-01-01,2@2001-01-02]') / (24 * 3600 * 1e6);
 -- 1.5
-</pre></li><li class="listitem"><a name="twAvg"></a><a class="indexterm" name="idm3060"></a><p>Obtener el promedio ponderado en el tiempo</p><p><code class="varname">twAvg(tnumber) → float</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="twAvg"></a><a class="indexterm" name="idm3065"></a><p>Obtener el promedio ponderado en el tiempo</p><p><code class="varname">twAvg(tnumber) → float</code></p><pre class="programlisting">
 SELECT twAvg(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-06)}');
 -- 1.75
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch05s04.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch05.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch05s06.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Conversión de tipos </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Transformaciones</td></tr></table></div></body></html>
