@@ -384,6 +384,15 @@ CREATE FUNCTION valueSet(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION valueN(tgeompoint, integer)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueN(tgeogpoint, integer)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- time is a reserved word in SQL
 CREATE FUNCTION getTime(tgeompoint)
   RETURNS tstzspanset

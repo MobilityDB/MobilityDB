@@ -960,6 +960,56 @@ tsequenceset_max_val(const TSequenceSet *ss)
 
 /**
  * @ingroup meos_internal_temporal_accessor
+ * @brief Return in the last argument a copy of the n-th value of a temporal
+ * sequence set 
+ * @param[in] ss Temporal sequence set
+ * @param[in] n Number
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tsequenceset_value_n(const TSequenceSet *ss, int n, Datum *result)
+{
+  assert(ss);
+  assert(n >= 1 && n <= ss->totalcount);
+  if (n == 1)
+  {
+    *result = tinstant_value(TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, 0), 0));
+    return true;
+  }
+
+  /* Continue the search 0-based */
+  n--;
+  const TInstant *prev = NULL, *next = NULL; /* make compiler quiet */
+  bool first = true, found = false;
+  int i = 0, count = 0, prevcount = 0;
+  while (i < ss->count)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    count += seq->count;
+    if (! first && tinstant_eq(prev, TSEQUENCE_INST_N(seq, 0)))
+    {
+        prevcount --;
+        count --;
+    }
+    if (prevcount <= n && n < count)
+    {
+      next = TSEQUENCE_INST_N(seq, n - prevcount);
+      found = true;
+      break;
+    }
+    prevcount = count;
+    prev = TSEQUENCE_INST_N(seq, seq->count - 1);
+    first = false;
+    i++;
+  }
+  if (! found)
+    return false;
+  *result = tinstant_value(next);
+  return true;
+}
+
+/**
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return the time frame a temporal sequence set as a timestamptz span
  * set
  * @param[in] ss Temporal sequence set

@@ -564,6 +564,23 @@ CREATE FUNCTION maxValue(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_max_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION valueN(tbool, integer)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueN(tint, integer)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueN(tfloat, integer)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueN(ttext, integer)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION minInstant(tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_min_instant'
