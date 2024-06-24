@@ -964,6 +964,7 @@ tsequenceset_max_val(const TSequenceSet *ss)
  * sequence set 
  * @param[in] ss Temporal sequence set
  * @param[in] n Number
+ * @param[out] result Value
  * @csqlfn #Temporal_value_n()
  */
 bool

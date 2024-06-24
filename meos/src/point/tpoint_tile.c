@@ -850,7 +850,7 @@ tpointinst_get_coords_eps(const TInstant *inst, bool hasz, bool hast,
  * @param[out] bm Bit matrix
  */
 static int
-tdiscseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
+tpointseq_disc_set_tiles(const TSequence *seq, bool hasz, bool hast,
   const STboxGridState *state, BitMatrix *bm)
 {
   /* Transform the point into tile coordinates */
@@ -876,7 +876,7 @@ tdiscseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
  * @param[out] bm Bit matrix
  */
 static int
-tcontseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
+tpointseq_cont_set_tiles(const TSequence *seq, bool hasz, bool hast,
   const STboxGridState *state, BitMatrix *bm)
 {
   int ndims = 2 + (hasz ? 1 : 0) + (hast ? 1 : 0);
@@ -911,8 +911,8 @@ tpointseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   const STboxGridState *state, BitMatrix *bm)
 {
   return MEOS_FLAGS_LINEAR_INTERP(seq->flags) ?
-    tcontseq_set_tiles((TSequence *) seq, hasz, hast, state, bm) :
-    tdiscseq_set_tiles((TSequence *) seq, hasz, hast, state, bm);
+    tpointseq_cont_set_tiles((TSequence *) seq, hasz, hast, state, bm) :
+    tpointseq_disc_set_tiles((TSequence *) seq, hasz, hast, state, bm);
 }
 
 /**
@@ -1051,6 +1051,8 @@ tpoint_space_time_split_init(Temporal *temp, float xsize, float ysize,
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
  * @param[in] sorigin Origin for the space dimension
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
+ * @param[in] border_inc True when the box contains the upper border, otherwise
+ * the upper border is assumed as outside of the box.
  * @param[out] space_buckets Array of space buckets
  * @param[out] count Number of elements in the output arrays
  */

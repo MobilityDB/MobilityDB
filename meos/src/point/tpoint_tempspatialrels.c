@@ -211,7 +211,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
     return result;
   }
 
-  Datum traj = PointerGetDatum(tpointcontseq_trajectory(seq));
+  Datum traj = PointerGetDatum(tpointseq_trajectory(seq));
   Datum inter = geom_intersection2d(traj, geom);
   GSERIALIZED *gsinter = DatumGetGserializedP(inter);
   if (gserialized_is_empty(gsinter))

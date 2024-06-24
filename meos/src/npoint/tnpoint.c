@@ -64,7 +64,7 @@ tnpointinst_tgeompointinst(const TInstant *inst)
  * @brief Return a temporal network point converted to a temporal geometry point
  */
 TSequence *
-tnpointdiscseq_tgeompointdiscseq(const TSequence *seq)
+tnpointseq_tgeompointseq_disc(const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -77,7 +77,7 @@ tnpointdiscseq_tgeompointdiscseq(const TSequence *seq)
  * @brief Return a temporal network point converted to a temporal geometry point
  */
 TSequence *
-tnpointcontseq_tgeompointcontseq(const TSequence *seq)
+tnpointseq_tgeompointseq_cont(const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
@@ -111,7 +111,7 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-    sequences[i] = tnpointcontseq_tgeompointcontseq(TSEQUENCESET_SEQ_N(ss, i));
+    sequences[i] = tnpointseq_tgeompointseq_cont(TSEQUENCESET_SEQ_N(ss, i));
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
 
@@ -128,8 +128,8 @@ tnpoint_tgeompoint(const Temporal *temp)
       return (Temporal *) tnpointinst_tgeompointinst((TInstant *) temp);
     case TSEQUENCE:
       return MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
-        (Temporal *) tnpointdiscseq_tgeompointdiscseq((TSequence *) temp) :
-        (Temporal *) tnpointcontseq_tgeompointcontseq((TSequence *) temp);
+        (Temporal *) tnpointseq_tgeompointseq_disc((TSequence *) temp) :
+        (Temporal *) tnpointseq_tgeompointseq_cont((TSequence *) temp);
     default: /* TSEQUENCESET */
       return (Temporal *) tnpointseqset_tgeompointseqset((TSequenceSet *) temp);
   }
@@ -396,7 +396,7 @@ tnpointinst_routes(const TInstant *inst)
  * @brief Return the routes of a temporal network point
  */
 Set *
-tnpointdiscseq_routes(const TSequence *seq)
+tnpointseq_disc_routes(const TSequence *seq)
 {
   Datum *values = palloc(sizeof(Datum) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -413,7 +413,7 @@ tnpointdiscseq_routes(const TSequence *seq)
  * @brief Return the routes of a temporal network point
  */
 Set *
-tnpointcontseq_routes(const TSequence *seq)
+tnpointseq_cont_routes(const TSequence *seq)
 {
   const Npoint *np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, 0)));
   Datum value = Int64GetDatum(np->rid);
@@ -451,8 +451,8 @@ tnpoint_routes(const Temporal *temp)
       return tnpointinst_routes((TInstant *) temp);
     case TSEQUENCE:
       return MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
-        tnpointdiscseq_routes((TSequence *) temp) :
-        tnpointcontseq_routes((TSequence *) temp);
+        tnpointseq_disc_routes((TSequence *) temp) :
+        tnpointseq_cont_routes((TSequence *) temp);
     default: /* TSEQUENCESET */
       return tnpointseqset_routes((TSequenceSet *) temp);
   }

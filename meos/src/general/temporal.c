@@ -2635,84 +2635,110 @@ temporal_value_n(const Temporal *temp, int n, Datum *result)
  * @ingroup meos_temporal_accessor
  * @brief Return the n-th value of a temporal boolean
  * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
  * @csqlfn #Temporal_value_n()
  */
 bool
-tbool_value_n(const Temporal *temp)
+tbool_value_n(const Temporal *temp, int n, bool *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return false;
-  return DatumGetBool(temporal_value_n(temp));
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetBool(dresult);
+  return true;
 }
 
 /**
  * @ingroup meos_temporal_accessor
  * @brief Return the n-th value of a temporal integer
  * @param[in] temp Temporal value
- * @return On error return @p INT_MAX
+ * @param[in] n Number
+ * @param[out] result Value
  * @csqlfn #Temporal_value_n()
  */
-int
-tint_value_n(const Temporal *temp)
+bool
+tint_value_n(const Temporal *temp, int n, int *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
-    return INT_MAX;
-  return DatumGetInt32(temporal_value_n(temp));
+    return false;
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetInt32(dresult);
+  return true;
 }
 
 /**
  * @ingroup meos_temporal_accessor
  * @brief Return the n-th value of a temporal float
  * @param[in] temp Temporal value
- * @return On error return @p DBL_MAX
+ * @param[in] n Number
+ * @param[out] result Value
  * @csqlfn #Temporal_value_n()
  */
-double
-tfloat_value_n(const Temporal *temp)
+bool
+tfloat_value_n(const Temporal *temp, int n, double *result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return DBL_MAX;
-  return DatumGetFloat8(temporal_value_n(temp));
+    return false;
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetFloat8(dresult);
+  return true;
 }
 
 /**
  * @ingroup meos_temporal_accessor
  * @brief Return a copy of the n-th value of a temporal text
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @param[in] n Number
+ * @param[out] result Value
  * @csqlfn #Temporal_value_n()
  */
-text *
-ttext_value_n(const Temporal *temp)
+bool
+ttext_value_n(const Temporal *temp, int n, text **result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
-    return NULL;
-  return DatumGetTextP(temporal_value_n(temp));
+    return false;
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetTextP(dresult);
+  return true;
 }
 
 /**
  * @ingroup meos_temporal_accessor
  * @brief Return a copy of the n-th value of a temporal point
  * @param[in] temp Temporal value
- * @return On error return @p NULL
+ * @param[in] n Number
+ * @param[out] result Value
  * @csqlfn #Temporal_value_n()
  */
-GSERIALIZED *
-tpoint_value_n(const Temporal *temp)
+bool
+tpoint_value_n(const Temporal *temp, int n, GSERIALIZED **result)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_tgeo_type(temp->temptype))
-    return NULL;
-  return DatumGetGserializedP(temporal_value_n(temp));
+    return false;
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetGserializedP(dresult);
+  return true;
 }
 #endif /* MEOS */
 
