@@ -579,7 +579,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   {
     /* Particular case when the input sequence is simple */
     pfree_array((void **) simpleseqs, nsimple);
-    traj = tpointcontseq_trajectory(seq2d);
+    traj = tpointseq_trajectory(seq2d);
     inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
     gsinter = DatumGetGserializedP(inter);
     if (! gserialized_is_empty(gsinter))
@@ -603,7 +603,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
     /* Loop for every simple fragment of the sequence */
     for (int i = 0; i < nsimple; i++)
     {
-      traj = tpointcontseq_trajectory(simpleseqs[i]);
+      traj = tpointseq_trajectory(simpleseqs[i]);
       inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
       gsinter = DatumGetGserializedP(inter);
       if (! gserialized_is_empty(gsinter))

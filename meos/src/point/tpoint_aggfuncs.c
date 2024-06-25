@@ -119,7 +119,7 @@ tpointinst_transform_tcentroid(const TInstant *inst)
  * @p double3 or @p double4 for performing temporal centroid aggregation
  */
 static TInstant **
-tpointdiscseq_transform_tcentroid(const TSequence *seq)
+tpointseq_disc_transform_tcentroid(const TSequence *seq)
 {
   TInstant **result = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -132,9 +132,9 @@ tpointdiscseq_transform_tcentroid(const TSequence *seq)
  * @p double3 or @p double4 for performing temporal centroid aggregation
  */
 static TSequence *
-tpointcontseq_transform_tcentroid(const TSequence *seq)
+tpointseq_cont_transform_tcentroid(const TSequence *seq)
 {
-  TInstant **instants = tpointdiscseq_transform_tcentroid(seq);
+  TInstant **instants = tpointseq_disc_transform_tcentroid(seq);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc,  MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
@@ -148,7 +148,7 @@ tpointseqset_transform_tcentroid(const TSequenceSet *ss)
 {
   TSequence **result = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-    result[i] = tpointcontseq_transform_tcentroid(TSEQUENCESET_SEQ_N(ss, i));
+    result[i] = tpointseq_cont_transform_tcentroid(TSEQUENCESET_SEQ_N(ss, i));
   return result;
 }
 
@@ -174,13 +174,13 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
     {
       if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
       {
-        result = (Temporal **) tpointdiscseq_transform_tcentroid((TSequence *) temp);
+        result = (Temporal **) tpointseq_disc_transform_tcentroid((TSequence *) temp);
         *count = ((TSequence *) temp)->count;
       }
       else
       {
         result = palloc(sizeof(Temporal *));
-        result[0] = (Temporal *) tpointcontseq_transform_tcentroid((TSequence *) temp);
+        result[0] = (Temporal *) tpointseq_cont_transform_tcentroid((TSequence *) temp);
         *count = 1;
       }
       break;
