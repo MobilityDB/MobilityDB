@@ -68,6 +68,8 @@
  * which results in 946684800 */
 #define DELTA_UNIX_POSTGRES_EPOCH 946684800
 
+extern void gserialized2_set_srid(GSERIALIZED *g, int32_t srid);
+
 /*****************************************************************************
  * Utility functions
  *****************************************************************************/
@@ -5413,7 +5415,7 @@ tpoint_is_simple(const Temporal *temp)
  * @pre The sequence has at least two instants
  */
 static TSequence **
-tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
+tpointseq_disc_split(const TSequence *seq, bool *splits, int count)
 {
   assert(seq->count > 1);
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -5446,7 +5448,7 @@ tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
  * @note This function is called for each sequence of a sequence set
  */
 static TSequence **
-tpointcontseq_split(const TSequence *seq, bool *splits, int count)
+tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
 {
   assert(seq->count > 2);
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
@@ -5523,6 +5525,32 @@ tpointseq_make_simple(const TSequence *seq, int *count)
     return result;
   }
 
+  /* Call GEOS to verify whether the trajectory is simple */
+  GSERIALIZED *traj = tpointseq_trajectory(seq);
+  LWGEOM *lwgeom = lwgeom_from_gserialized(traj);
+  int issimple = lwgeom_is_simple(lwgeom);
+  pfree(traj); lwgeom_free(lwgeom);
+  if (issimple == -1)
+  {
+    /* Error */
+    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      "Error while making the temporal point simple");
+    return NULL;
+  }
+  else if (issimple == LW_TRUE)
+  {
+    /* If the first point is equal to the last one the line is simple but
+     * we need to make two fragments */
+    if (! datum_point_eq(tinstant_val(TSEQUENCE_INST_N(seq, 0)),
+        tinstant_val(TSEQUENCE_INST_N(seq, (seq->count - 1)))))
+    {
+      result = palloc(sizeof(TSequence *));
+      result[0] = tsequence_copy(seq);
+      *count = 1;
+      return result;
+    }
+  }
+
   int numsplits;
   bool *splits = (interp == LINEAR) ?
     tpointseq_linear_find_splits(seq, &numsplits) :
@@ -5537,8 +5565,8 @@ tpointseq_make_simple(const TSequence *seq, int *count)
   }
 
   result = (interp == DISCRETE) ?
-    tpointdiscseq_split(seq, splits, numsplits + 1) :
-    tpointcontseq_split(seq, splits, numsplits + 1);
+    tpointseq_disc_split(seq, splits, numsplits + 1) :
+    tpointseq_cont_split(seq, splits, numsplits + 1);
   *count = numsplits + 1;
   pfree(splits);
   return result;
