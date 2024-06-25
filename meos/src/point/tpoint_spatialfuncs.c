@@ -1630,92 +1630,6 @@ lwline_make(Datum value1, Datum value2)
   return result;
 }
 
-/*****************************************************************************/
-
-/**
- * @brief Return the trajectory of a temporal discrete sequence point
- * @param[in] seq Temporal value
- * @note Notice that this function does not remove duplicate points
- * @pre The sequence is not instantaneous
- */
-GSERIALIZED *
-tpointdiscseq_trajectory(const TSequence *seq)
-{
-  assert(seq->count > 1);
-  LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-  {
-    Datum value = tinstant_val(TSEQUENCE_INST_N(seq, i));
-    GSERIALIZED *gsvalue = DatumGetGserializedP(value);
-    points[i] = lwgeom_from_gserialized(gsvalue);
-  }
-  LWGEOM *lwresult = lwpointarr_make_trajectory(points, seq->count, STEP);
-  GSERIALIZED *result = geo_serialize(lwresult);
-  lwgeom_free(lwresult);
-  return result;
-}
-
-/**
- * @brief Return the trajectory of a temporal point sequence
- * @param[in] seq Temporal sequence
- * @pre The sequence is not instantaneous
- * @note Since the sequence has been already validated there is no verification
- * of the input in this function, in particular for geographies it is supposed
- * that the composing points are geodetic
- */
-GSERIALIZED *
-tpointcontseq_trajectory(const TSequence *seq)
-{
-  assert(seq->count > 1);
-  LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
-  /* Remove two consecutive points if they are equal */
-  Datum value = tinstant_val(TSEQUENCE_INST_N(seq, 0));
-  GSERIALIZED *gs = DatumGetGserializedP(value);
-  points[0] = lwgeom_from_gserialized(gs);
-  int npoints = 1;
-  for (int i = 1; i < seq->count; i++)
-  {
-    value = tinstant_val(TSEQUENCE_INST_N(seq, i));
-    gs = DatumGetGserializedP(value);
-    LWPOINT *point = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-    /* Remove two consecutive points if they are equal */
-    if (! lwpoint_same(point, (LWPOINT *) points[npoints - 1]))
-      points[npoints++] = (LWGEOM *) point;
-  }
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  LWGEOM *lwresult = lwpointarr_make_trajectory(points, npoints, interp);
-  GSERIALIZED *result = geo_serialize(lwresult);
-  lwgeom_free(lwresult);
-  if (interp == LINEAR)
-  {
-    for (int i = 0; i < npoints; i++)
-      lwgeom_free(points[i]);
-    pfree(points);
-  }
-  return result;
-}
-
-/**
- * @ingroup meos_internal_temporal_spatial_accessor
- * @brief Return the trajectory of a temporal point sequence
- * @param[in] seq Temporal sequence
- * @note Since the sequence has been already validated there is no verification
- * of the input in this function, in particular for geographies it is supposed
- * that the composing points are geodetic
- * @csqlfn #Tpoint_trajectory()
- */
-GSERIALIZED *
-tpointseq_trajectory(const TSequence *seq)
-{
-  assert(seq); assert(tgeo_type(seq->temptype));
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-    return DatumGetGserializedP(tinstant_value(TSEQUENCE_INST_N(seq, 0)));
-
-  return MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
-    tpointdiscseq_trajectory(seq) :  tpointcontseq_trajectory(seq);
-}
-
 /**
  * @brief Return a geometry from an array of points and lines
  * @pre There is at least one geometry in both arrays
@@ -1779,6 +1693,346 @@ lwcoll_from_points_lines(LWGEOM **points, LWGEOM **lines, int npoints,
   return result;
 }
 
+/*****************************************************************************/
+
+/**
+ * @brief Return a trajectory from a set of points
+ * @details The result is either a linestring or a multipoint depending on
+ * whether the interpolation is either step/discrete or linear.
+ * @param[in] points Array of points
+ * @param[in] count Number of elements in the input array
+ * @param[in] box Spatiotemporal bounding box of the input points
+ * @param[in] interp Interpolation
+ * @note This function creates directly the GSERIALIZED result WITHOUT passing
+ * through the createtion of the LWPOINT to speed up the process
+ * @note The function does not remove duplicate points, that is, repeated
+ * points in a multipoint or consecutive equal points in a line string
+ */
+GSERIALIZED *
+geopointarr_make_trajectory(GSERIALIZED **points, int count, const STBox *box,
+  interpType interp)
+{
+  if (count == 1)
+    return geo_copy(points[0]);
+
+  /* General case */
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
+  /* subtype is used when the geotype is MULTIPOINTTYPE */
+  int geotype, subtype, npoints = 1;
+  /* ptsize is used when for both LINETYPE and MULTIPOINTTYPE */
+  size_t ptsize = sizeof(double) * (hasz ? 3 : 2);
+  /* subsize is used when the geotype is MULTIPOINTTYPE */
+  size_t subsize = ptsize + 8;
+  /* size is the total size of the GSERIALIZED initialized as follows
+   *   Header overhead (varsize+flags+srid) -> 8 +
+   *   Type number -> 4
+   *   Number of points -> 4
+   */
+  size_t size = 16;
+  if (interp == LINEAR)
+  {
+    geotype = LINETYPE;
+    size += count * ptsize;
+  }
+  else
+  {
+    geotype = MULTIPOINTTYPE;
+    subtype = POINTTYPE;
+    /* For each composing point we need to write subtype and npoints */
+    size += count * (subsize + (sizeof(uint32_t) * 2));
+  }
+
+  /* Create and fill the structure */
+  GSERIALIZED *result = palloc0(size);
+  gserialized_set_srid(result, box->srid); /* Set the SRID */
+  LWSIZE_SET(result->size, size);           /* Set the varsize */
+  /* Initialize the pointer for writing the struct */
+  uint8_t *ptr = (uint8_t *) result;
+  /* Move write head past size, srid and flags. */
+  ptr += 8;
+  /* Write in the type */
+  memcpy(ptr, &geotype, sizeof(uint32_t));
+  ptr += sizeof(uint32_t);
+  /* Write in the number of points */
+  memcpy(ptr, &count, sizeof(uint32_t));
+  ptr += sizeof(uint32_t);
+  /* Loop for all the points */
+  for (int i = 0; i < count; i++)
+  {
+    if (geotype == MULTIPOINTTYPE)
+    {
+      /* Write in the subtype = POINTTYPE */
+      memcpy(ptr, &subtype, sizeof(uint32_t));
+      ptr += sizeof(uint32_t);
+      /* Write in the npoints = 1 */
+      memcpy(ptr, &npoints, sizeof(uint32_t));
+      ptr += sizeof(uint32_t);
+    }
+    /* Write in the coordinates */
+    memcpy(ptr, GS_POINT_PTR(points[i]), ptsize);
+    ptr += ptsize;
+  }
+  FLAGS_SET_Z(result->gflags, hasz);
+  FLAGS_SET_GEODETIC(result->gflags, geodetic);
+  return result;
+}
+
+/**
+ * @brief Write in the buffer a GBOX from a spatiotemporal box
+ * @param[in] box Array of points
+ * @param[in] count Number of elements in the input array
+ * @param[in] box Spatiotemporal bounding box of the input points
+ * @result Number of bytes written into the buffer
+ * @note Implements the logic of PostGIS function gserialized2_from_gbox
+ */
+static size_t
+gbox_from_stbox(const STBox *box, uint8_t *buf)
+{
+  assert(buf);
+  uint8_t *loc = buf;
+  float *f = (float *) buf;
+  uint8_t i = 0;
+  f[i++] = next_float_down(box->xmin);
+  f[i++] = next_float_up(box->xmax);
+  f[i++] = next_float_down(box->ymin);
+  f[i++] = next_float_up(box->ymax);
+  loc += 4 * sizeof(float);
+  if (MEOS_FLAGS_GET_GEODETIC(box->flags) || MEOS_FLAGS_GET_Z(box->flags))
+  {
+    f[i++] = next_float_down(box->zmin);
+    f[i++] = next_float_up(box->zmax);
+    loc += 2 * sizeof(float);
+  }
+  return (size_t)(loc - buf);
+}
+
+/**
+ * @brief Return a trajectory from a set of points and lines
+ * @details The result is either a gometry collection, a (multi)point or a-
+ * (multi)linestring or a multipoint
+ * @param[in] points Array of points
+ * @param[in] npoints Number of elements in the points array
+ * @param[in] lines Array of lines
+ * @param[in] nlines Number of elements in the lines array
+ * @param[in] box Spatiotemporal bounding box of the input points
+ * @param[in] interp Interpolation
+ * @note This function creates directly the GSERIALIZED result WITHOUT passing
+ * through the createtion of the LWPOINT to speed up the process
+ * @note The function does not remove duplicate points, that is, repeated
+ * points in a multipoint or consecutive equal points in a line string
+ */
+GSERIALIZED *
+geopointlinearr_make_trajectory(GSERIALIZED **points, int npoints,
+  GSERIALIZED **lines, int nlines, const STBox *box)
+{
+  assert(npoints > 0 || nlines > 0);
+  assert(npoints == 0 || points);
+  assert(nlines == 0 || lines);
+
+  if (npoints == 1 && nlines == 0)
+    return geo_copy(points[0]);
+  if (npoints == 0 && nlines == 1)
+    return geo_copy(lines[0]);
+
+  /* General case */
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
+  /* subtype is used for geometry collections */
+  int geotype, subtype;
+  /* ptsize is used for writing the coordinates */
+  size_t ptsize = sizeof(double) * (hasz ? 3 : 2);
+  /* size is the total size of the GSERIALIZED initialized as follows
+   *   Header overhead (varsize+flags+srid) -> 8 +
+   *   Bbox -> sizeof(float) * no of dimensions * 2
+   *   Type number -> 4
+   *   Number of elements -> 4
+   */
+  size_t size = 8;
+  /* For GEOMETRYCOLLECTION, subtype and no of elements */
+  if (npoints > 0 && nlines > 0)
+    size += 8;
+  /* For MULTIPOINT, subtype and no of elements */
+  if (npoints > 1)
+    size += sizeof(uint32_t) * 2;
+  /* For MULTILINE, subtype and no of elements */
+  if (nlines > 1)
+    size += sizeof(uint32_t) * 2;
+  /* Add the size of the composing points
+   * (POINTTYPE + npoints = 1 + ptzize) for each point */
+  size += ((sizeof(uint32_t) * 2) + ptsize) * npoints;
+  /* Add the size of the composing lines */
+  uint32_t *line_npts = palloc(sizeof(uint32_t) * nlines);
+  for (int i = 0; i < nlines; i++)
+  {
+    line_npts[i] = *(uint32_t *)((lines[i]->data) + 4);
+    size += (sizeof(uint32_t) * 2) + (ptsize * line_npts[i]);
+  }
+  /* Implements the logic of PostGIS function lwgeom_needs_bbox */
+  bool hasbbox = (npoints > 1 || nlines > 1 ||
+    (nlines == 1 && line_npts[0] > 2) );
+  if (hasbbox)
+    size += sizeof(float) * (hasz || geodetic ? 3 : 2) * 2;
+
+  /* Create and fill the structure */
+  GSERIALIZED *result = palloc0(size);
+  gserialized_set_srid(result, box->srid); /* Set the SRID */
+  LWSIZE_SET(result->size, size);           /* Set the varsize */
+  /* Initialize the pointer for writing the struct */
+  uint8_t *ptr = (uint8_t *) result;
+  /* Move write head past size, srid and flags. */
+  ptr += 8;
+  /* Write in gbox */
+  if (hasbbox)
+    ptr += gbox_from_stbox(box, ptr);
+  /* Write in the type */
+  int count;
+  if (npoints > 0 && nlines > 0)
+  {
+    geotype = COLLECTIONTYPE;
+    memcpy(ptr, &geotype, sizeof(uint32_t));
+    ptr += sizeof(uint32_t);
+    /* Write in the number of composing geometries = 2 */
+    count = 2;
+    memcpy(ptr, &count, sizeof(uint32_t));
+    ptr += sizeof(uint32_t);
+  }
+  /* Write in the collection type, if any */
+  if (npoints > 1)
+  {
+    geotype = MULTIPOINTTYPE;
+    memcpy(ptr, &geotype, sizeof(uint32_t));
+    ptr += sizeof(uint32_t);
+    /* Write in the number of points */
+    memcpy(ptr, &npoints, sizeof(uint32_t));
+    ptr += sizeof(uint32_t);
+  }
+  /* Loop for all the points */
+  subtype = POINTTYPE;
+  count = 1;
+  for (int i = 0; i < npoints; i++)
+  {
+    memcpy(ptr, &subtype, sizeof(uint32_t));
+    ptr += sizeof(uint32_t);
+    /* Write in the npoints = 1 */
+    memcpy(ptr, &count, sizeof(uint32_t));
+    ptr += sizeof(uint32_t);
+    /* Write in the coordinates */
+    memcpy(ptr, GS_POINT_PTR(points[i]), ptsize);
+    ptr += ptsize;
+  }
+
+  /* Write in the collection type, if any */
+  if (nlines > 1)
+  {
+    geotype = MULTILINETYPE;
+    memcpy(ptr, &geotype, sizeof(uint32_t));
+    ptr += sizeof(uint32_t);
+    /* Write in the number of lines */
+    memcpy(ptr, &nlines, sizeof(uint32_t));
+    ptr += sizeof(uint32_t);
+  }
+  /* Loop for all the lines */
+  subtype = LINETYPE;
+  for (int i = 0; i < nlines; i++)
+  {
+    /* Write in the subtype = LINETYPE */
+    memcpy(ptr, &subtype, sizeof(uint32_t));
+    ptr += sizeof(uint32_t);
+    /* Write in the npoints of the line */
+    memcpy(ptr, &line_npts[i], sizeof(uint32_t));
+    ptr += sizeof(uint32_t);
+    /* Write in the coordinates */
+    uint8_t *buf = ((lines[i]->data) + 8);
+    memcpy(ptr, buf, ptsize * line_npts[i]);
+    ptr += ptsize * line_npts[i];
+  }
+
+  FLAGS_SET_BBOX(result->gflags, true);
+  FLAGS_SET_Z(result->gflags, hasz);
+  FLAGS_SET_GEODETIC(result->gflags, geodetic);
+  pfree(line_npts);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_spatial_accessor
+ * @brief Return the trajectory of a temporal point sequence
+ * @param[in] seq Temporal sequence
+ * @note Since the sequence has been already validated there is no verification
+ * of the input in this function, in particular for geographies it is supposed
+ * that the composing points are geodetic
+ * @csqlfn #Tpoint_trajectory()
+ */
+GSERIALIZED *
+tpointseq_trajectory(const TSequence *seq)
+{
+  assert(seq); assert(tgeo_type(seq->temptype));
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return DatumGetGserializedP(tinstant_value(TSEQUENCE_INST_N(seq, 0)));
+
+  /* General case */
+  GSERIALIZED **points = palloc(sizeof(GSERIALIZED *) * seq->count);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  /* Remove two consecutive points if they are equal */
+  int npoints = 0;
+  for (int i = 0; i < seq->count; i++)
+  {
+    GSERIALIZED *gs =
+      DatumGetGserializedP(tinstant_val(TSEQUENCE_INST_N(seq, i)));
+    /* If linear interpolation, remove two consecutive equal points */
+    if (interp == DISCRETE ||
+        (npoints == 0 || ! geopoint_same(gs, points[npoints - 1])))
+      points[npoints++] = gs;
+  }
+  STBox box;
+  memset(&box, 0, sizeof(box));
+  tsequence_set_bbox(seq, &box);
+  return geopointarr_make_trajectory(points, npoints, &box, interp);
+}
+
+/**
+ * @ingroup meos_internal_temporal_spatial_accessor
+ * @brief Return the trajectory of a temporal point sequence set
+ * @param[in] ss Temporal sequence set
+ * @csqlfn #Tpoint_trajectory()
+ */
+GSERIALIZED *
+tpointseqset_step_trajectory(const TSequenceSet *ss)
+{
+  assert(ss); assert(tgeo_type(ss->temptype));
+  assert(ss->count > 1); assert(! MEOS_FLAGS_LINEAR_INTERP(ss->flags));
+  GSERIALIZED **points = palloc(sizeof(GSERIALIZED *) * ss->totalcount);
+  int npoints = 0;
+  /* Iterate as in #tpointseq_trajectory accumulating the results */
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    /* npoints is the current number of points so far, k is the number of
+     * additional points from the current sequence */
+    int k = 0;
+    for (int j = 0; j < seq->count; j++)
+    {
+      GSERIALIZED *gs =
+        DatumGetGserializedP(tinstant_val(TSEQUENCE_INST_N(seq, j)));
+      /* Do not add the point if it is equal to the previous one */
+      if (npoints == 0 || ! geopoint_same(gs, points[npoints + k - 1]))
+        points[npoints + k++] = gs;
+    }
+    npoints += k;
+  }
+  STBox box;
+  memset(&box, 0, sizeof(box));
+  tsequenceset_set_bbox(ss, &box);
+  GSERIALIZED *result = geopointarr_make_trajectory(points, npoints, &box,
+    MEOS_FLAGS_GET_INTERP(ss->flags));
+  pfree(points);
+  return result;
+}
+
 /**
  * @ingroup meos_internal_temporal_spatial_accessor
  * @brief Return the trajectory of a temporal point sequence set
@@ -1793,56 +2047,37 @@ tpointseqset_trajectory(const TSequenceSet *ss)
   if (ss->count == 1)
     return tpointseq_trajectory(TSEQUENCESET_SEQ_N(ss, 0));
 
-  int32 srid = tpointseqset_srid(ss);
-  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->flags);
-  bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
-  LWGEOM **points = palloc(sizeof(LWGEOM *) * ss->totalcount);
-  LWGEOM **lines = palloc(sizeof(LWGEOM *) * ss->count);
+  interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
+  if (interp != LINEAR)
+    return tpointseqset_step_trajectory(ss);
+
+  GSERIALIZED **points = palloc(sizeof(GSERIALIZED *) * ss->totalcount);
+  GSERIALIZED **lines = palloc(sizeof(GSERIALIZED *) * ss->count);
   int npoints = 0, nlines = 0;
-  /* Iterate as in #tpointcontseq_trajectory accumulating the results */
+  /* Iterate as in #tpointseq_trajectory accumulating the results */
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    Datum value = tinstant_val(TSEQUENCE_INST_N(seq, 0));
-    GSERIALIZED *gs = DatumGetGserializedP(value);
-    /* npoints is the current number of points so far, k is the number of
-     * additional points from the current sequence */
-    LWGEOM *point1 = lwgeom_from_gserialized(gs);
-    points[npoints] = point1;
-    int k = 1;
-    for (int j = 1; j < seq->count; j++)
-    {
-      value = tinstant_val(TSEQUENCE_INST_N(seq, j));
-      gs = DatumGetGserializedP(value);
-      /* Do not add the point if it is equal to the previous ones */
-      LWGEOM *point2 = lwgeom_from_gserialized(gs);
-      if (! lwpoint_same((LWPOINT *) point1, (LWPOINT *) point2))
-      {
-        points[npoints + k++] = point2;
-        point1 = point2;
-      }
-      else
-        lwgeom_free(point2);
-    }
-    if (linear && k > 1)
-    {
-      lines[nlines] = (LWGEOM *) lwline_from_lwgeom_array(srid, (uint32_t) k,
-        &points[npoints]);
-      FLAGS_SET_Z(lines[nlines]->flags, hasz);
-      FLAGS_SET_GEODETIC(lines[nlines]->flags, geodetic);
-      nlines++;
-      for (int j = 0; j < k; j++)
-        lwgeom_free(points[npoints + j]);
-    }
+    if (seq->count == 1 || (seq->count == 2 &&
+        datum_point_eq(tinstant_val(TSEQUENCE_INST_N(seq, 0)),
+          tinstant_val(TSEQUENCE_INST_N(seq, 1)))))
+      points[npoints++] =
+        DatumGetGserializedP(tinstant_val(TSEQUENCE_INST_N(seq, 0)));
     else
-      npoints += k;
+      lines[nlines++] = tpointseq_trajectory(seq);
   }
-  LWGEOM *lwresult = lwcoll_from_points_lines(points, lines, npoints, nlines);
-  FLAGS_SET_Z(lwresult->flags, hasz);
-  FLAGS_SET_GEODETIC(lwresult->flags, geodetic);
-  GSERIALIZED *result = geo_serialize(lwresult);
-  lwgeom_free(lwresult); pfree(points); pfree(lines);
+  STBox box;
+  memset(&box, 0, sizeof(box));
+  tsequenceset_set_bbox(ss, &box);
+  GSERIALIZED *result = NULL;
+  /* Only points */
+  if (npoints > 0 && nlines == 0)
+    result = geopointarr_make_trajectory(points, npoints, &box, interp);
+  else
+    result = geopointlinearr_make_trajectory(points, npoints, lines, nlines,
+      &box);
+  pfree(points);
+  pfree_array((void **) lines, nlines);
   return result;
 }
 
@@ -3512,7 +3747,7 @@ tpointseq_length(const TSequence *seq)
   else
   {
     /* We are sure that the trajectory is a line */
-    GSERIALIZED *traj = tpointcontseq_trajectory(seq);
+    GSERIALIZED *traj = tpointseq_trajectory(seq);
     double result = pgis_geography_length(traj, true);
     pfree(traj);
     return result;
