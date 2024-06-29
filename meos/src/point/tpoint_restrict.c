@@ -392,12 +392,17 @@ liangBarskyClip(GSERIALIZED *point1, GSERIALIZED *point2, const STBox *box,
           if (max_code1 & max_code2)
             return false;
           /* Point is included if its max_code is 0 */
-          *p3_inc = (max_code1 == 0);
-          *p4_inc = (max_code2 == 0);
+          if (p3_inc && p4_inc)
+          {
+            *p3_inc = (max_code1 == 0);
+            *p4_inc = (max_code2 == 0);
+          }
         }
-        *point3 = geopoint_make(x1, y1, z1, hasz, false, srid);
-        *point4 = geopoint_make(x2, y2, z2, hasz, false, srid);
-
+        if (point3 && point4)
+        {
+          *point3 = geopoint_make(x1, y1, z1, hasz, false, srid);
+          *point4 = geopoint_make(x2, y2, z2, hasz, false, srid);
+        }
         return true;
       }
     }
@@ -1095,6 +1100,211 @@ tpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
   return tpoint_restrict_stbox(temp, box, border_inc, REST_MINUS);
 }
 #endif /* MEOS */
+
+/*****************************************************************************
+ * Restriction functions for a spatiotemporal box keeping the original 
+ * segments WITHOUT clipping
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_restrict
+ * @brief Return a temporal point sequence with the segments that intersect
+ * a spatiotemporal box in BOTH the spatial and the temporal dimension (if any)
+ * @param[in] seq Temporal sequence point
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
+ * @pre The box has X dimension and the arguments have the same SRID.
+ * This is verified in #tpoint_restrict_stbox
+ * @csqlfn #Tpoint_at_stbox(), minus_stbox()
+ */
+TSequenceSet *
+tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
+  bool border_inc)
+{
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    if (tpointinst_restrict_stbox_iter(TSEQUENCE_INST_N(seq, 0), box,
+        border_inc, REST_AT))
+      return tsequence_to_tsequenceset(seq);
+    return NULL;
+  }
+
+  /* General case */
+  bool hasz_seq = MEOS_FLAGS_GET_Z(seq->flags);
+  bool hasz_box = MEOS_FLAGS_GET_Z(box->flags);
+  bool hasz = hasz_seq && hasz_box;
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  TSequence **sequences = palloc(sizeof(TSequence *) * (seq->count - 1));
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  GSERIALIZED *p1 = DatumGetGserializedP(tinstant_val(inst1));
+  bool lower_inc = seq->period.lower_inc;
+  bool lower_inc_seq = lower_inc, upper_inc;
+  int nseqs = 0, ninsts = 0;
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+    GSERIALIZED *p2 = DatumGetGserializedP(tinstant_val(inst2));
+    /* Keep the segment if intersects the bounding box */
+    bool inter = false;
+    if (geopoint_eq(p1, p2))
+    {
+      /* Constant segment */
+      if (tpointinst_restrict_stbox_iter(inst1, box, border_inc, REST_AT))
+        inter = true;
+    }
+    else
+    {
+      /* Keep the segment if intersects the bounding box in BOTH the spatial
+       * dimension and the temporal dimension (if any) */
+      if (liangBarskyClip(p1, p2, box, hasz, border_inc, NULL, NULL, NULL, 
+          NULL))
+      {
+        if (hast)
+        {
+          Span s;
+          span_set(TimestampTzGetDatum(inst1->t),
+            TimestampTzGetDatum(inst2->t), lower_inc, upper_inc, T_TIMESTAMPTZ,
+              T_TSTZSPAN, &s);
+          if (overlaps_span_span(&s, &box->period))
+            inter = true;
+        }
+        else
+          inter = true;
+      }
+    }
+    if (inter)
+    {
+      if (ninsts == 0)
+        instants[ninsts++] = inst1;
+      instants[ninsts++] = inst2;
+    }
+    else if (ninsts > 0)
+    {
+      sequences[nseqs++] = tsequence_make(instants, ninsts, lower_inc_seq,
+        upper_inc, LINEAR, NORMALIZE_NO);
+      ninsts = 0;  
+      lower_inc_seq = lower_inc;
+    }
+    lower_inc = true;
+    inst1 = inst2;
+    p1 = p2;
+  }
+  if (ninsts > 0)
+    sequences[nseqs++] = tsequence_make(instants, ninsts, lower_inc_seq,
+      upper_inc, LINEAR, NORMALIZE_NO);
+  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+}
+
+/**
+ * @ingroup meos_internal_temporal_restrict
+ * @brief Return a temporal point sequence set with the segments that intersect
+ * a spatiotemporal box in BOTH the spatial and the temporal dimension (if any)
+ * @param[in] ss Temporal sequence set point
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
+ * @pre The box has X dimension and the arguments have the same SRID.
+ * This is verified in #tpoint_restrict_stbox
+ * @csqlfn #Tpoint_at_stbox(), minus_stbox()
+ */
+TSequenceSet *
+tpointseqset_at_stbox_segm(const TSequenceSet *ss, const STBox *box,
+  bool border_inc)
+{
+  assert(ss); assert(box); assert(tgeo_type(ss->temptype));
+  const TSequence *seq;
+  TSequenceSet *result = NULL;
+
+  /* Singleton sequence set */
+  if (ss->count == 1)
+    /* We can safely cast since the composing sequences are continuous */
+    return (TSequenceSet *) tpointseq_at_stbox_segm(TSEQUENCESET_SEQ_N(ss, 0),
+      box, border_inc);
+
+  /* General case */
+
+  /* Initialize to 0 due to the bounding box test below */
+  TSequenceSet **seqsets = palloc0(sizeof(TSequenceSet *) * ss->count);
+  int totalseqs = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    /* Bounding box test */
+    seq = TSEQUENCESET_SEQ_N(ss, i);
+    STBox box1;
+    tsequence_set_bbox(seq, &box1);
+    if (! overlaps_stbox_stbox(&box1, box))
+      continue;
+    else
+    {
+      /* We can safely cast since the composing sequences are continuous */
+      seqsets[i] = (TSequenceSet *) tpointseq_at_stbox_segm(seq, box,
+        border_inc);
+      if (seqsets[i])
+        totalseqs += seqsets[i]->count;
+    }
+  }
+  /* Assemble the sequences from all the sequence sets */
+  if (totalseqs > 0)
+    result = tseqsetarr_to_tseqset(seqsets, ss->count, totalseqs);
+  pfree_array((void **) seqsets, ss->count);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_restrict
+ * @brief Return a temporal point with the segments that intersect
+ * a spatiotemporal box in BOTH the spatial and the temporal dimension (if any)
+ * @param[in] temp Temporal point
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
+ * @note It is possible to mix 2D/3D geometries, the Z dimension is only
+ * considered if both the temporal point and the box have Z dimension
+ * @pre This function supposes all the checks have been done in the calling
+ * function
+ */
+Temporal *
+tpoint_at_stbox_segm(const Temporal *temp, const STBox *box, bool border_inc)
+{
+  assert(temp); assert(box); assert(tgeo_type(temp->temptype));
+  /* The following implies that temp->subtype != TINSTANT */
+  assert(MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR);
+  /* At least one of MEOS_FLAGS_GET_X and MEOS_FLAGS_GET_T is true */
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  assert(hasx || hast);
+  /* Ensure validity of the arguments */
+  if (! ensure_same_geodetic(temp->flags, box->flags) ||
+      (MEOS_FLAGS_GET_X(box->flags) &&
+        ! ensure_same_srid(tpoint_srid(temp), stbox_srid(box))))
+    return NULL;
+
+  /* Short-circuit restriction to only T dimension */
+  if (hast && ! hasx)
+    return temporal_restrict_tstzspan(temp, &box->period, REST_AT);
+
+  /* Parameter test */
+  assert(tpoint_srid(temp) == stbox_srid(box));
+  assert(MEOS_FLAGS_GET_GEODETIC(temp->flags) ==
+    MEOS_FLAGS_GET_GEODETIC(box->flags));
+
+  /* Bounding box test */
+  STBox box1;
+  temporal_set_bbox(temp, &box1);
+  if (! overlaps_stbox_stbox(&box1, box))
+    return NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TSEQUENCE)
+    return (Temporal *) tpointseq_at_stbox_segm((TSequence *) temp,
+        box, border_inc);
+  else /* temp->subtype == TSEQUENCESET */
+    return (Temporal *) tpointseqset_at_stbox_segm((TSequenceSet *) temp,
+      box, border_inc);
+}
 
 /*****************************************************************************
  * Restriction functions for geometry and possible a Z span and a time period
@@ -1796,19 +2006,38 @@ tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
   if (! overlaps)
     return atfunc ? NULL : temporal_cp(temp);
 
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  /* Restrict to atStbox prior to do atGeom to improve efficiency */
+  interpType interp = MEOS_FLAGS_GET_INTERP(temp->flags);
+  Temporal *temp1;
+  if (interp == LINEAR && atfunc)
+  {
+    temp1 = tpoint_at_stbox_segm(temp, &box2, BORDER_INC);
+    if (! temp1)
+      /* This is not redundant with the bounding box check above */
+      return atfunc ? NULL : temporal_cp(temp);
+  }
+  else
+    temp1 = (Temporal *) temp;
+
+  Temporal *result;
+  assert(temptype_subtype(temp1->subtype));
+  switch (temp1->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tpointinst_restrict_geom_time((TInstant *) temp,
+      return (Temporal *) tpointinst_restrict_geom_time((TInstant *) temp1,
         gs, zspan, period, atfunc);
+      break;
     case TSEQUENCE:
-      return tpointseq_restrict_geom_time((TSequence *) temp,
+      result = tpointseq_restrict_geom_time((TSequence *) temp1,
         gs, zspan, period, atfunc);
+      break;
     default: /* TSEQUENCESET */
-      return (Temporal *) tpointseqset_restrict_geom_time((TSequenceSet *)
-        temp, gs, zspan, period, atfunc);
+      result = (Temporal *) tpointseqset_restrict_geom_time((TSequenceSet *)
+          temp1, gs, zspan, period, atfunc);
   }
+  if (interp == LINEAR && atfunc)
+    pfree(temp1);
+  return result;
 }
 
 #if MEOS

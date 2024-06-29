@@ -62,7 +62,7 @@
  */
 static const char *_MEOSTYPE_NAMES[] =
 {
-  [T_UNKNOWN] = "",
+  [T_UNKNOWN] = "unknown",
   [T_BOOL] = "bool",
   [T_DATE] = "date",
   [T_DATEMULTIRANGE] = "datemultirange",
