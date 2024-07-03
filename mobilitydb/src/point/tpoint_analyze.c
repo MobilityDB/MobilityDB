@@ -675,7 +675,11 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
    * we have an average of 5 features for each cell so the histogram isn't
    * so sparse.
    */
+#if POSTGRESQL_VERSION_NUMBER >= 170000
+  histo_cells_target = (int) pow((double) (stats->attstattarget),
+#else
   histo_cells_target = (int) pow((double) (stats->attr->attstattarget),
+#endif
     (double) ndims);
   histo_cells_target = Min(histo_cells_target, ndims * 10000);
   histo_cells_target = Min(histo_cells_target, (int)(total_rows/5));
