@@ -95,7 +95,11 @@ void
 span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
   SpanBound *lowers, SpanBound *uppers, float8 *lengths, bool valuedim)
 {
+#if POSTGRESQL_VERSION_NUMBER >= 170000
+  int num_hist, num_bins = stats->attstattarget;
+#else
   int num_hist, num_bins = stats->attr->attstattarget;
+#endif
   Datum *bound_hist_values, *length_hist_values;
 
   /* Must copy the target values into anl_context */
@@ -361,11 +365,20 @@ Span_analyze(PG_FUNCTION_ARGS)
   /* Set the callback function to compute statistics. */
   stats->compute_stats = &span_compute_stats;
 
+
+#if POSTGRESQL_VERSION_NUMBER >= 170000
+  if (stats->attstattarget < 0)
+    stats->attstattarget = default_statistics_target;
+
+  /* same as in std_typanalyze */
+  stats->minrows = 300 * stats->attstattarget;
+#else
   if (stats->attr->attstattarget < 0)
     stats->attr->attstattarget = default_statistics_target;
 
   /* same as in std_typanalyze */
   stats->minrows = 300 * stats->attr->attstattarget;
+#endif
 
   PG_RETURN_BOOL(true);
 }
