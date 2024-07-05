@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Create a cache of metadata information about temporal types and
- * span types in global arrays
+ * span types in global constant arrays
  */
 
 #include "general/meos_catalog.h"
@@ -53,11 +53,11 @@
 #endif
 
 /*****************************************************************************
- * Global variables
+ * Global constants
  *****************************************************************************/
 
 /**
- * @brief Global array containing the type names corresponding to the
+ * @brief Global constant array containing the type names corresponding to the
  * enumeration meosType defined in file `meos_catalog.h`
  */
 static const char *_MEOSTYPE_NAMES[] =
@@ -117,8 +117,8 @@ static const char *_MEOSTYPE_NAMES[] =
 };
 
 /**
- * @brief Global array containing the operator names corresponding to the
- * enumeration meosOper defined in file `meos_catalog.h`
+ * @brief Global constant array containing the operator names corresponding to
+ * the enumeration meosOper defined in file `meos_catalog.h`
  */
 static const char *_MEOSOPER_NAMES[] =
 {
@@ -170,8 +170,8 @@ static const char *_MEOSOPER_NAMES[] =
 #define TEMPSUBTYPE_STR_MAXLEN 12
 
 /**
- * @brief Global array storing the string representation of the concrete
- * subtypes of temporal types
+ * @brief Global constant array storing the string representation of the
+ * concrete subtypes of temporal types
  */
 static const char *_TEMPSUBTYPE_NAMES[] =
 {
@@ -185,8 +185,8 @@ static const char *_TEMPSUBTYPE_NAMES[] =
 
 /**
 
- * @brief Global array containing the interpolation names corresponding to the
- * enumeration interpType defined in file `meos_catalog.h`
+ * @brief Global constant array containing the interpolation names 
+ * corresponding to the enumeration interpType defined in file `meos_catalog.h`
  * @note The names are in lowercase since they are used in error messages
  */
 static const char * _INTERPTYPE_NAMES[] =
@@ -200,9 +200,10 @@ static const char * _INTERPTYPE_NAMES[] =
 /*****************************************************************************/
 
 /**
- * @brief Global array that keeps type information for the defined set types
+ * @brief Global constant array that keeps type information for the defined set
+ * types
  */
-static settype_catalog_struct _SETTYPE_CATALOG[] =
+static const settype_catalog_struct _SETTYPE_CATALOG[] =
 {
   /* settype        basetype */
   {T_INTSET,        T_INT4},
@@ -217,9 +218,10 @@ static settype_catalog_struct _SETTYPE_CATALOG[] =
 };
 
 /**
- * @brief Global array that keeps type information for the defined span types
+ * @brief Global constant array that keeps type information for the defined
+ * span types
  */
-static spantype_catalog_struct _SPANTYPE_CATALOG[] =
+static const spantype_catalog_struct _SPANTYPE_CATALOG[] =
 {
   /* spantype       basetype */
   {T_INTSPAN,       T_INT4},
@@ -230,9 +232,10 @@ static spantype_catalog_struct _SPANTYPE_CATALOG[] =
 };
 
 /**
- * @brief Global array that keeps type information for the defined span set types
+ * @brief Global constant array that keeps type information for the defined
+ * span set types
  */
-static spansettype_catalog_struct _SPANSETTYPE_CATALOG[] =
+static const spansettype_catalog_struct _SPANSETTYPE_CATALOG[] =
 {
   /* spansettype    spantype */
   {T_INTSPANSET,    T_INTSPAN},
@@ -243,9 +246,10 @@ static spansettype_catalog_struct _SPANSETTYPE_CATALOG[] =
 };
 
 /**
- * @brief Global array that keeps type information for the defined temporal types
+ * @brief Global constant array that keeps type information for the defined
+ * temporal types
  */
-static temptype_catalog_struct _TEMPTYPE_CATALOG[] =
+static const temptype_catalog_struct _TEMPTYPE_CATALOG[] =
 {
   /* temptype    basetype */
   {T_TDOUBLE2,   T_DOUBLE2},
@@ -363,8 +367,6 @@ temptype_subtype_all(tempSubtype subtype)
   return false;
 }
 #endif /* DEBUG_BUILD */
-
-
 
 /*****************************************************************************/
 

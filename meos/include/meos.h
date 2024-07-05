@@ -38,6 +38,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+/* GSL */
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
 /* PostgreSQL */
 #if MEOS
 #include "postgres_int_defs.h"
@@ -352,6 +355,9 @@ extern bool meos_set_datestyle(char *newval, void *extra);
 extern bool meos_set_intervalstyle(char *newval, int extra);
 extern char *meos_get_datestyle(void);
 extern char *meos_get_intervalstyle(void);
+
+extern gsl_rng *gsl_get_generation_rng(void);
+extern gsl_rng *gsl_get_aggregation_rng(void);
 
 extern void meos_initialize(const char *tz_str, error_handler_fn err_handler);
 extern void meos_finalize(void);

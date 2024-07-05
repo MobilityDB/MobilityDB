@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief Create a cache of PostgreSQL type and operator Oids in global arrays
- * to avoid (slow) lookups
+ * @brief Create a cache of PostgreSQL type and operator Oids in global 
+ * variable arrays to avoid (slow) lookups
  *
  * The arrays are initialized when the extension is loaded.
  *
@@ -121,7 +121,7 @@ static bool _TYPEOID_CACHE_READY = false;
 static bool _OPEROID_CACHE_READY = false;
 
 /**
- * @brief Global array that keeps the type Oids used in MobilityDB
+ * @brief Global variable array that keeps the type Oids used in MobilityDB
  */
 static Oid _TYPE_OID[NO_MEOS_TYPES];
 
@@ -131,8 +131,8 @@ static Oid _TYPE_OID[NO_MEOS_TYPES];
 struct opertable_hash *_OID_OPER = NULL;
 
 /**
- * @brief Global 3-dimensional array that keeps the operator Oids used in
- * MobilityDB
+ * @brief Global variable 3-dimensional array that keeps the operator Oids used
+ * in MobilityDB
  *
  * The first dimension corresponds to the operator class (e.g., <=), the second
  * and third dimensions correspond, respectively, to the left and right

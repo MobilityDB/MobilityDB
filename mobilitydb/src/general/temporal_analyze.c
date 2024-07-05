@@ -90,6 +90,7 @@
 #define TEMPORAL_WIDTH_THRESHOLD 4096 // Should it be 0x10000 i.e. 64K as before ?
 
 /*
+ * Global variable for extra data for the compute_stats function.
  * While statistic functions are running, we keep a pointer to the extra data
  * here for use by assorted subroutines.  The functions doesn't currently need
  * to be re-entrant, so avoiding this is not worth the extra notational cruft
