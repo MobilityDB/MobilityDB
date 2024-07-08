@@ -43,6 +43,68 @@
 #include <meos.h>
 // #include <meos_internal.h>
 
+/***************************************************************************
+ * Initialize the Gnu Scientific Library
+ ***************************************************************************/
+
+/* Global variables */
+
+static bool _GSL_INITIALIZED = false;
+static gsl_rng *_GENERATION_RNG = NULL;
+static gsl_rng *_AGGREGATION_RNG = NULL;
+
+/**
+ * @brief Initialize the Gnu Scientific Library
+ */
+static void
+gsl_initialize(void)
+{
+  if (! _GSL_INITIALIZED)
+  {
+    gsl_rng_env_setup();
+    _GENERATION_RNG = gsl_rng_alloc(gsl_rng_default);
+    _AGGREGATION_RNG = gsl_rng_alloc(gsl_rng_ranlxd1);
+    _GSL_INITIALIZED = true;
+  }
+  return;
+}
+
+#if MEOS
+/**
+ * @brief Finalize the Gnu Scientific Library
+ */
+static void
+gsl_finalize(void)
+{
+  gsl_rng_free(_GENERATION_RNG);
+  gsl_rng_free(_AGGREGATION_RNG);
+  _GSL_INITIALIZED = false;
+  return;
+}
+#endif /* MEOS */
+
+/**
+ * @brief Get the random generator used by the data generator
+ */
+gsl_rng *
+gsl_get_generation_rng(void)
+{
+  if (! _GSL_INITIALIZED)
+    gsl_initialize();
+  return _GENERATION_RNG;
+}
+
+/**
+ * @brief Get the random generator used by temporal aggregation
+ */
+gsl_rng *
+gsl_get_aggregation_rng(void)
+{
+  if (! _GSL_INITIALIZED)
+    gsl_initialize();
+  return _AGGREGATION_RNG;
+}
+
 #if MEOS
 /*****************************************************************************/
 
@@ -483,67 +545,5 @@ meos_finalize(void)
 }
 
 #endif /* MEOS */
-
-/***************************************************************************
- * Initialize the Gnu Scientific Library
- ***************************************************************************/
-
-/* Global variables */
-
-static bool _GSL_INITIALIZED = false;
-static gsl_rng *_GENERATION_RNG = NULL;
-static gsl_rng *_AGGREGATION_RNG = NULL;
-
-/**
- * @brief Initialize the Gnu Scientific Library
- */
-static void
-gsl_initialize(void)
-{
-  if (! _GSL_INITIALIZED)
-  {
-    gsl_rng_env_setup();
-    _GENERATION_RNG = gsl_rng_alloc(gsl_rng_default);
-    _AGGREGATION_RNG = gsl_rng_alloc(gsl_rng_ranlxd1);
-    _GSL_INITIALIZED = true;
-  }
-  return;
-}
-
-#if MEOS
-/**
- * @brief Finalize the Gnu Scientific Library
- */
-static void
-gsl_finalize(void)
-{
-  gsl_rng_free(_GENERATION_RNG);
-  gsl_rng_free(_AGGREGATION_RNG);
-  _GSL_INITIALIZED = false;
-  return;
-}
-#endif /* MEOS */
-
-/**
- * @brief Get the random generator used by the data generator
- */
-gsl_rng *
-gsl_get_generation_rng(void)
-{
-  if (! _GSL_INITIALIZED)
-    gsl_initialize();
-  return _GENERATION_RNG;
-}
-
-/**
- * @brief Get the random generator used by temporal aggregation
- */
-gsl_rng *
-gsl_get_aggregation_rng(void)
-{
-  if (! _GSL_INITIALIZED)
-    gsl_initialize();
-  return _AGGREGATION_RNG;
-}
 
 /*****************************************************************************/

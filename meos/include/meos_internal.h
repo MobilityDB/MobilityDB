@@ -38,10 +38,20 @@
 #include <stddef.h>
 /* JSON-C */
 #include <json-c/json.h>
+/* GSL */
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
 /* PostgreSQL */
 /* MEOS */
 #include <meos.h>
 #include "general/meos_catalog.h" /* For meosType */
+
+/*****************************************************************************
+ * Internal function accessing the Gnu Scientic Library (GSL)
+ *****************************************************************************/
+
+extern gsl_rng *gsl_get_generation_rng(void);
+extern gsl_rng *gsl_get_aggregation_rng(void);
 
 /*****************************************************************************
  * Direct access to a single point in the GSERIALIZED struct
