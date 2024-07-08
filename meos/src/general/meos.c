@@ -478,8 +478,7 @@ meos_finalize(void)
   /* Finalize PROJ */
   proj_context_destroy(_PJ_CONTEXT);
   /* Finalize GSL */
-  gsl_rng_free(_GENERATION_RNG);
-  gsl_rng_free(_AGGREGATION_RNG);
+  gsl_finalize();
   return;
 }
 
@@ -510,6 +509,20 @@ gsl_initialize(void)
   }
   return;
 }
+
+#if MEOS
+/**
+ * @brief Finalize the Gnu Scientific Library
+ */
+static void
+gsl_finalize(void)
+{
+  gsl_rng_free(_GENERATION_RNG);
+  gsl_rng_free(_AGGREGATION_RNG);
+  _GSL_INITIALIZED = false;
+  return;
+}
+#endif /* MEOS */
 
 /**
  * @brief Get the random generator used by the data generator
