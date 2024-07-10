@@ -38,9 +38,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-/* GSL */
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
 /* PostgreSQL */
 #if MEOS
 #include "postgres_int_defs.h"

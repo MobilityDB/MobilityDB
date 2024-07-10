@@ -37,6 +37,9 @@
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
+/* GSL */
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
 /* Proj */
 #include <proj.h>
 /* MEOS */
