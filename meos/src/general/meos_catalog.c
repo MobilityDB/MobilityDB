@@ -60,7 +60,7 @@
  * @brief Global constant array containing the type names corresponding to the
  * enumeration meosType defined in file `meos_catalog.h`
  */
-static const char *_MEOSTYPE_NAMES[] =
+static const char *MEOS_TYPE_NAMES[] =
 {
   [T_UNKNOWN] = "unknown",
   [T_BOOL] = "bool",
@@ -120,7 +120,7 @@ static const char *_MEOSTYPE_NAMES[] =
  * @brief Global constant array containing the operator names corresponding to
  * the enumeration meosOper defined in file `meos_catalog.h`
  */
-static const char *_MEOSOPER_NAMES[] =
+static const char *MEOS_OPER_NAMES[] =
 {
   [UNKNOWN_OP] = "",
   [EQ_OP] = "=",
@@ -173,7 +173,7 @@ static const char *_MEOSOPER_NAMES[] =
  * @brief Global constant array storing the string representation of the
  * concrete subtypes of temporal types
  */
-static const char *_TEMPSUBTYPE_NAMES[] =
+static const char *MEOS_TEMPSUBTYPE_NAMES[] =
 {
   [ANYTEMPSUBTYPE] = "Any subtype",
   [TINSTANT] = "Instant",
@@ -189,7 +189,7 @@ static const char *_TEMPSUBTYPE_NAMES[] =
  * corresponding to the enumeration interpType defined in file `meos_catalog.h`
  * @note The names are in lowercase since they are used in error messages
  */
-static const char * _INTERPTYPE_NAMES[] =
+static const char * MEOS_INTERPTYPE_NAMES[] =
 {
   [INTERP_NONE] = "None",
   [DISCRETE] = "Discrete",
@@ -203,7 +203,7 @@ static const char * _INTERPTYPE_NAMES[] =
  * @brief Global constant array that keeps type information for the defined set
  * types
  */
-static const settype_catalog_struct _SETTYPE_CATALOG[] =
+static const settype_catalog_struct MEOS_SETTYPE_CATALOG[] =
 {
   /* settype        basetype */
   {T_INTSET,        T_INT4},
@@ -221,7 +221,7 @@ static const settype_catalog_struct _SETTYPE_CATALOG[] =
  * @brief Global constant array that keeps type information for the defined
  * span types
  */
-static const spantype_catalog_struct _SPANTYPE_CATALOG[] =
+static const spantype_catalog_struct MEOS_SPANTYPE_CATALOG[] =
 {
   /* spantype       basetype */
   {T_INTSPAN,       T_INT4},
@@ -235,7 +235,7 @@ static const spantype_catalog_struct _SPANTYPE_CATALOG[] =
  * @brief Global constant array that keeps type information for the defined
  * span set types
  */
-static const spansettype_catalog_struct _SPANSETTYPE_CATALOG[] =
+static const spansettype_catalog_struct MEOS_SPANSETTYPE_CATALOG[] =
 {
   /* spansettype    spantype */
   {T_INTSPANSET,    T_INTSPAN},
@@ -249,7 +249,7 @@ static const spansettype_catalog_struct _SPANSETTYPE_CATALOG[] =
  * @brief Global constant array that keeps type information for the defined
  * temporal types
  */
-static const temptype_catalog_struct _TEMPTYPE_CATALOG[] =
+static const temptype_catalog_struct MEOS_TEMPTYPE_CATALOG[] =
 {
   /* temptype    basetype */
   {T_TDOUBLE2,   T_DOUBLE2},
@@ -272,7 +272,7 @@ static const temptype_catalog_struct _TEMPTYPE_CATALOG[] =
 const char *
 meostype_name(meosType type)
 {
-  return _MEOSTYPE_NAMES[type];
+  return MEOS_TYPE_NAMES[type];
 }
 
 /*****************************************************************************/
@@ -284,7 +284,7 @@ meostype_name(meosType type)
 const char *
 tempsubtype_name(tempSubtype subtype)
 {
-  return _TEMPSUBTYPE_NAMES[subtype];
+  return MEOS_TEMPSUBTYPE_NAMES[subtype];
 }
 
 /**
@@ -326,11 +326,11 @@ tempsubtype_from_string(const char *str, int16 *subtype)
   tmpstr[i - tmpstartpos] = '\0';
   size_t len = strlen(tmpstr);
   /* Now check for the type */
-  size_t n = sizeof(_TEMPSUBTYPE_NAMES) / sizeof(char *);
+  size_t n = sizeof(MEOS_TEMPSUBTYPE_NAMES) / sizeof(char *);
   for (i = 0; i < n; i++)
   {
-    if (len == strnlen(_TEMPSUBTYPE_NAMES[i], TEMPSUBTYPE_STR_MAXLEN) &&
-      ! pg_strncasecmp(tmpstr, _TEMPSUBTYPE_NAMES[i], TEMPSUBTYPE_STR_MAXLEN))
+    if (len == strnlen(MEOS_TEMPSUBTYPE_NAMES[i], TEMPSUBTYPE_STR_MAXLEN) &&
+      ! pg_strncasecmp(tmpstr, MEOS_TEMPSUBTYPE_NAMES[i], TEMPSUBTYPE_STR_MAXLEN))
     {
       *subtype = i;
       pfree(tmpstr);
@@ -376,7 +376,7 @@ temptype_subtype_all(tempSubtype subtype)
 const char *
 meosoper_name(meosOper oper)
 {
-  return _MEOSOPER_NAMES[oper];
+  return MEOS_OPER_NAMES[oper];
 }
 
 /**
@@ -386,10 +386,10 @@ meosoper_name(meosOper oper)
 meosOper
 meosoper_from_string(const char *str)
 {
-  int n = sizeof(_MEOSOPER_NAMES) / sizeof(char *);
+  int n = sizeof(MEOS_OPER_NAMES) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {
-    if (strcmp(_MEOSOPER_NAMES[i], str) == 0)
+    if (strcmp(MEOS_OPER_NAMES[i], str) == 0)
       return i;
   }
   return UNKNOWN_OP;
@@ -404,7 +404,7 @@ meosoper_from_string(const char *str)
 const char *
 interptype_name(interpType interp)
 {
-  return _INTERPTYPE_NAMES[interp];
+  return MEOS_INTERPTYPE_NAMES[interp];
 }
 
 /**
@@ -413,10 +413,10 @@ interptype_name(interpType interp)
 interpType
 interptype_from_string(const char *str)
 {
-  int n = sizeof(_INTERPTYPE_NAMES) / sizeof(char *);
+  int n = sizeof(MEOS_INTERPTYPE_NAMES) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {
-    if (pg_strncasecmp(str, _INTERPTYPE_NAMES[i],
+    if (pg_strncasecmp(str, MEOS_INTERPTYPE_NAMES[i],
       INTERP_STR_MAXLEN) == 0)
       return i;
   }
@@ -436,11 +436,11 @@ interptype_from_string(const char *str)
 meosType
 temptype_basetype(meosType type)
 {
-  int n = sizeof(_TEMPTYPE_CATALOG) / sizeof(temptype_catalog_struct);
+  int n = sizeof(MEOS_TEMPTYPE_CATALOG) / sizeof(temptype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_TEMPTYPE_CATALOG[i].temptype == type)
-      return _TEMPTYPE_CATALOG[i].basetype;
+    if (MEOS_TEMPTYPE_CATALOG[i].temptype == type)
+      return MEOS_TEMPTYPE_CATALOG[i].basetype;
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -458,11 +458,11 @@ temptype_basetype(meosType type)
 meosType
 settype_basetype(meosType type)
 {
-  int n = sizeof(_SETTYPE_CATALOG) / sizeof(settype_catalog_struct);
+  int n = sizeof(MEOS_SETTYPE_CATALOG) / sizeof(settype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_SETTYPE_CATALOG[i].settype == type)
-      return _SETTYPE_CATALOG[i].basetype;
+    if (MEOS_SETTYPE_CATALOG[i].settype == type)
+      return MEOS_SETTYPE_CATALOG[i].basetype;
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -476,11 +476,11 @@ settype_basetype(meosType type)
 meosType
 basetype_settype(meosType type)
 {
-  int n = sizeof(_SETTYPE_CATALOG) / sizeof(settype_catalog_struct);
+  int n = sizeof(MEOS_SETTYPE_CATALOG) / sizeof(settype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_SETTYPE_CATALOG[i].basetype == type)
-      return _SETTYPE_CATALOG[i].settype;
+    if (MEOS_SETTYPE_CATALOG[i].basetype == type)
+      return MEOS_SETTYPE_CATALOG[i].settype;
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -494,11 +494,11 @@ basetype_settype(meosType type)
 meosType
 spantype_basetype(meosType type)
 {
-  int n = sizeof(_SPANTYPE_CATALOG) / sizeof(spantype_catalog_struct);
+  int n = sizeof(MEOS_SPANTYPE_CATALOG) / sizeof(spantype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_SPANTYPE_CATALOG[i].spantype == type)
-      return _SPANTYPE_CATALOG[i].basetype;
+    if (MEOS_SPANTYPE_CATALOG[i].spantype == type)
+      return MEOS_SPANTYPE_CATALOG[i].basetype;
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -512,11 +512,11 @@ spantype_basetype(meosType type)
 meosType
 spansettype_spantype(meosType type)
 {
-  int n = sizeof(_SPANSETTYPE_CATALOG) / sizeof(spansettype_catalog_struct);
+  int n = sizeof(MEOS_SPANSETTYPE_CATALOG) / sizeof(spansettype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_SPANSETTYPE_CATALOG[i].spansettype == type)
-      return _SPANSETTYPE_CATALOG[i].spantype;
+    if (MEOS_SPANSETTYPE_CATALOG[i].spansettype == type)
+      return MEOS_SPANSETTYPE_CATALOG[i].spantype;
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -530,11 +530,11 @@ spansettype_spantype(meosType type)
 meosType
 basetype_spantype(meosType type)
 {
-  int n = sizeof(_SPANTYPE_CATALOG) / sizeof(spantype_catalog_struct);
+  int n = sizeof(MEOS_SPANTYPE_CATALOG) / sizeof(spantype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_SPANTYPE_CATALOG[i].basetype == type)
-      return _SPANTYPE_CATALOG[i].spantype;
+    if (MEOS_SPANTYPE_CATALOG[i].basetype == type)
+      return MEOS_SPANTYPE_CATALOG[i].spantype;
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -548,11 +548,11 @@ basetype_spantype(meosType type)
 meosType
 spantype_spansettype(meosType type)
 {
-  int n = sizeof(_SPANSETTYPE_CATALOG) / sizeof(spansettype_catalog_struct);
+  int n = sizeof(MEOS_SPANSETTYPE_CATALOG) / sizeof(spansettype_catalog_struct);
   for (int i = 0; i < n; i++)
   {
-    if (_SPANSETTYPE_CATALOG[i].spantype == type)
-      return _SPANSETTYPE_CATALOG[i].spansettype;
+    if (MEOS_SPANSETTYPE_CATALOG[i].spantype == type)
+      return MEOS_SPANSETTYPE_CATALOG[i].spansettype;
   }
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

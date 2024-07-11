@@ -114,7 +114,7 @@ time_max_header_size(void)
  * in PostGIS functions such as #transform, #geography_distance, or
  * #geography_azimuth that need to access the proj cache
  */
-static FunctionCallInfo _FCINFO;
+static FunctionCallInfo MOBDB_PG_FCINFO;
 
 /**
  * @brief Fetch from the cache the fcinfo of the external function
@@ -122,8 +122,8 @@ static FunctionCallInfo _FCINFO;
 FunctionCallInfo
 fetch_fcinfo()
 {
-  assert(_FCINFO);
-  return _FCINFO;
+  assert(MOBDB_PG_FCINFO);
+  return MOBDB_PG_FCINFO;
 }
 
 /**
@@ -132,7 +132,7 @@ fetch_fcinfo()
 void
 store_fcinfo(FunctionCallInfo fcinfo)
 {
-  _FCINFO = fcinfo;
+  MOBDB_PG_FCINFO = fcinfo;
   return;
 }
 

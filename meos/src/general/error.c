@@ -49,7 +49,7 @@
 /**
  * @brief Global variable that keeps the last error number
  */
-static int _MEOS_ERRNO = 0;
+static int MEOS_ERR_NO = 0;
 
 /**
  * @brief Read an error number
@@ -57,7 +57,7 @@ static int _MEOS_ERRNO = 0;
 int
 meos_errno(void)
 {
-  return _MEOS_ERRNO;
+  return MEOS_ERR_NO;
 }
 
 #if MEOS
@@ -71,7 +71,7 @@ meos_errno_set(int err)
   if (err == 0)
     return 0;
 
-  _MEOS_ERRNO = err;
+  MEOS_ERR_NO = err;
   return err;
 }
 
@@ -134,7 +134,7 @@ int meos_errno_reset(void)
 /**
  * @brief Global variable that keeps the error handler function
  */
-void (*_ERROR_HANDLER)(int, int, char *) = NULL;
+void (*MEOS_ERROR_HANDLER)(int, int, char *) = NULL;
 
 #if MEOS
 /**
@@ -170,9 +170,9 @@ void
 meos_initialize_error_handler(error_handler_fn err_handler)
 {
   if (err_handler)
-    _ERROR_HANDLER = err_handler;
+    MEOS_ERROR_HANDLER = err_handler;
   else
-    _ERROR_HANDLER = &default_error_handler;
+    MEOS_ERROR_HANDLER = &default_error_handler;
   return;
 }
 #endif /* MEOS */
@@ -192,8 +192,8 @@ meos_error(int errlevel, int errcode, char *format, ...)
   vsnprintf(buffer, sizeof(buffer), format, args);
   va_end(args);
   /* Execute the error handler function */
-  if (_ERROR_HANDLER)
-    _ERROR_HANDLER(errlevel, errcode, buffer);
+  if (MEOS_ERROR_HANDLER)
+    MEOS_ERROR_HANDLER(errlevel, errcode, buffer);
   else
 #if ! MEOS
     elog(errlevel, "%s", buffer);
