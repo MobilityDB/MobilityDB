@@ -47,7 +47,7 @@
 // #include <meos_internal.h>
 
 /***************************************************************************
- * Initialize the Gnu Scientific Library
+ * Initialize/finalize the Gnu Scientific Library
  ***************************************************************************/
 
 /* Global variables */
@@ -109,6 +109,38 @@ gsl_get_aggregation_rng(void)
 }
 
 #if MEOS
+
+/***************************************************************************
+ * Initialize/finalize the PROJ library
+ ***************************************************************************/
+
+/* Global variables keeping Proj context */
+
+PJ_CONTEXT *MEOS_PJ_CONTEXT = NULL;
+
+/**
+ * @brief Initialize the PROJ library
+ */
+static void
+proj_initialize(void)
+{
+  if (! MEOS_PJ_CONTEXT)
+    MEOS_PJ_CONTEXT = proj_context_create();
+  return;
+}
+
+/**
+ * @brief Finalize the PROJ library
+ */
+static void
+proj_finalize(void)
+{
+  proj_context_destroy(MEOS_PJ_CONTEXT);
+  proj_cleanup();
+  MEOS_PJ_CONTEXT = NULL;
+  return;
+}
+
 /*****************************************************************************/
 
 /* Definitions taken from miscadmin.h */
@@ -142,10 +174,6 @@ gsl_get_aggregation_rng(void)
 int DateStyle = USE_ISO_DATES;
 int DateOrder = DATEORDER_MDY;
 int IntervalStyle = INTSTYLE_POSTGRES;
-
-/* Global variables keeping Proj context */
-
-PJ_CONTEXT *_PJ_CONTEXT;
 
 /***************************************************************************
  * Definitions taken from pg_regress.h/c
@@ -527,7 +555,7 @@ meos_initialize(const char *tz_str, error_handler_fn err_handler)
   meos_initialize_error_handler(err_handler);
   meos_initialize_timezone(tz_str);
   /* Initialize PROJ */
-  _PJ_CONTEXT = proj_context_create();
+  proj_initialize();
   /* Initialize GSL */
   gsl_initialize();
   return;
@@ -541,7 +569,7 @@ meos_finalize(void)
 {
   meos_finalize_timezone();
   /* Finalize PROJ */
-  proj_context_destroy(_PJ_CONTEXT);
+  proj_finalize();
   /* Finalize GSL */
   gsl_finalize();
   return;
