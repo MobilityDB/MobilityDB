@@ -1780,9 +1780,8 @@ geopointarr_make_trajectory(GSERIALIZED **points, int count, const STBox *box,
 
 /**
  * @brief Write in the buffer a GBOX from a spatiotemporal box
- * @param[in] box Array of points
- * @param[in] count Number of elements in the input array
- * @param[in] box Spatiotemporal bounding box of the input points
+ * @param[in] box Spatiotemporal bounding box
+ * @param[out] buf Output buffer where the GBOX is written
  * @result Number of bytes written into the buffer
  * @note Implements the logic of PostGIS function gserialized2_from_gbox
  */
@@ -1816,7 +1815,6 @@ gbox_from_stbox(const STBox *box, uint8_t *buf)
  * @param[in] lines Array of lines
  * @param[in] nlines Number of elements in the lines array
  * @param[in] box Spatiotemporal bounding box of the input points
- * @param[in] interp Interpolation
  * @note This function creates directly the GSERIALIZED result WITHOUT passing
  * through the createtion of the LWPOINT to speed up the process
  * @note The function does not remove duplicate points, that is, repeated

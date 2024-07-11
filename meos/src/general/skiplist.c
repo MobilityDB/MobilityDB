@@ -51,8 +51,6 @@
 #else
   #include <utils/memutils.h>
 #endif /* MEOS */
-/* GSL */
-#include <gsl/gsl_rng.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -106,10 +104,6 @@ ensure_same_skiplist_subtype(SkipList *state, uint8 subtype)
  * Functions manipulating skip lists
  *****************************************************************************/
 
-/* Global variable for skip lists which require the gsl random generator */
-
-static gsl_rng *_AGGREGATION_RNG = NULL;
-
 #ifdef NO_FFSL
 static int
 ffsl(long int i)
@@ -127,9 +121,7 @@ ffsl(long int i)
 static long int
 gsl_random48()
 {
-  if(! _AGGREGATION_RNG)
-    _AGGREGATION_RNG = gsl_rng_alloc(gsl_rng_ranlxd1);
-  return gsl_rng_get(_AGGREGATION_RNG);
+  return gsl_rng_get(gsl_get_aggregation_rng());
 }
 
 /**
