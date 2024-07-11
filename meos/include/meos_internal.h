@@ -54,6 +54,12 @@ extern gsl_rng *gsl_get_generation_rng(void);
 extern gsl_rng *gsl_get_aggregation_rng(void);
 
 /*****************************************************************************
+ * Internal function accessing the PROJ library
+ *****************************************************************************/
+
+extern PJ_CONTEXT *proj_get_context(void);
+
+/*****************************************************************************
  * Direct access to a single point in the GSERIALIZED struct
  *****************************************************************************/
 

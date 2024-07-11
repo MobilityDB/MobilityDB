@@ -47,14 +47,14 @@
 // #include <meos_internal.h>
 
 /***************************************************************************
- * Initialize/finalize the Gnu Scientific Library
+ * Functions for the Gnu Scientific Library (GSL)
  ***************************************************************************/
 
 /* Global variables */
 
-static bool _GSL_INITIALIZED = false;
-static gsl_rng *_GENERATION_RNG = NULL;
-static gsl_rng *_AGGREGATION_RNG = NULL;
+static bool MEOS_GSL_INITIALIZED = false;
+static gsl_rng *MEOS_GENERATION_RNG = NULL;
+static gsl_rng *MEOS_AGGREGATION_RNG = NULL;
 
 /**
  * @brief Initialize the Gnu Scientific Library
@@ -62,12 +62,12 @@ static gsl_rng *_AGGREGATION_RNG = NULL;
 static void
 gsl_initialize(void)
 {
-  if (! _GSL_INITIALIZED)
+  if (! MEOS_GSL_INITIALIZED)
   {
     gsl_rng_env_setup();
-    _GENERATION_RNG = gsl_rng_alloc(gsl_rng_default);
-    _AGGREGATION_RNG = gsl_rng_alloc(gsl_rng_ranlxd1);
-    _GSL_INITIALIZED = true;
+    MEOS_GENERATION_RNG = gsl_rng_alloc(gsl_rng_default);
+    MEOS_AGGREGATION_RNG = gsl_rng_alloc(gsl_rng_ranlxd1);
+    MEOS_GSL_INITIALIZED = true;
   }
   return;
 }
@@ -79,9 +79,9 @@ gsl_initialize(void)
 static void
 gsl_finalize(void)
 {
-  gsl_rng_free(_GENERATION_RNG);
-  gsl_rng_free(_AGGREGATION_RNG);
-  _GSL_INITIALIZED = false;
+  gsl_rng_free(MEOS_GENERATION_RNG);
+  gsl_rng_free(MEOS_AGGREGATION_RNG);
+  MEOS_GSL_INITIALIZED = false;
   return;
 }
 #endif /* MEOS */
@@ -92,9 +92,9 @@ gsl_finalize(void)
 gsl_rng *
 gsl_get_generation_rng(void)
 {
-  if (! _GSL_INITIALIZED)
+  if (! MEOS_GSL_INITIALIZED)
     gsl_initialize();
-  return _GENERATION_RNG;
+  return MEOS_GENERATION_RNG;
 }
 
 /**
@@ -103,15 +103,13 @@ gsl_get_generation_rng(void)
 gsl_rng *
 gsl_get_aggregation_rng(void)
 {
-  if (! _GSL_INITIALIZED)
+  if (! MEOS_GSL_INITIALIZED)
     gsl_initialize();
-  return _AGGREGATION_RNG;
+  return MEOS_AGGREGATION_RNG;
 }
 
-#if MEOS
-
 /***************************************************************************
- * Initialize/finalize the PROJ library
+ * Functions for the PROJ library
  ***************************************************************************/
 
 /* Global variables keeping Proj context */
@@ -129,6 +127,7 @@ proj_initialize(void)
   return;
 }
 
+#if MEOS
 /**
  * @brief Finalize the PROJ library
  */
@@ -140,7 +139,21 @@ proj_finalize(void)
   MEOS_PJ_CONTEXT = NULL;
   return;
 }
+#endif /* MEOS */
 
+/**
+ * @brief Get the random generator used by temporal aggregation
+ */
+PJ_CONTEXT *
+proj_get_context(void)
+{
+  if (! MEOS_PJ_CONTEXT)
+    proj_initialize();
+  return MEOS_PJ_CONTEXT;
+}
+
+/*****************************************************************************/
+#if MEOS
 /*****************************************************************************/
 
 /* Definitions taken from miscadmin.h */

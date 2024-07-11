@@ -403,11 +403,11 @@ lwproj_transform(int32 srid_from, int32 srid_to)
   char srid_to_str[MAX_AUTH_SRID_STR];
   /* From SRID */
   snprintf(srid_from_str, MAX_AUTH_SRID_STR, "EPSG:%d", srid_from);
-  PJ *pj1 = proj_create(PJ_DEFAULT_CTX, srid_from_str);
+  PJ *pj1 = proj_create(proj_get_context(), srid_from_str);
   if (! pj1)
   {
     snprintf(srid_from_str, MAX_AUTH_SRID_STR, "ESRI:%d", srid_from);
-    pj1 = proj_create(PJ_DEFAULT_CTX, srid_from_str);
+    pj1 = proj_create(proj_get_context(), srid_from_str);
     if (! pj1)
     {
       /* Error */
@@ -419,11 +419,11 @@ lwproj_transform(int32 srid_from, int32 srid_to)
   proj_destroy(pj1);
   /* To SRID */
   snprintf(srid_to_str, MAX_AUTH_SRID_STR, "EPSG:%d", srid_to);
-  PJ *pj2 = proj_create(PJ_DEFAULT_CTX, srid_to_str);
+  PJ *pj2 = proj_create(proj_get_context(), srid_to_str);
   if (! pj2)
   {
     snprintf(srid_to_str, MAX_AUTH_SRID_STR, "ESRI:%d", srid_to);
-    pj2 = proj_create(PJ_DEFAULT_CTX, srid_to_str);
+    pj2 = proj_create(proj_get_context(), srid_to_str);
     if (! pj2)
     {
       /* Error */
@@ -457,7 +457,7 @@ lwproj_transform_pipeline(char *pipeline, bool is_forward)
   if (result)
     return result;
   /* Error */
-  PJ *pj_in = proj_create(PJ_DEFAULT_CTX, pipeline);
+  PJ *pj_in = proj_create(proj_get_context(), pipeline);
   if (! pj_in)
   {
     proj_errno_reset(NULL);
