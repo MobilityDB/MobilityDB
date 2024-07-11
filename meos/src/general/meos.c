@@ -47,14 +47,14 @@
 // #include <meos_internal.h>
 
 /***************************************************************************
- * Initialize the Gnu Scientific Library
+ * Functions for the Gnu Scientific Library (GSL)
  ***************************************************************************/
 
 /* Global variables */
 
-static bool _GSL_INITIALIZED = false;
-static gsl_rng *_GENERATION_RNG = NULL;
-static gsl_rng *_AGGREGATION_RNG = NULL;
+static bool MEOS_GSL_INITIALIZED = false;
+static gsl_rng *MEOS_GENERATION_RNG = NULL;
+static gsl_rng *MEOS_AGGREGATION_RNG = NULL;
 
 /**
  * @brief Initialize the Gnu Scientific Library
@@ -62,12 +62,12 @@ static gsl_rng *_AGGREGATION_RNG = NULL;
 static void
 gsl_initialize(void)
 {
-  if (! _GSL_INITIALIZED)
+  if (! MEOS_GSL_INITIALIZED)
   {
     gsl_rng_env_setup();
-    _GENERATION_RNG = gsl_rng_alloc(gsl_rng_default);
-    _AGGREGATION_RNG = gsl_rng_alloc(gsl_rng_ranlxd1);
-    _GSL_INITIALIZED = true;
+    MEOS_GENERATION_RNG = gsl_rng_alloc(gsl_rng_default);
+    MEOS_AGGREGATION_RNG = gsl_rng_alloc(gsl_rng_ranlxd1);
+    MEOS_GSL_INITIALIZED = true;
   }
   return;
 }
@@ -79,9 +79,9 @@ gsl_initialize(void)
 static void
 gsl_finalize(void)
 {
-  gsl_rng_free(_GENERATION_RNG);
-  gsl_rng_free(_AGGREGATION_RNG);
-  _GSL_INITIALIZED = false;
+  gsl_rng_free(MEOS_GENERATION_RNG);
+  gsl_rng_free(MEOS_AGGREGATION_RNG);
+  MEOS_GSL_INITIALIZED = false;
   return;
 }
 #endif /* MEOS */
@@ -92,9 +92,9 @@ gsl_finalize(void)
 gsl_rng *
 gsl_get_generation_rng(void)
 {
-  if (! _GSL_INITIALIZED)
+  if (! MEOS_GSL_INITIALIZED)
     gsl_initialize();
-  return _GENERATION_RNG;
+  return MEOS_GENERATION_RNG;
 }
 
 /**
@@ -103,11 +103,56 @@ gsl_get_generation_rng(void)
 gsl_rng *
 gsl_get_aggregation_rng(void)
 {
-  if (! _GSL_INITIALIZED)
+  if (! MEOS_GSL_INITIALIZED)
     gsl_initialize();
-  return _AGGREGATION_RNG;
+  return MEOS_AGGREGATION_RNG;
 }
 
+/***************************************************************************
+ * Functions for the PROJ library
+ ***************************************************************************/
+
+/* Global variables keeping Proj context */
+
+PJ_CONTEXT *MEOS_PJ_CONTEXT = NULL;
+
+/**
+ * @brief Initialize the PROJ library
+ */
+static void
+proj_initialize(void)
+{
+  if (! MEOS_PJ_CONTEXT)
+    MEOS_PJ_CONTEXT = proj_context_create();
+  return;
+}
+
+#if MEOS
+/**
+ * @brief Finalize the PROJ library
+ */
+static void
+proj_finalize(void)
+{
+  proj_context_destroy(MEOS_PJ_CONTEXT);
+  proj_cleanup();
+  MEOS_PJ_CONTEXT = NULL;
+  return;
+}
+#endif /* MEOS */
+
+/**
+ * @brief Get the random generator used by temporal aggregation
+ */
+PJ_CONTEXT *
+proj_get_context(void)
+{
+  if (! MEOS_PJ_CONTEXT)
+    proj_initialize();
+  return MEOS_PJ_CONTEXT;
+}
+
+/*****************************************************************************/
 #if MEOS
 /*****************************************************************************/
 
@@ -142,10 +187,6 @@ gsl_get_aggregation_rng(void)
 int DateStyle = USE_ISO_DATES;
 int DateOrder = DATEORDER_MDY;
 int IntervalStyle = INTSTYLE_POSTGRES;
-
-/* Global variables keeping Proj context */
-
-PJ_CONTEXT *_PJ_CONTEXT;
 
 /***************************************************************************
  * Definitions taken from pg_regress.h/c
@@ -527,7 +568,7 @@ meos_initialize(const char *tz_str, error_handler_fn err_handler)
   meos_initialize_error_handler(err_handler);
   meos_initialize_timezone(tz_str);
   /* Initialize PROJ */
-  _PJ_CONTEXT = proj_context_create();
+  proj_initialize();
   /* Initialize GSL */
   gsl_initialize();
   return;
@@ -541,7 +582,7 @@ meos_finalize(void)
 {
   meos_finalize_timezone();
   /* Finalize PROJ */
-  proj_context_destroy(_PJ_CONTEXT);
+  proj_finalize();
   /* Finalize GSL */
   gsl_finalize();
   return;
