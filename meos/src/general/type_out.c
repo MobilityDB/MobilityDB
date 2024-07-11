@@ -1175,7 +1175,7 @@ wkb_swap_bytes(uint8_t variant)
  * (WKB) representation
  */
 uint8_t *
-bytes_to_wkb_buf(char *valptr, size_t size, uint8_t *buf, uint8_t variant)
+bytes_to_wkb_buf(uint8_t *valptr, size_t size, uint8_t *buf, uint8_t variant)
 {
   if (variant & WKB_HEX)
   {
@@ -1240,7 +1240,7 @@ bool_to_wkb_buf(bool b, uint8_t *buf, uint8_t variant)
       "Machine bool size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
     return NULL;
   }
-  char *bptr = (char *)(&b);
+  uint8_t *bptr = (uint8_t *)(&b);
   return bytes_to_wkb_buf(bptr, MEOS_WKB_BYTE_SIZE, buf, variant);
 }
 
@@ -1257,7 +1257,7 @@ uint8_to_wkb_buf(const uint8_t i, uint8_t *buf, uint8_t variant)
       "Machine int8 size is not %d bytes!", MEOS_WKB_BYTE_SIZE);
     return NULL;
   }
-  char *iptr = (char *)(&i);
+  uint8_t *iptr = (uint8_t *)(&i);
   return bytes_to_wkb_buf(iptr, MEOS_WKB_BYTE_SIZE, buf, variant);
 }
 
@@ -1274,7 +1274,7 @@ int16_to_wkb_buf(const int16 i, uint8_t *buf, uint8_t variant)
       "Machine int16 size is not %d bytes!", MEOS_WKB_INT2_SIZE);
     return NULL;
   }
-  char *iptr = (char *)(&i);
+  uint8_t *iptr = (uint8_t *)(&i);
   return bytes_to_wkb_buf(iptr, MEOS_WKB_INT2_SIZE, buf, variant);
 }
 
@@ -1291,7 +1291,7 @@ int32_to_wkb_buf(const int i, uint8_t *buf, uint8_t variant)
       "Machine int32 size is not %d bytes!", MEOS_WKB_INT4_SIZE);
     return NULL;
   }
-  char *iptr = (char *)(&i);
+  uint8_t *iptr = (uint8_t *)(&i);
   return bytes_to_wkb_buf(iptr, MEOS_WKB_INT4_SIZE, buf, variant);
 }
 
@@ -1308,7 +1308,7 @@ int64_to_wkb_buf(const int64 i, uint8_t *buf, uint8_t variant)
       "Machine int64 size is not %d bytes!", MEOS_WKB_INT8_SIZE);
     return NULL;
   }
-  char *iptr = (char *)(&i);
+  uint8_t *iptr = (uint8_t *)(&i);
   return bytes_to_wkb_buf(iptr, MEOS_WKB_INT8_SIZE, buf, variant);
 }
 
@@ -1325,7 +1325,7 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
       "Machine double size is not %d bytes!", MEOS_WKB_DOUBLE_SIZE);
     return NULL;
   }
-  char *dptr = (char *)(&d);
+  uint8_t *dptr = (uint8_t *)(&d);
   return bytes_to_wkb_buf(dptr, MEOS_WKB_DOUBLE_SIZE, buf, variant);
 }
 
@@ -1342,7 +1342,7 @@ date_to_wkb_buf(const DateADT d, uint8_t *buf, uint8_t variant)
       "Machine date size is not %d bytes!", MEOS_WKB_DATE_SIZE);
     return NULL;
   }
-  char *tptr = (char *)(&d);
+  uint8_t *tptr = (uint8_t *)(&d);
   return bytes_to_wkb_buf(tptr, MEOS_WKB_DATE_SIZE, buf, variant);
 }
 
@@ -1359,7 +1359,7 @@ timestamptz_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
       "Machine timestamp size is not %d bytes!", MEOS_WKB_TIMESTAMP_SIZE);
     return NULL;
   }
-  char *tptr = (char *)(&t);
+  uint8_t *tptr = (uint8_t *)(&t);
   return bytes_to_wkb_buf(tptr, MEOS_WKB_TIMESTAMP_SIZE, buf, variant);
 }
 
@@ -1371,9 +1371,10 @@ static uint8_t *
 text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
 {
   char *str = text2cstring(txt);
+  uint8_t *bstr = (uint8_t *)(str);
   size_t size = VARSIZE_ANY_EXHDR(txt) + 1;
   buf = int64_to_wkb_buf(size, buf, variant);
-  buf = bytes_to_wkb_buf(str, size, buf, variant);
+  buf = bytes_to_wkb_buf(bstr, size, buf, variant);
   pfree(str);
   return buf;
 }
