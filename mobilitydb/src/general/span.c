@@ -257,8 +257,8 @@ Datum
 Span_to_range(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  assert(s->basetype == T_INT4 || s->basetype == T_DATE ||
-    s->basetype == T_TIMESTAMPTZ);
+  assert(s->basetype == T_INT4 || s->basetype == T_INT8 || 
+    s->basetype == T_DATE || s->basetype == T_TIMESTAMPTZ);
   RangeType *range = range_make(s->lower, s->upper, s->lower_inc, s->upper_inc,
     s->basetype);
   PG_RETURN_POINTER(range);

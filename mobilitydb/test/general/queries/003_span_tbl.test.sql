@@ -100,15 +100,16 @@ SELECT COUNT(*) FROM tbl_datespan WHERE (d::tstzspan)::datespan <> d;
 SELECT COUNT(*) FROM tbl_intspan WHERE (i::floatspan)::intspan <> i;
 SELECT COUNT(*) FROM tbl_datespan WHERE (d::tstzspan)::datespan <> d;
 
-SELECT MAX(lower(i::int4range)) FROM tbl_intspan ORDER BY 1;
-SELECT MAX(lower(d::daterange)) FROM tbl_datespan ORDER BY 1;
-SELECT MAX(lower(t::tstzrange)) FROM tbl_tstzspan ORDER BY 1;
-
 SELECT MAX(lower(d::datespan)) FROM tbl_daterange ORDER BY 1;
 SELECT MAX(lower(d::datespan)) FROM tbl_date ORDER BY 1;
 
 SELECT MAX(lower(t::tstzspan)) FROM tbl_tstzrange ORDER BY 1;
 SELECT MAX(lower(t::tstzspan)) FROM tbl_timestamptz ORDER BY 1;
+
+SELECT COUNT(*) FROM tbl_intspan WHERE i <> (i::int4range)::intspan;
+SELECT COUNT(*) FROM tbl_bigintspan WHERE b <> (b::int8range)::bigintspan;
+SELECT COUNT(*) FROM tbl_datespan WHERE d <> (d::daterange)::datespan;
+SELECT COUNT(*) FROM tbl_tstzspan WHERE t <> (t::tstzrange)::tstzspan;
 
 -------------------------------------------------------------------------------
 -- Accessor Functions
