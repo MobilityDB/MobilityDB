@@ -4,6 +4,12 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE i <> (i::int4multirange)::intspanset;
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_bigintspanset WHERE b <> (b::int8multirange)::bigintspanset;
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_datespanset WHERE d <> (d::datemultirange)::datespanset;
  count 
 -------

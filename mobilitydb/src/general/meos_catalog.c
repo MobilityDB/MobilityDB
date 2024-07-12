@@ -534,7 +534,8 @@ fill_oid_cache(PG_FUNCTION_ARGS __attribute__((unused)))
 bool
 range_basetype(meosType type)
 {
-  if (type == T_TIMESTAMPTZ || type == T_DATE || type == T_INT4)
+  if (type == T_TIMESTAMPTZ || type == T_DATE || type == T_INT4 || 
+      type == T_INT8)
     return true;
   return false;
 }
@@ -563,17 +564,17 @@ basetype_rangetype(meosType type)
   ensure_range_basetype(type);
   if (type == T_INT4)
     return type_oid(T_INT4RANGE);
-  else if (type == T_DATE)
+  if (type == T_INT8)
+    return type_oid(T_INT8RANGE);
+  if (type == T_DATE)
     return type_oid(T_DATERANGE);
-  else if (type ==  T_TIMESTAMPTZ)
+  if (type ==  T_TIMESTAMPTZ)
     return type_oid(T_TSTZRANGE);
-  else
-  {
-    /* We only arrive here on error */
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Type %s is not a base type of a range type", meostype_name(type));
-    return T_UNKNOWN;
-  }
+
+  /* We only arrive here on error */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Type %s is not a base type of a range type", meostype_name(type));
+  return T_UNKNOWN;
 }
 
 /**
@@ -585,17 +586,17 @@ basetype_multirangetype(meosType type)
   ensure_range_basetype(type);
   if (type == T_INT4)
     return type_oid(T_INT4MULTIRANGE);
-  else if (type == T_DATE)
+  if (type == T_INT8)
+    return type_oid(T_INT8MULTIRANGE);
+  if (type == T_DATE)
     return type_oid(T_DATEMULTIRANGE);
-  else if (type ==  T_TIMESTAMPTZ)
+  if (type ==  T_TIMESTAMPTZ)
     return type_oid(T_TSTZMULTIRANGE);
-  else
-  {
-    /* We only arrive here on error */
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "type %s is not a base type of a multirange type", meostype_name(type));
-    return T_UNKNOWN;
-  }
+
+  /* We only arrive here on error */
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "type %s is not a base type of a multirange type", meostype_name(type));
+  return T_UNKNOWN;
 }
 
 /*****************************************************************************/

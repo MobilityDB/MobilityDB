@@ -282,10 +282,13 @@ range_set_span(RangeType *range, TypeCacheEntry *typcache, Span *result)
   bool empty;
   range_deserialize(typcache, range, &lower, &upper, &empty);
   Oid type_id = typcache->rngelemtype->type_id;
-  assert(type_id == INT4OID || type_id == DATEOID || type_id == TIMESTAMPTZOID);
+  assert(type_id == INT4OID || type_id == INT8OID || type_id == DATEOID || 
+    type_id == TIMESTAMPTZOID);
   meosType basetype;
   if (type_id == INT4OID)
     basetype = T_INT4;
+  else if (type_id == INT8OID)
+    basetype = T_INT8;
   else if (type_id == DATEOID)
     basetype = T_DATE;
   else /* type_id == TIMESTAMPTZOID */
@@ -310,6 +313,7 @@ Range_to_span(PG_FUNCTION_ARGS)
   RangeType *range = PG_GETARG_RANGE_P(0);
   TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
   assert(typcache->rngelemtype->type_id == INT4OID ||
+    typcache->rngelemtype->type_id == INT8OID ||
     typcache->rngelemtype->type_id == DATEOID ||
     typcache->rngelemtype->type_id == TIMESTAMPTZOID);
   Span *result = palloc(sizeof(Span));
