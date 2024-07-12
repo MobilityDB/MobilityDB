@@ -402,6 +402,10 @@ CREATE FUNCTION span(int4range)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Range_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span(int8range)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Range_to_span'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span(daterange)
   RETURNS datespan
   AS 'MODULE_PATHNAME', 'Range_to_span'
@@ -410,8 +414,13 @@ CREATE FUNCTION span(tstzrange)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Range_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION range(intspan)
   RETURNS int4range
+  AS 'MODULE_PATHNAME', 'Span_to_range'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION range(bigintspan)
+  RETURNS int8range
   AS 'MODULE_PATHNAME', 'Span_to_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range(datespan)
@@ -424,9 +433,11 @@ CREATE FUNCTION range(tstzspan)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (int4range AS intspan) WITH FUNCTION span(int4range);
+CREATE CAST (int8range AS bigintspan) WITH FUNCTION span(int8range);
 CREATE CAST (daterange AS datespan) WITH FUNCTION span(daterange);
 CREATE CAST (tstzrange AS tstzspan) WITH FUNCTION span(tstzrange);
 CREATE CAST (intspan AS int4range) WITH FUNCTION range(intspan);
+CREATE CAST (bigintspan AS int8range) WITH FUNCTION range(bigintspan);
 CREATE CAST (datespan AS daterange) WITH FUNCTION range(datespan);
 CREATE CAST (tstzspan AS tstzrange) WITH FUNCTION range(tstzspan);
 

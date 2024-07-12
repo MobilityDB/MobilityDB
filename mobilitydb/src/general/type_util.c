@@ -361,10 +361,12 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
   meosType basetype)
 {
   Oid rangetypid = 0;
-  assert(basetype == T_INT4 || basetype == T_DATE ||
+  assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_DATE ||
     basetype == T_TIMESTAMPTZ);
   if (basetype == T_INT4)
     rangetypid = type_oid(T_INT4RANGE);
+  else if (basetype == T_INT8)
+    rangetypid = type_oid(T_INT8RANGE);
   else if (basetype == T_DATE)
     rangetypid = type_oid(T_DATERANGE);
   else /* basetype == T_TIMESTAMPTZ */

@@ -197,24 +197,6 @@ SELECT COUNT(*) FROM tbl_datespan WHERE (d::tstzspan)::datespan <> d;
      0
 (1 row)
 
-SELECT MAX(lower(i::int4range)) FROM tbl_intspan ORDER BY 1;
- max 
------
-  99
-(1 row)
-
-SELECT MAX(lower(d::daterange)) FROM tbl_datespan ORDER BY 1;
-    max     
-------------
- 12-18-2001
-(1 row)
-
-SELECT MAX(lower(t::tstzrange)) FROM tbl_tstzspan ORDER BY 1;
-             max              
-------------------------------
- Sat Dec 29 12:53:00 2001 PST
-(1 row)
-
 SELECT MAX(lower(d::datespan)) FROM tbl_daterange ORDER BY 1;
     max     
 ------------
@@ -237,6 +219,30 @@ SELECT MAX(lower(t::tstzspan)) FROM tbl_timestamptz ORDER BY 1;
              max              
 ------------------------------
  Tue Dec 25 23:12:00 2001 PST
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intspan WHERE i <> (i::int4range)::intspan;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_bigintspan WHERE b <> (b::int8range)::bigintspan;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_datespan WHERE d <> (d::daterange)::datespan;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tstzspan WHERE t <> (t::tstzrange)::tstzspan;
+ count 
+-------
+     0
 (1 row)
 
 SELECT MAX(lower(i)) FROM tbl_intspan;
