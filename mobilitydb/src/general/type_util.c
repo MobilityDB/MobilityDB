@@ -397,14 +397,13 @@ MultirangeType *
 multirange_make(const SpanSet *ss)
 {
   RangeType **ranges = palloc(sizeof(RangeType *) * ss->count);
-  const Span *s = SPANSET_SP_N(ss, 0);
   Oid rangetypid = basetype_rangetype(ss->basetype);
   Oid mrangetypid = basetype_multirangetype(ss->basetype);
   TypeCacheEntry *typcache = lookup_type_cache(rangetypid,
     TYPECACHE_RANGE_INFO);
   for (int i = 0; i < ss->count; i++)
   {
-    s = SPANSET_SP_N(ss, i);
+    const Span *s = SPANSET_SP_N(ss, i);
     RangeBound lower;
     RangeBound upper;
     lower.val = s->lower;
@@ -419,7 +418,7 @@ multirange_make(const SpanSet *ss)
     ranges[i] = make_range(typcache, &lower, &upper, false, NULL);
 #else
     ranges[i] = make_range(typcache, &lower, &upper, false);
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
   }
   MultirangeType *result = make_multirange(mrangetypid, typcache, ss->count,
     ranges);

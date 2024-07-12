@@ -37,6 +37,7 @@
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE i <> (i::int4multirange)::intspanset;
+SELECT COUNT(*) FROM tbl_bigintspanset WHERE b <> (b::int8multirange)::bigintspanset;
 SELECT COUNT(*) FROM tbl_datespanset WHERE d <> (d::datemultirange)::datespanset;
 SELECT COUNT(*) FROM tbl_tstzspanset WHERE t <> (t::tstzmultirange)::tstzspanset;
 

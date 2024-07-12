@@ -319,8 +319,8 @@ Datum
 Spanset_to_multirange(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  assert(ss->spantype == T_INTSPAN || ss->spantype == T_DATESPAN ||
-    ss->spantype == T_TSTZSPAN);
+  assert(ss->spantype == T_INTSPAN || ss->spantype == T_BIGINTSPAN || 
+    ss->spantype == T_DATESPAN || ss->spantype == T_TSTZSPAN);
   MultirangeType *result = multirange_make(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_MULTIRANGE_P(result);

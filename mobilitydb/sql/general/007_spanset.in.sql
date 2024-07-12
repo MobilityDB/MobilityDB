@@ -451,6 +451,10 @@ CREATE FUNCTION multirange(intspanset)
   RETURNS int4multirange
   AS 'MODULE_PATHNAME', 'Spanset_to_multirange'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION multirange(bigintspanset)
+  RETURNS int8multirange
+  AS 'MODULE_PATHNAME', 'Spanset_to_multirange'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION multirange(datespanset)
   RETURNS datemultirange
   AS 'MODULE_PATHNAME', 'Spanset_to_multirange'
@@ -464,6 +468,10 @@ CREATE FUNCTION spanset(int4multirange)
   RETURNS intspanset
   AS 'MODULE_PATHNAME', 'Multirange_to_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spanset(int8multirange)
+  RETURNS bigintspanset
+  AS 'MODULE_PATHNAME', 'Multirange_to_spanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spanset(datemultirange)
   RETURNS datespanset
   AS 'MODULE_PATHNAME', 'Multirange_to_spanset'
@@ -474,9 +482,11 @@ CREATE FUNCTION spanset(tstzmultirange)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (intspanset AS int4multirange) WITH FUNCTION multirange(intspanset);
+CREATE CAST (bigintspanset AS int8multirange) WITH FUNCTION multirange(bigintspanset);
 CREATE CAST (datespanset AS datemultirange) WITH FUNCTION multirange(datespanset);
 CREATE CAST (tstzspanset AS tstzmultirange) WITH FUNCTION multirange(tstzspanset);
 CREATE CAST (int4multirange AS intspanset) WITH FUNCTION spanset(int4multirange);
+CREATE CAST (int8multirange AS bigintspanset) WITH FUNCTION spanset(int8multirange);
 CREATE CAST (datemultirange AS datespanset) WITH FUNCTION spanset(datemultirange);
 CREATE CAST (tstzmultirange AS tstzspanset) WITH FUNCTION spanset(tstzmultirange);
 #endif //POSTGRESQL_VERSION_NUMBER >= 140000

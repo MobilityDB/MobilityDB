@@ -75,6 +75,8 @@ typedef enum
   T_INTSPAN        = 19,  /**< int4 span type */
   T_INTSPANSET     = 20,  /**< int4 span set type */
   T_INT8           = 21,  /**< int8 type */
+  T_INT8MULTIRANGE = 52,  /**< PostgreSQL int8 multirange type */
+  T_INT8RANGE      = 53,  /**< PostgreSQL int8 range type */
   T_BIGINTSET      = 22,  /**< int8 set type */
   T_BIGINTSPAN     = 23,  /**< int8 span type */
   T_BIGINTSPANSET  = 24,  /**< int8 span set type */
@@ -107,7 +109,7 @@ typedef enum
   T_TNPOINT        = 51,  /**< temporal network point type */
 } meosType;
 
-#define NO_MEOS_TYPES 52
+#define NO_MEOS_TYPES 54
 
 /**
  * Enumeration that defines the classes of Boolean operators used in
