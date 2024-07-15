@@ -1029,7 +1029,7 @@ tpoint_space_time_split_init(Temporal *temp, float xsize, float ysize,
   /* Create function state */
   STboxGridState *state = stbox_tile_state_make(temp, &bounds, xsize, ysize,
     zsize, tunits, pt, torigin, border_inc);
-  int ndims = 2 + hasz ? 1 : 0 + state->tunits ? 1 : 0;
+  int ndims = 2 + (hasz ? 1 : 0) + (state->tunits ? 1 : 0);
   /* If a bit matrix is used to speed up the process */
   if (bitmatrix)
   {
