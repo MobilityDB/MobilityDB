@@ -5200,6 +5200,20 @@ tpointseq_discstep_find_splits(const TSequence *seq, int *count)
   return bitarr;
 }
 
+static void gbox_merge_point2d(const POINT2D *p, GBOX *gbox)
+{
+  if ( gbox->xmin > p->x ) gbox->xmin = p->x;
+  if ( gbox->ymin > p->y ) gbox->ymin = p->y;
+  if ( gbox->xmax < p->x ) gbox->xmax = p->x;
+  if ( gbox->ymax < p->y ) gbox->ymax = p->y;
+}
+
+static void gbox_init_point2d(const POINT2D *p, GBOX *gbox)
+{
+  gbox->xmin = gbox->xmax = p->x;
+  gbox->ymin = gbox->ymax = p->y;
+}
+
 /**
  * @brief Return a temporal point sequence with linear interpolation split into
  * an array of non self-intersecting fragments
@@ -5255,28 +5269,26 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
     /* Find intersections in the piece defined by start and end in a
      * breadth-first search */
     int i = start, j = start + 1;
+    GBOX box;
+    gbox_init_point2d(points[i], &box);
+    gbox_merge_point2d(points[j], &box);
     while (j < end)
     {
-      /* If the bounding boxes of the segments intersect */
-      if (lw_seg_interact(points[i], points[i + 1], points[j],
-        points[j + 1]))
+      /* Candidate for intersection */
+      POINT2D p = { 0 }; /* make compiler quiet */
+      int intertype = seg2d_intersection(points[i], points[i + 1],
+        points[j], points[j + 1], &p);
+      if (intertype > 0 &&
+        /* Exclude the case when two consecutive segments that
+         * necessarily touch each other in their common point */
+        (intertype != MEOS_SEG_TOUCH_END || j != i + 1 ||
+         p.x != points[j]->x || p.y != points[j]->y))
       {
-        /* Candidate for intersection */
-        POINT2D p = { 0 }; /* make compiler quiet */
-        int intertype = seg2d_intersection(points[i], points[i + 1],
-          points[j], points[j + 1], &p);
-        if (intertype > 0 &&
-          /* Exclude the case when two consecutive segments that
-           * necessarily touch each other in their common point */
-          (intertype != MEOS_SEG_TOUCH_END || j != i + 1 ||
-           p.x != points[j]->x || p.y != points[j]->y))
-        {
-          /* Set the new end */
-          end = j;
-          bitarr[end] = true;
-          numsplits++;
-          break;
-        }
+        /* Set the new end */
+        end = j;
+        bitarr[end] = true;
+        numsplits++;
+        break;
       }
       if (i < j - 1)
         i++;
@@ -5284,6 +5296,41 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
       {
         j++;
         i = start;
+
+        /* Shortcut */
+        if (!gbox_contains_point2d(&box, points[j]))
+        {
+          while (j < end) {
+            bool out = false;
+            if ( box.xmin > points[j]->x )
+            {
+              box.xmin = points[j]->x;
+              if ( box.xmin > points[j+1]->x )
+                out = true;
+            }
+            else if ( box.xmax < points[j]->x )
+            {
+              box.xmax = points[j]->x;
+              if ( box.xmax < points[j+1]->x )
+                out = true;
+            }
+            if ( box.ymin > points[j]->y )
+            {
+              box.ymin = points[j]->y;
+              if ( box.ymin > points[j+1]->y )
+                out = true;
+            }
+            else if ( box.ymax < points[j]->y )
+            {
+              box.ymax = points[j]->y;
+              if ( box.ymax < points[j+1]->y )
+                out = true;
+            }
+            if ( !out )
+              break;
+            j++;
+          }
+        }
       }
     }
     /* Process the next split */
