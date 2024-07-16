@@ -52,12 +52,6 @@ extern void tpointseq_expand_stbox(TSequence *seq, const TInstant *inst);
 extern void tpointseqarr_set_stbox(const TSequence **sequences, int count,
   STBox *box);
 
-/* Boxes functions */
-
-extern STBox *tpointseq_stboxes(const TSequence *seq, int *count);
-extern STBox *tpointseqset_stboxes(const TSequenceSet *ss, int *count);
-extern STBox * tpoint_stboxes(const Temporal *temp, int *count);
-
 /* Generic box functions */
 
 extern bool boxop_tpoint_stbox(const Temporal *temp, const STBox *box,
