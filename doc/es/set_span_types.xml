@@ -1009,6 +1009,45 @@ SELECT tstzspan '[2001-01-01, 2001-01-05)' * tstzspan '[2001-01-03, 2001-01-07)'
 	<sect1 id="setspan_topo_pos">
 		<title>Operaciones de cuadro delimitador</title>
 
+		<para>Al crear índices para tipos de conjuntos o conjunto de intervalos, lo que se almacena en el índice no es el valor real, sino un cuadro delimitador que representa el valor. En este caso, el índice proporcionará una lista de valores candidatos que <emphasis>pueden</emphasis> satisfacer el predicado de la consulta, y se necesita un segundo paso para filtrar los valores candidatos calculando el predicado de la consulta sobre los valores reales.</para>
+
+		<para>Sin embargo, cuando los cuadros delimitadores tienen un gran espacio vacío no cubierto por los valores reales, el índice generará muchos valores candidatos que no satisfacen el predicado de la consulta, lo que reduce la eficiencia del índice. En estas situaciones, puede ser mejor representar un valor no con un cuadro delimitador <emphasis>único</emphasis>, sino con <emphasis>múltiples</emphasis> cuadros delimitadores. Esto aumenta considerablemente la eficiencia del índice, siempre que el índice sea capaz de gestionar múltiples cuadros delimitadores por valor. Las siguientes funciones se utilizan para generar múltiples rangos a partir de un único valor de conjunto o conjunto de rangos.</para>
+
+		<itemizedlist>
+			<listitem id="set_spans">
+				<indexterm><primary><varname>spans</varname></primary></indexterm>
+				<para>Devuelve una matriz de rangos a partir de los elementos de un conjunto</para>
+				<para><varname>spans(set, max_count = 0) → span[]</varname></para>
+				<para>Si no se especifica el último argumento o si el número de elementos es menor que el número máximo de valores especificados, la matriz resultante tendrá un rangos por elemento. De lo contrario, el número especificado de rangos se obtendrá a partir de valores consecutivos.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT spans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}');
+/* {"[1, 2)","[2, 3)","[3, 4)","[4, 5)","[5, 6)","[6, 7)","[7, 8)","[8, 9)",
+    "[9, 10)","[10, 11)"} */
+SELECT spans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 3);
+-- {"[1, 5)","[5, 8)","[8, 11)"}
+SELECT spans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 6);
+-- {"[1, 3)","[3, 5)","[5, 7)","[7, 9)","[9, 10)","[10, 11)"}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+
+		<itemizedlist>
+			<listitem id="spanset_spans">
+				<indexterm><primary><varname>spans</varname></primary></indexterm>
+				<para>Devuelve una matriz de rangos a partir de los rangos que componen un conjunto de rangos</para>
+				<para><varname>spans(spanset, max_count = 0) → span[]</varname></para>
+				<para>Si no se especifica el último argumento o si el número de rangos componentes es menor que el número máximo de valores especificados, la matriz resultante tendrá un rangos por rangos componente. De lo contrario, el número especificado de rangos se obtendrá fusionando rangos consecutivos.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT spans(intspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}');
+-- {"[1, 2)","[3, 4)","[5, 6)","[7, 8)","[9, 10)"}
+SELECT spans(floatspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}', 3);
+-- {"[1, 4)","[5, 8)","[9, 10)"}
+SELECT spans(datespanset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-10)}', 3);
+-- {"[2000-01-01, 2000-01-04)","[2000-01-05, 2000-01-10)"}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+
 		<sect2>
 			<title>Operaciones topológicas</title>
 			<para>A continuación se presentan los operadores topológicos disponibles para los tipos de conjunto y de rango.</para>

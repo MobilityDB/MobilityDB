@@ -183,6 +183,28 @@ Set_to_span(PG_FUNCTION_ARGS)
   PG_RETURN_SPAN_P(result);
 }
 
+PGDLLEXPORT Datum Set_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_spans);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Return a set converted to a span
+ * @sqlfn spans()
+ */
+Datum
+Set_spans(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int max_count = PG_GETARG_INT32(1);
+  int count;
+  Span *spans = set_spans(s, max_count, &count);
+  PG_FREE_IF_COPY(s, 0);
+  if (! spans)
+    PG_RETURN_NULL();
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree(spans);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
 PGDLLEXPORT Datum Intspan_to_floatspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intspan_to_floatspan);
 /**

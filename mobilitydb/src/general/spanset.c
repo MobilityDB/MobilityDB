@@ -897,7 +897,7 @@ PGDLLEXPORT Datum Spanset_spans(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_spans);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return an array of maximumn n spans from a spanset where the 
+ * @brief Return an array of maximum n spans from a spanset where the
  * composing spans are merged to reach n, if any
  * @sqlfn spans()
  */

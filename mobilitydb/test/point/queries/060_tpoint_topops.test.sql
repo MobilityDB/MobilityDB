@@ -174,6 +174,48 @@ Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 6);
 
 -------------------------------------------------------------------------------
 
+-- Linestring
+SELECT stboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)');
+SELECT stboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
+SELECT stboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
+SELECT stboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 3);
+SELECT stboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 4);
+SELECT stboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 5);
+SELECT stboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 6);
+
+-- Multilinestring
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 1);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 2);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 3);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 4);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 5);
+
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 1);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 2);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 3);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 4);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 5);
+
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 1);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 2);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 3);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 4);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 5);
+
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
+
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
+
+-------------------------------------------------------------------------------
+
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp::stbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp::stbox IS NOT NULL;
 

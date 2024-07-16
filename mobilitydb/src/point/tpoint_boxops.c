@@ -46,9 +46,11 @@
 
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/temporal.h"
 #include "point/stbox.h"
 /* MobilityDB */
+#include "pg_point/postgis.h"
 #include "pg_general/type_util.h"
 
 /*****************************************************************************
@@ -58,8 +60,8 @@
 PGDLLEXPORT Datum Tpoint_stboxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_stboxes);
 /**
- * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return an array of maximumn n spatiotemporal boxes from a temporal
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return an array of maximum n spatiotemporal boxes from a temporal
  * point
  * @sqlfn stboxes()
  */
@@ -75,6 +77,32 @@ Tpoint_stboxes(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   ArrayType *result = stboxarr_to_array(boxes, count);
   pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Geo_stboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_stboxes);
+/**
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return an array of maximum n spatial boxes from a linestring
+ * @sqlfn stboxes()
+ */
+Datum
+Geo_stboxes(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int max_count = PG_GETARG_INT32(1);
+  int count;
+  GBOX *gboxes = geo_gboxes(gs, max_count, &count);
+  int srid = gserialized_get_srid(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! gboxes)
+    PG_RETURN_NULL();
+  STBox *boxes = palloc(sizeof(STBox) * count);
+  for (int i = 0; i < count; i++)
+    gbox_set_stbox(&gboxes[i], srid, &boxes[i]);
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(gboxes); pfree(boxes);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 

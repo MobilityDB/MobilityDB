@@ -1836,11 +1836,11 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
  *****************************************************************************/
 
 /**
- * @ingroup meos_span_bbox
+ * @ingroup meos_setspan_bbox
  * @brief Return an array of spans from the composing spans of a spanset
  * @param[in] ss Span set
- * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one box per composing span
+ * @param[in] max_count Maximum number of elements in the output array.
+ * If the value is < 1, the result is one span per composing span.
  * @param[out] count Number of elements in the output array
  */
 Span *
