@@ -285,19 +285,6 @@ tstzarr_to_array(TimestampTz *times, int count)
 }
 
 /**
- * @brief Return a C array of spans converted into a PostgreSQL array
- */
-ArrayType *
-spanptrarr_to_array(const Span **spans, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) spans, count,
-    type_oid(spans[0]->spantype), sizeof(Span), false, 'd');
-  pfree(spans);
-  return result;
-}
-
-/**
  * @brief Return a C array of text values converted into a PostgreSQL array
  */
 ArrayType *

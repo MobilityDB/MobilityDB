@@ -1589,13 +1589,12 @@ spanset_sps(const SpanSet *ss)
 #if MEOS
 /**
  * @ingroup meos_setspan_accessor
- * @brief Return an array copies of the spans of a span set
+ * @brief Return a C array with copies of the spans of a span set
  * @param[in] ss Span set
  * @return On error return @p NULL
- * @csqlfn #Spanset_spans()
  */
 Span **
-spanset_spans(const SpanSet *ss)
+spanset_spanarr(const SpanSet *ss)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss))
@@ -1845,7 +1844,7 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
  * @param[out] count Number of elements in the output array
  */
 Span *
-spanset_spans_max_n(const SpanSet *ss, int max_count, int *count)
+spanset_spans(const SpanSet *ss, int max_count, int *count)
 {
   assert(ss); assert(count); assert(spanset_type(ss->spansettype));
   int nspans = (max_count < 1) ? ss->count : max_count;

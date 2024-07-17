@@ -727,23 +727,6 @@ Spanset_span_n(PG_FUNCTION_ARGS)
   PG_RETURN_SPAN_P(result);
 }
 
-PGDLLEXPORT Datum Spanset_spans(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Spanset_spans);
-/**
- * @ingroup mobilitydb_setspan_accessor
- * @brief Return the array of spans of a span set
- * @sqlfn spans()
- */
-Datum
-Spanset_spans(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  const Span **spans = spanset_sps(ss);
-  ArrayType *result = spanptrarr_to_array(spans, ss->count);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_ARRAYTYPE_P(result);
-}
-
 /*****************************************************************************
  * Transformation functions
  *
@@ -910,20 +893,21 @@ Floatspanset_round(PG_FUNCTION_ARGS)
   PG_RETURN_SPANSET_P(result);
 }
 
-PGDLLEXPORT Datum Spanset_spans_max_n(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Spanset_spans_max_n);
+PGDLLEXPORT Datum Spanset_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_spans);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return an array of maximumn n temporal boxes from a temporal number
- * @sqlfn spansMaxN()
+ * @brief Return an array of maximumn n spans from a spanset where the 
+ * composing spans are merged to reach n, if any
+ * @sqlfn spans()
  */
 Datum
-Spanset_spans_max_n(PG_FUNCTION_ARGS)
+Spanset_spans(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   int max_count = PG_GETARG_INT32(1);
   int count;
-  Span *spans = spanset_spans_max_n(ss, max_count, &count);
+  Span *spans = spanset_spans(ss, max_count, &count);
   PG_FREE_IF_COPY(ss, 0);
   if (! spans)
     PG_RETURN_NULL();
