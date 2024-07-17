@@ -318,6 +318,22 @@ strarr_to_textarray(char **strarr, int count)
  * @brief Return a C array of spatiotemporal boxes converted into a PostgreSQL array
  */
 ArrayType *
+tboxarr_to_array(TBox *boxarr, int count)
+{
+  assert(count > 0);
+  TBox **boxes = palloc(sizeof(TBox *) * count);
+  for (int i = 0; i < count; i++)
+    boxes[i] = &boxarr[i];
+  ArrayType *result = construct_array((Datum *) boxes, count,
+    type_oid(T_TBOX), sizeof(TBox), false, 'd');
+  pfree(boxes);
+  return result;
+}
+
+/**
+ * @brief Return a C array of spatiotemporal boxes converted into a PostgreSQL array
+ */
+ArrayType *
 stboxarr_to_array(STBox *boxarr, int count)
 {
   assert(count > 0);

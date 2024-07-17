@@ -74,6 +74,10 @@ CREATE FUNCTION stboxesFromSegs(tgeompoint, int DEFAULT 0)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Tpoint_stboxes_from_segs'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxesFromSegs(tgeogpoint, int DEFAULT 0)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tpoint_stboxes_from_segs'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Contains

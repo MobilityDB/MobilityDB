@@ -1692,6 +1692,10 @@ extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
  * Bounding box functions for temporal types
  *****************************************************************************/
 
+/* Boxes function */
+
+extern TBox *tnumber_tboxes_from_segs(const Temporal *temp, int max_count, int *count);
+
 /* Topological functions for temporal types */
 
 extern bool adjacent_numspan_tnumber(const Span *s, const Temporal *temp);

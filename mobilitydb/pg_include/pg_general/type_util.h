@@ -90,6 +90,7 @@ extern ArrayType *tstzarr_to_array(TimestampTz *times, int count);
 extern ArrayType *spanarr_to_array(const Span **spans, int count);
 extern ArrayType *strarr_to_textarray(char **strarr, int count);
 extern ArrayType *temparr_to_array(Temporal **temporal, int count, bool free_all);
+extern ArrayType *tboxarr_to_array(TBox *boxarr, int count);
 extern ArrayType *stboxarr_to_array(STBox *boxarr, int count);
 
 /*****************************************************************************/
