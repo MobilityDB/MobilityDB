@@ -238,7 +238,7 @@ tpointseq_stboxes_from_segs_iter(const TSequence *seq, int max_count,
   else
   {
     /* One bounding box per several consecutive segments */
-    /* Minimum number of input segments merged together in a output box */
+    /* Minimum number of input segments merged together in an output box */
     int size = num_segs / max_count;
     /* Number of output boxes that result from merging (size + 1) segments */
     int remainder = num_segs % max_count;
@@ -333,7 +333,7 @@ tpointseqset_stboxes(const TSequenceSet *ss, int max_count, int *count)
   else
   {
     /* Merge consecutive sequences to reach the maximum number of boxes */
-    /* Minimum number of sequences merged together in a output box */
+    /* Minimum number of sequences merged together in an output box */
     int size = ss->count / max_count;
     /* Number of output boxes that result from merging (size + 1) sequences */
     int remainder = ss->count % max_count;

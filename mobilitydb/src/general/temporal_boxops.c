@@ -79,7 +79,7 @@ temporal_max_header_size(void)
 PGDLLEXPORT Datum Tnumber_tboxes_from_segs(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_tboxes_from_segs);
 /**
- * @ingroup mobilitydb_temporal_bbox_topo
+ * @ingroup mobilitydb_temporal_bbox
  * @brief Return an array of maximumn n temporal boxes from a temporal number
  * @sqlfn tboxesFromSegs()
  */

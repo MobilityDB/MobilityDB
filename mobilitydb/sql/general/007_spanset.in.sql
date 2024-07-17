@@ -858,6 +858,29 @@ CREATE FUNCTION round(floatspanset, integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Floatspanset_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************/
+
+CREATE FUNCTION spansN(intspanset, int DEFAULT 0)
+  RETURNS intspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_spans_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spansN(bigintspanset, int DEFAULT 0)
+  RETURNS bigintspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_spans_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spansN(floatspanset, int DEFAULT 0)
+  RETURNS floatspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_spans_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spansN(datespanset, int DEFAULT 0)
+  RETURNS datespan[]
+  AS 'MODULE_PATHNAME', 'Spanset_spans_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spansN(tstzspanset, int DEFAULT 0)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_spans_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Comparison operators
  ******************************************************************************/

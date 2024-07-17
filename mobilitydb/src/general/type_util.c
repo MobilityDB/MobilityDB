@@ -288,7 +288,7 @@ tstzarr_to_array(TimestampTz *times, int count)
  * @brief Return a C array of spans converted into a PostgreSQL array
  */
 ArrayType *
-spanarr_to_array(const Span **spans, int count)
+spanptrarr_to_array(const Span **spans, int count)
 {
   assert(count > 0);
   ArrayType *result = construct_array((Datum *) spans, count,
@@ -315,7 +315,23 @@ strarr_to_textarray(char **strarr, int count)
 }
 
 /**
- * @brief Return a C array of spatiotemporal boxes converted into a PostgreSQL array
+ * @brief Return a C array of spans converted into a PostgreSQL array
+ */
+ArrayType *
+spanarr_to_array(Span *spanarr, int count)
+{
+  assert(count > 0);
+  Span **spans = palloc(sizeof(Span *) * count);
+  for (int i = 0; i < count; i++)
+    spans[i] = &spanarr[i];
+  ArrayType *result = construct_array((Datum *) spans, count,
+    type_oid(spans[0]->spantype), sizeof(Span), false, 'd');
+  pfree(spans);
+  return result;
+}
+
+/**
+ * @brief Return a C array of temporal boxes converted into a PostgreSQL array
  */
 ArrayType *
 tboxarr_to_array(TBox *boxarr, int count)
@@ -324,8 +340,8 @@ tboxarr_to_array(TBox *boxarr, int count)
   TBox **boxes = palloc(sizeof(TBox *) * count);
   for (int i = 0; i < count; i++)
     boxes[i] = &boxarr[i];
-  ArrayType *result = construct_array((Datum *) boxes, count,
-    type_oid(T_TBOX), sizeof(TBox), false, 'd');
+  ArrayType *result = construct_array((Datum *) boxes, count, type_oid(T_TBOX),
+    sizeof(TBox), false, 'd');
   pfree(boxes);
   return result;
 }
