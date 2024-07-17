@@ -1694,7 +1694,7 @@ extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
 
 /* Boxes function */
 
-extern TBox *tnumber_tboxes_from_segs(const Temporal *temp, int max_count, int *count);
+extern TBox *tnumber_tboxes(const Temporal *temp, int max_count, int *count);
 
 /* Topological functions for temporal types */
 
@@ -1952,7 +1952,7 @@ extern bool tpoint_is_simple(const Temporal *temp);
 extern double tpoint_length(const Temporal *temp);
 extern Temporal *tpoint_speed(const Temporal *temp);
 extern int tpoint_srid(const Temporal *temp);
-extern STBox *tpoint_stboxes_from_segs(const Temporal *temp, int max_count, int *count);
+extern STBox *tpoint_stboxes(const Temporal *temp, int max_count, int *count);
 extern GSERIALIZED *tpoint_trajectory(const Temporal *temp);
 extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
 

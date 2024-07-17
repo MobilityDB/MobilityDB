@@ -1614,7 +1614,7 @@ tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
       continue;
     }
   }
-  if (instants[ninsts - 1] != cur)
+  if (ninsts > 0 && instants[ninsts - 1] != cur)
     instants[ninsts++] = cur;
   TSequence *result = tsequence_make(instants, ninsts,
     (ninsts == 1) ? true : seq->period.lower_inc,

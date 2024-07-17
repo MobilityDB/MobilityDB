@@ -358,7 +358,7 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
 
   /* Get the SRID if it is a geo set  */
   int32 srid;
-  char str1[13];
+  char str1[18];
   str1[0] = '\0';
   outfunc value_out1 = value_out;
   if (geoset_type(s->settype) && value_out == ewkt_out)

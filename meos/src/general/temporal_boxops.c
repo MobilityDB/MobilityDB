@@ -606,7 +606,7 @@ tsequenceset_compute_bbox(TSequenceSet *ss)
  * @return Number of elements in the array
  */
 static int
-tnumberseq_tboxes_from_segs_iter(const TSequence *seq, int max_count,
+tnumberseq_tboxes_iter(const TSequence *seq, int max_count,
   TBox *result)
 {
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
@@ -675,14 +675,14 @@ tnumberseq_tboxes_from_segs_iter(const TSequence *seq, int max_count,
  * @param[out] count Number of elements in the output array
  */
 TBox *
-tnumberseq_tboxes_from_segs(const TSequence *seq, int max_count, int *count)
+tnumberseq_tboxes(const TSequence *seq, int max_count, int *count)
 {
   assert(seq); assert(count); assert(tnumber_type(seq->temptype));
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   int nboxes = (max_count < 1) ?
     ( seq->count == 1 ? 1 : seq->count - 1 ) : max_count;
   TBox *result = palloc(sizeof(TBox) * nboxes);
-  *count = tnumberseq_tboxes_from_segs_iter(seq, max_count, result);
+  *count = tnumberseq_tboxes_iter(seq, max_count, result);
   return result;
 }
 
@@ -708,7 +708,7 @@ tnumberseqset_tboxes(const TSequenceSet *ss, int max_count, int *count)
     /* One bounding box per segment */
     nboxes1 = 0;
     for (int i = 0; i < ss->count; i++)
-      nboxes1 += tnumberseq_tboxes_from_segs_iter(TSEQUENCESET_SEQ_N(ss, i),
+      nboxes1 += tnumberseq_tboxes_iter(TSEQUENCESET_SEQ_N(ss, i),
         max_count, &result[nboxes1]);
     *count = nboxes1;
     return result;
@@ -724,7 +724,7 @@ tnumberseqset_tboxes(const TSequenceSet *ss, int max_count, int *count)
       int nboxes_seq = (int) (max_count * seq->count * 1.0 / ss->totalcount);
       if (! nboxes_seq)
         nboxes_seq = 1;
-      nboxes1 += tnumberseq_tboxes_from_segs_iter(seq, nboxes_seq,
+      nboxes1 += tnumberseq_tboxes_iter(seq, nboxes_seq,
         &result[nboxes1]);
     }
     *count = nboxes1;
@@ -746,19 +746,19 @@ tnumberseqset_tboxes(const TSequenceSet *ss, int max_count, int *count)
         j++;
       if (i < j)
       {
-        tnumberseq_tboxes_from_segs_iter(TSEQUENCESET_SEQ_N(ss, i), 1,
+        tnumberseq_tboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1,
           &result[k]);
         for (int l = i + 1; l <= j; l++)
         {
           TBox box;
-          tnumberseq_tboxes_from_segs_iter(TSEQUENCESET_SEQ_N(ss, l), 1, &box);
+          tnumberseq_tboxes_iter(TSEQUENCESET_SEQ_N(ss, l), 1, &box);
           tbox_expand(&box, &result[k]);
         }
         i = j + 1;
         k++;
       }
       else
-        tnumberseq_tboxes_from_segs_iter(TSEQUENCESET_SEQ_N(ss, i++), 1,
+        tnumberseq_tboxes_iter(TSEQUENCESET_SEQ_N(ss, i++), 1,
           &result[k++]);
     }
     *count = max_count;
@@ -778,7 +778,7 @@ tnumberseqset_tboxes(const TSequenceSet *ss, int max_count, int *count)
  * @csqlfn #Tnumber_tboxes()
  */
 TBox *
-tnumber_tboxes_from_segs(const Temporal *temp, int max_count, int *count)
+tnumber_tboxes(const Temporal *temp, int max_count, int *count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
@@ -789,7 +789,7 @@ tnumber_tboxes_from_segs(const Temporal *temp, int max_count, int *count)
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     return NULL;
   else if (temp->subtype == TSEQUENCE)
-    return tnumberseq_tboxes_from_segs((TSequence *)temp, max_count, count);
+    return tnumberseq_tboxes((TSequence *)temp, max_count, count);
   else /* TSEQUENCESET */
     return tnumberseqset_tboxes((TSequenceSet *)temp, max_count, count);
 }

@@ -76,20 +76,20 @@ temporal_max_header_size(void)
  * Boxes function
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tnumber_tboxes_from_segs(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnumber_tboxes_from_segs);
+PGDLLEXPORT Datum Tnumber_tboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_tboxes);
 /**
  * @ingroup mobilitydb_temporal_bbox
  * @brief Return an array of maximumn n temporal boxes from a temporal number
- * @sqlfn tboxesFromSegs()
+ * @sqlfn tboxes()
  */
 Datum
-Tnumber_tboxes_from_segs(PG_FUNCTION_ARGS)
+Tnumber_tboxes(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int max_count = PG_GETARG_INT32(1);
   int count;
-  TBox *boxes = tnumber_tboxes_from_segs(temp, max_count, &count);
+  TBox *boxes = tnumber_tboxes(temp, max_count, &count);
   PG_FREE_IF_COPY(temp, 0);
   if (! boxes)
     PG_RETURN_NULL();

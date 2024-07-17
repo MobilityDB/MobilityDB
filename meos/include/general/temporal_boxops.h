@@ -36,7 +36,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/array.h>
 /* MEOS */
 #include <meos.h>
 #include "general/meos_catalog.h"

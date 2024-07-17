@@ -860,25 +860,25 @@ CREATE FUNCTION round(floatspanset, integer DEFAULT 0)
 
 /*****************************************************************************/
 
-CREATE FUNCTION spansN(intspanset, int DEFAULT 0)
+CREATE FUNCTION spansMaxN(intspanset, int DEFAULT 0)
   RETURNS intspan[]
-  AS 'MODULE_PATHNAME', 'Spanset_spans_n'
+  AS 'MODULE_PATHNAME', 'Spanset_spans_max_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spansN(bigintspanset, int DEFAULT 0)
+CREATE FUNCTION spansMaxN(bigintspanset, int DEFAULT 0)
   RETURNS bigintspan[]
-  AS 'MODULE_PATHNAME', 'Spanset_spans_n'
+  AS 'MODULE_PATHNAME', 'Spanset_spans_max_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spansN(floatspanset, int DEFAULT 0)
+CREATE FUNCTION spansMaxN(floatspanset, int DEFAULT 0)
   RETURNS floatspan[]
-  AS 'MODULE_PATHNAME', 'Spanset_spans_n'
+  AS 'MODULE_PATHNAME', 'Spanset_spans_max_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spansN(datespanset, int DEFAULT 0)
+CREATE FUNCTION spansMaxN(datespanset, int DEFAULT 0)
   RETURNS datespan[]
-  AS 'MODULE_PATHNAME', 'Spanset_spans_n'
+  AS 'MODULE_PATHNAME', 'Spanset_spans_max_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spansN(tstzspanset, int DEFAULT 0)
+CREATE FUNCTION spansMaxN(tstzspanset, int DEFAULT 0)
   RETURNS tstzspan[]
-  AS 'MODULE_PATHNAME', 'Spanset_spans_n'
+  AS 'MODULE_PATHNAME', 'Spanset_spans_max_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

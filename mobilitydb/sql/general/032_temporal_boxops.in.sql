@@ -34,13 +34,13 @@
 
 /*****************************************************************************/
 
-CREATE FUNCTION tboxesFromSegs(tint, int DEFAULT 0)
+CREATE FUNCTION tboxes(tint, int DEFAULT 0)
   RETURNS tbox[]
-  AS 'MODULE_PATHNAME', 'Tnumber_tboxes_from_segs'
+  AS 'MODULE_PATHNAME', 'Tnumber_tboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tboxesFromSegs(tfloat, int DEFAULT 0)
+CREATE FUNCTION tboxes(tfloat, int DEFAULT 0)
   RETURNS tbox[]
-  AS 'MODULE_PATHNAME', 'Tnumber_tboxes_from_segs'
+  AS 'MODULE_PATHNAME', 'Tnumber_tboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

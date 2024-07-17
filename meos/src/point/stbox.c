@@ -187,7 +187,7 @@ stbox_out(const STBox *box, int maxdd)
   assert(hasx || hast);
 
   char *str = palloc(size);
-  char srid[13];
+  char srid[18];
   if (hasx && box->srid > 0)
     /* SRID_MAXIMUM is defined by PostGIS as 999999 */
     snprintf(srid, sizeof(srid), "SRID=%d;", box->srid);

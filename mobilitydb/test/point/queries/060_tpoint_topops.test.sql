@@ -65,110 +65,110 @@ SELECT round(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 -------------------------------------------------------------------------------
 
 -- Maximum boxes set by default to 1
-SELECT stboxesFromSegs(tgeompoint '[Point(1 1)@2000-01-01]');
-SELECT stboxesFromSegs(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01]');
+SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 -- NULL
-SELECT stboxesFromSegs(tgeompoint 'Point(1 1)@2000-01-01');
-SELECT stboxesFromSegs(tgeompoint '{Point(1 1)@2000-01-01}');
+SELECT stboxes(tgeompoint 'Point(1 1)@2000-01-01');
+SELECT stboxes(tgeompoint '{Point(1 1)@2000-01-01}');
 -- Sequence
-SELECT stboxesFromSegs(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]');
-SELECT stboxesFromSegs(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 1);
-SELECT stboxesFromSegs(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 2);
-SELECT stboxesFromSegs(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 3);
-SELECT stboxesFromSegs(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 4);
-SELECT stboxesFromSegs(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 5);
-SELECT stboxesFromSegs(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 6);
+SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]');
+SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 1);
+SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 2);
+SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 3);
+SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 4);
+SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 5);
+SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 6);
 -- Sequence set
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 1);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 2);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 3);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 4);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 5);
 
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
 [Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 1);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
 [Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 2);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
 [Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 3);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
 [Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 4);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
 [Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 5);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
 [Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 6);
 
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 1);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 2);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 3);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 4);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 5);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 6);
 
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 1);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 2);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 3);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 4);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 5);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 6);
 
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 1);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 2);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 3);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 4);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 5);
-SELECT stboxesFromSegs(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 6);
 
@@ -177,11 +177,11 @@ Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 6);
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp::stbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp::stbox IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxesFromSegs(temp, 1) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxesFromSegs(temp, 2) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxesFromSegs(temp, 3) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxesFromSegs(temp, 4) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxesFromSegs(temp, 5) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxes(temp, 1) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxes(temp, 2) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxes(temp, 3) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxes(temp, 4) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxes(temp, 5) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 
