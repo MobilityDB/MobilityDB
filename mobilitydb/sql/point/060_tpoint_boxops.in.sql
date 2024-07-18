@@ -70,7 +70,11 @@ CREATE FUNCTION expandSpace(tgeogpoint, float)
 
 /*****************************************************************************/
 
-CREATE FUNCTION stboxes(tgeompoint)
+CREATE FUNCTION stboxes(tgeompoint, int DEFAULT 0)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tpoint_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxes(tgeogpoint, int DEFAULT 0)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Tpoint_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

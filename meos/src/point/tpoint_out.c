@@ -126,7 +126,7 @@ tpoint_as_ewkt(const Temporal *temp, int maxdd)
     return NULL;
 
   int srid = tpoint_srid(temp);
-  char str1[13];
+  char str1[18];
   if (srid > 0)
     /* SRID_MAXIMUM is defined by PostGIS as 999999 */
     snprintf(str1, sizeof(str1), "SRID=%d%c", srid,

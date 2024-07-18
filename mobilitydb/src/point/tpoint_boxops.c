@@ -59,15 +59,17 @@ PGDLLEXPORT Datum Tpoint_stboxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_stboxes);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return an array of spatiotemporal boxes from a temporal point
+ * @brief Return an array of maximumn n spatiotemporal boxes from a temporal
+ * point
  * @sqlfn stboxes()
  */
 Datum
 Tpoint_stboxes(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int max_count = PG_GETARG_INT32(1);
   int count;
-  STBox *boxes = tpoint_stboxes(temp, &count);
+  STBox *boxes = tpoint_stboxes(temp, max_count, &count);
   PG_FREE_IF_COPY(temp, 0);
   if (! boxes)
     PG_RETURN_NULL();

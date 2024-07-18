@@ -596,7 +596,7 @@ extern bool spanset_lower_inc(const SpanSet *ss);
 extern int spanset_num_spans(const SpanSet *ss);
 extern Span *spanset_span(const SpanSet *ss);
 extern Span *spanset_span_n(const SpanSet *ss, int i);
-extern Span **spanset_spans(const SpanSet *ss);
+extern Span **spanset_spanarr(const SpanSet *ss);
 extern Span *spanset_start_span(const SpanSet *ss);
 extern bool spanset_upper_inc(const SpanSet *ss);
 extern text *textset_end_value(const Set *s);
@@ -1692,6 +1692,10 @@ extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
  * Bounding box functions for temporal types
  *****************************************************************************/
 
+/* Boxes function */
+
+extern TBox *tnumber_tboxes(const Temporal *temp, int max_count, int *count);
+
 /* Topological functions for temporal types */
 
 extern bool adjacent_numspan_tnumber(const Span *s, const Temporal *temp);
@@ -1948,7 +1952,7 @@ extern bool tpoint_is_simple(const Temporal *temp);
 extern double tpoint_length(const Temporal *temp);
 extern Temporal *tpoint_speed(const Temporal *temp);
 extern int tpoint_srid(const Temporal *temp);
-extern STBox *tpoint_stboxes(const Temporal *temp, int *count);
+extern STBox *tpoint_stboxes(const Temporal *temp, int max_count, int *count);
 extern GSERIALIZED *tpoint_trajectory(const Temporal *temp);
 extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
 

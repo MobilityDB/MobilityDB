@@ -319,7 +319,7 @@ Datum
 Spanset_to_multirange(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  assert(ss->spantype == T_INTSPAN || ss->spantype == T_BIGINTSPAN || 
+  assert(ss->spantype == T_INTSPAN || ss->spantype == T_BIGINTSPAN ||
     ss->spantype == T_DATESPAN || ss->spantype == T_TSTZSPAN);
   MultirangeType *result = multirange_make(ss);
   PG_FREE_IF_COPY(ss, 0);
@@ -727,23 +727,6 @@ Spanset_span_n(PG_FUNCTION_ARGS)
   PG_RETURN_SPAN_P(result);
 }
 
-PGDLLEXPORT Datum Spanset_spans(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Spanset_spans);
-/**
- * @ingroup mobilitydb_setspan_accessor
- * @brief Return the array of spans of a span set
- * @sqlfn spans()
- */
-Datum
-Spanset_spans(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  const Span **spans = spanset_sps(ss);
-  ArrayType *result = spanarr_to_array(spans, ss->count);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_ARRAYTYPE_P(result);
-}
-
 /*****************************************************************************
  * Transformation functions
  *
@@ -908,6 +891,29 @@ Floatspanset_round(PG_FUNCTION_ARGS)
   SpanSet *result = floatspanset_rnd(ss, maxdd);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_SPANSET_P(result);
+}
+
+PGDLLEXPORT Datum Spanset_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_spans);
+/**
+ * @ingroup mobilitydb_temporal_bbox_topo
+ * @brief Return an array of maximumn n spans from a spanset where the 
+ * composing spans are merged to reach n, if any
+ * @sqlfn spans()
+ */
+Datum
+Spanset_spans(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int max_count = PG_GETARG_INT32(1);
+  int count;
+  Span *spans = spanset_spans(ss, max_count, &count);
+  PG_FREE_IF_COPY(ss, 0);
+  if (! spans)
+    PG_RETURN_NULL();
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree(spans);
+  PG_RETURN_ARRAYTYPE_P(result);
 }
 
 /*****************************************************************************

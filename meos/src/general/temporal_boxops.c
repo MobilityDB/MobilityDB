@@ -55,6 +55,7 @@
 #include <meos_internal.h>
 #include "general/span.h"
 #include "general/type_util.h"
+#include "general/type_util.h"
 #include "point/tpoint_boxops.h"
 #if NPOINT
   #include "npoint/tnpoint_boxops.h"
@@ -586,6 +587,212 @@ tsequenceset_compute_bbox(TSequenceSet *ss)
   return;
 }
 #endif /* MEOS */
+
+/*****************************************************************************
+ * Boxes functions
+ * These functions can be used for defining MultiEntry Search Trees (a.k.a.
+ * VODKA) indexes
+ * https://www.pgcon.org/2014/schedule/events/696.en.html
+ * https://github.com/MobilityDB/mest
+ *****************************************************************************/
+
+/**
+ * @brief Return an array of maximumn n temporal boxes from the segments
+ * of a temporal number sequence (iterator function)
+ * @param[in] seq Temporal value
+ * @param[in] max_count Maximum number of elements in the output array
+ * If the value is < 1, the result is one box per segment
+ * @param[out] result Temporal box
+ * @return Number of elements in the array
+ */
+static int
+tnumberseq_tboxes_iter(const TSequence *seq, int max_count,
+  TBox *result)
+{
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, 0), &result[0]);
+    return 1;
+  }
+
+  /* Temporal sequence has at least 2 instants */
+  int num_segs = seq->count - 1;
+  if (max_count < 1 || num_segs <= max_count)
+  {
+    /* One bounding box per segment */
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+    for (int i = 0; i < seq->count - 1; i++)
+    {
+      tnumberinst_set_tbox(inst1, &result[i]);
+      const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+      TBox box;
+      tnumberinst_set_tbox(inst2, &box);
+      tbox_expand(&box, &result[i]);
+      inst1 = inst2;
+    }
+    return num_segs;
+  }
+  else
+  {
+    /* One bounding box per several consecutive segments */
+    /* Minimum number of input segments merged together in an output box */
+    int size = num_segs / max_count;
+    /* Number of output boxes that result from merging (size + 1) segments */
+    int remainder = num_segs % max_count;
+    int i = 0; /* Loop variable for input segments */
+    int k = 0; /* Loop variable for output boxes */
+    while (k < max_count)
+    {
+      int j = i + size;
+      if (k < remainder)
+        j++;
+      assert(i < j);
+      tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, i), &result[k]);
+      for (int l = i + 1; l <= j; l++)
+      {
+        const TInstant *inst = TSEQUENCE_INST_N(seq, l);
+        TBox box;
+        tnumberinst_set_tbox(inst, &box);
+        tbox_expand(&box, &result[k]);
+      }
+      k++;
+      i = j;
+    }
+    return max_count;
+  }
+}
+
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of maximumn n temporal boxes from the segments
+ * of a temporal number sequence
+ * @param[in] seq Temporal sequence
+ * @param[in] max_count Maximum number of elements in the output array
+ * If the value is < 1, the result is one box per segment
+ * @param[out] count Number of elements in the output array
+ */
+TBox *
+tnumberseq_tboxes(const TSequence *seq, int max_count, int *count)
+{
+  assert(seq); assert(count); assert(tnumber_type(seq->temptype));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+  int nboxes = (max_count < 1) ?
+    ( seq->count == 1 ? 1 : seq->count - 1 ) : max_count;
+  TBox *result = palloc(sizeof(TBox) * nboxes);
+  *count = tnumberseq_tboxes_iter(seq, max_count, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of temporal boxes from the segments of a
+ * temporal number sequence set
+ * @param[in] ss Temporal sequence set
+ * @param[in] max_count Maximum number of elements in the output array
+ * If the value is < 1, the result is one box per segment
+ * @param[out] count Number of elements in the output array
+ */
+TBox *
+tnumberseqset_tboxes(const TSequenceSet *ss, int max_count, int *count)
+{
+  assert(ss); assert(count); assert(tnumber_type(ss->temptype));
+  assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
+  int nboxes = (max_count < 1) ? ss->totalcount : max_count;
+  TBox *result = palloc(sizeof(TBox) * nboxes);
+  int nboxes1;
+  if (max_count < 1 || ss->totalcount <= max_count)
+  {
+    /* One bounding box per segment */
+    nboxes1 = 0;
+    for (int i = 0; i < ss->count; i++)
+      nboxes1 += tnumberseq_tboxes_iter(TSEQUENCESET_SEQ_N(ss, i),
+        max_count, &result[nboxes1]);
+    *count = nboxes1;
+    return result;
+  }
+  else if (ss->count <= max_count)
+  {
+    /* Amount of bounding boxes per composing sequence determined from the
+     * proportion of seq->count and ss->totalcount */
+    nboxes1 = 0;
+    for (int i = 0; i < ss->count; i++)
+    {
+      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+      int nboxes_seq = (int) (max_count * seq->count * 1.0 / ss->totalcount);
+      if (! nboxes_seq)
+        nboxes_seq = 1;
+      nboxes1 += tnumberseq_tboxes_iter(seq, nboxes_seq,
+        &result[nboxes1]);
+    }
+    *count = nboxes1;
+    return result;
+  }
+  else
+  {
+    /* Merge consecutive sequences to reach the maximum number of boxes */
+    /* Minimum number of sequences merged together in an output box */
+    int size = ss->count / max_count;
+    /* Number of output boxes that result from merging (size + 1) sequences */
+    int remainder = ss->count % max_count;
+    int i = 0; /* Loop variable for input sequences */
+    int k = 0; /* Loop variable for output boxes */
+    while (k < max_count)
+    {
+      int j = i + size - 1;
+      if (k < remainder)
+        j++;
+      if (i < j)
+      {
+        tnumberseq_tboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1,
+          &result[k]);
+        for (int l = i + 1; l <= j; l++)
+        {
+          TBox box;
+          tnumberseq_tboxes_iter(TSEQUENCESET_SEQ_N(ss, l), 1, &box);
+          tbox_expand(&box, &result[k]);
+        }
+        i = j + 1;
+        k++;
+      }
+      else
+        tnumberseq_tboxes_iter(TSEQUENCESET_SEQ_N(ss, i++), 1,
+          &result[k++]);
+    }
+    *count = max_count;
+    return result;
+  }
+}
+
+/**
+ * @ingroup meos_temporal_bbox
+ * @brief Return an array of temporal boxes from the segments of a
+ * temporal number
+ * @param[in] temp Temporal value
+ * @param[in] max_count Maximum number of elements in the output array.
+ * If the value is < 1, the result is one box per segment
+ * @param[out] count Number of values of the output array
+ * @return On error return @p NULL
+ * @csqlfn #Tnumber_tboxes()
+ */
+TBox *
+tnumber_tboxes(const Temporal *temp, int max_count, int *count)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_tnumber_type(temp->temptype))
+    return NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return NULL;
+  else if (temp->subtype == TSEQUENCE)
+    return tnumberseq_tboxes((TSequence *)temp, max_count, count);
+  else /* TSEQUENCESET */
+    return tnumberseqset_tboxes((TSequenceSet *)temp, max_count, count);
+}
 
 /*****************************************************************************
  * Generic bounding box functions for temporal types

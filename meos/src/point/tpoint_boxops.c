@@ -190,62 +190,99 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
 
 /*****************************************************************************
  * Boxes functions
- * These functions can be used for defining MultiEntry (a.k.a.) VODKA indexes
+ * These functions can be used for defining MultiEntry Search Trees (a.k.a.
+ * VODKA) indexes
  * https://www.pgcon.org/2014/schedule/events/696.en.html
- * https://github.com/mschoema/mgist
+ * https://github.com/MobilityDB/mest
  *****************************************************************************/
 
 /**
- * @brief Return an array of spatiotemporal boxes from the segments of a
- * temporal point sequence (iterator function)
+ * @brief Return an array of maximumn n spatiotemporal boxes from the segments
+ * of a temporal point sequence (iterator function)
  * @param[in] seq Temporal value
+ * @param[in] max_count Maximum number of elements in the output array
+ * If the value is < 1, the result is one box per segment
  * @param[out] result Spatiotemporal box
  * @return Number of elements in the array
  */
 static int
-tpointseq_stboxes_iter(const TSequence *seq, STBox *result)
+tpointseq_stboxes_iter(const TSequence *seq, int max_count,
+  STBox *result)
 {
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-  const TInstant *inst1;
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    inst1 = TSEQUENCE_INST_N(seq, 0);
-    tpointinst_set_stbox(inst1, &result[0]);
+    tpointinst_set_stbox(TSEQUENCE_INST_N(seq, 0), &result[0]);
     return 1;
   }
 
   /* Temporal sequence has at least 2 instants */
-  inst1 = TSEQUENCE_INST_N(seq, 0);
-  for (int i = 0; i < seq->count - 1; i++)
+  int num_segs = seq->count - 1;
+  if (max_count < 1 || num_segs <= max_count)
   {
-    tpointinst_set_stbox(inst1, &result[i]);
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
-    STBox box;
-    tpointinst_set_stbox(inst2, &box);
-    stbox_expand(&box, &result[i]);
-    inst1 = inst2;
+    /* One bounding box per segment */
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+    for (int i = 0; i < seq->count - 1; i++)
+    {
+      tpointinst_set_stbox(inst1, &result[i]);
+      const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+      STBox box;
+      tpointinst_set_stbox(inst2, &box);
+      stbox_expand(&box, &result[i]);
+      inst1 = inst2;
+    }
+    return num_segs;
   }
-  return seq->count - 1;
+  else
+  {
+    /* One bounding box per several consecutive segments */
+    /* Minimum number of input segments merged together in an output box */
+    int size = num_segs / max_count;
+    /* Number of output boxes that result from merging (size + 1) segments */
+    int remainder = num_segs % max_count;
+    int i = 0; /* Loop variable for input segments */
+    int k = 0; /* Loop variable for output boxes */
+    while (k < max_count)
+    {
+      int j = i + size;
+      if (k < remainder)
+        j++;
+      assert(i < j);
+      tpointinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[k]);
+      for (int l = i + 1; l <= j; l++)
+      {
+        const TInstant *inst = TSEQUENCE_INST_N(seq, l);
+        STBox box;
+        tpointinst_set_stbox(inst, &box);
+        stbox_expand(&box, &result[k]);
+      }
+      k++;
+      i = j;
+    }
+    return max_count;
+  }
 }
 
 /**
  * @ingroup meos_internal_temporal_spatial_accessor
- * @brief Return an array of spatiotemporal boxes from the segments of a
- * temporal point sequence
+ * @brief Return an array of maximumn n spatiotemporal boxes from the segments
+ * of a temporal point sequence
  * @param[in] seq Temporal sequence
+ * @param[in] max_count Maximum number of elements in the output array
+ * If the value is < 1, the result is one box per segment
  * @param[out] count Number of elements in the output array
  */
 STBox *
-tpointseq_stboxes(const TSequence *seq, int *count)
+tpointseq_stboxes(const TSequence *seq, int max_count, int *count)
 {
   assert(seq); assert(count); assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-  int newcount = seq->count == 1 ? 1 : seq->count - 1;
-  STBox *result = palloc(sizeof(STBox) * newcount);
-  tpointseq_stboxes_iter(seq, result);
-  *count = newcount;
+  int nboxes = (max_count < 1) ?
+    ( seq->count == 1 ? 1 : seq->count - 1 ) : max_count;
+  STBox *result = palloc(sizeof(STBox) * nboxes);
+  *count = tpointseq_stboxes_iter(seq, max_count, result);
   return result;
 }
 
@@ -254,19 +291,79 @@ tpointseq_stboxes(const TSequence *seq, int *count)
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal point sequence set
  * @param[in] ss Temporal sequence set
+ * @param[in] max_count Maximum number of elements in the output array
+ * If the value is < 1, the result is one box per segment
  * @param[out] count Number of elements in the output array
  */
 STBox *
-tpointseqset_stboxes(const TSequenceSet *ss, int *count)
+tpointseqset_stboxes(const TSequenceSet *ss, int max_count, int *count)
 {
   assert(ss); assert(count); assert(tgeo_type(ss->temptype));
   assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
-  STBox *result = palloc(sizeof(STBox) * ss->totalcount);
-  int nboxes = 0;
-  for (int i = 0; i < ss->count; i++)
-    nboxes += tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i), &result[nboxes]);
-  *count = nboxes;
-  return result;
+  int nboxes = (max_count < 1) ? ss->totalcount : max_count;
+  STBox *result = palloc(sizeof(STBox) * nboxes);
+  int nboxes1;
+  if (max_count < 1 || ss->totalcount <= max_count)
+  {
+    /* One bounding box per segment */
+    nboxes1 = 0;
+    for (int i = 0; i < ss->count; i++)
+      nboxes1 += tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i),
+        max_count, &result[nboxes1]);
+    *count = nboxes1;
+    return result;
+  }
+  else if (ss->count <= max_count)
+  {
+    /* Amount of bounding boxes per composing sequence determined from the
+     * proportion of seq->count and ss->totalcount */
+    nboxes1 = 0;
+    for (int i = 0; i < ss->count; i++)
+    {
+      const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+      int nboxes_seq = (int) (max_count * seq->count * 1.0 / ss->totalcount);
+      if (! nboxes_seq)
+        nboxes_seq = 1;
+      nboxes1 += tpointseq_stboxes_iter(seq, nboxes_seq,
+        &result[nboxes1]);
+    }
+    *count = nboxes1;
+    return result;
+  }
+  else
+  {
+    /* Merge consecutive sequences to reach the maximum number of boxes */
+    /* Minimum number of sequences merged together in an output box */
+    int size = ss->count / max_count;
+    /* Number of output boxes that result from merging (size + 1) sequences */
+    int remainder = ss->count % max_count;
+    int i = 0; /* Loop variable for input sequences */
+    int k = 0; /* Loop variable for output boxes */
+    while (k < max_count)
+    {
+      int j = i + size - 1;
+      if (k < remainder)
+        j++;
+      if (i < j)
+      {
+        tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1,
+          &result[k]);
+        for (int l = i + 1; l <= j; l++)
+        {
+          STBox box;
+          tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, l), 1, &box);
+          stbox_expand(&box, &result[k]);
+        }
+        i = j + 1;
+        k++;
+      }
+      else
+        tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i++), 1,
+          &result[k++]);
+    }
+    *count = max_count;
+    return result;
+  }
 }
 
 /**
@@ -274,12 +371,14 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal point
  * @param[in] temp Temporal value
+ * @param[in] max_count Maximum number of elements in the output array.
+ * If the value is < 1, the result is one box per segment
  * @param[out] count Number of values of the output array
  * @return On error return @p NULL
  * @csqlfn #Tpoint_stboxes()
  */
 STBox *
-tpoint_stboxes(const Temporal *temp, int *count)
+tpoint_stboxes(const Temporal *temp, int max_count, int *count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
@@ -290,9 +389,9 @@ tpoint_stboxes(const Temporal *temp, int *count)
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     return NULL;
   else if (temp->subtype == TSEQUENCE)
-    return tpointseq_stboxes((TSequence *)temp, count);
+    return tpointseq_stboxes((TSequence *)temp, max_count, count);
   else /* TSEQUENCESET */
-    return tpointseqset_stboxes((TSequenceSet *)temp, count);
+    return tpointseqset_stboxes((TSequenceSet *)temp, max_count, count);
 }
 
 /*****************************************************************************

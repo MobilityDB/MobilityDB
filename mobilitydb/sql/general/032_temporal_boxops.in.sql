@@ -32,6 +32,17 @@
  * Bounding tbox operators for temporal types.
  */
 
+/*****************************************************************************/
+
+CREATE FUNCTION tboxes(tint, int DEFAULT 0)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_tboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tboxes(tfloat, int DEFAULT 0)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_tboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Temporal boolean
  *****************************************************************************/

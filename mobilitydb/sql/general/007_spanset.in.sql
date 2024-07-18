@@ -706,27 +706,6 @@ CREATE FUNCTION spanN(tstzspanset, integer)
   AS 'MODULE_PATHNAME', 'Spanset_span_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION spans(intspanset)
-  RETURNS intspan[]
-  AS 'MODULE_PATHNAME', 'Spanset_spans'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spans(bigintspanset)
-  RETURNS bigintspan[]
-  AS 'MODULE_PATHNAME', 'Spanset_spans'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spans(floatspanset)
-  RETURNS floatspan[]
-  AS 'MODULE_PATHNAME', 'Spanset_spans'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spans(datespanset)
-  RETURNS datespan[]
-  AS 'MODULE_PATHNAME', 'Spanset_spans'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spans(tstzspanset)
-  RETURNS tstzspan[]
-  AS 'MODULE_PATHNAME', 'Spanset_spans'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION numDates(datespanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Datespanset_num_dates'
@@ -856,6 +835,29 @@ CREATE FUNCTION ceil(floatspanset)
 CREATE FUNCTION round(floatspanset, integer DEFAULT 0)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Floatspanset_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE FUNCTION spans(intspanset, int DEFAULT 0)
+  RETURNS intspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spans(bigintspanset, int DEFAULT 0)
+  RETURNS bigintspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spans(floatspanset, int DEFAULT 0)
+  RETURNS floatspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spans(datespanset, int DEFAULT 0)
+  RETURNS datespan[]
+  AS 'MODULE_PATHNAME', 'Spanset_spans'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spans(tstzspanset, int DEFAULT 0)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
