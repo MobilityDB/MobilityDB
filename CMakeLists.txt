@@ -77,6 +77,13 @@ option(MEOS
   OFF
 )
 
+# Option for including geoposes
+option(POSE
+    "Set ON|OFF (default=ON) to include geoposes
+    "
+    ON
+  )
+
 if(NOT MEOS)
   # Option for including network points
   option(NPOINT
@@ -96,6 +103,14 @@ if(NPOINT)
 else()
   message(STATUS "Excluding network points")
   add_definitions(-DNPOINT=0)
+endif()
+
+if(POSE)
+  message(STATUS "Including geoposes")
+  add_definitions(-DPOSE=1)
+else()
+  message(STATUS "Excluding geoposes")
+  add_definitions(-DPOSE=0)
 endif()
 
 # Get the MobilityDB major/minor/micro versions from the text file
