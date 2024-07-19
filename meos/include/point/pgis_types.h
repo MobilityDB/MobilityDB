@@ -59,6 +59,7 @@ extern LWGEOM *box3d_to_lwgeom(BOX3D *box);
 /* Functions adapted from lwgeom_functions_basic.c */
 
 /* The implementation of this function changed in PostGIS version 3.2 */
+extern double geo_perimeter(const GSERIALIZED *gs);
 extern GSERIALIZED *geometry_boundary(const GSERIALIZED *gs);
 extern GSERIALIZED *geo_shortestline2d(const GSERIALIZED *gs1,
   const GSERIALIZED *s2);
@@ -96,8 +97,10 @@ extern GSERIALIZED *geometry_convex_hull(const GSERIALIZED *gs);
 
 /* Functions adapted from geography_measurement.c */
 
-extern double pgis_geography_length(GSERIALIZED *g, bool use_spheroid);
-extern bool pgis_geography_dwithin(GSERIALIZED *g1, GSERIALIZED *g2,
+extern double pgis_geography_area(const GSERIALIZED *g, bool use_spheroid);
+extern double pgis_geography_perimeter(const GSERIALIZED *g, bool use_spheroid);
+extern double pgis_geography_length(const GSERIALIZED *g, bool use_spheroid);
+extern bool pgis_geography_dwithin(const GSERIALIZED *g1, GSERIALIZED *g2,
   double tolerance, bool use_spheroid);
 extern double pgis_geography_distance(const GSERIALIZED *g1,
   const GSERIALIZED *g2);

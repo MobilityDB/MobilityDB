@@ -523,6 +523,10 @@
 				<listitem>
 					<para><link linkend="xMaxInc"><varname>xMaxInc</varname>, <varname>tMaxInc</varname></link>: Es el máximo valor X/T inclusivo?</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="area"><varname>area</varname>, <varname>perimeter</varname></link>: Área o perímetro</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 

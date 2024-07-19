@@ -1158,10 +1158,12 @@ extern STBox *tpoint_to_stbox(const Temporal *temp);
  * Accessor functions for box types
  *****************************************************************************/
 
+extern double stbox_area(const STBox *box, bool spheroid);
 extern bool stbox_hast(const STBox *box);
 extern bool stbox_hasx(const STBox *box);
 extern bool stbox_hasz(const STBox *box);
 extern bool stbox_isgeodetic(const STBox *box);
+extern double stbox_perimeter(const STBox *box, bool spheroid);
 extern int32 stbox_srid(const STBox *box);
 extern bool stbox_tmax(const STBox *box, TimestampTz *result);
 extern bool stbox_tmax_inc(const STBox *box, bool *result);
