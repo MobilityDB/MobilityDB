@@ -1692,19 +1692,26 @@ numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
     return NULL;
 
   /* Copy the input span set to the output span set */
-  SpanSet *result = spanset_cp(ss);
+  SpanSet *copy = spanset_cp(ss);
 
   /* Shift and/or scale the bounding span */
   Datum delta;
   double scale;
-  numspan_shift_scale1(&result->span, shift, width, hasshift, haswidth,
+  numspan_shift_scale1(&copy->span, shift, width, hasshift, haswidth,
     &delta, &scale);
-  Datum origin = result->span.lower;
+  Datum origin = copy->span.lower;
 
   /* Shift and/or scale the span set */
   for (int i = 0; i < ss->count; i++)
-    numspan_delta_scale_iter(&result->elems[i], origin, delta, hasshift,
+    numspan_delta_scale_iter(&copy->elems[i], origin, delta, hasshift,
       scale);
+
+  /* Normalization is required after scaling */
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    memcpy(&spans[i], &copy->elems[i], sizeof(Span));
+  SpanSet *result = spanset_make_exp(spans, ss->count, ss->count, true, true);
+  pfree(copy); pfree(spans);
   return result;
 }
 
