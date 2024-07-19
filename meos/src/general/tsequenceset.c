@@ -486,7 +486,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
         instants[i - 1]->t);
       if (pg_interval_cmp(duration, maxt) > 0)
         split = true;
-      // CANNOT pfree(duration);
+      pfree(duration);
     }
     if (split)
       result[k++] = i;
@@ -961,7 +961,7 @@ tsequenceset_max_val(const TSequenceSet *ss)
 /**
  * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument a copy of the n-th value of a temporal
- * sequence set 
+ * sequence set
  * @param[in] ss Temporal sequence set
  * @param[in] n Number
  * @param[out] result Value

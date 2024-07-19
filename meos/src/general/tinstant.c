@@ -346,9 +346,7 @@ TInstant *
 tinstant_make_free(Datum value, meosType temptype, TimestampTz t)
 {
   TInstant *result = tinstant_make(value, temptype, t);
-  // DATUM_FREE(value, temptype_basetype(temptype));
-  if (! basetype_byvalue(temptype_basetype(temptype)))
-      pfree(DatumGetPointer(value));
+  DATUM_FREE(value, temptype_basetype(temptype));
   return result;
 }
 
