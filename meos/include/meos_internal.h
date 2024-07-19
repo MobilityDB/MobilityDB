@@ -41,6 +41,8 @@
 /* GSL */
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
+/* PROJ */
+#include <proj.h>
 /* PostgreSQL */
 /* MEOS */
 #include <meos.h>

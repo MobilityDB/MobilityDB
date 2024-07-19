@@ -191,6 +191,7 @@ main(int argc, char **argv)
     char *t_out = pg_timestamp_out(rec.T);
     sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
       rec.Latitude, t_out);
+    free(t_out);
 
     /* Send to the output file the trip if reached the maximum number of instants */
     if (trips[j].trip && trips[j].trip->count == NO_INSTANTS_BATCH)
@@ -213,6 +214,7 @@ main(int argc, char **argv)
         NO_INSTANTS_BATCH, true, true, LINEAR, false);
     else
       tsequence_append_tinstant(trips[j].trip, inst, 0.0, NULL, true);
+    free(inst);
   } while (! feof(file_in));
 
   printf("\n%d records read\n%d incomplete records ignored\n"

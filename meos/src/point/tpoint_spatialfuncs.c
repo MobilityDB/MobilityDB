@@ -1989,7 +1989,10 @@ tpointseq_trajectory(const TSequence *seq)
   STBox box;
   memset(&box, 0, sizeof(box));
   tsequence_set_bbox(seq, &box);
-  return geopointarr_make_trajectory(points, npoints, &box, interp);
+  GSERIALIZED *result = geopointarr_make_trajectory(points, npoints, &box,
+    interp);
+  pfree(points);
+  return result;
 }
 
 /**
