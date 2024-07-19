@@ -36,6 +36,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 #include <limits.h>
 /* PostgreSQL */
 #include "utils/timestamp.h"
@@ -1247,6 +1248,52 @@ stbox_tmax_inc(const STBox *box, bool *result)
     return false;
   *result = box->period.upper_inc;
   return true;
+}
+
+/**
+ * @ingroup meos_box_accessor
+ * @brief Return the area of the spatiotemporal box
+ * @param[in] box Spatiotemporal box
+ * @param[in] spheroid When true, the calculation uses the WGS 84 spheroid,
+ * otherwise it uses a faster spherical calculation
+ * @csqlfn #Stbox_area()
+ */
+double
+stbox_area(const STBox *box, bool spheroid)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box))
+    return false;
+
+  if (! MEOS_FLAGS_GET_GEODETIC(box->flags))
+    return (box->xmax - box->xmin) * (box->ymax - box->ymin);
+  
+  GSERIALIZED *geo = stbox_to_geo(box);
+  double result = pgis_geography_area(geo, spheroid);
+  pfree(geo);
+  return result;
+}
+
+/**
+ * @ingroup meos_box_accessor
+ * @brief Return the permieter of the spatiotemporal box
+ * @param[in] box Spatiotemporal box
+ * @param[in] spheroid When true, the calculation uses the WGS 84 spheroid,
+ * otherwise it uses a faster spherical calculation
+ * @csqlfn #Stbox_perimeter()
+ */
+double
+stbox_perimeter(const STBox *box, bool spheroid)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box))
+    return false;
+
+  GSERIALIZED *geo = stbox_to_geo(box);
+  double result = MEOS_FLAGS_GET_GEODETIC(box->flags) ?
+    pgis_geography_perimeter(geo, spheroid) : geo_perimeter(geo);
+  pfree(geo);
+  return result;
 }
 
 /*****************************************************************************

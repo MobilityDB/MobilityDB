@@ -312,6 +312,22 @@ box3d_to_lwgeom(BOX3D *box)
  *****************************************************************************/
 
 /**
+ * @brief find the "perimeter of a geometry"
+ *   perimeter(point) = 0
+ *   perimeter(line) = 0
+ *   perimeter(polygon) = sum of ring perimeters
+ *   uses euclidian 2d computation even if input is 3d
+ * @note PostGIS function: @p LWGEOM_perimeter2d_poly(PG_FUNCTION_ARGS)
+ */
+double
+geo_perimeter(const GSERIALIZED *geom)
+{
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+  double perimeter = lwgeom_perimeter_2d(lwgeom);
+  return perimeter;
+}
+
+/**
  * @brief Return the boundary of a geometry
  * @note PostGIS function: @p boundary(PG_FUNCTION_ARGS)
  */
@@ -1207,12 +1223,136 @@ geometry_buffer(const GSERIALIZED *gs, double size, char *params)
  *****************************************************************************/
 
 /**
+ * @brief Returns double area in meters square
+ * @return On error return @p DBL_MAX
+ * @note PostGIS function: @p geography_area(PG_FUNCTION_ARGS)
+ */
+double
+pgis_geography_area(const GSERIALIZED *g, bool use_spheroid)
+{
+  LWGEOM *lwgeom = NULL;
+  GBOX gbox;
+  double area;
+  SPHEROID s;
+
+  /* Initialize spheroid */
+  /* We currently cannot use the next statement since it uses PostGIS cache */
+  // spheroid_init_from_srid(gserialized_get_srid(g), &s);
+  spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+  lwgeom = lwgeom_from_gserialized(g);
+
+  /* EMPTY things have no area */
+  if ( lwgeom_is_empty(lwgeom) )
+  {
+    lwgeom_free(lwgeom);
+    return 0.0;
+  }
+
+  if ( lwgeom->bbox )
+    gbox = *(lwgeom->bbox);
+  else
+    lwgeom_calculate_gbox_geodetic(lwgeom, &gbox);
+
+#ifndef PROJ_GEODESIC
+  /* Test for cases that are currently not handled by spheroid code */
+  if ( use_spheroid )
+  {
+    /* We can't circle the poles right now */
+    if ( FP_GTEQ(gbox.zmax,1.0) || FP_LTEQ(gbox.zmin,-1.0) )
+      use_spheroid = LW_FALSE;
+    /* We can't cross the equator right now */
+    if ( gbox.zmax > 0.0 && gbox.zmin < 0.0 )
+      use_spheroid = LW_FALSE;
+  }
+#endif /* ifndef PROJ_GEODESIC */
+
+  /* User requests spherical calculation, turn our spheroid into a sphere */
+  if ( ! use_spheroid )
+    s.a = s.b = s.radius;
+
+  /* Calculate the area */
+  if ( use_spheroid )
+    area = lwgeom_area_spheroid(lwgeom, &s);
+  else
+    area = lwgeom_area_sphere(lwgeom, &s);
+
+  /* Clean up */
+  lwgeom_free(lwgeom);
+
+  /* Something went wrong... */
+  if ( area < 0.0 )
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "lwgeom_area_spheroid returned length < 0.0");
+    return DBL_MAX;
+  }
+
+  return area;
+}
+
+/**
+ * @brief Returns double perimeter in meters for area features
+ * @return On error return @p DBL_MAX
+ * @note PostGIS function: @p geography_perimeter(PG_FUNCTION_ARGS)
+ */
+double
+pgis_geography_perimeter(const GSERIALIZED *g, bool use_spheroid)
+{
+  LWGEOM *lwgeom = NULL;
+  double length;
+  SPHEROID s;
+  int type;
+
+  /* Only return for area features. */
+  type = gserialized_get_type(g);
+  if ( ! (type == POLYGONTYPE || type == MULTIPOLYGONTYPE || type == COLLECTIONTYPE) )
+  {
+    return 0.0;
+  }
+
+  lwgeom = lwgeom_from_gserialized(g);
+
+  /* EMPTY things have no perimeter */
+  if ( lwgeom_is_empty(lwgeom) )
+  {
+    lwgeom_free(lwgeom);
+    return 0.0;
+  }
+
+  /* Initialize spheroid */
+  /* We currently cannot use the next statement since it uses PostGIS cache */
+  // spheroid_init_from_srid(gserialized_get_srid(g), &s);
+  spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+  /* User requests spherical calculation, turn our spheroid into a sphere */
+  if ( ! use_spheroid )
+    s.a = s.b = s.radius;
+
+  /* Calculate the length */
+  length = lwgeom_length_spheroid(lwgeom, &s);
+
+  /* Something went wrong... */
+  if ( length < 0.0 )
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "lwgeom_perimeter_spheroid returned length < 0.0");
+    return DBL_MAX;
+  }
+
+  /* Clean up, but not all the way to the point arrays */
+  lwgeom_free(lwgeom);
+
+  return length;
+}
+
+/**
  * @brief Return double length in meters
  * @return On error return @p DBL_MAX
  * @note PostGIS function: @p geography_length(PG_FUNCTION_ARGS)
  */
 double
-pgis_geography_length(GSERIALIZED *gs, bool use_spheroid)
+pgis_geography_length(const GSERIALIZED *gs, bool use_spheroid)
 {
   /* EMPTY things have no length */
   int32 geo_type = gserialized_get_type(gs);
@@ -1257,7 +1397,7 @@ pgis_geography_length(GSERIALIZED *gs, bool use_spheroid)
  * where we use the WGS84 spheroid
  */
 bool
-pgis_geography_dwithin(GSERIALIZED *gs1, GSERIALIZED *gs2, double tolerance,
+pgis_geography_dwithin(const GSERIALIZED *gs1, GSERIALIZED *gs2, double tolerance,
   bool use_spheroid)
 {
   assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));

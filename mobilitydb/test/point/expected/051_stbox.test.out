@@ -525,6 +525,18 @@ SELECT tmaxInc(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
  
 (1 row)
 
+SELECT area(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
+ area 
+------
+    4
+(1 row)
+
+SELECT perimeter(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
+ perimeter 
+-----------
+         8
+(1 row)
+
 SELECT xmin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
  xmin 
 ------
@@ -571,6 +583,18 @@ SELECT tmax(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
  tmax 
 ------
  
+(1 row)
+
+SELECT area(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
+ area 
+------
+    9
+(1 row)
+
+SELECT perimeter(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
+ perimeter 
+-----------
+        48
 (1 row)
 
 SELECT xmin(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
@@ -633,6 +657,18 @@ SELECT tmaxInc(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])')
  t
 (1 row)
 
+SELECT area(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+ area 
+------
+    4
+(1 row)
+
+SELECT perimeter(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+ perimeter 
+-----------
+         8
+(1 row)
+
 SELECT xmin(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
  xmin 
 ------
@@ -681,6 +717,18 @@ SELECT tmax(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02
  Sun Jan 02 00:00:00 2000 PST
 (1 row)
 
+SELECT area(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+ area 
+------
+    9
+(1 row)
+
+SELECT perimeter(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+ perimeter 
+-----------
+        48
+(1 row)
+
 SELECT xmin(stbox 'STBOX T([2000-01-01, 2000-01-02])');
  xmin 
 ------
@@ -727,6 +775,34 @@ SELECT tmax(stbox 'STBOX T([2000-01-01, 2000-01-02])');
              tmax             
 ------------------------------
  Sun Jan 02 00:00:00 2000 PST
+(1 row)
+
+SELECT area(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+ERROR:  The box must have space dimension
+SELECT perimeter(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+ERROR:  The box must have space dimension
+SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])')::numeric, 1);
+     round      
+----------------
+ 110593375170.3
+(1 row)
+
+SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])', false)::numeric, 1);
+     round      
+----------------
+ 111083945187.3
+(1 row)
+
+SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])')::numeric, 1);
+   round   
+-----------
+ 1329924.2
+(1 row)
+
+SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])', false)::numeric, 1);
+   round   
+-----------
+ 1332868.0
 (1 row)
 
 SELECT round(stbox 'STBOX X((1.12345,1.12345),(2.12345,2.12345))', 2);

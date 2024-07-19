@@ -36,6 +36,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <lib/stringinfo.h>
@@ -806,6 +807,42 @@ Stbox_tmax_inc(PG_FUNCTION_ARGS)
   if (! stbox_tmax_inc(box, &result))
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Stbox_area(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_area);
+/**
+ * @ingroup mobilitydb_box_accessor
+ * @brief Return the area of a spatiotemporal box
+ * @sqlfn area()
+ */
+Datum
+Stbox_area(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  bool spheroid = PG_GETARG_BOOL(1);
+  double result = stbox_area(box, spheroid);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Stbox_perimeter(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_perimeter);
+/**
+ * @ingroup mobilitydb_box_accessor
+ * @brief Return the area of a spatiotemporal box
+ * @sqlfn area()
+ */
+Datum
+Stbox_perimeter(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  bool spheroid = PG_GETARG_BOOL(1);
+  double result = stbox_perimeter(box, spheroid);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
 }
 
 /*****************************************************************************
