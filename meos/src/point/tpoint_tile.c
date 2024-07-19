@@ -1152,6 +1152,7 @@ tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize,
       times[i] = DatumGetTimestampTz(box.period.lower);
     result[i++] = atstbox;
   }
+  pfree(state);
   *count = i;
   if (space_buckets)
     *space_buckets = spaces;

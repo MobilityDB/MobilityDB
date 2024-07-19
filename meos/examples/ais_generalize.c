@@ -231,9 +231,7 @@ int main(void)
     temp = temporal_tprecision(trips[i].trip, secs10, origin);
     tprec_10s += temporal_mem_size(temp);
     no_tprec_10s += temporal_num_instants(temp);
-    free(temp);
-    free(secs1);
-    free(secs10);
+    free(temp); free(secs1); free(secs10);
   }
 
   printf("\n---------------------------------------------------------------------------------\n");

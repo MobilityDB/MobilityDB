@@ -81,8 +81,7 @@ spanset_append_span(SpanSet *ss, const Span *span, bool expand)
 
   SpanSet *result = spanset_make_exp(spans, ss->count + 1, maxcount,
     NORMALIZE_NO, ORDER);
-  pfree(spans);
-  // pfree(ss);
+  pfree(spans); pfree(ss);
   return result;
 }
 
@@ -128,7 +127,7 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
 
   SpanSet *result = spanset_make_exp(spans, count, maxcount, NORMALIZE_NO,
     ORDER);
-  pfree(spans);
+  pfree(spans); pfree(ss1);
   return result;
 }
 
@@ -137,6 +136,13 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
  * @brief Transition function for span set aggregate union
  * @param[in,out] state Current aggregate state
  * @param[in] s Span to aggregate
+ * @result When the state variable has space for adding the new span, the 
+ * function returns the current state variable. Otherwise, a NEW state 
+ * variable is returned and the input state is freed.
+ * @note Always use the function to overwrite the existing state as in: 
+ * @code
+ * state = span_union_transfn(state, span);
+ * @endcode
  */
 SpanSet *
 span_union_transfn(SpanSet *state, const Span *s)
@@ -160,6 +166,13 @@ span_union_transfn(SpanSet *state, const Span *s)
  * @brief Transition function for span set aggregate union
  * @param[in,out] state Current aggregate state
  * @param[in] ss Span set to aggregate
+ * @result When the state variable has space for adding the new span set, the 
+ * function returns the current state variable. Otherwise, a NEW state 
+ * variable is returned and the input state is freed.
+ * @note Always use the function to overwrite the existing state as in: 
+ * @code
+ * state = spanset_union_transfn(state, spanset);
+ * @endcode
  */
 SpanSet *
 spanset_union_transfn(SpanSet *state, const SpanSet *ss)

@@ -424,7 +424,7 @@ span_bucket_list(const Span *s, Datum size, Datum origin, int count)
     span_bucket_set(state->value, state->size, state->basetype, &buckets[i]);
     span_bucket_state_next(state);
   }
-  free(state);
+  pfree(state);
   return buckets;
 }
 

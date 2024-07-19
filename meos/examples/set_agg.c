@@ -62,8 +62,7 @@ int main()
   printf("Result of the set union aggregation: %s\n", result_out);
 
   /* Clean up allocated objects */
-  free(agg); free(result);
-  free(agg_out); free(result_out);
+  free(agg); free(agg_out); free(result); free(result_out);
 
   /* Finalize MEOS */
   meos_finalize();

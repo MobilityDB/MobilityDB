@@ -985,8 +985,10 @@ set_make_free(Datum *values, int count, meosType basetype, bool order)
   assert(values); assert(count >= 0);
   Set *result = NULL;
   if (count > 0)
+  {
     result = set_make_exp(values, count, count, basetype, order);
-  pfree(values);
+    pfree(values);
+  }
   return result;
 }
 

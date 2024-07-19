@@ -82,12 +82,11 @@ int main(void)
   printf("--------------------------------\n");
   printf(" Transformed trip in SRID 25832\n");
   printf("--------------------------------\n%s\n", str_out);
-  free(str_out);
-
-  free(trip);
-  free(trip_out);
 
   /* Clean up */
+  free(str_out); free(trip); free(trip_out);
+
+  /* Finalize MEOS */
   meos_finalize();
   return 0;
 }

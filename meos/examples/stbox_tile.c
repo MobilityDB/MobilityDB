@@ -103,8 +103,7 @@ int main(void)
   printf("\nNumber of tiles: %d\n", count);
 
   /* Clean up allocated objects */
-  free(box); free(interv);
-  free(sorigin);
+  free(box); free(interv); free(sorigin);
   if (spacesplit)
     free(boxes);
   else

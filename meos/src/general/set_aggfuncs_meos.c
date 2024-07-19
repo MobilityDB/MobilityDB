@@ -94,7 +94,7 @@ set_expand_bbox(Datum value, meosType basetype, void *box)
  * @param[in] value Value
  */
 Set *
-set_append_value_exp(Set *set, Datum value)
+set_append_value(Set *set, Datum value)
 {
   assert(set);
 
@@ -164,6 +164,13 @@ set_append_value_exp(Set *set, Datum value)
  * @param[in,out] state Current aggregate state
  * @param[in] value Value
  * @param[in] basetype Type of the value
+ * @result When the state variable has space for adding the new value, the 
+ * function returns the current state variable. Otherwise, a NEW state 
+ * variable is returned and the input state is freed.
+ * @note Always use the function to overwrite the existing state as in: 
+ * @code
+ * state = value_union_transfn(state, value, basetype);
+ * @endcode
  */
 Set *
 value_union_transfn(Set *state, Datum value, meosType basetype)
@@ -173,7 +180,7 @@ value_union_transfn(Set *state, Datum value, meosType basetype)
     /* Arbitrary initialization to 64 elements */
     return set_make_exp(&value, 1, 64, basetype, ORDER);
 
-  return set_append_value_exp(state, value);
+  return set_append_value(state, value);
 }
 
 /**
@@ -272,6 +279,13 @@ text_union_transfn(Set *state, const text *txt)
  * @brief Transition function for set union aggregate of sets
  * @param[in,out] state Current aggregate state
  * @param[in] s Set to aggregate
+ * @result When the state variable has space for adding the new set, the 
+ * function returns the current state variable. Otherwise, a NEW state 
+ * variable is returned and the input state is freed.
+ * @note Always use the function to overwrite the existing state as in: 
+ * @code
+ * state = set_union_transfn(state, set);
+ * @endcode
  */
 Set *
 set_union_transfn(Set *state, Set *s)
@@ -292,7 +306,7 @@ set_union_transfn(Set *state, Set *s)
     return NULL;
 
   for (int i = 0; i < s->count; i++)
-    state = set_append_value_exp(state, SET_VAL_N(s, i));
+    state = set_append_value(state, SET_VAL_N(s, i));
   return state;
 }
 

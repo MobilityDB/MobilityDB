@@ -312,7 +312,7 @@ tnpointseqset_step_positions(const TSequenceSet *ss, int *count)
   Nsegment **result = palloc(sizeof(Nsegment *) * newcount);
   for (int i = 0; i < newcount; i++)
   {
-    Npoint *np = DatumGetNpointP(values[i]);
+    const Npoint *np = DatumGetNpointP(values[i]);
     result[i] = nsegment_make(np->rid, np->pos, np->pos);
   }
   pfree(values);

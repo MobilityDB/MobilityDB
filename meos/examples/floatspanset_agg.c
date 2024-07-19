@@ -111,11 +111,8 @@ int main(void)
     /* Transform the string representing the span set into a span set value */
     rec.ss = floatspanset_in(spanset_buffer);
 
-    SpanSet *ss = state[rec.k%NUMBER_GROUPS];
-    state[rec.k%NUMBER_GROUPS] = spanset_union_transfn(ss, rec.ss);
-    /* Free previous state if we allocated a new one */
-    if (ss && state[rec.k%NUMBER_GROUPS] != ss)
-      free(ss);
+    state[rec.k%NUMBER_GROUPS] = 
+      spanset_union_transfn(state[rec.k%NUMBER_GROUPS], rec.ss);
 
     /* Output the float spanset value read */
     char *spanset_out = floatspanset_out(rec.ss, 3);

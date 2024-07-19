@@ -275,6 +275,7 @@ main(int argc, char **argv)
     char *t_out = pg_timestamp_out(rec.T);
     sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
       rec.Latitude, t_out);
+    free(t_out);
 
     /* Send the trip to the database when its size reaches the maximum size */
     if (trips[j].trip && trips[j].trip->count == NO_INSTANTS_BATCH)
@@ -308,6 +309,7 @@ main(int argc, char **argv)
         NO_INSTANTS_BATCH, true, true, LINEAR, false);
     else
       tsequence_append_tinstant(trips[j].trip, inst, 0.0, NULL, true);
+    free(inst);
   } while (! feof(file));
 
   /* Close the file */
@@ -333,6 +335,7 @@ main(int argc, char **argv)
   printf("-----------+-------------\n");
   for (i = 0; i < numrows; i++)
     printf(" %s |     %s\n", PQgetvalue(res, i, 0), PQgetvalue(res, i, 1));
+  PQclear(res);
 
   /* State that the program executed successfully */
   exit_value = 0;
