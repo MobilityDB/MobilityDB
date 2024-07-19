@@ -1703,6 +1703,7 @@ pgis_geometry_in(char *str, int32 typmod)
     if ( lwgeom_needs_bbox(lwgeom) )
       lwgeom_add_bbox(lwgeom);
     result = geo_serialize(lwgeom);
+    // CANNOT lwgeom_free(lwgeom);
     lwgeom_parser_result_free(&lwg_parser_result);
   }
 
