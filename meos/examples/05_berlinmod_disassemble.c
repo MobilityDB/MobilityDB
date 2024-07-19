@@ -91,7 +91,7 @@ int main(void)
   /* Get start time */
   clock_t t;
   t = clock();
-  
+
   /* Initialize MEOS */
   meos_initialize(NULL, NULL);
 
@@ -177,7 +177,7 @@ int main(void)
     if (first == records_in)
       /* All trips have been processed */
       break;
-    const TInstant *min_inst = temporal_instant_n(trips[first].trip,
+    TInstant *min_inst = temporal_instant_n(trips[first].trip,
       curr_inst[first]);
     int min_trip = first;
 
@@ -186,21 +186,24 @@ int main(void)
     {
       if (curr_inst[i] < 0)
         continue;
-      const TInstant *inst = temporal_instant_n(trips[i].trip, curr_inst[i]);
+      TInstant *inst = temporal_instant_n(trips[i].trip, curr_inst[i]);
       if (min_inst->t > inst->t)
       {
+        free(min_inst);
         min_inst = inst;
         min_trip = i;
       }
+      else
+        free(inst);
     }
 
     /* Write line in the CSV file */
     char *date_str = pg_date_out(trips[min_trip].day);
-    char *geom_str = geo_as_ewkt((GSERIALIZED *)&min_inst->value, 6);
+    char *geom_str = geo_as_ewkt((GSERIALIZED *) &min_inst->value, 6);
     char *time_str = pg_timestamptz_out(min_inst->t);
     fprintf(file,"%d,%d,%s,%d,%s,%s\n", trips[min_trip].vehid,
       trips[min_trip].vehid, date_str, trips[min_trip].seq, geom_str, time_str);
-    free(date_str); free(geom_str); free(time_str);
+    free(date_str); free(geom_str); free(time_str); free(min_inst);
     records_out++;
 
     /* Advance the current instant of the trip */

@@ -1176,7 +1176,7 @@ geopoint_make(double x, double y, double z, bool hasz, bool geodetic,
     lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
   FLAGS_SET_GEODETIC(point->flags, geodetic);
   GSERIALIZED *result = geo_serialize((LWGEOM *) point);
-  // We CANNOT lwpoint_free(point);
+  lwpoint_free(point);
   return result;
 }
 
