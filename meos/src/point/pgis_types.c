@@ -1831,7 +1831,9 @@ geo_as_text(const GSERIALIZED *gs, int precision)
     return NULL;
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
-  return lwgeom_to_wkt(geom, WKT_ISO, precision, NULL);
+  char *result = lwgeom_to_wkt(geom, WKT_ISO, precision, NULL);
+  lwgeom_free(geom);
+  return result;
 }
 
 /**
@@ -1852,7 +1854,9 @@ geo_as_ewkt(const GSERIALIZED *gs, int precision)
     return NULL;
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
-  return lwgeom_to_wkt(geom, WKT_EXTENDED, precision, NULL);
+  char *result = lwgeom_to_wkt(geom, WKT_EXTENDED, precision, NULL);
+  lwgeom_free(geom);
+  return result;
 }
 
 /**

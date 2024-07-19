@@ -281,6 +281,7 @@ main(int argc, char **argv)
 
   printf("Query 'SELECT COUNT(*) FROM public.AISInstants' returned %s\n",
     PQgetvalue(res, 0, 0));
+  PQclear(res);
 
   /* State that the program executed successfully */
   exit_value = 0;

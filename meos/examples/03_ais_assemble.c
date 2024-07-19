@@ -33,7 +33,7 @@
  * instants, and the distance travelled. The program also stores in a CSV file
  * the assembled trips.
  *
- * Please read the assumptions made about the input file in the file 
+ * Please read the assumptions made about the input file in the file
  * `02_ais_read.c` in the same directory. Furthermore, the program assumes the
  * input file contains less than 50K observations for at most five ships.
  * Also, the program does not cope with erroneous inputs, such as two or more
@@ -188,6 +188,7 @@ int main(void)
     char *t_out = pg_timestamp_out(rec.T);
     sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
       rec.Latitude, t_out);
+    free(t_out);
     TInstant *inst1 = (TInstant *) tgeogpoint_in(point_buffer);
     trips[ship].trip_instants[trips[ship].numinstants] = inst1;
     TInstant *inst2 = (TInstant *) tfloatinst_make(rec.SOG, rec.T);
