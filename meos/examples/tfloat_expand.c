@@ -34,12 +34,12 @@
  * outputs the number of instants and the time-weighted average.
  *
  * This program and the program tfloat_expand.c in the same directory can be
- * used to compare the two alternative strategies for 
- * (1) assembling the sequence at the end from the input instants 
- * (2) expanding the sequence at each input instant 
+ * used to compare the two alternative strategies for
+ * (1) assembling the sequence at the end from the input instants
+ * (2) expanding the sequence at each input instant
  *
  * The instants are generated so they are not redundant, that is, all input
- * instants will appear in the final sequence. 
+ * instants will appear in the final sequence.
  *
  * The program can be build as follows
  * @code
@@ -64,7 +64,7 @@ int main(void)
   clock_t tm;
   tm = clock();
 
-  /* Initialize MEOS */ 
+  /* Initialize MEOS */
   meos_initialize(NULL, NULL);
 
   /* Expandable sequence */
@@ -98,7 +98,7 @@ int main(void)
     temporal_num_instants(seq), tnumber_twavg(seq));
 
   /* Free memory */
-  free(seq);
+  free(oneday); free(seq);
 
   /* Finalize MEOS */
   meos_finalize();

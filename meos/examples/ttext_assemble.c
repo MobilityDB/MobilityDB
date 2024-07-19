@@ -49,7 +49,7 @@
 
 #define MAX_INSTANTS 1000000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 1000
+#define NO_INSTANTS_BATCH 10000
 /* Maximum length in characters of the input instant */
 #define MAX_LENGTH_INST 64
 /* Maximum length in characters of the text values in the instants */
@@ -76,10 +76,18 @@ int main(void)
   /* Seed the random number generator with the current time in seconds. */
   srandom (time (0));
 
+  printf("Generating the instants (one '*' marker every %d instants)\n",
+    NO_INSTANTS_BATCH);
+
   TimestampTz t = pg_timestamptz_in("1999-12-31", -1);
   for (i = 0; i < MAX_INSTANTS; i++)
   {
     /* Generate the instant */
+    if (i % NO_INSTANTS_BATCH == 0)
+    {
+      printf("*");
+      fflush(stdout);
+    }
     /* Use a random generator to set the length of the text value */
     int len = random() % MAX_LENGTH_TEXT + 1;
     char *value = malloc(sizeof(char) * (len + 2));
@@ -97,13 +105,15 @@ int main(void)
   /* Print information about the sequence */
   // Uncomment the next line to see the resulting sequence value
   // printf("%s\n", ttext_out(seq));
-  char *str = text2cstring(ttext_end_value(seq));
-  printf("Number of instants: %d, Last value : %s\n",
+  text *txt = ttext_end_value(seq);
+  char *str = text2cstring(txt);
+  printf("\nNumber of instants: %d, Last value : %s\n",
     temporal_num_instants(seq), str);
 
   /* Free memory */
-  free(seq);
-  free(str);
+  free(seq); free(txt); free(str);
+  for (int i = 0; i < MAX_INSTANTS; i++)
+    free(instants[i]);
 
   /* Calculate the elapsed time */
   tm = clock() - tm;

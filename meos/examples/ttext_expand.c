@@ -84,6 +84,9 @@
  * - False: sequences are compacted when compacting the sequence set
  */
 #define COMPACT_COMP_SEQS false
+/* Determine whether debug messages showing the expansion of sequences and
+ * and sequence sets are shown */
+#define DEBUG false
 
 /* Main program */
 int main(void)
@@ -140,7 +143,7 @@ int main(void)
         seq = (TSequence *) tsequence_append_tinstant(seq, inst, 0.0, NULL,
           true);
         /* Print a marker when the sequence has been expanded */
-        if (EXPAND_SEQ && maxcount != seq->maxcount)
+        if (DEBUG && EXPAND_SEQ && maxcount != seq->maxcount)
         {
           printf(" Seq -> %d ", seq->maxcount);
           fflush(stdout);
@@ -190,13 +193,13 @@ int main(void)
 
   /* Print information about the last sequence */
   seq = temporal_end_sequence((Temporal *) ss1);
-  char *str = text2cstring(ttext_end_value((Temporal *) seq));
+  text *txt = ttext_end_value((Temporal *) seq);
+  char *str = text2cstring(txt);
   printf("Number of instants in the last sequence: %d, Last value : %s\n",
     seq->count, str);
 
   /* Free memory */
-  free(ss1);
-  free(str);
+  free(ss1); free(onehour); free(txt); free(str);
 
   /* Calculate the elapsed time */
   tm = clock() - tm;

@@ -101,7 +101,10 @@ int main(void)
     sprintf(inst_buffer, "Point(%d %d)@%s", value, value, time_str);
     instants[i] = (TInstant *) tgeompoint_in(inst_buffer);
 #endif
+    free(time_str);
   }
+
+  printf("\nAssembing the instants ...\n");
 
   seq = (Temporal *) tsequence_make((const TInstant **) instants, MAX_INSTANTS,
     true, true, LINEAR, true);

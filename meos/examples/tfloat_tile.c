@@ -97,11 +97,17 @@ int main(void)
         temp_str);
     printf("%s", output_buffer);
     if (timesplit) free(time_str);
-    free(temp_str);
+    free(result[i]); free(temp_str);
   }
 
   /* Print information about the result */
   printf("\nNumber of fragments: %d\n", count);
+
+  /* Free memory */
+  free(tfloat); free(interv); free(result);
+  if (valuesplit)
+    free(value_buckets);
+  free(time_buckets);
 
   /* Finalize MEOS */
   meos_finalize();
