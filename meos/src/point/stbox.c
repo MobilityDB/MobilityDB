@@ -628,15 +628,16 @@ spatialset_to_stbox(const Set *s)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Return a @p GBOX converted to a spatiotemporal box
+ * @brief Set the a spatiotemporal box in the last argument from the @p GBOX
+ ¨and the SRID
  * @param[in] box GBOX
+ * @param[in] srid SRID
+ * @param[out] result Spatiotemporal box
  */
-STBox *
-gbox_to_stbox(const GBOX *box)
+void
+gbox_set_stbox(const GBOX *box, int srid, STBox *result)
 {
   assert(box);
-  /* Note: zero-fill is required here, just as in heap tuples */
-  STBox *result = palloc0(sizeof(STBox));
   bool hasz = (bool) FLAGS_GET_Z(box->flags);
   bool geodetic = (bool) FLAGS_GET_GEODETIC(box->flags);
   MEOS_FLAGS_SET_X(result->flags, true);
@@ -653,6 +654,22 @@ gbox_to_stbox(const GBOX *box)
     result->zmin = box->zmin;
     result->zmax = box->zmax;
   }
+  result->srid = srid;
+  return;
+}
+
+/**
+ * @ingroup meos_internal_box_conversion
+ * @brief Return a @p GBOX converted to a spatiotemporal box
+ * @param[in] box GBOX
+ */
+STBox *
+gbox_to_stbox(const GBOX *box)
+{
+  assert(box);
+  /* Note: zero-fill is required here, just as in heap tuples */
+  STBox *result = palloc0(sizeof(STBox));
+  gbox_set_stbox(box, 0, result);
   return result;
 }
 

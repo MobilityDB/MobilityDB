@@ -79,6 +79,15 @@ CREATE FUNCTION stboxes(tgeogpoint, int DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Tpoint_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION stboxes(geometry, int DEFAULT 0)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Geo_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxes(geography, int DEFAULT 0)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Geo_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Contains
  *****************************************************************************/

@@ -80,7 +80,7 @@ PGDLLEXPORT Datum Tnumber_tboxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_tboxes);
 /**
  * @ingroup mobilitydb_temporal_bbox
- * @brief Return an array of maximumn n temporal boxes from a temporal number
+ * @brief Return an array of maximum n temporal boxes from a temporal number
  * @sqlfn tboxes()
  */
 Datum

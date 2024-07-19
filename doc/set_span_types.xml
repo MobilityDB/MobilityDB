@@ -996,6 +996,45 @@ SELECT tstzspan '[2001-01-01, 2001-01-05)' * tstzspan '[2001-01-03, 2001-01-07)'
 	<sect1 id="setspan_topo_pos">
 		<title>Bounding Box Operations</title>
 
+		<para>When creating indexes for set or span set types, what is stored in the index is not the actual value but instead, a bounding box representing the value. In this case, the index will provide a list of candidate values that <emphasis>may</emphasis> satisfy the query predicate, and a second step is needed to filter out candidate values by computing the query predicate on the actual values.</para>
+
+		<para>However, when the bounding boxes have a large empty space not covered by the actual values, the index will generate many candidate values that do not satisfy the query predicate, which reduces the efficiency of the index. In these situations, it may be better to represent a value not with a <emphasis>single</emphasis> bounding box, but instead with <emphasis>multiple</emphasis> bounding boxes. This increases considerably the efficiency of the index, provided that the index is able to manage multiple bounding boxes per value. The following functions are used for generating multiple spans from a single set or span set value.</para>
+
+		<itemizedlist>
+			<listitem id="set_spans">
+				<indexterm><primary><varname>spans</varname></primary></indexterm>
+				<para>Return an array of spans from the elements of a set</para>
+				<para><varname>spans(set, max_count = 0) → span[]</varname></para>
+				<para>If the last argument is not specified or if the number of elements is less than the maximum number of values specified, the resulting array will have one span per element. Otherwise, the specified number of spans will be obtained from several consecutive elements.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT spans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}');
+/* {"[1, 2)","[2, 3)","[3, 4)","[4, 5)","[5, 6)","[6, 7)","[7, 8)","[8, 9)",
+    "[9, 10)","[10, 11)"} */
+SELECT spans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 3);
+-- {"[1, 5)","[5, 8)","[8, 11)"}
+SELECT spans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 6);
+-- {"[1, 3)","[3, 5)","[5, 7)","[7, 9)","[9, 10)","[10, 11)"}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+
+		<itemizedlist>
+			<listitem id="spanset_spans">
+				<indexterm><primary><varname>spans</varname></primary></indexterm>
+				<para>Return an array of spans from the composing spans of a spanset</para>
+				<para><varname>spans(spanset, max_count = 0) → span[]</varname></para>
+				<para>If the last argument is not specified or if the number of composing spans is less than the maximum number of values specified, the resulting array will have one span per composing span. Otherwise, the specified number of spans will be obtained by merging consecutive spans.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT spans(intspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}');
+-- {"[1, 2)","[3, 4)","[5, 6)","[7, 8)","[9, 10)"}
+SELECT spans(floatspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}', 3);
+-- {"[1, 4)","[5, 8)","[9, 10)"}
+SELECT spans(datespanset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-10)}', 3);
+-- {"[2000-01-01, 2000-01-04)","[2000-01-05, 2000-01-10)"}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+
 		<sect2>
 			<title>Topological Operations</title>
 			<para>The topological operations available for the set and span types are given next.</para>

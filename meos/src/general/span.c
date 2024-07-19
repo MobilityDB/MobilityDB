@@ -883,16 +883,30 @@ timestamptz_to_span(TimestampTz t)
  * @ingroup meos_internal_setspan_conversion
  * @brief Return the last argument initialized to the bounding span of a set
  * @param[in] s Set
- * @param[in] sp Span
+ * @param[in] fromidx,toidx From and to indexes of the values used for the span
+ * bounds
+ * @param[in] result Span
  */
 void
-set_set_span(const Set *s, Span *sp)
+set_set_subspan(const Set *s, int fromidx, int toidx, Span *result)
 {
-  assert(s); assert(sp);
+  assert(s); assert(result);
   meosType spantype = basetype_spantype(s->basetype);
-  span_set(SET_VAL_N(s, MINIDX), SET_VAL_N(s, s->MAXIDX), true, true,
-    s->basetype, spantype, sp);
+  span_set(SET_VAL_N(s, fromidx), SET_VAL_N(s, toidx), true, true,
+    s->basetype, spantype, result);
   return;
+}
+
+/**
+ * @ingroup meos_internal_setspan_conversion
+ * @brief Return the last argument initialized to the bounding span of a set
+ * @param[in] s Set
+ * @param[in] result Span
+ */
+void
+set_set_span(const Set *s, Span *result)
+{
+  return set_set_subspan(s, 0, s->count - 1, result);
 }
 
 /**
@@ -1854,6 +1868,62 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
   result->lower = TimestampTzGetDatum(lower);
   result->upper = TimestampTzGetDatum(upper);
   return result;
+}
+
+/*****************************************************************************
+ * Spans function
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_bbox
+ * @brief Return an array of spans from the composing values of a set
+ * @param[in] s Set
+ * @param[in] max_count Maximum number of elements in the output array.
+ * If the value is < 1, the result is one span per element.
+ * @param[out] count Number of elements in the output array
+ */
+Span *
+set_spans(const Set *s, int max_count, int *count)
+{
+  assert(s); assert(count); assert(set_type(s->settype));
+  int nvalues = (max_count < 1) ? s->count : max_count;
+  Span *result = palloc(sizeof(Span) * nvalues);
+  if (max_count < 1 || s->count <= max_count)
+  {
+    /* Output the composing spans */
+    for (int i = 0; i < s->count; i++)
+      set_set_subspan(s, i, i, &result[i]);
+    *count = s->count;
+    return result;
+  }
+  else
+  {
+    /* Merge consecutive values to reach the maximum number of span */
+    /* Minimum number of values merged together in an output span */
+    int size = s->count / max_count;
+    /* Number of output spans that result from merging (size + 1) values */
+    int remainder = s->count % max_count;
+    int i = 0; /* Loop variable for input values */
+    int k = 0; /* Loop variable for output spans */
+    while (k < max_count)
+    {
+      int j = i + size - 1;
+      if (k < remainder)
+        j++;
+      if (i < j)
+      {
+        set_set_subspan(s, i, j, &result[k++]);
+        i = j + 1;
+      }
+      else
+      {
+        set_set_subspan(s, i, i, &result[k++]);
+        i++;
+      }
+    }
+    *count = max_count;
+    return result;
+  }
 }
 
 /*****************************************************************************

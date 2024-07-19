@@ -328,6 +328,18 @@
 		<sect2>
 			<title>Bounding Box Operations</title>
 
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="set_spans"><varname>spans</varname></link>: Return an array of spans from the elements of a set</para>
+				</listitem>
+			</itemizedlist>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="spanset_spans"><varname>spans</varname></link>: Return an array of spans from the composing spans of a spanset</para>
+				</listitem>
+			</itemizedlist>
+
 			<sect3>
 				<title>Topological Operations</title>
 				<itemizedlist>
@@ -1064,6 +1076,23 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Bounding Box Operations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tnumber_tboxes"><varname>tboxes</varname></link>: Return an array of temporal boxes from the instants or segments of a temporal number</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="geo_stboxes"><varname>stboxes</varname></link>: Return an array of spatial boxes from the segments of a line or multiline</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tpoint_stboxes"><varname>stboxes</varname></link>: Return an array of spatiotemporal boxes from the instants or segments of a temporal point</para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 	</sect1>
 

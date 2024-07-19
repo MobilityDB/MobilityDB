@@ -93,6 +93,10 @@
 			</listitem>
 
 			<listitem>
+				<para><varname>lines</varname> representa los tipos  <varname>geometry</varname> o <varname>geography</varname> restringidos a una (multi)línea.</para>
+			</listitem>
+
+			<listitem>
 				<para><varname>type[]</varname> representa una matriz de <varname>type</varname>.</para>
 			</listitem>
 
