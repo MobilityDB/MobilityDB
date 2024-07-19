@@ -743,7 +743,7 @@ stringarr_to_string(char **strings, int count, size_t outlen, char *prefix,
     result[pos++] = ',';
     if (spaces)
       result[pos++] = ' ';
-    // pfree(strings[i]); /* ??? */
+    pfree(strings[i]);
   }
   if (spaces)
   {
