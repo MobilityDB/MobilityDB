@@ -851,11 +851,35 @@ SELECT 'AAA'::text #&gt; ttext '{[AAA@2001-01-01, AAA@2001-01-03),
 		<para>Sin embargo, cuando los cuadros delimitadores tienen un gran espacio vacío no cubierto por los valores reales, el índice generará muchos valores candidatos que no satisfacen el predicado de la consulta, lo que reduce la eficiencia del índice. En estas situaciones, puede ser mejor representar un valor no con un cuadro delimitador <emphasis>único</emphasis>, sino con <emphasis>múltiples</emphasis> cuadros delimitadores. Esto aumenta considerablemente la eficiencia del índice, siempre que el índice sea capaz de gestionar múltiples cuadros delimitadores por valor. Las siguientes funciones se utilizan para generar múltiples cuadros delimitadores para un único valor temporal.</para>
 
 		<itemizedlist>
+			<listitem id="temporal_spans">
+				<indexterm><primary><varname>spans</varname></primary></indexterm>
+				<para>Devuelve una matriz de rangos construídos a partir los instantes o segmentos de un valor temporal</para>
+				<para><varname>spans(temp, max_count = 0) → spans[]</varname></para>
+				<para>Si no se especifica el último argumento, la matriz resultante tendrá un rango por instante o segmento del valor temporal, dependiendo de si la interpolación es discreta o continua. En caso contrario, el número de rangos especificado se obtendrá fusionando instantes o segmentos consecutivos.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT spans(ttext '{A@2000-01-01, B@2000-01-02, A@2000-01-03, B@2000-01-04,
+  A@2000-01-05}');
+/* {"[2000-01-01, 2000-01-01]", "[2000-01-02, 2000-01-02]",
+    "[2000-01-03, 2000-01-03]", "[2000-01-04, 2000-01-04]"} */
+SELECT spans(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04,
+  1@2000-01-05]');
+/* {"[2000-01-01, 2000-01-02])", "[2000-01-02, 2000-01-03])",
+    "[2000-01-03, 2000-01-04])", "[2000-01-04, 2000-01-05])"} */
+SELECT spans(ttext '[A@2000-01-01, B@2000-01-02, A@2000-01-03, B@2000-01-04,
+  A@2000-01-05]', 3);
+/* {"[2000-01-01, 2000-01-03])", "[2000-01-03, 2000-01-04])",
+    "[2000-01-04, 2000-01-05])"} */
+SELECT spans(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], 
+  [Point(1 1)@2000-01-03, Point(2 2)@2000-01-04], [Point(1 1)@2000-01-05]}', 2);
+-- {"[2000-01-01, 2000-01-04])", "[2000-01-05, 2000-01-05])"}
+</programlisting>
+			</listitem>
+
 			<listitem id="tnumber_tboxes">
 				<indexterm><primary><varname>tboxes</varname></primary></indexterm>
-				<para>Devuelve una matriz de cuadros temporales de los instantes o segmentos de un número temporal</para>
+				<para>Devuelve una matriz de cuadros temporales construídos a partir de los instantes o segmentos de un número temporal</para>
 				<para><varname>tboxes(tnumber, max_count = 0) → tbox[]</varname></para>
-				<para>Si no se especifica el último argumento, la matriz resultante tendrá un cuadro por instante o segmento de composición del número temporal, dependiendo de si la interpolación es discreta o continua. En caso contrario, el número de cuadros especificado se obtendrá fusionando instantes o segmentos consecutivos.</para>
+				<para>Si no se especifica el último argumento, la matriz resultante tendrá un cuadro por instante o segmento del número temporal, dependiendo de si la interpolación es discreta o continua. En caso contrario, el número de cuadros especificado se obtendrá fusionando instantes o segmentos consecutivos.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tboxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05}');
@@ -883,9 +907,9 @@ SELECT tboxes(tfloat '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 4@2000-01-04
 
 			<listitem id="geo_stboxes">
 				<indexterm><primary><varname>stboxes</varname></primary></indexterm>
-				<para>Devuelve una matriz de cuadros espaciales de los segmentos de una línea o multilínea</para>
+				<para>Devuelve una matriz de cuadros espaciales construídos a partir de los segmentos de una línea o multilínea</para>
 				<para><varname>stboxes(lines, max_count = 0) → stbox[]</varname></para>
-				<para>Si no se especifica el último argumento, la matriz resultante tendrá un cuadro por segmento la línea. En caso contrario, el número de cuadros especificado se obtendrá fusionando segmentos consecutivos.</para>
+				<para>Si no se especifica el último argumento, la matriz resultante tendrá un cuadro por segmento de la línea. En caso contrario, el número de cuadros especificado se obtendrá fusionando segmentos consecutivos.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT stboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)');
 /* {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))",
@@ -899,9 +923,9 @@ SELECT stboxes(geometry 'MultiLinestring((1 1,2 2),(3 1,4 2),(5 1,6 2))', 2);
 
 			<listitem id="tpoint_stboxes">
 				<indexterm><primary><varname>stboxes</varname></primary></indexterm>
-				<para>Devuelve una matriz de cuadros espaciotemporales de los instantes o segmentos de un punto temporal</para>
+				<para>Devuelve una matriz de cuadros espaciotemporales construídos a partir de los instantes o segmentos de un punto temporal</para>
 				<para><varname>stboxes(tpoint, max_count = 0) → stbox[]</varname></para>
-				<para>Si no se especifica el último argumento, la matriz resultante tendrá un cuadro por instante o segmento de composición del punto temporal, dependiendo de si la interpolación es discreta o continua. En caso contrario, el número de cuadros especificado se obtendrá fusionando instantes o segmentos consecutivos.</para>
+				<para>Si no se especifica el último argumento, la matriz resultante tendrá un cuadro por instante o segmento del punto temporal, dependiendo de si la interpolación es discreta o continua. En caso contrario, el número de cuadros especificado se obtendrá fusionando instantes o segmentos consecutivos.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT stboxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, 
   Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05}');
