@@ -84,6 +84,9 @@ int main(void)
   printf("--------------------------------\n%s\n", str_out);
   free(str_out);
 
+  free(trip);
+  free(trip_out);
+
   /* Clean up */
   meos_finalize();
   return 0;

@@ -1915,9 +1915,8 @@ geo_as_hexewkb(const GSERIALIZED *gs, const char *endian)
   }
   /* Create WKB hex string */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
-  lwvarlena_t *hexwkb = lwgeom_to_hexwkb_varlena(geom, variant | WKB_EXTENDED);
-  char *result = strdup(VARDATA(hexwkb));
-  pfree(hexwkb);
+  char *result = lwgeom_to_hexwkb_buffer(geom, variant | WKB_EXTENDED);
+  lwgeom_free(geom);
   return result;
 }
 
@@ -2105,7 +2104,7 @@ geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   char result = lwgeom_same(geom1, geom2);
-  pfree(geom1); pfree(geom2);
+  lwgeom_free(geom1); lwgeom_free(geom2);
   return (result == LW_TRUE);
 }
 

@@ -199,7 +199,9 @@ int main(void)
     seq->count, str);
 
   /* Free memory */
-  free(ss1); free(onehour); free(txt); free(str);
+  free(ss1); free(onehour);
+  free(txt); free(str);
+  free(seq);
 
   /* Calculate the elapsed time */
   tm = clock() - tm;

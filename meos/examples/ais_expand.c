@@ -170,6 +170,7 @@ int main(void)
     char *t_out = pg_timestamp_out(rec.T);
     sprintf(inst_buffer, "SRID=4326;Point(%lf %lf)@%s", rec.Longitude,
       rec.Latitude, t_out);
+    free(t_out);
     // TInstant *inst1 = (TInstant *) tgeogpoint_in(inst_buffer);
     // if (! trips[ship].trip)
       // trips[ship].trip = (Temporal *) tsequence_make_exp(

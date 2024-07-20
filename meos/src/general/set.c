@@ -808,7 +808,6 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_internal_setspan_constructor
  * @brief Return a set from an array of values
@@ -826,6 +825,7 @@ set_make(const Datum *values, int count, meosType basetype, bool order)
   return set_make_exp(values, count, count, basetype, order);
 }
 
+#if MEOS
 /**
  * @ingroup meos_setspan_constructor
  * @brief Return an integer set from an array of values

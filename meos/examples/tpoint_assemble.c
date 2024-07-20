@@ -114,7 +114,7 @@ int main(void)
     temporal_num_instants(seq), tpoint_length(seq));
 
   /* Free memory */
-  free(seq);
+  free(seq); free(oneday);
   for (i = 0; i < MAX_INSTANTS; i++)
     free(instants[i]);
 

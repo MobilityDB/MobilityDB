@@ -254,7 +254,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
           timestamptz_cmp_internal(ininsts[k - 1]->t, upper) < 0)
       {
         tsequence_value_at_timestamptz(seq, upper, false, &value);
-        ininsts[k++] = end = tinstant_make(value, seq->temptype, upper);
+        ininsts[k++] = end = tinstant_make_free(value, seq->temptype, upper);
       }
       seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
         NORMALIZE);
@@ -298,6 +298,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
     value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
       PointerGetDatum(tpointseq_twcentroid(seq1));
     outinsts[l++] = tinstant_make(value, temptype_out, lower);
+    pfree(seq1);
     if (! twavg)
       pfree(DatumGetPointer(value));
   }
