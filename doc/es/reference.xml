@@ -1105,15 +1105,19 @@
 			<title>Operaciones de cuadro delimitador</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tnumber_tboxes"><varname>tboxes</varname></link>: Devuelve una matriz de cuadros temporales de los instantes o segmentos de un número temporal</para>
+					<para><link linkend="temporal_spans"><varname>spans</varname></link>: Devuelve una matriz de rangos construídos a partir de los instantes o segmentos de un valor temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="geo_stboxes"><varname>stboxes</varname></link>: Devuelve una matriz de cuadros espaciales de los segmentos de una línea o multilínea</para>
+					<para><link linkend="tnumber_tboxes"><varname>tboxes</varname></link>: Devuelve una matriz de cuadros temporales construídos a partir de los instantes o segmentos de un número temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tpoint_stboxes"><varname>stboxes</varname></link>: Devuelve una matriz de cuadros espaciotemporales de los instantes o segmentos de un punto temporal</para>
+					<para><link linkend="geo_stboxes"><varname>stboxes</varname></link>: Devuelve una matriz de cuadros espaciales construídos a partir de los segmentos de una línea o multilínea</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tpoint_stboxes"><varname>stboxes</varname></link>: Devuelve una matriz de cuadros espaciotemporales construídos a partir de los instantes o segmentos de un punto temporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

@@ -1698,6 +1698,7 @@ extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
 
 /* Boxes function */
 
+extern Span *temporal_spans(const Temporal *temp, int max_count, int *count);
 extern TBox *tnumber_tboxes(const Temporal *temp, int max_count, int *count);
 extern STBox *tpoint_stboxes(const Temporal *temp, int max_count, int *count);
 

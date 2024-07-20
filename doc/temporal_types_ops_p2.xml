@@ -849,11 +849,35 @@ SELECT 'AAA'::text #&gt; ttext '{[AAA@2001-01-01, AAA@2001-01-03),
 		<para>However, when the bounding boxes have a large empty space not covered by the actual values, the index will generate many candidate values that do not satisfy the query predicate, which reduces the efficiency of the index. In these situations, it may be better to represent a value not with a <emphasis>single</emphasis> bounding box, but instead with <emphasis>multiple</emphasis> bounding boxes. This increases considerably the efficiency of the index, provided that the index is able to manage multiple bounding boxes per value. The following functions are used for generating multiple bounding boxes for a single temporal value.</para>
 
 		<itemizedlist>
+			<listitem id="temporal_spans">
+				<indexterm><primary><varname>spans</varname></primary></indexterm>
+				<para>Return an array of spans built from the instants or segments of a temporal value</para>
+				<para><varname>spans(temp, max_count = 0) → spans[]</varname></para>
+				<para>If the last argument is not specified, the resulting array will have one span per instant or segment of the temporal value, depending on whether the interpolation is discrete or continuous. Otherwise, the specified number of spans will be obtained by merging consecutive instants or segments.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT spans(ttext '{A@2000-01-01, B@2000-01-02, A@2000-01-03, B@2000-01-04,
+  A@2000-01-05}');
+/* {"[2000-01-01, 2000-01-01]", "[2000-01-02, 2000-01-02]",
+    "[2000-01-03, 2000-01-03]", "[2000-01-04, 2000-01-04]"} */
+SELECT spans(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04,
+  1@2000-01-05]');
+/* {"[2000-01-01, 2000-01-02])", "[2000-01-02, 2000-01-03])",
+    "[2000-01-03, 2000-01-04])", "[2000-01-04, 2000-01-05])"} */
+SELECT spans(ttext '[A@2000-01-01, B@2000-01-02, A@2000-01-03, B@2000-01-04,
+  A@2000-01-05]', 3);
+/* {"[2000-01-01, 2000-01-03])", "[2000-01-03, 2000-01-04])",
+    "[2000-01-04, 2000-01-05])"} */
+SELECT spans(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], 
+  [Point(1 1)@2000-01-03, Point(2 2)@2000-01-04], [Point(1 1)@2000-01-05]}', 2);
+-- {"[2000-01-01, 2000-01-04])", "[2000-01-05, 2000-01-05])"}
+</programlisting>
+			</listitem>
+
 			<listitem id="tnumber_tboxes">
 				<indexterm><primary><varname>tboxes</varname></primary></indexterm>
-				<para>Return an array of temporal boxes from the instants or segments of a temporal number</para>
+				<para>Return an array of temporal boxes built from the instants or segments of a temporal number</para>
 				<para><varname>tboxes(tnumber, max_count = 0) → tbox[]</varname></para>
-				<para>If the last argument is not specified, the resulting array will have one box per composing instant or segment of the temporal number, depending on whether the interpolation is discrete or continuous. Otherwise, the specified number of boxes will be obtained by merging consecutive instants or segments.</para>
+				<para>If the last argument is not specified, the resulting array will have one box per instant or segment of the temporal number, depending on whether the interpolation is discrete or continuous. Otherwise, the specified number of boxes will be obtained by merging consecutive instants or segments.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tboxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05}');
@@ -881,9 +905,9 @@ SELECT tboxes(tfloat '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 4@2000-01-04
 
 			<listitem id="geo_stboxes">
 				<indexterm><primary><varname>stboxes</varname></primary></indexterm>
-				<para>Return an array of spatial boxes from the segments of a (multi)line</para>
+				<para>Return an array of spatial boxes built from the segments of a line or a multiline</para>
 				<para><varname>stboxes(lines, max_count = 0) → stbox[]</varname></para>
-				<para>If the last argument is not specified, the resulting array will have one box per segment of the line. Otherwise, the specified number of boxes will be obtained by merging consecutive segments.</para>
+				<para>If the last argument is not specified, the resulting array will have one box per segment of the line or multiline. Otherwise, the specified number of boxes will be obtained by merging consecutive segments.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT stboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)');
 /* {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))",
@@ -897,9 +921,9 @@ SELECT stboxes(geometry 'MultiLinestring((1 1,2 2),(3 1,4 2),(5 1,6 2))', 2);
 
 			<listitem id="tpoint_stboxes">
 				<indexterm><primary><varname>stboxes</varname></primary></indexterm>
-				<para>Return an array of spatiotemporal boxes from the instants or segments of a temporal point</para>
+				<para>Return an array of spatiotemporal boxes built from the instants or segments of a temporal point</para>
 				<para><varname>stboxes(tpoint, max_count = 0) → stbox[]</varname></para>
-				<para>If the last argument is not specified, the resulting array will have one box per composing instant or segment of the temporal point, depending on whether the interpolation is discrete or continuous. Otherwise, the specified number of boxes will be obtained by merging consecutive instants or segments.</para>
+				<para>If the last argument is not specified, the resulting array will have one box per instant or segment of the temporal point, depending on whether the interpolation is discrete or continuous. Otherwise, the specified number of boxes will be obtained by merging consecutive instants or segments.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT stboxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, 
   Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05}');

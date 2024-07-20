@@ -1086,15 +1086,19 @@
 			<title>Bounding Box Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tnumber_tboxes"><varname>tboxes</varname></link>: Return an array of temporal boxes from the instants or segments of a temporal number</para>
+					<para><link linkend="temporal_spans"><varname>spans</varname></link>: Return an array of spans built from the instants or segments of a temporal number</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="geo_stboxes"><varname>stboxes</varname></link>: Return an array of spatial boxes from the segments of a line or multiline</para>
+					<para><link linkend="tnumber_tboxes"><varname>tboxes</varname></link>: Return an array of temporal boxes built from the instants or segments of a temporal number</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tpoint_stboxes"><varname>stboxes</varname></link>: Return an array of spatiotemporal boxes from the instants or segments of a temporal point</para>
+					<para><link linkend="geo_stboxes"><varname>stboxes</varname></link>: Return an array of spatial boxes built from the segments of a line or multiline</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tpoint_stboxes"><varname>stboxes</varname></link>: Return an array of spatiotemporal boxes built from the instants or segments of a temporal point</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

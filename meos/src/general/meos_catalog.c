@@ -1151,6 +1151,24 @@ talpha_type(meosType type)
   return false;
 }
 
+#if 0 /* not used */
+/**
+ * @brief Ensure that a type is a temporal alpha type (i.e., those whose
+ * bounding box is a timestamptz span)
+ */
+bool
+ensure_talpha_type(meosType type)
+{
+  if (! talpha_type(type))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The temporal value must be a temporal alpha type");
+    return false;
+  }
+  return true;
+}
+#endif /* not used */
+
 /**
  * @brief Return true if the type is a temporal number type
  */
