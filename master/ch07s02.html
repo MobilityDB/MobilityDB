@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Mathematical Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 User's Manual"><link rel="up" href="ch07.html" title="Chapter 7. Temporal Types: Alphanumeric Operations"><link rel="prev" href="ch07.html" title="Chapter 7. Temporal Types: Alphanumeric Operations"><link rel="next" href="ch07s03.html" title="Text Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Mathematical Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Temporal Types: Alphanumeric Operations</th><td width="20%" align="right"> <a accesskey="n" href="ch07s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_types_math"></a>Mathematical Operations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_add"></a><a class="indexterm" name="idm3869"></a><p>Temporal addition</p><p><code class="varname">{number,tnumber} + {number,tnumber} → tnumber</code></p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Mathematical Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.1 User's Manual"><link rel="up" href="ch07.html" title="Chapter 7. Temporal Types: Alphanumeric Operations"><link rel="prev" href="ch07.html" title="Chapter 7. Temporal Types: Alphanumeric Operations"><link rel="next" href="ch07s03.html" title="Text Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Mathematical Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Temporal Types: Alphanumeric Operations</th><td width="20%" align="right"> <a accesskey="n" href="ch07s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_types_math"></a>Mathematical Operations</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_add"></a><a class="indexterm" name="idm3878"></a><p>Temporal addition</p><p><code class="varname">{number,tnumber} + {number,tnumber} → tnumber</code></p><pre class="programlisting">
 SELECT tint '[2@2001-01-01, 2@2001-01-04)' + 1;
 -- [3@2001-01-01, 3@2001-01-04)
 SELECT tfloat '[2@2001-01-01, 2@2001-01-04)' + tfloat '[1@2001-01-01, 4@2001-01-04)';
@@ -6,19 +6,19 @@ SELECT tfloat '[2@2001-01-01, 2@2001-01-04)' + tfloat '[1@2001-01-01, 4@2001-01-
 SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' +
   tfloat '{[1@2001-01-01, 2@2001-01-02), [1@2001-01-02, 2@2001-01-04)}';
 -- {[2@2001-01-01, 4@2001-01-04), [3@2001-01-02, 6@2001-01-04)}
-</pre></li><li class="listitem"><a name="tnumber_sub"></a><a class="indexterm" name="idm3877"></a><p>Temporal subtraction</p><p><code class="varname">{number,tnumber} - {number,tnumber} → tnumber</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_sub"></a><a class="indexterm" name="idm3886"></a><p>Temporal subtraction</p><p><code class="varname">{number,tnumber} - {number,tnumber} → tnumber</code></p><pre class="programlisting">
 SELECT tint '[1@2001-01-01, 1@2001-01-04)' - tint '[2@2001-01-03, 2@2001-01-05)';
 -- [-1@2001-01-03, -1@2001-01-04)
 SELECT tfloat '[3@2001-01-01, 6@2001-01-04)' - tfloat '[2@2001-01-01, 2@2001-01-04)';
 -- [1@2001-01-01, 4@2001-01-04)
-</pre></li><li class="listitem"><a name="tnumber_mult"></a><a class="indexterm" name="idm3885"></a><p>Temporal multiplication</p><p><code class="varname">{number,tnumber} * {number,tnumber} → tnumber</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_mult"></a><a class="indexterm" name="idm3894"></a><p>Temporal multiplication</p><p><code class="varname">{number,tnumber} * {number,tnumber} → tnumber</code></p><pre class="programlisting">
 SELECT tint '[1@2001-01-01, 4@2001-01-04]' * 2;
 -- [2@2001-01-01, 8@2001-01-04]
 SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' * tfloat '[2@2001-01-01, 2@2001-01-04)';
 -- [2@2001-01-01, 8@2001-01-04)
 SELECT tfloat '[1@2001-01-01, 3@2001-01-03)' * '[3@2001-01-01, 1@2001-01-03)'
 -- {[3@2001-01-01, 4@2001-01-02, 3@2001-01-03)}
-</pre></li><li class="listitem"><a name="tnumber_div"></a><a class="indexterm" name="idm3893"></a><p>Temporal division</p><p><code class="varname">{number,tnumber} / {number,tnumber} → tnumber</code></p><p>The function will raise an error if the denominator will ever be equal to zero during the common timespan of the arguments.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnumber_div"></a><a class="indexterm" name="idm3902"></a><p>Temporal division</p><p><code class="varname">{number,tnumber} / {number,tnumber} → tnumber</code></p><p>The function will raise an error if the denominator will ever be equal to zero during the common timespan of the arguments.</p><pre class="programlisting">
 SELECT 2 / tfloat '[1@2001-01-01, 3@2001-01-04)';
 -- [2@2001-01-01, 0.666666666666667@2001-01-04)
 SELECT tfloat '[1@2001-01-01, 5@2001-01-05)' / tfloat '[5@2001-01-01, 1@2001-01-05)';
@@ -27,27 +27,27 @@ SELECT 2 / tfloat '[-1@2001-01-01, 1@2001-01-02]';
 -- ERROR:  Division by zero
 SELECT tfloat '[-1@2001-01-04, 1@2001-01-05]' / tfloat '[-1@2001-01-01, 1@2001-01-05]';
 -- [-2@2001-01-04, 1@2001-01-05]
-</pre></li><li class="listitem"><a name="abs"></a><a class="indexterm" name="idm3902"></a><p>Return the absolute value of the temporal number</p><p><code class="varname">abs(tnumber) → tnumber</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="abs"></a><a class="indexterm" name="idm3911"></a><p>Return the absolute value of the temporal number</p><p><code class="varname">abs(tnumber) → tnumber</code></p><pre class="programlisting">
 SELECT abs(tfloat '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 -- [1@2001-01-01, 0@2001-01-02, 1@2001-01-03, 0@2001-01-04, 1@2001-01-05]
 SELECT abs(tint '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 -- [1@2001-01-01, 1@2001-01-05]
-</pre></li><li class="listitem"><a name="deltaValue"></a><a class="indexterm" name="idm3910"></a><p>Return the value difference between consecutive instants of the temporal number</p><p><code class="varname">deltaValue(tnumber) → tnumber</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="deltaValue"></a><a class="indexterm" name="idm3919"></a><p>Return the value difference between consecutive instants of the temporal number</p><p><code class="varname">deltaValue(tnumber) → tnumber</code></p><pre class="programlisting">
 SELECT deltaValue(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
 -- [1@2001-01-01, -1@2001-01-02, -1@2001-01-03)
 SELECT deltaValue(tfloat '{[1.5@2001-01-01, 2@2001-01-02, 1@2001-01-03],
   [2@2001-01-04, 2@2001-01-05]}');
 /* Interp=Step;{[0.5@2001-01-01, -1@2001-01-02, -1@2001-01-03),
   [0@2001-01-04, 0@2001-01-05)} */
-</pre></li><li class="listitem"><a name="floor"></a><a class="indexterm" name="idm3918"></a><a class="indexterm" name="idm3921"></a><p>Round up or down to the neareast integer</p><p><code class="varname">floor(tfloat) → tfloat</code></p><p><code class="varname">ceil(tfloat) → tfloat</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="floor"></a><a class="indexterm" name="idm3927"></a><a class="indexterm" name="idm3930"></a><p>Round up or down to the neareast integer</p><p><code class="varname">floor(tfloat) → tfloat</code></p><p><code class="varname">ceil(tfloat) → tfloat</code></p><pre class="programlisting">
 SELECT floor(tfloat '[0.5@2001-01-01, 1.5@2001-01-02]');
 -- [0@2001-01-01, 1@2001-01-02]
 SELECT ceil(tfloat '[0.5@2001-01-01, 0.6@2001-01-02, 0.7@2001-01-03]');
 -- [1@2001-01-01, 1@2001-01-03]
-</pre></li><li class="listitem"><a name="round"></a><a class="indexterm" name="idm3931"></a><p>Round to a number of decimal places</p><p><code class="varname">round(tfloat,integer=0) → tfloat</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="round"></a><a class="indexterm" name="idm3940"></a><p>Round to a number of decimal places</p><p><code class="varname">round(tfloat,integer=0) → tfloat</code></p><pre class="programlisting">
 SELECT round(tfloat '[0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]', 2);
 -- [0.79@2001-01-01, 2.36@2001-01-02]
-</pre></li><li class="listitem"><a name="degrees"></a><a class="indexterm" name="idm3939"></a><a class="indexterm" name="idm3942"></a><p>Convert to degrees or radians</p><p><code class="varname">degrees({float,tfloat},normalize=false) → tfloat</code></p><p><code class="varname">radians(tfloat) → tfloat</code></p><p>The additional parameter in the <code class="varname">degrees</code> function can be used to normalize the values between 0 and 360 degrees.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="degrees"></a><a class="indexterm" name="idm3948"></a><a class="indexterm" name="idm3951"></a><p>Convert to degrees or radians</p><p><code class="varname">degrees({float,tfloat},normalize=false) → tfloat</code></p><p><code class="varname">radians(tfloat) → tfloat</code></p><p>The additional parameter in the <code class="varname">degrees</code> function can be used to normalize the values between 0 and 360 degrees.</p><pre class="programlisting">
 SELECT degrees(pi() * 5);
 -- 900
 SELECT degrees(pi() * 5, true);
@@ -56,7 +56,7 @@ SELECT round(degrees(tfloat '[0.785398163397448@2001-01-01, 2.356194490192345@20
 -- [45@2001-01-01, 135@2001-01-02]
 SELECT radians(tfloat '[45@2001-01-01, 135@2001-01-02]');
 -- [0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]
-</pre></li><li class="listitem"><a name="derivative"></a><a class="indexterm" name="idm3954"></a><p>Return the derivative over time of the temporal float in units per second</p><p><code class="varname">derivative(tfloat) → tfloat</code></p><p>The temporal float must have linear interpolation</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="derivative"></a><a class="indexterm" name="idm3963"></a><p>Return the derivative over time of the temporal float in units per second</p><p><code class="varname">derivative(tfloat) → tfloat</code></p><p>The temporal float must have linear interpolation</p><pre class="programlisting">
 SELECT derivative(tfloat '{[0@2001-01-01, 10@2001-01-02, 5@2001-01-03],
   [1@2001-01-04, 0@2001-01-05]}') * 3600 * 24;
 /* Interp=Step;{[-10@2001-01-01, 5@2001-01-02, 5@2001-01-03],
