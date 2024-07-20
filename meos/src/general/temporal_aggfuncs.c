@@ -410,26 +410,40 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
   int seqcount = (count1 * 3) + count1 + count2 + 1;
   TSequence **sequences = palloc(sizeof(TSequence *) * seqcount);
   int i = 0, j = 0, k = 0;
-  TSequence *seq1 = sequences1[i];
-  TSequence *seq2 = sequences2[j];
+  TSequence *seq1 = sequences1[i],
+            *seq2 = sequences2[j],
+            *tofree = NULL;
   while (i < count1 && j < count2)
   {
     int countstep = tsequence_tagg_iter(seq1, seq2, func, crossings,
       &sequences[k]);
     k += countstep - 1;
-    /* If both upper bounds are equal */
+
+    /* Need to get all info from seq1 and seq2
+     * since we might free one of them right after */
     int cmp = timestamptz_cmp_internal(seq1->period.upper, seq2->period.upper);
-    if (cmp == 0 && seq1->period.upper_inc == seq2->period.upper_inc)
+    bool upper1_inc = seq1->period.upper_inc,
+         upper2_inc = seq2->period.upper_inc;
+
+    /* We just discarded sequences[k]
+     * from last iteration, so free it */
+    if (tofree)
+      pfree(tofree);
+
+    /* If both upper bounds are equal */
+    if (cmp == 0 && upper1_inc == upper2_inc)
     {
       k++; i++; j++;
       if (i == count1 || j == count2)
         break;
       seq1 = sequences1[i];
       seq2 = sequences2[j];
+      /* Nothing to free in next iteration */
+      tofree = NULL;
     }
     /* If upper bound of seq1 is less than or equal to the upper bound of seq2 */
     else if (cmp < 0 ||
-      (!seq1->period.upper_inc && seq2->period.upper_inc && cmp == 0))
+      (!upper1_inc && upper2_inc && cmp == 0))
     {
       i++;
       if (i == count1)
@@ -437,8 +451,10 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
         k++; j++;
         break;
       }
+      /* sequences[k] will be overwritten in the next
+       * iteration so we need to save and later free it */
       seq1 = sequences1[i];
-      seq2 = sequences[k];
+      seq2 = tofree = sequences[k];
     }
     else
     {
@@ -448,7 +464,8 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
         k++; i++;
         break;
       }
-      seq1 = sequences[k];
+      /* see above for tofree */
+      seq1 = tofree = sequences[k];
       seq2 = sequences2[j];
     }
   }
