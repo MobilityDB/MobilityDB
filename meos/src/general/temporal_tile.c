@@ -679,6 +679,7 @@ tbox_tile_list(const TBox *box, Datum vsize, const Interval *duration,
     tbox_tile_state_next(state);
   }
   *count = count1;
+  pfree(state);
   return result;
 }
 

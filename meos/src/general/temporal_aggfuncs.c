@@ -381,6 +381,8 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
     &count);
   for (int i = 0; i < count; i++)
     result[i] = normseqs[i];
+  for (int i = 0; i < nseqs; i++)
+    pfree(sequences[i]);
   pfree(normseqs);
   return count;
 }

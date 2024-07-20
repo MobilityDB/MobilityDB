@@ -3953,7 +3953,7 @@ tpointseq_speed(const TSequence *seq)
   /* The resulting sequence has step interpolation */
   TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
-  pfree_array((void **) instants, seq->count - 1);
+  pfree_array((void **) instants, seq->count);
   return result;
 }
 

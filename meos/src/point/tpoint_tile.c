@@ -659,7 +659,7 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
     zsize, tunits, pt, torigin, border_inc);
   bool hasz = MEOS_FLAGS_GET_Z(state->box.flags);
   bool hast = MEOS_FLAGS_GET_T(state->box.flags);
-  int *cellcount = palloc0(sizeof(int) * MAXDIMS);
+  int cellcount[MAXDIMS];
   cellcount[0] = ceil((state->box.xmax - state->box.xmin) / state->xsize) + 1;
   cellcount[1] = ceil((state->box.ymax - state->box.ymin) / state->ysize) + 1;
   int count1 = cellcount[0] * cellcount[1];
@@ -670,8 +670,9 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   }
   if (hast)
   {
-    cellcount[3] = ceil((DatumGetTimestampTz(state->box.period.upper) -
-      DatumGetTimestampTz(state->box.period.lower)) / state->tunits) + 1;
+    TimestampTz duration = (DatumGetTimestampTz(state->box.period.upper) -
+                            DatumGetTimestampTz(state->box.period.lower));
+    cellcount[3] = ceil((double) duration / state->tunits) + 1;
     count1 *= cellcount[3];
   }
   STBox *result = palloc0(sizeof(STBox) * count1);
@@ -684,6 +685,8 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
     stbox_tile_state_next(state);
   }
   *count = count1;
+  if (state->bm) pfree(state->bm);
+  pfree(state);
   return result;
 }
 #endif /* MEOS */

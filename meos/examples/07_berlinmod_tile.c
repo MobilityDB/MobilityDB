@@ -100,7 +100,7 @@ int main(void)
     stbox_in("SRID=3857;STBOX X((473212.810151,6578740.528027),(499152.544688,6607165.513683))");
   GSERIALIZED *sorigin = pgis_geometry_in("Point(0 0)", -1);
   STBox *trip_tiles = stbox_tile_list(trip_extent, 5e3, 5e3, 0, NULL, sorigin,
-    0, &no_trip_tiles);
+    0, true, &no_trip_tiles);
   /* Compute the (value and time) tiles for speed of trips */
   TBox *speed_extent = tbox_in("TBox XT([0, 35),[2020-06-01, 2020-06-05))");
   Interval *duration = pg_interval_in("1 day", -1);
@@ -112,6 +112,11 @@ int main(void)
   memset(trip_splits, 0, sizeof(trip_record) * no_trip_tiles);
   speed_record *speed_splits = malloc(sizeof(speed_record) * no_speed_tiles);
   memset(speed_splits, 0, sizeof(speed_record) * no_speed_tiles);
+
+  free(trip_extent);
+  free(sorigin);
+  free(speed_extent);
+  free(duration);
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/berlinmod_trips.csv", "r");
@@ -224,6 +229,7 @@ int main(void)
         i, stbox_str, trip_splits[k].count, interval_str,
         trip_splits[k].distance);
       free(stbox_str);
+      free(interval_str);
     }
     k++;
   }
