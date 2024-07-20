@@ -763,9 +763,12 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
   if (flags == 0)
     return result;
 
+  /* Convert to JSON and back to a C string to apply flags using json-c */
   struct json_object *jobj = json_tokener_parse(result);
   pfree(result);
-  return (char *) json_object_to_json_string_ext(jobj, flags);
+  result = strdup(json_object_to_json_string_ext(jobj, flags));
+  json_object_put(jobj);
+  return result;
 }
 
 /*****************************************************************************

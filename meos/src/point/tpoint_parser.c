@@ -38,6 +38,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/type_parser.h"
+#include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************/
@@ -286,15 +287,16 @@ tpointinst_parse(const char **str, meosType temptype, bool end,
     return false;
   }
   TimestampTz t = timestamp_parse(str);
-  if (t == DT_NOEND)
-    return false;
-  if (end && ! ensure_end_input(str, "temporal point"))
+  if (t == DT_NOEND ||
+    /* Ensure there is no more input */
+    (end && ! ensure_end_input(str, "temporal point")))
   {
     pfree(gs);
     return false;
   }
   if (result)
-    *result = tinstant_make_free(PointerGetDatum(gs), temptype, t);
+    *result = tinstant_make(PointerGetDatum(gs), temptype, t);
+  pfree(gs);
   return true;
 }
 
@@ -399,8 +401,9 @@ tpointseq_cont_parse(const char **str, meosType temptype, interpType interp,
   p_cbracket(str);
   p_cparen(str);
   if (result)
-    *result = tsequence_make_free(instants, count, lower_inc, upper_inc,
-      interp, NORMALIZE);
+    *result = tsequence_make((const TInstant **) instants, count,
+      lower_inc, upper_inc, interp, NORMALIZE);
+  pfree_array((void **) instants, count);
   return true;
 }
 

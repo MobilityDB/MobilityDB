@@ -47,6 +47,7 @@
 #include <string.h>
 #include <time.h>
 #include <meos.h>
+#include <meos_internal.h>
 
 typedef struct
 {
@@ -134,21 +135,31 @@ int main(void)
     }
 
     /* Add the current value to the running aggregates */
-    extent = tpoint_extent_transfn(extent, trip_rec.trip);
+    STBox *new_extent = tpoint_extent_transfn(extent, trip_rec.trip);
+    if (extent != NULL)
+      free(extent);
+    extent = new_extent;
     /* Get the time of the trip at an hour granularity */
-    SpanSet *ps = tstzspanset_tprecision(temporal_time(trip_rec.trip), interval, origin);
+    SpanSet *temptime = temporal_time(trip_rec.trip);
+    SpanSet *ps = tstzspanset_tprecision(temptime, interval, origin);
     /* Aggregate the time of the trip */
     state = tstzspanset_tcount_transfn(state, ps);
     /* Free memory */
     free(trip_rec.trip);
+    free(temptime);
+    free(ps);
 
   } while (!feof(file));
 
   printf("\n%d trip records read\n\n", no_records);
 
+  char *out_str;
+
   printf("Extent\n");
   printf("------\n\n");
-  printf("\%s\n\n", stbox_out(extent, 6));
+  out_str = stbox_out(extent, 6);
+  printf("\%s\n\n", out_str);
+  free(out_str);
 
   printf("Temporal count\n");
   printf("--------------\n\n");
@@ -156,9 +167,18 @@ int main(void)
   Temporal *tcount = temporal_tagg_finalfn(state);
   Temporal **tcount_seqs = (Temporal **) temporal_sequences(tcount, &seqcount);
   for (i = 0; i < seqcount; i++)
-    printf("\%s\n", tint_out(tcount_seqs[i]));
+  {
+    out_str = tint_out(tcount_seqs[i]);
+    printf("\%s\n", out_str);
+    free(out_str);
+  }
 
   /* Free memory */
+  free(extent);
+  free(interval);
+  free(tcount);
+  for (int i = 0; i < seqcount; i++)
+    free(tcount_seqs[i]);
   free(tcount_seqs);
 
   /* Close the input file */

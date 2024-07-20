@@ -152,6 +152,8 @@ int main(void)
     rec.t = pg_timestamp_in(timestamp_buffer, -1);
     /* Transform the string representing the trip into a temporal value */
     TInstant *inst = tpointinst_make(rec.point, rec.t);
+    /* Free the point as it's not needed anymore */
+    free(rec.point);
 
     if (read == 6)
     {
