@@ -92,6 +92,7 @@ int main(void)
     temporal_num_instants(seq), tnumber_twavg(seq));
 
   /* Free memory */
+  free(oneday);
   free(seq);
 
   /* Finalize MEOS */

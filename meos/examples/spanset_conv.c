@@ -68,6 +68,8 @@ int main()
   printf("Float span set converted to integer span: %s\n", fss_conv_out);
 
   /* Clean up allocated objects */
+  free(iss); free(fss);
+  free(iss_conv); free(fss_conv);
   free(iss_out); free(fss_out);
   free(iss_conv_out); free(fss_conv_out);
 

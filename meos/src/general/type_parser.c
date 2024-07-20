@@ -505,12 +505,14 @@ set_parse(const char **str, meosType settype)
   Datum d;
   if (! elem_parse(str, basetype, &d))
     return NULL;
+  DATUM_FREE(d, basetype);
   int count = 1;
   while (p_comma(str))
   {
     count++;
     if (! elem_parse(str, basetype, &d))
       return NULL;
+    DATUM_FREE(d, basetype);
   }
   if (! ensure_cbrace(str, type_str) ||
       ! ensure_end_input(str, type_str))
@@ -530,7 +532,11 @@ set_parse(const char **str, meosType settype)
     for (int i = 0; i < count; i++)
       gserialized_set_srid(DatumGetGserializedP(values[i]), set_srid);
   }
-  return set_make_free(values, count, basetype, ORDER);
+  Set *result = set_make(values, count, basetype, ORDER);
+  for (int i = 0; i < count; ++i)
+    DATUM_FREE(values[i], basetype);
+  pfree(values);
+  return result;
 }
 
 /**

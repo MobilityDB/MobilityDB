@@ -109,7 +109,10 @@ int main(void)
     /* Transform the string representing the span into a span value */
     rec.span = intspan_in(span_buffer);
 
-    state = span_union_transfn(state, rec.span);
+    SpanSet *ss = state;
+    state = span_union_transfn(ss, rec.span);
+    if (ss && state != ss)
+      free(ss);
 
     /* Output the input span */
     char *span_out = intspan_out(rec.span);

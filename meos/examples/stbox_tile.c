@@ -74,7 +74,7 @@ int main(void)
   int count;
   if (spacesplit)
     boxes = stbox_tile_list(box, 5.0, 5.0, 5.0, timesplit ? interv : NULL,
-      sorigin, torigin, &count);
+      sorigin, torigin, true, &count);
   else
     spans = tstzspan_bucket_list(&box->period, interv, torigin, &count);
 
@@ -101,6 +101,14 @@ int main(void)
 
   /* Print information about the result */
   printf("\nNumber of tiles: %d\n", count);
+
+  /* Clean up allocated objects */
+  free(box); free(interv);
+  free(sorigin);
+  if (spacesplit)
+    free(boxes);
+  else
+    free(spans);
 
   /* Finalize MEOS */
   meos_finalize();

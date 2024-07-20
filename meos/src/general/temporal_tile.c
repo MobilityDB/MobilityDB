@@ -424,6 +424,7 @@ span_bucket_list(const Span *s, Datum size, Datum origin, int count)
     span_bucket_set(state->value, state->size, state->basetype, &buckets[i]);
     span_bucket_state_next(state);
   }
+  free(state);
   return buckets;
 }
 
@@ -1761,8 +1762,12 @@ tnumber_value_time_split(Temporal *temp, Datum size, Interval *duration,
   *count = nfrags;
   if (value_buckets)
     *value_buckets = v_buckets;
+  else
+    pfree(v_buckets);
   if (time_buckets)
     *time_buckets = t_buckets;
+  else
+    pfree(t_buckets);
   return fragments;
 }
 
@@ -1869,6 +1874,8 @@ tint_value_time_split(Temporal *temp, int size, Interval *duration,
     values[i] = DatumGetInt32(datum_buckets[i]);
   if (value_buckets)
     *value_buckets = values;
+  else
+    pfree(values);
   pfree(datum_buckets);
   return result;
 }
@@ -1910,6 +1917,8 @@ tfloat_value_time_split(Temporal *temp, double size, Interval *duration,
     values[i] = DatumGetFloat8(datum_buckets[i]);
   if (value_buckets)
     *value_buckets = values;
+  else
+    pfree(values);
   pfree(datum_buckets);
   return result;
 }

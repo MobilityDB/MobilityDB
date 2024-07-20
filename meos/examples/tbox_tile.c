@@ -106,6 +106,13 @@ int main(void)
   /* Print information about the result */
   printf("\nNumber of tiles: %d\n", count);
 
+  /* Clean up allocated objects */
+  free(box); free(interv);
+  if (valuesplit)
+    free(boxes);
+  else
+    free(spans);
+
   /* Finalize MEOS */
   meos_finalize();
 

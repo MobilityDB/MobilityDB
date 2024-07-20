@@ -180,6 +180,7 @@ int main(void)
     temp = temporal_simplify_dp(trips[i].trip, 10, true);
     dp_sed_10 += temporal_mem_size(temp);
     no_dp_sed_10 += temporal_num_instants(temp);
+    free(temp);
 
     /* Douglas-Peucker maximum distance simplification */
     temp = temporal_simplify_max_dist(trips[i].trip, 1, false);
@@ -197,6 +198,7 @@ int main(void)
     temp = temporal_simplify_max_dist(trips[i].trip, 10, true);
     max_dist_sed_10 += temporal_mem_size(temp);
     no_max_dist_sed_10 += temporal_num_instants(temp);
+    free(temp);
 
     /* Minimum distance simplification */
     temp = temporal_simplify_min_dist(trips[i].trip, 1);
@@ -230,6 +232,8 @@ int main(void)
     tprec_10s += temporal_mem_size(temp);
     no_tprec_10s += temporal_num_instants(temp);
     free(temp);
+    free(secs1);
+    free(secs10);
   }
 
   printf("\n---------------------------------------------------------------------------------\n");
