@@ -114,7 +114,7 @@ int main(void)
         EXPAND ? 2 : 1, true, true, LINEAR, false);
     else
       seq = temporal_append_tinstant((Temporal *) seq, inst, 0.0, NULL, EXPAND);
-    free(inst);
+    free(inst); free(time_str);
   }
 
   /* Print information about the sequence */
@@ -122,7 +122,7 @@ int main(void)
     temporal_num_instants(seq), tpoint_length(seq));
 
   /* Free memory */
-  free(seq);
+  free(seq); free(oneday);
 
   /* Calculate the elapsed time */
   time = clock() - time;
