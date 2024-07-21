@@ -208,7 +208,7 @@ WITH temp1 AS (
 temp2 AS (
   SELECT k, temp, merge(slice ORDER BY slice) AS tmerge
   FROM temp1 GROUP BY k, temp )
-SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
+SELECT k FROM temp2 WHERE temp <> tmerge ORDER BY k;
  k 
 ---
 (0 rows)
@@ -283,7 +283,7 @@ WITH temp1 AS (
 temp2 AS (
   SELECT k, temp, merge(slice ORDER BY slice) AS tmerge
   FROM temp1 GROUP BY k, temp )
-SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
+SELECT k FROM temp2 WHERE temp <> tmerge ORDER BY k;
  k 
 ---
 (0 rows)
@@ -326,7 +326,7 @@ WITH temp1 AS (
 temp2 AS (
   SELECT k, temp, merge(slice ORDER BY slice) AS tmerge
   FROM temp1 GROUP BY k, temp )
-SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
+SELECT k FROM temp2 WHERE temp <> tmerge ORDER BY k;
  k 
 ---
 (0 rows)
