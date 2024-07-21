@@ -833,7 +833,7 @@ tinstant_time_split(const TInstant *inst, int64 tunits, TimestampTz torigin,
  * @param[out] newcount Number of values in the output array
  */
 static TSequence **
-tnumberdiscseq_time_split(const TSequence *seq, TimestampTz start,
+tdiscseq_time_split(const TSequence *seq, TimestampTz start,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
   assert(seq);
@@ -892,14 +892,14 @@ tnumberdiscseq_time_split(const TSequence *seq, TimestampTz start,
  * @note This function is called for each sequence of a temporal sequence set
  */
 static int
-tsequence_time_split_iter(const TSequence *seq, TimestampTz start,
+tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
   TimestampTz end, int64 tunits, int count, TSequence **result,
   TimestampTz *times)
 {
   TimestampTz lower = start;
   TimestampTz upper = lower + tunits;
-  /* This loop is needed for filtering unnecesary time buckets for the
-   * sequences composing a sequence set.
+  /* This loop is needed for filtering unnecesary time buckets that are in the 
+   * time gaps between sequences composing a sequence set.
    * The upper bound for the bucket is exclusive => the test below is >= */
   while (lower < end &&
     (DatumGetTimestampTz(seq->period.lower) >= upper ||
@@ -916,11 +916,12 @@ tsequence_time_split_iter(const TSequence *seq, TimestampTz start,
   int i = 0,      /* counter for instants of temporal value */
       ninsts = 0, /* counter for instants of next split */
       nfree = 0,  /* counter for instants to free */
-      nfrags = 0;  /* counter for resulting fragments */
+      nfrags = 0; /* counter for resulting fragments */
   bool lower_inc1;
   while (i < seq->count)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    /* If the instant is in the bucket */
     if ((lower <= inst->t && inst->t < upper) ||
       (inst->t == upper && (interp == LINEAR || i == seq->count - 1)))
     {
@@ -945,18 +946,22 @@ tsequence_time_split_iter(const TSequence *seq, TimestampTz start,
         }
         instants[ninsts++] = tofree[nfree++];
       }
+
+      /* Compute the fragment */
       lower_inc1 = (nfrags == 0) ? seq->period.lower_inc : true;
       times[nfrags] = lower;
       result[nfrags++] = tsequence_make(instants, ninsts, lower_inc1,
          (ninsts > 1) ? false : true, interp, NORMALIZE);
+
+      /* Set up for the next bucket */
       ninsts = 0;
       lower = upper;
       upper += tunits;
-      /* The second condition is needed for filtering unnecesary buckets for the
-       * sequences composing a sequence set */
+      /* The second condition is needed for filtering unnecesary time buckets
+       * that are in the gaps between sequences composing a sequence set */
       if (lower >= end || ! contains_span_timestamptz(&seq->period, lower))
         break;
-      /* Reuse the end value of the previous bucket for the beginning of the bucket */
+      /* The end value of the previous bucket is the start of the new bucket */
       if (lower < inst->t)
         instants[ninsts++] = TSEQUENCE_INST_N(result[nfrags - 1],
           result[nfrags - 1]->count - 1);
@@ -985,13 +990,13 @@ tsequence_time_split_iter(const TSequence *seq, TimestampTz start,
  * @param[out] newcount Number of values in the output array
  */
 static TSequence **
-tsequence_time_split(const TSequence *seq, TimestampTz start, TimestampTz end,
+tcontseq_time_split(const TSequence *seq, TimestampTz start, TimestampTz end,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
   assert(seq); assert(buckets); ensure_not_null((void *) newcount);
   TSequence **result = palloc(sizeof(TSequence *) * count);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-  *newcount = tsequence_time_split_iter(seq, start, end, tunits, count, result,
+  *newcount = tcontseq_time_split_iter(seq, start, end, tunits, count, result,
     times);
   *buckets = times;
   return result;
@@ -1015,7 +1020,7 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
   /* Singleton sequence set */
   if (ss->count == 1)
   {
-    TSequence **sequences = tsequence_time_split(TSEQUENCESET_SEQ_N(ss, 0),
+    TSequence **sequences = tcontseq_time_split(TSEQUENCESET_SEQ_N(ss, 0),
       start, end, tunits, count, buckets, newcount);
     TSequenceSet **result = palloc(sizeof(TSequenceSet *) * *newcount);
     for (int i = 0; i < *newcount; i++)
@@ -1034,7 +1039,7 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
   /* Sequences for the buckets of the sequence set */
   TSequenceSet **result = palloc(sizeof(TSequenceSet *) * count);
   /* Variable used to adjust the start timestamp passed to the
-   * tsequence_time_split1 function in the loop */
+   * tcontseq_time_split1 function in the loop */
   TimestampTz lower = start;
   int nfrags = 0, /* Number of accumulated fragments of the current time bucket */
       nbucks = 0; /* Number of time buckets already processed */
@@ -1055,7 +1060,7 @@ tsequenceset_time_split(const TSequenceSet *ss, TimestampTz start,
       upper += tunits;
     }
     /* Number of time buckets of the current sequence */
-    int l = tsequence_time_split_iter(seq, lower, end, tunits, count,
+    int l = tcontseq_time_split_iter(seq, lower, end, tunits, count,
       sequences, &times[nbucks]);
     /* If the current sequence has produced more than two time buckets */
     if (l > 1)
@@ -1124,9 +1129,9 @@ temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
         tunits, torigin, buckets, newcount);
     case TSEQUENCE:
       return MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
-        (Temporal **) tnumberdiscseq_time_split((const TSequence *) temp,
+        (Temporal **) tdiscseq_time_split((const TSequence *) temp,
           start, tunits, count, buckets, newcount) :
-        (Temporal **) tsequence_time_split((const TSequence *) temp,
+        (Temporal **) tcontseq_time_split((const TSequence *) temp,
           start, end, tunits, count, buckets, newcount);
     default: /* TSEQUENCESET */
       return (Temporal **) tsequenceset_time_split((const TSequenceSet *) temp,
