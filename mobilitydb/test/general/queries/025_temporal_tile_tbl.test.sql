@@ -87,9 +87,9 @@ WITH temp1 AS (
   SELECT k, temp, (tb).tnumber AS slice
   FROM (SELECT k, temp, valueSplit(temp, 5) AS tb from tbl_tfloat) t ),
 temp2 AS (
-  SELECT k, temp, merge(slice ORDER BY slice) AS merge
+  SELECT k, temp, merge(slice ORDER BY slice) AS tmerge
   FROM temp1 GROUP BY k, temp )
-SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
+SELECT k FROM temp2 WHERE temp <> tmerge ORDER BY k;
 
 -------------------------------------------------------------------------------
 -- timeSplit
@@ -108,9 +108,9 @@ WITH temp1 AS (
   SELECT k, temp, (tb).temp AS slice
   FROM (SELECT k, temp, timeSplit(temp, '5 min') AS tb FROM tbl_tfloat) t ),
 temp2 AS (
-  SELECT k, temp, merge(slice ORDER BY slice) AS merge
+  SELECT k, temp, merge(slice ORDER BY slice) AS tmerge
   FROM temp1 GROUP BY k, temp )
-SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
+SELECT k FROM temp2 WHERE temp <> tmerge ORDER BY k;
 
 -------------------------------------------------------------------------------
 -- valueTimeSplit
@@ -126,8 +126,8 @@ WITH temp1 AS (
   SELECT k, temp, (tb).tnumber AS slice
   FROM (SELECT k, temp, valueTimeSplit(temp, 5, '5 min') AS tb FROM tbl_tfloat) t ),
 temp2 AS (
-  SELECT k, temp, merge(slice ORDER BY slice) AS merge
+  SELECT k, temp, merge(slice ORDER BY slice) AS tmerge
   FROM temp1 GROUP BY k, temp )
-SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
+SELECT k FROM temp2 WHERE temp <> tmerge ORDER BY k;
 
 -------------------------------------------------------------------------------

@@ -1519,6 +1519,13 @@ temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
  * @param[in] maxt Maximum time interval for defining a gap
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
+ * @result When the sequence passed as first argument has space for adding the
+ * instant, the function returns the updated sequence. Otherwise, a NEW 
+ * sequence is returned and the input sequence is freed.
+ * @note Always use the function to overwrite the existing sequence as in: 
+ * @code
+ * seq = tsequence_append_tinstant(seq, inst, ...);
+ * @endcode
  */
 Temporal *
 tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
@@ -1782,6 +1789,13 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
  * @param[in] maxt Maximum time interval for defining a gap
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
+ * @result When the sequence set passed as first argument has space for adding
+ * the instant, the  function returns the sequence set. Otherwise, a NEW
+ * sequence set is returned and the input sequence set is freed.
+ * @note Always use the function to overwrite the existing sequence set as in: 
+ * @code
+ * ss = tsequenceset_append_tinstant(ss, inst, ...);
+ * @endcode
  */
 TSequenceSet *
 tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
@@ -2021,6 +2035,13 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
  * @param[in] maxt Maximum time interval for defining a gap
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
+ * @result When the temporal value passed as first argument has space for 
+ * adding the instant, the function returns the temporal value. Otherwise,
+ * a NEW temporal value is returned and the input value is freed.
+ * @note Always use the function to overwrite the existing temporal value as in: 
+ * @code
+ * temp = temporal_append_tinstant(temp, inst, ...);
+ * @endcode
  */
 Temporal *
 temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,

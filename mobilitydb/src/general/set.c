@@ -145,9 +145,9 @@ Set_constructor(PG_FUNCTION_ARGS)
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_not_empty_array(array);
   meosType settype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  meosType basetype = settype_basetype(settype);
   int count;
   Datum *values = datumarr_extract(array, &count);
-  meosType basetype = settype_basetype(settype);
   Set *result = set_make_free(values, count, basetype, ORDER);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_SET_P(result);

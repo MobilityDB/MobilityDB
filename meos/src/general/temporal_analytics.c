@@ -298,9 +298,9 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
     value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
       PointerGetDatum(tpointseq_twcentroid(seq1));
     outinsts[l++] = tinstant_make(value, temptype_out, lower);
-    pfree(seq1);
     if (! twavg)
       pfree(DatumGetPointer(value));
+    pfree(seq1);
   }
   /* The lower and upper bounds are both true since the tprecision operation
    * amounts to a granularity change */
