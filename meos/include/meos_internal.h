@@ -437,7 +437,6 @@ extern bool right_value_spanset(Datum value, const SpanSet *ss);
 extern bool right_span_value(const Span *s, Datum value);
 extern bool right_spanset_value(const SpanSet *ss, Datum value);
 
-
 /*****************************************************************************/
 
 /* Set functions for set and span types */
