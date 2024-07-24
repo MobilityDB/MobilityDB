@@ -1324,10 +1324,10 @@ tnumberseq_step_value_split(const TSequence *seq, Datum start_bucket,
   }
 
   /* General case */
-  TInstant **tofree = palloc(sizeof(TInstant *) * count * seq->count);
+  TInstant **tofree = palloc(sizeof(TInstant *) * seq->count * count);
   int nfree = 0;   /* counter for the instants to free */
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-for (int i = 1; i < seq->count; i++)
+  for (int i = 1; i < seq->count; i++)
   {
     value = tinstant_val(inst1);
     bucket_value = datum_bucket(value, size, start_bucket, basetype);
