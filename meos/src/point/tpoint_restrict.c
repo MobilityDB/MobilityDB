@@ -664,7 +664,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   bool hasz = hasz_seq && hasz_box;
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  TInstant **tofree = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **tofree = palloc(sizeof(TInstant *) * seq->count * 2);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   GSERIALIZED *p1 = DatumGetGserializedP(tinstant_val(inst1));
   bool lower_inc = seq->period.lower_inc;
