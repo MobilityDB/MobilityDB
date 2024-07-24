@@ -267,8 +267,6 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     if (timesplit)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
     bool bitmatrix = PG_GETARG_BOOL(i++);
-    if (temporal_num_instants(temp) == 1)
-      bitmatrix = false;
     bool border_inc = PG_GETARG_BOOL(i++);
 
     /* Initialize state and verify parameter validity */
