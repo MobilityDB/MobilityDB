@@ -985,8 +985,9 @@ tpoint_space_time_split_init(const Temporal *temp, float xsize, float ysize,
   float zsize, const Interval *duration, const GSERIALIZED *sorigin,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *ntiles)
 {
-  /* The usage of bitmatrix is disallowed for instantaneous temporal values */
-  assert(! bitmatrix || temporal_num_instants(temp) > 1);
+  /* Disable the usage of bitmatrix for instantaneous temporal values */
+  if (temporal_num_instants(temp) == 1)
+      bitmatrix = false;
   /* Set bounding box */
   STBox bounds;
   temporal_set_bbox(temp, &bounds);
