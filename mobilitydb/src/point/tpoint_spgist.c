@@ -906,6 +906,7 @@ static int
 stbox_level_cmp(STBox *centroid, STBox *query, int level)
 {
   bool hasz = MEOS_FLAGS_GET_Z(centroid->flags);
+  bool hast = MEOS_FLAGS_GET_T(centroid->flags);
   int mod = hasz ? level % 8 : level % 6;
   if (mod == 0)
     return stbox_xmin_cmp(query, centroid);
@@ -919,10 +920,12 @@ stbox_level_cmp(STBox *centroid, STBox *query, int level)
     return stbox_zmin_cmp(query, centroid);
   else if (hasz && mod == 5)
     return stbox_zmax_cmp(query, centroid);
-  else if ((hasz && mod == 6) || (! hasz && mod == 4))
+  else if (hast && ((hasz && mod == 6) || (! hasz && mod == 4)))
     return stbox_tmin_cmp(query, centroid);
-  else /* (hasz && mod == 7) || (! hasz && mod == 5) */
+  else if (hast && ((hasz && mod == 7) || (! hasz && mod == 5)))
     return stbox_tmax_cmp(query, centroid);
+  /* We should never arrive here */
+  elog(ERROR, "stbox_level_cmp: unexpected error");
 }
 
 PGDLLEXPORT Datum Stbox_kdtree_choose(PG_FUNCTION_ARGS);
