@@ -79,9 +79,9 @@ option(MEOS
 
 # Option for including geoposes
 option(POSE
-    "Set ON|OFF (default=ON) to include geoposes
+    "Set ON|OFF (default=OFF) to include geoposes
     "
-    ON
+    OFF
   )
 
 if(NOT MEOS)
