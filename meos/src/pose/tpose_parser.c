@@ -146,286 +146,306 @@ pose_parse(const char **str, bool end)
   return result;
 }
 
-// /*****************************************************************************/
+/*****************************************************************************/
 
-// /**
-//  * @brief Parse a temporal instant pose from the buffer.
-//  * @param[in] str Input string
-//  * @param[in] temptype Temporal type
-//  * @param[in] end Set to true when reading a single instant to ensure there is
-//  * no moreinput after the sequence
-//  * @param[in] make Set to false for the first pass to do not create the instant
-//  * @param[in,out] tpose_srid SRID of the temporal pose
-//  */
-// TInstant *
-// tposeinst_parse(const char **str, meosType temptype, bool end, bool make,
-//   int *tpose_srid)
-// {
-//   p_whitespace(str);
-//   meosType basetype = temptype_basetype(temptype);
-//   /* The next instruction will throw an exception if it fails */
-//   Datum value = temporal_basetype_parse(str, basetype);
-//   Pose *pose = DatumGetPoseP(value);
-//   /* If one of the SRID of the temporal pose and of the geometry
-//    * is SRID_UNKNOWN and the other not, copy the SRID */
-//   int pose_srid = pose_get_srid(pose);
-//   if (*tpose_srid == SRID_UNKNOWN && pose_srid != SRID_UNKNOWN)
-//     *tpose_srid = pose_srid;
-//   else if (*tpose_srid != SRID_UNKNOWN && pose_srid == SRID_UNKNOWN)
-//     pose_set_srid(pose, *tpose_srid);
-//   /* If the SRID of the temporal pose and of the geometry do not match */
-//   else if (*tpose_srid != SRID_UNKNOWN && pose_srid != SRID_UNKNOWN &&
-//     *tpose_srid != pose_srid)
-//   {
-//     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-//       "Pose SRID (%d) does not match temporal type SRID (%d)",
-//       pose_srid, *tpose_srid);
-//     pfree(pose);
-//     return NULL;
-//   }
-//   /* The next instruction will throw an exception if it fails */
-//   TimestampTz t = timestamp_parse(str);
-//   if ((end && ! ensure_end_input(str, "temporal pose")) || ! make)
-//   {
-//     pfree(pose);
-//     return NULL;
-//   }
-//   TInstant *result = tinstant_make(PosePGetDatum(pose), temptype, t);
-//   pfree(pose);
-//   return result;
-// }
+/**
+ * @brief Parse a temporal instant pose from the buffer.
+ * @param[in] str Input string
+ * @param[in] temptype Temporal type
+ * @param[in] end Set to true when reading a single instant to ensure there is
+ * no moreinput after the sequence
+ * @param[in,out] tpose_srid SRID of the temporal pose
+ * @param[out] result New instant, may be NULL
+ */
+bool
+tposeinst_parse(const char **str, meosType temptype, bool end,
+  int *tpose_srid, TInstant **result)
+{
+  p_whitespace(str);
+  meosType basetype = temptype_basetype(temptype);
+  /* The next instruction will throw an exception if it fails */
+  Datum value;
+  if (! temporal_basetype_parse(str, basetype, &value))
+    return false;
+  Pose *pose = DatumGetPoseP(value);
+  /* If one of the SRID of the temporal pose and of the geometry
+   * is SRID_UNKNOWN and the other not, copy the SRID */
+  int pose_srid = pose_get_srid(pose);
+  if (*tpose_srid == SRID_UNKNOWN && pose_srid != SRID_UNKNOWN)
+    *tpose_srid = pose_srid;
+  else if (*tpose_srid != SRID_UNKNOWN && pose_srid == SRID_UNKNOWN)
+    pose_set_srid(pose, *tpose_srid);
+  /* If the SRID of the temporal pose and of the geometry do not match */
+  else if (*tpose_srid != SRID_UNKNOWN && pose_srid != SRID_UNKNOWN &&
+    *tpose_srid != pose_srid)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Pose SRID (%d) does not match temporal type SRID (%d)",
+      pose_srid, *tpose_srid);
+    pfree(pose);
+    return false;
+  }
+  TimestampTz t = timestamp_parse(str);
+  if (t == DT_NOEND ||
+    (end && ! ensure_end_input(str, "temporal pose")))
+  {
+    pfree(pose);
+    return false;
+  }
+  if (result)
+    *result = tinstant_make_free(PosePGetDatum(pose), temptype, t);
+  return true;
+}
 
-// /**
-//  * @brief Parse a temporal discrete sequence pose from the buffer.
-//  * @param[in] str Input string
-//  * @param[in] temptype Temporal type
-//  * @param[in,out] tpose_srid SRID of the temporal pose
-//  */
-// TSequence *
-// tposeseq_disc_parse(const char **str, meosType temptype, int *tpose_srid)
-// {
-//   const char *type_str = "temporal pose";
-//   p_whitespace(str);
-//   /* We are sure to find an opening brace because that was the condition
-//    * to call this function in the dispatch function tpose_parse */
-//   p_obrace(str);
+/**
+ * @brief Parse a temporal discrete sequence pose from the buffer.
+ * @param[in] str Input string
+ * @param[in] temptype Temporal type
+ * @param[in,out] tpose_srid SRID of the temporal pose
+ */
+TSequence *
+tposeseq_disc_parse(const char **str, meosType temptype, int *tpose_srid)
+{
+  const char *type_str = "temporal pose";
+  p_whitespace(str);
+  /* We are sure to find an opening brace because that was the condition
+   * to call this function in the dispatch function tpose_parse */
+  p_obrace(str);
 
-//   /* First parsing */
-//   const char *bak = *str;
-//   tposeinst_parse(str, temptype, false, false, tpose_srid);
-//   int count = 1;
-//   while (p_comma(str))
-//   {
-//     count++;
-//     tposeinst_parse(str, temptype, false, false, tpose_srid);
-//   }
-//   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
-//     return NULL;
+  /* First parsing */
+  const char *bak = *str;
+  if (! tposeinst_parse(str, temptype, false, tpose_srid, NULL))
+    return NULL;
+  int count = 1;
+  while (p_comma(str))
+  {
+    count++;
+    if (! tposeinst_parse(str, temptype, false, tpose_srid, NULL))
+      return NULL;
+  }
+  if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
+    return NULL;
 
-//   /* Second parsing */
-//   *str = bak;
-//   TInstant **instants = palloc(sizeof(TInstant *) * count);
-//   for (int i = 0; i < count; i++)
-//   {
-//     p_comma(str);
-//     instants[i] = tposeinst_parse(str, temptype, false, true, tpose_srid);
-//   }
-//   p_cbrace(str);
-//   return tsequence_make_free(instants, count, true, true, DISCRETE,
-//     NORMALIZE_NO);
-// }
+  /* Second parsing */
+  *str = bak;
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
+  for (int i = 0; i < count; i++)
+  {
+    p_comma(str);
+    tposeinst_parse(str, temptype, false, tpose_srid, &instants[i]);
+  }
+  p_cbrace(str);
+  return tsequence_make_free(instants, count, true, true, DISCRETE,
+    NORMALIZE_NO);
+}
 
-// /**
-//  * @brief Parse a temporal sequence pose from the buffer.
-//  * @param[in] str Input string
-//  * @param[in] temptype Temporal type
-//  * @param[in] interp Interpolation
-//  * @param[in] end Set to true when reading a single instant to ensure there is
-//  * no moreinput after the sequence
-//  * @param[in] make Set to false for the first pass to do not create the instant
-//  * @param[in,out] tpose_srid SRID of the temporal pose
-// */
-// TSequence *
-// tposeseq_cont_parse(const char **str, meosType temptype, interpType interp,
-//   bool end, bool make, int *tpose_srid)
-// {
-//   p_whitespace(str);
-//   bool lower_inc = false, upper_inc = false;
-//   /* We are sure to find an opening bracket or parenthesis because that was the
-//    * condition to call this function in the dispatch function tpose_parse */
-//   if (p_obracket(str))
-//     lower_inc = true;
-//   else if (p_oparen(str))
-//     lower_inc = false;
+/**
+ * @brief Parse a temporal sequence pose from the buffer.
+ * @param[in] str Input string
+ * @param[in] temptype Temporal type
+ * @param[in] interp Interpolation
+ * @param[in] end Set to true when reading a single instant to ensure there is
+ * no moreinput after the sequence
+ * @param[in,out] tpose_srid SRID of the temporal pose
+ * @param[out] result New sequence, may be NULL
+*/
+bool
+tposeseq_cont_parse(const char **str, meosType temptype, interpType interp,
+  bool end, int *tpose_srid, TSequence **result)
+{
+  p_whitespace(str);
+  bool lower_inc = false, upper_inc = false;
+  /* We are sure to find an opening bracket or parenthesis because that was the
+   * condition to call this function in the dispatch function tpose_parse */
+  if (p_obracket(str))
+    lower_inc = true;
+  else if (p_oparen(str))
+    lower_inc = false;
 
-//   /* First parsing */
-//   const char *bak = *str;
-//   tposeinst_parse(str, temptype, false, false, tpose_srid);
-//   int count = 1;
-//   while (p_comma(str))
-//   {
-//     count++;
-//     tposeinst_parse(str, temptype, false, false, tpose_srid);
-//   }
-//   if (p_cbracket(str))
-//     upper_inc = true;
-//   else if (p_cparen(str))
-//     upper_inc = false;
-//   else
-//   {
-//     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-//       "Could not parse temporal pose value: Missing closing bracket/parenthesis");
-//     return NULL;
-//   }
-//   /* Ensure there is no more input */
-//   if ((end && ! ensure_end_input(str, "temporal point")) || ! make)
-//     return NULL;
+  /* First parsing */
+  const char *bak = *str;
+  if (! tposeinst_parse(str, temptype, false, tpose_srid, NULL))
+    return false;
+  int count = 1;
+  while (p_comma(str))
+  {
+    count++;
+    if (! tposeinst_parse(str, temptype, false, tpose_srid, NULL))
+      return false;
+  }
+  if (p_cbracket(str))
+    upper_inc = true;
+  else if (p_cparen(str))
+    upper_inc = false;
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse temporal pose value: Missing closing bracket/parenthesis");
+    return NULL;
+  }
+  /* Ensure there is no more input */
+  if (end && ! ensure_end_input(str, "temporal point"))
+    return false;
 
-//   /* Second parsing */
-//   *str = bak;
-//   TInstant **instants = palloc(sizeof(TInstant *) * count);
-//   for (int i = 0; i < count; i++)
-//   {
-//     p_comma(str);
-//     instants[i] = tposeinst_parse(str, temptype, false, true, tpose_srid);
-//   }
-//   p_cbracket(str);
-//   p_cparen(str);
-//   return tsequence_make_free(instants, count, lower_inc, upper_inc,
-//     interp, NORMALIZE);
-// }
+  /* Second parsing */
+  *str = bak;
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
+  for (int i = 0; i < count; i++)
+  {
+    p_comma(str);
+    tposeinst_parse(str, temptype, false, tpose_srid, &instants[i]);
+  }
+  p_cbracket(str);
+  p_cparen(str);
+  if (result)
+    *result = tsequence_make_free(instants, count, lower_inc, upper_inc,
+      interp, NORMALIZE);
+  return true;
+}
 
-// /**
-//  * @brief Parse a temporal sequence set pose from the buffer.
-//  * @param[in] str Input string
-//  * @param[in] temptype Temporal type
-//  * @param[in] interp Interpolation
-//  * @param[in,out] tpose_srid SRID of the temporal pose
-//  */
-// TSequenceSet *
-// tposeseqset_parse(const char **str, meosType temptype, interpType interp,
-//   int *tpose_srid)
-// {
-//   const char *type_str = "temporal point";
-//   p_whitespace(str);
-//   /* We are sure to find an opening brace because that was the condition
-//    * to call this function in the dispatch function tpose_parse */
-//   p_obrace(str);
+/**
+ * @brief Parse a temporal sequence set pose from the buffer.
+ * @param[in] str Input string
+ * @param[in] temptype Temporal type
+ * @param[in] interp Interpolation
+ * @param[in,out] tpose_srid SRID of the temporal pose
+ */
+TSequenceSet *
+tposeseqset_parse(const char **str, meosType temptype, interpType interp,
+  int *tpose_srid)
+{
+  const char *type_str = "temporal point";
+  p_whitespace(str);
+  /* We are sure to find an opening brace because that was the condition
+   * to call this function in the dispatch function tpose_parse */
+  p_obrace(str);
 
-//   /* First parsing */
-//   const char *bak = *str;
-//   tposeseq_cont_parse(str, temptype, interp, false, false, tpose_srid);
-//   int count = 1;
-//   while (p_comma(str))
-//   {
-//     count++;
-//     tposeseq_cont_parse(str, temptype, interp, false, false, tpose_srid);
-//   }
-//   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
-//     return NULL;
+  /* First parsing */
+  const char *bak = *str;
+  if (! tposeseq_cont_parse(str, temptype, interp, false, tpose_srid, NULL))
+    return false;
+  int count = 1;
+  while (p_comma(str))
+  {
+    count++;
+    if (! tposeseq_cont_parse(str, temptype, interp, false, tpose_srid, NULL))
+      return false;
+  }
+  if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
+    return NULL;
 
-//   /* Second parsing */
-//   *str = bak;
-//   TSequence **sequences = palloc(sizeof(TSequence *) * count);
-//   for (int i = 0; i < count; i++)
-//   {
-//     p_comma(str);
-//     sequences[i] = tposeseq_cont_parse(str, temptype, interp, false, true,
-//       tpose_srid);
-//   }
-//   p_cbrace(str);
-//   return tsequenceset_make_free(sequences, count, NORMALIZE);
-// }
+  /* Second parsing */
+  *str = bak;
+  TSequence **sequences = palloc(sizeof(TSequence *) * count);
+  for (int i = 0; i < count; i++)
+  {
+    p_comma(str);
+    tposeseq_cont_parse(str, temptype, interp, false,
+      tpose_srid, &sequences[i]);
+  }
+  p_cbrace(str);
+  return tsequenceset_make_free(sequences, count, NORMALIZE);
+}
 
-// /**
-//  * @brief Parse a temporal pose value from the buffer.
-//  * @param[in] str Input string
-//  * @param[in] temptype Temporal type
-//  */
-// Temporal *
-// tpose_parse(const char **str, meosType temptype)
-// {
-//   int tpose_srid = 0;
-//   p_whitespace(str);
+/**
+ * @brief Parse a temporal pose value from the buffer.
+ * @param[in] str Input string
+ * @param[in] temptype Temporal type
+ */
+Temporal *
+tpose_parse(const char **str, meosType temptype)
+{
+  int tpose_srid = 0;
+  const char *bak = *str;
+  p_whitespace(str);
 
-//   /* Starts with "SRID=". The SRID specification must be gobbled for all
-//    * types excepted TInstant. We cannot use the atoi() function
-//    * because this requires a string terminated by '\0' and we cannot
-//    * modify the string in case it must be passed to the tposeinst_parse
-//    * function. */
-//   const char *bak = *str;
-//   if (pg_strncasecmp(*str, "SRID=", 5) == 0)
-//   {
-//     /* Move str to the start of the number part */
-//     *str += 5;
-//     int delim = 0;
-//     tpose_srid = 0;
-//     /* Delimiter will be either ',' or ';' depending on whether interpolation
-//        is given after */
-//     while ((*str)[delim] != ',' && (*str)[delim] != ';' && (*str)[delim] != '\0')
-//     {
-//       tpose_srid = tpose_srid * 10 + (*str)[delim] - '0';
-//       delim++;
-//     }
-//     /* Set str to the start of the temporal pose */
-//     *str += delim + 1;
-//   }
+  /* Starts with "SRID=". The SRID specification must be gobbled for all
+   * types excepted TInstant. We cannot use the atoi() function
+   * because this requires a string terminated by '\0' and we cannot
+   * modify the string in case it must be passed to the tposeinst_parse
+   * function. */
+  if (pg_strncasecmp(*str, "SRID=", 5) == 0)
+  {
+    /* Move str to the start of the number part */
+    *str += 5;
+    int delim = 0;
+    tpose_srid = 0;
+    /* Delimiter will be either ',' or ';' depending on whether interpolation
+       is given after */
+    while ((*str)[delim] != ',' && (*str)[delim] != ';' && (*str)[delim] != '\0')
+    {
+      tpose_srid = tpose_srid * 10 + (*str)[delim] - '0';
+      delim++;
+    }
+    /* Set str to the start of the temporal pose */
+    *str += delim + 1;
+  }
 
-//   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
-//   /* Starts with "Interp=Step" */
-//   if (pg_strncasecmp(*str, "Interp=Step;", 12) == 0)
-//   {
-//     /* Move str after the semicolon */
-//     *str += 12;
-//     interp = STEP;
-//   }
+  interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
+  /* Starts with "Interp=Step" */
+  if (pg_strncasecmp(*str, "Interp=Step;", 12) == 0)
+  {
+    /* Move str after the semicolon */
+    *str += 12;
+    interp = STEP;
+  }
 
-//   /* Allow spaces after the SRID and/or Interpolation */
-//   p_whitespace(str);
+  /* Allow spaces after the SRID and/or Interpolation */
+  p_whitespace(str);
 
-//   Temporal *result = NULL; /* keep compiler quiet */
-//   /* Determine the type of the temporal pose */
-//   if (**str != '{' && **str != '[' && **str != '(')
-//   {
-//     /* Pass the SRID specification */
-//     *str = bak;
-//     result = (Temporal *) tposeinst_parse(str, temptype, true, true,
-//       &tpose_srid);
-//   }
-//   else if (**str == '[' || **str == '(')
-//     result = (Temporal *) tposeseq_cont_parse(str, temptype, interp, true, true,
-//       &tpose_srid);
-//   else if (**str == '{')
-//   {
-//     bak = *str;
-//     p_obrace(str);
-//     p_whitespace(str);
-//     if (**str == '[' || **str == '(')
-//     {
-//       *str = bak;
-//       result = (Temporal *) tposeseqset_parse(str, temptype, interp,
-//         &tpose_srid);
-//     }
-//     else
-//     {
-//       *str = bak;
-//       result = (Temporal *) tposeseq_disc_parse(str, temptype, &tpose_srid);
-//     }
-//   }
-//   return result;
-// }
+  Temporal *result = NULL; /* keep compiler quiet */
+  /* Determine the type of the temporal pose */
+  if (**str != '{' && **str != '[' && **str != '(')
+  {
+    /* Pass the SRID specification */
+    *str = bak;
+    TInstant *inst;
+    if (! tposeinst_parse(str, temptype, true, &tpose_srid, &inst))
+      return NULL;
+    result = (Temporal *) inst;
+  }
+  else if (**str == '[' || **str == '(')
+  {
+    TSequence *seq;
+    if (! tposeseq_cont_parse(str, temptype, interp, true, &tpose_srid, &seq))
+      return NULL;
+    result = (Temporal *) seq;
+  }
+  else if (**str == '{')
+  {
+    bak = *str;
+    p_obrace(str);
+    p_whitespace(str);
+    if (**str == '[' || **str == '(')
+    {
+      *str = bak;
+      result = (Temporal *) tposeseqset_parse(str, temptype, interp,
+        &tpose_srid);
+    }
+    else
+    {
+      *str = bak;
+      result = (Temporal *) tposeseq_disc_parse(str, temptype, &tpose_srid);
+    }
+  }
+  return result;
+}
 
-// #if MEOS
-// /**
-//  * @ingroup libmeos_temporal_inout
-//  * @brief Return a temporal pose from its Well-Known Text (WKT)
-//  * representation.
-//  */
-// Temporal *
-// tpose_in(const char *str)
-// {
-//   return tpose_parse(&str, T_TPOSE);
-// }
-// #endif /* MEOS */
+#if MEOS
+/**
+ * @ingroup libmeos_temporal_inout
+ * @brief Return a temporal pose from its Well-Known Text (WKT)
+ * representation.
+ * @param[in] str String
+ */
+Temporal *
+tpose_in(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return tpose_parse(&str, T_TPOSE);
+}
+#endif /* MEOS */
 
 /*****************************************************************************/

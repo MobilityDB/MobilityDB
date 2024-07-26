@@ -46,10 +46,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/type_util.h"
-#include "point/pgis_call.h"
-#include "point/tpoint_boxops.h"
-#include "point/tpoint_spatialfuncs.h"
 #include "pose/tpose_static.h"
 
 /*****************************************************************************
@@ -78,7 +74,7 @@ pose_timestamp_set_stbox(const Pose *pose, TimestampTz t, STBox *box)
 {
   pose_set_stbox(pose, box);
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
-    T_TIMESTAMPTZ, &box->period);
+    T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
   return true;
 }
@@ -107,7 +103,7 @@ tposeinst_set_stbox(const TInstant *inst, STBox *box)
 {
   pose_set_stbox(DatumGetPoseP(tinstant_value(inst)), box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
-    true, true, T_TIMESTAMPTZ, &box->period);
+    true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
@@ -145,6 +141,20 @@ tposeinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
   }
   MEOS_FLAGS_SET_Z(box->flags, hasz);
   MEOS_FLAGS_SET_GEODETIC(box->flags, geodetic);
+  return;
+}
+
+/**
+ * @brief Expand the bounding box of a temporal pose sequence with an instant
+ * @param[in] seq Temporal sequence
+ * @param[in] inst Temporal instant
+ */
+void
+tposeseq_expand_stbox(TSequence *seq, const TInstant *inst)
+{
+  STBox box;
+  tposeinst_set_stbox(inst, &box);
+  stbox_expand(&box, (STBox *) TSEQUENCE_BBOX_PTR(seq));
   return;
 }
 

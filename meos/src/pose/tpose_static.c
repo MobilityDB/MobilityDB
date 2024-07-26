@@ -35,12 +35,14 @@
 #include "pose/tpose_static.h"
 
 /* C */
+#include <common/hashfn.h>
 #include <math.h>
 /* Postgres */
 #include <postgres.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
+#include <utils/float.h>
 /* MobilityDB */
 #include "meos.h"
 #include "meos_internal.h"
@@ -56,7 +58,7 @@
  *****************************************************************************/
 
 /**
- * @brief Return a network point from its string representation.
+ * @brief Return a pose from its string representation.
  */
 Pose *
 pose_in(const char *str, bool end)
@@ -65,7 +67,7 @@ pose_in(const char *str, bool end)
 }
 
 /**
- * @brief Return the string representation of a network point
+ * @brief Return the string representation of a pose
  */
 char *
 pose_out(const Pose *pose, int maxdd)
@@ -256,30 +258,8 @@ pose_distance(Datum pose1, Datum pose2)
 }
 
 /*****************************************************************************
- * Functions for defining B-tree index
+ * Interpolation function
  *****************************************************************************/
-
-/**
- * Returns true if the first pose is equal to the second one
- */
-bool
-pose_eq(const Pose *pose1, const Pose *pose2)
-{
-  if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags)
-    || pose_get_srid(pose1) != pose_get_srid(pose2))
-    return false;
-  bool result = (fabs(pose1->data[0] - pose2->data[0]) < MEOS_EPSILON &&
-    fabs(pose1->data[1] - pose2->data[1]) < MEOS_EPSILON &&
-    fabs(pose1->data[2] - pose2->data[2]) < MEOS_EPSILON);
-  if (MEOS_FLAGS_GET_Z(pose1->flags))
-    result &= (fabs(pose1->data[3] - pose2->data[3]) < MEOS_EPSILON &&
-    fabs(pose1->data[4] - pose2->data[4]) < MEOS_EPSILON &&
-    fabs(pose1->data[5] - pose2->data[5]) < MEOS_EPSILON &&
-    fabs(pose1->data[6] - pose2->data[6]) < MEOS_EPSILON);
-  return result;
-}
-
-/*****************************************************************************/
 
 Pose *
 pose_interpolate(const Pose *pose1, const Pose *pose2, double ratio)
@@ -353,6 +333,216 @@ pose_interpolate(const Pose *pose1, const Pose *pose2, double ratio)
     result = pose_make_3d(x, y, z, W, X, Y, Z);
   }
   return result;
+}
+
+/**
+ * @brief Return true if the three values are collinear
+ * @param[in] p1,p2,p3 Input values
+ * @param[in] ratio Value in [0,1] representing the duration of the
+ * timestamps associated to `p1` and `p2` divided by the duration
+ * of the timestamps associated to `p1` and `p3`
+ */
+bool
+pose_collinear(const Pose *p1, const Pose *p2, const Pose *p3, double ratio)
+{
+  Pose *p2_interpolated = pose_interpolate(p1, p3, ratio);
+  bool result = pose_same(p2, p2_interpolated);
+  pfree(p2_interpolated);
+  return result;
+}
+
+/*****************************************************************************
+ * Comparison functions for defining B-tree indexes
+ *****************************************************************************/
+
+/**
+ * @brief Return true if the first pose is equal to the second one
+ */
+bool
+pose_eq(const Pose *pose1, const Pose *pose2)
+{
+  if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags) ||
+      pose_get_srid(pose1) != pose_get_srid(pose2))
+    return false;
+  bool result = (
+    float8_eq(pose1->data[0], pose2->data[0]) &&
+    float8_eq(pose1->data[1], pose2->data[1]) &&
+    float8_eq(pose1->data[2], pose2->data[2])
+  );
+  if (MEOS_FLAGS_GET_Z(pose1->flags))
+    result &= (
+      float8_eq(pose1->data[3], pose2->data[3]) &&
+      float8_eq(pose1->data[4], pose2->data[4]) &&
+      float8_eq(pose1->data[5], pose2->data[5]) &&
+      float8_eq(pose1->data[6], pose2->data[6])
+    );
+  return result;
+}
+
+/**
+ * @brief Return true if the first pose is not equal to the second one
+ */
+bool
+pose_ne(const Pose *pose1, const Pose *pose2)
+{
+  return (!pose_eq(pose1, pose2));
+}
+
+/**
+ * @brief Return true if the first pose is equal to the second one
+ */
+bool
+pose_same(const Pose *pose1, const Pose *pose2)
+{
+  if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags) ||
+      pose_get_srid(pose1) != pose_get_srid(pose2))
+    return false;
+  bool result = (
+    MEOS_FP_EQ(pose1->data[0], pose2->data[0]) &&
+    MEOS_FP_EQ(pose1->data[1], pose2->data[1]) &&
+    MEOS_FP_EQ(pose1->data[2], pose2->data[2])
+  );
+  if (MEOS_FLAGS_GET_Z(pose1->flags))
+    result &= (
+      MEOS_FP_EQ(pose1->data[3], pose2->data[3]) &&
+      MEOS_FP_EQ(pose1->data[4], pose2->data[4]) &&
+      MEOS_FP_EQ(pose1->data[5], pose2->data[5]) &&
+      MEOS_FP_EQ(pose1->data[6], pose2->data[6])
+    );
+  return result;
+}
+
+/**
+ * @brief Return true if the first pose is not equal to the second one
+ */
+bool
+pose_nsame(const Pose *pose1, const Pose *pose2)
+{
+  return (!pose_same(pose1, pose2));
+}
+
+/**
+ * @brief Return -1, 0, or 1 depending on whether the first pose
+ * is less than, equal to, or greater than the second one
+ */
+int
+pose_cmp(const Pose *pose1, const Pose *pose2)
+{
+  /* Compare first the dimension, then the SRID,
+     then the position, then the orientation */
+
+  bool hasz1 = MEOS_FLAGS_GET_Z(pose1->flags),
+       hasz2 = MEOS_FLAGS_GET_Z(pose2->flags);
+  if (hasz1 != hasz2)
+    return (hasz1 ? 1 : -1);
+
+  int32 srid1 = pose_get_srid(pose1),
+        srid2 = pose_get_srid(pose2);
+  if (srid1 < srid2)
+    return -1;
+  else if (srid1 > srid2)
+    return 1;
+
+  if (hasz1)
+    return memcmp(pose1->data, pose2->data, sizeof(double) * 7);
+  else
+    return memcmp(pose1->data, pose2->data, sizeof(double) * 3);
+}
+
+/**
+ * @brief Return true if the first pose is less than the second one
+ */
+bool
+pose_lt(const Pose *pose1, const Pose *pose2)
+{
+  int cmp = pose_cmp(pose1, pose2);
+  return (cmp < 0);
+}
+
+/**
+ * @brief Return true if the first pose is less than or equal to the
+ * second one
+ */
+bool
+pose_le(const Pose *pose1, const Pose *pose2)
+{
+  int cmp = pose_cmp(pose1, pose2);
+  return (cmp <= 0);
+}
+
+/**
+ * @brief Return true if the first pose is greater than the second one
+ */
+bool
+pose_gt(const Pose *pose1, const Pose *pose2)
+{
+  int cmp = pose_cmp(pose1, pose2);
+  return (cmp > 0);
+}
+
+/**
+ * @brief Return true if the first pose is greater than or equal to
+ * the second one
+ */
+bool
+pose_ge(const Pose *pose1, const Pose *pose2)
+{
+  int cmp = pose_cmp(pose1, pose2);
+  return (cmp >= 0);
+}
+
+/*****************************************************************************
+ * Function for defining hash index
+ * The function reuses the approach for span types for combining the hash of
+ * the lower and upper bounds.
+ *****************************************************************************/
+
+/* Prototype for liblwgeom/lookup3.c */
+/* key = the key to hash */
+/* length = length of the key */
+/* pc = IN: primary initval, OUT: primary hash */
+/* pb = IN: secondary initval, OUT: secondary hash */
+void hashlittle2(const void *key, size_t length, uint32_t *pc, uint32_t *pb);
+
+/**
+ * @brief Return the 32-bit hash value of a pose
+ */
+uint32
+pose_hash(const Pose *pose)
+{
+  /* Use same code as gserialized2_hash */
+  int32_t hval;
+  int32_t pb = 0, pc = 0;
+  /* Point to just the type/coordinate part of buffer */
+  size_t hsz1 = 8; /* varsize (4) + flags (1) + srid(3) */
+  uint8_t *b1 = (uint8_t *)pose + hsz1;
+  /* Calculate size of type/coordinate buffer */
+  size_t sz1 = VARSIZE(pose);
+  size_t bsz1 = sz1 - hsz1;
+  /* Calculate size of srid/type/coordinate buffer */
+  int32_t srid = pose_get_srid(pose);
+  size_t bsz2 = bsz1 + sizeof(int);
+  uint8_t *b2 = palloc(bsz2);
+  /* Copy srid into front of combined buffer */
+  memcpy(b2, &srid, sizeof(int));
+  /* Copy type/coordinates into rest of combined buffer */
+  memcpy(b2+sizeof(int), b1, bsz1);
+  /* Hash combined buffer */
+  hashlittle2(b2, bsz2, (uint32_t *)&pb, (uint32_t *)&pc);
+  pfree(b2);
+  hval = pb ^ pc;
+  return hval;
+}
+
+/**
+ * @brief Return the 32-bit hash value of a network point
+ */
+uint64
+pose_hash_extended(const Pose *pose, uint64 seed)
+{
+  /* PostGIS currently does not provide an extended hash function, */
+  return DatumGetUInt64(hash_any_extended(
+    (unsigned char *) VARDATA_ANY(pose), VARSIZE_ANY_EXHDR(pose), seed));
 }
 
 /*****************************************************************************/

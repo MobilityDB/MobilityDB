@@ -56,7 +56,6 @@ tpose_to_tgeompoint(const Temporal *temp)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_pose_geom;
   lfinfo.numparam = 0;
-  lfinfo.args = true;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TGEOMPOINT;
   lfinfo.tpfunc_base = NULL;

@@ -86,11 +86,33 @@ extern void pose_set_srid(Pose *pose, int32 srid);
 extern GSERIALIZED *pose_geom(const Pose *pose);
 extern Datum datum_pose_geom(Datum pose);
 
+/* Distance */
+
 extern Datum pose_distance(Datum pose1, Datum pose2);
 
-extern bool pose_eq(const Pose *pose1, const Pose *pose2);
+/* Interpolation */
 
 extern Pose *pose_interpolate(const Pose *pose1, const Pose *pose2, double ratio);
+extern bool pose_collinear(const Pose *pose1, const Pose *pose2, const Pose *pose3, double ratio);
+
+/* Comparison functions */
+
+extern bool pose_eq(const Pose *pose1, const Pose *pose2);
+extern bool pose_ne(const Pose *pose1, const Pose *pose2);
+
+extern bool pose_same(const Pose *pose1, const Pose *pose2);
+extern bool pose_nsame(const Pose *pose1, const Pose *pose2);
+
+extern int pose_cmp(const Pose *pose1, const Pose *pose2);
+extern bool pose_lt(const Pose *pose1, const Pose *pose2);
+extern bool pose_le(const Pose *pose1, const Pose *pose2);
+extern bool pose_gt(const Pose *pose1, const Pose *pose2);
+extern bool pose_ge(const Pose *pose1, const Pose *pose2);
+
+/* Hash functions */
+
+extern uint32 pose_hash(const Pose *pose);
+extern uint64 pose_hash_extended(const Pose *pose, uint64 seed);
 
 /*****************************************************************************/
 

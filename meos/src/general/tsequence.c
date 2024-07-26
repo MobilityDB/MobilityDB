@@ -65,6 +65,10 @@
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
+#if POSE
+  #include "pose/tpose_static.h"
+  #include "pose/tpose_spatialfuncs.h"
+#endif
 
 /*****************************************************************************
  * Collinear functions
@@ -195,6 +199,11 @@ datum_collinear(Datum value1, Datum value2, Datum value3, meosType basetype,
   if (basetype == T_NPOINT)
     return npoint_collinear(DatumGetNpointP(value1), DatumGetNpointP(value2),
       DatumGetNpointP(value3), ratio);
+#endif
+#if POSE
+  if (basetype == T_POSE)
+    return pose_collinear(DatumGetPoseP(value1), DatumGetPoseP(value2),
+      DatumGetPoseP(value3), ratio);
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown collinear operation for base type: %d", basetype);
@@ -2326,6 +2335,15 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
     return PointerGetDatum(result);
   }
 #endif
+#if POSE
+  if (inst1->temptype == T_TPOSE)
+  {
+    Pose *pose1 = DatumGetPoseP(value1);
+    Pose *pose2 = DatumGetPoseP(value2);
+    Pose *result = pose_interpolate(pose1, pose2, ratio);
+    return PointerGetDatum(result);
+  }
+#endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown interpolation function for continuous temporal type: %d",
     inst1->temptype);
@@ -2732,6 +2750,10 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 #if NPOINT
   else if (inst1->temptype == T_TNPOINT)
     result = tnpointsegm_intersection_value(inst1, inst2, value, t);
+#endif
+#if POSE
+  else if (inst1->temptype == T_TPOSE)
+    result = tposesegm_intersection_value(inst1, inst2, value, t);
 #endif
   else
   {

@@ -38,8 +38,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 /* MobilityDB */
-#include "pg_general/temporal.h"
-#include "pg_general/type_util.h"
 #include "pose/tpose.h"
 #include "pose/tpose_static.h"
 #include "pose/tpose_spatialfuncs.h"
@@ -79,7 +77,7 @@ Pose_set_srid(PG_FUNCTION_ARGS)
   Pose *result = pose_copy(pose);
   pose_set_srid(result, srid);
   PG_FREE_IF_COPY(pose, 0);
-  PG_RETURN_INT32(result);
+  PG_RETURN_POSE_P(result);
 }
 
 PGDLLEXPORT Datum Tpose_get_srid(PG_FUNCTION_ARGS);
@@ -112,7 +110,7 @@ Tpose_set_srid(PG_FUNCTION_ARGS)
   int32 srid = PG_GETARG_INT32(1);
   Temporal *result = tpose_set_srid(temp, srid);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************

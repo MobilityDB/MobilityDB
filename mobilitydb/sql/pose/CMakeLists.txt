@@ -1,9 +1,9 @@
 SET(LOCAL_FILES
   100_tpose_static
-#  101_tpose
-#  102_tpose_inout
-#  104_tpose_spatialfuncs
-#  108_tpose_boxops
+  101_tpose
+  102_tpose_inout
+  104_tpose_spatialfuncs
+  108_tpose_boxops
   )
 
 foreach (f ${LOCAL_FILES})

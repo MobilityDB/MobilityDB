@@ -44,9 +44,12 @@ extern bool pose_timestamp_set_stbox(const Pose *pose, TimestampTz t,
   STBox *box);
 extern bool pose_period_set_stbox(const Pose *pose, const Span *p,
   STBox *box);
+/* Functions computing the bounding box at the creation of a temporal pose */
 
 extern void tposeinst_set_stbox(const TInstant *inst, STBox *box);
-extern void tposeinstarr_set_stbox(const TInstant **instants, int count, STBox *box);
+extern void tposeinstarr_set_stbox(const TInstant **instants, int count,
+  STBox *box);
+extern void tposeseq_expand_stbox(TSequence *seq, const TInstant *inst);
 
 /*****************************************************************************/
 

@@ -79,17 +79,17 @@ CREATE FUNCTION tpose(pose, timestamptz)
 
 CREATE FUNCTION tpose(pose, tstzset)
   RETURNS tpose
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base_timestampset'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tpose(pose, tstzspan, text DEFAULT 'linear')
   RETURNS tpose
-  AS 'MODULE_PATHNAME', 'Tsequence_from_base_period'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tpose(pose, tstzspanset, text DEFAULT 'linear')
   RETURNS tpose
-  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_periodset'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

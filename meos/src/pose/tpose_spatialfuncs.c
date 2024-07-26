@@ -70,6 +70,9 @@ tposesegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   double dist;
   /* Compute the value taking into account position only */
   double fraction = (double) geosegm_locate_point(geom_start, geom_end, geom, &dist);
+  pfree(DatumGetPointer(geom_start));
+  pfree(DatumGetPointer(geom_end));
+  pfree(DatumGetPointer(geom));
   if (fabs(dist) >= MEOS_EPSILON)
     return false;
   /* Compare value with interpolated pose to take into account orientation as well */
@@ -77,9 +80,9 @@ tposesegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Pose *pose2 = DatumGetPoseP(end);
   Pose *pose = DatumGetPoseP(value);
   Pose *pose_interp = pose_interpolate(pose1, pose2, fraction);
-  bool eq = pose_eq(pose, pose_interp);
+  bool same = pose_same(pose, pose_interp);
   pfree(pose_interp);
-  if (!eq)
+  if (!same)
     return false;
   if (t != NULL)
   {
@@ -105,7 +108,7 @@ tpose_ever_eq(const Temporal *temp, const Pose *pose)
   if (! ensure_same_srid(tpose_srid(temp), pose_get_srid(pose)) ||
       ! ensure_same_spatial_dimensionality(temp->flags, pose->flags))
     return false;
-  return temporal_ever_eq(temp, PosePGetDatum(pose));
+  return ever_eq_temporal_base(temp, PosePGetDatum(pose));
 }
 
 /**
@@ -120,7 +123,7 @@ tpose_always_eq(const Temporal *temp, const Pose *pose)
   if (! ensure_same_srid(tpose_srid(temp), pose_get_srid(pose)) ||
       ! ensure_same_spatial_dimensionality(temp->flags, pose->flags))
     return false;
-  return temporal_always_eq(temp, PosePGetDatum(pose));
+  return always_eq_temporal_base(temp, PosePGetDatum(pose));
 }
 
 /*****************************************************************************/

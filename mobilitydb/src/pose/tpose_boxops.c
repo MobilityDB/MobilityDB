@@ -48,6 +48,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/span.h"
 #include "pose/tpose.h"
 #include "pose/tpose_boxops.h"
 

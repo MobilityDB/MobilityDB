@@ -55,6 +55,10 @@
   #include "npoint/tnpoint_static.h"
   #include "npoint/tnpoint_parser.h"
 #endif
+#if POSE
+  #include "pose/tpose_static.h"
+  #include "pose/tpose_parser.h"
+#endif
 
 /*****************************************************************************
  * Comparison functions on datums
@@ -102,6 +106,10 @@ datum_cmp(Datum l, Datum r, meosType type)
 #if NPOINT
     case T_NPOINT:
       return npoint_cmp(DatumGetNpointP(l), DatumGetNpointP(r));
+#endif
+#if POSE
+    case T_POSE:
+      return pose_cmp(DatumGetPoseP(l), DatumGetPoseP(r));
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -184,6 +192,10 @@ datum_eq(Datum l, Datum r, meosType type)
 #if NPOINT
     case T_NPOINT:
       return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
+#endif
+#if POSE
+    case T_POSE:
+      return pose_eq(DatumGetPoseP(l), DatumGetPoseP(r));
 #endif
     default: /* Error! */
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -393,6 +405,10 @@ datum_hash(Datum d, meosType type)
     case T_NPOINT:
       return npoint_hash(DatumGetNpointP(d));
 #endif
+#if POSE
+    case T_POSE:
+      return pose_hash(DatumGetPoseP(d));
+#endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown hash function for base type: %d", type);
@@ -434,6 +450,10 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
 #if NPOINT
     case T_NPOINT:
       return npoint_hash_extended(DatumGetNpointP(d), seed);
+#endif
+#if POSE
+    case T_POSE:
+      return pose_hash_extended(DatumGetPoseP(d), seed);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -892,7 +912,7 @@ hypot4d(double x, double y, double z, double m)
  * @brief Call input function of the base type
  */
 bool
-#if NPOINT
+#if NPOINT || POSE
 basetype_in(const char *str, meosType type, bool end, Datum *result)
 #else
 basetype_in(const char *str, meosType type,
@@ -984,6 +1004,16 @@ basetype_in(const char *str, meosType type,
       return true;
     }
 #endif
+#if POSE
+    case T_POSE:
+    {
+      Pose *pose = pose_parse(&str, end);
+      if (! pose)
+        return false;
+      *result = PointerGetDatum(pose);
+      return true;
+    }
+#endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown input function for base type: %s", meostype_name(type));
@@ -1048,6 +1078,10 @@ basetype_out(Datum value, meosType type, int maxdd)
 #if NPOINT
     case T_NPOINT:
       return npoint_out(DatumGetNpointP(value), maxdd);
+#endif
+#if POSE
+    case T_POSE:
+      return pose_out(DatumGetPoseP(value), maxdd);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
