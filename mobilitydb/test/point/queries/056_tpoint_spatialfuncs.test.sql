@@ -375,6 +375,7 @@ SELECT ST_AsText(trajectory(tgeompoint 'Point(1 1)@2000-01-01'));
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(trajectory(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'))) AS t(dp);
 SELECT ST_AsText(trajectory(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
 SELECT ST_AsText(trajectory(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+SELECT ST_AsText(trajectory(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
 -- PostGIS 3.3 changed the output of MULTIPOINT
 -- SELECT ST_AsText(trajectory(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(trajectory(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'))) AS t(dp);
