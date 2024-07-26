@@ -1809,7 +1809,7 @@ gbox_from_stbox(const STBox *box, uint8_t *buf)
 /**
  * @brief Return a trajectory from a set of points and lines
  * @details The result is either a gometry collection, a (multi)point or a-
- * (multi)linestring or a multipoint
+ * (multi)linestring
  * @param[in] points Array of points
  * @param[in] npoints Number of elements in the points array
  * @param[in] lines Array of lines
@@ -1849,7 +1849,7 @@ geopointlinearr_make_trajectory(GSERIALIZED **points, int npoints,
   size_t size = 8;
   /* For GEOMETRYCOLLECTION, subtype and no of elements */
   if (npoints > 0 && nlines > 0)
-    size += 8;
+    size += sizeof(uint32_t) * 2;
   /* For MULTIPOINT, subtype and no of elements */
   if (npoints > 1)
     size += sizeof(uint32_t) * 2;
@@ -1857,7 +1857,7 @@ geopointlinearr_make_trajectory(GSERIALIZED **points, int npoints,
   if (nlines > 1)
     size += sizeof(uint32_t) * 2;
   /* Add the size of the composing points
-   * (POINTTYPE + npoints = 1 + ptzize) for each point */
+   * (POINTTYPE + npoints (= 1) + ptzize) for each point */
   size += ((sizeof(uint32_t) * 2) + ptsize) * npoints;
   /* Add the size of the composing lines */
   uint32_t *line_npts = palloc(sizeof(uint32_t) * nlines);
@@ -1867,7 +1867,7 @@ geopointlinearr_make_trajectory(GSERIALIZED **points, int npoints,
     size += (sizeof(uint32_t) * 2) + (ptsize * line_npts[i]);
   }
   /* Implements the logic of PostGIS function lwgeom_needs_bbox */
-  bool hasbbox = (npoints > 1 || nlines > 1 ||
+  bool hasbbox = (npoints + nlines > 1 ||
     (nlines == 1 && line_npts[0] > 2) );
   if (hasbbox)
     size += sizeof(float) * (hasz || geodetic ? 3 : 2) * 2;
