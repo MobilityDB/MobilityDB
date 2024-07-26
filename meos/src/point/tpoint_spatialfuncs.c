@@ -1808,7 +1808,7 @@ gbox_from_stbox(const STBox *box, uint8_t *buf)
 
 /**
  * @brief Return a trajectory from a set of points and lines
- * @details The result is either a gometry collection, a (multi)point or a-
+ * @details The result is either a geometry collection, a (multi)point or a-
  * (multi)linestring
  * @param[in] points Array of points
  * @param[in] npoints Number of elements in the points array
