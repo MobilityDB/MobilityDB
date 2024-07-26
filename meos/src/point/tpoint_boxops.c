@@ -218,7 +218,7 @@ tpointinst_stboxes(const TInstant *inst, int *count)
  * of a temporal point sequence with discrete interpolation (iterator function)
  * @param[in] seq Temporal value
  * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one box per segment
+ * If the value is < 1, the result is one box per instant
  * @param[out] result Temporal box
  * @return Number of elements in the array
  */
@@ -228,21 +228,20 @@ tpointseq_disc_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
   assert(tgeo_type(seq->temptype));
   assert(! MEOS_FLAGS_LINEAR_INTERP(seq->flags)); assert(seq->count > 1);
   /* Temporal sequence has at least 2 instants */
-  int nsegs = seq->count - 1;
-  if (max_count < 1 || nsegs <= max_count)
+  if (max_count < 1 || seq->count <= max_count)
   {
     /* One bounding box per instant */
     for (int i = 0; i < seq->count; i++)
       tpointinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[i]);
-    return nsegs;
+    return seq->count;
   }
   else
   {
     /* One bounding box per several consecutive instants */
     /* Minimum number of input instants merged together in an output box */
-    int size = nsegs / max_count;
+    int size = seq->count / max_count;
     /* Number of output boxes that result from merging (size + 1) instants */
-    int remainder = nsegs % max_count;
+    int remainder = seq->count % max_count;
     int i = 0; /* Loop variable for input instants */
     int k = 0; /* Loop variable for output boxes */
     while (k < max_count)
@@ -252,7 +251,7 @@ tpointseq_disc_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
         j++;
       assert(i < j);
       tpointinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[k]);
-      for (int l = i + 1; l <= j; l++)
+      for (int l = i + 1; l < j; l++)
       {
         const TInstant *inst = TSEQUENCE_INST_N(seq, l);
         STBox box;
@@ -373,8 +372,10 @@ STBox *
 tpointseq_stboxes(const TSequence *seq, int max_count, int *count)
 {
   assert(seq); assert(count); assert(tgeo_type(seq->temptype));
-  int nboxes = (max_count < 1) ?
-    ( seq->count == 1 ? 1 : seq->count - 1 ) : max_count;
+  /* In the discrete case, we will create at most seq->count boxes
+   * while in the continuous we create at most (seq->count - 1).
+   * Thus, allocate seq->count to be sure. */
+  int nboxes = (max_count < 1) ? seq->count : max_count;
   STBox *result = palloc(sizeof(STBox) * nboxes);
   *count = tpointseq_stboxes_iter(seq, max_count, result);
   return result;
