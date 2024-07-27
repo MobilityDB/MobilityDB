@@ -60,6 +60,9 @@
 #if NPOINT
   #include "npoint/tnpoint_boxops.h"
 #endif
+#if POSE
+  #include "pose/tpose_boxops.h"
+#endif
 
 /*****************************************************************************
  * Functions on generic bounding boxes of temporal types
@@ -222,6 +225,10 @@ tinstant_set_bbox(const TInstant *inst, void *box)
 #if NPOINT
   else if (inst->temptype == T_TNPOINT)
     tnpointinst_set_stbox(inst, (STBox *) box);
+#endif
+#if POSE
+  else if (inst->temptype == T_TPOSE)
+    tposeinst_set_stbox(inst, (STBox *) box);
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -410,6 +417,10 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   else if (temptype == T_TNPOINT)
     tnpointinstarr_set_stbox(instants, count, interp, (STBox *) box);
 #endif
+#if POSE
+  else if (temptype == T_TPOSE)
+    tposeinstarr_set_stbox(instants, count, (STBox *) box);
+#endif
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -460,6 +471,10 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
 #if NPOINT
   else if (seq->temptype == T_TNPOINT)
     tnpointseq_expand_stbox(seq, inst);
+#endif
+#if POSE
+  else if (seq->temptype == T_TPOSE)
+    tposeseq_expand_stbox(seq, inst);
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
