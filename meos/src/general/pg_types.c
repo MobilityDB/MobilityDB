@@ -53,6 +53,8 @@
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
+
+
 /* PostGIS */
 #include <liblwgeom_internal.h> /* for OUT_DOUBLE_BUFFER_SIZE */
 
@@ -70,6 +72,8 @@
   extern Datum timestamp_out(PG_FUNCTION_ARGS);
   extern Datum timestamptz_out(PG_FUNCTION_ARGS);
   extern Datum interval_out(PG_FUNCTION_ARGS);
+  extern Datum range_out(PG_FUNCTION_ARGS);
+  extern Datum multirange_out(PG_FUNCTION_ARGS);
 #endif /* ! MEOS */
 
 #if POSTGRESQL_VERSION_NUMBER >= 150000 || MEOS

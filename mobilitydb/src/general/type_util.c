@@ -41,10 +41,10 @@
 #include <utils/lsyscache.h>
 #include <catalog/pg_type_d.h>
 #include <utils/array.h>
+#include <utils/rangetypes.h>
 #if POSTGRESQL_VERSION_NUMBER >= 140000
   #include <utils/multirangetypes.h>
 #endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
-#include <utils/rangetypes.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -52,6 +52,9 @@
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/doublen.h"
+
+extern Datum range_out(PG_FUNCTION_ARGS);
+extern Datum multirange_out(PG_FUNCTION_ARGS);
 
 /*****************************************************************************
  * Call PostgreSQL functions
@@ -447,5 +450,33 @@ multirange_make(const SpanSet *ss)
   return result;
 }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+
+#if DEBUG_BUILD
+/**
+ * @ingroup meos_pg_types
+ * @brief Return a range converted to a string
+ * @param[in] r Timestamp
+ * @note PostgreSQL function: @p range_out(PG_FUNCTION_ARGS)
+ */
+char *
+pg_range_out(RangeType *r)
+{
+  Datum d = PointerGetDatum(r);
+  return DatumGetCString(call_function1(range_out, d));
+}
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return a multirange converted to a string
+ * @param[in] r Timestamp
+ * @note PostgreSQL function: @p range_out(PG_FUNCTION_ARGS)
+ */
+char *
+pg_multirange_out(MultirangeType *mr)
+{
+  Datum d = PointerGetDatum(mr);
+  return DatumGetCString(call_function1(multirange_out, d));
+}
+#endif /* DEBUG_BUILD */
 
 /*****************************************************************************/
