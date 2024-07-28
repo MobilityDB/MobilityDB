@@ -679,9 +679,9 @@ tdiscseq_spans_iter(const TSequence *seq, int max_count, Span *result)
       int j = i + size;
       if (k < remainder)
         j++;
-      assert(i < j);
+      assert(i < j - 1);
       tinstant_set_span(TSEQUENCE_INST_N(seq, i), &result[k]);
-      for (int l = i + 1; l <= j; l++)
+      for (int l = i + 1; l < j; l++)
       {
         const TInstant *inst = TSEQUENCE_INST_N(seq, l);
         Span span;
@@ -852,25 +852,23 @@ tsequenceset_spans(const TSequenceSet *ss, int max_count, int *count)
     int k = 0; /* Loop variable for output boxes */
     while (k < max_count)
     {
-      int j = i + size - 1;
+      int j = i + size;
       if (k < remainder)
         j++;
-      if (i < j)
+      if (i < j - 1)
       {
-        tsequence_spans_iter(TSEQUENCESET_SEQ_N(ss, i), 1,
-          &result[k]);
-        for (int l = i + 1; l <= j; l++)
+        tsequence_spans_iter(TSEQUENCESET_SEQ_N(ss, i), 1, &result[k]);
+        for (int l = i + 1; l < j; l++)
         {
           Span span;
           tsequence_spans_iter(TSEQUENCESET_SEQ_N(ss, l), 1, &span);
           span_expand(&span, &result[k]);
         }
-        i = j + 1;
         k++;
       }
       else
-        tsequence_spans_iter(TSEQUENCESET_SEQ_N(ss, i++), 1,
-          &result[k++]);
+        tsequence_spans_iter(TSEQUENCESET_SEQ_N(ss, i), 1, &result[k++]);
+      i = j;
     }
     *count = max_count;
     return result;
@@ -940,7 +938,7 @@ tnumberinst_tboxes(const TInstant *inst, int *count)
 static int
 tnumberseq_disc_tboxes_iter(const TSequence *seq, int max_count, TBox *result)
 {
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags) == DISCRETE); 
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE); 
   assert(seq->count > 1);
   /* Temporal sequence has at least 2 instants */
   int nsegs = seq->count - 1;
@@ -1025,9 +1023,9 @@ tnumberseq_cont_tboxes_iter(const TSequence *seq, int max_count, TBox *result)
       int j = i + size;
       if (k < remainder)
         j++;
-      assert(i < j);
+      assert(i < j - 1);
       tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, i), &result[k]);
-      for (int l = i + 1; l <= j; l++)
+      for (int l = i + 1; l < j; l++)
       {
         const TInstant *inst = TSEQUENCE_INST_N(seq, l);
         TBox box;
@@ -1139,25 +1137,23 @@ tnumberseqset_tboxes(const TSequenceSet *ss, int max_count, int *count)
     int k = 0; /* Loop variable for output boxes */
     while (k < max_count)
     {
-      int j = i + size - 1;
+      int j = i + size;
       if (k < remainder)
         j++;
-      if (i < j)
+      if (i < j - 1)
       {
-        tnumberseq_tboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1,
-          &result[k]);
-        for (int l = i + 1; l <= j; l++)
+        tnumberseq_tboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1, &result[k]);
+        for (int l = i + 1; l < j; l++)
         {
           TBox box;
           tnumberseq_tboxes_iter(TSEQUENCESET_SEQ_N(ss, l), 1, &box);
           tbox_expand(&box, &result[k]);
         }
-        i = j + 1;
         k++;
       }
       else
-        tnumberseq_tboxes_iter(TSEQUENCESET_SEQ_N(ss, i++), 1,
-          &result[k++]);
+        tnumberseq_tboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1, &result[k++]);
+      i = j;
     }
     *count = max_count;
     return result;

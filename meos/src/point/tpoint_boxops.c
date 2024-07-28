@@ -249,7 +249,6 @@ tpointseq_disc_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
       int j = i + size;
       if (k < remainder)
         j++;
-      assert(i < j);
       tpointinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[k]);
       for (int l = i + 1; l < j; l++)
       {
@@ -436,25 +435,23 @@ tpointseqset_stboxes(const TSequenceSet *ss, int max_count, int *count)
     int k = 0; /* Loop variable for output boxes */
     while (k < max_count)
     {
-      int j = i + size - 1;
+      int j = i + size;
       if (k < remainder)
         j++;
-      if (i < j)
+      if (i < j - 1)
       {
-        tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1,
-          &result[k]);
-        for (int l = i + 1; l <= j; l++)
+        tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1, &result[k]);
+        for (int l = i + 1; l < j; l++)
         {
           STBox box;
           tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, l), 1, &box);
           stbox_expand(&box, &result[k]);
         }
-        i = j + 1;
         k++;
       }
       else
-        tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i++), 1,
-          &result[k++]);
+        tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1, &result[k++]);
+      i = j;
     }
     *count = max_count;
     return result;
@@ -722,23 +719,23 @@ multiline_gboxes(const GSERIALIZED *gs, int max_count, int *count)
     int k = 0; /* Loop variable for output boxes */
     while (k < max_count)
     {
-      int j = i + size - 1;
+      int j = i + size;
       if (k < remainder)
         j++;
-      if (i < j)
+      if (i < j - 1)
       {
         line_gboxes_iter(lwmline->geoms[i], 1, &result[k]);
-        for (int l = i + 1; l <= j; l++)
+        for (int l = i + 1; l < j; l++)
         {
           GBOX box;
           line_gboxes_iter(lwmline->geoms[l], 1, &box);
           gbox_merge(&box, &result[k]);
         }
-        i = j + 1;
         k++;
       }
       else
-        line_gboxes_iter(lwmline->geoms[i++], 1, &result[k++]);
+        line_gboxes_iter(lwmline->geoms[i], 1, &result[k++]);
+      i = j;
     }
     *count = max_count;
     return result;
