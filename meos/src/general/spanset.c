@@ -1875,19 +1875,19 @@ spanset_spans(const SpanSet *ss, int max_count, int *count)
     int k = 0; /* Loop variable for output spans */
     while (k < max_count)
     {
-      int j = i + size - 1;
+      int j = i + size;
       if (k < remainder)
         j++;
-      if (i < j)
+      if (i < j - 1)
       {
         const Span *from = SPANSET_SP_N(ss, i);
-        const Span *to = SPANSET_SP_N(ss, j);
+        const Span *to = SPANSET_SP_N(ss, j - 1);
         span_set(from->lower, to->upper, from->lower_inc, to->upper_inc,
           from->basetype, to->spantype, &result[k++]);
-        i = j + 1;
       }
       else
-        memcpy(&result[k++], SPANSET_SP_N(ss, i++), sizeof(Span));
+        memcpy(&result[k++], SPANSET_SP_N(ss, i), sizeof(Span));
+      i = j;
     }
     *count = max_count;
     return result;
