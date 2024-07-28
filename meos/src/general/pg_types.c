@@ -72,8 +72,6 @@
   extern Datum timestamp_out(PG_FUNCTION_ARGS);
   extern Datum timestamptz_out(PG_FUNCTION_ARGS);
   extern Datum interval_out(PG_FUNCTION_ARGS);
-  extern Datum range_out(PG_FUNCTION_ARGS);
-  extern Datum multirange_out(PG_FUNCTION_ARGS);
 #endif /* ! MEOS */
 
 #if POSTGRESQL_VERSION_NUMBER >= 150000 || MEOS
