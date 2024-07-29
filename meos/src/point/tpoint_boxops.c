@@ -249,7 +249,6 @@ tpointseq_disc_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
       int j = i + size;
       if (k < remainder)
         j++;
-      assert(i < j);
       tpointinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[k]);
       for (int l = i + 1; l < j; l++)
       {
@@ -261,6 +260,8 @@ tpointseq_disc_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
       k++;
       i = j;
     }
+    assert(i == seq->count);
+    assert(k == max_count);
     return max_count;
   }
 }
@@ -278,15 +279,7 @@ static int
 tpointseq_cont_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
 {
   assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    tpointinst_set_stbox(TSEQUENCE_INST_N(seq, 0), &result[0]);
-    return 1;
-  }
-
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags)); assert(seq->count > 1);
   /* Temporal sequence has at least 2 instants */
   int nsegs = seq->count - 1;
   if (max_count < 1 || nsegs <= max_count)
@@ -318,7 +311,6 @@ tpointseq_cont_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
       int j = i + size;
       if (k < remainder)
         j++;
-      assert(i < j);
       tpointinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[k]);
       for (int l = i + 1; l <= j; l++)
       {
@@ -330,6 +322,8 @@ tpointseq_cont_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
       k++;
       i = j;
     }
+    assert(i == nsegs);
+    assert(k == max_count);
     return max_count;
   }
 }
@@ -405,6 +399,7 @@ tpointseqset_stboxes(const TSequenceSet *ss, int max_count, int *count)
     for (int i = 0; i < ss->count; i++)
       nboxes1 += tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i),
         max_count, &result[nboxes1]);
+    assert(nboxes1 <= ss->totalcount);
     *count = nboxes1;
     return result;
   }
@@ -422,6 +417,7 @@ tpointseqset_stboxes(const TSequenceSet *ss, int max_count, int *count)
       nboxes1 += tpointseq_stboxes_iter(seq, nboxes_seq,
         &result[nboxes1]);
     }
+    assert(nboxes1 <= ss->totalcount);
     *count = nboxes1;
     return result;
   }
@@ -436,26 +432,21 @@ tpointseqset_stboxes(const TSequenceSet *ss, int max_count, int *count)
     int k = 0; /* Loop variable for output boxes */
     while (k < max_count)
     {
-      int j = i + size - 1;
+      int j = i + size;
       if (k < remainder)
         j++;
-      if (i < j)
+      tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1, &result[k]);
+      for (int l = i + 1; l < j; l++)
       {
-        tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1,
-          &result[k]);
-        for (int l = i + 1; l <= j; l++)
-        {
-          STBox box;
-          tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, l), 1, &box);
-          stbox_expand(&box, &result[k]);
-        }
-        i = j + 1;
-        k++;
+        STBox box;
+        tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, l), 1, &box);
+        stbox_expand(&box, &result[k]);
       }
-      else
-        tpointseq_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i++), 1,
-          &result[k++]);
+      k++;
+      i = j;
     }
+    assert(i == ss->count);
+    assert(k == max_count);
     *count = max_count;
     return result;
   }
@@ -621,6 +612,8 @@ line_gboxes_iter(const LWLINE *lwline, int max_count, GBOX *result)
       k++;
       i = j;
     }
+    assert(i == nsegs);
+    assert(k == max_count);
     return max_count;
   }
 }
@@ -692,6 +685,7 @@ multiline_gboxes(const GSERIALIZED *gs, int max_count, int *count)
       nboxes1 += line_gboxes_iter(lwmline->geoms[i], max_count,
         &result[nboxes1]);
     *count = nboxes1;
+    assert(nboxes1 <= totalpoints);
     return result;
   }
   else if (nlines <= max_count)
@@ -708,6 +702,7 @@ multiline_gboxes(const GSERIALIZED *gs, int max_count, int *count)
         nboxes_line = 1;
       nboxes1 += line_gboxes_iter(lwline, nboxes_line, &result[nboxes1]);
     }
+    assert(nboxes1 <= max_count);
     *count = nboxes1;
     return result;
   }
@@ -722,24 +717,21 @@ multiline_gboxes(const GSERIALIZED *gs, int max_count, int *count)
     int k = 0; /* Loop variable for output boxes */
     while (k < max_count)
     {
-      int j = i + size - 1;
+      int j = i + size;
       if (k < remainder)
         j++;
-      if (i < j)
+      line_gboxes_iter(lwmline->geoms[i], 1, &result[k]);
+      for (int l = i + 1; l < j; l++)
       {
-        line_gboxes_iter(lwmline->geoms[i], 1, &result[k]);
-        for (int l = i + 1; l <= j; l++)
-        {
-          GBOX box;
-          line_gboxes_iter(lwmline->geoms[l], 1, &box);
-          gbox_merge(&box, &result[k]);
-        }
-        i = j + 1;
-        k++;
+        GBOX box;
+        line_gboxes_iter(lwmline->geoms[l], 1, &box);
+        gbox_merge(&box, &result[k]);
       }
-      else
-        line_gboxes_iter(lwmline->geoms[i++], 1, &result[k++]);
+      k++;
+      i = j;
     }
+    assert(i == nlines);
+    assert(k == max_count);
     *count = max_count;
     return result;
   }

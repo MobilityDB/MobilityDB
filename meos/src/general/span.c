@@ -1907,20 +1907,14 @@ set_spans(const Set *s, int max_count, int *count)
     int k = 0; /* Loop variable for output spans */
     while (k < max_count)
     {
-      int j = i + size - 1;
+      int j = i + size;
       if (k < remainder)
         j++;
-      if (i < j)
-      {
-        set_set_subspan(s, i, j, &result[k++]);
-        i = j + 1;
-      }
-      else
-      {
-        set_set_subspan(s, i, i, &result[k++]);
-        i++;
-      }
+      set_set_subspan(s, i, j - 1, &result[k++]);
+      i = j;
     }
+    assert(i == s->count);
+    assert(k == max_count);
     *count = max_count;
     return result;
   }
