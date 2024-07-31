@@ -450,7 +450,7 @@ lwproj_transform(int32 srid_from, int32 srid_to)
  * @param[in] is_forward True when the transformation is forward
  */
 static LWPROJ *
-lwproj_transform_pipeline(char *pipeline, bool is_forward)
+lwproj_transform_pipeline(const char *pipeline, bool is_forward)
 {
   assert(pipeline);
   LWPROJ *result = lwproj_from_str_pipeline(pipeline, is_forward);
@@ -580,7 +580,7 @@ point_transform(const GSERIALIZED *gs, int32 srid_to)
  * @param[in] is_forward True when the transformation is forward
  */
 GSERIALIZED *
-point_transform_pipeline(const GSERIALIZED *gs, char *pipeline,
+point_transform_pipeline(const GSERIALIZED *gs, const char *pipeline,
   int32 srid_to, bool is_forward)
 {
   int32 srid_from;
@@ -667,7 +667,7 @@ geoset_transform(const Set *s, int32 srid_to)
  * @param[in] is_forward True when the transformation is forward
  */
 Set *
-geoset_transform_pipeline(const Set *s, char *pipeline, int32 srid_to,
+geoset_transform_pipeline(const Set *s, const char *pipeline, int32 srid_to,
   bool is_forward)
 {
   int32 srid_from;
@@ -804,7 +804,7 @@ stbox_transform(const STBox *box, int32 srid_to)
  * @param[in] is_forward True when the transformation is forward
  */
 STBox *
-stbox_transform_pipeline(const STBox *box, char *pipeline,
+stbox_transform_pipeline(const STBox *box, const char *pipeline,
   int32 srid_to, bool is_forward)
 {
   /* Ensure validity of the arguments */
@@ -971,7 +971,7 @@ tpoint_transform(const Temporal *temp, int32 srid_to)
  * @param[in] is_forward True when the transformation is forward
  */
 Temporal *
-tpoint_transform_pipeline(const Temporal *temp, char *pipeline,
+tpoint_transform_pipeline(const Temporal *temp, const char *pipeline,
   int32 srid_to, bool is_forward)
 {
   /* Ensure validity of the arguments */

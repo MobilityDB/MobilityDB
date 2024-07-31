@@ -56,10 +56,10 @@ extern Datum datum_sum_double4(Datum l, Datum r);
 
 /* Generic aggregation functions */
 
-extern TInstant **tinstant_tagg(TInstant **instants1, int count1,
-  TInstant **instants2, int count2, datum_func2 func, int *newcount);
-extern TSequence **tsequence_tagg(TSequence **sequences1, int count1,
-  TSequence **sequences2, int count2, datum_func2 func,
+extern TInstant **tinstant_tagg(const TInstant **instants1, int count1,
+  const TInstant **instants2, int count2, datum_func2 func, int *newcount);
+extern TSequence **tsequence_tagg(const TSequence **sequences1, int count1,
+  const TSequence **sequences2, int count2, datum_func2 func,
   bool crossings, int *newcount);
 extern SkipList *tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
   datum_func2 func, bool interpoint);
@@ -68,8 +68,8 @@ extern SkipList *temporal_tagg_combinefn1(SkipList *state1, SkipList *state2,
 
 extern SkipList *tinstant_tagg_transfn(SkipList *state, const TInstant *inst,
   datum_func2 func);
-extern TSequence *tinstant_tavg_finalfn(TInstant **instants, int count);
-extern TSequenceSet *tsequence_tavg_finalfn(TSequence **sequences, int count);
+extern TSequence *tinstant_tavg_finalfn(const TInstant **instants, int count);
+extern TSequenceSet *tsequence_tavg_finalfn(const TSequence **sequences, int count);
 extern TInstant *tnumberinst_transform_tavg(const TInstant *inst);
 extern Temporal **temporal_transform_tcount(const Temporal *temp, int *count);
 extern Temporal **temporal_transform_tagg(const Temporal *temp, int *count,
@@ -87,9 +87,9 @@ extern Temporal *temporal_tagg_finalfn(SkipList *state);
 extern SkipList *temporal_tagg_transform_transfn(SkipList *state, const Temporal *temp,
   datum_func2 func, bool crossings, TInstant *(*transform)(const TInstant *));
 
-extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
-  double maxdist, Interval *maxt);
-extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
+extern Temporal *temporal_app_tinst_transfn(const Temporal *state, const TInstant *inst,
+  double maxdist, const Interval *maxt);
+extern Temporal *temporal_app_tseq_transfn(const Temporal *state, const TSequence *seq);
   
 /*****************************************************************************/
 

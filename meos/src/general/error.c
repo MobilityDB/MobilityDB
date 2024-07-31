@@ -134,7 +134,7 @@ int meos_errno_reset(void)
 /**
  * @brief Global variable that keeps the error handler function
  */
-void (*MEOS_ERROR_HANDLER)(int, int, char *) = NULL;
+void (*MEOS_ERROR_HANDLER)(int, int, const char *) = NULL;
 
 #if MEOS
 /**
@@ -142,7 +142,7 @@ void (*MEOS_ERROR_HANDLER)(int, int, char *) = NULL;
  * stderr, sets the errcode, and exits if error level is equal to `ERROR`
  */
 void
-default_error_handler(int errlevel, int errcode, char *errmsg)
+default_error_handler(int errlevel, int errcode, const char *errmsg)
 {
   fprintf(stderr, "%s\n", errmsg);
   meos_errno_set(errcode);
@@ -156,7 +156,7 @@ default_error_handler(int errlevel, int errcode, char *errmsg)
  */
 void
 error_handler_errno(int errlevel __attribute__((__unused__)), int errcode,
-  char *errmsg)
+  const char *errmsg)
 {
   perror(errmsg);
   meos_errno_set(errcode);
@@ -183,7 +183,7 @@ meos_initialize_error_handler(error_handler_fn err_handler)
  * @brief Function handling error messages
  */
 void
-meos_error(int errlevel, int errcode, char *format, ...)
+meos_error(int errlevel, int errcode, const char *format, ...)
 {
   char buffer[1024];
   va_list args;

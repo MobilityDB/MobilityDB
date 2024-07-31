@@ -427,7 +427,7 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
  * @result  Array of output values
  */
 static Temporal **
-temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
+temporalarr_convert_subtype(const Temporal **temparr, int count, uint8 subtype,
   interpType interp)
 {
   assert(temparr);
@@ -462,7 +462,7 @@ temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
  * @csqlfn #Temporal_merge_array()
  */
 Temporal *
-temporal_merge_array(Temporal **temparr, int count)
+temporal_merge_array(const Temporal **temparr, int count)
 {
   /* Ensure validity of the arguments */
   if( ! ensure_not_null((void *) temparr) || ! ensure_positive(count))
@@ -1528,7 +1528,7 @@ temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
  * @endcode
  */
 Temporal *
-tsequence_append_tinstant(const TSequence *seq, const TInstant *inst, double maxdist,
+tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
   const Interval *maxt, bool expand)
 {
   assert(seq); assert(inst); assert(seq->temptype == inst->temptype);
@@ -1798,7 +1798,7 @@ tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
  * @endcode
  */
 TSequenceSet *
-tsequenceset_append_tinstant(const TSequenceSet *ss, const TInstant *inst,
+tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
   double maxdist, const Interval *maxt, bool expand)
 {
   assert(ss); assert(inst);
@@ -1899,7 +1899,7 @@ tsequenceset_append_tinstant(const TSequenceSet *ss, const TInstant *inst,
  * @csqlfn #Temporal_append_tsequence()
  */
 TSequenceSet *
-tsequenceset_append_tsequence(const TSequenceSet *ss, const TSequence *seq,
+tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
   bool expand)
 {
   assert(ss); assert(seq);
@@ -2110,9 +2110,9 @@ temporal_append_tsequence(const Temporal *temp, const TSequence *seq, bool expan
   {
     case TINSTANT:
     {
-      TSequence *seq1 = tinstant_to_tsequence((TInstant *) temp, interp2);
+      TSequence *seq1 = tinstant_to_tsequence((const TInstant *) temp, interp2);
       Temporal *result = (Temporal *) tsequence_append_tsequence(
-        (TSequence *) seq1, (TSequence *) seq, expand);
+        (const TSequence *) seq1, seq, expand);
       pfree(seq1);
       return result;
     }
