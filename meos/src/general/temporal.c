@@ -1502,7 +1502,7 @@ temporal_compact(const Temporal *temp)
  * @param[out] count Number of instants or sequences kept
  */
 void
-temporal_restart(Temporal *temp, int count)
+temporal_restart(const Temporal *temp, int count)
 {
   assert(temp); assert(count > 0);
   assert(temptype_subtype(temp->subtype));

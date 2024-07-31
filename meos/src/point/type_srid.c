@@ -833,7 +833,7 @@ stbox_transform_pipeline(const STBox *box, char *pipeline,
  * @param[in] pj Information about the transformation
  */
 static bool
-tpointinst_transf_pj(TInstant *inst, int32 srid_to, const LWPROJ *pj)
+tpointinst_transf_pj(const TInstant *inst, int32 srid_to, const LWPROJ *pj)
 {
   assert(inst); assert(pj); assert(tgeo_type(inst->temptype));
   GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));

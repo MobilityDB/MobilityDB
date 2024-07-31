@@ -742,7 +742,7 @@ tfloatbox_tile_list(const TBox *box, double vsize, const Interval *duration,
  * @csqlfn #Tbox_tile()
  */
 TBox *
-tbox_tile(Datum value, TimestampTz t, Datum vsize, Interval *duration,
+tbox_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration,
   Datum vorigin, TimestampTz torigin, meosType basetype)
 {
   ensure_positive_datum(vsize, basetype);
@@ -767,7 +767,7 @@ tbox_tile(Datum value, TimestampTz t, Datum vsize, Interval *duration,
  * @csqlfn #Tbox_tile()
  */
 TBox *
-tintbox_tile(int value, TimestampTz t, int vsize, Interval *duration,
+tintbox_tile(int value, TimestampTz t, int vsize, const Interval *duration,
   int vorigin, TimestampTz torigin)
 {
   return tbox_tile(Int32GetDatum(value), t, Int32GetDatum(vsize), duration,
@@ -786,7 +786,7 @@ tintbox_tile(int value, TimestampTz t, int vsize, Interval *duration,
  * @csqlfn #Tbox_tile()
  */
 TBox *
-tfloatbox_tile(double value, TimestampTz t, double vsize, Interval *duration,
+tfloatbox_tile(double value, TimestampTz t, double vsize, const Interval *duration,
   double vorigin, TimestampTz torigin)
 {
   return tbox_tile(Float8GetDatum(value), t, Float8GetDatum(vsize), duration,
@@ -1151,7 +1151,7 @@ temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
  * @csqlfn #Temporal_time_split()
  */
 Temporal **
-temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin,
+temporal_time_split(const Temporal *temp, const Interval *duration, TimestampTz torigin,
   TimestampTz **buckets, int *count)
 {
   /* Ensure validity of the arguments */
@@ -1704,7 +1704,7 @@ tnumber_value_split(const Temporal *temp, Datum size, Datum vorigin,
  * a temporal grid
  */
 Temporal **
-tnumber_value_time_split(Temporal *temp, Datum size, Interval *duration,
+tnumber_value_time_split(const Temporal *temp, Datum size, const Interval *duration,
   Datum vorigin, TimestampTz torigin, Datum **value_buckets,
   TimestampTz **time_buckets, int *count)
 {
@@ -1789,7 +1789,7 @@ tnumber_value_time_split(Temporal *temp, Datum size, Interval *duration,
  * @csqlfn #Tnumber_value_split()
  */
 Temporal **
-tint_value_split(Temporal *temp, int size, int origin, int **buckets,
+tint_value_split(const Temporal *temp, int size, int origin, int **buckets,
   int *count)
 {
   /* Ensure validity of the arguments */
@@ -1822,7 +1822,7 @@ tint_value_split(Temporal *temp, int size, int origin, int **buckets,
  * @csqlfn #Tnumber_value_split()
  */
 Temporal **
-tfloat_value_split(Temporal *temp, double size, double origin,
+tfloat_value_split(const Temporal *temp, double size, double origin,
   double **buckets, int *count)
 {
   /* Ensure validity of the arguments */
@@ -1859,7 +1859,7 @@ tfloat_value_split(Temporal *temp, double size, double origin,
  * @csqlfn #Tnumber_value_time_split()
  */
 Temporal **
-tint_value_time_split(Temporal *temp, int size, Interval *duration,
+tint_value_time_split(const Temporal *temp, int size, const Interval *duration,
   int vorigin, TimestampTz torigin, int **value_buckets,
   TimestampTz **time_buckets, int *count)
 {
@@ -1900,7 +1900,7 @@ tint_value_time_split(Temporal *temp, int size, Interval *duration,
  * @csqlfn #Tnumber_value_time_split()
  */
 Temporal **
-tfloat_value_time_split(Temporal *temp, double size, Interval *duration,
+tfloat_value_time_split(const Temporal *temp, double size, const Interval *duration,
   double vorigin, TimestampTz torigin, double **value_buckets,
   TimestampTz **time_buckets, int *count)
 {

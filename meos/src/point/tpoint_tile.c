@@ -711,7 +711,7 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
  */
 STBox *
 stbox_tile(GSERIALIZED *point, TimestampTz t, double xsize, double ysize,
-  double zsize, Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
+  double zsize, const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
   bool hast)
 {
   /* Ensure parameter validity */
@@ -1067,7 +1067,7 @@ tpoint_space_time_split_init(const Temporal *temp, float xsize, float ysize,
  * @param[out] count Number of elements in the output arrays
  */
 Temporal **
-tpoint_space_split(Temporal *temp, float xsize, float ysize, float zsize,
+tpoint_space_split(const Temporal *temp, float xsize, float ysize, float zsize,
   GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
   GSERIALIZED ***space_buckets, int *count)
 {
@@ -1094,8 +1094,8 @@ tpoint_space_split(Temporal *temp, float xsize, float ysize, float zsize,
  * #Tpoint_space_time_split_ext
  */
 Temporal **
-tpoint_space_time_split(Temporal *temp, float xsize, float ysize, float zsize,
-  Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
+tpoint_space_time_split(const Temporal *temp, float xsize, float ysize, float zsize,
+  const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
   bool bitmatrix, bool border_inc, GSERIALIZED ***space_buckets,
   TimestampTz **time_buckets, int *count)
 {

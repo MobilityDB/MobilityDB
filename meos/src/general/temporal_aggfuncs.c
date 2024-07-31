@@ -183,7 +183,7 @@ datum_sum_double4(Datum l, Datum r)
  * @param[out] newcount Number of instants in the output array
  */
 TInstant **
-tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
+tinstant_tagg(const TInstant **instants1, int count1, const TInstant **instants2,
   int count2, datum_func2 func, int *newcount)
 {
   TInstant **result = palloc(sizeof(TInstant *) * (count1 + count2));
@@ -1519,7 +1519,7 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
  */
 Temporal *
 temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
-  double maxdist, Interval *maxt)
+  double maxdist, const Interval *maxt)
 {
   /* Null state: create a new temporal sequence with the instant */
   if (! state)

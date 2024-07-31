@@ -1528,7 +1528,7 @@ temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
  * @endcode
  */
 Temporal *
-tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
+tsequence_append_tinstant(const TSequence *seq, const TInstant *inst, double maxdist,
   const Interval *maxt, bool expand)
 {
   assert(seq); assert(inst); assert(seq->temptype == inst->temptype);
@@ -1713,7 +1713,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
  * @csqlfn #Temporal_append_tsequence()
  */
 Temporal *
-tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
+tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
   bool expand __attribute__((unused)))
 {
   assert(seq1); assert(seq2);
@@ -1798,7 +1798,7 @@ tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2,
  * @endcode
  */
 TSequenceSet *
-tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
+tsequenceset_append_tinstant(const TSequenceSet *ss, const TInstant *inst,
   double maxdist, const Interval *maxt, bool expand)
 {
   assert(ss); assert(inst);
@@ -1899,7 +1899,7 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
  * @csqlfn #Temporal_append_tsequence()
  */
 TSequenceSet *
-tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
+tsequenceset_append_tsequence(const TSequenceSet *ss, const TSequence *seq,
   bool expand)
 {
   assert(ss); assert(seq);
@@ -2044,8 +2044,8 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
  * @endcode
  */
 Temporal *
-temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
-  Interval *maxt, bool expand)
+temporal_append_tinstant(const Temporal *temp, const TInstant *inst, double maxdist,
+  const Interval *maxt, bool expand)
 {
   /* Validity tests */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) inst) ||
@@ -2089,7 +2089,7 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
  * @csqlfn #Temporal_append_tsequence()
  */
 Temporal *
-temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
+temporal_append_tsequence(const Temporal *temp, const TSequence *seq, bool expand)
 {
   /* Validity tests */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) seq) ||
