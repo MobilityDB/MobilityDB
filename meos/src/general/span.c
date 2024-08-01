@@ -1972,7 +1972,7 @@ span_ne(const Span *s1, const Span *s2)
  * @ingroup meos_internal_setspan_comp
  * @brief Return -1, 0, or 1 depending on whether the first span is less than,
  * equal, or greater than the second one
- * @param[in] s1,s2 Sets
+ * @param[in] s1,s2 Spans
  */
 int
 span_cmp_int(const Span *s1, const Span *s2)

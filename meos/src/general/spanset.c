@@ -1843,6 +1843,46 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_setspan_comp
+ * @brief Return -1, 0, or 1 depending on whether the duration of the first
+ * span is less than, equal, or greater than the second one
+ * @param[in] s1,s2 Spans
+ */
+int
+span_cmp_size(const Span *s1, const Span *s2)
+{
+  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
+  int result;
+  if (numspan_type(s1->spantype))
+  {
+    Datum d1 = distance_value_value(s1->upper, s1->lower, s1->basetype);
+    Datum d2 = distance_value_value(s2->upper, s2->lower, s2->basetype);
+    result = datum_cmp(d1, d2, s1->basetype);
+  }
+  else /* timespan_type(s1->spantype) */
+  {
+    Interval *dur1 = (s1->spantype == T_DATESPAN) ?
+      datespan_duration(s1) : tstzspan_duration(s1);
+    Interval *dur2 = (s2->spantype == T_DATESPAN) ?
+      datespan_duration(s2) : tstzspan_duration(s2);
+    result = pg_interval_cmp(dur1, dur2);
+    pfree(dur1); pfree(dur2);
+  }
+  return result;
+}
+
+/**
+ * @brief Sort function for spans
+ */
+void
+spanarr_sort_size(Span *spans, int count)
+{
+  qsort(spans, (size_t) count, sizeof(Span),
+    (qsort_comparator) &span_cmp_size);
+  return;
+}
+
+/**
  * @ingroup meos_setspan_bbox
  * @brief Return an array of spans from the composing spans of a spanset
  * @param[in] ss Span set
@@ -1866,26 +1906,25 @@ spanset_spans(const SpanSet *ss, int max_count, int *count)
   }
   else
   {
-    /* Merge consecutive spans to reach the maximum number of span */
-    /* Minimum number of spans merged together in an output span */
-    int size = ss->count / max_count;
-    /* Number of output spans that result from merging (size + 1) spans */
-    int remainder = ss->count % max_count;
-    int i = 0; /* Loop variable for input spans */
-    int k = 0; /* Loop variable for output spans */
-    while (k < max_count)
-    {
-      int j = i + size;
-      if (k < remainder)
-        j++;
-      memcpy(&result[k], SPANSET_SP_N(ss, i), sizeof(Span));
-      if (i < j - 1)
-        span_expand(SPANSET_SP_N(ss, j - 1), &result[k]);
-      k++;
-      i = j;
-    }
-    assert(i == ss->count);
-    assert(k == max_count);
+    /* Merge consecutive sequences having the smallest gap */
+    SpanSet *minus = minus_span_spanset(&ss->span, ss);
+    Span *holes = palloc(sizeof(Span) * minus->count);
+    for (int i = 0; i < minus->count; i++)
+      memcpy(&holes[i], SPANSET_SP_N(minus, i), sizeof(Span));
+    /* Sort the holes in increasing size */
+    spanarr_sort_size(holes, minus->count);
+    /* Number of holes in the original spanset that will be filled */
+    int nfills = minus->count - max_count + 1;
+    /* Sort the holes to fill the original spanset in increasing value/time */
+    spanarr_sort(holes, nfills);
+    SpanSet *tofill = spanset_make_exp(holes, nfills, nfills, NORMALIZE_NO,
+      ORDER_NO);
+    /* Resulting spanset with the holes filed */
+    SpanSet *res = union_spanset_spanset(ss, tofill);
+    assert(res->count == max_count);
+    /* Construct the resulting array of spans */
+    for (int i = 0; i < res->count; i++)
+      memcpy(&result[i], SPANSET_SP_N(res, i), sizeof(Span));
     *count = max_count;
     return result;
   }
