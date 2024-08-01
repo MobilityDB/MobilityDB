@@ -502,7 +502,7 @@ temporal_merge_array(const Temporal **temparr, int count)
   if (convert)
     newtemps = temporalarr_convert_subtype(temparr, count, subtype, interp);
   else
-    newtemps = temparr;
+    newtemps = (Temporal **) temparr;
 
   Temporal *result;
   assert(temptype_subtype(subtype));
@@ -2044,7 +2044,7 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
  * @endcode
  */
 Temporal *
-temporal_append_tinstant(const Temporal *temp, const TInstant *inst, double maxdist,
+temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
   const Interval *maxt, bool expand)
 {
   /* Validity tests */
@@ -2089,7 +2089,7 @@ temporal_append_tinstant(const Temporal *temp, const TInstant *inst, double maxd
  * @csqlfn #Temporal_append_tsequence()
  */
 Temporal *
-temporal_append_tsequence(const Temporal *temp, const TSequence *seq, bool expand)
+temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 {
   /* Validity tests */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) seq) ||
@@ -2117,7 +2117,7 @@ temporal_append_tsequence(const Temporal *temp, const TSequence *seq, bool expan
       return result;
     }
     case TSEQUENCE:
-      return (Temporal *) tsequence_append_tsequence((TSequence *) temp, seq,
+      return (Temporal *) tsequence_append_tsequence((const TSequence *) temp, seq,
         expand);
     default: /* TSEQUENCESET */
       return (Temporal *) tsequenceset_append_tsequence((TSequenceSet *) temp,

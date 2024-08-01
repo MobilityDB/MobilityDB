@@ -228,7 +228,7 @@ tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, double dist, bool restr,
  * points are within a distance
  */
 Temporal *
-tdwithin_tnpoint_tnpoint(const Temporal *temp1, Temporal *temp2, double dist,
+tdwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2, double dist,
   bool restr, bool atvalue)
 {
   Temporal *sync1, *sync2;

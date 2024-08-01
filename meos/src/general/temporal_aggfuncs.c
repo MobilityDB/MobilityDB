@@ -1518,7 +1518,7 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
  * @csqlfn #Temporal_app_tinst_transfn()
  */
 Temporal *
-temporal_app_tinst_transfn(const Temporal *state, const TInstant *inst,
+temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
   double maxdist, const Interval *maxt)
 {
   /* Null state: create a new temporal sequence with the instant */
@@ -1551,7 +1551,7 @@ temporal_app_tinst_transfn(const Temporal *state, const TInstant *inst,
  * @csqlfn #Temporal_app_tseq_transfn()
  */
 Temporal *
-temporal_app_tseq_transfn(const Temporal *state, const TSequence *seq)
+temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)
 {
   /* Null state: create a new temporal sequence with the sequence */
   if (! state)

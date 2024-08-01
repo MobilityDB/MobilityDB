@@ -1464,8 +1464,8 @@ extern Temporal **tpointarr_round(const Temporal **temp, int count, int maxdd);
  * Modification functions for temporal types
  *****************************************************************************/
 
-extern Temporal *temporal_append_tinstant(const Temporal *temp, const TInstant *inst, double maxdist, const Interval *maxt, bool expand);
-extern Temporal *temporal_append_tsequence(const Temporal *temp, const TSequence *seq, bool expand);
+extern Temporal *temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist, const Interval *maxt, bool expand);
+extern Temporal *temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand);
 extern Temporal *temporal_delete_tstzspan(const Temporal *temp, const Span *s, bool connect);
 extern Temporal *temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss, bool connect);
 extern Temporal *temporal_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect);
