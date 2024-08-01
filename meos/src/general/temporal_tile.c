@@ -493,10 +493,10 @@ floatspan_bucket_list(const Span *s, double size, double origin, int *count)
  * @param[in] duration Interval defining the size of the buckets
  * @param[in] origin Origin of the buckets
  * @param[out] count Number of elements in the output array
- * @csqlfn #Tstzspan_bucket_list()
+ * @csqlfn #Tstzspan_time_buckets()
  */
 Span *
-tstzspan_bucket_list(const Span *s, const Interval *duration, TimestampTz origin,
+tstzspan_time_buckets(const Span *s, const Interval *duration, TimestampTz origin,
   int *count)
 {
   /* Ensure validity of the arguments */
@@ -644,7 +644,7 @@ tbox_tile_state_next(TboxGridState *state)
  * @param[out] count Number of elements in the output array
  */
 TBox *
-tbox_tile_list(const TBox *box, Datum vsize, const Interval *duration,
+tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
   Datum vorigin, TimestampTz torigin, int *count)
 {
   assert(box); assert(count);
@@ -696,13 +696,13 @@ tbox_tile_list(const TBox *box, Datum vsize, const Interval *duration,
  * @csqlfn #Tbox_tile_list()
  */
 TBox *
-tintbox_tile_list(const TBox *box, int vsize, const Interval *duration,
+tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration,
   int vorigin, TimestampTz torigin, int *count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) count))
     return NULL;
-  return tbox_tile_list(box, Int32GetDatum(vsize), duration,
+  return tbox_value_time_tiles(box, Int32GetDatum(vsize), duration,
     Int32GetDatum(vorigin), torigin, count);
 }
 
@@ -718,13 +718,13 @@ tintbox_tile_list(const TBox *box, int vsize, const Interval *duration,
  * @csqlfn #Tbox_tile_list()
  */
 TBox *
-tfloatbox_tile_list(const TBox *box, double vsize, const Interval *duration,
-  double vorigin, TimestampTz torigin, int *count)
+tfloatbox_value_time_tiles(const TBox *box, double vsize,
+  const Interval *duration, double vorigin, TimestampTz torigin, int *count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) count))
     return NULL;
-  return tbox_tile_list(box, Float8GetDatum(vsize), duration,
+  return tbox_value_time_tiles(box, Float8GetDatum(vsize), duration,
     Float8GetDatum(vorigin), torigin, count);
 }
 #endif /* MEOS */
@@ -881,7 +881,7 @@ tdiscseq_time_split(const TSequence *seq, TimestampTz start,
 /*****************************************************************************/
 
 /**
- * @brief Split a temporal value into an array of fragments according to period
+ * @brief Split a temporal value into an array of fragments according to time
  * buckets
  * @param[in] seq Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
@@ -898,7 +898,7 @@ tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
 {
   TimestampTz lower = start;
   TimestampTz upper = lower + tunits;
-  /* This loop is needed for filtering unnecesary time buckets that are in the 
+  /* This loop is needed for filtering unnecesary time buckets that are in the
    * time gaps between sequences composing a sequence set.
    * The upper bound for the bucket is exclusive => the test below is >= */
   while (lower < end &&
@@ -980,7 +980,7 @@ tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
 }
 
 /**
- * @brief Split a temporal value into an array of fragments according to period
+ * @brief Split a temporal value into an array of fragments according to time
  * buckets
  * @param[in] seq Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
@@ -1151,7 +1151,7 @@ temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
  * @csqlfn #Temporal_time_split()
  */
 Temporal **
-temporal_time_split(const Temporal *temp, const Interval *duration, TimestampTz torigin,
+temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin,
   TimestampTz **buckets, int *count)
 {
   /* Ensure validity of the arguments */
@@ -1167,7 +1167,7 @@ temporal_time_split(const Temporal *temp, const Interval *duration, TimestampTz 
   int64 tunits = interval_units(duration);
   return temporal_time_split1(temp, DatumGetTimestampTz(start_bucket),
     DatumGetTimestampTz(end_bucket), tunits, torigin, nbuckets, buckets,
-    count);
+      count);
 }
 
 /*****************************************************************************
@@ -1640,8 +1640,8 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
   {
     if (nseqs[i] > 0)
     {
-      result[nfrags] = tsequenceset_make((const TSequence **)(&bucketseqs[i * ss->totalcount]),
-        nseqs[i], NORMALIZE);
+      result[nfrags] = tsequenceset_make((const TSequence **)
+        (&bucketseqs[i * ss->totalcount]), nseqs[i], NORMALIZE);
       values[nfrags++] = bucket_value;
     }
     bucket_value = datum_add(bucket_value, size, basetype);
@@ -1675,8 +1675,7 @@ tnumber_value_split(const Temporal *temp, Datum size, Datum vorigin,
   Span s;
   Datum start_bucket, end_bucket;
   tnumber_set_span(temp, &s);
-  int nbuckets = span_no_buckets(&s, size, vorigin, &start_bucket,
-      &end_bucket);
+  int nbuckets = span_no_buckets(&s, size, vorigin, &start_bucket, &end_bucket);
 
   /* Split the temporal value */
   assert(temptype_subtype(temp->subtype));
@@ -1704,9 +1703,9 @@ tnumber_value_split(const Temporal *temp, Datum size, Datum vorigin,
  * a temporal grid
  */
 Temporal **
-tnumber_value_time_split(const Temporal *temp, Datum size, const Interval *duration,
-  Datum vorigin, TimestampTz torigin, Datum **value_buckets,
-  TimestampTz **time_buckets, int *count)
+tnumber_value_time_split(const Temporal *temp, Datum size, 
+  const Interval *duration, Datum vorigin, TimestampTz torigin, 
+  Datum **value_buckets, TimestampTz **time_buckets, int *count)
 {
   meosType basetype = temptype_basetype(temp->temptype);
   meosType spantype = basetype_spantype(basetype);
@@ -1717,8 +1716,7 @@ tnumber_value_time_split(const Temporal *temp, Datum size, const Interval *durat
   Datum start_bucket, end_bucket, start_time_bucket, end_time_bucket;
   /* Compute the value bounds */
   tnumber_set_span(temp, &s);
-  int value_count = span_no_buckets(&s, size, vorigin, &start_bucket,
-      &end_bucket);
+  int value_count = span_no_buckets(&s, size, vorigin, &start_bucket, &end_bucket);
   /* Compute the time bounds */
   temporal_set_tstzspan(temp, &s);
   int time_count = tstzspan_no_buckets(&s, duration, torigin, &start_time_bucket,
@@ -1900,9 +1898,9 @@ tint_value_time_split(const Temporal *temp, int size, const Interval *duration,
  * @csqlfn #Tnumber_value_time_split()
  */
 Temporal **
-tfloat_value_time_split(const Temporal *temp, double size, const Interval *duration,
-  double vorigin, TimestampTz torigin, double **value_buckets,
-  TimestampTz **time_buckets, int *count)
+tfloat_value_time_split(const Temporal *temp, double size,
+  const Interval *duration, double vorigin, TimestampTz torigin, 
+  double **value_buckets, TimestampTz **time_buckets, int *count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||

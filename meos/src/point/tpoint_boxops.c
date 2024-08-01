@@ -214,13 +214,14 @@ tpointinst_stboxes(const TInstant *inst, int *count)
 }
 
 /**
- * @brief Return an array of maximum n spatiotemporal boxes from the instants
+ * @brief Return an array of spatiotemporal boxes from the instants
  * of a temporal point sequence with discrete interpolation (iterator function)
  * @param[in] seq Temporal value
  * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one box per instant
- * @param[out] result Temporal box
- * @return Number of elements in the array
+ * @param[out] result Array of boxes. If `max_count` is < 1, the result
+ * contains one box per instant. Otherwise, consecutive instants are combined
+ * into a single box in the result to reach `max_count` number of boxes.
+ * @return Number of elements in the output array
  */
 static int
 tpointseq_disc_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
@@ -267,13 +268,14 @@ tpointseq_disc_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
 }
 
 /**
- * @brief Return an array of maximum n spatiotemporal boxes from the segments
- * of a temporal point sequence (iterator function)
+ * @brief Return an array of spatiotemporal boxes from the segments of a
+ * temporal point sequence with continuous interpolation (iterator function)
  * @param[in] seq Temporal value
  * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one box per segment.
- * @param[out] result Spatiotemporal box
- * @return Number of elements in the array
+ * @param[out] result Array of boxes. If `max_count` is < 1, the result
+ * contains one box per segment. Otherwise, consecutive segments are combined
+ * into a single box in the result to reach `max_count` number of boxes.
+ * @return Number of elements in the output array
  */
 static int
 tpointseq_cont_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
@@ -329,14 +331,17 @@ tpointseq_cont_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
 }
 
 /**
- * @brief Return an array of maximum n spatiotemporal boxes from the instants
- * or segments of a temporal number sequence with linear interpolation
- * (iterator function)
+ * @brief Return an array of spatiotemporal boxes from the instants or segments
+ * of a temporal point sequence, where the choice between instants or segments
+ * depends, respectively, on whether the interpolation is discrete or
+ * continuous (iterator function)
  * @param[in] seq Temporal value
  * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one box per segment
- * @param[out] result Temporal box
- * @return Number of elements in the array
+ * @param[out] result Array of boxes. If `max_count` is < 1, the result
+ * contains one box per instant or segment. Otherwise, consecutive instants or
+ * segments are combined into a single box in the result to reach `max_count`
+ * number of boxes.
+ * @return Number of elements in the output array
  */
 static int
 tpointseq_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
@@ -355,12 +360,17 @@ tpointseq_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of maximum n spatiotemporal boxes from the segments
- * of a temporal point sequence
+ * @brief Return an array of spatiotemporal boxes from the instants or segments
+ * of a temporal point sequence, where the choice between instants or segments
+ * depends, respectively, on whether the interpolation is discrete or
+ * continuous
  * @param[in] seq Temporal sequence
  * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one box per segment.
  * @param[out] count Number of elements in the output array
+ * @result Array of boxes. If `max_count` is < 1, the result contains one box
+ * per instant or segment. Otherwise, consecutive instants or segments are
+ * combined into a single box in the result to reach `max_count` number of
+ * boxes.
  */
 STBox *
 tpointseq_stboxes(const TSequence *seq, int max_count, int *count)
@@ -381,8 +391,10 @@ tpointseq_stboxes(const TSequence *seq, int max_count, int *count)
  * temporal point sequence set
  * @param[in] ss Temporal sequence set
  * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one box per segment.
  * @param[out] count Number of elements in the output array
+ * @result Array of boxes. If `max_count` is < 1, the result contains one box
+ * per segment. Otherwise, consecutive segments are  combined into a single box
+ * in the result to reach `max_count` number of boxes.
  */
 STBox *
 tpointseqset_stboxes(const TSequenceSet *ss, int max_count, int *count)
@@ -454,13 +466,16 @@ tpointseqset_stboxes(const TSequenceSet *ss, int max_count, int *count)
 
 /**
  * @ingroup meos_temporal_bbox
- * @brief Return an array of spatiotemporal boxes from the segments of a
- * temporal point
+ * @brief Return an array of spatiotemporal boxes from the instants or segments
+ * of a temporal point, where the choice between instants or segments depends,
+ * respectively, on whether the interpolation is discrete or continuous
  * @param[in] temp Temporal value
  * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one box per segment.
  * @param[out] count Number of values of the output array
- * @return On error return @p NULL
+ * @result Array of boxes. If `max_count` is < 1, the result contains one box
+ * per instant or segment. Otherwise, consecutive instants or segments are
+ * combined into a single box in the result to reach `max_count` number of
+ * boxes. On error return @p NULL
  * @csqlfn #Tpoint_stboxes()
  */
 STBox *
@@ -545,13 +560,14 @@ lwpoint_merge_gbox(const POINT4D *p, bool hasz, bool hasm, bool geodetic,
 }
 
 /**
- * @brief Return an array of maximum n spatial boxes from the segments
- * of a line (iterator function)
+ * @brief Return an array of spatial boxes from the segments of a line
+ * (iterator function)
  * @param[in] lwline Line
  * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one box per segment.
- * @param[out] result Spatial box
- * @return Number of elements in the array
+ * @param[out] result Array of boxes. If `max_count` is < 1, the result
+ * contains one box per segment. Otherwise, consecutive segments are combined
+ * into a single box in the result to reach `max_count` number of boxes.
+ * @return Number of elements in the output array
  */
 static int
 line_gboxes_iter(const LWLINE *lwline, int max_count, GBOX *result)
@@ -620,12 +636,13 @@ line_gboxes_iter(const LWLINE *lwline, int max_count, GBOX *result)
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of maximum n spatial boxes from the segments
- * of a line
+ * @brief Return an array of spatial boxes from the segments of a line
  * @param[in] gs Line
  * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one box per segment.
  * @param[out] count Number of elements in the output array
+ * @result Array of boxes. If `max_count` is < 1, the result contains one box
+ * per segment. Otherwise, consecutive segments are combined into a single box
+ * in the result to reach `max_count` number of boxes.
  */
 GBOX *
 line_gboxes(const GSERIALIZED *gs, int max_count, int *count)
@@ -648,12 +665,13 @@ line_gboxes(const GSERIALIZED *gs, int max_count, int *count)
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of maximum n spatial boxes from the segments
- * of a multiline
+ * @brief Return an array of spatial boxes from the segments of a multiline
  * @param[in] gs Multiline
  * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one box per segment.
  * @param[out] count Number of elements in the output array
+ * @result Array of boxes. If `max_count` is < 1, the result contains one box
+ * per segment. Otherwise, consecutive segments are combined into a single box
+ * in the result to reach `max_count` number of boxes.
  */
 GBOX *
 multiline_gboxes(const GSERIALIZED *gs, int max_count, int *count)
@@ -739,12 +757,13 @@ multiline_gboxes(const GSERIALIZED *gs, int max_count, int *count)
 
 /**
  * @ingroup meos_temporal_bbox
- * @brief Return an array of maximum n spatial boxes from the segments
- * of a (multi)line
+ * @brief Return an array of spatial boxes from the segments of a (multi)line
  * @param[in] gs (Multi)line
  * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one box per segment.
  * @param[out] count Number of elements in the output array
+ * @result Array of boxes. If `max_count` is < 1, the result contains one box
+ * per segment. Otherwise, consecutive segments are combined into a single box
+ * in the result to reach `max_count` number of boxes.
  */
 GBOX *
 geo_gboxes(const GSERIALIZED *gs, int max_count, int *count)

@@ -1847,8 +1847,10 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
  * @brief Return an array of spans from the composing spans of a spanset
  * @param[in] ss Span set
  * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one span per composing span.
  * @param[out] count Number of elements in the output array
+ * @result If `max_count` is < 1, the result contains one span per composing
+ * span. Otherwise, consecutive spans are merged into a single one in the
+ * result to reach `max_count` number of spans.
  */
 Span *
 spanset_spans(const SpanSet *ss, int max_count, int *count)

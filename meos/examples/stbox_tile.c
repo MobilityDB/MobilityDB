@@ -73,10 +73,12 @@ int main(void)
   Span *spans;
   int count;
   if (spacesplit)
-    boxes = stbox_tile_list(box, 5.0, 5.0, 5.0, timesplit ? interv : NULL,
-      sorigin, torigin, true, &count);
+    boxes = timesplit ?
+      stbox_space_time_tiles(box, 5.0, 5.0, 5.0, interv, sorigin, torigin,
+        true, &count) :
+      stbox_space_tiles(box, 5.0, 5.0, 5.0, sorigin, true, &count);
   else
-    spans = tstzspan_bucket_list(&box->period, interv, torigin, &count);
+    spans = tstzspan_time_bins(&box->period, interv, torigin, &count);
 
   /* Print the input value to split */
   char *box_str = stbox_out(box, 3);

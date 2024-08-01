@@ -42,24 +42,24 @@ SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(t, '2 days', '2001-0
 
 -------------------------------------------------------------------------------
 
-SELECT SUM(valueBucket(i, 2)) FROM tbl_int;
-SELECT SUM(valueBucket(i, 2, 1)) FROM tbl_int;
-SELECT SUM(valueBucket(f, 2.5)) FROM tbl_float;
-SELECT SUM(valueBucket(f, 2.5, 1.5)) FROM tbl_float;
+SELECT SUM(valueBin(i, 2)) FROM tbl_int;
+SELECT SUM(valueBin(i, 2, 1)) FROM tbl_int;
+SELECT SUM(valueBin(f, 2.5)) FROM tbl_float;
+SELECT SUM(valueBin(f, 2.5, 1.5)) FROM tbl_float;
 
-SELECT spanBucket(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT spanBucket(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT spanBin(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT spanBin(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT spanBucket(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT spanBucket(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT spanBin(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT spanBin(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 -------------------------------------------------------------------------------
 
-SELECT timeBucket(t, '1 week'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT timeBucket(t, '1 week', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT timeBin(t, '1 week'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT timeBin(t, '1 week', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT periodBucket(t, interval '2 days'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT periodBucket(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT timeBin(t, interval '2 days'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT timeBin(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 -------------------------------------------------------------------------------
 

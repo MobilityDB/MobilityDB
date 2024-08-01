@@ -608,10 +608,10 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
  * @param[out] count Number of values in the output array
- * @csqlfn #Stbox_tile_list()
+ * @csqlfn #Stbox_space_time_tiles()
  */
 STBox *
-stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
+stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize, double zsize,
   const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
   bool border_inc, int *count)
 {
@@ -694,6 +694,14 @@ stbox_tile_list(const STBox *bounds, double xsize, double ysize, double zsize,
   if (state->bm) pfree(state->bm);
   pfree(state);
   return result;
+}
+
+STBox *
+stbox_space_tiles(const STBox *bounds, double xsize, double ysize, double zsize,
+  GSERIALIZED *sorigin,  bool border_inc, int *count)
+{
+  return stbox_space_time_tiles(bounds, xsize, ysize, zsize, NULL, sorigin, 0,
+    border_inc, count);
 }
 #endif /* MEOS */
 
@@ -1090,7 +1098,7 @@ tpoint_space_split(const Temporal *temp, float xsize, float ysize, float zsize,
  * @param[out] space_buckets Array of space buckets
  * @param[out] time_buckets Array of time buckets
  * @param[out] count Number of elements in the output arrays
- * @note This function in MEOS corresponds to the MobilityDB function 
+ * @note This function in MEOS corresponds to the MobilityDB function
  * #Tpoint_space_time_split_ext
  */
 Temporal **

@@ -1724,7 +1724,7 @@ temporal_unnest_state_next(TempUnnestState *state)
 {
   if (!state || state->done)
     return;
-  /* Move to the next bucket */
+  /* Move to the next bin */
   state->i++;
   if (state->i == state->count)
     state->done = true;
@@ -1771,7 +1771,7 @@ Temporal_unnest(PG_FUNCTION_ARGS)
   funcctx = SRF_PERCALL_SETUP();
   /* Get state */
   state = funcctx->user_fctx;
-  /* Stop when we've used up all buckets */
+  /* Stop when we've used up all bins */
   if (state->done)
   {
     /* Switch to memory context appropriate for multiple function calls */
