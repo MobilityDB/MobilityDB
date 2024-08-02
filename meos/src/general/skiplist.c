@@ -568,11 +568,11 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
     int newcount = 0;
     void **newvalues;
     if (subtype == TINSTANT)
-      newvalues = (void **) tinstant_tagg((TInstant **) spliced,
-        spliced_count, (TInstant **) values, count, func, &newcount);
+      newvalues = (void **) tinstant_tagg((const TInstant **) spliced,
+        spliced_count, (const TInstant **) values, count, func, &newcount);
     else /* subtype == TSEQUENCE */
-      newvalues = (void **) tsequence_tagg((TSequence **) spliced,
-        spliced_count, (TSequence **) values, count, func, crossings,
+      newvalues = (void **) tsequence_tagg((const TSequence **) spliced,
+        spliced_count, (const TSequence **) values, count, func, crossings,
         &newcount);
 
     /* Delete the spliced-out values */

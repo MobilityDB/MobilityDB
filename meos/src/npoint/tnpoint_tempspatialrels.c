@@ -97,7 +97,7 @@ tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
  * a temporal network point
  */
 Temporal *
-tcontains_geo_tnpoint(GSERIALIZED *gs, Temporal *temp, bool restr,
+tcontains_geo_tnpoint(GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
   if (gserialized_is_empty(gs))
@@ -175,7 +175,7 @@ ttouches_npoint_tnpoint(const Npoint *np, const Temporal *temp, bool restr,
  * temporal network point are within a distance
  */
 Temporal *
-tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *gs, double dist, bool restr,
+tdwithin_tnpoint_geo(const Temporal *temp, GSERIALIZED *gs, double dist, bool restr,
   bool atvalue)
 {
   if (gserialized_is_empty(gs))
@@ -191,7 +191,7 @@ tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *gs, double dist, bool restr,
  * temporal network point are within a distance
  */
 Temporal *
-tdwithin_geo_tnpoint(GSERIALIZED *gs, Temporal *temp, double dist, bool restr,
+tdwithin_geo_tnpoint(GSERIALIZED *gs, const Temporal *temp, double dist, bool restr,
   bool atvalue)
 {
   return tdwithin_tnpoint_geo(temp, gs, dist, restr, atvalue);
@@ -202,7 +202,7 @@ tdwithin_geo_tnpoint(GSERIALIZED *gs, Temporal *temp, double dist, bool restr,
  * a temporal network point are within a distance
  */
 Temporal *
-tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np, double dist, bool restr,
+tdwithin_tnpoint_npoint(const Temporal *temp, Npoint *np, double dist, bool restr,
   bool atvalue)
 {
   GSERIALIZED *geom = npoint_geom(np);
@@ -228,7 +228,7 @@ tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, double dist, bool restr,
  * points are within a distance
  */
 Temporal *
-tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2, double dist,
+tdwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2, double dist,
   bool restr, bool atvalue)
 {
   Temporal *sync1, *sync2;

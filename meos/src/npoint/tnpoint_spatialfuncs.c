@@ -757,7 +757,7 @@ tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
  * @sqlfn Tnpoint_at_stbox()
  */
 Temporal *
-tnpoint_restrict_stbox(Temporal *temp, STBox *box, bool border_inc, bool atfunc)
+tnpoint_restrict_stbox(const Temporal *temp, STBox *box, bool border_inc, bool atfunc)
 {
   Temporal *tgeom = tnpoint_tgeompoint(temp);
   Temporal *tgeomres = tpoint_restrict_stbox(tgeom, box, border_inc, atfunc);

@@ -188,7 +188,7 @@ datetimes_as_mfjson_sb(stringbuffer_t *sb, TimestampTz t)
  * @brief Write into the buffer an SRS in the MF-JSON representation
  */
 static void
-srs_as_mfjson_sb(stringbuffer_t *sb, char *srs)
+srs_as_mfjson_sb(stringbuffer_t *sb, const char *srs)
 {
   stringbuffer_append_len(sb, "\"crs\":{\"type\":\"Name\",", 21);
   stringbuffer_aprintf(sb, "\"properties\":{\"name\":\"%s\"}},", srs);
@@ -349,7 +349,7 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, meosType temptype)
  */
 static bool
 tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, bool isgeo,
-  bool hasz, const bboxunion *bbox, int precision, char *srs)
+  bool hasz, const bboxunion *bbox, int precision, const char *srs)
 {
   bool result = temptype_as_mfjson_sb(sb, inst->temptype);
   /* Propagate errors up */
@@ -459,7 +459,7 @@ tpointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
  */
 static bool
 tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq, bool isgeo,
-  bool hasz, const bboxunion *bbox, int precision, char *srs)
+  bool hasz, const bboxunion *bbox, int precision, const char *srs)
 {
   bool result = temptype_as_mfjson_sb(sb, seq->temptype);
   /* Propagate errors up */
@@ -583,7 +583,7 @@ tpointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
  */
 static bool
 tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss, bool isgeo,
-  bool hasz, const bboxunion *bbox, int precision, char *srs)
+  bool hasz, const bboxunion *bbox, int precision, const char *srs)
 {
   bool result = temptype_as_mfjson_sb(sb, ss->temptype);
   /* Propagate errors up */
@@ -721,7 +721,7 @@ tpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision,
  */
 char *
 temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
-  int precision, char *srs)
+  int precision, const char *srs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))

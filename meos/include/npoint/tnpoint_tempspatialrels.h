@@ -47,7 +47,7 @@ extern Temporal *tinterrel_tnpoint_npoint(const Temporal *temp,
 extern Temporal *tinterrel_tnpoint_geo(const Temporal *temp,
   const GSERIALIZED *geo, bool tinter, bool restr, bool atvalue);
 
-extern Temporal *tcontains_geo_tnpoint(GSERIALIZED *geo, Temporal *temp,
+extern Temporal *tcontains_geo_tnpoint(GSERIALIZED *geo, const Temporal *temp,
   bool restr, bool atvalue);
 extern Temporal *ttouches_tnpoint_geo(const Temporal *temp,
   const GSERIALIZED *geo, bool restr, bool atvalue);
@@ -57,15 +57,15 @@ extern Temporal *ttouches_tnpoint_npoint(const Temporal *temp,
   const Npoint *np, bool restr, bool atvalue);
 extern Temporal *ttouches_npoint_tnpoint(const Npoint *np,
   const Temporal *temp, bool restr, bool atvalue);
-extern Temporal *tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *geo,
+extern Temporal *tdwithin_tnpoint_geo(const Temporal *temp, GSERIALIZED *geo,
   double dist, bool restr, bool atvalue);
-extern Temporal *tdwithin_geo_tnpoint(GSERIALIZED *gs, Temporal *temp,
+extern Temporal *tdwithin_geo_tnpoint(GSERIALIZED *gs, const Temporal *temp,
   double dist, bool restr, bool atvalue);
-extern Temporal *tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np,
+extern Temporal *tdwithin_tnpoint_npoint(const Temporal *temp, Npoint *np,
   double dist, bool restr, bool atvalue);
 extern Temporal *tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp,
   double dist, bool restr, bool atvalue);
-extern Temporal *tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2,
+extern Temporal *tdwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   double dist, bool restr, bool atvalue);
 
 

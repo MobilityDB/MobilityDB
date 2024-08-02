@@ -1966,7 +1966,7 @@ geo_from_ewkb(const bytea *bytea_wkb, int32 srid)
  * @note PostGIS function: @p WKBFromLWGEOM(PG_FUNCTION_ARGS)
  */
 bytea *
-geo_as_ewkb(const GSERIALIZED *gs, char *endian)
+geo_as_ewkb(const GSERIALIZED *gs, const char *endian)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) gs))
@@ -2039,7 +2039,7 @@ geo_from_geojson(const char *geojson)
  * @note PostGIS function: @p LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
  */
 char *
-geo_as_geojson(const GSERIALIZED *gs, int option, int precision, char *srs)
+geo_as_geojson(const GSERIALIZED *gs, int option, int precision, const char *srs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) gs))

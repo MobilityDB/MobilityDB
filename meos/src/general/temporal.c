@@ -1593,7 +1593,7 @@ temporal_tsequence(const Temporal *temp, interpType interp)
  * @csqlfn #Temporal_to_tsequence()
  */
 TSequence *
-temporal_to_tsequence(const Temporal *temp, char *interp_str)
+temporal_to_tsequence(const Temporal *temp, const char *interp_str)
 {
   interpType interp;
   /* If the interpolation is not NULL */
@@ -1653,7 +1653,7 @@ temporal_tsequenceset(const Temporal *temp, interpType interp)
  * @csqlfn #Temporal_to_tsequenceset()
  */
 TSequenceSet *
-temporal_to_tsequenceset(const Temporal *temp, char *interp_str)
+temporal_to_tsequenceset(const Temporal *temp, const char *interp_str)
 {
   interpType interp;
   /* If the interpolation is not NULL */

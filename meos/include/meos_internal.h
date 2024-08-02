@@ -766,7 +766,7 @@ extern TSequence *tsequenceset_to_tsequence(const TSequenceSet *ss);
 extern Temporal *tinstant_merge(const TInstant *inst1, const TInstant *inst2);
 extern Temporal *tinstant_merge_array(const TInstant **instants, int count);
 extern Temporal *tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist, const Interval *maxt, bool expand);
-extern Temporal *tsequence_append_tsequence(TSequence *seq1, const TSequence *seq2, bool expand);
+extern Temporal *tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2, bool expand);
 extern Temporal *tsequence_delete_timestamptz(const TSequence *seq, TimestampTz t, bool connect);
 extern Temporal *tsequence_delete_tstzset(const TSequence *seq, const Set *s, bool connect);
 extern Temporal *tsequence_delete_tstzspan(const TSequence *seq, const Span *s, bool connect);
@@ -1015,7 +1015,7 @@ extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
 /* Aggregate functions for temporal types */
 
 extern void skiplist_free(SkipList *list);
-extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, double maxdist, Interval *maxt);
+extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, double maxdist, const Interval *maxt);
 extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
 
 /*****************************************************************************/
@@ -1023,7 +1023,7 @@ extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq
 /* Multidimensional tiling functions for temporal types */
 
 extern Temporal **tnumber_value_split(const Temporal *temp, Datum size, Datum origin, Datum **buckets, int *count);
-extern TBox *tbox_tile(Datum value, TimestampTz t, Datum vsize, Interval *duration, Datum vorigin, TimestampTz torigin, meosType basetype);
+extern TBox *tbox_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, meosType basetype);
 
 /*****************************************************************************/
 

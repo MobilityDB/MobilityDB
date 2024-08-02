@@ -183,15 +183,15 @@ datum_sum_double4(Datum l, Datum r)
  * @param[out] newcount Number of instants in the output array
  */
 TInstant **
-tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
+tinstant_tagg(const TInstant **instants1, int count1, const TInstant **instants2,
   int count2, datum_func2 func, int *newcount)
 {
   TInstant **result = palloc(sizeof(TInstant *) * (count1 + count2));
   int i = 0, j = 0, count = 0;
   while (i < count1 && j < count2)
   {
-    TInstant *inst1 = instants1[i];
-    TInstant *inst2 = instants2[j];
+    const TInstant *inst1 = instants1[i];
+    const TInstant *inst2 = instants2[j];
     int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
@@ -399,7 +399,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
  * @note Return new sequences that must be freed by the calling function.
  */
 TSequence **
-tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
+tsequence_tagg(const TSequence **sequences1, int count1, const TSequence **sequences2,
   int count2, datum_func2 func, bool crossings, int *newcount)
 {
   /*
@@ -410,9 +410,9 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
   int seqcount = (count1 * 3) + count1 + count2 + 1;
   TSequence **sequences = palloc(sizeof(TSequence *) * seqcount);
   int i = 0, j = 0, k = 0;
-  TSequence *seq1 = sequences1[i],
-            *seq2 = sequences2[j],
-            *tofree = NULL;
+  const TSequence *seq1 = sequences1[i],
+            *seq2 = sequences2[j];
+  TSequence *tofree = NULL;
   while (i < count1 && j < count2)
   {
     int countstep = tsequence_tagg_iter(seq1, seq2, func, crossings,
@@ -1371,12 +1371,12 @@ tnumberinst_transform_tavg(const TInstant *inst)
  * values
  */
 TSequence *
-tinstant_tavg_finalfn(TInstant **instants, int count)
+tinstant_tavg_finalfn(const TInstant **instants, int count)
 {
   TInstant **newinstants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i++)
   {
-    TInstant *inst = instants[i];
+    const TInstant *inst = instants[i];
     double2 *value = (double2 *) DatumGetPointer(tinstant_val(inst));
     double tavg = value->a / value->b;
     newinstants[i] = tinstant_make(Float8GetDatum(tavg), T_TFLOAT, inst->t);
@@ -1390,12 +1390,12 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
  * values
  */
 TSequenceSet *
-tsequence_tavg_finalfn(TSequence **sequences, int count)
+tsequence_tavg_finalfn(const TSequence **sequences, int count)
 {
   TSequence **newsequences = palloc(sizeof(TSequence *) * count);
   for (int i = 0; i < count; i++)
   {
-    TSequence *seq = sequences[i];
+    const TSequence *seq = sequences[i];
     TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
     for (int j = 0; j < seq->count; j++)
     {
@@ -1427,10 +1427,10 @@ tnumber_tavg_finalfn(SkipList *state)
   Temporal *result;
   assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
   if (values[0]->subtype == TINSTANT)
-    result = (Temporal *) tinstant_tavg_finalfn((TInstant **) values,
+    result = (Temporal *) tinstant_tavg_finalfn((const TInstant **) values,
       state->length);
   else /* values[0]->subtype == TSEQUENCE */
-    result = (Temporal *) tsequence_tavg_finalfn((TSequence **) values,
+    result = (Temporal *) tsequence_tavg_finalfn((const TSequence **) values,
       state->length);
   pfree(values);
   skiplist_free(state);
@@ -1519,7 +1519,7 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
  */
 Temporal *
 temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
-  double maxdist, Interval *maxt)
+  double maxdist, const Interval *maxt)
 {
   /* Null state: create a new temporal sequence with the instant */
   if (! state)

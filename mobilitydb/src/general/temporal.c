@@ -1878,7 +1878,7 @@ Temporal_merge_array(PG_FUNCTION_ARGS)
   ensure_not_empty_array(array);
   int count;
   Temporal **temparr = temparr_extract(array, &count);
-  Temporal *result = temporal_merge_array(temparr, count);
+  Temporal *result = temporal_merge_array((const Temporal **) temparr, count);
   pfree(temparr);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_TEMPORAL_P(result);

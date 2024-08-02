@@ -104,7 +104,7 @@ extern TboxGridState *tbox_tile_state_make(const TBox *box, Datum vsize,
   const Interval *duration, Datum xorigin, TimestampTz torigin);
 extern void tbox_tile_state_next(TboxGridState *state);
 extern TBox *tbox_tile(Datum value, TimestampTz t, Datum vsize,
-  Interval *duration, Datum vorigin, TimestampTz torigin, meosType basetype);
+  const Interval *duration, Datum vorigin, TimestampTz torigin, meosType basetype);
   
 /*****************************************************************************/
 
@@ -114,10 +114,10 @@ extern TimestampTz timestamptz_bucket1(TimestampTz timestamp, int64 tunits,
 extern Datum datum_bucket(Datum value, Datum size, Datum offset,
   meosType basetype);
 
-extern Temporal **temporal_time_split(Temporal *temp, Interval *duration,
+extern Temporal **temporal_time_split(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, TimestampTz **time_buckets, int *count);
-extern Temporal **tnumber_value_time_split(Temporal *temp, Datum size,
-  Interval *duration, Datum vorigin, TimestampTz torigin,
+extern Temporal **tnumber_value_time_split(const Temporal *temp, Datum size,
+  const Interval *duration, Datum vorigin, TimestampTz torigin,
   Datum **value_buckets, TimestampTz **time_buckets, int *count);
 
 /*****************************************************************************/
