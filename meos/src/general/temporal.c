@@ -3018,23 +3018,22 @@ temporal_segments(const Temporal *temp, int *count)
 
 /**
  * @ingroup meos_temporal_accessor
- * @brief Return 1 if the start instant of a temporal value is inclusive
+ * @brief Return true if the start instant of a temporal value is inclusive
  * @param[in] temp Temporal value
- * @return On error return -1
  * @csqlfn #Temporal_lower_inc()
  */
-int
+bool
 temporal_lower_inc(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
-    return -1;
+    return false;
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      return 1;
+      return true;
     case TSEQUENCE:
       return ((TSequence *) temp)->period.lower_inc;
     default: /* TSEQUENCESET */
@@ -3044,23 +3043,22 @@ temporal_lower_inc(const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_accessor
- * @brief Return 1 if the end instant of a temporal value is inclusive
+ * @brief Return true if the end instant of a temporal value is inclusive
  * @param[in] temp Temporal value
- * @return On error return -1
  * @csqlfn #Temporal_upper_inc()
  */
-int
+bool
 temporal_upper_inc(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
-    return -1;
+    return false;
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      return 1;
+      return true;
     case TSEQUENCE:
       return ((TSequence *) temp)->period.upper_inc;
     default: /* TSEQUENCESET */
