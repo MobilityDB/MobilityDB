@@ -2051,10 +2051,10 @@ extern SkipList *ttext_tmin_transfn(SkipList *state, const Temporal *temp);
 
 /* Simplification functions for temporal types */
 
-Temporal *temporal_simplify_dp(const Temporal *temp, double eps_dist, bool synchronized);
-Temporal *temporal_simplify_max_dist(const Temporal *temp, double eps_dist, bool synchronized);
-Temporal *temporal_simplify_min_dist(const Temporal *temp, double dist);
-Temporal *temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint);
+extern Temporal *temporal_simplify_dp(const Temporal *temp, double eps_dist, bool synchronized);
+extern Temporal *temporal_simplify_max_dist(const Temporal *temp, double eps_dist, bool synchronized);
+extern Temporal *temporal_simplify_min_dist(const Temporal *temp, double dist);
+extern Temporal *temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint);
 
 /*****************************************************************************/
 
