@@ -79,10 +79,10 @@ int main(void)
     boxes = intspan ?
       tintbox_value_time_tiles(box, 5, timesplit ? interv : NULL, 1, torigin,
         &count) :
-      tfloatboxvalue_time_tiles(box, 5, timesplit ? interv : NULL, 1, torigin,
+      tfloatbox_value_time_tiles(box, 5, timesplit ? interv : NULL, 1, torigin,
         &count);
   else
-    spans = tstzspan_time_bins(&box->period, interv, torigin, &count);
+    spans = tstzspan_bucket_list(&box->period, interv, torigin, &count);
 
   /* Print the input value to split */
   char *box_str = tbox_out(box, 3);

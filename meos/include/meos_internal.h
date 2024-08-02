@@ -1023,7 +1023,7 @@ extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq
 /* Multidimensional tiling functions for temporal types */
 
 extern Temporal **tnumber_value_split(const Temporal *temp, Datum size, Datum origin, Datum **buckets, int *count);
-extern TBox *tbox_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, meosType basetype);
+extern TBox *tbox_value_time_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, meosType basetype);
 
 /*****************************************************************************/
 

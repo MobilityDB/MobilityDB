@@ -41,75 +41,75 @@ CREATE TYPE index_stbox AS (
   tile stbox
 );
 
-CREATE FUNCTION tileList(bounds stbox, xsize float, ysize float, zsize float,
+CREATE FUNCTION spaceTiles(bounds stbox, xsize float, ysize float, zsize float,
     sorigin geometry DEFAULT 'Point(0 0 0)', borderIinc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
-  AS 'MODULE_PATHNAME', 'Stbox_tile_list'
+  AS 'MODULE_PATHNAME', 'Stbox_space_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tileList(bounds stbox, size float,
+CREATE FUNCTION spaceTiles(bounds stbox, size float,
     sorigin geometry DEFAULT 'Point(0 0 0)', borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
-  AS 'SELECT @extschema@.tileList($1, $2, $2, $2, $3, $4)'
+  AS 'SELECT @extschema@.spaceTiles($1, $2, $2, $2, $3, $4)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
-CREATE FUNCTION tileList(bounds stbox, xsize float, ysize float,
+CREATE FUNCTION spaceTiles(bounds stbox, xsize float, ysize float,
     sorigin geometry DEFAULT 'Point(0 0 0)', borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
-  AS 'SELECT @extschema@.tileList($1, $2, $3, $2, $4, $5)'
+  AS 'SELECT @extschema@.spaceTiles($1, $2, $3, $2, $4, $5)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE FUNCTION tileList(bounds stbox, xsize float, ysize float, zsize float,
+CREATE FUNCTION spaceTimeTiles(bounds stbox, xsize float, ysize float, zsize float,
   duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
   timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
-  AS 'MODULE_PATHNAME', 'Stbox_tile_list'
+  AS 'MODULE_PATHNAME', 'Stbox_space_time_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tileList(bounds stbox, size float,
+CREATE FUNCTION spaceTimeTiles(bounds stbox, size float,
   duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
   timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
-  AS 'SELECT @extschema@.tileList($1, $2, $2, $2, $3, $4, $5, $6)'
+  AS 'SELECT @extschema@.spaceTimeTiles($1, $2, $2, $2, $3, $4, $5, $6)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
-CREATE FUNCTION tileList(bounds stbox, xsize float, ysize float,
+CREATE FUNCTION spaceTimeTiles(bounds stbox, xsize float, ysize float,
   duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
   timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
-  AS 'SELECT @extschema@.tileList($1, $2, $3, $2, $4, $5, $6, $7)'
+  AS 'SELECT @extschema@.spaceTimeTiles($1, $2, $3, $2, $4, $5, $6, $7)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE FUNCTION tile(point geometry, xsize float, ysize float, zsize float,
+CREATE FUNCTION spaceTile(point geometry, xsize float, ysize float, zsize float,
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Stbox_tile'
+  AS 'MODULE_PATHNAME', 'Stbox_space_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tile(point geometry, size float,
+CREATE FUNCTION spaceTile(point geometry, size float,
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
-  AS 'SELECT @extschema@.tile($1, $2, $2, $2, $3)'
+  AS 'SELECT @extschema@.spaceTile($1, $2, $2, $2, $3)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
-CREATE FUNCTION tile(point geometry, xsize float, ysize float,
+CREATE FUNCTION spaceTile(point geometry, xsize float, ysize float,
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
-  AS 'SELECT @extschema@.tile($1, $2, $3, $2, $4)'
+  AS 'SELECT @extschema@.spaceTile($1, $2, $3, $2, $4)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE FUNCTION tile(point geometry, "time" timestamptz, xsize float,
+CREATE FUNCTION spaceTimeTile(point geometry, "time" timestamptz, xsize float,
     ysize float, zsize float, duration interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Stbox_tile'
+  AS 'MODULE_PATHNAME', 'Stbox_space_time_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tile(point geometry, "time" timestamptz, size float,
+CREATE FUNCTION spaceTimeTile(point geometry, "time" timestamptz, size float,
     duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
-  AS 'SELECT @extschema@.tile($1, $2, $3, $3, $3, $4, $5, $6)'
+  AS 'SELECT @extschema@.spaceTimeTile($1, $2, $3, $3, $3, $4, $5, $6)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
-CREATE FUNCTION tile(point geometry, "time" timestamptz, xsize float,
+CREATE FUNCTION spaceTimeTile(point geometry, "time" timestamptz, xsize float,
     ysize float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
-  AS 'SELECT @extschema@.tile($1, $2, $3, $4, $3, $5, $6, $7)'
+  AS 'SELECT @extschema@.spaceTimeTile($1, $2, $3, $4, $3, $5, $6, $7)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
 /*****************************************************************************/

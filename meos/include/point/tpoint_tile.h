@@ -99,6 +99,11 @@ extern STboxGridState *tpoint_space_time_split_init(const Temporal *temp,
   const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, 
   bool border_inc, int *ntiles);
 
+extern STBox *stbox_space_time_tile_common(const GSERIALIZED *point,
+  TimestampTz t, double xsize, double ysize, double zsize, 
+  const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin,
+  bool hast);
+  
 /*****************************************************************************/
 
 #endif

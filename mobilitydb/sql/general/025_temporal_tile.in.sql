@@ -28,13 +28,13 @@
  *****************************************************************************/
 
 /*
- * Bin and tile functions for temporal types.
- * The time bin function are inspired from TimescaleDB.
+ * Bucket and tile functions for temporal types.
+ * The time bucket function are inspired from TimescaleDB.
  * https://docs.timescale.com/latest/api#time_bucket
  */
 
 /*****************************************************************************
- * Bin functions
+ * Bucket functions
  *****************************************************************************/
 
 CREATE TYPE index_intspan AS (
@@ -46,37 +46,37 @@ CREATE TYPE index_floatspan AS (
   span floatspan
 );
 
-CREATE FUNCTION binList(bounds intspan, size integer,
+CREATE FUNCTION bucketList(bounds intspan, size integer,
   origin integer DEFAULT 0)
   RETURNS SETOF index_intspan
-  AS 'MODULE_PATHNAME', 'Numberspan_bin_list'
+  AS 'MODULE_PATHNAME', 'Numberspan_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION binList(bounds floatspan, size float,
+CREATE FUNCTION bucketList(bounds floatspan, size float,
   origin float DEFAULT 0.0)
   RETURNS SETOF index_floatspan
-  AS 'MODULE_PATHNAME', 'Numberspan_bin_list'
+  AS 'MODULE_PATHNAME', 'Numberspan_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueBin("value" integer, size integer,
+CREATE FUNCTION valueBucket("value" integer, size integer,
   origin integer DEFAULT 0)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Number_bin'
+  AS 'MODULE_PATHNAME', 'Number_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE FUNCTION valueBin("value" float, size float,
+CREATE FUNCTION valueBucket("value" float, size float,
   origin float DEFAULT '0.0')
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Number_bin'
+  AS 'MODULE_PATHNAME', 'Number_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE FUNCTION spanBin("value" integer, size integer,
+CREATE FUNCTION spanBucket("value" integer, size integer,
   origin integer DEFAULT 0)
   RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Valuespan_bin'
+  AS 'MODULE_PATHNAME', 'Valuespan_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanBin("value" float, size float,
+CREATE FUNCTION spanBucket("value" float, size float,
   origin float DEFAULT 0.0)
   RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Valuespan_bin'
+  AS 'MODULE_PATHNAME', 'Valuespan_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -86,30 +86,30 @@ CREATE TYPE index_tstzspan AS (
   span tstzspan
 );
 
-CREATE FUNCTION binList(tstzspan, interval, timestamptz DEFAULT '2000-01-03')
+CREATE FUNCTION bucketList(tstzspan, interval, timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_tstzspan
-  AS 'MODULE_PATHNAME', 'Tstzspan_bin_list'
+  AS 'MODULE_PATHNAME', 'Tstzspan_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- bining of timestamptz happens at UTC time
-CREATE FUNCTION timeBin("time" timestamptz, duration interval,
+-- bucketing of timestamptz happens at UTC time
+CREATE FUNCTION timeBucket("time" timestamptz, duration interval,
   origin timestamptz DEFAULT '2000-01-03')
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Timestamptz_bin'
+  AS 'MODULE_PATHNAME', 'Timestamptz_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
--- If an interval is given as the third argument, the bin alignment is offset by the interval.
--- CREATE FUNCTION timeBin(ts timestamptz, size interval, "offset" interval)
+-- If an interval is given as the third argument, the bucket alignment is offset by the interval.
+-- CREATE FUNCTION timeBucket(ts timestamptz, size interval, "offset" interval)
   -- RETURNS timestamptz
   -- LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT AS
 -- $BODY$
-    -- SELECT @extschema@.timeBin(ts-"offset", size)+"offset";
+    -- SELECT @extschema@.timeBucket(ts-"offset", size)+"offset";
 -- $BODY$;
 
-CREATE FUNCTION timeBin(timestamptz, interval,
+CREATE FUNCTION periodBucket(timestamptz, interval,
   timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Tstzspan_bin'
+  AS 'MODULE_PATHNAME', 'Tstzspan_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -121,18 +121,17 @@ CREATE TYPE index_tbox AS (
   tile tbox
 );
 
-CREATE FUNCTION tileList(bounds tbox, size float,
-  duration interval, vorigin float DEFAULT 0.0,
-  torigin timestamptz DEFAULT '2000-01-03')
+CREATE FUNCTION valueTimeTiles(bounds tbox, size float, duration interval,
+  vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_tbox
-  AS 'MODULE_PATHNAME', 'Tbox_tile_list'
+  AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tile("value" float, "time" timestamptz,
-  size float, duration interval, vorigin float DEFAULT 0.0,
+CREATE FUNCTION valueTimeTile("value" float, "time" timestamptz, size float,
+  duration interval, vorigin float DEFAULT 0.0,
   torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Tbox_tile'
+  AS 'MODULE_PATHNAME', 'Tbox_value_time_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

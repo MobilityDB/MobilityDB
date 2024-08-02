@@ -611,9 +611,9 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
  * @csqlfn #Stbox_space_time_tiles()
  */
 STBox *
-stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize, double zsize,
-  const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
-  bool border_inc, int *count)
+stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
+  double zsize, const Interval *duration, const GSERIALIZED *sorigin,
+  TimestampTz torigin, bool border_inc, int *count)
 {
   /* Ensure validity of the arguments
    * Since we pass by default Point(0 0 0) as origin independently of the input
@@ -696,9 +696,20 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize, double z
   return result;
 }
 
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the multidimensional grid of a spatiotemporal box
+ * @param[in] bounds Bounds
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] sorigin Origin for the space dimension
+ * @param[in] border_inc True when the box contains the upper border, otherwise
+ * the upper border is assumed as outside of the box.
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Stbox_space_tiles()
+ */
 STBox *
 stbox_space_tiles(const STBox *bounds, double xsize, double ysize, double zsize,
-  GSERIALIZED *sorigin,  bool border_inc, int *count)
+  const GSERIALIZED *sorigin,  bool border_inc, int *count)
 {
   return stbox_space_time_tiles(bounds, xsize, ysize, zsize, NULL, sorigin, 0,
     border_inc, count);
@@ -706,7 +717,6 @@ stbox_space_tiles(const STBox *bounds, double xsize, double ysize, double zsize,
 #endif /* MEOS */
 
 /**
- * @ingroup meos_temporal_analytics_tile
  * @brief Return a tile in the multidimensional grid of a spatiotemporal box
  * @param[in] point Point
  * @param[in] t Timestamp
@@ -715,12 +725,11 @@ stbox_space_tiles(const STBox *bounds, double xsize, double ysize, double zsize,
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
  * @param[out] hast True when spliting by time
- * @csqlfn Stbox_tile()
  */
 STBox *
-stbox_tile(GSERIALIZED *point, TimestampTz t, double xsize, double ysize,
-  double zsize, const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
-  bool hast)
+stbox_space_time_tile_common(const GSERIALIZED *point, TimestampTz t,
+  double xsize, double ysize, double zsize, const Interval *duration,
+  const GSERIALIZED *sorigin, TimestampTz torigin, bool hast)
 {
   /* Ensure parameter validity */
   if (! ensure_not_empty(point) || ! ensure_point_type(point) ||
@@ -773,6 +782,42 @@ stbox_tile(GSERIALIZED *point, TimestampTz t, double xsize, double ysize,
   stbox_tile_set(xmin, ymin, zmin, tmin, xsize, ysize, zsize, tunits, hasz,
     hast, srid, result);
   return result;
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return a tile in the multidimensional grid of a spatiotemporal box
+ * @param[in] point Point
+ * @param[in] t Timestamp
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] duration Duration
+ * @param[in] sorigin Origin for the space dimension
+ * @param[in] torigin Origin for the time dimension
+ * @csqlfn Stbox_space_time_tile()
+ */
+STBox *
+stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t, double xsize,
+  double ysize, double zsize, const Interval *duration,
+  const GSERIALIZED *sorigin, TimestampTz torigin)
+{
+  return stbox_space_time_tile_common(point, t, xsize, ysize, zsize, duration,
+    sorigin, torigin, true);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return a tile in the multidimensional grid of a spatiotemporal box
+ * @param[in] point Point
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension
+ * @param[in] sorigin Origin for the space dimension
+ * @csqlfn Stbox_space_tile()
+ */
+STBox *
+stbox_space_tile(const GSERIALIZED *point, double xsize, double ysize,
+  double zsize, const GSERIALIZED *sorigin)
+{
+  return stbox_space_time_tile_common(point, 0, xsize, ysize, zsize, NULL,
+    sorigin, 0, false);
 }
 
 /*****************************************************************************

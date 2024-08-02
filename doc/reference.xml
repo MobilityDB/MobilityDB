@@ -1516,11 +1516,11 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tileList"><varname>tileList</varname></link>: Return a set of tiles that covers the box with multidimensional tiles of the same size and duration</para>
+						<para><link linkend="valueTimeTiles"><varname>valueTimeTiles</varname>, <varname>spaceTiles</varname>, <varname>spaceTimeTiles</varname></link>: Return a set of tiles that covers the box with multidimensional tiles of the same size and duration</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tile"><varname>tile</varname></link>: Return the tile of the multidimensional grid that contains the value and the timestamp</para>
+						<para><link linkend="valueTimeTile"><varname>valueTimeTile</varname>, <varname>spaceTile</varname>, <varname>spaceTimeTile</varname></link>: Return the tile of the multidimensional grid that contains the value and the timestamp</para>
 						</listitem>
 				</itemizedlist>
 			</sect3>

@@ -90,8 +90,8 @@ span_no_buckets(const Span *s, Datum size, Datum origin, Datum *start_bucket,
  * @result Number of buckets
  */
 int
-tstzspan_no_buckets(const Span *s, const Interval *duration, TimestampTz torigin,
-  Datum *start_bucket, Datum *end_bucket)
+tstzspan_no_buckets(const Span *s, const Interval *duration, 
+  TimestampTz torigin, Datum *start_bucket, Datum *end_bucket)
 {
   assert(start_bucket); assert(end_bucket);
   TimestampTz start_time = DatumGetTimestampTz(s->lower);
@@ -493,14 +493,15 @@ floatspan_bucket_list(const Span *s, double size, double origin, int *count)
  * @param[in] duration Interval defining the size of the buckets
  * @param[in] origin Origin of the buckets
  * @param[out] count Number of elements in the output array
- * @csqlfn #Tstzspan_time_buckets()
+ * @csqlfn #Tstzspan_bucket_list()
  */
 Span *
-tstzspan_time_buckets(const Span *s, const Interval *duration, TimestampTz origin,
-  int *count)
+tstzspan_bucket_list(const Span *s, const Interval *duration,
+  TimestampTz origin, int *count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN) ||
+  if (! ensure_not_null((void *) s) || 
+      ! ensure_span_isof_type(s, T_TSTZSPAN) ||
       ! ensure_not_null((void *) count) ||
       ! ensure_valid_duration(duration))
     return NULL;
@@ -693,7 +694,7 @@ tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[out] count Number of elements in the output array
- * @csqlfn #Tbox_tile_list()
+ * @csqlfn #Tbox_value_time_tiles()
  */
 TBox *
 tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration,
@@ -715,7 +716,7 @@ tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration,
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[out] count Number of elements in the output array
- * @csqlfn #Tbox_tile_list()
+ * @csqlfn #Tbox_value_time_tiles()
  */
 TBox *
 tfloatbox_value_time_tiles(const TBox *box, double vsize,
@@ -739,11 +740,12 @@ tfloatbox_value_time_tiles(const TBox *box, double vsize,
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[in] basetype Type of the values
- * @csqlfn #Tbox_tile()
+ * @csqlfn #Tbox_value_time_tile()
  */
 TBox *
-tbox_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration,
-  Datum vorigin, TimestampTz torigin, meosType basetype)
+tbox_value_time_tile(Datum value, TimestampTz t, Datum vsize,
+  const Interval *duration, Datum vorigin, TimestampTz torigin,
+  meosType basetype)
 {
   ensure_positive_datum(vsize, basetype);
   ensure_valid_duration(duration);
@@ -764,14 +766,14 @@ tbox_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration,
  * @param[in] duration Interval defining the size of the buckets
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
- * @csqlfn #Tbox_tile()
+ * @csqlfn #Tbox_value_time_tile()
  */
 TBox *
-tintbox_tile(int value, TimestampTz t, int vsize, const Interval *duration,
-  int vorigin, TimestampTz torigin)
+tintbox_value_time_tile(int value, TimestampTz t, int vsize,
+  const Interval *duration, int vorigin, TimestampTz torigin)
 {
-  return tbox_tile(Int32GetDatum(value), t, Int32GetDatum(vsize), duration,
-    Int32GetDatum(vorigin), torigin, T_INT4);
+  return tbox_value_time_tile(Int32GetDatum(value), t, Int32GetDatum(vsize),
+    duration, Int32GetDatum(vorigin), torigin, T_INT4);
 }
 
 /**
@@ -783,14 +785,14 @@ tintbox_tile(int value, TimestampTz t, int vsize, const Interval *duration,
  * @param[in] duration Interval defining the size of the buckets
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
- * @csqlfn #Tbox_tile()
+ * @csqlfn #Tbox_value_time_tile()
  */
 TBox *
-tfloatbox_tile(double value, TimestampTz t, double vsize, const Interval *duration,
-  double vorigin, TimestampTz torigin)
+tfloatbox_value_time_tile(double value, TimestampTz t, double vsize,
+  const Interval *duration, double vorigin, TimestampTz torigin)
 {
-  return tbox_tile(Float8GetDatum(value), t, Float8GetDatum(vsize), duration,
-    Float8GetDatum(vorigin), torigin, T_FLOAT8);
+  return tbox_value_time_tile(Float8GetDatum(value), t, Float8GetDatum(vsize),
+    duration, Float8GetDatum(vorigin), torigin, T_FLOAT8);
 }
 
 /*****************************************************************************
@@ -1151,8 +1153,8 @@ temporal_time_split1(const Temporal *temp, TimestampTz start, TimestampTz end,
  * @csqlfn #Temporal_time_split()
  */
 Temporal **
-temporal_time_split(Temporal *temp, Interval *duration, TimestampTz torigin,
-  TimestampTz **buckets, int *count)
+temporal_time_split(const Temporal *temp, const Interval *duration,
+  TimestampTz torigin, TimestampTz **buckets, int *count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
@@ -1675,7 +1677,8 @@ tnumber_value_split(const Temporal *temp, Datum size, Datum vorigin,
   Span s;
   Datum start_bucket, end_bucket;
   tnumber_set_span(temp, &s);
-  int nbuckets = span_no_buckets(&s, size, vorigin, &start_bucket, &end_bucket);
+  int nbuckets = span_no_buckets(&s, size, vorigin, &start_bucket,
+    &end_bucket);
 
   /* Split the temporal value */
   assert(temptype_subtype(temp->subtype));
@@ -1703,8 +1706,8 @@ tnumber_value_split(const Temporal *temp, Datum size, Datum vorigin,
  * a temporal grid
  */
 Temporal **
-tnumber_value_time_split(const Temporal *temp, Datum size, 
-  const Interval *duration, Datum vorigin, TimestampTz torigin, 
+tnumber_value_time_split(const Temporal *temp, Datum size,
+  const Interval *duration, Datum vorigin, TimestampTz torigin,
   Datum **value_buckets, TimestampTz **time_buckets, int *count)
 {
   meosType basetype = temptype_basetype(temp->temptype);
@@ -1716,11 +1719,12 @@ tnumber_value_time_split(const Temporal *temp, Datum size,
   Datum start_bucket, end_bucket, start_time_bucket, end_time_bucket;
   /* Compute the value bounds */
   tnumber_set_span(temp, &s);
-  int value_count = span_no_buckets(&s, size, vorigin, &start_bucket, &end_bucket);
+  int value_count = span_no_buckets(&s, size, vorigin, &start_bucket,
+    &end_bucket);
   /* Compute the time bounds */
   temporal_set_tstzspan(temp, &s);
-  int time_count = tstzspan_no_buckets(&s, duration, torigin, &start_time_bucket,
-      &end_time_bucket);
+  int time_count = tstzspan_no_buckets(&s, duration, torigin,
+    &start_time_bucket, &end_time_bucket);
   TimestampTz start_time = DatumGetTimestampTz(start_time_bucket);
   TimestampTz end_time = DatumGetTimestampTz(end_time_bucket);
   int64 tunits = interval_units(duration);
@@ -1898,7 +1902,7 @@ tint_value_time_split(const Temporal *temp, int size, const Interval *duration,
  * @csqlfn #Tnumber_value_time_split()
  */
 Temporal **
-tfloat_value_time_split(const Temporal *temp, double size,
+tfloat_value_time_split(const Temporal *temp, double size, 
   const Interval *duration, double vorigin, TimestampTz torigin, 
   double **value_buckets, TimestampTz **time_buckets, int *count)
 {

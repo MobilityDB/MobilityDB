@@ -31,7 +31,7 @@
  * @file
  * @brief Bucket and tile functions for temporal types
  *
- * @note The time bin functions are inspired from TimescaleDB.
+ * @note The time bucket functions are inspired from TimescaleDB.
  * https://docs.timescale.com/latest/api#time_bucket
  */
 
@@ -52,53 +52,53 @@
 #include "pg_general/meos_catalog.h"
 
 /*****************************************************************************
- * Number bin functions
+ * Number bucket functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Number_bin(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Number_bin);
+PGDLLEXPORT Datum Number_bucket(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Number_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return the initial value of the bin in which an integer value falls
+ * @brief Return the initial value of the bucket in which an integer value falls
  * @sqlfn valueBucket()
  */
 Datum
-Number_bin(PG_FUNCTION_ARGS)
+Number_bucket(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
   Datum origin = PG_GETARG_DATUM(2);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_DATUM(datum_bin(value, size, origin, basetype));
+  PG_RETURN_DATUM(datum_bucket(value, size, origin, basetype));
 }
 
 /*****************************************************************************
- * Timestamp bin functions
+ * Timestamp bucket functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Timestamptz_bin(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Timestamptz_bin);
+PGDLLEXPORT Datum Timestamptz_bucket(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestamptz_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return the initial timestamp of the bin in which a timestamp falls
+ * @brief Return the initial timestamp of the bucket in which a timestamp falls
  * @sqlfn timeBucket()
  */
 Datum
-Timestamptz_bin(PG_FUNCTION_ARGS)
+Timestamptz_bucket(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  PG_RETURN_TIMESTAMPTZ(timestamptz_bin(t, duration, origin));
+  PG_RETURN_TIMESTAMPTZ(timestamptz_bucket(t, duration, origin));
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Return the bin list of a span
+ * @brief Return the bucket list of a span
  */
 Datum
-Span_bin_list(FunctionCallInfo fcinfo, bool valuelist)
+Span_bucket_list(FunctionCallInfo fcinfo, bool valuelist)
 {
   FuncCallContext *funcctx;
   SpanBucketState *state;
@@ -135,7 +135,7 @@ Span_bin_list(FunctionCallInfo fcinfo, bool valuelist)
     MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = span_bin_state_make(bounds, size, origin);
+    funcctx->user_fctx = span_bucket_state_make(bounds, size, origin);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -146,7 +146,7 @@ Span_bin_list(FunctionCallInfo fcinfo, bool valuelist)
   funcctx = SRF_PERCALL_SETUP();
   /* Get state */
   state = funcctx->user_fctx;
-  /* Stop when we've used up all bins */
+  /* Stop when we've used up all buckets */
   if (state->done)
   {
     /* Switch to memory context appropriate for multiple function calls */
@@ -159,11 +159,11 @@ Span_bin_list(FunctionCallInfo fcinfo, bool valuelist)
 
   /* Store index */
   tuple_arr[0] = Int32GetDatum(state->i);
-  /* Generate bin */
-  tuple_arr[1] = PointerGetDatum(span_bin_get(state->value, state->size,
+  /* Generate bucket */
+  tuple_arr[1] = PointerGetDatum(span_bucket_get(state->value, state->size,
     state->basetype));
   /* Advance state */
-  span_bin_state_next(state);
+  span_bucket_state_next(state);
   /* Form tuple and return */
   tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
   result = HeapTupleGetDatum(tuple);
@@ -172,82 +172,82 @@ Span_bin_list(FunctionCallInfo fcinfo, bool valuelist)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Numberspan_bin_list(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Numberspan_bin_list);
+PGDLLEXPORT Datum Numberspan_bucket_list(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Numberspan_bucket_list);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return the bin list of a number span
- * @sqlfn binList()
+ * @brief Return the bucket list of a number span
+ * @sqlfn bucketList()
  */
 Datum
-Numberspan_bin_list(PG_FUNCTION_ARGS)
+Numberspan_bucket_list(PG_FUNCTION_ARGS)
 {
-  return Span_bin_list(fcinfo, true);
+  return Span_bucket_list(fcinfo, true);
 }
 
-PGDLLEXPORT Datum Tstzspan_bin_list(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tstzspan_bin_list);
+PGDLLEXPORT Datum Tstzspan_bucket_list(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_bucket_list);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return the bin list of a timestamptz span
- * @sqlfn binList()
+ * @brief Return the bucket list of a timestamptz span
+ * @sqlfn bucketList()
  */
 Datum
-Tstzspan_bin_list(PG_FUNCTION_ARGS)
+Tstzspan_bucket_list(PG_FUNCTION_ARGS)
 {
-  return Span_bin_list(fcinfo, false);
+  return Span_bucket_list(fcinfo, false);
 }
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Valuespan_bin(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Valuespan_bin);
+PGDLLEXPORT Datum Valuespan_bucket(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Valuespan_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return a span bin in a bin list for number spans
+ * @brief Return a span bucket in a bucket list for number spans
  * @sqlfn spanBucket()
  */
 Datum
-Valuespan_bin(PG_FUNCTION_ARGS)
+Valuespan_bucket(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
   Datum origin = PG_GETARG_DATUM(2);
   meosType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Datum value_bin = datum_bin(value, size, origin, type);
-  PG_RETURN_SPAN_P(span_bin_get(value_bin, size, type));
+  Datum value_bucket = datum_bucket(value, size, origin, type);
+  PG_RETURN_SPAN_P(span_bucket_get(value_bucket, size, type));
 }
 
-PGDLLEXPORT Datum Tstzspan_bin(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tstzspan_bin);
+PGDLLEXPORT Datum Tstzspan_bucket(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tstzspan_bucket);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return a bin in a bin list for timestamptz spans.
+ * @brief Return a bucket in a bucket list for timestamptz spans.
  * @sqlfn periodBucket()
  */
 Datum
-Tstzspan_bin(PG_FUNCTION_ARGS)
+Tstzspan_bucket(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
-  TimestampTz time_bin = timestamptz_bin(t, duration, origin);
+  TimestampTz time_bucket = timestamptz_bucket(t, duration, origin);
   int64 tunits = interval_units(duration);
-  PG_RETURN_SPAN_P(span_bin_get(TimestampTzGetDatum(time_bin),
+  PG_RETURN_SPAN_P(span_bucket_get(TimestampTzGetDatum(time_bucket),
     Int64GetDatum(tunits), T_TIMESTAMPTZ));
 }
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Tbox_tile_list(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_tile_list);
+PGDLLEXPORT Datum Tbox_value_time_tiles(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_value_time_tiles);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the tile list of a temporal box
- * @sqlfn tileList()
+ * @sqlfn valueTimeTiles()
  */
 Datum
-Tbox_tile_list(PG_FUNCTION_ARGS)
+Tbox_value_time_tiles(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   TboxGridState *state;
@@ -318,15 +318,15 @@ Tbox_tile_list(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Tbox_tile(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_tile);
+PGDLLEXPORT Datum Tbox_value_time_tile(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_value_time_tile);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a tile in a multidimensional grid for temporal numbers
  * @sqlfn tile()
  */
 Datum
-Tbox_tile(PG_FUNCTION_ARGS)
+Tbox_value_time_tile(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
@@ -335,8 +335,8 @@ Tbox_tile(PG_FUNCTION_ARGS)
   Datum vorigin = PG_GETARG_DATUM(4);
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(5);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_TBOX_P(tbox_tile(value, t, vsize, duration, vorigin, torigin,
-    basetype));
+  PG_RETURN_TBOX_P(tbox_value_time_tile(value, t, vsize, duration, vorigin,
+    torigin, basetype));
 }
 
 /*****************************************************************************
@@ -346,18 +346,18 @@ Tbox_tile(PG_FUNCTION_ARGS)
 /**
  * @brief Create the initial state that persists across multiple calls of the
  * function
- * @param[in] size Value bin size
- * @param[in] tunits Time bin size
- * @param[in] value_bins Initial values of the tiles
- * @param[in] time_bins Initial timestamps of the tiles
+ * @param[in] size Value bucket size
+ * @param[in] tunits Time bucket size
+ * @param[in] value_buckets Initial values of the tiles
+ * @param[in] time_buckets Initial timestamps of the tiles
  * @param[in] fragments Fragments of the input temporal value
  * @param[in] count Number of elements in the input arrays
  *
  * @pre count is greater than 0
  */
 ValueTimeSplitState *
-value_time_split_state_make(Datum size, int64 tunits, Datum *value_bins,
-  TimestampTz *time_bins, Temporal **fragments, int count)
+value_time_split_state_make(Datum size, int64 tunits, Datum *value_buckets,
+  TimestampTz *time_buckets, Temporal **fragments, int count)
 {
   assert(count > 0);
   ValueTimeSplitState *state = palloc0(sizeof(ValueTimeSplitState));
@@ -365,8 +365,8 @@ value_time_split_state_make(Datum size, int64 tunits, Datum *value_bins,
   state->done = false;
   state->size = size;
   state->tunits = tunits;
-  state->value_bins = value_bins;
-  state->time_bins = time_bins;
+  state->value_buckets = value_buckets;
+  state->time_buckets = time_buckets;
   state->fragments = fragments;
   state->i = 0;
   state->count = count;
@@ -432,19 +432,19 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
     if (timesplit)
       torigin = PG_GETARG_TIMESTAMPTZ(i++);
 
-    Datum *value_bins = NULL;
-    TimestampTz *time_bins = NULL;
+    Datum *value_buckets = NULL;
+    TimestampTz *time_buckets = NULL;
     int count;
     Temporal **fragments;
     if (valuesplit && ! timesplit)
-      fragments = tnumber_value_split(temp, size, vorigin, &value_bins,
+      fragments = tnumber_value_split(temp, size, vorigin, &value_buckets,
         &count);
     else if (! valuesplit && timesplit)
-      fragments = temporal_time_split(temp, duration, torigin, &time_bins,
+      fragments = temporal_time_split(temp, duration, torigin, &time_buckets,
         &count);
     else /* valuesplit && timesplit */
       fragments = tnumber_value_time_split(temp, size, duration, vorigin,
-        torigin, &value_bins, &time_bins, &count);
+        torigin, &value_buckets, &time_buckets, &count);
 
     assert(count > 0);
     int64 tunits = 0;
@@ -453,7 +453,7 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
 
     /* Create function state */
     funcctx->user_fctx = value_time_split_state_make(size, tunits,
-      value_bins, time_bins, fragments, count);
+      value_buckets, time_buckets, fragments, count);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -481,9 +481,9 @@ Temporal_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
   /* Store value, timestamp, and split */
   int j = 0;
   if (valuesplit)
-    tuple_arr[j++] = state->value_bins[state->i];
+    tuple_arr[j++] = state->value_buckets[state->i];
   if (timesplit)
-    tuple_arr[j++] = TimestampTzGetDatum(state->time_bins[state->i]);
+    tuple_arr[j++] = TimestampTzGetDatum(state->time_buckets[state->i]);
   tuple_arr[j++] = PointerGetDatum(state->fragments[state->i]);
   /* Advance state */
   value_time_split_state_next(state);
@@ -500,7 +500,7 @@ PG_FUNCTION_INFO_V1(Temporal_time_split);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the fragments of a temporal value split according to
- * time bins
+ * time buckets
  * @sqlfn timeSplit()
  */
 Datum
@@ -514,7 +514,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_split);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the fragments of a temporal number split according to value
- * bins
+ * buckets
  * @sqlfn valueSplit()
  */
 Datum
@@ -528,7 +528,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the fragments of a temporal number split according to value
- * and time bins
+ * and time buckets
  * @sqlfn valueTimeSplit()
  */
 Datum

@@ -71,7 +71,7 @@ tpose_to_tgeompoint(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_spatial_accessor
  * @brief Return the SRID of a temporal instant point.
- * @sqlfunc SRID()
+ * @sqlfn SRID()
  */
 static int
 tposeinst_srid(const TInstant *inst)
@@ -83,7 +83,7 @@ tposeinst_srid(const TInstant *inst)
 /**
  * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the SRID of a temporal point.
- * @sqlfunc SRID()
+ * @sqlfn SRID()
  */
 int
 tpose_srid(const Temporal *temp)
@@ -109,7 +109,7 @@ tpose_srid(const Temporal *temp)
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal instant point
- * @sqlfunc setSRID()
+ * @sqlfn setSRID()
  */
 static TInstant *
 tposeinst_set_srid(const TInstant *inst, int32 srid)
@@ -123,7 +123,7 @@ tposeinst_set_srid(const TInstant *inst, int32 srid)
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal sequence point
- * @sqlfunc setSRID()
+ * @sqlfn setSRID()
  */
 static TSequence *
 tposeseq_set_srid(const TSequence *seq, int32 srid)
@@ -145,7 +145,7 @@ tposeseq_set_srid(const TSequence *seq, int32 srid)
 /**
  * @ingroup libmeos_internal_temporal_spatial_transf
  * @brief Set the SRID of a temporal sequence set point
- * @sqlfunc setSRID()
+ * @sqlfn setSRID()
  */
 static TSequenceSet *
 tposeseqset_set_srid(const TSequenceSet *ss, int32 srid)
@@ -179,7 +179,7 @@ tposeseqset_set_srid(const TSequenceSet *ss, int32 srid)
  * @see tposeinst_set_srid
  * @see tposeseq_set_srid
  * @see tposeseqset_set_srid
- * @sqlfunc setSRID()
+ * @sqlfn setSRID()
  */
 Temporal *
 tpose_set_srid(const Temporal *temp, int32 srid)
