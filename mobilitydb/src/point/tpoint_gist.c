@@ -57,22 +57,20 @@
  *****************************************************************************/
 
 /**
- * @brief Leaf-level consistency for temporal points
- *
- * Since spatiotemporal boxes do not distinguish between inclusive and
+ * @brief Leaf consistency for temporal points
+ * @brief Since spatiotemporal boxes do not distinguish between inclusive and
  * exclusive bounds it is necessary to generalize the tests, e.g.,
  * - before : (box1->tmax < box2->tmin) => (box1->tmax <= box2->tmin)
  *   e.g., to take into account before([a,b],(b,c])
  * - after : (box1->tmin > box2->tmax) => (box1->tmin >= box2->tmax)
  *   e.g., to take into account after((b,c],[a,b])
- *
  * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
  * @note This function is used for both GiST and SP-GiST indexes
  */
 bool
-stbox_index_consistent_leaf(const STBox *key, const STBox *query,
+stbox_index_leaf_consistent(const STBox *key, const STBox *query,
   StrategyNumber strategy)
 {
   bool retval;
@@ -161,8 +159,8 @@ stbox_index_consistent_leaf(const STBox *key, const STBox *query,
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
  */
-static bool
-stbox_gist_consistent(const STBox *key, const STBox *query,
+bool
+stbox_gist_inner_consistent(const STBox *key, const STBox *query,
   StrategyNumber strategy)
 {
   bool retval;
@@ -324,9 +322,9 @@ Stbox_gist_consistent(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(false);
 
   if (GIST_LEAF(entry))
-    result = stbox_index_consistent_leaf(key, &query, strategy);
+    result = stbox_index_leaf_consistent(key, &query, strategy);
   else
-    result = stbox_gist_consistent(key, &query, strategy);
+    result = stbox_gist_inner_consistent(key, &query, strategy);
 
   PG_RETURN_BOOL(result);
 }

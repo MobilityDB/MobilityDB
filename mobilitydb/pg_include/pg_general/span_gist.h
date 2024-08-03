@@ -44,9 +44,9 @@
 
 extern int common_entry_cmp(const void *i1, const void *i2);
 
-extern bool span_index_consistent_leaf(const Span *key, const Span *query,
+extern bool span_index_leaf_consistent(const Span *key, const Span *query,
   StrategyNumber strategy);
-extern bool span_gist_consistent(const Span *key, const Span *query,
+extern bool span_gist_inner_consistent(const Span *key, const Span *query,
   StrategyNumber strategy);
 extern bool span_index_recheck(StrategyNumber strategy);
 

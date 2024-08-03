@@ -1371,13 +1371,13 @@ Stbox_kdtree_inner_consistent(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * SP-GiST leaf-level consistency function
+ * SP-GiST leaf consistency function
  *****************************************************************************/
 
 PGDLLEXPORT Datum Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_spgist_leaf_consistent);
 /**
- * @brief SP-GiST leaf-level consistency function for temporal points
+ * @brief SP-GiST leaf consistency function for temporal points
  */
 Datum
 Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
@@ -1402,7 +1402,7 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     out->recheck |= tpoint_index_recheck(strategy);
 
     if (tpoint_spgist_get_stbox(&in->scankeys[i], &box))
-      result = stbox_index_consistent_leaf(key, &box, strategy);
+      result = stbox_index_leaf_consistent(key, &box, strategy);
     else
       result = false;
     /* If any check is failed, we have found our answer. */

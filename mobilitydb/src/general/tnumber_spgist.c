@@ -1050,13 +1050,13 @@ Tbox_kdtree_inner_consistent(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * SP-GiST leaf-level consistency function
+ * SP-GiST leaf consistency function
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_spgist_leaf_consistent);
 /**
- * @brief SP-GiST leaf-level consistency function for temporal numbers
+ * @brief SP-GiST leaf consistency function for temporal numbers
  */
 Datum
 Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
@@ -1082,7 +1082,7 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
     /* Convert the query to a box and perform the test */
     if (tnumber_spgist_get_tbox(&in->scankeys[i], &box))
-      result = tbox_index_consistent_leaf(key, &box, strategy);
+      result = tbox_index_leaf_consistent(key, &box, strategy);
     else
       result = false;
     /* If any check is failed, we have found our answer. */
