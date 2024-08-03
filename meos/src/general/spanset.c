@@ -1925,6 +1925,8 @@ spanset_spans(const SpanSet *ss, int max_count, int *count)
     /* Construct the resulting array of spans */
     for (int i = 0; i < res->count; i++)
       memcpy(&result[i], SPANSET_SP_N(res, i), sizeof(Span));
+    /* Clean-up and return */
+    pfree(minus); pfree(holes); pfree(tofill); pfree(res);
     *count = max_count;
     return result;
   }
