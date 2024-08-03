@@ -299,7 +299,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
 
     /* Initialize state and verify parameter validity */
     int ntiles;
-    STboxGridState *state = tpoint_space_time_split_init(temp, xsize, ysize,
+    STboxGridState *state = tpoint_space_time_tile_init(temp, xsize, ysize,
       zsize, duration, sorigin, torigin, bitmatrix, border_inc, &ntiles);
 
     /* Create function state */

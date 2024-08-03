@@ -1034,7 +1034,7 @@ tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
  * @param[out] ntiles Number of tiles
  */
 STboxGridState *
-tpoint_space_time_split_init(const Temporal *temp, float xsize, float ysize,
+tpoint_space_time_tile_init(const Temporal *temp, float xsize, float ysize,
   float zsize, const Interval *duration, const GSERIALIZED *sorigin,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *ntiles)
 {
@@ -1154,7 +1154,7 @@ tpoint_space_time_split(const Temporal *temp, float xsize, float ysize,
 {
   /* Initialize state */
   int ntiles;
-  STboxGridState *state = tpoint_space_time_split_init(temp, xsize, ysize,
+  STboxGridState *state = tpoint_space_time_tile_init(temp, xsize, ysize,
     zsize, duration, sorigin, torigin, bitmatrix, border_inc, &ntiles);
   if (! state)
     return NULL;
