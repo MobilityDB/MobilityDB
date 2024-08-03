@@ -100,7 +100,7 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
 
   pfree(line); lwline_free(lwline);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->temporal.flags), NORMALIZE_NO);
 }
 
 /**
@@ -167,7 +167,7 @@ tgeompointseq_tnpointseq(const TSequence *seq)
     instants[i] = inst;
   }
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->temporal.flags), NORMALIZE);
 }
 
 /**
@@ -274,7 +274,7 @@ tnpointseq_linear_positions(const TSequence *seq)
 Nsegment **
 tnpointseq_positions(const TSequence *seq, int *count)
 {
-  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+  if (! MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags))
     return tnpointseq_step_positions(seq, count);
 
   Nsegment **result = palloc(sizeof(Nsegment *));
@@ -326,7 +326,7 @@ tnpointseqset_step_positions(const TSequenceSet *ss, int *count)
 Nsegment **
 tnpointseqset_positions(const TSequenceSet *ss, int *count)
 {
-  return (MEOS_FLAGS_LINEAR_INTERP(ss->flags)) ?
+  return (MEOS_FLAGS_LINEAR_INTERP(ss->temporal.flags)) ?
     tnpointseqset_linear_positions(ss, count) :
     tnpointseqset_step_positions(ss, count);
 }

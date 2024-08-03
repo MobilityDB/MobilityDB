@@ -358,7 +358,7 @@ tinstant_recv(StringInfo buf, meosType temptype)
 void
 tinstant_write(const TInstant *inst, StringInfo buf)
 {
-  meosType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temporal.temptype);
   bytea *bt = call_send(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
   bytea *bv = call_send(basetype, tinstant_val(inst));
   pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
@@ -400,7 +400,7 @@ tsequence_write(const TSequence *seq, StringInfo buf)
   pq_sendint32(buf, seq->count);
   pq_sendbyte(buf, seq->period.lower_inc ? (uint8) 1 : (uint8) 0);
   pq_sendbyte(buf, seq->period.upper_inc ? (uint8) 1 : (uint8) 0);
-  pq_sendbyte(buf, (uint8) MEOS_FLAGS_GET_INTERP(seq->flags));
+  pq_sendbyte(buf, (uint8) MEOS_FLAGS_GET_INTERP(seq->temporal.flags));
   for (int i = 0; i < seq->count; i++)
     tinstant_write(TSEQUENCE_INST_N(seq, i), buf);
   return;

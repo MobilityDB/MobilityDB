@@ -108,8 +108,8 @@ tnumber_arithop_tp_at_timestamptz(const TInstant *start1, const TInstant *end1,
   Datum value1 = tsegment_value_at_timestamptz(start1, end1, LINEAR, *t);
   Datum value2 = tsegment_value_at_timestamptz(start2, end2, LINEAR, *t);
   assert (op == '*' || op == '/');
-  assert (start1->temptype == start2->temptype);
-  meosType basetype = temptype_basetype(start1->temptype);
+  assert (start1->temporal.temptype == start2->temptype);
+  meosType basetype = temptype_basetype(start1->temporal.temptype);
   *value = (op == '*') ?
     datum_mult(value1, value2, basetype) :
     datum_div(value1, value2, basetype);
@@ -265,8 +265,8 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 TInstant *
 tnumberinst_abs(const TInstant *inst)
 {
-  assert(inst); assert(tnumber_type(inst->temptype));
-  meosType basetype = temptype_basetype(inst->temptype);
+  assert(inst); assert(tnumber_type(inst->temporal.temptype));
+  meosType basetype = temptype_basetype(inst->temporal.temptype);
   assert(tnumber_basetype(basetype));
   Datum value = tinstant_val(inst);
   Datum absvalue;
@@ -274,7 +274,7 @@ tnumberinst_abs(const TInstant *inst)
     absvalue = Int32GetDatum(abs(DatumGetInt32(value)));
   else /* basetype == T_FLOAT8 */
     absvalue = Float8GetDatum(fabs(DatumGetFloat8(value)));
-  return tinstant_make(absvalue, inst->temptype, inst->t);
+  return tinstant_make(absvalue, inst->temporal.temptype, inst->t);
 }
 
 /**
@@ -283,8 +283,8 @@ tnumberinst_abs(const TInstant *inst)
 static TSequence *
 tnumberseq_iter_abs(const TSequence *seq)
 {
-  assert(seq); assert(tnumber_type(seq->temptype));
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  assert(seq); assert(tnumber_type(seq->temporal.temptype));
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     instants[i] = tnumberinst_abs(TSEQUENCE_INST_N(seq, i));
@@ -299,9 +299,9 @@ static TSequence *
 tnumberseq_linear_abs(const TSequence *seq)
 {
   assert(seq);
-  assert(tnumber_type(seq->temptype));
+  assert(tnumber_type(seq->temporal.temptype));
   const TInstant *inst1;
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -330,7 +330,7 @@ tnumberseq_linear_abs(const TSequence *seq)
       double duration = (double) (inst2->t - inst1->t);
       TimestampTz t = inst1->t + (TimestampTz) (duration * ratio);
       if (t != inst1->t && t != inst2->t)
-        instants[ninsts++] = tinstant_make(dzero, seq->temptype, t);
+        instants[ninsts++] = tinstant_make(dzero, seq->temporal.temptype, t);
     }
     instants[ninsts++] = tnumberinst_abs(inst2);
     inst1 = inst2;
@@ -351,8 +351,8 @@ tnumberseq_linear_abs(const TSequence *seq)
 TSequence *
 tnumberseq_abs(const TSequence *seq)
 {
-  assert(seq); assert(tnumber_type(seq->temptype));
-  return MEOS_FLAGS_LINEAR_INTERP(seq->flags) ?
+  assert(seq); assert(tnumber_type(seq->temporal.temptype));
+  return MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags) ?
     tnumberseq_linear_abs(seq) : tnumberseq_iter_abs(seq);
 }
 
@@ -365,8 +365,8 @@ tnumberseq_abs(const TSequence *seq)
 TSequenceSet *
 tnumberseqset_abs(const TSequenceSet *ss)
 {
-  assert(ss); assert(tnumber_type(ss->temptype));
-  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->flags);
+  assert(ss); assert(tnumber_type(ss->temporal.temptype));
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->temporal.flags);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
@@ -427,7 +427,7 @@ delta_value(Datum value1, Datum value2, meosType basetype)
 TSequence *
 tnumberseq_delta_value(const TSequence *seq)
 {
-  assert(seq); assert(tnumber_type(seq->temptype));
+  assert(seq); assert(tnumber_type(seq->temporal.temptype));
   /* Instantaneous sequence */
   if (seq->count == 1)
     return NULL;
@@ -437,20 +437,20 @@ tnumberseq_delta_value(const TSequence *seq)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_val(inst1);
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   Datum delta = 0; /* make compiler quiet */
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     Datum value2 = tinstant_val(inst2);
     delta = delta_value(value1, value2, basetype);
-    instants[i - 1] = tinstant_make(delta, seq->temptype, inst1->t);
+    instants[i - 1] = tinstant_make(delta, seq->temporal.temptype, inst1->t);
     inst1 = inst2;
     value1 = value2;
   }
-  instants[seq->count - 1] = tinstant_make(delta, seq->temptype, inst1->t);
+  instants[seq->count - 1] = tinstant_make(delta, seq->temporal.temptype, inst1->t);
   /* Resulting sequence has discrete or step interpolation */
-  interpType interp = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ? DISCRETE : STEP;
+  interpType interp = MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags) ? DISCRETE : STEP;
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     interp == DISCRETE ? true : false, interp, NORMALIZE);
 }
@@ -463,7 +463,7 @@ tnumberseq_delta_value(const TSequence *seq)
 TSequenceSet *
 tnumberseqset_delta_value(const TSequenceSet *ss)
 {
-  assert(ss); assert(tnumber_type(ss->temptype));
+  assert(ss); assert(tnumber_type(ss->temporal.temptype));
   TSequence *delta;
   /* Singleton sequence set */
   if (ss->count == 1)
@@ -544,14 +544,14 @@ tnumberseq_angular_difference_iter(const TSequence *seq, TInstant **result)
   Datum angdiff = Float8GetDatum(0);
   int ninsts = 0;
   if (seq->period.lower_inc)
-    result[ninsts++] = tinstant_make(angdiff, seq->temptype, inst1->t);
+    result[ninsts++] = tinstant_make(angdiff, seq->temporal.temptype, inst1->t);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     Datum value2 = tinstant_val(inst2);
     angdiff = angular_difference(value1, value2);
     if (i != seq->count - 1 || seq->period.upper_inc)
-      result[ninsts++] = tinstant_make(angdiff, seq->temptype, inst2->t);
+      result[ninsts++] = tinstant_make(angdiff, seq->temporal.temptype, inst2->t);
     inst1 = inst2;
     value1 = value2;
   }
@@ -642,14 +642,14 @@ tnumber_angular_difference(const Temporal *temp)
 TSequence *
 tfloatseq_derivative(const TSequence *seq)
 {
-  assert(seq); assert(seq->temptype == T_TFLOAT);
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+  assert(seq); assert(seq->temporal.temptype == T_TFLOAT);
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags));
   /* Instantaneous sequence */
   if (seq->count == 1)
     return NULL;
 
   /* General case */
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_val(inst1);
@@ -685,7 +685,7 @@ tfloatseq_derivative(const TSequence *seq)
 TSequenceSet *
 tfloatseqset_derivative(const TSequenceSet *ss)
 {
-  assert(ss); assert(ss->temptype == T_TFLOAT);
+  assert(ss); assert(ss->temporal.temptype == T_TFLOAT);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)

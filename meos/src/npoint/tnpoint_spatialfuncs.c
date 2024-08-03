@@ -194,7 +194,7 @@ tnpointseq_geom(const TSequence *seq)
     return tnpointinst_geom(TSEQUENCE_INST_N(seq, 0));
 
   GSERIALIZED *result;
-  if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags))
   {
     Nsegment *segment = tnpointseq_linear_positions(seq);
     result = nsegment_geom(segment);
@@ -224,7 +224,7 @@ tnpointseqset_geom(const TSequenceSet *ss)
 
   int count;
   GSERIALIZED *result;
-  if (MEOS_FLAGS_LINEAR_INTERP(ss->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(ss->temporal.flags))
   {
     Nsegment **segments = tnpointseqset_positions(ss, &count);
     result = nsegmentarr_geom(segments, count);
@@ -371,7 +371,7 @@ tnpoint_length(const Temporal *temp)
 static TSequence *
 tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
-  assert(seq); assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+  assert(seq); assert(MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags));
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -446,8 +446,8 @@ tnpoint_cumulative_length(const Temporal *temp)
 static TSequence *
 tnpointseq_speed(const TSequence *seq)
 {
-  assert(seq); assert(tspatial_type(seq->temptype));
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+  assert(seq); assert(tspatial_type(seq->temporal.temptype));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags));
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -483,8 +483,8 @@ tnpointseq_speed(const TSequence *seq)
 static TSequenceSet *
 tnpointseqset_speed(const TSequenceSet *ss)
 {
-  assert(ss); assert(tspatial_type(ss->temptype));
-  assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
+  assert(ss); assert(tspatial_type(ss->temporal.temptype));
+  assert(MEOS_FLAGS_LINEAR_INTERP(ss->temporal.flags));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)

@@ -262,7 +262,7 @@ tinstarr_normalize(const TInstant **instants, interpType interp, int count,
   int *newcount)
 {
   assert(count > 1);
-  meosType basetype = temptype_basetype(instants[0]->temptype);
+  meosType basetype = temptype_basetype(instants[0]->temporal.temptype);
   TInstant **result = palloc(sizeof(TInstant *) * count);
   /* Remove redundant instants */
   TInstant *inst1 = (TInstant *) instants[0];
@@ -308,9 +308,9 @@ bool
 tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   bool *removelast, bool *removefirst)
 {
-  assert(seq1->temptype == seq2->temptype);
-  meosType basetype = temptype_basetype(seq1->temptype);
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq1->flags);
+  assert(seq1->temporal.temptype == seq2->temporal.temptype);
+  meosType basetype = temptype_basetype(seq1->temporal.temptype);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq1->temporal.flags);
   bool result = false;
   TInstant *last2 = (seq1->count == 1 || interp == DISCRETE) ? NULL :
     (TInstant *) TSEQUENCE_INST_N(seq1, seq1->count - 2);
@@ -349,7 +349,7 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
     /* If float/point sequences and collinear last/first segments having the same duration
        ..., 1@t1, 2@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 3@t3, ...
     */
-    (temptype_continuous(seq1->temptype) && eq_last1_first1 &&
+    (temptype_continuous(seq1->temporal.temptype) && eq_last1_first1 &&
       datum_collinear(last2value, first1value, first2value, basetype,
         last2->t, first1->t, first2->t))
     ))
@@ -414,13 +414,13 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
   for (i = start2; i < seq2->count; i++)
     instants[ninsts++] = TSEQUENCE_INST_N(seq2, i);
   /* Get the bounding box size */
-  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq1->temptype));
+  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq1->temporal.temptype));
   bboxunion bbox;
   memcpy(&bbox, TSEQUENCE_BBOX_PTR(seq1), bboxsize);
-  bbox_expand(TSEQUENCE_BBOX_PTR(seq2), &bbox, seq1->temptype);
+  bbox_expand(TSEQUENCE_BBOX_PTR(seq2), &bbox, seq1->temporal.temptype);
   TSequence *result = tsequence_make_exp1(instants, count, count,
     seq1->period.lower_inc, seq2->period.upper_inc,
-    MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE_NO, &bbox);
+    MEOS_FLAGS_GET_INTERP(seq1->temporal.flags), NORMALIZE_NO, &bbox);
   pfree(instants);
   return result;
 }
@@ -690,8 +690,8 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
   char prefix[13];
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  if (! component && MEOS_FLAGS_GET_CONTINUOUS(seq->flags) &&
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
+  if (! component && MEOS_FLAGS_GET_CONTINUOUS(seq->temporal.flags) &&
       interp == STEP)
     snprintf(prefix, sizeof(prefix), "Interp=Step;");
   else
@@ -703,7 +703,7 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
     outlen += strlen(strings[i]) + 1;
   }
   char open, close;
-  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags))
   {
     open = (char) '{';
     close = (char) '}';
@@ -815,7 +815,7 @@ tsequence_make_exp1(const TInstant **instants, int count, int maxcount,
     norminsts = tinstarr_normalize(instants, interp, count, &newcount);
 
   /* Get the bounding box size */
-  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(instants[0]->temptype));
+  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(instants[0]->temporal.temptype));
   /* The period component of the bbox is already declared in the struct */
   size_t bboxsize_extra = bboxsize - sizeof(Span);
 
@@ -842,19 +842,19 @@ tsequence_make_exp1(const TInstant **instants, int count, int maxcount,
   SET_VARSIZE(result, memsize);
   result->count = newcount;
   result->maxcount = maxcount;
-  result->temptype = instants[0]->temptype;
-  result->subtype = TSEQUENCE;
+  result->temporal.temptype = instants[0]->temporal.temptype;
+  result->temporal.subtype = TSEQUENCE;
   result->bboxsize = (int16) bboxsize;
-  MEOS_FLAGS_SET_CONTINUOUS(result->flags,
-    MEOS_FLAGS_GET_CONTINUOUS(norminsts[0]->flags));
-  MEOS_FLAGS_SET_INTERP(result->flags, interp);
-  MEOS_FLAGS_SET_X(result->flags, true);
-  MEOS_FLAGS_SET_T(result->flags, true);
-  if (tgeo_type(instants[0]->temptype))
+  MEOS_FLAGS_SET_CONTINUOUS(result->temporal.flags,
+    MEOS_FLAGS_GET_CONTINUOUS(norminsts[0]->temporal.flags));
+  MEOS_FLAGS_SET_INTERP(result->temporal.flags, interp);
+  MEOS_FLAGS_SET_X(result->temporal.flags, true);
+  MEOS_FLAGS_SET_T(result->temporal.flags, true);
+  if (tgeo_type(instants[0]->temporal.temptype))
   {
-    MEOS_FLAGS_SET_Z(result->flags, MEOS_FLAGS_GET_Z(instants[0]->flags));
-    MEOS_FLAGS_SET_GEODETIC(result->flags,
-      MEOS_FLAGS_GET_GEODETIC(instants[0]->flags));
+    MEOS_FLAGS_SET_Z(result->temporal.flags, MEOS_FLAGS_GET_Z(instants[0]->temporal.flags));
+    MEOS_FLAGS_SET_GEODETIC(result->temporal.flags,
+      MEOS_FLAGS_GET_GEODETIC(instants[0]->temporal.flags));
   }
   /* Initialization of the variable-length part */
   /* Store the bounding box passed as parameter or compute it if not given */
@@ -899,7 +899,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
   }
   if (merge && inst1->t == inst2->t &&
     ! datum_eq(tinstant_val(inst1), tinstant_val(inst2),
-        temptype_basetype(inst1->temptype)))
+        temptype_basetype(inst1->temporal.temptype)))
   {
     char *t1 = pg_timestamptz_out(inst1->t);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -949,7 +949,7 @@ ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
 {
   for (int i = 0; i < count; i++)
   {
-    if (instants[i]->subtype != TINSTANT)
+    if (instants[i]->temporal.subtype != TINSTANT)
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
         "Input values must be temporal instants");
@@ -962,7 +962,7 @@ ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
             (Temporal *) instants[i]))
         return false;
 #if NPOINT
-      if (interp != DISCRETE && instants[i]->temptype == T_TNPOINT &&
+      if (interp != DISCRETE && instants[i]->temporal.temptype == T_TNPOINT &&
           ! ensure_same_rid_tnpointinst(instants[i - 1], instants[i]))
         return false;
 #endif /* NPOINT */
@@ -980,7 +980,7 @@ ensure_valid_tinstarr_common(const TInstant **instants, int count,
 {
   assert(instants); assert(count > 0);
   /* Test the validity of the instants */
-  if (! ensure_valid_interp(instants[0]->temptype, interp))
+  if (! ensure_valid_interp(instants[0]->temporal.temptype, interp))
     return false;
   if (count == 1 && (! lower_inc || ! upper_inc))
   {
@@ -988,7 +988,7 @@ ensure_valid_tinstarr_common(const TInstant **instants, int count,
       "Instant sequence must have inclusive bounds");
     return false;
   }
-  meosType basetype = temptype_basetype(instants[0]->temptype);
+  meosType basetype = temptype_basetype(instants[0]->temporal.temptype);
   if (interp == STEP && count > 1 && ! upper_inc &&
     datum_ne(tinstant_val(instants[count - 1]),
       tinstant_val(instants[count - 2]), basetype))
@@ -1453,7 +1453,7 @@ tsequence_restart(TSequence *seq, int count)
   memcpy(first, last_n, inst_size);
   /* Update the count and the bounding box */
   seq->count = count;
-  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq->temptype));
+  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq->temporal.temptype));
   if (bboxsize != 0)
     tsequence_compute_bbox(seq);
   return;
@@ -1478,7 +1478,7 @@ tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc,
   const TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < to - from; i++)
     instants[i] = TSEQUENCE_INST_N(seq, i + from);
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   TSequence *result = tsequence_make(instants, count, lower_inc, upper_inc,
     interp, NORMALIZE_NO);
   pfree(instants);
@@ -1526,7 +1526,7 @@ tinstant_to_tsequence_free(TInstant *inst, interpType interp)
 Temporal *
 tdiscseq_set_interp(const TSequence *seq, interpType interp)
 {
-  assert(seq); assert(MEOS_FLAGS_DISCRETE_INTERP(seq->flags));
+  assert(seq); assert(MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags));
   /* If the requested interpolation is discrete return a copy */
   if (interp == DISCRETE)
     return (Temporal *) tsequence_copy(seq);
@@ -1557,7 +1557,7 @@ tdiscseq_set_interp(const TSequence *seq, interpType interp)
 TSequence *
 tcontseq_to_discrete(const TSequence *seq)
 {
-  assert(seq); assert(! MEOS_FLAGS_DISCRETE_INTERP(seq->flags));
+  assert(seq); assert(! MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags));
   if (seq->count != 1)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -1575,11 +1575,11 @@ tcontseq_to_step(const TSequence *seq)
 {
   assert(seq);
   /* If the sequence has step interpolation return a copy */
-  if (MEOS_FLAGS_STEP_INTERP(seq->flags))
+  if (MEOS_FLAGS_STEP_INTERP(seq->temporal.flags))
     return tsequence_copy(seq);
 
   /* interp == LINEAR */
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   if ((seq->count > 2) ||
       (seq->count == 2 && ! datum_eq(
         tinstant_val(TSEQUENCE_INST_N(seq, 0)),
@@ -1612,7 +1612,7 @@ tstepseq_to_linear_iter(const TSequence *seq, TSequence **result)
   if (seq->count == 1)
   {
     result[0] = tsequence_copy(seq);
-    MEOS_FLAGS_SET_INTERP(result[0]->flags, LINEAR);
+    MEOS_FLAGS_SET_INTERP(result[0]->temporal.flags, LINEAR);
     return 1;
   }
 
@@ -1622,14 +1622,14 @@ tstepseq_to_linear_iter(const TSequence *seq, TSequence **result)
   Datum value2;
   bool lower_inc = seq->period.lower_inc;
   int nseqs = 0;
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   for (int i = 1; i < seq->count; i++)
   {
     inst2 = TSEQUENCE_INST_N(seq, i);
     value2 = tinstant_val(inst2);
     TInstant *instants[2];
     instants[0] = (TInstant *) inst1;
-    instants[1] = tinstant_make(value1, seq->temptype, inst2->t);
+    instants[1] = tinstant_make(value1, seq->temporal.temptype, inst2->t);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc &&
       datum_eq(value1, value2, basetype) : false;
     result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
@@ -1672,7 +1672,7 @@ tcontseq_to_linear(const TSequence *seq)
 {
   assert(seq);
   /* If the sequence has linear interpolation return a copy */
-  if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags))
     return (Temporal *) tsequence_copy(seq);
 
   /* interp == STEP */
@@ -1690,7 +1690,7 @@ Temporal *
 tsequence_set_interp(const TSequence *seq, interpType interp)
 {
   assert(seq);
-  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+  if (MEOS_FLAGS_GET_INTERP(seq->temporal.flags) == DISCRETE)
     return tdiscseq_set_interp(seq, interp);
 
   if (interp == DISCRETE)
@@ -1712,7 +1712,7 @@ void
 tnumberseq_shift_scale_value_iter(TSequence *seq, Datum origin, Datum delta,
   bool hasdelta, double scale)
 {
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, i);
@@ -1857,7 +1857,7 @@ tsequence_vals(const TSequence *seq, int *count)
     result[i] = tinstant_val(TSEQUENCE_INST_N(seq, i));
   if (seq->count > 1)
   {
-    meosType basetype = temptype_basetype(seq->temptype);
+    meosType basetype = temptype_basetype(seq->temporal.temptype);
     datumarr_sort(result, seq->count, basetype);
     *count = datumarr_remove_duplicates(result, seq->count, basetype);
   }
@@ -1880,7 +1880,7 @@ tnumberseq_valuespans(const TSequence *seq)
 {
   assert(seq);
   /* Temporal sequence number with linear interpolation */
-  if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+  if (MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags))
   {
     Span span;
     memcpy(&span, &((TBox *) TSEQUENCE_BBOX_PTR(seq))->span, sizeof(Span));
@@ -1889,7 +1889,7 @@ tnumberseq_valuespans(const TSequence *seq)
 
   /* Temporal sequence number with discrete or step interpolation */
   int count;
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   meosType spantype = basetype_spantype(basetype);
   Datum *values = tsequence_vals(seq, &count);
   Span *spans = palloc(sizeof(Span) * count);
@@ -1911,7 +1911,7 @@ tsequence_time(const TSequence *seq)
 {
   assert(seq);
   /* Continuous sequence */
-  if (! MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+  if (! MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags))
     return span_spanset(&seq->period);
 
   /* Discrete sequence */
@@ -1939,7 +1939,7 @@ tsequence_minmax_inst(const TSequence *seq,
   assert(seq);
   Datum min = tinstant_val(TSEQUENCE_INST_N(seq, 0));
   int idx = 0;
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   for (int i = 1; i < seq->count; i++)
   {
     Datum value = tinstant_val(TSEQUENCE_INST_N(seq, i));
@@ -1994,13 +1994,13 @@ Datum
 tsequence_min_val(const TSequence *seq)
 {
   assert(seq);
-  if (tnumber_type(seq->temptype))
+  if (tnumber_type(seq->temporal.temptype))
   {
     TBox *box = TSEQUENCE_BBOX_PTR(seq);
     return box->span.lower;
   }
 
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   Datum result = tinstant_val(TSEQUENCE_INST_N(seq, 0));
   for (int i = 1; i < seq->count; i++)
   {
@@ -2021,18 +2021,18 @@ Datum
 tsequence_max_val(const TSequence *seq)
 {
   assert(seq);
-  if (tnumber_type(seq->temptype))
+  if (tnumber_type(seq->temporal.temptype))
   {
     TBox *box = TSEQUENCE_BBOX_PTR(seq);
     Datum max = box->span.upper;
     /* The upper bound of an integer span in canonical form is non exclusive */
-    meosType basetype = temptype_basetype(seq->temptype);
+    meosType basetype = temptype_basetype(seq->temporal.temptype);
     if (basetype == T_INT4)
       max = Int32GetDatum(DatumGetInt32(max) - 1);
     return max;
   }
 
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   Datum result = tinstant_val(TSEQUENCE_INST_N(seq, 0));
   for (int i = 1; i < seq->count; i++)
   {
@@ -2101,7 +2101,7 @@ tsequence_seqs(const TSequence *seq, int *count)
 int
 tsequence_segments_iter(const TSequence *seq, TSequence **result)
 {
-  assert(! MEOS_FLAGS_DISCRETE_INTERP(seq->flags));
+  assert(! MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags));
   /* Singleton sequence */
   if (seq->count == 1)
   {
@@ -2111,18 +2111,18 @@ tsequence_segments_iter(const TSequence *seq, TSequence **result)
 
   /* General case */
   TInstant *instants[2];
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   bool lower_inc = seq->period.lower_inc;
   TInstant *inst1, *inst2;
   int nseqs = 0;
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   for (int i = 1; i < seq->count; i++)
   {
     inst1 = (TInstant *) TSEQUENCE_INST_N(seq, i - 1);
     inst2 = (TInstant *) TSEQUENCE_INST_N(seq, i);
     instants[0] = inst1;
     instants[1] = (interp == LINEAR) ? inst2 :
-      tinstant_make(tinstant_val(inst1), seq->temptype, inst2->t);
+      tinstant_make(tinstant_val(inst1), seq->temporal.temptype, inst2->t);
     bool upper_inc;
     if (i == seq->count - 1 && (interp == LINEAR ||
       datum_eq(tinstant_val(inst1), tinstant_val(inst2), basetype)))
@@ -2159,10 +2159,10 @@ tsequence_segments(const TSequence *seq, int *count)
   TSequence **result = palloc(sizeof(TSequence *) * seq->count);
 
   /* Discrete sequence */
-  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags))
   {
     /* Discrete sequence */
-    interpType interp = MEOS_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
+    interpType interp = MEOS_FLAGS_GET_CONTINUOUS(seq->temporal.flags) ? LINEAR : STEP;
     for (int i = 0; i < seq->count; i++)
       result[i] = tinstant_to_tsequence(TSEQUENCE_INST_N(seq, i), interp);
     *count = seq->count;
@@ -2269,7 +2269,7 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   Datum value1 = tinstant_val(inst1);
   Datum value2 = tinstant_val(inst2);
   /* Constant segment or t is equal to lower bound or step interpolation */
-  if (datum_eq(value1, value2, temptype_basetype(inst1->temptype)) ||
+  if (datum_eq(value1, value2, temptype_basetype(inst1->temporal.temptype)) ||
     inst1->t == t || (interp != LINEAR && t < inst2->t))
     return tinstant_value(inst1);
 
@@ -2283,15 +2283,15 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   long double ratio = duration1 / duration2;
   // TEST !!!! USED FOR ASSESSING FLOATINGING POINT PRECISION IN MEOS !!!
   // long double ratio = (double)(t - inst1->t) / (double)(inst2->t - inst1->t);
-  assert(temptype_continuous(inst1->temptype));
-  if (inst1->temptype == T_TFLOAT)
+  assert(temptype_continuous(inst1->temporal.temptype));
+  if (inst1->temporal.temptype == T_TFLOAT)
   {
     double start = DatumGetFloat8(value1);
     double end = DatumGetFloat8(value2);
     double dresult = start + (double) ((long double)(end - start) * ratio);
     return Float8GetDatum(dresult);
   }
-  if (inst1->temptype == T_TDOUBLE2)
+  if (inst1->temporal.temptype == T_TDOUBLE2)
   {
     double2 *start = DatumGetDouble2P(value1);
     double2 *end = DatumGetDouble2P(value2);
@@ -2300,7 +2300,7 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
     dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
     return Double2PGetDatum(dresult);
   }
-  if (inst1->temptype == T_TDOUBLE3)
+  if (inst1->temporal.temptype == T_TDOUBLE3)
   {
     double3 *start = DatumGetDouble3P(value1);
     double3 *end = DatumGetDouble3P(value2);
@@ -2310,7 +2310,7 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
     dresult->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
     return Double3PGetDatum(dresult);
   }
-  if (inst1->temptype == T_TDOUBLE4)
+  if (inst1->temporal.temptype == T_TDOUBLE4)
   {
     double4 *start = DatumGetDouble4P(value1);
     double4 *end = DatumGetDouble4P(value2);
@@ -2321,12 +2321,12 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
     dresult->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
     return Double4PGetDatum(dresult);
   }
-  if (tgeo_type(inst1->temptype))
+  if (tgeo_type(inst1->temporal.temptype))
   {
     return geosegm_interpolate_point(value1, value2, ratio);
   }
 #if NPOINT
-  if (inst1->temptype == T_TNPOINT)
+  if (inst1->temporal.temptype == T_TNPOINT)
   {
     Npoint *np1 = DatumGetNpointP(value1);
     Npoint *np2 = DatumGetNpointP(value2);
@@ -2336,7 +2336,7 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   }
 #endif
 #if POSE
-  if (inst1->temptype == T_TPOSE)
+  if (inst1->temporal.temptype == T_TPOSE)
   {
     Pose *pose1 = DatumGetPoseP(value1);
     Pose *pose2 = DatumGetPoseP(value2);
@@ -2346,7 +2346,7 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown interpolation function for continuous temporal type: %d",
-    inst1->temptype);
+    inst1->temporal.temptype);
   return 0;
 }
 
@@ -2402,7 +2402,7 @@ tsequence_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict,
     *result = tinstant_value(inst1);
   else
   {
-    interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+    interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
     *result = tsegment_value_at_timestamptz(inst1,
       TSEQUENCE_INST_N(seq, n + 1), interp, t);
   }
@@ -2437,8 +2437,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   if (! inter_span_span(&seq1->period, &seq2->period, &inter))
     return false;
 
-  interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
-  interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
+  interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->temporal.flags);
+  interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->temporal.flags);
   TInstant *inst1, *inst2;
 
   /* If the two sequences intersect at an instant */
@@ -2478,8 +2478,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   TInstant **instants1 = palloc(sizeof(TInstant *) * count);
   TInstant **instants2 = palloc(sizeof(TInstant *) * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * count * 2);
-  meosType basetype1 = temptype_basetype(seq1->temptype);
-  meosType basetype2 = temptype_basetype(seq2->temptype);
+  meosType basetype1 = temptype_basetype(seq1->temporal.temptype);
+  meosType basetype2 = temptype_basetype(seq2->temporal.temptype);
   while (i < seq1->count && j < seq2->count &&
     (inst1->t <= DatumGetTimestampTz(inter.upper) ||
      inst2->t <= DatumGetTimestampTz(inter.upper)))
@@ -2511,9 +2511,9 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
         instants2[ninsts - 1], inst2, interp2, &inter1, &inter2, &crosstime))
       {
         instants1[ninsts] = tofree[nfree++] = tinstant_make_free(inter1,
-          seq1->temptype, crosstime);
+          seq1->temporal.temptype, crosstime);
         instants2[ninsts++] = tofree[nfree++] = tinstant_make_free(inter2,
-          seq2->temptype, crosstime);
+          seq2->temporal.temptype, crosstime);
       }
     }
     instants1[ninsts] = inst1; instants2[ninsts++] = inst2;
@@ -2530,7 +2530,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
         tinstant_val(instants1[ninsts - 1]), basetype1))
   {
     instants1[ninsts - 1] = tinstant_make(tinstant_val(instants1[ninsts - 2]),
-      instants1[ninsts - 1]->temptype, instants1[ninsts - 1]->t);
+      instants1[ninsts - 1]->temporal.temptype, instants1[ninsts - 1]->t);
     tofree[nfree++] = instants1[ninsts - 1];
   }
   if (! inter.upper_inc && ninsts > 1 && (interp2 != LINEAR) &&
@@ -2538,7 +2538,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
         tinstant_val(instants2[ninsts - 1]), basetype2))
   {
     instants2[ninsts - 1] = tinstant_make(tinstant_val(instants2[ninsts - 2]),
-      instants2[ninsts - 1]->temptype, instants2[ninsts - 1]->t);
+      instants2[ninsts - 1]->temporal.temptype, instants2[ninsts - 1]->t);
     tofree[nfree++] = instants2[ninsts - 1];
   }
   *sync1 = tsequence_make((const TInstant **) instants1, ninsts,
@@ -2687,8 +2687,8 @@ bool
 tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, meosType basetype, TimestampTz *t)
 {
-  assert(inst1->temptype == T_TFLOAT);
-  assert(inst2->temptype == T_TFLOAT);
+  assert(inst1->temporal.temptype == T_TFLOAT);
+  assert(inst2->temporal.temptype == T_TFLOAT);
   double dvalue1 = DatumGetFloat8(tinstant_val(inst1));
   double dvalue2 = DatumGetFloat8(tinstant_val(inst2));
   double dvalue = datum_double(value, basetype);
@@ -2733,33 +2733,33 @@ bool
 tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, meosType basetype, Datum *inter, TimestampTz *t)
 {
-  assert(temptype_basetype(inst1->temptype) == basetype);
-  assert(temptype_basetype(inst2->temptype) == basetype);
+  assert(temptype_basetype(inst1->temporal.temptype) == basetype);
+  assert(temptype_basetype(inst2->temporal.temptype) == basetype);
   Datum value1 = tinstant_val(inst1);
   Datum value2 = tinstant_val(inst2);
   if (datum_eq(value, value1, basetype) ||
       datum_eq(value, value2, basetype))
     return false;
 
-  assert(temptype_continuous(inst1->temptype));
+  assert(temptype_continuous(inst1->temporal.temptype));
   bool result = false; /* make compiler quiet */
-  if (inst1->temptype == T_TFLOAT)
+  if (inst1->temporal.temptype == T_TFLOAT)
     result = tfloatsegm_intersection_value(inst1, inst2, value, basetype, t);
-  else if (tgeo_type(inst1->temptype))
+  else if (tgeo_type(inst1->temporal.temptype))
     result = tpointsegm_intersection_value(inst1, inst2, value, t);
 #if NPOINT
-  else if (inst1->temptype == T_TNPOINT)
+  else if (inst1->temporal.temptype == T_TNPOINT)
     result = tnpointsegm_intersection_value(inst1, inst2, value, t);
 #endif
 #if POSE
-  else if (inst1->temptype == T_TPOSE)
+  else if (inst1->temporal.temptype == T_TPOSE)
     result = tposesegm_intersection_value(inst1, inst2, value, t);
 #endif
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Unknown intersection function for continuous temporal type: %d",
-      inst1->temptype);
+      inst1->temporal.temptype);
     return NULL;
   }
 
@@ -2875,8 +2875,8 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
 {
   bool result = false; /* Make compiler quiet */
   Datum value;
-  meosType basetype1 = temptype_basetype(start1->temptype);
-  meosType basetype2 = temptype_basetype(start2->temptype);
+  meosType basetype1 = temptype_basetype(start1->temporal.temptype);
+  meosType basetype2 = temptype_basetype(start2->temporal.temptype);
   if (interp1 != LINEAR)
   {
     value = tinstant_val(start1);
@@ -2896,12 +2896,12 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
   else
   {
     /* Both segments have linear interpolation */
-    assert(temporal_type(start1->temptype));
-    if (tnumber_type(start1->temptype))
+    assert(temporal_type(start1->temporal.temptype));
+    if (tnumber_type(start1->temporal.temptype))
       result = tnumbersegm_intersection(start1, end1, start2, end2, t);
-    else if (start1->temptype == T_TGEOMPOINT)
+    else if (start1->temporal.temptype == T_TGEOMPOINT)
       result = tgeompointsegm_intersection(start1, end1, start2, end2, t);
-    else if (start1->temptype == T_TGEOGPOINT)
+    else if (start1->temporal.temptype == T_TGEOGPOINT)
       result = tgeogpointsegm_intersection(start1, end1, start2, end2, t);
     /* We are sure it is linear interpolation */
     if (result && inter1 != NULL)
@@ -2960,13 +2960,13 @@ double
 tnumberseq_integral(const TSequence *seq)
 {
   assert(seq);
-  assert(tnumber_type(seq->temptype));
+  assert(tnumber_type(seq->temporal.temptype));
   double result = 0;
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+    if (MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags))
     {
       /* Linear interpolation */
       double min = Min(DatumGetFloat8(tinstant_val(inst1)),
@@ -2979,7 +2979,7 @@ tnumberseq_integral(const TSequence *seq)
     {
       /* Step interpolation */
       result += datum_double(tinstant_val(inst1),
-        temptype_basetype(inst1->temptype)) * (double) (inst2->t - inst1->t);
+        temptype_basetype(inst1->temporal.temptype)) * (double) (inst2->t - inst1->t);
     }
     inst1 = inst2;
   }
@@ -2997,8 +2997,8 @@ double
 tnumberdiscseq_twavg(const TSequence *seq)
 {
   assert(seq);
-  assert(tnumber_type(seq->temptype));
-  meosType basetype = temptype_basetype(seq->temptype);
+  assert(tnumber_type(seq->temporal.temptype));
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   double result = 0.0;
   for (int i = 0; i < seq->count; i++)
     result += datum_double(tinstant_val(TSEQUENCE_INST_N(seq, i)), basetype);
@@ -3012,13 +3012,13 @@ double
 tnumbercontseq_twavg(const TSequence *seq)
 {
   assert(seq);
-  assert(tnumber_type(seq->temptype));
+  assert(tnumber_type(seq->temporal.temptype));
   double duration = (double) (DatumGetTimestampTz(seq->period.upper) -
     DatumGetTimestampTz(seq->period.lower));
   if (duration == 0.0)
     /* Instantaneous sequence */
     return datum_double(tinstant_val(TSEQUENCE_INST_N(seq, 0)),
-      temptype_basetype(seq->temptype));
+      temptype_basetype(seq->temporal.temptype));
   else
     return tnumberseq_integral(seq) / duration;
 }
@@ -3032,8 +3032,8 @@ tnumbercontseq_twavg(const TSequence *seq)
 double
 tnumberseq_twavg(const TSequence *seq)
 {
-  assert(seq); assert(tnumber_type(seq->temptype));
-  return MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
+  assert(seq); assert(tnumber_type(seq->temporal.temptype));
+  return MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags) ?
     tnumberdiscseq_twavg(seq) : tnumbercontseq_twavg(seq);
 }
 
@@ -3053,15 +3053,15 @@ bool
 tsequence_eq(const TSequence *seq1, const TSequence *seq2)
 {
   assert(seq1); assert(seq2);
-  assert(seq1->temptype == seq2->temptype);
+  assert(seq1->temporal.temptype == seq2->temporal.temptype);
   /* If number of sequences, flags, or periods are not equal */
-  if (seq1->count != seq2->count || seq1->flags != seq2->flags ||
+  if (seq1->count != seq2->count || seq1->temporal.flags != seq2->temporal.flags ||
       ! span_eq(&seq1->period, &seq2->period))
     return false;
 
   /* If bounding boxes are not equal */
   if (! temporal_bbox_eq(TSEQUENCE_BBOX_PTR(seq1), TSEQUENCE_BBOX_PTR(seq2),
-      seq1->temptype))
+      seq1->temporal.temptype))
     return false;
 
   /* Compare the composing instants */
@@ -3087,7 +3087,7 @@ int
 tsequence_cmp(const TSequence *seq1, const TSequence *seq2)
 {
   assert(seq1); assert(seq2);
-  assert(seq1->temptype == seq2->temptype);
+  assert(seq1->temporal.temptype == seq2->temporal.temptype);
 
   /* Compare composing instants */
   int count = Min(seq1->count, seq2->count);
@@ -3103,9 +3103,9 @@ tsequence_cmp(const TSequence *seq1, const TSequence *seq2)
    * composing instant tests above */
 
   /* Compare flags  */
-  if (seq1->flags < seq2->flags)
+  if (seq1->temporal.flags < seq2->temporal.flags)
     return -1;
-  if (seq1->flags > seq2->flags)
+  if (seq1->temporal.flags > seq2->temporal.flags)
     return 1;
 
   /* The two values are equal */

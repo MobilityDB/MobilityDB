@@ -98,7 +98,7 @@ ensure_geoaggstate_state(const SkipList *state1, const SkipList *state2)
 static TInstant *
 tpointinst_transform_tcentroid(const TInstant *inst)
 {
-  if (MEOS_FLAGS_GET_Z(inst->flags))
+  if (MEOS_FLAGS_GET_Z(inst->temporal.flags))
   {
     const POINT3DZ *point = DATUM_POINT3DZ_P(tinstant_val(inst));
     double4 dvalue;
@@ -136,7 +136,7 @@ tpointseq_cont_transform_tcentroid(const TSequence *seq)
 {
   TInstant **instants = tpointseq_disc_transform_tcentroid(seq);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc,  MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+    seq->period.upper_inc,  MEOS_FLAGS_GET_INTERP(seq->temporal.flags), NORMALIZE_NO);
 }
 
 /**
@@ -291,9 +291,9 @@ tpoint_extent_transfn(STBox *box, const Temporal *temp)
 static Datum
 doublen_to_point(const TInstant *inst, int srid)
 {
-  assert(inst->temptype == T_TDOUBLE3 || inst->temptype == T_TDOUBLE4);
+  assert(inst->temporal.temptype == T_TDOUBLE3 || inst->temporal.temptype == T_TDOUBLE4);
   LWPOINT *point;
-  if (inst->temptype == T_TDOUBLE3)
+  if (inst->temporal.temptype == T_TDOUBLE3)
   {
     double3 *value3 = (double3 *) DatumGetPointer(tinstant_val(inst));
     assert(value3->c != 0);
@@ -301,7 +301,7 @@ doublen_to_point(const TInstant *inst, int srid)
     double valueb = value3->b / value3->c;
     point = lwpoint_make2d(srid, valuea, valueb);
   }
-  else /* inst->temptype == T_TDOUBLE4 */
+  else /* inst->temporal.temptype == T_TDOUBLE4 */
   {
     double4 *value4 = (double4 *) DatumGetPointer(tinstant_val(inst));
     assert(value4->d != 0);
@@ -360,7 +360,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,
-      MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+      MEOS_FLAGS_GET_INTERP(seq->temporal.flags), NORMALIZE);
   }
   return tsequenceset_make_free(newsequences, count, NORMALIZE);
 }

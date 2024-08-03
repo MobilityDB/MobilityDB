@@ -72,7 +72,7 @@ tinstant_val(const TInstant *inst)
 {
   assert(inst);
   /* For base types passed by value */
-  if (MEOS_FLAGS_GET_BYVAL(inst->flags))
+  if (MEOS_FLAGS_GET_BYVAL(inst->temporal.flags))
     return inst->value;
   /* For base types passed by reference */
   return PointerGetDatum(&inst->value);
@@ -88,10 +88,10 @@ tinstant_value(const TInstant *inst)
 {
   assert(inst);
   /* For base types passed by value */
-  if (MEOS_FLAGS_GET_BYVAL(inst->flags))
+  if (MEOS_FLAGS_GET_BYVAL(inst->temporal.flags))
     return inst->value;
   /* For base types passed by reference */
-  meosType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temporal.temptype);
   return datum_copy(PointerGetDatum(&inst->value), basetype);
 }
 
@@ -120,11 +120,11 @@ double
 tnumberinst_double(const TInstant *inst)
 {
   assert(inst);
-  assert(tnumber_type(inst->temptype));
+  assert(tnumber_type(inst->temporal.temptype));
   Datum value = tinstant_val(inst);
-  if (inst->temptype == T_TINT)
+  if (inst->temporal.temptype == T_TINT)
     return (double)(DatumGetInt32(value));
-  else /* inst->temptype == T_TFLOAT */
+  else /* inst->temporal.temptype == T_TFLOAT */
     return DatumGetFloat8(value);
 }
 
@@ -244,7 +244,7 @@ tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
   assert(inst); assert(maxdd >= 0);
 
   char *t = pg_timestamptz_out(inst->t);
-  meosType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temporal.temptype);
   char *value = value_out(tinstant_val(inst), basetype, maxdd);
   size_t size = strlen(value) + strlen(t) + 2;
   char *result = palloc(size);
@@ -317,19 +317,19 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
   void *value_to = ((char *) result) + value_offset;
   memcpy(value_to, value_from, value_size);
   /* Initialize fixed-size values */
-  result->temptype = temptype;
-  result->subtype = TINSTANT;
+  result->temporal.temptype = temptype;
+  result->temporal.subtype = TINSTANT;
   result->t = t;
   SET_VARSIZE(result, size);
-  MEOS_FLAGS_SET_BYVAL(result->flags, typbyval);
-  MEOS_FLAGS_SET_CONTINUOUS(result->flags, temptype_continuous(temptype));
-  MEOS_FLAGS_SET_X(result->flags, true);
-  MEOS_FLAGS_SET_T(result->flags, true);
+  MEOS_FLAGS_SET_BYVAL(result->temporal.flags, typbyval);
+  MEOS_FLAGS_SET_CONTINUOUS(result->temporal.flags, temptype_continuous(temptype));
+  MEOS_FLAGS_SET_X(result->temporal.flags, true);
+  MEOS_FLAGS_SET_T(result->temporal.flags, true);
   if (tgeo_type(temptype))
   {
     GSERIALIZED *gs = DatumGetGserializedP(value);
-    MEOS_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(gs->gflags));
-    MEOS_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
+    MEOS_FLAGS_SET_Z(result->temporal.flags, FLAGS_GET_Z(gs->gflags));
+    MEOS_FLAGS_SET_GEODETIC(result->temporal.flags, FLAGS_GET_GEODETIC(gs->gflags));
     PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
   }
   return result;
@@ -473,7 +473,7 @@ tnumberinst_valuespans(const TInstant *inst)
 {
   assert(inst);
   Datum value = tinstant_val(inst);
-  meosType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temporal.temptype);
   meosType spantype = basetype_spantype(basetype);
   Span s;
   span_set(value, value, true, true, basetype, spantype, &s);
@@ -622,7 +622,7 @@ tnumberinst_shift_value(const TInstant *inst, Datum shift)
   assert(inst);
   TInstant *result = tinstant_copy(inst);
   Datum value = tinstant_val(result);
-  meosType basetype = temptype_basetype(result->temptype);
+  meosType basetype = temptype_basetype(result->temporal.temptype);
   value = datum_add(value, shift, basetype);
   tinstant_set(result, value, result->t);
   return result;
@@ -687,12 +687,12 @@ intersection_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
 bool
 tinstant_eq(const TInstant *inst1, const TInstant *inst2)
 {
-  assert(inst1); assert(inst2); assert(inst1->temptype == inst2->temptype);
+  assert(inst1); assert(inst2); assert(inst1->temporal.temptype == inst2->temporal.temptype);
   /* Compare values and timestamps */
   Datum value1 = tinstant_val(inst1);
   Datum value2 = tinstant_val(inst2);
   return inst1->t == inst2->t && datum_eq(value1, value2,
-    temptype_basetype(inst1->temptype));
+    temptype_basetype(inst1->temporal.temptype));
 }
 
 /**
@@ -711,7 +711,7 @@ tinstant_eq(const TInstant *inst1, const TInstant *inst2)
 int
 tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 {
-  assert(inst1); assert(inst2); assert(inst1->temptype == inst2->temptype);
+  assert(inst1); assert(inst2); assert(inst1->temporal.temptype == inst2->temporal.temptype);
   /* Compare timestamps */
   int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
   if (cmp < 0)
@@ -720,10 +720,10 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
     return 1;
   /* Compare values */
   if (datum_lt(tinstant_val(inst1), tinstant_val(inst2),
-      temptype_basetype(inst1->temptype)))
+      temptype_basetype(inst1->temporal.temptype)))
     return -1;
   if (datum_gt(tinstant_val(inst1), tinstant_val(inst2),
-      temptype_basetype(inst1->temptype)))
+      temptype_basetype(inst1->temporal.temptype)))
     return 1;
   /* The two values are equal */
   return 0;
@@ -746,7 +746,7 @@ tinstant_hash(const TInstant *inst)
 {
   assert(inst);
   Datum value = tinstant_val(inst);
-  meosType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temporal.temptype);
   /* Apply the hash function to the base type */
   uint32 value_hash = datum_hash(value, basetype);
   /* Apply the hash function to the timestamp */

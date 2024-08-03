@@ -190,7 +190,7 @@ tinstant_tprecision(const TInstant *inst, const Interval *duration,
   assert(valid_duration(duration));
   TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
   Datum value = tinstant_val(inst);
-  return tinstant_make(value, inst->temptype, lower);
+  return tinstant_make(value, inst->temporal.temptype, lower);
 }
 
 /**
@@ -204,8 +204,8 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   TimestampTz torigin)
 {
   assert(seq); assert(duration);
-  assert(seq->temptype == T_TINT || seq->temptype == T_TFLOAT ||
-    seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT );
+  assert(seq->temporal.temptype == T_TINT || seq->temporal.temptype == T_TFLOAT ||
+    seq->temporal.temptype == T_TGEOMPOINT || seq->temporal.temptype == T_TGEOGPOINT );
   assert(valid_duration(duration));
 
   int64 tunits = interval_units(duration);
@@ -221,10 +221,10 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   TInstant **outinsts = palloc(sizeof(TInstant *) * count);
   lower = lower_bucket;
   upper = lower_bucket + tunits;
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  meosType temptype_out = (seq->temptype == T_TINT) ? T_TFLOAT : seq->temptype;
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
+  meosType temptype_out = (seq->temporal.temptype == T_TINT) ? T_TFLOAT : seq->temporal.temptype;
   /* Determine whether we are computing the twAvg or the twCentroid */
-  bool twavg = tnumber_type(seq->temptype);
+  bool twavg = tnumber_type(seq->temporal.temptype);
   /* New instants computing the value at the beginning/end of the bucket */
   TInstant *start = NULL, *end = NULL;
   /* Sequence for computing the twAvg/twCentroid of each bucket */
@@ -254,7 +254,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
           timestamptz_cmp_internal(ininsts[k - 1]->t, upper) < 0)
       {
         tsequence_value_at_timestamptz(seq, upper, false, &value);
-        ininsts[k++] = end = tinstant_make_free(value, seq->temptype, upper);
+        ininsts[k++] = end = tinstant_make_free(value, seq->temporal.temptype, upper);
       }
       seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
         NORMALIZE);
@@ -323,8 +323,8 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
   assert(ss); assert(duration);
-  assert(ss->temptype == T_TINT || ss->temptype == T_TFLOAT ||
-    ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT );
+  assert(ss->temporal.temptype == T_TINT || ss->temporal.temptype == T_TFLOAT ||
+    ss->temporal.temptype == T_TGEOMPOINT || ss->temporal.temptype == T_TGEOGPOINT );
   assert(valid_duration(duration));
 
   int64 tunits = interval_units(duration);
@@ -340,10 +340,10 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   lower = lower_bucket;
   upper = lower_bucket + tunits;
-  interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
-  meosType temptype_out = (ss->temptype == T_TINT) ? T_TFLOAT : ss->temptype;
+  interpType interp = MEOS_FLAGS_GET_INTERP(ss->temporal.flags);
+  meosType temptype_out = (ss->temporal.temptype == T_TINT) ? T_TFLOAT : ss->temporal.temptype;
   /* Determine whether we are computing the twAvg or the twCentroid */
-  bool twavg = tnumber_type(ss->temptype);
+  bool twavg = tnumber_type(ss->temporal.temptype);
   int ninsts = 0;
   int nseqs = 0;
   /* Loop for each bucket */
@@ -459,7 +459,7 @@ int
 tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bucket,
   TimestampTz upper_bucket, int64 tunits, TInstant **result)
 {
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   const TInstant *start = TSEQUENCE_INST_N(seq, 0);
   TimestampTz lower = lower_bucket;
   int i; /* Current segment of the sequence */
@@ -510,7 +510,7 @@ tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bucket,
           (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
       {
         Datum value = tsegment_value_at_timestamptz(start, end, interp, lower);
-        result[ninsts++] = tinstant_make(value, seq->temptype, lower);
+        result[ninsts++] = tinstant_make(value, seq->temporal.temptype, lower);
         /* Advance the bucket */
         lower += tunits;
       }
@@ -682,7 +682,7 @@ static double
 tinstarr_similarity1(double *dist, const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, SimFunc simfunc)
 {
-  datum_func2 func = pt_distance_fn(instants1[0]->flags);
+  datum_func2 func = pt_distance_fn(instants1[0]->temporal.flags);
   for (int i = 0; i < count1; i++)
   {
     for (int j = 0; j < count2; j++)
@@ -930,7 +930,7 @@ static void
 tinstarr_similarity_matrix1(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, SimFunc simfunc, double *dist)
 {
-  datum_func2 func = pt_distance_fn(instants1[0]->flags);
+  datum_func2 func = pt_distance_fn(instants1[0]->temporal.flags);
   for (int i = 0; i < count1; i++)
   {
     for (int j = 0; j < count2; j++)
@@ -1088,7 +1088,7 @@ static double
 tinstarr_hausdorff_distance(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2)
 {
-  datum_func2 func = pt_distance_fn(instants1[0]->flags);
+  datum_func2 func = pt_distance_fn(instants1[0]->temporal.flags);
   const TInstant *inst1, *inst2;
   double cmax = 0.0, cmin;
   double d;
@@ -1167,7 +1167,7 @@ temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
 TSequence *
 tsequence_simplify_min_dist(const TSequence *seq, double dist)
 {
-  datum_func2 func = pt_distance_fn(seq->flags);
+  datum_func2 func = pt_distance_fn(seq->temporal.flags);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   /* Add first instant to the output sequence */
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -1505,8 +1505,8 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   POINT2D *p2k, *p2_sync, *p2a, *p2b;
   POINT3DZ *p3k, *p3_sync, *p3a, *p3b;
   Datum value;
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
+  bool hasz = MEOS_FLAGS_GET_Z(seq->temporal.flags);
   double d = -1;
   *split = i1;
   *dist = -1;
@@ -1602,9 +1602,9 @@ tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
       continue;
     }
     /* For temporal floats only Synchronized Distance is used */
-    if (seq->temptype == T_TFLOAT)
+    if (seq->temporal.temptype == T_TFLOAT)
       tfloatseq_findsplit(seq, start, i, &split, &d);
-    else /* tgeo_type(seq->temptype) */
+    else /* tgeo_type(seq->temporal.temptype) */
       tpointseq_findsplit(seq, start, i, syncdist, &split, &d);
     bool dosplit = (d >= 0 && (d > dist || start + i + 1 < minpts));
     if (dosplit)
@@ -1717,8 +1717,8 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
   uint32_t i;
   double d;
 
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-  assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags));
+  assert(seq->temporal.temptype == T_TFLOAT || tgeo_type(seq->temporal.temptype));
   /* Do not try to simplify really short things */
   if (seq->count < 3)
     return tsequence_copy(seq);
@@ -1742,9 +1742,9 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
   do
   {
     /* For temporal floats only Synchronized Distance is used */
-    if (seq->temptype == T_TFLOAT)
+    if (seq->temporal.temptype == T_TFLOAT)
       tfloatseq_findsplit(seq, i1, stack[sp], &split, &d);
-    else /* tgeo_type(seq->temptype) */
+    else /* tgeo_type(seq->temporal.temptype) */
       tpointseq_findsplit(seq, i1, stack[sp], syncdist, &split, &d);
     bool dosplit = (d >= 0 && (d > dist || outn + sp + 1 < minpts));
     if (dosplit)

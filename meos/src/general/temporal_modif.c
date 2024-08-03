@@ -73,7 +73,7 @@ Temporal *
 tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 {
   assert(inst1); assert(inst2);
-  assert(inst1->temptype == inst2->temptype);
+  assert(inst1->temporal.temptype == inst2->temporal.temptype);
   const TInstant *instants[] = {inst1, inst2};
   return tinstant_merge_array(instants, 2);
 }
@@ -118,7 +118,7 @@ Temporal *
 tsequence_merge(const TSequence *seq1, const TSequence *seq2)
 {
   assert(seq1); assert(seq2);
-  assert(seq1->temptype == seq2->temptype);
+  assert(seq1->temporal.temptype == seq2->temporal.temptype);
   const TSequence *sequences[] = {seq1, seq2};
   return tsequence_merge_array(sequences, 2);
 }
@@ -172,7 +172,7 @@ tsequence_merge_array1(const TSequence **sequences, int count,
     tseqarr_sort((TSequence **) sequences, count);
   /* Test the validity of the composing sequences */
   const TSequence *seq1 = sequences[0];
-  meosType basetype = temptype_basetype(seq1->temptype);
+  meosType basetype = temptype_basetype(seq1->temporal.temptype);
   for (int i = 1; i < count; i++)
   {
     const TInstant *inst1 = TSEQUENCE_INST_N(seq1, seq1->count - 1);
@@ -222,7 +222,7 @@ tsequence_merge_array(const TSequence **sequences, int count)
   assert(count > 0);
 
   /* Discrete sequences */
-  if (MEOS_FLAGS_DISCRETE_INTERP(sequences[0]->flags))
+  if (MEOS_FLAGS_DISCRETE_INTERP(sequences[0]->temporal.flags))
     return tdiscseq_merge_array(sequences, count);
 
   /* Continuous sequences */
@@ -253,7 +253,7 @@ TSequenceSet *
 tsequenceset_merge(const TSequenceSet *ss1, const TSequenceSet *ss2)
 {
   assert(ss1); assert(ss2);
-  assert(ss1->temptype == ss2->temptype);
+  assert(ss1->temporal.temptype == ss2->temporal.temptype);
   const TSequenceSet *seqsets[] = {ss1, ss2};
   return tsequenceset_merge_array(seqsets, 2);
 }
@@ -536,7 +536,7 @@ Temporal *
 tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
 {
   assert(seq1); assert(seq2);
-  assert(seq1->temptype == seq2->temptype);
+  assert(seq1->temporal.temptype == seq2->temporal.temptype);
   /* Order the two sequences */
   const TSequence *seq; /* for swaping */
   const TInstant *instants[2] = {0};
@@ -550,7 +550,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
   }
 
   /* Add the sequences in the array to merge */
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq1->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq1->temporal.flags);
   TSequence *tofree = NULL;
   const TSequence **sequences = palloc(sizeof(TSequence *) * 3);
   sequences[0] = seq1;
@@ -569,7 +569,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
   }
   else /* overlap on the boundary */
   {
-    meosType basetype = temptype_basetype(seq1->temptype);
+    meosType basetype = temptype_basetype(seq1->temporal.temptype);
     if (! datum_eq(tinstant_val(instants[0]), tinstant_val(instants[1]),
       basetype))
     {
@@ -610,9 +610,9 @@ Temporal *
 tsequence_insert(const TSequence *seq1, const TSequence *seq2, bool connect)
 {
   assert(seq1); assert(seq2);
-  assert(seq1->temptype == seq2->temptype);
+  assert(seq1->temporal.temptype == seq2->temporal.temptype);
 
-  if (MEOS_FLAGS_DISCRETE_INTERP(seq1->flags) || ! connect)
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq1->temporal.flags) || ! connect)
     return (Temporal *) tsequence_merge(seq1, seq2);
   else
     return (Temporal *) tcontseq_insert(seq1, seq2);
@@ -663,7 +663,7 @@ tcontseq_delete_timestamptz(const TSequence *seq, TimestampTz t)
     return NULL;
   else if (ninsts == 1)
     lower_inc1 = upper_inc1 = true;
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   TSequence *result = tsequence_make((const TInstant **) instants, ninsts,
     lower_inc1, upper_inc1, interp, NORMALIZE);
   pfree(instants);
@@ -683,7 +683,7 @@ Temporal *
 tsequence_delete_timestamptz(const TSequence *seq, TimestampTz t, bool connect)
 {
   assert(seq);
-  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags))
     return (Temporal *) tdiscseq_minus_timestamptz(seq, t);
   else
     return connect ?
@@ -771,7 +771,7 @@ tcontseq_delete_tstzset(const TSequence *seq, const Set *s)
     return NULL;
   else if (ninsts == 1)
     lower_inc1 = upper_inc1 = true;
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   TSequence *result = tsequence_make((const TInstant **) instants, ninsts,
     lower_inc1, upper_inc1, interp, NORMALIZE_NO);
   pfree(instants);
@@ -791,7 +791,7 @@ Temporal *
 tsequence_delete_tstzset(const TSequence *seq, const Set *s, bool connect)
 {
   assert(seq); assert(s);
-  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags))
     return (Temporal *) tdiscseq_restrict_tstzset(seq, s, REST_MINUS);
   else
     return connect ?
@@ -838,7 +838,7 @@ tcontseq_delete_tstzspan(const TSequence *seq, const Span *s)
     return NULL;
   else if (ninsts == 1)
     lower_inc1 = upper_inc1 = true;
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   TSequence *result = tsequence_make((const TInstant **) instants, ninsts,
     lower_inc1, upper_inc1, interp, NORMALIZE);
   pfree(instants);
@@ -858,7 +858,7 @@ Temporal *
 tsequence_delete_tstzspan(const TSequence *seq, const Span *s, bool connect)
 {
   assert(seq); assert(s);
-  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags))
     return (Temporal *) tsequence_restrict_tstzspan(seq, s, REST_MINUS);
   else
     return connect ?
@@ -913,7 +913,7 @@ tcontseq_delete_tstzspanset(const TSequence *seq, const SpanSet *ss)
     return NULL;
   else if (ninsts == 1)
     lower_inc1 = upper_inc1 = true;
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   TSequence *result = tsequence_make((const TInstant **) instants, ninsts,
     lower_inc1, upper_inc1, interp, NORMALIZE);
   pfree(instants);
@@ -934,7 +934,7 @@ tsequence_delete_tstzspanset(const TSequence *seq, const SpanSet *ss,
   bool connect)
 {
   assert(seq); assert(ss);
-  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags))
     return (Temporal *) tdiscseq_restrict_tstzspanset(seq, ss, REST_MINUS);
   else
     return connect ?
@@ -953,10 +953,10 @@ TSequenceSet *
 tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
 {
   assert(ss1); assert(ss2);
-  assert(ss1->temptype == ss2->temptype);
+  assert(ss1->temporal.temptype == ss2->temporal.temptype);
   TSequenceSet *result;
   const TInstant *instants[2] = {0};
-  interpType interp = MEOS_FLAGS_GET_INTERP(ss1->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(ss1->temporal.flags);
   int count;
 
   /* Order the two sequence sets */
@@ -1012,7 +1012,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
   const TSequence **sequences = palloc(sizeof(TSequence *) * count);
   TSequence **tofree = palloc(sizeof(TSequence *) *
     Min(ss1->count, ss2->count) * 2);
-  meosType basetype = temptype_basetype(ss1->temptype);
+  meosType basetype = temptype_basetype(ss1->temporal.temptype);
   /* Add the first sequence of ss1 to the result */
   sequences[0] = TSEQUENCESET_SEQ_N(ss1, 0);
   int i = 1, /* counter for the first sequence */
@@ -1230,7 +1230,7 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
     return tsequenceset_copy(ss);
 
   TSequence *seq;
-  interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(ss->temporal.flags);
 
   /* Singleton sequence set */
   if (ss->count == 1)
@@ -1531,13 +1531,13 @@ Temporal *
 tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
   const Interval *maxt, bool expand)
 {
-  assert(seq); assert(inst); assert(seq->temptype == inst->temptype);
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  meosType basetype = temptype_basetype(seq->temptype);
+  assert(seq); assert(inst); assert(seq->temporal.temptype == inst->temporal.temptype);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   TInstant *last = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
-  int16 flags = seq->flags;
+  int16 flags = seq->temporal.flags;
 #if NPOINT
-  if (last->temptype == T_TNPOINT && interp != DISCRETE &&
+  if (last->temporal.temptype == T_TNPOINT && interp != DISCRETE &&
       ! ensure_same_rid_tnpointinst(inst, last))
     return NULL;
 #endif
@@ -1689,11 +1689,11 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
     maxcount = count;
 
   /* Get the bounding box size */
-  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq->temptype));
+  size_t bboxsize = DOUBLE_PAD(temporal_bbox_size(seq->temporal.temptype));
   bboxunion bbox, bbox1;
   memcpy(&bbox, TSEQUENCE_BBOX_PTR(seq), bboxsize);
   tinstant_set_bbox(inst, &bbox1);
-  bbox_expand(&bbox1, &bbox, seq->temptype);
+  bbox_expand(&bbox1, &bbox, seq->temporal.temptype);
   TSequence *result = tsequence_make_exp1(instants, count, maxcount,
     seq->period.lower_inc, true, interp, NORMALIZE_NO, &bbox);
   pfree(instants);
@@ -1717,9 +1717,9 @@ tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
   bool expand __attribute__((unused)))
 {
   assert(seq1); assert(seq2);
-  assert(seq1->temptype == seq2->temptype);
-  interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
-  assert(interp1 == MEOS_FLAGS_GET_INTERP(seq2->flags));
+  assert(seq1->temporal.temptype == seq2->temporal.temptype);
+  interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->temporal.flags);
+  assert(interp1 == MEOS_FLAGS_GET_INTERP(seq2->temporal.flags));
   const TInstant *inst1 = TSEQUENCE_INST_N(seq1, seq1->count - 1);
   const TInstant *inst2 = TSEQUENCE_INST_N(seq2, 0);
   /* We cannot call ensure_increasing_timestamps since we must take into
@@ -1737,7 +1737,7 @@ tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
   else if (inst1->t == inst2->t && seq1->period.upper_inc &&
     seq2->period.lower_inc)
   {
-    meosType basetype = temptype_basetype(seq1->temptype);
+    meosType basetype = temptype_basetype(seq1->temporal.temptype);
     Datum value1 = tinstant_val(inst1);
     Datum value2 = tinstant_val(inst2);
     if (! datum_eq(value1, value2, basetype))
@@ -1751,7 +1751,7 @@ tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
     }
   }
 #if NPOINT
-  if (inst1->temptype == T_TNPOINT && interp1 != DISCRETE &&
+  if (inst1->temporal.temptype == T_TNPOINT && interp1 != DISCRETE &&
       ! ensure_same_rid_tnpointinst(inst1, inst2))
     return NULL;
 #endif
@@ -1802,7 +1802,7 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
   double maxdist, const Interval *maxt, bool expand)
 {
   assert(ss); assert(inst);
-  assert(ss->temptype == inst->temptype);
+  assert(ss->temporal.temptype == inst->temporal.temptype);
   /* Append the instant to the last sequence */
   TSequence *last = (TSequence *) TSEQUENCESET_SEQ_N(ss, ss->count - 1);
   Temporal *temp = tsequence_append_tinstant(last, inst, maxdist, maxt,
@@ -1903,7 +1903,7 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
   bool expand)
 {
   assert(ss); assert(seq);
-  assert(ss->temptype == seq->temptype);
+  assert(ss->temporal.temptype == seq->temporal.temptype);
 
   /* The last sequence below may be modified with expandable structures */
   TSequence *last = (TSequence *) TSEQUENCESET_SEQ_N(ss, ss->count - 1);
@@ -1924,7 +1924,7 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
   else if (inst1->t == inst2->t && ss->period.upper_inc &&
     seq->period.lower_inc)
   {
-    meosType basetype = temptype_basetype(ss->temptype);
+    meosType basetype = temptype_basetype(ss->temporal.temptype);
     Datum value1 = tinstant_val(inst1);
     Datum value2 = tinstant_val(inst2);
     if (! datum_eq(value1, value2, basetype))
@@ -2103,7 +2103,7 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
    * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */
 
-  interpType interp2 = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp2 = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)

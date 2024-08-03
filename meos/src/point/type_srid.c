@@ -150,7 +150,7 @@ stbox_set_srid(const STBox *box, int32 srid)
 int
 tpointinst_srid(const TInstant *inst)
 {
-  assert(inst); assert(tgeo_type(inst->temptype));
+  assert(inst); assert(tgeo_type(inst->temporal.temptype));
   GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
   return gserialized_get_srid(gs);
 }
@@ -166,7 +166,7 @@ tpointseq_srid(const TSequence *seq)
 {
   assert(seq);
   /* This function is also called for tnpoint */
-  assert(tspatial_type(seq->temptype));
+  assert(tspatial_type(seq->temporal.temptype));
   STBox *box = TSEQUENCE_BBOX_PTR(seq);
   return box->srid;
 }
@@ -182,7 +182,7 @@ tpointseqset_srid(const TSequenceSet *ss)
 {
   assert(ss);
   /* This function is also called for tnpoint */
-  assert(tspatial_type(ss->temptype));
+  assert(tspatial_type(ss->temporal.temptype));
   STBox *box = TSEQUENCESET_BBOX_PTR(ss);
   return box->srid;
 }
@@ -225,7 +225,7 @@ tpoint_srid(const Temporal *temp)
 TInstant *
 tpointinst_set_srid(const TInstant *inst, int32 srid)
 {
-  assert(inst); assert(tgeo_type(inst->temptype));
+  assert(inst); assert(tgeo_type(inst->temporal.temptype));
   TInstant *result = tinstant_copy(inst);
   GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(result));
   gserialized_set_srid(gs, srid);
@@ -242,7 +242,7 @@ tpointinst_set_srid(const TInstant *inst, int32 srid)
 TSequence *
 tpointseq_set_srid(const TSequence *seq, int32 srid)
 {
-  assert(seq); assert(tgeo_type(seq->temptype));
+  assert(seq); assert(tgeo_type(seq->temporal.temptype));
   TSequence *result = tsequence_copy(seq);
   /* Set the SRID of the composing points */
   for (int i = 0; i < seq->count; i++)
@@ -268,7 +268,7 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
 TSequenceSet *
 tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
 {
-  assert(ss); assert(tgeo_type(ss->temptype));
+  assert(ss); assert(tgeo_type(ss->temporal.temptype));
   STBox *box;
   TSequenceSet *result = tsequenceset_copy(ss);
   /* Loop for every composing sequence */
@@ -835,7 +835,7 @@ stbox_transform_pipeline(const STBox *box, const char *pipeline,
 static bool
 tpointinst_transf_pj(const TInstant *inst, int32 srid_to, const LWPROJ *pj)
 {
-  assert(inst); assert(pj); assert(tgeo_type(inst->temptype));
+  assert(inst); assert(pj); assert(tgeo_type(inst->temporal.temptype));
   GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
   /* The SRID of the geometry is set in the following function */
   if (! point_transf_pj(gs, srid_to, pj))
@@ -852,7 +852,7 @@ tpointinst_transf_pj(const TInstant *inst, int32 srid_to, const LWPROJ *pj)
 static bool
 tpointseq_transf_pj(TSequence *seq, int32 srid_to, const LWPROJ *pj)
 {
-  assert(seq); assert(pj); assert(tgeo_type(seq->temptype));
+  assert(seq); assert(pj); assert(tgeo_type(seq->temporal.temptype));
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, i);
@@ -876,7 +876,7 @@ tpointseq_transf_pj(TSequence *seq, int32 srid_to, const LWPROJ *pj)
 static bool
 tpointseqset_transf_pj(TSequenceSet *ss, int32 srid_to, const LWPROJ *pj)
 {
-  assert(ss); assert(pj); assert(tgeo_type(ss->temptype));
+  assert(ss); assert(pj); assert(tgeo_type(ss->temporal.temptype));
   for (int i = 0; i < ss->count; i++)
   {
     TSequence *seq = (TSequence *) TSEQUENCESET_SEQ_N(ss, i);

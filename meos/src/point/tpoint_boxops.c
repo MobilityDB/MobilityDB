@@ -93,7 +93,7 @@ tpointinst_set_stbox(const TInstant *inst, STBox *box)
 void
 tspatialseq_set_stbox(const TSequence *seq, STBox *box)
 {
-  assert(seq); assert(box); assert(tspatial_type(seq->temptype));
+  assert(seq); assert(box); assert(tspatial_type(seq->temporal.temptype));
   memcpy(box, TSEQUENCE_BBOX_PTR(seq), sizeof(STBox));
   return;
 }
@@ -110,7 +110,7 @@ tspatialseq_set_stbox(const TSequence *seq, STBox *box)
 void
 tspatialseqset_set_stbox(const TSequenceSet *ss, STBox *box)
 {
-  assert(ss); assert(box); assert(tspatial_type(ss->temptype));
+  assert(ss); assert(box); assert(tspatial_type(ss->temporal.temptype));
   memcpy(box, TSEQUENCESET_BBOX_PTR(ss), sizeof(STBox));
   return;
 }
@@ -129,8 +129,8 @@ tpointinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
   /* Initialize the bounding box with the first instant */
   tpointinst_set_stbox(instants[0], box);
   /* Prepare for the iteration */
-  bool hasz = MEOS_FLAGS_GET_Z(instants[0]->flags);
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(instants[0]->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(instants[0]->temporal.flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(instants[0]->temporal.flags);
   for (int i = 1; i < count; i++)
   {
     GSERIALIZED *point = DatumGetGserializedP(tinstant_val(instants[i]));
@@ -206,7 +206,7 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
 STBox *
 tpointinst_stboxes(const TInstant *inst, int *count)
 {
-  assert(inst); assert(tgeo_type(inst->temptype));
+  assert(inst); assert(tgeo_type(inst->temporal.temptype));
   STBox *result = palloc(sizeof(STBox));
   tpointinst_set_stbox(inst, &result[0]);
   *count = 1;
@@ -225,8 +225,8 @@ tpointinst_stboxes(const TInstant *inst, int *count)
 static int
 tpointseq_disc_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
 {
-  assert(tgeo_type(seq->temptype));
-  assert(! MEOS_FLAGS_LINEAR_INTERP(seq->flags)); assert(seq->count > 1);
+  assert(tgeo_type(seq->temporal.temptype));
+  assert(! MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags)); assert(seq->count > 1);
   /* Temporal sequence has at least 2 instants */
   if (max_count < 1 || seq->count <= max_count)
   {
@@ -278,8 +278,8 @@ tpointseq_disc_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
 static int
 tpointseq_cont_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
 {
-  assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags)); assert(seq->count > 1);
+  assert(tgeo_type(seq->temporal.temptype));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags)); assert(seq->count > 1);
   /* Temporal sequence has at least 2 instants */
   int nsegs = seq->count - 1;
   if (max_count < 1 || nsegs <= max_count)
@@ -341,14 +341,14 @@ tpointseq_cont_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
 static int
 tpointseq_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
 {
-  assert(tgeo_type(seq->temptype));
+  assert(tgeo_type(seq->temporal.temptype));
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
     tpointinst_set_stbox(TSEQUENCE_INST_N(seq, 0), &result[0]);
     return 1;
   }
-  return (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE) ?
+  return (MEOS_FLAGS_GET_INTERP(seq->temporal.flags) == DISCRETE) ?
     tpointseq_disc_stboxes_iter(seq, max_count, result) :
     tpointseq_cont_stboxes_iter(seq, max_count, result);
 }
@@ -365,7 +365,7 @@ tpointseq_stboxes_iter(const TSequence *seq, int max_count, STBox *result)
 STBox *
 tpointseq_stboxes(const TSequence *seq, int max_count, int *count)
 {
-  assert(seq); assert(count); assert(tgeo_type(seq->temptype));
+  assert(seq); assert(count); assert(tgeo_type(seq->temporal.temptype));
   /* In the discrete case, we will create at most seq->count boxes
    * while in the continuous we create at most (seq->count - 1).
    * Thus, allocate seq->count to be sure. */
@@ -387,8 +387,8 @@ tpointseq_stboxes(const TSequence *seq, int max_count, int *count)
 STBox *
 tpointseqset_stboxes(const TSequenceSet *ss, int max_count, int *count)
 {
-  assert(ss); assert(count); assert(tgeo_type(ss->temptype));
-  assert(MEOS_FLAGS_LINEAR_INTERP(ss->flags));
+  assert(ss); assert(count); assert(tgeo_type(ss->temporal.temptype));
+  assert(MEOS_FLAGS_LINEAR_INTERP(ss->temporal.flags));
   int nboxes = (max_count < 1) ? ss->totalcount : max_count;
   STBox *result = palloc(sizeof(STBox) * nboxes);
   int nboxes1;

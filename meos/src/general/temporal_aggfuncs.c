@@ -197,7 +197,7 @@ tinstant_tagg(const TInstant **instants1, int count1, const TInstant **instants2
     {
       if (func != NULL)
         result[count++] = tinstant_make(
-          func(tinstant_val(inst1), tinstant_val(inst2)), inst1->temptype,
+          func(tinstant_val(inst1), tinstant_val(inst2)), inst1->temporal.temptype,
           inst1->t);
       else
       {
@@ -333,7 +333,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
     const TInstant *inst2 = TSEQUENCE_INST_N(syncseq2, i);
     if (func != NULL)
       instants[i] = tinstant_make(
-        func(tinstant_val(inst1), tinstant_val(inst2)), seq1->temptype,
+        func(tinstant_val(inst1), tinstant_val(inst2)), seq1->temporal.temptype,
         inst1->t);
     else
     {
@@ -350,7 +350,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
     }
   }
   sequences[nseqs++] = tsequence_make_free(instants, syncseq1->count,
-    lower_inc, upper_inc, MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE);
+    lower_inc, upper_inc, MEOS_FLAGS_GET_INTERP(seq1->temporal.flags), NORMALIZE);
   pfree(syncseq1); pfree(syncseq2);
 
   /* Compute the aggregation on the period after the intersection of the
@@ -924,7 +924,7 @@ tcontseq_transform_tagg(const TSequence *seq,
   for (int i = 0; i < seq->count; i++)
     instants[i] = func(TSEQUENCE_INST_N(seq, i));
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->temporal.flags), NORMALIZE_NO);
 }
 
 /**
@@ -1406,7 +1406,7 @@ tsequence_tavg_finalfn(const TSequence **sequences, int count)
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,
-      MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+      MEOS_FLAGS_GET_INTERP(seq->temporal.flags), NORMALIZE);
   }
   return tsequenceset_make_free(newsequences, count, NORMALIZE);
 }
@@ -1528,7 +1528,7 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
     MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
     /* Default interpolation depending on the base type */
-    interpType interp = MEOS_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEP;
+    interpType interp = MEOS_FLAGS_GET_CONTINUOUS(inst->temporal.flags) ? LINEAR : STEP;
     /* Arbitrary initialization to 64 elements */
     Temporal *result = (Temporal *) tsequence_make_exp(
       (const TInstant **) &inst, 1, 64, true, true, interp, NORMALIZE_NO);

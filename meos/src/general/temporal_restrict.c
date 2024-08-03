@@ -651,7 +651,7 @@ tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
 {
   assert(inst);
   if (datum_eq(value, tinstant_val(inst),
-      temptype_basetype(inst->temptype)))
+      temptype_basetype(inst->temporal.temptype)))
     return atfunc ? tinstant_copy(inst) : NULL;
   return atfunc ? NULL : tinstant_copy(inst);
 }
@@ -667,7 +667,7 @@ bool
 tinstant_restrict_values_test(const TInstant *inst, const Set *s, bool atfunc)
 {
   Datum value = tinstant_val(inst);
-  meosType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temporal.temptype);
   for (int i = 0; i < s->count; i++)
   {
     if (datum_eq(value, SET_VAL_N(s, i), basetype))
@@ -887,7 +887,7 @@ TSequence *
 tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 {
   assert(seq);
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -970,11 +970,11 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   interpType interp, bool lower_inc, bool upper_inc, Datum value, bool atfunc,
   TSequence **result)
 {
-  assert(inst1->temptype == inst2->temptype);
+  assert(inst1->temporal.temptype == inst2->temporal.temptype);
   assert(interp != DISCRETE);
   Datum value1 = tinstant_val(inst1);
   Datum value2 = tinstant_val(inst2);
-  meosType basetype = temptype_basetype(inst1->temptype);
+  meosType basetype = temptype_basetype(inst1->temporal.temptype);
   TInstant *instants[2];
   /* Is the segment constant? */
   bool isconst = datum_eq(value1, value2, basetype);
@@ -1017,7 +1017,7 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
     if (lower)
     {
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(value1, inst1->temptype, inst2->t);
+      instants[1] = tinstant_make(value1, inst1->temporal.temptype, inst2->t);
       result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, false, STEP, NORMALIZE_NO);
       pfree(instants[1]);
@@ -1036,7 +1036,7 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   /* Interpolation */
   if (atfunc)
   {
-    TInstant *inst = tinstant_make_free(projvalue, inst1->temptype, t);
+    TInstant *inst = tinstant_make_free(projvalue, inst1->temporal.temptype, t);
     result[0] = tinstant_to_tsequence(inst, LINEAR);
     pfree(inst);
     return 1;
@@ -1071,7 +1071,7 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
     else
     {
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make_free(projvalue, inst1->temptype, t);
+      instants[1] = tinstant_make_free(projvalue, inst1->temporal.temptype, t);
       result[0] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, false, LINEAR, NORMALIZE_NO);
       instants[0] = instants[1];
@@ -1110,7 +1110,7 @@ tcontseq_restrict_value_iter(const TSequence *seq, Datum value, bool atfunc,
     /* We do not call the function tinstant_restrict_value since this
      * would create a new unnecessary instant that needs to be freed */
     bool equal = datum_eq(tinstant_val(inst1), value,
-      temptype_basetype(seq->temptype));
+      temptype_basetype(seq->temporal.temptype));
     if ((atfunc && ! equal) || (! atfunc && equal))
       return 0;
     result[0] = tsequence_copy(seq);
@@ -1128,7 +1128,7 @@ tcontseq_restrict_value_iter(const TSequence *seq, Datum value, bool atfunc,
   }
 
   /* General case */
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int nseqs = 0;
@@ -1161,7 +1161,7 @@ tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
   assert(seq);
   int count = seq->count;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int newcount = tcontseq_restrict_value_iter(seq, value, atfunc, sequences);
@@ -1204,7 +1204,7 @@ tsequence_at_values_iter(const TSequence *seq, const Set *set,
     return 0;
 
   /* General case */
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int nseqs = 0;
@@ -1280,7 +1280,7 @@ TSequence *
 tnumberdiscseq_restrict_span(const TSequence *seq, const Span *s, bool atfunc)
 {
   assert(seq); assert(s);
-  assert(temptype_basetype(seq->temptype) == s->basetype);
+  assert(temptype_basetype(seq->temporal.temptype) == s->basetype);
   /* Instantaneous sequence */
   if (seq->count == 1)
     return atfunc ? tsequence_copy(seq) : NULL;
@@ -1359,7 +1359,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
 {
   Datum value1 = tinstant_val(inst1);
   Datum value2 = tinstant_val(inst2);
-  meosType basetype = temptype_basetype(inst1->temptype);
+  meosType basetype = temptype_basetype(inst1->temporal.temptype);
   meosType spantype = basetype_spantype(basetype);
   TInstant *instants[2];
   bool found;
@@ -1385,7 +1385,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
     if ((atfunc && found) || (! atfunc && ! found))
     {
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(value1, inst1->temptype, inst2->t);
+      instants[1] = tinstant_make(value1, inst1->temporal.temptype, inst2->t);
       result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, false, interp, NORMALIZE_NO);
       pfree(instants[1]);
@@ -1582,7 +1582,7 @@ tnumbercontseq_restrict_span_iter(const TSequence *seq, const Span *s,
   }
 
   /* General case */
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int nseqs = 0;
@@ -1610,10 +1610,10 @@ TSequenceSet *
 tnumbercontseq_restrict_span(const TSequence *seq, const Span *s, bool atfunc)
 {
   assert(seq); assert(s);
-  assert(temptype_basetype(seq->temptype) == s->basetype);
+  assert(temptype_basetype(seq->temporal.temptype) == s->basetype);
   int count = seq->count;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int newcount = tnumbercontseq_restrict_span_iter(seq, s, atfunc, sequences);
@@ -1653,7 +1653,7 @@ tnumbercontseq_restrict_spanset_iter(const TSequence *seq, const SpanSet *ss,
   }
 
   /* General case */
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   if (atfunc)
   {
     /* AT function */
@@ -1715,11 +1715,11 @@ tnumbercontseq_restrict_spanset(const TSequence *seq, const SpanSet *ss,
   bool atfunc)
 {
   assert(seq); assert(ss);
-  assert(temptype_basetype(seq->temptype) == ss->basetype);
+  assert(temptype_basetype(seq->temporal.temptype) == ss->basetype);
   /* General case */
   int maxcount = seq->count * ss->count;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags))
     maxcount *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
   int newcount = tnumbercontseq_restrict_spanset_iter(seq, ss, atfunc,
@@ -2019,7 +2019,7 @@ tsegment_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   interpType interp, TimestampTz t)
 {
   Datum value = tsegment_value_at_timestamptz(inst1, inst2, interp, t);
-  return tinstant_make_free(value, inst1->temptype, t);
+  return tinstant_make_free(value, inst1->temporal.temptype, t);
 }
 
 /**
@@ -2046,7 +2046,7 @@ tcontseq_at_timestamptz(const TSequence *seq, TimestampTz t)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, n + 1);
     return tsegment_at_timestamptz(inst1, inst2,
-      MEOS_FLAGS_GET_INTERP(seq->flags), t);
+      MEOS_FLAGS_GET_INTERP(seq->temporal.flags), t);
   }
 }
 
@@ -2060,7 +2060,7 @@ TInstant *
 tsequence_at_timestamptz(const TSequence *seq, TimestampTz t)
 {
   assert(seq);
-  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags))
     return tdiscseq_at_timestamptz(seq, t);
   else
     return tcontseq_at_timestamptz(seq, t);
@@ -2097,7 +2097,7 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
   TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
   const TInstant *inst1, *inst2;
   inst1 = TSEQUENCE_INST_N(seq, 0);
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   int i, nseqs = 0;
   int n = tcontseq_find_timestamptz(seq, t);
   /* Compute the first sequence until t */
@@ -2118,7 +2118,7 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
       else
       {
         instants[n] = tinstant_make(tinstant_val(instants[n - 1]),
-          inst1->temptype, t);
+          inst1->temporal.temptype, t);
         result[nseqs++] = tsequence_make((const TInstant **) instants, n + 1,
           seq->period.lower_inc, false, interp, NORMALIZE_NO);
         pfree(instants[n]);
@@ -2130,7 +2130,7 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
       instants[n] = (TInstant *) inst1;
       instants[n + 1] = (interp == LINEAR) ?
         tsegment_at_timestamptz(inst1, inst2, interp, t) :
-        tinstant_make(tinstant_val(inst1), inst1->temptype, t);
+        tinstant_make(tinstant_val(inst1), inst1->temporal.temptype, t);
       result[nseqs++] = tsequence_make((const TInstant **) instants, n + 2,
         seq->period.lower_inc, false, interp, NORMALIZE_NO);
       pfree(instants[n + 1]);
@@ -2268,7 +2268,7 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
   }
 
   /* General case */
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   TInstant **tofree = palloc(sizeof(TInstant *) * Min(s->count, seq->count));
   bool lower_inc = seq->period.lower_inc;
@@ -2298,7 +2298,7 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
         {
           /* Take the value of the previous instant */
           value = tinstant_val(instants[ninsts - 1]);
-          instants[ninsts] = tinstant_make(value, inst->temptype, inst->t);
+          instants[ninsts] = tinstant_make(value, inst->temporal.temptype, inst->t);
           tofree[nfree++] = instants[ninsts++];
         }
         result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
@@ -2326,7 +2326,7 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
         else
           /* Take the value of the previous instant */
           value = tinstant_val(instants[ninsts - 1]);
-        instants[ninsts] = tinstant_make(value, inst->temptype, t);
+        instants[ninsts] = tinstant_make(value, inst->temporal.temptype, t);
         tofree[nfree] = instants[ninsts++];
         result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
           lower_inc, false, interp, NORMALIZE_NO);
@@ -2385,7 +2385,7 @@ tcontseq_at_tstzspan(const TSequence *seq, const Span *s)
     return tsequence_copy(seq);
 
   /* General case */
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   TSequence *result;
   /* Intersecting period is instantaneous */
   if (inter.lower == inter.upper)
@@ -2429,7 +2429,7 @@ tcontseq_at_tstzspan(const TSequence *seq, const Span *s)
   else
   {
     Datum value = tinstant_val(instants[ninsts - 1]);
-    instants[ninsts++] = tinstant_make(value, seq->temptype, inter.upper);
+    instants[ninsts++] = tinstant_make(value, seq->temporal.temptype, inter.upper);
   }
   /* Since by definition the sequence is normalized it is not necessary to
    * normalize the projection of the sequence to the period */
@@ -2506,7 +2506,7 @@ Temporal *
 tsequence_restrict_tstzspan(const TSequence *seq, const Span *s, bool atfunc)
 {
   assert(seq); assert(s);
-  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags))
     return (Temporal *) tdiscseq_restrict_tstzspan(seq, s, atfunc);
   else
     return atfunc ?
@@ -2647,7 +2647,7 @@ Temporal *
 tsequence_restrict_tstzspanset(const TSequence *seq, const SpanSet *ss,
   bool atfunc)
 {
-  return MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
+  return MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags) ?
       (Temporal *) tdiscseq_restrict_tstzspanset(seq, ss, atfunc) :
       (Temporal *) tcontseq_restrict_tstzspanset(seq, ss, atfunc);
 }
@@ -2677,7 +2677,7 @@ tsequenceset_restrict_value(const TSequenceSet *ss, Datum value, bool atfunc)
   /* General case */
   int count = ss->totalcount;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(ss->flags))
+  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(ss->temporal.flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int nseqs = 0;
@@ -2760,7 +2760,7 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *s,
   /* General case */
   int count = ss->totalcount;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(ss->flags))
+  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(ss->temporal.flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int nseqs = 0;
@@ -2793,7 +2793,7 @@ tnumberseqset_restrict_spanset(const TSequenceSet *ss, const SpanSet *sps,
   /* General case */
   int maxcount = ss->totalcount * sps->count;
   /* For minus and linear interpolation we need the double of the count */
-  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(ss->flags))
+  if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(ss->temporal.flags))
     maxcount *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
   int nseqs = 0;

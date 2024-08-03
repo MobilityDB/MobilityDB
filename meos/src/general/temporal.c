@@ -933,7 +933,7 @@ temporal_copy(const Temporal *temp)
 static TSequence *
 tdiscseq_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
 {
-  assert(seq); assert(MEOS_FLAGS_DISCRETE_INTERP(seq->flags));
+  assert(seq); assert(MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags));
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     instants[i] = tinstant_make(value, temptype, TSEQUENCE_INST_N(seq, i)->t);
@@ -949,7 +949,7 @@ TSequence *
 tsequence_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
 {
   assert(seq);
-  return MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
+  return MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags) ?
     tdiscseq_from_base_temp(value, temptype, seq) :
     tsequence_from_base_tstzspan(value, temptype, &seq->period,
       temptype_continuous(temptype) ? LINEAR : STEP);
@@ -3414,7 +3414,7 @@ static double
 mrr_distance_scalar(const TSequence *seq, int start, int end)
 {
   assert(seq);
-  assert(seq->temptype == T_TFLOAT);
+  assert(seq->temporal.temptype == T_TFLOAT);
   double min_value, max_value, curr_value;
   min_value = DatumGetFloat8(tinstant_val(TSEQUENCE_INST_N(seq, start)));
   max_value = min_value;
@@ -3440,7 +3440,7 @@ static int
 tfloatseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   TSequence **result)
 {
-  assert(seq->temptype == T_TFLOAT);
+  assert(seq->temporal.temptype == T_TFLOAT);
   assert(seq->count > 1);
 
   const TInstant *inst1 = NULL, *inst2 = NULL; /* make compiler quiet */
@@ -3508,7 +3508,7 @@ tsequence_stops(const TSequence *seq, double maxdist, int64 mintunits)
 
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
-  int nseqs = (seq->temptype == T_TFLOAT) ?
+  int nseqs = (seq->temporal.temptype == T_TFLOAT) ?
     tfloatseq_stops_iter(seq, maxdist, mintunits, sequences) :
     tpointseq_stops_iter(seq, maxdist, mintunits, sequences);
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
@@ -3534,7 +3534,7 @@ tsequenceset_stops(const TSequenceSet *ss, double maxdist, int64 mintunits)
     /* Instantaneous sequences do not have stops */
     if (seq->count == 1)
       continue;
-    nseqs += (seq->temptype == T_TFLOAT) ?
+    nseqs += (seq->temporal.temptype == T_TFLOAT) ?
       tfloatseq_stops_iter(seq, maxdist, mintunits, &sequences[nseqs]) :
       tpointseq_stops_iter(seq, maxdist, mintunits, &sequences[nseqs]);
   }
@@ -3713,7 +3713,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
   seq = (TSequence *) temp1;
   ss = (TSequenceSet *) temp2;
   const TSequence *seq1;
-  if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
+  if (MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags))
   {
     for (int i = 0; i < seq->count; i++)
     {

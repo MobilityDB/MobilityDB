@@ -919,7 +919,7 @@ static int
 tpointseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   const STboxGridState *state, BitMatrix *bm)
 {
-  return MEOS_FLAGS_LINEAR_INTERP(seq->flags) ?
+  return MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags) ?
     tpointseq_cont_set_tiles((TSequence *) seq, hasz, hast, state, bm) :
     tpointseq_disc_set_tiles((TSequence *) seq, hasz, hast, state, bm);
 }

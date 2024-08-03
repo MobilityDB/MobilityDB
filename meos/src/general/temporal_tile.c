@@ -912,7 +912,7 @@ tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
 
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * seq->count * count);
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   int i = 0,      /* counter for instants of temporal value */
       ninsts = 0, /* counter for instants of next split */
       nfree = 0,  /* counter for instants to free */
@@ -942,7 +942,7 @@ tcontseq_time_split_iter(const TSequence *seq, TimestampTz start,
           /* The last two values of sequences with step interpolation and
            * exclusive upper bound must be equal */
           Datum value = tinstant_val(instants[ninsts - 1]);
-          tofree[nfree] = tinstant_make(value, seq->temptype, upper);
+          tofree[nfree] = tinstant_make(value, seq->temporal.temptype, upper);
         }
         instants[ninsts++] = tofree[nfree++];
       }
@@ -1210,7 +1210,7 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
 {
   assert(inst); assert(buckets); assert(newcount);
   Datum value = tinstant_val(inst);
-  meosType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temporal.temptype);
   TInstant **result = palloc(sizeof(TInstant *));
   Datum *values = palloc(sizeof(Datum));
   result[0] = tinstant_copy(inst);
@@ -1237,7 +1237,7 @@ tnumberdiscseq_value_split(const TSequence *seq, Datum start_bucket,
   Datum size, int count, Datum **buckets, int *newcount)
 {
   assert(seq); assert(buckets); assert(newcount);
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   TSequence **result;
   Datum *values, value, bucket_value;
 
@@ -1307,8 +1307,8 @@ static void
 tnumberseq_step_value_split(const TSequence *seq, Datum start_bucket,
   Datum size, int count, TSequence **result, int *nseqs, int numcols)
 {
-  assert(! MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-  meosType basetype = temptype_basetype(seq->temptype);
+  assert(! MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags));
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   Datum value, bucket_value;
   int bucket_no, seq_no;
 
@@ -1340,7 +1340,7 @@ tnumberseq_step_value_split(const TSequence *seq, Datum start_bucket,
     int nfrags = 1;
     if (i < seq->count)
     {
-      tofree[nfree++] = bounds[1] = tinstant_make(value, seq->temptype, inst2->t);
+      tofree[nfree++] = bounds[1] = tinstant_make(value, seq->temporal.temptype, inst2->t);
       nfrags++;
     }
     result[bucket_no * numcols + seq_no] = tsequence_make(
@@ -1381,8 +1381,8 @@ static void
 tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
   Datum size, int count, TSequence **result, int *nseqs, int numcols)
 {
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-  meosType basetype = temptype_basetype(seq->temptype);
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags));
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   meosType spantype = basetype_spantype(basetype);
   Datum value1, bucket_value1;
   int bucket_no1, seq_no;
@@ -1469,7 +1469,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
         /* To reduce the roundoff errors we take the value projected to the
          * timestamp instead of the bound value */
         tofree[nfree++] = bounds[last] =
-          tinstant_make(projvalue, seq->temptype, t);
+          tinstant_make(projvalue, seq->temporal.temptype, t);
       }
       else
         bounds[last] = (cmp <= 0) ? (TInstant *) inst2 : (TInstant *) inst1;
@@ -1545,8 +1545,8 @@ tnumbercontseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
   assert(seq); assert(buckets); assert(newcount);
-  meosType basetype = temptype_basetype(seq->temptype);
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
@@ -1616,11 +1616,11 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
       size, count, buckets, newcount);
 
   /* General case */
-  meosType basetype = temptype_basetype(ss->temptype);
+  meosType basetype = temptype_basetype(ss->temporal.temptype);
   TSequence **bucketseqs = palloc(sizeof(TSequence *) * ss->totalcount * count);
   /* palloc0 to initialize the counters to 0 */
   int *nseqs = palloc0(sizeof(int) * count);
-  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->flags);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->temporal.flags);
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);

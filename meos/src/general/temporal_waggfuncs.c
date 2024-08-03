@@ -60,9 +60,9 @@ tinstant_extend(const TInstant *inst, const Interval *interv,
   TInstant *instants[2];
   TimestampTz upper = add_timestamptz_interval(inst->t, interv);
   instants[0] = (TInstant *) inst;
-  instants[1] = tinstant_make(tinstant_val(inst), inst->temptype, upper);
+  instants[1] = tinstant_make(tinstant_val(inst), inst->temporal.temptype, upper);
   result[0] = tsequence_make((const TInstant **) instants, 2, true, true,
-    MEOS_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEP, NORMALIZE_NO);
+    MEOS_FLAGS_GET_CONTINUOUS(inst->temporal.flags) ? LINEAR : STEP, NORMALIZE_NO);
   pfree(instants[1]);
   return 1;
 }
@@ -101,9 +101,9 @@ tcontseq_extend(const TSequence *seq, const Interval *interv, bool min,
   TInstant *instants[3];
   TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_val(inst1);
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   bool lower_inc = seq->period.lower_inc;
-  meosType basetype = temptype_basetype(seq->temptype);
+  meosType basetype = temptype_basetype(seq->temporal.temptype);
   for (int i = 0; i < seq->count - 1; i++)
   {
     TInstant *inst2 = (TInstant *) TSEQUENCE_INST_N(seq, i + 1);
@@ -115,7 +115,7 @@ tcontseq_extend(const TSequence *seq, const Interval *interv, bool min,
     {
       TimestampTz upper = add_timestamptz_interval(inst2->t, interv);
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(value1, inst1->temptype, upper);
+      instants[1] = tinstant_make(value1, inst1->temporal.temptype, upper);
       result[i] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, upper_inc, interp, NORMALIZE_NO);
       pfree(instants[1]);
@@ -131,8 +131,8 @@ tcontseq_extend(const TSequence *seq, const Interval *interv, bool min,
         TimestampTz lower = add_timestamptz_interval(inst1->t, interv);
         TimestampTz upper = add_timestamptz_interval(inst2->t, interv);
         instants[0] = inst1;
-        instants[1] = tinstant_make(value1, inst1->temptype, lower);
-        instants[2] = tinstant_make(value2, inst1->temptype, upper);
+        instants[1] = tinstant_make(value1, inst1->temporal.temptype, lower);
+        instants[2] = tinstant_make(value2, inst1->temporal.temptype, upper);
         result[i] = tsequence_make((const TInstant **) instants, 3,
           lower_inc, upper_inc, interp, NORMALIZE_NO);
         pfree(instants[1]); pfree(instants[2]);
@@ -144,7 +144,7 @@ tcontseq_extend(const TSequence *seq, const Interval *interv, bool min,
           interv);
         instants[0] = inst1;
         instants[1] = inst2;
-        instants[2] = tinstant_make(value2, inst1->temptype, upper);
+        instants[2] = tinstant_make(value2, inst1->temporal.temptype, upper);
         result[i] = tsequence_make((const TInstant**) instants, 3,
           lower_inc, upper_inc, interp, NORMALIZE_NO);
         pfree(instants[2]);
@@ -202,7 +202,7 @@ temporal_extend(const Temporal *temp, const Interval *interv, bool min,
     {
       TSequence *seq = (TSequence *) temp;
       result = palloc(sizeof(TSequence *) * seq->count);
-      *count = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
+      *count = MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags) ?
         tdiscseq_extend(seq, interv, result) :
         tcontseq_extend(seq, interv, min, result);
       break;
@@ -376,10 +376,10 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interv,
 {
   /* TODO: Should be an additional attribute */
   float8 value = 0.0;
-  assert(tnumber_type(inst->temptype));
-  if (inst->temptype == T_TINT)
+  assert(tnumber_type(inst->temporal.temptype));
+  if (inst->temporal.temptype == T_TINT)
     value = DatumGetInt32(tinstant_val(inst));
-  else /* inst->temptype == T_TFLOAT */
+  else /* inst->temporal.temptype == T_TFLOAT */
     value = DatumGetFloat8(tinstant_val(inst));
   double2 dvalue;
   double2_set(value, 1, &dvalue);
@@ -388,7 +388,7 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interv,
   instants[0] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, inst->t);
   instants[1] = tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE2, upper);
   result[0] = tsequence_make((const TInstant**) instants, 2, true, true,
-    MEOS_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEP, NORMALIZE_NO);
+    MEOS_FLAGS_GET_CONTINUOUS(inst->temporal.flags) ? LINEAR : STEP, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return 1;
 }
@@ -502,7 +502,7 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interv,
     {
       TSequence *seq = (TSequence *) temp;
       result = palloc(sizeof(TSequence *) * seq->count);
-      *count = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
+      *count = MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags) ?
         tnumberdiscseq_transform_wavg(seq, interv, result) :
         tintseq_transform_wavg(seq, interv, result);
       break;

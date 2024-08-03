@@ -198,7 +198,7 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
 {
   /* Compute the bounding box of the end point of the sequence and the instant */
   STBox box;
-  if (MEOS_FLAGS_GET_INTERP(seq->flags) != LINEAR)
+  if (MEOS_FLAGS_GET_INTERP(seq->temporal.flags) != LINEAR)
     tnpointinst_set_stbox(inst, &box);
   else
   {

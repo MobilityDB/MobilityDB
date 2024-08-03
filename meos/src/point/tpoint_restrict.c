@@ -422,7 +422,7 @@ static bool
 tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
   bool border_inc, bool atfunc)
 {
-  bool hasz = MEOS_FLAGS_GET_Z(inst->flags) && MEOS_FLAGS_GET_Z(box->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(inst->temporal.flags) && MEOS_FLAGS_GET_Z(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
 
   /* Restrict to the T dimension */
@@ -474,7 +474,7 @@ TInstant *
 tpointinst_restrict_stbox(const TInstant *inst, const STBox *box,
   bool border_inc, bool atfunc)
 {
-  assert(inst); assert(box); assert(tgeo_type(inst->temptype));
+  assert(inst); assert(box); assert(tgeo_type(inst->temporal.temptype));
   if (tpointinst_restrict_stbox_iter(inst, box, border_inc, atfunc))
     return tinstant_copy(inst);
   return NULL;
@@ -494,8 +494,8 @@ tpointdiscseq_restrict_stbox(const TSequence *seq, const STBox *box,
   bool border_inc, bool atfunc)
 {
   assert(seq); assert(box);
-  assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  assert(tgeo_type(seq->temporal.temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->temporal.flags) == DISCRETE);
   assert (seq->count > 1);
 
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -532,8 +532,8 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
   bool border_inc, bool atfunc)
 {
   assert(seq); assert(box);
-  assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
+  assert(tgeo_type(seq->temporal.temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->temporal.flags) == STEP);
   assert(seq->count > 1);
 
   /* Compute the time span of the result if the box has T dimension */
@@ -576,7 +576,7 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
             if (TimestampTzGetDatum(inter.lower) !=
                 TimestampTzGetDatum(inter.upper))
             {
-              instants[ninsts++] = tinstant_make(value, seq->temptype,
+              instants[ninsts++] = tinstant_make(value, seq->temporal.temptype,
                 DatumGetTimestampTz(inter.upper));
               tofree = true;
             }
@@ -587,7 +587,7 @@ tpointseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
         else
         {
           /* Continue the last instant of the sequence until the time of inst2 */
-          instants[ninsts++] = tinstant_make(value, seq->temptype, inst->t);
+          instants[ninsts++] = tinstant_make(value, seq->temporal.temptype, inst->t);
           tofree = true;
         }
         lower_inc = (instants[0]->t == start) ? seq->period.lower_inc : true;
@@ -647,7 +647,7 @@ TSequenceSet *
 tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   bool border_inc)
 {
-  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
+  assert(MEOS_FLAGS_GET_INTERP(seq->temporal.flags) == LINEAR);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -659,7 +659,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   }
 
   /* General case */
-  bool hasz_seq = MEOS_FLAGS_GET_Z(seq->flags);
+  bool hasz_seq = MEOS_FLAGS_GET_Z(seq->temporal.flags);
   bool hasz_box = MEOS_FLAGS_GET_Z(box->flags);
   bool hasz = hasz_seq && hasz_box;
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
@@ -762,7 +762,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           {
             inter1 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, t1);
             free1 = true;
-            instants[ninsts] = tinstant_make(inter1, inst1->temptype, t1);
+            instants[ninsts] = tinstant_make(inter1, inst1->temporal.temptype, t1);
             tofree[nfree++] = instants[ninsts++];
             lower_inc = p3_inc;
           }
@@ -804,7 +804,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
             if (! free1 || ! geopoint_eq(DatumGetGserializedP(inter1),
                   DatumGetGserializedP(inter2)))
             {
-              instants[ninsts] = tinstant_make(inter2, inst1->temptype, t2);
+              instants[ninsts] = tinstant_make(inter2, inst1->temporal.temptype, t2);
               tofree[nfree++] = instants[ninsts++];
               upper_inc = p4_inc;
             }
@@ -876,8 +876,8 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
   bool border_inc, bool atfunc)
 {
   assert(seq); assert(box);
-  assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+  assert(tgeo_type(seq->temporal.temptype));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags));
   assert(seq->count > 1);
 
   /* Restrict to the temporal dimension */
@@ -924,8 +924,8 @@ Temporal *
 tpointseq_restrict_stbox(const TSequence *seq, const STBox *box, bool border_inc,
   bool atfunc)
 {
-  assert(seq); assert(box); assert(tgeo_type(seq->temptype));
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  assert(seq); assert(box); assert(tgeo_type(seq->temporal.temptype));
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -965,7 +965,7 @@ TSequenceSet *
 tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
   bool border_inc, bool atfunc)
 {
-  assert(ss); assert(box); assert(tgeo_type(ss->temptype));
+  assert(ss); assert(box); assert(tgeo_type(ss->temporal.temptype));
   const TSequence *seq;
   TSequenceSet *result = NULL;
 
@@ -1121,7 +1121,7 @@ TSequenceSet *
 tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
   bool border_inc)
 {
-  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
+  assert(MEOS_FLAGS_GET_INTERP(seq->temporal.flags) == LINEAR);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -1133,7 +1133,7 @@ tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
   }
 
   /* General case */
-  bool hasz_seq = MEOS_FLAGS_GET_Z(seq->flags);
+  bool hasz_seq = MEOS_FLAGS_GET_Z(seq->temporal.flags);
   bool hasz_box = MEOS_FLAGS_GET_Z(box->flags);
   bool hasz = hasz_seq && hasz_box;
   bool hast = MEOS_FLAGS_GET_T(box->flags);
@@ -1216,7 +1216,7 @@ TSequenceSet *
 tpointseqset_at_stbox_segm(const TSequenceSet *ss, const STBox *box,
   bool border_inc)
 {
-  assert(ss); assert(box); assert(tgeo_type(ss->temptype));
+  assert(ss); assert(box); assert(tgeo_type(ss->temporal.temptype));
   const TSequence *seq;
   TSequenceSet *result = NULL;
 
@@ -1359,7 +1359,7 @@ TInstant *
 tpointinst_restrict_geom_time(const TInstant *inst, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
-  assert(inst); assert(gs); assert(tgeo_type(inst->temptype));
+  assert(inst); assert(gs); assert(tgeo_type(inst->temporal.temptype));
   if (tpointinst_restrict_geom_time_iter(inst, gs, zspan, period, atfunc))
     return tinstant_copy(inst);
   return NULL;
@@ -1380,8 +1380,8 @@ tpointdiscseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
   assert(seq); ensure_not_null((void *) gs);
-  assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  assert(tgeo_type(seq->temporal.temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->temporal.flags) == DISCRETE);
   assert(seq->count > 1);
 
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -1418,8 +1418,8 @@ tpointseq_step_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
    const Span *zspan, const Span *period, bool atfunc)
 {
   assert(seq); ensure_not_null((void *) gs);
-  assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
+  assert(tgeo_type(seq->temporal.temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->temporal.flags) == STEP);
   assert(seq->count > 1);
 
   /* Compute the time span of the result if period is given */
@@ -1461,7 +1461,7 @@ tpointseq_step_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
             if (TimestampTzGetDatum(inter.lower) !=
                 TimestampTzGetDatum(inter.upper))
             {
-              instants[ninsts++] = tinstant_make(value, seq->temptype,
+              instants[ninsts++] = tinstant_make(value, seq->temporal.temptype,
                 DatumGetTimestampTz(inter.upper));
               tofree = true;
             }
@@ -1472,7 +1472,7 @@ tpointseq_step_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
         else
         {
           /* Continue the last instant of the sequence until the time of inst2 */
-          instants[ninsts++] = tinstant_make(value, seq->temptype, inst->t);
+          instants[ninsts++] = tinstant_make(value, seq->temporal.temptype, inst->t);
           tofree = true;
         }
         lower_inc = (instants[0]->t == start) ? seq->period.lower_inc : true;
@@ -1675,7 +1675,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
 static TSequenceSet *
 tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
 {
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags));
   TSequenceSet *result;
 
   /* Instantaneous sequence */
@@ -1696,7 +1696,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
     return NULL;
 
   /* Convert the point to 2D before computing the restriction to geometry */
-  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(seq->temporal.flags);
   TSequence *seq2d = hasz ?
     (TSequence *) tpoint_force2d((Temporal *) seq) : (TSequence *) seq;
 
@@ -1804,8 +1804,8 @@ tpointseq_linear_restrict_geom_time(const TSequence *seq,
   const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc)
 {
   assert(seq); ensure_not_null((void *) gs);
-  assert(tgeo_type(seq->temptype));
-  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+  assert(tgeo_type(seq->temporal.temptype));
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags));
   assert(seq->count > 1);
 
   /* Restrict to the temporal dimension */
@@ -1882,8 +1882,8 @@ Temporal *
 tpointseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
-  assert(seq); assert(gs); assert(tgeo_type(seq->temptype));
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  assert(seq); assert(gs); assert(tgeo_type(seq->temporal.temptype));
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -1921,7 +1921,7 @@ TSequenceSet *
 tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
-  assert(ss); assert(gs); assert(tgeo_type(ss->temptype));
+  assert(ss); assert(gs); assert(tgeo_type(ss->temporal.temptype));
   const TSequence *seq;
   TSequenceSet *result = NULL;
 

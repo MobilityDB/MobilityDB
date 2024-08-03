@@ -197,10 +197,7 @@ typedef struct
  */
 typedef struct
 {
-  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  uint8 temptype;       /**< Temporal type */
-  uint8 subtype;        /**< Temporal subtype */
-  int16 flags;          /**< Flags */
+  Temporal temporal;
   TimestampTz t;        /**< Timestamp (8 bytes) */
   Datum value;          /**< Base value for types passed by value,
                              first 8 bytes of the base value for values
@@ -214,10 +211,7 @@ typedef struct
  */
 typedef struct
 {
-  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  uint8 temptype;       /**< Temporal type */
-  uint8 subtype;        /**< Temporal subtype */
-  int16 flags;          /**< Flags */
+  Temporal temporal;
   int32 count;          /**< Number of TInstant elements */
   int32 maxcount;       /**< Maximum number of TInstant elements */
   int16 bboxsize;       /**< Size of the bounding box */
@@ -236,10 +230,7 @@ typedef struct
  */
 typedef struct
 {
-  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  uint8 temptype;       /**< Temporal type */
-  uint8 subtype;        /**< Temporal subtype */
-  int16 flags;          /**< Flags */
+  Temporal temporal;
   int32 count;          /**< Number of TSequence elements */
   int32 totalcount;     /**< Total number of TInstant elements in all
                              composing TSequence elements */

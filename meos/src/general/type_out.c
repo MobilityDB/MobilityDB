@@ -150,7 +150,7 @@ coordinates_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision
 {
   assert(precision <= OUT_MAX_DOUBLE_PRECISION);
   stringbuffer_append_char(sb, '[');
-  if (MEOS_FLAGS_GET_Z(inst->flags))
+  if (MEOS_FLAGS_GET_Z(inst->temporal.flags))
   {
     const POINT3DZ *pt = DATUM_POINT3DZ_P(tinstant_val(inst));
     stringbuffer_append_double(sb, pt->x, precision);
@@ -351,14 +351,14 @@ static bool
 tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, bool isgeo,
   bool hasz, const bboxunion *bbox, int precision, const char *srs)
 {
-  bool result = temptype_as_mfjson_sb(sb, inst->temptype);
+  bool result = temptype_as_mfjson_sb(sb, inst->temporal.temptype);
   /* Propagate errors up */
   if (! result)
     return false;
   if (srs) srs_as_mfjson_sb(sb, srs);
   if (bbox)
   {
-    result = bbox_as_mfjson_sb(sb, inst->temptype, bbox, hasz, precision);
+    result = bbox_as_mfjson_sb(sb, inst->temporal.temptype, bbox, hasz, precision);
     /* Propagate errors up */
     if (! result)
       return false;
@@ -369,7 +369,7 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, bool isgeo,
   else
   {
     result = temporal_basevalue_as_mfjson_sb(sb, tinstant_val(inst),
-      inst->temptype, precision);
+      inst->temporal.temptype, precision);
     /* Propagate errors up */
     if (! result)
       return false;
@@ -461,14 +461,14 @@ static bool
 tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq, bool isgeo,
   bool hasz, const bboxunion *bbox, int precision, const char *srs)
 {
-  bool result = temptype_as_mfjson_sb(sb, seq->temptype);
+  bool result = temptype_as_mfjson_sb(sb, seq->temporal.temptype);
   /* Propagate errors up */
   if (! result)
     return false;
   if (srs) srs_as_mfjson_sb(sb, srs);
   if (bbox)
   {
-    result = bbox_as_mfjson_sb(sb, seq->temptype, bbox, hasz, precision);
+    result = bbox_as_mfjson_sb(sb, seq->temporal.temptype, bbox, hasz, precision);
     /* Propagate errors up */
     if (! result)
       return false;
@@ -484,7 +484,7 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq, bool isgeo,
     else
     {
       result = temporal_basevalue_as_mfjson_sb(sb, tinstant_val(inst),
-        inst->temptype, precision);
+        inst->temporal.temptype, precision);
       /* Propagate errors up */
       if (! result)
         return false;
@@ -499,8 +499,8 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq, bool isgeo,
   }
   stringbuffer_aprintf(sb, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolation\":\"%s\"}",
     seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false",
-    MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ? "Discrete" :
-    ( MEOS_FLAGS_LINEAR_INTERP(seq->flags) ? "Linear" : "Step" ) );
+    MEOS_FLAGS_DISCRETE_INTERP(seq->temporal.flags) ? "Discrete" :
+    ( MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags) ? "Linear" : "Step" ) );
   return true;
 }
 
@@ -585,14 +585,14 @@ static bool
 tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss, bool isgeo,
   bool hasz, const bboxunion *bbox, int precision, const char *srs)
 {
-  bool result = temptype_as_mfjson_sb(sb, ss->temptype);
+  bool result = temptype_as_mfjson_sb(sb, ss->temporal.temptype);
   /* Propagate errors up */
   if (! result)
     return false;
   if (srs) srs_as_mfjson_sb(sb, srs);
   if (bbox)
   {
-    result = bbox_as_mfjson_sb(sb, ss->temptype, bbox, hasz, precision);
+    result = bbox_as_mfjson_sb(sb, ss->temporal.temptype, bbox, hasz, precision);
     /* Propagate errors up */
     if (! result)
       return false;
@@ -613,7 +613,7 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss, bool isgeo
       else
       {
         result = temporal_basevalue_as_mfjson_sb(sb, tinstant_val(inst),
-          inst->temptype, precision);
+          inst->temporal.temptype, precision);
         /* Propagate errors up */
         if (! result)
           return false;
@@ -631,7 +631,7 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss, bool isgeo
         "true" : "false");
   }
   stringbuffer_aprintf(sb, "],\"interpolation\":\"%s\"}",
-    MEOS_FLAGS_LINEAR_INTERP(ss->flags) ? "Linear" : "Step");
+    MEOS_FLAGS_LINEAR_INTERP(ss->temporal.flags) ? "Linear" : "Step");
   return true;
 }
 
@@ -1015,12 +1015,12 @@ static size_t
 tinstarr_to_wkb_size(const TInstant **instants, int count)
 {
   size_t result = 0;
-  meosType basetype = temptype_basetype(instants[0]->temptype);
+  meosType basetype = temptype_basetype(instants[0]->temporal.temptype);
   for (int i = 0; i < count; i++)
   {
     Datum value = tinstant_val(instants[i]);
     result += temporal_basetype_to_wkb_size(value, basetype,
-      instants[i]->flags);
+      instants[i]->temporal.flags);
   }
   /* size of the TInstant array */
   result += count * MEOS_WKB_TIMESTAMP_SIZE;
@@ -1051,7 +1051,7 @@ tinstant_to_wkb_size(const TInstant *inst, uint8_t variant)
   /* Endian flag + temporal type + temporal flag */
   size_t size = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
-  if (tgeo_type(inst->temptype) &&
+  if (tgeo_type(inst->temporal.temptype) &&
       tpoint_wkb_needs_srid((Temporal *) inst, variant))
     size += MEOS_WKB_INT4_SIZE;
   /* TInstant */
@@ -1069,7 +1069,7 @@ tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
   /* Endian flag + temporal type + temporal flag */
   size_t size = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
-  if (tgeo_type(seq->temptype) &&
+  if (tgeo_type(seq->temporal.temptype) &&
       tpoint_wkb_needs_srid((Temporal *) seq, variant))
     size += MEOS_WKB_INT4_SIZE;
   /* Include the number of instants and the period bounds flag */
@@ -1091,7 +1091,7 @@ tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
   /* Endian flag + temporal type + temporal flag */
   size_t size = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
-  if (tgeo_type(ss->temptype) &&
+  if (tgeo_type(ss->temporal.temptype) &&
       tpoint_wkb_needs_srid((Temporal *) ss, variant))
     size += MEOS_WKB_INT4_SIZE;
   /* Include the number of sequences */
@@ -1858,9 +1858,9 @@ tinstant_basevalue_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
   uint8_t variant)
 {
   Datum value = tinstant_val(inst);
-  meosType basetype = temptype_basetype(inst->temptype);
+  meosType basetype = temptype_basetype(inst->temporal.temptype);
   assert(temporal_basetype(basetype));
-  buf = basevalue_to_wkb_buf(value, basetype, inst->flags, buf, variant);
+  buf = basevalue_to_wkb_buf(value, basetype, inst->temporal.flags, buf, variant);
   buf = timestamptz_to_wkb_buf(inst->t, buf, variant);
   return buf;
 }
@@ -1881,11 +1881,11 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal type */
-  buf = int16_to_wkb_buf(inst->temptype, buf, variant);
+  buf = int16_to_wkb_buf(inst->temporal.temptype, buf, variant);
   /* Write the temporal flags */
   buf = temporal_flags_to_wkb_buf((Temporal *) inst, buf, variant);
   /* Write the optional SRID for extended variant */
-  if (tgeo_type(inst->temptype) &&
+  if (tgeo_type(inst->temporal.temptype) &&
       tpoint_wkb_needs_srid((Temporal *) inst, variant))
     buf = int32_to_wkb_buf(tpointinst_srid(inst), buf, variant);
   return tinstant_basevalue_time_to_wkb_buf(inst, buf, variant);
@@ -1908,11 +1908,11 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal type */
-  buf = int16_to_wkb_buf(seq->temptype, buf, variant);
+  buf = int16_to_wkb_buf(seq->temporal.temptype, buf, variant);
   /* Write the temporal flags and interpolation */
   buf = temporal_flags_to_wkb_buf((Temporal *) seq, buf, variant);
   /* Write the optional SRID for extended variant */
-  if (tgeo_type(seq->temptype) &&
+  if (tgeo_type(seq->temporal.temptype) &&
       tpoint_wkb_needs_srid((Temporal *) seq, variant))
     buf = int32_to_wkb_buf(tpointseq_srid(seq), buf, variant);
   /* Write the count */
@@ -1946,11 +1946,11 @@ tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
   /* Write the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal type */
-  buf = int16_to_wkb_buf(ss->temptype, buf, variant);
+  buf = int16_to_wkb_buf(ss->temporal.temptype, buf, variant);
   /* Write the temporal and interpolation flags */
   buf = temporal_flags_to_wkb_buf((Temporal *) ss, buf, variant);
   /* Write the optional SRID for extended variant */
-  if (tgeo_type(ss->temptype) &&
+  if (tgeo_type(ss->temporal.temptype) &&
       tpoint_wkb_needs_srid((Temporal *) ss, variant))
     buf = int32_to_wkb_buf(tpointseqset_srid(ss), buf, variant);
   /* Write the count */

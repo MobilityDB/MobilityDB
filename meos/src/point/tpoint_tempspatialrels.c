@@ -161,7 +161,7 @@ TSequence *
 tinterrel_tpointseq_discstep_geom(const TSequence *seq, Datum geom,
   bool tinter, datum_func2 func)
 {
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->temporal.flags);
   assert(interp == DISCRETE || interp == STEP);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -373,7 +373,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
   TSequence **allseqs;
 
   /* Step interpolation */
-  if (! MEOS_FLAGS_LINEAR_INTERP(ss->flags))
+  if (! MEOS_FLAGS_LINEAR_INTERP(ss->temporal.flags))
   {
     allseqs = palloc(sizeof(TSequence *) * ss->count);
     for (int i = 0; i < ss->count; i++)
@@ -889,9 +889,9 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
   }
 
   int nseqs = 0;
-  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
-  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
-  bool hasz = MEOS_FLAGS_GET_Z(seq1->flags);
+  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->temporal.flags);
+  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->temporal.flags);
+  bool hasz = MEOS_FLAGS_GET_Z(seq1->temporal.flags);
   Datum sv1 = tinstant_val(start1);
   Datum sv2 = tinstant_val(start2);
   TimestampTz lower = start1->t;
@@ -1026,8 +1026,8 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
   }
 
   int nseqs = 0;
-  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
-  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->temporal.flags);
+  bool hasz = MEOS_FLAGS_GET_Z(seq->temporal.flags);
   TimestampTz lower = start->t;
   bool lower_inc = seq->period.lower_inc;
   const Datum datum_true = BoolGetDatum(true);

@@ -724,9 +724,9 @@ ea_dwithin_tpointseq_tpointseq_cont(const TSequence *seq1,
   Datum sv1 = tinstant_val(start1);
   Datum sv2 = tinstant_val(start2);
 
-  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
-  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
-  bool hasz = MEOS_FLAGS_GET_Z(seq1->flags);
+  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->temporal.flags);
+  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->temporal.flags);
+  bool hasz = MEOS_FLAGS_GET_Z(seq1->temporal.flags);
   TimestampTz lower = start1->t;
   bool lower_inc = seq1->period.lower_inc;
   bool ret_loop = ever ? true : false;
@@ -782,8 +782,8 @@ ea_dwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
   const TSequenceSet *ss2, double dist, datum_func3 func, bool ever)
 {
   assert(ss1); assert(ss2);
-  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss1->flags) ||
-    MEOS_FLAGS_LINEAR_INTERP(ss2->flags);
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(ss1->temporal.flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(ss2->temporal.flags);
   bool ret_loop = ever ? true : false;
   for (int i = 0; i < ss1->count; i++)
   {

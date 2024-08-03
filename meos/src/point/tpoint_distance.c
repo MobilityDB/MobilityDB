@@ -88,10 +88,10 @@ double
 tinstant_distance(const TInstant *inst1, const TInstant *inst2,
   datum_func2 func)
 {
-  assert(tnumber_type(inst1->temptype) || tgeo_type(inst1->temptype));
-  if (tnumber_type(inst1->temptype))
+  assert(tnumber_type(inst1->temporal.temptype) || tgeo_type(inst1->temporal.temptype));
+  if (tnumber_type(inst1->temporal.temptype))
     return tnumberinst_distance(inst1, inst2);
-  else /* tgeo_type(inst1->temptype) */
+  else /* tgeo_type(inst1->temporal.temptype) */
     return tpointinst_distance(inst1, inst2, func);
 }
 
@@ -301,7 +301,7 @@ tgeompoint_min_dist_at_timestamptz(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *mindist, TimestampTz *t)
 {
   double fraction;
-  bool hasz = MEOS_FLAGS_GET_Z(start1->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(start1->temporal.flags);
   if (hasz) /* 3D */
   {
     const POINT3DZ *p1 = DATUM_POINT3DZ_P(tinstant_val(start1));
@@ -413,7 +413,7 @@ bool
 tpoint_min_dist_at_timestamptz(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
-  if (MEOS_FLAGS_GET_GEODETIC(start1->flags))
+  if (MEOS_FLAGS_GET_GEODETIC(start1->temporal.flags))
     return tgeogpoint_min_dist_at_timestamptz(start1, end1, start2, end2, value, t);
   else
     return tgeompoint_min_dist_at_timestamptz(start1, end1, start2, end2, value, t);
@@ -663,7 +663,7 @@ nai_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
   /* The closest point may be at an exclusive bound */
   Datum value;
   tsequence_value_at_timestamptz(seq, t, false, &value);
-  return tinstant_make_free(value, seq->temptype, t);
+  return tinstant_make_free(value, seq->temporal.temptype, t);
 }
 
 /**
@@ -691,7 +691,7 @@ nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
   /* The closest point may be at an exclusive bound. */
   Datum value;
   tsequenceset_value_at_timestamptz(ss, t, false, &value);
-  return tinstant_make_free(value, ss->temptype, t);
+  return tinstant_make_free(value, ss->temporal.temptype, t);
 }
 
 /*****************************************************************************/
