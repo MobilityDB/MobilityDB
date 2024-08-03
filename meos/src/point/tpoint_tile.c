@@ -1121,7 +1121,7 @@ tpoint_space_time_split_init(const Temporal *temp, float xsize, float ysize,
  */
 Temporal **
 tpoint_space_split(const Temporal *temp, float xsize, float ysize, float zsize,
-  GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
+  const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
   GSERIALIZED ***space_buckets, int *count)
 {
   return tpoint_space_time_split(temp, xsize, ysize, zsize, NULL, sorigin, 0,
@@ -1147,10 +1147,10 @@ tpoint_space_split(const Temporal *temp, float xsize, float ysize, float zsize,
  * #Tpoint_space_time_split_ext
  */
 Temporal **
-tpoint_space_time_split(const Temporal *temp, float xsize, float ysize, float zsize,
-  const Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin,
-  bool bitmatrix, bool border_inc, GSERIALIZED ***space_buckets,
-  TimestampTz **time_buckets, int *count)
+tpoint_space_time_split(const Temporal *temp, float xsize, float ysize,
+  float zsize, const Interval *duration, const GSERIALIZED *sorigin, 
+  TimestampTz torigin, bool bitmatrix, bool border_inc, 
+  GSERIALIZED ***space_buckets, TimestampTz **time_buckets, int *count)
 {
   /* Initialize state */
   int ntiles;
