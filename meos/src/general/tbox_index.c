@@ -189,4 +189,33 @@ tbox_gist_inner_consistent(const TBox *key, const TBox *query,
   return retval;
 }
 
+/**
+ * @brief Determine whether a recheck is necessary depending on the strategy
+ * @param[in] strategy Operator of the operator class being applied
+ */
+bool
+tbox_index_recheck(StrategyNumber strategy)
+{
+  /* These operators are based on bounding boxes */
+  switch (strategy)
+  {
+    case RTAdjacentStrategyNumber:
+    case RTLeftStrategyNumber:
+    case RTOverLeftStrategyNumber:
+    case RTRightStrategyNumber:
+    case RTOverRightStrategyNumber:
+    case RTBelowStrategyNumber:
+    case RTOverBelowStrategyNumber:
+    case RTAboveStrategyNumber:
+    case RTOverAboveStrategyNumber:
+    case RTFrontStrategyNumber:
+    case RTOverFrontStrategyNumber:
+    case RTBackStrategyNumber:
+    case RTOverBackStrategyNumber:
+      return false;
+    default:
+      return true;
+  }
+}
+
 /*****************************************************************************/

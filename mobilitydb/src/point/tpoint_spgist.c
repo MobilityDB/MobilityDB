@@ -106,6 +106,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/span.h"
+#include "general/stratnum.h"
 #include "general/temporal.h"
 #include "general/type_util.h"
 #include "point/stbox.h"
@@ -114,7 +115,6 @@
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
 #include "pg_general/tnumber_spgist.h"
-#include "pg_point/tpoint_gist.h"
 
 /*****************************************************************************
  * Data structures

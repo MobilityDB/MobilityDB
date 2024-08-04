@@ -41,12 +41,15 @@
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <access/gist.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/span.h"
+#include "general/span_index.h"
+#include "general/stratnum.h"
 #include "general/tbox.h"
 #include "general/tbox_index.h"
 #include "general/temporal_boxops.h"
@@ -54,7 +57,6 @@
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
-#include "pg_general/span_gist.h"
 
 /*****************************************************************************
  * GiST consistent methods
@@ -116,11 +118,8 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
   const TBox *key = DatumGetTboxP(entry->key);
   TBox query;
 
-  /*
-   * All tests are lossy since boxes do not distinghish between inclusive
-   * and exclusive bounds.
-   */
-  *recheck = true;
+  /* Determine whether the index is lossy depending on the strategy */
+  *recheck = tbox_index_recheck(strategy);
 
   if (key == NULL)
     PG_RETURN_BOOL(false);

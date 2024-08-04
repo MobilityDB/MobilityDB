@@ -33,8 +33,6 @@
  * @note These functions are based on those in the file `rangetypes_gist.c`
  */
 
-#include "pg_general/span_gist.h"
-
 /* C */
 #include <assert.h>
 #include <float.h>

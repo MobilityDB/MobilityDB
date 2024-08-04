@@ -108,7 +108,9 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/span.h"
+#include "general/stratnum.h"
 #include "general/tbox.h"
+#include "general/tbox_index.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
