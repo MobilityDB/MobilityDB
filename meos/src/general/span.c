@@ -1878,46 +1878,59 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
  * @ingroup meos_setspan_bbox
  * @brief Return an array of spans from the composing values of a set
  * @param[in] s Set
+ */
+Span *
+set_spans(const Set *s)
+{
+  assert(s); assert(set_type(s->settype));
+  /* Output the composing spans */
+  Span *result = palloc(sizeof(Span) * s->count);
+  for (int i = 0; i < s->count; i++)
+    set_set_subspan(s, i, i, &result[i]);
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_bbox
+ * @brief Return an array of spans from the composing values of a set
+ * @param[in] s Set
  * @param[in] max_count Maximum number of elements in the output array.
  * If the value is < 1, the result is one span per element.
  * @param[out] count Number of elements in the output array
  */
 Span *
-set_spans(const Set *s, int max_count, int *count)
+set_spans_merge(const Set *s, int max_count, int *count)
 {
   assert(s); assert(count); assert(set_type(s->settype));
   int nvalues = (max_count < 1) ? s->count : max_count;
   Span *result = palloc(sizeof(Span) * nvalues);
+
+  /* Output the composing spans */
   if (max_count < 1 || s->count <= max_count)
   {
-    /* Output the composing spans */
     for (int i = 0; i < s->count; i++)
       set_set_subspan(s, i, i, &result[i]);
     *count = s->count;
     return result;
   }
-  else
+
+  /* Merge consecutive values to reach the maximum number of span */
+  /* Minimum number of values merged together in an output span */
+  int size = s->count / max_count;
+  /* Number of output spans that result from merging (size + 1) values */
+  int remainder = s->count % max_count;
+  int i = 0; /* Loop variable for input values */
+  for (int k = 0; k < max_count; k++)
   {
-    /* Merge consecutive values to reach the maximum number of span */
-    /* Minimum number of values merged together in an output span */
-    int size = s->count / max_count;
-    /* Number of output spans that result from merging (size + 1) values */
-    int remainder = s->count % max_count;
-    int i = 0; /* Loop variable for input values */
-    int k = 0; /* Loop variable for output spans */
-    while (k < max_count)
-    {
-      int j = i + size;
-      if (k < remainder)
-        j++;
-      set_set_subspan(s, i, j - 1, &result[k++]);
-      i = j;
-    }
-    assert(i == s->count);
-    assert(k == max_count);
-    *count = max_count;
-    return result;
+    int j = i + size;
+    if (k < remainder)
+      j++;
+    set_set_subspan(s, i, j - 1, &result[k]);
+    i = j;
   }
+  assert(i == s->count);
+  *count = max_count;
+  return result;
 }
 
 /*****************************************************************************

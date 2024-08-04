@@ -652,8 +652,9 @@ extern Span *intspan_shift_scale(const Span *s, int shift, int width, bool hassh
 extern SpanSet *intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift, bool haswidth);
 extern GSERIALIZED *point_transform(const GSERIALIZED *gs, int32 srid);
 extern GSERIALIZED *point_transform_pipeline(const GSERIALIZED *gs, const char *pipelinestr, int32 srid, bool is_forward);
-extern Span *set_spans(const Set *s, int max_count, int *count);
-extern Span *spanset_spans(const SpanSet *ss, int max_count, int *count);
+extern Span *set_spans(const Set *s);
+extern Span *set_spans_merge(const Set *s, int max_count, int *count);
+extern Span *spanset_spans_merge(const SpanSet *ss, int max_count, int *count);
 extern Set *textset_initcap(const Set *s);
 extern Set *textset_lower(const Set *s);
 extern Set *textset_upper(const Set *s);
@@ -1698,9 +1699,13 @@ extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
 
 /* Boxes function */
 
-extern Span *temporal_spans(const Temporal *temp, int max_count, int *count);
-extern TBox *tnumber_tboxes(const Temporal *temp, int max_count, int *count);
-extern STBox *tpoint_stboxes(const Temporal *temp, int max_count, int *count);
+extern Span *temporal_spans(const Temporal *temp, int *count);
+extern TBox *tnumber_tboxes(const Temporal *temp, int *count);
+extern STBox *tpoint_stboxes(const Temporal *temp, int *count);
+
+extern Span *temporal_spans_merge(const Temporal *temp, int max_count, int *count);
+extern TBox *tnumber_tboxes_merge(const Temporal *temp, int max_count, int *count);
+extern STBox *tpoint_stboxes_merge(const Temporal *temp, int max_count, int *count);
 
 /* Topological functions for temporal types */
 
@@ -1946,7 +1951,8 @@ extern GSERIALIZED *shortestline_tpoint_tpoint(const Temporal *temp1, const Temp
 extern bool bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result);
 extern Temporal *bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert);
 extern Temporal *bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
-extern GBOX *geo_gboxes(const GSERIALIZED *gs, int max_count, int *count);
+extern GBOX *geo_gboxes(const GSERIALIZED *gs, int *count);
+extern GBOX *geo_gboxes_merge(const GSERIALIZED *gs, int max_count, int *count);
 extern Temporal *tpoint_angular_difference(const Temporal *temp);
 extern Temporal *tpoint_azimuth(const Temporal *temp);
 extern GSERIALIZED *tpoint_convex_hull(const Temporal *temp);

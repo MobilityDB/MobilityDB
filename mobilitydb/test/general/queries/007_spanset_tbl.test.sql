@@ -140,19 +140,19 @@ SELECT MAX(numSpans(i)) FROM tbl_intspanset;
 SELECT MAX(lower(startSpan(i))) FROM tbl_intspanset;
 SELECT MAX(lower(endSpan(i))) FROM tbl_intspanset;
 SELECT MAX(lower(spanN(i, 1))) FROM tbl_intspanset;
-SELECT MAX(array_length(spans(i),1)) FROM tbl_intspanset;
+SELECT MAX(array_length(spans(i), 1)) FROM tbl_intspanset;
 
 SELECT MAX(numSpans(f)) FROM tbl_floatspanset;
 SELECT MAX(lower(startSpan(f))) FROM tbl_floatspanset;
 SELECT MAX(lower(endSpan(f))) FROM tbl_floatspanset;
 SELECT MAX(lower(spanN(f, 1))) FROM tbl_floatspanset;
-SELECT MAX(array_length(spans(f),1)) FROM tbl_floatspanset;
+SELECT MAX(array_length(spans(f), 1)) FROM tbl_floatspanset;
 
 SELECT MAX(numSpans(t)) FROM tbl_tstzspanset;
 SELECT MAX(lower(startSpan(t))) FROM tbl_tstzspanset;
 SELECT MAX(lower(endSpan(t))) FROM tbl_tstzspanset;
 SELECT MAX(lower(spanN(t, 1))) FROM tbl_tstzspanset;
-SELECT MAX(array_length(spans(t),1)) FROM tbl_tstzspanset;
+SELECT MAX(array_length(spans(t), 1)) FROM tbl_tstzspanset;
 
 SELECT MAX(numTimestamps(t)) FROM tbl_tstzspanset;
 SELECT MAX(startTimestamp(t)) FROM tbl_tstzspanset;

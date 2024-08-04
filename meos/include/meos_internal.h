@@ -368,7 +368,8 @@ extern SpanSet *numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum wid
 extern Set *set_compact(const Set *s);
 extern void span_expand(const Span *s1, Span *s2);
 extern SpanSet *spanset_compact(const SpanSet *ss);
-extern Span *spanset_spans(const SpanSet *ss, int max_count, int *count);
+extern Span *spanset_spans(const SpanSet *ss);
+extern Span *spanset_spans_merge(const SpanSet *ss, int max_count, int *count);
 extern Set *textcat_textset_text_int(const Set *s, const text *txt, bool invert);
 extern void tstzspan_set_datespan(const Span *s1, Span *s2);
 
@@ -966,14 +967,16 @@ extern bool tpointseq_is_simple(const TSequence *seq);
 extern double tpointseq_length(const TSequence *seq);
 extern TSequence *tpointseq_speed(const TSequence *seq);
 extern int tpointseq_srid(const TSequence *seq);
-extern STBox *tpointseq_stboxes(const TSequence *seq, int max_count, int *count);
+extern STBox *tpointseq_stboxes(const TSequence *seq, int *count);
+extern STBox *tpointseq_stboxes_merge(const TSequence *seq, int max_count, int *count);
 extern TSequenceSet *tpointseqset_azimuth(const TSequenceSet *ss);
 extern TSequenceSet *tpointseqset_cumulative_length(const TSequenceSet *ss);
 extern bool tpointseqset_is_simple(const TSequenceSet *ss);
 extern double tpointseqset_length(const TSequenceSet *ss);
 extern TSequenceSet *tpointseqset_speed(const TSequenceSet *ss);
 extern int tpointseqset_srid(const TSequenceSet *ss);
-extern STBox *tpointseqset_stboxes(const TSequenceSet *ss, int max_count, int *count);
+extern STBox *tpointseqset_stboxes(const TSequenceSet *ss, int *count);
+extern STBox *tpointseqset_stboxes_merge(const TSequenceSet *ss, int max_count, int *count);
 extern GSERIALIZED *tpointseqset_trajectory(const TSequenceSet *ss);
 extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 

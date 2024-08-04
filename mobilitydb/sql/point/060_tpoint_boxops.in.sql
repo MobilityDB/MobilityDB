@@ -70,31 +70,60 @@ CREATE FUNCTION expandSpace(tgeogpoint, float)
 
 /*****************************************************************************/
 
-CREATE FUNCTION spans(tgeompoint, int DEFAULT 0)
+CREATE FUNCTION spans(tgeompoint)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spans(tgeogpoint, int DEFAULT 0)
+CREATE FUNCTION spans(tgeogpoint)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stboxes(tgeompoint, int DEFAULT 0)
+CREATE FUNCTION stboxes(tgeompoint)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Tpoint_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxes(tgeogpoint, int DEFAULT 0)
+CREATE FUNCTION stboxes(tgeogpoint)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Tpoint_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stboxes(geometry, int DEFAULT 0)
+CREATE FUNCTION stboxes(geometry)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Geo_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxes(geography, int DEFAULT 0)
+CREATE FUNCTION stboxes(geography)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Geo_stboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE FUNCTION spansMerge(tgeompoint, int DEFAULT 0)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_spans_merge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spansMerge(tgeogpoint, int DEFAULT 0)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_spans_merge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stboxesMerge(tgeompoint, int DEFAULT 0)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tpoint_stboxes_merge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxesMerge(tgeogpoint, int DEFAULT 0)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tpoint_stboxes_merge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stboxesMerge(geometry, int DEFAULT 0)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Geo_stboxes_merge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxesMerge(geography, int DEFAULT 0)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Geo_stboxes_merge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

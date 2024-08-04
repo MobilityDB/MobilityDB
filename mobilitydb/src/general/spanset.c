@@ -897,17 +897,38 @@ PGDLLEXPORT Datum Spanset_spans(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_spans);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
- * @brief Return an array of maximum n spans from a spanset where the
- * composing spans are merged to reach n, if any
+ * @brief Return an array of spans
  * @sqlfn spans()
  */
 Datum
 Spanset_spans(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Span *spans = spanset_spans(ss);
+  int count = ss->count;
+  PG_FREE_IF_COPY(ss, 0);
+  if (! spans)
+    PG_RETURN_NULL();
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree(spans);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Spanset_spans_merge(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_spans_merge);
+/**
+ * @ingroup mobilitydb_temporal_bbox_topo
+ * @brief Return an array of maximum n spans from a spanset where the
+ * composing spans are merged to reach n, if any
+ * @sqlfn spans()
+ */
+Datum
+Spanset_spans_merge(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
   int max_count = PG_GETARG_INT32(1);
   int count;
-  Span *spans = spanset_spans(ss, max_count, &count);
+  Span *spans = spanset_spans_merge(ss, max_count, &count);
   PG_FREE_IF_COPY(ss, 0);
   if (! spans)
     PG_RETURN_NULL();

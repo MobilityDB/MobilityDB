@@ -1884,6 +1884,22 @@ spanarr_sort_size(Span *spans, int count)
 
 /**
  * @ingroup meos_setspan_bbox
+ * @brief Return the array of spans of a spanset
+ * @param[in] ss Span set
+ */
+Span *
+spanset_spans(const SpanSet *ss)
+{
+  assert(ss); assert(spanset_type(ss->spansettype));
+  Span *result = palloc(sizeof(Span) * ss->count);
+  /* Output the composing spans */
+  for (int i = 0; i < ss->count; i++)
+    memcpy(&result[i], SPANSET_SP_N(ss, i), sizeof(Span));
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_bbox
  * @brief Return an array of spans from the composing spans of a spanset
  * @param[in] ss Span set
  * @param[in] max_count Maximum number of elements in the output array.
@@ -1891,45 +1907,42 @@ spanarr_sort_size(Span *spans, int count)
  * @param[out] count Number of elements in the output array
  */
 Span *
-spanset_spans(const SpanSet *ss, int max_count, int *count)
+spanset_spans_merge(const SpanSet *ss, int max_count, int *count)
 {
   assert(ss); assert(count); assert(spanset_type(ss->spansettype));
-  int nspans = (max_count < 1) ? ss->count : max_count;
-  Span *result = palloc(sizeof(Span) * nspans);
+
+  /* Output the composing spans */
   if (max_count < 1 || ss->count <= max_count)
   {
-    /* Output the composing spans */
-    for (int i = 0; i < ss->count; i++)
-      memcpy(&result[i], SPANSET_SP_N(ss, i), sizeof(Span));
     *count = ss->count;
-    return result;
+    return spanset_spans(ss);
   }
-  else
-  {
-    /* Merge consecutive sequences having the smallest gap */
-    SpanSet *minus = minus_span_spanset(&ss->span, ss);
-    Span *holes = palloc(sizeof(Span) * minus->count);
-    for (int i = 0; i < minus->count; i++)
-      memcpy(&holes[i], SPANSET_SP_N(minus, i), sizeof(Span));
-    /* Sort the holes in increasing size */
-    spanarr_sort_size(holes, minus->count);
-    /* Number of holes in the original spanset that will be filled */
-    int nfills = minus->count - max_count + 1;
-    /* Sort the holes to fill the original spanset in increasing value/time */
-    spanarr_sort(holes, nfills);
-    SpanSet *tofill = spanset_make_exp(holes, nfills, nfills, NORMALIZE_NO,
-      ORDER_NO);
-    /* Resulting spanset with the holes filed */
-    SpanSet *res = union_spanset_spanset(ss, tofill);
-    assert(res->count == max_count);
-    /* Construct the resulting array of spans */
-    for (int i = 0; i < res->count; i++)
-      memcpy(&result[i], SPANSET_SP_N(res, i), sizeof(Span));
-    /* Clean-up and return */
-    pfree(minus); pfree(holes); pfree(tofill); pfree(res);
-    *count = max_count;
-    return result;
-  }
+
+  /* Merge consecutive sequences having the smallest gap */
+  int nspans = (max_count < 1) ? ss->count : max_count;
+  Span *result = palloc(sizeof(Span) * nspans);
+  SpanSet *minus = minus_span_spanset(&ss->span, ss);
+  Span *holes = palloc(sizeof(Span) * minus->count);
+  for (int i = 0; i < minus->count; i++)
+    memcpy(&holes[i], SPANSET_SP_N(minus, i), sizeof(Span));
+  /* Sort the holes in increasing size */
+  spanarr_sort_size(holes, minus->count);
+  /* Number of holes in the original spanset that will be filled */
+  int nfills = minus->count - max_count + 1;
+  /* Sort the holes to fill the original spanset in increasing value/time */
+  spanarr_sort(holes, nfills);
+  SpanSet *tofill = spanset_make_exp(holes, nfills, nfills, NORMALIZE_NO,
+    ORDER_NO);
+  /* Resulting spanset with the holes filed */
+  SpanSet *res = union_spanset_spanset(ss, tofill);
+  assert(res->count == max_count);
+  /* Construct the resulting array of spans */
+  for (int i = 0; i < res->count; i++)
+    memcpy(&result[i], SPANSET_SP_N(res, i), sizeof(Span));
+  /* Clean-up and return */
+  pfree(minus); pfree(holes); pfree(tofill); pfree(res);
+  *count = max_count;
+  return result;
 }
 
 /*****************************************************************************
