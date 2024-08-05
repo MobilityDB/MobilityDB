@@ -36,30 +36,56 @@
  * Boxes functions
  *****************************************************************************/
 
-CREATE FUNCTION spans(tbool, int DEFAULT 0)
+CREATE FUNCTION spans(tbool)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spans(tint, int DEFAULT 0)
+CREATE FUNCTION spans(tint)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spans(tfloat, int DEFAULT 0)
+CREATE FUNCTION spans(tfloat)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spans(ttext, int DEFAULT 0)
+CREATE FUNCTION spans(ttext)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tboxes(tint, int DEFAULT 0)
+CREATE FUNCTION tboxes(tint)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_tboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tboxes(tfloat, int DEFAULT 0)
+CREATE FUNCTION tboxes(tfloat)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_tboxes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION spansMerge(tbool, int DEFAULT 0)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_spans_merge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spansMerge(tint, int DEFAULT 0)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_spans_merge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spansMerge(tfloat, int DEFAULT 0)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_spans_merge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spansMerge(ttext, int DEFAULT 0)
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_spans_merge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tboxesMerge(tint, int DEFAULT 0)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_tboxes_merge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tboxesMerge(tfloat, int DEFAULT 0)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_tboxes_merge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

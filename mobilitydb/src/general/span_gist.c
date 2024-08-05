@@ -161,7 +161,7 @@ span_index_recheck(StrategyNumber strategy)
 /**
  * @brief Transform the query argument into a span
  */
-static bool
+bool
 span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
 {
   meosType type = oid_type(typid);

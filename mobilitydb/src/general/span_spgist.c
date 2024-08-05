@@ -332,6 +332,16 @@ overRight2D(const SpanNode *nodebox, const Span *query)
 }
 
 /**
+ * @brief Can any span from nodebox be to the left of the query?
+ */
+bool
+adjacent2D(const SpanNode *nodebox, const Span *query)
+{
+  return adj_span_span(&nodebox->left, query) ||
+    adj_span_span(&nodebox->right, query);
+}
+
+/**
  * @brief Distance between a query span and a box of spans
  */
 double
@@ -834,8 +844,11 @@ Span_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
       {
         case RTOverlapStrategyNumber:
         case RTContainedByStrategyNumber:
-        case RTAdjacentStrategyNumber:
           flag = overlap2D(&next_nodespan, &queries[i]);
+          break;
+        case RTAdjacentStrategyNumber:
+          flag = adjacent2D(&next_nodespan, &queries[i]) || 
+            overlap2D(&next_nodespan, &queries[i]);
           break;
         case RTContainsStrategyNumber:
         case RTEqualStrategyNumber:
