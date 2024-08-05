@@ -60,23 +60,21 @@
  *****************************************************************************/
 
 /**
- * @brief Leaf-level consistency for temporal numbers
- *
- * Since temporal boxes do not distinguish between inclusive and
+ * @brief Leaf consistency for temporal numbers
+ * @details Since temporal boxes do not distinguish between inclusive and
  * exclusive bounds, it is necessary to generalize the tests, e.g.,
  * - left : (box1->xmax < box2->xmin) => (box1->xmax <= box2->xmin)
  *   e.g., to take into account left([a,b],(b,c])
  * - right : (box1->xmin > box2->xmax) => (box1->xmin >= box2->xmax)
  *   e.g., to take into account right((b,c],[a,b])
  * and similarly for before and after
- *
  * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
  * @note This function is used for both GiST and SP-GiST indexes
  */
 bool
-tbox_index_consistent_leaf(const TBox *key, const TBox *query,
+tbox_index_leaf_consistent(const TBox *key, const TBox *query,
   StrategyNumber strategy)
 {
   bool retval;
@@ -263,7 +261,7 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(false);
 
   if (GIST_LEAF(entry))
-    result = tbox_index_consistent_leaf(key, &query, strategy);
+    result = tbox_index_leaf_consistent(key, &query, strategy);
   else
     result = tnumber_gist_consistent(key, &query, strategy);
 

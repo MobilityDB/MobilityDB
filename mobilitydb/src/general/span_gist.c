@@ -58,14 +58,14 @@
  *****************************************************************************/
 
 /**
- * @brief Leaf-level consistency for span types
+ * @brief Leaf consistency for span types
  * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
  * @note This function is used for both GiST and SP-GiST indexes
  */
 bool
-span_index_consistent_leaf(const Span *key, const Span *query,
+span_index_leaf_consistent(const Span *key, const Span *query,
   StrategyNumber strategy)
 {
   switch (strategy)
@@ -106,7 +106,7 @@ span_index_consistent_leaf(const Span *key, const Span *query,
  * @param[in] strategy Operator of the operator class being applied
  */
 bool
-span_gist_consistent(const Span *key, const Span *query,
+span_gist_inner_consistent(const Span *key, const Span *query,
   StrategyNumber strategy)
 {
   switch (strategy)
@@ -167,7 +167,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
   meosType type = oid_type(typid);
   if (span_basetype(type))
   {
-    /* Since function span_gist_consistent is strict, value is not NULL */
+    /* Since function span_gist_inner_consistent is strict, value is not NULL */
     Datum value = PG_GETARG_DATUM(1);
     meosType spantype = basetype_spantype(type);
     span_set(value, value, true, true, type, spantype, result);
@@ -228,9 +228,9 @@ Span_gist_consistent(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(false);
 
   if (GIST_LEAF(entry))
-    result = span_index_consistent_leaf(key, &query, strategy);
+    result = span_index_leaf_consistent(key, &query, strategy);
   else
-    result = span_gist_consistent(key, &query, strategy);
+    result = span_gist_inner_consistent(key, &query, strategy);
 
   PG_RETURN_BOOL(result);
 }

@@ -932,13 +932,13 @@ Span_kdtree_inner_consistent(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * SP-GiST leaf-level consistency function
+ * SP-GiST leaf consistency function
  *****************************************************************************/
 
 PGDLLEXPORT Datum Span_spgist_leaf_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_spgist_leaf_consistent);
 /**
- * @brief SP-GiST leaf-level consistency function for span types
+ * @brief SP-GiST leaf consistency function for span types
  */
 Datum
 Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
@@ -965,7 +965,7 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 
     /* Convert the query to a span and perform the test */
     span_spgist_get_span(&in->scankeys[i], &span);
-    result = span_index_consistent_leaf(key, &span, strategy);
+    result = span_index_leaf_consistent(key, &span, strategy);
 
     /* If any check is failed, we have found our answer. */
     if (! result)
