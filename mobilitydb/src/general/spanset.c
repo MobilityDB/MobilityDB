@@ -914,8 +914,8 @@ Spanset_spans(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
-PGDLLEXPORT Datum Spanset_spans_merge(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Spanset_spans_merge);
+PGDLLEXPORT Datum Spanset_spans_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_spans_n);
 /**
  * @ingroup mobilitydb_temporal_bbox_topo
  * @brief Return an array of maximum n spans from a spanset where the
@@ -923,12 +923,12 @@ PG_FUNCTION_INFO_V1(Spanset_spans_merge);
  * @sqlfn spans()
  */
 Datum
-Spanset_spans_merge(PG_FUNCTION_ARGS)
+Spanset_spans_n(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   int max_count = PG_GETARG_INT32(1);
   int count;
-  Span *spans = spanset_spans_merge(ss, max_count, &count);
+  Span *spans = spanset_spans_n(ss, max_count, &count);
   PG_FREE_IF_COPY(ss, 0);
   if (! spans)
     PG_RETURN_NULL();

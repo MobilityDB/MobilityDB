@@ -120,20 +120,20 @@ Tnumber_tboxes(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Temporal_spans_merge(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_spans_merge);
+PGDLLEXPORT Datum Temporal_spans_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_spans_n);
 /**
  * @ingroup mobilitydb_temporal_bbox
  * @brief Return an array of maximum n spans from a temporal value
  * @sqlfn spans()
  */
 Datum
-Temporal_spans_merge(PG_FUNCTION_ARGS)
+Temporal_spans_n(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int max_count = PG_GETARG_INT32(1);
   int count;
-  Span *spans = temporal_spans_merge(temp, max_count, &count);
+  Span *spans = temporal_spans_n(temp, max_count, &count);
   PG_FREE_IF_COPY(temp, 0);
   if (! spans)
     PG_RETURN_NULL();
@@ -142,20 +142,20 @@ Temporal_spans_merge(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
-PGDLLEXPORT Datum Tnumber_tboxes_merge(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnumber_tboxes_merge);
+PGDLLEXPORT Datum Tnumber_tboxes_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_tboxes_n);
 /**
  * @ingroup mobilitydb_temporal_bbox
  * @brief Return an array of maximum n temporal boxes from a temporal number
  * @sqlfn tboxes()
  */
 Datum
-Tnumber_tboxes_merge(PG_FUNCTION_ARGS)
+Tnumber_tboxes_n(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int max_count = PG_GETARG_INT32(1);
   int count;
-  TBox *boxes = tnumber_tboxes_merge(temp, max_count, &count);
+  TBox *boxes = tnumber_tboxes_n(temp, max_count, &count);
   PG_FREE_IF_COPY(temp, 0);
   if (! boxes)
     PG_RETURN_NULL();

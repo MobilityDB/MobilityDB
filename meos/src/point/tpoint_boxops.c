@@ -352,7 +352,7 @@ tpoint_stboxes(const Temporal *temp, int *count)
  * @param[out] count Number of elements in the array
  */
 static STBox *
-tpointseq_disc_stboxes_merge(const TSequence *seq, int max_count, int *count)
+tpointseq_disc_stboxes_n(const TSequence *seq, int max_count, int *count)
 {
   assert(seq); assert(count); assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
@@ -457,13 +457,13 @@ tpointseq_cont_stboxes_merge_iter(const TSequence *seq, int max_count,
  * boxes.
  */
 STBox *
-tpointseq_stboxes_merge(const TSequence *seq, int max_count, int *count)
+tpointseq_stboxes_n(const TSequence *seq, int max_count, int *count)
 {
   assert(seq); assert(count); assert(tgeo_type(seq->temptype));
 
   /* Discrete case */
   if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
-    return tpointseq_disc_stboxes_merge(seq, max_count, count);
+    return tpointseq_disc_stboxes_n(seq, max_count, count);
 
   /* Continuous case */
   int nboxes = (max_count < 1) ?
@@ -485,7 +485,7 @@ tpointseq_stboxes_merge(const TSequence *seq, int max_count, int *count)
  * in the result to reach `max_count` number of boxes.
  */
 STBox *
-tpointseqset_stboxes_merge(const TSequenceSet *ss, int max_count, int *count)
+tpointseqset_stboxes_n(const TSequenceSet *ss, int max_count, int *count)
 {
   assert(ss); assert(count); assert(tgeo_type(ss->temptype));
 
@@ -555,7 +555,7 @@ tpointseqset_stboxes_merge(const TSequenceSet *ss, int max_count, int *count)
  * @csqlfn #Tpoint_stboxes()
  */
 STBox *
-tpoint_stboxes_merge(const Temporal *temp, int max_count, int *count)
+tpoint_stboxes_n(const Temporal *temp, int max_count, int *count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
@@ -569,9 +569,9 @@ tpoint_stboxes_merge(const Temporal *temp, int max_count, int *count)
     return tpointinst_stboxes((TInstant *) temp);
   }
   else if (temp->subtype == TSEQUENCE)
-    return tpointseq_stboxes_merge((TSequence *) temp, max_count, count);
+    return tpointseq_stboxes_n((TSequence *) temp, max_count, count);
   else /* TSEQUENCESET */
-    return tpointseqset_stboxes_merge((TSequenceSet *) temp, max_count, count);
+    return tpointseqset_stboxes_n((TSequenceSet *) temp, max_count, count);
 }
 
 /*****************************************************************************
@@ -843,7 +843,7 @@ line_gboxes_merge_iter(const LWLINE *lwline, int max_count, GBOX *result)
  * in the result to reach `max_count` number of boxes.
  */
 GBOX *
-line_gboxes_merge(const GSERIALIZED *gs, int max_count, int *count)
+line_gboxes_n(const GSERIALIZED *gs, int max_count, int *count)
 {
   assert(gs); assert(gserialized_get_type(gs) == LINETYPE);
   assert(! gserialized_is_empty(gs));
@@ -876,7 +876,7 @@ line_gboxes_merge(const GSERIALIZED *gs, int max_count, int *count)
  * in the result to reach `max_count` number of boxes.
  */
 GBOX *
-multiline_gboxes_merge(const GSERIALIZED *gs, int max_count, int *count)
+multiline_gboxes_n(const GSERIALIZED *gs, int max_count, int *count)
 {
   assert(gs); assert(gserialized_get_type(gs) == MULTILINETYPE);
   assert(! gserialized_is_empty(gs));
@@ -965,7 +965,7 @@ multiline_gboxes_merge(const GSERIALIZED *gs, int max_count, int *count)
  * in the result to reach `max_count` number of boxes.
  */
 GBOX *
-geo_gboxes_merge(const GSERIALIZED *gs, int max_count, int *count)
+geo_gboxes_n(const GSERIALIZED *gs, int max_count, int *count)
 {
   assert(gs); assert(count);
   uint32_t geotype = gserialized_get_type(gs);
@@ -979,9 +979,9 @@ geo_gboxes_merge(const GSERIALIZED *gs, int max_count, int *count)
     return NULL;
 
   if ( geotype == LINETYPE )
-    return line_gboxes_merge(gs, max_count, count);
+    return line_gboxes_n(gs, max_count, count);
   else
-    return multiline_gboxes_merge(gs, max_count, count);
+    return multiline_gboxes_n(gs, max_count, count);
 }
 
 /*****************************************************************************

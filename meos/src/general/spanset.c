@@ -1907,7 +1907,7 @@ spanset_spans(const SpanSet *ss)
  * @param[out] count Number of elements in the output array
  */
 Span *
-spanset_spans_merge(const SpanSet *ss, int max_count, int *count)
+spanset_spans_n(const SpanSet *ss, int max_count, int *count)
 {
   assert(ss); assert(count); assert(spanset_type(ss->spansettype));
 

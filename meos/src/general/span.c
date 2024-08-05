@@ -1899,7 +1899,7 @@ set_spans(const Set *s)
  * @param[out] count Number of elements in the output array
  */
 Span *
-set_spans_merge(const Set *s, int max_count, int *count)
+set_spans_n(const Set *s, int max_count, int *count)
 {
   assert(s); assert(count); assert(set_type(s->settype));
   int nvalues = (max_count < 1) ? s->count : max_count;

@@ -775,7 +775,7 @@ temporal_spans(const Temporal *temp, int *count)
  * @return Number of elements in the output array
  */
 static Span *
-tdiscseq_spans_merge(const TSequence *seq, int max_count, int *count)
+tdiscseq_spans_n(const TSequence *seq, int max_count, int *count)
 {
   assert(seq); assert(count);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
@@ -877,13 +877,13 @@ tcontseq_spans_merge_iter(const TSequence *seq, int max_count, Span *result)
  * spans.
  */
 Span *
-tsequence_spans_merge(const TSequence *seq, int max_count, int *count)
+tsequence_spans_n(const TSequence *seq, int max_count, int *count)
 {
   assert(seq); assert(count);
 
   /* Discrete case */
   if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
-    return tdiscseq_spans_merge(seq, max_count, count);
+    return tdiscseq_spans_n(seq, max_count, count);
 
   /* Continuous case */
   int nboxes = (max_count < 1) ?
@@ -904,7 +904,7 @@ tsequence_spans_merge(const TSequence *seq, int max_count, int *count)
  * in the result to reach `max_count` number of spans.
  */
 Span *
-tsequenceset_spans_merge(const TSequenceSet *ss, int max_count, int *count)
+tsequenceset_spans_n(const TSequenceSet *ss, int max_count, int *count)
 {
   assert(ss); assert(count);
 
@@ -972,7 +972,7 @@ tsequenceset_spans_merge(const TSequenceSet *ss, int max_count, int *count)
  * @csqlfn #Temporal_spans()
  */
 Span *
-temporal_spans_merge(const Temporal *temp, int max_count, int *count)
+temporal_spans_n(const Temporal *temp, int max_count, int *count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
@@ -985,9 +985,9 @@ temporal_spans_merge(const Temporal *temp, int max_count, int *count)
     return tinstant_spans((TInstant *) temp);
   }
   else if (temp->subtype == TSEQUENCE)
-    return tsequence_spans_merge((TSequence *) temp, max_count, count);
+    return tsequence_spans_n((TSequence *) temp, max_count, count);
   else /* TSEQUENCESET */
-    return tsequenceset_spans_merge((TSequenceSet *) temp, max_count, count);
+    return tsequenceset_spans_n((TSequenceSet *) temp, max_count, count);
 }
 
 /*****************************************************************************
@@ -1154,7 +1154,7 @@ tnumber_tboxes(const Temporal *temp, int *count)
  * @param[out] count Number of elements in the array
  */
 static TBox *
-tnumberseq_disc_tboxes_merge(const TSequence *seq, int max_count, int *count)
+tnumberseq_disc_tboxes_n(const TSequence *seq, int max_count, int *count)
 {
   assert(seq); assert(count); assert(tnumber_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
@@ -1260,13 +1260,13 @@ tnumberseq_cont_tboxes_merge_iter(const TSequence *seq, int max_count,
  * boxes.
  */
 TBox *
-tnumberseq_tboxes_merge(const TSequence *seq, int max_count, int *count)
+tnumberseq_tboxes_n(const TSequence *seq, int max_count, int *count)
 {
   assert(seq); assert(count); assert(tnumber_type(seq->temptype));
 
   /* Discrete case */
   if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
-    return tnumberseq_disc_tboxes_merge(seq, max_count, count);
+    return tnumberseq_disc_tboxes_n(seq, max_count, count);
 
   /* Continuous case */
   int nboxes = (max_count < 1) ?
@@ -1288,7 +1288,7 @@ tnumberseq_tboxes_merge(const TSequence *seq, int max_count, int *count)
  * in the result to reach `max_count` number of boxes.
  */
 TBox *
-tnumberseqset_tboxes_merge(const TSequenceSet *ss, int max_count, int *count)
+tnumberseqset_tboxes_n(const TSequenceSet *ss, int max_count, int *count)
 {
   assert(ss); assert(count); assert(tnumber_type(ss->temptype));
 
@@ -1352,10 +1352,10 @@ tnumberseqset_tboxes_merge(const TSequenceSet *ss, int max_count, int *count)
  * @param[in] max_count Maximum number of elements in the output array.
  * @param[out] count Number of values of the output array
  * @return On error return @p NULL
- * @csqlfn #Tnumber_tboxes_merge()
+ * @csqlfn #Tnumber_tboxes_n()
  */
 TBox *
-tnumber_tboxes_merge(const Temporal *temp, int max_count, int *count)
+tnumber_tboxes_n(const Temporal *temp, int max_count, int *count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
@@ -1369,9 +1369,9 @@ tnumber_tboxes_merge(const Temporal *temp, int max_count, int *count)
     return tnumberinst_tboxes((TInstant *) temp);
   }
   else if (temp->subtype == TSEQUENCE)
-    return tnumberseq_tboxes_merge((TSequence *) temp, max_count, count);
+    return tnumberseq_tboxes_n((TSequence *) temp, max_count, count);
   else /* TSEQUENCESET */
-    return tnumberseqset_tboxes_merge((TSequenceSet *) temp, max_count, count);
+    return tnumberseqset_tboxes_n((TSequenceSet *) temp, max_count, count);
 }
 
 /*****************************************************************************

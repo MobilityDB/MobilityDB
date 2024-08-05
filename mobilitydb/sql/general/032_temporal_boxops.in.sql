@@ -62,30 +62,30 @@ CREATE FUNCTION tboxes(tfloat)
   AS 'MODULE_PATHNAME', 'Tnumber_tboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION spansMerge(tbool, int DEFAULT 0)
+CREATE FUNCTION spansN(tbool, int DEFAULT 0)
   RETURNS tstzspan[]
-  AS 'MODULE_PATHNAME', 'Temporal_spans_merge'
+  AS 'MODULE_PATHNAME', 'Temporal_spans_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spansMerge(tint, int DEFAULT 0)
+CREATE FUNCTION spansN(tint, int DEFAULT 0)
   RETURNS tstzspan[]
-  AS 'MODULE_PATHNAME', 'Temporal_spans_merge'
+  AS 'MODULE_PATHNAME', 'Temporal_spans_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spansMerge(tfloat, int DEFAULT 0)
+CREATE FUNCTION spansN(tfloat, int DEFAULT 0)
   RETURNS tstzspan[]
-  AS 'MODULE_PATHNAME', 'Temporal_spans_merge'
+  AS 'MODULE_PATHNAME', 'Temporal_spans_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spansMerge(ttext, int DEFAULT 0)
+CREATE FUNCTION spansN(ttext, int DEFAULT 0)
   RETURNS tstzspan[]
-  AS 'MODULE_PATHNAME', 'Temporal_spans_merge'
+  AS 'MODULE_PATHNAME', 'Temporal_spans_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tboxesMerge(tint, int DEFAULT 0)
+CREATE FUNCTION tboxesN(tint, int DEFAULT 0)
   RETURNS tbox[]
-  AS 'MODULE_PATHNAME', 'Tnumber_tboxes_merge'
+  AS 'MODULE_PATHNAME', 'Tnumber_tboxes_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tboxesMerge(tfloat, int DEFAULT 0)
+CREATE FUNCTION tboxesN(tfloat, int DEFAULT 0)
   RETURNS tbox[]
-  AS 'MODULE_PATHNAME', 'Tnumber_tboxes_merge'
+  AS 'MODULE_PATHNAME', 'Tnumber_tboxes_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

@@ -105,8 +105,8 @@ Geo_stboxes(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Tpoint_stboxes_merge(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_stboxes_merge);
+PGDLLEXPORT Datum Tpoint_stboxes_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_stboxes_n);
 /**
  * @ingroup mobilitydb_temporal_bbox
  * @brief Return an array of maximum n spatiotemporal boxes from a temporal
@@ -114,12 +114,12 @@ PG_FUNCTION_INFO_V1(Tpoint_stboxes_merge);
  * @sqlfn stboxesMerge()
  */
 Datum
-Tpoint_stboxes_merge(PG_FUNCTION_ARGS)
+Tpoint_stboxes_n(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int max_count = PG_GETARG_INT32(1);
   int count;
-  STBox *boxes = tpoint_stboxes_merge(temp, max_count, &count);
+  STBox *boxes = tpoint_stboxes_n(temp, max_count, &count);
   PG_FREE_IF_COPY(temp, 0);
   if (! boxes)
     PG_RETURN_NULL();
@@ -128,20 +128,20 @@ Tpoint_stboxes_merge(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
-PGDLLEXPORT Datum Geo_stboxes_merge(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geo_stboxes_merge);
+PGDLLEXPORT Datum Geo_stboxes_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_stboxes_n);
 /**
  * @ingroup mobilitydb_temporal_bbox
  * @brief Return an array of maximum n spatial boxes from a linestring
  * @sqlfn stboxes()
  */
 Datum
-Geo_stboxes_merge(PG_FUNCTION_ARGS)
+Geo_stboxes_n(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   int max_count = PG_GETARG_INT32(1);
   int count;
-  GBOX *gboxes = geo_gboxes_merge(gs, max_count, &count);
+  GBOX *gboxes = geo_gboxes_n(gs, max_count, &count);
   int srid = gserialized_get_srid(gs);
   PG_FREE_IF_COPY(gs, 0);
   if (! gboxes)

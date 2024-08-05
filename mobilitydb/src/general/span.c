@@ -204,20 +204,20 @@ Set_spans(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
-PGDLLEXPORT Datum Set_spans_merge(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Set_spans_merge);
+PGDLLEXPORT Datum Set_spans_n(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_spans_n);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Return a set converted to a span
  * @sqlfn spansMerge()
  */
 Datum
-Set_spans_merge(PG_FUNCTION_ARGS)
+Set_spans_n(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   int max_count = PG_GETARG_INT32(1);
   int count;
-  Span *spans = set_spans_merge(s, max_count, &count);
+  Span *spans = set_spans_n(s, max_count, &count);
   PG_FREE_IF_COPY(s, 0);
   if (! spans)
     PG_RETURN_NULL();

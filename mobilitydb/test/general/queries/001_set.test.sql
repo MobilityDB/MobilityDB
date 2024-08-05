@@ -92,13 +92,13 @@ SELECT span(tstzset '{2000-01-01, 2000-01-02, 2000-01-03}');
 SELECT spans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}');
 
 -- Maximum number of spans in last argument
-SELECT spansMerge(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}');
-SELECT spansMerge(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 1);
-SELECT spansMerge(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 2);
-SELECT spansMerge(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 3);
-SELECT spansMerge(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 4);
-SELECT spansMerge(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 5);
-SELECT spansMerge(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 6);
+SELECT spansN(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}');
+SELECT spansN(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 1);
+SELECT spansN(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 2);
+SELECT spansN(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 3);
+SELECT spansN(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 4);
+SELECT spansN(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 5);
+SELECT spansN(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 6);
 
 SELECT numValues(dateset '{2000-01-01}');
 SELECT numValues(dateset '{2000-01-01, 2000-01-02, 2000-01-03}');

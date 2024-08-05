@@ -395,25 +395,25 @@ CREATE FUNCTION spans(tstzset)
   AS 'MODULE_PATHNAME', 'Set_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION spansMerge(intset, int DEFAULT 0)
+CREATE FUNCTION spansN(intset, int DEFAULT 0)
   RETURNS intspan[]
-  AS 'MODULE_PATHNAME', 'Set_spans_merge'
+  AS 'MODULE_PATHNAME', 'Set_spans_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spansMerge(bigintset, int DEFAULT 0)
+CREATE FUNCTION spansN(bigintset, int DEFAULT 0)
   RETURNS bigintspan[]
-  AS 'MODULE_PATHNAME', 'Set_spans_merge'
+  AS 'MODULE_PATHNAME', 'Set_spans_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spansMerge(floatset, int DEFAULT 0)
+CREATE FUNCTION spansN(floatset, int DEFAULT 0)
   RETURNS floatspan[]
-  AS 'MODULE_PATHNAME', 'Set_spans_merge'
+  AS 'MODULE_PATHNAME', 'Set_spans_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spansMerge(dateset, int DEFAULT 0)
+CREATE FUNCTION spansN(dateset, int DEFAULT 0)
   RETURNS datespan[]
-  AS 'MODULE_PATHNAME', 'Set_spans_merge'
+  AS 'MODULE_PATHNAME', 'Set_spans_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spansMerge(tstzset, int DEFAULT 0)
+CREATE FUNCTION spansN(tstzset, int DEFAULT 0)
   RETURNS tstzspan[]
-  AS 'MODULE_PATHNAME', 'Set_spans_merge'
+  AS 'MODULE_PATHNAME', 'Set_spans_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intspan(floatspan)
