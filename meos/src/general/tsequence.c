@@ -252,7 +252,7 @@ tsequence_norm_test(Datum value1, Datum value2, Datum value3, meosType basetype,
  * @param[in] interp Interpolation
  * @param[in] count Number of elements in the input array
  * @param[out] newcount Number of elements in the output array
- * @result Array of normalized temporal instants
+ * @return Array of normalized temporal instants
  * @pre The input array has at least two elements
  * @note The function does not create new instants, it creates an array of
  * pointers to a subset of the input instants
@@ -301,7 +301,7 @@ tinstarr_normalize(const TInstant **instants, interpType interp, int count,
  * @param[in] seq1,seq2 Input sequences
  * @param[out] removelast,removefirst State the instants to remove if the
  * sequences can be joined
- * @result True when the input sequences can be joined
+ * @return True when the input sequences can be joined
  * @pre Both sequences are normalized
  */
 bool
@@ -451,7 +451,7 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
  *
  * @param[in] seq Temporal continuous sequence
  * @param[in] t Timestamp
- * @result Return -1 if the timestamp is not contained in a temporal sequence
+ * @return Return -1 if the timestamp is not contained in a temporal sequence
  */
 int
 tcontseq_find_timestamptz(const TSequence *seq, TimestampTz t)
@@ -499,7 +499,7 @@ tcontseq_find_timestamptz(const TSequence *seq, TimestampTz t)
  *
  * @param[in] seq Temporal discrete sequence
  * @param[in] t Timestamp
- * @result Return true if the timestamp is contained in the discrete sequence
+ * @return Return true if the timestamp is contained in the discrete sequence
  */
 int
 tdiscseq_find_timestamptz(const TSequence *seq, TimestampTz t)
@@ -1845,7 +1845,7 @@ tsequence_shift_scale_time(const TSequence *seq, const Interval *shift,
  * sequence
  * @param[in] seq Temporal sequence
  * @param[out] count Number of values in the resulting array
- * @result Array of values
+ * @return Array of values
  * @csqlfn #Temporal_valueset()
  */
 Datum *
@@ -2358,7 +2358,7 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
  * @param[in] t Timestamp
  * @param[in] strict True if inclusive/exclusive bounds are taken into account
  * @param[out] result Result
- * @result Return true if the timestamp is contained in the temporal sequence
+ * @return Return true if the timestamp is contained in the temporal sequence
  * @csqlfn #Temporal_value_at_timestamptz()
  */
 bool
@@ -2423,7 +2423,7 @@ tsequence_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict,
  * @param[in] seq1,seq2 Input values
  * @param[in] crossings True if turning points are added in the segments
  * @param[out] sync1,sync2 Output values
- * @result Return false if the input values do not overlap on time
+ * @return Return false if the input values do not overlap on time
  */
 bool
 synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
@@ -2560,7 +2560,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
  * @brief Temporally intersect two temporal discrete sequences
  * @param[in] seq1,seq2 Input values
  * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on time
+ * @return Return false if the input values do not overlap on time
  */
 bool
 intersection_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
@@ -2610,7 +2610,7 @@ intersection_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
  * @brief Temporally intersect two temporal sequences
  * @param[in] seq1,seq2 Input values
  * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on time.
+ * @return Return false if the input values do not overlap on time.
  */
 bool
 intersection_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
@@ -2654,7 +2654,7 @@ intersection_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
  * @brief Temporally intersect two temporal values
  * @param[in] seq1,seq2 Temporal values
  * @param[out] inter1,inter2 Output values
- * @result Return false if the input values do not overlap on time.
+ * @return Return false if the input values do not overlap on time.
  */
 bool
 intersection_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
@@ -2916,7 +2916,7 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
  * @brief Temporally intersect two temporal sequences
  * @param[in] seq,inst Input values
  * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on time.
+ * @return Return false if the input values do not overlap on time.
  */
 bool
 intersection_tsequence_tinstant(const TSequence *seq, const TInstant *inst,
@@ -2937,7 +2937,7 @@ intersection_tsequence_tinstant(const TSequence *seq, const TInstant *inst,
  * @brief Temporally intersect two temporal values
  * @param[in] inst,seq Temporal values
  * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on time.
+ * @return Return false if the input values do not overlap on time.
  */
 bool
 intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,

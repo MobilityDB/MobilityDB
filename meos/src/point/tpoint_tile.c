@@ -270,7 +270,7 @@ bitmatrix_print(const BitMatrix *bm)
  * @param[in] ndims Number of dimensions of the grid. It is either 2 (for 2D),
  * 3 (for 3D or 2D+T) or 4 (3D+T)
  * @param[out] bm Bit matrix
- * @result Number of tiles set
+ * @return Number of tiles set
  */
 static int
 fastvoxel_bm(int *coords1, double *eps1, int *coords2, double *eps2,
@@ -1002,7 +1002,7 @@ tpointseqset_set_tiles(const TSequenceSet *ss, bool hasz, bool hast,
  * @param[in] temp Temporal point
  * @param[in] state Grid definition
  * @param[out] bm Bit matrix
- * @result Number of tiles set
+ * @return Number of tiles set
  */
 int
 tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,

@@ -84,7 +84,7 @@
  * @param[in] ss Temporal sequence set
  * @param[in] t Timestamp
  * @param[out] loc Location
- * @result Return true if the timestamp is contained in the temporal sequence
+ * @return Return true if the timestamp is contained in the temporal sequence
  * set.
  */
 bool
@@ -121,7 +121,7 @@ tsequenceset_find_timestamptz(const TSequenceSet *ss, TimestampTz t, int *loc)
  * @param[in] sequences Array of temporal sequences
  * @param[in] count Number of elements in the input array
  * @param[out] newcount Number of elements in the output array
- * @result Array of normalized temporal sequences values
+ * @return Array of normalized temporal sequences values
  * @pre Each sequence in the input array is normalized.
  * When merging sequences, the test whether the value is the same
  * at the common instant should be ensured by the calling function.
@@ -447,7 +447,7 @@ tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
  * @param[in] maxdist Maximum distance to split the temporal sequence
  * @param[in] maxt Maximum time interval to split the temporal sequence
  * @param[out] nsplits Number of splits
- * @result Array of indices at which the temporal sequence is split
+ * @return Array of indices at which the temporal sequence is split
  */
 static int *
 ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
@@ -770,7 +770,7 @@ tpointseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
  * sequence set
  * @param[in] ss Temporal sequence set
  * @param[out] count Number of elements in the output array
- * @result Array of Datums
+ * @return Array of Datums
  * @csqlfn #Temporal_valueset()
  */
 Datum *
@@ -1349,7 +1349,7 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
  * @param[in] t Timestamp
  * @param[in] strict True if exclusive bounds are taken into account
  * @param[out] result Base value
- * @result Return true if the timestamp is contained in the temporal sequence set
+ * @return Return true if the timestamp is contained in the temporal sequence set
  * @pre A bounding box test has been done before by the calling function
  * @csqlfn #Temporal_value_at_timestamptz()
  */
@@ -1842,7 +1842,7 @@ tsequenceset_shift_scale_time(const TSequenceSet *ss, const Interval *shift,
  * @param[in] ss,seq Input values
  * @param[in] mode Enumeration for either intersect or synchronize
  * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on time
+ * @return Return false if the input values do not overlap on time
  */
 bool
 synchronize_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
@@ -1890,7 +1890,7 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
  * @param[in] ss1,ss2 Input values
  * @param[in] mode Intersection or synchronization (with or without adding crossings)
  * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on time
+ * @return Return false if the input values do not overlap on time
  */
 bool
 synchronize_tsequenceset_tsequenceset(const TSequenceSet *ss1,
@@ -1947,7 +1947,7 @@ synchronize_tsequenceset_tsequenceset(const TSequenceSet *ss1,
  * @brief Temporally intersect two temporal values
  * @param[in] ss,inst Input values
  * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on time
+ * @return Return false if the input values do not overlap on time
  */
 bool
 intersection_tsequenceset_tinstant(const TSequenceSet *ss, const TInstant *inst,
@@ -1970,7 +1970,7 @@ intersection_tsequenceset_tinstant(const TSequenceSet *ss, const TInstant *inst,
  * @brief Temporally intersect two temporal values
  * @param[in] inst,ss Input values
  * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on time
+ * @return Return false if the input values do not overlap on time
  */
 bool
 intersection_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
@@ -1983,7 +1983,7 @@ intersection_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ss,
  * @brief Temporally intersect two temporal values
  * @param[in] ss,seq Input values
  * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on time
+ * @return Return false if the input values do not overlap on time
  */
 bool
 intersection_tsequenceset_tdiscseq(const TSequenceSet *ss,
@@ -2037,7 +2037,7 @@ intersection_tsequenceset_tdiscseq(const TSequenceSet *ss,
  * @brief Temporally intersect two temporal values
  * @param[in] seq,ss Input values
  * @param[out] inter1,inter2 Output values
- * @result Return false if the input values do not overlap on time
+ * @return Return false if the input values do not overlap on time
  */
 bool
 intersection_tdiscseq_tsequenceset(const TSequence *seq,
@@ -2051,7 +2051,7 @@ intersection_tdiscseq_tsequenceset(const TSequence *seq,
  * @param[in] seq,ss Input values
  * @param[in] mode Enumeration for either intersect or synchronize
  * @param[out] inter1, inter2 Output values
- * @result Return false if the input values do not overlap on times
+ * @return Return false if the input values do not overlap on times
  */
 bool
 intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss,

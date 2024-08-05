@@ -1876,13 +1876,18 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
 
 /**
  * @ingroup meos_setspan_bbox
- * @brief Return an array of spans from the composing values of a set
+ * @brief Return an array of spans from the values of a set
  * @param[in] s Set
+ * @return On error return @p NULL
+ * @csqlfn #Set_spans()
  */
 Span *
 set_spans(const Set *s)
 {
-  assert(s); assert(set_type(s->settype));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s))
+    return NULL;
+
   /* Output the composing spans */
   Span *result = palloc(sizeof(Span) * s->count);
   for (int i = 0; i < s->count; i++)
@@ -1892,21 +1897,25 @@ set_spans(const Set *s)
 
 /**
  * @ingroup meos_setspan_bbox
- * @brief Return an array of spans from the composing values of a set
+ * @brief Return an array of N spans from the values of a set
  * @param[in] s Set
- * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one span per element.
+ * @param[in] span_count Number of spans
  * @param[out] count Number of elements in the output array
+ * @return On error return @p NULL
+ * @csqlfn #Set_split_n_spans()
  */
 Span *
-set_spans_merge(const Set *s, int max_count, int *count)
+set_split_n_spans(const Set *s, int span_count, int *count)
 {
-  assert(s); assert(count); assert(set_type(s->settype));
-  int nvalues = (max_count < 1) ? s->count : max_count;
-  Span *result = palloc(sizeof(Span) * nvalues);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
+      ! ensure_numset_type(s->settype) || ! ensure_positive(span_count))
+    return NULL;
+
+  Span *result = palloc(sizeof(Span) * s->count);
 
   /* Output the composing spans */
-  if (max_count < 1 || s->count <= max_count)
+  if (s->count <= span_count)
   {
     for (int i = 0; i < s->count; i++)
       set_set_subspan(s, i, i, &result[i]);
@@ -1916,11 +1925,11 @@ set_spans_merge(const Set *s, int max_count, int *count)
 
   /* Merge consecutive values to reach the maximum number of span */
   /* Minimum number of values merged together in an output span */
-  int size = s->count / max_count;
+  int size = s->count / span_count;
   /* Number of output spans that result from merging (size + 1) values */
-  int remainder = s->count % max_count;
+  int remainder = s->count % span_count;
   int i = 0; /* Loop variable for input values */
-  for (int k = 0; k < max_count; k++)
+  for (int k = 0; k < span_count; k++)
   {
     int j = i + size;
     if (k < remainder)
@@ -1929,7 +1938,44 @@ set_spans_merge(const Set *s, int max_count, int *count)
     i = j;
   }
   assert(i == s->count);
-  *count = max_count;
+  *count = span_count;
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_bbox
+ * @brief Return an array of spans from a set obtained by merging consecutive
+ * elements
+ * @param[in] s Set
+ * @param[in] elems_per_span Number of elements merge into an ouput span
+ * @param[out] count Number of elements in the output array
+ * @return On error return @p NULL
+ * @csqlfn #Set_split_each_n_spans()
+ */
+Span *
+set_split_each_n_spans(const Set *s, int32 elems_per_span, int *count)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
+      ! ensure_numset_type(s->settype) || ! ensure_positive(elems_per_span))
+    return NULL;
+
+  int nspans = ceil((double) s->count / (double) elems_per_span);
+  Span *result = palloc(sizeof(Span) * nspans);
+  int k = 0;
+  for (int i = 0; i < s->count; ++i)
+  {
+    if (i % elems_per_span == 0)
+      value_set_span(SET_VAL_N(s, i), s->basetype, &result[k++]);
+    else
+    {
+      Span span;
+      value_set_span(SET_VAL_N(s, i), s->basetype, &span);
+      span_expand(&span, &result[k - 1]);
+    }
+  }
+  assert(k == nspans);
+  *count = k;
   return result;
 }
 

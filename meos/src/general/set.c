@@ -136,7 +136,7 @@ ensure_same_set_type(const Set *s1, const Set *s2)
  * @param[in] s Set
  * @param[in] d Value
  * @param[out] loc Location
- * @result Return true if the value is contained in the set
+ * @return Return true if the value is contained in the set
  */
 bool
 set_find_value(const Set *s, Datum d, int *loc)
@@ -170,7 +170,7 @@ set_find_value(const Set *s, Datum d, int *loc)
  * @param[in] s Set
  * @param[in] d Value
  * @param[out] loc Location of the value if found
- * @result Return true if the value is contained in the vecctor
+ * @return Return true if the value is contained in the vecctor
  * @note Contrary to function `set_find_value`, if the value is not found the
  * returned location is always 0.
  */
@@ -1588,7 +1588,7 @@ geoset_end_value(const Set *s)
  * @param[in] s Set
  * @param[in] n Number
  * @param[out] result Value
- * @result Return true if the value is found
+ * @return Return true if the value is found
  * @note It is assumed that n is 1-based
  * @csqlfn #Set_value_n()
  */
@@ -1611,7 +1611,7 @@ set_value_n(const Set *s, int n, Datum *result)
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
- * @result Return true if the value is found
+ * @return Return true if the value is found
  * @note It is assumed that n is 1-based
  * @csqlfn #Set_value_n()
  */
@@ -1633,7 +1633,7 @@ intset_value_n(const Set *s, int n, int *result)
  * @param[in] s Integer set
  * @param[in] n Number
  * @param[out] result Value
- * @result Return true if the value is found
+ * @return Return true if the value is found
  * @note It is assumed that n is 1-based
  * @csqlfn #Set_value_n()
  */
@@ -1654,7 +1654,7 @@ bigintset_value_n(const Set *s, int n, int64 *result)
  * @param[in] s Float set
  * @param[in] n Number
  * @param[out] result Value
- * @result Return true if the value is found
+ * @return Return true if the value is found
  * @note It is assumed that n is 1-based
  * @csqlfn #Set_value_n()
  */
@@ -1676,7 +1676,7 @@ floatset_value_n(const Set *s, int n, double *result)
  * @param[in] s Text set
  * @param[in] n Number
  * @param[out] result Value
- * @result Return true if the value is found
+ * @return Return true if the value is found
  * @note It is assumed that n is 1-based
  * @csqlfn #Set_value_n()
  */
@@ -1697,7 +1697,7 @@ textset_value_n(const Set *s, int n, text **result)
  * @param[in] s Date set
  * @param[in] n Number
  * @param[out] result Date
- * @result Return true if the date is found
+ * @return Return true if the date is found
  * @note It is assumed that n is 1-based
  * @csqlfn #Set_value_n()
  */
@@ -1719,7 +1719,7 @@ dateset_value_n(const Set *s, int n, DateADT *result)
  * @param[in] s Timestamptz set
  * @param[in] n Number
  * @param[out] result Timestamptz
- * @result Return true if the timestamptz is found
+ * @return Return true if the timestamptz is found
  * @note It is assumed that n is 1-based
  * @csqlfn #Set_value_n()
  */
@@ -1741,7 +1741,7 @@ tstzset_value_n(const Set *s, int n, TimestampTz *result)
  * @param[in] s Geo set
  * @param[in] n Number
  * @param[out] result Value
- * @result Return true if the value is found
+ * @return Return true if the value is found
  * @note It is assumed that n is 1-based
  * @csqlfn #Set_value_n()
  */

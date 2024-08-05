@@ -497,7 +497,7 @@ distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
  * begining but contains the minimum distance found in the previous
  * sequences of a temporal sequence set
  * @param[out] result Instant with the minimum distance
- * @result Minimum distance
+ * @return Minimum distance
  */
 static double
 nai_tpointseq_discstep_geo_iter(const TSequence *seq, const LWGEOM *geo,
@@ -561,7 +561,6 @@ nai_tpointseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo)
  * @param[in] inst1,inst2 Temporal segment
  * @param[in] geo Geometry/geography
  * @param[out] t Timestamp
- * @result Distance
  */
 static double
 nai_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,

@@ -71,107 +71,226 @@ SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 SELECT stboxes(tgeompoint 'Point(1 1)@2000-01-01');
 SELECT stboxes(tgeompoint '{Point(1 1)@2000-01-01}');
 
+-------------------------------------------------------------------------------
+
 -- Sequence
--- Maximum boxes set by default to 1
-SELECT stboxesMerge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]');
-SELECT stboxesMerge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 1);
-SELECT stboxesMerge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 2);
-SELECT stboxesMerge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 3);
-SELECT stboxesMerge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 4);
-SELECT stboxesMerge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 5);
-SELECT stboxesMerge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 6);
+SELECT splitNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 1);
+SELECT splitNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 2);
+SELECT splitNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 3);
+SELECT splitNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 4);
+SELECT splitNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 5);
+SELECT splitNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 6);
 -- Sequence set
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 1);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 2);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 3);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 4);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 5);
 
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
 [Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 1);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
 [Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 2);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
 [Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 3);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
 [Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 4);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
 [Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 5);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
 [Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 6);
 
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 1);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 2);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 3);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 4);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 5);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 6);
 
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 1);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 2);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 3);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 4);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 5);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
 [Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 6);
 
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 1);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 2);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 3);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 4);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 5);
-SELECT stboxesMerge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
 Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 6);
+/* Errors */
+SELECT splitNStboxes(tgeompoint 'Point(1 1)@2000-01-01', -1);
+
+-------------------------------------------------------------------------------
+
+-- Instant and instantaneous sequence and sequence set
+SELECT splitEachNStboxes(tgeompoint 'Point(1 1)@2000-01-01', 1);
+SELECT splitEachNStboxes(tgeompoint '{Point(1 1)@2000-01-01}', 1);
+SELECT splitEachNStboxes(tgeompoint '[Point(1 1)@2000-01-01]', 1);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01]}', 1);
+-- Discrete Sequence
+SELECT splitEachNStboxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05}', 1);
+SELECT splitEachNStboxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05}', 2);
+SELECT splitEachNStboxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05}', 3);
+SELECT splitEachNStboxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05}', 4);
+SELECT splitEachNStboxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05}', 5);
+SELECT splitEachNStboxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05}', 6);
+-- Sequence
+SELECT splitEachNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 1);
+SELECT splitEachNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 2);
+SELECT splitEachNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 3);
+SELECT splitEachNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 4);
+SELECT splitEachNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 5);
+SELECT splitEachNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 6);
+-- Sequence set
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 1);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 2);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 3);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 4);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06, Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09,Point(10 2)@2000-01-10]}', 5);
+
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+[Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
+[Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 1);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+[Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
+[Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 2);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+[Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
+[Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 3);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+[Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
+[Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 4);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+[Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
+[Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 5);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03],
+[Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05], [Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07],
+[Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 6);
+
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 1);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 2);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 3);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 4);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 5);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04], [Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08], [Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 6);
+
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+[Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 1);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+[Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 2);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+[Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 3);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+[Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 4);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+[Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 5);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03],
+[Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09], [Point(10 2)@2000-01-10]}', 6);
+
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 1);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 2);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 3);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 4);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 5);
+SELECT splitEachNStboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03,
+Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1)@2000-01-07,
+Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 6);
+
+/* Errors */
+SELECT splitEachNStboxes(tgeompoint 'Point(1 1)@2000-01-01', -1);
 
 -------------------------------------------------------------------------------
 
@@ -180,81 +299,158 @@ SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10
 -- 3D
 SELECT stboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))');
 
+/* Errors */
+SELECT stboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))');
+SELECT stboxes(geometry 'Linestring empty');
+
+-------------------------------------------------------------------------------
+
 -- Linestring
-SELECT stboxesMerge(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)');
-SELECT stboxesMerge(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
-SELECT stboxesMerge(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
-SELECT stboxesMerge(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 3);
-SELECT stboxesMerge(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 4);
-SELECT stboxesMerge(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 5);
-SELECT stboxesMerge(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 6);
+SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
+SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
+SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 3);
+SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 4);
+SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 5);
+SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 6);
 --3D
-SELECT stboxesMerge(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)');
-SELECT stboxesMerge(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 1);
-SELECT stboxesMerge(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 2);
-SELECT stboxesMerge(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 3);
-SELECT stboxesMerge(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 4);
-SELECT stboxesMerge(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 5);
-SELECT stboxesMerge(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6);
+SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 1);
+SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 2);
+SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 3);
+SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 4);
+SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 5);
+SELECT splitNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6);
 --4D
-SELECT stboxesMerge(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)');
-SELECT stboxesMerge(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 1);
-SELECT stboxesMerge(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 2);
-SELECT stboxesMerge(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 3);
-SELECT stboxesMerge(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 4);
-SELECT stboxesMerge(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 5);
-SELECT stboxesMerge(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 6);
+SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 1);
+SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 2);
+SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 3);
+SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 4);
+SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 5);
+SELECT splitNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 6);
 
 -- Multilinestring
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 1);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 2);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 3);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 4);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 5);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 1);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 2);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 3);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 4);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 5);
 
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 1);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 2);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 3);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 4);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 5);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 1);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 2);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 3);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 4);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 5);
 
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 1);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 2);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 3);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 4);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 5);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 1);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 2);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 3);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 4);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 5);
 
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
 
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
 
 -- 3D
-SELECT stboxesMerge(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 1);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 2);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 3);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 4);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 5);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 6);
-SELECT stboxesMerge(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 12);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 1);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 2);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 3);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 4);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 5);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 6);
+SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 12);
+
+/* Errors */
+SELECT splitNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
+SELECT splitNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
+SELECT splitNStboxes(geometry 'Linestring empty', 1);
+
+-------------------------------------------------------------------------------
+
+-- Linestring
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 3);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 4);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 5);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 6);
+--3D
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 1);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 2);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 3);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 4);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 5);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6);
+--4D
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 1);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 2);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 3);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 4);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 5);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1 1 1,2 2 1 1,3 1 1 1,4 2 1 1,5 1 1 1)', 6);
+
+-- Multilinestring
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 1);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 2);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 3);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 4);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10 2))', 5);
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 1);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 2);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 3);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 4);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2,7 1,8 2,9 1,10 2))', 5);
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 1);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 2);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 3);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 4);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1),(4 2,5 1,6 2),(7 1,8 2,9 1,10 2))', 5);
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
+
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 1);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 2);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 3);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 4);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1,2 2),(3 1,4 2),(5 1,6 2),(7 1,8 2),(9 1,10 2))', 5);
+
+-- 3D
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 1);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 2);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 3);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 4);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 5);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 6);
+SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 12);
+
+/* Errors */
+SELECT splitEachNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
+SELECT splitEachNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
+SELECT splitEachNStboxes(geometry 'Linestring empty', 1);
 
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp::stbox IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp::stbox IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxesMerge(temp, 1) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxesMerge(temp, 2) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxesMerge(temp, 3) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxesMerge(temp, 4) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE stboxesMerge(temp, 5) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE splitNStboxes(temp, 1) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE splitNStboxes(temp, 2) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE splitNStboxes(temp, 3) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE splitNStboxes(temp, 4) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE splitNStboxes(temp, 5) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 

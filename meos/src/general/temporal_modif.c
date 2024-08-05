@@ -130,7 +130,7 @@ tsequence_merge(const TSequence *seq1, const TSequence *seq2)
  * may be a period. For this reason two passes are necessary.
  * @param[in] sequences Array of temporal sequences
  * @param[in] count Number of elements in the array
- * @result Result value that can be either a temporal instant or a temporal
+ * @return Result value that can be either a temporal instant or a temporal
  * discrete sequence
  */
 Temporal *
@@ -160,7 +160,6 @@ tdiscseq_merge_array(const TSequence **sequences, int count)
  * @param[in] sequences Array of values
  * @param[in] count Number of elements in the array
  * @param[out] totalcount Number of elements in the resulting array
- * @result Array of merged sequences
  * @note The values in the array may overlap on a single instant.
  */
 static TSequence **
@@ -369,8 +368,8 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
  * @ingroup meos_temporal_modif
  * @brief Merge two temporal values
  * @param[in] temp1,temp2 Temporal values
- * @result Return NULL if both arguments are NULL
- * If one argument is null the other argument is output.
+ * @return Return @p NULL if both arguments are @p NULL.
+ * If one argument is null, return the other argument.
  * @csqlfn #Temporal_merge()
  */
 Temporal *
@@ -424,7 +423,6 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
  * @param[in] count Number of values in the array
  * @param[in] subtype common subtype
  * @param[in] interp Interpolation
- * @result  Array of output values
  */
 static Temporal **
 temporalarr_convert_subtype(const Temporal **temparr, int count, uint8 subtype,
@@ -1519,7 +1517,7 @@ temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
  * @param[in] maxt Maximum time interval for defining a gap
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
- * @result When the sequence passed as first argument has space for adding the
+ * @return When the sequence passed as first argument has space for adding the
  * instant, the function returns the updated sequence. Otherwise, a NEW 
  * sequence is returned and the input sequence is freed.
  * @note Always use the function to overwrite the existing sequence as in: 
@@ -1789,7 +1787,7 @@ tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
  * @param[in] maxt Maximum time interval for defining a gap
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
- * @result When the sequence set passed as first argument has space for adding
+ * @return When the sequence set passed as first argument has space for adding
  * the instant, the  function returns the sequence set. Otherwise, a NEW
  * sequence set is returned and the input sequence set is freed.
  * @note Always use the function to overwrite the existing sequence set as in: 
@@ -2035,7 +2033,7 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
  * @param[in] maxt Maximum time interval for defining a gap
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
- * @result When the temporal value passed as first argument has space for 
+ * @return When the temporal value passed as first argument has space for 
  * adding the instant, the function returns the temporal value. Otherwise,
  * a NEW temporal value is returned and the input value is freed.
  * @note Always use the function to overwrite the existing temporal value as in: 

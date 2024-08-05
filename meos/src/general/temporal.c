@@ -561,7 +561,7 @@ temporal_bbox_ptr(const Temporal *temp)
  * @param[in] temp1,temp2 Temporal values
  * @param[in] mode Either intersection or synchronization
  * @param[out] inter1,inter2 Output values
- * @result Return false if the values do not overlap on time
+ * @return Return false if the values do not overlap on time
  */
 bool
 intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
@@ -1232,9 +1232,9 @@ temporal_to_tstzspan(const Temporal *temp)
 void
 tnumber_set_span(const Temporal *temp, Span *s)
 {
-  assert(temp); assert(s);
-  assert(tnumber_type(temp->temptype));
+  assert(temp); assert(s); assert(tnumber_type(temp->temptype));
   assert(temptype_subtype(temp->subtype));
+
   meosType basetype = temptype_basetype(temp->temptype);
   meosType spantype = basetype_spantype(basetype);
   if (temp->subtype == TINSTANT)
@@ -1673,6 +1673,7 @@ temporal_to_tsequenceset(const Temporal *temp, const char *interp_str)
  * @brief Return a temporal value transformed to a given interpolation
  * @param[in] temp Temporal value
  * @param[in] interp Interpolation
+ * @return On error return @p NULL
  * @csqlfn #Temporal_set_interp()
  */
 Temporal *
@@ -1683,15 +1684,17 @@ temporal_set_interp(const Temporal *temp, interpType interp)
       ! ensure_valid_interp(temp->temptype, interp))
     return NULL;
 
-  Temporal *result;
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tinstant_to_tsequence((TInstant *) temp, interp);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tsequence_set_interp((TSequence *) temp, interp);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tsequenceset_set_interp((TSequenceSet *) temp,
-      interp);
-  return result;
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tinstant_to_tsequence((TInstant *) temp, interp);
+    case TSEQUENCE:
+      return (Temporal *) tsequence_set_interp((TSequence *) temp, interp);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tsequenceset_set_interp((TSequenceSet *) temp,
+        interp);
+  }
 }
 
 /*****************************************************************************/
@@ -3003,17 +3006,19 @@ temporal_segments(const Temporal *temp, int *count)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
     return NULL;
-  if (temp->subtype == TINSTANT)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The temporal value must be of subtype sequence (set)");
-    return NULL;
-  }
 
-  return (temp->subtype == TSEQUENCE) ?
-    tsequence_segments((TSequence *) temp, count) :
-    /* temp->subtype == TSEQUENCESET */
-    tsequenceset_segments((TSequenceSet *) temp, count);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "The temporal value must be of subtype sequence (set)");
+      return NULL;
+    case TSEQUENCE:
+      return tsequence_segments((TSequence *) temp, count);
+    default: /* TSEQUENCESET */
+      return tsequenceset_segments((TSequenceSet *) temp, count);
+  }
 }
 
 /**
@@ -3880,7 +3885,7 @@ temporal_gt(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_temporal_accessor
  * @brief Return the 32-bit hash value of a temporal value
  * @param[in] temp Temporal value
- * @result On error return @p INT_MAX
+ * @return On error return @p INT_MAX
  * @csqlfn #Temporal_hash()
  */
 uint32

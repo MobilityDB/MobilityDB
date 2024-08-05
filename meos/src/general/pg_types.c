@@ -1182,7 +1182,7 @@ MEOSAdjustTimestampForTypmod(Timestamp *time, int32 typmod)
  * @param[in] str String
  * @param[in] typmod Precision
  * @param[in] withtz True when using timezone
- * @result On error return DT_NOEND
+ * @return On error return DT_NOEND
  * @note The function returns a TimestampTz that must be cast to a Timestamp
  * when calling the function with the last argument to false
  */

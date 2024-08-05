@@ -106,7 +106,7 @@ tpoint_force2d(const Temporal *temp)
  * @param[in] inst1,inst2 Temporal values
  * @param[in] value Base value
  * @param[out] t Timestamp
- * @result Return true if the point is found in the temporal point
+ * @return Return true if the point is found in the temporal point
  * @pre The segment is not constant and has linear interpolation
  * @note The resulting timestamptz may be at an exclusive bound
  */
@@ -150,7 +150,7 @@ tpointsegm_timestamp_at_value1_iter(const TInstant *inst1,
  * @param[in] seq Temporal point sequence
  * @param[in] value Base value
  * @param[out] t Timestamp
- * @result Return true if the point is found in the temporal point
+ * @return Return true if the point is found in the temporal point
  * @pre The point is known to belong to the temporal sequence (taking into
  * account roundoff errors), the temporal sequence has linear interpolation,
  * and is simple
@@ -298,7 +298,7 @@ clipt(double p, double q, double *t0, double *t1)
  * @param[out] point3,point4 Output points
  * @param[out] p3_inc,p4_inc Are the points included or not in the box?
  * These are only written/returned when @p border_inc is false
- * @result True if the line segment defined by p1,p2 intersects the bounding
+ * @return True if the line segment defined by p1,p2 intersects the bounding
  * box, false otherwise.
  * @note It is possible to mix 2D/3D geometries, the Z dimension is only
  * considered if both the temporal point and the box have Z dimension
