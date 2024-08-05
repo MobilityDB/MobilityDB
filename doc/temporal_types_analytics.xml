@@ -313,7 +313,7 @@ SELECT dynTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03
 				<listitem id="bucketList">
 					<indexterm><primary><varname>bucketList</varname></primary></indexterm>
 					<para>Return a set of buckets that cover the span with buckets of the same size or duration aligned with the origin &SRF;</para>
-					<para><varname>bucketList(bounds unitspan,size number,origin number=0) → {(index,span)}</varname></para>
+					<para><varname>bucketList(bounds numberspan,size number,origin number=0) → {(index,span)}</varname></para>
 					<para><varname>bucketList(bounds tstzspan,duration interval,origin timestamptz='2000-01-03') → </varname></para>
 					<para><varname>  {(index,span)}</varname></para>
 					<para>The result is a set of pairs <varname>(index,span)</varname>. If the origin is not specified, it is set by default to 0 for number spans and Monday, January 3, 2000 for periods. The indices start by 1.</para>
@@ -408,56 +408,58 @@ SELECT periodBucket('2001-01-04', interval '1 week', '2001-01-07');
 			<title>Tile Functions</title>
 
 			<itemizedlist>
-				<listitem id="tileList">
-					<indexterm><primary><varname>tileList</varname></primary></indexterm>
+				<listitem id="valueTimeTiles">
+					<indexterm><primary><varname>valueTimeTiles</varname></primary></indexterm>
+					<indexterm><primary><varname>spaceTiles</varname></primary></indexterm>
+					<indexterm><primary><varname>spaceTimeTiles</varname></primary></indexterm>
 					<para>Return a set of tiles that covers the box with multidimensional tiles of the same size and duration &Z_support; &SRF;</para>
 					<para><varname>tileList(bounds tbox,size float,duration interval,vorigin float=0,</varname></para>
 					<para><varname>  torigin timestamptz='2000-01-03') → {(index,tile)}</varname></para>
-					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,] </varname></para>
+					<para><varname>spaceTiles(bounds stbox,xsize float,[ysize float,zsize float,] </varname></para>
 					<para><varname>  sorigin geompoint='Point(0 0 0)',borderInc bool=true) → {(index,tile)}</varname></para>
-					<para><varname>tileList(bounds stbox,xsize float,[ysize float,zsize float,]duration interval,</varname></para>
+					<para><varname>spaceTimeTiles(bounds stbox,xsize float,[ysize float,zsize float,]duration interval,</varname></para>
 					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03',</varname></para>
 					<para><varname>  borderInc bool=true) → {(index,tile)}</varname></para>
 					<para>The result is a set of pairs <varname>(index,tile)</varname>. If the origin of the value and/or time dimensions are not specified, they are set by default to 0 or <varname>'Point(0 0 0)'</varname> for the value dimension (depending on the box type) and to Monday, January 3, 2000 for the time dimension. The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus, extra tiles containing the border are generated.</para>
 					<para>In the case of a spatiotemporal grid, <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. The SRID of the tile coordinates is determined by the input box and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT (gr).index, (gr).tile
-FROM (SELECT tileList(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0, '2 days')
+FROM (SELECT valueTimeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0, '2 days')
   AS gr) t;
 -- 1 | TBOX XT([14,16),[2001-01-15,2001-01-17))
 -- 2 | TBOX XT([16,18),[2001-01-15,2001-01-17))
 -- 3 | TBOX XT([18,20),[2001-01-15,2001-01-17))
 -- ...
-SELECT tileList(tfloat '[15@2001-01-15,25@2001-01-25]'::tbox, 2.0, '2 days', 11.5);
+SELECT valueTimeTiles(tfloat '[15@2001-01-15,25@2001-01-25]'::tbox, 2.0, '2 days', 11.5);
 -- (1,"TBOX XT([13.5,15.5),[2001-01-15,2001-01-17))")
 -- (2,"TBOX XT([15.5,17.5),[2001-01-15,2001-01-17))")
 -- (3,"TBOX XT([17.5,19.5),[2001-01-15,2001-01-17))")
 -- ...
-SELECT tileList(tgeompoint '[Point(3 3)@2001-01-15,
+SELECT spaceTiles(tgeompoint '[Point(3 3)@2001-01-15,
   Point(15 15)@2001-01-25]'::stbox, 2.0);
 -- (1,"STBOX X((2,2),(4,4))")
 -- (2,"STBOX X((4,2),(6,4))")
 -- (3,"STBOX X((6,2),(8,4))")
 -- ...
-SELECT tileList(tgeompoint 'SRID=3812;[Point(3 3)@2001-01-15,
+SELECT spaceTiles(tgeompoint 'SRID=3812;[Point(3 3)@2001-01-15,
   Point(15 15)@2001-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
 -- (1,"SRID=3812;STBOX X((3,3),(5,5))")
 -- (2,"SRID=3812;STBOX X((5,3),(7,5))")
 -- (3,"SRID=3812;STBOX X((7,3),(9,5))")
 -- ...
-SELECT tileList(tgeompoint '[Point(3 3 3)@2001-01-15,
+SELECT spaceTiles(tgeompoint '[Point(3 3 3)@2001-01-15,
   Point(15 15 15)@2001-01-25]'::stbox, 2.0, geometry 'Point(3 3 3)');
 -- (1,"STBOX Z((3,3,3),(5,5,5))")
 -- (2,"STBOX Z((5,3,3),(7,5,5))")
 -- (3,"STBOX Z((7,3,3),(9,5,5))")
 -- ...
-SELECT tileList(tgeompoint '[Point(3 3)@2001-01-15,
+SELECT spaceTimeTiles(tgeompoint '[Point(3 3)@2001-01-15,
   Point(15 15)@2001-01-25]'::stbox, 2.0, interval '2 days');
 -- (1,"STBOX XT(((2,2),(4,4)),[2001-01-15,2001-01-17))")
 -- (2,"STBOX XT(((4,2),(6,4)),[2001-01-15,2001-01-17))")
 -- (3,"STBOX XT(((6,2),(8,4)),[2001-01-15,2001-01-17))")
 -- ...
-SELECT tileList(tgeompoint '[Point(3 3 3)@2001-01-15,
+SELECT spaceTimeTiles(tgeompoint '[Point(3 3 3)@2001-01-15,
   Point(15 15 15)@2001-01-25]'::stbox, 2.0, interval '2 days',
   'Point(3 3 3)', '2001-01-15');
 -- (1,"STBOX ZT(((3,3,3),(5,5,5)),[2001-01-15,2001-01-17))")
@@ -467,27 +469,29 @@ SELECT tileList(tgeompoint '[Point(3 3 3)@2001-01-15,
 </programlisting>
 				</listitem>
 
-				<listitem id="tile">
-					<indexterm><primary><varname>tile</varname></primary></indexterm>
+				<listitem id="valueTimeTile">
+					<indexterm><primary><varname>valueTimeTile</varname></primary></indexterm>
+					<indexterm><primary><varname>spaceTile</varname></primary></indexterm>
+					<indexterm><primary><varname>spaceTimeTile</varname></primary></indexterm>
 					<para>Return the tile of the multidimensional grid that contains the value and the timestamp &Z_support;</para>
-					<para><varname>tile(value float,time timestamptz,size float,duration interval,</varname></para>
+					<para><varname>valueTimeTile(value float,time timestamptz,size float,duration interval,</varname></para>
 					<para><varname>  vorigin float=0.0,torigin timestamptz='2000-01-03') → tbox</varname></para>
-					<para><varname>tile(point geometry,xsize float,[ysize float,zsize float],</varname></para>
+					<para><varname>spaceTile(point geometry,xsize float,[ysize float,zsize float],</varname></para>
 					<para><varname>  sorigin geompoint='Point(0 0 0)') → stbox</varname></para>
-					<para><varname>tile(point geometry,time timestamptz,xsize float,[ysize float,zsize float,]duration</varname></para>
+					<para><varname>spaceTimeTile(point geometry,time timestamptz,xsize float,[ysize float,zsize float,]duration</varname></para>
 					<para><varname>  interval,sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03') → stbox</varname></para>
 					<para>If the origin of the value and/or time dimensions are not specified, they are set by default to 0 or <varname>Point(0 0 0)</varname> for the value dimension and Monday, January 3, 2000 for the time dimension, respectively.</para>
 					<para>In the case of a spatiotemporal grid, <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. The SRID of the tile coordinates is determined by the input point and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT tile(15, '2001-01-15', 2, interval '2 days');
+SELECT valueTimeTile(15, '2001-01-15', 2, interval '2 days');
 -- TBOX XT([14,16),[2001-01-15,2001-01-17))
-SELECT tile(15, '2001-01-15', 2, interval '2 days', 1, '2001-01-02');
+SELECT valueTimeTile(15, '2001-01-15', 2, interval '2 days', 1, '2001-01-02');
 -- TBOX XT([15,17),[2001-01-14,2001-01-16))
-SELECT tile(geometry 'Point(1 1 1)', 2.0);
+SELECT spaceTile(geometry 'Point(1 1 1)', 2.0);
 -- STBOX Z((0,0,0),(2,2,2))
-SELECT tile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days');
+SELECT spaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days');
 -- STBOX XT(((0,0),(2,2)),[2001-01-01, 2001-01-03))
-SELECT tile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days',
+SELECT spaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 days',
   'Point(1 1)', '2001-01-02');
 -- STBOX XT(((1,1),(3,3)),[2000-12-31, 2001-01-02))
 </programlisting>

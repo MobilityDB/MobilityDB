@@ -115,7 +115,7 @@ PG_FUNCTION_INFO_V1(Pose_to_geom);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Transforms the pose into a geometry point
- * @sqlfunc geometry()
+ * @sqlfn geometry()
  */
 Datum
 Pose_to_geom(PG_FUNCTION_ARGS)

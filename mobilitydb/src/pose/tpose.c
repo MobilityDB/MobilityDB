@@ -89,7 +89,7 @@ PG_FUNCTION_INFO_V1(Tpose_to_tgeompoint);
 /**
  * @ingroup mobilitydb_tgeometry_accessor
  * @brief Return the end instant of a temporal value
- * @sqlfunc endInstant()
+ * @sqlfn endInstant()
  */
 Datum
 Tpose_to_tgeompoint(PG_FUNCTION_ARGS)

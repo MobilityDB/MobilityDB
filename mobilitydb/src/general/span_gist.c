@@ -30,8 +30,7 @@
 /**
  * @file
  * @brief R-tree GiST index for span and span set types
- *
- * These functions are based on those in the file `rangetypes_gist.c`.
+ * @note These functions are based on those in the file `rangetypes_gist.c`
  */
 
 #include "pg_general/span_gist.h"
@@ -60,7 +59,6 @@
 
 /**
  * @brief Leaf-level consistency for span types
- *
  * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
@@ -103,7 +101,6 @@ span_index_consistent_leaf(const Span *key, const Span *query,
 
 /**
  * @brief GiST internal-page consistency for span types
- *
  * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
@@ -311,9 +308,8 @@ PGDLLEXPORT Datum Span_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_penalty);
 /**
  * @brief GiST page split penalty function for spans
- *
- * The penalty function has the following goals (in order from most to least
- * important):
+ * @details The penalty function has the following goals (in order from most to
+ * least important):
  * - Avoid broadening (as determined by dist_double_value_value) the original
  *   predicate
  * - Favor adding spans to narrower original predicates
@@ -366,8 +362,8 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
   } while (0)
 
 /**
- * @brief Trivial split: half of entries will be placed on one page
- * and the other half on the other page
+ * @brief Trivial split: half of entries will be placed on one page and the
+ * other half on the other page
  */
 static void
 span_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
@@ -398,7 +394,7 @@ span_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 }
 
 /**
- * @brief Structure keeping context for the function span_gist_consider_split
+ * @brief Structure keeping context for the function #Span_gist_consider_split
  */
 typedef struct
 {
@@ -834,8 +830,7 @@ PGDLLEXPORT Datum Span_gist_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_gist_picksplit);
 /**
  * @brief GiST picksplit method for span types
- *
- * It splits a list of spans into quadrants by choosing a central 4D
+ * @details It splits a list of spans into quadrants by choosing a central 4D
  * point as the median of the coordinates of the spans.
  */
 Datum

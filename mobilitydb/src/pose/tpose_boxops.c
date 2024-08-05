@@ -61,7 +61,7 @@ PG_FUNCTION_INFO_V1(Pose_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_cast
  * @brief Return the bounding box of the network point value
- * @sqlfunc stbox()
+ * @sqlfn stbox()
  * @sqlop @p ::
  */
 Datum
@@ -78,7 +78,7 @@ PG_FUNCTION_INFO_V1(Pose_timestamp_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_cast
  * @brief Transform a network point and a timestamp to a spatiotemporal box
- * @sqlfunc stbox()
+ * @sqlfn stbox()
  * @sqlop @p
  */
 Datum
@@ -96,7 +96,7 @@ PG_FUNCTION_INFO_V1(Pose_period_to_stbox);
 /**
  * @ingroup mobilitydb_temporal_cast
  * @brief Transform a network point and a period to a spatiotemporal box
- * @sqlfunc stbox()
+ * @sqlfn stbox()
  * @sqlop @p
  */
 Datum

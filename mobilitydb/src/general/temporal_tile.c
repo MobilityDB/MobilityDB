@@ -239,15 +239,15 @@ Tstzspan_bucket(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Tbox_tile_list(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_tile_list);
+PGDLLEXPORT Datum Tbox_value_time_tiles(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_value_time_tiles);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the tile list of a temporal box
- * @sqlfn tileList()
+ * @sqlfn valueTimeTiles()
  */
 Datum
-Tbox_tile_list(PG_FUNCTION_ARGS)
+Tbox_value_time_tiles(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   TboxGridState *state;
@@ -318,15 +318,15 @@ Tbox_tile_list(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Tbox_tile(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_tile);
+PGDLLEXPORT Datum Tbox_value_time_tile(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_value_time_tile);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a tile in a multidimensional grid for temporal numbers
  * @sqlfn tile()
  */
 Datum
-Tbox_tile(PG_FUNCTION_ARGS)
+Tbox_value_time_tile(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
@@ -335,8 +335,8 @@ Tbox_tile(PG_FUNCTION_ARGS)
   Datum vorigin = PG_GETARG_DATUM(4);
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(5);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_TBOX_P(tbox_tile(value, t, vsize, duration, vorigin, torigin,
-    basetype));
+  PG_RETURN_TBOX_P(tbox_value_time_tile(value, t, vsize, duration, vorigin,
+    torigin, basetype));
 }
 
 /*****************************************************************************

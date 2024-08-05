@@ -620,14 +620,14 @@ static void
 tinstant_set_span(const TInstant *inst, Span *result)
 {
   assert(inst); assert(result);
-  span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t), 
+  span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, result);
   return;
 }
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of maximum n spans from a temporal instant
+ * @brief Return a singleton array of spans from a temporal instant
  * @param[in] inst Temporal value
  * @param[out] count Number of elements in the output array
  */
@@ -643,18 +643,19 @@ tinstant_spans(const TInstant *inst, int *count)
 
 
 /**
- * @brief Return an array of maximum n spans from the instants of a
- * temporal sequence with discrete interpolation (iterator function)
+ * @brief Return an array of spans from the instants of a temporal sequence
+ * with discrete interpolation (iterator function)
  * @param[in] seq Temporal value
  * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one span per segment
- * @param[out] result Temporal span
- * @return Number of elements in the array
+ * @param[out] result Array of spans. If `max_count` is < 1, the result
+ * contains one span per instant. Otherwise, consecutive instants are combined
+ * into a single span in the result to reach `max_count` number of spans.
+ * @return Number of elements in the output array
  */
 static int
 tdiscseq_spans_iter(const TSequence *seq, int max_count, Span *result)
 {
-  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE); 
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   assert(seq->count > 1);
   /* Temporal sequence has at least 2 instants */
   if (max_count < 1 || seq->count <= max_count)
@@ -696,18 +697,19 @@ tdiscseq_spans_iter(const TSequence *seq, int max_count, Span *result)
 }
 
 /**
- * @brief Return an array of maximum n spans from the segments of a
- * temporal sequence with continuous interpolation (iterator function)
+ * @brief Return an array of spans from the segments of a temporal sequence
+ * with continuous interpolation (iterator function)
  * @param[in] seq Temporal value
  * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one span per segment
- * @param[out] result Temporal span
- * @return Number of elements in the array
+ * @param[out] result Array of spans. If `max_count` is < 1, the result
+ * contains one span per segment. Otherwise, consecutive segments are combined
+ * into a single span in the result to reach `max_count` number of spans.
+ * @return Number of elements in the output array
  */
 static int
 tcontseq_spans_iter(const TSequence *seq, int max_count, Span *result)
 {
-  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE); 
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
   assert(seq->count > 1);
   /* Temporal sequence has at least 2 instants */
   int nsegs = seq->count - 1;
@@ -755,13 +757,17 @@ tcontseq_spans_iter(const TSequence *seq, int max_count, Span *result)
 }
 
 /**
- * @brief Return an array of maximum n spans from the instants or
- * segments of a temporal sequence (iterator function)
+ * @brief Return an array of spans from the instants or segments of a temporal
+ * sequence, where the choice between instants or segments depends,
+ * respectively, on whether the interpolation is discrete or continuous
+ * (iterator function)
  * @param[in] seq Temporal value
  * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one span per segment
- * @param[out] result Temporal span
- * @return Number of elements in the array
+ * @param[out] result Array of spans. If `max_count` is < 1, the result
+ * contains one span per instant or segment. Otherwise, consecutive instants
+ * or segments are combined into a single span in the result to reach
+ * `max_count` number of spans.
+ * @return Number of elements in the output array
  */
 static int
 tsequence_spans_iter(const TSequence *seq, int max_count, Span *result)
@@ -779,12 +785,17 @@ tsequence_spans_iter(const TSequence *seq, int max_count, Span *result)
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of maximum n spans from the segments
- * of a temporal number sequence
- * @param[in] seq Temporal sequence
+ * @brief Return an array of spans from the instants or segments of a temporal
+ * sequence, where the choice between instants or segments depends,
+ * respectively, on whether the interpolation is discrete or continuous
+ * (iterator function)
+ * @param[in] seq Temporal value
  * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one span per segment
- * @param[out] count Number of elements in the output array
+ * @param[out] count Number of elements in the resulting array
+ * @return Array of spans. If `max_count` is < 1, the result contains one span
+ * per instant or segment. Otherwise, consecutive instants or segments are
+ * combined into a single span in the result to reach `max_count` number of
+ * spans.
  */
 Span *
 tsequence_spans(const TSequence *seq, int max_count, int *count)
@@ -804,8 +815,10 @@ tsequence_spans(const TSequence *seq, int max_count, int *count)
  * @brief Return an array of spans from the segments of a temporal sequence set
  * @param[in] ss Temporal sequence set
  * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one span per segment
  * @param[out] count Number of elements in the output array
+ * @return Array of spans. If `max_count` is < 1, the result contains one span
+ * per segment. Otherwise, consecutive segments are combined into a single span
+ * in the result to reach `max_count` number of spans.
  */
 Span *
 tsequenceset_spans(const TSequenceSet *ss, int max_count, int *count)
@@ -876,12 +889,16 @@ tsequenceset_spans(const TSequenceSet *ss, int max_count, int *count)
 
 /**
  * @ingroup meos_temporal_bbox
- * @brief Return an array of spans from the segments of a temporal value
+ * @brief Return an array of spans from the instants or segments of a temporal
+ * value, where the choice between instants or segments depends, respectively,
+ * on whether the interpolation is discrete or continuous
  * @param[in] temp Temporal value
  * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one span per segment
  * @param[out] count Number of values of the output array
- * @return On error return @p NULL
+ * @return Array of spans. If `max_count` is < 1, the result contains one span
+ * per instant or segment. Otherwise, consecutive instants or segments are
+ * combined into a single span in the result to reach `max_count` number of
+ * spans. On error return @p NULL
  * @csqlfn #Temporal_spans()
  */
 Span *
@@ -910,7 +927,7 @@ temporal_spans(const Temporal *temp, int max_count, int *count)
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of maximum n temporal boxes from a temporal number
+ * @brief Return a singleton array of temporal boxes from a temporal number
  * instant
  * @param[in] inst Temporal value
  * @param[out] count Number of elements in the output array
@@ -926,18 +943,19 @@ tnumberinst_tboxes(const TInstant *inst, int *count)
 }
 
 /**
- * @brief Return an array of maximum n temporal boxes from the instants of a
- * temporal number sequence with discrete interpolation (iterator function)
+ * @brief Return an array of temporal boxes from the instants of a temporal
+ * number sequence with discrete interpolation (iterator function)
  * @param[in] seq Temporal value
  * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one box per segment
- * @param[out] result Temporal box
- * @return Number of elements in the array
+ * @param[out] result Array of boxes. If `max_count` is < 1, the result
+ * contains one box per instant. Otherwise, consecutive instants are combined
+ * into a single box in the result to reach `max_count` number of boxes.
+ * @return Number of elements in the output array
  */
 static int
 tnumberseq_disc_tboxes_iter(const TSequence *seq, int max_count, TBox *result)
 {
-  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE); 
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   assert(seq->count > 1);
   /* Temporal sequence has at least 2 instants */
   if (max_count < 1 || seq->count <= max_count)
@@ -979,13 +997,14 @@ tnumberseq_disc_tboxes_iter(const TSequence *seq, int max_count, TBox *result)
 }
 
 /**
- * @brief Return an array of maximum n temporal boxes from the segments of a
- * temporal number sequence with continuous interpolation (iterator function)
+ * @brief Return an array of temporal boxes from the segments of a temporal
+ * number sequence with continuous interpolation (iterator function)
  * @param[in] seq Temporal value
  * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one box per segment
- * @param[out] result Temporal box
- * @return Number of elements in the array
+ * @param[out] result Array of boxes. If `max_count` is < 1, the result
+ * contains one box per segment. Otherwise, consecutive segments are combined
+ * into a single box in the result to reach `max_count` number of boxes.
+ * @return Number of elements in the output array
  */
 static int
 tnumberseq_cont_tboxes_iter(const TSequence *seq, int max_count, TBox *result)
@@ -1040,13 +1059,17 @@ tnumberseq_cont_tboxes_iter(const TSequence *seq, int max_count, TBox *result)
 }
 
 /**
- * @brief Return an array of maximum n temporal boxes from the instants or
- * segments of a temporal number sequence (iterator function)
+ * @brief Return an array of temporal boxes from the instants or segments of a
+ * temporal number sequence, where the choice between instants or segments
+ * depends, respectively, on whether the interpolation is discrete or
+ * continuous (iterator function)
  * @param[in] seq Temporal value
  * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one box per segment
- * @param[out] result Temporal box
- * @return Number of elements in the array
+ * @param[out] result Array of boxes. If `max_count` is < 1, the result
+ * contains one box per instant or segment. Otherwise, consecutive instants or
+ * segments are combined into a single box in the result to reach `max_count`
+ * number of boxes.
+ * @return Number of elements in the output array
  */
 static int
 tnumberseq_tboxes_iter(const TSequence *seq, int max_count, TBox *result)
@@ -1064,12 +1087,17 @@ tnumberseq_tboxes_iter(const TSequence *seq, int max_count, TBox *result)
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of maximum n temporal boxes from the segments
- * of a temporal number sequence
+ * @brief Return an array of temporal boxes from the instants or segments of a
+ * temporal number sequence, where the choice between instants or segments
+ * depends, respectively, on whether the interpolation is discrete or
+ * continuous
  * @param[in] seq Temporal sequence
  * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one box per segment
  * @param[out] count Number of elements in the output array
+ * @return Array of boxes. If `max_count` is < 1, the result contains one box
+ * per instant or segment. Otherwise, consecutive instants or segments are
+ * combined into a single box in the result to reach `max_count` number of
+ * boxes.
  */
 TBox *
 tnumberseq_tboxes(const TSequence *seq, int max_count, int *count)
@@ -1086,12 +1114,14 @@ tnumberseq_tboxes(const TSequence *seq, int max_count, int *count)
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of temporal boxes from the segments of a
- * temporal number sequence set
+ * @brief Return an array of temporal boxes from the segments of a temporal
+ * number sequence set
  * @param[in] ss Temporal sequence set
  * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one box per segment
  * @param[out] count Number of elements in the output array
+ * @return Array of boxes. If `max_count` is < 1, the result contains one box
+ * per segment. Otherwise, consecutive segments are combined into a single box
+ * in the result to reach `max_count` number of boxes.
  */
 TBox *
 tnumberseqset_tboxes(const TSequenceSet *ss, int max_count, int *count)
@@ -1163,13 +1193,16 @@ tnumberseqset_tboxes(const TSequenceSet *ss, int max_count, int *count)
 
 /**
  * @ingroup meos_temporal_bbox
- * @brief Return an array of temporal boxes from the segments of a
- * temporal number
+ * @brief Return an array of temporal boxes from the instants or segments of a
+ * temporal number, where the choice between instants or segments depends,
+ * respectively, on whether the interpolation is discrete or continuous
  * @param[in] temp Temporal value
  * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one box per segment
  * @param[out] count Number of values of the output array
- * @return On error return @p NULL
+ * @return Array of boxes. If `max_count` is < 1, the result contains one box
+ * per instant or segment. Otherwise, consecutive instants or segments are
+ * combined into a single box in the result to reach `max_count` number of
+ * boxes. On error return @p NULL
  * @csqlfn #Tnumber_tboxes()
  */
 TBox *

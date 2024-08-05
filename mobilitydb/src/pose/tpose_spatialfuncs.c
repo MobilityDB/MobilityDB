@@ -51,7 +51,7 @@ PG_FUNCTION_INFO_V1(Pose_get_srid);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the SRID of a temporal pose
- * @sqlfunc SRID()
+ * @sqlfn SRID()
  */
 Datum
 Pose_get_srid(PG_FUNCTION_ARGS)
@@ -67,7 +67,7 @@ PG_FUNCTION_INFO_V1(Pose_set_srid);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the SRID of a temporal pose
- * @sqlfunc SRID()
+ * @sqlfn SRID()
  */
 Datum
 Pose_set_srid(PG_FUNCTION_ARGS)
@@ -85,7 +85,7 @@ PG_FUNCTION_INFO_V1(Tpose_get_srid);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the SRID of a temporal pose
- * @sqlfunc SRID()
+ * @sqlfn SRID()
  */
 Datum
 Tpose_get_srid(PG_FUNCTION_ARGS)
@@ -101,7 +101,7 @@ PG_FUNCTION_INFO_V1(Tpose_set_srid);
 /**
  * @ingroup mobilitydb_temporal_spatial_transf
  * @brief Set the SRID of a temporal pose
- * @sqlfunc setSRID()
+ * @sqlfn setSRID()
  */
 Datum
 Tpose_set_srid(PG_FUNCTION_ARGS)
@@ -139,7 +139,7 @@ PG_FUNCTION_INFO_V1(Tpose_ever_eq);
 /**
  * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal pose is ever equal to a pose
- * @sqlfunc ever_eq()
+ * @sqlfn ever_eq()
  */
 Datum
 Tpose_ever_eq(PG_FUNCTION_ARGS)
@@ -152,7 +152,7 @@ PG_FUNCTION_INFO_V1(Tpose_always_eq);
 /**
  * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal pose is always equal to a pose
- * @sqlfunc always_eq()
+ * @sqlfn always_eq()
  */
 Datum
 Tpose_always_eq(PG_FUNCTION_ARGS)
@@ -165,7 +165,7 @@ PG_FUNCTION_INFO_V1(Tpose_ever_ne);
 /**
  * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal pose is ever different from a pose
- * @sqlfunc ever_ne()
+ * @sqlfn ever_ne()
  */
 Datum
 Tpose_ever_ne(PG_FUNCTION_ARGS)
@@ -178,7 +178,7 @@ PG_FUNCTION_INFO_V1(Tpose_always_ne);
 /**
  * @ingroup mobilitydb_temporal_ever
  * @brief Return true if a temporal pose is always different from a pose
- * @sqlfunc always_ne()
+ * @sqlfn always_ne()
  */
 Datum
 Tpose_always_ne(PG_FUNCTION_ARGS)

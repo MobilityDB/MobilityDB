@@ -77,8 +77,10 @@ int main(void)
   int count;
   if (valuesplit)
     boxes = intspan ?
-      tintbox_tile_list(box, 5, timesplit ? interv : NULL, 1, torigin, &count) :
-      tfloatbox_tile_list(box, 5, timesplit ? interv : NULL, 1, torigin, &count);
+      tintbox_value_time_tiles(box, 5, timesplit ? interv : NULL, 1, torigin,
+        &count) :
+      tfloatbox_value_time_tiles(box, 5, timesplit ? interv : NULL, 1, torigin,
+        &count);
   else
     spans = tstzspan_bucket_list(&box->period, interv, torigin, &count);
 

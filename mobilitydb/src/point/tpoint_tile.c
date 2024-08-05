@@ -52,15 +52,15 @@
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Stbox_tile_list(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_tile_list);
+PGDLLEXPORT Datum Stbox_space_time_tiles(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_space_time_tiles);
 /**
  * @brief @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the multidimensional grid of a spatiotemporal box
- * @sqlfn multidimGrid()
+ * @sqlfn spaceTimeTiles()
  */
 Datum
-Stbox_tile_list(PG_FUNCTION_ARGS)
+Stbox_space_time_tiles(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
@@ -183,15 +183,29 @@ Stbox_tile_list(PG_FUNCTION_ARGS)
   SRF_RETURN_NEXT(funcctx, result);
 }
 
-PGDLLEXPORT Datum Stbox_tile(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_tile);
+PGDLLEXPORT Datum Stbox_space_tiles(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_space_tiles);
 /**
- * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return a tile in the multidimensional grid of a spatiotemporal box
- * @sqlfn multidimTile()
+ * @brief @ingroup mobilitydb_temporal_analytics_tile
+ * @brief Return the multidimensional grid of a spatiotemporal box
+ * @sqlfn spaceTiles()
  */
 Datum
-Stbox_tile(PG_FUNCTION_ARGS)
+Stbox_space_tiles(PG_FUNCTION_ARGS)
+{
+  return Stbox_space_time_tiles(fcinfo);
+}
+
+PGDLLEXPORT Datum Stbox_space_time_tile(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_space_time_tile);
+/**
+ * @ingroup mobilitydb_temporal_analytics_tile
+ * @brief Return a spatiotemporal tile in the multidimensional grid of a
+ * spatiotemporal box
+ * @sqlfn spaceTimeTile()
+ */
+Datum
+Stbox_space_time_tile(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *point = PG_GETARG_GSERIALIZED_P(0);
   double xsize, ysize, zsize;
@@ -221,8 +235,22 @@ Stbox_tile(PG_FUNCTION_ARGS)
     hast = true;
   }
 
-  PG_RETURN_STBOX_P(stbox_tile(point, t, xsize, ysize, zsize, duration,
-    sorigin, torigin, hast));
+  PG_RETURN_STBOX_P(stbox_space_time_tile_common(point, t, xsize, ysize, zsize,
+    duration, sorigin, torigin, hast));
+}
+
+PGDLLEXPORT Datum Stbox_space_tile(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_space_tile);
+/**
+ * @ingroup mobilitydb_temporal_analytics_tile
+ * @brief Return a space tile in the multidimensional grid of a spatiotemporal
+ * box
+ * @sqlfn spaceTile()
+ */
+Datum
+Stbox_space_tile(PG_FUNCTION_ARGS)
+{
+  return Stbox_space_time_tile(fcinfo);
 }
 
 /*****************************************************************************
@@ -271,7 +299,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
 
     /* Initialize state and verify parameter validity */
     int ntiles;
-    STboxGridState *state = tpoint_space_time_split_init(temp, xsize, ysize,
+    STboxGridState *state = tpoint_space_time_tile_init(temp, xsize, ysize,
       zsize, duration, sorigin, torigin, bitmatrix, border_inc, &ntiles);
 
     /* Create function state */

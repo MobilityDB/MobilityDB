@@ -99,14 +99,14 @@ int main(void)
   STBox *trip_extent =
     stbox_in("SRID=3857;STBOX X((473212.810151,6578740.528027),(499152.544688,6607165.513683))");
   GSERIALIZED *sorigin = pgis_geometry_in("Point(0 0)", -1);
-  STBox *trip_tiles = stbox_tile_list(trip_extent, 5e3, 5e3, 0, NULL, sorigin,
-    0, true, &no_trip_tiles);
+  STBox *trip_tiles = stbox_space_tiles(trip_extent, 5e3, 5e3, 0, sorigin,
+    true, &no_trip_tiles);
   /* Compute the (value and time) tiles for speed of trips */
   TBox *speed_extent = tbox_in("TBox XT([0, 35),[2020-06-01, 2020-06-05))");
   Interval *duration = pg_interval_in("1 day", -1);
   TimestampTz torigin = pg_timestamptz_in("2020-06-01", -1);
-  TBox *speed_tiles = tfloatbox_tile_list(speed_extent, 10.0, duration, 0.0, torigin,
-    &no_speed_tiles);
+  TBox *speed_tiles = tfloatbox_value_time_tiles(speed_extent, 10.0, duration,
+    0.0, torigin,  &no_speed_tiles);
   /* Variables for tiling the trips and their speeds */
   trip_record *trip_splits = malloc(sizeof(trip_record) * no_trip_tiles);
   memset(trip_splits, 0, sizeof(trip_record) * no_trip_tiles);

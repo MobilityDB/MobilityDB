@@ -121,18 +121,17 @@ CREATE TYPE index_tbox AS (
   tile tbox
 );
 
-CREATE FUNCTION tileList(bounds tbox, size float,
-  duration interval, vorigin float DEFAULT 0.0,
-  torigin timestamptz DEFAULT '2000-01-03')
+CREATE FUNCTION valueTimeTiles(bounds tbox, size float, duration interval,
+  vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_tbox
-  AS 'MODULE_PATHNAME', 'Tbox_tile_list'
+  AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tile("value" float, "time" timestamptz,
-  size float, duration interval, vorigin float DEFAULT 0.0,
+CREATE FUNCTION valueTimeTile("value" float, "time" timestamptz, size float,
+  duration interval, vorigin float DEFAULT 0.0,
   torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Tbox_tile'
+  AS 'MODULE_PATHNAME', 'Tbox_value_time_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

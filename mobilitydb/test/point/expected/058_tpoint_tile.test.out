@@ -1,37 +1,37 @@
-SELECT tileList(tgeompoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0) LIMIT 3;
-          tilelist          
+SELECT spaceTiles(tgeompoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0) LIMIT 3;
+         spacetiles         
 ----------------------------
  (1,"STBOX X((2,2),(4,4))")
  (2,"STBOX X((4,2),(6,4))")
  (3,"STBOX X((6,2),(8,4))")
 (3 rows)
 
-SELECT tileList(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)') LIMIT 3;
-               tilelist               
+SELECT spaceTiles(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)') LIMIT 3;
+              spacetiles              
 --------------------------------------
  (1,"SRID=3812;STBOX X((3,3),(5,5))")
  (2,"SRID=3812;STBOX X((5,3),(7,5))")
  (3,"SRID=3812;STBOX X((7,3),(9,5))")
 (3 rows)
 
-SELECT tileList(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3 3)') LIMIT 3;
-            tilelist            
+SELECT spaceTiles(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3 3)') LIMIT 3;
+           spacetiles           
 --------------------------------
  (1,"STBOX Z((3,3,3),(5,5,5))")
  (2,"STBOX Z((5,3,3),(7,5,5))")
  (3,"STBOX Z((7,3,3),(9,5,5))")
 (3 rows)
 
-SELECT tileList(tgeompoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, interval '2 days', 'Point(3 3)', '2000-01-15') LIMIT 3;
-                                          tilelist                                          
+SELECT spaceTimeTiles(tgeompoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, interval '2 days', 'Point(3 3)', '2000-01-15') LIMIT 3;
+                                       spacetimetiles                                       
 --------------------------------------------------------------------------------------------
  (1,"STBOX XT(((3,3),(5,5)),[Sat Jan 15 00:00:00 2000 PST, Mon Jan 17 00:00:00 2000 PST))")
  (2,"STBOX XT(((5,3),(7,5)),[Sat Jan 15 00:00:00 2000 PST, Mon Jan 17 00:00:00 2000 PST))")
  (3,"STBOX XT(((7,3),(9,5)),[Sat Jan 15 00:00:00 2000 PST, Mon Jan 17 00:00:00 2000 PST))")
 (3 rows)
 
-SELECT tileList(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, interval '2 days', 'Point(3 3 3)', '2000-01-15') LIMIT 3;
-                                            tilelist                                            
+SELECT spaceTimeTiles(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, interval '2 days', 'Point(3 3 3)', '2000-01-15') LIMIT 3;
+                                         spacetimetiles                                         
 ------------------------------------------------------------------------------------------------
  (1,"STBOX ZT(((3,3,3),(5,5,5)),[Sat Jan 15 00:00:00 2000 PST, Mon Jan 17 00:00:00 2000 PST))")
  (2,"STBOX ZT(((5,3,3),(7,5,5)),[Sat Jan 15 00:00:00 2000 PST, Mon Jan 17 00:00:00 2000 PST))")
@@ -39,58 +39,57 @@ SELECT tileList(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25
 (3 rows)
 
 /* Errors */
-SELECT tileList(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
+SELECT spaceTiles(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
 ERROR:  The spatiotemporal box and the geometry must be of the same dimensionality
-CONTEXT:  SQL function "tilelist" statement 1
-SELECT tileList(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'SRID=5676;Point(1 1)');
+CONTEXT:  SQL function "spacetiles" statement 1
+SELECT spaceTiles(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "tilelist" statement 1
-SELECT tileList(tgeogpoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0);
+CONTEXT:  SQL function "spacetiles" statement 1
+SELECT spaceTiles(tgeogpoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0);
 ERROR:  Only planar coordinates supported
-CONTEXT:  SQL function "tilelist" statement 1
-SELECT tile(geometry 'Point(3 3)', 2.0);
-         tile         
+CONTEXT:  SQL function "spacetiles" statement 1
+SELECT spaceTile(geometry 'Point(3 3)', 2.0);
+      spacetile       
 ----------------------
  STBOX X((2,2),(4,4))
 (1 row)
 
-SELECT tile(geometry 'Point(3 3 3)', 2.0);
-           tile           
+SELECT spaceTile(geometry 'Point(3 3 3)', 2.0);
+        spacetile         
 --------------------------
  STBOX Z((2,2,2),(4,4,4))
 (1 row)
 
-SELECT tile(geometry 'Point(3 3)', timestamptz '2000-01-15', 2.0, interval '2 days');
-                                         tile                                         
+SELECT spaceTimeTile(geometry 'Point(3 3)', timestamptz '2000-01-15', 2.0, interval '2 days');
+                                    spacetimetile                                     
 --------------------------------------------------------------------------------------
  STBOX XT(((2,2),(4,4)),[Sat Jan 15 00:00:00 2000 PST, Mon Jan 17 00:00:00 2000 PST))
 (1 row)
 
-SELECT tile(geometry 'Point(3 3)', timestamptz '2000-01-15', 2.0, interval '2 days');
-                                         tile                                         
+SELECT spaceTimeTile(geometry 'Point(3 3)', timestamptz '2000-01-15', 2.0, interval '2 days');
+                                    spacetimetile                                     
 --------------------------------------------------------------------------------------
  STBOX XT(((2,2),(4,4)),[Sat Jan 15 00:00:00 2000 PST, Mon Jan 17 00:00:00 2000 PST))
 (1 row)
 
-SELECT tile(geometry 'Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'Point(1 1 1)', '2020-06-15');
-                                           tile                                           
+SELECT spaceTimeTile(geometry 'Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'Point(1 1 1)', '2020-06-15');
+                                      spacetimetile                                       
 ------------------------------------------------------------------------------------------
  STBOX ZT(((3,3,3),(5,5,5)),[Thu Jan 13 23:00:00 2000 PST, Sat Jan 15 23:00:00 2000 PST))
 (1 row)
 
-SELECT tile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'SRID=3812;Point(1 1 1)', '2020-06-15');
-                                                tile                                                
-----------------------------------------------------------------------------------------------------
- SRID=3812;STBOX ZT(((3,3,3),(5,5,5)),[Thu Jan 13 23:00:00 2000 PST, Sat Jan 15 23:00:00 2000 PST))
-(1 row)
-
+SELECT spaceTimeTiles(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'SRID=3812;Point(1 1 1)', '2020-06-15');
+ERROR:  function spacetimetiles(geometry, timestamp with time zone, numeric, interval, geometry, unknown) does not exist
+LINE 1: SELECT spaceTimeTiles(geometry 'SRID=3812;Point(3 3 3)', tim...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
 /* Errors */
-SELECT tile(geometry 'Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'Point(1 1)', '2020-06-15');
+SELECT spaceTimeTile(geometry 'Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'Point(1 1)', '2020-06-15');
 ERROR:  The geometry must have Z dimension
-CONTEXT:  SQL function "tile" statement 1
-SELECT tile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'SRID=2154;Point(1 1)', '2020-06-15');
+CONTEXT:  SQL function "spacetimetile" statement 1
+SELECT spaceTimeTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'SRID=2154;Point(1 1)', '2020-06-15');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "tile" statement 1
+CONTEXT:  SQL function "spacetimetile" statement 1
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint 'Point(1 1)@2000-01-01', 2.0) AS sp) t;
    point    |                 tpoint                  
