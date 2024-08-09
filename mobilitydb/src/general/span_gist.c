@@ -394,7 +394,7 @@ span_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 }
 
 /**
- * @brief Structure keeping context for the function #Span_gist_consider_split
+ * @brief Structure keeping context for the function #span_gist_consider_split
  */
 typedef struct
 {

@@ -663,7 +663,7 @@ tgeompoint '[POINT(4 3)@2000-01-04, POINT(5 3)@2000-01-05]', 1)
  * @param[in] hasz True for 3D segments
  * @param[in] func Distance function (2D or 3D)
  * @param[out] t1,t2 Resulting timestamps
- * @result Number of timestamps in the result, between 0 and 2. In the case
+ * @return Number of timestamps in the result, between 0 and 2. In the case
  * of a single result both t1 and t2 are set to the unique timestamp
  */
 int
@@ -813,7 +813,7 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
 /**
  * @brief Construct the result of the tdwithin function of a segment from
  * the solutions of the quadratic equation found previously
- * @result Number of sequences of the result
+ * @return Number of sequences of the result
  */
 static int
 tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
@@ -871,7 +871,7 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
  * @param[in] func DWithin function (2D or 3D)
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
- * @result Number of elements in the resulting array
+ * @return Number of elements in the resulting array
  * @pre The temporal points must be synchronized.
  */
 static int
@@ -1009,7 +1009,7 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
  * @param[in] func DWithin function (2D or 3D)
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
- * @result Number of elements in the resulting array
+ * @return Number of elements in the resulting array
  */
 static int
 tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,

@@ -141,7 +141,7 @@ ensure_same_spanset_span_type(const SpanSet *ss, const Span *s)
  * @param[in] ss Span set
  * @param[in] v Value
  * @param[out] loc Location
- * @result Return true if the value is contained in the span set
+ * @return Return true if the value is contained in the span set
  */
 bool
 spanset_find_value(const SpanSet *ss, Datum v, int *loc)
@@ -859,6 +859,7 @@ spanset_mem_size(const SpanSet *ss)
   assert(ss);
   return (int) VARSIZE(DatumGetPointer(ss));
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_accessor
@@ -874,7 +875,6 @@ spanset_span(const SpanSet *ss)
     return NULL;
   return span_cp(&ss->span);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_setspan_accessor
@@ -1278,7 +1278,7 @@ datespanset_end_date(const SpanSet *ss)
  * @param[in] ss Span set
  * @param[in] n Number
  * @param[out] result Date
- * @result Return true if the date is found
+ * @return Return true if the date is found
  * @note It is assumed that n is 1-based
  * @csqlfn #Datespanset_date_n()
  */
@@ -1414,7 +1414,7 @@ tstzspanset_end_timestamptz(const SpanSet *ss)
  * @param[in] ss Span set
  * @param[in] n Number
  * @param[out] result Timestamptz
- * @result Return true if the timestamptz is found
+ * @return Return true if the timestamptz is found
  * @note It is assumed that n is 1-based
  * @csqlfn #Tstzspanset_timestamptz_n()
  */
@@ -1844,7 +1844,7 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
 
 /**
  * @ingroup meos_internal_setspan_comp
- * @brief Return -1, 0, or 1 depending on whether the duration of the first
+ * @brief Return -1, 0, or 1 depending on whether the size of the first
  * span is less than, equal, or greater than the second one
  * @param[in] s1,s2 Spans
  */
@@ -1872,7 +1872,7 @@ span_cmp_size(const Span *s1, const Span *s2)
 }
 
 /**
- * @brief Sort function for spans
+ * @brief Sort function for comparying spans based on their size
  */
 void
 spanarr_sort_size(Span *spans, int count)
@@ -1886,11 +1886,16 @@ spanarr_sort_size(Span *spans, int count)
  * @ingroup meos_setspan_bbox
  * @brief Return the array of spans of a spanset
  * @param[in] ss Span set
+ * @return On error return @p NULL
+ * @csqlfn #Spanset_spans()
  */
 Span *
 spanset_spans(const SpanSet *ss)
 {
-  assert(ss); assert(spanset_type(ss->spansettype));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss))
+    return NULL;
+
   Span *result = palloc(sizeof(Span) * ss->count);
   /* Output the composing spans */
   for (int i = 0; i < ss->count; i++)
@@ -1900,27 +1905,32 @@ spanset_spans(const SpanSet *ss)
 
 /**
  * @ingroup meos_setspan_bbox
- * @brief Return an array of spans from the composing spans of a spanset
+ * @brief Return an array of N spans from the composing spans of a spanset
  * @param[in] ss Span set
- * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one span per composing span.
+ * @param[in] span_count Number of spans
  * @param[out] count Number of elements in the output array
+ * @return If the number of spans of the spanset is <= `span_count`, the result
+ * contains one span per composing span. On error return @p NULL
+ * @return On error return @p NULL
+ * @csqlfn #Spanset_split_n_spans()
  */
 Span *
-spanset_spans_merge(const SpanSet *ss, int max_count, int *count)
+spanset_split_n_spans(const SpanSet *ss, int span_count, int *count)
 {
-  assert(ss); assert(count); assert(spanset_type(ss->spansettype));
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count) ||
+      ! ensure_positive(span_count))
+    return NULL;
 
   /* Output the composing spans */
-  if (max_count < 1 || ss->count <= max_count)
+  if (ss->count <= span_count)
   {
     *count = ss->count;
     return spanset_spans(ss);
   }
 
   /* Merge consecutive sequences having the smallest gap */
-  int nspans = (max_count < 1) ? ss->count : max_count;
-  Span *result = palloc(sizeof(Span) * nspans);
+  Span *result = palloc(sizeof(Span) * span_count);
   SpanSet *minus = minus_span_spanset(&ss->span, ss);
   Span *holes = palloc(sizeof(Span) * minus->count);
   for (int i = 0; i < minus->count; i++)
@@ -1928,20 +1938,56 @@ spanset_spans_merge(const SpanSet *ss, int max_count, int *count)
   /* Sort the holes in increasing size */
   spanarr_sort_size(holes, minus->count);
   /* Number of holes in the original spanset that will be filled */
-  int nfills = minus->count - max_count + 1;
+  int nfills = minus->count - span_count + 1;
   /* Sort the holes to fill the original spanset in increasing value/time */
   spanarr_sort(holes, nfills);
   SpanSet *tofill = spanset_make_exp(holes, nfills, nfills, NORMALIZE_NO,
     ORDER_NO);
   /* Resulting spanset with the holes filed */
   SpanSet *res = union_spanset_spanset(ss, tofill);
-  assert(res->count == max_count);
+  assert(res->count == span_count);
   /* Construct the resulting array of spans */
   for (int i = 0; i < res->count; i++)
     memcpy(&result[i], SPANSET_SP_N(res, i), sizeof(Span));
   /* Clean-up and return */
   pfree(minus); pfree(holes); pfree(tofill); pfree(res);
-  *count = max_count;
+  *count = span_count;
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_bbox
+ * @brief Return an array of N spans from a spanset obtained by merging
+ * consecutive composing spans 
+ * @param[in] ss Spanset
+ * @param[in] elems_per_span Number of spans merged into an ouput span
+ * @param[out] count Number of elements in the output array
+ * @return On error return @p NULL
+ * @csqlfn #Spanset_split_each_n_spans()
+ */
+Span *
+spanset_split_each_n_spans(const SpanSet *ss, int32 elems_per_span, int *count)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count) ||
+      ! ensure_positive(elems_per_span))
+    return NULL;
+
+  int nspans = ceil((double) ss->count / (double) elems_per_span);
+  Span *result = palloc(sizeof(Span) * nspans);
+  int k = 0;
+  for (int i = 0; i < ss->count; ++i)
+  {
+    if (i % elems_per_span == 0)
+      result[k++] = *SPANSET_SP_N(ss, i);
+    else
+    {
+      Span span = *SPANSET_SP_N(ss, i);
+      span_expand(&span, &result[k - 1]);
+    }
+  }
+  assert(k == nspans);
+  *count = k;
   return result;
 }
 

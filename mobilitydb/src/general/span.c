@@ -204,20 +204,43 @@ Set_spans(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
-PGDLLEXPORT Datum Set_spans_merge(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Set_spans_merge);
+PGDLLEXPORT Datum Set_split_n_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_split_n_spans);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Return a set converted to a span
- * @sqlfn spansMerge()
+ * @brief Return an array of N spans from the elements of a set
+ * @sqlfn splitNspans()
  */
 Datum
-Set_spans_merge(PG_FUNCTION_ARGS)
+Set_split_n_spans(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  int max_count = PG_GETARG_INT32(1);
+  int span_count = PG_GETARG_INT32(1);
   int count;
-  Span *spans = set_spans_merge(s, max_count, &count);
+  Span *spans = set_split_n_spans(s, span_count, &count);
+  PG_FREE_IF_COPY(s, 0);
+  if (! spans)
+    PG_RETURN_NULL();
+  ArrayType *result = spanarr_to_array(spans, count);
+  pfree(spans);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Set_split_each_n_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_split_each_n_spans);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Return an array of spans from the elements of a set obtained by
+ * merging a given number of successive elements
+ * @sqlfn splitEachNSpans()
+ */
+Datum
+Set_split_each_n_spans(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int elem_count = PG_GETARG_INT32(1);
+  int count;
+  Span *spans = set_split_each_n_spans(s, elem_count, &count);
   PG_FREE_IF_COPY(s, 0);
   if (! spans)
     PG_RETURN_NULL();

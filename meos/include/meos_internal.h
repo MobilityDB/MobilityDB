@@ -966,7 +966,7 @@ extern double tpointseq_length(const TSequence *seq);
 extern TSequence *tpointseq_speed(const TSequence *seq);
 extern int tpointseq_srid(const TSequence *seq);
 extern STBox *tpointseq_stboxes(const TSequence *seq, int *count);
-extern STBox *tpointseq_stboxes_merge(const TSequence *seq, int max_count, int *count);
+extern STBox *tpointseq_split_n_stboxes(const TSequence *seq, int max_count, int *count);
 extern TSequenceSet *tpointseqset_azimuth(const TSequenceSet *ss);
 extern TSequenceSet *tpointseqset_cumulative_length(const TSequenceSet *ss);
 extern bool tpointseqset_is_simple(const TSequenceSet *ss);
@@ -974,7 +974,7 @@ extern double tpointseqset_length(const TSequenceSet *ss);
 extern TSequenceSet *tpointseqset_speed(const TSequenceSet *ss);
 extern int tpointseqset_srid(const TSequenceSet *ss);
 extern STBox *tpointseqset_stboxes(const TSequenceSet *ss, int *count);
-extern STBox *tpointseqset_stboxes_merge(const TSequenceSet *ss, int max_count, int *count);
+extern STBox *tpointseqset_split_n_stboxes(const TSequenceSet *ss, int max_count, int *count);
 extern GSERIALIZED *tpointseqset_trajectory(const TSequenceSet *ss);
 extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 

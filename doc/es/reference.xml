@@ -361,7 +361,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="spans_merge"><varname>spansMerge</varname></link>: Devuelve una matriz de rangos a partir de los elementos de un conjunto o de los rangos de un conjunto de rangos</para>
+					<para><link linkend="splitNSpans"><varname>splitNSpans</varname></link>: Devuelve una matriz de rangos a partir de los elementos de un conjunto o de los rangos de un conjunto de rangos</para>
 				</listitem>
 			</itemizedlist>
 
@@ -1099,15 +1099,27 @@
 			<title>Operaciones de cuadro delimitador</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="temporal_spans_merge"><varname>spansMerge</varname></link>: Devuelve una matriz de rangos temporales a partir de los instantes o segmentos de un valor temporal</para>
+					<para><link linkend="temporal_splitNSpans"><varname>splitNSpans</varname></link>: Devuelve una matriz de N rangos temporales a partir de los instantes o segmentos de un valor temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tboxes_merge"><varname>tboxesMerge</varname></link>: Devuelve una matriz de cuadros temporales a partir de los instantes o segmentos de un número temporal</para>
+					<para><link linkend="temporal_splitEachNSpans"><varname>splitEachNSpans</varname></link>: Devuelve una matriz de rangos temporales a partir de los instantes o segmentos de un valor temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stboxes_merge"><varname>stboxesMerge</varname></link>: Devuelve ya sea una matriz de cuadros espaciales a partir de los segmentos de una (multi)línea o una matriz de cuadros espaciotemporales a partir de los instantes o segmentos de un punto temporal</para>
+					<para><link linkend="splitNTboxes"><varname>splitNTboxes</varname></link>: Devuelve una matriz de N cuadros temporales a partir de los instantes o segmentos de un número temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="splitEachNTboxes"><varname>splitEachNTboxes</varname></link>: Devuelve una matriz de cuadros temporales a partir de los instantes o segmentos de un número temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="splitNStboxes"><varname>splitNStboxes</varname></link>: Devuelve ya sea una matriz de N cuadros espaciales a partir de los segmentos de una (multi)línea o una matriz de N cuadros espaciotemporales a partir de los instantes o segmentos de un punto temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="splitNStboxesElems"><varname>splitNStboxesElems</varname></link>: Devuelve ya sea una matriz de cuadros espaciales a partir de los segmentos de una (multi)línea o una matriz de cuadros espaciotemporales a partir de los instantes o segmentos de un punto temporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

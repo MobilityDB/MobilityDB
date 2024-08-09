@@ -806,7 +806,7 @@ temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_temporal_analytics_similarity
  * @brief Return the Dynamic Time Warp distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
- * @result On error return @p DBL_MAX
+ * @return On error return @p DBL_MAX
  * @csqlfn #Temporal_dyntimewarp_distance()
  */
 double

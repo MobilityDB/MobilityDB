@@ -164,7 +164,7 @@ set_append_value(Set *set, Datum value)
  * @param[in,out] state Current aggregate state
  * @param[in] value Value
  * @param[in] basetype Type of the value
- * @result When the state variable has space for adding the new value, the 
+ * @return When the state variable has space for adding the new value, the 
  * function returns the current state variable. Otherwise, a NEW state 
  * variable is returned and the input state is freed.
  * @note Always use the function to overwrite the existing state as in: 
@@ -279,7 +279,7 @@ text_union_transfn(Set *state, const text *txt)
  * @brief Transition function for set union aggregate of sets
  * @param[in,out] state Current aggregate state
  * @param[in] s Set to aggregate
- * @result When the state variable has space for adding the new set, the 
+ * @return When the state variable has space for adding the new set, the 
  * function returns the current state variable. Otherwise, a NEW state 
  * variable is returned and the input state is freed.
  * @note Always use the function to overwrite the existing state as in: 

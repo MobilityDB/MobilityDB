@@ -477,6 +477,7 @@ temporal_write(const Temporal *temp, StringInfo buf)
 {
   pq_sendbyte(buf, temp->temptype);
   pq_sendbyte(buf, temp->subtype);
+  assert(temptype_subtype(temp->subtype));
   assert(temp->subtype == TINSTANT || temp->subtype == TSEQUENCE);
   if (temp->subtype == TINSTANT)
     tinstant_write((TInstant *) temp, buf);

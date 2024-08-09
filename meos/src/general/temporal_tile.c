@@ -62,7 +62,7 @@
  * @param[in] size Size of the buckets
  * @param[in] origin Time origin of the tiles
  * @param[out] start_bucket,end_bucket Values of the start and end buckets
- * @result Number of buckets
+ * @return Number of buckets
  */
 int
 span_no_buckets(const Span *s, Datum size, Datum origin, Datum *start_bucket,
@@ -87,7 +87,7 @@ span_no_buckets(const Span *s, Datum size, Datum origin, Datum *start_bucket,
  * @param[in] duration Interval defining the size of the buckets
  * @param[in] torigin Time origin of the tiles
  * @param[out] start_bucket,end_bucket Start and end buckets
- * @result Number of buckets
+ * @return Number of buckets
  */
 int
 tstzspan_no_buckets(const Span *s, const Interval *duration, 

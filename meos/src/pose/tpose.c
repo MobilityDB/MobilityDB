@@ -175,25 +175,31 @@ tposeseqset_set_srid(const TSequenceSet *ss, int32 srid)
 
 /**
  * @ingroup libmeos_temporal_spatial_transf
- * @brief Set the SRID of a temporal pose.
+ * @brief Set the SRID of a temporal pose
  * @see tposeinst_set_srid
  * @see tposeseq_set_srid
  * @see tposeseqset_set_srid
- * @sqlfn setSRID()
+ * @return On error return @p NULL
+ * @csqlfn Tpose_set_srid()
  */
 Temporal *
 tpose_set_srid(const Temporal *temp, int32 srid)
 {
-  Temporal *result;
-  if (temp->subtype == TINSTANT)
-    result = (Temporal *) tposeinst_set_srid((TInstant *) temp, srid);
-  else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) tposeseq_set_srid((TSequence *) temp, srid);
-  else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *) tposeseqset_set_srid((TSequenceSet *) temp, srid);
+  /* Ensure validity of the arguments */
+  // TODO ensure that is a tgeometry type
+  if (! ensure_not_null((void *) temp))
+    return NULL;
 
-  assert(result != NULL);
-  return result;
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tposeinst_set_srid((TInstant *) temp, srid);
+    case TSEQUENCE:
+      return (Temporal *) tposeseq_set_srid((TSequence *) temp, srid);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tposeseqset_set_srid((TSequenceSet *) temp, srid);
+  }
 }
 
 /*****************************************************************************/

@@ -55,6 +55,7 @@
 #include <meos_internal.h>
 #include "point/stbox.h"
 #include "general/temporal.h"
+#include "point/tpoint_spatialfuncs.h"
 
 extern void ll2cart(const POINT2D *g, POINT3D *p);
 extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox);
@@ -119,7 +120,7 @@ tspatialseqset_set_stbox(const TSequenceSet *ss, STBox *box)
  * @brief Return the last argument initialized with the spatiotemporal box of
  * an array of temporal point instants
  * @param[in] instants Temporal instant values
- * @param[in] count Number of elements in the array
+ * @param[in] count Number of elements in the output array
  * @param[out] box Spatiotemporal box
  * @note Temporal instant values do not have a precomputed bounding box
  */
@@ -173,7 +174,7 @@ tpointseq_expand_stbox(TSequence *seq, const TInstant *inst)
  * @brief Return the last argument initialized with the the spatiotemporal box
  * from an array of temporal point sequences
  * @param[in] sequences Temporal instant values
- * @param[in] count Number of elements in the array
+ * @param[in] count Number of elements in the output array
  * @param[out] box Spatiotemporal box
  */
 void
@@ -190,8 +191,7 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
 
 /*****************************************************************************
  * Boxes functions
- * These functions can be used for defining MultiEntry Search Trees (a.k.a.
- * VODKA) indexes
+ * These functions can be used for defining MultiEntry Search Trees indexes
  * https://www.pgcon.org/2014/schedule/events/696.en.html
  * https://github.com/MobilityDB/mest
  *****************************************************************************/
@@ -200,12 +200,13 @@ tpointseqarr_set_stbox(const TSequence **sequences, int count, STBox *box)
  * @ingroup meos_internal_temporal_bbox
  * @brief Return a singleton array of spatiotemporal boxes from a temporal
  * point instant
- * @param[in] inst Temporal point
+ * @param[in] inst Temporal instant
  */
 STBox *
 tpointinst_stboxes(const TInstant *inst)
 {
   assert(inst); assert(tgeo_type(inst->temptype));
+  /* One bounding box per instant */
   STBox *result = palloc(sizeof(STBox));
   tpointinst_set_stbox(inst, &result[0]);
   return result;
@@ -231,9 +232,9 @@ tpointseq_disc_stboxes(const TSequence *seq)
 /**
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal point sequence with continuous interpolation (iterator function)
- * @param[in] seq Temporal point
+ * @param[in] seq Temporal sequence
  * @param[out] result Spatiotemporal box
- * @return Number of elements in the array
+ * @return Number of elements in the ouput array
  */
 static int
 tpointseq_cont_stboxes_iter(const TSequence *seq, STBox *result)
@@ -249,15 +250,14 @@ tpointseq_cont_stboxes_iter(const TSequence *seq, STBox *result)
   }
 
   /* One bounding box per segment */
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   for (int i = 0; i < seq->count - 1; i++)
   {
-    tpointinst_set_stbox(inst1, &result[i]);
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    tpointinst_set_stbox(inst, &result[i]);
+    inst = TSEQUENCE_INST_N(seq, i + 1);
     STBox box;
-    tpointinst_set_stbox(inst2, &box);
+    tpointinst_set_stbox(inst, &box);
     stbox_expand(&box, &result[i]);
-    inst1 = inst2;
   }
   return seq->count - 1;
 }
@@ -265,7 +265,9 @@ tpointseq_cont_stboxes_iter(const TSequence *seq, STBox *result)
 /**
  * @ingroup meos_internal_temporal_bbox
  * @brief Return an array of spatiotemporal boxes from the instants or segments
- * of a temporal point sequence
+ * of a temporal point sequence, where the choice between instants or segments
+ * depends, respectively, on whether the interpolation is discrete or
+ * continuous
  * @param[in] seq Temporal sequence
  * @param[out] count Number of elements in the output array
  */
@@ -314,8 +316,9 @@ tpointseqset_stboxes(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup meos_temporal_bbox
- * @brief Return an array of spatiotemporal boxes from the segments of a
- * temporal point
+ * @brief Return an array of spatiotemporal boxes from the instants or segments
+ * of a temporal point, where the choice between instants or segments depends,
+ * respectively, on whether the interpolation is discrete or continuous
  * @param[in] temp Temporal point
  * @param[out] count Number of values of the output array
  * @return On error return @p NULL
@@ -330,48 +333,49 @@ tpoint_stboxes(const Temporal *temp, int *count)
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
+  switch (temp->subtype)
   {
-    *count = 1;
-    return tpointinst_stboxes((TInstant *) temp);
+    case TINSTANT:
+      *count = 1;
+      return tpointinst_stboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tpointseq_stboxes((TSequence *) temp, count);
+    default: /* TSEQUENCESET */
+      return tpointseqset_stboxes((TSequenceSet *) temp, count);
   }
-  else if (temp->subtype == TSEQUENCE)
-    return tpointseq_stboxes((TSequence *) temp, count);
-  else /* TSEQUENCESET */
-    return tpointseqset_stboxes((TSequenceSet *) temp, count);
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Return an array of maximum n spatiotemporal boxes from the instants
- * of a temporal point sequence with discrete interpolation (iterator function)
- * @param[in] seq Temporal point
- * @param[in] max_count Maximum number of elements in the output array
- * If the value is < 1, the result is one box per instant
- * @param[out] count Number of elements in the array
+ * @brief Return an array of N spatiotemporal boxes from the instants
+ * of a temporal point sequence with discrete interpolation
+ * @param[in] seq Temporal sequence
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
  */
 static STBox *
-tpointseq_disc_stboxes_merge(const TSequence *seq, int max_count, int *count)
+tpointseq_disc_split_n_stboxes(const TSequence *seq, int box_count, int *count)
 {
   assert(seq); assert(count); assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  assert(box_count > 0);
 
   /* One bounding box per instant */
-  if (max_count < 1 || seq->count <= max_count)
+  if (seq->count <= box_count)
   {
     *count = seq->count;
     return tpointseq_disc_stboxes(seq);
   }
 
   /* One bounding box per several consecutive instants */
-  STBox *result = palloc(sizeof(STBox) * max_count);
+  STBox *result = palloc(sizeof(STBox) * box_count);
   /* Minimum number of input instants merged together in an output box */
-  int size = seq->count / max_count;
+  int size = seq->count / box_count;
   /* Number of output boxes that result from merging (size + 1) instants */
-  int remainder = seq->count % max_count;
+  int remainder = seq->count % box_count;
   int i = 0; /* Loop variable for input instants */
-  for (int k = 0; k < max_count; k++)
+  for (int k = 0; k < box_count; k++)
   {
     int j = i + size;
     if (k < remainder)
@@ -386,25 +390,24 @@ tpointseq_disc_stboxes_merge(const TSequence *seq, int max_count, int *count)
     i = j;
   }
   assert(i == seq->count);
-  *count = max_count;
+  *count = box_count;
   return result;
 }
 
 /**
- * @brief Return an array of maximum n spatiotemporal boxes from the segments
- * of a temporal point sequence (iterator function)
+ * @brief Return an array of N spatiotemporal boxes from the segments of a 
+ * temporal point sequence with continuous interpolation (iterator function)
  * @param[in] seq Temporal point
- * @param[in] max_count Maximum number of elements in the output array.
- * If the value is < 1, the result is one box per segment.
- * @param[out] result Spatiotemporal box
- * @return Number of elements in the array
+ * @param[in] box_count Number of boxes
+ * @param[out] result Number of elements in the ouput array
  */
 static int
-tpointseq_cont_stboxes_merge_iter(const TSequence *seq, int max_count,
+tpointseq_cont_split_n_stboxes_iter(const TSequence *seq, int box_count,
   STBox *result)
 {
   assert(seq); assert(result); assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+  assert(box_count > 0);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -415,16 +418,16 @@ tpointseq_cont_stboxes_merge_iter(const TSequence *seq, int max_count,
 
   /* One bounding box per segment */
   int nsegs = seq->count - 1;
-  if (max_count < 1 || nsegs <= max_count)
+  if (nsegs <= box_count)
     return tpointseq_cont_stboxes_iter(seq, result);
 
   /* One bounding box per several consecutive segments */
   /* Minimum number of input segments merged together in an output box */
-  int size = nsegs / max_count;
+  int size = nsegs / box_count;
   /* Number of output boxes that result from merging (size + 1) segments */
-  int remainder = nsegs % max_count;
+  int remainder = nsegs % box_count;
   int i = 0; /* Loop variable for input segments */
-  for (int k = 0; k < max_count; k++)
+  for (int k = 0; k < box_count; k++)
   {
     int j = i + size;
     if (k < remainder)
@@ -439,74 +442,76 @@ tpointseq_cont_stboxes_merge_iter(const TSequence *seq, int max_count,
     i = j;
   }
   assert(i == nsegs);
-  return max_count;
+  return box_count;
 }
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of spatiotemporal boxes from the instants or segments
- * of a temporal point sequence, where the choice between instants or segments
- * depends, respectively, on whether the interpolation is discrete or
+ * @brief Return an array of N spatiotemporal boxes from the instants or
+ * segments of a temporal point sequence, where the choice between instants or
+ * segments depends, respectively, on whether the interpolation is discrete or
  * continuous
  * @param[in] seq Temporal sequence
- * @param[in] max_count Maximum number of elements in the output array.
+ * @param[in] box_count Number of boxes
  * @param[out] count Number of elements in the output array
- * @result Array of boxes. If `max_count` is < 1, the result contains one box
+ * @return If `seq->count <= box_count`, the result contains one box
  * per instant or segment. Otherwise, consecutive instants or segments are
- * combined into a single box in the result to reach `max_count` number of
+ * combined into a single box in the result to reach the given number of
  * boxes.
  */
 STBox *
-tpointseq_stboxes_merge(const TSequence *seq, int max_count, int *count)
+tpointseq_split_n_stboxes(const TSequence *seq, int box_count, int *count)
 {
   assert(seq); assert(count); assert(tgeo_type(seq->temptype));
+  assert(box_count > 0);
 
   /* Discrete case */
   if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
-    return tpointseq_disc_stboxes_merge(seq, max_count, count);
+    return tpointseq_disc_split_n_stboxes(seq, box_count, count);
 
   /* Continuous case */
-  int nboxes = (max_count < 1) ?
-    (seq->count == 1 ? 1 : seq->count - 1) : max_count;
+  int nboxes = (seq->count <= box_count) ?
+    (seq->count == 1 ? 1 : seq->count - 1) : box_count;
   STBox *result = palloc(sizeof(STBox) * nboxes);
-  *count = tpointseq_cont_stboxes_merge_iter(seq, max_count, result);
+  *count = tpointseq_cont_split_n_stboxes_iter(seq, box_count, result);
   return result;
 }
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of spatiotemporal boxes from the segments of a
+ * @brief Return an array of N spatiotemporal boxes from the segments of a
  * temporal point sequence set
  * @param[in] ss Temporal sequence set
- * @param[in] max_count Maximum number of elements in the output array.
+ * @param[in] box_count Number of boxes
  * @param[out] count Number of elements in the output array
- * @result Array of boxes. If `max_count` is < 1, the result contains one box
- * per segment. Otherwise, consecutive segments are  combined into a single box
- * in the result to reach `max_count` number of boxes.
+ * @return If `ss->totalcount <= box_count`, the result contains one box per
+ * segment. Otherwise, consecutive input segments are combined into a single box in
+ * the result to reach the given number of boxes.
  */
 STBox *
-tpointseqset_stboxes_merge(const TSequenceSet *ss, int max_count, int *count)
+tpointseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count)
 {
   assert(ss); assert(count); assert(tgeo_type(ss->temptype));
+  assert(box_count > 0);
 
   /* One bounding box per segment */
-  int nboxes = (max_count < 1) ? ss->totalcount : max_count;
+  int nboxes = (ss->totalcount <= box_count) ? ss->totalcount : box_count;
   STBox *result = palloc(sizeof(STBox) * nboxes);
-  if (max_count < 1 || ss->totalcount <= max_count)
+  if (ss->totalcount <= box_count)
     return tpointseqset_stboxes(ss, count);
 
-  /* Amount of bounding boxes per composing sequence determined from the
+  /* Number of bounding boxes per composing sequence determined from the
    * proportion of seq->count and ss->totalcount */
-  if (ss->count <= max_count)
+  if (ss->count <= box_count)
   {
     int nboxes1 = 0;
     for (int i = 0; i < ss->count; i++)
     {
       const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-      int nboxes_seq = (int) (max_count * seq->count * 1.0 / ss->totalcount);
+      int nboxes_seq = (int) (box_count * seq->count * 1.0 / ss->totalcount);
       if (! nboxes_seq)
         nboxes_seq = 1;
-      nboxes1 += tpointseq_cont_stboxes_merge_iter(seq, nboxes_seq,
+      nboxes1 += tpointseq_cont_split_n_stboxes_iter(seq, nboxes_seq,
         &result[nboxes1]);
     }
     assert(nboxes1 <= ss->totalcount);
@@ -516,62 +521,237 @@ tpointseqset_stboxes_merge(const TSequenceSet *ss, int max_count, int *count)
 
   /* Merge consecutive sequences to reach the maximum number of boxes */
   /* Minimum number of sequences merged together in an output box */
-  int size = ss->count / max_count;
+  int size = ss->count / box_count;
   /* Number of output boxes that result from merging (size + 1) sequences */
-  int remainder = ss->count % max_count;
+  int remainder = ss->count % box_count;
   int i = 0; /* Loop variable for input sequences */
-  for (int k = 0; k < max_count; k++)
+  for (int k = 0; k < box_count; k++)
   {
     int j = i + size;
     if (k < remainder)
       j++;
-    tpointseq_cont_stboxes_merge_iter(TSEQUENCESET_SEQ_N(ss, i), 1,
+    tpointseq_cont_split_n_stboxes_iter(TSEQUENCESET_SEQ_N(ss, i), 1,
       &result[k]);
     for (int l = i + 1; l < j; l++)
     {
       STBox box;
-      tpointseq_cont_stboxes_merge_iter(TSEQUENCESET_SEQ_N(ss, l), 1, &box);
+      tpointseq_cont_split_n_stboxes_iter(TSEQUENCESET_SEQ_N(ss, l), 1, &box);
       stbox_expand(&box, &result[k]);
     }
     i = j;
   }
   assert(i == ss->count);
-  *count = max_count;
+  *count = box_count;
   return result;
 }
 
 /**
  * @ingroup meos_temporal_bbox
- * @brief Return an array of spatiotemporal boxes from the instants or segments
- * of a temporal point, where the choice between instants or segments depends,
- * respectively, on whether the interpolation is discrete or continuous
+ * @brief Return an array of N spatiotemporal boxes obtained by merging
+ * consecutive instants or segments of a temporal point, where the choice
+ * between instants or segments depends, respectively, on whether the
+ * interpolation is discrete or continuous
  * @param[in] temp Temporal point
- * @param[in] max_count Maximum number of elements in the output array.
- * @param[out] count Number of values of the output array
- * @result Array of boxes. If `max_count` is < 1, the result contains one box
- * per instant or segment. Otherwise, consecutive instants or segments are
- * combined into a single box in the result to reach `max_count` number of
- * boxes. On error return @p NULL
- * @csqlfn #Tpoint_stboxes()
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
+ * @return On error return @p NULL
+ * @csqlfn #Tpoint_split_n_stboxes()
  */
 STBox *
-tpoint_stboxes_merge(const Temporal *temp, int max_count, int *count)
+tpoint_split_n_stboxes(const Temporal *temp, int box_count, int *count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_tgeo_type(temp->temptype))
+      ! ensure_tgeo_type(temp->temptype) || ! ensure_positive(box_count))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
+  switch (temp->subtype)
   {
-    *count = 1;
-    return tpointinst_stboxes((TInstant *) temp);
+    case TINSTANT:
+      *count = 1;
+      return tpointinst_stboxes((TInstant *) temp);
+    case TSEQUENCE:
+      return tpointseq_split_n_stboxes((TSequence *) temp, box_count, count);
+    default: /* TSEQUENCESET */
+      return tpointseqset_split_n_stboxes((TSequenceSet *) temp, box_count,
+        count);
   }
-  else if (temp->subtype == TSEQUENCE)
-    return tpointseq_stboxes_merge((TSequence *) temp, max_count, count);
-  else /* TSEQUENCESET */
-    return tpointseqset_stboxes_merge((TSequenceSet *) temp, max_count, count);
+}
+
+/*****************************************************************************
+ * split_each_n_stboxes function
+ *****************************************************************************/
+
+/**
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * consecutive instants of a temporal point sequence with discrete
+ * interpolation 
+ * @param[in] seq Temporal sequence
+ * @param[in] elems_per_box Number of input instants merged into an output box
+ * @param[out] count Number of elements in the output array
+ */
+static STBox *
+tpointseq_disc_split_each_n_stboxes(const TSequence *seq, int elems_per_box,
+  int *count)
+{
+  assert(seq); assert(count); assert(tgeo_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+  assert(elems_per_box > 0);
+
+  int nboxes = ceil((double) seq->count / (double) elems_per_box);
+  STBox *result = palloc(sizeof(STBox) * nboxes);
+  int k = 0;
+  for (int i = 0; i < seq->count; ++i)
+  {
+    if (i % elems_per_box == 0)
+      tinstant_set_bbox(TSEQUENCE_INST_N(seq, i), &result[k++]);
+    else
+    {
+      STBox box;
+      tinstant_set_bbox(TSEQUENCE_INST_N(seq, i), &box);
+      stbox_expand(&box, &result[k - 1]);
+    }
+  }
+  assert(k == nboxes);
+  *count = k;
+  return result;
+}
+
+/**
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * consecutive segments of a temporal point sequence with continuous
+ * interpolation (iterator function)
+ * @param[in] seq Temporal sequence
+ * @param[in] elems_per_box Number of input segments merged into an output box
+ * @param[out] result Array of boxes
+ * @return Number of elements in the output array
+ */
+static int
+tpointseq_cont_split_each_n_stboxes_iter(const TSequence *seq, int elems_per_box,
+  STBox *result)
+{
+  assert(seq); assert(result); assert(tgeo_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+  assert(elems_per_box > 0);
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    tsequence_set_bbox(seq, &result[0]);
+    return 1;
+  }
+
+  /* General case */
+  int k = 0;
+  tinstant_set_bbox(TSEQUENCE_INST_N(seq, 0), &result[k]);
+  for (int i = 1; i < seq->count; ++i)
+  {
+    STBox box;
+    tinstant_set_bbox(TSEQUENCE_INST_N(seq, i), &box);
+    stbox_expand(&box, &result[k]);
+    if ((i % elems_per_box == 0) && (i < seq->count - 1))
+      result[++k] = box;
+  }
+  int nboxes = ceil((double) (seq->count - 1) / (double) elems_per_box);
+  assert(k + 1 == nboxes);
+  return nboxes;
+}
+
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * consecutive instants or segments of a temporal point sequence, where the
+ * choice between instants or segments depends, respectively, on whether the
+ * interpolation is discrete or continuous
+ * @param[in] seq Temporal sequence
+ * @param[in] elems_per_box Number of input segments merged into an output box
+ * @param[out] count Number of elements in the output array
+ */
+static STBox *
+tpointseq_split_each_n_stboxes(const TSequence *seq, int elems_per_box,
+  int *count)
+{
+  assert(seq); assert(count); assert(tgeo_type(seq->temptype));
+  assert(elems_per_box > 0);
+
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+    return tpointseq_disc_split_each_n_stboxes(seq, elems_per_box, count);
+
+  /* Number of instants or segments */
+  int nelems = (seq->count == 1) ? 1 : seq->count - 1;
+  int nboxes = ceil((double) nelems / (double) elems_per_box);
+  STBox *result = palloc(sizeof(STBox) * nboxes);
+  *count = tpointseq_cont_split_each_n_stboxes_iter(seq, elems_per_box,
+    result);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * consecutive segments of a temporal point sequence set 
+ * @param[in] ss Temporal sequence set
+ * @param[in] elems_per_box Number of input segments merged into an output box
+ * @param[out] count Number of elements in the output array
+ */
+static STBox *
+tpointseqset_split_each_n_stboxes(const TSequenceSet *ss, int elems_per_box,
+  int *count)
+{
+  assert(ss); assert(count); assert(tgeo_type(ss->temptype));
+  assert(elems_per_box > 0);
+
+  /* Singleton sequence set */
+  if (ss->count == 1)
+    return tpointseq_split_each_n_stboxes(TSEQUENCESET_SEQ_N(ss, 0),
+      elems_per_box, count);
+
+  /* Iterate for every composing sequence */
+  int nboxes = 0;
+  STBox *result = palloc(sizeof(STBox) * ss->totalcount);
+  for (int i = 0; i < ss->count; ++i)
+    nboxes += tpointseq_cont_split_each_n_stboxes_iter(
+      TSEQUENCESET_SEQ_N(ss, i), elems_per_box, &result[nboxes]);
+  *count = nboxes;
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_bbox
+ * @brief Return an array of spatiotemporal boxes obtained by merging
+ * consecutive instants or segments of a temporal point, where the choice
+ * between instants or segments depends, respectively, on whether the
+ * interpolation is discrete or continuous.
+ * @param[in] temp Temporal value
+ * @param[in] elems_per_box Number of input instants or segments merged into an
+ * output box
+ * @param[out] count Number of values of the output array
+ * @return On error return @p NULL
+ * @csqlfn #Tpoint_split_each_n_stboxes()
+ */
+STBox *
+tpoint_split_each_n_stboxes(const Temporal *temp, int elems_per_box,
+  int *count)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_tgeo_type(temp->temptype) || ! ensure_positive(elems_per_box))
+    return NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      *count = 1;
+      return tpoint_to_stbox(temp);
+    case TSEQUENCE:
+      return tpointseq_split_each_n_stboxes((TSequence *) temp, elems_per_box,
+        count);
+    default: /* TSEQUENCESET */
+      return tpointseqset_split_each_n_stboxes((TSequenceSet *) temp,
+        elems_per_box, count);
+  }
 }
 
 /*****************************************************************************
@@ -580,7 +760,7 @@ tpoint_stboxes_merge(const Temporal *temp, int max_count, int *count)
 
 /**
  * @ingroup meos_internal_box
- * @brief Return the GBOX in the last argument initialized with a @p LWPOINT
+ * @brief Return the @p GBOX in the last argument initialized with a @p LWPOINT
  * @param[in] p Point
  * @param[in] hasz True when the box has Z dimension
  * @param[in] hasm True when the box has M dimension
@@ -609,7 +789,7 @@ lwpoint_init_gbox(const POINT4D *p, bool hasz, bool hasm, bool geodetic,
 
 /**
  * @ingroup meos_internal_box
- * @brief Return the GBOX in the last argument merged with a @p LWPOINT
+ * @brief Return the @p GBOX in the last argument merged with a @p LWPOINT
  * @param[in] p Point
  * @param[in] hasz True when the box has Z dimension
  * @param[in] hasm True when the box has M dimension
@@ -621,77 +801,78 @@ lwpoint_merge_gbox(const POINT4D *p, bool hasz, bool hasm, bool geodetic,
   GBOX *box)
 {
   assert(p); assert(box);
-  if ( box->xmin > p->x ) box->xmin = p->x;
-  if ( box->xmax < p->x ) box->xmax = p->x;
-  if ( box->ymin > p->y ) box->ymin = p->y;
-  if ( box->ymax < p->y ) box->ymax = p->y;
+  if (box->xmin > p->x) box->xmin = p->x;
+  if (box->xmax < p->x) box->xmax = p->x;
+  if (box->ymin > p->y) box->ymin = p->y;
+  if (box->ymax < p->y) box->ymax = p->y;
   if (hasz || geodetic)
   {
-    if ( box->zmin > p->z ) box->zmin = p->z;
-    if ( box->zmax < p->z ) box->zmax = p->z;
+    if (box->zmin > p->z) box->zmin = p->z;
+    if (box->zmax < p->z) box->zmax = p->z;
   }
   if (hasm)
   {
-    if ( box->mmin > p->m ) box->mmin = p->m;
-    if ( box->mmax < p->m ) box->mmax = p->m;
+    if (box->mmin > p->m) box->mmin = p->m;
+    if (box->mmax < p->m) box->mmax = p->m;
   }
   return;
 }
 
 /**
- * @brief Return an array of spatial boxes from the segments of a line
+ * @brief Return an array of N spatial boxes from the segments of a line
  * (iterator function)
  * @param[in] lwline Line
  * @param[out] result Spatial box
- * @return Number of elements in the array
+ * @param[in] geodetic True when the line is geodetic
+ * @return Number of elements in the ouput array
+ * @note Temporal instant values do not have a precomputed bounding box
  */
 static int
-line_gboxes_iter(const LWLINE *lwline, GBOX *result)
+line_gboxes_iter(const LWLINE *lwline, bool geodetic, GBOX *result)
 {
   assert(lwline); assert(result); assert(lwline->points->npoints > 1);
   POINTARRAY *pa = lwline->points;
   int npoints = lwline->points->npoints;
-  const POINT4D *pt1, *pt2;
   bool hasz = FLAGS_GET_Z(pa->flags);
-  bool geodetic = FLAGS_GET_GEODETIC(pa->flags);
+  bool hasm = FLAGS_GET_M(pa->flags);
+  const POINT4D *pt;
 
   /* Line has only 1 point */
   if (npoints == 1)
   {
-    pt1 = (POINT4D *) getPoint_internal(pa, 0);
-    lwpoint_init_gbox(pt1, hasz, hasz, geodetic, &result[0]);
+    pt = (POINT4D *) getPoint_internal(pa, 0);
+    lwpoint_init_gbox(pt, hasz, hasm, geodetic, &result[0]);
     return 1;
   }
 
   /* One bounding box per segment */
-  pt1 = (POINT4D *) getPoint_internal(pa, 0);
+  pt = (POINT4D *) getPoint_internal(pa, 0);
   for (int i = 0; i < npoints - 1; i++)
   {
-    lwpoint_init_gbox(pt1, hasz, hasz, geodetic, &result[i]);
-    pt2 = (POINT4D *) getPoint_internal(pa, i + 1);
-    lwpoint_merge_gbox(pt2, hasz, hasz, geodetic, &result[i]);
-    pt1 = pt2;
+    lwpoint_init_gbox(pt, hasz, hasm, geodetic, &result[i]);
+    pt = (POINT4D *) getPoint_internal(pa, i + 1);
+    lwpoint_merge_gbox(pt, hasz, hasm, geodetic, &result[i]);
   }
   return npoints - 1;
 }
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of maximum n spatial boxes from the segments
- * of a line
+ * @brief Return an array of N spatial boxes from the segments of a line
  * @param[in] gs Line
  * @param[out] count Number of elements in the output array
  */
 GBOX *
 line_gboxes(const GSERIALIZED *gs, int *count)
 {
-  assert(gs); assert(gserialized_get_type(gs) == LINETYPE);
+  assert(gs); assert(count); assert(gserialized_get_type(gs) == LINETYPE);
   assert(! gserialized_is_empty(gs));
 
+  bool geodetic = FLAGS_GET_GEODETIC(gs->gflags);
   LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
   int npoints = lwline->points->npoints;
   /* No points in the point array */
-  if ( ! npoints )
+  if (! npoints)
   {
     lwline_free(lwline);
     return NULL;
@@ -699,28 +880,28 @@ line_gboxes(const GSERIALIZED *gs, int *count)
 
   int nboxes = npoints == 1 ? 1 : npoints - 1;
   GBOX *result = palloc(sizeof(GBOX) * nboxes);
-  *count = line_gboxes_iter(lwline, result);
+  *count = line_gboxes_iter(lwline, geodetic, result);
   lwline_free(lwline);
   return result;
 }
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of maximum n spatial boxes from the segments
- * of a multiline
+ * @brief Return an array of N spatial boxes from the segments of a multiline
  * @param[in] gs Multiline
  * @param[out] count Number of elements in the output array
  */
 GBOX *
 multiline_gboxes(const GSERIALIZED *gs, int *count)
 {
-  assert(gs); assert(gserialized_get_type(gs) == MULTILINETYPE);
+  assert(gs); assert(count); assert(gserialized_get_type(gs) == MULTILINETYPE);
   assert(! gserialized_is_empty(gs));
 
+  bool geodetic = FLAGS_GET_GEODETIC(gs->gflags);
   LWMLINE *lwmline = lwgeom_as_lwmline(lwgeom_from_gserialized(gs));
   int nlines = lwmline->ngeoms;
   /* No points in the point array */
-  if ( ! nlines )
+  if (! nlines)
   {
     lwmline_free(lwmline);
     return NULL;
@@ -737,7 +918,7 @@ multiline_gboxes(const GSERIALIZED *gs, int *count)
   /* One bounding box per segment */
   int nboxes = 0;
   for (int i = 0; i < nlines; i++)
-    nboxes += line_gboxes_iter(lwmline->geoms[i], &result[nboxes]);
+    nboxes += line_gboxes_iter(lwmline->geoms[i], geodetic, &result[nboxes]);
   lwmline_free(lwmline);
   *count = nboxes;
   assert(nboxes <= totalpoints);
@@ -746,141 +927,148 @@ multiline_gboxes(const GSERIALIZED *gs, int *count)
 
 /**
  * @ingroup meos_temporal_bbox
- * @brief Return an array of maximum n spatial boxes from the segments
- * of a (multi)line
+ * @brief Return an array of N spatial boxes obtained by merging consecutive
+ * segments of a (multi)line
  * @param[in] gs (Multi)line
  * @param[out] count Number of elements in the output array
+ * @return On error return @p NULL
  */
 GBOX *
 geo_gboxes(const GSERIALIZED *gs, int *count)
 {
-  assert(gs); assert(count);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) count) ||
+      ! ensure_not_empty(gs))
+    return NULL;
   uint32_t geotype = gserialized_get_type(gs);
-  if ( geotype != LINETYPE && geotype != MULTILINETYPE )
+  if (geotype != LINETYPE && geotype != MULTILINETYPE)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Argument is not a (multi) line");
     return NULL;
   }
-  if ( gserialized_is_empty(gs) )
-    return NULL;
 
-  if ( geotype == LINETYPE )
-    return line_gboxes(gs, count);
-  else
-    return multiline_gboxes(gs, count);
+  return (geotype == LINETYPE) ?
+    line_gboxes(gs, count) : multiline_gboxes(gs, count);
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Return an array of maximum n spatial boxes from the segments
- * of a line (iterator function)
+ * @brief Return an array of N spatial boxes obtained by merging consecutive 
+ * segments of a line (iterator function)
  * @param[in] lwline Line
- * @param[in] max_count Maximum number of elements in the output array.
- * @param[out] result Array of boxes. If `max_count` is < 1, the result
- * contains one box per segment. Otherwise, consecutive segments are combined
- * into a single box in the result to reach `max_count` number of boxes.
+ * @param[in] box_count Number of boxes
+ * @param[in] geodetic True when the line is geodetic
+ * @param[out] result Array of boxes. If `totalpoints <= box_count`, the result
+ * contains one box per segment. Otherwise, consecutive input segments are
+ * combined into a single box in the result to reach the given number of boxes.
  * @return Number of elements in the output array
+ * @note We must pass the `geodetic` flag since `LWLINE` does not have this
+ * flag set
  */
 static int
-line_gboxes_merge_iter(const LWLINE *lwline, int max_count, GBOX *result)
+line_split_n_gboxes_iter(const LWLINE *lwline, int box_count, bool geodetic,
+  GBOX *result)
 {
   assert(lwline); assert(result); assert(lwline->points->npoints > 1);
+  assert(box_count > 0);
+
   POINTARRAY *pa = lwline->points;
   int npoints = lwline->points->npoints;
-  const POINT4D *pt1, *pt2;
   bool hasz = FLAGS_GET_Z(pa->flags);
   bool hasm = FLAGS_GET_M(pa->flags);
-  bool geodetic = FLAGS_GET_GEODETIC(pa->flags);
+  const POINT4D *pt;
 
   /* Line has only 1 point */
   if (npoints == 1)
   {
-    pt1 = (POINT4D *) getPoint_internal(pa, 0);
-    lwpoint_init_gbox(pt1, hasz, hasz, geodetic, &result[0]);
+    pt = (POINT4D *) getPoint_internal(pa, 0);
+    lwpoint_init_gbox(pt, hasz, hasm, geodetic, &result[0]);
     return 1;
   }
 
   /* One bounding box per segment */
   int nsegs = npoints - 1;
-  if (max_count < 1 || nsegs <= max_count)
-    return line_gboxes_iter(lwline, result);
+  if (nsegs <= box_count)
+    return line_gboxes_iter(lwline, geodetic, result);
 
   /* One bounding box per several consecutive segments */
   /* Minimum number of input segments merged together in an output box */
-  int size = nsegs / max_count;
+  int size = nsegs / box_count;
   /* Number of output boxes that result from merging (size + 1) segments */
-  int remainder = nsegs % max_count;
+  int remainder = nsegs % box_count;
   int i = 0; /* Loop variable for input segments */
-  for (int k = 0; k < max_count; k++)
+  for (int k = 0; k < box_count; k++)
   {
     int j = i + size;
     if (k < remainder)
       j++;
     assert(i < j);
-    pt1 = (POINT4D *) getPoint_internal(pa, i);
-    lwpoint_init_gbox(pt1, hasz, hasm, geodetic, &result[k]);
+    pt = (POINT4D *) getPoint_internal(pa, i);
+    lwpoint_init_gbox(pt, hasz, hasm, geodetic, &result[k]);
     for (int l = i + 1; l <= j; l++)
     {
-      pt2 = (POINT4D *) getPoint_internal(pa, l);
-      lwpoint_merge_gbox(pt2, hasz, hasm, geodetic, &result[k]);
+      pt = (POINT4D *) getPoint_internal(pa, l);
+      lwpoint_merge_gbox(pt, hasz, hasm, geodetic, &result[k]);
     }
     i = j;
   }
   assert(i == nsegs);
-  return max_count;
+  return box_count;
 }
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of spatial boxes from the segments of a line
+ * @brief Return an array of N spatial boxes from the segments of a line
  * @param[in] gs Line
- * @param[in] max_count Maximum number of elements in the output array.
+ * @param[in] box_count Number of boxes
  * @param[out] count Number of elements in the output array
- * @result Array of boxes. If `max_count` is < 1, the result contains one box
- * per segment. Otherwise, consecutive segments are combined into a single box
- * in the result to reach `max_count` number of boxes.
+ * @return If `totalpoints <= box_count`, the result contains one box per
+ * segment. Otherwise, consecutive input segments are combined into a single
+ * box in the result to reach the given number of boxes.
  */
 GBOX *
-line_gboxes_merge(const GSERIALIZED *gs, int max_count, int *count)
+line_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
 {
-  assert(gs); assert(gserialized_get_type(gs) == LINETYPE);
-  assert(! gserialized_is_empty(gs));
+  assert(gs); assert(count); assert(gserialized_get_type(gs) == LINETYPE);
+  assert(! gserialized_is_empty(gs)); assert(box_count > 0);
 
+  bool geodetic = FLAGS_GET_GEODETIC(gs->gflags);
   LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
   int npoints = lwline->points->npoints;
   /* No points in the point array */
-  if ( ! npoints )
+  if (! npoints)
   {
     lwline_free(lwline);
     return NULL;
   }
 
-  int nboxes = (max_count < 1) ?
-    ( npoints == 1 ? 1 : npoints - 1 ) : max_count;
+  int nboxes = (npoints <= box_count) ?
+    ( npoints == 1 ? 1 : npoints - 1 ) : box_count;
   GBOX *result = palloc(sizeof(GBOX) * nboxes);
-  *count = line_gboxes_merge_iter(lwline, max_count, result);
+  *count = line_split_n_gboxes_iter(lwline, box_count, geodetic, result);
   lwline_free(lwline);
   return result;
 }
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return an array of spatial boxes from the segments of a multiline
+ * @brief Return an array of N spatial boxes from the segments of a multiline
  * @param[in] gs Multiline
- * @param[in] max_count Maximum number of elements in the output array.
+ * @param[in] box_count Number of boxes
  * @param[out] count Number of elements in the output array
- * @result Array of boxes. If `max_count` is < 1, the result contains one box
- * per segment. Otherwise, consecutive segments are combined into a single box
- * in the result to reach `max_count` number of boxes.
+ * @return If `totalpoints <= box_count`, the result contains one box per
+ * segment. Otherwise, consecutive input segments are combined into a single
+ * box in the result to reach the given number of boxes.
  */
 GBOX *
-multiline_gboxes_merge(const GSERIALIZED *gs, int max_count, int *count)
+multiline_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
 {
-  assert(gs); assert(gserialized_get_type(gs) == MULTILINETYPE);
-  assert(! gserialized_is_empty(gs));
+  assert(gs); assert(count); assert(gserialized_get_type(gs) == MULTILINETYPE);
+  assert(! gserialized_is_empty(gs)); assert(box_count > 0);
 
+  bool geodetic = FLAGS_GET_GEODETIC(gs->gflags);
   LWMLINE *lwmline = lwgeom_as_lwmline(lwgeom_from_gserialized(gs));
   int nlines = lwmline->ngeoms;
   /* No points in the point array */
@@ -894,94 +1082,257 @@ multiline_gboxes_merge(const GSERIALIZED *gs, int max_count, int *count)
     lwline = lwmline->geoms[i];
     totalpoints += lwline->points->npoints;
   }
-  int nboxes = (max_count < 1) ? totalpoints : max_count;
+  int nboxes = (totalpoints <= box_count) ? totalpoints : box_count;
   GBOX *result = palloc(sizeof(GBOX) * nboxes);
   int nboxes1;
 
   /* One bounding box per segment */
-  if (max_count < 1 || totalpoints <= max_count)
+  if (totalpoints <= box_count)
   {
     nboxes1 = 0;
     for (int i = 0; i < nlines; i++)
-      nboxes1 += line_gboxes_merge_iter(lwmline->geoms[i], max_count,
-        &result[nboxes1]);
+      nboxes1 += line_split_n_gboxes_iter(lwmline->geoms[i], box_count,
+        geodetic, &result[nboxes1]);
     *count = nboxes1;
     assert(nboxes1 <= totalpoints);
     return result;
   }
 
-  /* Amount of bounding boxes per composing lines determined from the
+  /* Number of bounding boxes per composing lines determined from the
    * proportion of nlines and totalpoints */
-  if (nlines <= max_count)
+  if (nlines <= box_count)
   {
     nboxes1 = 0;
     for (int i = 0; i < nlines; i++)
     {
       lwline = lwmline->geoms[i];
-      int nboxes_line = (int) (max_count * lwline->points->npoints * 1.0 /
+      int nboxes_line = (int) (box_count * lwline->points->npoints * 1.0 /
         totalpoints);
       if (! nboxes_line)
         nboxes_line = 1;
-      nboxes1 += line_gboxes_merge_iter(lwline, nboxes_line, &result[nboxes1]);
+      nboxes1 += line_split_n_gboxes_iter(lwline, nboxes_line,
+        geodetic, &result[nboxes1]);
     }
-    assert(nboxes1 <= max_count);
+    assert(nboxes1 <= box_count);
     *count = nboxes1;
     return result;
   }
 
   /* Merge consecutive sequences to reach the maximum number of boxes */
   /* Minimum number of sequences merged together in an output box */
-  int size = nlines / max_count;
+  int size = nlines / box_count;
   /* Number of output boxes that result from merging (size + 1) sequences */
-  int remainder = nlines % max_count;
+  int remainder = nlines % box_count;
   int i = 0; /* Loop variable for input sequences */
-  for (int k = 0; k < max_count; k++)
+  for (int k = 0; k < box_count; k++)
   {
     int j = i + size;
     if (k < remainder)
       j++;
-    line_gboxes_merge_iter(lwmline->geoms[i], 1, &result[k]);
+    line_split_n_gboxes_iter(lwmline->geoms[i], 1, geodetic, &result[k]);
     for (int l = i + 1; l < j; l++)
     {
       GBOX box;
-      line_gboxes_merge_iter(lwmline->geoms[l], 1, &box);
+      line_split_n_gboxes_iter(lwmline->geoms[l], 1, geodetic, &box);
       gbox_merge(&box, &result[k]);
     }
     i = j;
   }
   assert(i == nlines);
-  *count = max_count;
+  *count = box_count;
   return result;
 }
 
 /**
  * @ingroup meos_temporal_bbox
- * @brief Return an array of spatial boxes from the segments of a (multi)line
+ * @brief Return an array of N spatial boxes obtained by merging consecutive
+ * segments of a (multi)line
  * @param[in] gs (Multi)line
- * @param[in] max_count Maximum number of elements in the output array.
+ * @param[in] box_count Number of boxes
  * @param[out] count Number of elements in the output array
- * @result Array of boxes. If `max_count` is < 1, the result contains one box
- * per segment. Otherwise, consecutive segments are combined into a single box
- * in the result to reach `max_count` number of boxes.
+ * @return On error return @p NULL
  */
 GBOX *
-geo_gboxes_merge(const GSERIALIZED *gs, int max_count, int *count)
+geo_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
 {
-  assert(gs); assert(count);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) count) ||
+      ! ensure_not_empty(gs) || ! ensure_positive(box_count))
+    return NULL;
   uint32_t geotype = gserialized_get_type(gs);
-  if ( geotype != LINETYPE && geotype != MULTILINETYPE )
+  if (geotype != LINETYPE && geotype != MULTILINETYPE)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Argument is not a (multi)line");
     return NULL;
   }
-  if ( gserialized_is_empty(gs) )
-    return NULL;
 
-  if ( geotype == LINETYPE )
-    return line_gboxes_merge(gs, max_count, count);
-  else
-    return multiline_gboxes_merge(gs, max_count, count);
+  return (geotype == LINETYPE) ?
+    line_split_n_gboxes(gs, box_count, count) :
+    multiline_split_n_gboxes(gs, box_count, count);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return an array of spatial boxes from the segments of a line
+ * (iterator function)
+ * @param[in] lwline Line
+ * @param[in] elems_per_box Number of input segments merged into an output box
+ * @param[in] geodetic True when the line is geodetic
+ * @param[out] result Array of boxes
+ * @return Number of elements in the output array. If the number of segments <=
+ * `elems_per_box`, the result contains a single box. Otherwise, consecutive
+ * input segments are combined into a single output box.
+ * @note We must pass the `geodetic` flag since `LWLINE` does not have this
+ * flag set
+ */
+static int
+line_split_each_n_gboxes_iter(const LWLINE *lwline, int elems_per_box,
+  bool geodetic, GBOX *result)
+{
+  assert(lwline); assert(result); assert(elems_per_box > 0);
+
+  POINTARRAY *pa = lwline->points;
+  int npoints = lwline->points->npoints;
+  bool hasz = FLAGS_GET_Z(pa->flags);
+  bool hasm = FLAGS_GET_M(pa->flags);
+  const POINT4D *pt;
+
+  /* Line has only 1 point */
+  if (npoints == 1)
+  {
+    pt = (POINT4D *) getPoint_internal(pa, 0);
+    lwpoint_init_gbox(pt, hasz, hasm, geodetic, &result[0]);
+    return 1;
+  }
+
+  /* General case */
+  int k = 0;
+  pt = (POINT4D *) getPoint_internal(pa, 0);
+  lwpoint_init_gbox(pt, hasz, hasm, geodetic, &result[k]);
+  for (int i = 1; i < npoints; ++i)
+  {
+    GBOX box;
+    pt = (POINT4D *) getPoint_internal(pa, i);
+    lwpoint_init_gbox(pt, hasz, hasm, geodetic, &box);
+    gbox_merge(&box, &result[k]);
+    if ((i % elems_per_box == 0) && (i < npoints - 1))
+      result[++k] = box;
+  }
+  int nboxes = ceil((double) (npoints - 1) / (double) elems_per_box);
+  assert(k + 1 == nboxes);
+  return nboxes;
+}
+
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of spatial boxes from the segments of a line
+ * @param[in] gs Line
+ * @param[in] elems_per_box Number of input segments merged into an output box
+ * @param[out] count Number of elements in the output array
+ * @return If the number of segments <= `elems_per_box`, the result contains a 
+ * single box. Otherwise, consecutive input segments are combined into a single
+ * output box.
+ */
+GBOX *
+line_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
+{
+  assert(gs); assert(gserialized_get_type(gs) == LINETYPE);
+  assert(! gserialized_is_empty(gs)); assert(elems_per_box > 0);
+
+  LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
+  int npoints = lwline->points->npoints;
+  /* No points in the point array */
+  if (! npoints)
+  {
+    lwline_free(lwline);
+    return NULL;
+  }
+
+  /* Number of segments */
+  int nsegs = (npoints == 1) ? 1 : npoints - 1;
+  int nboxes = ceil((double) nsegs / (double) elems_per_box);
+  GBOX *result = palloc(sizeof(GBOX) * nboxes);
+  bool geodetic = FLAGS_GET_GEODETIC(gs->gflags);
+  *count = line_split_each_n_gboxes_iter(lwline, elems_per_box, geodetic,
+    result);
+  lwline_free(lwline);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return an array of spatial boxes from the segments of a multiline
+ * @param[in] gs Multiline
+ * @param[in] elems_per_box Number of input segments merged into an output box
+ * @param[out] count Number of elements in the output array
+ */
+GBOX *
+multiline_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box,
+  int *count)
+{
+  assert(gs); assert(gserialized_get_type(gs) == MULTILINETYPE);
+  assert(! gserialized_is_empty(gs)); assert(elems_per_box > 0);
+
+  LWMLINE *lwmline = lwgeom_as_lwmline(lwgeom_from_gserialized(gs));
+  int nlines = lwmline->ngeoms;
+  /* No points in the point array */
+  if (! nlines)
+  {
+    lwmline_free(lwmline);
+    return NULL;
+  }
+
+  /* Compute the total number of points */
+  int totalpoints = 0;
+  const LWLINE *lwline;
+  for (int i = 0; i < nlines; i++)
+  {
+    lwline = lwmline->geoms[i];
+    totalpoints += lwline->points->npoints;
+  }
+
+  /* Iterate for every composing line */
+  int nboxes = 0;
+  GBOX *result = palloc(sizeof(GBOX) * totalpoints);
+  bool geodetic = FLAGS_GET_GEODETIC(gs->gflags);
+  for (int i = 0; i < nlines; ++i)
+    nboxes += line_split_each_n_gboxes_iter(lwmline->geoms[i], elems_per_box,
+      geodetic, &result[nboxes]);
+  *count = nboxes;
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_bbox
+ * @brief Return an array of spatial boxes obtained by merging consecutive
+ * segments of a (multi)line
+ * @param[in] gs (Multi)line
+ * @param[in] elems_per_box Number of input segments combined in an output box
+ * @param[out] count Number of boxes in the output array
+ * @return If the number of segments is <= `elems_per_box`, the result contains
+ * a single box. Otherwise, consecutive input segments are combined into an
+ * output box in the result. On error return @p NULL
+ */
+GBOX *
+geo_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) count) ||
+      ! ensure_not_empty(gs) || ! ensure_positive(elems_per_box))
+    return NULL;
+  uint32_t geotype = gserialized_get_type(gs);
+  if (geotype != LINETYPE && geotype != MULTILINETYPE)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Argument is not a (multi)line");
+    return NULL;
+  }
+
+  return (geotype == LINETYPE) ?
+    line_split_each_n_gboxes(gs, elems_per_box, count) :
+    multiline_split_each_n_gboxes(gs, elems_per_box, count);
 }
 
 /*****************************************************************************

@@ -1782,7 +1782,7 @@ geopointarr_make_trajectory(GSERIALIZED **points, int count, const STBox *box,
  * @brief Write in the buffer a GBOX from a spatiotemporal box
  * @param[in] box Spatiotemporal bounding box
  * @param[out] buf Output buffer where the GBOX is written
- * @result Number of bytes written into the buffer
+ * @return Number of bytes written into the buffer
  * @note Implements the logic of PostGIS function gserialized2_from_gbox
  */
 static size_t
@@ -2577,7 +2577,7 @@ tpointseqset_to_geomeas(const TSequenceSet *ss, const TSequenceSet *meas)
  * sequence point and optionally a temporal float
  * @param[in] seq Temporal point
  * @param[in] meas Temporal float, may be @p NULL
- * @result The result is a (Multi)Point when there are only instantaneous
+ * @return The result is a (Multi)Point when there are only instantaneous
  * sequences or a (Multi)linestring when each composing linestring corresponds
  * to a segment of a sequence of the temporal point
  */
@@ -4170,7 +4170,7 @@ geog_azimuth(Datum geog1, Datum geog2)
  * @brief Return the direction of a temporal point sequence
  * @param[in] seq Temporal sequence
  * @param[out] result Azimuth between the first and last point
- * @result True when it is possible to determine the azimuth, i.e., when there
+ * @return True when it is possible to determine the azimuth, i.e., when there
  * are at least two points that are not equal; false, otherwise.
  * @csqlfn #Tpoint_direction()
  */
@@ -4201,7 +4201,7 @@ tpointseq_direction(const TSequence *seq, double *result)
  * @brief Return the direction of a temporal point sequence set
  * @param[in] ss Temporal sequence set
  * @param[out] result Azimuth between the first and last point
- * @result True when it is possible to determine the azimuth, i.e., when there
+ * @return True when it is possible to determine the azimuth, i.e., when there
  * are at least two points that are not equal; false, otherwise.
  * @csqlfn #Tpoint_direction()
  */
@@ -5151,7 +5151,7 @@ seg2d_intersection(const POINT2D *a, const POINT2D *b, const POINT2D *c,
  * interpolation split into an array of non self-intersecting fragments
  * @param[in] seq Temporal point
  * @param[out] count Number of elements in the resulting array
- * @result Boolean array determining the instant numbers at which the
+ * @return Boolean array determining the instant numbers at which the
  * discrete sequence must be split
  * @pre The temporal point has at least 2 instants
  */
@@ -5223,7 +5223,7 @@ static void gbox_init_point2d(const POINT2D *p, GBOX *gbox)
  * @note The function works only on 2D even if the input points are in 3D
  * @param[in] seq Temporal point
  * @param[out] count Number of elements in the resulting array
- * @result Boolean array determining the instant numbers at which the
+ * @return Boolean array determining the instant numbers at which the
  * sequence must be split
  * @pre The input sequence has at least 3 instants
  */

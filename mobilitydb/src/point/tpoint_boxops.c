@@ -61,7 +61,9 @@ PGDLLEXPORT Datum Tpoint_stboxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_stboxes);
 /**
  * @ingroup mobilitydb_temporal_bbox
- * @brief Return an array of spatiotemporal boxes from a temporal point
+ * @brief Return an array of spatiotemporal boxes from the instants or segments
+ * of a temporal point, where the choice between instants or segments depends,
+ * respectively, on whether the interpolation is discrete or continuous
  * @sqlfn stboxes()
  */
 Datum
@@ -82,7 +84,8 @@ PGDLLEXPORT Datum Geo_stboxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_stboxes);
 /**
  * @ingroup mobilitydb_temporal_bbox
- * @brief Return an array of spatial boxes from a (mult)linestring
+ * @brief Return an array of spatial boxes from the segments of a 
+ * (mult)linestring
  * @sqlfn stboxes()
  */
 Datum
@@ -105,21 +108,23 @@ Geo_stboxes(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Tpoint_stboxes_merge(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_stboxes_merge);
+PGDLLEXPORT Datum Tpoint_split_n_stboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_split_n_stboxes);
 /**
  * @ingroup mobilitydb_temporal_bbox
- * @brief Return an array of maximum n spatiotemporal boxes from a temporal
- * point
- * @sqlfn stboxesMerge()
+ * @brief Return an array of N spatiotemporal boxes from the instants or
+ * segments of a temporal point, where the choice between instants or segments
+ * depends, respectively, on whether the interpolation is discrete or
+ * continuous
+ * @sqlfn splitNStboxes()
  */
 Datum
-Tpoint_stboxes_merge(PG_FUNCTION_ARGS)
+Tpoint_split_n_stboxes(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int max_count = PG_GETARG_INT32(1);
+  int box_count = PG_GETARG_INT32(1);
   int count;
-  STBox *boxes = tpoint_stboxes_merge(temp, max_count, &count);
+  STBox *boxes = tpoint_split_n_stboxes(temp, box_count, &count);
   PG_FREE_IF_COPY(temp, 0);
   if (! boxes)
     PG_RETURN_NULL();
@@ -128,20 +133,74 @@ Tpoint_stboxes_merge(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
-PGDLLEXPORT Datum Geo_stboxes_merge(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geo_stboxes_merge);
+PGDLLEXPORT Datum Geo_split_n_stboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_split_n_stboxes);
 /**
  * @ingroup mobilitydb_temporal_bbox
- * @brief Return an array of maximum n spatial boxes from a linestring
- * @sqlfn stboxes()
+ * @brief Return an array of N spatial boxes from the segments of a 
+ * (multi)linestring
+ * @sqlfn splitNStboxes()
  */
 Datum
-Geo_stboxes_merge(PG_FUNCTION_ARGS)
+Geo_split_n_stboxes(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  int max_count = PG_GETARG_INT32(1);
+  int box_count = PG_GETARG_INT32(1);
   int count;
-  GBOX *gboxes = geo_gboxes_merge(gs, max_count, &count);
+  GBOX *gboxes = geo_split_n_gboxes(gs, box_count, &count);
+  int srid = gserialized_get_srid(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! gboxes)
+    PG_RETURN_NULL();
+  STBox *boxes = palloc(sizeof(STBox) * count);
+  for (int i = 0; i < count; i++)
+    gbox_set_stbox(&gboxes[i], srid, &boxes[i]);
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(gboxes); pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Tpoint_split_each_n_stboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_split_each_n_stboxes);
+/**
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return an array of spatiotemporal boxes from the instants or segments
+ * of a temporal point, where the choice between instants or segments depends,
+ * respectively, on whether the interpolation is discrete or continuous
+ * @sqlfn splitEachNStboxes()
+ */
+Datum
+Tpoint_split_each_n_stboxes(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int elems_per_box = PG_GETARG_INT32(1);
+  int count;
+  STBox *boxes = tpoint_split_each_n_stboxes(temp, elems_per_box, &count);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! boxes)
+    PG_RETURN_NULL();
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Geo_split_each_n_stboxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_split_each_n_stboxes);
+/**
+ * @ingroup mobilitydb_temporal_bbox
+ * @brief Return an array of spatial boxes from the segments of a
+ * (multi)linestring
+ * @sqlfn splitEachNStboxes()
+ */
+Datum
+Geo_split_each_n_stboxes(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  int elems_per_box = PG_GETARG_INT32(1);
+  int count;
+  GBOX *gboxes = geo_split_each_n_gboxes(gs, elems_per_box, &count);
   int srid = gserialized_get_srid(gs);
   PG_FREE_IF_COPY(gs, 0);
   if (! gboxes)

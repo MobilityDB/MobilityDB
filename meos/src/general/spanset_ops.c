@@ -2670,7 +2670,7 @@ distance_spanset_value(const SpanSet *ss, Datum value)
  * @brief Return the distance between a span set and an integer
  * @param[in] ss Span set
  * @param[in] i Value
- * @result On error return -1
+ * @return On error return -1.0
  * @csqlfn #Distance_spanset_value()
  */
 int
@@ -2688,7 +2688,7 @@ distance_spanset_int(const SpanSet *ss, int i)
  * @brief Return the distance between a span set and a big integer
  * @param[in] ss Span set
  * @param[in] i Value
- * @result On error return -1.0
+ * @return On error return -1.0
  * @csqlfn #Distance_spanset_value()
  */
 int64
@@ -2706,7 +2706,7 @@ distance_spanset_bigint(const SpanSet *ss, int64 i)
  * @brief Return the distance between a span set and a float
  * @param[in] ss Span set
  * @param[in] d Value
- * @result On error return -1.0
+ * @return On error return -1.0
  * @csqlfn #Distance_spanset_value()
  */
 double
@@ -2725,7 +2725,7 @@ distance_spanset_float(const SpanSet *ss, double d)
  * double
  * @param[in] ss Span set
  * @param[in] d Value
- * @result On error return -1
+ * @return On error return -1.0
  * @csqlfn #Distance_spanset_value()
  */
 int
@@ -2743,7 +2743,7 @@ distance_spanset_date(const SpanSet *ss, DateADT d)
  * @brief Return the distance in seconds between a span set and a timestamptz
  * @param[in] ss Span set
  * @param[in] t Value
- * @result On error return -1.0
+ * @return On error return -1.0
  * @csqlfn #Distance_spanset_value()
  */
 double
@@ -2762,7 +2762,7 @@ distance_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
  * @brief Return the distance between a span set and a span
  * @param[in] ss Span set
  * @param[in] s Span
- * @result On error return -1.0
+ * @return On error return -1.0
  * @csqlfn #Distance_spanset_span()
  */
 Datum
@@ -2778,7 +2778,7 @@ distance_spanset_span(const SpanSet *ss, const Span *s)
  * @brief Return the distance between an integer span set and a span
  * @param[in] ss Spanset
  * @param[in] s Span
- * @return On error return -1
+ * @return On error return -1.0
  * @csqlfn #Distance_spanset_span()
  */
 int
@@ -2797,7 +2797,7 @@ distance_intspanset_intspan(const SpanSet *ss, const Span *s)
  * @brief Return the distance between a big integer span set and a span
  * @param[in] ss Spanset
  * @param[in] s Span
- * @return On error return -1
+ * @return On error return -1.0
  * @csqlfn #Distance_spanset_span()
  */
 int64
@@ -2835,7 +2835,7 @@ distance_floatspanset_floatspan(const SpanSet *ss, const Span *s)
  * @brief Return the distance in days between a date span set and a span
  * @param[in] ss Spanset
  * @param[in] s Span
- * @return On error return -1
+ * @return On error return -1.0
  * @csqlfn #Distance_spanset_span()
  */
 int
@@ -2874,7 +2874,7 @@ distance_tstzspanset_tstzspan(const SpanSet *ss, const Span *s)
  * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two span sets
  * @param[in] ss1,ss2 Span sets
- * @result On error return -1.0
+ * @return On error return -1.0
  * @csqlfn #Distance_spanset_span()
  */
 Datum
@@ -2889,7 +2889,7 @@ distance_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two integer span sets
  * @param[in] ss1,ss2 Spanset
- * @return On error return -1
+ * @return On error return -1.0
  * @csqlfn #Distance_spanset_spanset()
  */
 int
@@ -2907,7 +2907,7 @@ distance_intspanset_intspanset(const SpanSet *ss1, const SpanSet *ss2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two big integer span sets
  * @param[in] ss1,ss2 Spanset
- * @return On error return -1
+ * @return On error return -1.0
  * @csqlfn #Distance_spanset_spanset()
  */
 int64
@@ -2943,7 +2943,7 @@ distance_floatspanset_floatspanset(const SpanSet *ss1, const SpanSet *ss2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance in days between two date span sets
  * @param[in] ss1,ss2 Spanset
- * @return On error return -1
+ * @return On error return -1.0
  * @csqlfn #Distance_spanset_spanset()
  */
 int
