@@ -1931,14 +1931,13 @@ geo_as_hexewkb(const GSERIALIZED *gs, const char *endian)
  * @note wkb is in *binary* not hex form
  */
 GSERIALIZED *
-geo_from_ewkb(const bytea *bytea_wkb, int32 srid)
+geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32 srid)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) bytea_wkb))
+  if (! ensure_not_null((void *) wkb))
     return NULL;
 
-  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  LWGEOM *geom = lwgeom_from_wkb(wkb, VARSIZE_ANY_EXHDR(bytea_wkb),
+  LWGEOM *geom = lwgeom_from_wkb(wkb, wkb_size,
     LW_PARSER_CHECK_ALL);
   if (!geom)
   {
