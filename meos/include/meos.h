@@ -403,7 +403,7 @@ extern char *geo_as_ewkt(const GSERIALIZED *gs, int precision);
 extern char *geo_as_geojson(const GSERIALIZED *gs, int option, int precision, const char *srs);
 extern char *geo_as_hexewkb(const GSERIALIZED *gs, const char *endian);
 extern char *geo_as_text(const GSERIALIZED *gs, int precision);
-extern GSERIALIZED *geo_from_ewkb(const bytea *bytea_wkb, int32 srid);
+extern GSERIALIZED *geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32 srid);
 extern GSERIALIZED *geo_from_geojson(const char *geojson);
 extern char *geo_out(const GSERIALIZED *gs);
 extern bool geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
