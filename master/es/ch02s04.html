@@ -44,7 +44,7 @@ SELECT width(intspanset '{[1,3),[5,7)}');
 -- 4
 SELECT width(intspanset '{[1,3),[5,7)}', true);
 -- 6
-</pre></li><li class="listitem"><a name="setspan_duration"></a><a class="indexterm" name="idm917"></a><p>Obtener el intervalo de tiempo</p><p><code class="varname">duration({datespan,tstzspan}) → interval</code></p><p><code class="varname">duration({datespanset,tstzspanset},boundspan bool=false) → interval</code></p><p>Se puede establecer a verdadero un parámetro adicional para calcular la duración en el rango delimitador, ignorando así las posibles brechas de tiempo</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_duration"></a><a class="indexterm" name="idm917"></a><p>Obtener el rango de tiempo</p><p><code class="varname">duration({datespan,tstzspan}) → interval</code></p><p><code class="varname">duration({datespanset,tstzspanset},boundspan bool=false) → interval</code></p><p>Se puede establecer a verdadero un parámetro adicional para calcular la duración en el rango delimitador, ignorando así las posibles brechas de tiempo</p><pre class="programlisting">
 SELECT duration(datespan '[2001-01-01, 2001-01-03)');
 -- 2 days
 SELECT duration(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}');
