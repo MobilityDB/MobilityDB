@@ -1988,7 +1988,7 @@ tpointseq_trajectory(const TSequence *seq)
   }
   STBox box;
   memset(&box, 0, sizeof(box));
-  tsequence_set_bbox(seq, &box);
+  tspatialseq_set_stbox(seq, &box);
   GSERIALIZED *result = geopointarr_make_trajectory(points, npoints, &box,
     interp);
   pfree(points);
@@ -2027,7 +2027,7 @@ tpointseqset_step_trajectory(const TSequenceSet *ss)
   }
   STBox box;
   memset(&box, 0, sizeof(box));
-  tsequenceset_set_bbox(ss, &box);
+  tspatialseqset_set_stbox(ss, &box);
   GSERIALIZED *result = geopointarr_make_trajectory(points, npoints, &box,
     MEOS_FLAGS_GET_INTERP(ss->flags));
   pfree(points);
@@ -2069,7 +2069,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
   }
   STBox box;
   memset(&box, 0, sizeof(box));
-  tsequenceset_set_bbox(ss, &box);
+  tspatialseqset_set_stbox(ss, &box);
   GSERIALIZED *result = NULL;
   /* Only points */
   if (npoints > 0 && nlines == 0)
@@ -2436,6 +2436,8 @@ tpointseq_disc_to_geomeas(const TSequence *seq, const TSequence *meas)
 static GSERIALIZED *
 tpointseq_cont_to_geomeas(const TSequence *seq, const TSequence *meas)
 {
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Instantaneous sequence */
   if (seq->count == 1)
     return tpointinst_to_geomeas(TSEQUENCE_INST_N(seq, 0),
@@ -2584,6 +2586,8 @@ tpointseqset_to_geomeas(const TSequenceSet *ss, const TSequenceSet *meas)
 static GSERIALIZED *
 tpointseq_cont_to_geomeas_segm(const TSequence *seq, const TSequence *meas)
 {
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Instantaneous sequence */
   if (seq->count == 1)
     /* Result is a point */
@@ -3654,7 +3658,7 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
 
   / * Bounding box test to drop geometries smaller than the resolution * /
   STBox box;
-  temporal_set_bbox(temp, &box);
+  tspatial_set_stbox(temp, &box);
   double tpoint_width = box.xmax - box.xmin;
   double tpoint_height = box.ymax - box.ymin;
   / * We use half of the square height and width as limit: We use this
@@ -5461,9 +5465,11 @@ tpoint_is_simple(const Temporal *temp)
  * @pre The sequence has at least two instants
  */
 static TSequence **
-tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
+tpointseq_disc_split(const TSequence *seq, bool *splits, int count)
 {
-  assert(seq->count > 1);
+  assert(seq); assert(splits); assert(seq->count > 1);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   TSequence **result = palloc(sizeof(TSequence *) * count);
   /* Create the splits */
@@ -5494,9 +5500,11 @@ tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
  * @note This function is called for each sequence of a sequence set
  */
 static TSequence **
-tpointcontseq_split(const TSequence *seq, bool *splits, int count)
+tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
 {
-  assert(seq->count > 2);
+  assert(seq); assert(splits); assert(seq->count > 2);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   TSequence **result = palloc(sizeof(TSequence *) * count);
@@ -5585,8 +5593,8 @@ tpointseq_make_simple(const TSequence *seq, int *count)
   }
 
   result = (interp == DISCRETE) ?
-    tpointdiscseq_split(seq, splits, numsplits + 1) :
-    tpointcontseq_split(seq, splits, numsplits + 1);
+    tpointseq_disc_split(seq, splits, numsplits + 1) :
+    tpointseq_cont_split(seq, splits, numsplits + 1);
   *count = numsplits + 1;
   pfree(splits);
   return result;

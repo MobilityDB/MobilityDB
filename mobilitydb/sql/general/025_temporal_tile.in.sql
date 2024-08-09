@@ -95,22 +95,98 @@ CREATE TYPE index_tbox AS (
   tile tbox
 );
 
-CREATE FUNCTION valueTimeTiles(bounds tbox, size float, duration interval,
+CREATE FUNCTION valueTiles(bounds tbox, vsize float, vorigin float DEFAULT 0.0)
+  RETURNS SETOF index_tbox
+  AS 'MODULE_PATHNAME', 'Tbox_value_tiles'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION timeTiles(bounds tbox, duration interval,
+  torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS SETOF index_tbox
+  AS 'MODULE_PATHNAME', 'Tbox_time_tiles'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueTimeTiles(bounds tbox, vsize float, duration interval,
   vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION getValueTimeTile("value" float, "time" timestamptz, size float,
+/*****************************************************************************/
+
+CREATE FUNCTION getValueTile(v float, vsize float, vorigin float DEFAULT 0.0)
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_get_value_tile'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getTimeTileTBox(t timestamptz, duration interval,
+  torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS tbox
+  AS 'MODULE_PATHNAME', 'Tbox_get_time_tile'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getValueTimeTile(v float, t timestamptz, vsize float,
   duration interval, vorigin float DEFAULT 0.0,
   torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'Tbox_value_time_tile'
+  AS 'MODULE_PATHNAME', 'Tbox_get_value_time_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Boxes
  *****************************************************************************/
+
+CREATE FUNCTION timeSpans(tbool, tsize interval,
+    torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_time_spans'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION timeSpans(tint, tsize interval,
+    torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_time_spans'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION timeSpans(tfloat, tsize interval,
+    torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_time_spans'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION timeSpans(ttext, tsize interval,
+    torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Temporal_time_spans'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+
+CREATE FUNCTION valueSpans(tint, vsize int, vorigin int DEFAULT 0)
+  RETURNS intspan[]
+  AS 'MODULE_PATHNAME', 'Tnumber_value_spans'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION valueSpans(tfloat, vsize float, vorigin float DEFAULT 0.0)
+  RETURNS floatspan[]
+  AS 'MODULE_PATHNAME', 'Tnumber_value_spans'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+
+/*****************************************************************************/
+
+CREATE FUNCTION valueBoxes(tint, vsize int, vorigin int DEFAULT 0)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_value_boxes'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION valueBoxes(tfloat, vsize float, vorigin float DEFAULT 0.0)
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_value_boxes'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+
+CREATE FUNCTION timeBoxes(tint, tsize interval,
+    torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_time_boxes'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION timeBoxes(tfloat, tsize interval,
+    torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_time_boxes'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 CREATE FUNCTION valueTimeBoxes(tint, vsize int, tsize interval,
     vorigin int DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')

@@ -303,19 +303,17 @@ Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
   get_call_result_type(fcinfo, NULL, &resultTupleDesc);
   BlessTupleDesc(resultTupleDesc);
 
-  /* Construct the result */
-  HeapTuple resultTuple;
-  bool result_is_null[2] = {0,0}; /* needed to say no value is null */
-  Datum result_values[2]; /* used to construct the composite return value */
-  Datum result; /* the actual composite return value */
+  /* Construct the composite return value */
+  Datum values[2];
   /* Store geometry */
-  result_values[0] = PointerGetDatum(geom);
+  values[0] = PointerGetDatum(geom);
   /* Store timestamp array */
-  result_values[1] = PointerGetDatum(timesarr);
-  /* Form tuple and return */
-  resultTuple = heap_form_tuple(resultTupleDesc, result_values, result_is_null);
-  result = HeapTupleGetDatum(resultTuple);
-
+  values[1] = PointerGetDatum(timesarr);
+  /* Form tuple */
+  bool is_null[2] = {0,0}; /* needed to say no value is null */
+  HeapTuple resultTuple = heap_form_tuple(resultTupleDesc, values, is_null);
+  Datum result = HeapTupleGetDatum(resultTuple);
+  /* Clean up and return */
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }

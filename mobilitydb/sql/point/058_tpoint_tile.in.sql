@@ -57,6 +57,12 @@ CREATE FUNCTION spaceTiles(bounds stbox, xsize float, ysize float,
   AS 'SELECT @extschema@.spaceTiles($1, $2, $3, $2, $4, $5)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
+CREATE FUNCTION timeTiles(bounds stbox, duration interval,
+  timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
+  RETURNS SETOF index_stbox
+  AS 'MODULE_PATHNAME', 'Stbox_time_tiles'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION spaceTimeTiles(bounds stbox, xsize float, ysize float, zsize float,
   duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
   timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
@@ -76,12 +82,14 @@ CREATE FUNCTION spaceTimeTiles(bounds stbox, xsize float, ysize float,
   AS 'SELECT @extschema@.spaceTimeTiles($1, $2, $3, $2, $4, $5, $6, $7)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE FUNCTION getSpaceTile(point geometry, xsize float, ysize float, zsize float,
-    sorigin geometry DEFAULT 'Point(0 0 0)')
+/******************************************************************************/
+
+CREATE FUNCTION getSpaceTile(point geometry, xsize float, ysize float, 
+    zsize float, sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Stbox_space_tile'
+  AS 'MODULE_PATHNAME', 'Stbox_get_space_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION getSpaceTile(point geometry, size float,
+CREATE FUNCTION getSpaceTile(point geometry, xsize float,
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
   AS 'SELECT @extschema@.getSpaceTile($1, $2, $2, $2, $3)'
@@ -92,20 +100,26 @@ CREATE FUNCTION getSpaceTile(point geometry, xsize float, ysize float,
   AS 'SELECT @extschema@.getSpaceTile($1, $2, $3, $2, $4)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE FUNCTION getSpaceTimeTile(point geometry, "time" timestamptz, xsize float,
+CREATE FUNCTION getTimeTileStbox(t timestamptz, duration interval,
+    torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_get_time_tile'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getSpaceTimeTile(point geometry, t timestamptz, xsize float,
     ysize float, zsize float, duration interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Stbox_space_time_tile'
+  AS 'MODULE_PATHNAME', 'Stbox_get_space_time_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION getSpaceTimeTile(point geometry, "time" timestamptz, size float,
+CREATE FUNCTION getSpaceTimeTile(point geometry, t timestamptz, xsize float,
     duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
   AS 'SELECT @extschema@.getSpaceTimeTile($1, $2, $3, $3, $3, $4, $5, $6)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
-CREATE FUNCTION getSpaceTimeTile(point geometry, "time" timestamptz, xsize float,
+CREATE FUNCTION getSpaceTimeTile(point geometry, t timestamptz, xsize float,
     ysize float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
@@ -132,6 +146,13 @@ CREATE FUNCTION spaceBoxes(tgeompoint, sizeX float, sizeY float,
   RETURNS stbox[]
   AS 'SELECT @extschema@.spaceBoxes($1, $2, $3, $2, $4, $5)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+
+CREATE FUNCTION timeBoxes(tgeompoint, interval,
+    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tpoint_time_boxes'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 CREATE FUNCTION spaceTimeBoxes(tgeompoint, xsize float, ysize float,
     zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',

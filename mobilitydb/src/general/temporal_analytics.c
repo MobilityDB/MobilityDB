@@ -244,7 +244,8 @@ Temporal_hausdorff_distance(PG_FUNCTION_ARGS)
 static SimilarityPathState *
 similarity_path_state_make(Match *path, int size)
 {
-  assert(size > 0);
+  assert(path); assert(size > 0);
+
   SimilarityPathState *state = palloc0(sizeof(SimilarityPathState));
   /* Fill in state */
   state->done = false;
@@ -261,7 +262,7 @@ similarity_path_state_make(Match *path, int size)
 static void
 similarity_path_state_next(SimilarityPathState *state)
 {
-  if (!state || state->done)
+  if (! state || state->done)
     return;
   /* Move to the next match */
   state->i--;
@@ -281,7 +282,6 @@ Datum
 Temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
 {
   FuncCallContext *funcctx;
-  bool isnull[2] = {0,0}; /* needed to say no value is null */
 
   /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
@@ -328,13 +328,14 @@ Temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
     SRF_RETURN_DONE(funcctx);
   }
   /* Store index */
-  Datum tuple_arr[2]; /* used to construct the composite return value */
-  tuple_arr[0] = Int32GetDatum(state->path[state->i].i);
-  tuple_arr[1] = Int32GetDatum(state->path[state->i].j);
+  Datum values[2]; /* used to construct the composite return value */
+  values[0] = Int32GetDatum(state->path[state->i].i);
+  values[1] = Int32GetDatum(state->path[state->i].j);
   /* Advance state */
   similarity_path_state_next(state);
   /* Form tuple and return */
-  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
+  bool isnull[2] = {0,0}; /* needed to say no value is null */
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, values, isnull);
   Datum result = HeapTupleGetDatum(tuple);
   SRF_RETURN_NEXT(funcctx, result);
 }

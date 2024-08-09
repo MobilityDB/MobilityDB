@@ -1660,7 +1660,6 @@ tstepseq_to_linear(const TSequence *seq)
   assert(seq);
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   int count = tstepseq_to_linear_iter(seq, sequences);
-  /* We are sure that count > 0 */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -2994,10 +2993,11 @@ tnumberseq_integral(const TSequence *seq)
  * @param[in] seq Temporal sequence
  */
 double
-tnumberdiscseq_twavg(const TSequence *seq)
+tnumberseq_disc_twavg(const TSequence *seq)
 {
-  assert(seq);
-  assert(tnumber_type(seq->temptype));
+  assert(seq); assert(tnumber_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+
   meosType basetype = temptype_basetype(seq->temptype);
   double result = 0.0;
   for (int i = 0; i < seq->count; i++)
@@ -3011,8 +3011,9 @@ tnumberdiscseq_twavg(const TSequence *seq)
 double
 tnumberseq_cont_twavg(const TSequence *seq)
 {
-  assert(seq);
-  assert(tnumber_type(seq->temptype));
+  assert(seq); assert(tnumber_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   double duration = (double) (DatumGetTimestampTz(seq->period.upper) -
     DatumGetTimestampTz(seq->period.lower));
   if (duration == 0.0)
@@ -3034,7 +3035,7 @@ tnumberseq_twavg(const TSequence *seq)
 {
   assert(seq); assert(tnumber_type(seq->temptype));
   return MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
-    tnumberdiscseq_twavg(seq) : tnumberseq_cont_twavg(seq);
+    tnumberseq_disc_twavg(seq) : tnumberseq_cont_twavg(seq);
 }
 
 /*****************************************************************************
@@ -3054,6 +3055,7 @@ tsequence_eq(const TSequence *seq1, const TSequence *seq2)
 {
   assert(seq1); assert(seq2);
   assert(seq1->temptype == seq2->temptype);
+
   /* If number of sequences, flags, or periods are not equal */
   if (seq1->count != seq2->count || seq1->flags != seq2->flags ||
       ! span_eq(&seq1->period, &seq2->period))

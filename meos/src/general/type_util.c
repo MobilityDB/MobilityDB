@@ -294,6 +294,9 @@ datum_add(Datum l, Datum r, meosType type)
     case T_DATE:
       /* For dates we ALWAYS add integers */
       return DateADTGetDatum(DatumGetDateADT(l) + DatumGetInt32(r));
+    case T_TIMESTAMPTZ:
+      /* For timestamps we ALWAYS add big integers */
+      return TimestampTzGetDatum(DatumGetTimestampTz(l) + DatumGetInt64(r));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown add function for base type: %s", meostype_name(type));

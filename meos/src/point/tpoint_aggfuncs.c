@@ -134,6 +134,7 @@ tpointseq_disc_transform_tcentroid(const TSequence *seq)
 static TSequence *
 tpointseq_cont_transform_tcentroid(const TSequence *seq)
 {
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
   TInstant **instants = tpointseq_disc_transform_tcentroid(seq);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc,  MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
@@ -260,7 +261,7 @@ tpoint_extent_transfn(STBox *box, const Temporal *temp)
   /* Null box and non-null temporal, return the bbox of the temporal */
   if (temp && ! box )
   {
-    temporal_set_bbox(temp, result);
+    tspatial_set_stbox(temp, result);
     return result;
   }
   /* Non-null box and null temporal, return the box */
@@ -276,7 +277,7 @@ tpoint_extent_transfn(STBox *box, const Temporal *temp)
       ! ensure_same_geodetic(temp->flags, box->flags))
     return NULL;
 
-  temporal_set_bbox(temp, result);
+  tspatial_set_stbox(temp, result);
   stbox_expand(box, result);
   return result;
 }

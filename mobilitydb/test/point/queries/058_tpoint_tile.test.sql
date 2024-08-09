@@ -65,6 +65,16 @@ SELECT spaceBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-
 SELECT spaceBoxes(tgeompoint 'SRID=3812;[Point(1 1)@2000-01-01, Point(10 10)@2000-01-10]', 2.0, geometry 'SRID=5676;Point(1 1)');
 
 -------------------------------------------------------------------------------
+-- time boxes
+-------------------------------------------------------------------------------
+
+SELECT round(timeBoxes(tgeompoint '[Point(1 1)@2000-01-01, Point(10 10)@2000-01-10]', interval '2 days', '2000-01-01'), 6);
+SELECT round(timeBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-10]', interval '2 days', '2000-01-01'));
+
+/* Errors */
+SELECT timeBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-10]', interval '2 months', '2000-01-01');
+
+-------------------------------------------------------------------------------
 -- SpaceTime boxes
 -------------------------------------------------------------------------------
 

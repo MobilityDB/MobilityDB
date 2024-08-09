@@ -444,7 +444,7 @@ static void
 tnumberseq_expand_tbox(TSequence *seq, const TInstant *inst)
 {
   TBox box;
-  tinstant_set_bbox(inst, &box);
+  tnumberinst_set_tbox(inst, &box);
   tbox_expand(&box, (TBox *) TSEQUENCE_BBOX_PTR(seq));
   return;
 }
@@ -1594,11 +1594,11 @@ tnumberseq_disc_split_each_n_tboxes(const TSequence *seq, int elems_per_box,
   for (int i = 0; i < seq->count; ++i)
   {
     if (i % elems_per_box == 0)
-      tinstant_set_bbox(TSEQUENCE_INST_N(seq, i), &result[k++]);
+      tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, i), &result[k++]);
     else
     {
       TBox box;
-      tinstant_set_bbox(TSEQUENCE_INST_N(seq, i), &box);
+      tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, i), &box);
       tbox_expand(&box, &result[k - 1]);
     }
   }
@@ -1627,17 +1627,17 @@ tnumberseq_cont_split_each_n_tboxes_iter(const TSequence *seq,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    tsequence_set_bbox(seq, &result[0]);
+    tnumberseq_set_tbox(seq, &result[0]);
     return 1;
   }
 
   /* General case */
   int k = 0;
-  tinstant_set_bbox(TSEQUENCE_INST_N(seq, 0), &result[k]);
+  tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, 0), &result[k]);
   for (int i = 1; i < seq->count; ++i)
   {
     TBox box;
-    tinstant_set_bbox(TSEQUENCE_INST_N(seq, i), &box);
+    tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, i), &box);
     tbox_expand(&box, &result[k]);
     if ((i % elems_per_box == 0) && (i < seq->count - 1))
       result[++k] = box;
@@ -1800,7 +1800,7 @@ boxop_tnumber_tbox(const Temporal *temp, const TBox *box,
   bool (*func)(const TBox *, const TBox *), bool invert)
 {
   TBox box1;
-  temporal_set_bbox(temp, &box1);
+  tnumber_set_tbox(temp, &box1);
   return invert ? func(box, &box1) : func(&box1, box);
 }
 
@@ -1812,8 +1812,8 @@ boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const TBox *, const TBox *))
 {
   TBox box1, box2;
-  temporal_set_bbox(temp1, &box1);
-  temporal_set_bbox(temp2, &box2);
+  tnumber_set_tbox(temp1, &box1);
+  tnumber_set_tbox(temp2, &box2);
   return func(&box1, &box2);
 }
 

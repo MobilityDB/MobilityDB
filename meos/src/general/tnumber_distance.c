@@ -186,7 +186,7 @@ nad_tnumber_number(const Temporal *temp, Datum value)
   assert(temp); assert(tnumber_type(temp->temptype));
   meosType basetype = temptype_basetype(temp->temptype);
   TBox box1, box2;
-  temporal_set_bbox(temp, &box1);
+  tnumber_set_tbox(temp, &box1);
   number_set_tbox(value, basetype, &box2);
   return nad_tbox_tbox(&box1, &box2);
 }
@@ -291,7 +291,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
     temporal_restrict_tstzspan(temp, &inter, REST_AT) : (Temporal *) temp;
   /* Test if the bounding boxes overlap */
   TBox box1;
-  temporal_set_bbox(temp1, &box1);
+  tnumber_set_tbox(temp1, &box1);
   if (overlaps_tbox_tbox(box, &box1))
     return (box->span.basetype == T_INT4) ?
       DatumGetInt32(0) : DatumGetFloat8(0.0);
@@ -393,8 +393,8 @@ nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   assert(temp1->temptype == temp2->temptype);
   assert(tnumber_type(temp1->temptype));
   TBox box1, box2;
-  temporal_set_bbox(temp1, &box1);
-  temporal_set_bbox(temp2, &box2);
+  tnumber_set_tbox(temp1, &box1);
+  tnumber_set_tbox(temp2, &box2);
   return nad_tbox_tbox(&box1, &box2);
 }
 

@@ -490,11 +490,10 @@ tpointinst_restrict_stbox(const TInstant *inst, const STBox *box,
  * @pre Instantaneous sequences have been managed in the calling function
  */
 TSequence *
-tpointdiscseq_restrict_stbox(const TSequence *seq, const STBox *box,
+tpointseq_disc_restrict_stbox(const TSequence *seq, const STBox *box,
   bool border_inc, bool atfunc)
 {
-  assert(seq); assert(box);
-  assert(tgeo_type(seq->temptype));
+  assert(seq); assert(box); assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   assert (seq->count > 1);
 
@@ -939,7 +938,7 @@ tpointseq_restrict_stbox(const TSequence *seq, const STBox *box, bool border_inc
 
   /* General case */
   if (interp == DISCRETE)
-    return (Temporal *) tpointdiscseq_restrict_stbox((TSequence *) seq, box,
+    return (Temporal *) tpointseq_disc_restrict_stbox((TSequence *) seq, box,
       border_inc, atfunc);
   else if (interp == STEP)
     return (Temporal *) tpointseq_step_restrict_stbox((TSequence *) seq, box,
@@ -988,7 +987,7 @@ tpointseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
     /* Bounding box test */
     seq = TSEQUENCESET_SEQ_N(ss, i);
     STBox box1;
-    tsequence_set_bbox(seq, &box1);
+    tspatialseq_set_stbox(seq, &box1);
     if (atfunc && ! overlaps_stbox_stbox(&box1, box))
       continue;
     else
@@ -1044,7 +1043,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 
   /* Bounding box test */
   STBox box1;
-  temporal_set_bbox(temp, &box1);
+  tspatial_set_stbox(temp, &box1);
   bool overlaps = overlaps_stbox_stbox(&box1, box);
   if (! overlaps)
     return atfunc ? NULL : temporal_cp(temp);
@@ -1236,7 +1235,7 @@ tpointseqset_at_stbox_segm(const TSequenceSet *ss, const STBox *box,
     /* Bounding box test */
     seq = TSEQUENCESET_SEQ_N(ss, i);
     STBox box1;
-    tsequence_set_bbox(seq, &box1);
+    tspatialseq_set_stbox(seq, &box1);
     if (! overlaps_stbox_stbox(&box1, box))
       continue;
     else
@@ -1294,7 +1293,7 @@ tpoint_at_stbox_segm(const Temporal *temp, const STBox *box, bool border_inc)
 
   /* Bounding box test */
   STBox box1;
-  temporal_set_bbox(temp, &box1);
+  tspatial_set_stbox(temp, &box1);
   if (! overlaps_stbox_stbox(&box1, box))
     return NULL;
 
@@ -1376,11 +1375,10 @@ tpointinst_restrict_geom_time(const TInstant *inst, const GSERIALIZED *gs,
  * @pre Instantaneous sequences have been managed in the calling function
  */
 TSequence *
-tpointdiscseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
+tpointseq_disc_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, const Span *period, bool atfunc)
 {
-  assert(seq); ensure_not_null((void *) gs);
-  assert(tgeo_type(seq->temptype));
+  assert(seq); assert(gs); assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   assert(seq->count > 1);
 
@@ -1689,7 +1687,7 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
 
   /* Bounding box test */
   STBox box1, box2;
-  tsequence_set_bbox(seq, &box1);
+  tspatialseq_set_stbox(seq, &box1);
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
@@ -1829,7 +1827,7 @@ tpointseq_linear_restrict_geom_time(const TSequence *seq,
     {
       /* Bounding box test for the Z dimension */
       STBox box1;
-      tsequenceset_set_bbox(at_xyt, &box1);
+      tspatialseqset_set_stbox(at_xyt, &box1);
       Span zspan1;
       span_set(Float8GetDatum(box1.zmin), Float8GetDatum(box1.zmax), true, true,
         T_FLOAT8, T_FLOATSPAN, &zspan1);
@@ -1897,7 +1895,7 @@ tpointseq_restrict_geom_time(const TSequence *seq, const GSERIALIZED *gs,
 
   /* General case */
   if (interp == DISCRETE)
-    return (Temporal *) tpointdiscseq_restrict_geom_time((TSequence *) seq,
+    return (Temporal *) tpointseq_disc_restrict_geom_time((TSequence *) seq,
       gs, zspan, period, atfunc);
   else if (interp == STEP)
     return (Temporal *) tpointseq_step_restrict_geom_time((TSequence *) seq,
@@ -1947,7 +1945,7 @@ tpointseqset_restrict_geom_time(const TSequenceSet *ss, const GSERIALIZED *gs,
     /* Bounding box test */
     seq = TSEQUENCESET_SEQ_N(ss, i);
     STBox box1;
-    tsequence_set_bbox(seq, &box1);
+    tspatialseq_set_stbox(seq, &box1);
     if (atfunc && ! overlaps_stbox_stbox(&box1, &box2))
       continue;
     else
@@ -1991,7 +1989,7 @@ tpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
 
   /* Bounding box test */
   STBox box1, box2;
-  temporal_set_bbox(temp, &box1);
+  tspatial_set_stbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
   if (zspan)

@@ -2,16 +2,16 @@ SELECT (bl).index, COUNT((bl).span) FROM (SELECT valueSpans(i, 2) AS bl FROM tbl
  index | count 
 -------+-------
      1 |    99
-     2 |    88
-     3 |    66
+     2 |    96
+     3 |    75
 (3 rows)
 
 SELECT (bl).index, COUNT((bl).span) FROM (SELECT valueSpans(i, 2, 1) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
  index | count 
 -------+-------
      1 |    99
-     2 |    84
-     3 |    65
+     2 |    96
+     3 |    78
 (3 rows)
 
 SELECT (bl).index, COUNT((bl).span) FROM (SELECT valueSpans(f, 2) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;

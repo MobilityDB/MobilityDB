@@ -415,6 +415,7 @@ tnpointseq_disc_routes(const TSequence *seq)
 Set *
 tnpointseq_cont_routes(const TSequence *seq)
 {
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
   const Npoint *np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, 0)));
   Datum value = Int64GetDatum(np->rid);
   return set_make_exp(&value, 1, 1, T_INT8, ORDER_NO);

@@ -146,11 +146,11 @@ CREATE OPERATOR CLASS stbox_rtree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION gist_tgeompoint_consistent(internal, tgeompoint, smallint, oid, internal)
+CREATE FUNCTION tgeompoint_gist_consistent(internal, tgeompoint, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_tgeogpoint_consistent(internal, tgeogpoint, smallint, oid, internal)
+CREATE FUNCTION tgeogpoint_gist_consistent(internal, tgeogpoint, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -238,7 +238,7 @@ CREATE OPERATOR CLASS tgeompoint_rtree_ops
   OPERATOR  35    /&> (tgeompoint, stbox),
   OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- functions
-  FUNCTION  1  gist_tgeompoint_consistent(internal, tgeompoint, smallint, oid, internal),
+  FUNCTION  1  tgeompoint_gist_consistent(internal, tgeompoint, smallint, oid, internal),
   FUNCTION  2  stbox_gist_union(internal, internal),
   FUNCTION  3  tpoint_gist_compress(internal),
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
@@ -289,7 +289,7 @@ CREATE OPERATOR CLASS tgeogpoint_rtree_ops
   OPERATOR  31    #&> (tgeogpoint, stbox),
   OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- functions
-  FUNCTION  1  gist_tgeogpoint_consistent(internal, tgeogpoint, smallint, oid, internal),
+  FUNCTION  1  tgeogpoint_gist_consistent(internal, tgeogpoint, smallint, oid, internal),
   FUNCTION  2  stbox_gist_union(internal, internal),
   FUNCTION  3  tpoint_gist_compress(internal),
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
