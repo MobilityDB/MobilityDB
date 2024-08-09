@@ -130,7 +130,7 @@ extern Datum tsegment_value_at_timestamptz(const TInstant *inst1,
 
 /* Local Aggregate Functions */
 
-extern double tnumbercontseq_twavg(const TSequence *seq);
+extern double tnumberseq_cont_twavg(const TSequence *seq);
 
 /*****************************************************************************/
 

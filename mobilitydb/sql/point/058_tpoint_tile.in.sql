@@ -114,6 +114,49 @@ CREATE FUNCTION spaceTimeTile(point geometry, "time" timestamptz, xsize float,
 
 /*****************************************************************************/
 
+CREATE FUNCTION spaceBoxes(tgeompoint, xsize float, ysize float, zsize float,
+    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tpoint_space_boxes'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION spaceBoxes(tgeompoint, size float,
+    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
+  RETURNS stbox[]
+  AS 'SELECT @extschema@.spaceBoxes($1, $2, $2, $2, $3, $4)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION spaceBoxes(tgeompoint, sizeX float, sizeY float,
+    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
+  RETURNS stbox[]
+  AS 'SELECT @extschema@.spaceBoxes($1, $2, $3, $2, $4, $5)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+
+CREATE FUNCTION spaceTimeBoxes(tgeompoint, xsize float, ysize float,
+    zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',
+    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Tpoint_space_time_boxes'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION spaceTimeBoxes(tgeompoint, size float, interval,
+    sorigin geometry DEFAULT 'Point(0 0 0)',
+    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
+  RETURNS stbox[]
+  AS 'SELECT @extschema@.spaceTimeBoxes($1, $2, $2, $2, $3, $4, $5, $6)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION spaceTimeBoxes(tgeompoint, xsize float, ysize float, interval,
+    sorigin geometry DEFAULT 'Point(0 0 0)',
+    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
+    borderInc boolean DEFAULT TRUE)
+  RETURNS stbox[]
+  AS 'SELECT @extschema@.spaceTimeBoxes($1, $2, $3, $2, $4, $5, $6, $7)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+
+/*****************************************************************************/
+
 CREATE TYPE point_tpoint AS (
   point geometry,
   tpoint tgeompoint

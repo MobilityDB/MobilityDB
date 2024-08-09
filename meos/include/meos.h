@@ -1209,6 +1209,7 @@ extern STBox *stbox_set_srid(const STBox *box, int32 srid);
 extern STBox *stbox_shift_scale_time(const STBox *box, const Interval *shift, const Interval *duration);
 extern STBox *stbox_transform(const STBox *box, int32 srid);
 extern STBox *stbox_transform_pipeline(const STBox *box, const char *pipelinestr, int32 srid, bool is_forward);
+extern STBox *stboxarr_round(const STBox *boxarr, int count, int maxdd);
 extern TBox *tbox_expand_time(const TBox *box, const Interval *interv);
 extern TBox *tbox_expand_float(const TBox *box, const double d);
 extern TBox *tbox_expand_int(const TBox *box, const int i);
@@ -1698,7 +1699,7 @@ extern Temporal *tne_ttext_text(const Temporal *temp, const text *txt);
 
 /*****************************************************************************
  * Bounding box functions for temporal types
- *****************************************************************************/
+ *****************************************************************************/  
 
 /* Boxes function */
 
@@ -1709,6 +1710,8 @@ extern TBox *tnumber_tboxes(const Temporal *temp, int *count);
 extern TBox *tnumber_split_each_n_tboxes(const Temporal *temp, int elem_count, int *count);
 extern TBox *tnumber_split_n_tboxes(const Temporal *temp, int box_count, int *count);
 extern STBox *tpoint_stboxes(const Temporal *temp, int *count);
+extern STBox *tpoint_space_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, int *count); 
+extern STBox *tpoint_space_time_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, int *count);
 extern STBox *tpoint_split_each_n_stboxes(const Temporal *temp, int elem_count, int *count);
 extern STBox *tpoint_split_n_stboxes(const Temporal *temp, int box_count, int *count);
 extern GBOX *geo_split_each_n_gboxes(const GSERIALIZED *gs, int elem_count, int *count);
@@ -2107,8 +2110,9 @@ extern Temporal **tint_value_split(const Temporal *temp, int size, int origin, i
 extern Temporal **tint_value_time_split(const Temporal *temp, int size, const Interval *duration, int vorigin, TimestampTz torigin, int **value_buckets, TimestampTz **time_buckets, int *count);
 extern TBox *tintbox_value_time_tile(int value, TimestampTz t, int vsize, const Interval *duration, int vorigin, TimestampTz torigin);
 extern TBox *tintbox_value_time_tiles(const TBox *box, int xsize, const Interval *duration, int xorigin, TimestampTz torigin, int *count);
-extern Temporal **tpoint_space_split(const Temporal *temp, float xsize, float ysize, float zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_buckets, int *count);
-extern Temporal **tpoint_space_time_split(const Temporal *temp, float xsize, float ysize, float zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_buckets, TimestampTz **time_buckets, int *count);
+
+extern Temporal **tpoint_space_split(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_buckets, int *count);
+extern Temporal **tpoint_space_time_split(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_buckets, TimestampTz **time_buckets, int *count);
 extern Span *tstzspan_bucket_list(const Span *bounds, const Interval *duration, TimestampTz origin, int *count);
 
 /*****************************************************************************/

@@ -46,7 +46,6 @@ typedef struct SpanBucketState
 {
   bool done;       /**< True when the state is consumed */
   uint8 basetype;  /**< span basetype */
-  char padding[2]; /**< Not used */
   int i;           /**< Current tile number */
   Temporal *temp;  /**< NULL when generating bucket list, used for splitting */
   Datum size;      /**< Size of the values */ 
@@ -61,14 +60,17 @@ typedef struct SpanBucketState
  */
 typedef struct TboxGridState
 {
-  bool done;       /**< True when the state is consumed */
-  char padding[3]; /**< Not used */
-  int i;           /**< Current tile number */
-  Datum vsize;     /**< Vertical size of the values */
-  int64 tunits;    /**< Horizontal size of the time */
-  TBox box;        /**< Bounding box */
-  Datum value;     /**< Current value */
-  TimestampTz t;   /**< Current time */
+  bool done;            /**< True when the state is consumed */
+  int i;                /**< Current tile number */
+  Datum vsize;          /**< Value size */
+  int64 tunits;         /**< Time size */
+  TBox box;             /**< Bounding box */
+  const Temporal *temp; /**< Optional temporal number to be split */
+  Datum value;          /**< Current value */
+  TimestampTz t;        /**< Current time */
+  int ntiles;           /**< Total number of tiles */
+  int max_coords[2];    /**< Maximum coordinates of the tiles */
+  int coords[2];        /**< Coordinates of the current tile */
 } TboxGridState;
 
 /*****************************************************************************/
@@ -81,7 +83,7 @@ typedef struct ValueTimeSplitState
 {
   bool done;           /**< True when all tiles have been processed */
   int i;               /**< Number of current tile */
-  Datum size;
+  Datum vsize;
   int64 tunits;
   Datum *value_buckets;
   TimestampTz *time_buckets;
@@ -98,10 +100,11 @@ extern SpanBucketState *span_bucket_state_make(const Span *s, Datum size,
   Datum origin);
 extern void span_bucket_state_next(SpanBucketState *state);
 
-extern void tbox_tile_get(Datum value, TimestampTz t, Datum vsize,
-  int64 tunits, meosType basetype, TBox *box);
-extern TboxGridState *tbox_tile_state_make(const TBox *box, Datum vsize,
-  const Interval *duration, Datum xorigin, TimestampTz torigin);
+extern void tbox_tile_set(Datum value, TimestampTz t, Datum vsize,
+  int64 tunits, meosType basetype, meosType spantype, TBox *box);
+extern TboxGridState *tbox_tile_state_make(const Temporal *temp,
+  const TBox *box, Datum vsize, const Interval *duration, Datum xorigin, 
+  TimestampTz torigin);
 extern void tbox_tile_state_next(TboxGridState *state);
   
 /*****************************************************************************/
@@ -112,13 +115,12 @@ extern TimestampTz timestamptz_bucket1(TimestampTz timestamp, int64 tunits,
 extern Datum datum_bucket(Datum value, Datum size, Datum offset,
   meosType basetype);
 
-extern Temporal **temporal_time_split(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin, TimestampTz **time_buckets, int *count);
-extern Temporal **tnumber_value_time_split(const Temporal *temp, Datum size,
-  const Interval *duration, Datum vorigin, TimestampTz torigin,
-  Datum **value_buckets, TimestampTz **time_buckets, int *count);
+
+extern TboxGridState *tnumber_value_time_tile_init(const Temporal *temp,
+  Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, 
+  int *ntiles);
+extern bool tbox_tile_state_get(TboxGridState *state, TBox *box);
 
 /*****************************************************************************/
-
 #endif /* __TEMPORAL_TILE_H__ */
 

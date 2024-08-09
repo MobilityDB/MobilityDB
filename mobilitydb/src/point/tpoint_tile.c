@@ -37,6 +37,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>
+#include <utils/array.h>
 #include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>
@@ -44,10 +45,12 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal_tile.h"
+#include "general/temporal_tile.h"
 #include "point/stbox.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tile.h"
 /* MobilityDB */
+#include "pg_general/type_util.h"
 #include "pg_point/postgis.h"
 
 /*****************************************************************************/
@@ -63,11 +66,7 @@ Datum
 Stbox_space_time_tiles(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
-  STboxGridState *state;
   bool isnull[2] = {0,0}; /* needed to say no value is null */
-  Datum tuple_arr[2]; /* used to construct the composite return value */
-  HeapTuple tuple;
-  Datum result; /* the actual composite return value */
 
   /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
@@ -82,8 +81,8 @@ Stbox_space_time_tiles(PG_FUNCTION_ARGS)
     ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
     ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8);
     ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8);
+    Interval *duration = NULL;
     GSERIALIZED *sorigin;
-    int64 tunits = 0; /* make compiler quiet */
     TimestampTz torigin = 0; /* make compiler quiet */
     assert(PG_NARGS() == 6 || PG_NARGS() == 8);
     bool border_inc;
@@ -96,9 +95,8 @@ Stbox_space_time_tiles(PG_FUNCTION_ARGS)
     {
       /* If time arguments are given */
       ensure_has_T_stbox(bounds);
-      Interval *duration = PG_GETARG_INTERVAL_P(4);
+      duration = PG_GETARG_INTERVAL_P(4);
       ensure_valid_duration(duration);
-      tunits = interval_units(duration);
       sorigin = PG_GETARG_GSERIALIZED_P(5);
       torigin = PG_GETARG_TIMESTAMPTZ(6);
       border_inc = PG_GETARG_BOOL(7);
@@ -145,7 +143,7 @@ Stbox_space_time_tiles(PG_FUNCTION_ARGS)
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
     funcctx->user_fctx = stbox_tile_state_make(NULL, bounds, xsize, ysize,
-      zsize, tunits, pt, torigin, border_inc);
+      zsize, duration, pt, torigin, border_inc);
     /* Build a tuple description for a multidim_grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -155,7 +153,7 @@ Stbox_space_time_tiles(PG_FUNCTION_ARGS)
   /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
   /* Get state */
-  state = funcctx->user_fctx;
+  STboxGridState *state = funcctx->user_fctx;
   /* Stop when we've used up all the grid tiles */
   if (state->done)
   {
@@ -176,10 +174,11 @@ Stbox_space_time_tiles(PG_FUNCTION_ARGS)
   stbox_tile_state_next(state);
   /* Form tuple and return
    * The i value was incremented with the previous _next function call */
+  Datum tuple_arr[2]; /* used to construct the composite return value */
   tuple_arr[0] = Int32GetDatum(state->i - 1);
   tuple_arr[1] = PointerGetDatum(box);
-  tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
-  result = HeapTupleGetDatum(tuple);
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
+  Datum result = HeapTupleGetDatum(tuple);
   SRF_RETURN_NEXT(funcctx, result);
 }
 
@@ -254,6 +253,69 @@ Stbox_space_tile(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Boxes functions
+ *****************************************************************************/
+
+/**
+ * @brief Compute the spatiotemporal boxes of a temporal point split with
+ * respect to a spatial and possibly a temporal grid
+ */
+static Datum
+Tpoint_space_time_boxes_ext(FunctionCallInfo fcinfo, bool timetile)
+{
+  /* Get input parameters */
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double xsize = PG_GETARG_FLOAT8(1);
+  double ysize = PG_GETARG_FLOAT8(2);
+  double zsize = PG_GETARG_FLOAT8(3);
+  int i = 4;
+  Interval *duration = timetile ? PG_GETARG_INTERVAL_P(i++) : NULL;
+  GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(i++);
+  TimestampTz torigin = timetile ? torigin = PG_GETARG_TIMESTAMPTZ(i++) : 0;
+  bool bitmatrix = PG_GETARG_BOOL(i++);
+  bool border_inc = PG_GETARG_BOOL(i++);
+
+  /* Get the tiles */
+  if (temporal_num_instants(temp) == 1)
+    bitmatrix = false;
+  int count;
+  STBox *boxes = tpoint_space_time_boxes(temp, xsize, ysize, zsize, duration, 
+    sorigin, torigin, bitmatrix, border_inc, &count);
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(boxes);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Tpoint_space_boxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_space_boxes);
+/**
+ * @ingroup mobilitydb_temporal_analytics_tile
+ * @brief Return the spatiotemporal boxes of a temporal point split with
+ * respect to a spatial grid
+ * @sqlfn spaceBoxes()
+ */
+Datum
+Tpoint_space_boxes(PG_FUNCTION_ARGS)
+{
+  return Tpoint_space_time_boxes_ext(fcinfo, false);
+}
+
+PGDLLEXPORT Datum Tpoint_space_time_boxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_space_time_boxes);
+/**
+ * @ingroup mobilitydb_temporal_analytics_tile
+ * @brief Return the spatiotemporal boxes of a temporal point split with
+ * respect to a spatiotemporal grid
+ * @sqlfn spaceTimeBoxes()
+ */
+Datum
+Tpoint_space_time_boxes(PG_FUNCTION_ARGS)
+{
+  return Tpoint_space_time_boxes_ext(fcinfo, true);
+}
+
+/*****************************************************************************
  * Split functions
  *****************************************************************************/
 
@@ -265,12 +327,7 @@ Datum
 Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
 {
   FuncCallContext *funcctx;
-  STboxGridState *state;
-  bool hasz;
   bool isnull[3] = {0,0,0}; /* needed to say no value is null */
-  Datum tuple_arr[3]; /* used to construct the composite return value */
-  HeapTuple tuple;
-  Datum result; /* the actual composite return value */
 
   /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
@@ -286,14 +343,10 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     double xsize = PG_GETARG_FLOAT8(1);
     double ysize = PG_GETARG_FLOAT8(2);
     double zsize = PG_GETARG_FLOAT8(3);
-    Interval *duration = NULL;
-    TimestampTz torigin = 0;
     int i = 4;
-    if (timesplit)
-      duration = PG_GETARG_INTERVAL_P(i++);
+    Interval *duration = timesplit ? PG_GETARG_INTERVAL_P(i++) : NULL;
     GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(i++);
-    if (timesplit)
-      torigin = PG_GETARG_TIMESTAMPTZ(i++);
+    TimestampTz torigin = timesplit ? PG_GETARG_TIMESTAMPTZ(i++) : 0;
     bool bitmatrix = PG_GETARG_BOOL(i++);
     bool border_inc = PG_GETARG_BOOL(i++);
 
@@ -314,7 +367,7 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
   /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
   /* Get state */
-  state = funcctx->user_fctx;
+  STboxGridState *state = funcctx->user_fctx;
   /* We need to loop since atStbox may be NULL */
   while (true)
   {
@@ -356,15 +409,16 @@ Tpoint_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
       continue;
 
     /* Form tuple and return */
+    bool hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
+    Datum tuple_arr[3]; /* used to construct the composite return value */
     int i = 0;
-    hasz = MEOS_FLAGS_GET_Z(state->temp->flags);
     tuple_arr[i++] = PointerGetDatum(geopoint_make(box.xmin, box.ymin,
       box.zmin, hasz, false, box.srid));
     if (timesplit)
       tuple_arr[i++] = box.period.lower;
     tuple_arr[i++] = PointerGetDatum(atstbox);
-    tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
-    result = HeapTupleGetDatum(tuple);
+    HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
+    Datum result = HeapTupleGetDatum(tuple);
     SRF_RETURN_NEXT(funcctx, result);
   }
 }

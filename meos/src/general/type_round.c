@@ -125,6 +125,7 @@ floatset_rnd(const Set *s, int maxdd)
   return set_round(s, maxdd, &datum_round_float);
 }
 
+#if MEOS
 /**
  * @ingroup meos_setspan_transf
  * @brief Return a float set with the precision of the values set to a number
@@ -142,6 +143,7 @@ floatset_round(const Set *s, int maxdd)
     return NULL;
   return set_round(s, maxdd, &datum_round_float);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_transf
@@ -230,6 +232,7 @@ floatspan_rnd(const Span *s, int maxdd)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup meos_setspan_transf
  * @brief Return a float span with the precision of the bounds set to a
@@ -247,6 +250,7 @@ floatspan_round(const Span *s, int maxdd)
     return NULL;
   return floatspan_rnd(s, maxdd);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * SpanSet
@@ -270,7 +274,7 @@ floatspanset_rnd(const SpanSet *ss, int maxdd)
   return spanset_make_free(spans, ss->count, NORMALIZE, ORDER_NO);
 }
 
-
+#if MEOS
 /**
  * @ingroup meos_setspan_transf
  * @brief Return a float span set with the precision of the spans set to a
@@ -288,6 +292,7 @@ floatspanset_round(const SpanSet *ss, int maxdd)
     return NULL;
   return floatspanset_rnd(ss, maxdd);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Tbox
@@ -320,6 +325,32 @@ tbox_round(const TBox *box, int maxdd)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_box_transf
+ * @brief Return the last argument initialized to a spatiotemporal box with the
+ * precision set to a number of decimal places
+ * @param[in] box Spatiotemporal box
+ * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] result Result box
+ */
+void
+stbox_round_set(const STBox *box, int maxdd, STBox *result)
+{
+  assert(box); assert(result); assert(MEOS_FLAGS_GET_X(box->flags));
+  assert(maxdd >=0);
+
+  result->xmin = float_round(box->xmin, maxdd);
+  result->xmax = float_round(box->xmax, maxdd);
+  result->ymin = float_round(box->ymin, maxdd);
+  result->ymax = float_round(box->ymax, maxdd);
+  if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
+  {
+    result->zmin = float_round(box->zmin, maxdd);
+    result->zmax = float_round(box->zmax, maxdd);
+  }
+  return;
+}
+
+/**
  * @ingroup meos_box_transf
  * @brief Return a spatiotemporal box with the precision of the coordinates set
  * to a number of decimal places
@@ -336,15 +367,31 @@ stbox_round(const STBox *box, int maxdd)
     return NULL;
 
   STBox *result = stbox_cp(box);
-  result->xmin = float_round(box->xmin, maxdd);
-  result->xmax = float_round(box->xmax, maxdd);
-  result->ymin = float_round(box->ymin, maxdd);
-  result->ymax = float_round(box->ymax, maxdd);
-  if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
-  {
-    result->zmin = float_round(box->zmin, maxdd);
-    result->zmax = float_round(box->zmax, maxdd);
-  }
+  stbox_round_set(box, maxdd, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return an array of spatiotemporal boxes with the precision of the
+ * coordinates set to a number of decimal places
+ * @param[in] boxarr Array of spatiotemporal boxes
+ * @param[in] count Number of elements in the array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Stboxarr_round()
+ */
+STBox *
+stboxarr_round(const STBox *boxarr, int count, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) boxarr) ||
+      ! ensure_positive(count) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  STBox *result = palloc(sizeof(STBox) * count);
+  memcpy(result, boxarr, sizeof(STBox) * count);
+  for (int i = 0; i < count; i++)
+    stbox_round_set(&boxarr[i], maxdd, &result[i]);
   return result;
 }
 

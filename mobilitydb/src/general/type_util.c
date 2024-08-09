@@ -215,6 +215,21 @@ spanarr_extract(ArrayType *array, int *count)
 }
 
 /**
+ * @brief Extract a C array from a PostgreSQL array containing spatiotemporal
+ * boxes
+ */
+STBox *
+stboxarr_extract(ArrayType *array, int *count)
+{
+  STBox **boxes = (STBox **) datumarr_extract(array, count);
+  STBox *result = palloc(sizeof(STBox) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = *boxes[i];
+  pfree(boxes);
+  return result;
+}
+
+/**
  * @brief Extract a C array from a PostgreSQL array containing temporal values
  */
 Temporal **

@@ -141,9 +141,9 @@ SELECT valueTimeTiles(b, 2.5, '1 week'), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 
 SELECT valueTimeTiles(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
                                        valuetimetiles                                        | count 
 ---------------------------------------------------------------------------------------------+-------
- (5,"TBOXFLOAT XT([41.5, 44),[Mon Jun 11 01:00:00 2001 PDT, Mon Jun 18 01:00:00 2001 PDT))") |     3
  (1,"TBOXFLOAT XT([34, 36.5),[Mon Nov 19 00:00:00 2001 PST, Mon Nov 26 00:00:00 2001 PST))") |     2
  (1,"TBOXFLOAT XT([6.5, 9),[Mon Dec 03 00:00:00 2001 PST, Mon Dec 10 00:00:00 2001 PST))")   |     2
+ (2,"TBOXFLOAT XT([36.5, 39),[Mon Nov 19 00:00:00 2001 PST, Mon Nov 26 00:00:00 2001 PST))") |     2
 (3 rows)
 
 SELECT valueTimeTiles(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
@@ -168,6 +168,42 @@ SELECT extent(valueTimeTile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
                                         extent                                        
 --------------------------------------------------------------------------------------
  TBOXFLOAT XT([6, 83.5),[Mon Jan 22 00:00:00 2001 PST, Mon Dec 10 00:00:00 2001 PST))
+(1 row)
+
+SELECT SUM(array_length(valueTimeBoxes(temp, 2, '1 week'), 1)) FROM tbl_tint;
+ sum 
+-----
+ 627
+(1 row)
+
+SELECT SUM(array_length(valueTimeBoxes(temp, 2, '1 week', 1), 1)) FROM tbl_tint;
+ sum 
+-----
+ 624
+(1 row)
+
+SELECT SUM(array_length(valueTimeBoxes(temp, 2, '1 week', 1, '2001-06-01'), 1)) FROM tbl_tint;
+ sum 
+-----
+ 627
+(1 row)
+
+SELECT SUM(array_length(valueTimeBoxes(temp, 2.5, '1 week'), 1)) FROM tbl_tfloat;
+ sum  
+------
+ 1604
+(1 row)
+
+SELECT SUM(array_length(valueTimeBoxes(temp, 2.5, '1 week', 1.5), 1)) FROM tbl_tfloat;
+ sum  
+------
+ 1614
+(1 row)
+
+SELECT SUM(array_length(valueTimeBoxes(temp, 2.5, '1 week', 1.5, '2001-06-01'), 1)) FROM tbl_tfloat;
+ sum  
+------
+ 1581
 (1 row)
 
 SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2) AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;

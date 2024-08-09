@@ -74,11 +74,12 @@ span_no_buckets(const Span *s, Datum size, Datum origin, Datum *start_bucket,
   Datum end_value = datum_add(s->upper, size, s->basetype);
   *start_bucket = datum_bucket(start_value, size, origin, s->basetype);
   *end_bucket = datum_bucket(end_value, size, origin, s->basetype);
-  return (s->basetype == T_INT4) ? /** xx **/
+  assert(s->basetype == T_INT4 || s->basetype == T_FLOAT8);
+  return (s->basetype == T_INT4) ? 
       (DatumGetInt32(*end_bucket) - DatumGetInt32(*start_bucket)) /
         DatumGetInt32(size) :
       (int) floor((DatumGetFloat8(*end_bucket) -
-        DatumGetFloat8(*start_bucket)) /  DatumGetFloat8(size));
+        DatumGetFloat8(*start_bucket)) / DatumGetFloat8(size));
 }
 
 /**
@@ -527,46 +528,47 @@ tstzspan_bucket_list(const Span *s, const Interval *duration,
 
 /**
  * @brief Create the initial state for tiling operations
+ * @param[in] temp Temporal number, may be @p NULL
  * @param[in] box Bounds of the multidimensional grid
  * @param[in] vsize Value size of the tiles
- * @param[in] duration Interval defining the time size of the tile, may be NULL
+ * @param[in] duration Interval defining the time size of the tile
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
- * @pre At least one of vsize or tunits must be greater than 0.
  */
 TboxGridState *
-tbox_tile_state_make(const TBox *box, Datum vsize, const Interval *duration,
-  Datum vorigin, TimestampTz torigin)
+tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
+  const Interval *duration, Datum vorigin, TimestampTz torigin)
 {
-  assert(box);
-  int64 tunits = duration ? interval_units(duration) : 0;
-  double size = datum_double(vsize, box->span.basetype);
-  assert(size > 0 || tunits > 0);
+  assert(box); assert(duration);
+  assert(datum_double(vsize, box->span.basetype) > 0);
+  assert(MEOS_FLAGS_GET_X(box->flags));
+  assert(MEOS_FLAGS_GET_T(box->flags));
+  /* Create the state */
   TboxGridState *state = palloc0(sizeof(TboxGridState));
-
   /* Fill in state */
-  state->done = false;
   state->i = 1;
-  state->vsize = vsize;
-  state->tunits = tunits;
-  Span span, period;
-  memset(&span, 0, sizeof(Span));
-  memset(&period, 0, sizeof(Span));
+  state->ntiles = 1;
   Datum start_bucket, end_bucket;
-  if (size)
-  {
-    span_no_buckets(&box->span, vsize, vorigin, &start_bucket, &end_bucket);
-    span_set(start_bucket, end_bucket, true, false, box->span.basetype,
-      box->span.spantype, &span);
-  }
-  if (tunits)
-  {
-    tstzspan_no_buckets(&box->period, duration, torigin, &start_bucket,
-      &end_bucket);
-    span_set(start_bucket, end_bucket, true, false, T_TIMESTAMPTZ, T_TSTZSPAN,
-      &period);
-  }
-  tbox_set(size ? &span : NULL, tunits ? &period : NULL, &state->box);
+  /* Set the value dimension of the state box*/
+  state->vsize = vsize;
+  state->max_coords[0] = span_no_buckets(&box->span, vsize, vorigin, 
+    &start_bucket, &end_bucket) - 1;
+  state->ntiles *= (state->max_coords[0] + 1);
+  span_set(start_bucket, end_bucket, true, false, box->span.basetype,
+    box->span.spantype, &state->box.span);
+  /* Set the time dimension of the state box */
+  state->tunits = interval_units(duration);
+  state->max_coords[1] = tstzspan_no_buckets(&box->period, duration, torigin,
+    &start_bucket, &end_bucket) - 1;
+  state->ntiles *= (state->max_coords[1] + 1);
+  span_set(start_bucket, end_bucket, true, false, T_TIMESTAMPTZ, T_TSTZSPAN,
+    &state->box.period);
+  /* Set the flags of the state box */
+  MEOS_FLAGS_SET_X(state->box.flags, true);
+  MEOS_FLAGS_SET_T(state->box.flags, true);
+  /* Set the temporal value */
+  state->temp = temp;
+  /* Set the state start values */
   state->value = state->box.span.lower;
   state->t = DatumGetTimestampTz(state->box.period.lower);
   return state;
@@ -575,32 +577,44 @@ tbox_tile_state_make(const TBox *box, Datum vsize, const Interval *duration,
 /**
  * @brief Generate a tile from the a multidimensional grid
  * @param[in] value Start value of the tile to output
- * @param[in] basetype Type of the value
  * @param[in] t Start timestamp of the tile to output
  * @param[in] vsize Value size of the tiles
  * @param[in] tunits Time size of the tiles in PostgreSQL time units
+ * @param[in] basetype Type of the value
+ * @param[in] spantype Span type of the value
  * @param[out] box Output box
  */
 void
-tbox_tile_get(Datum value, TimestampTz t, Datum vsize, int64 tunits,
-  meosType basetype, TBox *box)
+tbox_tile_set(Datum value, TimestampTz t, Datum vsize, int64 tunits,
+  meosType basetype, meosType spantype, TBox *box)
 {
   assert(box);
   Datum xmin = value;
   Datum xmax = datum_add(value, vsize, basetype);
   Datum tmin = TimestampTzGetDatum(t);
   Datum tmax = TimestampTzGetDatum(t + tunits);
-  Span span, period;
-  memset(&span, 0, sizeof(Span));
-  memset(&period, 0, sizeof(Span));
-  double size = datum_double(vsize, basetype);
-  meosType spantype = basetype_spantype(basetype);
-  if (size)
-    span_set(xmin, xmax, true, false, basetype, spantype, &span);
-  if (tunits)
-    span_set(tmin, tmax, true, false, T_TIMESTAMPTZ, T_TSTZSPAN, &period);
-  tbox_set(size ? &span : NULL, tunits ? &period : NULL, box);
+  span_set(xmin, xmax, true, false, basetype, spantype, &box->span);
+  span_set(tmin, tmax, true, false, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
+  /* Set the flags of the state box */
+  MEOS_FLAGS_SET_X(box->flags, true);
+  MEOS_FLAGS_SET_T(box->flags, true);
   return;
+}
+
+/**
+ * @brief Get the current tile of the multidimensional grid
+ * @param[in] state State to increment
+ * @param[out] box Current tile
+ */
+bool
+tbox_tile_state_get(TboxGridState *state, TBox *box)
+{
+  if (! state || state->done)
+    return false;
+  /* Get the box of the current tile */
+  tbox_tile_set(state->value, state->t, state->vsize, state->tunits,
+    state->box.span.basetype, state->box.span.spantype, box);
+  return true;
 }
 
 /**
@@ -615,12 +629,13 @@ tbox_tile_state_next(TboxGridState *state)
       return;
   /* Move to the next tile */
   state->i++;
-  state->value = datum_add(state->value, state->vsize, state->box.span.basetype);
-  if (datum_gt(state->value, state->box.span.upper, state->box.span.basetype))
+  state->value = datum_add(state->value, state->vsize, 
+    state->box.span.basetype);
+  if (datum_ge(state->value, state->box.span.upper, state->box.span.basetype))
   {
     state->value = state->box.span.lower;
     state->t += state->tunits;
-    if (state->t > DatumGetTimestampTz(state->box.period.upper))
+    if (state->t >= DatumGetTimestampTz(state->box.period.upper))
     {
       state->done = true;
       return;
@@ -641,20 +656,18 @@ tbox_tile_state_next(TboxGridState *state)
  * @param[in] vsize Value size of the tiles
  * @param[in] duration Interval defining the temporal size of the tiles
  * @param[in] vorigin Value origin of the tiles
- * @param[in] torigin Time origin of the tile
+ * @param[in] torigin Time origin of the tiles
  * @param[out] count Number of elements in the output array
  */
 TBox *
 tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
   Datum vorigin, TimestampTz torigin, int *count)
 {
-  assert(box); assert(count);
-  /* Ensure validity of the arguments */
-  if (! ensure_positive_datum(vsize, box->span.basetype) ||
-      (duration && ! ensure_valid_duration(duration)))
-    return NULL;
+  assert(box); assert(count); assert(duration);
+  assert(positive_datum(vsize, box->span.basetype));
+  assert(valid_duration(duration));
 
-  TboxGridState *state = tbox_tile_state_make(box, vsize, duration,
+  TboxGridState *state = tbox_tile_state_make(NULL, box, vsize, duration,
     vorigin, torigin);
 
   int nrows = 1, ncols = 1;
@@ -676,7 +689,7 @@ tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
   TBox *result = palloc0(sizeof(TBox) * count1);
   for (int i = 0; i < count1; i++)
   {
-    tbox_tile_get(state->value, state->t, state->vsize, state->tunits,
+    tbox_tile_set(state->value, state->t, state->vsize, state->tunits,
       state->box.span.basetype, &result[i]);
     tbox_tile_state_next(state);
   }
@@ -745,7 +758,7 @@ tfloatbox_value_time_tiles(const TBox *box, double vsize,
 TBox *
 tbox_value_time_tile(Datum value, TimestampTz t, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin,
-  meosType basetype)
+  meosType basetype, meosType spantype)
 {
   ensure_positive_datum(vsize, basetype);
   ensure_valid_duration(duration);
@@ -753,7 +766,8 @@ tbox_value_time_tile(Datum value, TimestampTz t, Datum vsize,
   Datum value_bucket = datum_bucket(value, vsize, vorigin, basetype);
   TimestampTz time_bucket = timestamptz_bucket(t, duration, torigin);
   TBox *result = palloc(sizeof(TBox));
-  tbox_tile_get(value_bucket, time_bucket, vsize, tunits, basetype, result);
+  tbox_tile_set(value_bucket, time_bucket, vsize, tunits, basetype, spantype,
+    result);
   return result;
 }
 
@@ -773,7 +787,7 @@ tintbox_value_time_tile(int value, TimestampTz t, int vsize,
   const Interval *duration, int vorigin, TimestampTz torigin)
 {
   return tbox_value_time_tile(Int32GetDatum(value), t, Int32GetDatum(vsize),
-    duration, Int32GetDatum(vorigin), torigin, T_INT4);
+    duration, Int32GetDatum(vorigin), torigin, T_INT4, T_INTSPAN);
 }
 
 /**
@@ -792,7 +806,124 @@ tfloatbox_value_time_tile(double value, TimestampTz t, double vsize,
   const Interval *duration, double vorigin, TimestampTz torigin)
 {
   return tbox_value_time_tile(Float8GetDatum(value), t, Float8GetDatum(vsize),
-    duration, Float8GetDatum(vorigin), torigin, T_FLOAT8);
+    duration, Float8GetDatum(vorigin), torigin, T_FLOAT8, T_FLOATSPAN);
+}
+
+/*****************************************************************************
+ * TBoxes functions for temporal numbers
+ *****************************************************************************/
+
+/**
+ * @brief Set the state with a temporal number and a value and possibly time 
+ * grid for splitting or obtaining a set of temporal boxes
+ * @param[in] temp Temporal number
+ * @param[in] vsize Size of the value dimension
+ * @param[in] duration Size of the time dimension as an interval
+ * @param[in] vorigin Origin for the value dimension
+ * @param[in] torigin Origin for the time dimension
+ * @param[out] ntiles Number of tiles
+ */
+TboxGridState *
+tnumber_value_time_tile_init(const Temporal *temp, Datum vsize, 
+  const Interval *duration, Datum vorigin, TimestampTz torigin, int *ntiles)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ntiles) || 
+      ! ensure_positive_datum(vsize, temptype_basetype(temp->temptype)) ||
+      ! ensure_not_null((void *) duration) || 
+      ! ensure_valid_duration(duration))
+    return NULL;
+
+  /* Set bounding box */
+  TBox bounds;
+  temporal_set_bbox(temp, &bounds);
+  /* Create function state */
+  TboxGridState *state = tbox_tile_state_make(temp, &bounds, vsize, duration, 
+    vorigin, torigin);
+  *ntiles = state->ntiles;
+  return state;
+}
+
+/**
+ * @brief Return the temporal boxes of a temporal number split with respect to
+ * a value and possibly a time grid
+ * @param[in] temp Temporal number
+ * @param[in] vsize Size of the value dimension
+ * @param[in] duration Size of the time dimension as an interval
+ * @param[in] vorigin Origin for the value dimension
+ * @param[in] torigin Origin for the time dimension
+ * @param[out] count Number of elements in the output array
+ * @note The check for parameter validity is done in function 
+ * #tnumber_value_time_tile_init to be shared for both MEOS and MobilityDB
+ * @csqlfn #Tnumber_value_time_boxes
+ */
+TBox *
+tnumber_value_time_boxes(const Temporal *temp, Datum vsize, 
+  const Interval *duration, Datum vorigin, TimestampTz torigin, int *count) 
+{
+  /* Initialize state */
+  int ntiles;
+  TboxGridState *state = tnumber_value_time_tile_init(temp, vsize, duration,
+    vorigin, torigin, &ntiles);
+  if (! state)
+    return NULL;
+
+  TBox *result = palloc(sizeof(TBox) * ntiles);
+  /* We need to loop since atTbox may be NULL */
+  int i = 0;
+  while (true)
+  {
+    TBox box;
+    bool found;
+
+    /* Stop when we have used up all the grid tiles */
+    if (state->done)
+    {
+      pfree(state);
+      break;
+    }
+
+    /* Get current tile (if any) and advance state
+     * It is necessary to test if we found a tile since the previous tile
+     * may be the last one set in the associated bit matrix */
+    found = tbox_tile_state_get(state, &box);
+    if (! found)
+    {
+      pfree(state);
+      break;
+    }
+    tbox_tile_state_next(state);
+
+    /* Restrict the temporal number to the box and compute its bounding box */
+    Temporal *attbox = tnumber_at_tbox(state->temp, &box);
+    if (attbox == NULL)
+      continue;
+    tnumber_set_tbox(attbox, &box);
+    /* If only value grid */
+    // if (! duration)
+      // MEOS_FLAGS_SET_T(box.flags, false);
+    pfree(attbox);
+
+    /* Copy the box to the result */
+    memcpy(&result[i++], &box, sizeof(TBox));
+  }
+  *count = i;
+  return result;
+}
+
+/**
+ * @brief Return the temporal boxes of a temporal number split with respect to
+ * a value grid
+ * @param[in] temp Temporal number
+ * @param[in] vsize Size of the value dimension
+ * @param[in] vorigin Origin for the value dimension
+ * @param[out] count Number of elements in the output array
+ */
+TBox *
+tnumber_value_boxes(const Temporal *temp, Datum vsize, Datum vorigin, 
+  int *count)
+{
+  return tnumber_value_time_boxes(temp, vsize, NULL, vorigin, 0, count);
 }
 
 /*****************************************************************************
@@ -1235,7 +1366,7 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
  * @param[out] newcount Number of values in the output arrays
  */
 static TSequence **
-tnumberdiscseq_value_split(const TSequence *seq, Datum start_bucket,
+tnumberseq_disc_value_split(const TSequence *seq, Datum start_bucket,
   Datum size, int count, Datum **buckets, int *newcount)
 {
   assert(seq); assert(buckets); assert(newcount);
@@ -1543,7 +1674,7 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bucket,
  * @param[out] newcount Number of elements in output arrays
  */
 static TSequenceSet **
-tnumbercontseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
+tnumberseq_cont_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
   assert(seq); assert(buckets); assert(newcount);
@@ -1614,7 +1745,7 @@ tnumberseqset_value_split(const TSequenceSet *ss, Datum start_bucket,
   assert(ss); assert(buckets); assert(newcount);
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tnumbercontseq_value_split(TSEQUENCESET_SEQ_N(ss, 0), start_bucket,
+    return tnumberseq_cont_value_split(TSEQUENCESET_SEQ_N(ss, 0), start_bucket,
       size, count, buckets, newcount);
 
   /* General case */
@@ -1689,9 +1820,9 @@ tnumber_value_split(const Temporal *temp, Datum size, Datum vorigin,
         start_bucket, size, buckets, count);
     case TSEQUENCE:
       return MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
-        (Temporal **) tnumberdiscseq_value_split((const TSequence *) temp,
+        (Temporal **) tnumberseq_disc_value_split((const TSequence *) temp,
           start_bucket, size, nbuckets, buckets, count) :
-        (Temporal **) tnumbercontseq_value_split((const TSequence *) temp,
+        (Temporal **) tnumberseq_cont_value_split((const TSequence *) temp,
           start_bucket, size, nbuckets, buckets, count);
     default: /* TSEQUENCESET */
       return (Temporal **) tnumberseqset_value_split((const TSequenceSet *) temp,
@@ -1711,7 +1842,6 @@ tnumber_value_time_split(const Temporal *temp, Datum size,
   Datum **value_buckets, TimestampTz **time_buckets, int *count)
 {
   meosType basetype = temptype_basetype(temp->temptype);
-  meosType spantype = basetype_spantype(basetype);
   ensure_positive_datum(size, basetype);
   ensure_valid_duration(duration);
 
@@ -1741,6 +1871,7 @@ tnumber_value_time_split(const Temporal *temp, Datum size,
   fragments = palloc(sizeof(Temporal *) * ntiles);
   int nfrags = 0;
   Datum lower_value = start_bucket;
+  meosType spantype = basetype_spantype(basetype);
   while (datum_lt(lower_value, end_bucket, basetype))
   {
     Datum upper_value = datum_add(lower_value, size, basetype);
@@ -1870,6 +2001,7 @@ tint_value_time_split(const Temporal *temp, int size, const Interval *duration,
       ! ensure_temporal_isof_type(temp, T_TINT) || ! ensure_positive(size) ||
       ! ensure_valid_duration(duration))
     return NULL;
+
   Datum *datum_buckets;
   Temporal **result = tnumber_value_time_split(temp, Int32GetDatum(size),
     duration, Int32GetDatum(vorigin), torigin, &datum_buckets, time_buckets,

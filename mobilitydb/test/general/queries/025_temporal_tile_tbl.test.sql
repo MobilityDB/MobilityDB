@@ -75,6 +75,18 @@ SELECT extent(valueTimeTile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
 
 -------------------------------------------------------------------------------
+-- valueTimeBoxes
+-------------------------------------------------------------------------------
+
+SELECT SUM(array_length(valueTimeBoxes(temp, 2, '1 week'), 1)) FROM tbl_tint;
+SELECT SUM(array_length(valueTimeBoxes(temp, 2, '1 week', 1), 1)) FROM tbl_tint;
+SELECT SUM(array_length(valueTimeBoxes(temp, 2, '1 week', 1, '2001-06-01'), 1)) FROM tbl_tint;
+
+SELECT SUM(array_length(valueTimeBoxes(temp, 2.5, '1 week'), 1)) FROM tbl_tfloat;
+SELECT SUM(array_length(valueTimeBoxes(temp, 2.5, '1 week', 1.5), 1)) FROM tbl_tfloat;
+SELECT SUM(array_length(valueTimeBoxes(temp, 2.5, '1 week', 1.5, '2001-06-01'), 1)) FROM tbl_tfloat;
+
+-------------------------------------------------------------------------------
 -- valueSplit
 -------------------------------------------------------------------------------
 

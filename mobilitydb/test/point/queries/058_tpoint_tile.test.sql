@@ -53,6 +53,29 @@ SELECT spaceTimeTile(geometry 'Point(3 3 3)', timestamptz '2000-01-15', 2.0, int
 SELECT spaceTimeTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'SRID=2154;Point(1 1)', '2020-06-15');
 
 -------------------------------------------------------------------------------
+-- Space boxes
+-------------------------------------------------------------------------------
+
+SELECT round(spaceBoxes(tgeompoint '[Point(1 1)@2000-01-01, Point(10 10)@2000-01-10]', 2.0), 6);
+SELECT round(spaceBoxes(tgeompoint 'SRID=3812;[Point(1 1)@2000-01-01, Point(10 10)@2000-01-10]', 2.0, geometry 'Point(1 1)'), 6);
+SELECT round(spaceBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-10]', 2.0, geometry 'Point(1 1 1)'), 6);
+
+/* Errors */
+SELECT spaceBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-10]', 2.0, geometry 'Point(1 1)');
+SELECT spaceBoxes(tgeompoint 'SRID=3812;[Point(1 1)@2000-01-01, Point(10 10)@2000-01-10]', 2.0, geometry 'SRID=5676;Point(1 1)');
+
+-------------------------------------------------------------------------------
+-- SpaceTime boxes
+-------------------------------------------------------------------------------
+
+SELECT round(spaceTimeBoxes(tgeompoint '[Point(1 1)@2000-01-01, Point(10 10)@2000-01-10]', 2.0, interval '2 days', 'Point(1 1)', '2000-01-01'), 6);
+SELECT round(spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-10]', 2.0, interval '2 days', 'Point(1 1 1)', '2000-01-01'));
+
+/* Errors */
+SELECT spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-10]', 2.0, interval '2 days', 'Point(1 1)', '2000-01-01');
+SELECT spaceTimeBoxes(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]', 2.0, interval '2 days', 'SRID=5676;Point(1 1)', '2000-01-01');
+
+-------------------------------------------------------------------------------
 -- Space split
 -------------------------------------------------------------------------------
 

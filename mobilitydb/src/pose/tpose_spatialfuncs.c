@@ -137,7 +137,7 @@ tpose_ev_al_comp_ext(FunctionCallInfo fcinfo,
 PGDLLEXPORT Datum Tpose_ever_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_ever_eq);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal pose is ever equal to a pose
  * @sqlfn ever_eq()
  */
@@ -150,7 +150,7 @@ Tpose_ever_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpose_always_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_always_eq);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal pose is always equal to a pose
  * @sqlfn always_eq()
  */
@@ -163,7 +163,7 @@ Tpose_always_eq(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpose_ever_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_ever_ne);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal pose is ever different from a pose
  * @sqlfn ever_ne()
  */
@@ -176,7 +176,7 @@ Tpose_ever_ne(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpose_always_ne(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_always_ne);
 /**
- * @ingroup mobilitydb_temporal_ever
+ * @ingroup mobilitydb_temporal_comp_ever
  * @brief Return true if a temporal pose is always different from a pose
  * @sqlfn always_ne()
  */

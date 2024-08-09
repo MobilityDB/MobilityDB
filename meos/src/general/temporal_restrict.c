@@ -291,14 +291,14 @@ tnumber_restrict_span(const Temporal *temp, const Span *s, bool atfunc)
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
-    case TINSTANT:
+    case TINSTANT:  
       return (Temporal *) tnumberinst_restrict_span((TInstant *) temp,
         s, atfunc);
     case TSEQUENCE:
       return (interp == DISCRETE) ?
-        (Temporal *) tnumberdiscseq_restrict_span((TSequence *) temp, s,
+        (Temporal *) tnumberseq_disc_restrict_span((TSequence *) temp, s,
           atfunc) :
-        (Temporal *) tnumbercontseq_restrict_span((TSequence *) temp, s,
+        (Temporal *) tnumberseq_cont_restrict_span((TSequence *) temp, s,
           atfunc);
     default: /* TSEQUENCESET */
       return (Temporal *) tnumberseqset_restrict_span((TSequenceSet *) temp, s,
@@ -346,9 +346,9 @@ tnumber_restrict_spanset(const Temporal *temp, const SpanSet *ss, bool atfunc)
         atfunc);
     case TSEQUENCE:
       return (interp == DISCRETE) ?
-        (Temporal *) tnumberdiscseq_restrict_spanset((TSequence *) temp, ss,
+        (Temporal *) tnumberseq_disc_restrict_spanset((TSequence *) temp, ss,
           atfunc) :
-        (Temporal *) tnumbercontseq_restrict_spanset((TSequence *) temp, ss,
+        (Temporal *) tnumberseq_cont_restrict_spanset((TSequence *) temp, ss,
           atfunc);
     default: /* TSEQUENCESET */
       return (Temporal *) tnumberseqset_restrict_spanset((TSequenceSet *) temp,
@@ -1277,7 +1277,7 @@ tcontseq_restrict_values(const TSequence *seq, const Set *s, bool atfunc)
  * @note A bounding box test has been done in the dispatch function.
  */
 TSequence *
-tnumberdiscseq_restrict_span(const TSequence *seq, const Span *s, bool atfunc)
+tnumberseq_disc_restrict_span(const TSequence *seq, const Span *s, bool atfunc)
 {
   assert(seq); assert(s);
   assert(temptype_basetype(seq->temptype) == s->basetype);
@@ -1309,7 +1309,7 @@ tnumberdiscseq_restrict_span(const TSequence *seq, const Span *s, bool atfunc)
  * @note A bounding box test has been done in the dispatch function.
  */
 TSequence *
-tnumberdiscseq_restrict_spanset(const TSequence *seq, const SpanSet *ss,
+tnumberseq_disc_restrict_spanset(const TSequence *seq, const SpanSet *ss,
   bool atfunc)
 {
   assert(seq); assert(ss);
@@ -1547,7 +1547,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tnumbercontseq_restrict_span_iter(const TSequence *seq, const Span *s,
+tnumberseq_cont_restrict_span_iter(const TSequence *seq, const Span *s,
   bool atfunc, TSequence **result)
 {
   /* Bounding box test */
@@ -1607,7 +1607,7 @@ tnumbercontseq_restrict_span_iter(const TSequence *seq, const Span *s,
  * function.
  */
 TSequenceSet *
-tnumbercontseq_restrict_span(const TSequence *seq, const Span *s, bool atfunc)
+tnumberseq_cont_restrict_span(const TSequence *seq, const Span *s, bool atfunc)
 {
   assert(seq); assert(s);
   assert(temptype_basetype(seq->temptype) == s->basetype);
@@ -1616,7 +1616,7 @@ tnumbercontseq_restrict_span(const TSequence *seq, const Span *s, bool atfunc)
   if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(seq->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  int newcount = tnumbercontseq_restrict_span_iter(seq, s, atfunc, sequences);
+  int newcount = tnumberseq_cont_restrict_span_iter(seq, s, atfunc, sequences);
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -1635,7 +1635,7 @@ tnumbercontseq_restrict_span(const TSequence *seq, const Span *s, bool atfunc)
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tnumbercontseq_restrict_spanset_iter(const TSequence *seq, const SpanSet *ss,
+tnumberseq_cont_restrict_spanset_iter(const TSequence *seq, const SpanSet *ss,
   bool atfunc, TSequence **result)
 {
   const TInstant *inst1, *inst2;
@@ -1684,7 +1684,7 @@ tnumbercontseq_restrict_spanset_iter(const TSequence *seq, const SpanSet *ss,
      * since we kept the span values instead of the projected values when
      * computing atSpans
      */
-    TSequenceSet *seqset = tnumbercontseq_restrict_spanset(seq, ss, REST_AT);
+    TSequenceSet *seqset = tnumberseq_cont_restrict_spanset(seq, ss, REST_AT);
     if (seqset == NULL)
     {
       result[0] = tsequence_copy(seq);
@@ -1711,7 +1711,7 @@ tnumbercontseq_restrict_spanset_iter(const TSequence *seq, const SpanSet *ss,
  * @param[in] atfunc True if the restriction is at, false for minus
  */
 TSequenceSet *
-tnumbercontseq_restrict_spanset(const TSequence *seq, const SpanSet *ss,
+tnumberseq_cont_restrict_spanset(const TSequence *seq, const SpanSet *ss,
   bool atfunc)
 {
   assert(seq); assert(ss);
@@ -1722,7 +1722,7 @@ tnumbercontseq_restrict_spanset(const TSequence *seq, const SpanSet *ss,
   if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(seq->flags))
     maxcount *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
-  int newcount = tnumbercontseq_restrict_spanset_iter(seq, ss, atfunc,
+  int newcount = tnumberseq_cont_restrict_spanset_iter(seq, ss, atfunc,
     sequences);
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
@@ -2755,7 +2755,7 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *s,
   assert(ss); assert(s);
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tnumbercontseq_restrict_span(TSEQUENCESET_SEQ_N(ss, 0), s, atfunc);
+    return tnumberseq_cont_restrict_span(TSEQUENCESET_SEQ_N(ss, 0), s, atfunc);
 
   /* General case */
   int count = ss->totalcount;
@@ -2765,7 +2765,7 @@ tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *s,
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
-    nseqs += tnumbercontseq_restrict_span_iter(TSEQUENCESET_SEQ_N(ss, i), s,
+    nseqs += tnumberseq_cont_restrict_span_iter(TSEQUENCESET_SEQ_N(ss, i), s,
       atfunc, &sequences[nseqs]);
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
@@ -2787,7 +2787,7 @@ tnumberseqset_restrict_spanset(const TSequenceSet *ss, const SpanSet *sps,
   assert(ss); assert(sps);
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tnumbercontseq_restrict_spanset(TSEQUENCESET_SEQ_N(ss, 0),
+    return tnumberseq_cont_restrict_spanset(TSEQUENCESET_SEQ_N(ss, 0),
       sps, atfunc);
 
   /* General case */
@@ -2798,7 +2798,7 @@ tnumberseqset_restrict_spanset(const TSequenceSet *ss, const SpanSet *sps,
   TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
-    nseqs += tnumbercontseq_restrict_spanset_iter(TSEQUENCESET_SEQ_N(ss, i),
+    nseqs += tnumberseq_cont_restrict_spanset_iter(TSEQUENCESET_SEQ_N(ss, i),
       sps, atfunc, &sequences[nseqs]);
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }

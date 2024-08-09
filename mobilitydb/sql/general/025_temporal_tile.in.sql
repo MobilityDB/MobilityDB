@@ -135,6 +135,21 @@ CREATE FUNCTION valueTimeTile("value" float, "time" timestamptz, size float,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Boxes
+ *****************************************************************************/
+
+CREATE FUNCTION valueTimeBoxes(tint, vsize int, tsize interval,
+    vorigin int DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_value_time_boxes'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION valueTimeBoxes(tfloat, vsize float, tsize interval,
+    vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS tbox[]
+  AS 'MODULE_PATHNAME', 'Tnumber_value_time_boxes'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+
+/*****************************************************************************
  * Splitting
  *****************************************************************************/
 

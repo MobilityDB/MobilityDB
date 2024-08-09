@@ -186,8 +186,7 @@ TInstant *
 tinstant_tprecision(const TInstant *inst, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(inst); assert(duration);
-  assert(valid_duration(duration));
+  assert(inst); assert(duration); assert(valid_duration(duration));
   TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
   Datum value = tinstant_val(inst);
   return tinstant_make(value, inst->temptype, lower);
@@ -203,10 +202,9 @@ TSequence *
 tsequence_tprecision(const TSequence *seq, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(seq); assert(duration);
+  assert(seq); assert(duration); assert(valid_duration(duration));
   assert(seq->temptype == T_TINT || seq->temptype == T_TFLOAT ||
     seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT );
-  assert(valid_duration(duration));
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
@@ -322,10 +320,9 @@ TSequenceSet *
 tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(ss); assert(duration);
+  assert(ss); assert(duration); assert(valid_duration(duration));
   assert(ss->temptype == T_TINT || ss->temptype == T_TFLOAT ||
     ss->temptype == T_TGEOMPOINT || ss->temptype == T_TGEOGPOINT );
-  assert(valid_duration(duration));
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(ss->period.lower);
@@ -438,8 +435,7 @@ TInstant *
 tinstant_tsample(const TInstant *inst, const Interval *duration,
   TimestampTz torigin)
 {
-  assert(inst); assert(duration);
-  assert(valid_duration(duration));
+  assert(inst); assert(duration); assert(valid_duration(duration));
   TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
   if (timestamp_cmp_internal(lower, inst->t) == 0)
     return tinstant_copy(inst);
@@ -542,8 +538,8 @@ TSequence *
 tsequence_tsample(const TSequence *seq, const Interval *duration,
   TimestampTz torigin, interpType interp)
 {
-  assert(seq); assert(duration);
-  assert(valid_duration(duration));
+  assert(seq); assert(duration); assert(valid_duration(duration));
+
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
   TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
@@ -570,6 +566,7 @@ tsequenceset_disc_tsample(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
   assert(ss); assert(duration); assert(valid_duration(duration));
+
   int64 tunits = interval_units(duration);
   TimestampTz lower = tsequenceset_start_timestamptz(ss);
   TimestampTz upper = tsequenceset_end_timestamptz(ss);
@@ -602,7 +599,9 @@ TSequenceSet *
 tsequenceset_cont_tsample(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin, interpType interp)
 {
+  assert(ss); assert(duration); assert(valid_duration(duration));
   assert(interp != DISCRETE);
+
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
