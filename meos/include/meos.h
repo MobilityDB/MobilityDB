@@ -1959,7 +1959,6 @@ extern bool bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2, 
 extern Temporal *bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert);
 extern Temporal *bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern GBOX *geo_gboxes(const GSERIALIZED *gs, int *count);
-extern GBOX *geo_split_n_gboxes(const GSERIALIZED *gs, int max_count, int *count);
 extern Temporal *tpoint_angular_difference(const Temporal *temp);
 extern Temporal *tpoint_azimuth(const Temporal *temp);
 extern GSERIALIZED *tpoint_convex_hull(const Temporal *temp);
