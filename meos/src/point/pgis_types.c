@@ -1925,20 +1925,20 @@ geo_as_hexewkb(const GSERIALIZED *gs, const char *endian)
  * @brief Return a geometry/geography from its EWKB representation
  * @details This function parses EWKB (extended form) which also contains SRID
  * info.
- * @param[in] bytea_wkb WKB string
+ * @param[in] wkb WKB bytes
+ * @param[in] wkb_size Number of WKB bytes
  * @param[in] srid SRID
  * @note PostGIS function: @p LWGEOMFromEWKB(wkb, [SRID])
  * @note wkb is in *binary* not hex form
  */
 GSERIALIZED *
-geo_from_ewkb(const bytea *bytea_wkb, int32 srid)
+geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32 srid)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) bytea_wkb))
+  if (! ensure_not_null((void *) wkb))
     return NULL;
 
-  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  LWGEOM *geom = lwgeom_from_wkb(wkb, VARSIZE_ANY_EXHDR(bytea_wkb),
+  LWGEOM *geom = lwgeom_from_wkb(wkb, wkb_size,
     LW_PARSER_CHECK_ALL);
   if (!geom)
   {
