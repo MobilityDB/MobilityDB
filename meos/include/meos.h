@@ -1460,7 +1460,7 @@ extern Temporal *tint_shift_value(const Temporal *temp, int shift);
 extern Temporal *tpoint_round(const Temporal *temp, int maxdd);
 extern Temporal *tpoint_transform(const Temporal *temp, int32 srid);
 extern Temporal *tpoint_transform_pipeline(const Temporal *temp, const char *pipelinestr, int32 srid, bool is_forward);
-extern Temporal *tpoint_transform_pj(const Temporal *temp, int32 srid, const LWPROJ* pj);
+extern Temporal *tpoint_transform_pj(const Temporal *temp, int32 srid, const LWPROJ *pj);
 extern LWPROJ *lwproj_transform(int32 srid_from, int32 srid_to);
 extern Temporal **tpointarr_round(const Temporal **temp, int count, int maxdd);
 
@@ -1983,11 +1983,11 @@ extern STBox *geo_expand_space(const GSERIALIZED *gs, double d);
 extern Temporal *geomeas_to_tpoint(const GSERIALIZED *gs);
 extern Temporal *tgeogpoint_to_tgeompoint(const Temporal *temp);
 extern Temporal *tgeompoint_to_tgeogpoint(const Temporal *temp);
-bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr, int *count);
+extern bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr, int *count);
 extern STBox *tpoint_expand_space(const Temporal *temp, double d);
 extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
 extern Temporal *tpoint_set_srid(const Temporal *temp, int32 srid);
-bool tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
+extern bool tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
 
 /*****************************************************************************/
 
