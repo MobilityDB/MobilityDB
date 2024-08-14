@@ -154,7 +154,7 @@ SELECT valueTimeTiles(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tb
  (1,"TBOXFLOAT XT([34, 36.5),[Thu Nov 22 23:00:00 2001 PST, Thu Nov 29 23:00:00 2001 PST))") |     2
 (3 rows)
 
-SELECT extent(valueTimeTile(t1.f, t2.t, 2.5, '1 week')) FROM
+SELECT extent(getValueTimeTile(t1.f, t2.t, 2.5, '1 week')) FROM
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
                                        extent                                       
@@ -162,7 +162,7 @@ SELECT extent(valueTimeTile(t1.f, t2.t, 2.5, '1 week')) FROM
  TBOXFLOAT XT([5, 85),[Mon Jan 22 00:00:00 2001 PST, Mon Dec 10 00:00:00 2001 PST))
 (1 row)
 
-SELECT extent(valueTimeTile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
+SELECT extent(getValueTimeTile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
                                         extent                                        

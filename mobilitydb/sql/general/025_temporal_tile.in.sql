@@ -127,7 +127,7 @@ CREATE FUNCTION valueTimeTiles(bounds tbox, size float, duration interval,
   AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueTimeTile("value" float, "time" timestamptz, size float,
+CREATE FUNCTION getValueTimeTile("value" float, "time" timestamptz, size float,
   duration interval, vorigin float DEFAULT 0.0,
   torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox

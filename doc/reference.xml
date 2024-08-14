@@ -1487,11 +1487,11 @@
 			<title>Multidimensional Tiling</title>
 
 			<sect3>
-				<title>Bucket Operations</title>
+				<title>Bucket Functions</title>
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Return a set of buckets that cover the span or period with buckets of the same width or duration aligned with the origin</para>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Return a set of buckets that cover the value or time span with buckets of the same width or duration aligned with the origin</para>
 					</listitem>
 
 					<listitem>
@@ -1514,7 +1514,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Grid Operations</title>
+				<title>Tile Functions</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1528,7 +1528,21 @@
 			</sect3>
 
 			<sect3>
-				<title>Split Operations</title>
+				<title>Bounding Box Functions</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="valueTimeBoxes"><varname>valueTimeBoxes</varname></link>: Return an array of temporal boxes from the instants or segments of a temporal number with respect to a value and time grid</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceTimeBoxes"><varname>spaceBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Return an array of spatiotemporal boxes from the instants or segments of a temporal point with respect to a space and possibly time grid</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Split Functions</title>
 
 				<itemizedlist>
 					<listitem>

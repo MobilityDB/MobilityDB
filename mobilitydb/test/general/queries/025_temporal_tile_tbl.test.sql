@@ -67,10 +67,10 @@ SELECT valueTimeTiles(b, 2.5, '1 week'), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 
 SELECT valueTimeTiles(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 SELECT valueTimeTiles(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT extent(valueTimeTile(t1.f, t2.t, 2.5, '1 week')) FROM
+SELECT extent(getValueTimeTile(t1.f, t2.t, 2.5, '1 week')) FROM
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
-SELECT extent(valueTimeTile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
+SELECT extent(getValueTimeTile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
 

@@ -170,14 +170,14 @@ SELECT valueTimeTiles(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 wee
  (3,"TBOXFLOAT XT([18, 20.5),[Sat Jan 15 00:00:00 2000 PST, Sat Jan 22 00:00:00 2000 PST))")
 (3 rows)
 
-SELECT valueTimeTile(15.5, timestamptz '2000-01-15', 2.5, interval '1 week');
-                                     valuetimetile                                     
+SELECT getValueTimeTile(15.5, timestamptz '2000-01-15', 2.5, interval '1 week');
+                                   getvaluetimetile                                    
 ---------------------------------------------------------------------------------------
  TBOXFLOAT XT([15, 17.5),[Mon Jan 10 00:00:00 2000 PST, Mon Jan 17 00:00:00 2000 PST))
 (1 row)
 
-SELECT valueTimeTile(15.5, timestamptz '2000-01-15', 2.5, interval '1 week', 1.5, '2020-06-15');
-                                     valuetimetile                                     
+SELECT getValueTimeTile(15.5, timestamptz '2000-01-15', 2.5, interval '1 week', 1.5, '2020-06-15');
+                                   getvaluetimetile                                    
 ---------------------------------------------------------------------------------------
  TBOXFLOAT XT([14, 16.5),[Sun Jan 09 23:00:00 2000 PST, Sun Jan 16 23:00:00 2000 PST))
 (1 row)

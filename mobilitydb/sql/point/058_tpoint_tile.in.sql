@@ -76,40 +76,40 @@ CREATE FUNCTION spaceTimeTiles(bounds stbox, xsize float, ysize float,
   AS 'SELECT @extschema@.spaceTimeTiles($1, $2, $3, $2, $4, $5, $6, $7)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE FUNCTION spaceTile(point geometry, xsize float, ysize float, zsize float,
+CREATE FUNCTION getSpaceTile(point geometry, xsize float, ysize float, zsize float,
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_space_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spaceTile(point geometry, size float,
+CREATE FUNCTION getSpaceTile(point geometry, size float,
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
-  AS 'SELECT @extschema@.spaceTile($1, $2, $2, $2, $3)'
+  AS 'SELECT @extschema@.getSpaceTile($1, $2, $2, $2, $3)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
-CREATE FUNCTION spaceTile(point geometry, xsize float, ysize float,
+CREATE FUNCTION getSpaceTile(point geometry, xsize float, ysize float,
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
-  AS 'SELECT @extschema@.spaceTile($1, $2, $3, $2, $4)'
+  AS 'SELECT @extschema@.getSpaceTile($1, $2, $3, $2, $4)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE FUNCTION spaceTimeTile(point geometry, "time" timestamptz, xsize float,
+CREATE FUNCTION getSpaceTimeTile(point geometry, "time" timestamptz, xsize float,
     ysize float, zsize float, duration interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_space_time_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spaceTimeTile(point geometry, "time" timestamptz, size float,
+CREATE FUNCTION getSpaceTimeTile(point geometry, "time" timestamptz, size float,
     duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
-  AS 'SELECT @extschema@.spaceTimeTile($1, $2, $3, $3, $3, $4, $5, $6)'
+  AS 'SELECT @extschema@.getSpaceTimeTile($1, $2, $3, $3, $3, $4, $5, $6)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
-CREATE FUNCTION spaceTimeTile(point geometry, "time" timestamptz, xsize float,
+CREATE FUNCTION getSpaceTimeTile(point geometry, "time" timestamptz, xsize float,
     ysize float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
-  AS 'SELECT @extschema@.spaceTimeTile($1, $2, $3, $4, $3, $5, $6, $7)'
+  AS 'SELECT @extschema@.getSpaceTimeTile($1, $2, $3, $4, $3, $5, $6, $7)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
 /*****************************************************************************/

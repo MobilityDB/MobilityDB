@@ -1521,7 +1521,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de intervalos que cubre el rango o el período con intervalos de la misma amplitud alineados con el origen</para>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de intervalos que cubre el rango de valores o de tiempo con intervalos de la misma amplitud alineados con el origen</para>
 					</listitem>
 
 					<listitem>
@@ -1554,6 +1554,20 @@
 					<listitem>
 						<para><link linkend="valueTimeTile"><varname>valueTimeTile</varname>, <varname>spaceTile</varname>, <varname>spaceTimeTile</varname></link>: Obtener el mosaico de la malla multidimensional que contiene el valor y la marca de tiempo</para>
 						</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Funciones de cuadro delimitador</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="valueTimeBoxes"><varname>valueTimeBoxes</varname></link>: Devuelve una matriz de cuadros temporales de los instantes o segmentos de un número temporal con respecto a un mosaico de valores y tiempo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceTimeBoxes"><varname>spaceBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Devuelve una matriz de cuadros espaciotemporales de los instantes o segmentos de un punto temporal con respecto a un mosaico espacial y posiblemente temporal</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 
