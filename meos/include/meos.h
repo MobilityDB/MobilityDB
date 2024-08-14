@@ -398,7 +398,7 @@ extern DateADT timestamptz_to_date(TimestampTz t);
  * Functions for PostGIS types
  *===========================================================================*/
 
-extern bytea *geo_as_ewkb(const GSERIALIZED *gs, const char *endian);
+extern uint8_t *geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size);
 extern char *geo_as_ewkt(const GSERIALIZED *gs, int precision);
 extern char *geo_as_geojson(const GSERIALIZED *gs, int option, int precision, const char *srs);
 extern char *geo_as_hexewkb(const GSERIALIZED *gs, const char *endian);
