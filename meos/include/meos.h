@@ -296,6 +296,33 @@ typedef struct
   SkipListElem *elems;
 } SkipList;
 
+typedef struct RTreeNode{
+    bool kind;
+    int count;
+    STBox** boxes;
+    union {
+        struct RTreeNode ** nodes;
+        int64 *ids;
+    };
+} RTreeNode;
+
+/**
+ * Rtree in memory index basic structure.
+ *
+ * It works based on STBox. The spliting criteria is based on the largest axis.
+ * The inserting criteria is based on least enlarging square.
+ *
+ * The get axis function makes it ease to implement with X,Y,Z and time or any
+ * combination that you may want.
+ */
+typedef struct {
+    STBox *box; /* In the future this should be able to be TBox or Span */
+    RTreeNode *root;
+    int count;
+    int dims;
+    double (*get_axis)(const STBox*, int, bool);
+} RTree;
+
 /*****************************************************************************
  * Error codes
  *****************************************************************************/
@@ -1225,6 +1252,15 @@ extern TBox *union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict);
 extern TBox *intersection_tbox_tbox(const TBox *box1, const TBox *box2);
 extern STBox *union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict);
 extern STBox *intersection_stbox_stbox(const STBox *box1, const STBox *box2);
+
+/*****************************************************************************
+ * RTree functions
+ *****************************************************************************/
+
+extern RTree * rtree_create (double (*get_axis)(const STBox *, int, bool), int dims);
+extern void rtree_insert (RTree *rtree ,STBox *box, int64 id);
+extern int * rtree_search ( const RTree* rtree,const STBox * query, int * count);
+extern void rtree_free(RTree* rtree);
 
 /*****************************************************************************
  * Bounding box functions for box types
