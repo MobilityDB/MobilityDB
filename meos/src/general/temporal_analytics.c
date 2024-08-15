@@ -61,10 +61,10 @@
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a timestamptz with the precision set to a time bucket
+ * @brief Return a timestamptz with the precision set to a time bin
  * @param[in] t Time value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  */
 TimestampTz
 timestamptz_tprecision(TimestampTz t, const Interval *duration,
@@ -74,15 +74,15 @@ timestamptz_tprecision(TimestampTz t, const Interval *duration,
   if (! ensure_not_null((void *) duration) ||
       ! ensure_valid_duration(duration))
     return DT_NOEND;
-  return timestamptz_bucket(t, duration, torigin);
+  return timestamptz_get_bin(t, duration, torigin);
 }
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a timestamptz set with the precision set to a time bucket
+ * @brief Return a timestamptz set with the precision set to a time bin
  * @param[in] s Timestamptz set
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  */
 Set *
 tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin)
@@ -96,16 +96,16 @@ tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin)
   Datum *values = palloc(sizeof(Datum) * s->count);
   /* Loop for each value */
   for (int i = 0; i < s->count; i++)
-    values[i] = timestamptz_bucket(SET_VAL_N(s, i), duration, torigin);
+    values[i] = timestamptz_get_bin(SET_VAL_N(s, i), duration, torigin);
   return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDER);
 }
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a timestamptz span with the precision set to a time bucket
+ * @brief Return a timestamptz span with the precision set to a time bin
  * @param[in] s Time value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  */
 Span *
 tstzspan_tprecision(const Span *s, const Interval *duration,
@@ -120,20 +120,20 @@ tstzspan_tprecision(const Span *s, const Interval *duration,
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(s->lower);
   TimestampTz upper = DatumGetTimestampTz(s->upper);
-  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamptz of the last bucket */
-  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+  TimestampTz lower_bin = timestamptz_get_bin(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamptz of the last bin */
+  TimestampTz upper_bin = timestamptz_get_bin(upper, duration, torigin) +
     tunits;
-  return span_make(TimestampTzGetDatum(lower_bucket),
-    TimestampTzGetDatum(upper_bucket), true, false, T_TIMESTAMPTZ);
+  return span_make(TimestampTzGetDatum(lower_bin),
+    TimestampTzGetDatum(upper_bin), true, false, T_TIMESTAMPTZ);
 }
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a timestamptz span set with the precision set to a time bucket
+ * @brief Return a timestamptz span set with the precision set to a time bin
  * @param[in] ss Time value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  */
 SpanSet *
 tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
@@ -148,17 +148,17 @@ tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(ss->span.lower);
   TimestampTz upper = DatumGetTimestampTz(ss->span.upper);
-  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamptz of the last bucket */
-  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+  TimestampTz lower_bin = timestamptz_get_bin(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamptz of the last bin */
+  TimestampTz upper_bin = timestamptz_get_bin(upper, duration, torigin) +
     tunits;
-  /* Number of buckets */
-  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
+  /* Number of bins */
+  int count = (int) (((int64) upper_bin - (int64) lower_bin) / tunits);
   Span *spans = palloc(sizeof(Span) * count);
-  lower = lower_bucket;
-  upper = lower_bucket + tunits;
+  lower = lower_bin;
+  upper = lower_bin + tunits;
   int nspans = 0;
-  /* Loop for each bucket */
+  /* Loop for each bin */
   for (int i = 0; i < count; i++)
   {
     Span s;
@@ -177,26 +177,26 @@ tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
  *****************************************************************************/
 
 /**
- * @brief Return a temporal instant with the precision set to a time bucket
+ * @brief Return a temporal instant with the precision set to a time bin
  * @param[in] inst Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  */
 TInstant *
 tinstant_tprecision(const TInstant *inst, const Interval *duration,
   TimestampTz torigin)
 {
   assert(inst); assert(duration); assert(valid_duration(duration));
-  TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
+  TimestampTz lower = timestamptz_get_bin(inst->t, duration, torigin);
   Datum value = tinstant_val(inst);
   return tinstant_make(value, inst->temptype, lower);
 }
 
 /**
- * @brief Return a temporal sequence with the precision set to a time bucket
+ * @brief Return a temporal sequence with the precision set to a time bin
  * @param[in] seq Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  */
 TSequence *
 tsequence_tprecision(const TSequence *seq, const Interval *duration,
@@ -209,23 +209,23 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
   TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
-  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamp of the last bucket */
-  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+  TimestampTz lower_bin = timestamptz_get_bin(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamp of the last bin */
+  TimestampTz upper_bin = timestamptz_get_bin(upper, duration, torigin) +
     tunits;
-  /* Number of buckets */
-  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
+  /* Number of bins */
+  int count = (int) (((int64) upper_bin - (int64) lower_bin) / tunits);
   TInstant **ininsts = palloc(sizeof(TInstant *) * seq->count);
   TInstant **outinsts = palloc(sizeof(TInstant *) * count);
-  lower = lower_bucket;
-  upper = lower_bucket + tunits;
+  lower = lower_bin;
+  upper = lower_bin + tunits;
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   meosType temptype_out = (seq->temptype == T_TINT) ? T_TFLOAT : seq->temptype;
   /* Determine whether we are computing the twAvg or the twCentroid */
   bool twavg = tnumber_type(seq->temptype);
-  /* New instants computing the value at the beginning/end of the bucket */
+  /* New instants computing the value at the beginning/end of the bin */
   TInstant *start = NULL, *end = NULL;
-  /* Sequence for computing the twAvg/twCentroid of each bucket */
+  /* Sequence for computing the twAvg/twCentroid of each bin */
   TSequence *seq1;
   Datum value;
   int i = 0;   /* Instant of the input sequence being processed */
@@ -237,17 +237,17 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
     /* Get the next instant */
     TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, i);
     int cmp = timestamptz_cmp_internal(inst->t, upper);
-    /* If the instant is in the current bucket consume it */
+    /* If the instant is in the current bin consume it */
     if (cmp <= 0)
     {
       ininsts[k++] = inst;
       i++;
     }
-    /* If we have reached the end of the bucket */
+    /* If we have reached the end of the bin */
     if (cmp >= 0)
     {
       assert(k > 0);
-      /* Compute the value at the end of the bucket if we do not have it */
+      /* Compute the value at the end of the bin if we do not have it */
       if (interp != DISCRETE &&
           timestamptz_cmp_internal(ininsts[k - 1]->t, upper) < 0)
       {
@@ -256,14 +256,14 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       }
       seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
         NORMALIZE);
-      /* Compute the twAvg/twCentroid for the bucket */
+      /* Compute the twAvg/twCentroid for the bin */
       value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
         PointerGetDatum(tpointseq_twcentroid(seq1));
       outinsts[l++] = tinstant_make(value, temptype_out, lower);
       pfree(seq1);
       if (! twavg)
         pfree(DatumGetPointer(value));
-      /* Free the instant at the beginning of the bucket if it was generated */
+      /* Free the instant at the beginning of the bin if it was generated */
       if (start)
       {
         pfree(start); start = NULL;
@@ -274,8 +274,8 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       }
       if (interp != DISCRETE)
       {
-        /* The instant at the end of the current bucket is the start of the next
-         * one excepted when the last bucket is empty */
+        /* The instant at the end of the current bin is the start of the next
+         * one excepted when the last bin is empty */
         if (i < seq->count || seq->period.upper_inc)
         {
           ininsts[0] = ininsts[k - 1];
@@ -288,7 +288,7 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       upper += tunits;
     }
   }
-  /* Compute the twAvg/twCentroid of the last bucket */
+  /* Compute the twAvg/twCentroid of the last bin */
   if (k > 0)
   {
     seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
@@ -311,10 +311,10 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
 }
 
 /**
- * @brief Return a temporal sequence set with the precision set to a time bucket
+ * @brief Return a temporal sequence set with the precision set to a time bin
  * @param[in] ss Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  */
 TSequenceSet *
 tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
@@ -327,23 +327,23 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(ss->period.lower);
   TimestampTz upper = DatumGetTimestampTz(ss->period.upper);
-  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamp of the last bucket */
-  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+  TimestampTz lower_bin = timestamptz_get_bin(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamp of the last bin */
+  TimestampTz upper_bin = timestamptz_get_bin(upper, duration, torigin) +
     tunits;
-  /* Number of buckets */
-  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits);
+  /* Number of bins */
+  int count = (int) (((int64) upper_bin - (int64) lower_bin) / tunits);
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  lower = lower_bucket;
-  upper = lower_bucket + tunits;
+  lower = lower_bin;
+  upper = lower_bin + tunits;
   interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
   meosType temptype_out = (ss->temptype == T_TINT) ? T_TFLOAT : ss->temptype;
   /* Determine whether we are computing the twAvg or the twCentroid */
   bool twavg = tnumber_type(ss->temptype);
   int ninsts = 0;
   int nseqs = 0;
-  /* Loop for each bucket */
+  /* Loop for each bin */
   for (int i = 0; i < count; i++)
   {
     Span p;
@@ -391,10 +391,10 @@ tsequenceset_tprecision(const TSequenceSet *ss, const Interval *duration,
 
 /**
  * @ingroup meos_temporal_analytics_reduction
- * @brief Return a temporal value with the precision set to period buckets
+ * @brief Return a temporal value with the precision set to time bins
  * @param[in] temp Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  * @csqlfn #Temporal_tprecision()
  */
 Temporal *
@@ -426,17 +426,17 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
  *****************************************************************************/
 
 /**
- * @brief Return a temporal value sampled at period buckets
+ * @brief Return a temporal value sampled at time bins
  * @param[in] inst Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  */
 TInstant *
 tinstant_tsample(const TInstant *inst, const Interval *duration,
   TimestampTz torigin)
 {
   assert(inst); assert(duration); assert(valid_duration(duration));
-  TimestampTz lower = timestamptz_bucket(inst->t, duration, torigin);
+  TimestampTz lower = timestamptz_get_bin(inst->t, duration, torigin);
   if (timestamp_cmp_internal(lower, inst->t) == 0)
     return tinstant_copy(inst);
   return NULL;
@@ -444,36 +444,36 @@ tinstant_tsample(const TInstant *inst, const Interval *duration,
 
 
 /**
- * @brief Return a temporal value sampled according to period buckets
+ * @brief Return a temporal value sampled according to time bins
  * @param[in] seq Temporal value
- * @param[in] lower_bucket,upper_bucket First and last buckets
+ * @param[in] lower_bin,upper_bin First and last bins
  * @param[in] tunits Time size of the tiles in PostgreSQL time units
  * @param[out] result Output array of temporal instants
  * @note The result is an temporal sequence with discrete interpolation
  */
 int
-tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bucket,
-  TimestampTz upper_bucket, int64 tunits, TInstant **result)
+tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bin,
+  TimestampTz upper_bin, int64 tunits, TInstant **result)
 {
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   const TInstant *start = TSEQUENCE_INST_N(seq, 0);
-  TimestampTz lower = lower_bucket;
+  TimestampTz lower = lower_bin;
   int i; /* Current segment of the sequence */
   int ninsts = 0; /* Number of instants of the result */
   int cmp1;
   if (interp == DISCRETE)
   {
     i = 0; /* Current instant of the sequence */
-    while (i < seq->count && lower < upper_bucket)
+    while (i < seq->count && lower < upper_bin)
     {
       cmp1 = timestamptz_cmp_internal(start->t, lower);
-      /* If the instant is equal to the lower bound of the bucket */
+      /* If the instant is equal to the lower bound of the bin */
       if (cmp1 == 0)
       {
         result[ninsts++] = tinstant_copy(start);
         lower += tunits;
       }
-      /* Advance the bucket if it is after the instant */
+      /* Advance the bin if it is after the instant */
       else if (cmp1 > 0)
       {
         int times = ceil((double) (start->t - lower) / tunits);
@@ -496,24 +496,24 @@ tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bucket,
     const TInstant *end = TSEQUENCE_INST_N(seq, 1);
     bool lower_inc = seq->period.lower_inc;
     i = 1; /* Current segment of the sequence */
-    while (i < seq->count && lower < upper_bucket)
+    while (i < seq->count && lower < upper_bin)
     {
       bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
       cmp1 = timestamptz_cmp_internal(start->t, lower);
       int cmp2 = timestamptz_cmp_internal(lower, end->t);
-      /* If the segment contains the lower bound of the bucket */
+      /* If the segment contains the lower bound of the bin */
       if ((cmp1 < 0 || (cmp1 == 0 && lower_inc)) &&
           (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
       {
         Datum value = tsegment_value_at_timestamptz(start, end, interp, lower);
         result[ninsts++] = tinstant_make(value, seq->temptype, lower);
-        /* Advance the bucket */
+        /* Advance the bin */
         lower += tunits;
       }
-      /* Advance the bucket if it is after the start of the segment */
+      /* Advance the bin if it is after the start of the segment */
       else if (cmp1 >= 0)
         lower += tunits;
-      /* Advance the segment if it is after the lower bound of the bucket */
+      /* Advance the segment if it is after the lower bound of the bin */
       else if (cmp2 >= 0)
       {
         /* If there are no more segments */
@@ -528,10 +528,10 @@ tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bucket,
 }
 
 /**
- * @brief Return a temporal value sampled according to period buckets
+ * @brief Return a temporal value sampled according to time bins
  * @param[in] seq Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  * @param[in] interp Interpolation
  */
 TSequence *
@@ -543,23 +543,23 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
   TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
-  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamp of the last bucket */
-  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+  TimestampTz lower_bin = timestamptz_get_bin(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamp of the last bin */
+  TimestampTz upper_bin = timestamptz_get_bin(upper, duration, torigin) +
     tunits;
-  /* Number of buckets */
-  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits) + 1;
+  /* Number of bins */
+  int count = (int) (((int64) upper_bin - (int64) lower_bin) / tunits) + 1;
   TInstant **instants = palloc(sizeof(TInstant *) * count);
-  int ninsts = tsequence_tsample_iter(seq, lower_bucket, upper_bucket, tunits,
+  int ninsts = tsequence_tsample_iter(seq, lower_bin, upper_bin, tunits,
     &instants[0]);
   return tsequence_make_free(instants, ninsts, true, true, interp, NORMALIZE);
 }
 
 /**
- * @brief Return a temporal value sampled according to period buckets
+ * @brief Return a temporal value sampled according to time bins
  * @param[in] ss Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  */
 TSequence *
 tsequenceset_disc_tsample(const TSequenceSet *ss, const Interval *duration,
@@ -570,29 +570,29 @@ tsequenceset_disc_tsample(const TSequenceSet *ss, const Interval *duration,
   int64 tunits = interval_units(duration);
   TimestampTz lower = tsequenceset_start_timestamptz(ss);
   TimestampTz upper = tsequenceset_end_timestamptz(ss);
-  TimestampTz lower_bucket = timestamptz_bucket(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamp of the last bucket */
-  TimestampTz upper_bucket = timestamptz_bucket(upper, duration, torigin) +
+  TimestampTz lower_bin = timestamptz_get_bin(lower, duration, torigin);
+  /* We need to add tunits to obtain the end timestamp of the last bin */
+  TimestampTz upper_bin = timestamptz_get_bin(upper, duration, torigin) +
     tunits;
-  /* Number of buckets */
-  int count = (int) (((int64) upper_bucket - (int64) lower_bucket) / tunits) + 1;
+  /* Number of bins */
+  int count = (int) (((int64) upper_bin - (int64) lower_bin) / tunits) + 1;
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   /* Loop for each segment */
   int ninsts = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    ninsts += tsequence_tsample_iter(TSEQUENCESET_SEQ_N(ss, i), lower_bucket,
-      upper_bucket, tunits, &instants[ninsts]);
+    ninsts += tsequence_tsample_iter(TSEQUENCESET_SEQ_N(ss, i), lower_bin,
+      upper_bin, tunits, &instants[ninsts]);
   }
   return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
     NORMALIZE);
 }
 
 /**
- * @brief Return a temporal value sampled according to period buckets
+ * @brief Return a temporal value sampled according to time bins
  * @param[in] ss Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  * @param[in] interp Interpolation
  */
 TSequenceSet *
@@ -615,10 +615,10 @@ tsequenceset_cont_tsample(const TSequenceSet *ss, const Interval *duration,
 }
 
 /**
- * @brief Return a temporal value sampled according to period buckets
+ * @brief Return a temporal value sampled according to time bins
  * @param[in] ss Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  * @param[in] interp Interpolation
  */
 Temporal *
@@ -632,10 +632,10 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
 
 /**
  * @ingroup meos_temporal_analytics_reduction
- * @brief Return a temporal value sampled according to period buckets
+ * @brief Return a temporal value sampled according to time bins
  * @param[in] temp Temporal value
- * @param[in] duration Size of the time buckets
- * @param[in] torigin Time origin of the buckets
+ * @param[in] duration Size of the time bins
+ * @param[in] torigin Time origin of the bins
  * @param[in] interp Interpolation
  * @csqlfn #Temporal_tsample()
  */

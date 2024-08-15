@@ -274,6 +274,7 @@ int64arr_to_array(int64 *values, int count)
   return result;
 }
 
+#if 0 /* not used */
 /**
  * @brief Return a C array of dates converted into a PostgreSQL array
  */
@@ -288,6 +289,7 @@ datearr_to_array(DateADT *dates, int count)
   pfree(values); pfree(dates);
   return result;
 }
+#endif /* not used */
 
 /**
  * @brief Return a C array of timestamps converted into a PostgreSQL array

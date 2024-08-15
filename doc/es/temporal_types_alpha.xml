@@ -52,7 +52,7 @@ SELECT ~tbool '[true@2001-01-03, true@2001-01-05)';
 
 			<listitem id="whenTrue">
 				<indexterm><primary><varname>whenTrue</varname></primary></indexterm>
-				<para>Obtener el tiempo cuando el booleano temporal toma el valor verdadero</para>
+				<para>Devuelve el tiempo cuando el booleano temporal toma el valor verdadero</para>
 				<para><varname>whenTrue(tbool) → tstzspanset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT whenTrue(tfloat '[1@2001-01-01, 4@2001-01-04, 1@2001-01-07]' #> 2);
@@ -129,7 +129,7 @@ SELECT tfloat '[-1@2001-01-04, 1@2001-01-05]' / tfloat '[-1@2001-01-01, 1@2001-0
 
 			<listitem id="abs">
 				<indexterm><primary><varname>abs</varname></primary></indexterm>
-				<para>Obtener el valor absoluto del número temporal</para>
+				<para>Devuelve el valor absoluto del número temporal</para>
 				<para><varname>abs(tnumber) → tnumber</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT abs(tfloat '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
@@ -141,7 +141,7 @@ SELECT abs(tint '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
 
 			<listitem id="deltaValue">
 				<indexterm><primary><varname>deltaValue</varname></primary></indexterm>
-				<para>Obtener la diferencia de valor entre instantes consectivos del número temporal</para>
+				<para>Devuelve la diferencia de valor entre instantes consectivos del número temporal</para>
 				<para><varname>deltaValue(tnumber) → tnumber</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT deltaValue(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
@@ -198,7 +198,7 @@ SELECT radians(tfloat '[45@2001-01-01, 135@2001-01-02]');
 
 			<listitem id="derivative">
 				<indexterm><primary><varname>derivative</varname></primary></indexterm>
-				<para>Obtener la derivada sobre el tiempo del número flotante temporal en unidades por segundo</para>
+				<para>Devuelve la derivada sobre el tiempo del número flotante temporal en unidades por segundo</para>
 				<para><varname>derivative(tfloat) → tfloat</varname></para>
 				<para>El número flotante temporal debe tener interpolación linear</para>
 				<programlisting language="sql" xml:space="preserve">

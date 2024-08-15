@@ -2400,7 +2400,7 @@ set_unnest_state_next(SetUnnestState *state)
 {
   if (! state || state->done)
     return;
-  /* Move to the next bucket */
+  /* Move to the next bin */
   state->i++;
   if (state->i == state->count)
     state->done = true;

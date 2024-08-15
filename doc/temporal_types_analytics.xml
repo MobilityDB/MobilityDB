@@ -131,7 +131,7 @@ SELECT asText(tsample(tgeompoint '{[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05
 
 			<listitem id="tprecision">
 				<indexterm><primary><varname>tprecision</varname></primary></indexterm>
-				<para>Reduce the temporal precision of a temporal value with respect to an interval computing the time-weighted average/centroid in each time bucket</para>
+				<para>Reduce the temporal precision of a temporal value with respect to an interval computing the time-weighted average/centroid in each time bin</para>
 				<para><varname>tprecision({tnumber,tgeompoint},duration interval,torigin timestamptz='2000-01-03')</varname></para>
 				<para><varname> → {tnumber,tpoint}</varname></para>
 				<para>If the origin is not specified, it is set by default to Monday, January 3, 2000. The given interval must be strictly greater than zero.</para>
@@ -284,11 +284,11 @@ SELECT dynTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03
 	<sect1 id="temporal_types_tiling">
 		<title>Multidimensional Tiling</title>
 		<para>
-			Multidimensional tiling is the mechanism used to partition the domain of temporal values in buckets or tiles of varying number of dimensions. In the case of a single dimension, the domain can be partitioned by value or by time using buckets of the same size or duration, respectively. For temporal numbers, the domain can be partitioned in two-dimensional tiles of the same size for the value dimension and the same duration for the time dimension. For temporal points, the domain can be partitioned in space in two- or three-dimensional tiles, depending on the number of dimensions of the spatial coordinates. Finally, for temporal points, the domain can be partitioned in space and time using three- or four-dimensional tiles. Furthermore, the temporal values can also be fragmented according to a multidimensional grid defined over the underlying domain.
+			Multidimensional tiling is the mechanism used to partition the domain of temporal values in bins or tiles of varying number of dimensions. In the case of a single dimension, the domain can be partitioned by value or by time using bins of the same size or duration, respectively. For temporal numbers, the domain can be partitioned in two-dimensional tiles of the same size for the value dimension and the same duration for the time dimension. For temporal points, the domain can be partitioned in space in two- or three-dimensional tiles, depending on the number of dimensions of the spatial coordinates. Finally, for temporal points, the domain can be partitioned in space and time using three- or four-dimensional tiles.
 		</para>
 
 		<para>
-			Multidimensional tiling can be used for various purposes. For example, it can be used for computing multidimensional histograms, where the temporal values are aggregated according to the underlying partition of the domain. On the other hand, multidimensional tiling can be used for distributing a dataset across a cluster of servers, where each server contains a partition of the dataset. The advantage of this partition mechanism is that it preserves proximitity in space and time, unlike the traditional hash-based partition mechanisms used in big data environments.
+			Multidimensional tiling can be used for various purposes. It can be used for computing multidimensional histograms, where the temporal values are aggregated according to the underlying partition of the domain. On the other hand, multidimensional tiling can also be used for indexing purposes, where the bounding box of a temporal value can be fragmented into multiple boxes in order to improve the efficiency of the index. Finally, multidimensional tiling can be used for fragmenting temporal values according to a multidimensional grid defined over the underlying domain. This enables the distribution of a dataset across a cluster of servers, where each server contains a partition of the dataset. The advantage of this partition mechanism is that it preserves proximitity in value/space and time, unlike the traditional hash-based partition mechanisms.
 		</para>
 
 		<figure id="tiling" float="start">
@@ -306,101 +306,62 @@ SELECT dynTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03
 
 		<para>Many of the functions in this section are <emphasis>set-returning functions</emphasis> (also known as a <emphasis>table functions</emphasis>) since they typically return more than one value. In this case, the functions are marked with the &SRF; symbol.</para>
 
-		<sect2 id="bucket_functions">
-			<title>Bucket Functions</title>
+		<sect2 id="bin_functions">
+			<title>Bin Functions</title>
 
 			<itemizedlist>
-				<listitem id="bucketList">
-					<indexterm><primary><varname>bucketList</varname></primary></indexterm>
-					<para>Return a set of buckets that cover the value or time span with buckets of the same size or duration aligned with the origin &SRF;</para>
-					<para><varname>bucketList(bounds numberspan,size number,origin number=0) → {(index,span)}</varname></para>
-					<para><varname>bucketList(bounds tstzspan,duration interval,origin timestamptz='2000-01-03') → </varname></para>
+				<listitem id="valueBins">
+					<indexterm><primary><varname>valueBins</varname></primary></indexterm>
+					<indexterm><primary><varname>timeBins</varname></primary></indexterm>
+					<para>Return a set of bins that cover the value or time span with bin of the same size or duration &SRF;</para>
+					<para><varname>valueBins(bounds numberspan,size number,origin number=0) → {(index,span)}</varname></para>
+					<para><varname>timeBins(bounds tstzspan,duration interval,origin timestamptz='2000-01-03') → </varname></para>
 					<para><varname>  {(index,span)}</varname></para>
-					<para>The result is a set of pairs <varname>(index,span)</varname>. If the origin is not specified, it is set by default to 0 for number spans and Monday, January 3, 2000 for periods. The indices start by 1.</para>
+					<para>The result is a set of pairs <varname>(index,span)</varname>. If the origin is not specified, it is set by default to 0 for value spans and Monday, January 3, 2000 for time spans. The indices start by 1.</para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT (bl).index, (bl).span
-FROM (SELECT bucketList(intspan '[15, 25]', 2) AS bl) t;
--- 1 | [14,16)
--- 2 | [16,18)
--- 3 | [18,20)
--- ...
-SELECT bucketList(floatspan '[-10, -1]', 2.5, -7);
+SELECT valueBins(floatspan '[-10, -1]', 2.5, -7);
 -- (1,"[-12, -9.5)")
 -- (2,"[-9.5, -7)")
 -- (3,"[-7, -4.5)")
 -- ...
 SELECT (bl).index, (bl).span
-FROM (SELECT bucketList(tstzspan '[2001-01-15, 2001-01-25]','2 days') AS bl) t;
--- 1 | [2001-01-15, 2001-01-17)
--- 2 | [2001-01-17, 2001-01-19)
--- 3 | [2001-01-19, 2001-01-21)
+FROM (SELECT valueBins(intspan '[15, 25]', 2) AS bl) t;
+-- 1 | [14,16)
+-- 2 | [16,18)
+-- 3 | [18,20)
 -- ...
-SELECT bucketList(tstzspan '[2001-01-15, 2001-01-25]', '2 days', '2001-01-02');
+SELECT timeBins(tstzspan '[2001-01-15, 2001-01-25]', '2 days', '2001-01-02');
 -- (1,"[2001-01-14, 2001-01-16)")
 -- (2,"[2001-01-16, 2001-01-18)")
 -- (3,"[2001-01-18, 2001-01-20)")
 -- ...
+SELECT (bl).index, (bl).span
+FROM (SELECT timeBins(tstzspan '[2001-01-15, 2001-01-25]','2 days') AS bl) t;
+-- 1 | [2001-01-15, 2001-01-17)
+-- 2 | [2001-01-17, 2001-01-19)
+-- 3 | [2001-01-19, 2001-01-21)
+-- ...
 </programlisting>
 				</listitem>
 
-				<listitem id="valueBucket">
-					<indexterm><primary><varname>valueBucket</varname></primary></indexterm>
-					<para> Return the start value of the bucket that contains the input number</para>
-					<para><varname>valueBucket(value number,size number,origin number=0) → number</varname></para>
-					<para>If the origin is not specified, it is set by default to 0.</para>
+				<listitem id="getValueBin">
+					<indexterm><primary><varname>getValueBin</varname></primary></indexterm>
+					<indexterm><primary><varname>getTimeBin</varname></primary></indexterm>
+					<para>Return the bin that contains a number or timestamp</para>
+					<para><varname>getValueBin(value number,size number,origin number=0) → span</varname></para>
+					<para><varname>getTimeBin(time timestamptz,duration interval,origin timestamptz='2000-01-03') → </varname></para>
+					<para>If the origin is not specified, it is set by default to 0 for value bins and to Monday, January 3, 2000 for time bins.</para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT valueBucket(3, 2);
--- 2
-SELECT valueBucket(3.5, 2.5, 1.5);
--- 1.5
-</programlisting>
-				</listitem>
-
-				<listitem id="spanBucket">
-					<indexterm><primary><varname>spanBucket</varname></primary></indexterm>
-					<para>Return the span in the bucket space that contains the input number</para>
-					<para><varname>spanBucket(value number,size number,origin number=0) → span</varname></para>
-					<para>If the origin is not specified, it is set by default to 0.</para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT spanBucket(2, 2);
+SELECT getValueBin(2, 2);
 -- [2, 4)
-SELECT spanBucket(2, 2, 1);
--- [1, 3)
-SELECT spanBucket(2, 2.5);
--- [0, 2.5)
-SELECT spanBucket(2, 2.5, 1.5);
+SELECT getValueBin(2, 2.5, 1.5);
 -- [1.5, 4)
-</programlisting>
-				</listitem>
-
-				<listitem id="timeBucket">
-					<indexterm><primary><varname>timeBucket</varname></primary></indexterm>
-					<para>Return the start timestamp of the bucket that contains the input timestamp</para>
-					<para><varname>timeBucket(time timestamptz,duration interval,origin timestamptz='2000-01-03') → </varname></para>
-					<para><varname>  timestamptz</varname></para>
-					<para>If the origin is not specified, it is set by default to Monday, January 3, 2000.</para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT timeBucket(timestamptz '2001-05-01', interval '2 days');
--- 2001-04-29 01:00:00
-SELECT timeBucket(timestamptz '2001-05-01', interval '2 days', timestamptz '2001-01-01');
--- 2001-04-30 01:00:00
-</programlisting>
-				</listitem>
-
-				<listitem id="periodBucket">
-					<indexterm><primary><varname>periodBucket</varname></primary></indexterm>
-					<para>Return the period in the bucket space that contains the input timestamp</para>
-					<para><varname>periodBucket(time timestamptz,duration interval,origin timestamptz='2000-01-03') → </varname></para>
-					<para><varname>  tstzspan</varname></para>
-					<para>If the origin is not specified, it is set by default to Monday, January 3, 2000.</para>
-					<programlisting language="sql" xml:space="preserve">
-SELECT periodBucket('2001-01-04', interval '1 week');
+SELECT getTimeBin('2001-01-04', interval '1 week');
 -- [2001-01-03, 2001-01-10)
-SELECT periodBucket('2001-01-04', interval '1 week', '2001-01-07');
+SELECT getTimeBin('2001-01-04', interval '1 week', '2001-01-07');
 -- [2000-12-31, 2001-01-07)
 </programlisting>
 				</listitem>
-
 			</itemizedlist>
 		</sect2>
 
@@ -473,7 +434,7 @@ SELECT spaceTimeTiles(tgeompoint '[Point(3 3 3)@2001-01-15,
 					<indexterm><primary><varname>getValueTimeTile</varname></primary></indexterm>
 					<indexterm><primary><varname>getSpaceTile</varname></primary></indexterm>
 					<indexterm><primary><varname>getSpaceTimeTile</varname></primary></indexterm>
-					<para>Return the tile of the multidimensional grid that contains the value and the timestamp &Z_support;</para>
+					<para>Return the tile that contains a value and a timestamp &Z_support;</para>
 					<para><varname>getValueTimeTile(value float,time timestamptz,size float,duration interval,</varname></para>
 					<para><varname>  vorigin float=0.0,torigin timestamptz='2000-01-03') → tbox</varname></para>
 					<para><varname>getSpaceTile(point geometry,xsize float,[ysize float,zsize float],</varname></para>
@@ -503,10 +464,26 @@ SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 da
 			<title>Bounding Box Functions</title>
 			<para>These functions fragment the bounding box of a temporal value with respect to a multidimensional grid. They provide an alternative to the functions in <xref linkend="temporal_types_bbox" /> to split the bounding boxes by specifying the maximum size of the boxes in the various dimensions.</para>
 			<itemizedlist>
+				<listitem id="valueSpans">
+					<indexterm><primary><varname>valueSpans</varname></primary></indexterm>
+					<indexterm><primary><varname>timeSpans</varname></primary></indexterm>
+					<para>Return an array of spans obtained from the instants or segments of a temporal value with respect to a value or a time grid</para>
+					<para><varname>valueSpans(tumber,size number,vorigin number=0) → numberspan[]</varname></para>
+					<para><varname>timeSpans(tumber,duration interval,torigin timestamptz='2000-01-03') → tstzspan[]</varname></para>
+					<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of values or time is not specified, it is set by default to 0 for the value spans or to Monday, January 3, 2000 for the time spans.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT valueSpans(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
+  1@2000-01-05}', 3, '3 days');
+-- {"[1, 3)","[4, 5)"}
+SELECT timeSpans(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
+  1@2000-01-05]', 3, '3 days', 1, '2000-01-01');
+-- {"[2000-01-01, 2000-01-04)","[2000-01-04, 2000-01-05)"}
+</programlisting>
+				</listitem>
 
 				<listitem id="valueTimeBoxes">
 					<indexterm><primary><varname>valueTimeBoxes</varname></primary></indexterm>
-					<para>Return an array of temporal boxes from the instants or segments of a temporal number with respect to a value and time grid</para>
+					<para>Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and time grid</para>
 					<para><varname>valueTimeBoxes(tumber,size number,duration interval,vorigin number=0,</varname></para>
 					<para><varname>  torigin timestamptz='2000-01-03') → tbox[]</varname></para>
 					<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of values and/or time are not specified, they are set by default to 0 and to Monday, January 3, 2000, respectively.</para>
@@ -527,7 +504,7 @@ SELECT valueTimeBoxes(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-
 				<listitem id="spaceTimeBoxes">
 					<indexterm><primary><varname>spaceBoxes</varname></primary></indexterm>
 					<indexterm><primary><varname>spaceTimeBoxes</varname></primary></indexterm>
-					<para>Return an array of spatiotemporal boxes from the instants or segments of a temporal point with respect to a space and possibly a time grid &Z_support;</para>
+					<para>Return an array of spatiotemporal boxes obtained from the instants or segments of a temporal point with respect to a space and possibly a time grid &Z_support;</para>
 					<para><varname>spaceBoxes(tgeompoint,xsize float,[ysize float,zsize float,] </varname></para>
 					<para><varname>  sorigin geompoint='Point(0 0 0)',borderInc bool=true) → stbox[]</varname></para>
 					<para><varname>spaceTimeBoxes(tgeompoint,xsize float,[ysize float,zsize float,]duration interval,</varname></para>
@@ -557,11 +534,11 @@ SELECT spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01
 
 		<sect2 id="split_functions">
 			<title>Split Functions</title>
-			<para>These functions fragment a temporal value with respect to a sequence of buckets (see <xref linkend="bucket_functions" />) or tiles (see <xref linkend="tile_functions" />).</para>
+			<para>These functions fragment a temporal value with respect to a sequence of bins (see <xref linkend="bin_functions" />) or tiles (see <xref linkend="tile_functions" />).</para>
 			<itemizedlist>
 				<listitem id="valueSplit">
 					<indexterm><primary><varname>valueSplit</varname></primary></indexterm>
-					<para>Fragment the temporal number with respect to span buckets &SRF;</para>
+					<para>Fragment a temporal number with respect to value bins &SRF;</para>
 					<para><varname>valueSplit(tnumber,size number,origin number=0) → {(number,tnumber)}</varname></para>
 					<para>The result is a set of pairs <varname>(number,tnumber)</varname>. If the origin of values is not specified, it is set by default to 0.</para>
 					<programlisting language="sql" xml:space="preserve">
@@ -583,7 +560,7 @@ SELECT valueSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 2.0, 1.0);
 
 				<listitem id="timeSplit">
 					<indexterm><primary><varname>timeSplit</varname></primary></indexterm>
-					<para>Fragment the temporal value with respect to time buckets &Z_support; &SRF;</para>
+					<para>Fragment a temporal value with respect to time bins &Z_support; &SRF;</para>
 					<para><varname>timeSplit(ttype,duration interval,origin timestamptz='2000-01-03') → </varname></para>
 					<para><varname>  {(time,temp)}</varname></para>
 					<para>The result is a set of pairs <varname>(time,temp)</varname>. If the origin of time is not specified, it is set by default to Monday, January 3, 2000.</para>
@@ -602,7 +579,7 @@ FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-02-01, Point(10 10)@2001-02-
 -- 2001-02-05 | [POINT(5 5)@2001-02-05, POINT(7 7)@2001-02-07)
 -- ...
 </programlisting>
-					<para>Notice that we can fragment a temporal value in cyclic (instead of linear) time buckets. The following two examples show how to fragment a temporal value by hour and by day of the week.</para>
+					<para>Notice that we can fragment a temporal value in cyclic (instead of linear) time bins. The following two examples show how to fragment a temporal value by hour and by day of the week.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT (ts).time::time AS hour, merge((ts).temp) AS temp
 FROM (SELECT timeSplit(tfloat '[1@2001-01-01, 10@2001-01-03]', '1 hour') AS ts) t
@@ -633,7 +610,7 @@ GROUP BY dow, dow_no ORDER BY dow_no;
 
 				<listitem id="valueTimeSplit">
 					<indexterm><primary><varname>valueTimeSplit</varname></primary></indexterm>
-					<para>Fragment the temporal number with respect to the tiles in a value-time grid &SRF;</para>
+					<para>Fragment a temporal number with respect to a value and time grid &SRF;</para>
 					<para><varname>valueTimeSplit(tumber,size number,duration interval,vorigin number=0,</varname></para>
 					<para><varname>  torigin timestamptz='2000-01-03') → {(number,time,tnumber}</varname></para>
 					<para>The result is a set of triples <varname>(number,time,tnumber)</varname>. If the origin of values and/or time are not specified, they are set by default to 0 and to Monday, January 3, 2000, respectively.</para>
@@ -655,7 +632,7 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', 5.0, '5 days
 
 				<listitem id="spaceSplit">
 					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
-					<para>Fragment the temporal point with respect to the tiles in a spatial grid &Z_support; &SRF;</para>
+					<para>Fragment a temporal point with respect to a spatial grid &Z_support; &SRF;</para>
 					<para><varname>spaceSplit(tgeompoint,xsize float,[ysize float,zsize float,]</varname></para>
 					<para><varname>  origin geompoint='Point(0 0 0)',bitmatrix boolean=true,borderInc bool=true) →</varname></para>
 					<para><varname>  {(point,tpoint)}</varname></para>
@@ -679,7 +656,7 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2001-03-01,
 				</listitem>
 				<listitem id="spaceTimeSplit">
 					<indexterm><primary><varname>spaceTimeSplit</varname></primary></indexterm>
-					<para>Fragment the temporal point with respect to the tiles in a spatiotemporal grid &Z_support; &SRF;</para>
+					<para>Fragment a temporal point with respect to a spatiotemporal grid &Z_support; &SRF;</para>
 					<para><varname>spaceTimeSplit(tgeompoint,xsize float,[ysize float,ysize float,]</varname></para>
 					<para><varname>  duration interval,sorigin geompoint='Point(0 0 0)',</varname></para>
 					<para><varname>  torigin timestamptz='2000-01-03',bitmatrix boolean=true,borderInc boolean=true) →</varname></para>

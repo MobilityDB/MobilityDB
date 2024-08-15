@@ -29,7 +29,7 @@
 
 /**
  * @brief A simple program that applies multidimensional tiling to a temporal
- * float according to value and/or time buckets.
+ * float according to value and/or time bins.
  *
  * The program can be build as follows
  * @code
@@ -61,15 +61,15 @@ int main(void)
   bool valuesplit = true; /* Set this parameter to enable/disable value split */
   bool timesplit = true; /* Set this parameter to enable/disable time split */
 
-  double *value_buckets = NULL;
-  TimestampTz *time_buckets = NULL;
+  double *value_bins = NULL;
+  TimestampTz *time_bins = NULL;
   Temporal **result;
   int count;
   if (valuesplit)
     result = tfloat_value_time_split(tfloat, 2.0, timesplit ? interv : NULL,
-      vorigin, torigin, &value_buckets, &time_buckets, &count);
+      vorigin, torigin, &value_bins, &time_bins, &count);
   else
-    result = temporal_time_split(tfloat, interv, torigin, &time_buckets,
+    result = temporal_time_split(tfloat, interv, torigin, &time_bins,
       &count);
 
   /* Print the input value to split */
@@ -87,11 +87,11 @@ int main(void)
   int i;
   for (i = 0; i < count; i++)
   {
-    char *time_str = timesplit ? pg_timestamptz_out(time_buckets[i]) : "";
+    char *time_str = timesplit ? pg_timestamptz_out(time_bins[i]) : "";
     char *temp_str = tfloat_out(result[i], 3);
     if (valuesplit)
       snprintf(output_buffer, sizeof(output_buffer), "%f, %s%s%s\n",
-        value_buckets[i], time_str, timesplit ? ", " : "", temp_str);
+        value_bins[i], time_str, timesplit ? ", " : "", temp_str);
     else
       snprintf(output_buffer, sizeof(output_buffer), "%s, %s\n", time_str,
         temp_str);
@@ -106,8 +106,8 @@ int main(void)
   /* Free memory */
   free(tfloat); free(interv); free(result);
   if (valuesplit)
-    free(value_buckets);
-  free(time_buckets);
+    free(value_bins);
+  free(time_bins);
 
   /* Finalize MEOS */
   meos_finalize();

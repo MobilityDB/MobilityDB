@@ -44,7 +44,7 @@ typedef enum
 
 /**
  * Struct for storing the state that persists across multiple calls generating
- * the bucket list
+ * the path
  */
 typedef struct
 {

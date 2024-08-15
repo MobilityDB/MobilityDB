@@ -58,8 +58,8 @@
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a date in the input data */
 #define MAX_LENGTH_DATE 12
-/* Maximum number of buckets in each dimension */
-#define MAX_NO_BUCKETS 10
+/* Maximum number of bins in each dimension */
+#define MAX_NO_BINS 10
 
 typedef struct
 {

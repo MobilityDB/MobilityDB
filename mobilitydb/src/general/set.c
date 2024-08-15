@@ -658,7 +658,7 @@ Set_unnest(PG_FUNCTION_ARGS)
   funcctx = SRF_PERCALL_SETUP();
   /* Get state */
   SetUnnestState *state = funcctx->user_fctx;
-  /* Stop when we've used up all buckets */
+  /* Stop when we've used up all bins */
   if (state->done)
   {
     /* Switch to memory context appropriate for multiple function calls */

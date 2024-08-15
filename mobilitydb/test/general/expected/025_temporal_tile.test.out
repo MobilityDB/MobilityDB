@@ -1,151 +1,115 @@
-SELECT bucketList(intspan '[1, 10]', 2) LIMIT 3;
-  bucketlist  
+SELECT valueSpans(intspan '[1, 10]', 2) LIMIT 3;
+  valuespans  
 --------------
  (1,"[0, 2)")
  (2,"[2, 4)")
  (3,"[4, 6)")
 (3 rows)
 
-SELECT bucketList(intspan '[1, 10]', 2, 1) LIMIT 3;
-  bucketlist  
+SELECT valueSpans(intspan '[1, 10]', 2, 1) LIMIT 3;
+  valuespans  
 --------------
  (1,"[1, 3)")
  (2,"[3, 5)")
  (3,"[5, 7)")
 (3 rows)
 
-SELECT bucketList(floatspan '(1, 10)', 2.5) LIMIT 3;
-   bucketlist   
+SELECT valueSpans(floatspan '(1, 10)', 2.5) LIMIT 3;
+   valuespans   
 ----------------
  (1,"[0, 2.5)")
  (2,"[2.5, 5)")
  (3,"[5, 7.5)")
 (3 rows)
 
-SELECT bucketList(floatspan '(1, 10)', 2.5, 1.5) LIMIT 3;
-   bucketlist    
+SELECT valueSpans(floatspan '(1, 10)', 2.5, 1.5) LIMIT 3;
+   valuespans    
 -----------------
  (1,"[-1, 1.5)")
  (2,"[1.5, 4)")
  (3,"[4, 6.5)")
 (3 rows)
 
-SELECT valueBucket(3, 2);
- valuebucket 
--------------
-           2
-(1 row)
-
-SELECT valueBucket(3, 2, 1);
- valuebucket 
--------------
-           3
-(1 row)
-
-SELECT valueBucket(3.5, 2.5);
- valuebucket 
--------------
-         2.5
-(1 row)
-
-SELECT valueBucket(3.5, 2.5, 1.5);
- valuebucket 
--------------
-         1.5
-(1 row)
-
-SELECT valueBucket(-3, 2, -2);
- valuebucket 
--------------
-          -4
-(1 row)
-
-SELECT valueBucket(-3.5, 2, -2);
- valuebucket 
--------------
-          -4
-(1 row)
-
-/* Errors */
-SELECT valueBucket(3, -2);
-ERROR:  The value must be strictly positive: -2
-SELECT valueBucket(3.5, -2.5);
-ERROR:  The value must be strictly positive: -2.500000
-SELECT valueBucket(-2147483647, 3, 2);
-ERROR:  number out of span
-SELECT valueBucket(2147483646, 3, -2);
-ERROR:  number out of span
-SELECT spanBucket(3, 2);
- spanbucket 
-------------
+SELECT getValueSpan(3, 2);
+ getvaluespan 
+--------------
  [2, 4)
 (1 row)
 
-SELECT spanBucket(3, 2, 1);
- spanbucket 
-------------
+SELECT getValueSpan(3, 2, 1);
+ getvaluespan 
+--------------
  [3, 5)
 (1 row)
 
-SELECT spanBucket(3.5, 2.5);
- spanbucket 
-------------
+SELECT getValueSpan(3.5, 2.5);
+ getvaluespan 
+--------------
  [2.5, 5)
 (1 row)
 
-SELECT spanBucket(3.5, 2.5, 1.5);
- spanbucket 
-------------
+SELECT getValueSpan(3.5, 2.5, 1.5);
+ getvaluespan 
+--------------
  [1.5, 4)
 (1 row)
 
-SELECT bucketList(tstzspan '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
-                             bucketlist                             
+SELECT getValueSpan(-3, 2, -2);
+ getvaluespan 
+--------------
+ [-4, -2)
+(1 row)
+
+SELECT getValueSpan(-3.5, 2, -2);
+ getvaluespan 
+--------------
+ [-4, -2)
+(1 row)
+
+/* Errors */
+SELECT getValueSpan(3, -2);
+ERROR:  The value must be strictly positive: -2
+SELECT getValueSpan(3.5, -2.5);
+ERROR:  The value must be strictly positive: -2.500000
+SELECT getValueSpan(-2147483647, 3, 2);
+ERROR:  number out of span
+SELECT getValueSpan(2147483646, 3, -2);
+ERROR:  number out of span
+SELECT timeSpans(tstzspan '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
+                             timespans                              
 --------------------------------------------------------------------
  (1,"[Mon Dec 27 00:00:00 1999 PST, Mon Jan 03 00:00:00 2000 PST)")
  (2,"[Mon Jan 03 00:00:00 2000 PST, Mon Jan 10 00:00:00 2000 PST)")
  (3,"[Mon Jan 10 00:00:00 2000 PST, Mon Jan 17 00:00:00 2000 PST)")
 (3 rows)
 
-SELECT bucketList(tstzspan '[2000-01-01, 2000-01-10]', '1 week', '2020-06-15') LIMIT 3;
-                             bucketlist                             
+SELECT timeSpans(tstzspan '[2000-01-01, 2000-01-10]', '1 week', '2020-06-15') LIMIT 3;
+                             timespans                              
 --------------------------------------------------------------------
  (1,"[Sun Dec 26 23:00:00 1999 PST, Sun Jan 02 23:00:00 2000 PST)")
  (2,"[Sun Jan 02 23:00:00 2000 PST, Sun Jan 09 23:00:00 2000 PST)")
  (3,"[Sun Jan 09 23:00:00 2000 PST, Sun Jan 16 23:00:00 2000 PST)")
 (3 rows)
 
-SELECT timeBucket('2020-01-01', '1 week');
-          timebucket          
-------------------------------
- Mon Dec 30 00:00:00 2019 PST
-(1 row)
-
-SELECT timeBucket('2020-01-01', '1 week', timestamptz '2001-06-01');
-          timebucket          
-------------------------------
- Thu Dec 26 23:00:00 2019 PST
-(1 row)
-
-SELECT timeBucket('infinity'::timestamptz, '1 day');
-ERROR:  timestamp out of span
-SELECT timeBucket('-infinity'::timestamptz, '1 day');
-ERROR:  timestamp out of span
-/* Errors */
-SELECT timeBucket('2020-01-01', '1 month', timestamptz '2001-06-01');
-ERROR:  Interval defined in terms of month, year, century, etc. not supported: 1 mon
-SELECT periodBucket('2020-01-01', '1 week');
-                         periodbucket                         
+SELECT getTimeSpan('2020-01-01', '1 week');
+                         gettimespan                          
 --------------------------------------------------------------
  [Mon Dec 30 00:00:00 2019 PST, Mon Jan 06 00:00:00 2020 PST)
 (1 row)
 
-SELECT periodBucket('2020-01-01', '1 week', timestamptz '2001-06-01');
-                         periodbucket                         
+SELECT getTimeSpan('2020-01-01', '1 week', timestamptz '2001-06-01');
+                         gettimespan                          
 --------------------------------------------------------------
  [Thu Dec 26 23:00:00 2019 PST, Thu Jan 02 23:00:00 2020 PST)
 (1 row)
 
+SELECT getTimeSpan('infinity'::timestamptz, '1 day');
+ERROR:  timestamp out of span
+SELECT getTimeSpan('-infinity'::timestamptz, '1 day');
+ERROR:  timestamp out of span
+/* Errors */
+SELECT getTimeSpan('2020-01-01', '1 month', timestamptz '2001-06-01');
+ERROR:  Interval defined in terms of month, year, century, etc. not supported: 1 mon
 SELECT valueTimeTiles(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 week') LIMIT 3;
                                        valuetimetiles                                        
 ---------------------------------------------------------------------------------------------
@@ -431,6 +395,9 @@ SELECT timeSplit(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2
  ("Mon Jan 03 00:00:00 2000 PST","{[""CCC""@Tue Jan 04 00:00:00 2000 PST, ""CCC""@Wed Jan 05 00:00:00 2000 PST]}")
 (2 rows)
 
+/* Errors */
+SELECT timeSplit(tbool 't@2000-01-01', '-1 week');
+ERROR:  The interval must be positive: -7 days
 SELECT valueTimeSplit(tint '1@2000-01-01', 2, '1 week');
                            valuetimesplit                            
 ---------------------------------------------------------------------

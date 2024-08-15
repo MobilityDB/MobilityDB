@@ -119,23 +119,23 @@
 			<title>Entrada y salida</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_asText"><varname>asText</varname></link>: Obtener la representación textual conocida (Well-Known Text o WKT)</para>
+					<para><link linkend="setspan_asText"><varname>asText</varname></link>: Devuelve la representación textual conocida (Well-Known Text o WKT)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_asBinary"><varname>asBinary</varname></link>: Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
+					<para><link linkend="setspan_asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (Well-Known Binary o WKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_asHexWKB"><varname>asHexWKB</varname></link>: Obtener la representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><link linkend="setspan_asHexWKB"><varname>asHexWKB</varname></link>: Devuelve la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_FromBinary"><varname>settypeFromBinary</varname>, <varname>spantypeFromBinary</varname>, <varname>spansettypeFromBinary</varname></link>: Obtener a partir de la representación binaria conocida (WKB)</para>
+					<para><link linkend="setspan_FromBinary"><varname>settypeFromBinary</varname>, <varname>spantypeFromBinary</varname>, <varname>spansettypeFromBinary</varname></link>: Devuelve a partir de la representación binaria conocida (WKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_FromHexWKB"><varname>settypeFromHexWKB</varname>, <varname>spantypeFromHexWKB</varname>, <varname>spansettypeFromHexWKB</varname></link>: Obtener a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><link linkend="setspan_FromHexWKB"><varname>settypeFromHexWKB</varname>, <varname>spantypeFromHexWKB</varname>, <varname>spansettypeFromHexWKB</varname></link>: Devuelve a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -187,11 +187,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_memSize"><varname>memSize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
+					<para><link linkend="setspan_memSize"><varname>memSize</varname></link>: Devuelve el tamaño de la memoria en bytes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="lower"><varname>lower</varname>, <varname>upper</varname></link>: Obtener el límite inferior o superior</para>
+					<para><link linkend="lower"><varname>lower</varname>, <varname>upper</varname></link>: Devuelve el límite inferior o superior</para>
 				</listitem>
 
 				<listitem>
@@ -199,51 +199,51 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="width"><varname>width</varname></link>: Obtener el ancho del rango como un número de punto flotante</para>
+					<para><link linkend="width"><varname>width</varname></link>: Devuelve el ancho del rango como un número de punto flotante</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_duration"><varname>duration</varname></link>: Obtener el intervalo de tiempo</para>
+					<para><link linkend="setspan_duration"><varname>duration</varname></link>: Devuelve el intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_span"><varname>span</varname></link>: Obtener el lapso de tiempo delimitador ignorando las posibles brechas de tiempo</para>
+					<para><link linkend="setspan_span"><varname>span</varname></link>: Devuelve el lapso de tiempo delimitador ignorando las posibles brechas de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_numValues"><varname>numValues</varname></link>: Obtener el número de valores</para>
+					<para><link linkend="setspan_numValues"><varname>numValues</varname></link>: Devuelve el número de valores</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener el valor inicial, final o enésimo</para>
+					<para><link linkend="setspan_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Devuelve el valor inicial, final o enésimo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_getValues"><varname>getValue</varname></link>: Obtener los valores</para>
+					<para><link linkend="setspan_getValues"><varname>getValue</varname></link>: Devuelve los valores</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="numSpans"><varname>numSpans</varname></link>: Obtener el número de rangos o períodos</para>
+					<para><link linkend="numSpans"><varname>numSpans</varname></link>: Devuelve el número de rangos o períodos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startSpan"><varname>startSpan</varname>, <varname>endSpan</varname>, <varname>spanN</varname></link>: Obtener el rango inicial, final o enésimo</para>
+					<para><link linkend="startSpan"><varname>startSpan</varname>, <varname>endSpan</varname>, <varname>spanN</varname></link>: Devuelve el rango inicial, final o enésimo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spans"><varname>spans</varname></link>: Obtener los rangos</para>
+					<para><link linkend="spans"><varname>spans</varname></link>: Devuelve los rangos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_numTimestamps"><varname>numDates</varname>, <varname>numTimestamps</varname></link>: Obtener el número de fechas o marcas de tiempo</para>
+					<para><link linkend="setspan_numTimestamps"><varname>numDates</varname>, <varname>numTimestamps</varname></link>: Devuelve el número de fechas o marcas de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startTimestamp"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname>, <varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Obtener la fecha or marca de tiempo inicial, final o enésima</para>
+					<para><link linkend="setspan_startTimestamp"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname>, <varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Devuelve la fecha or marca de tiempo inicial, final o enésima</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_timestamps"><varname>dates</varname>, <varname>timestamps</varname></link>: Obtener los fechas o marcas de tiempo diferentes</para>
+					<para><link linkend="setspan_timestamps"><varname>dates</varname>, <varname>timestamps</varname></link>: Devuelve los fechas o marcas de tiempo diferentes</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -325,7 +325,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="geoset_SRID"><varname>SRID</varname></link>: Obtener el identificador de referencia espacial</para>
+					<para><link linkend="geoset_SRID"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial</para>
 				</listitem>
 
 				<listitem>
@@ -415,7 +415,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="smallest_distance_time"><varname>&lt;-&gt;</varname></link>: Obtener la distancia mínima</para>
+					<para><link linkend="smallest_distance_time"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia mínima</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -446,23 +446,23 @@
 			<title>Entrada y salida</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="box_asText"><varname>asText</varname></link>: Obtener la representación textual conocida (Well-Known Text o WKT)</para>
+					<para><link linkend="box_asText"><varname>asText</varname></link>: Devuelve la representación textual conocida (Well-Known Text o WKT)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_asBinary"><varname>asBinary</varname></link>: Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
+					<para><link linkend="box_asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (Well-Known Binary o WKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_asHexWKB"><varname>asHexWKB</varname></link>: Obtener la representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><link linkend="box_asHexWKB"><varname>asHexWKB</varname></link>: Devuelve la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_FromBinary"><varname>tboxFromBinary</varname>, <varname>stboxFromBinary</varname></link>: Obtener a partir de la representación binaria conocida (WKB)</para>
+					<para><link linkend="box_FromBinary"><varname>tboxFromBinary</varname>, <varname>stboxFromBinary</varname></link>: Devuelve a partir de la representación binaria conocida (WKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_FromHexWKB"><varname>tboxFromHexWKB</varname>, <varname>stboxFromHexWKB</varname></link>: Obtener a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><link linkend="box_FromHexWKB"><varname>tboxFromHexWKB</varname>, <varname>stboxFromHexWKB</varname></link>: Devuelve a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -515,11 +515,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="xMin"><varname>xMin</varname>, <varname>yMin</varname>, <varname>zMin</varname>, <varname>tMin</varname></link>: Obtener el valor mínimo de X/Y/Z/T</para>
+					<para><link linkend="xMin"><varname>xMin</varname>, <varname>yMin</varname>, <varname>zMin</varname>, <varname>tMin</varname></link>: Devuelve el valor mínimo de X/Y/Z/T</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="xMax"><varname>xMax</varname>, <varname>yMax</varname>, <varname>zMax</varname>, <varname>tMax</varname></link>: Obtener el valor máximo de X/Y/Z/T</para>
+					<para><link linkend="xMax"><varname>xMax</varname>, <varname>yMax</varname>, <varname>zMax</varname>, <varname>tMax</varname></link>: Devuelve el valor máximo de X/Y/Z/T</para>
 				</listitem>
 
 				<listitem>
@@ -552,7 +552,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="getSpace"><varname>getSpace</varname></link>: Obtener la dimensión espacial de un cuadro delimitador, eliminando la dimensión temporal, si existe</para>
+					<para><link linkend="getSpace"><varname>getSpace</varname></link>: Devuelve la dimensión espacial de un cuadro delimitador, eliminando la dimensión temporal, si existe</para>
 					</listitem>
 
 				<listitem>
@@ -579,7 +579,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="stbox_SRID"><varname>SRID</varname></link>: Obtener el identificador de referencia espacial</para>
+					<para><link linkend="stbox_SRID"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial</para>
 				</listitem>
 
 				<listitem>
@@ -729,31 +729,31 @@
 			<title>Entrada y salida</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="temporal_asText"><varname>asText</varname></link>: Obtener la representación Well-Known Text (WKT)</para>
+					<para><link linkend="temporal_asText"><varname>asText</varname></link>: Devuelve la representación Well-Known Text (WKT)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_asBinary"><varname>asBinary</varname></link>: Obtener la representación Well-Known Binary (WKB)</para>
+					<para><link linkend="temporal_asBinary"><varname>asBinary</varname></link>: Devuelve la representación Well-Known Binary (WKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_asHexWKB"><varname>asHexWKB</varname></link>: Obtener la representación Hexadecimal Well-Known Binary (HexWKB) como texto</para>
+					<para><link linkend="temporal_asHexWKB"><varname>asHexWKB</varname></link>: Devuelve la representación Hexadecimal Well-Known Binary (HexWKB) como texto</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_asMFJSON"><varname>asMFJSON</varname></link>: Obtener la representación Moving Features JSON (MF-JSON)</para>
+					<para><link linkend="temporal_asMFJSON"><varname>asMFJSON</varname></link>: Devuelve la representación Moving Features JSON (MF-JSON)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_FromBinary"><varname>ttypeFromBinary</varname></link>: Obtener a partir de la representación Well-Known Binary (WKB)</para>
+					<para><link linkend="temporal_FromBinary"><varname>ttypeFromBinary</varname></link>: Devuelve a partir de la representación Well-Known Binary (WKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_FromHexWKB"><varname>ttypeFromHexWKB</varname></link>: Obtener a partir de la representación Hexadecimal Well-Known Binary (HexWKB)</para>
+					<para><link linkend="temporal_FromHexWKB"><varname>ttypeFromHexWKB</varname></link>: Devuelve a partir de la representación Hexadecimal Well-Known Binary (HexWKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_FromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Obtener a partir de la representación Moving Features JSON (MF-JSON)</para>
+					<para><link linkend="temporal_FromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Devuelve a partir de la representación Moving Features JSON (MF-JSON)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -801,51 +801,51 @@
 			<title>Accesores</title>
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_memSize"><varname>memSize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
+				<para><link linkend="ttype_memSize"><varname>memSize</varname></link>: Devuelve el tamaño de la memoria en bytes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tempSubtype"><varname>tempSubtype</varname></link>: Obtener el subtipo temporal</para>
+					<para><link linkend="tempSubtype"><varname>tempSubtype</varname></link>: Devuelve el subtipo temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="interp"><varname>interp</varname></link>: Obtener la interpolación</para>
+					<para><link linkend="interp"><varname>interp</varname></link>: Devuelve la interpolación</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="getValue"><varname>getValue</varname>, <varname>getTimestamp</varname></link>: Obtener el valor o el tiempo del instante</para>
+					<para><link linkend="getValue"><varname>getValue</varname>, <varname>getTimestamp</varname></link>: Devuelve el valor o el tiempo del instante</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="getValues"><varname>getValues</varname>, <varname>getTime</varname></link>: Obtener los valores o el tiempo en el que se define el valor temporal</para>
+					<para><link linkend="getValues"><varname>getValues</varname>, <varname>getTime</varname></link>: Devuelve los valores o el tiempo en el que se define el valor temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="valueSpan"><varname>valueSpan</varname>, <varname>timeSpan</varname></link>: Obtener el rango de valores o de tiempo</para>
+					<para><link linkend="valueSpan"><varname>valueSpan</varname>, <varname>timeSpan</varname></link>: Devuelve el rango de valores o de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="valueSet"><varname>valueSet</varname></link>: Obtener los valores del número o punto temporal number como un conjunto</para>
+					<para><link linkend="valueSet"><varname>valueSet</varname></link>: Devuelve los valores del número o punto temporal number como un conjunto</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Obtener el valor inicial, final o enésimo</para>
+					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Devuelve el valor inicial, final o enésimo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="minValue"><varname>minValue</varname>, <varname>maxValue</varname></link>: Obtener el valor mínimo o máximo</para>
+					<para><link linkend="minValue"><varname>minValue</varname>, <varname>maxValue</varname></link>: Devuelve el valor mínimo o máximo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="minInstant"><varname>minInstant</varname>, <varname>maxInstant</varname></link>: Obtener el instante con el valor mínimo o máximo</para>
+					<para><link linkend="minInstant"><varname>minInstant</varname>, <varname>maxInstant</varname></link>: Devuelve el instante con el valor mínimo o máximo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Obtener el valor en una marca de tiempo</para>
+					<para><link linkend="valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_duration"><varname>duration</varname></link>: Obtener el intervalo de tiempo</para>
+					<para><link linkend="ttype_duration"><varname>duration</varname></link>: Devuelve el intervalo de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -853,51 +853,51 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="numInstants"><varname>numInstants</varname></link>: Obtener el número de instantes diferentes</para>
+					<para><link linkend="numInstants"><varname>numInstants</varname></link>: Devuelve el número de instantes diferentes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startInstant"><varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname></link>: Obtener el instante inicial, final o enésimo</para>
+					<para><link linkend="startInstant"><varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname></link>: Devuelve el instante inicial, final o enésimo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="instants"><varname>instants</varname></link>: Obtener los instantes diferentes</para>
+					<para><link linkend="instants"><varname>instants</varname></link>: Devuelve los instantes diferentes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_numTimestamps"><varname>numTimestamps</varname></link>: Obtener el número de marcas de tiempo diferentes</para>
+					<para><link linkend="ttype_numTimestamps"><varname>numTimestamps</varname></link>: Devuelve el número de marcas de tiempo diferentes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_startTimestamp"><varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Obtener la marca de tiempo inicial, final o enésima</para>
+					<para><link linkend="ttype_startTimestamp"><varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Devuelve la marca de tiempo inicial, final o enésima</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_timestamps"><varname>timestamps</varname></link>: Obtener las marcas de tiempo diferentes</para>
+					<para><link linkend="ttype_timestamps"><varname>timestamps</varname></link>: Devuelve las marcas de tiempo diferentes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="numSequences"><varname>numSequences</varname></link>: Obtener el número de secuencias</para>
+					<para><link linkend="numSequences"><varname>numSequences</varname></link>: Devuelve el número de secuencias</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startSequence"><varname>startSequence</varname>, <varname>endSequence</varname>, <varname>sequenceN</varname></link>: Obtener la secuencia inicial, final o enésima</para>
+					<para><link linkend="startSequence"><varname>startSequence</varname>, <varname>endSequence</varname>, <varname>sequenceN</varname></link>: Devuelve la secuencia inicial, final o enésima</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="sequences"><varname>sequences</varname></link>: Obtener las secuencias</para>
+					<para><link linkend="sequences"><varname>sequences</varname></link>: Devuelve las secuencias</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="segments"><varname>segments</varname></link>: Obtener los segmentos</para>
+					<para><link linkend="segments"><varname>segments</varname></link>: Devuelve los segmentos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="integral"><varname>integral</varname></link>: Obtener el área bajo la curva</para>
+					<para><link linkend="integral"><varname>integral</varname></link>: Devuelve el área bajo la curva</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="twAvg"><varname>twAvg</varname></link>: Obtener el promedio ponderado en el tiempo</para>
+					<para><link linkend="twAvg"><varname>twAvg</varname></link>: Devuelve el promedio ponderado en el tiempo</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1162,11 +1162,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="abs"><varname>abs</varname></link>: Obtener el valor absoluto del número temporal</para>
+					<para><link linkend="abs"><varname>abs</varname></link>: Devuelve el valor absoluto del número temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="deltaValue"><varname>deltaValue</varname></link>: Obtener la diferencia de valor entre instantes consectivos del número temporal</para>
+					<para><link linkend="deltaValue"><varname>deltaValue</varname></link>: Devuelve la diferencia de valor entre instantes consectivos del número temporal</para>
 				</listitem>
 
 				<listitem>
@@ -1182,7 +1182,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="derivative"><varname>derivative</varname></link>: Obtener la derivada sobre el tiempo del número temporal en unidades por segundo</para>
+					<para><link linkend="derivative"><varname>derivative</varname></link>: Devuelve la derivada sobre el tiempo del número temporal en unidades por segundo</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1203,7 +1203,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="whenTrue"><varname>whenTrue</varname></link>: Obtener el tiempo cuando el booleano temporal toma el valor verdadero</para>
+					<para><link linkend="whenTrue"><varname>whenTrue</varname></link>: Devuelve el tiempo cuando el booleano temporal toma el valor verdadero</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1232,27 +1232,27 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="asText"><varname>asText</varname></link>: Obtener la representación de texto conocido (Well-Known Text o WKT)</para>
+					<para><link linkend="asText"><varname>asText</varname></link>: Devuelve la representación de texto conocido (Well-Known Text o WKT)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asEWKT"><varname>asEWKT</varname></link>: Obtener la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					<para><link linkend="asEWKT"><varname>asEWKT</varname></link>: Devuelve la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asMFJSON"><varname>asMFJSON</varname></link>: Obtener la representación JSON de características móviles (Moving Features JSON o MF-JSON)</para>
+					<para><link linkend="asMFJSON"><varname>asMFJSON</varname></link>: Devuelve la representación JSON de características móviles (Moving Features JSON o MF-JSON)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asBinary"><varname>asBinary</varname></link>: Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
+					<para><link linkend="asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (Well-Known Binary o WKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asEWKB"><varname>asEWKB</varname></link>: Obtener la representación extendida binaria conocida (Extended Well-Known Binary o EWKB)</para>
+					<para><link linkend="asEWKB"><varname>asEWKB</varname></link>: Devuelve la representación extendida binaria conocida (Extended Well-Known Binary o EWKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asHexEWKB"><varname>asHexEWKB</varname></link>: Obtener la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
+					<para><link linkend="asHexEWKB"><varname>asHexEWKB</varname></link>: Devuelve la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
 				</listitem>
 
 				<listitem>
@@ -1285,7 +1285,7 @@
 			<title>Sistema de referencia espacial</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tpoint_SRID"><varname>SRID</varname></link>: Obtener el identificador de referencia espacial</para>
+					<para><link linkend="tpoint_SRID"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial</para>
 				</listitem>
 
 				<listitem>
@@ -1302,7 +1302,7 @@
 			<title>Operaciones de cuadro delimitador</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tpoint_expandSpace"><varname>expandSpace</varname></link>: Obtener el cuadro delimitador espaciotemporal expandido en la dimensión espacial por un valor flotante</para>
+					<para><link linkend="tpoint_expandSpace"><varname>expandSpace</varname></link>: Devuelve el cuadro delimitador espaciotemporal expandido en la dimensión espacial por un valor flotante</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1311,47 +1311,47 @@
 			<title>Accesores</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trajectory"><varname>trajectory</varname></link>: Obtener la trayectoria</para>
+					<para><link linkend="trajectory"><varname>trajectory</varname></link>: Devuelve la trayectoria</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Obtener los valores de las coordenadas X/Y/Z como un número flotante temporal</para>
+					<para><link linkend="getX"><varname>getX</varname>, <varname>getY</varname>, <varname>getZ</varname></link>: Devuelve los valores de las coordenadas X/Y/Z como un número flotante temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="isSimple"><varname>isSimple</varname></link>: Obtener verdadero si el punto temporal no se auto-intersecta espacialmente</para>
+					<para><link linkend="isSimple"><varname>isSimple</varname></link>: Devuelve verdadero si el punto temporal no se auto-intersecta espacialmente</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="length"><varname>length</varname></link>: Obtener la longitud atravesada por el punto temporal </para>
+					<para><link linkend="length"><varname>length</varname></link>: Devuelve la longitud atravesada por el punto temporal </para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="cumulativeLength"><varname>cumulativeLength</varname></link>: Obtener la longitud acumulada atravesada por el punto temporal</para>
+					<para><link linkend="cumulativeLength"><varname>cumulativeLength</varname></link>: Devuelve la longitud acumulada atravesada por el punto temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="speed"><varname>speed</varname></link>: Obtener la velocidad del punto temporal en unidades por segundo </para>
+					<para><link linkend="speed"><varname>speed</varname></link>: Devuelve la velocidad del punto temporal en unidades por segundo </para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="twCentroid"><varname>twCentroid</varname></link>: Obtener el centroide ponderado en el tiempo</para>
+					<para><link linkend="twCentroid"><varname>twCentroid</varname></link>: Devuelve el centroide ponderado en el tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="direction"><varname>direction</varname></link>: Obtener la dirección</para>
+					<para><link linkend="direction"><varname>direction</varname></link>: Devuelve la dirección</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="azimuth"><varname>azimuth</varname></link>: Obtener el acimut temporal</para>
+					<para><link linkend="azimuth"><varname>azimuth</varname></link>: Devuelve el acimut temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="angularDifference"><varname>angularDifference</varname></link>: Obtener la diferencia angular temporal</para>
+					<para><link linkend="angularDifference"><varname>angularDifference</varname></link>: Devuelve la diferencia angular temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="bearing"><varname>bearing</varname></link>: Obtener el rumbo temporal</para>
+					<para><link linkend="bearing"><varname>bearing</varname></link>: Devuelve el rumbo temporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1364,7 +1364,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="makeSimple"><varname>makeSimple</varname></link>: Obtener una matriz de fragmentos del punto temporal que son simples</para>
+					<para><link linkend="makeSimple"><varname>makeSimple</varname></link>: Devuelve una matriz de fragmentos del punto temporal que son simples</para>
 				</listitem>
 
 				<listitem>
@@ -1382,19 +1382,19 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="smallest_distance"><varname>|=|</varname></link>: Obtener la distancia mínima que haya existido</para>
+					<para><link linkend="smallest_distance"><varname>|=|</varname></link>: Devuelve la distancia mínima que haya existido</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Obtener el instante del primer punto temporal en el que los dos argumentos están a la distancia más cercana</para>
+					<para><link linkend="nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Devuelve el instante del primer punto temporal en el que los dos argumentos están a la distancia más cercana</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="shortestLine"><varname>shortestLine</varname></link>: Obtener la línea que conecta el punto de aproximación más cercano</para>
+					<para><link linkend="shortestLine"><varname>shortestLine</varname></link>: Devuelve la línea que conecta el punto de aproximación más cercano</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Obtener la distancia temporal</para>
+					<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1492,23 +1492,23 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="hausdorffDistance"><varname>hausdorffDistance</varname></link>: Obtener la distancia de Hausdorff discreta entre dos valores temporales</para>
+					<para><link linkend="hausdorffDistance"><varname>hausdorffDistance</varname></link>: Devuelve la distancia de Hausdorff discreta entre dos valores temporales</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="frechetDistance"><varname>frechetDistance</varname></link>: Obtener la distancia de Fréchet discreta entre dos valores temporales</para>
+					<para><link linkend="frechetDistance"><varname>frechetDistance</varname></link>: Devuelve la distancia de Fréchet discreta entre dos valores temporales</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="frechetDistancePath"><varname>frechetDistancePath</varname></link>: Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de Fréchet discreta</para>
+					<para><link linkend="frechetDistancePath"><varname>frechetDistancePath</varname></link>: Devuelve las parejas de correspondencia entre dos valores temporales con respecto a la distancia de Fréchet discreta</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="dynTimeWarpDistance"><varname>dynTimeWarpDistance</varname></link>: Obtener la distancia de distorsión de tiempo dinámica (Dynamic Time Warp) entre dos valores temporales</para>
+					<para><link linkend="dynTimeWarpDistance"><varname>dynTimeWarpDistance</varname></link>: Devuelve la distancia de distorsión de tiempo dinámica (Dynamic Time Warp) entre dos valores temporales</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="dynTimeWarpPath"><varname>dynTimeWarpPath</varname></link>: Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
+					<para><link linkend="dynTimeWarpPath"><varname>dynTimeWarpPath</varname></link>: Devuelve las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1521,38 +1521,25 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de intervalos que cubre el rango de valores o de tiempo con intervalos de la misma amplitud alineados con el origen</para>
+						<para><link linkend="valueBins"><varname>valueBins</varname>, <varname>timeBins</varname></link>: Devuelve un conjunto de intervalos que cubre un rango de valores o de tiempo con intervalos de la misma amplitud or duración</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el número de entrada</para>
+						<para><link linkend="getValueBin"><varname>getValueBin</varname>, <varname>getTimeBin</varname></link>: Devuelve el intervalo que contiene un número o una marca de tiempo</para>
 					</listitem>
-
-					<listitem>
-						<para><link linkend="spanBucket"><varname>spanBucket</varname></link>: Obtener el rango en el espacio de intervalos contiene el número de entrada</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Obtener el valor inicial del intervalo que contiene la marca de tiempo de entrada</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="periodBucket"><varname>periodBucket</varname></link>: Obtener el período en el espacio de intervalos que contiene la marca de tiempo de entrada</para>
-					</listitem>
-
 				</itemizedlist>
 			</sect3>
 
 			<sect3>
-				<title>Operaciones de malla</title>
+				<title>Operaciones de mosaico</title>
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueTimeTiles"><varname>valueTimeTiles</varname>, <varname>spaceTiles</varname>, <varname>spaceTimeTiles</varname></link>: Obtener un conjunto de mosaicos que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración</para>
+						<para><link linkend="valueTimeTiles"><varname>valueTimeTiles</varname>, <varname>spaceTiles</varname>, <varname>spaceTimeTiles</varname></link>: Devuelve un conjunto de mosaicos que cubre un cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueTimeTile"><varname>valueTimeTile</varname>, <varname>spaceTile</varname>, <varname>spaceTimeTile</varname></link>: Obtener el mosaico de la malla multidimensional que contiene el valor y la marca de tiempo</para>
+						<para><link linkend="getValueTimeTile"><varname>getValueTimeTile</varname>, <varname>getSpaceTile</varname>, <varname>getSpaceTimeTile</varname></link>: Devuelve el mosaico que contiene un valor y una marca de tiempo</para>
 						</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1562,11 +1549,15 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueTimeBoxes"><varname>valueTimeBoxes</varname></link>: Devuelve una matriz de cuadros temporales de los instantes o segmentos de un número temporal con respecto a un mosaico de valores y tiempo</para>
+						<para><link linkend="valueSpans"><varname>valueSpans</varname>, <varname>timeSpans</varname></link>: Devuelve una matriz de intervalos obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores o de tiempo</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceTimeBoxes"><varname>spaceBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Devuelve una matriz de cuadros espaciotemporales de los instantes o segmentos de un punto temporal con respecto a un mosaico espacial y posiblemente temporal</para>
+						<para><link linkend="valueTimeBoxes"><varname>valueTimeBoxes</varname></link>: Devuelve una matriz de cuadros temporales obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores y tiempo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceTimeBoxes"><varname>spaceBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Devuelve una matriz de cuadros espaciotemporales obtenidos a partir de los instantes o segmentos de un punto temporal con respecto a un mosaico espacial y posiblemente temporal</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1576,23 +1567,23 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Fragmentar el número temporal con respecto a intervalos de valores</para>
+						<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Fragmentar un número temporal con respecto a intervalos de valores</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Fragmentar el valor temporal con respecto a intervalos de tiempo</para>
+						<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Fragmentar un valor temporal con respecto a intervalos de tiempo</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Fragmentar el número temporal con respecto a los mosaicos de una malla de valores y de tiempo</para>
+						<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Fragmentar un número temporal con respecto a los mosaicos de una malla de valores y de tiempo</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceSplit"><varname>spaceSplit</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial</para>
+						<para><link linkend="spaceSplit"><varname>spaceSplit</varname></link>: Fragmentar un punto temporal con respecto a los mosaicos de una malla espacial</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceTimeSplit"><varname>spaceTimeSplit</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal</para>
+						<para><link linkend="spaceTimeSplit"><varname>spaceTimeSplit</varname></link>: Fragmentar un punto temporal con respecto a los mosaicos de una malla espacio-temporal</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1686,19 +1677,19 @@
 				<title>Accesores</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="route"><varname>route</varname></link>: Obtener el identificador de ruta</para>
+						<para><link linkend="route"><varname>route</varname></link>: Devuelve el identificador de ruta</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="getPosition"><varname>getPosition</varname></link>: Obtener la fracción de posición</para>
+						<para><link linkend="getPosition"><varname>getPosition</varname></link>: Devuelve la fracción de posición</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="startPosition"><varname>startPosition</varname>, <varname>endPosition</varname></link>: Obtener la posición inicial o final</para>
+						<para><link linkend="startPosition"><varname>startPosition</varname>, <varname>endPosition</varname></link>: Devuelve la posición inicial o final</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Obtener el identificador de referencia espacial</para>
+						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1808,27 +1799,27 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_getValues"><varname>getValues</varname></link>: Obtener los valores</para>
+						<para><link linkend="tnpoint_getValues"><varname>getValues</varname></link>: Devuelve los valores</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_routes"><varname>routes</varname></link>: Obtener los identificadores de ruta</para>
+						<para><link linkend="tnpoint_routes"><varname>routes</varname></link>: Devuelve los identificadores de ruta</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Obtener el valor en una marca de tiempo</para>
+						<para><link linkend="tnpoint_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_length"><varname>length</varname></link>: Obtener la longitud atravesada por el punto de red temporal</para>
+						<para><link linkend="tnpoint_length"><varname>length</varname></link>: Devuelve la longitud atravesada por el punto de red temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_cumulativeLength"><varname>cumulativeLength</varname></link>: Obtener la longitud acumulada atravesada por el punto de red temporal</para>
+						<para><link linkend="tnpoint_cumulativeLength"><varname>cumulativeLength</varname></link>: Devuelve la longitud acumulada atravesada por el punto de red temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_speed"><varname>speed</varname></link>: Obtener la velocidad del punto de red temporal en unidades por segundo</para>
+						<para><link linkend="tnpoint_speed"><varname>speed</varname></link>: Devuelve la velocidad del punto de red temporal en unidades por segundo</para>
 					</listitem>
 
 					<listitem>
@@ -1836,23 +1827,23 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_twCentroid"><varname>twCentroid</varname></link>: Obtener el centroide ponderado en el tiempo</para>
+						<para><link linkend="tnpoint_twCentroid"><varname>twCentroid</varname></link>: Devuelve el centroide ponderado en el tiempo</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_azimuth"><varname>azimuth</varname></link>: Obtener el acimut temporal</para>
+						<para><link linkend="tnpoint_azimuth"><varname>azimuth</varname></link>: Devuelve el acimut temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Obtener el instante del primer punto de red temporal en el que los dos argumentos están a la distancia más cercana</para>
+						<para><link linkend="tnpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Devuelve el instante del primer punto de red temporal en el que los dos argumentos están a la distancia más cercana</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>: Obtener la distancia más pequeña entre los dos argumentos</para>
+						<para><link linkend="tnpoint_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>: Devuelve la distancia más pequeña entre los dos argumentos</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_shortestLine"><varname>shortestLine</varname></link>: Obtener la línea que conecta el punto de aproximación más cercano entre los dos argumentos</para>
+						<para><link linkend="tnpoint_shortestLine"><varname>shortestLine</varname></link>: Devuelve la línea que conecta el punto de aproximación más cercano entre los dos argumentos</para>
 					</listitem>
 
 					<listitem>
@@ -1884,11 +1875,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_smallestDistance"><varname>|=|</varname></link>: Obtener la distancia más pequeña entre los dos argumentos</para>
+						<para><link linkend="tnpoint_smallestDistance"><varname>|=|</varname></link>: Devuelve la distancia más pequeña entre los dos argumentos</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_distance"><varname>&lt;-&gt;</varname></link>: Obtener la distancia temporal</para>
+						<para><link linkend="tnpoint_distance"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal</para>
 					</listitem>
 
 					<listitem>

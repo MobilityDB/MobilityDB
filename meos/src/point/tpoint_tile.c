@@ -423,14 +423,14 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
   state->ntiles = 1;
   state->xsize = xsize;
   state->ysize = ysize;
-  state->box.xmin = float_bucket(box->xmin, xsize, sorigin.x);
-  state->box.xmax = float_bucket(box->xmax, xsize, sorigin.x);
+  state->box.xmin = float_get_bin(box->xmin, xsize, sorigin.x);
+  state->box.xmax = float_get_bin(box->xmax, xsize, sorigin.x);
   state->max_coords[0] = ceil((state->box.xmax - state->box.xmin) / xsize);
   if (border_inc)
     state->max_coords[0] += 1;
   state->ntiles *= (state->max_coords[0] + 1);
-  state->box.ymin = float_bucket(box->ymin, ysize, sorigin.y);
-  state->box.ymax = float_bucket(box->ymax, ysize, sorigin.y);
+  state->box.ymin = float_get_bin(box->ymin, ysize, sorigin.y);
+  state->box.ymax = float_get_bin(box->ymax, ysize, sorigin.y);
   state->max_coords[1] = ceil((state->box.ymax - state->box.ymin) / ysize);
   if (border_inc)
     state->max_coords[1] += 1;
@@ -448,8 +448,8 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
     {
       state->hasz = true;
       state->zsize = zsize;
-      state->box.zmin = float_bucket(box->zmin, zsize, sorigin.z);
-      state->box.zmax = float_bucket(box->zmax, zsize, sorigin.z);
+      state->box.zmin = float_get_bin(box->zmin, zsize, sorigin.z);
+      state->box.zmax = float_get_bin(box->zmax, zsize, sorigin.z);
       state->max_coords[dim] = ceil((state->box.zmax - state->box.zmin) / zsize);
       if (border_inc)
         state->max_coords[dim] += 1;
@@ -466,9 +466,9 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
     {
       state->hast = true;
       state->tunits = interval_units(duration);
-      state->box.period.lower = TimestampTzGetDatum(timestamptz_bucket1(
+      state->box.period.lower = TimestampTzGetDatum(timestamptz_get_bin1(
         DatumGetTimestampTz(box->period.lower), state->tunits, torigin));
-      state->box.period.upper = TimestampTzGetDatum(timestamptz_bucket1(
+      state->box.period.upper = TimestampTzGetDatum(timestamptz_get_bin1(
         DatumGetTimestampTz(box->period.upper), state->tunits, torigin));
       state->max_coords[dim] =
         ceil((state->box.period.upper - state->box.period.lower) / 
@@ -766,12 +766,12 @@ stbox_space_time_tile_common(const GSERIALIZED *point, TimestampTz t,
     ptorig.x = p2->x;
     ptorig.y = p2->y;
   }
-  double xmin = float_bucket(pt.x, xsize, ptorig.x);
-  double ymin = float_bucket(pt.y, ysize, ptorig.y);
-  double zmin = float_bucket(pt.z, zsize, ptorig.z);
+  double xmin = float_get_bin(pt.x, xsize, ptorig.x);
+  double ymin = float_get_bin(pt.y, ysize, ptorig.y);
+  double zmin = float_get_bin(pt.z, zsize, ptorig.z);
   TimestampTz tmin = 0; /* make compiler quiet */
   if (hast)
-    tmin = timestamptz_bucket1(t, tunits, torigin);
+    tmin = timestamptz_get_bin1(t, tunits, torigin);
   STBox *result = palloc0(sizeof(STBox));
   stbox_tile_set(xmin, ymin, zmin, tmin, xsize, ysize, zsize, tunits, hasz,
     hast, srid, result);
@@ -989,14 +989,14 @@ tpointinst_get_coords_fpos(const TInstant *inst, bool hasz, bool hast,
   /* Read the point and compute the minimum values of the tile */
   POINT4D p;
   datum_point4d(tinstant_val(inst), &p);
-  double x = float_bucket(p.x, state->xsize, state->box.xmin);
-  double y = float_bucket(p.y, state->ysize, state->box.ymin);
+  double x = float_get_bin(p.x, state->xsize, state->box.xmin);
+  double y = float_get_bin(p.y, state->ysize, state->box.ymin);
   double z = 0;
   TimestampTz t = 0;
   if (hasz)
-    z = float_bucket(p.z, state->zsize, state->box.zmin);
+    z = float_get_bin(p.z, state->zsize, state->box.zmin);
   if (hast)
-    t = timestamptz_bucket1(inst->t, state->tunits,
+    t = timestamptz_get_bin1(inst->t, state->tunits,
       DatumGetTimestampTz(state->box.period.lower));
   /* Transform the minimum values of the tile into matrix coordinates */
   tile_get_coords(x, y, z, t, state, coords);
@@ -1218,16 +1218,16 @@ tpoint_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
- * @param[out] space_buckets Array of space buckets
+ * @param[out] space_bins Array of space bins
  * @param[out] count Number of elements in the output arrays
  */
 Temporal **
 tpoint_space_split(const Temporal *temp, double xsize, double ysize, 
   double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
-  GSERIALIZED ***space_buckets, int *count)
+  GSERIALIZED ***space_bins, int *count)
 {
   return tpoint_space_time_split(temp, xsize, ysize, zsize, NULL, sorigin, 0,
-    bitmatrix, border_inc, space_buckets, NULL, count);
+    bitmatrix, border_inc, space_bins, NULL, count);
 }
 
 /**
@@ -1242,8 +1242,8 @@ tpoint_space_split(const Temporal *temp, double xsize, double ysize,
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
- * @param[out] space_buckets Array of space buckets
- * @param[out] time_buckets Array of time buckets
+ * @param[out] space_bins Array of space bins
+ * @param[out] time_bins Array of time bins
  * @param[out] count Number of elements in the output arrays
  * @note This function in MEOS corresponds to the MobilityDB function
  * #Tpoint_space_time_split_ext. Note that the test for the validity of the 
@@ -1253,7 +1253,7 @@ Temporal **
 tpoint_space_time_split(const Temporal *temp, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin, 
   TimestampTz torigin, bool bitmatrix, bool border_inc, 
-  GSERIALIZED ***space_buckets, TimestampTz **time_buckets, int *count)
+  GSERIALIZED ***space_bins, TimestampTz **time_bins, int *count)
 {
   /* Initialize state */
   int ntiles;
@@ -1309,10 +1309,10 @@ tpoint_space_time_split(const Temporal *temp, double xsize, double ysize,
     result[i++] = atstbox;
   }
   *count = i;
-  if (space_buckets)
-    *space_buckets = spaces;
-  if (time_buckets)
-    *time_buckets = times;
+  if (space_bins)
+    *space_bins = spaces;
+  if (time_bins)
+    *time_bins = times;
   return result;
 }
 #endif /* MEOS */

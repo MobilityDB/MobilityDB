@@ -40,20 +40,20 @@
 
 /**
  * Struct for storing the state that persists across multiple calls generating
- * the bucket list
+ * the bin list
  */
-typedef struct SpanBucketState
+typedef struct SpanBinState
 {
   bool done;       /**< True when the state is consumed */
   uint8 basetype;  /**< span basetype */
   int i;           /**< Current tile number */
-  Temporal *temp;  /**< NULL when generating bucket list, used for splitting */
+  Temporal *temp;  /**< NULL when generating bins, used for splitting */
   Datum size;      /**< Size of the values */ 
   Datum origin;    /**< Origin of the values */
   Datum minvalue;  /**< Maximum value */
   Datum maxvalue;  /**< Maximum value */
   Datum value;     /**< Current value */
-} SpanBucketState;
+} SpanBinState;
 
 /**
  * @brief Struct for storing the state for tiling operations
@@ -85,20 +85,20 @@ typedef struct ValueTimeSplitState
   int i;               /**< Number of current tile */
   Datum vsize;
   int64 tunits;
-  Datum *value_buckets;
-  TimestampTz *time_buckets;
+  Datum *value_bins;
+  TimestampTz *time_bins;
   Temporal **fragments;
   int count;
 } ValueTimeSplitState;
 
 /*****************************************************************************/
 
-extern void span_bucket_set(Datum lower, Datum size, meosType basetype,
+extern void span_bin_state_set(Datum lower, Datum size, meosType basetype,
   Span *span);
-extern Span *span_bucket_get(Datum lower, Datum size, meosType basetype);
-extern SpanBucketState *span_bucket_state_make(const Span *s, Datum size,
+extern Span *span_bin_state_get(Datum lower, Datum size, meosType basetype);
+extern SpanBinState *span_bin_state_make(const Span *s, Datum size,
   Datum origin);
-extern void span_bucket_state_next(SpanBucketState *state);
+extern void span_bin_state_next(SpanBinState *state);
 
 extern void tbox_tile_set(Datum value, TimestampTz t, Datum vsize,
   int64 tunits, meosType basetype, meosType spantype, TBox *box);
@@ -110,9 +110,9 @@ extern void tbox_tile_state_next(TboxGridState *state);
 /*****************************************************************************/
 
 extern int64 interval_units(const Interval *interval);
-extern TimestampTz timestamptz_bucket1(TimestampTz timestamp, int64 tunits,
+extern TimestampTz timestamptz_get_bin1(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin);
-extern Datum datum_bucket(Datum value, Datum size, Datum offset,
+extern Datum datum_bin(Datum value, Datum size, Datum offset,
   meosType basetype);
 
 

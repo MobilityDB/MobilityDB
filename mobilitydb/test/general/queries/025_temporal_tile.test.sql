@@ -31,50 +31,35 @@
 -- Multidimensional tiling
 -------------------------------------------------------------------------------
 
-SELECT bucketList(intspan '[1, 10]', 2) LIMIT 3;
-SELECT bucketList(intspan '[1, 10]', 2, 1) LIMIT 3;
+SELECT valueSpans(intspan '[1, 10]', 2) LIMIT 3;
+SELECT valueSpans(intspan '[1, 10]', 2, 1) LIMIT 3;
 
-SELECT bucketList(floatspan '(1, 10)', 2.5) LIMIT 3;
-SELECT bucketList(floatspan '(1, 10)', 2.5, 1.5) LIMIT 3;
+SELECT valueSpans(floatspan '(1, 10)', 2.5) LIMIT 3;
+SELECT valueSpans(floatspan '(1, 10)', 2.5, 1.5) LIMIT 3;
 
-SELECT valueBucket(3, 2);
-SELECT valueBucket(3, 2, 1);
-SELECT valueBucket(3.5, 2.5);
-SELECT valueBucket(3.5, 2.5, 1.5);
-
-SELECT valueBucket(-3, 2, -2);
-SELECT valueBucket(-3.5, 2, -2);
--- PG_INT32_MIN or PG_INT32_MAX
--- SELECT valueBucket(2147483647, 2);
--- SELECT valueBucket(-2147483648, 2);
--- DBL_MIN or DBL_MAX
--- SELECT valueBucket(-1.7976931348623158e+308, 2);
--- SELECT valueBucket(1.7976931348623158e+308, 2);
+SELECT getValueSpan(3, 2);
+SELECT getValueSpan(3, 2, 1);
+SELECT getValueSpan(3.5, 2.5);
+SELECT getValueSpan(3.5, 2.5, 1.5);
+SELECT getValueSpan(-3, 2, -2);
+SELECT getValueSpan(-3.5, 2, -2);
 /* Errors */
-SELECT valueBucket(3, -2);
-SELECT valueBucket(3.5, -2.5);
-SELECT valueBucket(-2147483647, 3, 2);
-SELECT valueBucket(2147483646, 3, -2);
-
-SELECT spanBucket(3, 2);
-SELECT spanBucket(3, 2, 1);
-SELECT spanBucket(3.5, 2.5);
-SELECT spanBucket(3.5, 2.5, 1.5);
+SELECT getValueSpan(3, -2);
+SELECT getValueSpan(3.5, -2.5);
+SELECT getValueSpan(-2147483647, 3, 2);
+SELECT getValueSpan(2147483646, 3, -2);
 
 -------------------------------------------------------------------------------
 
-SELECT bucketList(tstzspan '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
-SELECT bucketList(tstzspan '[2000-01-01, 2000-01-10]', '1 week', '2020-06-15') LIMIT 3;
+SELECT timeSpans(tstzspan '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
+SELECT timeSpans(tstzspan '[2000-01-01, 2000-01-10]', '1 week', '2020-06-15') LIMIT 3;
 
-SELECT timeBucket('2020-01-01', '1 week');
-SELECT timeBucket('2020-01-01', '1 week', timestamptz '2001-06-01');
-SELECT timeBucket('infinity'::timestamptz, '1 day');
-SELECT timeBucket('-infinity'::timestamptz, '1 day');
+SELECT getTimeSpan('2020-01-01', '1 week');
+SELECT getTimeSpan('2020-01-01', '1 week', timestamptz '2001-06-01');
+SELECT getTimeSpan('infinity'::timestamptz, '1 day');
+SELECT getTimeSpan('-infinity'::timestamptz, '1 day');
 /* Errors */
-SELECT timeBucket('2020-01-01', '1 month', timestamptz '2001-06-01');
-
-SELECT periodBucket('2020-01-01', '1 week');
-SELECT periodBucket('2020-01-01', '1 week', timestamptz '2001-06-01');
+SELECT getTimeSpan('2020-01-01', '1 month', timestamptz '2001-06-01');
 
 -------------------------------------------------------------------------------
 
@@ -137,6 +122,9 @@ SELECT timeSplit(ttext 'AAA@2000-01-01', '1 week');
 SELECT timeSplit(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', '1 week');
 SELECT timeSplit(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', '1 week');
 SELECT timeSplit(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', '1 week');
+
+/* Errors */
+SELECT timeSplit(tbool 't@2000-01-01', '-1 week');
 
 -------------------------------------------------------------------------------
 -- valueTimeSplit

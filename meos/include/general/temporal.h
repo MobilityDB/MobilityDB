@@ -206,12 +206,12 @@ enum MEOS_WKB_TSUBTYPE
 // #define MEOS_WKB_GET_LINEAR(flags)     ((bool) (((flags) & MEOS_WKB_LINEARFLAG)>>3))
 
 /*****************************************************************************
- * Definitions for bucketing and tiling
+ * Definitions for binning and tiling
  *****************************************************************************/
 
 /*
  * The default origin is Monday 2000-01-03. We don't use PG epoch since it
- * starts on a Saturday. This makes time-buckets by a week more intuitive and
+ * starts on a Saturday. This makes time bins by a week more intuitive and
  * aligns it with date_trunc.
  */
 #define JAN_3_2000 (2 * USECS_PER_DAY)

@@ -1452,7 +1452,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tprecision"><varname>tprecision</varname></link>: Reduce the temporal precision of a temporal value with respect to an interval computing the time-weighted average/centroid in each time bucket</para>
+					<para><link linkend="tprecision"><varname>tprecision</varname></link>: Reduce the temporal precision of a temporal value with respect to an interval computing the time-weighted average/centroid in each time bin</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1487,29 +1487,16 @@
 			<title>Multidimensional Tiling</title>
 
 			<sect3>
-				<title>Bucket Functions</title>
+				<title>Bin Functions</title>
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Return a set of buckets that cover the value or time span with buckets of the same width or duration aligned with the origin</para>
+						<para><link linkend="valueBins"><varname>valueBins</varname>, <varname>timeBins</varname></link>: Return a set of bins that cover a value or time span with bins of the same width or duration</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Return the start value of the bucket that contains the input number</para>
+						<para><link linkend="getValueBin"><varname>getValueBin</varname>, <varname>getTimeBin</varname></link>: Return the bin that contains a number or timestamp</para>
 					</listitem>
-
-					<listitem>
-						<para><link linkend="spanBucket"><varname>spanBucket</varname></link>: Return the span in the bucket space that contains the input number</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Return the start timestamp of the bucket that contains the input timestamp</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="periodBucket"><varname>periodBucket</varname></link>: Return a period in the bucket space that contains the input timestamp</para>
-					</listitem>
-
 				</itemizedlist>
 			</sect3>
 
@@ -1518,11 +1505,11 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueTimeTiles"><varname>valueTimeTiles</varname>, <varname>spaceTiles</varname>, <varname>spaceTimeTiles</varname></link>: Return a set of tiles that covers the box with multidimensional tiles of the same size and duration</para>
+						<para><link linkend="valueTimeTiles"><varname>valueTimeTiles</varname>, <varname>spaceTiles</varname>, <varname>spaceTimeTiles</varname></link>: Return a set of tiles that cover a temporal or spatiotemporal box with tiles of the same size and duration</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueTimeTile"><varname>valueTimeTile</varname>, <varname>spaceTile</varname>, <varname>spaceTimeTile</varname></link>: Return the tile of the multidimensional grid that contains the value and the timestamp</para>
+						<para><link linkend="getValueTimeTile"><varname>getValueTimeTile</varname>, <varname>getSpaceTile</varname>, <varname>getSpaceTimeTile</varname></link>: Return the tile that contains a value or point and a timestamp</para>
 						</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1532,11 +1519,15 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueTimeBoxes"><varname>valueTimeBoxes</varname></link>: Return an array of temporal boxes from the instants or segments of a temporal number with respect to a value and time grid</para>
+						<para><link linkend="valueSpans"><varname>valueSpans</varname>, <varname>timeSpans</varname></link>: Return an array of value or time spans obtained from the instants or segments of a temporal value with respect to a value or time grid</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceTimeBoxes"><varname>spaceBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Return an array of spatiotemporal boxes from the instants or segments of a temporal point with respect to a space and possibly time grid</para>
+						<para><link linkend="valueTimeBoxes"><varname>valueTimeBoxes</varname></link>: Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and time grid</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceTimeBoxes"><varname>spaceBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Return an array of spatiotemporal boxes obtained from the instants or segments of a temporal point with respect to a space and possibly a time grid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1546,23 +1537,23 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Fragment the temporal number with respect to value buckets</para>
+						<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Fragment a temporal number with respect to value bins</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Fragment the temporal value with respect to time buckets</para>
+						<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Fragment a temporal value with respect to time bins</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Fragment the temporal number with respect to the tiles in a value-time grid</para>
+						<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Fragment a temporal number with respect to a value and time grid</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceSplit"><varname>spaceSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatial grid</para>
+						<para><link linkend="spaceSplit"><varname>spaceSplit</varname></link>: Fragment a temporal point with respect to a spatial grid</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceTimeSplit"><varname>spaceTimeSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatiotemporal grid</para>
+						<para><link linkend="spaceTimeSplit"><varname>spaceTimeSplit</varname></link>: Fragment a temporal point with respect to a spatiotemporal grid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

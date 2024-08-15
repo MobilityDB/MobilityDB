@@ -1,4 +1,4 @@
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(i, 2) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT valueSpans(i, 2) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
  index | count 
 -------+-------
      1 |    99
@@ -6,7 +6,7 @@ SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(i, 2) AS bl FROM tbl
      3 |    66
 (3 rows)
 
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(i, 2, 1) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT valueSpans(i, 2, 1) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
  index | count 
 -------+-------
      1 |    99
@@ -14,7 +14,7 @@ SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(i, 2, 1) AS bl FROM 
      3 |    65
 (3 rows)
 
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(f, 2) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT valueSpans(f, 2) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
  index | count 
 -------+-------
      1 |    99
@@ -22,7 +22,7 @@ SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(f, 2) AS bl FROM tbl
      3 |    75
 (3 rows)
 
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(f, 2.5, 1.5) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT valueSpans(f, 2.5, 1.5) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
  index | count 
 -------+-------
      1 |    99
@@ -30,100 +30,60 @@ SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(f, 2.5, 1.5) AS bl F
      3 |    63
 (3 rows)
 
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(t, '2 days') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT timeSpans(t, '2 days') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
  index | count 
 -------+-------
      1 |    99
 (1 row)
 
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bucketList(t, '2 days', '2001-06-01') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT timeSpans(t, '2 days', '2001-06-01') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
  index | count 
 -------+-------
      1 |    99
 (1 row)
 
-SELECT SUM(valueBucket(i, 2)) FROM tbl_int;
- sum  
-------
- 4828
-(1 row)
-
-SELECT SUM(valueBucket(i, 2, 1)) FROM tbl_int;
- sum  
-------
- 4825
-(1 row)
-
-SELECT SUM(valueBucket(f, 2.5)) FROM tbl_float;
-  sum   
---------
- 4712.5
-(1 row)
-
-SELECT SUM(valueBucket(f, 2.5, 1.5)) FROM tbl_float;
- sum  
-------
- 4706
-(1 row)
-
-SELECT spanBucket(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
- spanbucket | count 
-------------+-------
- [74, 76)   |     6
- [2, 4)     |     5
- [24, 26)   |     5
+SELECT getValueSpan(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ getvaluespan | count 
+--------------+-------
+ [74, 76)     |     6
+ [2, 4)       |     5
+ [24, 26)     |     5
 (3 rows)
 
-SELECT spanBucket(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
- spanbucket | count 
-------------+-------
- [73, 75)   |     6
- [1, 3)     |     5
- [21, 23)   |     5
+SELECT getValueSpan(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ getvaluespan | count 
+--------------+-------
+ [73, 75)     |     6
+ [1, 3)       |     5
+ [21, 23)     |     5
 (3 rows)
 
-SELECT spanBucket(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
- spanbucket | count 
-------------+-------
- [15, 17.5) |     6
- [45, 47.5) |     6
- [10, 12.5) |     5
+SELECT getValueSpan(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ getvaluespan | count 
+--------------+-------
+ [15, 17.5)   |     6
+ [45, 47.5)   |     6
+ [10, 12.5)   |     5
 (3 rows)
 
-SELECT spanBucket(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
- spanbucket | count 
-------------+-------
- [14, 16.5) |     7
- [9, 11.5)  |     6
- [46.5, 49) |     6
+SELECT getValueSpan(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+ getvaluespan | count 
+--------------+-------
+ [14, 16.5)   |     7
+ [9, 11.5)    |     6
+ [46.5, 49)   |     6
 (3 rows)
 
-SELECT timeBucket(t, '1 week'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-          timebucket          | count 
-------------------------------+-------
- Mon Jun 11 01:00:00 2001 PDT |     6
- Mon Sep 17 01:00:00 2001 PDT |     6
- Mon Jan 22 00:00:00 2001 PST |     5
-(3 rows)
-
-SELECT timeBucket(t, '1 week', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-          timebucket          | count 
-------------------------------+-------
- Fri Sep 14 00:00:00 2001 PDT |     8
- Thu Mar 29 23:00:00 2001 PST |     5
- Fri Jun 15 00:00:00 2001 PDT |     5
-(3 rows)
-
-SELECT periodBucket(t, interval '2 days'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-                         periodbucket                         | count 
+SELECT getTimeSpan(t, interval '2 days'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                         gettimespan                          | count 
 --------------------------------------------------------------+-------
  [Sun Sep 16 01:00:00 2001 PDT, Tue Sep 18 01:00:00 2001 PDT) |     4
  [Sat Jan 27 00:00:00 2001 PST, Mon Jan 29 00:00:00 2001 PST) |     3
  [Sat Oct 06 01:00:00 2001 PDT, Mon Oct 08 01:00:00 2001 PDT) |     3
 (3 rows)
 
-SELECT periodBucket(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-                         periodbucket                         | count 
+SELECT getTimeSpan(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                         gettimespan                          | count 
 --------------------------------------------------------------+-------
  [Mon Sep 17 00:00:00 2001 PDT, Wed Sep 19 00:00:00 2001 PDT) |     4
  [Wed Apr 18 00:00:00 2001 PDT, Fri Apr 20 00:00:00 2001 PDT) |     3

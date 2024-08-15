@@ -57,7 +57,7 @@ PGDLLEXPORT Datum Timestamptz_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamptz_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Return the initial timestamptz of the bucket in which a timestamptz
+ * @brief Return the initial timestamptz of the bin in which a timestamptz
  * falls
  * @sqlfn tPrecision()
  */
@@ -74,7 +74,7 @@ PGDLLEXPORT Datum Tstzset_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Return a tstzset with the precision set to time buckets
+ * @brief Return a tstzset with the precision set to time bins
  * @sqlfn tPrecision()
  */
 Datum
@@ -90,7 +90,7 @@ PGDLLEXPORT Datum Tstzspan_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspan_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Return a tstzspan with the precision set to time buckets
+ * @brief Return a tstzspan with the precision set to time bins
  * @sqlfn tPrecision()
  */
 Datum
@@ -106,7 +106,7 @@ PGDLLEXPORT Datum Tstzspanset_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Return a tstzspanset value with the precision set to time buckets
+ * @brief Return a tstzspanset value with the precision set to time bins
  * @sqlfn tPrecision()
  */
 Datum
@@ -128,7 +128,7 @@ PGDLLEXPORT Datum Temporal_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Return a temporal value with the precision set to time buckets
+ * @brief Return a temporal value with the precision set to time bins
  * @sqlfn tPrecision()
  */
 Datum
@@ -146,7 +146,7 @@ PGDLLEXPORT Datum Temporal_tsample(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tsample);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Return a temporal value sampled at time buckets
+ * @brief Return a temporal value sampled at time bins
  * @sqlfn tSample()
  */
 Datum
@@ -316,7 +316,7 @@ Temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
   funcctx = SRF_PERCALL_SETUP();
   /* Get state */
   SimilarityPathState *state = funcctx->user_fctx;
-  /* Stop when we've used up all buckets */
+  /* Stop when we've used up all bins */
   if (state->done)
   {
     /* Switch to memory context appropriate for multiple function calls */
