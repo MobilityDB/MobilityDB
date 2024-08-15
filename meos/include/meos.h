@@ -297,13 +297,13 @@ typedef struct
 } SkipList;
 
 typedef struct RTreeNode{
-    bool kind;
-    int count;
-    STBox** boxes;
-    union {
-        struct RTreeNode ** nodes;
-        int64 *ids;
-    };
+  bool kind;
+  int count;
+  STBox** boxes;
+  union {
+    struct RTreeNode ** nodes;
+    int64 *ids;
+  };
 } RTreeNode;
 
 /**
@@ -316,11 +316,11 @@ typedef struct RTreeNode{
  * combination that you may want.
  */
 typedef struct {
-    STBox *box; /* In the future this should be able to be TBox or Span */
-    RTreeNode *root;
-    int count;
-    int dims;
-    double (*get_axis)(const STBox*, int, bool);
+  STBox *box; /* In the future this should be able to be TBox or Span */
+  RTreeNode *root;
+  int count;
+  int dims;
+  double (*get_axis)(const STBox*, int, bool);
 } RTree;
 
 /*****************************************************************************
