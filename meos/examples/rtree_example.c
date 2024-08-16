@@ -38,6 +38,8 @@
 
 #include <meos.h>
 
+#include<meos_internal.h>
+
 #include <stdio.h>
 
 #include <stdlib.h>
@@ -82,7 +84,6 @@ int get_random_number() {
 
 int main() {
   stboxes = malloc(sizeof(STBox) * NO_STBOX);
-  printf("\n%d\n", sizeof(STBox));
   // This can be srand(time(NULL)) for random.
   srand(1);
   RTree * rtree;
