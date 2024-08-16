@@ -1963,10 +1963,11 @@ geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32 srid)
  * geometry/geography
  * @param[in] gs Geometry/geography
  * @param[in] endian Endianness
+ * @param[in] size Size of result
  * @note PostGIS function: @p WKBFromLWGEOM(PG_FUNCTION_ARGS)
  */
-bytea *
-geo_as_ewkb(const GSERIALIZED *gs, const char *endian)
+uint8_t *
+geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) gs))
@@ -1986,9 +1987,12 @@ geo_as_ewkb(const GSERIALIZED *gs, const char *endian)
   /* Create WKB hex string */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwvarlena_t *wkb = lwgeom_to_wkb_varlena(geom, variant | WKB_EXTENDED);
-  bytea *result = palloc(wkb->size - LWVARHDRSZ);
-  memcpy(result, wkb->data, wkb->size - LWVARHDRSZ);
+
+  size_t data_size = wkb->size - LWVARHDRSZ;
+  uint8_t *result = palloc(data_size);
+  memcpy(result, wkb->data, data_size);
   pfree(geom); pfree(wkb);
+  *size = data_size;
   return result;
 }
 
