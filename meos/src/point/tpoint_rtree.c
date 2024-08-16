@@ -37,11 +37,13 @@
 
 #include <math.h>
 
-/* MEOS */ #include <meos.h>
+/* MEOS */
+#include <meos.h>
+
+#include <meos_internal.h>
 
 #include "point/tpoint_rtree.h"
 
-#include "point/stbox.h"
 
 
 /**
