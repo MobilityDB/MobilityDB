@@ -35,19 +35,19 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 </pre><p>
 		</p><p>
 				Damos a continuación las funciones de entrada y salida de tipos de cuadro delimitador en formato textual (Well-Known Text o WKT) y binario (Well-Known Binary o WKB).
-			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_asText"></a><a class="indexterm" name="idm1551"></a><p>Obtener la representación textual conocida (Well-Known Text o WKT)</p><p><code class="varname">asText(box,maxdecdigits=15) → text</code></p><p>El argumento <code class="varname">maxdecdigits</code> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</p><pre class="programlisting">
+			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_asText"></a><a class="indexterm" name="idm1551"></a><p>Devuelve la representación textual conocida (Well-Known Text o WKT)</p><p><code class="varname">asText(box,maxdecdigits=15) → text</code></p><p>El argumento <code class="varname">maxdecdigits</code> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</p><pre class="programlisting">
 SELECT asText(tbox 'TBOXFLOAT XT([1.123456789,2.123456789),[2001-01-01,2001-01-02))', 3);
 -- TBOXFLOAT XT([1.123, 2.123),[2001-01-01 00:00:00+01, 2001-01-02 00:00:00+01))
 SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 -- STBOX Z((2,2,2),(3,3,3))
-</pre></li><li class="listitem"><a name="box_asBinary"></a><a class="indexterm" name="idm1561"></a><p>Obtener la representación binaria conocida (Well-Known Binary o WKB)</p><p><code class="varname">asBinary(box,endian text='') → bytea</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_asBinary"></a><a class="indexterm" name="idm1561"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB)</p><p><code class="varname">asBinary(box,endian text='') → bytea</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))');
 -- \x0103270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))', 'XDR');
 -- \x000300270100001cc1d3579c0000001cd5f12efc00000d013ff00000000000004000000000000000
 SELECT asBinary(stbox 'STBOX X((1,1),(2,2))');
 -- \x0101000000000000f03f0000000000000040000000000000f03f0000000000000040
-</pre></li><li class="listitem"><a name="box_asHexWKB"></a><a class="indexterm" name="idm1570"></a><p>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto</p><p><code class="varname">asHexWKB(box,endian text='') → text</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="box_asHexWKB"></a><a class="indexterm" name="idm1570"></a><p>Devuelve la representación hexadecimal binaria conocida (HexWKB) en formato texto</p><p><code class="varname">asHexWKB(box,endian text='') → text</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
 SELECT asHexWKB(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))');
 -- 0103270001009C57D3C11C000000FC2EF1D51C00000D0001000000000000F03F0000000000000040
 SELECT asHexWKB(tbox 'TBOXFLOAT XT([1,2)[2001-01-01,2001-01-02))', 'XDR');

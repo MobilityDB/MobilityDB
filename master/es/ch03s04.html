@@ -14,7 +14,7 @@ SELECT isGeodetic(stbox 'GEODSTBOX Z((1.0,1.0,0.0),(3.0,3.0,1.0))');
 -- true
 SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])');
 -- false
-</pre></li><li class="listitem"><a name="xMin"></a><a class="indexterm" name="idm1764"></a><a class="indexterm" name="idm1767"></a><a class="indexterm" name="idm1770"></a><a class="indexterm" name="idm1773"></a><p>Obtener el valor mínimo de X/Y/Z/T</p><p><code class="varname">xMin(box) → float</code></p><p><code class="varname">yMin(stbox) → float</code></p><p><code class="varname">zMin(stbox) → float</code></p><p><code class="varname">tMin(box) → timestamptz</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="xMin"></a><a class="indexterm" name="idm1764"></a><a class="indexterm" name="idm1767"></a><a class="indexterm" name="idm1770"></a><a class="indexterm" name="idm1773"></a><p>Devuelve el valor mínimo de X/Y/Z/T</p><p><code class="varname">xMin(box) → float</code></p><p><code class="varname">yMin(stbox) → float</code></p><p><code class="varname">zMin(stbox) → float</code></p><p><code class="varname">tMin(box) → timestamptz</code></p><pre class="programlisting">
 SELECT xMin(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- 1
 SELECT yMin(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
@@ -23,7 +23,7 @@ SELECT zMin(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
 -- 3
 SELECT tMin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- 2001-01-01
-</pre></li><li class="listitem"><a name="xMax"></a><a class="indexterm" name="idm1787"></a><a class="indexterm" name="idm1790"></a><a class="indexterm" name="idm1793"></a><a class="indexterm" name="idm1796"></a><p>Obtener el valor máximo de X/Y/Z/T</p><p><code class="varname">xMax(box) → float</code></p><p><code class="varname">yMax(stbox) → float</code></p><p><code class="varname">zMax(stbox) → float</code></p><p><code class="varname">tMax(box) → timestamptz</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="xMax"></a><a class="indexterm" name="idm1787"></a><a class="indexterm" name="idm1790"></a><a class="indexterm" name="idm1793"></a><a class="indexterm" name="idm1796"></a><p>Devuelve el valor máximo de X/Y/Z/T</p><p><code class="varname">xMax(box) → float</code></p><p><code class="varname">yMax(stbox) → float</code></p><p><code class="varname">zMax(stbox) → float</code></p><p><code class="varname">tMax(box) → timestamptz</code></p><pre class="programlisting">
 SELECT xMax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 -- 3
 SELECT yMax(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
