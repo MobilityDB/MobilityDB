@@ -81,6 +81,7 @@ extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
 extern Datum *datumarr_extract(ArrayType *array, int *count);
 extern TimestampTz *timestamparr_extract(ArrayType *array, int *count);
 extern Span *spanarr_extract(ArrayType *array, int *count);
+extern STBox *stboxarr_extract(ArrayType *array, int *count);
 extern Temporal **temparr_extract(ArrayType *array, int *count);
 
 extern ArrayType *datumarr_to_array(Datum *values, int count, meosType type);

@@ -1490,12 +1490,20 @@ tnumberseqset_split_n_tboxes(const TSequenceSet *ss, int box_count, int *count)
     int nboxes1 = 0;
     for (int i = 0; i < ss->count; i++)
     {
+      bool end = false;
       const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
       int nboxes_seq = (int) (box_count * seq->count * 1.0 / ss->totalcount);
       if (! nboxes_seq)
         nboxes_seq = 1;
+      if (nboxes_seq + nboxes1 >= box_count)
+      {
+        end = true;
+        nboxes_seq = box_count - nboxes1;
+      }
       nboxes1 += tnumberseq_cont_split_n_tboxes_iter(seq, nboxes_seq,
         &result[nboxes1]);
+      if (end)
+        break;
     }
     assert(nboxes1 <= box_count);
     *count = nboxes1;

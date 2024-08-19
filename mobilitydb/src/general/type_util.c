@@ -215,6 +215,21 @@ spanarr_extract(ArrayType *array, int *count)
 }
 
 /**
+ * @brief Extract a C array from a PostgreSQL array containing spatiotemporal
+ * boxes
+ */
+STBox *
+stboxarr_extract(ArrayType *array, int *count)
+{
+  STBox **boxes = (STBox **) datumarr_extract(array, count);
+  STBox *result = palloc(sizeof(STBox) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = *boxes[i];
+  pfree(boxes);
+  return result;
+}
+
+/**
  * @brief Extract a C array from a PostgreSQL array containing temporal values
  */
 Temporal **
@@ -259,6 +274,7 @@ int64arr_to_array(int64 *values, int count)
   return result;
 }
 
+#if 0 /* not used */
 /**
  * @brief Return a C array of dates converted into a PostgreSQL array
  */
@@ -273,6 +289,7 @@ datearr_to_array(DateADT *dates, int count)
   pfree(values); pfree(dates);
   return result;
 }
+#endif /* not used */
 
 /**
  * @brief Return a C array of timestamps converted into a PostgreSQL array

@@ -956,6 +956,35 @@ Stbox_round(PG_FUNCTION_ARGS)
   PG_RETURN_STBOX_P(stbox_round(box, maxdd));
 }
 
+PGDLLEXPORT Datum Stboxarr_round(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stboxarr_round);
+/**
+ * @ingroup mobilitydb_temporal_transf
+ * @brief Return an array of temporal points with the precision of the
+ * coordinates set to a number of decimal places
+ * @sqlfn round()
+ */
+Datum
+Stboxarr_round(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  /* Return NULL on empty array */
+  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+  if (count == 0)
+  {
+    PG_FREE_IF_COPY(array, 0);
+    PG_RETURN_NULL();
+  }
+  int maxdd = PG_GETARG_INT32(1);
+
+  STBox *boxarr = stboxarr_extract(array, &count);
+  STBox *resarr = stboxarr_round(boxarr, count, maxdd);
+  ArrayType *result = stboxarr_to_array(resarr, count);
+  pfree(boxarr);
+  PG_FREE_IF_COPY(array, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
 /*****************************************************************************
  * Topological operators
  *****************************************************************************/

@@ -29,7 +29,7 @@
 
 /**
  * @brief A simple program that applies multidimensional tiling to a temporal
- * point according to value and/or time buckets.
+ * point according to value and/or time bins.
  *
  * The program can be build as follows
  * @code
@@ -64,16 +64,16 @@ int main(void)
   bool border_inc = true; /* Set this parameter to include/exclude the upper
                              border of the extent */
 
-  GSERIALIZED **space_buckets = NULL;
-  TimestampTz *time_buckets = NULL;
+  GSERIALIZED **space_bins = NULL;
+  TimestampTz *time_bins = NULL;
   Temporal **result;
   int count;
   if (spacesplit)
     result = tpoint_space_time_split(tpoint, 2.0, 2.0, 2.0,
       timesplit ? interv : NULL, sorigin, torigin, bitmatrix, border_inc,
-      &space_buckets, &time_buckets, &count);
+      &space_bins, &time_bins, &count);
   else
-    result = temporal_time_split(tpoint, interv, torigin, &time_buckets,
+    result = temporal_time_split(tpoint, interv, torigin, &time_bins,
       &count);
 
   /* Print the input value to split */
@@ -91,8 +91,8 @@ int main(void)
   for (int i = 0; i < count; i++)
   {
     char *space_str = spacesplit ?
-      geo_as_ewkt(space_buckets[i], 3) : "";
-    char *time_str = timesplit ? pg_timestamptz_out(time_buckets[i]) : "";
+      geo_as_ewkt(space_bins[i], 3) : "";
+    char *time_str = timesplit ? pg_timestamptz_out(time_bins[i]) : "";
     char *temp_str = tpoint_as_ewkt(result[i], 3);
     sprintf(output_buffer, "%s%s%s%s%s\n", space_str, spacesplit ? ", " : "",
       time_str, timesplit ? ", " : "", temp_str);

@@ -40,35 +40,37 @@
 
 /**
  * Struct for storing the state that persists across multiple calls generating
- * the bucket list
+ * the bin list
  */
-typedef struct SpanBucketState
+typedef struct SpanBinState
 {
   bool done;       /**< True when the state is consumed */
   uint8 basetype;  /**< span basetype */
-  char padding[2]; /**< Not used */
   int i;           /**< Current tile number */
-  Temporal *temp;  /**< NULL when generating bucket list, used for splitting */
+  Temporal *temp;  /**< NULL when generating bins, used for splitting */
   Datum size;      /**< Size of the values */ 
   Datum origin;    /**< Origin of the values */
   Datum minvalue;  /**< Maximum value */
   Datum maxvalue;  /**< Maximum value */
   Datum value;     /**< Current value */
-} SpanBucketState;
+} SpanBinState;
 
 /**
  * @brief Struct for storing the state for tiling operations
  */
 typedef struct TboxGridState
 {
-  bool done;       /**< True when the state is consumed */
-  char padding[3]; /**< Not used */
-  int i;           /**< Current tile number */
-  Datum vsize;     /**< Vertical size of the values */
-  int64 tunits;    /**< Horizontal size of the time */
-  TBox box;        /**< Bounding box */
-  Datum value;     /**< Current value */
-  TimestampTz t;   /**< Current time */
+  bool done;            /**< True when the state is consumed */
+  int i;                /**< Current tile number */
+  Datum vsize;          /**< Value size */
+  int64 tunits;         /**< Time size */
+  TBox box;             /**< Bounding box */
+  const Temporal *temp; /**< Optional temporal number to be split */
+  Datum value;          /**< Current value */
+  TimestampTz t;        /**< Current time */
+  int ntiles;           /**< Total number of tiles */
+  int max_coords[2];    /**< Maximum coordinates of the tiles */
+  int coords[2];        /**< Coordinates of the current tile */
 } TboxGridState;
 
 /*****************************************************************************/
@@ -81,44 +83,44 @@ typedef struct ValueTimeSplitState
 {
   bool done;           /**< True when all tiles have been processed */
   int i;               /**< Number of current tile */
-  Datum size;
+  Datum vsize;
   int64 tunits;
-  Datum *value_buckets;
-  TimestampTz *time_buckets;
+  Datum *value_bins;
+  TimestampTz *time_bins;
   Temporal **fragments;
   int count;
 } ValueTimeSplitState;
 
 /*****************************************************************************/
 
-extern void span_bucket_set(Datum lower, Datum size, meosType basetype,
+extern void span_bin_state_set(Datum lower, Datum size, meosType basetype,
   Span *span);
-extern Span *span_bucket_get(Datum lower, Datum size, meosType basetype);
-extern SpanBucketState *span_bucket_state_make(const Span *s, Datum size,
+extern Span *span_bin_state_get(Datum lower, Datum size, meosType basetype);
+extern SpanBinState *span_bin_state_make(const Span *s, Datum size,
   Datum origin);
-extern void span_bucket_state_next(SpanBucketState *state);
+extern void span_bin_state_next(SpanBinState *state);
 
-extern void tbox_tile_get(Datum value, TimestampTz t, Datum vsize,
-  int64 tunits, meosType basetype, TBox *box);
-extern TboxGridState *tbox_tile_state_make(const TBox *box, Datum vsize,
-  const Interval *duration, Datum xorigin, TimestampTz torigin);
+extern void tbox_tile_set(Datum value, TimestampTz t, Datum vsize,
+  int64 tunits, meosType basetype, meosType spantype, TBox *box);
+extern TboxGridState *tbox_tile_state_make(const Temporal *temp,
+  const TBox *box, Datum vsize, const Interval *duration, Datum xorigin, 
+  TimestampTz torigin);
 extern void tbox_tile_state_next(TboxGridState *state);
   
 /*****************************************************************************/
 
 extern int64 interval_units(const Interval *interval);
-extern TimestampTz timestamptz_bucket1(TimestampTz timestamp, int64 tunits,
+extern TimestampTz timestamptz_get_bin1(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin);
-extern Datum datum_bucket(Datum value, Datum size, Datum offset,
+extern Datum datum_bin(Datum value, Datum size, Datum offset,
   meosType basetype);
 
-extern Temporal **temporal_time_split(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin, TimestampTz **time_buckets, int *count);
-extern Temporal **tnumber_value_time_split(const Temporal *temp, Datum size,
-  const Interval *duration, Datum vorigin, TimestampTz torigin,
-  Datum **value_buckets, TimestampTz **time_buckets, int *count);
+
+extern TboxGridState *tnumber_value_time_tile_init(const Temporal *temp,
+  Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, 
+  int *ntiles);
+extern bool tbox_tile_state_get(TboxGridState *state, TBox *box);
 
 /*****************************************************************************/
-
 #endif /* __TEMPORAL_TILE_H__ */
 

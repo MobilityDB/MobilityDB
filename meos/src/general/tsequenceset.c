@@ -2268,7 +2268,7 @@ tnumberseqset_twavg(const TSequenceSet *ss)
   {
     result = 0;
     for (int i = 0; i < ss->count; i++)
-      result += tnumbercontseq_twavg(TSEQUENCESET_SEQ_N(ss, i));
+      result += tnumberseq_cont_twavg(TSEQUENCESET_SEQ_N(ss, i));
     return result / ss->count;
   }
   else

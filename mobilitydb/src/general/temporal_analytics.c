@@ -57,7 +57,7 @@ PGDLLEXPORT Datum Timestamptz_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Timestamptz_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Return the initial timestamptz of the bucket in which a timestamptz
+ * @brief Return the initial timestamptz of the bin in which a timestamptz
  * falls
  * @sqlfn tPrecision()
  */
@@ -74,7 +74,7 @@ PGDLLEXPORT Datum Tstzset_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Return a tstzset with the precision set to time buckets
+ * @brief Return a tstzset with the precision set to time bins
  * @sqlfn tPrecision()
  */
 Datum
@@ -90,7 +90,7 @@ PGDLLEXPORT Datum Tstzspan_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspan_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Return a tstzspan with the precision set to time buckets
+ * @brief Return a tstzspan with the precision set to time bins
  * @sqlfn tPrecision()
  */
 Datum
@@ -106,7 +106,7 @@ PGDLLEXPORT Datum Tstzspanset_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspanset_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Return a tstzspanset value with the precision set to time buckets
+ * @brief Return a tstzspanset value with the precision set to time bins
  * @sqlfn tPrecision()
  */
 Datum
@@ -128,7 +128,7 @@ PGDLLEXPORT Datum Temporal_tprecision(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Return a temporal value with the precision set to time buckets
+ * @brief Return a temporal value with the precision set to time bins
  * @sqlfn tPrecision()
  */
 Datum
@@ -146,7 +146,7 @@ PGDLLEXPORT Datum Temporal_tsample(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_tsample);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
- * @brief Return a temporal value sampled at time buckets
+ * @brief Return a temporal value sampled at time bins
  * @sqlfn tSample()
  */
 Datum
@@ -281,11 +281,7 @@ Datum
 Temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
 {
   FuncCallContext *funcctx;
-  SimilarityPathState *state;
   bool isnull[2] = {0,0}; /* needed to say no value is null */
-  Datum tuple_arr[2]; /* used to construct the composite return value */
-  HeapTuple tuple;
-  Datum result; /* the actual composite return value */
 
   /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
@@ -319,8 +315,8 @@ Temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
   /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
   /* Get state */
-  state = funcctx->user_fctx;
-  /* Stop when we've used up all buckets */
+  SimilarityPathState *state = funcctx->user_fctx;
+  /* Stop when we've used up all bins */
   if (state->done)
   {
     /* Switch to memory context appropriate for multiple function calls */
@@ -332,13 +328,14 @@ Temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
     SRF_RETURN_DONE(funcctx);
   }
   /* Store index */
+  Datum tuple_arr[2]; /* used to construct the composite return value */
   tuple_arr[0] = Int32GetDatum(state->path[state->i].i);
   tuple_arr[1] = Int32GetDatum(state->path[state->i].j);
   /* Advance state */
   similarity_path_state_next(state);
   /* Form tuple and return */
-  tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
-  result = HeapTupleGetDatum(tuple);
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
+  Datum result = HeapTupleGetDatum(tuple);
   SRF_RETURN_NEXT(funcctx, result);
 }
 

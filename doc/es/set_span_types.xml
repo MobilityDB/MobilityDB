@@ -192,7 +192,7 @@ SELECT tstzspanset '{[2001-01-01 08:00:00, 2001-01-01 08:10:00),
 		<itemizedlist>
 			<listitem id="setspan_asText">
 				<indexterm><primary><varname>asText</varname></primary></indexterm>
-				<para>Obtener la representación textual conocida (Well-Known Text o WKT)</para>
+				<para>Devuelve la representación textual conocida (Well-Known Text o WKT)</para>
 				<para><varname>asText({floatset,floatspans},maxdecdigits=15) → text</varname></para>
 					<para>El argumento <varname>maxdecdigits</varname> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -205,7 +205,7 @@ SELECT asText(floatspanset '{[1.55,2.55],[4,5]}',0);
 
 			<listitem id="setspan_asBinary">
 				<indexterm><primary><varname>asBinary</varname></primary></indexterm>
-				<para>Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
+				<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB)</para>
 				<para><varname>asBinary({set,spans},endian text='') → bytea</varname></para>
 				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -220,7 +220,7 @@ SELECT asBinary(floatspanset '{[1, 2], [4, 5]}', 'XDR');
 
 			<listitem id="setspan_asHexWKB">
 				<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
-				<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
+				<para>Devuelve la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
 				<para><varname>asHexWKB({set,spans},endian text='') → text</varname></para>
 				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -237,7 +237,7 @@ SELECT asHexWKB(floatspanset '{[1, 2], [4, 5]}', 'XDR');
 				<indexterm><primary><varname>settypeFromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>spantypeFromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>spansettypeFromBinary</varname></primary></indexterm>
-				<para>Obtener a partir de la representación binaria conocida (WKB)</para>
+				<para>Devuelve a partir de la representación binaria conocida (WKB)</para>
 				<para><varname>settypeFromBinary(bytea) → set</varname></para>
 				<para><varname>spantypeFromBinary(bytea) → span</varname></para>
 				<para><varname>spansettypeFromBinary(bytea) → spanset</varname></para>
@@ -257,7 +257,7 @@ SELECT floatspansetFromBinary(
 				<indexterm><primary><varname>settypeFromHexWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>spantypeFromHexWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>spansettypeFromHexWKB</varname></primary></indexterm>
-				<para>Obtener a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
+				<para>Devuelve a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
 				<para><varname>settypeFromHexWKB(text) → set</varname></para>
 				<para><varname>spantypeFromHexWKB(text) → span</varname></para>
 				<para><varname>spansettypeFromHexWKB(text) → spanset</varname></para>
@@ -453,7 +453,7 @@ SELECT tstzmultirange '{[2001-01-01,2001-01-02],[2001-01-04,2001-01-05]}'::tstzs
 		<itemizedlist>
 			<listitem id="setspan_memSize">
 				<indexterm><primary><varname>memSize</varname></primary></indexterm>
-				<para>Obtener el tamaño de la memoria en bytes</para>
+				<para>Devuelve el tamaño de la memoria en bytes</para>
 				<para><varname>memSize({set,spanset}) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT memSize(tstzset '{2001-01-01, 2001-01-02, 2001-01-03}');
@@ -467,7 +467,7 @@ SELECT memSize(tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04],
 			<listitem id="lower">
 				<indexterm><primary><varname>lower</varname></primary></indexterm>
 				<indexterm><primary><varname>upper</varname></primary></indexterm>
-				<para>Obtener el límite inferior o superior</para>
+				<para>Devuelve el límite inferior o superior</para>
 				<para><varname>lower(spans) → base</varname></para>
 				<para><varname>upper(spans) → base</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -520,7 +520,7 @@ SELECT upperInc(tstzspan '[2001-01-01, 2001-01-05)');
 
 			<listitem id="width">
 				<indexterm><primary><varname>width</varname></primary></indexterm>
-				<para>Obtener el ancho del rango como un número de punto flotante</para>
+				<para>Devuelve el ancho del rango como un número de punto flotante</para>
 				<para><varname>width(numspan) → float</varname></para>
 				<para><varname>width(numspanset,boundspan=false) → float</varname></para>
 				<para>Se puede establecer a verdadero un parámetro adicional para calcular el ancho del rango delimitador, ignorando así las posibles brechas de valors</para>
@@ -536,7 +536,7 @@ SELECT width(intspanset '{[1,3),[5,7)}', true);
 
 			<listitem id="setspan_duration">
 				<indexterm><primary><varname>duration</varname></primary></indexterm>
-				<para>Obtener el rango de tiempo</para>
+				<para>Devuelve el rango de tiempo</para>
 				<para><varname>duration({datespan,tstzspan}) → interval</varname></para>
 				<para><varname>duration({datespanset,tstzspanset},boundspan bool=false) → interval</varname></para>
 				<para>Se puede establecer a verdadero un parámetro adicional para calcular la duración en el rango delimitador, ignorando así las posibles brechas de tiempo</para>
@@ -552,7 +552,7 @@ SELECT duration(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)
 
 			<listitem id="setspan_numValues">
 				<indexterm><primary><varname>numValues</varname></primary></indexterm>
-				<para>Obtener el número de valores</para>
+				<para>Devuelve el número de valores</para>
 				<para><varname>numValues(set) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT numValues(intset '{1,3,5,7}');
@@ -564,7 +564,7 @@ SELECT numValues(intset '{1,3,5,7}');
 				<indexterm><primary><varname>startValue</varname></primary></indexterm>
 				<indexterm><primary><varname>endValue</varname></primary></indexterm>
 				<indexterm><primary><varname>valueN</varname></primary></indexterm>
-				<para>Obtener el valor inicial, final o enésimo</para>
+				<para>Devuelve el valor inicial, final o enésimo</para>
 				<para><varname>startValue(set) → base</varname></para>
 				<para><varname>endValue(set) → base</varname></para>
 				<para><varname>valueN(set,integer) → base</varname></para>
@@ -580,7 +580,7 @@ SELECT valueN(floatset '{1,3,5,7}',2);
 
 			<listitem id="setspan_getValues">
 				<indexterm><primary><varname>getValues</varname></primary></indexterm>
-				<para>Obtener los valores</para>
+				<para>Devuelve los valores</para>
 				<para><varname>getValues(set) → base[]</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getValues(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}');
@@ -590,7 +590,7 @@ SELECT getValues(tstzset '{2001-01-01, 2001-01-03, 2001-01-05, 2001-01-07}');
 
 			<listitem id="numSpans">
 				<indexterm><primary><varname>numSpans</varname></primary></indexterm>
-				<para>Obtener el número de rangos</para>
+				<para>Devuelve el número de rangos</para>
 				<para><varname>numSpans(spanset) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT numSpans(intspanset '{[1,3),[4,5),[6,7)}');
@@ -605,7 +605,7 @@ SELECT numSpans(datespanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)
 				<indexterm><primary><varname>startSpan</varname></primary></indexterm>
 				<indexterm><primary><varname>endSpan</varname></primary></indexterm>
 				<indexterm><primary><varname>spanN</varname></primary></indexterm>
-				<para>Obtener el rango inicial, final o enésimo</para>
+				<para>Devuelve el rango inicial, final o enésimo</para>
 				<para><varname>startSpan(spanset) → span</varname></para>
 				<para><varname>endSpan(spanset) → span</varname></para>
 				<para><varname>spanN(spanset,integer) → span</varname></para>
@@ -634,7 +634,7 @@ SELECT spanN(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
 
 			<listitem id="spans">
 				<indexterm><primary><varname>spans</varname></primary></indexterm>
-				<para>Obtener los rangos</para>
+				<para>Devuelve los rangos</para>
 				<para><varname>spans(spanset) → span[]</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT spans(floatspanset '{[1,3),[4,4],[6,7)}');
@@ -648,7 +648,7 @@ SELECT spans(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
 			<listitem id="setspan_numTimestamps">
 				<indexterm><primary><varname>numDates</varname></primary></indexterm>
 				<indexterm><primary><varname>numTimestamps</varname></primary></indexterm>
-				<para>Obtener el número de fechas o marcas de tiempo diferentes</para>
+				<para>Devuelve el número de fechas o marcas de tiempo diferentes</para>
 				<para><varname>numDates(datespanset) → integer</varname></para>
 				<para><varname>numTimestamps(tstzspanset) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -666,7 +666,7 @@ SELECT numTimestamps(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-0
 				<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
 				<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
 				<indexterm><primary><varname>timestampN</varname></primary></indexterm>
-				<para>Obtener la fecha o marca de tiempo inicial, final o enésima</para>
+				<para>Devuelve la fecha o marca de tiempo inicial, final o enésima</para>
 				<para><varname>startDate(datespanset) → date</varname></para>
 				<para><varname>endDate(datespanset) → date</varname></para>
 				<para><varname>dateN(datespanset,integer) → date</varname></para>
@@ -687,7 +687,7 @@ SELECT timestampN(tstzspanset '{[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-0
 			<listitem id="setspan_timestamps">
 				<indexterm><primary><varname>dates</varname></primary></indexterm>
 				<indexterm><primary><varname>timestamps</varname></primary></indexterm>
-				<para>Obtener el conjunto de fechas o marcas de tiempo diferentes</para>
+				<para>Devuelve el conjunto de fechas o marcas de tiempo diferentes</para>
 				<para><varname>dates(datespanset) → dateset</varname></para>
 				<para><varname>timestamps(tstzspanset) → tstzset</varname></para>
 				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
@@ -894,7 +894,7 @@ SELECT tprecision(tstzspanset '{[2001-12-01 08:00, 2001-12-01 09:00],
 		<itemizedlist>
 			<listitem id="geoset_SRID">
 				<indexterm><primary><varname>SRID</varname></primary></indexterm>
-				<para>Obtener el identificador de referencia espacial</para>
+				<para>Devuelve el identificador de referencia espacial</para>
 				<para><varname>SRID(geoset) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT SRID(geoset 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
@@ -1220,7 +1220,7 @@ SELECT timestamp '2001-01-01' #&amp;&gt; tstzspan '[2001-01-01, 2001-01-05)';
 		<itemizedlist>
 			<listitem id="smallest_distance_time">
 				<indexterm><primary><varname>&lt;-&gt;</varname></primary></indexterm>
-				<para>Obtener la distancia mínima</para>
+				<para>Devuelve la distancia mínima</para>
 				<para><varname>numbers &lt;-&gt; numbers → base</varname></para>
 				<para><varname>dates &lt;-&gt; dates → integer</varname></para>
 				<para><varname>times &lt;-&gt; times → float</varname></para>

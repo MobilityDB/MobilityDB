@@ -1725,7 +1725,7 @@ temporal_unnest_state_next(TempUnnestState *state)
 {
   if (!state || state->done)
     return;
-  /* Move to the next bucket */
+  /* Move to the next bin */
   state->i++;
   if (state->i == state->count)
     state->done = true;
@@ -1743,11 +1743,7 @@ Datum
 Temporal_unnest(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
-  TempUnnestState *state;
   bool isnull[2] = {0,0}; /* needed to say no value is null */
-  Datum tuple_arr[2]; /* used to construct the composite return value */
-  HeapTuple tuple;
-  Datum result; /* the actual composite return value */
 
   /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
@@ -1771,8 +1767,8 @@ Temporal_unnest(PG_FUNCTION_ARGS)
   /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
   /* Get state */
-  state = funcctx->user_fctx;
-  /* Stop when we've used up all buckets */
+  TempUnnestState *state = funcctx->user_fctx;
+  /* Stop when we've used up all bins */
   if (state->done)
   {
     /* Switch to memory context appropriate for multiple function calls */
@@ -1786,6 +1782,7 @@ Temporal_unnest(PG_FUNCTION_ARGS)
   }
 
   /* Get value */
+  Datum tuple_arr[2]; /* used to construct the composite return value */
   tuple_arr[0] = state->values[state->i];
   /* Get span set */
   Temporal *rest = temporal_restrict_value(state->temp,
@@ -1798,8 +1795,8 @@ Temporal_unnest(PG_FUNCTION_ARGS)
   /* Advance state */
   temporal_unnest_state_next(state);
   /* Form tuple and return */
-  tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
-  result = HeapTupleGetDatum(tuple);
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
+  Datum result = HeapTupleGetDatum(tuple);
   SRF_RETURN_NEXT(funcctx, result);
 }
 

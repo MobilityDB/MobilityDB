@@ -507,14 +507,22 @@ tpointseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count)
     int nboxes1 = 0;
     for (int i = 0; i < ss->count; i++)
     {
+      bool end = false;
       const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
       int nboxes_seq = (int) (box_count * seq->count * 1.0 / ss->totalcount);
       if (! nboxes_seq)
         nboxes_seq = 1;
+      if (nboxes_seq + nboxes1 >= box_count)
+      {
+        end = true;
+        nboxes_seq = box_count - nboxes1;
+      }
       nboxes1 += tpointseq_cont_split_n_stboxes_iter(seq, nboxes_seq,
         &result[nboxes1]);
+      if (end)
+        break;
     }
-    assert(nboxes1 <= ss->totalcount);
+    assert(nboxes1 <= box_count);
     *count = nboxes1;
     return result;
   }
@@ -1105,13 +1113,21 @@ multiline_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
     nboxes1 = 0;
     for (int i = 0; i < nlines; i++)
     {
+      bool end = false;
       lwline = lwmline->geoms[i];
       int nboxes_line = (int) (box_count * lwline->points->npoints * 1.0 /
         totalpoints);
       if (! nboxes_line)
         nboxes_line = 1;
+      if (nboxes_line + nboxes1 >= box_count)
+      {
+        end = true;
+        nboxes_line = box_count - nboxes1;
+      }
       nboxes1 += line_split_n_gboxes_iter(lwline, nboxes_line,
         geodetic, &result[nboxes1]);
+      if (end)
+        break;
     }
     assert(nboxes1 <= box_count);
     *count = nboxes1;

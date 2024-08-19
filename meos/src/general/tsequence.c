@@ -3009,7 +3009,7 @@ tnumberdiscseq_twavg(const TSequence *seq)
  * @brief Return the time-weighted average of a temporal sequence number
  */
 double
-tnumbercontseq_twavg(const TSequence *seq)
+tnumberseq_cont_twavg(const TSequence *seq)
 {
   assert(seq);
   assert(tnumber_type(seq->temptype));
@@ -3034,7 +3034,7 @@ tnumberseq_twavg(const TSequence *seq)
 {
   assert(seq); assert(tnumber_type(seq->temptype));
   return MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
-    tnumberdiscseq_twavg(seq) : tnumbercontseq_twavg(seq);
+    tnumberdiscseq_twavg(seq) : tnumberseq_cont_twavg(seq);
 }
 
 /*****************************************************************************

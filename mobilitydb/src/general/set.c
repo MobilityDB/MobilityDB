@@ -638,7 +638,6 @@ Datum
 Set_unnest(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
-  SetUnnestState *state;
 
   /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
@@ -658,8 +657,8 @@ Set_unnest(PG_FUNCTION_ARGS)
   /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
   /* Get state */
-  state = funcctx->user_fctx;
-  /* Stop when we've used up all buckets */
+  SetUnnestState *state = funcctx->user_fctx;
+  /* Stop when we've used up all bins */
   if (state->done)
   {
     /* Switch to memory context appropriate for multiple function calls */
