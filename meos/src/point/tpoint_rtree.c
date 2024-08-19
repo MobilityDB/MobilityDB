@@ -217,8 +217,8 @@ stbox_largest_axis(STBox * box, RTree * rtree) {
   int largest_axis = 0;
   double previous_largest = get_axis_length(rtree, box, 0);
   for (int i = 1; i < rtree -> dims; ++i) {
-    if (previous_largest < get_axis_length(rtree, box, 0)) {
-      previous_largest = get_axis_length(rtree, box, 0);
+    if (previous_largest < get_axis_length(rtree, box, i)) {
+      previous_largest = get_axis_length(rtree, box, i);
       largest_axis = i;
     }
   }
