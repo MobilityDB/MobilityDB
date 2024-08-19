@@ -1505,11 +1505,20 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueTimeTiles"><varname>valueTimeTiles</varname>, <varname>spaceTiles</varname>, <varname>spaceTimeTiles</varname></link>: Return a set of tiles that cover a temporal or spatiotemporal box with tiles of the same size and duration</para>
+						<para><link linkend="valueTimeTiles"><varname>valueTiles</varname>, <varname>timeTiles</varname>, <varname>valueTimeTiles</varname></link>: Return the set of tiles that cover a temporal box with tiles of the same size and/or duration</para>
+					</listitem>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="spaceTimeTiles"><varname>spaceTiles</varname>, <varname>timeTiles</varname>, <varname>spaceTimeTiles</varname></link>: Return the set of tiles that cover a spatiotemporal box with tiles of the same size and/or duration</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="getValueTimeTile"><varname>getValueTimeTile</varname>, <varname>getSpaceTile</varname>, <varname>getSpaceTimeTile</varname></link>: Return the tile that contains a value or point and a timestamp</para>
+						<para><link linkend="getValueTimeTile"><varname>getValueTile</varname>, <varname>getTimeTileTbox</varname>, <varname>getValueTimeTile</varname></link>: Return the temporal tile that covers a value and/or a timestamp</para>
+						</listitem>
+
+					<listitem>
+						<para><link linkend="getSpaceTimeTile"><varname>getSpaceTile</varname>, <varname>getTimeTileStbox</varname>, <varname>getSpaceTimeTile</varname></link>: Return the spatiotemporal tile that covers a point and/or a timestamp</para>
 						</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1519,15 +1528,19 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueSpans"><varname>valueSpans</varname>, <varname>timeSpans</varname></link>: Return an array of value or time spans obtained from the instants or segments of a temporal value with respect to a value or time grid</para>
+						<para><link linkend="timeSpans"><varname>timeSpans</varname></link>: Return an array of time spans obtained from the instants or segments of a temporal value with respect to a time grid</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueTimeBoxes"><varname>valueTimeBoxes</varname></link>: Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and time grid</para>
+						<para><link linkend="valueSpans"><varname>valueSpans</varname></link>: Return an array of value spans obtained from the instants or segments of a temporal number with respect to a value grid</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceTimeBoxes"><varname>spaceBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Return an array of spatiotemporal boxes obtained from the instants or segments of a temporal point with respect to a space and possibly a time grid</para>
+						<para><link linkend="valueTimeBoxes"><varname>valueBoxes</varname>, <varname>timeBoxes</varname>, <varname>valueTimeBoxes</varname></link>: Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and/or time grid</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceTimeBoxes"><varname>spaceBoxes</varname>, <varname>timeBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Return an array of spatiotemporal boxes obtained from the instants or segments of a temporal point with respect to a space and/or time grid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

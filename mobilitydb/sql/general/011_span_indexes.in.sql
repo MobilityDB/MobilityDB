@@ -312,6 +312,10 @@ CREATE FUNCTION span_gist_same(tstzspan, tstzspan, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Span_gist_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION span_gist_distance(internal, tstzspan, smallint, oid, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
 
@@ -358,6 +362,7 @@ CREATE OPERATOR CLASS tstzspan_rtree_ops
   FUNCTION  5  span_gist_penalty(internal, internal, internal),
   FUNCTION  6  span_gist_picksplit(internal, internal),
   FUNCTION  7  span_gist_same(tstzspan, tstzspan, internal),
+  FUNCTION  8  span_gist_distance(internal, tstzspan, smallint, oid, internal),
   FUNCTION  9  span_gist_fetch(internal);
 
 /******************************************************************************
@@ -384,7 +389,6 @@ CREATE FUNCTION tstzspan_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME', 'Tstzspan_spgist_config'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 
 CREATE FUNCTION span_quadtree_choose(internal, internal)
   RETURNS void

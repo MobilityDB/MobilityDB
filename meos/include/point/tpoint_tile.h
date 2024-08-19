@@ -58,6 +58,7 @@ typedef struct
 typedef struct STboxGridState
 {
   bool done;               /**< True when all tiles have been processed */
+  bool hasx;               /**< True when tiles have X dimension */
   bool hasz;               /**< True when tiles have Z dimension */
   bool hast;               /**< True when tiles have T dimension */
   int i;                   /**< Number of current tile */
@@ -85,9 +86,9 @@ extern int tpoint_set_tiles(const Temporal *temp, const STboxGridState *state,
   BitMatrix *bm);
 extern Temporal *tpoint_at_tile(const Temporal *temp, const STBox *box);
 
-extern void stbox_tile_set(double x, double y, double z, TimestampTz t,
-  double xsize, double ysize, double zsize, int64 tunits, bool hasz, bool hast,
-  int32 srid, STBox *result);
+extern void stbox_tile_state_set(double x, double y, double z, TimestampTz t,
+  double xsize, double ysize, double zsize, int64 tunits, bool hasx, bool hasz,
+  bool hast, int32 srid, STBox *result);
 extern STboxGridState *stbox_tile_state_make(const Temporal *temp,
   const STBox *box, double xsize, double ysize, double zsize, 
   const Interval *duration, POINT3DZ sorigin, TimestampTz torigin, 
@@ -101,9 +102,9 @@ extern STboxGridState *tpoint_space_time_tile_init(const Temporal *temp,
   bool border_inc, int *ntiles);
 
 extern STBox *stbox_space_time_tile_common(const GSERIALIZED *point,
-  TimestampTz t, double xsize, double ysize, double zsize, 
+  TimestampTz t, double xsize, double ysize, double zsize,
   const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin,
-  bool hast);
+  bool hasx, bool hast);
 
 /*****************************************************************************/
 

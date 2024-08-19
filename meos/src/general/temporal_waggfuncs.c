@@ -95,9 +95,14 @@ static int
 tcontseq_extend(const TSequence *seq, const Interval *interv, bool min,
   TSequence **result)
 {
+  assert(seq); assert(interv); assert(result);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
+  /* Instantaneous sequence */
   if (seq->count == 1)
     return tinstant_extend(TSEQUENCE_INST_N(seq, 0), interv, result);
 
+  /* General case */
   TInstant *instants[3];
   TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_val(inst1);
@@ -402,7 +407,7 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interv,
  * values are stored
  */
 static int
-tnumberdiscseq_transform_wavg(const TSequence *seq, const Interval *interv,
+tnumberseq_disc_transform_wavg(const TSequence *seq, const Interval *interv,
   TSequence **result)
 {
   for (int i = 0; i < seq->count; i++)
@@ -503,7 +508,7 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interv,
       TSequence *seq = (TSequence *) temp;
       result = palloc(sizeof(TSequence *) * seq->count);
       *count = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
-        tnumberdiscseq_transform_wavg(seq, interv, result) :
+        tnumberseq_disc_transform_wavg(seq, interv, result) :
         tintseq_transform_wavg(seq, interv, result);
       break;
     }

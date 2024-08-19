@@ -63,12 +63,78 @@ SELECT getTimeSpan('2020-01-01', '1 month', timestamptz '2001-06-01');
 
 -------------------------------------------------------------------------------
 
+SELECT valueSpans(tint '[15@2000-01-15, 25@2000-01-25]', 2);
+SELECT valueSpans(tint '[15@2000-01-15, 25@2000-01-25]', 2, 15);
+
+SELECT valueSpans(tfloat '[15@2000-01-15, 25@2000-01-25]', 2.5);
+SELECT valueSpans(tfloat '[15@2000-01-15, 25@2000-01-25]', 2.5, 15.5);
+
+SELECT timeSpans(tint '[15@2000-01-15, 25@2000-01-25]', '2 days');
+SELECT timeSpans(tint '[15@2000-01-15, 25@2000-01-25]', '2 days', '2000-01-01');
+
+SELECT timeSpans(tfloat '[15@2000-01-15, 25@2000-01-25]', '2 days');
+SELECT timeSpans(tfloat '[15@2000-01-15, 25@2000-01-25]', '2 days', '2000-01-01');
+
+-------------------------------------------------------------------------------
+
+SELECT valueTiles(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5) LIMIT 3;
+SELECT valueTiles(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, 15.5) LIMIT 3;
+
+SELECT getValueTile(15.5, 2.5);
+SELECT getValueTile(15.5, 2.5, 1.5);
+
+-------------------------------------------------------------------------------
+
+SELECT timeTiles(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, '1 week') LIMIT 3;
+SELECT timeTiles(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, '1 week', '2020-06-15') LIMIT 3;
+
+SELECT getTimeTileTbox(timestamptz '2000-01-15', interval '1 week');
+SELECT getTimeTileTbox(timestamptz '2000-01-15', interval '1 week', '2020-06-15');
+
+-------------------------------------------------------------------------------
+
 SELECT valueTimeTiles(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 week') LIMIT 3;
 SELECT valueTimeTiles(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 week', 15.5) LIMIT 3;
 SELECT valueTimeTiles(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 week', 15.5, '2000-01-15') LIMIT 3;
 
 SELECT getValueTimeTile(15.5, timestamptz '2000-01-15', 2.5, interval '1 week');
 SELECT getValueTimeTile(15.5, timestamptz '2000-01-15', 2.5, interval '1 week', 1.5, '2020-06-15');
+
+-------------------------------------------------------------------------------
+-- valueBoxes
+-------------------------------------------------------------------------------
+
+SELECT valueBoxes(tint '1@2000-01-01', 2);
+SELECT valueBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 2);
+SELECT valueBoxes(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 2);
+SELECT valueBoxes(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 2);
+
+SELECT valueBoxes(tint '1@2000-01-01', 2, 1);
+SELECT valueBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 2, 1);
+SELECT valueBoxes(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 2, 1);
+SELECT valueBoxes(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 2, 1);
+
+SELECT valueBoxes(tfloat '1.5@2000-01-01', 0.5);
+SELECT valueBoxes(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 0.5);
+SELECT valueBoxes(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 0.5);
+SELECT valueBoxes(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 0.5);
+SELECT valueBoxes(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 0.5);
+SELECT valueBoxes(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 0.5);
+
+-------------------------------------------------------------------------------
+-- timeBoxes
+-------------------------------------------------------------------------------
+
+SELECT timeBoxes(tint '1@2000-01-01', '1 week');
+SELECT timeBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', '1 week');
+SELECT timeBoxes(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', '1 week');
+SELECT timeBoxes(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', '1 week');
+SELECT timeBoxes(tfloat '1.5@2000-01-01', '1 week');
+SELECT timeBoxes(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', '1 week');
+SELECT timeBoxes(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 week');
+SELECT timeBoxes(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 week');
+SELECT timeBoxes(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 week');
+SELECT timeBoxes(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 week');
 
 -------------------------------------------------------------------------------
 -- valueTimeBoxes

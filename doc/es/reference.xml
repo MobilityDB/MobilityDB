@@ -1535,11 +1535,16 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueTimeTiles"><varname>valueTimeTiles</varname>, <varname>spaceTiles</varname>, <varname>spaceTimeTiles</varname></link>: Devuelve un conjunto de mosaicos que cubre un cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración</para>
+						<para><link linkend="valueTimeTiles"><varname>valueTiles</varname>, <varname>timeTiles</varname>, <varname>valueTimeTiles</varname></link>: Devuelve el conjunto de mosaicos que cubre un cuadro delimitador temporal con mosaicos del mismo tamaño y/o duración</para>
 					</listitem>
-
 					<listitem>
-						<para><link linkend="getValueTimeTile"><varname>getValueTimeTile</varname>, <varname>getSpaceTile</varname>, <varname>getSpaceTimeTile</varname></link>: Devuelve el mosaico que contiene un valor y una marca de tiempo</para>
+						<para><link linkend="spaceTimeTiles"><varname>spaceTiles</varname>, <varname>timeTiles</varname>, <varname>spaceTimeTiles</varname></link>: Devuelve el conjunto de mosaicos que cubre un cuadro delimitador espaciotemporal con mosaicos del mismo tamaño y/o duración</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="getValueTimeTile"><varname>getValueTile</varname>, <varname>getTimeTileTbox</varname>, <varname>getValueTimeTile</varname></link>: Devuelve el mosaico temporal que cubre un valor y/o una marca de tiempo</para>
+						</listitem>
+					<listitem>
+						<para><link linkend="getSpaceTimeTile"><varname>getSpaceTile</varname>, <varname>getTimeTileStbox</varname>, <varname>getSpaceTimeTile</varname></link>: Devuelve el mosaico espaciotemporal que cubre un punto y/o una marca de tiempo</para>
 						</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1549,15 +1554,19 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueSpans"><varname>valueSpans</varname>, <varname>timeSpans</varname></link>: Devuelve una matriz de intervalos obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores o de tiempo</para>
+						<para><link linkend="timeSpans"><varname>timeSpans</varname></link>: Devuelve una matriz de intervalos obtenidos a partir de los instantes o segmentos de un valor temporal con respecto a un mosaico de tiempo</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueTimeBoxes"><varname>valueTimeBoxes</varname></link>: Devuelve una matriz de cuadros temporales obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores y tiempo</para>
+						<para><link linkend="valueSpans"><varname>valueSpans</varname></link>: Devuelve una matriz de intervalos obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceTimeBoxes"><varname>spaceBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Devuelve una matriz de cuadros espaciotemporales obtenidos a partir de los instantes o segmentos de un punto temporal con respecto a un mosaico espacial y posiblemente temporal</para>
+						<para><link linkend="valueTimeBoxes"><varname>valueBoxes</varname>, <varname>timeBoxes</varname>, <varname>valueTimeBoxes</varname></link>: Devuelve una matriz de cuadros temporales obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores y/o tiempo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceTimeBoxes"><varname>spaceBoxes</varname>, <varname>timeBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Devuelve una matriz de cuadros espaciotemporales obtenidos a partir de los instantes o segmentos de un punto temporal con respecto a un mosaico espacial y/o temporal</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

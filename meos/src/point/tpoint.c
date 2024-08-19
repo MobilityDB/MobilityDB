@@ -163,7 +163,7 @@ tpoint_expand_space(const Temporal *temp, double d)
     return NULL;
 
   STBox box;
-  temporal_set_bbox(temp, &box);
+  tspatial_set_stbox(temp, &box);
   return stbox_expand_space(&box, d);
 }
 

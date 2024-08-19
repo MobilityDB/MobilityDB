@@ -102,7 +102,7 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
     if (temp->subtype != TINSTANT)
     {
       STBox box1, box2;
-      temporal_set_bbox(temp, &box1);
+      tspatial_set_stbox(temp, &box1);
       geo_set_stbox(gs, &box2);
       return contains_stbox_stbox(&box1, &box2);
     }
@@ -121,7 +121,7 @@ tnumber_bbox_restrict_span(const Temporal *temp, const Span *s)
   assert(tnumber_type(temp->temptype));
   /* Bounding box test */
   TBox box1, box2;
-  temporal_set_bbox(temp, &box1);
+  tnumber_set_tbox(temp, &box1);
   numspan_set_tbox(s, &box2);
   return overlaps_tbox_tbox(&box1, &box2);
 }
@@ -208,7 +208,7 @@ temporal_bbox_restrict_set(const Temporal *temp, const Set *s)
   if (tgeo_type(temp->temptype) && temp->subtype != TINSTANT)
   {
     STBox box;
-    temporal_set_bbox(temp, &box);
+    tspatial_set_stbox(temp, &box);
     return contains_stbox_stbox(&box, (STBox *) SET_BBOX_PTR(s));
   }
   return true;
@@ -505,7 +505,7 @@ temporal_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
 Temporal *
 temporal_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
 {
-  assert(temp); assert(s);
+  assert(temp); assert(s); 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
@@ -568,7 +568,7 @@ tnumber_at_tbox(const Temporal *temp, const TBox *box)
 
   /* Bounding box test */
   TBox box1;
-  temporal_set_bbox(temp, &box1);
+  tnumber_set_tbox(temp, &box1);
   if (! overlaps_tbox_tbox(box, &box1))
     return NULL;
 
@@ -577,18 +577,17 @@ tnumber_at_tbox(const Temporal *temp, const TBox *box)
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   if (hast)
-    /* Due the bounding box test above, temp1 is never NULL */
     temp1 = temporal_restrict_tstzspan(temp, &box->period, REST_AT);
   else
     temp1 = (Temporal *) temp;
+  /* Despite the bounding box test above, temp1 may be NULL for discrete
+    sequences */
+  if (! temp1)
+    return NULL;
 
   Temporal *result;
   if (hasx)
-  {
-    /* Ensure function is called for temporal numbers */
-    assert(tnumber_type(temp->temptype));
     result = tnumber_restrict_span(temp1, &box->span, REST_AT);
-  }
   else
     result = temp1;
   if (hasx && hast)
@@ -619,7 +618,7 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
 
   /* Bounding box test */
   TBox box1;
-  temporal_set_bbox(temp, &box1);
+  tnumber_set_tbox(temp, &box1);
   if (! overlaps_tbox_tbox(box, &box1))
     return temporal_cp(temp);
 
@@ -886,7 +885,7 @@ tinstant_restrict_tstzspanset(const TInstant *inst,const  SpanSet *ss,
 TSequence *
 tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 {
-  assert(seq);
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   meosType basetype = temptype_basetype(seq->temptype);
 
   /* Instantaneous sequence */
@@ -927,6 +926,7 @@ TSequence *
 tdiscseq_restrict_values(const TSequence *seq, const Set *s, bool atfunc)
 {
   assert(seq); assert(s);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -1101,15 +1101,15 @@ int
 tcontseq_restrict_value_iter(const TSequence *seq, Datum value, bool atfunc,
   TSequence **result)
 {
-  const TInstant *inst1;
+  assert(seq); assert(result);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    inst1 = TSEQUENCE_INST_N(seq, 0);
     /* We do not call the function tinstant_restrict_value since this
      * would create a new unnecessary instant that needs to be freed */
-    bool equal = datum_eq(tinstant_val(inst1), value,
+    bool equal = datum_eq(tinstant_val(TSEQUENCE_INST_N(seq, 0)), value,
       temptype_basetype(seq->temptype));
     if ((atfunc && ! equal) || (! atfunc && equal))
       return 0;
@@ -1129,7 +1129,7 @@ tcontseq_restrict_value_iter(const TSequence *seq, Datum value, bool atfunc,
 
   /* General case */
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  inst1 = TSEQUENCE_INST_N(seq, 0);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int nseqs = 0;
   for (int i = 1; i < seq->count; i++)
@@ -1158,7 +1158,8 @@ tcontseq_restrict_value_iter(const TSequence *seq, Datum value, bool atfunc,
 TSequenceSet *
 tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 {
-  assert(seq);
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   int count = seq->count;
   /* For minus and linear interpolation we need the double of the count */
   if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(seq->flags))
@@ -1239,6 +1240,8 @@ TSequenceSet *
 tcontseq_restrict_values(const TSequence *seq, const Set *s, bool atfunc)
 {
   assert(seq); assert(s);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count *
     s->count * 2);
@@ -1550,9 +1553,13 @@ int
 tnumberseq_cont_restrict_span_iter(const TSequence *seq, const Span *s,
   bool atfunc, TSequence **result)
 {
+  assert(seq); assert(s); assert(result);
+  assert(tnumber_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Bounding box test */
   TBox box1, box2;
-  tsequence_set_bbox(seq, &box1);
+  tnumberseq_set_tbox(seq, &box1);
   numspan_set_tbox(s, &box2);
   if (! overlaps_tbox_tbox(&box1, &box2))
   {
@@ -1609,8 +1616,10 @@ tnumberseq_cont_restrict_span_iter(const TSequence *seq, const Span *s,
 TSequenceSet *
 tnumberseq_cont_restrict_span(const TSequence *seq, const Span *s, bool atfunc)
 {
-  assert(seq); assert(s);
+  assert(seq); assert(s); assert(tnumber_type(seq->temptype));
   assert(temptype_basetype(seq->temptype) == s->basetype);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   int count = seq->count;
   /* For minus and linear interpolation we need the double of the count */
   if (! atfunc && MEOS_FLAGS_LINEAR_INTERP(seq->flags))
@@ -1638,13 +1647,15 @@ int
 tnumberseq_cont_restrict_spanset_iter(const TSequence *seq, const SpanSet *ss,
   bool atfunc, TSequence **result)
 {
-  const TInstant *inst1, *inst2;
+  assert(seq); assert(ss); assert(result);
+  assert(tnumber_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    inst1 = TSEQUENCE_INST_N(seq, 0);
-    TInstant *inst = tnumberinst_restrict_spanset(inst1, ss, atfunc);
+    TInstant *inst = tnumberinst_restrict_spanset(TSEQUENCE_INST_N(seq, 0),
+      ss, atfunc);
     if (inst == NULL)
       return 0;
     pfree(inst);
@@ -1657,12 +1668,12 @@ tnumberseq_cont_restrict_spanset_iter(const TSequence *seq, const SpanSet *ss,
   if (atfunc)
   {
     /* AT function */
-    inst1 = TSEQUENCE_INST_N(seq, 0);
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
     bool lower_inc = seq->period.lower_inc;
     int nseqs = 0;
     for (int i = 1; i < seq->count; i++)
     {
-      inst2 = TSEQUENCE_INST_N(seq, i);
+      const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
       bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
       for (int j = 0; j < ss->count; j++)
         nseqs += tnumbersegm_restrict_span(inst1, inst2, interp, lower_inc,
@@ -1743,7 +1754,7 @@ tnumberseq_cont_restrict_spanset(const TSequence *seq, const SpanSet *ss,
 TSequence *
 tdiscseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 {
-  assert(seq);
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   Datum minmax = min ? tsequence_min_val(seq) : tsequence_max_val(seq);
   return tdiscseq_restrict_value(seq, minmax, atfunc);
 }
@@ -1762,7 +1773,7 @@ tdiscseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 TSequenceSet *
 tcontseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 {
-  assert(seq);
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
   Datum minmax = min ? tsequence_min_val(seq) : tsequence_max_val(seq);
   return tcontseq_restrict_value(seq, minmax, atfunc);
 }
@@ -1777,9 +1788,11 @@ tcontseq_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
  * return a copy of the value.
  */
 bool
-tdiscseq_value_at_timestamptz(const TSequence *seq, TimestampTz t, Datum *result)
+tdiscseq_value_at_timestamptz(const TSequence *seq, TimestampTz t,
+  Datum *result)
 {
-  assert(seq); assert(result);
+  assert(seq); assert(result); 
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   int loc = tdiscseq_find_timestamptz(seq, t);
   if (loc < 0)
     return false;
@@ -1798,7 +1811,8 @@ tdiscseq_value_at_timestamptz(const TSequence *seq, TimestampTz t, Datum *result
 TInstant *
 tdiscseq_at_timestamptz(const TSequence *seq, TimestampTz t)
 {
-  assert(seq);
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+
   /* Bounding box test */
   if (! contains_span_timestamptz(&seq->period, t))
     return NULL;
@@ -1826,7 +1840,8 @@ tdiscseq_at_timestamptz(const TSequence *seq, TimestampTz t)
 TSequence *
 tdiscseq_minus_timestamptz(const TSequence *seq, TimestampTz t)
 {
-  assert(seq);
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+
   /* Bounding box test */
   if (! contains_span_timestamptz(&seq->period, t))
     return tsequence_copy(seq);
@@ -1858,6 +1873,8 @@ TSequence *
 tdiscseq_restrict_tstzset(const TSequence *seq, const Set *s, bool atfunc)
 {
   assert(seq); assert(s);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+
   TSequence *result;
   const TInstant *inst;
 
@@ -1936,6 +1953,8 @@ TSequence *
 tdiscseq_restrict_tstzspan(const TSequence *seq, const Span *s, bool atfunc)
 {
   assert(seq); assert(s);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+
   /* Bounding box test */
   if (! over_span_span(&seq->period, s))
     return atfunc ? NULL : tsequence_copy(seq);
@@ -1969,6 +1988,7 @@ tdiscseq_restrict_tstzspanset(const TSequence *seq, const SpanSet *ss,
   bool atfunc)
 {
   assert(seq); assert(ss);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   const TInstant *inst;
 
   /* Singleton span set */
@@ -2028,7 +2048,8 @@ tsegment_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
 TInstant *
 tcontseq_at_timestamptz(const TSequence *seq, TimestampTz t)
 {
-  assert(seq);
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Bounding box test */
   if (! contains_span_timestamptz(&seq->period, t))
     return NULL;
@@ -2082,6 +2103,9 @@ int
 tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
   TSequence **result)
 {
+  assert(seq); assert(result);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Bounding box test */
   if (! contains_span_timestamptz(&seq->period, t))
   {
@@ -2159,7 +2183,8 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
 TSequenceSet *
 tcontseq_minus_timestamptz(const TSequence *seq, TimestampTz t)
 {
-  assert(seq);
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   TSequence *sequences[2];
   int count = tcontseq_minus_timestamp_iter(seq, t, sequences);
   if (count == 0)
@@ -2180,16 +2205,18 @@ TSequence *
 tcontseq_at_tstzset(const TSequence *seq, const Set *s)
 {
   assert(seq); assert(s);
-  TInstant *inst;
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
+  TInstant *inst; 
 
   /* Singleton timestamp set */
   if (s->count == 1)
   {
-    inst = tsequence_at_timestamptz(seq,
-      DatumGetTimestampTz(SET_VAL_N(s, 0)));
+    inst = tsequence_at_timestamptz(seq, DatumGetTimestampTz(SET_VAL_N(s, 0)));
     if (inst == NULL)
       return NULL;
-    TSequence *result = tinstant_to_tsequence((const TInstant *) inst, DISCRETE);
+    TSequence *result = tinstant_to_tsequence((const TInstant *) inst,
+      DISCRETE);
     pfree(inst);
     return result;
   }
@@ -2224,7 +2251,8 @@ tcontseq_at_tstzset(const TSequence *seq, const Set *s)
     if (inst != NULL)
       instants[ninsts++] = inst;
   }
-  return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
+  return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 /*****************************************************************************/
@@ -2243,6 +2271,9 @@ int
 tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
   TSequence **result)
 {
+  assert(seq); assert(s); assert(result);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Singleton timestamp set */
   if (s->count == 1)
     return tcontseq_minus_timestamp_iter(seq,
@@ -2360,7 +2391,8 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
 TSequenceSet *
 tcontseq_minus_tstzset(const TSequence *seq, const Set *s)
 {
-  assert(seq); assert(s);
+  assert(seq); assert(s); 
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
   TSequence **sequences = palloc0(sizeof(TSequence *) * (s->count + 1));
   int count = tcontseq_minus_tstzset_iter(seq, s, sequences);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
@@ -2375,6 +2407,8 @@ TSequence *
 tcontseq_at_tstzspan(const TSequence *seq, const Span *s)
 {
   assert(seq); assert(s);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Bounding box test */
   Span inter;
   if (! inter_span_span(&seq->period, s, &inter))
@@ -2396,15 +2430,14 @@ tcontseq_at_tstzspan(const TSequence *seq, const Span *s)
     return result;
   }
 
-  const TInstant *inst1, *inst2;
   int n = tcontseq_find_timestamptz(seq, inter.lower);
   /* If the lower bound of the intersecting period is exclusive */
   if (n == -1)
     n = 0;
   TInstant **instants = palloc(sizeof(TInstant *) * (seq->count - n));
   /* Compute the value at the beginning of the intersecting period */
-  inst1 = TSEQUENCE_INST_N(seq, n);
-  inst2 = TSEQUENCE_INST_N(seq, n + 1);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, n);
+  const TInstant *inst2 = TSEQUENCE_INST_N(seq, n + 1);
   instants[0] = tsegment_at_timestamptz(inst1, inst2, interp, inter.lower);
   int ninsts = 1;
   for (int i = n + 2; i < seq->count; i++)
@@ -2454,6 +2487,9 @@ int
 tcontseq_minus_tstzspan_iter(const TSequence *seq, const Span *s,
   TSequence **result)
 {
+  assert(seq); assert(s); assert(result);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Bounding box test */
   if (! over_span_span(&seq->period, s))
   {
@@ -2483,6 +2519,8 @@ TSequenceSet *
 tcontseq_minus_tstzspan(const TSequence *seq, const Span *s)
 {
   assert(seq); assert(s);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   TSequence *sequences[2];
   int count = tcontseq_minus_tstzspan_iter(seq, s, sequences);
   if (count == 0)
@@ -2530,6 +2568,9 @@ int
 tcontseq_at_tstzspanset1(const TSequence *seq, const SpanSet *ss,
   TSequence **result)
 {
+  assert(seq); assert(ss); assert(result); 
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Singleton span set */
   if (ss->count == 1)
   {
@@ -2583,6 +2624,9 @@ int
 tcontseq_minus_tstzspanset_iter(const TSequence *seq, const SpanSet *ss,
   TSequence **result)
 {
+  assert(seq); assert(ss); assert(result);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Singleton span set */
   if (ss->count == 1)
     return tcontseq_minus_tstzspan_iter(seq, SPANSET_SP_N(ss, 0), result);
@@ -2615,6 +2659,8 @@ tcontseq_restrict_tstzspanset(const TSequence *seq, const SpanSet *ss,
   bool atfunc)
 {
   assert(seq); assert(ss);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Bounding box test */
   if (! over_span_span(&seq->period, &ss->span))
     return atfunc ? NULL : tsequence_to_tsequenceset(seq);

@@ -44,15 +44,15 @@
  */
 typedef struct SpanBinState
 {
-  bool done;       /**< True when the state is consumed */
-  uint8 basetype;  /**< span basetype */
-  int i;           /**< Current tile number */
-  Temporal *temp;  /**< NULL when generating bins, used for splitting */
-  Datum size;      /**< Size of the values */ 
-  Datum origin;    /**< Origin of the values */
-  Datum minvalue;  /**< Maximum value */
-  Datum maxvalue;  /**< Maximum value */
-  Datum value;     /**< Current value */
+  bool done;            /**< True when the state is consumed */
+  uint8 basetype;       /**< span basetype */
+  int i;                /**< Current tile number */
+  Datum size;           /**< Size of the values */ 
+  Datum origin;         /**< Origin of the values */
+  Span span;            /**< Bounding span */
+  const Temporal *temp; /**< NULL when generating bins, used for splitting */
+  Datum value;          /**< Current value */
+  int nbins;            /**< Total number of bins */
 } SpanBinState;
 
 /**
@@ -75,46 +75,30 @@ typedef struct TboxGridState
 
 /*****************************************************************************/
 
-/**
- * Struct for storing the state that persists across multiple calls to output
- * the temporal fragments
- */
-typedef struct ValueTimeSplitState
-{
-  bool done;           /**< True when all tiles have been processed */
-  int i;               /**< Number of current tile */
-  Datum vsize;
-  int64 tunits;
-  Datum *value_bins;
-  TimestampTz *time_bins;
-  Temporal **fragments;
-  int count;
-} ValueTimeSplitState;
-
-/*****************************************************************************/
-
+extern SpanBinState *span_bin_state_make(const Temporal *temp, const Span *s,
+  Datum size, Datum origin);
 extern void span_bin_state_set(Datum lower, Datum size, meosType basetype,
-  Span *span);
-extern Span *span_bin_state_get(Datum lower, Datum size, meosType basetype);
-extern SpanBinState *span_bin_state_make(const Span *s, Datum size,
-  Datum origin);
+  meosType spantype, Span *span);
+extern bool span_bin_state_get(SpanBinState *state, Span *span);
 extern void span_bin_state_next(SpanBinState *state);
 
-extern void tbox_tile_set(Datum value, TimestampTz t, Datum vsize,
-  int64 tunits, meosType basetype, meosType spantype, TBox *box);
+extern SpanBinState *temporal_time_bin_init(const Temporal *temp,
+  const Interval *duration, TimestampTz torigin, int *nbins);
+
 extern TboxGridState *tbox_tile_state_make(const Temporal *temp,
   const TBox *box, Datum vsize, const Interval *duration, Datum xorigin, 
   TimestampTz torigin);
 extern void tbox_tile_state_next(TboxGridState *state);
-  
+extern void tbox_tile_state_set(Datum value, TimestampTz t, Datum vsize,
+  int64 tunits, meosType basetype, meosType spantype, TBox *box);
+
 /*****************************************************************************/
 
 extern int64 interval_units(const Interval *interval);
-extern TimestampTz timestamptz_get_bin1(TimestampTz timestamp, int64 tunits,
+extern TimestampTz timestamptz_get_bin_int(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin);
 extern Datum datum_bin(Datum value, Datum size, Datum offset,
   meosType basetype);
-
 
 extern TboxGridState *tnumber_value_time_tile_init(const Temporal *temp,
   Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, 
