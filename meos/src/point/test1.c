@@ -1,4 +1,0 @@
-#if MEOS
-
-#endif /* MEOS */
-
