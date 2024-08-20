@@ -65,21 +65,7 @@ extern Datum float8_numeric(PG_FUNCTION_ARGS);
   PointerGetDatum(PG_GETARG_VARLENA_P(X)) : PG_GETARG_DATUM(X))
 
 /*****************************************************************************
- * Additional operator strategy numbers used in the GiST and SP-GiST temporal
- * opclasses with respect to those defined in the file stratnum.h
- *****************************************************************************/
-
-#define RTOverBeforeStrategyNumber    28    /* for &<# */
-#define RTBeforeStrategyNumber        29    /* for <<# */
-#define RTAfterStrategyNumber         30    /* for #>> */
-#define RTOverAfterStrategyNumber     31    /* for #&> */
-#define RTOverFrontStrategyNumber     32    /* for &</ */
-#define RTFrontStrategyNumber         33    /* for <</ */
-#define RTBackStrategyNumber          34    /* for />> */
-#define RTOverBackStrategyNumber      35    /* for /&> */
-
-/*****************************************************************************
- * Generic oGIN perator strategy numbers indepenedent of the argument types
+ * Generic GIN operator strategy numbers independent of the argument types
  *****************************************************************************/
 
 #define GinOverlapStrategy             1    /* for && @@ */

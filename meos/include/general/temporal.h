@@ -156,6 +156,20 @@ typedef enum
 } SetOper;
 
 /*****************************************************************************
+ * Additional operator strategy numbers used in the GiST and SP-GiST temporal
+ * opclasses with respect to those defined in the file stratnum.h
+ *****************************************************************************/
+
+#define RTOverBeforeStrategyNumber    28    /* for &<# */
+#define RTBeforeStrategyNumber        29    /* for <<# */
+#define RTAfterStrategyNumber         30    /* for #>> */
+#define RTOverAfterStrategyNumber     31    /* for #&> */
+#define RTOverFrontStrategyNumber     32    /* for &</ */
+#define RTFrontStrategyNumber         33    /* for <</ */
+#define RTBackStrategyNumber          34    /* for />> */
+#define RTOverBackStrategyNumber      35    /* for /&> */
+
+/*****************************************************************************
  * Well-Known Binary (WKB)
  *****************************************************************************/
 

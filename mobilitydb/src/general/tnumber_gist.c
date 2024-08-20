@@ -48,6 +48,7 @@
 #include <meos_internal.h>
 #include "general/span.h"
 #include "general/tbox.h"
+#include "general/tbox_index.h"
 #include "general/temporal_boxops.h"
 #include "general/type_util.h"
 /* MobilityDB */
@@ -58,138 +59,6 @@
 /*****************************************************************************
  * GiST consistent methods
  *****************************************************************************/
-
-/**
- * @brief Leaf consistency for temporal numbers
- * @details Since temporal boxes do not distinguish between inclusive and
- * exclusive bounds, it is necessary to generalize the tests, e.g.,
- * - left : (box1->xmax < box2->xmin) => (box1->xmax <= box2->xmin)
- *   e.g., to take into account left([a,b],(b,c])
- * - right : (box1->xmin > box2->xmax) => (box1->xmin >= box2->xmax)
- *   e.g., to take into account right((b,c],[a,b])
- * and similarly for before and after
- * @param[in] key Element in the index
- * @param[in] query Value being looked up in the index
- * @param[in] strategy Operator of the operator class being applied
- * @note This function is used for both GiST and SP-GiST indexes
- */
-bool
-tbox_index_leaf_consistent(const TBox *key, const TBox *query,
-  StrategyNumber strategy)
-{
-  bool retval;
-
-  switch (strategy)
-  {
-    case RTOverlapStrategyNumber:
-      retval = overlaps_tbox_tbox(key, query);
-      break;
-    case RTContainsStrategyNumber:
-      retval = contains_tbox_tbox(key, query);
-      break;
-    case RTContainedByStrategyNumber:
-      retval = contained_tbox_tbox(key, query);
-      break;
-    case RTSameStrategyNumber:
-      retval = same_tbox_tbox(key, query);
-      break;
-    case RTAdjacentStrategyNumber:
-      retval = adjacent_tbox_tbox(key, query);
-      break;
-    case RTLeftStrategyNumber:
-      retval = left_tbox_tbox(key, query);
-      break;
-    case RTOverLeftStrategyNumber:
-      retval = overleft_tbox_tbox(key, query);
-      break;
-    case RTRightStrategyNumber:
-      retval = right_tbox_tbox(key, query);
-      break;
-    case RTOverRightStrategyNumber:
-      retval = overright_tbox_tbox(key, query);
-      break;
-    case RTBeforeStrategyNumber:
-      retval = before_tbox_tbox(key, query);
-      break;
-    case RTOverBeforeStrategyNumber:
-      retval = overbefore_tbox_tbox(key, query);
-      break;
-    case RTAfterStrategyNumber:
-      retval = after_tbox_tbox(key, query);
-      break;
-    case RTOverAfterStrategyNumber:
-      retval = overafter_tbox_tbox(key, query);
-      break;
-    default:
-      elog(ERROR, "unrecognized strategy number: %d", strategy);
-      retval = false;    /* keep compiler quiet */
-      break;
-  }
-  return retval;
-}
-
-/**
- * @brief GiST internal-page consistent method for temporal numbers
- *
- * Return false if for all data items x below entry, the predicate
- * x op query must be false, where op is the oper corresponding to
- * strategy in the pg_amop table.
- *
- * @param[in] key Element in the index
- * @param[in] query Value being looked up in the index
- * @param[in] strategy Operator of the operator class being applied
- */
-static bool
-tnumber_gist_consistent(const TBox *key, const TBox *query,
-  StrategyNumber strategy)
-{
-  bool retval;
-
-  switch (strategy)
-  {
-    case RTOverlapStrategyNumber:
-    case RTContainedByStrategyNumber:
-      retval = overlaps_tbox_tbox(key, query);
-      break;
-    case RTContainsStrategyNumber:
-    case RTSameStrategyNumber:
-      retval = contains_tbox_tbox(key, query);
-      break;
-    case RTAdjacentStrategyNumber:
-      retval = adjacent_tbox_tbox(key, query) ||
-        overlaps_tbox_tbox(key, query);
-      break;
-    case RTLeftStrategyNumber:
-      retval = ! overright_tbox_tbox(key, query);
-      break;
-    case RTOverLeftStrategyNumber:
-      retval = ! right_tbox_tbox(key, query);
-      break;
-    case RTRightStrategyNumber:
-      retval = ! overleft_tbox_tbox(key, query);
-      break;
-    case RTOverRightStrategyNumber:
-      retval = ! left_tbox_tbox(key, query);
-      break;
-    case RTBeforeStrategyNumber:
-      retval = ! overafter_tbox_tbox(key, query);
-      break;
-    case RTOverBeforeStrategyNumber:
-      retval = ! after_tbox_tbox(key, query);
-      break;
-    case RTAfterStrategyNumber:
-      retval = ! overbefore_tbox_tbox(key, query);
-      break;
-    case RTOverAfterStrategyNumber:
-      retval = ! before_tbox_tbox(key, query);
-      break;
-    default:
-      elog(ERROR, "unrecognized strategy number: %d", strategy);
-      retval = false;    /* keep compiler quiet */
-      break;
-  }
-  return retval;
-}
 
 /**
  * @brief Transform the query argument into a box initializing the dimensions
@@ -263,7 +132,7 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
   if (GIST_LEAF(entry))
     result = tbox_index_leaf_consistent(key, &query, strategy);
   else
-    result = tnumber_gist_consistent(key, &query, strategy);
+    result = tbox_gist_inner_consistent(key, &query, strategy);
 
   PG_RETURN_BOOL(result);
 }

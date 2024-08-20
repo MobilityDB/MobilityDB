@@ -10,11 +10,13 @@ add_library(general OBJECT
   set_ops.c
   span.c
   span_aggfuncs.c
+  span_index.c
   span_ops.c
   spanset.c
   spanset_ops.c
   tbool_boolops.c
   tbox.c
+  tbox_index.c
   temporal.c
   temporal_aggfuncs.c
   temporal_analytics.c
