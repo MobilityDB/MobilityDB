@@ -308,10 +308,10 @@ typedef struct RTreeNode RTreeNode;
  * combination that you may want.
  */
 typedef struct {
-  STBox *box; /* In the future this should be able to be TBox or Span */
   RTreeNode *root;
   int count;
   int dims;
+  STBox box; /* In the future this should be able to be TBox or Span */
   double (*get_axis)(const STBox*, int, bool);
 } RTree;
 

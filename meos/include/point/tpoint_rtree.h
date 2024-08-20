@@ -62,12 +62,13 @@
  */
 typedef struct RTreeNode{
   bool kind;
+  meosType basetype;
   int count;
-  STBox** boxes;
   union {
-    struct RTreeNode ** nodes;
-    int64 *ids;
+    struct RTreeNode * nodes[MAXITEMS];
+    int64 ids[MAXITEMS];
   };
+  STBox boxes[MAXITEMS];
 } RTreeNode;
 
 

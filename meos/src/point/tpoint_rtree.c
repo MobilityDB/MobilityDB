@@ -56,10 +56,7 @@
 static RTreeNode *
   node_new(bool kind) {
     RTreeNode * node = palloc(sizeof(RTreeNode));
-    memset(node, 0, sizeof(RTreeNode));
     node -> kind = kind;
-    node -> boxes = palloc(sizeof(STBox * ) * MAXITEMS);
-    node -> nodes = palloc(sizeof(RTreeNode * ) * MAXITEMS);
     return node;
   }
 
@@ -144,8 +141,8 @@ node_choose_least_enlargement(const RTreeNode * node,
   int result = 0;
   double previous_enlargement = INFINITY;
   for (int i = 0; i < node -> count; ++i) {
-    double unioned_area = box_unioned_area(node -> boxes[i], box, rtree);
-    double area = box_area(node -> boxes[i], rtree);
+    double unioned_area = box_unioned_area(& node -> boxes[i], box, rtree);
+    double area = box_area(& node -> boxes[i], rtree);
     double enlarge_area = unioned_area - area;
     if (enlarge_area < previous_enlargement) {
       result = i;
@@ -175,7 +172,7 @@ node_choose(RTree * rtree,
     const RTreeNode * node) {
   // Check if you can add without expanding any rectangle.
   for (int i = 0; i < node -> count; ++i) {
-    if (contains_stbox_stbox(rtree -> box, box)) {
+    if (contains_stbox_stbox(& rtree -> box, box)) {
       return i;
     }
   }
@@ -194,10 +191,11 @@ node_choose(RTree * rtree,
  */
 static STBox *
   node_box_calculate(const RTreeNode * node) {
+    //TODO: should we just return the STBOX instead of the pointer?
     STBox * result = palloc(sizeof(STBox));
-    memcpy(result, node -> boxes[0], sizeof(STBox));
+    memcpy(result, & node -> boxes[0], sizeof(STBox));
     for (int i = 0; i < node -> count; ++i) {
-      stbox_expand(node -> boxes[i], result);
+      stbox_expand(& node -> boxes[i], result);
     }
     return result;
   }
@@ -258,7 +256,7 @@ node_move_box_at_index_into(RTreeNode * from, int index, RTreeNode * into) {
  */
 static void
 node_swap(RTreeNode * node, int i, int j) {
-  STBox * tmp = node -> boxes[i];
+  STBox tmp = node -> boxes[i];
   node -> boxes[i] = node -> boxes[j];
   node -> boxes[j] = tmp;
   if (node -> kind == LEAF) {
@@ -295,7 +293,7 @@ node_qsort(const RTree * rtree, RTreeNode * node, int index, bool upper, int s, 
   int pivot = no_box / 2;
   node_swap(node, s + pivot, s + right);
   for (int i = 0; i < no_box; ++i) {
-    if (rtree -> get_axis(node -> boxes[right + s], index, upper) > rtree -> get_axis(node -> boxes[s + i], index, upper)) {
+    if (rtree -> get_axis(& node -> boxes[right + s], index, upper) > rtree -> get_axis(& node -> boxes[s + i], index, upper)) {
       node_swap(node, s + i, s + left);
       left++;
     }
@@ -337,8 +335,8 @@ node_split(RTree * rtree, RTreeNode * node, STBox * box, RTreeNode ** right_out)
   int largest_axis = stbox_largest_axis(box, rtree);
   RTreeNode * right = node_new(node -> kind);
   for (int i = 0; i < node -> count; ++i) {
-    double min_dist = rtree -> get_axis(node -> boxes[i], largest_axis, false) - rtree -> get_axis(box, largest_axis, false);
-    double max_dist = rtree -> get_axis(box, largest_axis, true) - rtree -> get_axis(node -> boxes[i], largest_axis, true);
+    double min_dist = rtree -> get_axis(& node -> boxes[i], largest_axis, false) - rtree -> get_axis(box, largest_axis, false);
+    double max_dist = rtree -> get_axis(box, largest_axis, true) - rtree -> get_axis(& node -> boxes[i], largest_axis, true);
     // move to right
     if (max_dist < min_dist) {
       node_move_box_at_index_into(node, i, right);
@@ -385,22 +383,23 @@ node_split(RTree * rtree, RTreeNode * node, STBox * box, RTreeNode ** right_out)
 static void
 node_insert(RTree * rtree, STBox * old_box, RTreeNode * node,
   STBox * new_box, int id, bool * split) {
+  //TODO deprecate old_box
   if (node -> kind == LEAF) {
     if (node -> count == MAXITEMS) {
       * split = true;
       return;
     }
     int index = node -> count;
-    node -> boxes[index] = new_box;
+    node -> boxes[index] = *new_box;
     node -> ids[index] = id;
     node -> count++;
     * split = false;
     return;
   }
   int insertion_node = node_choose(rtree, new_box, node);
-  node_insert(rtree, node -> boxes[insertion_node], (RTreeNode * ) node -> nodes[insertion_node], new_box, id, split);
+  node_insert(rtree, & node -> boxes[insertion_node], (RTreeNode * ) node -> nodes[insertion_node], new_box, id, split);
   if (! * split) {
-    stbox_expand(new_box, node -> boxes[insertion_node]);
+    stbox_expand(new_box, & node -> boxes[insertion_node]);
     * split = false;
     return;
   }
@@ -409,9 +408,9 @@ node_insert(RTree * rtree, STBox * old_box, RTreeNode * node,
     return;
   }
   RTreeNode * right;
-  node_split(rtree, node -> nodes[insertion_node], node -> boxes[insertion_node], & right);
-  node -> boxes[insertion_node] = node_box_calculate(node -> nodes[insertion_node]);
-  node -> boxes[node -> count] = node_box_calculate(right);
+  node_split(rtree, node -> nodes[insertion_node], & node -> boxes[insertion_node], & right);
+  node -> boxes[insertion_node] = *node_box_calculate(node -> nodes[insertion_node]);
+  node -> boxes[node -> count] = *node_box_calculate(right);
   node -> nodes[node -> count] = right;;
   node -> count++;
   return node_insert(rtree, old_box, node, new_box, id, split);
@@ -447,11 +446,6 @@ node_free(RTreeNode * node) {
       node_free(node -> nodes[i]);
     }
   }
-  for (int i = 0; i < node -> count; ++i) {
-    free(node -> boxes[i]);
-  }
-  free(node -> boxes);
-  free(node -> nodes);
   free(node);
 }
 
@@ -466,14 +460,14 @@ void node_search(const RTreeNode * node,
   const STBox * query, int ** ids, int * count) {
   if (node -> kind == LEAF) {
     for (int i = 0; i < node -> count; ++i) {
-      if (overlaps_stbox_stbox(query, node -> boxes[i])) {
+      if (overlaps_stbox_stbox(query, & node -> boxes[i])) {
         add_answer(node -> ids[i], ids, count);
       }
     }
     return;
   }
   for (int i = 0; i < node -> count; ++i) {
-    if (overlaps_stbox_stbox(query, node -> boxes[i])) {
+    if (overlaps_stbox_stbox(query, & node -> boxes[i])) {
       node_search(node -> nodes[i], query, ids, count);
     }
   }
@@ -491,28 +485,26 @@ void node_search(const RTreeNode * node,
 void
 rtree_insert(RTree * rtree, STBox * box, int64 id) {
   /** Copy STBox */
-  STBox * new_box = palloc(sizeof(STBox));
-  memcpy(new_box, box, sizeof(STBox));
 
   while (1) {
     if (!rtree -> root) {
       RTreeNode * new_root = node_new(LEAF);
       rtree -> root = new_root;
-      rtree -> box = new_box;
+      rtree -> box = *box;
     }
     bool split = false;
-    node_insert(rtree, rtree -> box, rtree -> root, new_box, id, & split);
+    node_insert(rtree, & rtree -> box, rtree -> root, box, id, & split);
     if (!split) {
-      stbox_expand(new_box, rtree -> box);
+      stbox_expand(box, & rtree -> box);
       rtree -> count++;
       return;
     }
     RTreeNode * new_root = node_new(BRANCH);
     RTreeNode * right;
-    node_split(rtree, rtree -> root, rtree -> box, & right);
+    node_split(rtree, rtree -> root, & rtree -> box, & right);
 
-    new_root -> boxes[0] = node_box_calculate(rtree -> root);
-    new_root -> boxes[1] = node_box_calculate(right);
+    new_root -> boxes[0] = *node_box_calculate(rtree -> root);
+    new_root -> boxes[1] = *node_box_calculate(right);
     new_root -> nodes[0] = rtree -> root;
     new_root -> nodes[1] = right;
     rtree -> root = new_root;
