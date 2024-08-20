@@ -296,15 +296,7 @@ typedef struct
   SkipListElem *elems;
 } SkipList;
 
-typedef struct RTreeNode{
-  bool kind;
-  int count;
-  STBox** boxes;
-  union {
-    struct RTreeNode ** nodes;
-    int64 *ids;
-  };
-} RTreeNode;
+typedef struct RTreeNode RTreeNode;
 
 /**
  * Rtree in memory index basic structure.
