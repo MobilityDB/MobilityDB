@@ -995,59 +995,6 @@ SELECT tstzspan '[2001-01-01, 2001-01-05)' * tstzspan '[2001-01-03, 2001-01-07)'
 
 	<sect1 id="setspan_topo_pos">
 		<title>Bounding Box Operations</title>
-
-		<para>When creating indexes for set or span set types, what is stored in the index is not the actual value but instead, a bounding box that <emphasis>represents</emphasis> the value. In this case, the index will provide a list of candidate values that <emphasis>may</emphasis> satisfy the query predicate, and a second step is needed to filter out candidate values by computing the query predicate on the actual values.</para>
-
-		<para>However, when the bounding boxes have a large empty space not covered by the actual values, the index will generate many candidate values that do not satisfy the query predicate, which reduces the efficiency of the index. In these situations, it may be better to represent a value not with a <emphasis>single</emphasis> bounding box, but instead with <emphasis>multiple</emphasis> bounding boxes. This increases considerably the efficiency of the index, provided that the index is able to manage multiple bounding boxes per value. The following functions are used for generating multiple spans from a single set or span set value.</para>
-
-		<itemizedlist>
-			<listitem id="splitNSpans">
-				<indexterm><primary><varname>splitNSpans</varname></primary></indexterm>
-				<para>Return an array of N spans from the elements of a set or from the spans of a spanset</para>
-				<para><varname>splitNSpans(set, integer) → span[]</varname></para>
-				<para><varname>splitNSpans(spanset, integer) → span[]</varname></para>
-				<para>The last argument specifies the number of output spans. If the number of input elements or spans is less than the given number, the resulting array will have one span per input element or span. Otherwise, the given number of output spans will be obtained by merging several consecutive input elements or spans.</para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT splitNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 1);
-/* {"[1, 11)"} */
-SELECT splitNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 3);
--- {"[1, 5)","[5, 8)","[8, 11)"}
-SELECT splitNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 6);
--- {"[1, 3)","[3, 5)","[5, 7)","[7, 9)","[9, 10)","[10, 11)"}
-SELECT splitNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 12);
-/* {"[1, 2)","[2, 3)","[3, 4)","[4, 5)","[5, 6)","[6, 7)","[7, 8)","[8, 9)",
-    "[9, 10)","[10, 11)"} */
-</programlisting>
-				<programlisting language="sql" xml:space="preserve">
-SELECT splitNSpans(intspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}');
--- {"[1, 2)","[3, 4)","[5, 6)","[7, 8)","[9, 10)"}
-SELECT splitNSpans(floatspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}', 3);
--- {"[1, 4)","[5, 8)","[9, 10)"}
-SELECT splitNSpans(datespanset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-10)}', 3);
--- {"[2000-01-01, 2000-01-04)","[2000-01-05, 2000-01-10)"}
-</programlisting>
-			</listitem>
-
-			<listitem id="splitEachNSpans">
-				<indexterm><primary><varname>splitEachNSpans</varname></primary></indexterm>
-				<para>Return an array of spans from the elements of a set or from the spans of a spanset</para>
-				<para><varname>splitEachNSpans(set, integer) → span[]</varname></para>
-				<para><varname>splitEachNSpans(spanset, integer) → span[]</varname></para>
-				<para>The last argument specifies the number of input elements that are merged to produce an output span. If the number of input elements is less than the given number, the resulting array will have one output span per element. Otherwise, the given number of consecutive input elements will be merged into a single output span in the answer. Notice that, contrary to the <link linkend="splitNSpans"><varname>splitNSpans</varname></link> function, the number of spans in the result depends on the number of input elements or spans.</para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT splitEachNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 1);
-/* {"[1, 2)","[2, 3)","[3, 4)","[4, 5)","[5, 6)","[6, 7)","[7, 8)","[8, 9)",
-    "[9, 10)","[10, 11)"} */
-SELECT splitEachNSpans(intspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}', 3);
--- {"[1, 6)","[7, 10)"}
-SELECT splitEachNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 6);
--- {"[1, 7)","[7, 11)"}
-SELECT splitEachNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 12);
--- {"[1, 11)"}
-</programlisting>
-			</listitem>
-		</itemizedlist>
-
 		<sect2>
 			<title>Topological Operations</title>
 			<para>The topological operations available for the set and span types are given next.</para>
@@ -1191,6 +1138,62 @@ SELECT floatspanset '{[1, 2],[3, 4]}' &amp;&gt; floatspan '(1, 3)';
 -- false
 SELECT timestamp '2001-01-01' #&amp;&gt; tstzspan '[2001-01-01, 2001-01-05)';
 -- true
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 id="setspan_bbox_split">
+			<title>Bounding Box Splitting</title>
+
+			<para>When creating indexes for set or span set types, what is stored in the index is not the actual value but instead, a bounding box that <emphasis>represents</emphasis> the value. In this case, the index will provide a list of candidate values that <emphasis>may</emphasis> satisfy the query predicate, and a second step is needed to filter out candidate values by computing the query predicate on the actual values.</para>
+
+			<para>However, when the bounding boxes have a large empty space not covered by the actual values, the index will generate many candidate values that do not satisfy the query predicate, which reduces the efficiency of the index. In these situations, it may be better to represent a value not with a <emphasis>single</emphasis> bounding box, but instead with <emphasis>multiple</emphasis> bounding boxes. This increases considerably the efficiency of the index, provided that the index is able to manage multiple bounding boxes per value. The following functions are used for generating multiple spans from a single set or span set value.</para>
+
+			<itemizedlist>
+				<listitem id="splitNSpans">
+					<indexterm><primary><varname>splitNSpans</varname></primary></indexterm>
+					<para>Return an array of N spans obtained by merging the elements of a set or the spans of a spanset</para>
+					<para><varname>splitNSpans(set, integer) → span[]</varname></para>
+					<para><varname>splitNSpans(spanset, integer) → span[]</varname></para>
+					<para>The last argument specifies the number of output spans. If the number of input elements or spans is less than the given number, the resulting array will have one span per input element or span. Otherwise, the given number of output spans will be obtained by merging several consecutive input elements or spans.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT splitNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 1);
+/* {"[1, 11)"} */
+SELECT splitNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 3);
+-- {"[1, 5)","[5, 8)","[8, 11)"}
+SELECT splitNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 6);
+-- {"[1, 3)","[3, 5)","[5, 7)","[7, 9)","[9, 10)","[10, 11)"}
+SELECT splitNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 12);
+/* {"[1, 2)","[2, 3)","[3, 4)","[4, 5)","[5, 6)","[6, 7)","[7, 8)","[8, 9)",
+    "[9, 10)","[10, 11)"} */
+</programlisting>
+					<programlisting language="sql" xml:space="preserve">
+SELECT splitNSpans(intspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}');
+-- {"[1, 2)","[3, 4)","[5, 6)","[7, 8)","[9, 10)"}
+SELECT splitNSpans(floatspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}', 3);
+-- {"[1, 4)","[5, 8)","[9, 10)"}
+SELECT splitNSpans(datespanset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-10)}', 3);
+-- {"[2000-01-01, 2000-01-04)","[2000-01-05, 2000-01-10)"}
+</programlisting>
+				</listitem>
+
+				<listitem id="splitEachNSpans">
+					<indexterm><primary><varname>splitEachNSpans</varname></primary></indexterm>
+					<para>Return an array of spans obtained by merging N consecutive elements of a set or N consecutive spans of a spanset</para>
+					<para><varname>splitEachNSpans(set, integer) → span[]</varname></para>
+					<para><varname>splitEachNSpans(spanset, integer) → span[]</varname></para>
+					<para>The last argument specifies the number of input elements that are merged to produce an output span. If the number of input elements is less than the given number, the resulting array will have one output span per element. Otherwise, the given number of consecutive input elements will be merged into a single output span in the answer. Notice that, contrary to the <link linkend="splitNSpans"><varname>splitNSpans</varname></link> function, the number of spans in the result depends on the number of input elements or spans.</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT splitEachNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 1);
+/* {"[1, 2)","[2, 3)","[3, 4)","[4, 5)","[5, 6)","[6, 7)","[7, 8)","[8, 9)",
+    "[9, 10)","[10, 11)"} */
+SELECT splitEachNSpans(intspanset '{[1, 2), [3, 4), [5, 6), [7, 8), [9, 10)}', 3);
+-- {"[1, 6)","[7, 10)"}
+SELECT splitEachNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 6);
+-- {"[1, 7)","[7, 11)"}
+SELECT splitEachNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 12);
+-- {"[1, 11)"}
 </programlisting>
 				</listitem>
 			</itemizedlist>

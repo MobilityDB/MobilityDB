@@ -328,12 +328,6 @@
 		<sect2>
 			<title>Bounding Box Operations</title>
 
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="splitNSpans"><varname>splitNSpans</varname>, <varname>splitEachNSpans</varname></link>: Return an array of spans from the elements of a set or from the spans of a spanset</para>
-				</listitem>
-			</itemizedlist>
-
 			<sect3>
 				<title>Topological Operations</title>
 				<itemizedlist>
@@ -375,6 +369,19 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
+
+			<sect3>
+				<title>Bounding Box Splitting</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="splitNSpans"><varname>splitNSpans</varname></link>: Return an array of N spans obtained by merging the elements of a set or the spans of a spanset</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="splitEachNSpans"><varname>splitEachNSpans</varname></link>: Return an array of spans obtained by merging N consecutive elements of a set or N consecutive spans of a spanset</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
 		</sect2>
 
 		<sect2>
@@ -590,7 +597,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Split Functions</title>
+			<title>Split Operations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="quadSplit"><varname>quadSplit</varname></link>: Split the bounding box in quadrants or octants</para>
@@ -1075,35 +1082,6 @@
 				</itemizedlist>
 			</sect3>
 		</sect2>
-
-		<sect2>
-			<title>Bounding Box Operations</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="temporal_splitNSpans"><varname>splitNSpans</varname></link>: Return an array of N temporal spans from the instants or segments of a temporal value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="temporal_splitEachNSpans"><varname>splitEachNSpans</varname></link>: Return an array of temporal spans from the instants or segments of a temporal value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="splitNTboxes"><varname>splitNTboxes</varname></link>: Return an array of N temporal boxes from the instants or segments of a temporal number</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="splitEachNTboxes"><varname>splitEachNTboxes</varname></link>: Return an array of temporal boxes from the instants or segments of a temporal number</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="splitNStboxes"><varname>splitNStboxes</varname></link>: Return either an array of N spatial boxes from the segments of a (multi)line or an array of N spatiotemporal boxes from the instants or segments of a temporal point</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="splitEachNStboxes"><varname>splitEachNStboxes</varname></link>: Return either an array of spatial boxes from the segments of a (multi)line or an array of spatiotemporal boxes from the instants or segments of a temporal point</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
 	</sect1>
 
 	<sect1>
@@ -1484,10 +1462,39 @@
 		</sect2>
 
 		<sect2>
+			<title>Bounding Box Splitting</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="temporal_splitNSpans"><varname>splitNSpans</varname></link>: Return an array of N time spans obtained by merging the instants or segments of a temporal value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="temporal_splitEachNSpans"><varname>splitEachNSpans</varname></link>: Return an array of time spans obtained by merging N consecutive instants or segments of a temporal value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="splitNTboxes"><varname>splitNTboxes</varname></link>: Return an array of N temporal boxes obtained by merging the instants or segments of a temporal number</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="splitEachNTboxes"><varname>splitEachNTboxes</varname></link>: Return an array of temporal boxes obtained by merging N consecutive instants or segments of a temporal number</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="splitNStboxes"><varname>splitNStboxes</varname></link>: Return either an array of N spatial boxes obtained by merging the segments of a (multi)line or an array of N spatiotemporal boxes obtained by merging the instants or segments of a temporal point</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="splitEachNStboxes"><varname>splitEachNStboxes</varname></link>: Return either an array of spatial boxes obtained by merging N consecutive segments of a (multi)line or an array of spatiotemporal boxes obtained by merging N consecutive instants or segments of a temporal point</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Multidimensional Tiling</title>
 
 			<sect3>
-				<title>Bin Functions</title>
+				<title>Bin Operations</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1501,14 +1508,13 @@
 			</sect3>
 
 			<sect3>
-				<title>Tile Functions</title>
+				<title>Tile Operations</title>
 
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="valueTimeTiles"><varname>valueTiles</varname>, <varname>timeTiles</varname>, <varname>valueTimeTiles</varname></link>: Return the set of tiles that cover a temporal box with tiles of the same size and/or duration</para>
 					</listitem>
 
-				<itemizedlist>
 					<listitem>
 						<para><link linkend="spaceTimeTiles"><varname>spaceTiles</varname>, <varname>timeTiles</varname>, <varname>spaceTimeTiles</varname></link>: Return the set of tiles that cover a spatiotemporal box with tiles of the same size and/or duration</para>
 					</listitem>
@@ -1524,7 +1530,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Bounding Box Functions</title>
+				<title>Bounding Box Operations</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1546,27 +1552,27 @@
 			</sect3>
 
 			<sect3>
-				<title>Split Functions</title>
+				<title>Split Operations</title>
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Fragment a temporal number with respect to value bins</para>
+						<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Split a temporal number with respect to value bins</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Fragment a temporal value with respect to time bins</para>
+						<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Split a temporal value with respect to time bins</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Fragment a temporal number with respect to a value and time grid</para>
+						<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Split a temporal number with respect to a value and time grid</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceSplit"><varname>spaceSplit</varname></link>: Fragment a temporal point with respect to a spatial grid</para>
+						<para><link linkend="spaceSplit"><varname>spaceSplit</varname></link>: Split a temporal point with respect to a spatial grid</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceTimeSplit"><varname>spaceTimeSplit</varname></link>: Fragment a temporal point with respect to a spatiotemporal grid</para>
+						<para><link linkend="spaceTimeSplit"><varname>spaceTimeSplit</varname></link>: Split a temporal point with respect to a spatiotemporal grid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1636,7 +1642,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Utility Functions</title>
+			<title>Utility Operations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="mobilitydb_version"><varname>mobilitydb_version</varname></link>: Return the version of the MobilityDB extension</para>
