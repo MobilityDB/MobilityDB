@@ -55,11 +55,11 @@
  */
 static RTreeNode *
   node_new(bool kind) {
-    RTreeNode * node = malloc(sizeof(RTreeNode));
+    RTreeNode * node = palloc(sizeof(RTreeNode));
     memset(node, 0, sizeof(RTreeNode));
     node -> kind = kind;
-    node -> boxes = malloc(sizeof(STBox * ) * MAXITEMS);
-    node -> nodes = malloc(sizeof(RTreeNode * ) * MAXITEMS);
+    node -> boxes = palloc(sizeof(STBox * ) * MAXITEMS);
+    node -> nodes = palloc(sizeof(RTreeNode * ) * MAXITEMS);
     return node;
   }
 
@@ -118,7 +118,7 @@ box_area(const STBox * box, RTree * rtree) {
 static double
 box_unioned_area(const STBox * box,
   const STBox * other_box, RTree * rtree) {
-  STBox * union_box = malloc(sizeof(STBox));
+  STBox * union_box = palloc(sizeof(STBox));
   memcpy(union_box, box, sizeof(STBox));
   stbox_expand(other_box, union_box);
 
@@ -194,7 +194,7 @@ node_choose(RTree * rtree,
  */
 static STBox *
   node_box_calculate(const RTreeNode * node) {
-    STBox * result = malloc(sizeof(STBox));
+    STBox * result = palloc(sizeof(STBox));
     memcpy(result, node -> boxes[0], sizeof(STBox));
     for (int i = 0; i < node -> count; ++i) {
       stbox_expand(node -> boxes[i], result);
@@ -426,7 +426,7 @@ node_insert(RTree * rtree, STBox * old_box, RTreeNode * node,
  */
 void add_answer(int id, int ** ids, int * count) {
   if ( * count >= 63 && (( * count & ( * count + 1)) == 0)) {
-    * ids = realloc( * ids, sizeof(int) * ( * count + 1) * 2);
+    * ids = repalloc( * ids, sizeof(int) * ( * count + 1) * 2);
   }
   ( * ids)[ * count] = id;
   ( * count) ++;
@@ -491,7 +491,7 @@ void node_search(const RTreeNode * node,
 void
 rtree_insert(RTree * rtree, STBox * box, int64 id) {
   /** Copy STBox */
-  STBox * new_box = malloc(sizeof(STBox));
+  STBox * new_box = palloc(sizeof(STBox));
   memcpy(new_box, box, sizeof(STBox));
 
   while (1) {
@@ -534,7 +534,7 @@ rtree_insert(RTree * rtree, STBox * box, int64 id) {
  */
 RTree *
   rtree_create(double( * get_axis)(const STBox * , int, bool), int dims) {
-    RTree * rtree = malloc(sizeof(RTree));
+    RTree * rtree = palloc(sizeof(RTree));
     memset(rtree, 0, sizeof(RTree));
     rtree -> dims = dims;
     rtree -> get_axis = get_axis;
@@ -553,8 +553,8 @@ RTree *
 int *
   rtree_search(const RTree * rtree,
     const STBox * query, int * count) {
-    int ** ids = malloc(sizeof(int * ));
-    * ids = malloc(sizeof(int) * 64);
+    int ** ids = palloc(sizeof(int * ));
+    * ids = palloc(sizeof(int) * 64);
     if (rtree -> root) {
       node_search(rtree -> root, query, ids, count);
     }
