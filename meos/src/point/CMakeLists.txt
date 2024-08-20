@@ -1,6 +1,7 @@
 add_library(point OBJECT
   pgis_types.c
   stbox.c
+  stbox_index.c
   tpoint.c
   tpoint_aggfuncs.c
   tpoint_boxops.c
