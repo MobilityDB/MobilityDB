@@ -234,7 +234,6 @@ node_choose(RTree * rtree,
  */
 static STBox *
   node_box_calculate(const RTreeNode * node) {
-    //TODO: should we just return the STBOX instead of the pointer?
     STBox * result = palloc(sizeof(STBox));
     memcpy(result, & node -> boxes[0], sizeof(STBox));
     for (int i = 0; i < node -> count; ++i) {
@@ -426,7 +425,6 @@ node_split(RTree * rtree, RTreeNode * node, STBox * box, RTreeNode ** right_out)
 static void
 node_insert(RTree * rtree, STBox * old_box, RTreeNode * node,
   STBox * new_box, int id, bool * split) {
-  //TODO deprecate old_box
   if (node -> kind == RTREE_INNER_NODE_NO) {
     if (node -> count == MAXITEMS) {
       * split = true;
