@@ -36,7 +36,6 @@
  * @endcode
  */
 
-
 #include<meos.h>
 
 #include <meos_internal.h>
@@ -45,20 +44,19 @@
 
 #include <stdlib.h>
 
+#include <time.h>
+
 #define NO_STBOX 10000
 
 bool index_result[NO_STBOX];
 bool actual[NO_STBOX];
 STBox * stboxes;
 
-
 void print_stbox(const STBox * stbox, char * prefix) {
   printf("\n%s\nXmin = %f, Xmax = %f\nymin: %f ymax: %f\ndate_min: %s date_max: %s\n", prefix, stbox -> xmin, stbox -> xmax, stbox -> ymin, stbox -> ymax, pg_timestamp_out(stbox -> period.lower), pg_timestamp_out(stbox -> period.upper));
 }
 
-int get_random_number() {
-  int min = 1;
-  int max = 29;
+int get_random_number(int min, int max) {
   return rand() % (max - min + 1) + min;
 }
 
@@ -66,16 +64,18 @@ int main() {
   stboxes = malloc(sizeof(STBox) * NO_STBOX);
   // This can be srand(time(NULL)) for random.
   srand(1);
+  clock_t t;
+  double time_taken;
   RTree * rtree;
   rtree = rtree_create(T_STBOX);
 
   for (int i = 0; i < NO_STBOX; ++i) {
-    int xmin = get_random_number();
-    int xmax = xmin + get_random_number();
-    int ymin = get_random_number();
-    int ymax = ymin + get_random_number();
-    int time_min = get_random_number();
-    int time_max = time_min + get_random_number();
+    int xmin = get_random_number(1, 1000);
+    int xmax = xmin + get_random_number(1, 10);
+    int ymin = get_random_number(1, 1000);
+    int ymax = ymin + get_random_number(1, 10);
+    int time_min = get_random_number(1, 29);
+    int time_max = time_min + get_random_number(1, 29);
     char trip_str[100];
     sprintf(trip_str, "SRID=25832;[POINT(%d %d)@2023-01-01 00:00:%02d+00,POINT(%d %d)@2023-01-01 00:00:%02d+00]", xmin, ymin, time_min, xmax, ymax, time_max);
     Temporal * trip = tgeompoint_in(trip_str);
@@ -86,17 +86,27 @@ int main() {
   int count = 0;
   int real_count = 0;
   char trip_str[100];
-  sprintf(trip_str, "SRID=25832;[POINT(0 0)@2023-01-01 00:00:00+00,POINT(10 10)@2023-01-01 00:00:60+00]");
+  sprintf(trip_str, "SRID=25832;[POINT(0 0)@2023-01-01 00:00:00+00,POINT(100 100)@2023-01-01 00:00:60+00]");
   STBox * stbox = malloc(sizeof(STBox));
   Temporal * trip = tgeompoint_in(trip_str);
   tspatial_set_stbox(trip, stbox);
+
+  t = clock();
   int * ids = rtree_search(rtree, stbox, & count);
+  t = clock() - t;
+  time_taken = ((double) t) / CLOCKS_PER_SEC; // in seconds 
+  printf("Index lookup took %f seconds to execute \n", time_taken);
+
+  t = clock();
   for (int i = 0; i < NO_STBOX; ++i) {
     if (overlaps_stbox_stbox( & stboxes[i], stbox)) {
       real_count++;
       actual[i] = true;
     }
   }
+  t = clock() - t;
+  time_taken = ((double) t) / CLOCKS_PER_SEC; // in seconds 
+  printf("Brute foce took %f seconds to execute \n", time_taken);
 
   for (int i = 0; i < count; ++i) {
     index_result[ids[i]] = true;
