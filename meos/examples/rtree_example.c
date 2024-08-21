@@ -36,9 +36,10 @@
  * @endcode
  */
 
-#include <meos.h>
 
-#include<meos_internal.h>
+#include<meos.h>
+
+#include <meos_internal.h>
 
 #include <stdio.h>
 
@@ -50,27 +51,6 @@ bool index_result[NO_STBOX];
 bool actual[NO_STBOX];
 STBox * stboxes;
 
-double get_axis_stbox(const STBox * box, int axis, bool upper) {
-  if (axis == 0 && upper) {
-    return box -> xmax;
-  }
-  if (axis == 0 && !upper) {
-    return box -> xmin;
-  }
-  if (axis == 1 && upper) {
-    return box -> ymax;
-  }
-  if (axis == 1 && !upper) {
-    return box -> ymin;
-  }
-  if (axis == 2 && upper) {
-    return (double)((int64) box -> period.upper);
-  }
-  if (axis == 2 && !upper) {
-    return (double)((int64) box -> period.lower);
-  }
-  return -1.0;
-}
 
 void print_stbox(const STBox * stbox, char * prefix) {
   printf("\n%s\nXmin = %f, Xmax = %f\nymin: %f ymax: %f\ndate_min: %s date_max: %s\n", prefix, stbox -> xmin, stbox -> xmax, stbox -> ymin, stbox -> ymax, pg_timestamp_out(stbox -> period.lower), pg_timestamp_out(stbox -> period.upper));
@@ -87,7 +67,7 @@ int main() {
   // This can be srand(time(NULL)) for random.
   srand(1);
   RTree * rtree;
-  rtree = rtree_create(get_axis_stbox, 3);
+  rtree = rtree_create(T_STBOX);
 
   for (int i = 0; i < NO_STBOX; ++i) {
     int xmin = get_random_number();

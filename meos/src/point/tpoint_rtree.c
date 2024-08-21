@@ -42,9 +42,38 @@
 
 #include <meos_internal.h>
 
+#include <meos_catalog.h>
+
 #include "point/tpoint_rtree.h"
 
 
+double get_axis_stbox(const STBox * box, int axis, bool upper) {
+  if (axis == 0 && upper) {
+    return box -> xmax;
+  }
+  if (axis == 0 && !upper) {
+    return box -> xmin;
+  }
+  if (axis == 1 && upper) {
+    return box -> ymax;
+  }
+  if (axis == 1 && !upper) {
+    return box -> ymin;
+  }
+  if (axis == 2 && upper) {
+    return (double)((int64) box -> period.upper);
+  }
+  if (axis == 2 && !upper) {
+    return (double)((int64) box -> period.lower);
+  }
+  if (axis == 3 && upper) {
+    return box -> zmax;
+  }
+  if (axis == 3 && !upper) {
+    return box -> zmin;
+  }
+  return 0.0;
+}
 
 /**
  * @brief Creates a new RTree node.
@@ -473,6 +502,28 @@ void node_search(const RTreeNode * node,
   }
 }
 
+
+static bool
+rtree_set_dims(RTree* rtree,const STBox* box){
+  if(rtree->basetype == T_STBOX){
+    rtree->dims = 3 +  MEOS_FLAGS_GET_Z(box->flags);
+    return true;
+  }
+  return false;
+}
+
+static bool 
+set_rtree_functions(RTree* rtree ){
+  switch(rtree->basetype){
+    case T_STBOX:
+      rtree->get_axis = get_axis_stbox;
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
 /**
  * @ingroup meos_stbox_rtree_index
  * @brief Insert an STBox into the RTree index. 
@@ -484,11 +535,10 @@ void node_search(const RTreeNode * node,
  */
 void
 rtree_insert(RTree * rtree, STBox * box, int64 id) {
-  /** Copy STBox */
-
   while (1) {
     if (!rtree -> root) {
       RTreeNode * new_root = node_new(LEAF);
+      rtree_set_dims(rtree, box);
       rtree -> root = new_root;
       rtree -> box = *box;
     }
@@ -525,11 +575,14 @@ rtree_insert(RTree * rtree, STBox * box, int64 id) {
  * @return RTree initialized.
  */
 RTree *
-  rtree_create(double( * get_axis)(const STBox * , int, bool), int dims) {
-    RTree * rtree = palloc(sizeof(RTree));
-    memset(rtree, 0, sizeof(RTree));
-    rtree -> dims = dims;
-    rtree -> get_axis = get_axis;
+  rtree_create(int basetype) {
+    RTree * rtree = palloc0(sizeof(RTree));
+    rtree -> basetype = basetype;
+    if (!set_rtree_functions(rtree)){
+      pfree(rtree);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Unsupported base type for RTree %d", basetype);
+      return NULL;
+    }
     return rtree;
   }
 

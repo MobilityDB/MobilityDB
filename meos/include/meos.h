@@ -308,6 +308,7 @@ typedef struct RTreeNode RTreeNode;
  * combination that you may want.
  */
 typedef struct {
+  int basetype;
   RTreeNode *root;
   int count;
   int dims;
@@ -1249,7 +1250,7 @@ extern STBox *intersection_stbox_stbox(const STBox *box1, const STBox *box2);
  * RTree functions
  *****************************************************************************/
 
-extern RTree * rtree_create (double (*get_axis)(const STBox *, int, bool), int dims);
+extern RTree * rtree_create (int basetype);
 extern void rtree_insert (RTree *rtree ,STBox *box, int64 id);
 extern int * rtree_search ( const RTree* rtree,const STBox * query, int * count);
 extern void rtree_free(RTree* rtree);

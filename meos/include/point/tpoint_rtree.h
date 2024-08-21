@@ -62,7 +62,6 @@
  */
 typedef struct RTreeNode{
   bool kind;
-  meosType basetype;
   int count;
   union {
     struct RTreeNode * nodes[MAXITEMS];
