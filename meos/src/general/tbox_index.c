@@ -117,7 +117,8 @@ tbox_index_leaf_consistent(const TBox *key, const TBox *query,
       retval = overafter_tbox_tbox(key, query);
       break;
     default:
-      elog(ERROR, "unrecognized strategy number: %d", strategy);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unrecognized tbox strategy number: %d", strategy);
       retval = false;    /* keep compiler quiet */
       break;
   }
@@ -180,7 +181,8 @@ tbox_gist_inner_consistent(const TBox *key, const TBox *query,
       retval = ! before_tbox_tbox(key, query);
       break;
     default:
-      elog(ERROR, "unrecognized strategy number: %d", strategy);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unrecognized strategy number: %d", strategy);
       retval = false;    /* keep compiler quiet */
       break;
   }
