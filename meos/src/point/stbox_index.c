@@ -138,7 +138,8 @@ stbox_index_leaf_consistent(const STBox *key, const STBox *query,
       retval = overafter_stbox_stbox(key, query);
       break;
     default:
-      elog(ERROR, "unrecognized strategy number: %d", strategy);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unrecognized stbox strategy number: %d", strategy);
       retval = false;    /* keep compiler quiet */
       break;
   }
@@ -146,7 +147,7 @@ stbox_index_leaf_consistent(const STBox *key, const STBox *query,
 }
 
 /**
- * @brief Internal-page consistent method for temporal points
+ * @brief Inner consistent method for temporal points
  *
  * Return false if for all data items x below entry, the predicate
  * x op query must be false, where op is the oper corresponding to strategy
@@ -225,7 +226,8 @@ stbox_gist_inner_consistent(const STBox *key, const STBox *query,
       retval = !before_stbox_stbox(key, query);
       break;
     default:
-      elog(ERROR, "unrecognized strategy number: %d", strategy);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unrecognized strategy number: %d", strategy);
       retval = false;    /* keep compiler quiet */
       break;
   }

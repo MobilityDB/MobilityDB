@@ -88,7 +88,8 @@ span_index_leaf_consistent(const Span *key, const Span *query,
     case RTOverAfterStrategyNumber:
       return ovri_span_span(key, query);
     default:
-      elog(ERROR, "unrecognized span strategy: %d", strategy);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unrecognized span strategy: %d", strategy);
       return false;    /* keep compiler quiet */
   }
 }
@@ -127,7 +128,8 @@ span_gist_inner_consistent(const Span *key, const Span *query,
     case RTOverAfterStrategyNumber:
       return ! lf_span_span(key, query);
     default:
-      elog(ERROR, "unrecognized span strategy: %d", strategy);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unrecognized span strategy: %d", strategy);
       return false;    /* keep compiler quiet */
   }
 }

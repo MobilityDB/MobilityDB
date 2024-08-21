@@ -1060,18 +1060,17 @@ tbox_tmax_inc(const TBox *box, bool *result)
  * @param[in] box Temporal box
  * @param[in] shift Value to shift the value span
  * @param[in] width Width of the result
- * @param[in] basetype Type of the values
  * @param[in] hasshift True when the shift argument is given
  * @param[in] haswidth True when the width argument is given
  */
 TBox *
 tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,
-  meosType basetype, bool hasshift, bool haswidth)
+  bool hasshift, bool haswidth)
 {
   assert(box);
   /* Ensure validity of the arguments */
   if (! ensure_has_X_tbox(box) || ! ensure_one_true(hasshift, haswidth) ||
-      ! ensure_span_isof_basetype(&box->span, basetype) ||
+      ! ensure_span_isof_basetype(&box->span, box->span.basetype) ||
       (haswidth && ! ensure_positive_datum(width, box->span.basetype)))
     return NULL;
 
@@ -1108,7 +1107,7 @@ tbox_shift_scale_int(const TBox *box, int shift, int width, bool hasshift,
     return NULL;
 
   return tbox_shift_scale_value(box, Int32GetDatum(shift),
-    Int32GetDatum(width), T_INT4, hasshift, haswidth);
+    Int32GetDatum(width), hasshift, haswidth);
 }
 
 /**
@@ -1131,7 +1130,7 @@ tbox_shift_scale_float(const TBox *box, double shift, double width,
     return NULL;
 
   return tbox_shift_scale_value(box, Float8GetDatum(shift),
-    Float8GetDatum(width), T_FLOAT8, hasshift, haswidth);
+    Float8GetDatum(width), hasshift, haswidth);
 }
 
 #endif /* MEOS */

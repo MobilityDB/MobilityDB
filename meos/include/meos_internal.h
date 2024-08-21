@@ -528,7 +528,7 @@ extern void tstzspanset_set_tbox(const SpanSet *ss, TBox *box);
 
 /* Transformation functions for box types */
 
-extern TBox *tbox_shift_scale_value(const TBox *box, Datum shift, Datum width, meosType basetype, bool hasshift, bool haswidth);
+extern TBox *tbox_shift_scale_value(const TBox *box, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern void stbox_expand(const STBox *box1, STBox *box2);
 extern void tbox_expand(const TBox *box1, TBox *box2);
 
