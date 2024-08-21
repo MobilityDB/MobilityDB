@@ -460,15 +460,32 @@ node_insert(RTree * rtree, STBox * old_box, RTreeNode * node,
 
 }
 
+
+/**
+ * @brief Checks if a number bigger than 0 is a power of two or not. 
+ * 
+ * @param[in] n Number to check
+ * @returns True if `n` is a power of two, False otherwise.
+ */
+static bool
+is_power_of_two(const int n){
+  return ( n & ( n - 1)) == 0;
+}
+
 /**
  * @brief Adds an ID to the dynamically allocated array with the answer of a query.
  * @param[in] id The integer ID to be added to the array.
  * @param[in] ids Pointer to a pointer to the dynamically allocated array of integers.
  * @param[in] count Pointer to an integer representing the current number of elements in the array.
  */
-void add_answer(int id, int ** ids, int * count) {
-  if ( * count >= 63 && (( * count & ( * count + 1)) == 0)) {
-    * ids = repalloc( * ids, sizeof(int) * ( * count + 1) * 2);
+static void
+add_answer(const int id, int ** ids, int * count) {
+  /**
+   * Every power of two that exceeds the size of the array must  
+   * be resized to double the current size.  
+  */
+  if ( * count >= SEARCH_ARRAY_STARTING_SIZE  && is_power_of_two(*count)) {
+    * ids = repalloc( * ids, sizeof(int) * (*count) * 2);
   }
   ( * ids)[ * count] = id;
   ( * count) ++;
@@ -501,17 +518,13 @@ node_free(RTreeNode * node) {
  */
 void node_search(const RTreeNode * node,
   const STBox * query, int ** ids, int * count) {
-  if (node -> kind == RTREE_INNER_NODE_NO) {
-    for (int i = 0; i < node -> count; ++i) {
-      if (overlaps_stbox_stbox(query, & node -> boxes[i])) {
-        add_answer(node -> ids[i], ids, count);
-      }
-    }
-    return;
-  }
   for (int i = 0; i < node -> count; ++i) {
     if (overlaps_stbox_stbox(query, & node -> boxes[i])) {
-      node_search(node -> nodes[i], query, ids, count);
+      if (node -> kind == RTREE_INNER_NODE_NO){
+        add_answer(node -> ids[i], ids, count);
+      }else{
+        node_search(node -> nodes[i], query, ids, count);
+      }
     }
   }
 }
@@ -621,18 +634,18 @@ RTree *
  * @note The @p count will be the output size of the array given.
  * @param[in] rtree The RTree to query.
  * @param[in] query The STBox that serves as query.
- * @param[in] count An int that corresponds to the number of hits the RTree found.
+ * @param[out] count An int that corresponds to the number of hits the RTree found.
  * @return array of ids that have a hit.
  */
 int *
   rtree_search(const RTree * rtree,
     const STBox * query, int * count) {
-    int ** ids = palloc(sizeof(int * ));
-    * ids = palloc(sizeof(int) * 64);
+    int * ids = palloc(sizeof(int) * SEARCH_ARRAY_STARTING_SIZE);
+    * count = 0;
     if (rtree -> root) {
-      node_search(rtree -> root, query, ids, count);
+      node_search(rtree -> root, query, &ids, count);
     }
-    return * ids;
+    return ids;
   }
 
 /**
