@@ -133,7 +133,8 @@ temporal_basevalue_as_mfjson_sb(stringbuffer_t *sb, Datum value,
       break;
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
-        "Unknown temporal type in MFJSON output: %d", temptype);
+        "Unknown temporal type in MFJSON output: %s",
+        meostype_name(temptype));
       return false;
   }
   return true;
@@ -302,7 +303,8 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, meosType temptype, const bboxunion *bbox,
       break;
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
-        "Unknown temporal type in MFJSON output: %d", temptype);
+        "Unknown temporal type in MFJSON output: %s",
+        meostype_name(temptype));
       return false;
   }
   return true;
@@ -335,7 +337,8 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, meosType temptype)
       break;
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
-        "Unknown temporal type in MFJSON output: %d", temptype);
+        "Unknown temporal type in MFJSON output: %s",
+        meostype_name(temptype));
       return false;
   }
   return true;
@@ -823,7 +826,7 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal base type in WKB output: %s",
-          meostype_name(basetype));
+        meostype_name(basetype));
       return SIZE_MAX;
   }
 }
@@ -1147,7 +1150,7 @@ datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
     return temporal_to_wkb_size((Temporal *) DatumGetPointer(value), variant);
   /* Error! */
   meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
-    "Unknown type in WKB output: %d", type);
+    "Unknown type in WKB output: %s", meostype_name(type));
   return SIZE_MAX;
 }
 
@@ -1468,7 +1471,7 @@ basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
 #endif /* NPOINT */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
-        "Unknown basetype in WKB output: %d", basetype);
+        "Unknown basetype in WKB output: %s", meostype_name(basetype));
       return NULL;
   }
   return buf;
@@ -1597,7 +1600,8 @@ lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
       break;
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
-        "Unknown span base type in WKB output: %d", s->basetype);
+        "Unknown span base type in WKB output: %s",
+        meostype_name(s->basetype));
       return NULL;
   }
   return buf;
@@ -2017,7 +2021,7 @@ datum_to_wkb_buf(Datum value, meosType type, uint8_t *buf, uint8_t variant)
   else /* Error! */
   {
     meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
-      "Unknown type in WKB output: %d", type);
+      "Unknown type in WKB output: %s", meostype_name(type));
     return NULL;
   }
 

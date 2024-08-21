@@ -37,6 +37,12 @@ SELECT valueSpans(intspan '[1, 10]', 2, 1) LIMIT 3;
 SELECT valueSpans(floatspan '(1, 10)', 2.5) LIMIT 3;
 SELECT valueSpans(floatspan '(1, 10)', 2.5, 1.5) LIMIT 3;
 
+SELECT valueSpans(intspanset '{[1, 10]}', 2) LIMIT 3;
+SELECT valueSpans(intspanset '{[1, 10]}', 2, 1) LIMIT 3;
+
+SELECT valueSpans(floatspanset '{(1, 10)}', 2.5) LIMIT 3;
+SELECT valueSpans(floatspanset '{(1, 10)}', 2.5, 1.5) LIMIT 3;
+
 SELECT getValueSpan(3, 2);
 SELECT getValueSpan(3, 2, 1);
 SELECT getValueSpan(3.5, 2.5);
@@ -53,6 +59,9 @@ SELECT getValueSpan(2147483646, 3, -2);
 
 SELECT timeSpans(tstzspan '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
 SELECT timeSpans(tstzspan '[2000-01-01, 2000-01-10]', '1 week', '2020-06-15') LIMIT 3;
+
+SELECT timeSpans(tstzspanset '{[2000-01-01, 2000-01-10]}', '1 week') LIMIT 3;
+SELECT timeSpans(tstzspanset '{[2000-01-01, 2000-01-10]}', '1 week', '2020-06-15') LIMIT 3;
 
 SELECT getTimeSpan('2020-01-01', '1 week');
 SELECT getTimeSpan('2020-01-01', '1 week', timestamptz '2001-06-01');

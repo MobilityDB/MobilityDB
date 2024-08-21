@@ -75,7 +75,8 @@ call_recv(meosType type, StringInfo buf)
 
   Oid typid = type_oid(type);
   if (typid == 0)
-    elog(ERROR, "Unknown type when calling receive function: %d", type);
+    elog(ERROR, "Unknown type when calling receive function: %s",
+      meostype_name(type));
   Oid recvfunc;
   Oid basetypid;
   FmgrInfo recvfuncinfo;
@@ -99,7 +100,8 @@ call_send(meosType type, Datum value)
 
   Oid typid = type_oid(type);
   if (typid == 0)
-    elog(ERROR, "Unknown type when calling send function: %d", type);
+    elog(ERROR, "Unknown type when calling send function: %s",
+      meostype_name(type));
   Oid sendfunc;
   bool isvarlena;
   FmgrInfo sendfuncinfo;

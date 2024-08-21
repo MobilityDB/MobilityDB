@@ -69,13 +69,10 @@
 bool
 ensure_not_null(void *ptr)
 {
-  if (ptr == NULL)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG,
-      "Null pointer not allowed");
-    return false;
-  }
-  return true;
+  if (ptr)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+  return false;
 }
 
 /**
@@ -84,13 +81,11 @@ ensure_not_null(void *ptr)
 bool
 ensure_one_not_null(void *ptr1, void *ptr2)
 {
-  if (ptr1 == NULL && ptr2 == NULL)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG,
-      "At least one pointer must be not null");
-    return false;
-  }
-  return true;
+  if (ptr1 || ptr2)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG,
+    "At least one pointer must be not null");
+  return false;
 }
 
 /**
@@ -99,13 +94,11 @@ ensure_one_not_null(void *ptr1, void *ptr2)
 bool
 ensure_one_true(bool hasshift, bool haswidth)
 {
-  if (! hasshift && ! haswidth)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG,
-      "At least one of the arguments shift or width must be given");
-    return false;
-  }
-  return true;
+  if (hasshift || haswidth)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG,
+    "At least one of the arguments shift or width must be given");
+  return false;
 }
 
 /**
@@ -149,13 +142,11 @@ ensure_same_interp(const Temporal *temp1, const Temporal *temp2)
 {
   interpType interp1 = MEOS_FLAGS_GET_INTERP(temp1->flags);
   interpType interp2 = MEOS_FLAGS_GET_INTERP(temp2->flags);
-  if (interp1 != interp2)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The temporal values must have the same interpolation");
-    return false;
-  }
-  return true;
+  if (interp1 == interp2)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The temporal values must have the same interpolation");
+  return false;
 }
 
 /**
@@ -183,13 +174,11 @@ ensure_same_continuous_interp(int16 flags1, int16 flags2)
 bool
 ensure_not_discrete_interp(int16 flags)
 {
-  if (MEOS_FLAGS_DISCRETE_INTERP(flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The temporal value cannot have discrete interpolation");
-    return false;
-  }
-  return true;
+  if (! MEOS_FLAGS_DISCRETE_INTERP(flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The temporal value cannot have discrete interpolation");
+  return false;
 }
 #endif /* not used */
 
@@ -199,13 +188,11 @@ ensure_not_discrete_interp(int16 flags)
 bool
 ensure_linear_interp(int16 flags)
 {
-  if (! MEOS_FLAGS_LINEAR_INTERP(flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The temporal value must have linear interpolation");
-    return false;
-  }
-  return true;
+  if (MEOS_FLAGS_LINEAR_INTERP(flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The temporal value must have linear interpolation");
+  return false;
 }
 
 /**
@@ -214,13 +201,11 @@ ensure_linear_interp(int16 flags)
 bool
 ensure_nonlinear_interp(int16 flags)
 {
-  if (MEOS_FLAGS_LINEAR_INTERP(flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The temporal value cannot have linear interpolation");
-    return false;
-  }
-  return true;
+  if (! MEOS_FLAGS_LINEAR_INTERP(flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The temporal value cannot have linear interpolation");
+  return false;
 }
 
 /**
@@ -248,14 +233,12 @@ ensure_common_dimension(int16 flags1, int16 flags2)
 bool
 ensure_temporal_isof_basetype(const Temporal *temp, meosType basetype)
 {
-  if (temptype_basetype(temp->temptype) != basetype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Operation on mixed temporal type and base type: %s, %s",
-      meostype_name(temp->temptype), meostype_name(basetype));
-    return false;
-  }
-  return true;
+  if (temptype_basetype(temp->temptype) == basetype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Operation on mixed temporal type and base type: %s, %s",
+    meostype_name(temp->temptype), meostype_name(basetype));
+  return false;
 }
 
 /**
@@ -264,13 +247,11 @@ ensure_temporal_isof_basetype(const Temporal *temp, meosType basetype)
 bool
 ensure_temporal_isof_type(const Temporal *temp, meosType temptype)
 {
-  if (temp->temptype != temptype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The temporal value must be of type %s", meostype_name(temptype));
-    return false;
-  }
-  return true;
+  if (temp->temptype == temptype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The temporal value must be of type %s", meostype_name(temptype));
+  return false;
 }
 
 /**
@@ -280,14 +261,12 @@ ensure_temporal_isof_type(const Temporal *temp, meosType temptype)
 bool
 ensure_same_temporal_type(const Temporal *temp1, const Temporal *temp2)
 {
-  if (temp1->temptype != temp2->temptype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Operation on mixed temporal types: %s and %s",
-      meostype_name(temp1->temptype), meostype_name(temp2->temptype));
-    return false;
-  }
-  return true;
+  if (temp1->temptype == temp2->temptype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Operation on mixed temporal types: %s and %s",
+    meostype_name(temp1->temptype), meostype_name(temp2->temptype));
+  return false;
 }
 
 /**
@@ -296,13 +275,11 @@ ensure_same_temporal_type(const Temporal *temp1, const Temporal *temp2)
 bool
 ensure_temporal_isof_subtype(const Temporal *temp, tempSubtype subtype)
 {
-  if (temp->subtype != subtype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The temporal value must be of subtype %s", tempsubtype_name(subtype));
-    return false;
-  }
-  return true;
+  if (temp->subtype == subtype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The temporal value must be of subtype %s", tempsubtype_name(subtype));
+  return false;
 }
 
 #if MEOS
@@ -314,14 +291,12 @@ ensure_temporal_isof_subtype(const Temporal *temp, tempSubtype subtype)
 bool
 ensure_valid_tnumber_span(const Temporal *temp, const Span *s)
 {
-  if (temptype_basetype(temp->temptype) != s->basetype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Operation on mixed temporal number type and span type: %s, %s",
-      meostype_name(temp->temptype), meostype_name(s->spantype));
-    return false;
-  }
-  return true;
+  if (temptype_basetype(temp->temptype) == s->basetype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Operation on mixed temporal number type and span type: %s, %s",
+    meostype_name(temp->temptype), meostype_name(s->spantype));
+  return false;
 }
 
 /**
@@ -332,14 +307,12 @@ ensure_valid_tnumber_span(const Temporal *temp, const Span *s)
 bool
 ensure_valid_tnumber_spanset(const Temporal *temp, const SpanSet *ss)
 {
-  if (temptype_basetype(temp->temptype) != ss->basetype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Operation on mixed temporal number type and span type: %s, %s",
-      meostype_name(temp->temptype), meostype_name(ss->spantype));
-    return false;
-  }
-  return true;
+  if (temptype_basetype(temp->temptype) == ss->basetype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Operation on mixed temporal number type and span type: %s, %s",
+    meostype_name(temp->temptype), meostype_name(ss->spantype));
+  return false;
 }
 #endif /* MEOS */
 
@@ -371,13 +344,11 @@ ensure_valid_tnumber_tbox(const Temporal *temp, const TBox *box)
 bool
 ensure_not_negative(int i)
 {
-  if (i < 0)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The value cannot be negative: %d", i);
-    return false;
-  }
-  return true;
+  if (i >= 0)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The value cannot be negative: %d", i);
+  return false;
 }
 
 /**
@@ -386,13 +357,11 @@ ensure_not_negative(int i)
 bool
 ensure_positive(int i)
 {
-  if (i <= 0)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The value must be strictly positive: %d", i);
-    return false;
-  }
-  return true;
+  if (i >= 0)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The value must be strictly positive: %d", i);
+  return false;
 }
 
 #if 0 /* not used */
@@ -402,14 +371,12 @@ ensure_positive(int i)
 bool
 ensure_less_equal(int i, int j)
 {
-  if (i > j)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The first value must be less or equal than the second one: %d, %d",
-      i, j);
-    return false;
-  }
-  return true;
+  if (i <= j)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The first value must be less or equal than the second one: %d, %d",
+    i, j);
+  return false;
 }
 #endif /* not used */
 
@@ -436,22 +403,20 @@ not_negative_datum(Datum size, meosType basetype)
 bool
 ensure_not_negative_datum(Datum size, meosType basetype)
 {
-  if (! not_negative_datum(size, basetype))
-  {
-    char str[256];
-    assert(basetype == T_INT4 || basetype == T_FLOAT8 ||
-      basetype == T_TIMESTAMPTZ);
-    if (basetype == T_INT4)
-      snprintf(str, sizeof(str), "%d", DatumGetInt32(size));
-    else if (basetype == T_FLOAT8)
-      snprintf(str, sizeof(str), "%f", DatumGetFloat8(size));
-    else /* basetype == T_TIMESTAMPTZ */
-      snprintf(str, sizeof(str), INT64_FORMAT, DatumGetInt64(size));
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The value cannot be negative: %s", str);
-    return false;
-  }
-  return true;
+  if (not_negative_datum(size, basetype))
+    return true;
+  char str[256];
+  assert(basetype == T_INT4 || basetype == T_FLOAT8 ||
+    basetype == T_TIMESTAMPTZ);
+  if (basetype == T_INT4)
+    snprintf(str, sizeof(str), "%d", DatumGetInt32(size));
+  else if (basetype == T_FLOAT8)
+    snprintf(str, sizeof(str), "%f", DatumGetFloat8(size));
+  else /* basetype == T_TIMESTAMPTZ */
+    snprintf(str, sizeof(str), INT64_FORMAT, DatumGetInt64(size));
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The value cannot be negative: %s", str);
+  return false;
 }
 
 /**
@@ -483,24 +448,22 @@ positive_datum(Datum size, meosType basetype)
 bool
 ensure_positive_datum(Datum size, meosType basetype)
 {
-  if (! positive_datum(size, basetype))
-  {
-    char str[256];
-    if (basetype == T_INT4)
-      snprintf(str, sizeof(str), "%d", DatumGetInt32(size));
-    else if (basetype == T_FLOAT8)
-      snprintf(str, sizeof(str), "%f", DatumGetFloat8(size));
+  if (positive_datum(size, basetype))
+    return true;
+  char str[256];
+  if (basetype == T_INT4)
+    snprintf(str, sizeof(str), "%d", DatumGetInt32(size));
+  else if (basetype == T_FLOAT8)
+    snprintf(str, sizeof(str), "%f", DatumGetFloat8(size));
 #if 0 /* not used */
-    else if (basetype == T_INT8)
-      snprintf(str, sizeof(str), "%ld", DatumGetInt64(size));
-    else /* basetype == T_TIMESTAMPTZ */
-      snprintf(str, sizeof(str), INT64_FORMAT, DatumGetInt64(size));
+  else if (basetype == T_INT8)
+    snprintf(str, sizeof(str), "%ld", DatumGetInt64(size));
+  else /* basetype == T_TIMESTAMPTZ */
+    snprintf(str, sizeof(str), INT64_FORMAT, DatumGetInt64(size));
 #endif /* not used */
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The value must be strictly positive: %s", str);
-    return false;
-  }
-  return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The value must be strictly positive: %s", str);
+  return false;
 }
 
 /**
@@ -526,6 +489,7 @@ ensure_valid_duration(const Interval *duration)
 {
   if (valid_duration(duration))
     return true;
+
   char *str = pg_interval_out(duration);
   if (duration->month != 0)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
