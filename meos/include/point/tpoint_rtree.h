@@ -46,8 +46,8 @@
 #define MAXITEMS 64
 #define MINITEMS_PERCENTAGE 10
 #define MINITEMS ((MAXITEMS) * (MINITEMS_PERCENTAGE) / 100 + 1)
-#define LEAF true
-#define BRANCH false
+#define RTREE_INNER_NODE_NO true
+#define RTREE_INNER_NODE false
 
 /*****************************************************************************/
 

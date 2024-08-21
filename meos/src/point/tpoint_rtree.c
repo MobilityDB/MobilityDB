@@ -263,7 +263,7 @@ static void
 node_move_box_at_index_into(RTreeNode * from, int index, RTreeNode * into) {
   into -> boxes[into -> count] = from -> boxes[index];
   from -> boxes[index] = from -> boxes[from -> count - 1];
-  if (from -> kind == LEAF) {
+  if (from -> kind == RTREE_INNER_NODE_NO) {
     into -> ids[into -> count] = from -> ids[index];
     from -> ids[index] = from -> ids[from -> count - 1];
   } else {
@@ -288,7 +288,7 @@ node_swap(RTreeNode * node, int i, int j) {
   STBox tmp = node -> boxes[i];
   node -> boxes[i] = node -> boxes[j];
   node -> boxes[j] = tmp;
-  if (node -> kind == LEAF) {
+  if (node -> kind == RTREE_INNER_NODE_NO) {
     int tmp = node -> ids[i];
     node -> ids[i] = node -> ids[j];
     node -> ids[j] = tmp;
@@ -388,7 +388,7 @@ node_split(RTree * rtree, RTreeNode * node, STBox * box, RTreeNode ** right_out)
       node_move_box_at_index_into(node, node -> count - 1, right);
     } while (right -> count < MINITEMS);
   }
-  if (node -> kind == BRANCH) {
+  if (node -> kind == RTREE_INNER_NODE) {
     node_sort_axis(rtree, node, 0, false);
     node_sort_axis(rtree, right, 0, false);
   }
@@ -413,7 +413,7 @@ static void
 node_insert(RTree * rtree, STBox * old_box, RTreeNode * node,
   STBox * new_box, int id, bool * split) {
   //TODO deprecate old_box
-  if (node -> kind == LEAF) {
+  if (node -> kind == RTREE_INNER_NODE_NO) {
     if (node -> count == MAXITEMS) {
       * split = true;
       return;
@@ -470,7 +470,7 @@ void add_answer(int id, int ** ids, int * count) {
  */
 static void
 node_free(RTreeNode * node) {
-  if (node -> kind == BRANCH) {
+  if (node -> kind == RTREE_INNER_NODE) {
     for (int i = 0; i < node -> count; ++i) {
       node_free(node -> nodes[i]);
     }
@@ -487,7 +487,7 @@ node_free(RTreeNode * node) {
  */
 void node_search(const RTreeNode * node,
   const STBox * query, int ** ids, int * count) {
-  if (node -> kind == LEAF) {
+  if (node -> kind == RTREE_INNER_NODE_NO) {
     for (int i = 0; i < node -> count; ++i) {
       if (overlaps_stbox_stbox(query, & node -> boxes[i])) {
         add_answer(node -> ids[i], ids, count);
@@ -505,9 +505,12 @@ void node_search(const RTreeNode * node,
 
 static bool
 rtree_set_dims(RTree* rtree,const STBox* box){
-  if(rtree->basetype == T_STBOX){
-    rtree->dims = 3 +  MEOS_FLAGS_GET_Z(box->flags);
-    return true;
+  switch(rtree->basetype){
+    case T_STBOX:
+      rtree->dims = 3 +  MEOS_FLAGS_GET_Z(box->flags);
+      return true;
+    default:
+      break;
   }
   return false;
 }
@@ -537,7 +540,7 @@ void
 rtree_insert(RTree * rtree, STBox * box, int64 id) {
   while (1) {
     if (!rtree -> root) {
-      RTreeNode * new_root = node_new(LEAF);
+      RTreeNode * new_root = node_new(RTREE_INNER_NODE_NO);
       rtree_set_dims(rtree, box);
       rtree -> root = new_root;
       rtree -> box = *box;
@@ -549,7 +552,7 @@ rtree_insert(RTree * rtree, STBox * box, int64 id) {
       rtree -> count++;
       return;
     }
-    RTreeNode * new_root = node_new(BRANCH);
+    RTreeNode * new_root = node_new(RTREE_INNER_NODE);
     RTreeNode * right;
     node_split(rtree, rtree -> root, & rtree -> box, & right);
 
