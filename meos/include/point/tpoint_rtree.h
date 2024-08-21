@@ -68,6 +68,7 @@ typedef struct RTreeNode{
     struct RTreeNode * nodes[MAXITEMS];
     int64 ids[MAXITEMS];
   };
+  // TODO: Find a way to include box and span in the definition.
   STBox boxes[MAXITEMS];
 } RTreeNode;
 

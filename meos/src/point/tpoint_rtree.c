@@ -184,8 +184,8 @@ node_choose_least_enlargement(const RTreeNode * node,
   int result = 0;
   double previous_enlargement = INFINITY;
   for (int i = 0; i < node -> count; ++i) {
-    double unioned_area = box_unioned_area(& node -> boxes[i], box, rtree);
-    double area = box_area(& node -> boxes[i], rtree);
+    double unioned_area = box_unioned_area( & node -> boxes[i], box, rtree);
+    double area = box_area( & node -> boxes[i], rtree);
     double enlarge_area = unioned_area - area;
     if (enlarge_area < previous_enlargement) {
       result = i;
@@ -215,7 +215,7 @@ node_choose(RTree * rtree,
     const RTreeNode * node) {
   // Check if you can add without expanding any rectangle.
   for (int i = 0; i < node -> count; ++i) {
-    if (contains_stbox_stbox(& rtree -> box, box)) {
+    if (contains_stbox_stbox( & rtree -> box, box)) {
       return i;
     }
   }
@@ -238,7 +238,7 @@ static STBox *
     STBox * result = palloc(sizeof(STBox));
     memcpy(result, & node -> boxes[0], sizeof(STBox));
     for (int i = 0; i < node -> count; ++i) {
-      stbox_expand(& node -> boxes[i], result);
+      stbox_expand( & node -> boxes[i], result);
     }
     return result;
   }
@@ -336,7 +336,7 @@ node_qsort(const RTree * rtree, RTreeNode * node, int index, bool upper, int s, 
   int pivot = no_box / 2;
   node_swap(node, s + pivot, s + right);
   for (int i = 0; i < no_box; ++i) {
-    if (rtree -> get_axis(& node -> boxes[right + s], index, upper) > rtree -> get_axis(& node -> boxes[s + i], index, upper)) {
+    if (rtree -> get_axis( & node -> boxes[right + s], index, upper) > rtree -> get_axis( & node -> boxes[s + i], index, upper)) {
       node_swap(node, s + i, s + left);
       left++;
     }
@@ -378,8 +378,8 @@ node_split(RTree * rtree, RTreeNode * node, STBox * box, RTreeNode ** right_out)
   int largest_axis = stbox_largest_axis(box, rtree);
   RTreeNode * right = node_new(node -> kind);
   for (int i = 0; i < node -> count; ++i) {
-    double min_dist = rtree -> get_axis(& node -> boxes[i], largest_axis, false) - rtree -> get_axis(box, largest_axis, false);
-    double max_dist = rtree -> get_axis(box, largest_axis, true) - rtree -> get_axis(& node -> boxes[i], largest_axis, true);
+    double min_dist = rtree -> get_axis( & node -> boxes[i], largest_axis, false) - rtree -> get_axis(box, largest_axis, false);
+    double max_dist = rtree -> get_axis(box, largest_axis, true) - rtree -> get_axis( & node -> boxes[i], largest_axis, true);
     // move to right
     if (max_dist < min_dist) {
       node_move_box_at_index_into(node, i, right);
@@ -433,7 +433,7 @@ node_insert(RTree * rtree, STBox * old_box, RTreeNode * node,
       return;
     }
     int index = node -> count;
-    node -> boxes[index] = *new_box;
+    node -> boxes[index] = * new_box;
     node -> ids[index] = id;
     node -> count++;
     * split = false;
@@ -452,14 +452,13 @@ node_insert(RTree * rtree, STBox * old_box, RTreeNode * node,
   }
   RTreeNode * right;
   node_split(rtree, node -> nodes[insertion_node], & node -> boxes[insertion_node], & right);
-  node -> boxes[insertion_node] = *node_box_calculate(node -> nodes[insertion_node]);
-  node -> boxes[node -> count] = *node_box_calculate(right);
+  node -> boxes[insertion_node] = * node_box_calculate(node -> nodes[insertion_node]);
+  node -> boxes[node -> count] = * node_box_calculate(right);
   node -> nodes[node -> count] = right;;
   node -> count++;
   return node_insert(rtree, old_box, node, new_box, id, split);
 
 }
-
 
 /**
  * @brief Checks if a number bigger than 0 is a power of two or not. 
@@ -468,8 +467,8 @@ node_insert(RTree * rtree, STBox * old_box, RTreeNode * node,
  * @returns True if `n` is a power of two, False otherwise.
  */
 static bool
-is_power_of_two(const int n){
-  return ( n & ( n - 1)) == 0;
+is_power_of_two(const int n) {
+  return (n & (n - 1)) == 0;
 }
 
 /**
@@ -483,9 +482,9 @@ add_answer(const int id, int ** ids, int * count) {
   /**
    * Every power of two that exceeds the size of the array must  
    * be resized to double the current size.  
-  */
-  if ( * count >= SEARCH_ARRAY_STARTING_SIZE  && is_power_of_two(*count)) {
-    * ids = repalloc( * ids, sizeof(int) * (*count) * 2);
+   */
+  if ( * count >= SEARCH_ARRAY_STARTING_SIZE && is_power_of_two( * count)) {
+    * ids = repalloc( * ids, sizeof(int) * ( * count) * 2);
   }
   ( * ids)[ * count] = id;
   ( * count) ++;
@@ -520,9 +519,9 @@ void node_search(const RTreeNode * node,
   const STBox * query, int ** ids, int * count) {
   for (int i = 0; i < node -> count; ++i) {
     if (overlaps_stbox_stbox(query, & node -> boxes[i])) {
-      if (node -> kind == RTREE_INNER_NODE_NO){
+      if (node -> kind == RTREE_INNER_NODE_NO) {
         add_answer(node -> ids[i], ids, count);
-      }else{
+      } else {
         node_search(node -> nodes[i], query, ids, count);
       }
     }
@@ -537,13 +536,14 @@ void node_search(const RTreeNode * node,
  * @return `true` if the dimensions were successfully set; `false` otherwise.
  */
 static bool
-rtree_set_dims(RTree* rtree,const STBox* box){
-  switch(rtree->basetype){
-    case T_STBOX:
-      rtree->dims = 3 +  MEOS_FLAGS_GET_Z(box->flags);
-      return true;
-    default:
-      break;
+rtree_set_dims(RTree * rtree,
+  const STBox * box) {
+  switch (rtree -> basetype) {
+  case T_STBOX:
+    rtree -> dims = 3 + MEOS_FLAGS_GET_Z(box -> flags);
+    return true;
+  default:
+    break;
   }
   return false;
 }
@@ -554,14 +554,17 @@ rtree_set_dims(RTree* rtree,const STBox* box){
  * @param[in] rtree The R-tree structure for which the function pointer is to be set.
  * @return `true` if the function pointer was successfully set; `false` otherwise.
  */
-static bool 
-set_rtree_functions(RTree* rtree ){
-  switch(rtree->basetype){
-    case T_STBOX:
-      rtree->get_axis = get_axis_stbox;
-      return true;
-    default:
-      break;
+static bool
+set_rtree_functions(RTree * rtree) {
+  switch (rtree -> basetype) {
+  case T_STBOX:
+    /** TODO: This should be deprecated when we start using picksplit since this function
+     * is only used in the splitting phase.
+     */
+    rtree -> get_axis = get_axis_stbox;
+    return true;
+  default:
+    break;
   }
   return false;
 }
@@ -582,7 +585,7 @@ rtree_insert(RTree * rtree, STBox * box, int64 id) {
       RTreeNode * new_root = node_new(RTREE_INNER_NODE_NO);
       rtree_set_dims(rtree, box);
       rtree -> root = new_root;
-      rtree -> box = *box;
+      rtree -> box = * box;
     }
     bool split = false;
     node_insert(rtree, & rtree -> box, rtree -> root, box, id, & split);
@@ -595,8 +598,8 @@ rtree_insert(RTree * rtree, STBox * box, int64 id) {
     RTreeNode * right;
     node_split(rtree, rtree -> root, & rtree -> box, & right);
 
-    new_root -> boxes[0] = *node_box_calculate(rtree -> root);
-    new_root -> boxes[1] = *node_box_calculate(right);
+    new_root -> boxes[0] = * node_box_calculate(rtree -> root);
+    new_root -> boxes[1] = * node_box_calculate(right);
     new_root -> nodes[0] = rtree -> root;
     new_root -> nodes[1] = right;
     rtree -> root = new_root;
@@ -620,7 +623,7 @@ RTree *
   rtree_create(int basetype) {
     RTree * rtree = palloc0(sizeof(RTree));
     rtree -> basetype = basetype;
-    if (!set_rtree_functions(rtree)){
+    if (!set_rtree_functions(rtree)) {
       pfree(rtree);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Unsupported base type for RTree %d", basetype);
       return NULL;
@@ -643,7 +646,7 @@ int *
     int * ids = palloc(sizeof(int) * SEARCH_ARRAY_STARTING_SIZE);
     * count = 0;
     if (rtree -> root) {
-      node_search(rtree -> root, query, &ids, count);
+      node_search(rtree -> root, query, & ids, count);
     }
     return ids;
   }
