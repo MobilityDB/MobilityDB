@@ -46,8 +46,23 @@
 
 #include "point/tpoint_rtree.h"
 
-
-double get_axis_stbox(const STBox * box, int axis, bool upper) {
+/**
+ * @brief Retrieves the value of a specific axis from an STBox.
+ *
+ * @details Returns the coordinate or temporal value of a specified axis
+ * from the stbox. The axis is determined by the `axis` parameter,
+ * and whether the value is from the lower or upper bound of that axis is specified
+ * by the `upper` parameter. The function supports the X, Y, Z spatial axes and 
+ * the temporal axis.
+ *
+ * @param[in] box The STBox structure from which the axis value is to be retrieved.
+ * @param[in] axis The axis to retrieve (0 = X, 1 = Y, 2 = time, 3 = Z).
+ * @param[in] upper A boolean indicating whether to retrieve the upper (`true`) 
+ *                  or lower (`false`) bound of the specified axis.
+ * @return The value of the specified axis and bound as a double. Returns 0.0 if the axis is invalid.
+ */
+static double
+get_axis_stbox(const STBox * box, int axis, bool upper) {
   if (axis == 0 && upper) {
     return box -> xmax;
   }
@@ -77,9 +92,8 @@ double get_axis_stbox(const STBox * box, int axis, bool upper) {
 
 /**
  * @brief Creates a new RTree node.
- * @details This function initializes a new RTree node, allocating memory for 
- * storing bounding boxes (STBox) and child nodes.
- * @param[in] kind Boolean flag indicating the type of node (e.g., leaf or branch).
+ * @details This function initializes a new RTree node.
+ * @param[in] kind Boolean flag indicating the type of node (e.g.,inner node or not inner node).
  * @return Pointer to the newly created RTreeNode structure.
  */
 static RTreeNode *
@@ -502,7 +516,13 @@ void node_search(const RTreeNode * node,
   }
 }
 
-
+/**
+ * @brief Sets the dimensions of an R-tree based on the meostype of the RTree
+ * 
+ * @param[in] rtree The R-tree structure whose dimensions are to be set.
+ * @param[in] box The spatial bounding box (STBox) from which to derive the dimensions.
+ * @return `true` if the dimensions were successfully set; `false` otherwise.
+ */
 static bool
 rtree_set_dims(RTree* rtree,const STBox* box){
   switch(rtree->basetype){
@@ -515,6 +535,12 @@ rtree_set_dims(RTree* rtree,const STBox* box){
   return false;
 }
 
+/**
+ * @brief Sets the appropriate get axis function for the R-tree based on its meostype.
+ * 
+ * @param[in] rtree The R-tree structure for which the function pointer is to be set.
+ * @return `true` if the function pointer was successfully set; `false` otherwise.
+ */
 static bool 
 set_rtree_functions(RTree* rtree ){
   switch(rtree->basetype){
