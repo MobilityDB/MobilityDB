@@ -226,21 +226,18 @@ node_choose(RTree * rtree,
 
 /**
  * @brief Calculates the bounding box that encloses all STBoxes in an RTree node.
- * @details This function computes a new STBox that represents the minimal bounding box 
- * enclosing all STBoxes within a given RTree node.
+ * @details This function takes the destination STBox and change it to the 
+ * minimal bounding box enclosing all STBoxes within a given RTree node.
  * @param[in] node Pointer to the RTreeNode structure containing the STBoxes.
- * @return A pointer to the newly allocated STBox structure that represents the bounding 
- * box enclosing all STBoxes.
+ * @param[out] box STBox that will be expanded
  */
-static STBox *
-  node_box_calculate(const RTreeNode * node) {
-    STBox * result = palloc(sizeof(STBox));
-    memcpy(result, & node -> boxes[0], sizeof(STBox));
-    for (int i = 0; i < node -> count; ++i) {
-      stbox_expand( & node -> boxes[i], result);
-    }
-    return result;
+static void
+node_box_calculate(const RTreeNode * node, STBox* box) {
+  memcpy(box, & node -> boxes[0], sizeof(STBox));
+  for (int i = 1; i < node -> count; ++i) {
+    stbox_expand( & node -> boxes[i], box);
   }
+}
 
 /**
  * @brief Identifies the axis with the largest length in an STBox.
@@ -450,8 +447,8 @@ node_insert(RTree * rtree, STBox * old_box, RTreeNode * node,
   }
   RTreeNode * right;
   node_split(rtree, node -> nodes[insertion_node], & node -> boxes[insertion_node], & right);
-  node -> boxes[insertion_node] = * node_box_calculate(node -> nodes[insertion_node]);
-  node -> boxes[node -> count] = * node_box_calculate(right);
+  node_box_calculate(node -> nodes[insertion_node], & node -> boxes[insertion_node]);
+  node_box_calculate(right, & node -> boxes[node -> count]);
   node -> nodes[node -> count] = right;;
   node -> count++;
   return node_insert(rtree, old_box, node, new_box, id, split);
@@ -596,8 +593,8 @@ rtree_insert(RTree * rtree, STBox * box, int64 id) {
     RTreeNode * right;
     node_split(rtree, rtree -> root, & rtree -> box, & right);
 
-    new_root -> boxes[0] = * node_box_calculate(rtree -> root);
-    new_root -> boxes[1] = * node_box_calculate(right);
+    node_box_calculate(rtree -> root, & new_root -> boxes[0]);
+    node_box_calculate(right, & new_root -> boxes[1]);
     new_root -> nodes[0] = rtree -> root;
     new_root -> nodes[1] = right;
     rtree -> root = new_root;
