@@ -134,7 +134,7 @@ get_axis_length(const RTree * rtree,
  * @return The computed area or volume of the STBox.
  */
 static double
-box_area(const STBox * box, RTree * rtree) {
+box_area(const STBox * box,const RTree * rtree) {
   double result = 1.0;
   for (int i = 0; i < rtree -> dims; ++i) {
     result *= get_axis_length(rtree, box, i);
@@ -157,14 +157,12 @@ box_area(const STBox * box, RTree * rtree) {
  */
 static double
 box_unioned_area(const STBox * box,
-  const STBox * other_box, RTree * rtree) {
-  STBox * union_box = palloc(sizeof(STBox));
-  memcpy(union_box, box, sizeof(STBox));
-  stbox_expand(other_box, union_box);
+  const STBox * other_box,const RTree * rtree) {
+  STBox union_box;
+  memcpy(&union_box, box, sizeof(STBox));
+  stbox_expand(other_box, &union_box);
 
-  double answer = box_area(union_box, rtree);
-  free(union_box);
-  return answer;
+  return box_area(&union_box, rtree);
 }
 
 /**
