@@ -1498,11 +1498,11 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueBins"><varname>valueBins</varname>, <varname>timeBins</varname></link>: Return a set of bins that cover a value or time span with bins of the same width or duration</para>
+						<para><link linkend="bins"><varname>bins</varname></link>: Return a set of bins that cover a value or time span with bins of the same width or duration</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="getValueBin"><varname>getValueBin</varname>, <varname>getTimeBin</varname></link>: Return the bin that contains a number or timestamp</para>
+						<para><link linkend="getBin"><varname>getBin</varname></link>: Return the bin that contains a number or a timestamp</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1520,11 +1520,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="getValueTimeTile"><varname>getValueTile</varname>, <varname>getTimeTileTbox</varname>, <varname>getValueTimeTile</varname></link>: Return the temporal tile that covers a value and/or a timestamp</para>
+						<para><link linkend="getValueTimeTile"><varname>getValueTile</varname>, <varname>getTboxTimeTile</varname>, <varname>getValueTimeTile</varname></link>: Return the temporal tile that covers a value and/or a timestamp</para>
 						</listitem>
 
 					<listitem>
-						<para><link linkend="getSpaceTimeTile"><varname>getSpaceTile</varname>, <varname>getTimeTileStbox</varname>, <varname>getSpaceTimeTile</varname></link>: Return the spatiotemporal tile that covers a point and/or a timestamp</para>
+						<para><link linkend="getSpaceTimeTile"><varname>getSpaceTile</varname>, <varname>getStboxTimeTile</varname>, <varname>getSpaceTimeTile</varname></link>: Return the spatiotemporal tile that covers a point and/or a timestamp</para>
 						</listitem>
 				</itemizedlist>
 			</sect3>

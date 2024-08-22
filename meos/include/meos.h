@@ -1741,7 +1741,7 @@ extern TBox *tnumber_tboxes(const Temporal *temp, int *count);
 extern TBox *tnumber_split_each_n_tboxes(const Temporal *temp, int elem_count, int *count);
 extern TBox *tnumber_split_n_tboxes(const Temporal *temp, int box_count, int *count);
 extern STBox *tpoint_stboxes(const Temporal *temp, int *count);
-extern STBox *tpoint_space_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, int *count); 
+extern STBox *tpoint_space_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, int *count);
 extern STBox *tpoint_space_time_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, int *count);
 extern STBox *tpoint_split_each_n_stboxes(const Temporal *temp, int elem_count, int *count);
 extern STBox *tpoint_split_n_stboxes(const Temporal *temp, int box_count, int *count);
@@ -2121,17 +2121,32 @@ extern double temporal_hausdorff_distance(const Temporal *temp1, const Temporal 
 
 /*****************************************************************************/
 
+/* Tile functions for span and spanset types */
+
+extern int64 bigint_get_bin(int64 value, int64 vsize, int64 vorigin);
+extern Span *bigintspan_bins(const Span *s, int64 vsize, int64 vorigin, int *count);
+extern Span *bigintspanset_bins(const SpanSet *ss, int64 vsize, int64 vorigin, int *count);
+extern Span *bigintspanset_value_spans(const SpanSet *ss, int64 vsize, int64 vorigin, int *count);
+extern DateADT date_get_bin(DateADT d, const Interval *duration, DateADT torigin);
+extern Span *datespan_bins(const Span *s, const Interval *duration, DateADT torigin, int *count);
+extern Span *datespanset_bins(const SpanSet *ss, const Interval *duration, DateADT torigin, int *count);
+extern Span *datespanset_time_spans(const SpanSet *ss, const Interval *duration, DateADT torigin, int *count);
+extern double float_get_bin(double value, double vsize, double vorigin);
+extern Span *floatspan_bins(const Span *s, double vsize, double vorigin, int *count);
+extern Span *floatspanset_bins(const SpanSet *ss, double vsize, double vorigin,
+  int *count);
+extern Span *floatspanset_value_spans(const SpanSet *ss, double vsize, double vorigin, int *count);
+extern int int_get_bin(int value, int vsize, int vorigin);
+extern Span *intspan_bins(const Span *s, int vsize, int vorigin, int *count);
+extern Span *intspanset_bins(const SpanSet *ss, int vsize, int vorigin, int *count);
+extern Span *intspanset_value_spans(const SpanSet *ss, int vsize, int vorigin, int *count);
+extern TimestampTz timestamptz_get_bin(TimestampTz t, const Interval *duration, TimestampTz torigin);
+extern Span *tstzspan_bins(const Span *s, const Interval *duration, TimestampTz origin, int *count);
+extern Span *tstzspanset_bins(const SpanSet *ss, const Interval *duration, TimestampTz torigin, int *count);
+extern Span *tstzspanset_time_spans(const SpanSet *ss, const Interval *duration, TimestampTz torigin, int *count);
+
 /* Tile functions for temporal types */
 
-extern DateADT date_get_bin(DateADT d, const Interval *duration, DateADT torigin);
-extern double float_get_bin(double value, double vsize, double vorigin);
-extern Span *floatspan_value_spans(const Span *bounds, double vsize, double vorigin, int *count);
-extern Span *floatspanset_value_spans(const SpanSet *ss, double vsize, double vorigin,
-  int *count);
-extern int int_get_bin(int value, int vsize, int vorigin);
-extern Span *intspan_value_spans(const Span *bounds, int vsize, int vorigin, int *count);
-extern Span *intspanset_value_spans(const SpanSet *ss, int vsize, int vorigin, int *count);
-extern Span *spanset_time_spans(const SpanSet *ss, const Interval *duration, TimestampTz torigin, int *count);
 extern STBox *stbox_get_space_tile(const GSERIALIZED *point, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin);
 extern STBox *stbox_get_space_time_tile(const GSERIALIZED *point, TimestampTz t, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin);
 extern STBox *stbox_get_time_tile(TimestampTz t, const Interval *duration, TimestampTz torigin);
@@ -2162,7 +2177,6 @@ extern TBox *tintbox_value_time_tiles(const TBox *box, int xsize, const Interval
 extern Temporal **tpoint_space_split(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_bins, int *count);
 extern Temporal **tpoint_space_time_split(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_bins, TimestampTz **time_bins, int *count);
 extern Temporal **tpoint_time_split(const Temporal *temp, const Interval *duration, TimestampTz torigin, bool border_inc, TimestampTz **time_bins, int *count);
-extern Span *tstzspan_time_spans(const Span *bounds, const Interval *duration, TimestampTz origin, int *count);
 
 /*****************************************************************************/
 

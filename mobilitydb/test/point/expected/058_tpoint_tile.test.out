@@ -60,6 +60,18 @@ SELECT getSpaceTile(geometry 'Point(3 3 3)', 2.0);
  STBOX Z((2,2,2),(4,4,4))
 (1 row)
 
+SELECT getStboxTimeTile(timestamptz '2000-01-15', interval '2 days');
+                           getstboxtimetile                            
+-----------------------------------------------------------------------
+ STBOX T([Sat Jan 15 00:00:00 2000 PST, Mon Jan 17 00:00:00 2000 PST))
+(1 row)
+
+SELECT getStboxTimeTile(timestamptz '2000-01-15', interval '2 days', '2020-06-15');
+                           getstboxtimetile                            
+-----------------------------------------------------------------------
+ STBOX T([Thu Jan 13 23:00:00 2000 PST, Sat Jan 15 23:00:00 2000 PST))
+(1 row)
+
 SELECT getSpaceTimeTile(geometry 'Point(3 3)', timestamptz '2000-01-15', 2.0, interval '2 days');
                                    getspacetimetile                                   
 --------------------------------------------------------------------------------------
@@ -130,7 +142,7 @@ SELECT round(timeBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@200
 
 /* Errors */
 SELECT timeBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-10]', interval '2 months', '2000-01-01');
-ERROR:  Interval defined in terms of month, year, century, etc. not supported: 2 mons
+ERROR:  Cannot have month intervals: 2 mons
 SELECT round(spaceTimeBoxes(tgeompoint '[Point(1 1)@2000-01-01, Point(10 10)@2000-01-10]', 2.0, interval '2 days', 'Point(1 1)', '2000-01-01'), 6);
                                                                                                                                                                                                                          round                                                                                                                                                                                                                          
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

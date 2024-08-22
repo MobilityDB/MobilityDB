@@ -43,6 +43,8 @@ SELECT spaceTiles(tgeogpoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]':
 
 SELECT getSpaceTile(geometry 'Point(3 3)', 2.0);
 SELECT getSpaceTile(geometry 'Point(3 3 3)', 2.0);
+SELECT getStboxTimeTile(timestamptz '2000-01-15', interval '2 days');
+SELECT getStboxTimeTile(timestamptz '2000-01-15', interval '2 days', '2020-06-15');
 SELECT getSpaceTimeTile(geometry 'Point(3 3)', timestamptz '2000-01-15', 2.0, interval '2 days');
 SELECT getSpaceTimeTile(geometry 'Point(3 3)', timestamptz '2000-01-15', 2.0, interval '2 days');
 SELECT getSpaceTimeTile(geometry 'Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'Point(1 1 1)', '2020-06-15');

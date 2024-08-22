@@ -343,13 +343,11 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 bool
 ensure_not_geodetic(int16 flags)
 {
-  if (MEOS_FLAGS_GET_GEODETIC(flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Only planar coordinates supported");
-    return false;
-  }
-  return true;
+  if (! MEOS_FLAGS_GET_GEODETIC(flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only planar coordinates supported");
+  return false;
 }
 
 /**
@@ -375,13 +373,11 @@ ensure_same_geodetic(int16 flags1, int16 flags2)
 bool
 ensure_srid_known(int32_t srid)
 {
-  if (srid == SRID_UNKNOWN)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The SRID cannot be unknown");
-    return false;
-  }
-  return true;
+  if (srid != SRID_UNKNOWN)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The SRID cannot be unknown");
+  return false;
 }
 
 /**
@@ -390,13 +386,11 @@ ensure_srid_known(int32_t srid)
 bool
 ensure_same_srid(int32_t srid1, int32_t srid2)
 {
-  if (srid1 != srid2)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed SRID");
-    return false;
-  }
-  return true;
+  if (srid1 == srid2)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on mixed SRID");
+  return false;
 }
 
 /**
@@ -423,13 +417,11 @@ ensure_same_srid_stbox(const STBox *box1, const STBox *box2)
 bool
 ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs)
 {
-  if (box->srid != gserialized_get_srid(gs))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed SRID");
-    return false;
-  }
-  return true;
+  if (box->srid == gserialized_get_srid(gs))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on mixed SRID");
+  return false;
 }
 
 /**
@@ -439,15 +431,13 @@ ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs)
 bool
 ensure_same_dimensionality(int16 flags1, int16 flags2)
 {
-  if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) ||
-      MEOS_FLAGS_GET_Z(flags1) != MEOS_FLAGS_GET_Z(flags2) ||
-      MEOS_FLAGS_GET_T(flags1) != MEOS_FLAGS_GET_T(flags2))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The arguments must be of the same dimensionality");
-    return false;
-  }
-  return true;
+  if (MEOS_FLAGS_GET_X(flags1) == MEOS_FLAGS_GET_X(flags2) &&
+      MEOS_FLAGS_GET_Z(flags1) == MEOS_FLAGS_GET_Z(flags2) &&
+      MEOS_FLAGS_GET_T(flags1) == MEOS_FLAGS_GET_T(flags2))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The arguments must be of the same dimensionality");
+  return false;
 }
 
 /**
@@ -457,10 +447,10 @@ ensure_same_dimensionality(int16 flags1, int16 flags2)
 bool
 same_spatial_dimensionality(int16 flags1, int16 flags2)
 {
-  if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) ||
-      MEOS_FLAGS_GET_Z(flags1) != MEOS_FLAGS_GET_Z(flags2))
-    return false;
-  return true;
+  if (MEOS_FLAGS_GET_X(flags1) == MEOS_FLAGS_GET_X(flags2) &&
+      MEOS_FLAGS_GET_Z(flags1) == MEOS_FLAGS_GET_Z(flags2))
+    return true;
+  return false;
 }
 
 /**
@@ -470,13 +460,11 @@ same_spatial_dimensionality(int16 flags1, int16 flags2)
 bool
 ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
 {
-  if (! same_spatial_dimensionality(flags1, flags2))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed 2D/3D dimensions");
-    return false;
-  }
-  return true;
+  if (same_spatial_dimensionality(flags1, flags2))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on mixed 2D/3D dimensions");
+  return false;
 }
 
 /**
@@ -504,13 +492,11 @@ ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2)
 bool
 ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  if (FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed 2D/3D dimensions");
-    return false;
-  }
-  return true;
+  if (FLAGS_GET_Z(gs1->gflags) == FLAGS_GET_Z(gs2->gflags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on mixed 2D/3D dimensions");
+  return false;
 }
 
 /**
@@ -532,13 +518,11 @@ same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 bool
 ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (! same_dimensionality_tpoint_gs(temp, gs))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed 2D/3D dimensions");
-    return false;
-  }
-  return true;
+  if (same_dimensionality_tpoint_gs(temp, gs))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on mixed 2D/3D dimensions");
+  return false;
 }
 
 /**
@@ -566,13 +550,11 @@ ensure_same_spatial_dimensionality_stbox_gs(const STBox *box, const GSERIALIZED 
 bool
 ensure_has_Z(int16 flags)
 {
-  if (! MEOS_FLAGS_GET_Z(flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The temporal point must have Z dimension");
-    return false;
-  }
-  return true;
+  if (MEOS_FLAGS_GET_Z(flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The temporal point must have Z dimension");
+  return false;
 }
 
 /**
@@ -581,13 +563,11 @@ ensure_has_Z(int16 flags)
 bool
 ensure_has_not_Z(int16 flags)
 {
-  if (MEOS_FLAGS_GET_Z(flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The temporal point cannot have Z dimension");
-    return false;
-  }
-  return true;
+  if (! MEOS_FLAGS_GET_Z(flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The temporal point cannot have Z dimension");
+  return false;
 }
 
 /**
@@ -596,13 +576,11 @@ ensure_has_not_Z(int16 flags)
 bool
 ensure_has_Z_gs(const GSERIALIZED *gs)
 {
-  if (! FLAGS_GET_Z(gs->gflags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The geometry must have Z dimension");
-    return false;
-  }
-  return true;
+  if (FLAGS_GET_Z(gs->gflags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The geometry must have Z dimension");
+  return false;
 }
 
 /**
@@ -611,13 +589,11 @@ ensure_has_Z_gs(const GSERIALIZED *gs)
 bool
 ensure_has_not_Z_gs(const GSERIALIZED *gs)
 {
-  if (FLAGS_GET_Z(gs->gflags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The geometry cannot have Z dimension");
-    return false;
-  }
-  return true;
+  if (! FLAGS_GET_Z(gs->gflags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The geometry cannot have Z dimension");
+  return false;
 }
 
 /**
@@ -626,13 +602,11 @@ ensure_has_not_Z_gs(const GSERIALIZED *gs)
 bool
 ensure_has_M_gs(const GSERIALIZED *gs)
 {
-  if (! FLAGS_GET_M(gs->gflags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Only geometries with M dimension accepted");
-    return false;
-  }
-  return true;
+  if (FLAGS_GET_M(gs->gflags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only geometries with M dimension accepted");
+  return false;
 }
 
 /**
@@ -641,13 +615,11 @@ ensure_has_M_gs(const GSERIALIZED *gs)
 bool
 ensure_has_not_M_gs(const GSERIALIZED *gs)
 {
-  if (FLAGS_GET_M(gs->gflags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Only geometries without M dimension accepted");
-    return false;
-  }
-  return true;
+  if (! FLAGS_GET_M(gs->gflags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only geometries without M dimension accepted");
+  return false;
 }
 
 /**
@@ -656,13 +628,11 @@ ensure_has_not_M_gs(const GSERIALIZED *gs)
 bool
 ensure_point_type(const GSERIALIZED *gs)
 {
-  if (gserialized_get_type(gs) != POINTTYPE)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Only point geometries accepted");
-    return false;
-  }
-  return true;
+  if (gserialized_get_type(gs) == POINTTYPE)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only point geometries accepted");
+  return false;
 }
 
 /**
@@ -671,13 +641,11 @@ ensure_point_type(const GSERIALIZED *gs)
 bool
 ensure_not_empty(const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(gs))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Only non-empty geometries accepted");
-    return false;
-  }
-  return true;
+  if (! gserialized_is_empty(gs))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only non-empty geometries accepted");
+  return false;
 }
 
 /*****************************************************************************/
@@ -733,12 +701,12 @@ ensure_valid_spatial_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 ensure_valid_tpoint_box(const Temporal *temp, const STBox *box)
 {
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tgeo_type(temp->temptype) || ! ensure_has_X_stbox(box) ||
-      ! ensure_same_geodetic(temp->flags, box->flags) ||
-      ! ensure_same_srid(tpoint_srid(temp), stbox_srid(box)))
-    return false;
-  return true;
+  if (ensure_not_null((void *) temp) && ensure_not_null((void *) box) &&
+      ensure_tgeo_type(temp->temptype) && ensure_has_X_stbox(box) &&
+      ensure_same_geodetic(temp->flags, box->flags) &&
+      ensure_same_srid(tpoint_srid(temp), stbox_srid(box)))
+    return true;
+  return false;
 }
 
 /**
@@ -747,12 +715,12 @@ ensure_valid_tpoint_box(const Temporal *temp, const STBox *box)
 bool
 ensure_valid_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_tgeo_type(temp1->temptype) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)))
-    return false;
-  return true;
+  if (ensure_not_null((void *) temp1) && ensure_not_null((void *) temp2) &&
+      ensure_tgeo_type(temp1->temptype) &&
+      ensure_same_temporal_type(temp1, temp2) &&
+      ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)))
+    return true;
+  return false;
 }
 
 /*****************************************************************************

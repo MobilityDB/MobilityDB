@@ -55,11 +55,15 @@
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Span_bins(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_bins);
 /**
+ * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the bins of a span
+ * @sqlfn bins()
  */
 Datum
-Span_spans_ext(FunctionCallInfo fcinfo, bool valuelist)
+Span_bins(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
 
@@ -69,18 +73,25 @@ Span_spans_ext(FunctionCallInfo fcinfo, bool valuelist)
     /* Get input parameters */
     Span *bounds = PG_GETARG_SPAN_P(0);
     Datum size, origin;
-    if (valuelist)
+    assert(numspan_type(bounds->spantype) || timespan_type(bounds->spantype));
+    if (numspan_type(bounds->spantype))
     {
       size = PG_GETARG_DATUM(1);
       origin = PG_GETARG_DATUM(2);
       meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
       ensure_positive_datum(size, basetype);
     }
-    else
+    else if (bounds->spantype == T_DATESPAN)
     {
       Interval *duration = PG_GETARG_INTERVAL_P(1);
-      TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
-      origin = TimestampTzGetDatum(torigin);
+      origin = PG_GETARG_DATUM(2);
+      ensure_valid_day_duration(duration);
+      size = Int32GetDatum((int)(interval_units(duration) / USECS_PER_DAY));
+    }
+    else /*(span->spantype == T_TSTZSPAN) */
+    {
+      Interval *duration = PG_GETARG_INTERVAL_P(1);
+      origin = PG_GETARG_DATUM(2);
       ensure_valid_duration(duration);
       size = Int64GetDatum(interval_units(duration));
     }
@@ -134,43 +145,15 @@ Span_spans_ext(FunctionCallInfo fcinfo, bool valuelist)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Numberspan_spans(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Numberspan_spans);
-/**
- * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return the bins of a number span
- * @sqlfn valueSpans()
- */
-Datum
-Numberspan_spans(PG_FUNCTION_ARGS)
-{
-  return Span_spans_ext(fcinfo, true);
-}
-
-PGDLLEXPORT Datum Tstzspan_spans(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tstzspan_spans);
-/**
- * @ingroup mobilitydb_temporal_analytics_tile
- * @brief Return the bins of a timestamptz span
- * @sqlfn timeSpans()
- */
-Datum
-Tstzspan_spans(PG_FUNCTION_ARGS)
-{
-  return Span_spans_ext(fcinfo, false);
-}
-
-/*****************************************************************************/
-
-PGDLLEXPORT Datum Value_span(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Value_span);
+PGDLLEXPORT Datum Value_bin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Value_bin);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a span bin in a bin list for number spans
- * @sqlfn getValueSpan()
+ * @sqlfn getValueBin()
  */
 Datum
-Value_span(PG_FUNCTION_ARGS)
+Value_bin(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
@@ -183,35 +166,36 @@ Value_span(PG_FUNCTION_ARGS)
   PG_RETURN_SPAN_P(result);
 }
 
-PGDLLEXPORT Datum Datespan_span(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Datespan_span);
+PGDLLEXPORT Datum Date_bin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Date_bin);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a span bin in a bin list for date spans
- * @sqlfn getTimeSpan()
+ * @sqlfn getTimeBin()
  */
 Datum
-Datespan_span(PG_FUNCTION_ARGS)
+Date_bin(PG_FUNCTION_ARGS)
 {
   DateADT d = PG_GETARG_DATEADT(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   DateADT origin = PG_GETARG_DATEADT(2);
   DateADT date_bin = date_get_bin(d, duration, origin);
   Span *result = palloc(sizeof(Span));
-  span_set(DateADTGetDatum(date_bin), DateADTGetDatum(date_bin + origin),
-    true, false, T_DATE, T_DATESPAN, result);
+  int32 ndays = (int32) (interval_units(duration) / USECS_PER_DAY);
+  span_bin_state_set(DateADTGetDatum(date_bin), Int32GetDatum(ndays),
+    T_DATE, T_DATESPAN, result);
   PG_RETURN_SPAN_P(result);
 }
 
-PGDLLEXPORT Datum Tstzspan_span(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tstzspan_span);
+PGDLLEXPORT Datum Timestamptz_bin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Timestamptz_bin);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a span bin in a bin list for timestamptz spans
- * @sqlfn getTimeSpan()
+ * @sqlfn getTimeBin()
  */
 Datum
-Tstzspan_span(PG_FUNCTION_ARGS)
+Timestamptz_bin(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
@@ -219,8 +203,8 @@ Tstzspan_span(PG_FUNCTION_ARGS)
   TimestampTz time_bin = timestamptz_get_bin(t, duration, origin);
   int64 tunits = interval_units(duration);
   Span *result = palloc(sizeof(Span));
-  span_set(TimestampTzGetDatum(time_bin), TimestampTzGetDatum(
-    time_bin + tunits), true, false, T_TIMESTAMPTZ, T_TSTZSPAN, result);
+  span_bin_state_set(TimestampTzGetDatum(time_bin), Int64GetDatum(tunits),
+    T_TIMESTAMPTZ, T_TSTZSPAN, result);
   PG_RETURN_SPAN_P(result);
 }
 
@@ -239,7 +223,7 @@ Spanset_time_spans(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
+  Datum torigin = PG_GETARG_DATUM(2);
   /* Get the spans */
   int count;
   Span *spans = spanset_time_spans(ss, duration, torigin, &count);
@@ -325,7 +309,7 @@ Tnumber_value_spans(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * TBox functions 
+ * TBox functions
  *****************************************************************************/
 
 /**
@@ -370,7 +354,7 @@ Tbox_value_time_tiles_ext(FunctionCallInfo fcinfo, bool valuetiles,
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = tbox_tile_state_make(NULL, bounds, 
+    funcctx->user_fctx = tbox_tile_state_make(NULL, bounds,
       Float8GetDatum(xsize), duration, Float8GetDatum(xorigin), torigin);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
@@ -686,7 +670,8 @@ Temporal_time_split(PG_FUNCTION_ARGS)
     span_bin_state_next(state);
 
     /* Restrict the temporal point to the span */
-    Temporal *atspan = temporal_restrict_tstzspan(state->temp, &span, REST_AT);
+    Temporal *atspan = temporal_restrict_tstzspan(state->to_split, &span,
+      REST_AT);
     if (atspan == NULL)
       continue;
 

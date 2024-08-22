@@ -31,27 +31,25 @@
 -- Multidimensional tiling
 -------------------------------------------------------------------------------
 
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT valueSpans(i, 2) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT valueSpans(i, 2, 1) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bins(i, 2) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bins(i, 2, 1) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT valueSpans(f, 2) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT valueSpans(f, 2.5, 1.5) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bins(f, 2) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bins(f, 2.5, 1.5) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT timeSpans(t, '2 days') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT timeSpans(t, '2 days', '2001-06-01') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-
--------------------------------------------------------------------------------
-
-SELECT getValueSpan(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT getValueSpan(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-
-SELECT getValueSpan(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT getValueSpan(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bins(t, '2 days') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).span) FROM (SELECT bins(t, '2 days', '2001-06-01') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 -------------------------------------------------------------------------------
 
-SELECT getTimeSpan(t, interval '2 days'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT getTimeSpan(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT getBin(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT getBin(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+
+SELECT getBin(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT getBin(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+
+SELECT getBin(t, interval '2 days'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT getBin(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 -------------------------------------------------------------------------------
 
@@ -59,6 +57,12 @@ SELECT valueTimeTiles(b, 2.5, '1 week'), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 
 SELECT valueTimeTiles(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 SELECT valueTimeTiles(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tboxfloat GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
+-- Time
+SELECT extent(getTboxTimeTile(t2.t, '1 week')) FROM
+(SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
+SELECT extent(getTboxTimeTile(t2.t, '1 week', '2001-01-15')) FROM
+(SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
+-- 2D
 SELECT extent(getValueTimeTile(t1.f, t2.t, 2.5, '1 week')) FROM
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;

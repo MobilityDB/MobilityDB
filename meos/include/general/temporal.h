@@ -363,6 +363,7 @@ extern bool not_negative_datum(Datum size, meosType basetype);
 extern bool ensure_not_negative_datum(Datum size, meosType basetype);
 extern bool positive_datum(Datum size, meosType basetype);
 extern bool ensure_positive_datum(Datum size, meosType basetype);
+extern bool ensure_valid_day_duration(const Interval *duration);
 extern bool valid_duration(const Interval *duration);
 extern bool ensure_valid_duration(const Interval *duration);
 

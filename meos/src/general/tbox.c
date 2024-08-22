@@ -65,13 +65,11 @@ bool
 ensure_has_X_tbox(const TBox *box)
 {
   assert(box);
-  if (! MEOS_FLAGS_GET_X(box->flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The box must have value dimension");
-    return false;
-  }
-  return true;
+  if (MEOS_FLAGS_GET_X(box->flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The box must have value dimension");
+  return false;
 }
 
 /**
@@ -81,13 +79,11 @@ bool
 ensure_has_T_tbox(const TBox *box)
 {
   assert(box);
-  if (! MEOS_FLAGS_GET_T(box->flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The box must have time dimension");
-    return false;
-  }
-  return true;
+  if (MEOS_FLAGS_GET_T(box->flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The box must have time dimension");
+  return false;
 }
 
 /**
@@ -96,14 +92,12 @@ ensure_has_T_tbox(const TBox *box)
 bool
 ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2)
 {
-  if (MEOS_FLAGS_GET_X(box1->flags) != MEOS_FLAGS_GET_X(box2->flags) ||
-    MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The boxes must be of the same dimensionality");
-    return false;
-  }
-  return true;
+  if (MEOS_FLAGS_GET_X(box1->flags) == MEOS_FLAGS_GET_X(box2->flags) &&
+      MEOS_FLAGS_GET_T(box1->flags) == MEOS_FLAGS_GET_T(box2->flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The boxes must be of the same dimensionality");
+  return false;
 }
 
 /*****************************************************************************

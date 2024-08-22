@@ -124,13 +124,11 @@ bool
 ensure_continuous(const Temporal *temp)
 {
   assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT || MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Input must be a temporal continuous sequence (set)");
-    return false;
-  }
-  return true;
+  if (temp->subtype != TINSTANT && ! MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Input must be a temporal continuous sequence (set)");
+  return false;
 }
 
 /**
@@ -140,9 +138,8 @@ ensure_continuous(const Temporal *temp)
 bool
 ensure_same_interp(const Temporal *temp1, const Temporal *temp2)
 {
-  interpType interp1 = MEOS_FLAGS_GET_INTERP(temp1->flags);
-  interpType interp2 = MEOS_FLAGS_GET_INTERP(temp2->flags);
-  if (interp1 == interp2)
+  if (MEOS_FLAGS_GET_INTERP(temp1->flags) ==
+      MEOS_FLAGS_GET_INTERP(temp2->flags))
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "The temporal values must have the same interpolation");
@@ -200,14 +197,12 @@ ensure_nonlinear_interp(int16 flags)
 bool
 ensure_common_dimension(int16 flags1, int16 flags2)
 {
-  if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) &&
-      MEOS_FLAGS_GET_T(flags1) != MEOS_FLAGS_GET_T(flags2))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The temporal values must have at least one common dimension");
-    return false;
-  }
-  return true;
+  if (MEOS_FLAGS_GET_X(flags1) == MEOS_FLAGS_GET_X(flags2) ||
+      MEOS_FLAGS_GET_T(flags1) == MEOS_FLAGS_GET_T(flags2))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The temporal values must have at least one common dimension");
+  return false;
 }
 
 /**
@@ -342,7 +337,7 @@ ensure_not_negative(int i)
 bool
 ensure_positive(int i)
 {
-  if (i >= 0)
+  if (i > 0)
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "The value must be strictly positive: %d", i);
@@ -430,6 +425,62 @@ ensure_positive_datum(Datum size, meosType basetype)
 }
 
 /**
+ * @brief Ensure that an interval does not have a month component
+ * @note Binning by months is currently not supported
+ */
+bool
+ensure_not_month_duration(const Interval *duration)
+{
+  if (! duration->month)
+    return true;
+  char *str = pg_interval_out(duration);
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Cannot have month intervals: %s", str);
+  pfree(str);
+  return false;
+}
+
+/**
+ * @brief Ensure that a day interval for binning is valid
+ * @note Binning by months is currently not supported
+ */
+bool
+ensure_valid_day_duration(const Interval *duration)
+{
+  if (! ensure_not_month_duration(duration))
+    return false;
+
+  char *str;
+  int64 day = USECS_PER_DAY;
+  int64 tunits = interval_units(duration);
+  if (tunits < day)
+  {
+    str = pg_interval_out(duration);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The interval must not have sub-day precision: %s", str);
+    pfree(str);
+    return false;
+  }
+  if (tunits % day != 0)
+  {
+    str = pg_interval_out(duration);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The interval must be a multiple of a day: %s", str);
+    pfree(str);
+    return false;
+  }
+  if (tunits < 0)
+  {
+    str = pg_interval_out(duration);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The interval must be positive: %s", str);
+    pfree(str);
+    return false;
+  }
+  return true;
+}
+
+/**
  * @brief Return true if the interval is a positive and absolute duration
  */
 bool
@@ -453,13 +504,12 @@ ensure_valid_duration(const Interval *duration)
   if (valid_duration(duration))
     return true;
 
+  if (! ensure_not_month_duration(duration))
+    return false;
+
   char *str = pg_interval_out(duration);
-  if (duration->month != 0)
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Interval defined in terms of month, year, century, etc. not supported: %s", str);
-  else
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The interval must be positive: %s", str);
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The interval must be positive: %s", str);
   pfree(str);
   return false;
 }

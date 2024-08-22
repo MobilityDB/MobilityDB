@@ -105,13 +105,11 @@ stbox_expand(const STBox *box1, STBox *box2)
 bool
 ensure_has_X_stbox(const STBox *box)
 {
-  if (! MEOS_FLAGS_GET_X(box->flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The box must have space dimension");
-    return false;
-  }
-  return true;
+  if (MEOS_FLAGS_GET_X(box->flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The box must have space dimension");
+  return false;
 }
 
 /**
@@ -120,13 +118,11 @@ ensure_has_X_stbox(const STBox *box)
 bool
 ensure_has_T_stbox(const STBox *box)
 {
-  if (! MEOS_FLAGS_GET_T(box->flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The box must have time dimension");
-    return false;
-  }
-  return true;
+  if (MEOS_FLAGS_GET_T(box->flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The box must have time dimension");
+  return false;
 }
 
 
