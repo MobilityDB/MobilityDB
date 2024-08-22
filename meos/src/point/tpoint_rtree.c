@@ -42,8 +42,6 @@
 
 #include <meos_internal.h>
 
-#include <meos_catalog.h>
-
 #include "point/tpoint_rtree.h"
 
 /**
