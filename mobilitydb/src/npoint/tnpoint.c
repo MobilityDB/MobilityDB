@@ -53,19 +53,6 @@
  * General functions
  *****************************************************************************/
 
-#if 0 /* not used */
-/**
- * @brief Return a C array of network point values converted to a PostgreSQL
- * array
- */
-ArrayType *
-npointarr_array(Npoint **npointarr, int count)
-{
-  return construct_array((Datum *)npointarr, count, type_oid(T_NPOINT),
-    sizeof(Npoint), false, 'd');
-}
-#endif
-
 /**
  * @brief Return a C array of network segment values with M measure to a
  * PostgreSQL array

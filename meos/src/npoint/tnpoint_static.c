@@ -161,25 +161,6 @@ nsegmentarr_geom(Nsegment **segments, int count)
 
 /*****************************************************************************/
 
-#if 0 /* not used */
-/**
- * @brief Comparator functions
- */
-static int
-npoint_sort_cmp(Npoint **l, Npoint **r)
-{
-  return npoint_cmp(*l, *r);
-}
-
-void
-npointarr_sort(Npoint **points, int count)
-{
-  qsort(points, (size_t) count, sizeof(Npoint *),
-      (qsort_comparator) &npoint_sort_cmp);
-  return;
-}
-#endif
-
 /**
  * @brief Comparator function for network segments
  */
@@ -230,22 +211,6 @@ nsegmentarr_normalize(Nsegment **segments, int *count)
   *count = newcount;
   return result;
 }
-
-#if 0 /* not used */
-/**
- * @brief Remove duplicates from an array of network points
- */
-int
-npoint_remove_duplicates(Npoint **values, int count)
-{
-  assert (count > 0);
-  int newcount = 0;
-  for (int i = 1; i < count; i++)
-    if (npoint_ne(values[newcount], values[i]))
-      values[++ newcount] = values[i];
-  return newcount + 1;
-}
-#endif
 
 /*****************************************************************************
  * Input/output functions
@@ -559,44 +524,6 @@ route_geom(int64 rid)
 
   return result;
 }
-
-#if 0 /* not used */
-/**
- * @brief Access the edge table to get the rid from a geometry
- * @return On error return @p LONG_MAX
- */
-int64
-rid_from_geom(Datum geom)
-{
-  char *geomstr = ewkt_out(geom, 0, OUT_DEFAULT_DECIMAL_DIGITS);
-  char sql[128];
-  snprintf(sql, sizeof(sql),
-    "SELECT gid FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "
-    "ORDER BY ST_Distance(the_geom, '%s') LIMIT 1", geomstr, DIST_EPSILON,
-    geomstr);
-  pfree(geomstr);
-  bool isNull = true;
-  int64 result = 0; /* make compiler quiet */
-  SPI_connect();
-  int ret = SPI_execute(sql, true, 1);
-  uint64 proc = SPI_processed;
-  if (ret > 0 && proc > 0 && SPI_tuptable != NULL)
-  {
-    SPITupleTable *tuptable = SPI_tuptable;
-    result = DatumGetInt64(SPI_getbinval(tuptable->vals[0], tuptable->tupdesc,
-      1, &isNull));
-  }
-  SPI_finish();
-  if (isNull)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Cannot get route identifier from geometry point");
-    return LONG_MAX;
-  }
-
-  return result;
-}
-#endif
 
 /**
  * @brief Transform a network point into a geometry

@@ -224,15 +224,21 @@ extern meosType basetype_settype(meosType type);
 
 /* Catalog functions */
 
+#ifdef DEBUG_BUILD
 extern bool meos_basetype(meosType type);
+extern bool alphanum_basetype(meosType type);
+extern bool set_basetype(meosType type);
+extern bool span_bbox_type(meosType type);
+extern bool temporal_basetype(meosType type);
+extern bool talphanum_type(meosType type);
+#endif
+
 extern bool alpha_basetype(meosType type);
 extern bool tnumber_basetype(meosType type);
-extern bool alphanum_basetype(meosType type);
 extern bool geo_basetype(meosType type);
 extern bool spatial_basetype(meosType type);
 
 extern bool time_type(meosType type);
-extern bool set_basetype(meosType type);
 
 extern bool set_type(meosType type);
 extern bool numset_type(meosType type);
@@ -250,7 +256,6 @@ extern bool ensure_spatialset_type(meosType type);
 extern bool span_basetype(meosType type);
 extern bool span_canon_basetype(meosType type);
 extern bool span_type(meosType type);
-extern bool span_bbox_type(meosType type);
 extern bool numspan_basetype(meosType type);
 extern bool numspan_type(meosType type);
 extern bool ensure_numspan_type(meosType type);
@@ -264,12 +269,10 @@ extern bool timespanset_type(meosType type);
 extern bool ensure_timespanset_type(meosType type);
 
 extern bool temporal_type(meosType type);
-extern bool temporal_basetype(meosType type);
 extern bool temptype_continuous(meosType type);
 extern bool basetype_byvalue(meosType type);
 extern bool basetype_varlength(meosType type);
 extern int16 basetype_length(meosType type);
-extern bool talphanum_type(meosType type);
 extern bool talpha_type(meosType type);
 extern bool tnumber_type(meosType type);
 extern bool ensure_tnumber_type(meosType type);
