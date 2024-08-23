@@ -50,7 +50,8 @@ typedef struct SpanBinState
   Datum size;           /**< Size of the values */ 
   Datum origin;         /**< Origin of the values */
   Span span;            /**< Bounding span */
-  const Temporal *temp; /**< NULL when generating bins, used for splitting */
+  const void *temp;     /**< NULL when generating bins, used for splitting 
+                         * span sets or temporal values*/
   Datum value;          /**< Current value */
   int nbins;            /**< Total number of bins */
 } SpanBinState;
@@ -75,7 +76,7 @@ typedef struct TboxGridState
 
 /*****************************************************************************/
 
-extern SpanBinState *span_bin_state_make(const Temporal *temp, const Span *s,
+extern SpanBinState *span_bin_state_make(const void *temp, const Span *s,
   Datum size, Datum origin);
 extern void span_bin_state_set(Datum lower, Datum size, meosType basetype,
   meosType spantype, Span *span);

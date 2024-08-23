@@ -971,6 +971,108 @@ minus_date_date(DateADT d1, DateADT d2)
   return result;
 }
 
+/*****************************************************************************/
+
+/*
+ * Promote date to timestamp.
+ *
+ * On successful conversion, *overflow is set to zero if it's not NULL.
+ *
+ * If the date is finite but out of the valid range for timestamp, then:
+ * if overflow is NULL, we throw an out-of-range error.
+ * if overflow is not NULL, we store +1 or -1 there to indicate the sign
+ * of the overflow, and return the appropriate timestamp infinity.
+ *
+ * Note: *overflow = -1 is actually not possible currently, since both
+ * datatypes have the same lower bound, Julian day zero.
+ */
+Timestamp
+date2timestamp_opt_overflow(DateADT dateVal, int *overflow)
+{
+  Timestamp  result;
+
+  if (overflow)
+    *overflow = 0;
+
+  if (DATE_IS_NOBEGIN(dateVal))
+    TIMESTAMP_NOBEGIN(result);
+  else if (DATE_IS_NOEND(dateVal))
+    TIMESTAMP_NOEND(result);
+  else
+  {
+    /*
+     * Since dates have the same minimum values as timestamps, only upper
+     * boundary need be checked for overflow.
+     */
+    if (dateVal >= (TIMESTAMP_END_JULIAN - POSTGRES_EPOCH_JDATE))
+    {
+      if (overflow)
+      {
+        *overflow = 1;
+        TIMESTAMP_NOEND(result);
+        return result;
+      }
+      else
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "date out of range for timestamp");
+      }
+    }
+
+    /* date is days since 2000, timestamp is microseconds since same... */
+    result = dateVal * USECS_PER_DAY;
+  }
+
+  return result;
+}
+
+/*
+ * Promote date to timestamp, throwing error for overflow.
+ */
+static TimestampTz
+date2timestamp(DateADT dateVal)
+{
+  return date2timestamp_opt_overflow(dateVal, NULL);
+}
+
+/* date_timestamp()
+ * Convert date to timestamp data type.
+ */
+Timestamp
+date_to_timestamp(DateADT dateVal)
+{
+  Timestamp result;
+  result = date2timestamp(dateVal);
+  return result;
+}
+
+/* timestamp_date()
+ * Convert timestamp to date data type.
+ */
+DateADT
+timestamp_to_date(Timestamp timestamp)
+{
+  DateADT result;
+  struct pg_tm tt,
+         *tm = &tt;
+  fsec_t    fsec;
+
+  if (TIMESTAMP_IS_NOBEGIN(timestamp))
+    DATE_NOBEGIN(result);
+  else if (TIMESTAMP_IS_NOEND(timestamp))
+    DATE_NOEND(result);
+  else
+  {
+    if (timestamp2tm(timestamp, NULL, tm, &fsec, NULL, NULL) != 0)
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+        "timestamp out of range");
+
+    result = date2j(tm->tm_year, tm->tm_mon, tm->tm_mday) - POSTGRES_EPOCH_JDATE;
+  }
+
+  return result;
+}
+
 /*****************************************************************************
  *   Time ADT
  *****************************************************************************/

@@ -338,7 +338,7 @@ type_oid(meosType type)
   Oid result = MOBDB_TYPE_OID[type];
   if (! result)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Unknown MEOS type; %d", type)));
+      errmsg("Unknown MEOS type; %s", meostype_name(type))));
   return result;
 }
 

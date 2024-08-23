@@ -206,7 +206,7 @@ datum_collinear(Datum value1, Datum value2, Datum value3, meosType basetype,
       DatumGetPoseP(value3), ratio);
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Unknown collinear operation for base type: %d", basetype);
+    "Unknown collinear function for type: %s", meostype_name(basetype));
   return false;
 }
 
@@ -2344,8 +2344,8 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   }
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Unknown interpolation function for continuous temporal type: %d",
-    inst1->temptype);
+    "Unknown interpolation function for type: %s",
+    meostype_name(inst1->temptype));
   return 0;
 }
 
@@ -2757,8 +2757,8 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Unknown intersection function for continuous temporal type: %d",
-      inst1->temptype);
+      "Unknown intersection function for type: %s",
+      meostype_name(inst1->temptype));
     return NULL;
   }
 

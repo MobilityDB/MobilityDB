@@ -562,8 +562,8 @@ set_bbox_size(meosType settype)
   if (spatialset_type(settype))
     return sizeof(STBox);
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Unknown set type when determining the size of the bounding box: %d",
-    settype);
+    "Unknown set type when determining the size of the bounding box: %s",
+    meostype_name(settype));
   return SIZE_MAX;
 }
 
@@ -588,7 +588,8 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Unknown set type for computing the bounding box: %d", basetype);
+      "Unknown set type for computing the bounding box: %s",
+      meostype_name(basetype));
   return;
 }
 

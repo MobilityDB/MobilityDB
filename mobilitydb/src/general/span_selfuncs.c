@@ -985,7 +985,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
     value_oper_sel(oper, ltype, rtype) : time_oper_sel(oper, ltype, rtype);
   if (! found)
     /* In case of unknown operator */
-    elog(ERROR, "Unknown operator Oid %d", operid);
+    elog(ERROR, "Unknown span operator %d", operid);
 
   /* Retrieve the stats object */
   HeapTuple stats_tuple = NULL;

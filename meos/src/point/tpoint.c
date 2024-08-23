@@ -91,7 +91,7 @@ tspatial_set_stbox(const Temporal *temp, STBox *box)
 #endif
       else
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-          "Unknown temporal point type: %u", temp->temptype);
+          "Unknown temporal point type: %s", meostype_name(temp->temptype));
       break;
     case TSEQUENCE:
       tspatialseq_set_stbox((TSequence *) temp, box);

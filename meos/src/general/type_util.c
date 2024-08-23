@@ -113,7 +113,7 @@ datum_cmp(Datum l, Datum r, meosType type)
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown compare function for base type: %s", meostype_name(type));
+        "Unknown compare function for type: %s", meostype_name(type));
     return INT_MAX;
   }
 }
@@ -199,7 +199,7 @@ datum_eq(Datum l, Datum r, meosType type)
 #endif
     default: /* Error! */
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Unknown equality function for base type: %s", meostype_name(type));
+      "Unknown equality function for type: %s", meostype_name(type));
     return false;
   }
 }
@@ -299,7 +299,7 @@ datum_add(Datum l, Datum r, meosType type)
       return TimestampTzGetDatum(DatumGetTimestampTz(l) + DatumGetInt64(r));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown add function for base type: %s", meostype_name(type));
+        "Unknown add function for type: %s", meostype_name(type));
       return 0;
   }
 }
@@ -323,7 +323,7 @@ datum_sub(Datum l, Datum r, meosType type)
       return DateADTGetDatum(DatumGetDateADT(l) - DatumGetInt32(r));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown subtract function for base type: %s", meostype_name(type));
+        "Unknown subtract function for type: %s", meostype_name(type));
       return 0;
   }
 }
@@ -344,8 +344,7 @@ datum_mult(Datum l, Datum r, meosType type)
       return Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown multiplication function for base type: %s",
-          meostype_name(type));
+        "Unknown multiplication function for type: %s", meostype_name(type));
       return 0;
   }
 }
@@ -366,7 +365,7 @@ datum_div(Datum l, Datum r, meosType type)
       return Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown division function for base type: %s", meostype_name(type));
+        "Unknown division function for type: %s", meostype_name(type));
     return 0;
   }
 }
@@ -414,7 +413,7 @@ datum_hash(Datum d, meosType type)
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown hash function for base type: %d", type);
+        "Unknown hash function for type: %s", meostype_name(type));
       return INT_MAX;
   }
 }
@@ -460,7 +459,7 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown extended hash function for base type: %d", type);
+        "Unknown extended hash function for type: %s", meostype_name(type));
       return INT_MAX;
   }
 }
@@ -507,7 +506,8 @@ datum_double(Datum d, meosType type)
       return (double) DatumGetDateADT(d);
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown conversion to double function for base type: %d", type);
+        "Unknown conversion to double function for type: %s",
+        meostype_name(type));
       return DBL_MAX;
   }
 }
@@ -531,7 +531,8 @@ double_datum(double d, meosType type)
       return DateADTGetDatum((DateADT) d);
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown conversion to Datum function for base type: %d", type);
+        "Unknown conversion to Datum function for type: %s",
+        meostype_name(type));
       return (Datum) 0;
   }
 }
@@ -1019,7 +1020,7 @@ basetype_in(const char *str, meosType type,
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown input function for base type: %s", meostype_name(type));
+        "Unknown input function for type: %s", meostype_name(type));
       return false;
   }
 }
@@ -1088,7 +1089,7 @@ basetype_out(Datum value, meosType type, int maxdd)
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown output function for base type: %s", meostype_name(type));
+        "Unknown output function for type: %s", meostype_name(type));
       return NULL;
   }
 }

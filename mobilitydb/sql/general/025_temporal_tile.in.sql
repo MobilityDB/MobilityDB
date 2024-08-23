@@ -136,6 +136,23 @@ CREATE FUNCTION getValueTimeTile(v float, t timestamptz, vsize float,
  * Boxes
  *****************************************************************************/
 
+CREATE FUNCTION timeSpans(tstzspanset, tsize interval,
+    torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS tstzspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_time_spans'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+
+CREATE FUNCTION valueSpans(intspanset, vsize int, vorigin int DEFAULT 0)
+  RETURNS intspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_value_spans'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE FUNCTION valueSpans(floatspanset, vsize float, vorigin float DEFAULT 0.0)
+  RETURNS floatspan[]
+  AS 'MODULE_PATHNAME', 'Spanset_value_spans'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+
+/*****************************************************************************/
+
 CREATE FUNCTION timeSpans(tbool, tsize interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan[]

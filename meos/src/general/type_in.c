@@ -242,7 +242,8 @@ parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
         break;
       default: /* Error! */
         meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-          "Unknown temporal type in MFJSON string: %d", temptype);
+          "Unknown temporal type in MFJSON string: %s",
+          meostype_name(temptype));
         return NULL;
     }
   }
@@ -1291,7 +1292,8 @@ basevalue_from_wkb_state(wkb_parse_state *s)
 #endif /* NPOINT */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_INPUT,
-        "Unknown base type in WKB string: %d", s->basetype);
+        "Unknown base type in WKB string: %s",
+        meostype_name(s->basetype));
       return 0;
   }
 }
@@ -1775,7 +1777,7 @@ datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
     return PointerGetDatum(temporal_from_wkb_state(&s));
   /* Error! */
   meos_error(ERROR, MEOS_ERR_WKB_INPUT,
-    "Unknown type in WKB string: %d", type);
+    "Unknown type in WKB string: %s", meostype_name(type));
   return 0;
 }
 

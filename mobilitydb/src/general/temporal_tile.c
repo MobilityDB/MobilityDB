@@ -183,6 +183,26 @@ Value_span(PG_FUNCTION_ARGS)
   PG_RETURN_SPAN_P(result);
 }
 
+PGDLLEXPORT Datum Datespan_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Datespan_span);
+/**
+ * @ingroup mobilitydb_temporal_analytics_tile
+ * @brief Return a span bin in a bin list for date spans
+ * @sqlfn getTimeSpan()
+ */
+Datum
+Datespan_span(PG_FUNCTION_ARGS)
+{
+  DateADT d = PG_GETARG_DATEADT(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  DateADT origin = PG_GETARG_DATEADT(2);
+  DateADT date_bin = date_get_bin(d, duration, origin);
+  Span *result = palloc(sizeof(Span));
+  span_set(DateADTGetDatum(date_bin), DateADTGetDatum(date_bin + origin),
+    true, false, T_DATE, T_DATESPAN, result);
+  PG_RETURN_SPAN_P(result);
+}
+
 PGDLLEXPORT Datum Tstzspan_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspan_span);
 /**
@@ -199,9 +219,59 @@ Tstzspan_span(PG_FUNCTION_ARGS)
   TimestampTz time_bin = timestamptz_get_bin(t, duration, origin);
   int64 tunits = interval_units(duration);
   Span *result = palloc(sizeof(Span));
-  span_bin_state_set(TimestampTzGetDatum(time_bin), Int64GetDatum(tunits),
-    T_TIMESTAMPTZ, T_TSTZSPAN, result);
+  span_set(TimestampTzGetDatum(time_bin), TimestampTzGetDatum(
+    time_bin + tunits), true, false, T_TIMESTAMPTZ, T_TSTZSPAN, result);
   PG_RETURN_SPAN_P(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Spanset_time_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_time_spans);
+/**
+ * @ingroup mobilitydb_temporal_analytics_tile
+ * @brief Return an array of spans obtained by splitting a spanset with respect
+ * to time bins
+ * @sqlfn timeSpans()
+ */
+Datum
+Spanset_time_spans(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
+  /* Get the spans */
+  int count;
+  Span *spans = spanset_time_spans(ss, duration, torigin, &count);
+  ArrayType *result = spanarr_to_array(spans, count);
+  /* Clean up and return */
+  pfree(spans);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PGDLLEXPORT Datum Spanset_value_spans(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_value_spans);
+/**
+ * @ingroup mobilitydb_temporal_analytics_tile
+ * @brief Return an array of spans obtained by splitting a spanset with respect
+ * to value bins
+ * @sqlfn valueSpans()
+ */
+Datum
+Spanset_value_spans(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  Datum vsize = PG_GETARG_DATUM(1);
+  Datum vorigin = PG_GETARG_DATUM(2);
+  /* Get the spans */
+  int count;
+  Span *spans = spanset_value_spans(ss, vsize, vorigin, &count);
+  ArrayType *result = spanarr_to_array(spans, count);
+  /* Clean up and return */
+  pfree(spans);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
 }
 
 /*****************************************************************************/

@@ -963,6 +963,8 @@ extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq
 
 /* Multidimensional tiling functions for temporal types */
 
+extern Span *spanset_value_spans(const SpanSet *ss, Datum vsize, Datum vorigin, int *count);
+extern Span *tnumber_value_spans(const Temporal *temp, Datum size, Datum origin, int *count);
 extern TBox *tnumber_value_boxes(const Temporal *temp, Datum vsize, Datum vorigin, int *count);
 extern TBox *tnumber_time_boxes(const Temporal *temp, const Interval *duration, TimestampTz torigin, int *count);
 extern TBox *tnumber_value_time_boxes(const Temporal *temp, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, int *count);
