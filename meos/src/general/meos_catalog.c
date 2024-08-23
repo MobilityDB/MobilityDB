@@ -567,7 +567,6 @@ spantype_spansettype(meosType type)
 
 /*****************************************************************************/
 
-#ifdef DEBUG_BUILD
 /**
  * @brief Return true if the type is a base type of one of the template types,
  * that is, @p Set, @p Span, @p SpanSet, and @p Temporal
@@ -585,7 +584,6 @@ meos_basetype(meosType type)
     return true;
   return false;
 }
-#endif
 
 /**
  * @brief Return true if the values of the base type are passed by value
