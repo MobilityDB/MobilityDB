@@ -328,19 +328,6 @@ skiplist_headval(SkipList *list)
   return list->elems[list->elems[0].next[0]].value;
 }
 
-#if 0 /* not used */
-void *
-skiplist_tailval(SkipList *list)
-{
-  /* Despite the look, this is pretty much O(1) */
-  SkipListElem *e = &list->elems[0];
-  int height = e->height;
-  while (e->next[height - 1] != list->tail)
-    e = &list->elems[e->next[height - 1]];
-  return e->value;
-}
-#endif /* not used */
-
 /**
  * @brief Constructs a skiplist from the array of values values
  * @param[in] values Array of values

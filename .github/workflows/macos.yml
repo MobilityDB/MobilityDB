@@ -47,10 +47,9 @@ jobs:
           brew reinstall python@3.12 || brew link --overwrite python@3.12
           brew update
 
-      - name: Get dependencies from homebrew (cache)
-        uses: tecolicom/actions-use-homebrew-tools@v1
-        with:
-          tools: postgresql postgis proj gsl
+      - name: install deps
+        run: |
+          brew install postgresql postgis proj gsl
 
       - name: Configure
         run: |

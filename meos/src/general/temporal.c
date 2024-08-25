@@ -167,21 +167,6 @@ ensure_same_continuous_interp(int16 flags1, int16 flags2)
   return true;
 }
 
-#if 0 /* not used */
-/**
- * @brief Ensure that a temporal value does not have discrete interpolation
- */
-bool
-ensure_not_discrete_interp(int16 flags)
-{
-  if (! MEOS_FLAGS_DISCRETE_INTERP(flags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The temporal value cannot have discrete interpolation");
-  return false;
-}
-#endif /* not used */
-
 /**
  * @brief Ensure that a temporal value has linear interpolation
  */
@@ -364,22 +349,6 @@ ensure_positive(int i)
   return false;
 }
 
-#if 0 /* not used */
-/**
- * @brief Ensure that the first value is less or equal than the second one
- */
-bool
-ensure_less_equal(int i, int j)
-{
-  if (i <= j)
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The first value must be less or equal than the second one: %d, %d",
-    i, j);
-  return false;
-}
-#endif /* not used */
-
 /**
  * @brief Return true if the number is not negative
  */
@@ -455,12 +424,6 @@ ensure_positive_datum(Datum size, meosType basetype)
     snprintf(str, sizeof(str), "%d", DatumGetInt32(size));
   else if (basetype == T_FLOAT8)
     snprintf(str, sizeof(str), "%f", DatumGetFloat8(size));
-#if 0 /* not used */
-  else if (basetype == T_INT8)
-    snprintf(str, sizeof(str), "%ld", DatumGetInt64(size));
-  else /* basetype == T_TIMESTAMPTZ */
-    snprintf(str, sizeof(str), INT64_FORMAT, DatumGetInt64(size));
-#endif /* not used */
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "The value must be strictly positive: %s", str);
   return false;

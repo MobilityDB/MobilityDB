@@ -140,18 +140,6 @@ geog_intersects(Datum geog1, Datum geog2)
     DatumGetGserializedP(geog2), 0.00001, true));
 }
 
-#if 0 /* not used */
-/**
- * @brief Return a Datum true if two geometries touch
- */
-Datum
-geom_touches(Datum geom1, Datum geom2)
-{
-  return BoolGetDatum(geometry_spatialrel(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2), TOUCHES));
-}
-#endif /* not used */
-
 /**
  * @brief Return a Datum true if two 2D geometries are within a distance
  */

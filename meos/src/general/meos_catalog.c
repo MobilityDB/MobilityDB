@@ -567,21 +567,6 @@ spantype_spansettype(meosType type)
 
 /*****************************************************************************/
 
-#if 0 /* not used */
-/**
- * @brief Determine whether the type is an internal MobilityDB type
- */
-bool
-meostype_internal(meosType type)
-{
-  if (type == T_DOUBLE2 || type == T_DOUBLE3 || type == T_DOUBLE4 ||
-      type == T_TDOUBLE2 || type == T_TDOUBLE3 || type == T_TDOUBLE4)
-    return true;
-  return false;
-}
-#endif /* not used */
-
-#ifdef DEBUG_BUILD
 /**
  * @brief Return true if the type is a base type of one of the template types,
  * that is, @p Set, @p Span, @p SpanSet, and @p Temporal
@@ -599,7 +584,6 @@ meos_basetype(meosType type)
     return true;
   return false;
 }
-#endif
 
 /**
  * @brief Return true if the values of the base type are passed by value
@@ -788,23 +772,6 @@ timeset_type(meosType type)
     return true;
   return false;
 }
-
-#if 0 /* not used */
-/**
- * @brief Ensure that the type is a number set type
- */
-bool
-ensure_timeset_type(meosType type)
-{
-  if (! timeset_type(type))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The set value must be a time set");
-    return false;
-  }
-  return true;
-}
-#endif /* not used */
 
 /**
  * @brief Return true if the type is a set type with a span as a bounding box
@@ -1010,23 +977,6 @@ timespan_type(meosType type)
   return false;
 }
 
-#if 0 /* not used */
-/**
- * @brief Ensure that a span is a time span type
- */
-bool
-ensure_timespan_type(meosType type)
-{
-  if (! timespan_type(type))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The span value must be a time span type");
-    return false;
-  }
-  return true;
-}
-#endif /* not used */
-
 /*****************************************************************************/
 
 /**
@@ -1040,20 +990,6 @@ spanset_type(meosType type)
     return true;
   return false;
 }
-
-#if 0 /* not used */
-/**
- * @brief Return true if the type is a number span type
- */
-bool
-numspanset_type(meosType type)
-{
-  if (type == T_INTSPANSET || type == T_BIGINTSPANSET ||
-      type == T_FLOATSPANSET)
-    return true;
-  return false;
-}
-#endif
 
 /**
  * @brief Return true if the type is a time span type
@@ -1174,24 +1110,6 @@ talpha_type(meosType type)
     return true;
   return false;
 }
-
-#if 0 /* not used */
-/**
- * @brief Ensure that a type is a temporal alpha type (i.e., those whose
- * bounding box is a timestamptz span)
- */
-bool
-ensure_talpha_type(meosType type)
-{
-  if (! talpha_type(type))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The temporal value must be a temporal alpha type");
-    return false;
-  }
-  return true;
-}
-#endif /* not used */
 
 /**
  * @brief Return true if the type is a temporal number type

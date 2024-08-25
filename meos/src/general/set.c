@@ -163,35 +163,6 @@ set_find_value(const Set *s, Datum d, int *loc)
   return false;
 }
 
-#if 0 /* not used */
-/**
- * @brief Return the location of a value in a ranked set (which is unordered)
- * using sequential search
- * @param[in] s Set
- * @param[in] d Value
- * @param[out] loc Location of the value if found
- * @return Return true if the value is contained in the vecctor
- * @note Contrary to function `set_find_value`, if the value is not found the
- * returned location is always 0.
- */
-bool
-rset_find_value(const Set *s, Datum d, int *loc)
-{
-  assert(s); assert(loc);
-  for (int i = 0; i < s->count; i++)
-  {
-    Datum d1 = SET_VAL_N(s, i);
-    if (datum_eq(d, d1, s->basetype))
-    {
-      *loc = i;
-      return true;
-    }
-  }
-  *loc = 0;
-  return false;
-}
-#endif /* not used */
-
 /*****************************************************************************
  * Input/output functions in string format
  *****************************************************************************/

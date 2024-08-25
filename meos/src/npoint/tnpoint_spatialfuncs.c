@@ -47,23 +47,6 @@
  * Parameter tests
  *****************************************************************************/
 
-#if 0 /* not used */
-/**
- * @brief Ensure that a temporal network point and a STBox have the same SRID
- */
-bool
-ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBox *box)
-{
-  if (MEOS_FLAGS_GET_X(box->flags) && tnpoint_srid(temp) != box->srid)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The temporal network point and the box must be in the same SRID");
-    return false;
-  }
-  return true;
-}
-#endif /* not used */
-
 /**
  * @brief Ensure that two temporal network point instants have the same route
  * identifier
