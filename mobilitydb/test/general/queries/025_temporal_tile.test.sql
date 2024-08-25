@@ -31,11 +31,44 @@
 -- Multidimensional tiling
 -------------------------------------------------------------------------------
 
-SELECT valueSpans(intspan '[1, 10]', 2) LIMIT 3;
-SELECT valueSpans(intspan '[1, 10]', 2, 1) LIMIT 3;
+SELECT bins(intspan '[1, 10]', 2) LIMIT 3;
+SELECT bins(intspan '[1, 10]', 2, 1) LIMIT 3;
 
-SELECT valueSpans(floatspan '(1, 10)', 2.5) LIMIT 3;
-SELECT valueSpans(floatspan '(1, 10)', 2.5, 1.5) LIMIT 3;
+SELECT bins(bigintspan '[1, 10]', 2) LIMIT 3;
+SELECT bins(bigintspan '[1, 10]', 2, 1) LIMIT 3;
+
+SELECT bins(floatspan '(1, 10)', 2.5) LIMIT 3;
+SELECT bins(floatspan '(1, 10)', 2.5, 1.5) LIMIT 3;
+
+SELECT bins(datespan '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
+SELECT bins(datespan '[2000-01-01, 2000-01-10]', '1 week', '2000-01-01') LIMIT 3;
+
+SELECT bins(tstzspan '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
+SELECT bins(tstzspan '[2000-01-01, 2000-01-10]', '1 week', '2000-01-01') LIMIT 3;
+
+
+SELECT getBin(3, 2);
+SELECT getBin(3, 2, 1);
+SELECT getBin(3::bigint, 2::bigint);
+SELECT getBin(3::bigint, 2::bigint, 1::bigint);
+SELECT getBin(3.5, 2.5);
+SELECT getBin(3.5, 2.5, 1.5);
+SELECT getBin(-3, 2, -2);
+SELECT getBin(-3.5, 2, -2);
+SELECT getBin(date '2000-01-01', '1 week');
+SELECT getBin(date '2000-01-01', '1 week', '2000-01-01');
+SELECT getBin(timestamptz '2000-01-01', '1 week');
+SELECT getBin(timestamptz '2000-01-01', '1 week', '2000-01-01');
+SELECT getBin('infinity'::timestamptz, '1 day');
+SELECT getBin('-infinity'::timestamptz, '1 day');
+/* Errors */
+SELECT getBin(3, -2);
+SELECT getBin(3.5, -2.5);
+SELECT getBin(-2147483647, 3, 2);
+SELECT getBin(2147483646, 3, -2);
+SELECT getBin('2020-01-01', '1 month', timestamptz '2001-06-01');
+
+-------------------------------------------------------------------------------
 
 SELECT valueSpans(intspanset '{[1, 10]}', 2) LIMIT 3;
 SELECT valueSpans(intspanset '{[1, 10]}', 2, 1) LIMIT 3;
@@ -43,32 +76,13 @@ SELECT valueSpans(intspanset '{[1, 10]}', 2, 1) LIMIT 3;
 SELECT valueSpans(floatspanset '{(1, 10)}', 2.5) LIMIT 3;
 SELECT valueSpans(floatspanset '{(1, 10)}', 2.5, 1.5) LIMIT 3;
 
-SELECT getValueSpan(3, 2);
-SELECT getValueSpan(3, 2, 1);
-SELECT getValueSpan(3.5, 2.5);
-SELECT getValueSpan(3.5, 2.5, 1.5);
-SELECT getValueSpan(-3, 2, -2);
-SELECT getValueSpan(-3.5, 2, -2);
-/* Errors */
-SELECT getValueSpan(3, -2);
-SELECT getValueSpan(3.5, -2.5);
-SELECT getValueSpan(-2147483647, 3, 2);
-SELECT getValueSpan(2147483646, 3, -2);
-
 -------------------------------------------------------------------------------
 
-SELECT timeSpans(tstzspan '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
-SELECT timeSpans(tstzspan '[2000-01-01, 2000-01-10]', '1 week', '2020-06-15') LIMIT 3;
+SELECT timeSpans(datespanset '{[2000-01-01, 2000-01-10]}', '1 week') LIMIT 3;
+SELECT timeSpans(datespanset '{[2000-01-01, 2000-01-10]}', '1 week', '2020-06-15') LIMIT 3;
 
 SELECT timeSpans(tstzspanset '{[2000-01-01, 2000-01-10]}', '1 week') LIMIT 3;
 SELECT timeSpans(tstzspanset '{[2000-01-01, 2000-01-10]}', '1 week', '2020-06-15') LIMIT 3;
-
-SELECT getTimeSpan('2020-01-01', '1 week');
-SELECT getTimeSpan('2020-01-01', '1 week', timestamptz '2001-06-01');
-SELECT getTimeSpan('infinity'::timestamptz, '1 day');
-SELECT getTimeSpan('-infinity'::timestamptz, '1 day');
-/* Errors */
-SELECT getTimeSpan('2020-01-01', '1 month', timestamptz '2001-06-01');
 
 -------------------------------------------------------------------------------
 
@@ -97,8 +111,8 @@ SELECT getValueTile(15.5, 2.5, 1.5);
 SELECT timeTiles(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, '1 week') LIMIT 3;
 SELECT timeTiles(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, '1 week', '2020-06-15') LIMIT 3;
 
-SELECT getTimeTileTbox(timestamptz '2000-01-15', interval '1 week');
-SELECT getTimeTileTbox(timestamptz '2000-01-15', interval '1 week', '2020-06-15');
+SELECT getTboxTimeTile(timestamptz '2000-01-15', interval '1 week');
+SELECT getTboxTimeTile(timestamptz '2000-01-15', interval '1 week', '2020-06-15');
 
 -------------------------------------------------------------------------------
 

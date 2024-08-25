@@ -1953,7 +1953,8 @@ Interval *
 add_interval_interval(const Interval *interv1, const Interval *interv2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) interv1) || ! ensure_not_null((void *) interv2))
+  if (! ensure_not_null((void *) interv1) || 
+      ! ensure_not_null((void *) interv2))
     return NULL;
 
   Interval *result = palloc(sizeof(Interval));

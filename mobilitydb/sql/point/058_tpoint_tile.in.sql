@@ -100,7 +100,7 @@ CREATE FUNCTION getSpaceTile(point geometry, xsize float, ysize float,
   AS 'SELECT @extschema@.getSpaceTile($1, $2, $3, $2, $4)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE FUNCTION getTimeTileStbox(t timestamptz, duration interval,
+CREATE FUNCTION getStboxTimeTile(t timestamptz, duration interval,
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_get_time_tile'

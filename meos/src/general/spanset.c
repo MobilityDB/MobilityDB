@@ -63,13 +63,11 @@
 bool
 ensure_spanset_isof_type(const SpanSet *ss, meosType spansettype)
 {
-  if (ss->spansettype != spansettype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The span set value must be of type %s", meostype_name(spansettype));
-    return false;
-  }
-  return true;
+  if (ss->spansettype == spansettype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The span set value must be of type %s", meostype_name(spansettype));
+  return false;
 }
 
 /**
@@ -78,13 +76,11 @@ ensure_spanset_isof_type(const SpanSet *ss, meosType spansettype)
 bool
 ensure_spanset_isof_basetype(const SpanSet *ss, meosType basetype)
 {
-  if (ss->basetype != basetype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Operation on mixed span set and base types");
-    return false;
-  }
-  return true;
+  if (ss->basetype == basetype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Operation on mixed span set and base types");
+  return false;
 }
 
 /**
@@ -93,13 +89,11 @@ ensure_spanset_isof_basetype(const SpanSet *ss, meosType basetype)
 bool
 ensure_same_spanset_type(const SpanSet *ss1, const SpanSet *ss2)
 {
-  if (ss1->spansettype != ss2->spansettype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Operation on mixed span set types");
-    return false;
-  }
-  return true;
+  if (ss1->spansettype == ss2->spansettype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Operation on mixed span set types");
+  return false;
 }
 
 /**
@@ -108,13 +102,11 @@ ensure_same_spanset_type(const SpanSet *ss1, const SpanSet *ss2)
 bool
 ensure_same_spanset_span_type(const SpanSet *ss, const Span *s)
 {
-  if (ss->spantype != s->spantype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Operation on mixed span set and span types");
-    return false;
-  }
-  return true;
+  if (ss->spantype == s->spantype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Operation on mixed span set and span types");
+  return false;
 }
 
 /*****************************************************************************

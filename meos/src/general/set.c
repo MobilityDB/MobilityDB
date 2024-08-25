@@ -69,13 +69,11 @@
 bool
 ensure_set_isof_type(const Set *s, meosType settype)
 {
-  if (s->settype != settype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The set must be of type %s", meostype_name(settype));
-    return false;
-  }
-  return true;
+  if (s->settype == settype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The set must be of type %s", meostype_name(settype));
+  return false;
 }
 
 #if MEOS
@@ -85,14 +83,12 @@ ensure_set_isof_type(const Set *s, meosType settype)
 bool
 ensure_set_isof_basetype(const Set *s, meosType basetype)
 {
-  if (s->basetype != basetype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Operation on mixed set and base types: %s and %s",
-      meostype_name(s->settype), meostype_name(basetype));
-    return false;
-  }
-  return true;
+  if (s->basetype == basetype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Operation on mixed set and base types: %s and %s",
+    meostype_name(s->settype), meostype_name(basetype));
+  return false;
 }
 #endif /* MEOS */
 
@@ -103,14 +99,12 @@ ensure_set_isof_basetype(const Set *s, meosType basetype)
 bool
 ensure_same_set_type(const Set *s1, const Set *s2)
 {
-  if (s1->settype != s2->settype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Operation on mixed set types: %s and %s",
-      meostype_name(s1->settype), meostype_name(s2->settype));
-    return false;
-  }
-  return true;
+  if (s1->settype == s2->settype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Operation on mixed set types: %s and %s",
+    meostype_name(s1->settype), meostype_name(s2->settype));
+  return false;
 }
 
 /*****************************************************************************

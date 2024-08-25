@@ -41,31 +41,62 @@ CREATE TYPE index_intspan AS (
   index integer,
   span intspan
 );
+CREATE TYPE index_bigintspan AS (
+  index integer,
+  span bigintspan
+);
 CREATE TYPE index_floatspan AS (
   index integer,
   span floatspan
 );
 
-CREATE FUNCTION valueSpans(bounds intspan, size integer,
+CREATE FUNCTION bins(intspan, size integer,
   origin integer DEFAULT 0)
   RETURNS SETOF index_intspan
-  AS 'MODULE_PATHNAME', 'Numberspan_spans'
+  AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueSpans(bounds floatspan, size float,
+CREATE FUNCTION bins(bigintspan, size bigint,
+  origin bigint DEFAULT 0)
+  RETURNS SETOF index_bigintspan
+  AS 'MODULE_PATHNAME', 'Span_bins'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bins(floatspan, size float,
   origin float DEFAULT 0.0)
   RETURNS SETOF index_floatspan
-  AS 'MODULE_PATHNAME', 'Numberspan_spans'
+  AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION getValueSpan("value" integer, size integer,
+CREATE FUNCTION getBin("value" integer, size integer,
   origin integer DEFAULT 0)
   RETURNS intspan
-  AS 'MODULE_PATHNAME', 'Value_span'
+  AS 'MODULE_PATHNAME', 'Value_bin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION getValueSpan("value" float, size float,
+CREATE FUNCTION getBin("value" bigint, size bigint,
+  origin bigint DEFAULT 0)
+  RETURNS bigintspan
+  AS 'MODULE_PATHNAME', 'Value_bin'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getBin("value" float, size float,
   origin float DEFAULT 0.0)
   RETURNS floatspan
-  AS 'MODULE_PATHNAME', 'Value_span'
+  AS 'MODULE_PATHNAME', 'Value_bin'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE TYPE index_datespan AS (
+  index integer,
+  span datespan
+);
+
+CREATE FUNCTION bins(datespan, interval, date DEFAULT '2000-01-03')
+  RETURNS SETOF index_datespan
+  AS 'MODULE_PATHNAME', 'Span_bins'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getBin(date, interval, date DEFAULT '2000-01-03')
+  RETURNS datespan
+  AS 'MODULE_PATHNAME', 'Date_bin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -75,15 +106,14 @@ CREATE TYPE index_tstzspan AS (
   span tstzspan
 );
 
-CREATE FUNCTION timeSpans(tstzspan, interval, timestamptz DEFAULT '2000-01-03')
+CREATE FUNCTION bins(tstzspan, interval, timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_tstzspan
-  AS 'MODULE_PATHNAME', 'Tstzspan_spans'
+  AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION getTimeSpan(timestamptz, interval,
-  timestamptz DEFAULT '2000-01-03')
+CREATE FUNCTION getBin(timestamptz, interval, timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Tstzspan_span'
+  AS 'MODULE_PATHNAME', 'Timestamptz_bin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -95,18 +125,18 @@ CREATE TYPE index_tbox AS (
   tile tbox
 );
 
-CREATE FUNCTION valueTiles(bounds tbox, vsize float, vorigin float DEFAULT 0.0)
+CREATE FUNCTION valueTiles(tbox, vsize float, vorigin float DEFAULT 0.0)
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'Tbox_value_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timeTiles(bounds tbox, duration interval,
+CREATE FUNCTION timeTiles(tbox, duration interval,
   torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'Tbox_time_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueTimeTiles(bounds tbox, vsize float, duration interval,
+CREATE FUNCTION valueTimeTiles(tbox, vsize float, duration interval,
   vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'Tbox_value_time_tiles'
@@ -119,7 +149,7 @@ CREATE FUNCTION getValueTile(v float, vsize float, vorigin float DEFAULT 0.0)
   AS 'MODULE_PATHNAME', 'Tbox_get_value_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION getTimeTileTBox(t timestamptz, duration interval,
+CREATE FUNCTION getTBoxTimeTile(t timestamptz, duration interval,
   torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'Tbox_get_time_tile'
@@ -135,6 +165,12 @@ CREATE FUNCTION getValueTimeTile(v float, t timestamptz, vsize float,
 /*****************************************************************************
  * Boxes
  *****************************************************************************/
+
+CREATE FUNCTION timeSpans(datespanset, tsize interval,
+    torigin date DEFAULT '2000-01-01')
+  RETURNS datespan[]
+  AS 'MODULE_PATHNAME', 'Spanset_time_spans'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 CREATE FUNCTION timeSpans(tstzspanset, tsize interval,
     torigin timestamptz DEFAULT '2000-01-03')

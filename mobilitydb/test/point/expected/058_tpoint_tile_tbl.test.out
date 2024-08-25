@@ -50,6 +50,20 @@ SELECT extent(getSpaceTile(g, 2.5, geometry 'Point(10 10 10)')) FROM
  STBOX Z((2.5,10,0),(72.5,92.5,97.5))
 (1 row)
 
+SELECT extent(getStboxTimeTile(t, interval '2 days')) FROM
+(SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
+                                extent                                 
+-----------------------------------------------------------------------
+ STBOX T([Sat Jan 27 00:00:00 2001 PST, Tue Dec 11 00:00:00 2001 PST))
+(1 row)
+
+SELECT extent(getStboxTimeTile(t, interval '2 days', '2001-06-01')) FROM
+(SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
+                                extent                                 
+-----------------------------------------------------------------------
+ STBOX T([Sat Jan 27 23:00:00 2001 PST, Sun Dec 09 23:00:00 2001 PST))
+(1 row)
+
 SELECT extent(getSpaceTimeTile(g, t, 2.5, interval '2 days')) FROM
 (SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;

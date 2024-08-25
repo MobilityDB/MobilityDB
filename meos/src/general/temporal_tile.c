@@ -54,252 +54,7 @@
 #include "general/type_util.h"
 
 /*****************************************************************************
- * Span bin functions
- *****************************************************************************/
-
-/**
- * @brief Get the time bins of a temporal value
- * @param[in] s Span to tile
- * @param[in] size Size of the bins
- * @param[in] origin Time origin of the tiles
- * @param[out] start_bin,end_bin Values of the start and end bins
- * @return Number of bins
- */
-int
-span_no_bins(const Span *s, Datum size, Datum origin, Datum *start_bin,
-  Datum *end_bin)
-{
-  assert(s); assert(start_bin); assert(end_bin);
-
-  Datum start_value = s->lower;
-  /* We need to add size to obtain the end value of the last bin */
-  Datum end_value = datum_add(s->upper, size, s->basetype);
-  *start_bin = datum_bin(start_value, size, origin, s->basetype);
-  *end_bin = datum_bin(end_value, size, origin, s->basetype);
-  switch (s->basetype)
-  {
-    case T_INT4:
-      return (DatumGetInt32(*end_bin) - DatumGetInt32(*start_bin)) /
-        DatumGetInt32(size);
-    case T_INT8:
-      return (DatumGetInt64(*end_bin) - DatumGetInt64(*start_bin)) /
-        DatumGetInt64(size);
-    case T_FLOAT8:
-      return (int) floor((DatumGetFloat8(*end_bin) -
-        DatumGetFloat8(*start_bin)) / DatumGetFloat8(size));
-    case T_TIMESTAMPTZ:
-      return (DatumGetInt64(*end_bin) - DatumGetInt64(*start_bin)) /
-        DatumGetInt64(size);
-    default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Unknown number of bins function for type: %s",
-        meostype_name(s->basetype));
-      return 0;
-  }
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Create the initial state for tiling operations
- * @param[in] temp Temporal value, may be @p NULL
- * @param[in] s Bounds for generating the bins
- * @param[in] size Size of the bins
- * @param[in] origin Origin of the bins
- * @note The first argument is NULL when generating the bins, otherwise
- * it is a temporal number to be split and in this case is the value span
- * of the temporal number
- */
-SpanBinState *
-span_bin_state_make(const void *temp, const Span *s, Datum size,
-  Datum origin)
-{
-  assert(s); assert(positive_datum(size, s->basetype));
-
-  /* Use palloc0 for initialization */
-  SpanBinState *state = palloc0(sizeof(SpanBinState));
-  /* Fill in state */
-  state->done = false;
-  state->basetype = s->basetype;
-  state->i = 1;
-  state->size = size;
-  state->origin = origin;
-  /* Get the span bounds of the state */
-  Datum start_bin, end_bin;
-  state->nbins = span_no_bins(s, size, origin, &start_bin, &end_bin);
-  /* Set the span of the state */
-  span_set(start_bin, end_bin, true, false, s->basetype, s->spantype,
-    &state->span);
-  state->value = start_bin;
-  state->temp = temp;
-  return state;
-}
-
-/**
- * @brief Generate an integer or float span bin from a bin list
- * @param[in] lower Start value of the bin
- * @param[in] size Size of the bins
- * @param[in] basetype Type of the arguments
- * @param[in] spantype Span type of the arguments
- * @param[out] span Output span
- */
-void
-span_bin_state_set(Datum lower, Datum size, meosType basetype,
-  meosType spantype, Span *span)
-{
-  assert(span);
-
-  Datum upper = datum_add(lower, size, basetype);
-  span_set(lower, upper, true, false, basetype, spantype, span);
-  return;
-}
-
-/**
- * @brief Get the current bin of the bins
- * @param[in] state State to increment
- * @param[out] span Current bin
- */
-bool
-span_bin_state_get(SpanBinState *state, Span *span)
-{
-  if (! state || state->done)
-    return false;
-  /* Get the box of the current tile */
-  span_bin_state_set(state->value, state->size, state->span.basetype,
-    state->span.spantype, span);
-  return true;
-}
-
-/**
- * @brief Increment the current state to the next bin of the bins
- * @param[in] state State to increment
- */
-void
-span_bin_state_next(SpanBinState *state)
-{
-  if (! state || state->done)
-    return;
-  /* Move to the next bin */
-  state->i++;
-  state->value = datum_add(state->value, state->size, state->basetype);
-  if (state->i > state->nbins)
-    state->done = true;
-  return;
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Set the state with a spanset and a time bin for splitting
- * or obtaining a set of spans
- * @param[in] ss SpanSet value
- * @param[in] duration Size of the time dimension as an interval
- * @param[in] torigin Origin for the time dimension
- * @param[out] nbins Number of bins
- */
-SpanBinState *
-spanset_time_bin_init(const SpanSet *ss, const Interval *duration,
-  TimestampTz torigin, int *nbins)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) nbins) ||
-      ! ensure_not_null((void *) duration) ||
-      ! ensure_valid_duration(duration))
-    return NULL;
-
-  /* Create function state */
-  int64 tunits = interval_units(duration);
-  SpanBinState *state = span_bin_state_make((const void *) ss, &ss->span,
-    Int64GetDatum(tunits), TimestampTzGetDatum(torigin));
-  *nbins = state->nbins;
-  return state;
-}
-
-/**
- * @brief Set the state with a spanset and a time bin for splitting
- * or obtaining a set of spans
- * @param[in] ss SpanSet value
- * @param[in] vsize Size of the value dimension
- * @param[in] vorigin Origin for the value dimension
- * @param[out] nbins Number of bins
- */
-SpanBinState *
-spanset_value_bin_init(const SpanSet *ss, Datum vsize, Datum vorigin,
-  int *nbins)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) nbins) ||
-      ! ensure_positive_datum(vsize, ss->basetype))
-    return NULL;
-
-  /* Create function state */
-  SpanBinState *state = span_bin_state_make((const void *) ss, &ss->span,
-    vsize, vorigin);
-  *nbins = state->nbins;
-  return state;
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Set the state with a temporal value and a time bin for splitting
- * or obtaining a set of spans
- * @param[in] temp Temporal value
- * @param[in] duration Size of the time dimension as an interval
- * @param[in] torigin Origin for the time dimension
- * @param[out] nbins Number of bins
- */
-SpanBinState *
-temporal_time_bin_init(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin, int *nbins)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) nbins) ||
-      ! ensure_not_null((void *) duration) ||
-      ! ensure_valid_duration(duration))
-    return NULL;
-
-  /* Set bounding box */
-  Span bounds;
-  temporal_set_tstzspan(temp, &bounds);
-  /* Create function state */
-  int64 tunits = interval_units(duration);
-  SpanBinState *state = span_bin_state_make((const void *) temp, &bounds,
-    tunits, torigin);
-  *nbins = state->nbins;
-  return state;
-}
-
-/**
- * @brief Set the state with a temporal value and a time bin for splitting
- * or obtaining a set of spans
- * @param[in] temp Temporal value
- * @param[in] vsize Size of the value dimension
- * @param[in] vorigin Origin for the value dimension
- * @param[out] nbins Number of bins
- */
-SpanBinState *
-tnumber_value_bin_init(const Temporal *temp, Datum vsize, Datum vorigin,
-  int *nbins)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) nbins) ||
-      ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_positive_datum(vsize, temptype_basetype(temp->temptype)))
-    return NULL;
-
-  /* Set bounding box */
-  Span bounds;
-  tnumber_set_span(temp, &bounds);
-  /* Create function state */
-  SpanBinState *state = span_bin_state_make((const void *) temp, &bounds,
-    vsize, vorigin);
-  *nbins = state->nbins;
-  return state;
-}
-
-/*****************************************************************************
- * Bin functions
+ * Bin functions for the various span base types
  *****************************************************************************/
 
 /**
@@ -319,7 +74,7 @@ int_get_bin(int value, int size, int origin)
   if (origin != 0)
   {
     /*
-     * We need to ensure that the value is in span _after_ the origin is
+     * We need to ensure that the value is in span AFTER the origin is
      * applied: when the origin is positive we need to make sure the resultant
      * value is at least the minimum integer value (PG_INT32_MIN) and when
      * negative that it is less than the maximum integer value (PG_INT32_MAX)
@@ -444,76 +199,6 @@ float_get_bin(double value, double size, double origin)
 
 /*****************************************************************************/
 
-#define TIME_BUCKET(period, timestamp, offset, min, max, result)                                   \
-  do                                                                                             \
-  {                                                                                              \
-    if ((period) <= 0)                                                                         \
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,                                     \
-        "period must be greater than 0");                                    \
-    if ((offset) != 0)                                                                         \
-    {                                                                                          \
-      /* We need to ensure that the timestamp is in range _after_ the */                     \
-      /* offset is applied: when the offset is positive we need to make */                   \
-      /* sure the resultant time is at least min, and when negative that */                  \
-      /* it is less than the max. */                                                         \
-      (offset) = (offset) % (period);                                                        \
-      if (((offset) > 0 && (timestamp) < (min) + (offset)) ||                                \
-        ((offset) < 0 && (timestamp) > (max) + (offset)))                                  \
-        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,                              \
-          "timestamp out of range");                                       \
-      (timestamp) -= (offset);                                                               \
-    }                                                                                          \
-    (result) = ((timestamp) / (period)) * (period);                                            \
-    if ((timestamp) < 0 && (timestamp) % (period))                                             \
-    {                                                                                          \
-      if ((result) < (min) + (period))                                                       \
-        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,                              \
-          "timestamp out of range");                                       \
-      else                                                                                   \
-        (result) = (result) - (period);                                                    \
-    }                                                                                          \
-    (result) += (offset);                                                                      \
-  } while (0)
-
-/*
- * The default origin is Monday 2000-01-03. We don't use PG epoch since it starts on a saturday.
- * This makes time-buckets by a week more intuitive and aligns it with date_trunc. Since month
- * bucketing ignores the day component this makes origin for month buckets 2000-01-01.
- */
-#define DEFAULT_ORIGIN (JAN_3_2000)
-#define TIME_BUCKET_TS(period, timestamp, result, shift)                                           \
-  do                                                                                             \
-  {                                                                                              \
-    if ((period) <= 0)                                                                         \
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,                                     \
-        "period must be greater than 0");                                    \
-    /* shift = shift % period, but use TMODULO */                                              \
-    TMODULO(shift, result, period);                                                            \
-                                                                                                   \
-    if (((shift) > 0 && (timestamp) < DT_NOBEGIN + (shift)) ||                                 \
-      ((shift) < 0 && (timestamp) > DT_NOEND + (shift)))                                     \
-      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,                                  \
-        "timestamp out of range");                                           \
-    (timestamp) -= (shift);                                                                    \
-                                                                                                   \
-    /* result = (timestamp / period) * period */                                               \
-    TMODULO(timestamp, result, period);                                                        \
-    if ((timestamp) < 0)                                                                       \
-    {                                                                                          \
-      /*                                                                                     \
-       * need to subtract another period if remainder < 0 this only happens                  \
-       * if timestamp is negative to begin with and there is a remainder                     \
-       * after division. Need to subtract another period since division                      \
-       * truncates toward 0 in C99.                                                          \
-       */                                                                                    \
-      (result) = ((result) * (period)) - (period);                                           \
-    }                                                                                          \
-    else                                                                                       \
-      (result) *= (period);                                                                  \
-                                                                                                   \
-    (result) += (shift);                                                                       \
-  } while (0)
-
 /**
  * @brief Return the interval in the same representation as Postgres timestamps
  */
@@ -524,84 +209,16 @@ interval_units(const Interval *interval)
 }
 
 /**
- * @brief Validate a month bucket
- */
-static void
-validate_month_bucket(const Interval *interval)
-{
-  /*
-   * Bucketing by a month and non-month cannot be mixed.
-   */
-  assert(interval->month);
-
-  if (interval->day || interval->time)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "month intervals cannot have day or time component");
-  }
-}
-
-/*
- * To bucket by month we get the year and month of a date and convert
- * that to the nth month since origin. This allows us to treat month
- * bucketing similar to int bucketing. During this process we ignore
- * the day component and therefore only support bucketing by full months.
+ * @brief To bin by day we get the year and month of a date and convert
+ * that to the nth month since origin. This allows us to treat month bining
+ * similar to int bining. During this process we ignore the day component and
+ * therefore only support bining by full months.
  */
 static DateADT
-bucket_month(int32 period, DateADT date, DateADT origin)
+date_get_bin_int(DateADT d, int32 ndays, DateADT origin)
 {
-  int32 year, month, day;
-  int32 result;
-
-  j2date(date + POSTGRES_EPOCH_JDATE, &year, &month, &day);
-  int32 timestamp = year * 12 + month - 1;
-
-  j2date(origin + POSTGRES_EPOCH_JDATE, &year, &month, &day);
-  int32 offset = year * 12 + month - 1;
-
-  TIME_BUCKET(period, timestamp, offset, PG_INT32_MIN, PG_INT32_MAX, result);
-
-  year = result / 12;
-  month = result % 12;
-  day = 1;
-
-  return date2j(year, month + 1, day) - POSTGRES_EPOCH_JDATE;
-}
-
-/**
- * @brief Returns the period in the same representation as Postgres Timestamps.
- * Note that this is not our internal representation (microseconds).
- * Always returns an exact value.
- */
-static int64
-get_interval_period_timestamp_units(const Interval *interval)
-{
-  if (interval->month != 0)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "interval defined in terms of month, year, century etc. not supported");
-      return -1; // TODO
-  }
-  return interval->time + (interval->day * USECS_PER_DAY);
-}
-
-/**
- * @brief Ensure that a day period is correct.
- */
-static void
-check_period_is_daily(int64 period)
-{
-  int64 day = USECS_PER_DAY;
-  if (period < day)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "interval must not have sub-day precision");
-  }
-  if (period % day != 0)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "interval must be a multiple of a day");
-  }
+  /* In PostgreSQL DateADT is defined as a typedef of int32 */
+  return (DateADT) int_get_bin((int) d, (int) ndays, (int) origin);
 }
 
 /**
@@ -616,33 +233,14 @@ date_get_bin(DateADT d, const Interval *duration, DateADT origin)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) duration) ||
-      ! ensure_valid_duration(duration))
+      ! ensure_valid_day_duration(duration))
     return DATEVAL_NOEND;
-
-  Timestamp origin_ts = date_to_timestamp(origin);
-  Timestamp result;
 
   if (DATE_NOT_FINITE(d))
     return d;
 
-  /* convert to timestamp (NOT tz), bucket, convert back to date */
-  Timestamp timestamp = date_to_timestamp(d);
-  assert(! TIMESTAMP_NOT_FINITE(timestamp));
-
-  if (duration->month)
-  {
-    validate_month_bucket(duration);
-    d = bucket_month(duration->month, d, origin);
-    return d;
-  }
-  else
-  {
-    int64 period = get_interval_period_timestamp_units(duration);
-    /* check the period aligns on a date */
-    check_period_is_daily(period);
-    TIME_BUCKET_TS(period, timestamp, result, origin_ts);
-    return timestamp_to_date(result);
-  }
+  int32 ndays = interval_units(duration) / USECS_PER_DAY;
+  return date_get_bin_int(d, ndays, origin);
 }
 
 /**
@@ -717,12 +315,19 @@ timestamptz_get_bin(TimestampTz t, const Interval *duration,
   return timestamptz_get_bin_int(t, size, origin);
 }
 
+/*****************************************************************************
+ * Span bin functions
+ *****************************************************************************/
+
 /**
  * @brief Return the initial value of the bin that contains a number value
  * @param[in] value Input value
  * @param[in] size Size of the bins
  * @param[in] origin Origin of the bins
  * @param[in] type Data type of the arguments
+ * @pre When called for dates, this function assumes that the duration interval
+ * which the calling function translated into the argument `size` does NOT
+ * have a month component
  */
 Datum
 datum_bin(Datum value, Datum size, Datum origin, meosType type)
@@ -743,10 +348,9 @@ datum_bin(Datum value, Datum size, Datum origin, meosType type)
     case T_FLOAT8:
       return Float8GetDatum(float_get_bin(DatumGetFloat8(value),
         DatumGetFloat8(size), DatumGetFloat8(origin)));
-    // case T_DATE:
-      // return DateADTGetDatum(date_get_bin_int(
-        // DatumGetDateADT(value), DatumGetInt32(size),
-        // DatumGetDateADT(origin)));
+    case T_DATE:
+      return DateADTGetDatum(date_get_bin_int(DatumGetDateADT(value),
+          DatumGetInt32(size), DatumGetDateADT(origin)));
     case T_TIMESTAMPTZ:
       return TimestampTzGetDatum(timestamptz_get_bin_int(
         DatumGetTimestampTz(value), DatumGetInt64(size),
@@ -758,8 +362,268 @@ datum_bin(Datum value, Datum size, Datum origin, meosType type)
   }
 }
 
+/**
+ * @brief Get the time bins of a temporal value
+ * @param[in] s Span to tile
+ * @param[in] size Size of the bins
+ * @param[in] origin Time origin of the tiles
+ * @param[out] start_bin,end_bin Values of the start and end bins
+ * @return Number of bins
+ * @pre When called for dates, this function assumes that the duration interval
+ * which the calling function translated into the argument `size` does NOT
+ * have a month component
+ */
+int
+span_no_bins(const Span *s, Datum size, Datum origin, Datum *start_bin,
+  Datum *end_bin)
+{
+  assert(s); assert(start_bin); assert(end_bin);
+
+  Datum start_value = s->lower;
+  /* We need to add size to obtain the end value of the last bin */
+  Datum end_value = datum_add(s->upper, size, s->basetype);
+  *start_bin = datum_bin(start_value, size, origin, s->basetype);
+  *end_bin = datum_bin(end_value, size, origin, s->basetype);
+  switch (s->basetype)
+  {
+    case T_INT4:
+      return (DatumGetInt32(*end_bin) - DatumGetInt32(*start_bin)) /
+        DatumGetInt32(size);
+    case T_INT8:
+      return (DatumGetInt64(*end_bin) - DatumGetInt64(*start_bin)) /
+        DatumGetInt64(size);
+    case T_FLOAT8:
+      return (int) floor((DatumGetFloat8(*end_bin) -
+        DatumGetFloat8(*start_bin)) / DatumGetFloat8(size));
+    case T_DATE:
+      return (DatumGetDateADT(*end_bin) - DatumGetDateADT(*start_bin)) /
+          DatumGetInt32(size);
+    case T_TIMESTAMPTZ:
+      return (DatumGetInt64(*end_bin) - DatumGetInt64(*start_bin)) /
+        DatumGetInt64(size);
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "Unknown number of bins function for type: %s",
+        meostype_name(s->basetype));
+      return 0;
+  }
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Create the initial state for tiling operations
+ * @param[in] to_split Value to split, currently either a spanset or a temporal
+ * value, may be @p NULL
+ * @param[in] s Bounds for generating the bins
+ * @param[in] size Size of the bins
+ * @param[in] origin Origin of the bins
+ * @note The first argument is NULL when generating the bins, otherwise
+ * it is a spanset or a temporal value to be split and in this case is the
+ * bounding span of the value to split
+ */
+SpanBinState *
+span_bin_state_make(const void *to_split, const Span *s, Datum size,
+  Datum origin)
+{
+  assert(s); assert(positive_datum(size, s->basetype));
+
+  /* Use palloc0 for initialization */
+  SpanBinState *state = palloc0(sizeof(SpanBinState));
+  /* Fill in state */
+  state->done = false;
+  state->basetype = s->basetype;
+  state->i = 1;
+  state->size = size;
+  state->origin = origin;
+  /* Get the span bounds of the state */
+  Datum start_bin, end_bin;
+  state->nbins = span_no_bins(s, size, origin, &start_bin, &end_bin);
+  /* Set the span of the state */
+  span_set(start_bin, end_bin, true, false, s->basetype, s->spantype,
+    &state->span);
+  state->value = start_bin;
+  state->to_split = to_split;
+  return state;
+}
+
+/**
+ * @brief Generate an integer or float span bin from a bin list
+ * @param[in] lower Start value of the bin
+ * @param[in] size Size of the bins
+ * @param[in] basetype Type of the arguments
+ * @param[in] spantype Span type of the arguments
+ * @param[out] span Output span
+ */
+void
+span_bin_state_set(Datum lower, Datum size, meosType basetype,
+  meosType spantype, Span *span)
+{
+  assert(span);
+
+  Datum upper = datum_add(lower, size, basetype);
+  span_set(lower, upper, true, false, basetype, spantype, span);
+  return;
+}
+
+/**
+ * @brief Get the current bin of the bins
+ * @param[in] state State to increment
+ * @param[out] span Current bin
+ */
+bool
+span_bin_state_get(SpanBinState *state, Span *span)
+{
+  if (! state || state->done)
+    return false;
+  /* Get the box of the current tile */
+  span_bin_state_set(state->value, state->size, state->span.basetype,
+    state->span.spantype, span);
+  return true;
+}
+
+/**
+ * @brief Increment the current state to the next bin of the bins
+ * @param[in] state State to increment
+ */
+void
+span_bin_state_next(SpanBinState *state)
+{
+  if (! state || state->done)
+    return;
+  /* Move to the next bin */
+  state->i++;
+  state->value = datum_add(state->value, state->size, state->basetype);
+  if (state->i > state->nbins)
+    state->done = true;
+  return;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Set the state with a spanset and a time bin for splitting
+ * or obtaining a set of spans
+ * @param[in] ss SpanSet value
+ * @param[in] duration Size of the time dimension as an interval
+ * @param[in] torigin Origin for the time dimension, may be a Date or a
+ * TimestampTz
+ * @param[out] nbins Number of bins
+ */
+SpanBinState *
+spanset_time_bin_init(const SpanSet *ss, const Interval *duration,
+  Datum torigin, int *nbins)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) nbins) ||
+      ! ensure_not_null((void *) duration) ||
+      (ss->basetype != T_DATE && ! ensure_valid_duration(duration)) ||
+      (ss->basetype == T_DATE && ! ensure_valid_day_duration(duration)))
+    return NULL;
+
+  /* Create function state */
+  SpanBinState *state;
+  if (ss->basetype == T_DATE)
+  {
+    int32 days = (int32) (interval_units(duration) / USECS_PER_DAY);
+    state = span_bin_state_make((const void *) ss, &ss->span,
+      Int32GetDatum(days), torigin);
+  }
+  else
+  {
+    int64 tunits = interval_units(duration);
+    state = span_bin_state_make((const void *) ss, &ss->span,
+      Int64GetDatum(tunits), torigin);
+  }
+  *nbins = state->nbins;
+  return state;
+}
+
+/**
+ * @brief Set the state with a spanset and a time bin for splitting
+ * or obtaining a set of spans
+ * @param[in] ss SpanSet value
+ * @param[in] vsize Size of the value dimension
+ * @param[in] vorigin Origin for the value dimension
+ * @param[out] nbins Number of bins
+ */
+SpanBinState *
+spanset_value_bin_init(const SpanSet *ss, Datum vsize, Datum vorigin,
+  int *nbins)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) nbins) ||
+      ! ensure_positive_datum(vsize, ss->basetype))
+    return NULL;
+
+  /* Create function state */
+  SpanBinState *state = span_bin_state_make((const void *) ss, &ss->span,
+    vsize, vorigin);
+  *nbins = state->nbins;
+  return state;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Set the state with a temporal value and a time bin for splitting
+ * or obtaining a set of spans
+ * @param[in] temp Temporal value
+ * @param[in] duration Size of the time dimension as an interval
+ * @param[in] torigin Origin for the time dimension
+ * @param[out] nbins Number of bins
+ */
+SpanBinState *
+temporal_time_bin_init(const Temporal *temp, const Interval *duration,
+  TimestampTz torigin, int *nbins)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) nbins) ||
+      ! ensure_not_null((void *) duration) ||
+      ! ensure_valid_duration(duration))
+    return NULL;
+
+  /* Set bounding box */
+  Span bounds;
+  temporal_set_tstzspan(temp, &bounds);
+  /* Create function state */
+  int64 tunits = interval_units(duration);
+  SpanBinState *state = span_bin_state_make((const void *) temp, &bounds,
+    tunits, torigin);
+  *nbins = state->nbins;
+  return state;
+}
+
+/**
+ * @brief Set the state with a temporal value and a time bin for splitting
+ * or obtaining a set of spans
+ * @param[in] temp Temporal value
+ * @param[in] vsize Size of the value dimension
+ * @param[in] vorigin Origin for the value dimension
+ * @param[out] nbins Number of bins
+ */
+SpanBinState *
+tnumber_value_bin_init(const Temporal *temp, Datum vsize, Datum vorigin,
+  int *nbins)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) nbins) ||
+      ! ensure_tnumber_type(temp->temptype) ||
+      ! ensure_positive_datum(vsize, temptype_basetype(temp->temptype)))
+    return NULL;
+
+  /* Set bounding box */
+  Span bounds;
+  tnumber_set_span(temp, &bounds);
+  /* Create function state */
+  SpanBinState *state = span_bin_state_make((const void *) temp, &bounds,
+    vsize, vorigin);
+  *nbins = state->nbins;
+  return state;
+}
+
 /*****************************************************************************
- * Bin functions
+ * Bins functions
  *****************************************************************************/
 
 #if MEOS
@@ -786,49 +650,6 @@ span_bins(const Span *s, Datum size, Datum origin, int *count)
   *count = state->nbins;
   pfree(state);
   return bins;
-}
-
-/**
- * @ingroup meos_internal_temporal_analytics_tile
- * @brief Return the bins of a number span
- * @param[in] s Input span to split
- * @param[in] size Size of the bins
- * @param[in] origin Origin of the bins
- * @param[out] count Number of elements in the output array
- */
-Span *
-numberspan_bins(const Span *s, Datum size, Datum origin, int *count)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
-      ! ensure_numspan_type(s->spantype) ||
-      ! ensure_positive_datum(size, s->basetype))
-    return NULL;
-
-  return span_bins(s, size, origin, count);
-}
-
-/**
- * @ingroup meos_temporal_analytics_tile
- * @brief Return the bins of a timestamptz span
- * @param[in] s Input span to split
- * @param[in] duration Interval defining the size of the bins
- * @param[in] origin Origin of the bins
- * @param[out] count Number of elements in the output array
- */
-Span *
-tstzspan_bins(const Span *s, Interval *duration, TimestampTz origin,
-  int *count)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
-      ! ensure_not_null((void *) duration) ||
-      ! ensure_valid_duration(duration) ||
-      ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return NULL;
-
-  int64 tunits = interval_units(duration);
-  return span_bins(s, tunits, TimestampTzGetDatum(origin), count);
 }
 
 /**
@@ -863,96 +684,67 @@ floatspan_bins(const Span *s, double size, double origin, int *count)
  * @ingroup meos_temporal_analytics_tile
  * @brief Return the bins of a date span
  * @param[in] s Input span to split
- * @param[in] size Size of the bins
+ * @param[in] duration Interval defining the size of the bins
  * @param[in] origin Origin of the bins
  * @param[out] count Number of elements in the output array
  */
 Span *
-datespan_bins(const Span *s, int size, DateADT origin, int *count)
+datespan_bins(const Span *s, const Interval *duration, DateADT origin,
+  int *count)
 {
-  return span_bins(s, Float8GetDatum(size), DateADTGetDatum(origin), count);
-}
-#endif /* MEOS */
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
+      ! ensure_not_null((void *) duration) ||
+      ! ensure_valid_day_duration(duration) ||
+      ! ensure_span_isof_type(s, T_DATESPAN))
+    return NULL;
 
-/*****************************************************************************/
+  int32 days = (int32) (interval_units(duration) / USECS_PER_DAY);
+  return span_bins(s, Int32GetDatum(days), DateADTGetDatum(origin), count);
+}
 
 /**
  * @ingroup meos_temporal_analytics_tile
- * @brief Return the time bins of a span set
- * @param[in] ss Input span to split
+ * @brief Return the bins of a timestamptz span
+ * @param[in] s Input span to split
  * @param[in] duration Interval defining the size of the bins
- * @param[in] torigin Origin of the bins
+ * @param[in] origin Origin of the bins
  * @param[out] count Number of elements in the output array
- * @note The tests for the validity of the arguments is done in function
- * #spanset_time_bin_init
  */
 Span *
-spanset_time_spans(const SpanSet *ss, const Interval *duration,
-  TimestampTz torigin, int *count)
+tstzspan_bins(const Span *s, const Interval *duration, TimestampTz origin,
+  int *count)
 {
-  /* Initialize state */
-  int nbins;
-  SpanBinState *state = spanset_time_bin_init(ss, duration, torigin,
-    &nbins);
-  if (! state)
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
+      ! ensure_not_null((void *) duration) ||
+      ! ensure_valid_duration(duration) ||
+      ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
 
-  Span *result = palloc(sizeof(Span) * nbins);
-  /* We need to loop since atSpan may be NULL */
-  int i = 0;
-  while (true)
-  {
-    /* Stop when we have used up all the grid bins */
-    if (state->done)
-    {
-      pfree(state);
-      break;
-    }
-
-    /* Get current bin (if any) and advance state */
-    Span span;
-    if (! span_bin_state_get(state, &span))
-    {
-      pfree(state);
-      break;
-    }
-    span_bin_state_next(state);
-
-    /* Restrict the span set to the timestamptz span and compute
-     * its bounding span */
-    SpanSet *atspan = intersection_spanset_span(ss, &span);
-    if (atspan == NULL)
-      continue;
-    memcpy(&span, &atspan->span, sizeof(Span));
-    pfree(atspan);
-
-    /* Copy the span to the result */
-    memcpy(&result[i++], &span, sizeof(Span));
-  }
-  *count = i;
-  return result;
+  int64 tunits = interval_units(duration);
+  return span_bins(s, Int64GetDatum(tunits), TimestampTzGetDatum(origin),
+    count);
 }
+#endif /* MEOS */
+
+/*****************************************************************************
+ * Spans functions
+ *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_analytics_tile
- * @brief Return the bins of a temporal number
+ * @brief Function with common functionality for functions
+ * #spanset_value_spans and #spanset_time_spans
  * @param[in] ss Input span to split
- * @param[in] vsize Size of the bins
- * @param[in] vorigin Origin of the bins
+ * @param[in] state State
  * @param[out] count Number of elements in the output array
- * @note The tests for the validity of the arguments is done in function
- * #spanset_value_bin_init
  */
-Span *
-spanset_value_spans(const SpanSet *ss, Datum vsize, Datum vorigin, int *count)
+static Span *
+spanset_spans_common(const SpanSet *ss, SpanBinState *state, int *count)
 {
-  /* Initialize state */
-  int nbins;
-  SpanBinState *state = spanset_value_bin_init(ss, vsize, vorigin, &nbins);
-  if (! state)
-    return NULL;
+  assert(ss); assert(state); assert(count);
 
-  Span *result = palloc(sizeof(Span) * nbins);
+  Span *result = palloc(sizeof(Span) * state->nbins);
   /* We need to loop since atSpan may be NULL */
   int i = 0;
   while (true)
@@ -974,7 +766,7 @@ spanset_value_spans(const SpanSet *ss, Datum vsize, Datum vorigin, int *count)
     span_bin_state_next(state);
 
     /* Restrict the temporal number to the span and compute its bounding span */
-    SpanSet *atspan = intersection_spanset_span((SpanSet *) state->temp, &span);
+    SpanSet *atspan = intersection_spanset_span(ss, &span);
     if (atspan == NULL)
       continue;
     memcpy(&span, &atspan->span, sizeof(Span));
@@ -985,6 +777,86 @@ spanset_value_spans(const SpanSet *ss, Datum vsize, Datum vorigin, int *count)
   }
   *count = i;
   return result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_analytics_tile
+ * @brief Return the time bins of a span set
+ * @param[in] ss Input span to split
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Origin of the bins
+ * @param[out] count Number of elements in the output array
+ * @note The tests for the validity of the arguments is done in function
+ * #spanset_time_bin_init
+ */
+Span *
+spanset_time_spans(const SpanSet *ss, const Interval *duration,
+  Datum torigin, int *count)
+{
+  /* Initialize state */
+  int nbins;
+  SpanBinState *state = spanset_time_bin_init(ss, duration, torigin,
+    &nbins);
+  if (! state)
+    return NULL;
+  return spanset_spans_common(ss, state, count);
+}
+
+#if MEOS
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the time bins of a span set
+ * @param[in] ss Input span to split
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Origin of the bins
+ * @param[out] count Number of elements in the output array
+ * @note The tests for the validity of the arguments is done in function
+ * #spanset_time_bin_init
+ */
+Span *
+datespanset_time_spans(const SpanSet *ss, const Interval *duration,
+  DateADT torigin, int *count)
+{
+  return spanset_time_spans(ss, duration, DateADTGetDatum(torigin), count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the time bins of a span set
+ * @param[in] ss Input span to split
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Origin of the bins
+ * @param[out] count Number of elements in the output array
+ * @note The tests for the validity of the arguments is done in function
+ * #spanset_time_bin_init
+ */
+Span *
+tstzspanset_time_spans(const SpanSet *ss, const Interval *duration,
+  TimestampTz torigin, int *count)
+{
+  return spanset_time_spans(ss, duration, TimestampTzGetDatum(torigin), count);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_internal_temporal_analytics_tile
+ * @brief Return the bins of a temporal number
+ * @param[in] ss Input span to split
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @param[out] count Number of elements in the output array
+ * @note The tests for the validity of the arguments is done in function
+ * #spanset_value_bin_init
+ */
+Span *
+spanset_value_spans(const SpanSet *ss, Datum vsize, Datum vorigin, int *count)
+{
+  /* Initialize state */
+  int nbins;
+  SpanBinState *state = spanset_value_bin_init(ss, vsize, vorigin, &nbins);
+  if (! state)
+    return NULL;
+  return spanset_spans_common(ss, state, count);
 }
 
 #if MEOS
@@ -999,8 +871,24 @@ spanset_value_spans(const SpanSet *ss, Datum vsize, Datum vorigin, int *count)
 Span *
 intspanset_value_spans(const SpanSet *ss, int vsize, int vorigin, int *count)
 {
-  return spanset_value_spans(ss, Int32GetDatum(vsize),
-    Int32GetDatum(vorigin), count);
+  return spanset_value_spans(ss, Int32GetDatum(vsize), Int32GetDatum(vorigin),
+    count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the bins of a bigint span set
+ * @param[in] ss SpanSet number
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @param[out] count Number of elements in the output array
+ */
+Span *
+bigintspanset_value_spans(const SpanSet *ss, int64 vsize, int64 vorigin,
+  int *count)
+{
+  return spanset_value_spans(ss, Int64GetDatum(vsize), Int64GetDatum(vorigin),
+    count);
 }
 
 /**
@@ -1121,8 +1009,8 @@ tnumber_value_spans(const Temporal *temp, Datum vsize, Datum vorigin,
     span_bin_state_next(state);
 
     /* Restrict the temporal number to the span and compute its bounding span */
-    Temporal *atspan = tnumber_restrict_span((Temporal *) state->temp, &span,
-      REST_AT);
+    Temporal *atspan = tnumber_restrict_span((Temporal *) state->to_split,
+      &span, REST_AT);
     if (atspan == NULL)
       continue;
     tnumber_set_span(atspan, &span);

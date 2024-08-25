@@ -147,13 +147,11 @@ store_fcinfo(FunctionCallInfo fcinfo)
 bool
 ensure_not_empty_array(ArrayType *array)
 {
-  if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
-  {
-    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
-      errmsg("The input array cannot be empty")));
-    return false;
-  }
-  return true;
+  if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) > 0)
+    return true;
+  ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
+    errmsg("The input array cannot be empty")));
+  return false;
 }
 
 /*****************************************************************************

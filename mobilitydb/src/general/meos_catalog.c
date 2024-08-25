@@ -546,13 +546,11 @@ range_basetype(meosType type)
 bool
 ensure_range_basetype(meosType type)
 {
-  if (! range_basetype(type))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The value must be of a type compatible with a range type");
-    return false;
-  }
-  return true;
+  if (range_basetype(type))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The value must be of a type compatible with a range type");
+  return false;
 }
 
 /**
