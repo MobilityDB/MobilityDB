@@ -67,7 +67,7 @@ int main() {
   clock_t t;
   double time_taken;
   RTree * rtree;
-  rtree = rtree_create(T_STBOX);
+  rtree = rtree_create_stbox();
 
   for (int i = 0; i < NO_STBOX; ++i) {
     int xmin = get_random_number(1, 1000);

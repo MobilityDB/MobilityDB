@@ -296,7 +296,8 @@ typedef struct
   SkipListElem *elems;
 } SkipList;
 
-typedef struct RTreeNode RTreeNode;
+
+typedef struct RTreeMetadata RTreeMetadata;
 
 /**
  * Rtree in memory index basic structure.
@@ -308,12 +309,9 @@ typedef struct RTreeNode RTreeNode;
  * combination that you may want.
  */
 typedef struct {
-  int basetype;
-  RTreeNode *root;
   int count;
-  int dims;
-  STBox box; /* In the future this should be able to be TBox or Span */
-  double (*get_axis)(const STBox*, int, bool);
+  STBox box;
+  RTreeMetadata * metadata;
 } RTree;
 
 /*****************************************************************************
@@ -1250,7 +1248,7 @@ extern STBox *intersection_stbox_stbox(const STBox *box1, const STBox *box2);
  * RTree functions
  *****************************************************************************/
 
-extern RTree * rtree_create (int basetype);
+extern RTree * rtree_create_stbox();
 extern void rtree_insert (RTree *rtree ,STBox *box, int64 id);
 extern int * rtree_search ( const RTree* rtree,const STBox * query, int * count);
 extern void rtree_free(RTree* rtree);
