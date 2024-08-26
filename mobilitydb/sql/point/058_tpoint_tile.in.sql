@@ -161,7 +161,7 @@ CREATE FUNCTION spaceTimeBoxes(tgeompoint, xsize float, ysize float,
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Tpoint_space_time_boxes'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE FUNCTION spaceTimeBoxes(tgeompoint, ssize float, interval,
+CREATE FUNCTION spaceTimeBoxes(tgeompoint, xsize float, interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
