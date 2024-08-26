@@ -95,11 +95,11 @@ get_axis_stbox(const STBox * box, int axis, bool upper) {
  * @return Pointer to the newly created RTreeNode structure.
  */
 static RTreeNode *
-  node_new(bool kind) {
-    RTreeNode * node = palloc(sizeof(RTreeNode));
-    node -> kind = kind;
-    return node;
-  }
+node_new(bool kind) {
+  RTreeNode * node = palloc(sizeof(RTreeNode));
+  node -> kind = kind;
+  return node;
+}
 
 /**
  * @brief Calculates the length of an STBox along a specified axis.
@@ -132,7 +132,8 @@ get_axis_length(const RTree * rtree,
  * @return The computed area or volume of the STBox.
  */
 static double
-box_area(const STBox * box,const RTree * rtree) {
+box_area(const STBox * box,
+  const RTree * rtree) {
   double result = 1.0;
   for (int i = 0; i < rtree -> metadata -> dims; ++i) {
     result *= get_axis_length(rtree, box, i);
@@ -155,12 +156,13 @@ box_area(const STBox * box,const RTree * rtree) {
  */
 static double
 box_unioned_area(const STBox * box,
-  const STBox * other_box,const RTree * rtree) {
+  const STBox * other_box,
+    const RTree * rtree) {
   STBox union_box;
-  memcpy(&union_box, box, sizeof(STBox));
-  stbox_expand(other_box, &union_box);
+  memcpy( & union_box, box, sizeof(STBox));
+  stbox_expand(other_box, & union_box);
 
-  return box_area(&union_box, rtree);
+  return box_area( & union_box, rtree);
 }
 
 /**
@@ -176,7 +178,7 @@ box_unioned_area(const STBox * box,
  */
 static int
 node_choose_least_enlargement(const RTreeNode * node,
-  const STBox * box, RTree * rtree) {
+  const STBox * box,const RTree * rtree) {
   int result = 0;
   double previous_enlargement = INFINITY;
   for (int i = 0; i < node -> count; ++i) {
@@ -206,7 +208,7 @@ node_choose_least_enlargement(const RTreeNode * node,
  * @return The index of the chosen child node for insertion.
  */
 static int
-node_choose(RTree * rtree,
+node_choose(const RTree * rtree,
   const STBox * box,
     const RTreeNode * node) {
   // Check if you can add without expanding any rectangle.
@@ -228,7 +230,7 @@ node_choose(RTree * rtree,
  * @param[out] box STBox that will be expanded
  */
 static void
-node_box_calculate(const RTreeNode * node, STBox* box) {
+node_box_calculate(const RTreeNode * node, STBox * box) {
   memcpy(box, & node -> boxes[0], sizeof(STBox));
   for (int i = 1; i < node -> count; ++i) {
     stbox_expand( & node -> boxes[i], box);
@@ -246,7 +248,8 @@ node_box_calculate(const RTreeNode * node, STBox* box) {
  * @return The index of the axis with the largest length.
  */
 static int
-stbox_largest_axis(STBox * box, RTree * rtree) {
+stbox_largest_axis(const STBox * box,
+  const RTree * rtree) {
   int largest_axis = 0;
   double previous_largest = get_axis_length(rtree, box, 0);
   for (int i = 1; i < rtree -> metadata -> dims; ++i) {
@@ -285,7 +288,7 @@ node_move_box_at_index_into(RTreeNode * from, int index, RTreeNode * into) {
  * @details This function exchanges the positions of two STBoxes within a single RTree node. 
  * If the node is a leaf, it also swaps the associated IDs. For internal nodes, it swaps the 
  * pointers to child nodes. This function is useful for reordering elements within a node.
- * @param[in] node Pointer to the RTreeNode structure containing the STBoxes and associated data.
+ * @param[in,out] node Pointer to the RTreeNode structure containing the STBoxes and associated data.
  * @param[in] i The index of the first STBox to be swapped.
  * @param[in] j The index of the second STBox to be swapped.
  */
@@ -311,7 +314,7 @@ node_swap(RTreeNode * node, int i, int j) {
  * along a particular axis. It uses the QuickSort algorithm to order the STBoxes based on their 
  * axis values, either upper or lower, as provided by the `get_axis` function in the RTree structure.
  * @param[in] rtree Pointer to the RTree structure which provides the function for retrieving axis values.
- * @param[in] node Pointer to the RTreeNode structure containing the STBoxes to be sorted.
+ * @param[in,out] node Pointer to the RTreeNode structure containing the STBoxes to be sorted.
  * @param[in] index The axis index along which to sort the STBoxes.
  * @param[in] upper Boolean flag indicating whether to sort by upper or lower axis value.
  * @param[in] s The starting index of the range to be sorted in the `node->boxes` array.
@@ -522,7 +525,7 @@ void node_search(const RTreeNode * node,
 /**
  * @brief Sets the dimensions of an R-tree based on the meostype of the RTree
  * 
- * @param[in] rtree The R-tree structure whose dimensions are to be set.
+ * @param[in,out] rtree The R-tree structure whose dimensions are to be set.
  * @param[in] box The spatial bounding box (STBox) from which to derive the dimensions.
  * @return `true` if the dimensions were successfully set; `false` otherwise.
  */
@@ -542,11 +545,11 @@ rtree_set_dims(RTree * rtree,
 /**
  * @brief Sets the appropriate get axis function for the R-tree based on its meostype.
  * 
- * @param[in] rtree The R-tree structure for which the function pointer is to be set.
+ * @param[in,out] rtree The R-tree structure for which the function pointer is to be set.
  * @return `true` if the function pointer was successfully set; `false` otherwise.
  */
 static bool
-set_rtree_functions(RTree * rtree) {
+rtree_set_functions(RTree * rtree) {
   switch (rtree -> metadata -> basetype) {
   case T_STBOX:
     /** TODO: This should be deprecated when we start using picksplit since this function
@@ -559,6 +562,27 @@ set_rtree_functions(RTree * rtree) {
   }
   return false;
 }
+
+/**
+ * @brief Creates an RTree index. 
+ * @param[in] basetype The meosType of the elements to index.
+ * Currently the only basetype supported is T_STBOX. 
+ * @return RTree initialized.
+ */
+RTree *
+rtree_create(meosType basetype) {
+  RTree * rtree = palloc0(sizeof(RTree));
+  rtree -> metadata = palloc0(sizeof(RTreeMetadata));
+  rtree -> metadata -> basetype = basetype;
+  if (!rtree_set_functions(rtree)) {
+    pfree(rtree);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Unsupported base type for RTree %d", basetype);
+    return NULL;
+  }
+  return rtree;
+}
+
+#if MEOS
 
 /**
  * @ingroup meos_stbox_rtree_index
@@ -600,34 +624,14 @@ rtree_insert(RTree * rtree, STBox * box, int64 id) {
 }
 
 /**
- * @brief Creates an RTree index. 
- * @note the get axis function is to facilitate STBox having only 
- * some data available i.e. z is optional.
- * @param[in] get_axis function that given an stbox, a dimension and whether
- * upper or lower, returns the STBox value at that dimension in the lower or 
- * uppper value.
- * @param[in] dims The number of axis.@
- * @return RTree initialized.
+ * @ingroup meos_stbox_rtree_index
+ * @brief Creates an RTree index for STBoxes.
+ * @return RTree initialized for STBoxes.
  */
 RTree *
-  rtree_create(meosType basetype) {
-    RTree * rtree = palloc0(sizeof(RTree));
-    rtree -> metadata = palloc0(sizeof (RTreeMetadata));
-    rtree -> metadata -> basetype = basetype;
-    if (!set_rtree_functions(rtree)) {
-      pfree(rtree);
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Unsupported base type for RTree %d", basetype);
-      return NULL;
-    }
-    return rtree;
-  }
-
-
-RTree *
-  rtree_create_stbox(){
-    return rtree_create(T_STBOX);
-  }
-
+rtree_create_stbox() {
+  return rtree_create(T_STBOX);
+}
 
 /**
  * @ingroup meos_stbox_rtree_index
@@ -639,15 +643,15 @@ RTree *
  * @return array of ids that have a hit.
  */
 int *
-  rtree_search(const RTree * rtree,
-    const STBox * query, int * count) {
-    int * ids = palloc(sizeof(int) * SEARCH_ARRAY_STARTING_SIZE);
-    * count = 0;
-    if (rtree -> metadata -> root) {
-      node_search(rtree -> metadata -> root, query, & ids, count);
-    }
-    return ids;
+rtree_search(const RTree * rtree,
+  const STBox * query, int * count) {
+  int * ids = palloc(sizeof(int) * SEARCH_ARRAY_STARTING_SIZE);
+  * count = 0;
+  if (rtree -> metadata -> root) {
+    node_search(rtree -> metadata -> root, query, & ids, count);
   }
+  return ids;
+}
 
 /**
  * @ingroup meos_stbox_rtree_index
@@ -659,5 +663,8 @@ rtree_free(RTree * rtree) {
   if (rtree -> metadata -> root) {
     node_free(rtree -> metadata -> root);
   }
+  free(rtree -> metadata);
   free(rtree);
 }
+
+#endif /* MEOS */
