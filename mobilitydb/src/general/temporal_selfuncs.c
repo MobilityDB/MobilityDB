@@ -114,7 +114,7 @@ tnumber_const_to_span_tstzspan(const Node *other, Span **s, Span **p)
   {
     const Temporal *temp = DatumGetTemporalP(((Const *) other)->constvalue);
     TBox box;
-    temporal_set_bbox(temp, &box);
+    tnumber_set_tbox(temp, &box);
     *s = span_cp(&box.span);
     *p = span_cp(&box.period);
   }
@@ -145,7 +145,7 @@ tpoint_const_to_stbox(Node *other, STBox *box)
   else if (type == T_STBOX)
     memcpy(box, DatumGetSTboxP(constvalue), sizeof(STBox));
   else if (tspatial_type(type))
-    temporal_set_bbox(DatumGetTemporalP(constvalue), box);
+    tspatial_set_stbox(DatumGetTemporalP(constvalue), box);
   else
   {
     /* Error */

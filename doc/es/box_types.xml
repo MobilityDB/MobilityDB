@@ -68,7 +68,7 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 			<itemizedlist>
 				<listitem id="box_asText">
 					<indexterm><primary><varname>asText</varname></primary></indexterm>
-					<para>Obtener la representación textual conocida (Well-Known Text o WKT)</para>
+					<para>Devuelve la representación textual conocida (Well-Known Text o WKT)</para>
 					<para><varname>asText(box,maxdecdigits=15) → text</varname></para>
 					<para>El argumento <varname>maxdecdigits</varname> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</para>
 					<programlisting language="sql" xml:space="preserve">
@@ -81,7 +81,7 @@ SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 
 				<listitem id="box_asBinary">
 					<indexterm><primary><varname>asBinary</varname></primary></indexterm>
-					<para>Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
+					<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB)</para>
 					<para><varname>asBinary(box,endian text='') → bytea</varname></para>
 					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 					<programlisting language="sql" xml:space="preserve">
@@ -96,7 +96,7 @@ SELECT asBinary(stbox 'STBOX X((1,1),(2,2))');
 
 				<listitem id="box_asHexWKB">
 					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
-					<para>Obtener la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
+					<para>Devuelve la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
 					<para><varname>asHexWKB(box,endian text='') → text</varname></para>
 					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 					<programlisting language="sql" xml:space="preserve">
@@ -351,7 +351,7 @@ SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])
 				<indexterm><primary><varname>yMin</varname></primary></indexterm>
 				<indexterm><primary><varname>zMin</varname></primary></indexterm>
 				<indexterm><primary><varname>tMin</varname></primary></indexterm>
-				<para>Obtener el valor mínimo de X/Y/Z/T</para>
+				<para>Devuelve el valor mínimo de X/Y/Z/T</para>
 				<para><varname>xMin(box) → float</varname></para>
 				<para><varname>yMin(stbox) → float</varname></para>
 				<para><varname>zMin(stbox) → float</varname></para>
@@ -373,7 +373,7 @@ SELECT tMin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 				<indexterm><primary><varname>yMax</varname></primary></indexterm>
 				<indexterm><primary><varname>zMax</varname></primary></indexterm>
 				<indexterm><primary><varname>tMax</varname></primary></indexterm>
-				<para>Obtener el valor máximo de X/Y/Z/T</para>
+				<para>Devuelve el valor máximo de X/Y/Z/T</para>
 				<para><varname>xMax(box) → float</varname></para>
 				<para><varname>yMax(stbox) → float</varname></para>
 				<para><varname>zMax(stbox) → float</varname></para>
@@ -505,7 +505,7 @@ SELECT shiftScaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])
 
 			<listitem id="getSpace">
 				<indexterm><primary><varname>getSpace</varname></primary></indexterm>
-				<para>Obtener la dimensión espacial del cuadro delimitador, eliminando la dimensión temporal, si existe</para>
+				<para>Devuelve la dimensión espacial del cuadro delimitador, eliminando la dimensión temporal, si existe</para>
 				<para><varname>getSpace(stbox) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])');
@@ -577,7 +577,7 @@ SELECT round(stbox 'STBOX XT(((1.12345,1.12345),(2.12345,2.12345)),
 		<itemizedlist>
 			<listitem id="stbox_SRID">
 				<indexterm><primary><varname>SRID</varname></primary></indexterm>
-				<para>Obtener el identificador de referencia espacial</para>
+				<para>Devuelve el identificador de referencia espacial</para>
 				<para><varname>SRID(stbox) → integer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT SRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');

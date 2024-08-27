@@ -1486,7 +1486,7 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
   if (! state)
   {
     TBox *result = palloc0(sizeof(TBox));
-    temporal_set_bbox(temp, result);
+    tnumber_set_tbox(temp, result);
     return result;
   }
   /* Non-null state and null temporal, return the state */
@@ -1499,7 +1499,7 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
 
   /* Both state and temporal are not null */
   TBox b;
-  temporal_set_bbox(temp, &b);
+  tnumber_set_tbox(temp, &b);
   tbox_expand(&b, state);
   return state;
 }

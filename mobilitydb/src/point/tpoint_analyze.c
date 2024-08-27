@@ -613,7 +613,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     {
       /* Get bounding box from temporal point */
       Temporal *temp = DatumGetTemporalP(datum);
-      temporal_set_bbox(temp, &box);
+      tspatial_set_stbox(temp, &box);
       /* Free up memory if our temporal point was copied */
       if (VARATT_IS_EXTENDED(temp))
         pfree(temp);

@@ -147,13 +147,11 @@ store_fcinfo(FunctionCallInfo fcinfo)
 bool
 ensure_not_empty_array(ArrayType *array)
 {
-  if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
-  {
-    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
-      errmsg("The input array cannot be empty")));
-    return false;
-  }
-  return true;
+  if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) > 0)
+    return true;
+  ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
+    errmsg("The input array cannot be empty")));
+  return false;
 }
 
 /*****************************************************************************
@@ -1723,9 +1721,9 @@ temporal_unnest_state_make(const Temporal *temp)
 void
 temporal_unnest_state_next(TempUnnestState *state)
 {
-  if (!state || state->done)
+  if (! state || state->done)
     return;
-  /* Move to the next bucket */
+  /* Move to the next bin */
   state->i++;
   if (state->i == state->count)
     state->done = true;
@@ -1743,11 +1741,6 @@ Datum
 Temporal_unnest(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
-  TempUnnestState *state;
-  bool isnull[2] = {0,0}; /* needed to say no value is null */
-  Datum tuple_arr[2]; /* used to construct the composite return value */
-  HeapTuple tuple;
-  Datum result; /* the actual composite return value */
 
   /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
@@ -1771,8 +1764,8 @@ Temporal_unnest(PG_FUNCTION_ARGS)
   /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
   /* Get state */
-  state = funcctx->user_fctx;
-  /* Stop when we've used up all buckets */
+  TempUnnestState *state = funcctx->user_fctx;
+  /* Stop when we've used up all bins */
   if (state->done)
   {
     /* Switch to memory context appropriate for multiple function calls */
@@ -1786,20 +1779,22 @@ Temporal_unnest(PG_FUNCTION_ARGS)
   }
 
   /* Get value */
-  tuple_arr[0] = state->values[state->i];
+  Datum values[2]; /* used to construct the composite return value */
+  values[0] = state->values[state->i];
   /* Get span set */
   Temporal *rest = temporal_restrict_value(state->temp,
     state->values[state->i], REST_AT);
-  if (!rest)
+  if (! rest)
     elog(ERROR, "Unexpected error with temporal value %s",
       temporal_out(state->temp, OUT_DEFAULT_DECIMAL_DIGITS));
-  tuple_arr[1] = PointerGetDatum(temporal_time(rest));
+  values[1] = PointerGetDatum(temporal_time(rest));
   pfree(rest);
   /* Advance state */
   temporal_unnest_state_next(state);
   /* Form tuple and return */
-  tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
-  result = HeapTupleGetDatum(tuple);
+  bool isnull[2] = {0,0}; /* needed to say no value is null */
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, values, isnull);
+  Datum result = HeapTupleGetDatum(tuple);
   SRF_RETURN_NEXT(funcctx, result);
 }
 

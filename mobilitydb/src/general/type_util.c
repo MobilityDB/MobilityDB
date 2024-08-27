@@ -75,7 +75,8 @@ call_recv(meosType type, StringInfo buf)
 
   Oid typid = type_oid(type);
   if (typid == 0)
-    elog(ERROR, "Unknown type when calling receive function: %d", type);
+    elog(ERROR, "Unknown type when calling receive function: %s",
+      meostype_name(type));
   Oid recvfunc;
   Oid basetypid;
   FmgrInfo recvfuncinfo;
@@ -99,7 +100,8 @@ call_send(meosType type, Datum value)
 
   Oid typid = type_oid(type);
   if (typid == 0)
-    elog(ERROR, "Unknown type when calling send function: %d", type);
+    elog(ERROR, "Unknown type when calling send function: %s",
+      meostype_name(type));
   Oid sendfunc;
   bool isvarlena;
   FmgrInfo sendfuncinfo;
@@ -215,6 +217,21 @@ spanarr_extract(ArrayType *array, int *count)
 }
 
 /**
+ * @brief Extract a C array from a PostgreSQL array containing spatiotemporal
+ * boxes
+ */
+STBox *
+stboxarr_extract(ArrayType *array, int *count)
+{
+  STBox **boxes = (STBox **) datumarr_extract(array, count);
+  STBox *result = palloc(sizeof(STBox) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = *boxes[i];
+  pfree(boxes);
+  return result;
+}
+
+/**
  * @brief Extract a C array from a PostgreSQL array containing temporal values
  */
 Temporal **
@@ -256,21 +273,6 @@ int64arr_to_array(int64 *values, int count)
     dvalues[i] = Int64GetDatum(values[i]);
   ArrayType *result = construct_array(dvalues, count, INT8OID, 8, true, 'd');
   pfree(dvalues); pfree(values);
-  return result;
-}
-
-/**
- * @brief Return a C array of dates converted into a PostgreSQL array
- */
-ArrayType *
-datearr_to_array(DateADT *dates, int count)
-{
-  assert(count > 0);
-  Datum *values = palloc(sizeof(Datum) * count);
-  for (int i = 0; i < count; i++)
-    values[i] = DateADTGetDatum(dates[i]);
-  ArrayType *result = construct_array(values, count, DATEOID, 4, true, 'i');
-  pfree(values); pfree(dates);
   return result;
 }
 

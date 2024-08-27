@@ -89,11 +89,9 @@ Temporal_spans(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   Span *spans = temporal_spans(temp, &count);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! spans)
-    PG_RETURN_NULL();
   ArrayType *result = spanarr_to_array(spans, count);
   pfree(spans);
+  PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -110,11 +108,9 @@ Tnumber_tboxes(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   TBox *boxes = tnumber_tboxes(temp, &count);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! boxes)
-    PG_RETURN_NULL();
   ArrayType *result = tboxarr_to_array(boxes, count);
   pfree(boxes);
+  PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -557,7 +553,7 @@ Boxop_tbox_tnumber(FunctionCallInfo fcinfo,
   TBox *box = PG_GETARG_TBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   TBox box1;
-  temporal_set_bbox(temp, &box1);
+  tnumber_set_tbox(temp, &box1);
   bool result = boxop_tnumber_tbox(temp, box, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);

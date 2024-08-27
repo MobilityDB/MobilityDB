@@ -131,7 +131,8 @@ temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
     // a problem still remains (result != 0) even with the _cmp function
     return stbox_cmp((STBox *) box1, (STBox *) box2) == 0;
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Unknown temporal type for bounding box function: %d", temptype);
+    "Unknown temporal type for bounding box function: %s",
+    meostype_name(temptype));
   return false;
 }
 
@@ -153,7 +154,8 @@ temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
   if (tspatial_type(temptype))
     return stbox_cmp((STBox *) box1, (STBox *) box2);
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Unknown temporal type for bounding box function: %d", temptype);
+    "Unknown temporal type for bounding box function: %s",
+    meostype_name(temptype));
   return INT_MAX;
 }
 
@@ -175,7 +177,8 @@ temporal_bbox_size(meosType temptype)
   if (tspatial_type(temptype))
     return sizeof(STBox);
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Unknown temporal type for bounding box function: %d", temptype);
+    "Unknown temporal type for bounding box function: %s",
+    meostype_name(temptype));
   return SIZE_MAX; /* make compiler quiet */
 }
 
@@ -232,7 +235,8 @@ tinstant_set_bbox(const TInstant *inst, void *box)
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Unknown temporal type for bounding box function: %d", inst->temptype);
+      "Unknown temporal type for bounding box function: %s",
+      meostype_name(inst->temptype));
   return;
 }
 
@@ -424,7 +428,8 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Unknown temporal type for bounding box function: %d", temptype);
+      "Unknown temporal type for bounding box function: %s",
+      meostype_name(temptype));
     return;
   }
   /* Set the lower_inc and upper_inc bounds of the period at the beginning
@@ -444,7 +449,7 @@ static void
 tnumberseq_expand_tbox(TSequence *seq, const TInstant *inst)
 {
   TBox box;
-  tinstant_set_bbox(inst, &box);
+  tnumberinst_set_tbox(inst, &box);
   tbox_expand(&box, (TBox *) TSEQUENCE_BBOX_PTR(seq));
   return;
 }
@@ -478,7 +483,8 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Unknown temporal type for bounding box function: %d", seq->temptype);
+      "Unknown temporal type for bounding box function: %s",
+      meostype_name(seq->temptype));
   return;
 }
 
@@ -504,7 +510,8 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
       (STBox *) TSEQUENCE_BBOX_PTR(ss));
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Unknown temporal type for bounding box function: %d", ss->temptype);
+      "Unknown temporal type for bounding box function: %s",
+      meostype_name(ss->temptype));
   return;
 }
 
@@ -560,8 +567,8 @@ tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
     tpointseqarr_set_stbox(sequences, count, (STBox *) box);
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Unknown temporal type for bounding box function: %d",
-      sequences[0]->temptype);
+      "Unknown temporal type for bounding box function: %s",
+      meostype_name(sequences[0]->temptype));
   return;
 }
 
@@ -1490,12 +1497,20 @@ tnumberseqset_split_n_tboxes(const TSequenceSet *ss, int box_count, int *count)
     int nboxes1 = 0;
     for (int i = 0; i < ss->count; i++)
     {
+      bool end = false;
       const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
       int nboxes_seq = (int) (box_count * seq->count * 1.0 / ss->totalcount);
       if (! nboxes_seq)
         nboxes_seq = 1;
+      if (nboxes_seq + nboxes1 >= box_count)
+      {
+        end = true;
+        nboxes_seq = box_count - nboxes1;
+      }
       nboxes1 += tnumberseq_cont_split_n_tboxes_iter(seq, nboxes_seq,
         &result[nboxes1]);
+      if (end)
+        break;
     }
     assert(nboxes1 <= box_count);
     *count = nboxes1;
@@ -1586,11 +1601,11 @@ tnumberseq_disc_split_each_n_tboxes(const TSequence *seq, int elems_per_box,
   for (int i = 0; i < seq->count; ++i)
   {
     if (i % elems_per_box == 0)
-      tinstant_set_bbox(TSEQUENCE_INST_N(seq, i), &result[k++]);
+      tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, i), &result[k++]);
     else
     {
       TBox box;
-      tinstant_set_bbox(TSEQUENCE_INST_N(seq, i), &box);
+      tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, i), &box);
       tbox_expand(&box, &result[k - 1]);
     }
   }
@@ -1619,17 +1634,17 @@ tnumberseq_cont_split_each_n_tboxes_iter(const TSequence *seq,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    tsequence_set_bbox(seq, &result[0]);
+    tnumberseq_set_tbox(seq, &result[0]);
     return 1;
   }
 
   /* General case */
   int k = 0;
-  tinstant_set_bbox(TSEQUENCE_INST_N(seq, 0), &result[k]);
+  tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, 0), &result[k]);
   for (int i = 1; i < seq->count; ++i)
   {
     TBox box;
-    tinstant_set_bbox(TSEQUENCE_INST_N(seq, i), &box);
+    tnumberinst_set_tbox(TSEQUENCE_INST_N(seq, i), &box);
     tbox_expand(&box, &result[k]);
     if ((i % elems_per_box == 0) && (i < seq->count - 1))
       result[++k] = box;
@@ -1792,7 +1807,7 @@ boxop_tnumber_tbox(const Temporal *temp, const TBox *box,
   bool (*func)(const TBox *, const TBox *), bool invert)
 {
   TBox box1;
-  temporal_set_bbox(temp, &box1);
+  tnumber_set_tbox(temp, &box1);
   return invert ? func(box, &box1) : func(&box1, box);
 }
 
@@ -1804,8 +1819,8 @@ boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const TBox *, const TBox *))
 {
   TBox box1, box2;
-  temporal_set_bbox(temp1, &box1);
-  temporal_set_bbox(temp2, &box2);
+  tnumber_set_tbox(temp1, &box1);
+  tnumber_set_tbox(temp2, &box2);
   return func(&box1, &box2);
 }
 

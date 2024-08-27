@@ -239,7 +239,7 @@ tpointseq_disc_stboxes(const TSequence *seq)
 static int
 tpointseq_cont_stboxes_iter(const TSequence *seq, STBox *result)
 {
-  assert(seq); assert(tgeo_type(seq->temptype));
+  assert(seq); assert(result); assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
 
   /* Instantaneous sequence */
@@ -507,14 +507,22 @@ tpointseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count)
     int nboxes1 = 0;
     for (int i = 0; i < ss->count; i++)
     {
+      bool end = false;
       const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
       int nboxes_seq = (int) (box_count * seq->count * 1.0 / ss->totalcount);
       if (! nboxes_seq)
         nboxes_seq = 1;
+      if (nboxes_seq + nboxes1 >= box_count)
+      {
+        end = true;
+        nboxes_seq = box_count - nboxes1;
+      }
       nboxes1 += tpointseq_cont_split_n_stboxes_iter(seq, nboxes_seq,
         &result[nboxes1]);
+      if (end)
+        break;
     }
-    assert(nboxes1 <= ss->totalcount);
+    assert(nboxes1 <= box_count);
     *count = nboxes1;
     return result;
   }
@@ -605,11 +613,11 @@ tpointseq_disc_split_each_n_stboxes(const TSequence *seq, int elems_per_box,
   for (int i = 0; i < seq->count; ++i)
   {
     if (i % elems_per_box == 0)
-      tinstant_set_bbox(TSEQUENCE_INST_N(seq, i), &result[k++]);
+      tpointinst_set_stbox(TSEQUENCE_INST_N(seq, i), &result[k++]);
     else
     {
       STBox box;
-      tinstant_set_bbox(TSEQUENCE_INST_N(seq, i), &box);
+      tpointinst_set_stbox(TSEQUENCE_INST_N(seq, i), &box);
       stbox_expand(&box, &result[k - 1]);
     }
   }
@@ -628,8 +636,8 @@ tpointseq_disc_split_each_n_stboxes(const TSequence *seq, int elems_per_box,
  * @return Number of elements in the output array
  */
 static int
-tpointseq_cont_split_each_n_stboxes_iter(const TSequence *seq, int elems_per_box,
-  STBox *result)
+tpointseq_cont_split_each_n_stboxes_iter(const TSequence *seq,
+  int elems_per_box, STBox *result)
 {
   assert(seq); assert(result); assert(tgeo_type(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
@@ -638,17 +646,17 @@ tpointseq_cont_split_each_n_stboxes_iter(const TSequence *seq, int elems_per_box
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    tsequence_set_bbox(seq, &result[0]);
+    tspatialseq_set_stbox(seq, &result[0]);
     return 1;
   }
 
   /* General case */
   int k = 0;
-  tinstant_set_bbox(TSEQUENCE_INST_N(seq, 0), &result[k]);
+  tpointinst_set_stbox(TSEQUENCE_INST_N(seq, 0), &result[k]);
   for (int i = 1; i < seq->count; ++i)
   {
     STBox box;
-    tinstant_set_bbox(TSEQUENCE_INST_N(seq, i), &box);
+    tpointinst_set_stbox(TSEQUENCE_INST_N(seq, i), &box);
     stbox_expand(&box, &result[k]);
     if ((i % elems_per_box == 0) && (i < seq->count - 1))
       result[++k] = box;
@@ -1105,13 +1113,21 @@ multiline_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
     nboxes1 = 0;
     for (int i = 0; i < nlines; i++)
     {
+      bool end = false;
       lwline = lwmline->geoms[i];
       int nboxes_line = (int) (box_count * lwline->points->npoints * 1.0 /
         totalpoints);
       if (! nboxes_line)
         nboxes_line = 1;
+      if (nboxes_line + nboxes1 >= box_count)
+      {
+        end = true;
+        nboxes_line = box_count - nboxes1;
+      }
       nboxes1 += line_split_n_gboxes_iter(lwline, nboxes_line,
         geodetic, &result[nboxes1]);
+      if (end)
+        break;
     }
     assert(nboxes1 <= box_count);
     *count = nboxes1;
@@ -1348,7 +1364,7 @@ boxop_tpoint_stbox(const Temporal *temp, const STBox *box,
   bool (*func)(const STBox *, const STBox *), bool inverted)
 {
   STBox box1;
-  temporal_set_bbox(temp, &box1);
+  tspatial_set_stbox(temp, &box1);
   return inverted ? func(box, &box1) : func(&box1, box);
 }
 
@@ -1360,8 +1376,8 @@ boxop_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const STBox *, const STBox *))
 {
   STBox box1, box2;
-  temporal_set_bbox(temp1, &box1);
-  temporal_set_bbox(temp2, &box2);
+  tspatial_set_stbox(temp1, &box1);
+  tspatial_set_stbox(temp2, &box2);
   return func(&box1, &box2);
 }
 

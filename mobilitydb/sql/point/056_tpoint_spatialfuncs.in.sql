@@ -55,6 +55,10 @@ CREATE FUNCTION round(stbox, integer DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION round(stbox[], integer DEFAULT 0)
+  RETURNS stbox[]
+  AS 'MODULE_PATHNAME', 'Stboxarr_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION round(geometry, integer DEFAULT 0)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Geo_round'

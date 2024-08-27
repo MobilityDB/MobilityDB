@@ -156,6 +156,20 @@ typedef enum
 } SetOper;
 
 /*****************************************************************************
+ * Additional operator strategy numbers used in the GiST and SP-GiST temporal
+ * opclasses with respect to those defined in the file stratnum.h
+ *****************************************************************************/
+
+#define RTOverBeforeStrategyNumber    28    /* for &<# */
+#define RTBeforeStrategyNumber        29    /* for <<# */
+#define RTAfterStrategyNumber         30    /* for #>> */
+#define RTOverAfterStrategyNumber     31    /* for #&> */
+#define RTOverFrontStrategyNumber     32    /* for &</ */
+#define RTFrontStrategyNumber         33    /* for <</ */
+#define RTBackStrategyNumber          34    /* for />> */
+#define RTOverBackStrategyNumber      35    /* for /&> */
+
+/*****************************************************************************
  * Well-Known Binary (WKB)
  *****************************************************************************/
 
@@ -206,12 +220,12 @@ enum MEOS_WKB_TSUBTYPE
 // #define MEOS_WKB_GET_LINEAR(flags)     ((bool) (((flags) & MEOS_WKB_LINEARFLAG)>>3))
 
 /*****************************************************************************
- * Definitions for bucketing and tiling
+ * Definitions for binning and tiling
  *****************************************************************************/
 
 /*
  * The default origin is Monday 2000-01-03. We don't use PG epoch since it
- * starts on a Saturday. This makes time-buckets by a week more intuitive and
+ * starts on a Saturday. This makes time bins by a week more intuitive and
  * aligns it with date_trunc.
  */
 #define JAN_3_2000 (2 * USECS_PER_DAY)
@@ -349,6 +363,7 @@ extern bool not_negative_datum(Datum size, meosType basetype);
 extern bool ensure_not_negative_datum(Datum size, meosType basetype);
 extern bool positive_datum(Datum size, meosType basetype);
 extern bool ensure_positive_datum(Datum size, meosType basetype);
+extern bool ensure_valid_day_duration(const Interval *duration);
 extern bool valid_duration(const Interval *duration);
 extern bool ensure_valid_duration(const Interval *duration);
 

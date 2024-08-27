@@ -338,7 +338,7 @@ type_oid(meosType type)
   Oid result = MOBDB_TYPE_OID[type];
   if (! result)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Unknown MEOS type; %d", type)));
+      errmsg("Unknown MEOS type; %s", meostype_name(type))));
   return result;
 }
 
@@ -546,13 +546,11 @@ range_basetype(meosType type)
 bool
 ensure_range_basetype(meosType type)
 {
-  if (! range_basetype(type))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The value must be of a type compatible with a range type");
-    return false;
-  }
-  return true;
+  if (range_basetype(type))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The value must be of a type compatible with a range type");
+  return false;
 }
 
 /**

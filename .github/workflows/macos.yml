@@ -39,9 +39,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: install deps
+      - name: update brew
+        if: matrix.os == 'macos-13'
+        # Necessary to avoid issue with macOS runners. See
+        # https://github.com/actions/runner-images/issues/4020
         run: |
-          brew install postgresql postgis proj gsl
+          brew reinstall python@3.12 || brew link --overwrite python@3.12
+          brew update
+
+      - name: Get dependencies from homebrew (cache)
+        uses: tecolicom/actions-use-homebrew-tools@v1
+        with:
+          tools: cmake postgresql postgis proj gsl
 
       - name: Configure
         run: |

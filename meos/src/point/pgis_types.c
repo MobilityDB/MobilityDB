@@ -1963,10 +1963,11 @@ geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32 srid)
  * geometry/geography
  * @param[in] gs Geometry/geography
  * @param[in] endian Endianness
+ * @param[in] size Size of result
  * @note PostGIS function: @p WKBFromLWGEOM(PG_FUNCTION_ARGS)
  */
-bytea *
-geo_as_ewkb(const GSERIALIZED *gs, const char *endian)
+uint8_t *
+geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) gs))
@@ -1986,9 +1987,12 @@ geo_as_ewkb(const GSERIALIZED *gs, const char *endian)
   /* Create WKB hex string */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwvarlena_t *wkb = lwgeom_to_wkb_varlena(geom, variant | WKB_EXTENDED);
-  bytea *result = palloc(wkb->size - LWVARHDRSZ);
-  memcpy(result, wkb->data, wkb->size - LWVARHDRSZ);
+
+  size_t data_size = wkb->size - LWVARHDRSZ;
+  uint8_t *result = palloc(data_size);
+  memcpy(result, wkb->data, data_size);
   pfree(geom); pfree(wkb);
+  *size = data_size;
   return result;
 }
 
@@ -2258,70 +2262,6 @@ pgis_geography_from_binary(const char *wkb_bytea)
   return result;
 }
 #endif /* MEOS */
-
-/*****************************************************************************/
-
-#if 0 /* not used  */
-/**
- * @brief Get a geography from a geometry
- * @note PostGIS function: @p geography_from_geometry(PG_FUNCTION_ARGS)
- */
-GSERIALIZED *
-gserialized_geog_from_geom(GSERIALIZED *geom)
-{
-  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
-  geography_valid_type(lwgeom_get_type(lwgeom));
-
-  /* Force default SRID */
-  if ( (int) lwgeom->srid <= 0 )
-  {
-    lwgeom->srid = SRID_DEFAULT;
-  }
-
-  /* Error on any SRID != default */
-  // Cannot test this in MobilityDB since we do not have access to PROJ
-  // srid_check_latlong(lwgeom->srid);
-
-  /* Force the geometry to have valid geodetic coordinate range. */
-  lwgeom_nudge_geodetic(lwgeom);
-  if ( lwgeom_force_geodetic(lwgeom) == LW_TRUE )
-  {
-    meos_error(NOTICE, MEOS_ERR_TEXT_INPUT,
-      "Coordinate values were coerced into range [-180 -90, 180 90] for GEOGRAPHY");
-    return NULL;
-  }
-
-  /* force recalculate of box by dropping */
-  lwgeom_drop_bbox(lwgeom);
-
-  lwgeom_set_geodetic(lwgeom, true);
-  /* We are trusting geography_serialize will add a box if needed */
-  GSERIALIZED *result = geo_serialize(lwgeom);
-  lwgeom_free(lwgeom);
-  return result;
-}
-
-/**
- * @brief Get a geometry from a geography
- * @note PostGIS function: @p geometry_from_geography(PG_FUNCTION_ARGS)
- */
-GSERIALIZED *
-gserialized_geom_from_geog(GSERIALIZED *geom)
-{
-  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
-  /* Recalculate the boxes after re-setting the geodetic bit */
-  lwgeom_set_geodetic(lwgeom, false);
-  lwgeom_refresh_bbox(lwgeom);
-  /* We want "geometry" to think all our "geography" has an SRID, and the
-     implied SRID is the default, so we fill that in if our SRID is actually unknown. */
-  if ( (int)lwgeom->srid <= 0 )
-    lwgeom->srid = SRID_DEFAULT;
-
-  GSERIALIZED *result = geo_serialize(lwgeom);
-  lwgeom_free(lwgeom);
-  return result;
-}
-#endif /* not used  */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_functions_analytic.c

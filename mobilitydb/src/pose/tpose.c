@@ -57,11 +57,11 @@ PG_FUNCTION_INFO_V1(Tpose_in);
  * @code
  * Pose(0, 0, 0) @ 2012-01-01 08:00:00
  * @endcode
- * - Instant set
+ * - Discrete sequence
  * @code
  * { Pose(0, 0, 0) @ 2012-01-01 08:00:00 , Pose(1, 1, 0) @ 2012-01-01 08:10:00 }
  * @endcode
- * - Sequence
+ * - Continuous sequence
  * @code
  * [ Pose(0, 0, 0) @ 2012-01-01 08:00:00 , Pose(1, 1, 0) @ 2012-01-01 08:10:00 )
  * @endcode
@@ -87,9 +87,10 @@ Tpose_in(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpose_to_tgeompoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_to_tgeompoint);
 /**
- * @ingroup mobilitydb_tgeometry_accessor
- * @brief Return the end instant of a temporal value
- * @sqlfn endInstant()
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Return a temporal pose converted to a temporal geometry point
+ * @sqlfn tgeompoint()
+ * @sqlop @p ::
  */
 Datum
 Tpose_to_tgeompoint(PG_FUNCTION_ARGS)

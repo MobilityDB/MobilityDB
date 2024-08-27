@@ -66,13 +66,11 @@
 bool
 ensure_span_isof_type(const Span *s, meosType spantype)
 {
-  if (s->spantype != spantype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "The span must be of type %s", meostype_name(spantype));
-    return false;
-  }
-  return true;
+  if (s->spantype == spantype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The span must be of type %s", meostype_name(spantype));
+  return false;
 }
 
 /**
@@ -81,14 +79,12 @@ ensure_span_isof_type(const Span *s, meosType spantype)
 bool
 ensure_span_isof_basetype(const Span *s, meosType basetype)
 {
-  if (s->basetype != basetype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Operation on mixed span and base types: %s and %s",
-      meostype_name(s->spantype), meostype_name(basetype));
-    return false;
-  }
-  return true;
+  if (s->basetype == basetype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Operation on mixed span and base types: %s and %s",
+    meostype_name(s->spantype), meostype_name(basetype));
+  return false;
 }
 
 /**
@@ -97,14 +93,12 @@ ensure_span_isof_basetype(const Span *s, meosType basetype)
 bool
 ensure_same_span_type(const Span *s1, const Span *s2)
 {
-  if (s1->spantype != s2->spantype)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Operation on mixed span types: %s and %s",
-      meostype_name(s1->spantype), meostype_name(s2->spantype));
-    return false;
-  }
-  return true;
+  if (s1->spantype == s2->spantype)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Operation on mixed span types: %s and %s",
+    meostype_name(s1->spantype), meostype_name(s2->spantype));
+  return false;
 }
 
 /*****************************************************************************

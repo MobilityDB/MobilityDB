@@ -564,9 +564,9 @@ rtree_set_functions(RTree * rtree) {
 }
 
 /**
- * @brief Creates an RTree index. 
+ * @brief Creates an RTree index.
  * @param[in] basetype The meosType of the elements to index.
- * Currently the only basetype supported is T_STBOX. 
+ * Currently the only basetype supported is T_STBOX.
  * @return RTree initialized.
  */
 RTree *

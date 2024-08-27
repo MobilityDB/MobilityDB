@@ -528,7 +528,7 @@ extern void tstzspanset_set_tbox(const SpanSet *ss, TBox *box);
 
 /* Transformation functions for box types */
 
-extern TBox *tbox_shift_scale_value(const TBox *box, Datum shift, Datum width, meosType basetype, bool hasshift, bool haswidth);
+extern TBox *tbox_shift_scale_value(const TBox *box, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern void stbox_expand(const STBox *box1, STBox *box2);
 extern void tbox_expand(const TBox *box1, TBox *box2);
 
@@ -961,10 +961,19 @@ extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq
 
 /*****************************************************************************/
 
-/* Multidimensional tiling functions for temporal types */
+/* Tile functions for span and temporal types */
 
-extern Temporal **tnumber_value_split(const Temporal *temp, Datum size, Datum origin, Datum **buckets, int *count);
-extern TBox *tbox_value_time_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, meosType basetype);
+extern Span *numspanset_spans(const SpanSet *ss, Datum vsize, Datum vorigin, int *count);
+extern Span *spanset_time_spans(const SpanSet *ss, const Interval *duration, Datum torigin, int *count);
+extern Span *spanset_value_spans(const SpanSet *ss, Datum vsize, Datum vorigin, int *count);
+extern Span *timespanset_spans(const SpanSet *ss, const Interval *duration, Datum torigin, int *count);
+extern Span *tnumber_value_spans(const Temporal *temp, Datum size, Datum origin, int *count);
+extern TBox *tnumber_value_boxes(const Temporal *temp, Datum vsize, Datum vorigin, int *count);
+extern TBox *tnumber_time_boxes(const Temporal *temp, const Interval *duration, TimestampTz torigin, int *count);
+extern TBox *tnumber_value_time_boxes(const Temporal *temp, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, int *count);
+extern Temporal **tnumber_value_split(const Temporal *temp, Datum vsize, Datum vorigin, Datum **bins, int *count);
+extern TBox *tbox_get_value_time_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, meosType basetype, meosType spantype);
+extern Temporal **tnumber_value_time_split(const Temporal *temp, Datum size, const Interval *duration, Datum vorigin, TimestampTz torigin, Datum **value_bins, TimestampTz **time_bins, int *count);
 
 /*****************************************************************************/
 

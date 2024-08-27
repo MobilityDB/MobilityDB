@@ -176,7 +176,7 @@ Boxop_stbox_tnpoint(FunctionCallInfo fcinfo,
   STBox *box = PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   STBox box1;
-  temporal_set_bbox(temp, &box1);
+  tspatial_set_stbox(temp, &box1);
   bool result = func(box, &box1);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -194,7 +194,7 @@ Boxop_tnpoint_stbox(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
   STBox box1;
-  temporal_set_bbox(temp, &box1);
+  tspatial_set_stbox(temp, &box1);
   bool result = func(&box1, box);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -212,8 +212,8 @@ Boxop_tnpoint_tnpoint(FunctionCallInfo fcinfo,
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   STBox box1, box2;
-  temporal_set_bbox(temp1, &box1);
-  temporal_set_bbox(temp2, &box2);
+  tspatial_set_stbox(temp1, &box1);
+  tspatial_set_stbox(temp2, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);

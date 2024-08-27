@@ -173,7 +173,7 @@ psql mobility -c "CREATE EXTENSION MobilityDB cascade"
 				To download this release:
 			</para>
 			<programlisting language="bash" xml:space="preserve">
-wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v1.0.tar.gz
+wget -O mobilitydb-1.1.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v1.1.tar.gz
 </programlisting>
 			<para>
 				Go to <xref linkend="short_version" /> to the extract and compile instructions.
@@ -189,7 +189,7 @@ wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v
 			<programlisting language="bash" xml:space="preserve">
 git clone https://github.com/MobilityDB/MobilityDB.git
 cd MobilityDB
-git checkout v1.0
+git checkout v1.1
 </programlisting>
 			<para>
 				Go to <xref linkend="short_version" /> to the compile instructions (there is no tar ball).

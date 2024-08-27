@@ -343,13 +343,11 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 bool
 ensure_not_geodetic(int16 flags)
 {
-  if (MEOS_FLAGS_GET_GEODETIC(flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Only planar coordinates supported");
-    return false;
-  }
-  return true;
+  if (! MEOS_FLAGS_GET_GEODETIC(flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only planar coordinates supported");
+  return false;
 }
 
 /**
@@ -375,13 +373,11 @@ ensure_same_geodetic(int16 flags1, int16 flags2)
 bool
 ensure_srid_known(int32_t srid)
 {
-  if (srid == SRID_UNKNOWN)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The SRID cannot be unknown");
-    return false;
-  }
-  return true;
+  if (srid != SRID_UNKNOWN)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The SRID cannot be unknown");
+  return false;
 }
 
 /**
@@ -390,13 +386,11 @@ ensure_srid_known(int32_t srid)
 bool
 ensure_same_srid(int32_t srid1, int32_t srid2)
 {
-  if (srid1 != srid2)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed SRID");
-    return false;
-  }
-  return true;
+  if (srid1 == srid2)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on mixed SRID");
+  return false;
 }
 
 /**
@@ -423,13 +417,11 @@ ensure_same_srid_stbox(const STBox *box1, const STBox *box2)
 bool
 ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs)
 {
-  if (box->srid != gserialized_get_srid(gs))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed SRID");
-    return false;
-  }
-  return true;
+  if (box->srid == gserialized_get_srid(gs))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on mixed SRID");
+  return false;
 }
 
 /**
@@ -439,15 +431,13 @@ ensure_same_srid_stbox_gs(const STBox *box, const GSERIALIZED *gs)
 bool
 ensure_same_dimensionality(int16 flags1, int16 flags2)
 {
-  if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) ||
-      MEOS_FLAGS_GET_Z(flags1) != MEOS_FLAGS_GET_Z(flags2) ||
-      MEOS_FLAGS_GET_T(flags1) != MEOS_FLAGS_GET_T(flags2))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The arguments must be of the same dimensionality");
-    return false;
-  }
-  return true;
+  if (MEOS_FLAGS_GET_X(flags1) == MEOS_FLAGS_GET_X(flags2) &&
+      MEOS_FLAGS_GET_Z(flags1) == MEOS_FLAGS_GET_Z(flags2) &&
+      MEOS_FLAGS_GET_T(flags1) == MEOS_FLAGS_GET_T(flags2))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The arguments must be of the same dimensionality");
+  return false;
 }
 
 /**
@@ -457,10 +447,10 @@ ensure_same_dimensionality(int16 flags1, int16 flags2)
 bool
 same_spatial_dimensionality(int16 flags1, int16 flags2)
 {
-  if (MEOS_FLAGS_GET_X(flags1) != MEOS_FLAGS_GET_X(flags2) ||
-      MEOS_FLAGS_GET_Z(flags1) != MEOS_FLAGS_GET_Z(flags2))
-    return false;
-  return true;
+  if (MEOS_FLAGS_GET_X(flags1) == MEOS_FLAGS_GET_X(flags2) &&
+      MEOS_FLAGS_GET_Z(flags1) == MEOS_FLAGS_GET_Z(flags2))
+    return true;
+  return false;
 }
 
 /**
@@ -470,13 +460,11 @@ same_spatial_dimensionality(int16 flags1, int16 flags2)
 bool
 ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
 {
-  if (! same_spatial_dimensionality(flags1, flags2))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed 2D/3D dimensions");
-    return false;
-  }
-  return true;
+  if (same_spatial_dimensionality(flags1, flags2))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on mixed 2D/3D dimensions");
+  return false;
 }
 
 /**
@@ -504,13 +492,11 @@ ensure_same_spatial_dimensionality_temp_box(int16 flags1, int16 flags2)
 bool
 ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  if (FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed 2D/3D dimensions");
-    return false;
-  }
-  return true;
+  if (FLAGS_GET_Z(gs1->gflags) == FLAGS_GET_Z(gs2->gflags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on mixed 2D/3D dimensions");
+  return false;
 }
 
 /**
@@ -532,13 +518,11 @@ same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 bool
 ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (! same_dimensionality_tpoint_gs(temp, gs))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed 2D/3D dimensions");
-    return false;
-  }
-  return true;
+  if (same_dimensionality_tpoint_gs(temp, gs))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on mixed 2D/3D dimensions");
+  return false;
 }
 
 /**
@@ -566,13 +550,11 @@ ensure_same_spatial_dimensionality_stbox_gs(const STBox *box, const GSERIALIZED 
 bool
 ensure_has_Z(int16 flags)
 {
-  if (! MEOS_FLAGS_GET_Z(flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The temporal point must have Z dimension");
-    return false;
-  }
-  return true;
+  if (MEOS_FLAGS_GET_Z(flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The temporal point must have Z dimension");
+  return false;
 }
 
 /**
@@ -581,13 +563,11 @@ ensure_has_Z(int16 flags)
 bool
 ensure_has_not_Z(int16 flags)
 {
-  if (MEOS_FLAGS_GET_Z(flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The temporal point cannot have Z dimension");
-    return false;
-  }
-  return true;
+  if (! MEOS_FLAGS_GET_Z(flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The temporal point cannot have Z dimension");
+  return false;
 }
 
 /**
@@ -596,13 +576,11 @@ ensure_has_not_Z(int16 flags)
 bool
 ensure_has_Z_gs(const GSERIALIZED *gs)
 {
-  if (! FLAGS_GET_Z(gs->gflags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The geometry must have Z dimension");
-    return false;
-  }
-  return true;
+  if (FLAGS_GET_Z(gs->gflags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The geometry must have Z dimension");
+  return false;
 }
 
 /**
@@ -611,13 +589,11 @@ ensure_has_Z_gs(const GSERIALIZED *gs)
 bool
 ensure_has_not_Z_gs(const GSERIALIZED *gs)
 {
-  if (FLAGS_GET_Z(gs->gflags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The geometry cannot have Z dimension");
-    return false;
-  }
-  return true;
+  if (! FLAGS_GET_Z(gs->gflags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The geometry cannot have Z dimension");
+  return false;
 }
 
 /**
@@ -626,13 +602,11 @@ ensure_has_not_Z_gs(const GSERIALIZED *gs)
 bool
 ensure_has_M_gs(const GSERIALIZED *gs)
 {
-  if (! FLAGS_GET_M(gs->gflags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Only geometries with M dimension accepted");
-    return false;
-  }
-  return true;
+  if (FLAGS_GET_M(gs->gflags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only geometries with M dimension accepted");
+  return false;
 }
 
 /**
@@ -641,13 +615,11 @@ ensure_has_M_gs(const GSERIALIZED *gs)
 bool
 ensure_has_not_M_gs(const GSERIALIZED *gs)
 {
-  if (FLAGS_GET_M(gs->gflags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Only geometries without M dimension accepted");
-    return false;
-  }
-  return true;
+  if (! FLAGS_GET_M(gs->gflags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only geometries without M dimension accepted");
+  return false;
 }
 
 /**
@@ -656,13 +628,11 @@ ensure_has_not_M_gs(const GSERIALIZED *gs)
 bool
 ensure_point_type(const GSERIALIZED *gs)
 {
-  if (gserialized_get_type(gs) != POINTTYPE)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Only point geometries accepted");
-    return false;
-  }
-  return true;
+  if (gserialized_get_type(gs) == POINTTYPE)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only point geometries accepted");
+  return false;
 }
 
 /**
@@ -671,13 +641,11 @@ ensure_point_type(const GSERIALIZED *gs)
 bool
 ensure_not_empty(const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(gs))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Only non-empty geometries accepted");
-    return false;
-  }
-  return true;
+  if (! gserialized_is_empty(gs))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only non-empty geometries accepted");
+  return false;
 }
 
 /*****************************************************************************/
@@ -733,12 +701,12 @@ ensure_valid_spatial_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 ensure_valid_tpoint_box(const Temporal *temp, const STBox *box)
 {
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tgeo_type(temp->temptype) || ! ensure_has_X_stbox(box) ||
-      ! ensure_same_geodetic(temp->flags, box->flags) ||
-      ! ensure_same_srid(tpoint_srid(temp), stbox_srid(box)))
-    return false;
-  return true;
+  if (ensure_not_null((void *) temp) && ensure_not_null((void *) box) &&
+      ensure_tgeo_type(temp->temptype) && ensure_has_X_stbox(box) &&
+      ensure_same_geodetic(temp->flags, box->flags) &&
+      ensure_same_srid(tpoint_srid(temp), stbox_srid(box)))
+    return true;
+  return false;
 }
 
 /**
@@ -747,12 +715,12 @@ ensure_valid_tpoint_box(const Temporal *temp, const STBox *box)
 bool
 ensure_valid_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_tgeo_type(temp1->temptype) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)))
-    return false;
-  return true;
+  if (ensure_not_null((void *) temp1) && ensure_not_null((void *) temp2) &&
+      ensure_tgeo_type(temp1->temptype) &&
+      ensure_same_temporal_type(temp1, temp2) &&
+      ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)))
+    return true;
+  return false;
 }
 
 /*****************************************************************************
@@ -864,102 +832,6 @@ tpoint_get_z(const Temporal *temp)
   return tpoint_get_coord(temp, 2);
 }
 #endif /* MEOS */
-
-/*****************************************************************************
- * Return true if a point is in a segment (2D, 3D, or geodetic).
- * For 2D/3D points we proceed as follows.
- * If the cross product of (B-A) and (p-A) is 0, then the points A, B,
- * and p are aligned. To know if p is between A and B, we also have to
- * check that the dot product of (B-A) and (p-A) is positive and is less
- * than the square of the distance between A and B.
- * https://stackoverflow.com/questions/328107/how-can-you-determine-a-point-is-between-two-other-points-on-a-line-segment
- *****************************************************************************/
-
-#if 0 /* not used */
-/**
- * @brief Return true if point @p p is in the 2D segment defined by @p A and
- * @p B
- * @note The test of `p = A` or `p = B` *must be* done in the calling function
- * to take care of the inclusive/exclusive bounds for temporal sequences
- */
-static bool
-point2d_on_segment(const POINT2D *p, const POINT2D *A, const POINT2D *B)
-{
-  double crossproduct = (p->y - A->y) * (B->x - A->x) -
-    (p->x - A->x) * (B->y - A->y);
-  if (fabs(crossproduct) >= MEOS_EPSILON)
-    return false;
-  double dotproduct = (p->x - A->x) * (B->x - A->x) +
-    (p->y - A->y) * (B->y - A->y);
-  return (dotproduct >= 0);
-}
-
-/**
- * @brief Return true if a point @p p is in the 3D segment defined by @p A and
- * @p B
- * @note The test of `p = A` or `p = B` *must be* done in the calling function
- * to take care of the inclusive/exclusive bounds for temporal sequences
- */
-static bool
-point3dz_on_segment(const POINT3DZ *p, const POINT3DZ *A, const POINT3DZ *B)
-{
-  /* Find the collinearity of the points using the cross product
-   * http://www.ambrsoft.com/TrigoCalc/Line3D/LineColinear.htm */
-  double i = (p->y - A->y) * (B->z - A->z) - (p->z - A->z) * (B->y - A->y);
-  double j = (p->z - A->z) * (B->x - A->x) - (p->x - A->x) * (B->z - A->z);
-  double k = (p->x - A->x) * (B->y - A->y) - (p->y - A->y) * (B->x - A->x);
-  if (fabs(i) >= MEOS_EPSILON || fabs(j) >= MEOS_EPSILON ||
-      fabs(k) >= MEOS_EPSILON)
-    return false;
-  double dotproduct = (p->x - A->x) * (B->x - A->x) +
-    (p->y - A->y) * (B->y - A->y) + (p->z - A->z) * (B->z - A->z);
-  return (dotproduct >= 0);
-}
-
-/**
- * @brief Return true if point @p p is in the geodetic segment defined by @p A
- * and @p B
- */
-static bool
-point_on_segment_sphere(const POINT4D *p, const POINT4D *A, const POINT4D *B)
-{
-  POINT4D closest;
-  double dist;
-  closest_point_on_segment_sphere(p, A, B, &closest, &dist);
-  return (dist > MEOS_EPSILON) && (FP_EQUALS(p->z, closest.z));
-}
-
-/**
- * @brief Determine if a point is in a segment
- * @param[in] start,end Points defining the segment
- * @param[in] point Point
- */
-static bool
-point_on_segment(Datum start, Datum end, Datum point)
-{
-  GSERIALIZED *gs = DatumGetGserializedP(start);
-  if (FLAGS_GET_GEODETIC(gs->gflags))
-  {
-    POINT4D p1, p2, p;
-    datum_point4d(start, &p1);
-    datum_point4d(end, &p2);
-    datum_point4d(point, &p);
-    return point_on_segment_sphere(&p, &p1, &p2);
-  }
-  if (FLAGS_GET_Z(gs->gflags))
-  {
-    const POINT3DZ *p1 = DATUM_POINT3DZ_P(start);
-    const POINT3DZ *p2 = DATUM_POINT3DZ_P(end);
-    const POINT3DZ *p = DATUM_POINT3DZ_P(point);
-    return point3dz_on_segment(p, p1, p2);
-  }
-  /* 2D */
-  const POINT2D *p1 = DATUM_POINT2D_P(start);
-  const POINT2D *p2 = DATUM_POINT2D_P(end);
-  const POINT2D *p = DATUM_POINT2D_P(point);
-  return point2d_on_segment(p, p1, p2);
-}
-#endif /* not used */
 
 /*****************************************************************************
  * Functions derived from PostGIS to increase floating-point precision
@@ -1988,7 +1860,7 @@ tpointseq_trajectory(const TSequence *seq)
   }
   STBox box;
   memset(&box, 0, sizeof(box));
-  tsequence_set_bbox(seq, &box);
+  tspatialseq_set_stbox(seq, &box);
   GSERIALIZED *result = geopointarr_make_trajectory(points, npoints, &box,
     interp);
   pfree(points);
@@ -2027,7 +1899,7 @@ tpointseqset_step_trajectory(const TSequenceSet *ss)
   }
   STBox box;
   memset(&box, 0, sizeof(box));
-  tsequenceset_set_bbox(ss, &box);
+  tspatialseqset_set_stbox(ss, &box);
   GSERIALIZED *result = geopointarr_make_trajectory(points, npoints, &box,
     MEOS_FLAGS_GET_INTERP(ss->flags));
   pfree(points);
@@ -2069,7 +1941,7 @@ tpointseqset_trajectory(const TSequenceSet *ss)
   }
   STBox box;
   memset(&box, 0, sizeof(box));
-  tsequenceset_set_bbox(ss, &box);
+  tspatialseqset_set_stbox(ss, &box);
   GSERIALIZED *result = NULL;
   /* Only points */
   if (npoints > 0 && nlines == 0)
@@ -2436,6 +2308,8 @@ tpointseq_disc_to_geomeas(const TSequence *seq, const TSequence *meas)
 static GSERIALIZED *
 tpointseq_cont_to_geomeas(const TSequence *seq, const TSequence *meas)
 {
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Instantaneous sequence */
   if (seq->count == 1)
     return tpointinst_to_geomeas(TSEQUENCE_INST_N(seq, 0),
@@ -2584,6 +2458,8 @@ tpointseqset_to_geomeas(const TSequenceSet *ss, const TSequenceSet *meas)
 static GSERIALIZED *
 tpointseq_cont_to_geomeas_segm(const TSequence *seq, const TSequence *meas)
 {
+  assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Instantaneous sequence */
   if (seq->count == 1)
     /* Result is a point */
@@ -3654,7 +3530,7 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
 
   / * Bounding box test to drop geometries smaller than the resolution * /
   STBox box;
-  temporal_set_bbox(temp, &box);
+  tspatial_set_stbox(temp, &box);
   double tpoint_width = box.xmax - box.xmin;
   double tpoint_height = box.ymax - box.ymin;
   / * We use half of the square height and width as limit: We use this
@@ -5461,9 +5337,11 @@ tpoint_is_simple(const Temporal *temp)
  * @pre The sequence has at least two instants
  */
 static TSequence **
-tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
+tpointseq_disc_split(const TSequence *seq, bool *splits, int count)
 {
-  assert(seq->count > 1);
+  assert(seq); assert(splits); assert(seq->count > 1);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
+
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   TSequence **result = palloc(sizeof(TSequence *) * count);
   /* Create the splits */
@@ -5494,9 +5372,11 @@ tpointdiscseq_split(const TSequence *seq, bool *splits, int count)
  * @note This function is called for each sequence of a sequence set
  */
 static TSequence **
-tpointcontseq_split(const TSequence *seq, bool *splits, int count)
+tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
 {
-  assert(seq->count > 2);
+  assert(seq); assert(splits); assert(seq->count > 2);
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   TSequence **result = palloc(sizeof(TSequence *) * count);
@@ -5585,8 +5465,8 @@ tpointseq_make_simple(const TSequence *seq, int *count)
   }
 
   result = (interp == DISCRETE) ?
-    tpointdiscseq_split(seq, splits, numsplits + 1) :
-    tpointcontseq_split(seq, splits, numsplits + 1);
+    tpointseq_disc_split(seq, splits, numsplits + 1) :
+    tpointseq_cont_split(seq, splits, numsplits + 1);
   *count = numsplits + 1;
   pfree(splits);
   return result;

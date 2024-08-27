@@ -27,41 +27,29 @@
  *
  *****************************************************************************/
 
-#ifndef __TEMPORAL_ANALYTICS_H__
-#define __TEMPORAL_ANALYTICS_H__
+/**
+ * @brief Basic routines for indexing spans
+ */
 
+#ifndef __SPAN_INDEX_H__
+#define __SPAN_INDEX_H__
+
+/* PostgreSQL */
+#include <postgres.h>
+#include <access/stratnum.h>
 /* MEOS */
 #include <meos.h>
+#include "general/temporal.h"
+#include "general/meos_catalog.h"
 
 /*****************************************************************************/
 
-typedef enum
-{
-  FRECHET,
-  DYNTIMEWARP,
-  HAUSDORFF
-} SimFunc;
-
-/**
- * Struct for storing the state that persists across multiple calls generating
- * the path
- */
-typedef struct
-{
-  bool done;
-  int i;
-  int size;
-  Match *path;
-} SimilarityPathState;
+extern bool span_index_leaf_consistent(const Span *key, const Span *query,
+  StrategyNumber strategy);
+extern bool span_gist_inner_consistent(const Span *key, const Span *query,
+  StrategyNumber strategy);
+extern bool span_index_recheck(StrategyNumber strategy);
 
 /*****************************************************************************/
 
-extern double temporal_similarity(const Temporal *temp1, const Temporal *temp2,
-  SimFunc simfunc);
-extern Match *temporal_similarity_path(const Temporal *temp1,
-  const Temporal *temp2, int *count, SimFunc simfunc);
-
-/*****************************************************************************/
-
-#endif /* __TEMPORAL_ANALYTICS_H__ */
-
+#endif /* __SPAN_INDEX_H__ */

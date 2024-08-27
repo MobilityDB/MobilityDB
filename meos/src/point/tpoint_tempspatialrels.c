@@ -296,9 +296,12 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom,
  * @param[out] count Number of elements in the output array
  */
 static TSequence **
-tinterrel_tpointcontseq_geom_iter(const TSequence *seq, Datum geom,
+tinterrel_tpointseq_cont_geom_iter(const TSequence *seq, Datum geom,
   const STBox *box, bool tinter, datum_func2 func, int *count)
 {
+  assert(seq); assert(box); assert(count); assert(tgeo_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
@@ -340,15 +343,17 @@ tinterrel_tpointcontseq_geom_iter(const TSequence *seq, Datum geom,
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  */
 TSequenceSet *
-tinterrel_tpointcontseq_geom(const TSequence *seq, Datum geom,
+tinterrel_tpointseq_cont_geom(const TSequence *seq, Datum geom,
   const STBox *box, bool tinter, datum_func2 func)
 {
+  assert(seq); assert(box); assert(tgeo_type(seq->temptype));
+  assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
+
   /* Split the temporal point in an array of non self-intersecting
    * temporal points */
   int count;
-  TSequence **sequences = tinterrel_tpointcontseq_geom_iter(seq, geom, box,
+  TSequence **sequences = tinterrel_tpointseq_cont_geom_iter(seq, geom, box,
     tinter, func, &count);
-  /* We are sure that count > 0 since the geometry is not empty */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -366,7 +371,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tinterrel_tpointcontseq_geom(TSEQUENCESET_SEQ_N(ss, 0), geom, box,
+    return tinterrel_tpointseq_cont_geom(TSEQUENCESET_SEQ_N(ss, 0), geom, box,
       tinter, func);
 
   int totalcount;
@@ -389,7 +394,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, Datum geom,
     totalcount = 0;
     for (int i = 0; i < ss->count; i++)
     {
-      sequences[i] = tinterrel_tpointcontseq_geom_iter(
+      sequences[i] = tinterrel_tpointseq_cont_geom_iter(
         TSEQUENCESET_SEQ_N(ss, i), geom, box, tinter, func, &countseqs[i]);
       totalcount += countseqs[i];
     }
@@ -419,7 +424,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
 
   /* Bounding box test */
   STBox box1, box2;
-  temporal_set_bbox(temp, &box1);
+  tspatial_set_stbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
@@ -450,7 +455,7 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
       result = ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
         (Temporal *) tinterrel_tpointseq_discstep_geom((TSequence *) temp,
           PointerGetDatum(gs), tinter, func) :
-        (Temporal *) tinterrel_tpointcontseq_geom((TSequence *) temp,
+        (Temporal *) tinterrel_tpointseq_cont_geom((TSequence *) temp,
           PointerGetDatum(gs), &box2, tinter, func);
       break;
     default: /* TSEQUENCESET */
@@ -967,7 +972,6 @@ tdwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
   TSequence **sequences = palloc(sizeof(TSequence *) * seq1->count * 4);
   int count = tdwithin_tpointseq_tpointseq_iter(seq1, seq2, Float8GetDatum(dist),
     func, sequences);
-  /* We are sure that count > 0 */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 

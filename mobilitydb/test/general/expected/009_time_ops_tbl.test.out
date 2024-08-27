@@ -150,7 +150,7 @@ ERROR:  Oid 1184 does not refer to a table
 SELECT _mobdb_span_sel('tbl_tstzspan'::regclass, 'X', '&&(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]');
 ERROR:  attribute "X" does not exist
 SELECT _mobdb_span_sel('tbl_tstzspan'::regclass, 't', '<(text,text)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]');
-ERROR:  Unknown operator Oid 664
+ERROR:  Unknown span operator 664
 SELECT _mobdb_span_joinsel(1184, 'X', 'tbl_tstzspan'::regclass, 't', '&&(tstzspan,tstzspan)'::regoperator);
 ERROR:  Oid 1184 does not refer to a table
 SELECT _mobdb_span_joinsel('tbl_tstzspan'::regclass, 'X', 'tbl_tstzspan'::regclass, 't', '&&(tstzspan,tstzspan)'::regoperator);
