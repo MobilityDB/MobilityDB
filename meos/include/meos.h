@@ -309,8 +309,6 @@ typedef struct RTreeMetadata RTreeMetadata;
  * combination that you may want.
  */
 typedef struct {
-  int count;
-  STBox box;
   RTreeMetadata * metadata;
 } RTree;
 

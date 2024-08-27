@@ -79,6 +79,7 @@ typedef struct RTreeMetadata {
   meosType basetype;
   int dims;
   RTreeNode *root;
+  STBox box;
   double (*get_axis)(const STBox*, int, bool);
 } RTreeMetadata;
 /*****************************************************************************/

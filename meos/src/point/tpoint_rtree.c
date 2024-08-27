@@ -213,7 +213,7 @@ node_choose(const RTree * rtree,
     const RTreeNode * node) {
   // Check if you can add without expanding any rectangle.
   for (int i = 0; i < node -> count; ++i) {
-    if (contains_stbox_stbox( & rtree -> box, box)) {
+    if (contains_stbox_stbox( & rtree -> metadata -> box, box)) {
       return i;
     }
   }
@@ -412,14 +412,14 @@ node_split(RTree * rtree, RTreeNode * node, STBox * box, RTreeNode ** right_out)
  * the appropriate child node for insertion and recursively inserts the STBox. If splitting occurs, 
  * the function handles the split and updates the parent node's bounding boxes.
  * @param[in] rtree Pointer to the RTree structure that provides axis value retrieval and node splitting functions.
- * @param[in] old_box Pointer to the STBox that is being replaced or added.
+ * @param[in] node_bounding_box Pointer to the bounding STBox of all the STBoxes in `node`
  * @param[in] node Pointer to the RTreeNode structure where the STBox is being inserted.
  * @param[in] new_box Pointer to the STBox to be inserted.
  * @param[in] id Identifier associated with the new STBox (used only for leaf nodes).
  * @param[out] split Pointer to a boolean flag that indicates if the node was split during insertion.
  */
 static void
-node_insert(RTree * rtree, STBox * old_box, RTreeNode * node,
+node_insert(RTree * rtree, STBox * node_bounding_box, RTreeNode * node,
   STBox * new_box, int id, bool * split) {
   if (node -> kind == RTREE_INNER_NODE_NO) {
     if (node -> count == MAXITEMS) {
@@ -450,7 +450,7 @@ node_insert(RTree * rtree, STBox * old_box, RTreeNode * node,
   node_box_calculate(right, & node -> boxes[node -> count]);
   node -> nodes[node -> count] = right;;
   node -> count++;
-  return node_insert(rtree, old_box, node, new_box, id, split);
+  return node_insert(rtree, node_bounding_box, node, new_box, id, split);
 
 }
 
@@ -600,18 +600,17 @@ rtree_insert(RTree * rtree, STBox * box, int64 id) {
       RTreeNode * new_root = node_new(RTREE_INNER_NODE_NO);
       rtree_set_dims(rtree, box);
       rtree -> metadata -> root = new_root;
-      rtree -> box = * box;
+      rtree -> metadata -> box = * box;
     }
     bool split = false;
-    node_insert(rtree, & rtree -> box, rtree -> metadata -> root, box, id, & split);
+    node_insert(rtree, & rtree -> metadata -> box, rtree -> metadata -> root, box, id, & split);
     if (!split) {
-      stbox_expand(box, & rtree -> box);
-      rtree -> count++;
+      stbox_expand(box, & rtree -> metadata -> box);
       return;
     }
     RTreeNode * new_root = node_new(RTREE_INNER_NODE);
     RTreeNode * right;
-    node_split(rtree, rtree -> metadata -> root, & rtree -> box, & right);
+    node_split(rtree, rtree -> metadata -> root, & rtree -> metadata -> box, & right);
 
     node_box_calculate(rtree -> metadata -> root, & new_root -> boxes[0]);
     node_box_calculate(right, & new_root -> boxes[1]);
