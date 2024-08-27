@@ -297,20 +297,10 @@ typedef struct
 } SkipList;
 
 
-typedef struct RTreeMetadata RTreeMetadata;
-
 /**
- * Rtree in memory index basic structure.
- *
- * It works based on STBox. The spliting criteria is based on the largest axis.
- * The inserting criteria is based on least enlarging square.
- *
- * The get axis function makes it ease to implement with X,Y,Z and time or any
- * combination that you may want.
+ * Structure for the in-memory Rtree index
  */
-typedef struct {
-  RTreeMetadata * metadata;
-} RTree;
+typedef struct RTree RTree;
 
 /*****************************************************************************
  * Error codes

@@ -36,15 +36,12 @@
  * @endcode
  */
 
-#include<meos.h>
-
-#include <meos_internal.h>
-
 #include <stdio.h>
-
 #include <stdlib.h>
-
 #include <time.h>
+
+#include <meos.h>
+#include <meos_internal.h>
 
 #define NO_STBOX 10000
 

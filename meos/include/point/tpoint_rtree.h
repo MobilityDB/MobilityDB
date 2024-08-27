@@ -74,14 +74,23 @@ typedef struct RTreeNode{
   STBox boxes[MAXITEMS];
 } RTreeNode;
 
-
-typedef struct RTreeMetadata {
+/**
+ * Rtree in memory index basic structure.
+ *
+ * It works based on STBox. The spliting criteria is based on the largest axis.
+ * The inserting criteria is based on least enlarging square.
+ *
+ * The get axis function makes it ease to implement with X,Y,Z and time or any
+ * combination that you may want.
+ */
+struct RTree {
   meosType basetype;
   int dims;
   RTreeNode *root;
   STBox box;
   double (*get_axis)(const STBox*, int, bool);
-} RTreeMetadata;
+};
+
 /*****************************************************************************/
 
 #endif /* __TPOINT_RTREE__ */

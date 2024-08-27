@@ -34,14 +34,10 @@
 
 /* C */
 #include <stdlib.h>
-
 #include <math.h>
-
 /* MEOS */
 #include <meos.h>
-
 #include <meos_internal.h>
-
 #include "point/tpoint_rtree.h"
 
 /**
@@ -117,7 +113,7 @@ node_new(bool kind) {
 static double
 get_axis_length(const RTree * rtree,
   const STBox * box, int axis) {
-  return rtree -> metadata -> get_axis(box, axis, true) - rtree -> metadata -> get_axis(box, axis, false);
+  return rtree -> get_axis(box, axis, true) - rtree -> get_axis(box, axis, false);
 }
 
 /**
@@ -135,7 +131,7 @@ static double
 box_area(const STBox * box,
   const RTree * rtree) {
   double result = 1.0;
-  for (int i = 0; i < rtree -> metadata -> dims; ++i) {
+  for (int i = 0; i < rtree -> dims; ++i) {
     result *= get_axis_length(rtree, box, i);
   }
   return result;
@@ -213,7 +209,7 @@ node_choose(const RTree * rtree,
     const RTreeNode * node) {
   // Check if you can add without expanding any rectangle.
   for (int i = 0; i < node -> count; ++i) {
-    if (contains_stbox_stbox( & rtree -> metadata -> box, box)) {
+    if (contains_stbox_stbox( & rtree -> box, box)) {
       return i;
     }
   }
@@ -252,7 +248,7 @@ stbox_largest_axis(const STBox * box,
   const RTree * rtree) {
   int largest_axis = 0;
   double previous_largest = get_axis_length(rtree, box, 0);
-  for (int i = 1; i < rtree -> metadata -> dims; ++i) {
+  for (int i = 1; i < rtree -> dims; ++i) {
     if (previous_largest < get_axis_length(rtree, box, i)) {
       previous_largest = get_axis_length(rtree, box, i);
       largest_axis = i;
@@ -331,7 +327,7 @@ node_qsort(const RTree * rtree, RTreeNode * node, int index, bool upper, int s, 
   int pivot = no_box / 2;
   node_swap(node, s + pivot, s + right);
   for (int i = 0; i < no_box; ++i) {
-    if (rtree -> metadata -> get_axis( & node -> boxes[right + s], index, upper) > rtree -> metadata -> get_axis( & node -> boxes[s + i], index, upper)) {
+    if (rtree -> get_axis( & node -> boxes[right + s], index, upper) > rtree -> get_axis( & node -> boxes[s + i], index, upper)) {
       node_swap(node, s + i, s + left);
       left++;
     }
@@ -373,8 +369,8 @@ node_split(RTree * rtree, RTreeNode * node, STBox * box, RTreeNode ** right_out)
   int largest_axis = stbox_largest_axis(box, rtree);
   RTreeNode * right = node_new(node -> kind);
   for (int i = 0; i < node -> count; ++i) {
-    double min_dist = rtree -> metadata -> get_axis( & node -> boxes[i], largest_axis, false) - rtree -> metadata -> get_axis(box, largest_axis, false);
-    double max_dist = rtree -> metadata -> get_axis(box, largest_axis, true) - rtree -> metadata -> get_axis( & node -> boxes[i], largest_axis, true);
+    double min_dist = rtree -> get_axis( & node -> boxes[i], largest_axis, false) - rtree -> get_axis(box, largest_axis, false);
+    double max_dist = rtree -> get_axis(box, largest_axis, true) - rtree -> get_axis( & node -> boxes[i], largest_axis, true);
     // move to right
     if (max_dist < min_dist) {
       node_move_box_at_index_into(node, i, right);
@@ -532,9 +528,9 @@ void node_search(const RTreeNode * node,
 static bool
 rtree_set_dims(RTree * rtree,
   const STBox * box) {
-  switch (rtree -> metadata -> basetype) {
+  switch (rtree -> basetype) {
   case T_STBOX:
-    rtree -> metadata -> dims = 3 + MEOS_FLAGS_GET_Z(box -> flags);
+    rtree -> dims = 3 + MEOS_FLAGS_GET_Z(box -> flags);
     return true;
   default:
     break;
@@ -550,12 +546,12 @@ rtree_set_dims(RTree * rtree,
  */
 static bool
 rtree_set_functions(RTree * rtree) {
-  switch (rtree -> metadata -> basetype) {
+  switch (rtree -> basetype) {
   case T_STBOX:
     /** TODO: This should be deprecated when we start using picksplit since this function
      * is only used in the splitting phase.
      */
-    rtree -> metadata -> get_axis = get_axis_stbox;
+    rtree -> get_axis = get_axis_stbox;
     return true;
   default:
     break;
@@ -572,8 +568,7 @@ rtree_set_functions(RTree * rtree) {
 RTree *
 rtree_create(meosType basetype) {
   RTree * rtree = palloc0(sizeof(RTree));
-  rtree -> metadata = palloc0(sizeof(RTreeMetadata));
-  rtree -> metadata -> basetype = basetype;
+  rtree -> basetype = basetype;
   if (!rtree_set_functions(rtree)) {
     pfree(rtree);
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Unsupported base type for RTree %d", basetype);
@@ -596,28 +591,28 @@ rtree_create(meosType basetype) {
 void
 rtree_insert(RTree * rtree, STBox * box, int64 id) {
   while (1) {
-    if (!rtree -> metadata -> root) {
+    if (!rtree -> root) {
       RTreeNode * new_root = node_new(RTREE_INNER_NODE_NO);
       rtree_set_dims(rtree, box);
-      rtree -> metadata -> root = new_root;
-      rtree -> metadata -> box = * box;
+      rtree -> root = new_root;
+      rtree -> box = * box;
     }
     bool split = false;
-    node_insert(rtree, & rtree -> metadata -> box, rtree -> metadata -> root, box, id, & split);
+    node_insert(rtree, & rtree -> box, rtree -> root, box, id, & split);
     if (!split) {
-      stbox_expand(box, & rtree -> metadata -> box);
+      stbox_expand(box, & rtree -> box);
       return;
     }
     RTreeNode * new_root = node_new(RTREE_INNER_NODE);
     RTreeNode * right;
-    node_split(rtree, rtree -> metadata -> root, & rtree -> metadata -> box, & right);
+    node_split(rtree, rtree -> root, & rtree -> box, & right);
 
-    node_box_calculate(rtree -> metadata -> root, & new_root -> boxes[0]);
+    node_box_calculate(rtree -> root, & new_root -> boxes[0]);
     node_box_calculate(right, & new_root -> boxes[1]);
-    new_root -> nodes[0] = rtree -> metadata -> root;
+    new_root -> nodes[0] = rtree -> root;
     new_root -> nodes[1] = right;
-    rtree -> metadata -> root = new_root;
-    rtree -> metadata -> root -> count = 2;
+    rtree -> root = new_root;
+    rtree -> root -> count = 2;
   }
 
 }
@@ -646,8 +641,8 @@ rtree_search(const RTree * rtree,
   const STBox * query, int * count) {
   int * ids = palloc(sizeof(int) * SEARCH_ARRAY_STARTING_SIZE);
   * count = 0;
-  if (rtree -> metadata -> root) {
-    node_search(rtree -> metadata -> root, query, & ids, count);
+  if (rtree -> root) {
+    node_search(rtree -> root, query, & ids, count);
   }
   return ids;
 }
@@ -659,10 +654,9 @@ rtree_search(const RTree * rtree,
  */
 void
 rtree_free(RTree * rtree) {
-  if (rtree -> metadata -> root) {
-    node_free(rtree -> metadata -> root);
+  if (rtree -> root) {
+    node_free(rtree -> root);
   }
-  free(rtree -> metadata);
   free(rtree);
 }
 
