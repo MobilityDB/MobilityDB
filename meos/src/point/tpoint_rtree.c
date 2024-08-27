@@ -577,8 +577,6 @@ rtree_create(meosType basetype) {
   return rtree;
 }
 
-#if MEOS
-
 /**
  * @ingroup meos_stbox_rtree_index
  * @brief Insert an STBox into the RTree index. 
@@ -659,5 +657,3 @@ rtree_free(RTree * rtree) {
   }
   free(rtree);
 }
-
-#endif /* MEOS */
