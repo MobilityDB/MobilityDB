@@ -1,4 +1,4 @@
-add_library(point OBJECT
+set(POINT_SRCS
   pgis_types.c
   stbox.c
   stbox_index.c
@@ -9,7 +9,6 @@ add_library(point OBJECT
   tpoint_compops.c
   tpoint_distance.c
   tpoint_out.c
-  tpoint_rtree.c
   tpoint_parser.c
   tpoint_posops_meos.c
   tpoint_restrict.c
@@ -20,5 +19,11 @@ add_library(point OBJECT
   tpoint_tile.c
   type_srid.c
 )
+
+if(MEOS)
+  list(APPEND POINT_SRCS tpoint_rtree.c)
+endif()
+
+add_library(point OBJECT ${POINT_SRCS})
 
 
