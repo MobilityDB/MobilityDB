@@ -50,7 +50,12 @@ jobs:
       - name: Get dependencies from homebrew (cache)
         uses: tecolicom/actions-use-homebrew-tools@v1
         with:
-          tools: cmake postgresql postgis proj gsl
+          tools: postgresql postgis proj gsl
+
+      - name: reinstall cmake
+        # Remove once issue with hombrew cache action is fixed
+        run: |
+          brew reinstall cmake
 
       - name: Configure
         run: |
