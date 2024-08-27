@@ -46,7 +46,7 @@ CREATE FUNCTION spaceTiles(bounds stbox, xsize float, ysize float, zsize float,
   RETURNS SETOF index_stbox
   AS 'MODULE_PATHNAME', 'Stbox_space_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spaceTiles(bounds stbox, size float,
+CREATE FUNCTION spaceTiles(bounds stbox, xsize float,
     sorigin geometry DEFAULT 'Point(0 0 0)', borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
   AS 'SELECT @extschema@.spaceTiles($1, $2, $2, $2, $3, $4)'
@@ -69,7 +69,7 @@ CREATE FUNCTION spaceTimeTiles(bounds stbox, xsize float, ysize float, zsize flo
   RETURNS SETOF index_stbox
   AS 'MODULE_PATHNAME', 'Stbox_space_time_tiles'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spaceTimeTiles(bounds stbox, size float,
+CREATE FUNCTION spaceTimeTiles(bounds stbox, xsize float,
   duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
   timestamptz DEFAULT '2000-01-03', borderInc boolean DEFAULT TRUE)
   RETURNS SETOF index_stbox
@@ -134,13 +134,13 @@ CREATE FUNCTION spaceBoxes(tgeompoint, xsize float, ysize float, zsize float,
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Tpoint_space_boxes'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE FUNCTION spaceBoxes(tgeompoint, size float,
+CREATE FUNCTION spaceBoxes(tgeompoint, xsize float,
     sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
   RETURNS stbox[]
   AS 'SELECT @extschema@.spaceBoxes($1, $2, $2, $2, $3, $4)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
-CREATE FUNCTION spaceBoxes(tgeompoint, sizeX float, sizeY float,
+CREATE FUNCTION spaceBoxes(tgeompoint, xsize float, ysize float,
     sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
   RETURNS stbox[]
@@ -161,7 +161,7 @@ CREATE FUNCTION spaceTimeBoxes(tgeompoint, xsize float, ysize float,
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Tpoint_space_time_boxes'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE FUNCTION spaceTimeBoxes(tgeompoint, size float, interval,
+CREATE FUNCTION spaceTimeBoxes(tgeompoint, xsize float, interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
