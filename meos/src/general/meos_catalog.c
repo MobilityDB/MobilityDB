@@ -346,7 +346,7 @@ tempsubtype_from_string(const char *str, int16 *subtype)
   return false;
 }
 
-#if DEBUG_BUILD
+#if NDEBUG
 /**
  * @brief Ensure that the subtype of a temporal value is valid
  * @note The function is used for the dispatch functions for temporal types
@@ -371,7 +371,7 @@ temptype_subtype_all(tempSubtype subtype)
     return true;
   return false;
 }
-#endif /* DEBUG_BUILD */
+#endif
 
 /*****************************************************************************/
 
@@ -647,7 +647,7 @@ basetype_length(meosType type)
   return SHRT_MAX;
 }
 
-#ifdef DEBUG_BUILD
+#ifndef NDEBUG
 /**
  * @brief Return true if the type is an alphanumeric base type
  * @note This function is only used in the asserts
@@ -705,7 +705,7 @@ time_type(meosType type)
 
 /*****************************************************************************/
 
-#ifdef DEBUG_BUILD
+#ifndef NDEBUG
 /**
  * @brief Return true if the type is a base type of a set type
  * @note This function is only used in the asserts
@@ -893,7 +893,7 @@ span_type(meosType type)
   return false;
 }
 
-#ifdef DEBUG_BUILD
+#ifndef NDEBUG
 /**
  * @brief Return true if the type is a span type
  * @note This function is only used in the asserts
@@ -1029,7 +1029,7 @@ temporal_type(meosType type)
   return false;
 }
 
-#ifdef DEBUG_BUILD
+#ifndef NDEBUG
 /**
  * @brief Return true if the type is a temporal base type
  * @note This function is only used in the asserts
@@ -1072,7 +1072,7 @@ temptype_continuous(meosType type)
   return false;
 }
 
-#ifdef DEBUG_BUILD
+#ifndef NDEBUG
 /**
  * @brief Return true if the type is a temporal alphanumeric type
  * @note This function is only used in the asserts
