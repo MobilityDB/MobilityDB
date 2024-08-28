@@ -528,36 +528,9 @@ bbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v,
   return;
 }
 
-/**
- * @brief Double sorting split algorithm
- *
- * The algorithm finds split of boxes by considering splits along each axis.
- * Each entry is first projected as an interval on the X-axis, and different
- * ways to split the intervals into two groups are considered, trying to
- * minimize the overlap of the groups. Then the same is repeated for the
- * Y-axis, and the overall best split is chosen. The quality of a split is
- * determined by overlap along that axis and some other criteria (see
- * bbox_gist_consider_split).
- *
- * After that, all the entries are divided into three groups:
- *
- * 1. Entries which should be placed to the left group
- * 2. Entries which should be placed to the right group
- * 3. "Common entries" which can be placed to any of groups without affecting
- *    of overlap along selected axis.
- *
- * The common entries are distributed by minimizing penalty.
- *
- * For details see:
- * "A new double sorting-based node splitting algorithm for R-tree", A. Korotkov
- * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
- */
-Datum
-bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
-  void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *))
-{
-  GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
-  GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
+void bbox_picksplit( meosType bboxtype,
+  void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *),
+  GistEntryVector *entryvec, GIST_SPLITVEC *v ){
   OffsetNumber i, maxoff;
   ConsiderSplitContext context;
   void *box, *leftBox, *rightBox;
@@ -782,7 +755,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
   if (context.first)
   {
     bbox_gist_fallback_split(entryvec, v, bboxtype, &tbox_adjust);
-    PG_RETURN_POINTER(v);
+    return;
   }
 
   /*
@@ -948,7 +921,48 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
   v->spl_rdatum = PointerGetDatum(rightBox);
 
   pfree(common_entries);
+}
 
+
+
+/**
+ * @brief Double sorting split algorithm
+ *
+ * The algorithm finds split of boxes by considering splits along each axis.
+ * Each entry is first projected as an interval on the X-axis, and different
+ * ways to split the intervals into two groups are considered, trying to
+ * minimize the overlap of the groups. Then the same is repeated for the
+ * Y-axis, and the overall best split is chosen. The quality of a split is
+ * determined by overlap along that axis and some other criteria (see
+ * bbox_gist_consider_split).
+ *
+ * After that, all the entries are divided into three groups:
+ *
+ * 1. Entries which should be placed to the left group
+ * 2. Entries which should be placed to the right group
+ * 3. "Common entries" which can be placed to any of groups without affecting
+ *    of overlap along selected axis.
+ *
+ * The common entries are distributed by minimizing penalty.
+ *
+ * For details see:
+ * "A new double sorting-based node splitting algorithm for R-tree", A. Korotkov
+ * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
+ * @param[in] fcinfo Function call Info. Used to get the PG_GETARG_POINTER for 
+ * * entryvec and *v.
+ * @param[in] bboxtype Meostype of the type of box. Supports T_BOX and T_STBOX
+ * @param[in] bbox_adjust Increase the first box to include the second one
+ * @param[in] bbox_penalty Return the amount by which the union of the 
+ * two boxes is larger than the original STBox's volume.
+
+ */
+Datum
+bbox_gist_picksplit(FunctionCallInfo fcinfo, meosType bboxtype,
+  void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *))
+{
+  GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
+  GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
+  bbox_picksplit(bboxtype, bbox_adjust, bbox_penalty, entryvec, v);
   PG_RETURN_POINTER(v);
 }
 
