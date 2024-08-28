@@ -36,15 +36,12 @@
  * @endcode
  */
 
-#include<meos.h>
-
-#include <meos_internal.h>
-
 #include <stdio.h>
-
 #include <stdlib.h>
-
 #include <time.h>
+
+#include <meos.h>
+#include <meos_internal.h>
 
 #define NO_STBOX 10000
 
@@ -67,7 +64,7 @@ int main() {
   clock_t t;
   double time_taken;
   RTree * rtree;
-  rtree = rtree_create(T_STBOX);
+  rtree = rtree_create_stbox();
 
   for (int i = 0; i < NO_STBOX; ++i) {
     int xmin = get_random_number(1, 1000);

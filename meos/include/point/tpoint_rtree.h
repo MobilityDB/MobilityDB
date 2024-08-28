@@ -37,6 +37,8 @@
 /* MEOS */
 #include <meos.h>
 
+#include "general/meos_catalog.h"
+
 /*****************************************************************************
  * Definitions
  *****************************************************************************/
@@ -72,6 +74,22 @@ typedef struct RTreeNode{
   STBox boxes[MAXITEMS];
 } RTreeNode;
 
+/**
+ * Rtree in memory index basic structure.
+ *
+ * It works based on STBox. The spliting criteria is based on the largest axis.
+ * The inserting criteria is based on least enlarging square.
+ *
+ * The get axis function makes it ease to implement with X,Y,Z and time or any
+ * combination that you may want.
+ */
+struct RTree {
+  meosType basetype;
+  int dims;
+  RTreeNode *root;
+  STBox box;
+  double (*get_axis)(const STBox*, int, bool);
+};
 
 /*****************************************************************************/
 
