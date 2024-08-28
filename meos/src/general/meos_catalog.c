@@ -346,7 +346,7 @@ tempsubtype_from_string(const char *str, int16 *subtype)
   return false;
 }
 
-#if NDEBUG
+#ifndef NDEBUG
 /**
  * @brief Ensure that the subtype of a temporal value is valid
  * @note The function is used for the dispatch functions for temporal types
