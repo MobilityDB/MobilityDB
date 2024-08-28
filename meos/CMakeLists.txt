@@ -36,6 +36,12 @@ if(DEBUG_EXPAND)
   message(STATUS "Showing debug messages for expandable data structures")
 endif()
 
+#-----------------------------------------------------------------------------
+# Install directories
+#-----------------------------------------------------------------------------
+
+include(GNUInstallDirs)
+
 #-----------------------------------------
 # Set default PostgreSQL Version for MEOS
 #-----------------------------------------
@@ -208,9 +214,32 @@ else()
 endif()
 
 #-----------------------------------------------------------------------------
-# Documentation
+# Configure pkg-config file meos.pc
 #-----------------------------------------------------------------------------
 
+# Consider CMAKE_INSTALL_PREFIX with spaces
+string(REPLACE " " "\\ " prefix ${CMAKE_INSTALL_PREFIX})
+set(exec_prefix "$\{prefix\}")
+if(IS_ABSOLUTE "${CMAKE_INSTALL_INCLUDEDIR}")
+  set(includedir "${CMAKE_INSTALL_INCLUDEDIR}")
+else()
+  set(includedir "$\{prefix\}/${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+if(IS_ABSOLUTE "${CMAKE_INSTALL_LIBDIR}")
+  set(libdir "${CMAKE_INSTALL_LIBDIR}")
+else()
+  set(libdir "$\{exec_prefix\}/${CMAKE_INSTALL_LIBDIR}")
+endif()
+set(VERSION ${MEOS_LIB_VERSION})
+
+configure_file(
+  ${CMAKE_SOURCE_DIR}/tools/meos.pc.in
+  ${CMAKE_BINARY_DIR}/meos.pc
+  @ONLY)
+
+install(
+  FILES ${CMAKE_BINARY_DIR}/meos.pc
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 #-----------------------------------------------------------------------------
 # The End
