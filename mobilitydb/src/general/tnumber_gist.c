@@ -36,8 +36,7 @@
 
 #include "pg_general/tnumber_gist.h"
 
-/* C */
-#include <assert.h>
+
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
