@@ -8,6 +8,7 @@ add_library(point OBJECT
   tpoint_boxops_meos.c
   tpoint_compops.c
   tpoint_distance.c
+  tpoint_gist.c
   tpoint_out.c
   tpoint_rtree.c
   tpoint_parser.c

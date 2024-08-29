@@ -28,6 +28,7 @@ add_library(general OBJECT
   temporal_waggfuncs.c
   tinstant.c
   tnumber_distance.c
+  tnumber_gist.c
   tnumber_mathfuncs.c
   tsequence.c
   tsequenceset.c

@@ -414,22 +414,6 @@ spanbounds_cmp_upper(const void *a, const void *b)
   return span_bound_cmp(&i1->upper, &i2->upper);
 }
 
-/**
- * @brief Compare common entries by their deltas
- * @note We assume the deltas can't be NaN
- */
-int
-common_entry_cmp(const void *i1, const void *i2)
-{
-  double delta1 = ((CommonEntry *) i1)->delta;
-  double delta2 = ((CommonEntry *) i2)->delta;
-  if (delta1 < delta2)
-    return -1;
-  else if (delta1 > delta2)
-    return 1;
-  else
-    return 0;
-}
 
 /**
  * @brief Double sorting split algorithm

@@ -42,7 +42,7 @@
 #include <utils/lsyscache.h>
 /* MEOS */
 #include <meos.h>
-
+#include <general/temporal.h>
 /*****************************************************************************/
 
 
@@ -88,47 +88,6 @@ typedef struct
   Temporal *temp;  /* Temporal value to unnest */
   Datum *values;   /* Values obtained by getValues(temp) */
 } TempUnnestState;
-
-/*****************************************************************************
- * Struct definitions for GisT indexes copied from PostgreSQL
- *****************************************************************************/
-
-/**
- * Structure to represent information about an entry that can be placed
- * to either group without affecting overlap over selected axis ("common entry").
- */
-typedef struct
-{
-  /* Index of entry in the initial array */
-  int      index;
-  /* Delta between penalties of entry insertion into different groups */
-  double    delta;
-} CommonEntry;
-
-/**
- * Structure to represent a projection of bounding box to an axis.
- */
-typedef struct
-{
-  double    lower,
-            upper;
-} SplitInterval;
-
-/*****************************************************************************
- * Definitions for GiST indexes
- *****************************************************************************/
-
-/* Minimum accepted ratio of split */
-#define LIMIT_RATIO 0.3
-
-/* Convenience macros for NaN-aware comparisons */
-#define FLOAT8_EQ(a,b)   (float8_cmp_internal(a, b) == 0)
-#define FLOAT8_LT(a,b)   (float8_cmp_internal(a, b) < 0)
-#define FLOAT8_LE(a,b)   (float8_cmp_internal(a, b) <= 0)
-#define FLOAT8_GT(a,b)   (float8_cmp_internal(a, b) > 0)
-#define FLOAT8_GE(a,b)   (float8_cmp_internal(a, b) >= 0)
-#define FLOAT8_MAX(a,b)  (FLOAT8_GT(a, b) ? (a) : (b))
-#define FLOAT8_MIN(a,b)  (FLOAT8_LT(a, b) ? (a) : (b))
 
 /*****************************************************************************
  * Struct definitions for SP-GiST indexes

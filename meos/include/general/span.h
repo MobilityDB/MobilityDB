@@ -117,4 +117,10 @@ extern double dist_double_value_value(Datum l, Datum r, meosType type);
 
 /*****************************************************************************/
 
+/* GIST functions */
+extern int common_entry_cmp(const void *i1, const void *i2);
+
+/*****************************************************************************/
+
+
 #endif /* __SPAN_H__ */

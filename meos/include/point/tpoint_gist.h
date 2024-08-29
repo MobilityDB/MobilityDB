@@ -28,27 +28,15 @@
  *****************************************************************************/
 
 /**
- * @brief R-tree GiST index for time types.
+ * @brief R-tree GiST index for temporal integers and temporal floats
  */
 
-#ifndef __SPAN_GIST_H__
-#define __SPAN_GIST_H__
-
-/* PostgreSQL */
-#include <postgres.h>
-#include <access/stratnum.h>
-/* MEOS */
-#include <meos.h>
-
-/*****************************************************************************/
+#ifndef __MEOS_TNUMBER_GIST_H__
+#define __MEOS_TNUMBER_GIST_H__
 
 
-extern bool span_index_leaf_consistent(const Span *key, const Span *query,
-  StrategyNumber strategy);
-extern bool span_gist_inner_consistent(const Span *key, const Span *query,
-  StrategyNumber strategy);
-extern bool span_index_recheck(StrategyNumber strategy);
 
-#endif
+void stbox_adjust(void *bbox1, void *bbox2);
 
-/*****************************************************************************/
+
+#endif /* __MEOS_TNUMBER_GIST_H__ */
