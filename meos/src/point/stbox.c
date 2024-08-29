@@ -113,6 +113,19 @@ ensure_has_X_stbox(const STBox *box)
 }
 
 /**
+ * @brief Ensure that the spatiotemporal box has XY dimension
+ */
+bool
+ensure_has_Z_stbox(const STBox *box)
+{
+  if (MEOS_FLAGS_GET_Z(box->flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The box must have Z dimension");
+  return false;
+}
+
+/**
  * @brief Ensure that the spatiotemporal box has T dimension
  */
 bool
@@ -1248,7 +1261,7 @@ stbox_tmax_inc(const STBox *box, bool *result)
 
 /**
  * @ingroup meos_box_accessor
- * @brief Return the area of the spatiotemporal box
+ * @brief Return the area of a spatiotemporal box
  * @param[in] box Spatiotemporal box
  * @param[in] spheroid When true, the calculation uses the WGS 84 spheroid,
  * otherwise it uses a faster spherical calculation
@@ -1268,6 +1281,24 @@ stbox_area(const STBox *box, bool spheroid)
   double result = pgis_geography_area(geo, spheroid);
   pfree(geo);
   return result;
+}
+
+/**
+ * @ingroup meos_box_accessor
+ * @brief Return the volume of a 3D spatiotemporal box
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Stbox_volume()
+ */
+double
+stbox_volume(const STBox *box)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box) || 
+      ! ensure_has_Z_stbox(box) || ! ensure_not_geodetic(box->flags))
+    return false;
+
+  return (box->xmax - box->xmin) * (box->ymax - box->ymin) * 
+    (box->zmax - box->zmin);
 }
 
 /**

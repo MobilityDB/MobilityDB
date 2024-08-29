@@ -339,6 +339,10 @@ CREATE FUNCTION area(stbox, spheroid bool DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Stbox_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION volume(stbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Stbox_volume'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION perimeter(stbox, spheroid bool DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Stbox_perimeter'

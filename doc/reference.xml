@@ -535,7 +535,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="area"><varname>area</varname>, <varname>perimeter</varname></link>: Area or perimeter</para>
+					<para><link linkend="area"><varname>area</varname>, <varname>volume</varname>, <varname>perimeter</varname></link>: Area, volume, perimeter</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

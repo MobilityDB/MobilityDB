@@ -827,6 +827,23 @@ Stbox_area(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Stbox_volume(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_volume);
+/**
+ * @ingroup mobilitydb_box_accessor
+ * @brief Return the volume of a 3D spatiotemporal box
+ * @sqlfn volume()
+ */
+Datum
+Stbox_volume(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  double result = stbox_volume(box);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
 PGDLLEXPORT Datum Stbox_perimeter(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_perimeter);
 /**
