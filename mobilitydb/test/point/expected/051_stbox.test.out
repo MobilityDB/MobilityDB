@@ -591,6 +591,12 @@ SELECT area(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
     9
 (1 row)
 
+SELECT volume(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
+ volume 
+--------
+     27
+(1 row)
+
 SELECT perimeter(stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))');
  perimeter 
 -----------
@@ -723,6 +729,12 @@ SELECT area(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02
     9
 (1 row)
 
+SELECT volume(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
+ volume 
+--------
+     27
+(1 row)
+
 SELECT perimeter(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
  perimeter 
 -----------
@@ -805,6 +817,13 @@ SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-0
  1332868.0
 (1 row)
 
+/* Errors */
+SELECT area(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+ERROR:  The box must have space dimension
+SELECT volume(stbox 'STBOX T([2000-01-01, 2000-01-02])');
+ERROR:  The box must have space dimension
+SELECT volume(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2000-01-01, 2000-01-02])');
+ERROR:  The box must have Z dimension
 SELECT round(stbox 'STBOX X((1.12345,1.12345),(2.12345,2.12345))', 2);
               round               
 ----------------------------------

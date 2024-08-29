@@ -55,6 +55,7 @@
 /* Parameter tests */
 
 extern bool ensure_has_X_stbox(const STBox *box);
+extern bool ensure_has_Z_stbox(const STBox *box);
 extern bool ensure_has_T_stbox(const STBox *box);
 
 /* Set an STBox from a <Type> */

@@ -1183,6 +1183,7 @@ extern bool stbox_tmax(const STBox *box, TimestampTz *result);
 extern bool stbox_tmax_inc(const STBox *box, bool *result);
 extern bool stbox_tmin(const STBox *box, TimestampTz *result);
 extern bool stbox_tmin_inc(const STBox *box, bool *result);
+extern double stbox_volume(const STBox *box);
 extern bool stbox_xmax(const STBox *box, double *result);
 extern bool stbox_xmin(const STBox *box, double *result);
 extern bool stbox_ymax(const STBox *box, double *result);
