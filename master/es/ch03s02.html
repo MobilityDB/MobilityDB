@@ -26,7 +26,7 @@ SELECT stboxZT(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-03]');
 -- Sólo dimensión de valores con coordenadas geodéticas X, Y y Z
 SELECT geodstboxZ(1.0,2.0,3.0,1.0,2.0,3.0);
 -- Sólo dimensión de tiempo para cuadro geodético
-SELECT geodstboxT(tstzspan '[2001-01-03,2001-01-03]'); 
+SELECT geodstboxT(tstzspan '[2001-01-03,2001-01-03]');
 -- Dimensiones de valor (con coordenadas geodéticas X, Y y Z) y de tiempo
 SELECT geodstboxZT(1.0,2.0,3.0, 1.0,2.0,3.0, tstzspan '[2001-01-03,2001-01-04]');
 -- Geometry and time dimensión

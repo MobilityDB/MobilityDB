@@ -42,9 +42,11 @@ SELECT xMaxInc(tbox 'TBOXFLOAT XT((1.0,3.0),[2001-01-01,2001-01-03))');
 -- false
 SELECT tMaxInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 -- true
-</pre></li><li class="listitem"><a name="area"></a><a class="indexterm" name="idm1838"></a><a class="indexterm" name="idm1841"></a><p>Área o perímetro</p><p><code class="varname">area(stbox, spheroid bool=true) → float</code></p><p><code class="varname">perimeter(stbox, spheroid bool=true) → float</code></p><p>Para cuadros geodésicos, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="area"></a><a class="indexterm" name="idm1838"></a><a class="indexterm" name="idm1841"></a><p>Área, volumen, perímetro</p><p><code class="varname">area(stbox, spheroid bool=true) → float</code></p><p><code class="varname">volume(stbox) → float</code></p><p><code class="varname">perimeter(stbox, spheroid bool=true) → float</code></p><p>Para cuadros geodésicos, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido. La función <code class="varname">volume</code> no acepta cuadros geodésicos.</p><pre class="programlisting">
 SELECT area(stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03))');
 -- 4
+SELECT volume(stbox 'STBOX ZT(((1,1,1),(3,3,3)),[2001-01-01,2001-01-03))');
+-- 8
 SELECT perimeter(stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03))');
 -- 8
 SELECT area(stbox 'GEODSTBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03))');

@@ -1,83 +1,83 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Operaciones para los tipos de puntos de red</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.2 Manual de usuario"><link rel="up" href="ch11.html" title="Capítulo 11. Puntos de red temporales"><link rel="prev" href="ch11s05.html" title="Conversión de tipos"><link rel="next" href="ch11s07.html" title="Agregacions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Operaciones para los tipos de puntos de red</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s05.html">Anterior</a> </td><th width="60%" align="center">Capítulo 11. Puntos de red temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch11s07.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_network_points_operations"></a>Operaciones para los tipos de puntos de red</h2></div></div></div><p>La mayoría de las funciones para tipos temporales descritas en los capítulos precendentes se pueden aplicar para tipos de puntos de red temporales. Por lo tanto, en las firmas de las funciones, la notación <code class="varname">base</code> también representa un <code class="varname">npoint</code> y las notaciones <code class="varname">ttype</code>, <code class="varname">tpoint</code> y <code class="varname">tgeompoint</code> también representan un <code class="varname">tnpoint</code>. Además, las funciones que tienen un argumento de tipo <code class="varname">geometry</code> aceptan además un argumento de tipo <code class="varname">npoint</code>. Para evitar la redundancia, a continuación solo presentamos algunos ejemplos de estas funciones y operadores para puntos de red temporales.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_subtype"></a><a class="indexterm" name="idm6673"></a><a class="indexterm" name="idm6676"></a><a class="indexterm" name="idm6679"></a><p>Transformar un punto de red temporal en otro subtipo</p><p><code class="varname">tnpointInst(tnpoint) → tnpointInst</code></p><p><code class="varname">tnpointSeq(tnpoint,interp) → tnpointSeq</code></p><p><code class="varname">tnpointSeqSet(tnpoint) → tnpointSeqSet</code></p><pre class="programlisting">
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Operaciones para los tipos de puntos de red</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.2 Manual de usuario"><link rel="up" href="ch11.html" title="Capítulo 11. Puntos de red temporales"><link rel="prev" href="ch11s05.html" title="Conversión de tipos"><link rel="next" href="ch11s07.html" title="Agregacions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Operaciones para los tipos de puntos de red</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11s05.html">Anterior</a> </td><th width="60%" align="center">Capítulo 11. Puntos de red temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch11s07.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_network_points_operations"></a>Operaciones para los tipos de puntos de red</h2></div></div></div><p>La mayoría de las funciones para tipos temporales descritas en los capítulos precendentes se pueden aplicar para tipos de puntos de red temporales. Por lo tanto, en las firmas de las funciones, la notación <code class="varname">base</code> también representa un <code class="varname">npoint</code> y las notaciones <code class="varname">ttype</code>, <code class="varname">tpoint</code> y <code class="varname">tgeompoint</code> también representan un <code class="varname">tnpoint</code>. Además, las funciones que tienen un argumento de tipo <code class="varname">geometry</code> aceptan además un argumento de tipo <code class="varname">npoint</code>. Para evitar la redundancia, a continuación solo presentamos algunos ejemplos de estas funciones y operadores para puntos de red temporales.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnpoint_subtype"></a><a class="indexterm" name="idm6676"></a><a class="indexterm" name="idm6679"></a><a class="indexterm" name="idm6682"></a><p>Transformar un punto de red temporal en otro subtipo</p><p><code class="varname">tnpointInst(tnpoint) → tnpointInst</code></p><p><code class="varname">tnpointSeq(tnpoint,interp) → tnpointSeq</code></p><p><code class="varname">tnpointSeqSet(tnpoint) → tnpointSeqSet</code></p><pre class="programlisting">
 SELECT tnpointSeq(tnpoint 'NPoint(1, 0.5)@2001-01-01', 'discrete');
 -- {NPoint(1,0.5)@2001-01-01}
 SELECT tnpointSeq(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 -- [NPoint(1,0.5)@2001-01-01]
 SELECT tnpointSeqSet(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 -- {[NPoint(1,0.5)@2001-01-01]}
-</pre></li><li class="listitem"><a name="tnpoint_setInterp"></a><a class="indexterm" name="idm6691"></a><p>Transformar un punto de red temporal en otra interpolación</p><p><code class="varname">setInterp(tnpoint, interp) → tnpoint</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_setInterp"></a><a class="indexterm" name="idm6694"></a><p>Transformar un punto de red temporal en otra interpolación</p><p><code class="varname">setInterp(tnpoint, interp) → tnpoint</code></p><pre class="programlisting">
 SELECT setInterp(tnpoint 'NPoint(1,0.2)@2001-01-01','linear');
 -- [NPoint(1,0.2)@2001-01-01]
 SELECT setInterp(tnpoint '{[NPoint(1,0.1)@2001-01-01], [NPoint(1,0.2)@2001-01-02]}',
   'discrete');
 -- {NPoint(1,0.1)@2001-01-01, NPoint(1,0.2)@2001-01-02}
-</pre></li><li class="listitem"><a name="tnpoint_round"></a><a class="indexterm" name="idm6699"></a><p>Redondear la fracción del punto de red temporal en el número de lugares decimales</p><p><code class="varname">round(tnpoint,integer=0) → tnpoint</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_round"></a><a class="indexterm" name="idm6702"></a><p>Redondear la fracción del punto de red temporal en el número de lugares decimales</p><p><code class="varname">round(tnpoint,integer=0) → tnpoint</code></p><pre class="programlisting">
 SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-02)}', 6);
 -- {[NPoint(1,0.123457)@2001-01-01 00:00:00+01, NPoint(1,0.5)@2001-01-02 00:00:00+01)}
-</pre></li><li class="listitem"><a name="tnpoint_getValues"></a><a class="indexterm" name="idm6707"></a><p>Devuelve los valores</p><p><code class="varname">getValues(tnpoint) → npoint[]</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_getValues"></a><a class="indexterm" name="idm6710"></a><p>Devuelve los valores</p><p><code class="varname">getValues(tnpoint) → npoint[]</code></p><pre class="programlisting">
 SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02)}');
 -- {"NPoint(1,0.3)","NPoint(1,0.5)"}
 SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.3)@2001-01-02)}');
 -- {"NPoint(1,0.3)"}
-</pre></li><li class="listitem"><a name="tnpoint_routes"></a><a class="indexterm" name="idm6715"></a><p>Devuelve los identificadores de ruta</p><p><code class="varname">routes(tnpoint) → bigintset</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_routes"></a><a class="indexterm" name="idm6718"></a><p>Devuelve los identificadores de ruta</p><p><code class="varname">routes(tnpoint) → bigintset</code></p><pre class="programlisting">
 SELECT routes(tnpoint '{NPoint(3, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02}');
 -- {1, 3}
-</pre></li><li class="listitem"><a name="tnpoint_valueAtTimestamp"></a><a class="indexterm" name="idm6723"></a><p>Devuelve el valor en una marca de tiempo</p><p><code class="varname">valueAtTimestamp(tnpoint,timestamptz) → npoint</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_valueAtTimestamp"></a><a class="indexterm" name="idm6726"></a><p>Devuelve el valor en una marca de tiempo</p><p><code class="varname">valueAtTimestamp(tnpoint,timestamptz) → npoint</code></p><pre class="programlisting">
 SELECT valueAtTimestamp(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)',
   '2001-01-02');
 -- NPoint(1,0.4)
-</pre></li><li class="listitem"><a name="tnpoint_length"></a><a class="indexterm" name="idm6731"></a><p>Devuelve la longitud atravesada por el punto de red temporal</p><p><code class="varname">length(tnpoint) → float</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_length"></a><a class="indexterm" name="idm6734"></a><p>Devuelve la longitud atravesada por el punto de red temporal</p><p><code class="varname">length(tnpoint) → float</code></p><pre class="programlisting">
 SELECT length(tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]');
 -- 54.3757408468784
-</pre></li><li class="listitem"><a name="tnpoint_cumulativeLength"></a><a class="indexterm" name="idm6739"></a><p>Devuelve la longitud acumulada atravesada por el punto de red temporal</p><p><code class="varname">cumulativeLength(tnpoint) → tfloat</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_cumulativeLength"></a><a class="indexterm" name="idm6742"></a><p>Devuelve la longitud acumulada atravesada por el punto de red temporal</p><p><code class="varname">cumulativeLength(tnpoint) → tfloat</code></p><pre class="programlisting">
 SELECT cumulativeLength(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02,
   NPoint(1, 0.5)@2001-01-03], [NPoint(1, 0.6)@2001-01-04, NPoint(1, 0.7)@2001-01-05]}');
 /* {[0@2001-01-01, 54.3757408468784@2001-01-02, 54.3757408468784@2001-01-03],
    [54.3757408468784@2001-01-04, 81.5636112703177@2001-01-05]} */
-</pre></li><li class="listitem"><a name="tnpoint_speed"></a><a class="indexterm" name="idm6747"></a><p>Devuelve la velocidad del punto de red temporal en unidades por segundo</p><p><code class="varname">speed({tnpointSeq, tnpointSeqSet}) → tfloatSeqSet</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_speed"></a><a class="indexterm" name="idm6750"></a><p>Devuelve la velocidad del punto de red temporal en unidades por segundo</p><p><code class="varname">speed({tnpointSeq, tnpointSeqSet}) → tfloatSeqSet</code></p><pre class="programlisting">
 SELECT speed(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.4)@2001-01-02,
   NPoint(1, 0.6)@2001-01-03]') * 3600 * 24;
 /* Interp=Step;[21.4016800272077@2001-01-01, 14.2677866848051@2001-01-02,
    14.2677866848051@2001-01-03] */
-</pre></li><li class="listitem"><a name="tnpoint_stbox"></a><a class="indexterm" name="idm6755"></a><p>Construir el cuadro delimitador a partir de un punto de red y, opcionalmente, una marca de tiempo o un período</p><p><code class="varname">stbox(npoint) → stbox</code></p><p><code class="varname">stbox(npoint,{timestamptz,period}) → stbox</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_stbox"></a><a class="indexterm" name="idm6758"></a><p>Construir el cuadro delimitador a partir de un punto de red y, opcionalmente, una marca de tiempo o un período</p><p><code class="varname">stbox(npoint) → stbox</code></p><p><code class="varname">stbox(npoint,{timestamptz,period}) → stbox</code></p><pre class="programlisting">
 SELECT stbox(npoint 'NPoint(1,0.3)');
 -- STBOX X((48.711754,20.92568),(48.711758,20.925682))
 SELECT stbox(npoint 'NPoint(1,0.3)', timestamptz '2001-01-01');
 -- STBOX XT((62.786633,80.143555),(62.786636,80.143562),[2001-01-01,2001-01-01])
 SELECT stbox(npoint 'NPoint(1,0.3)', period '[2001-01-01,2001-01-02]');
 -- STBOX XT((62.786633,80.143555),(62.786636,80.143562),[2001-01-01,2001-01-02])
-</pre></li><li class="listitem"><a name="tnpoint_twCentroid"></a><a class="indexterm" name="idm6765"></a><p>Devuelve el centroide ponderado en el tiempo</p><p><code class="varname">twCentroid(tnpoint) → geometry(Point)</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_twCentroid"></a><a class="indexterm" name="idm6768"></a><p>Devuelve el centroide ponderado en el tiempo</p><p><code class="varname">twCentroid(tnpoint) → geometry(Point)</code></p><pre class="programlisting">
 SELECT st_astext(twCentroid(tnpoint '{[NPoint(1, 0.3)@2001-01-01,
   NPoint(1, 0.5)@2001-01-02, NPoint(1, 0.5)@2001-01-03, NPoint(1, 0.7)@2001-01-04)}'));
 -- POINT(79.9787466444847 46.2385558051041)
-</pre></li><li class="listitem"><a name="tnpoint_azimuth"></a><a class="indexterm" name="idm6773"></a><p>Devuelve el acimut temporal</p><p><code class="varname">azimuth(tnpoint) → tfloat</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_azimuth"></a><a class="indexterm" name="idm6776"></a><p>Devuelve el acimut temporal</p><p><code class="varname">azimuth(tnpoint) → tfloat</code></p><pre class="programlisting">
 SELECT azimuth(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-02]');
 /* {[0.974681063778863@2001-01-01 00:00:00+01,
    0.974681063778863@2001-01-01 23:54:36.721091+01),
    [3.68970843029227@2001-01-01 23:54:36.721091+01,
    3.68970843029227@2001-01-02 00:00:00+01)} */
-</pre><p>Dado que la geometría subyacente asociada a una ruta puede tener varios vértices, el valor de acimut puede cambiar entre instantes del punto de red temporal de entrada, como se muestra en el ejemplo anterior.</p></li><li class="listitem"><a name="tnpoint_nearestApproachInstant"></a><a class="indexterm" name="idm6782"></a><p>Devuelve el instante del primer punto de red temporal en el que los dos argumentos están a la distancia más cercana</p><p><code class="varname">nearestApproachInstant({geo,npoint,tpoint},{geo,npoint,tpoint}) → tpoint</code></p><pre class="programlisting">
+</pre><p>Dado que la geometría subyacente asociada a una ruta puede tener varios vértices, el valor de acimut puede cambiar entre instantes del punto de red temporal de entrada, como se muestra en el ejemplo anterior.</p></li><li class="listitem"><a name="tnpoint_nearestApproachInstant"></a><a class="indexterm" name="idm6785"></a><p>Devuelve el instante del primer punto de red temporal en el que los dos argumentos están a la distancia más cercana</p><p><code class="varname">nearestApproachInstant({geo,npoint,tpoint},{geo,npoint,tpoint}) → tpoint</code></p><pre class="programlisting">
 SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2001-01-01,
   NPoint(2, 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
 -- NPoint(2,0.349928)@2001-01-01 02:59:44.402905+01
 SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2001-01-01,
   NPoint(2, 0.7)@2001-01-02]', npoint 'NPoint(1, 0.5)');
 -- NPoint(2,0.592181)@2001-01-01 17:31:51.080405+01
-</pre></li><li class="listitem"><a name="tnpoint_nearestApproachDistance"></a><a class="indexterm" name="idm6790"></a><p>Devuelve la distancia más pequeña entre los dos argumentos</p><p><code class="varname">nearestApproachDistance({geo,npoint,tpoint},{geo,npoint,tpoint}) → float</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_nearestApproachDistance"></a><a class="indexterm" name="idm6793"></a><p>Devuelve la distancia más pequeña entre los dos argumentos</p><p><code class="varname">nearestApproachDistance({geo,npoint,tpoint},{geo,npoint,tpoint}) → float</code></p><pre class="programlisting">
 SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2001-01-01,
   NPoint(2, 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
 -- 1.41793220500979
 SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2001-01-01,
   NPoint(2, 0.7)@2001-01-02]', npoint 'NPoint(1, 0.5)');
 -- NPoint(2,0.592181)@2001-01-01 17:31:51.080405+01
-</pre><p>La función <code class="varname">nearestApproachDistance</code> tiene un operador asociado <code class="varname">|=|</code> que se puede utilizar para realizar búsquedas más cercanas utilizando un índice GiST (ver <a class="xref" href="ch10s02.html" title="Indexación">“Indexación”</a>).</p></li><li class="listitem"><a name="tnpoint_shortestLine"></a><a class="indexterm" name="idm6802"></a><p>Devuelve la línea que conecta el punto de aproximación más cercano entre los dos argumentos</p><p><code class="varname">shortestLine({geo,npoint,tpoint},{geo,npoint,tpoint}) → geometry</code></p><p>The function will only return the first line that it finds if there are more than one</p><pre class="programlisting">
+</pre><p>La función <code class="varname">nearestApproachDistance</code> tiene un operador asociado <code class="varname">|=|</code> que se puede utilizar para realizar búsquedas más cercanas utilizando un índice GiST (ver <a class="xref" href="ch10s02.html" title="Indexación">“Indexación”</a>).</p></li><li class="listitem"><a name="tnpoint_shortestLine"></a><a class="indexterm" name="idm6805"></a><p>Devuelve la línea que conecta el punto de aproximación más cercano entre los dos argumentos</p><p><code class="varname">shortestLine({geo,npoint,tpoint},{geo,npoint,tpoint}) → geometry</code></p><p>The function will only return the first line that it finds if there are more than one</p><pre class="programlisting">
 SELECT st_astext(shortestLine(tnpoint '[NPoint(2, 0.3)@2001-01-01,
   NPoint(2, 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));
 -- LINESTRING(50.7960725266492 48.8266286733015,50 50)
 SELECT st_astext(shortestLine(tnpoint '[NPoint(2, 0.3)@2001-01-01,
   NPoint(2, 0.7)@2001-01-02]', npoint 'NPoint(1, 0.5)'));
 -- LINESTRING(77.0902838115125 66.6659083092593,90.8134936900394 46.4385792121146)
-</pre></li><li class="listitem"><a name="tnpoint_atValue"></a><a class="indexterm" name="idm6811"></a><a class="indexterm" name="idm6814"></a><p>Restringir a un valor</p><p><code class="varname">atValue(tnpoint,base) → tnpoint</code></p><p><code class="varname">minusValue(tnpoint,base) → tnpoint</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_atValue"></a><a class="indexterm" name="idm6814"></a><a class="indexterm" name="idm6817"></a><p>Restringir a un valor</p><p><code class="varname">atValue(tnpoint,base) → tnpoint</code></p><p><code class="varname">minusValue(tnpoint,base) → tnpoint</code></p><pre class="programlisting">
 SELECT atValue(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03]',
   'NPoint(2, 0.5)');
 -- {[NPoint(2,0.5)@2001-01-02]}
@@ -85,14 +85,14 @@ SELECT minusValue(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03
   'NPoint(2, 0.5)');
 /* {[NPoint(2,0.3)@2001-01-01, NPoint(2,0.5)@2001-01-02),
    (NPoint(2,0.5)@2001-01-02, NPoint(2,0.7)@2001-01-03]} */
-</pre></li><li class="listitem"><a name="tnpoint_atGeometry"></a><a class="indexterm" name="idm6824"></a><a class="indexterm" name="idm6827"></a><p>Restringir a una geometría</p><p><code class="varname">atGeometry(tnpoint,geometry) → tnpoint</code></p><p><code class="varname">minusGeometry(tnpoint,geometry) → tnpoint</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_atGeometry"></a><a class="indexterm" name="idm6827"></a><a class="indexterm" name="idm6830"></a><p>Restringir a una geometría</p><p><code class="varname">atGeometry(tnpoint,geometry) → tnpoint</code></p><p><code class="varname">minusGeometry(tnpoint,geometry) → tnpoint</code></p><pre class="programlisting">
 SELECT atGeometry(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03]',
   'Polygon((40 40,40 50,50 50,50 40,40 40))');
 SELECT minusGeometry(tnpoint '[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.7)@2001-01-03]',
   'Polygon((40 40,40 50,50 50,50 40,40 40))');
 /* {(NPoint(2,0.342593)@2001-01-01 05:06:40.364673+01,
    NPoint(2,0.7)@2001-01-03 00:00:00+01]} */
-</pre></li><li class="listitem"><a name="tnpoint_comp"></a><a class="indexterm" name="idm6837"></a><p>Operadores de comparación tradicionales</p><p><code class="varname">tnpoint = tnpoint → boolean</code></p><p><code class="varname">tnpoint &lt;&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &lt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &lt;= tnpoint → boolean</code></p><p><code class="varname">tnpoint &gt;= tnpoint → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_comp"></a><a class="indexterm" name="idm6840"></a><p>Operadores de comparación tradicionales</p><p><code class="varname">tnpoint = tnpoint → boolean</code></p><p><code class="varname">tnpoint &lt;&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &lt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &lt;= tnpoint → boolean</code></p><p><code class="varname">tnpoint &gt;= tnpoint → boolean</code></p><pre class="programlisting">
 SELECT tnpoint '{[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-02),
   [NPoint(1, 0.3)@2001-01-02, NPoint(1, 0.5)@2001-01-03]}' =
   tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]';
@@ -103,19 +103,19 @@ SELECT tnpoint '{[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]}' &lt;&g
 SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;
   tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.6)@2001-01-03]';
 -- true
-</pre></li><li class="listitem"><a name="tnpoint_tcomp"></a><a class="indexterm" name="idm6855"></a><p>Operadores de comparación temporales</p><p><code class="varname">tnpoint #= tnpoint → tbool</code></p><p><code class="varname">tnpoint #&lt;&gt; tnpoint → tbool</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_tcomp"></a><a class="indexterm" name="idm6858"></a><p>Operadores de comparación temporales</p><p><code class="varname">tnpoint #= tnpoint → tbool</code></p><p><code class="varname">tnpoint #&lt;&gt; tnpoint → tbool</code></p><pre class="programlisting">
 SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.4)@2001-01-03)' #=
   npoint 'NPoint(1, 0.3)';
 -- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
 SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.8)@2001-01-03)' #&lt;&gt;
   tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.7)@2001-01-03)';
 -- {[t@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
-</pre></li><li class="listitem"><a name="tnpoint_ever_always"></a><a class="indexterm" name="idm6865"></a><a class="indexterm" name="idm6868"></a><p>Operadores de igualdad alguna vez y siempre</p><p><code class="varname">tnpoint ?= tnpoint → boolean</code></p><p><code class="varname">tnpoint %= tnpoint → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_ever_always"></a><a class="indexterm" name="idm6868"></a><a class="indexterm" name="idm6871"></a><p>Operadores de igualdad alguna vez y siempre</p><p><code class="varname">tnpoint ?= tnpoint → boolean</code></p><p><code class="varname">tnpoint %= tnpoint → boolean</code></p><pre class="programlisting">
 SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-04)' ?= Npoint(1, 0.3);
 -- true
 SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.2)@2001-01-04)' &amp;= Npoint(1, 0.2);
 -- true
-</pre></li><li class="listitem"><a name="tnpoint_pos"></a><a class="indexterm" name="idm6878"></a><p>Operadores de posición</p><p><code class="varname">tnpoint &lt;&lt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &amp;&lt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &gt;&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &amp;&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &lt;&lt;| tnpoint → boolean</code></p><p><code class="varname">tnpoint &amp;&lt;| tnpoint → boolean</code></p><p><code class="varname">tnpoint |&gt;&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint |&amp;&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &lt;&lt;# tnpoint → boolean</code></p><p><code class="varname">tnpoint &amp;&lt;# tnpoint → boolean</code></p><p><code class="varname">tnpoint #&gt;&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint #&amp;&gt; tnpoint → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_pos"></a><a class="indexterm" name="idm6881"></a><p>Operadores de posición</p><p><code class="varname">tnpoint &lt;&lt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &amp;&lt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &gt;&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &amp;&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &lt;&lt;| tnpoint → boolean</code></p><p><code class="varname">tnpoint &amp;&lt;| tnpoint → boolean</code></p><p><code class="varname">tnpoint |&gt;&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint |&amp;&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint &lt;&lt;# tnpoint → boolean</code></p><p><code class="varname">tnpoint &amp;&lt;# tnpoint → boolean</code></p><p><code class="varname">tnpoint #&gt;&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint #&amp;&gt; tnpoint → boolean</code></p><pre class="programlisting">
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &lt;&lt;
   npoint 'NPoint(1, 0.2)'
 -- false
@@ -128,7 +128,7 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &amp;&gt
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &gt;&gt;#
   tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.5)@2001-01-05]'
 -- true
-</pre></li><li class="listitem"><a name="tnpoint_topo"></a><a class="indexterm" name="idm6908"></a><a class="indexterm" name="idm6911"></a><a class="indexterm" name="idm6914"></a><a class="indexterm" name="idm6917"></a><a class="indexterm" name="idm6920"></a><p>Operadores topológicos</p><p><code class="varname">tnpoint &amp;&amp; tnpoint → boolean</code></p><p><code class="varname">tnpoint &lt;@ tnpoint → boolean</code></p><p><code class="varname">tnpoint @&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint ~= tnpoint → boolean</code></p><p><code class="varname">tnpoint -|- tnpoint → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_topo"></a><a class="indexterm" name="idm6911"></a><a class="indexterm" name="idm6914"></a><a class="indexterm" name="idm6917"></a><a class="indexterm" name="idm6920"></a><a class="indexterm" name="idm6923"></a><p>Operadores topológicos</p><p><code class="varname">tnpoint &amp;&amp; tnpoint → boolean</code></p><p><code class="varname">tnpoint &lt;@ tnpoint → boolean</code></p><p><code class="varname">tnpoint @&gt; tnpoint → boolean</code></p><p><code class="varname">tnpoint ~= tnpoint → boolean</code></p><p><code class="varname">tnpoint -|- tnpoint → boolean</code></p><pre class="programlisting">
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02]' &amp;&amp;
   npoint 'NPoint(1, 0.5)'
 -- true
@@ -142,14 +142,14 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' ~=
   tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.35)@2001-01-02,
   NPoint(1, 0.5)@2001-01-03]'
 -- true
-</pre></li><li class="listitem"><a name="tnpoint_smallestDistance"></a><a class="indexterm" name="idm6936"></a><p>Devuelve la distancia más pequeña entre los dos argumentos</p><p><code class="varname">tgeompoint |=| tnpoint → float</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_smallestDistance"></a><a class="indexterm" name="idm6939"></a><p>Devuelve la distancia más pequeña entre los dos argumentos</p><p><code class="varname">tgeompoint |=| tnpoint → float</code></p><pre class="programlisting">
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' |=|
   npoint 'NPoint(1, 0.2)';
 -- 2.34988300875063
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' |=|
   geometry 'Linestring(2 2,2 1,3 1)';
 -- 82.2059262761477
-</pre></li><li class="listitem"><a name="tnpoint_distance"></a><a class="indexterm" name="idm6944"></a><p>Devuelve la distancia temporal</p><p><code class="varname">tgeompoint &lt;-&gt; tnpoint → tfloat</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_distance"></a><a class="indexterm" name="idm6947"></a><p>Devuelve la distancia temporal</p><p><code class="varname">tgeompoint &lt;-&gt; tnpoint → tfloat</code></p><pre class="programlisting">
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt;
   npoint 'NPoint(1, 0.2)';
 -- [2.34988300875063@2001-01-02 00:00:00+01, 2.34988300875063@2001-01-03 00:00:00+01]
@@ -159,7 +159,7 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt;
   tnpoint '[NPoint(1, 0.3)@2001-01-02, NPoint(1, 0.5)@2001-01-04]'
 -- [2.34988300875063@2001-01-02 00:00:00+01, 2.34988300875063@2001-01-03 00:00:00+01]
-</pre></li><li class="listitem"><a name="tnpoint_espatialrels"></a><a class="indexterm" name="idm6952"></a><a class="indexterm" name="idm6955"></a><a class="indexterm" name="idm6958"></a><a class="indexterm" name="idm6961"></a><a class="indexterm" name="idm6964"></a><a class="indexterm" name="idm6967"></a><a class="indexterm" name="idm6970"></a><a class="indexterm" name="idm6973"></a><a class="indexterm" name="idm6976"></a><a class="indexterm" name="idm6979"></a><p>Relaciones espaciales alguna vez</p><p><code class="varname">eContains(geometry,tnpoint) → boolean</code></p><p><code class="varname">aContains(geometry,tnpoint) → boolean</code></p><p><code class="varname">eDisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">aDisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">eIntersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">aIntersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">eTouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">aTouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">eDwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float) → boolean</code></p><p><code class="varname">aDwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float) → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_espatialrels"></a><a class="indexterm" name="idm6955"></a><a class="indexterm" name="idm6958"></a><a class="indexterm" name="idm6961"></a><a class="indexterm" name="idm6964"></a><a class="indexterm" name="idm6967"></a><a class="indexterm" name="idm6970"></a><a class="indexterm" name="idm6973"></a><a class="indexterm" name="idm6976"></a><a class="indexterm" name="idm6979"></a><a class="indexterm" name="idm6982"></a><p>Relaciones espaciales alguna vez</p><p><code class="varname">eContains(geometry,tnpoint) → boolean</code></p><p><code class="varname">aContains(geometry,tnpoint) → boolean</code></p><p><code class="varname">eDisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">aDisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">eIntersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">aIntersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">eTouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">aTouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">eDwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float) → boolean</code></p><p><code class="varname">aDwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float) → boolean</code></p><pre class="programlisting">
 SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)');
 -- false
@@ -169,7 +169,7 @@ SELECT eDisjoint(npoint 'NPoint(2, 0.0)',
 SELECT eIntersects(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)',
   tnpoint '[NPoint(2, 0.0)@2001-01-01, NPoint(2, 1)@2001-01-03)');
 -- false
-</pre></li><li class="listitem"><a name="tnpoint_tspatialrels"></a><a class="indexterm" name="idm7005"></a><a class="indexterm" name="idm7008"></a><a class="indexterm" name="idm7011"></a><a class="indexterm" name="idm7014"></a><a class="indexterm" name="idm7017"></a><p>Relaciones espaciales temporales</p><p><code class="varname">tContains(geometry,tnpoint) → boolean</code></p><p><code class="varname">tDisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">tIntersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">tTouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">tDwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float) → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tnpoint_tspatialrels"></a><a class="indexterm" name="idm7008"></a><a class="indexterm" name="idm7011"></a><a class="indexterm" name="idm7014"></a><a class="indexterm" name="idm7017"></a><a class="indexterm" name="idm7020"></a><p>Relaciones espaciales temporales</p><p><code class="varname">tContains(geometry,tnpoint) → boolean</code></p><p><code class="varname">tDisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">tIntersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">tTouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}) → boolean</code></p><p><code class="varname">tDwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float) → boolean</code></p><pre class="programlisting">
 SELECT tDisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)');
 -- {[t@2001-01-01 00:00:00+01, t@2001-01-03 00:00:00+01)}

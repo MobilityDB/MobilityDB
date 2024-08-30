@@ -37,7 +37,7 @@ FROM Trips T, Regions R
 WHERE eIntersects(T.Trip, R.Geom)
 </pre><p>
 			que verifica si un viaje <code class="varname">T</code> (que es un punto temporal) se cruza con una región <code class="varname">R</code> (que es una geometría) beneficiará de un índice espacio-temporal en la columna <code class="varname">T.Trip</code> dado que la función <code class="varname">intersects</code> realiza automáticamente la comparación del cuadro delimitador <code class="varname">T.Trip &amp;&amp; R.Geom</code>. Esto se explica más adelante en este documento.
-		</p><p>No todas las relaciones espaciales disponibles en PostGIS tienen una generalización significativa para los puntos temporales. Se define una versión generalizada de las siguientes relaciones para los puntos geométricos temporales: <code class="varname">eIntersects</code>, <code class="varname">eDisjoint</code>, <code class="varname">eDwithin</code>, <code class="varname">eContains</code>, y <code class="varname">eTouches</code>, mientras que para los puntos geográficos temporales solo se definen las tres primeras. Además, no todas las combinaciones de parámetros son significativas para una función generalizada dada. Por ejemplo, mientras que <code class="varname">tContains(geometry,tpoint)</code> es significativo, <code class="varname">tContains(tpoint,geometry)</code> es significativo solo cuando la geometría es un solo punto, y <code class="varname">tContains(tpoint,tpoint)</code> es equivalente a <code class="varname">tIntersects(tpoint, geometry)</code>. Por esta razón, solo se define la primera combinación de parámetros para <code class="varname">eContains</code>, <code class="varname">aContains</code> y <code class="varname">tContains</code>.</p><p>Finalmente, cabe destacar que las relaciónes temporales permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm4957"></a>Relaciones espaciales alguna vez o siempre</h3></div></div></div><p>Presentamos a continuación las relaciones espaciales alguna vez o siempre. Estas relaciones incluyen automáticamente una comparación de cuadro delimitador que hace uso de cualquier índice espacial que esté disponible en los argumentos.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="eContains"></a><a class="indexterm" name="idm4962"></a><a class="indexterm" name="idm4965"></a><p>Contiene alguna vez</p><p><code class="varname">eContains(geo,tgeompoint) → boolean</code></p><p><code class="varname">aContains(geo,tgeompoint) → boolean</code></p><p>Esta función devuelve verdadero si el punto temporal está alguna vez en el interior de la geometría. Recuerde que una geometría no contiene cosas en su borde y, por lo tanto, los polígonos y las líneas no contienen líneas y puntos que se encuentran en su borde. Consulte la documentación de la función <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> en PostGIS.</p><pre class="programlisting">
+		</p><p>No todas las relaciones espaciales disponibles en PostGIS tienen una generalización significativa para los puntos temporales. Se define una versión generalizada de las siguientes relaciones para los puntos geométricos temporales: <code class="varname">eIntersects</code>, <code class="varname">eDisjoint</code>, <code class="varname">eDwithin</code>, <code class="varname">eContains</code>, y <code class="varname">eTouches</code>, mientras que para los puntos geográficos temporales solo se definen las tres primeras. Además, no todas las combinaciones de parámetros son significativas para una función generalizada dada. Por ejemplo, mientras que <code class="varname">tContains(geometry,tpoint)</code> es significativo, <code class="varname">tContains(tpoint,geometry)</code> es significativo solo cuando la geometría es un solo punto, y <code class="varname">tContains(tpoint,tpoint)</code> es equivalente a <code class="varname">tIntersects(tpoint, geometry)</code>. Por esta razón, solo se define la primera combinación de parámetros para <code class="varname">eContains</code>, <code class="varname">aContains</code> y <code class="varname">tContains</code>.</p><p>Finalmente, cabe destacar que las relaciónes temporales permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm4960"></a>Relaciones espaciales alguna vez o siempre</h3></div></div></div><p>Presentamos a continuación las relaciones espaciales alguna vez o siempre. Estas relaciones incluyen automáticamente una comparación de cuadro delimitador que hace uso de cualquier índice espacial que esté disponible en los argumentos.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="eContains"></a><a class="indexterm" name="idm4965"></a><a class="indexterm" name="idm4968"></a><p>Contiene alguna vez</p><p><code class="varname">eContains(geo,tgeompoint) → boolean</code></p><p><code class="varname">aContains(geo,tgeompoint) → boolean</code></p><p>Esta función devuelve verdadero si el punto temporal está alguna vez en el interior de la geometría. Recuerde que una geometría no contiene cosas en su borde y, por lo tanto, los polígonos y las líneas no contienen líneas y puntos que se encuentran en su borde. Consulte la documentación de la función <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> en PostGIS.</p><pre class="programlisting">
 SELECT eContains(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
 -- false
@@ -50,7 +50,7 @@ SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeompoint '[Point(1 4)@2001-01-01, Point(4 1)@2001-01-04]');
 -- true
-</pre></li><li class="listitem"><a name="eDisjoint"></a><a class="indexterm" name="idm4977"></a><a class="indexterm" name="idm4980"></a><p>Está disjunto alguna vez <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="eDisjoint"></a><a class="indexterm" name="idm4980"></a><a class="indexterm" name="idm4983"></a><p>Está disjunto alguna vez <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">eDisjoint({geo,tgeompoint},{geo,tgeompoint}) → boolean</code></p><p><code class="varname">aDisjoint({geo,tpoint},{geo,tpoint}) → boolean</code></p><pre class="programlisting">
 SELECT eDisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
@@ -59,7 +59,7 @@ SELECT eDisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 SELECT eDisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 0)@2001-01-03)');
 -- true
-</pre></li><li class="listitem"><a name="eDwithin"></a><a class="indexterm" name="idm5004"></a><a class="indexterm" name="idm5007"></a><p>Está alguna vez a distancia de <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="eDwithin"></a><a class="indexterm" name="idm5007"></a><a class="indexterm" name="idm5010"></a><p>Está alguna vez a distancia de <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">eDwithin({geo,tpoint},{geo,tpoint},float) → boolean</code></p><p><code class="varname">aDwithin({geo,tgeompoint},{geo,tgeompoint},float) → boolean</code></p><pre class="programlisting">
 SELECT eDwithin(geometry 'Point(1 1 1)',
@@ -68,7 +68,7 @@ SELECT eDwithin(geometry 'Point(1 1 1)',
 SELECT eDwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 2 2)@2001-01-01,Point(2 2 2)@2001-01-02]', 1);
 -- false
-</pre></li><li class="listitem"><a name="eIntersects"></a><a class="indexterm" name="idm5031"></a><a class="indexterm" name="idm5034"></a><p>Intersecta alguna vez <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="eIntersects"></a><a class="indexterm" name="idm5034"></a><a class="indexterm" name="idm5037"></a><p>Intersecta alguna vez <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">eIntersects({geo,tpoint},{geo,tpoint}) → boolean</code></p><p><code class="varname">aIntersects({geo,tgeompoint},{geo,tgeompoint}) → boolean</code></p><pre class="programlisting">
 SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
@@ -77,11 +77,11 @@ SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
 SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
 -- true
-</pre></li><li class="listitem"><a name="eTouches"></a><a class="indexterm" name="idm5058"></a><a class="indexterm" name="idm5061"></a><p>Toca alguna vez</p><p><code class="varname">eTouches({geo,tgeompoint},{geo,tgeompoint}) → boolean</code></p><p><code class="varname">aTouches({geo,tgeompoint},{geo,tgeompoint}) → boolean</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="eTouches"></a><a class="indexterm" name="idm5061"></a><a class="indexterm" name="idm5064"></a><p>Toca alguna vez</p><p><code class="varname">eTouches({geo,tgeompoint},{geo,tgeompoint}) → boolean</code></p><p><code class="varname">aTouches({geo,tgeompoint},{geo,tgeompoint}) → boolean</code></p><pre class="programlisting">
 SELECT eTouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-03)');
 -- true
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm5070"></a>Relaciones espaciales temporales</h3></div></div></div><p>Presentamos a continuación las relaciones espaciales temporales. Un requisito común con respecto ellas es restringir el resultado de la relación a los instantes en que el valor del resultado es verdadero o falso. Por ejemplo, la siguiente consulta calcula para cada viaje el tiempo dedicado viajando en el municipio de Bruselas.</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="idm5073"></a>Relaciones espaciales temporales</h3></div></div></div><p>Presentamos a continuación las relaciones espaciales temporales. Un requisito común con respecto ellas es restringir el resultado de la relación a los instantes en que el valor del resultado es verdadero o falso. Por ejemplo, la siguiente consulta calcula para cada viaje el tiempo dedicado viajando en el municipio de Bruselas.</p><pre class="programlisting">
 SELECT TripId, duration(atValue(tIntersects(T.trip, M.geom), True))
 FROM Trips T, Municipality M
 WHERE M.Name = "Brussels" AND atValue(tIntersects(T.trip, M.geom), True) IS NOT NULL;
@@ -89,7 +89,7 @@ WHERE M.Name = "Brussels" AND atValue(tIntersects(T.trip, M.geom), True) IS NOT 
 SELECT TripId, duration(tIntersects(T.trip, M.geom, True))
 FROM Trips T, Municipality M
 WHERE M.Name = "Brussels" AND tIntersects(T.trip, M.geom, True) IS NOT NULL;
-</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tContains"></a><a class="indexterm" name="idm5080"></a><p>Contiene temporal</p><p><code class="varname">tContains(geometry,tgeompoint,atValue boolean=NULL) → tbool</code></p><pre class="programlisting">
+</pre><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tContains"></a><a class="indexterm" name="idm5083"></a><p>Contiene temporal</p><p><code class="varname">tContains(geometry,tgeompoint,atValue boolean=NULL) → tbool</code></p><pre class="programlisting">
 SELECT tContains(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
 -- {[f@2001-01-01, f@2001-01-02]}
@@ -102,7 +102,7 @@ SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeompoint '[Point(1 4)@2001-01-01, Point(4 1)@2001-01-04]');
 -- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, f@2001-01-03, f@2001-01-04]}
-</pre></li><li class="listitem"><a name="tDisjoint"></a><a class="indexterm" name="idm5088"></a><p>Disjunto temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tDisjoint"></a><a class="indexterm" name="idm5091"></a><p>Disjunto temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">tDisjoint({geo,tpoint},{geo,tpoint},atValue boolean=NULL) → tbool</code></p><p>La función solo admite 3D o geografías para dos puntos temporales</p><pre class="programlisting">
 SELECT tDisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
@@ -111,7 +111,7 @@ SELECT tDisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 SELECT tDisjoint(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
 -- {[t@2001-01-01, f@2001-01-03], (t@2001-01-03, t@2001-01-05)}
-</pre></li><li class="listitem"><a name="tDwithin"></a><a class="indexterm" name="idm5111"></a><p>Está a distancia de temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tDwithin"></a><a class="indexterm" name="idm5114"></a><p>Está a distancia de temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
 </p><p><code class="varname">tDwithin({geompoint,tgeompoint},{geompoint,tgeompoint},float,atValue boolean=NULL)</code></p><p><code class="varname">  → tbool</code></p><pre class="programlisting">
 SELECT tDwithin(geometry 'Point(1 1)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)', sqrt(2));
@@ -119,7 +119,7 @@ SELECT tDwithin(geometry 'Point(1 1)',
 SELECT tDwithin(tgeompoint '[Point(1 0)@2001-01-01, Point(1 4)@2001-01-05]',
   tgeompoint 'Interp=Step;[Point(1 2)@2001-01-01, Point(1 3)@2001-01-05]', 1);
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-04], (f@2001-01-04, t@2001-01-05]}
-</pre></li><li class="listitem"><a name="tIntersects"></a><a class="indexterm" name="idm5128"></a><p>Intersección temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tIntersects"></a><a class="indexterm" name="idm5131"></a><p>Intersección temporal <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">tIntersects({geo,tpoint},{geo,tpoint},atValue boolean=NULL) → tbool</code></p><p>La función solo admite 3D o geografías para dos puntos temporales</p><pre class="programlisting">
 SELECT tIntersects(geometry 'MultiPoint(1 1,2 2)',
@@ -129,7 +129,7 @@ SELECT tIntersects(geometry 'MultiPoint(1 1,2 2)',
 SELECT tIntersects(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
 -- {[f@2001-01-01, t@2001-01-03], (f@2001-01-03, f@2001-01-05)}
-</pre></li><li class="listitem"><a name="tTouches"></a><a class="indexterm" name="idm5151"></a><p>Toca temporal</p><p><code class="varname">tTouches({geo,tgeompoint},{geo,tgeompoint},atValue boolean=NULL) → tbool</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tTouches"></a><a class="indexterm" name="idm5154"></a><p>Toca temporal</p><p><code class="varname">tTouches({geo,tgeompoint},{geo,tgeompoint},atValue boolean=NULL) → tbool</code></p><pre class="programlisting">
 SELECT tTouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-04)');
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
