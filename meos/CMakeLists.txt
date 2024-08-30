@@ -192,6 +192,7 @@ install(
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 install(TARGETS ${MEOS_LIB_NAME} DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 message(STATUS "Building MEOS:")
+message(STATUS "  Install prefix: '${CMAKE_INSTALL_PREFIX}'")
 message(STATUS "  Library file: '${CMAKE_INSTALL_LIBDIR}'")
 message(STATUS "  Include file: '${CMAKE_INSTALL_INCLUDEDIR}'")
 
