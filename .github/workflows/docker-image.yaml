@@ -22,7 +22,7 @@ jobs:
       IMG_NAME: ${{ github.repository }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.0.0
+        uses: actions/checkout@v4
 
       - name: Extract highest version
         id: extract-highest-version
