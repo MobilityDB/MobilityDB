@@ -49,7 +49,7 @@ jobs:
 
       # store the documentation files
       - name: Upload output directory
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: doc-files
           path: |
@@ -72,13 +72,13 @@ jobs:
 
     steps:
       # checkout the gh-pages branch
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: gh-pages
 
       # download the doc files, most of which are generated above
       - name: Download output directory
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: doc-files
           path: docs-temp
