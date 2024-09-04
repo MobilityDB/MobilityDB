@@ -41,11 +41,7 @@
 #include <postgres.h>
 #include <utils/float.h>
 #include <utils/timestamp.h>
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  #include <common/hashfn.h>
-#else
-  #include <access/hash.h>
-#endif
+#include <common/hashfn.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
@@ -291,7 +287,7 @@ tnumber_restrict_span(const Temporal *temp, const Span *s, bool atfunc)
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
-    case TINSTANT:  
+    case TINSTANT:
       return (Temporal *) tnumberinst_restrict_span((TInstant *) temp,
         s, atfunc);
     case TSEQUENCE:
@@ -505,7 +501,7 @@ temporal_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
 Temporal *
 temporal_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
 {
-  assert(temp); assert(s); 
+  assert(temp); assert(s);
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
@@ -1791,7 +1787,7 @@ bool
 tdiscseq_value_at_timestamptz(const TSequence *seq, TimestampTz t,
   Datum *result)
 {
-  assert(seq); assert(result); 
+  assert(seq); assert(result);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   int loc = tdiscseq_find_timestamptz(seq, t);
   if (loc < 0)
@@ -2207,7 +2203,7 @@ tcontseq_at_tstzset(const TSequence *seq, const Set *s)
   assert(seq); assert(s);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
 
-  TInstant *inst; 
+  TInstant *inst;
 
   /* Singleton timestamp set */
   if (s->count == 1)
@@ -2391,7 +2387,7 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
 TSequenceSet *
 tcontseq_minus_tstzset(const TSequence *seq, const Set *s)
 {
-  assert(seq); assert(s); 
+  assert(seq); assert(s);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
   TSequence **sequences = palloc0(sizeof(TSequence *) * (s->count + 1));
   int count = tcontseq_minus_tstzset_iter(seq, s, sequences);
@@ -2568,7 +2564,7 @@ int
 tcontseq_at_tstzspanset1(const TSequence *seq, const SpanSet *ss,
   TSequence **result)
 {
-  assert(seq); assert(ss); assert(result); 
+  assert(seq); assert(ss); assert(result);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
 
   /* Singleton span set */

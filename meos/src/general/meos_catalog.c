@@ -40,11 +40,7 @@
 #include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  #include <common/hashfn.h>
-#else
-  #include <access/hash.h>
-#endif
+#include <common/hashfn.h>
 /* MEOS */
 #include <meos.h>
 #include "general/doublen.h"
@@ -189,7 +185,7 @@ static const char *MEOS_TEMPSUBTYPE_NAMES[] =
 
 /**
 
- * @brief Global constant array containing the interpolation names 
+ * @brief Global constant array containing the interpolation names
  * corresponding to the enumeration interpType defined in file `meos_catalog.h`
  * @note The names are in lowercase since they are used in error messages
  */

@@ -468,13 +468,8 @@ temporal_sel_tstzspan(VariableStatData *vardata, Span *s, meosOper oper)
   if (oper == SAME_OP)
   {
     Oid operid = oper_oid(EQ_OP, T_TSTZSPAN, T_TSTZSPAN);
-#if POSTGRESQL_VERSION_NUMBER < 130000
-    selec = var_eq_const(vardata, operid, SpanPGetDatum(s),
-      false, false, false);
-#else
     selec = var_eq_const(vardata, operid, DEFAULT_COLLATION_OID,
       SpanPGetDatum(s), false, false, false);
-#endif
   }
   else if (oper == OVERLAPS_OP || oper == CONTAINS_OP ||
     oper == CONTAINED_OP ||  oper == ADJACENT_OP ||
@@ -525,25 +520,15 @@ tnumber_sel_span_tstzspan(VariableStatData *vardata, Span *span, Span *period,
     if (span != NULL)
     {
       Oid value_oprid = oper_oid(EQ_OP, span->spantype, span->spantype);
-#if POSTGRESQL_VERSION_NUMBER < 130000
-      selec *= var_eq_const(vardata, value_oprid, PointerGetDatum(span),
-        false, false, false);
-#else
       selec *= var_eq_const(vardata, value_oprid, DEFAULT_COLLATION_OID,
         PointerGetDatum(span), false, false, false);
-#endif
     }
     /* Selectivity for the time dimension */
     if (period != NULL)
     {
       Oid tstzspan_oprid = oper_oid(EQ_OP, period->spantype, period->spantype);
-#if POSTGRESQL_VERSION_NUMBER < 130000
-      selec *= var_eq_const(vardata, tstzspan_oprid, SpanPGetDatum(period),
-        false, false, false);
-#else
       selec *= var_eq_const(vardata, tstzspan_oprid, DEFAULT_COLLATION_OID,
         SpanPGetDatum(period), false, false, false);
-#endif
     }
   }
   else if (oper == OVERLAPS_OP || oper == CONTAINS_OP ||

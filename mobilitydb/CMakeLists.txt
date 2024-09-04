@@ -43,7 +43,7 @@ endif()
 #-------------------------------------
 
 # Find PostgreSQL
-set(PG_MIN_MAJOR_VERSION "12")
+set(PG_MIN_MAJOR_VERSION "13")
 set(PG_MAX_MAJOR_VERSION "14")
 find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
 if(NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)

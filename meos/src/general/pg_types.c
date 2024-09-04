@@ -45,11 +45,7 @@
 #include <utils/datetime.h>
 #include <utils/float.h>
 #include "utils/formatting.h"
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  #include <common/hashfn.h>
-#else
-  #include <access/hash.h>
-#endif
+#include <common/hashfn.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
@@ -82,10 +78,8 @@
 
 /* Definition in numutils.c */
 extern int32 pg_strtoint32(const char *s);
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  extern int pg_ultoa_n(uint32 value, char *a);
-  extern int pg_ulltoa_n(uint64 l, char *a);
-#endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
+extern int pg_ultoa_n(uint32 value, char *a);
+extern int pg_ulltoa_n(uint64 l, char *a);
 
 /* To avoid including varlena.h */
 extern int varstr_cmp(const char *arg1, int len1, const char *arg2, int len2,
@@ -248,7 +242,6 @@ int4_in(const char *str)
   return pg_strtoint32(str);
 }
 
-#if POSTGRESQL_VERSION_NUMBER >= 130000
 /*
  * pg_ltoa: converts a signed 32-bit integer to its string representation and
  * returns strlen(a).
@@ -275,7 +268,6 @@ mobdb_ltoa(int32 value, char *a)
   a[len] = '\0';
   return len;
 }
-#endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
 
 /**
  * @brief Return a string from an int4
@@ -285,11 +277,7 @@ char *
 int4_out(int32 val)
 {
   char *result = palloc(MAXINT4LEN);  /* sign, 10 digits, '\0' */
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   mobdb_ltoa(val, result);
-#else
-  snprintf(result, MAXINT4LEN, "%d", val);
-#endif
   return result;
 }
 
@@ -317,7 +305,6 @@ int8_in(const char *str)
   return result;
 }
 
-#if POSTGRESQL_VERSION_NUMBER >= 130000
 /*
  * pg_lltoa: converts a signed 64-bit integer to its string representation and
  * returns strlen(a).
@@ -344,7 +331,6 @@ mobdb_lltoa(int64 value, char *a)
   a[len] = '\0';
   return len;
 }
-#endif /* POSTGRESQL_VERSION_NUMBER >= 130000 */
 
 /**
  * @brief Return a string from an @p int8
@@ -354,7 +340,6 @@ char *
 int8_out(int64 val)
 {
   char *result;
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   char buf[MAXINT8LEN + 1];
   int len = mobdb_lltoa(val, buf) + 1;
   /*
@@ -363,10 +348,6 @@ int8_out(int64 val)
    */
   result = palloc(len);
   memcpy(result, buf, len);
-#else
-  result = palloc(MAXINT8LEN + 1);
-  snprintf(result, MAXINT8LEN + 1, "%ld", val);
-#endif
   return result;
 }
 
@@ -799,7 +780,7 @@ pg_date_out(DateADT d)
 }
 #endif /* MEOS */
 
-#if MEOS || POSTGRESQL_VERSION_NUMBER < 130000
+#if MEOS
 /*
  * Promote date to timestamp with time zone.
  *
@@ -884,7 +865,7 @@ date2timestamptz_opt_overflow(DateADT dateVal, int *overflow)
   }
   return result;
 }
-#endif /* MEOS || POSTGRESQL_VERSION_NUMBER < 130000 */
+#endif /* MEOS */
 
 /**
  * @ingroup meos_pg_types
@@ -1953,7 +1934,7 @@ Interval *
 add_interval_interval(const Interval *interv1, const Interval *interv2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) interv1) || 
+  if (! ensure_not_null((void *) interv1) ||
       ! ensure_not_null((void *) interv2))
     return NULL;
 
@@ -2494,83 +2475,6 @@ datum_initcap(Datum value)
 /*****************************************************************************
  * Functions adapted from hashfn.h and hashfn.c
  *****************************************************************************/
-
-#if POSTGRESQL_VERSION_NUMBER < 130000
-
-/* Rotate a uint32 value left by k bits - note multiple evaluation! */
-#define rot(x,k) (((x)<<(k)) | ((x)>>(32-(k))))
-
-#define mix(a,b,c) \
-{ \
-  a -= c;  a ^= rot(c, 4);  c += b; \
-  b -= a;  b ^= rot(a, 6);  a += c; \
-  c -= b;  c ^= rot(b, 8);  b += a; \
-  a -= c;  a ^= rot(c,16);  c += b; \
-  b -= a;  b ^= rot(a,19);  a += c; \
-  c -= b;  c ^= rot(b, 4);  b += a; \
-}
-
-#define final(a,b,c) \
-{ \
-  c ^= b; c -= rot(b,14); \
-  a ^= c; a -= rot(c,11); \
-  b ^= a; b -= rot(a,25); \
-  c ^= b; c -= rot(b,16); \
-  a ^= c; a -= rot(c, 4); \
-  b ^= a; b -= rot(a,14); \
-  c ^= b; c -= rot(b,24); \
-}
-
-/*
- * hash_bytes_uint32() -- hash a 32-bit value to a 32-bit value
- *
- * This has the same result as
- *    hash_bytes(&k, sizeof(uint32))
- * but is faster and doesn't force the caller to store k into memory.
- */
-uint32
-hash_bytes_uint32(uint32 k)
-{
-  uint32    a,
-        b,
-        c;
-
-  a = b = c = 0x9e3779b9 + (uint32) sizeof(uint32) + 3923095;
-  a += k;
-
-  final(a, b, c);
-
-  /* report the result */
-  return c;
-}
-
-/*
- * hash_bytes_uint32_extended() -- hash 32-bit value to 64-bit value, with seed
- *
- * Like hash_bytes_uint32, this is a convenience function.
- */
-uint64
-hash_bytes_uint32_extended(uint32 k, uint64 seed)
-{
-  uint32 a, b, c;
-  a = b = c = 0x9e3779b9 + (uint32) sizeof(uint32) + 3923095;
-
-  if (seed != 0)
-  {
-    a += (uint32) (seed >> 32);
-    b += (uint32) seed;
-    mix(a, b, c);
-  }
-
-  a += k;
-
-  final(a, b, c);
-
-  /* report the result */
-  return ((uint64) b << 32) | c;
-}
-
-#endif /* POSTGRESQL_VERSION_NUMBER < 130000 */
 
 /**
  * @brief Get the 32-bit hash value of an int64 value.
