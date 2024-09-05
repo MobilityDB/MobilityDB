@@ -39,12 +39,8 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  #include <access/heaptoast.h>
-  #include <access/detoast.h>
-#else
-  #include <access/tuptoaster.h>
-#endif
+#include <access/heaptoast.h>
+#include <access/detoast.h>
 #include <libpq/pqformat.h>
 #include <utils/timestamp.h>
 /* MEOS */

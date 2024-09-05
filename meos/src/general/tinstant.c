@@ -39,11 +39,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  #include <common/hashfn.h>
-#else
-  #include <access/hash.h>
-#endif
+#include <common/hashfn.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif

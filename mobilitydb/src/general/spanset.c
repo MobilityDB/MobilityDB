@@ -37,12 +37,8 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  #include <access/heaptoast.h>
-  #include <access/detoast.h>
-#else
-  #include <access/tuptoaster.h>
-#endif
+#include <access/heaptoast.h>
+#include <access/detoast.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>

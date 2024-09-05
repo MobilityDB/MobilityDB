@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Create a cache of PostgreSQL type and operator Oids in global 
+ * @brief Create a cache of PostgreSQL type and operator Oids in global
  * variable arrays to avoid (slow) lookups
  *
  * The arrays are initialized when the extension is loaded.
@@ -65,11 +65,7 @@
 #include <catalog/pg_extension.h>
 #include <catalog/pg_type.h>
 #include <commands/extension.h>
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  #include <common/hashfn.h>
-#else
-  #include "general/pg_types.h"
-#endif
+#include <common/hashfn.h>
 #include <utils/fmgroids.h>
 #include <utils/syscache.h>
 #include <utils/rel.h>
@@ -283,11 +279,7 @@ populate_operoid_cache()
   /* Fetch the rows of the table containing the MobilityDB operator cache */
   Oid nsp_oid = mobilitydb_nsp_oid();
   Oid catalog = RelnameNspGetRelid("mobilitydb_opcache", nsp_oid);
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  Relation rel = heap_open(catalog, AccessShareLock);
-#else
   Relation rel = table_open(catalog, AccessShareLock);
-#endif
   TupleDesc tupDesc = rel->rd_att;
   ScanKeyData scandata;
   TableScanDesc scan = table_beginscan_catalog(rel, 0, &scandata);
@@ -315,11 +307,7 @@ populate_operoid_cache()
     tuple = heap_getnext(scan, ForwardScanDirection);
   }
   heap_endscan(scan);
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  heap_close(rel, AccessShareLock);
-#else
   table_close(rel, AccessShareLock);
-#endif
   /* Mark that the cache has been initialized */
   MOBDB_OPEROID_CACHE_READY = true;
 }
@@ -429,22 +417,14 @@ fill_oid_cache(PG_FUNCTION_ARGS __attribute__((unused)))
 
   /* Get the Oid of the mobilitydb_opcache table */
   Oid cat_mob = RelnameGetRelid("mobilitydb_opcache");
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  Relation rel_mob = heap_open(cat_mob, AccessExclusiveLock);
-#else
   Relation rel_mob = table_open(cat_mob, AccessExclusiveLock);
-#endif
   TupleDesc tupDesc_mob = rel_mob->rd_att;
   bool isnullarr[] = {false, false, false, false};
   Datum data[] = {0, 0, 0, 0};
 
   /* Get the Oid of the pg_operator catalog table */
   Oid cat_pg = RelnameGetRelid("pg_operator");
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  Relation rel_pg = heap_open(cat_pg, AccessShareLock);
-#else
   Relation rel_pg = table_open(cat_pg, AccessShareLock);
-#endif
   ScanKeyData scandata;
   TableScanDesc scan = table_beginscan_catalog(rel_pg, 0, &scandata);
   HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
@@ -513,13 +493,8 @@ fill_oid_cache(PG_FUNCTION_ARGS __attribute__((unused)))
     CHECK_FOR_INTERRUPTS();
   }
   heap_endscan(scan);
-#if POSTGRESQL_VERSION_NUMBER < 130000
-  heap_close(rel_pg, AccessShareLock);
-  heap_close(rel_mob, AccessExclusiveLock);
-#else
   table_close(rel_pg, AccessShareLock);
   table_close(rel_mob, AccessExclusiveLock);
-#endif
   PG_RETURN_VOID();
 }
 
@@ -534,7 +509,7 @@ fill_oid_cache(PG_FUNCTION_ARGS __attribute__((unused)))
 bool
 range_basetype(meosType type)
 {
-  if (type == T_TIMESTAMPTZ || type == T_DATE || type == T_INT4 || 
+  if (type == T_TIMESTAMPTZ || type == T_DATE || type == T_INT4 ||
       type == T_INT8)
     return true;
   return false;

@@ -41,11 +41,7 @@
 #include <limits.h>
 /* PostgreSQL */
 #include <utils/timestamp.h>
-#if POSTGRESQL_VERSION_NUMBER >= 130000
-  #include <common/hashfn.h>
-#else
-  #include <access/hash.h>
-#endif
+#include <common/hashfn.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
