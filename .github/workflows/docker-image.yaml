@@ -55,7 +55,7 @@ jobs:
           images: mobilitydb/mobilitydb
           # generate Docker tags based on the following events/attributes
           flavor: |
-            latest=${{ matrix.psql == '16' && github.ref_type == 'tag' && contains(github.ref_name, steps.extract-highest-version.outputs.highest-version}}
+            latest=${{ matrix.psql == '16' && github.ref_type == 'tag' && contains(github.ref_name, steps.extract-highest-version.outputs.highest-version) }}
             prefix=${{ matrix.psql }}-${{ matrix.postgis }}-
           tags: |
             type=ref,event=branch
