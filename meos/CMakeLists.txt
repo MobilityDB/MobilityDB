@@ -68,14 +68,18 @@ add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 #--------------------------------
 
 # PostGIS
-configure_file(${CMAKE_SOURCE_DIR}/postgis/postgis_config.h.in ${CMAKE_SOURCE_DIR}/postgis/postgis_config.h)
+configure_file(../postgis/liblwgeom/liblwgeom.h.in ../postgis/liblwgeom/liblwgeom.h)
+configure_file(../postgis/postgis_config.h.in ../postgis/postgis_config.h)
 include_directories("${CMAKE_SOURCE_DIR}/postgis/liblwgeom")
 include_directories("${CMAKE_SOURCE_DIR}/postgis")
+include_directories("${CMAKE_BINARY_DIR}/postgis/liblwgeom")
+include_directories("${CMAKE_BINARY_DIR}/postgis")
 add_subdirectory("${CMAKE_SOURCE_DIR}/postgis" "postgis")
 
 # PostgreSQL
-configure_file(${CMAKE_SOURCE_DIR}/meos/postgres/pg_config.h.in ${CMAKE_SOURCE_DIR}/meos/postgres/pg_config.h)
+configure_file(postgres/pg_config.h.in postgres/pg_config.h)
 include_directories("postgres")
+include_directories("${CMAKE_BINARY_DIR}/meos/postgres")
 add_subdirectory("postgres")
 # Disable all warnings on embedded code from PostgreSQL
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")

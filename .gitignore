@@ -1,5 +1,2 @@
 build/
 .vscode
-
-meos/postgres/pg_config.h
-postgis/postgis_config.h
