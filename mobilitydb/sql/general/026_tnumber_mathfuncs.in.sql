@@ -236,7 +236,7 @@ CREATE FUNCTION tnumber_mult(float, tfloat)
 CREATE OPERATOR * (
   PROCEDURE = tnumber_mult,
   LEFTARG = float, RIGHTARG = tfloat,
-  COMMUTATOR = +
+  COMMUTATOR = *
 );
 
 /*****************************************************************************/
