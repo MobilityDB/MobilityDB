@@ -57,13 +57,13 @@ stringlist_release(stringlist_t *s)
 	memset(s, 0, sizeof(stringlist_t));
 }
 
-// MEOS: add __attribute__((unused))
+
 stringlist_t *
-stringlist_create_with_size(size_t size __attribute__((unused)))
+stringlist_create_with_size(size_t size)
 {
 	stringlist_t *s = lwalloc(sizeof(stringlist_t));
 	memset(s, 0, sizeof(stringlist_t));
-	stringlist_init(s);
+	stringlist_init_with_size(s, size);
 	return s;
 }
 

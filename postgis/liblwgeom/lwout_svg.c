@@ -159,9 +159,7 @@ assvg_line(stringbuffer_t* sb, const LWLINE *line, int relative, int precision)
 		pointArray_svg_abs(sb, line->points, 1, precision, 0);
 }
 
-// MEOS: added __attribute__((unused))
-static void pointArray_svg_arc(stringbuffer_t* sb, const POINTARRAY *pa,
-  int close_ring __attribute__((unused)), int relative,  int precision)
+static void pointArray_svg_arc(stringbuffer_t* sb, const POINTARRAY *pa, int close_ring, int relative,  int precision)
 {
 	uint32_t i; //, end;
 	char sx[OUT_DOUBLE_BUFFER_SIZE];
@@ -314,7 +312,7 @@ assvg_polygon(stringbuffer_t* sb, const LWPOLY *poly, int relative, int precisio
 
 	for (i = 0; i<poly->nrings; i++)
 	{
-		if (i) stringbuffer_append(sb, " ");	/* Space beetween each ring */
+		if (i) stringbuffer_append(sb, " ");	/* Space between each ring */
 		stringbuffer_append(sb, "M ");		/* Start path with SVG MoveTo */
 
 		if (relative)

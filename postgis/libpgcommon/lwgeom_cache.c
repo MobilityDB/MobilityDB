@@ -34,7 +34,7 @@
 * the following kinds of objects:
 *
 *   geometries-with-trees
-*      PreparedGeometry, RTree, CIRC_TREE, RECT_TREE
+*      PreparedGeometry, IntervalTree, CIRC_TREE, RECT_TREE
 *
 * Each GenericCache* has a type, and after that
 * some data. Similar to generic LWGEOM*. Test that
@@ -266,8 +266,7 @@ ToastCacheGetGeometry(FunctionCallInfo fcinfo, uint32_t argnum)
  * Could return SRS as short one (i.e EPSG:4326)
  * or as long one: (i.e urn:ogc:def:crs:EPSG::4326)
  */
-// MEOS
-// static
+/* MobilityDB removed static */
 char *
 getSRSbySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
 {
@@ -372,10 +371,8 @@ GetSRSCacheBySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
  * Require valid spatial_ref_sys table entry
  *
  */
-// MEOS: removed static and added __attribute__((unused))
-// static
-int32_t
-getSRIDbySRS(FunctionCallInfo fcinfo __attribute__((unused)), const char *srs)
+static int32_t
+getSRIDbySRS(FunctionCallInfo fcinfo, const char *srs)
 {
 	static const int16_t max_query_size = 512;
 	char query[512];
