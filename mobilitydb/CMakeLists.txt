@@ -106,7 +106,7 @@ include_directories("pg_include")
 add_subdirectory("src")
 
 # Must be after add_library
-if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles" OR CMAKE_GENERATOR STREQUAL "Ninja")
   # Disable all warnings on embeded code from PostgreSQL and PostGIS
   target_compile_options(liblwgeom PRIVATE "-w")
   target_compile_options(libpgcommon PRIVATE "-w")
