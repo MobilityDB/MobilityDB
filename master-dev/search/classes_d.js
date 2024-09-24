@@ -10,6 +10,7 @@ var searchData=
   ['point3dz_7',['POINT3DZ',['../structPOINT3DZ.html',1,'']]],
   ['point4d_8',['POINT4D',['../structPOINT4D.html',1,'']]],
   ['pointarray_9',['POINTARRAY',['../structPOINTARRAY.html',1,'']]],
-  ['printfargvalue_10',['PrintfArgValue',['../unionPrintfArgValue.html',1,'']]],
-  ['printftarget_11',['PrintfTarget',['../structPrintfTarget.html',1,'']]]
+  ['pose_10',['Pose',['../structPose.html',1,'']]],
+  ['printfargvalue_11',['PrintfArgValue',['../unionPrintfArgValue.html',1,'']]],
+  ['printftarget_12',['PrintfTarget',['../structPrintfTarget.html',1,'']]]
 ];

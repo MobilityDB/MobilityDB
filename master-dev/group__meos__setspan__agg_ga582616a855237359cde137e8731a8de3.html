@@ -136,6 +136,12 @@ $(function() {
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>When the state variable has space for adding the new set, the function returns the current state variable. Otherwise, a NEW state variable is returned and the input state is freed. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Always use the function to overwrite the existing state as in: <div class="fragment"><div class="line"><a class="code hl_struct" href="structstate.html">state</a> = <a class="code hl_function" href="group__meos__setspan__agg_ga582616a855237359cde137e8731a8de3.html#ga582616a855237359cde137e8731a8de3">set_union_transfn</a>(<a class="code hl_struct" href="structstate.html">state</a>, <a class="code hl_function" href="meos_2src_2point_2CMakeLists_8txt_aac07733079a6be1155b6728f8222b562.html#aac07733079a6be1155b6728f8222b562">set</a>);</div>
+<div class="ttc" id="agroup__meos__setspan__agg_ga582616a855237359cde137e8731a8de3_html_ga582616a855237359cde137e8731a8de3"><div class="ttname"><a href="group__meos__setspan__agg_ga582616a855237359cde137e8731a8de3.html#ga582616a855237359cde137e8731a8de3">set_union_transfn</a></div><div class="ttdeci">Set * set_union_transfn(Set *state, Set *s)</div><div class="ttdoc">Transition function for set union aggregate of sets.</div><div class="ttdef"><b>Definition:</b> set_aggfuncs_meos.c:292</div></div>
+<div class="ttc" id="ameos_2src_2point_2CMakeLists_8txt_aac07733079a6be1155b6728f8222b562_html_aac07733079a6be1155b6728f8222b562"><div class="ttname"><a href="meos_2src_2point_2CMakeLists_8txt_aac07733079a6be1155b6728f8222b562.html#aac07733079a6be1155b6728f8222b562">set</a></div><div class="ttdeci">set(POINT_SRCS pgis_types.c stbox.c stbox_index.c tpoint.c tpoint_aggfuncs.c tpoint_boxops.c tpoint_boxops_meos.c tpoint_compops.c tpoint_distance.c tpoint_out.c tpoint_parser.c tpoint_posops_meos.c tpoint_restrict.c tpoint_datagen.c tpoint_spatialfuncs.c tpoint_spatialrels.c tpoint_tempspatialrels.c tpoint_tile.c type_srid.c) if(1) list(APPEND POINT_SRCS tpoint_rtree.c) endif() add_library(point OBJECT $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+<div class="ttc" id="astructstate_html"><div class="ttname"><a href="structstate.html">state</a></div><div class="ttdef"><b>Definition:</b> pgtz.h:42</div></div>
+</div><!-- fragment --> </dd></dl>
 
 </div>
 </div>

@@ -79,17 +79,17 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_ad8c224a66dbdaec6755d9dda75b83842.html#ad8c224a66dbdaec6755d9dda75b83842">_OID_OPER</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_aa0f65a79798789c64746c72edcac9375.html#aa0f65a79798789c64746c72edcac9375">_OPER_OID</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_a3a443effcf423e89f06c039b835eec2b.html#a3a443effcf423e89f06c039b835eec2b">_OPEROID_CACHE_READY</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_a66f2d09fd3af870180eb40bd7c96dd64.html#a66f2d09fd3af870180eb40bd7c96dd64">_TYPE_OID</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_abd481d2c6a000b45b63f21ba4c0d10a8.html#abd481d2c6a000b45b63f21ba4c0d10a8">_TYPEOID_CACHE_READY</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_ab0781b06643deb1eacca285bf8840b13.html#ab0781b06643deb1eacca285bf8840b13">basetype_multirangetype</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_a8371df12f7312345934a1f25ed62a887.html#a8371df12f7312345934a1f25ed62a887">basetype_rangetype</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_aa2f89def3072c95d41dc50d328e0108d.html#aa2f89def3072c95d41dc50d328e0108d">ensure_range_basetype</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_a31f90b9cf0517364cd45116f180b4e50.html#a31f90b9cf0517364cd45116f180b4e50">fill_oid_cache</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_ac52b2cf5cf2809658d7270c735d4991b.html#ac52b2cf5cf2809658d7270c735d4991b">get_extension_schema</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_aa7211eaffd70add54d2dae2b6aecb877.html#aa7211eaffd70add54d2dae2b6aecb877">internal_type</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_a59cc3ef1c038529ccfea0040aeb2c0f9.html#a59cc3ef1c038529ccfea0040aeb2c0f9">MOBDB_OPER_OID</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_a768fa2739f9abd6df06639e2b8ffa18b.html#a768fa2739f9abd6df06639e2b8ffa18b">MOBDB_OPER_OID_ARGS</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_a03a6399d564c9e3065bca85b39a4ab0e.html#a03a6399d564c9e3065bca85b39a4ab0e">MOBDB_OPEROID_CACHE_READY</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_a60f1a178d8272450b27777a5e09d0c12.html#a60f1a178d8272450b27777a5e09d0c12">MOBDB_TYPE_OID</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_ae76fff6178eaa9533bf622f467961f9b.html#ae76fff6178eaa9533bf622f467961f9b">MOBDB_TYPEOID_CACHE_READY</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_afbc3541089611d6b523e68aa512123c5.html#afbc3541089611d6b523e68aa512123c5">mobilitydb_nsp_oid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_a69abbf281e160ede6aa5ecb8fa95ffdc.html#a69abbf281e160ede6aa5ecb8fa95ffdc">namestrcmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2meos__catalog_8c_ae865764d823b38dbd664ed5f3c37a6da.html#ae865764d823b38dbd664ed5f3c37a6da">oid_oper</a></td></tr>
@@ -138,7 +138,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Populate the operator Oid cache from the precomputed operator cache stored in table <code>mobilitydb_opcache</code> </p>
-<p >This table is filled by function <a class="el" href="mobilitydb_2src_2general_2meos__catalog_8c_a31f90b9cf0517364cd45116f180b4e50.html#a31f90b9cf0517364cd45116f180b4e50" title="Function executed during the CREATE EXTENSION to precompute the operator cache and store it in table ...">fill_oid_cache</a> when the extension is created. </p><dl class="section note"><dt>Note</dt><dd>Due to some memory context issues, the _OPER_OID array should be filled again even if it is already filled during the extension creation. </dd></dl>
+<p >This table is filled by function <a class="el" href="mobilitydb_2src_2general_2meos__catalog_8c_a31f90b9cf0517364cd45116f180b4e50.html#a31f90b9cf0517364cd45116f180b4e50" title="Function executed during the CREATE EXTENSION to precompute the operator cache and store it in table ...">fill_oid_cache</a> when the extension is created. </p><dl class="section note"><dt>Note</dt><dd>Due to some memory context issues, the MOBDB_OPER_OID_ARGS array should be filled again even if it is already filled during the extension creation. </dd></dl>
 
 </div>
 </div>

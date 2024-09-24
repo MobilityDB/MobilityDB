@@ -99,8 +99,7 @@ $(function() {
 
 <p>A simple program that generates a given number of tgeompoint instants, assembles the instants into a sequence at the end of the generation process, and outputs the number of instants and the distance travelled. </p>
 <p >The instants are generated so they are not redundant, that is, all input instants will appear in the final sequence.</p>
-<p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o <a class="code hl_function" href="group__meos__temporal__analytics__tile_ga20409e130090c2560351179cd114f48f.html#ga20409e130090c2560351179cd114f48f">stbox_tile</a> <a class="code hl_function" href="group__meos__temporal__analytics__tile_ga20409e130090c2560351179cd114f48f.html#ga20409e130090c2560351179cd114f48f">stbox_tile</a>.c -L/usr/local/lib -lmeos</div>
-<div class="ttc" id="agroup__meos__temporal__analytics__tile_ga20409e130090c2560351179cd114f48f_html_ga20409e130090c2560351179cd114f48f"><div class="ttname"><a href="group__meos__temporal__analytics__tile_ga20409e130090c2560351179cd114f48f.html#ga20409e130090c2560351179cd114f48f">stbox_tile</a></div><div class="ttdeci">STBox * stbox_tile(GSERIALIZED *point, TimestampTz t, double xsize, double ysize, double zsize, Interval *duration, GSERIALIZED *sorigin, TimestampTz torigin, bool hast)</div><div class="ttdoc">Return a tile in the multidimensional grid of a spatiotemporal box.</div><div class="ttdef"><b>Definition:</b> tpoint_tile.c:674</div></div>
+<p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o stbox_tile stbox_tile.c -L/usr/local/lib -lmeos</div>
 </div><!-- fragment --> 
 </div>
 </div>

@@ -1,27 +1,6 @@
 var searchData=
 [
-  ['_5faggregation_5frng_0',['_AGGREGATION_RNG',['../meos_2src_2general_2skiplist_8c_aa1ba79386d7a84d2a8e9bfef8e13c467.html#aa1ba79386d7a84d2a8e9bfef8e13c467',1,'skiplist.c']]],
-  ['_5fdateorder_5fstrings_1',['_DATEORDER_STRINGS',['../meos_8c_a291dc482b59c07ebeed2aa3c1b6f2f53.html#a291dc482b59c07ebeed2aa3c1b6f2f53',1,'meos.c']]],
-  ['_5fdatestyle_5fstrings_2',['_DATESTYLE_STRINGS',['../meos_8c_a2b6b2087c926baa4b5aa852d0abed9b3.html#a2b6b2087c926baa4b5aa852d0abed9b3',1,'meos.c']]],
-  ['_5ferror_5fhandler_3',['_ERROR_HANDLER',['../error_8c_abb2953ce6ded0ee1dac6d8768ccea878.html#abb2953ce6ded0ee1dac6d8768ccea878',1,'error.c']]],
-  ['_5ffcinfo_4',['_FCINFO',['../mobilitydb_2src_2general_2temporal_8c_a9f6c57c37f2a30c0623e0ca583b65f30.html#a9f6c57c37f2a30c0623e0ca583b65f30',1,'temporal.c']]],
-  ['_5fgsl_5finitialized_5',['_GSL_INITIALIZED',['../meos_2src_2point_2tpoint__datagen_8c_a392165de3ada6d2ea99bb519ab353911.html#a392165de3ada6d2ea99bb519ab353911',1,'tpoint_datagen.c']]],
-  ['_5finterptype_5fnames_6',['_INTERPTYPE_NAMES',['../meos_2src_2general_2meos__catalog_8c_ade4e926aff72a277dc000517fe34f990.html#ade4e926aff72a277dc000517fe34f990',1,'meos_catalog.c']]],
-  ['_5fintervalstyle_5fstrings_7',['_INTERVALSTYLE_STRINGS',['../meos_8c_a1190dc3e30c271f66e43e979d91a5589.html#a1190dc3e30c271f66e43e979d91a5589',1,'meos.c']]],
-  ['_5fmeos_5ferrno_8',['_MEOS_ERRNO',['../error_8c_a52a03c4399b2fc8d93dbc1b9c367b5c4.html#a52a03c4399b2fc8d93dbc1b9c367b5c4',1,'error.c']]],
-  ['_5fmeosoper_5fnames_9',['_MEOSOPER_NAMES',['../meos_2src_2general_2meos__catalog_8c_a934ee007279e8b12b4aaf695aced5bfe.html#a934ee007279e8b12b4aaf695aced5bfe',1,'meos_catalog.c']]],
-  ['_5fmeostype_5fnames_10',['_MEOSTYPE_NAMES',['../meos_2src_2general_2meos__catalog_8c_ad9667eb02a9b18d97b4715f96a7c6e9f.html#ad9667eb02a9b18d97b4715f96a7c6e9f',1,'meos_catalog.c']]],
-  ['_5foid_5foper_11',['_OID_OPER',['../mobilitydb_2src_2general_2meos__catalog_8c_ad8c224a66dbdaec6755d9dda75b83842.html#ad8c224a66dbdaec6755d9dda75b83842',1,'meos_catalog.c']]],
-  ['_5foper_5foid_12',['_OPER_OID',['../mobilitydb_2src_2general_2meos__catalog_8c_aa0f65a79798789c64746c72edcac9375.html#aa0f65a79798789c64746c72edcac9375',1,'meos_catalog.c']]],
-  ['_5foperoid_5fcache_5fready_13',['_OPEROID_CACHE_READY',['../mobilitydb_2src_2general_2meos__catalog_8c_a3a443effcf423e89f06c039b835eec2b.html#a3a443effcf423e89f06c039b835eec2b',1,'meos_catalog.c']]],
-  ['_5fpj_5fcontext_14',['_PJ_CONTEXT',['../meos_8c_a9cc0fd8d5043fb4bae4b2c5ea2dcb424.html#a9cc0fd8d5043fb4bae4b2c5ea2dcb424',1,'meos.c']]],
-  ['_5frng_15',['_RNG',['../meos_2src_2point_2tpoint__datagen_8c_a98f8e9c579b815b112bfae16110cee7a.html#a98f8e9c579b815b112bfae16110cee7a',1,'tpoint_datagen.c']]],
-  ['_5frng_5ftype_16',['_RNG_TYPE',['../meos_2src_2point_2tpoint__datagen_8c_ad13394c22de00a3f9acf17592fb8283b.html#ad13394c22de00a3f9acf17592fb8283b',1,'tpoint_datagen.c']]],
-  ['_5fsettype_5fcatalog_17',['_SETTYPE_CATALOG',['../meos_2src_2general_2meos__catalog_8c_a21678375e1da863fdbaea66311b6f1c8.html#a21678375e1da863fdbaea66311b6f1c8',1,'meos_catalog.c']]],
-  ['_5fspansettype_5fcatalog_18',['_SPANSETTYPE_CATALOG',['../meos_2src_2general_2meos__catalog_8c_a901833abd601dab1f06553f4ae11a768.html#a901833abd601dab1f06553f4ae11a768',1,'meos_catalog.c']]],
-  ['_5fspantype_5fcatalog_19',['_SPANTYPE_CATALOG',['../meos_2src_2general_2meos__catalog_8c_a8f854dfb35363e10aa37a4b808a09f50.html#a8f854dfb35363e10aa37a4b808a09f50',1,'meos_catalog.c']]],
-  ['_5ftempsubtype_5fnames_20',['_TEMPSUBTYPE_NAMES',['../meos_2src_2general_2meos__catalog_8c_a1a7a045f6cdcc0a6619cac6eb863da3c.html#a1a7a045f6cdcc0a6619cac6eb863da3c',1,'meos_catalog.c']]],
-  ['_5ftemptype_5fcatalog_21',['_TEMPTYPE_CATALOG',['../meos_2src_2general_2meos__catalog_8c_a6d1e33012ec5214717c4934aa89e0f1d.html#a6d1e33012ec5214717c4934aa89e0f1d',1,'meos_catalog.c']]],
-  ['_5ftype_5foid_22',['_TYPE_OID',['../mobilitydb_2src_2general_2meos__catalog_8c_a66f2d09fd3af870180eb40bd7c96dd64.html#a66f2d09fd3af870180eb40bd7c96dd64',1,'meos_catalog.c']]],
-  ['_5ftypeoid_5fcache_5fready_23',['_TYPEOID_CACHE_READY',['../mobilitydb_2src_2general_2meos__catalog_8c_abd481d2c6a000b45b63f21ba4c0d10a8.html#abd481d2c6a000b45b63f21ba4c0d10a8',1,'meos_catalog.c']]]
+  ['_5fdateorder_5fstrings_0',['_DATEORDER_STRINGS',['../meos_8c_a291dc482b59c07ebeed2aa3c1b6f2f53.html#a291dc482b59c07ebeed2aa3c1b6f2f53',1,'meos.c']]],
+  ['_5fdatestyle_5fstrings_1',['_DATESTYLE_STRINGS',['../meos_8c_a2b6b2087c926baa4b5aa852d0abed9b3.html#a2b6b2087c926baa4b5aa852d0abed9b3',1,'meos.c']]],
+  ['_5fintervalstyle_5fstrings_2',['_INTERVALSTYLE_STRINGS',['../meos_8c_a1190dc3e30c271f66e43e979d91a5589.html#a1190dc3e30c271f66e43e979d91a5589',1,'meos.c']]]
 ];

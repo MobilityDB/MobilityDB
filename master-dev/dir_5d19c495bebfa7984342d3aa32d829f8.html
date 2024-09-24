@@ -90,10 +90,10 @@ Files</h2></td></tr>
 <tr class="memdesc:lifting_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic functions for lifting functions and operators on temporal types. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c.html">meos.c</a></td></tr>
-<tr class="memdesc:meos_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for managing the MEOS extension and its global variables. <br /></td></tr>
+<tr class="memdesc:meos_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for managing the MEOS extension and its global variables and constants. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2general_2meos__catalog_8c.html">meos_catalog.c</a></td></tr>
-<tr class="memdesc:meos_2src_2general_2meos__catalog_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a cache of metadata information about temporal types and span types in global arrays. <br /></td></tr>
+<tr class="memdesc:meos_2src_2general_2meos__catalog_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a cache of metadata information about temporal types and span types in global constant arrays. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pg__types_8c.html">pg_types.c</a></td></tr>
 <tr class="memdesc:pg__types_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for base and time types corresponding to external PostgreSQL functions in order to bypass the function manager <code>fmgr.c</code>. <br /></td></tr>
@@ -119,6 +119,9 @@ Files</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__aggfuncs__meos_8c.html">span_aggfuncs_meos.c</a></td></tr>
 <tr class="memdesc:span__aggfuncs__meos_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Aggregate functions for span types. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__index_8c.html">span_index.c</a></td></tr>
+<tr class="memdesc:span__index_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">R-tree GiST index for span and span set types. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2general_2span__ops_8c.html">span_ops.c</a></td></tr>
 <tr class="memdesc:meos_2src_2general_2span__ops_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Operators for span types. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -136,6 +139,9 @@ Files</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2general_2tbox_8c.html">tbox.c</a></td></tr>
 <tr class="memdesc:meos_2src_2general_2tbox_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for temporal bounding boxes. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tbox__index_8c.html">tbox_index.c</a></td></tr>
+<tr class="memdesc:tbox__index_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">R-tree GiST index for temporal integers and temporal floats. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2general_2temporal_8c.html">temporal.c</a></td></tr>
 <tr class="memdesc:meos_2src_2general_2temporal_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic functions for temporal types of any subtype. <br /></td></tr>
@@ -171,7 +177,7 @@ Files</h2></td></tr>
 <tr class="memdesc:temporal__restrict_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Restriction functions for temporal values. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2general_2temporal__tile_8c.html">temporal_tile.c</a></td></tr>
-<tr class="memdesc:meos_2src_2general_2temporal__tile_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bucket and tile functions for temporal types. <br /></td></tr>
+<tr class="memdesc:meos_2src_2general_2temporal__tile_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bin and tile functions for temporal types. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2general_2temporal__waggfuncs_8c.html">temporal_waggfuncs.c</a></td></tr>
 <tr class="memdesc:meos_2src_2general_2temporal__waggfuncs_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">General aggregate functions for temporal types. <br /></td></tr>
@@ -204,7 +210,7 @@ Files</h2></td></tr>
 <tr class="memdesc:meos_2src_2general_2type__in_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Input of temporal types in WKT, MF-JSON, WKB, EWKB, and HexWKB format. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2general_2type__out_8c.html">type_out.c</a></td></tr>
-<tr class="memdesc:meos_2src_2general_2type__out_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output of types in WKT, WKB, EWKB, HexWKB, and MF-JSON representation. <br /></td></tr>
+<tr class="memdesc:meos_2src_2general_2type__out_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output of types in WKB, EWKB, HexWKB, and MF-JSON representation. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__parser_8c.html">type_parser.c</a></td></tr>
 <tr class="memdesc:type__parser_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for parsing base, set, span, tbox, and temporal types. <br /></td></tr>

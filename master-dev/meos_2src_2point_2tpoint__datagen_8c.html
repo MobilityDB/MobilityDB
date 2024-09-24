@@ -76,8 +76,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#define-members">Macros</a> &#124;
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">tpoint_datagen.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -87,8 +86,6 @@ $(function() {
 <div class="textblock"><code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="float_8h_source.html">utils/float.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
-<code>#include &lt;gsl/gsl_rng.h&gt;</code><br />
-<code>#include &lt;gsl/gsl_randist.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &quot;point/tpoint_spatialfuncs.h&quot;</code><br />
@@ -103,24 +100,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a57a3ca085f5ab3f32294098c7246c812"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTSequence.html">TSequence</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2point_2tpoint__datagen_8c_a57a3ca085f5ab3f32294098c7246c812.html#a57a3ca085f5ab3f32294098c7246c812">create_trip</a> (<a class="el" href="structLWLINE.html">LWLINE</a> **lines, const double *maxSpeeds, const int *categories, uint32_t noEdges, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> startTime, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> disturbData, int verbosity)</td></tr>
 <tr class="memdesc:a57a3ca085f5ab3f32294098c7246c812"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a trip using the BerlinMOD data generator.  <a href="meos_2src_2point_2tpoint__datagen_8c_a57a3ca085f5ab3f32294098c7246c812.html#a57a3ca085f5ab3f32294098c7246c812">More...</a><br /></td></tr>
 <tr class="separator:a57a3ca085f5ab3f32294098c7246c812"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a15a9238a5f7936a683f607996e4133e7"><td class="memItemLeft" align="right" valign="top">gsl_rng *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2point_2tpoint__datagen_8c_a15a9238a5f7936a683f607996e4133e7.html#a15a9238a5f7936a683f607996e4133e7">gsl_get_rng</a> (void)</td></tr>
-<tr class="memdesc:a15a9238a5f7936a683f607996e4133e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the Gnu Scientific Library.  <a href="meos_2src_2point_2tpoint__datagen_8c_a15a9238a5f7936a683f607996e4133e7.html#a15a9238a5f7936a683f607996e4133e7">More...</a><br /></td></tr>
-<tr class="separator:a15a9238a5f7936a683f607996e4133e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acef173e0f71b379cefaa6745b2832e93"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2point_2tpoint__datagen_8c_acef173e0f71b379cefaa6745b2832e93.html#acef173e0f71b379cefaa6745b2832e93">gsl_initialize</a> (void)</td></tr>
-<tr class="memdesc:acef173e0f71b379cefaa6745b2832e93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the Gnu Scientific Library.  <a href="meos_2src_2point_2tpoint__datagen_8c_acef173e0f71b379cefaa6745b2832e93.html#acef173e0f71b379cefaa6745b2832e93">More...</a><br /></td></tr>
-<tr class="separator:acef173e0f71b379cefaa6745b2832e93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3fbaf2516b450989bf6e1b68330a2782"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2point_2tpoint__datagen_8c_a3fbaf2516b450989bf6e1b68330a2782.html#a3fbaf2516b450989bf6e1b68330a2782">pt_angle</a> (<a class="el" href="structPOINT2D.html">POINT2D</a> p1, <a class="el" href="structPOINT2D.html">POINT2D</a> p2, <a class="el" href="structPOINT2D.html">POINT2D</a> p3)</td></tr>
 <tr class="memdesc:a3fbaf2516b450989bf6e1b68330a2782"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the angle in degrees between 3 points.  <a href="meos_2src_2point_2tpoint__datagen_8c_a3fbaf2516b450989bf6e1b68330a2782.html#a3fbaf2516b450989bf6e1b68330a2782">More...</a><br /></td></tr>
 <tr class="separator:a3fbaf2516b450989bf6e1b68330a2782"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:a392165de3ada6d2ea99bb519ab353911"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2point_2tpoint__datagen_8c_a392165de3ada6d2ea99bb519ab353911.html#a392165de3ada6d2ea99bb519ab353911">_GSL_INITIALIZED</a> = <a class="el" href="c_8h_a65e9886d74aaee76545e83dd09011727.html#a65e9886d74aaee76545e83dd09011727">false</a></td></tr>
-<tr class="separator:a392165de3ada6d2ea99bb519ab353911"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a98f8e9c579b815b112bfae16110cee7a"><td class="memItemLeft" align="right" valign="top">static gsl_rng *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2point_2tpoint__datagen_8c_a98f8e9c579b815b112bfae16110cee7a.html#a98f8e9c579b815b112bfae16110cee7a">_RNG</a></td></tr>
-<tr class="separator:a98f8e9c579b815b112bfae16110cee7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad13394c22de00a3f9acf17592fb8283b"><td class="memItemLeft" align="right" valign="top">static const gsl_rng_type *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2point_2tpoint__datagen_8c_ad13394c22de00a3f9acf17592fb8283b.html#ad13394c22de00a3f9acf17592fb8283b">_RNG_TYPE</a></td></tr>
-<tr class="separator:ad13394c22de00a3f9acf17592fb8283b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Data generator for MobilityDB. </p>

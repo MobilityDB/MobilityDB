@@ -9,5 +9,7 @@ var searchData=
   ['hour_6',['HOUR',['../datetime_8h_a4698ae12cf6a8acb5886fffd0ec897e6.html#a4698ae12cf6a8acb5886fffd0ec897e6',1,'datetime.h']]],
   ['hours_5fper_5fday_7',['HOURS_PER_DAY',['../timestamp__def_8h_ab6e4646c1e386028708330569ee98f64.html#ab6e4646c1e386028708330569ee98f64',1,'timestamp_def.h']]],
   ['hoursperday_8',['HOURSPERDAY',['../private_8h_a77e3c323dfbddadb30abe56bc5395f91.html#a77e3c323dfbddadb30abe56bc5395f91',1,'private.h']]],
-  ['hr24_9',['HR24',['../datetime_8h_a80eef78809b12e08439f682201374cf3.html#a80eef78809b12e08439f682201374cf3',1,'datetime.h']]]
+  ['hr24_9',['HR24',['../datetime_8h_a80eef78809b12e08439f682201374cf3.html#a80eef78809b12e08439f682201374cf3',1,'datetime.h']]],
+  ['htequalstrategynumber_10',['HTEqualStrategyNumber',['../stratnum_8h_a6cac2978f1fdecbca7460a77f88ba128.html#a6cac2978f1fdecbca7460a77f88ba128',1,'stratnum.h']]],
+  ['htmaxstrategynumber_11',['HTMaxStrategyNumber',['../stratnum_8h_a3c13097dc94267eabe6eab02b5fbe171.html#a3c13097dc94267eabe6eab02b5fbe171',1,'stratnum.h']]]
 ];

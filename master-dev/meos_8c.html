@@ -84,10 +84,12 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Functions for managing the MEOS extension and its global variables.  
+<p>Functions for managing the MEOS extension and its global variables and constants.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
+<code>#include &lt;gsl/gsl_rng.h&gt;</code><br />
+<code>#include &lt;gsl/gsl_randist.h&gt;</code><br />
 <code>#include &lt;proj.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 </div><table class="memberdecls">
@@ -104,6 +106,10 @@ Macros</h2></td></tr>
 <tr class="separator:a5016e7f66baf2be27e0eb4339ddad81e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c6804e5a4311b2abfd0d8d21571c1e4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a9c6804e5a4311b2abfd0d8d21571c1e4.html#a9c6804e5a4311b2abfd0d8d21571c1e4">DATEORDER_YMD</a>&#160;&#160;&#160;0</td></tr>
 <tr class="separator:a9c6804e5a4311b2abfd0d8d21571c1e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ac77c45765e6aaeca225bdaaa4338d2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a6ac77c45765e6aaeca225bdaaa4338d2.html#a6ac77c45765e6aaeca225bdaaa4338d2">DATESTYLE_STR_MAXLEN</a>&#160;&#160;&#160;32</td></tr>
+<tr class="separator:a6ac77c45765e6aaeca225bdaaa4338d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58a8e93a4143219c98ec25781e045a2f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a58a8e93a4143219c98ec25781e045a2f.html#a58a8e93a4143219c98ec25781e045a2f">INTERVALSTYLE_STR_MAXLEN</a>&#160;&#160;&#160;32</td></tr>
+<tr class="separator:a58a8e93a4143219c98ec25781e045a2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abf27a6b0a5565d230c4289eeda129444"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_abf27a6b0a5565d230c4289eeda129444.html#abf27a6b0a5565d230c4289eeda129444">INTSTYLE_ISO_8601</a>&#160;&#160;&#160;3</td></tr>
 <tr class="separator:abf27a6b0a5565d230c4289eeda129444"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad93e5b423cb6c441471ea757fd897eb1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_ad93e5b423cb6c441471ea757fd897eb1.html#ad93e5b423cb6c441471ea757fd897eb1">INTSTYLE_POSTGRES</a>&#160;&#160;&#160;0</td></tr>
@@ -130,8 +136,8 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ae9242f3a2a18415a896683a372c566fe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_ae9242f3a2a18415a896683a372c566fe.html#ae9242f3a2a18415a896683a372c566fe">add_stringlist_item</a> (<a class="el" href="struct__stringlist.html">_stringlist</a> **listhead, const char *str)</td></tr>
-<tr class="separator:ae9242f3a2a18415a896683a372c566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4eab1ac92ade698c8209f8cb30bb598"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_ad4eab1ac92ade698c8209f8cb30bb598.html#ad4eab1ac92ade698c8209f8cb30bb598">add_stringlist_item</a> (<a class="el" href="struct__stringlist.html">_stringlist</a> **listhead, const char *str)</td></tr>
+<tr class="separator:ad4eab1ac92ade698c8209f8cb30bb598"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a758bd8eef0081ba4be7480eeca1c7410"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a758bd8eef0081ba4be7480eeca1c7410.html#a758bd8eef0081ba4be7480eeca1c7410">check_datestyle</a> (char **newval, void **extra)</td></tr>
 <tr class="memdesc:a758bd8eef0081ba4be7480eeca1c7410"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check a datestyle string.  <a href="meos_8c_a758bd8eef0081ba4be7480eeca1c7410.html#a758bd8eef0081ba4be7480eeca1c7410">More...</a><br /></td></tr>
 <tr class="separator:a758bd8eef0081ba4be7480eeca1c7410"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,6 +152,18 @@ Functions</h2></td></tr>
 <tr class="separator:a9c4741c4c6cfd1e9aeb9a6efa22f868c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f6b48ea3fca8a019a9c561a6d1412a6"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a2f6b48ea3fca8a019a9c561a6d1412a6.html#a2f6b48ea3fca8a019a9c561a6d1412a6">free_stringlist</a> (<a class="el" href="struct__stringlist.html">_stringlist</a> **listhead)</td></tr>
 <tr class="separator:a2f6b48ea3fca8a019a9c561a6d1412a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2f7c4bf8a48966b3b5f4e789e18e997"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_af2f7c4bf8a48966b3b5f4e789e18e997.html#af2f7c4bf8a48966b3b5f4e789e18e997">gsl_finalize</a> (void)</td></tr>
+<tr class="memdesc:af2f7c4bf8a48966b3b5f4e789e18e997"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finalize the Gnu Scientific Library.  <a href="meos_8c_af2f7c4bf8a48966b3b5f4e789e18e997.html#af2f7c4bf8a48966b3b5f4e789e18e997">More...</a><br /></td></tr>
+<tr class="separator:af2f7c4bf8a48966b3b5f4e789e18e997"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7301d7d14d053967621c3042d11eb29b"><td class="memItemLeft" align="right" valign="top">gsl_rng *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a7301d7d14d053967621c3042d11eb29b.html#a7301d7d14d053967621c3042d11eb29b">gsl_get_aggregation_rng</a> (void)</td></tr>
+<tr class="memdesc:a7301d7d14d053967621c3042d11eb29b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the random generator used by temporal aggregation.  <a href="meos_8c_a7301d7d14d053967621c3042d11eb29b.html#a7301d7d14d053967621c3042d11eb29b">More...</a><br /></td></tr>
+<tr class="separator:a7301d7d14d053967621c3042d11eb29b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab57cdfdc7ea65a70fd984767bc431d9a"><td class="memItemLeft" align="right" valign="top">gsl_rng *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_ab57cdfdc7ea65a70fd984767bc431d9a.html#ab57cdfdc7ea65a70fd984767bc431d9a">gsl_get_generation_rng</a> (void)</td></tr>
+<tr class="memdesc:ab57cdfdc7ea65a70fd984767bc431d9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the random generator used by the data generator.  <a href="meos_8c_ab57cdfdc7ea65a70fd984767bc431d9a.html#ab57cdfdc7ea65a70fd984767bc431d9a">More...</a><br /></td></tr>
+<tr class="separator:ab57cdfdc7ea65a70fd984767bc431d9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acef173e0f71b379cefaa6745b2832e93"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_acef173e0f71b379cefaa6745b2832e93.html#acef173e0f71b379cefaa6745b2832e93">gsl_initialize</a> (void)</td></tr>
+<tr class="memdesc:acef173e0f71b379cefaa6745b2832e93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the Gnu Scientific Library.  <a href="meos_8c_acef173e0f71b379cefaa6745b2832e93.html#acef173e0f71b379cefaa6745b2832e93">More...</a><br /></td></tr>
+<tr class="separator:acef173e0f71b379cefaa6745b2832e93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c04d63e5c17b9f4b96f42dbe2aa8122"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a1c04d63e5c17b9f4b96f42dbe2aa8122.html#a1c04d63e5c17b9f4b96f42dbe2aa8122">intervalstyle_string</a> (int intervalstyle)</td></tr>
 <tr class="memdesc:a1c04d63e5c17b9f4b96f42dbe2aa8122"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the string representation of the intervalstyle.  <a href="meos_8c_a1c04d63e5c17b9f4b96f42dbe2aa8122.html#a1c04d63e5c17b9f4b96f42dbe2aa8122">More...</a><br /></td></tr>
 <tr class="separator:a1c04d63e5c17b9f4b96f42dbe2aa8122"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -157,7 +175,7 @@ Functions</h2></td></tr>
 <tr class="memitem:aa30a083e08860451ba92a1966939c82e"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_aa30a083e08860451ba92a1966939c82e.html#aa30a083e08860451ba92a1966939c82e">meos_get_intervalstyle</a> (void)</td></tr>
 <tr class="memdesc:aa30a083e08860451ba92a1966939c82e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the IntervalStyle.  <a href="meos_8c_aa30a083e08860451ba92a1966939c82e.html#aa30a083e08860451ba92a1966939c82e">More...</a><br /></td></tr>
 <tr class="separator:aa30a083e08860451ba92a1966939c82e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2a49fc74ec453c0813b5747df0cde7c4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a2a49fc74ec453c0813b5747df0cde7c4.html#a2a49fc74ec453c0813b5747df0cde7c4">meos_initialize</a> (const char *tz_str, <a class="el" href="meos_8h_ac1de80dcf97822e250aa82cf76669b33.html#ac1de80dcf97822e250aa82cf76669b33">error_handler_fn</a> err_handler)</td></tr>
+<tr class="memitem:a2a49fc74ec453c0813b5747df0cde7c4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a2a49fc74ec453c0813b5747df0cde7c4.html#a2a49fc74ec453c0813b5747df0cde7c4">meos_initialize</a> (const char *tz_str, <a class="el" href="meos_8h_ac6cea2666f057c8268d1e0b25a7df255.html#ac6cea2666f057c8268d1e0b25a7df255">error_handler_fn</a> err_handler)</td></tr>
 <tr class="separator:a2a49fc74ec453c0813b5747df0cde7c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5149c54f380d1ff85a6b0c1522e990aa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a5149c54f380d1ff85a6b0c1522e990aa.html#a5149c54f380d1ff85a6b0c1522e990aa">meos_set_datestyle</a> (char *newval, void *extra)</td></tr>
 <tr class="memdesc:a5149c54f380d1ff85a6b0c1522e990aa"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the DateStyle.  <a href="meos_8c_a5149c54f380d1ff85a6b0c1522e990aa.html#a5149c54f380d1ff85a6b0c1522e990aa">More...</a><br /></td></tr>
@@ -165,31 +183,46 @@ Functions</h2></td></tr>
 <tr class="memitem:a24d92eb3ac86ba6ffee63645393c3e3c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a24d92eb3ac86ba6ffee63645393c3e3c.html#a24d92eb3ac86ba6ffee63645393c3e3c">meos_set_intervalstyle</a> (char *newval, int extra)</td></tr>
 <tr class="memdesc:a24d92eb3ac86ba6ffee63645393c3e3c"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the IntervalStyle.  <a href="meos_8c_a24d92eb3ac86ba6ffee63645393c3e3c.html#a24d92eb3ac86ba6ffee63645393c3e3c">More...</a><br /></td></tr>
 <tr class="separator:a24d92eb3ac86ba6ffee63645393c3e3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae80edd4cdb1a2f5833491effeb1cf54a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_ae80edd4cdb1a2f5833491effeb1cf54a.html#ae80edd4cdb1a2f5833491effeb1cf54a">proj_finalize</a> (void)</td></tr>
+<tr class="memdesc:ae80edd4cdb1a2f5833491effeb1cf54a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finalize the PROJ library.  <a href="meos_8c_ae80edd4cdb1a2f5833491effeb1cf54a.html#ae80edd4cdb1a2f5833491effeb1cf54a">More...</a><br /></td></tr>
+<tr class="separator:ae80edd4cdb1a2f5833491effeb1cf54a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb4ea3ec36162407424522d39c0c4f6c"><td class="memItemLeft" align="right" valign="top">PJ_CONTEXT *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_afb4ea3ec36162407424522d39c0c4f6c.html#afb4ea3ec36162407424522d39c0c4f6c">proj_get_context</a> (void)</td></tr>
+<tr class="memdesc:afb4ea3ec36162407424522d39c0c4f6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the random generator used by temporal aggregation.  <a href="meos_8c_afb4ea3ec36162407424522d39c0c4f6c.html#afb4ea3ec36162407424522d39c0c4f6c">More...</a><br /></td></tr>
+<tr class="separator:afb4ea3ec36162407424522d39c0c4f6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98576dd698e254d2b8b341fb15da84cf"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a98576dd698e254d2b8b341fb15da84cf.html#a98576dd698e254d2b8b341fb15da84cf">proj_initialize</a> (void)</td></tr>
+<tr class="memdesc:a98576dd698e254d2b8b341fb15da84cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the PROJ library.  <a href="meos_8c_a98576dd698e254d2b8b341fb15da84cf.html#a98576dd698e254d2b8b341fb15da84cf">More...</a><br /></td></tr>
+<tr class="separator:a98576dd698e254d2b8b341fb15da84cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a78c61a21bb91d32b8db57956c75f234f"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a78c61a21bb91d32b8db57956c75f234f.html#a78c61a21bb91d32b8db57956c75f234f">split_to_stringlist</a> (const char *s, const char *delim, <a class="el" href="struct__stringlist.html">_stringlist</a> **listhead)</td></tr>
 <tr class="separator:a78c61a21bb91d32b8db57956c75f234f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:a291dc482b59c07ebeed2aa3c1b6f2f53"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a291dc482b59c07ebeed2aa3c1b6f2f53.html#a291dc482b59c07ebeed2aa3c1b6f2f53">_DATEORDER_STRINGS</a> []</td></tr>
-<tr class="memdesc:a291dc482b59c07ebeed2aa3c1b6f2f53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global array containing the dateorder strings.  <a href="meos_8c_a291dc482b59c07ebeed2aa3c1b6f2f53.html#a291dc482b59c07ebeed2aa3c1b6f2f53">More...</a><br /></td></tr>
+<tr class="memdesc:a291dc482b59c07ebeed2aa3c1b6f2f53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global constant array containing the dateorder strings.  <a href="meos_8c_a291dc482b59c07ebeed2aa3c1b6f2f53.html#a291dc482b59c07ebeed2aa3c1b6f2f53">More...</a><br /></td></tr>
 <tr class="separator:a291dc482b59c07ebeed2aa3c1b6f2f53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2b6b2087c926baa4b5aa852d0abed9b3"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a2b6b2087c926baa4b5aa852d0abed9b3.html#a2b6b2087c926baa4b5aa852d0abed9b3">_DATESTYLE_STRINGS</a> []</td></tr>
-<tr class="memdesc:a2b6b2087c926baa4b5aa852d0abed9b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global array containing the datestyle strings.  <a href="meos_8c_a2b6b2087c926baa4b5aa852d0abed9b3.html#a2b6b2087c926baa4b5aa852d0abed9b3">More...</a><br /></td></tr>
+<tr class="memdesc:a2b6b2087c926baa4b5aa852d0abed9b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global constant array containing the datestyle strings.  <a href="meos_8c_a2b6b2087c926baa4b5aa852d0abed9b3.html#a2b6b2087c926baa4b5aa852d0abed9b3">More...</a><br /></td></tr>
 <tr class="separator:a2b6b2087c926baa4b5aa852d0abed9b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1190dc3e30c271f66e43e979d91a5589"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a1190dc3e30c271f66e43e979d91a5589.html#a1190dc3e30c271f66e43e979d91a5589">_INTERVALSTYLE_STRINGS</a> []</td></tr>
-<tr class="memdesc:a1190dc3e30c271f66e43e979d91a5589"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global array containing the intervalstyle string.  <a href="meos_8c_a1190dc3e30c271f66e43e979d91a5589.html#a1190dc3e30c271f66e43e979d91a5589">More...</a><br /></td></tr>
+<tr class="memdesc:a1190dc3e30c271f66e43e979d91a5589"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global constant array containing the intervalstyle string.  <a href="meos_8c_a1190dc3e30c271f66e43e979d91a5589.html#a1190dc3e30c271f66e43e979d91a5589">More...</a><br /></td></tr>
 <tr class="separator:a1190dc3e30c271f66e43e979d91a5589"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9cc0fd8d5043fb4bae4b2c5ea2dcb424"><td class="memItemLeft" align="right" valign="top">PJ_CONTEXT *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a9cc0fd8d5043fb4bae4b2c5ea2dcb424.html#a9cc0fd8d5043fb4bae4b2c5ea2dcb424">_PJ_CONTEXT</a></td></tr>
-<tr class="separator:a9cc0fd8d5043fb4bae4b2c5ea2dcb424"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae461a388b642e9d2b503450f80323a38"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_ae461a388b642e9d2b503450f80323a38.html#ae461a388b642e9d2b503450f80323a38">DateOrder</a> = <a class="el" href="datetime_8h_a5016e7f66baf2be27e0eb4339ddad81e.html#a5016e7f66baf2be27e0eb4339ddad81e">DATEORDER_MDY</a></td></tr>
 <tr class="separator:ae461a388b642e9d2b503450f80323a38"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3915ac6598ecd2061efd8e1fc7b5324b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a3915ac6598ecd2061efd8e1fc7b5324b.html#a3915ac6598ecd2061efd8e1fc7b5324b">DateStyle</a> = <a class="el" href="datetime_8h_a449fb9e72222dfbdd3136adc71936907.html#a449fb9e72222dfbdd3136adc71936907">USE_ISO_DATES</a></td></tr>
 <tr class="separator:a3915ac6598ecd2061efd8e1fc7b5324b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc75cb539277c7cfa814b8755690cb1d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_abc75cb539277c7cfa814b8755690cb1d.html#abc75cb539277c7cfa814b8755690cb1d">IntervalStyle</a> = <a class="el" href="datetime_8h_ad93e5b423cb6c441471ea757fd897eb1.html#ad93e5b423cb6c441471ea757fd897eb1">INTSTYLE_POSTGRES</a></td></tr>
 <tr class="separator:abc75cb539277c7cfa814b8755690cb1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd1cf68caf291119a3426ba9f3647830"><td class="memItemLeft" align="right" valign="top">static gsl_rng *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_acd1cf68caf291119a3426ba9f3647830.html#acd1cf68caf291119a3426ba9f3647830">MEOS_AGGREGATION_RNG</a> = NULL</td></tr>
+<tr class="separator:acd1cf68caf291119a3426ba9f3647830"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc0bfbfc0403a3f3273762b26f70eb75"><td class="memItemLeft" align="right" valign="top">static gsl_rng *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_abc0bfbfc0403a3f3273762b26f70eb75.html#abc0bfbfc0403a3f3273762b26f70eb75">MEOS_GENERATION_RNG</a> = NULL</td></tr>
+<tr class="separator:abc0bfbfc0403a3f3273762b26f70eb75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40c1e9656b9065d9b61bf16d751358fa"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_a40c1e9656b9065d9b61bf16d751358fa.html#a40c1e9656b9065d9b61bf16d751358fa">MEOS_GSL_INITIALIZED</a> = <a class="el" href="c_8h_a65e9886d74aaee76545e83dd09011727.html#a65e9886d74aaee76545e83dd09011727">false</a></td></tr>
+<tr class="separator:a40c1e9656b9065d9b61bf16d751358fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6974c705fe6b2ea470b6585a9dce7bc"><td class="memItemLeft" align="right" valign="top">PJ_CONTEXT *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_8c_ac6974c705fe6b2ea470b6585a9dce7bc.html#ac6974c705fe6b2ea470b6585a9dce7bc">MEOS_PJ_CONTEXT</a> = NULL</td></tr>
+<tr class="separator:ac6974c705fe6b2ea470b6585a9dce7bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Functions for managing the MEOS extension and its global variables. </p>
+<div class="textblock"><p >Functions for managing the MEOS extension and its global variables and constants. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

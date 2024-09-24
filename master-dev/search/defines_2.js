@@ -14,7 +14,13 @@ var searchData=
   ['boolisvalid_11',['BoolIsValid',['../c_8h_a7be99864cb1b1fab083f12722efa01cd.html#a7be99864cb1b1fab083f12722efa01cd',1,'c.h']]],
   ['border_5fexc_12',['BORDER_EXC',['../meos_2include_2general_2temporal_8h_a6a6b4bdfb1828b7bb8dbde05e079cc92.html#a6a6b4bdfb1828b7bb8dbde05e079cc92',1,'temporal.h']]],
   ['border_5finc_13',['BORDER_INC',['../meos_2include_2general_2temporal_8h_a888c5df49c0c821f4bae0c6494bdfe19.html#a888c5df49c0c821f4bae0c6494bdfe19',1,'temporal.h']]],
-  ['btree_5fam_5foid_14',['BTREE_AM_OID',['../temporal__selfuncs_8h_a61cb01df7cb4cea59362e25b6c2c5132.html#a61cb01df7cb4cea59362e25b6c2c5132',1,'temporal_selfuncs.h']]],
-  ['bufferalign_15',['BUFFERALIGN',['../c_8h_a6e8b5dca852d45ff5b26dd7ae80f059a.html#a6e8b5dca852d45ff5b26dd7ae80f059a',1,'c.h']]],
-  ['bufferalign_5fdown_16',['BUFFERALIGN_DOWN',['../c_8h_a55cd19ee91502de127782a89e8b3372f.html#a55cd19ee91502de127782a89e8b3372f',1,'c.h']]]
+  ['btequalstrategynumber_14',['BTEqualStrategyNumber',['../stratnum_8h_a96b88787b1cd06bd099fb50f3009cf7c.html#a96b88787b1cd06bd099fb50f3009cf7c',1,'stratnum.h']]],
+  ['btgreaterequalstrategynumber_15',['BTGreaterEqualStrategyNumber',['../stratnum_8h_ae9b9d39531a9650e9056c4be85d0fd8f.html#ae9b9d39531a9650e9056c4be85d0fd8f',1,'stratnum.h']]],
+  ['btgreaterstrategynumber_16',['BTGreaterStrategyNumber',['../stratnum_8h_a482674183e603e23be166eca364618aa.html#a482674183e603e23be166eca364618aa',1,'stratnum.h']]],
+  ['btlessequalstrategynumber_17',['BTLessEqualStrategyNumber',['../stratnum_8h_ace420362c271b8806995ef1e0b550d79.html#ace420362c271b8806995ef1e0b550d79',1,'stratnum.h']]],
+  ['btlessstrategynumber_18',['BTLessStrategyNumber',['../stratnum_8h_a92b3efa99331bad757bb6f4a95cebdbc.html#a92b3efa99331bad757bb6f4a95cebdbc',1,'stratnum.h']]],
+  ['btmaxstrategynumber_19',['BTMaxStrategyNumber',['../stratnum_8h_a560ddbb38ef439af97632953e876bcd6.html#a560ddbb38ef439af97632953e876bcd6',1,'stratnum.h']]],
+  ['btree_5fam_5foid_20',['BTREE_AM_OID',['../temporal__selfuncs_8h_a61cb01df7cb4cea59362e25b6c2c5132.html#a61cb01df7cb4cea59362e25b6c2c5132',1,'temporal_selfuncs.h']]],
+  ['bufferalign_21',['BUFFERALIGN',['../c_8h_a6e8b5dca852d45ff5b26dd7ae80f059a.html#a6e8b5dca852d45ff5b26dd7ae80f059a',1,'c.h']]],
+  ['bufferalign_5fdown_22',['BUFFERALIGN_DOWN',['../c_8h_a55cd19ee91502de127782a89e8b3372f.html#a55cd19ee91502de127782a89e8b3372f',1,'c.h']]]
 ];

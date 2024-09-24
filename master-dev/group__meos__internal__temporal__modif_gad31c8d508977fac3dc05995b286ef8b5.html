@@ -82,7 +82,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__modif_gaaedf70d8475d738ad214db22e68417a9.html#gaaedf70d8475d738ad214db22e68417a9">tinstant_merge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__modif_ga642525ab11ea6303f0b9f27e70604f59.html#ga642525ab11ea6303f0b9f27e70604f59">tinstant_merge_array</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__modif_gae589b7e63d858275b5f63a1e7942c424.html#gae589b7e63d858275b5f63a1e7942c424">tsequence_append_tinstant</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__modif_gae318759e4d0cef12b3de4a6fd1cac98a.html#gae318759e4d0cef12b3de4a6fd1cac98a">tsequence_append_tsequence</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__modif_gad87eea49292b2eca4d9fa2e5f7beb378.html#gad87eea49292b2eca4d9fa2e5f7beb378">tsequence_append_tsequence</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__modif_ga793e7c3d3d62cb20f8f616afd51a3d66.html#ga793e7c3d3d62cb20f8f616afd51a3d66">tsequence_delete_timestamptz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__modif_gaa7bd149a33c8096aedf446efc3d58de7.html#gaa7bd149a33c8096aedf446efc3d58de7">tsequence_delete_tstzset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__modif_gac9acb223268ce1a182c852add18075d7.html#gac9acb223268ce1a182c852add18075d7">tsequence_delete_tstzspan</a></td></tr>
@@ -158,6 +158,10 @@ $(function() {
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>When the sequence set passed as first argument has space for adding the instant, the function returns the sequence set. Otherwise, a NEW sequence set is returned and the input sequence set is freed. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Always use the function to overwrite the existing sequence set as in: <div class="fragment"><div class="line">ss = <a class="code hl_function" href="group__meos__internal__temporal__modif_gad31c8d508977fac3dc05995b286ef8b5.html#gad31c8d508977fac3dc05995b286ef8b5">tsequenceset_append_tinstant</a>(ss, inst, ...);</div>
+<div class="ttc" id="agroup__meos__internal__temporal__modif_gad31c8d508977fac3dc05995b286ef8b5_html_gad31c8d508977fac3dc05995b286ef8b5"><div class="ttname"><a href="group__meos__internal__temporal__modif_gad31c8d508977fac3dc05995b286ef8b5.html#gad31c8d508977fac3dc05995b286ef8b5">tsequenceset_append_tinstant</a></div><div class="ttdeci">TSequenceSet * tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst, double maxdist, const Interval *maxt, bool expand)</div><div class="ttdoc">Append an instant to a temporal sequence set.</div><div class="ttdef"><b>Definition:</b> temporal_modif.c:1799</div></div>
+</div><!-- fragment --> </dd></dl>
 
 </div>
 </div>
