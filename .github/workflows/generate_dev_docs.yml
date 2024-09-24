@@ -3,6 +3,7 @@
 name: Generate MEOS documentation with Doxygen
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - '.github/workflows/generate_dev_docs.yml'
