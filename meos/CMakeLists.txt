@@ -59,12 +59,12 @@ add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER})
 # Set default PostGIS Version for MEOS
 #--------------------------------------
 
-set(POSTGIS_VERSION_STRING "PostGIS 3.4.2")
-set(POSTGIS_VERSION_NUMBER "30402")
+set(POSTGIS_VERSION_STRING "PostGIS 3.5.0")
+set(POSTGIS_VERSION_NUMBER "30500")
 set(POSTGIS_VERSION_MAJOR "3")
-set(POSTGIS_VERSION_MINOR "4")
-set(POSTGIS_VERSION_MICRO "2")
-set(POSTGIS_VERSION "3.4.2")
+set(POSTGIS_VERSION_MINOR "5")
+set(POSTGIS_VERSION_MICRO "0")
+set(POSTGIS_VERSION "3.5.0")
 
 set(SRID_MAX "999999")
 set(SRID_USR_MAX "998999")
@@ -86,10 +86,10 @@ add_definitions(-DPOSTGIS_PGSQL_VERSION=${POSTGIS_PGSQL_VERSION})
 # PostGIS
 configure_file(../postgis/liblwgeom/liblwgeom.h.in ../postgis/liblwgeom/liblwgeom.h)
 configure_file(../postgis/postgis_config.h.in ../postgis/postgis_config.h)
-include_directories("${CMAKE_SOURCE_DIR}/postgis/liblwgeom")
-include_directories("${CMAKE_SOURCE_DIR}/postgis")
-include_directories("${CMAKE_BINARY_DIR}/postgis/liblwgeom")
-include_directories("${CMAKE_BINARY_DIR}/postgis")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis/liblwgeom")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis")
+include_directories(SYSTEM "${CMAKE_BINARY_DIR}/postgis/liblwgeom")
+include_directories(SYSTEM "${CMAKE_BINARY_DIR}/postgis")
 add_subdirectory("${CMAKE_SOURCE_DIR}/postgis" "postgis")
 
 # PostgreSQL
@@ -97,26 +97,31 @@ configure_file(postgres/pg_config.h.in postgres/pg_config.h)
 include_directories("postgres")
 include_directories("${CMAKE_BINARY_DIR}/meos/postgres")
 add_subdirectory("postgres")
-# Disable all warnings on embedded code from PostgreSQL
-if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-  target_compile_options(timezone PRIVATE "-w")
-  target_compile_options(utils PRIVATE "-w")
-endif()
 
 # MEOS
 include_directories("include")
 add_subdirectory("src")
 
 # Must be after add_library
-if(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles" OR CMAKE_GENERATOR STREQUAL "Ninja")
+  # Disable all warnings on embeded code from PostgreSQL and PostGIS
+  target_compile_options(liblwgeom PRIVATE "-w")
+  target_compile_options(ryu PRIVATE "-w")
+  target_compile_options(timezone PRIVATE "-w")
+  target_compile_options(utils PRIVATE "-w")
+elseif(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
   # Disable all warnings on embedded code from PostgreSQL and PostGIS
   target_compile_options(liblwgeom PRIVATE "/W0")
-  target_compile_options(libpgcommon PRIVATE "/W0")
   target_compile_options(ryu PRIVATE "/W0")
+  target_compile_options(timezone PRIVATE "/W0")
+  target_compile_options(utils PRIVATE "/W0")
   # Enable all warnings on MEOS and MobilityDB
   target_compile_options(general PRIVATE "/W4")
   target_compile_options(point PRIVATE "/W4")
   target_compile_options(npoint PRIVATE "/W4")
+  if(POSE)
+    target_compile_options(pose PRIVATE "/W4")
+  endif()
 endif()
 
 #--------------------------------
