@@ -87,14 +87,14 @@ add_definitions(-DPOSTGIS_PGSQL_VERSION=${POSTGIS_PGSQL_VERSION})
 set(SRID_MAX "999999")
 set(SRID_USR_MAX "998999")
 
-# Embed PostGIS 3
+# Embed PostGIS
 configure_file(../postgis/liblwgeom/liblwgeom.h.in ../postgis/liblwgeom/liblwgeom.h)
 configure_file(../postgis/postgis_config.h.in ../postgis/postgis_config.h)
-include_directories("${CMAKE_SOURCE_DIR}/postgis/liblwgeom")
-include_directories("${CMAKE_SOURCE_DIR}/postgis/libpgcommon")
-include_directories("${CMAKE_SOURCE_DIR}/postgis")
-include_directories("${CMAKE_BINARY_DIR}/postgis/liblwgeom")
-include_directories("${CMAKE_BINARY_DIR}/postgis")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis/liblwgeom")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis/libpgcommon")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/postgis")
+include_directories(SYSTEM "${CMAKE_BINARY_DIR}/postgis/liblwgeom")
+include_directories(SYSTEM "${CMAKE_BINARY_DIR}/postgis")
 add_subdirectory("${CMAKE_SOURCE_DIR}/postgis" "postgis")
 
 # MEOS
@@ -106,7 +106,12 @@ include_directories("pg_include")
 add_subdirectory("src")
 
 # Must be after add_library
-if(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
+if(CMAKE_GENERATOR STREQUAL "Unix Makefiles" OR CMAKE_GENERATOR STREQUAL "Ninja")
+  # Disable all warnings on embeded code from PostgreSQL and PostGIS
+  target_compile_options(liblwgeom PRIVATE "-w")
+  target_compile_options(libpgcommon PRIVATE "-w")
+  target_compile_options(ryu PRIVATE "-w")
+elseif(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
   # Disable all warnings on embeded code from PostgreSQL and PostGIS
   target_compile_options(liblwgeom PRIVATE "/W0")
   target_compile_options(libpgcommon PRIVATE "/W0")
@@ -118,10 +123,10 @@ if(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
   target_compile_options(pg_general PRIVATE "/W4")
   target_compile_options(pg_point PRIVATE "/W4")
   target_compile_options(pg_npoint PRIVATE "/W4")
-if(POSE)
-  target_compile_options(pose PRIVATE "/W4")
-  target_compile_options(pg_pose PRIVATE "/W4")
-endif()
+  if(POSE)
+    target_compile_options(pose PRIVATE "/W4")
+    target_compile_options(pg_pose PRIVATE "/W4")
+  endif()
 endif()
 
 #--------------------------------

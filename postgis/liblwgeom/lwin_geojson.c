@@ -47,8 +47,6 @@
 
 /* Prototype */
 static LWGEOM *parse_geojson(json_object *geojson, int *hasz);
-/* MobilityDB: Added pg_strcasecmp */
-extern int pg_strcasecmp(const char *s1, const char *s2);
 
 static inline json_object *
 findMemberByName(json_object *poObj, const char *pszName)
@@ -77,8 +75,7 @@ findMemberByName(json_object *poObj, const char *pszName)
 		     (it.entry ? (it.key = (char *)it.entry->k, it.val = (json_object *)it.entry->v, it.entry) : 0);
 		     it.entry = it.entry->next)
 		{
-			/* MobilityDB: changed to pg_strcasecmp for Windows build */
-			if (pg_strcasecmp((char *)it.key, pszName) == 0)
+			if (strcasecmp((char *)it.key, pszName) == 0)
 				return it.val;
 		}
 	}
@@ -428,7 +425,7 @@ lwgeom_from_geojson(const char *geojson, char **srs)
 		snprintf(err, 256, "%s (at offset %d)", json_tokener_error_desc(jstok->err), jstok->char_offset);
 		json_tokener_free(jstok);
 		json_object_put(poObj);
-		lwerror(err);
+		lwerror("%s", err);
 		return NULL;
 	}
 	json_tokener_free(jstok);
