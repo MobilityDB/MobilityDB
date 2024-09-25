@@ -580,7 +580,7 @@ rtree_create(meosType basetype) {
 /**
  * @ingroup meos_stbox_rtree_index
  * @brief Insert an STBox into the RTree index. 
- * @note the parameter @id is used for the search function, when a match is found
+ * @note the parameter `id` is used for the search function, when a match is found
  * the id will be returned. The STBox will be copied into the RTRee.
  * @param[in] rtree The RTree previously initialized
  * @param[in] box The stbox to be inserted

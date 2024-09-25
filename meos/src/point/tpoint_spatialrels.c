@@ -579,8 +579,7 @@ atouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   bool result = false;
   if (gsbound && ! gserialized_is_empty(gsbound))
   {
-    Temporal *temp1 = tpoint_restrict_geom_time(temp, gsbound, NULL, NULL,
-      REST_MINUS);
+    Temporal *temp1 = tpoint_restrict_geom(temp, gsbound, NULL, REST_MINUS);
     result = (temp1 == NULL);
     if (temp1)
       pfree(temp1);

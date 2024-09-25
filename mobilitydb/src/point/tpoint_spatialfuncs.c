@@ -665,37 +665,22 @@ Tpoint_make_simple(PG_FUNCTION_ARGS)
 
 /**
  * @brief Return a temporal point restricted to (the complement of) a geometry
- * and possibly a timestamptz span
  * @note Mixing 2D/3D is enabled to compute, for example, 2.5D operations.
  * However the geometry must be in 2D.
  */
 static Datum
-Tpoint_restrict_geom_time(FunctionCallInfo fcinfo, bool atfunc, bool resttime)
+Tpoint_restrict_geom(FunctionCallInfo fcinfo, bool atfunc)
 {
   /*
   CREATE FUNCTION at/minusGeometry(tgeompoint, geometry)
   CREATE FUNCTION at/minusGeometry(tgeompoint, geometry, floatspan)
-  CREATE FUNCTION at/minusGeometryTime(tgeompoint, geometry, tstzspan)
-  CREATE FUNCTION at/minusGeometryTime(tgeompoint, geometry, floatspan, tstzspan)
   */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
   Span *zspan = NULL;
-  Span *period = NULL;
   if (PG_NARGS() == 3)
-  {
-    if (resttime)
-      period = PG_GETARG_SPAN_P(2);
-    else
-      zspan = PG_GETARG_SPAN_P(2);
-  }
-  else if (PG_NARGS() == 4)
-  {
     zspan = PG_GETARG_SPAN_P(2);
-    period = PG_GETARG_SPAN_P(3);
-  }
-  Temporal *result = tpoint_restrict_geom_time(temp, geo, zspan, period,
-    atfunc);
+  Temporal *result = tpoint_restrict_geom(temp, geo, zspan, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(geo, 1);
   if (! result)
@@ -713,20 +698,7 @@ PG_FUNCTION_INFO_V1(Tpoint_at_geom);
 Datum
 Tpoint_at_geom(PG_FUNCTION_ARGS)
 {
-  return Tpoint_restrict_geom_time(fcinfo, REST_AT, REST_TIME_NO);
-}
-
-PGDLLEXPORT Datum Tpoint_at_geom_time(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_at_geom_time);
-/**
- * @ingroup mobilitydb_temporal_restrict
- * @brief Return a temporal point restricted to a geometry and a time value
- * @sqlfn atGeometryTime()
- */
-Datum
-Tpoint_at_geom_time(PG_FUNCTION_ARGS)
-{
-  return Tpoint_restrict_geom_time(fcinfo, REST_AT, REST_TIME);
+  return Tpoint_restrict_geom(fcinfo, REST_AT);
 }
 
 PGDLLEXPORT Datum Tpoint_minus_geom(PG_FUNCTION_ARGS);
@@ -739,21 +711,7 @@ PG_FUNCTION_INFO_V1(Tpoint_minus_geom);
 Datum
 Tpoint_minus_geom(PG_FUNCTION_ARGS)
 {
-  return Tpoint_restrict_geom_time(fcinfo, REST_MINUS, REST_TIME_NO);
-}
-
-PGDLLEXPORT Datum Tpoint_minus_geom_time(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_minus_geom_time);
-/**
- * @ingroup mobilitydb_temporal_restrict
- * @brief Return a temporal point restricted to the complement of a geometry
- * and a time value
- * @sqlfn minusGeometryTime()
- */
-Datum
-Tpoint_minus_geom_time(PG_FUNCTION_ARGS)
-{
-  return Tpoint_restrict_geom_time(fcinfo, REST_MINUS, REST_TIME);
+  return Tpoint_restrict_geom(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/

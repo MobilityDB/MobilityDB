@@ -42,10 +42,6 @@
 /* MEOS */
 #include <meos.h>
 
-/** Symbolic constants for distinguishing between atGeometry and atGeometryTime */
-#define REST_TIME           true
-#define REST_TIME_NO        false
-
 /*****************************************************************************/
 
 /* Restriction functions */
