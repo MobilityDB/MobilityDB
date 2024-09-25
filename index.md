@@ -13,6 +13,7 @@ The documentation is available for the master and release branches.
 | branch | English | Spanish |
 | ------ | :-----: | :-----: |
 | master | [html](https://mobilitydb.github.io/MobilityDB/master/) &#124; [pdf](https://mobilitydb.github.io/MobilityDB/master/mobilitydb-manual.pdf) &#124; [epub](https://mobilitydb.github.io/MobilityDB/master/mobilitydb-manual.epub) |[html](https://mobilitydb.github.io/MobilityDB/master/es/) &#124; [pdf](https://mobilitydb.github.io/MobilityDB/master/es/mobilitydb-manual.pdf) &#124; [epub](https://mobilitydb.github.io/MobilityDB/master/es/mobilitydb-manual.epub) |
+| stable-1.2 | [html](https://mobilitydb.github.io/MobilityDB/stable-1.2/) &#124; [pdf](https://mobilitydb.github.io/MobilityDB/stable-1.2/mobilitydb-manual.pdf) &#124; [epub](https://mobilitydb.github.io/MobilityDB/stable-1.2/mobilitydb-manual.epub) |[html](https://mobilitydb.github.io/MobilityDB/stable-1.2/es/) &#124; [pdf](https://mobilitydb.github.io/MobilityDB/stable-1.2/es/mobilitydb-manual.pdf) &#124; [epub](https://mobilitydb.github.io/MobilityDB/stable-1.2/es/mobilitydb-manual.epub) |
 | stable-1.1 | [html](https://mobilitydb.github.io/MobilityDB/stable-1.1/) &#124; [pdf](https://mobilitydb.github.io/MobilityDB/stable-1.1/mobilitydb-manual.pdf) &#124; [epub](https://mobilitydb.github.io/MobilityDB/stable-1.1/mobilitydb-manual.epub) |[html](https://mobilitydb.github.io/MobilityDB/stable-1.1/es/) &#124; [pdf](https://mobilitydb.github.io/MobilityDB/stable-1.1/es/mobilitydb-manual.pdf) &#124; [epub](https://mobilitydb.github.io/MobilityDB/stable-1.1/es/mobilitydb-manual.epub) |
 
 -----------------------------------------------
@@ -24,4 +25,5 @@ The documentation is available for the master and release branches.
 | branch | English |
 | ------ | :-----: |
 | master | [html](https://mobilitydb.github.io/MobilityDB/master-dev/) |
+| stable-1.2 | [html](https://mobilitydb.github.io/MobilityDB/stable-1.2-dev/) |
 | stable-1.1 | [html](https://mobilitydb.github.io/MobilityDB/stable-1.1-dev/) |
