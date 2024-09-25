@@ -313,14 +313,6 @@ CREATE FUNCTION atGeometry(tgeompoint, geometry, floatspan)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpoint_at_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atGeometryTime(tgeompoint, geometry, tstzspan)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpoint_at_geom_time'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atGeometryTime(tgeompoint, geometry, floatspan, tstzspan)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpoint_at_geom_time'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusGeometry(tgeompoint, geometry)
   RETURNS tgeompoint
@@ -329,14 +321,6 @@ CREATE FUNCTION minusGeometry(tgeompoint, geometry)
 CREATE FUNCTION minusGeometry(tgeompoint, geometry, floatspan)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpoint_minus_geom'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusGeometryTime(tgeompoint, geometry, tstzspan)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpoint_minus_geom_time'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusGeometryTime(tgeompoint, geometry, floatspan, tstzspan)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpoint_minus_geom_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atStbox(tgeompoint, stbox, borderInc bool DEFAULT TRUE)

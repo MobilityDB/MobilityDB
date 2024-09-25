@@ -70,8 +70,8 @@ extern Temporal *tnpoint_cumulative_length(const Temporal *temp);
 extern Temporal *tnpoint_speed(const Temporal *temp);
 extern GSERIALIZED *tnpoint_twcentroid(const Temporal *temp);
 extern Temporal *tnpoint_azimuth(const Temporal *temp);
-extern Temporal *tnpoint_restrict_geom_time(const Temporal *temp,
-  const GSERIALIZED *gs, const Span *zspan, const Span *period, bool atfunc);
+extern Temporal *tnpoint_restrict_geom(const Temporal *temp,
+  const GSERIALIZED *gs, const Span *zspan, bool atfunc);
 extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, STBox *box,
   bool border_inc, bool atfunc);
 

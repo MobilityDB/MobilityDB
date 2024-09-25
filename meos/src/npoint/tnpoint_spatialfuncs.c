@@ -697,8 +697,8 @@ tnpoint_azimuth(const Temporal *temp)
  * geometry
  */
 Temporal *
-tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
-  const Span *zspan, const Span *period, bool atfunc)
+tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
+  const Span *zspan, bool atfunc)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
@@ -716,8 +716,7 @@ tnpoint_restrict_geom_time(const Temporal *temp, const GSERIALIZED *gs,
     return NULL;
 
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *resgeom = tpoint_restrict_geom_time(tempgeom, gs, zspan,
-    period, atfunc);
+  Temporal *resgeom = tpoint_restrict_geom(tempgeom, gs, zspan, atfunc);
   Temporal *result = NULL;
   if (resgeom != NULL)
   {
