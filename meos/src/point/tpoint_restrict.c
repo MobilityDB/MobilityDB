@@ -1106,21 +1106,22 @@ tpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_restrict
  * @brief Return a temporal point sequence with the segments that intersect
- * a spatiotemporal box in BOTH the spatial and the temporal dimension (if any)
+ * a spatiotemporal box in ONLY the spatial dimension
  * @param[in] seq Temporal sequence point
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
  * @pre The box has X dimension and the arguments have the same SRID.
  * This is verified in #tpoint_restrict_stbox
- * @csqlfn #Tpoint_at_stbox(), minus_stbox()
+ * @note This function is ONLY called by the function atGeometry and thus the
+ * stbox has NO temporal dimension
  */
-TSequenceSet *
+static TSequenceSet *
 tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
   bool border_inc)
 {
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
+  assert(! MEOS_FLAGS_GET_T(box->flags));
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -1135,7 +1136,6 @@ tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
   bool hasz_seq = MEOS_FLAGS_GET_Z(seq->flags);
   bool hasz_box = MEOS_FLAGS_GET_Z(box->flags);
   bool hasz = hasz_seq && hasz_box;
-  bool hast = MEOS_FLAGS_GET_T(box->flags);
   TSequence **sequences = palloc(sizeof(TSequence *) * (seq->count - 1));
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
@@ -1158,23 +1158,11 @@ tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
     }
     else
     {
-      /* Keep the segment if intersects the bounding box in BOTH the spatial
-       * dimension and the temporal dimension (if any) */
+      /* Keep the segment if intersects the bounding box in the spatial
+       * dimension */
       if (liangBarskyClip(p1, p2, box, hasz, border_inc, NULL, NULL, NULL,
           NULL))
-      {
-        if (hast)
-        {
-          Span s;
-          span_set(TimestampTzGetDatum(inst1->t),
-            TimestampTzGetDatum(inst2->t), lower_inc, upper_inc, T_TIMESTAMPTZ,
-              T_TSTZSPAN, &s);
-          if (overlaps_span_span(&s, &box->period))
-            inter = true;
-        }
-        else
-          inter = true;
-      }
+        inter = true;
     }
     if (inter)
     {
@@ -1201,7 +1189,6 @@ tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
  * @brief Return a temporal point sequence set with the segments that intersect
  * a spatiotemporal box in BOTH the spatial and the temporal dimension (if any)
  * @param[in] ss Temporal sequence set point
@@ -1209,9 +1196,10 @@ tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
  * @param[in] border_inc True when the box contains the upper border
  * @pre The box has X dimension and the arguments have the same SRID.
  * This is verified in #tpoint_restrict_stbox
- * @csqlfn #Tpoint_at_stbox(), minus_stbox()
+ * @note This function is ONLY called by the function atGeometry and thus the
+ * stbox has NO temporal dimension
  */
-TSequenceSet *
+static TSequenceSet *
 tpointseqset_at_stbox_segm(const TSequenceSet *ss, const STBox *box,
   bool border_inc)
 {
@@ -1255,9 +1243,8 @@ tpointseqset_at_stbox_segm(const TSequenceSet *ss, const STBox *box,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
  * @brief Return a temporal point with the segments that intersect
- * a spatiotemporal box in BOTH the spatial and the temporal dimension (if any)
+ * a spatiotemporal box in ONLY the spatial dimension
  * @param[in] temp Temporal point
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
@@ -1265,26 +1252,23 @@ tpointseqset_at_stbox_segm(const TSequenceSet *ss, const STBox *box,
  * considered if both the temporal point and the box have Z dimension
  * @pre This function supposes all the checks have been done in the calling
  * function
+ * @note This function is ONLY called by the function atGeometry and thus the
+ * stbox has NO temporal dimension
  */
-Temporal *
+static Temporal *
 tpoint_at_stbox_segm(const Temporal *temp, const STBox *box, bool border_inc)
 {
   assert(temp); assert(box); assert(tgeo_type(temp->temptype));
   /* The following implies that temp->subtype != TINSTANT */
   assert(MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR);
-  /* At least one of MEOS_FLAGS_GET_X and MEOS_FLAGS_GET_T is true */
-  bool hasx = MEOS_FLAGS_GET_X(box->flags);
-  bool hast = MEOS_FLAGS_GET_T(box->flags);
-  assert(hasx || hast);
+  /* The stbox has ONLY spatial dimension */
+  assert(MEOS_FLAGS_GET_X(box->flags));
+  assert(! MEOS_FLAGS_GET_T(box->flags));
   /* Ensure validity of the arguments */
   if (! ensure_same_geodetic(temp->flags, box->flags) ||
       (MEOS_FLAGS_GET_X(box->flags) &&
         ! ensure_same_srid(tpoint_srid(temp), stbox_srid(box))))
     return NULL;
-
-  /* Short-circuit restriction to only T dimension */
-  if (hast && ! hasx)
-    return temporal_restrict_tstzspan(temp, &box->period, REST_AT);
 
   /* Parameter test */
   assert(tpoint_srid(temp) == stbox_srid(box));

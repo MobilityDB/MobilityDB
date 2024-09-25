@@ -216,8 +216,6 @@ Tnpoint_azimuth(PG_FUNCTION_ARGS)
 static Datum
 Tnpoint_restrict_geom(FunctionCallInfo fcinfo, bool atfunc)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *result = tnpoint_restrict_geom(temp, gs, NULL, atfunc);

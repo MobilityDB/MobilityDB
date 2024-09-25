@@ -317,9 +317,9 @@
  * @ingroup meos_temporal_analytics
  * @brief Tile functions for temporal types
  *
- * @defgroup meos_stbox_rtree_index
+ * @defgroup meos_stbox_rtree_index Index functions
  * @ingroup meos_box
- * @brief In memory RTree index for STBox
+ * @brief In-memory RTree index for STBox
  */
 
 /*****************************************************************************
