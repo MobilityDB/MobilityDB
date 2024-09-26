@@ -44,6 +44,7 @@
 #include <liblwgeom_internal.h>
 #include <lwgeodetic.h>
 #include <lwgeom_geos.h>
+#include <lwgeom_pg.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -220,9 +221,9 @@ datum2_point_nsame(Datum point1, Datum point2)
 GSERIALIZED *
 geo_serialize(const LWGEOM *geom)
 {
-  size_t size;
-  GSERIALIZED *result = gserialized_from_lwgeom((LWGEOM *) geom, &size);
-  SET_VARSIZE(result, size);
+  GSERIALIZED *result = FLAGS_GET_GEODETIC(geom->flags) ?
+    geography_serialize((LWGEOM *) geom) :
+    geometry_serialize((LWGEOM *) geom);
   return result;
 }
 
@@ -1042,7 +1043,7 @@ interpolate_point4d_spheroid(const POINT4D *p1, const POINT4D *p2,
  */
 GSERIALIZED *
 geopoint_make(double x, double y, double z, bool hasz, bool geodetic,
-  int32 srid)
+  int32_t srid)
 {
   LWPOINT *point = hasz ?
     lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
@@ -1842,20 +1843,19 @@ tpointseq_trajectory(const TSequence *seq)
   assert(seq); assert(tgeo_type(seq->temptype));
   /* Instantaneous sequence */
   if (seq->count == 1)
-    return DatumGetGserializedP(tinstant_value(TSEQUENCE_INST_N(seq, 0)));
+    return geo_copy(DatumGetGserializedP(
+      tinstant_value(TSEQUENCE_INST_N(seq, 0))));
 
   /* General case */
   GSERIALIZED **points = palloc(sizeof(GSERIALIZED *) * seq->count);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  /* Remove two consecutive points if they are equal */
   int npoints = 0;
   for (int i = 0; i < seq->count; i++)
   {
     GSERIALIZED *gs =
       DatumGetGserializedP(tinstant_val(TSEQUENCE_INST_N(seq, i)));
-    /* If linear interpolation, remove two consecutive equal points */
-    if (interp == DISCRETE ||
-        (npoints == 0 || ! geopoint_same(gs, points[npoints - 1])))
+    /* Remove two consecutive points if they are equal */
+    if (npoints == 0 || ! geopoint_same(gs, points[npoints - 1]))
       points[npoints++] = gs;
   }
   STBox box;
@@ -1891,7 +1891,7 @@ tpointseqset_step_trajectory(const TSequenceSet *ss)
     {
       GSERIALIZED *gs =
         DatumGetGserializedP(tinstant_val(TSEQUENCE_INST_N(seq, j)));
-      /* Do not add the point if it is equal to the previous one */
+      /* Remove two consecutive points if they are equal */
       if (npoints == 0 || ! geopoint_same(gs, points[npoints + k - 1]))
         points[npoints + k++] = gs;
     }
@@ -2018,7 +2018,7 @@ TInstant *
 tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 {
   assert(inst); assert(tgeo_type(inst->temptype));
-  int32 srid = tpointinst_srid(inst);
+  int32_t srid = tpointinst_srid(inst);
   GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   geom->srid = srid;
@@ -2192,7 +2192,7 @@ static LWGEOM *
 point_meas_to_lwpoint(Datum point, Datum meas)
 {
   GSERIALIZED *gs = DatumGetGserializedP(point);
-  int32 srid = gserialized_get_srid(gs);
+  int32_t srid = gserialized_get_srid(gs);
   int hasz = FLAGS_GET_Z(gs->gflags);
   int geodetic = FLAGS_GET_GEODETIC(gs->gflags);
   double d = DatumGetFloat8(meas);
@@ -2267,7 +2267,7 @@ tpointseq_disc_to_geomeas(const TSequence *seq, const TSequence *meas)
     return tpointinst_to_geomeas(inst, m);
 
   /* General case */
-  int32 srid = tpointseq_srid(seq);
+  int32_t srid = tpointseq_srid(seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
@@ -2316,7 +2316,7 @@ tpointseq_cont_to_geomeas(const TSequence *seq, const TSequence *meas)
       meas ? TSEQUENCE_INST_N(meas, 0) : NULL);
 
   /* General case */
-  int32 srid = tpointseq_srid(seq);
+  int32_t srid = tpointseq_srid(seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
@@ -2391,7 +2391,7 @@ tpointseqset_to_geomeas(const TSequenceSet *ss, const TSequenceSet *meas)
     return tpointseq_cont_to_geomeas(seq1, seq2);
   }
 
-  int32 srid = tpointseqset_srid(ss);
+  int32_t srid = tpointseqset_srid(ss);
   bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
   bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->flags);
@@ -2467,7 +2467,7 @@ tpointseq_cont_to_geomeas_segm(const TSequence *seq, const TSequence *meas)
       meas ? TSEQUENCE_INST_N(meas, 0) : NULL);
 
   /* General case */
-  int32 srid = tpointseq_srid(seq);
+  int32_t srid = tpointseq_srid(seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
@@ -2529,7 +2529,7 @@ tpointseqset_to_geomeas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
     return tpointseq_cont_to_geomeas_segm(seq1, seq2);
   }
 
-  int32 srid = tpointseqset_srid(ss);
+  int32_t srid = tpointseqset_srid(ss);
   bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ss->totalcount);
