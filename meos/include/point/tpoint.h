@@ -42,34 +42,6 @@
 #include <meos.h>
 #include "general/meos_catalog.h"
 
-/*****************************************************************************
- * Macros for manipulating the 'typmod' int. An int32_t used as follows:
- * Plus/minus = Top bit.
- * Spare bits = Next 2 bits.
- * SRID = Next 21 bits.
- * TYPE = Next 6 bits.
- * ZM Flags = Bottom 2 bits.
- *****************************************************************************/
-
-/* The following (commented out) definitions are taken from POSTGIS
-#define TYPMOD_GET_SRID(typmod) ((((typmod) & 0x0FFFFF00) - ((typmod) & 0x10000000)) >> 8)
-#define TYPMOD_SET_SRID(typmod, srid) ((typmod) = (((typmod) & 0xE00000FF) | ((srid & 0x001FFFFF)<<8)))
-#define TYPMOD_GET_TYPE(typmod) ((typmod & 0x000000FC)>>2)
-#define TYPMOD_SET_TYPE(typmod, type) ((typmod) = (typmod & 0xFFFFFF03) | ((type & 0x0000003F)<<2))
-#define TYPMOD_GET_Z(typmod) ((typmod & 0x00000002)>>1)
-#define TYPMOD_SET_Z(typmod) ((typmod) = typmod | 0x00000002)
-#define TYPMOD_GET_M(typmod) (typmod & 0x00000001)
-#define TYPMOD_SET_M(typmod) ((typmod) = typmod | 0x00000001)
-#define TYPMOD_GET_NDIMS(typmod) (2+TYPMOD_GET_Z(typmod)+TYPMOD_GET_M(typmod))
-*/
-
-/* In order to reuse the above (commented out) macros for manipulating the
-   typmod from POSTGIS we need to shift them to take into account that the
-   first 4 bits are taken for the temporal type */
-
-#define TYPMOD_DEL_SUBTYPE(typmod) (typmod = typmod >> 4 )
-#define TYPMOD_SET_SUBTYPE(typmod, subtype) ((typmod) = typmod << 4 | subtype)
-
 /*****************************************************************************/
 
 /* General functions */

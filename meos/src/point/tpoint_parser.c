@@ -485,10 +485,14 @@ tpoint_parse(const char **str, meosType temptype)
     *str += delim + 1;
   }
 
-  /* We cannot ensure that the SRID is geodetic for geography since
-   * the srid_is_latlong function is not exported by PostGIS */
-  // if (temptype == T_TGEOGPOINT)
-    // srid_is_latlong(fcinfo, tpoint_srid);
+  /* Ensure that the SRID is geodetic for geography */
+  if (temptype == T_TGEOGPOINT && tpoint_srid != SRID_UNKNOWN && 
+      ! meos_srid_is_latlong(tpoint_srid))
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Only lon/lat coordinate systems are supported in geography.");
+    return NULL;    
+  }
 
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   /* Starts with "Interp=Step" */

@@ -164,7 +164,7 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
   /* No typmod (-1) */
   if (typmod < 0)
     return temp;
-  uint8 typmod_subtype = TYPMOD_GET_SUBTYPE(typmod);
+  uint8 typmod_subtype = TYPMOD_GET_TEMPSUBTYPE(typmod);
   uint8 subtype = temp->subtype;
   /* Typmod has a preference */
   if (typmod_subtype != ANYTEMPSUBTYPE && typmod_subtype != subtype)
@@ -207,13 +207,18 @@ Temporal_typmod_in(PG_FUNCTION_ARGS)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Empty temporal type modifier")));
 
-  int16 subtype = ANYTEMPSUBTYPE;
-  if (! tempsubtype_from_string(s, &subtype))
+  int16 tempsubtype = ANYTEMPSUBTYPE;
+  if (! tempsubtype_from_string(s, &tempsubtype))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Invalid temporal type modifier: %s", s)));
 
+  /* Set the typmod */
+  uint32 typmod = 0;
+  if (tempsubtype != ANYTEMPSUBTYPE)
+    TYPMOD_SET_TEMPSUBTYPE(typmod, tempsubtype);
+  
   pfree(elem_values);
-  PG_RETURN_INT32((int32) subtype);
+  PG_RETURN_INT32((int32) typmod);
 }
 
 PGDLLEXPORT Datum Temporal_typmod_out(PG_FUNCTION_ARGS);
@@ -226,7 +231,7 @@ Temporal_typmod_out(PG_FUNCTION_ARGS)
 {
   char *str = palloc(TYPMOD_MAXLEN);
   int32 typmod = PG_GETARG_INT32(0);
-  int16 subtype = TYPMOD_GET_SUBTYPE(typmod);
+  int16 subtype = TYPMOD_GET_TEMPSUBTYPE(typmod);
   /* No type? Then no typmod at all. Return empty string.  */
   if (typmod < 0 || ! subtype)
   {

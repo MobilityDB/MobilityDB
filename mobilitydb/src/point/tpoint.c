@@ -110,8 +110,7 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 {
   int32 srid = tpoint_srid(temp);
   uint8 subtype = temp->subtype;
-  uint8 typmod_subtype = TYPMOD_GET_SUBTYPE(typmod);
-  TYPMOD_DEL_SUBTYPE(typmod);
+  uint8 typmod_subtype = TYPMOD_GET_TEMPSUBTYPE(typmod);
   /* If there is no geometry type */
   if (typmod == 0)
     typmod = -1;
@@ -134,11 +133,11 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
       errmsg("Temporal type (%s) does not match column type (%s)",
         tempsubtype_name(subtype), tempsubtype_name(typmod_subtype)) ));
   /* Mismatched Z dimensionality.  */
-  if (typmod > 0 && typmod_z && ! tpoint_z)
+  if (typmod_z && ! tpoint_z)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Column has Z dimension but temporal point does not" )));
   /* Mismatched Z dimensionality (other way) */
-  if (typmod > 0 && tpoint_z && ! typmod_z)
+  if (typmod_type > 0 && tpoint_z && ! typmod_z)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Temporal point has Z dimension but column does not" )));
 
@@ -155,12 +154,17 @@ PG_FUNCTION_INFO_V1(Tpoint_in);
  * @code
  * -- Instant
  * Point(0 0) @ 2012-01-01 08:00:00
- * -- Discrete sequence
+ * -- Sequence with discrete interpolation
  * { Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 }
- * -- Continuous sequence
+ * -- Sequence with linear interpolation
  * [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 )
- * -- Sequence set
+ * -- Sequence with step interploation
+ * Interp=Step;[ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 )
+ * -- Sequence set with linear interpolation
  * { [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 ) ,
+ *   [ Point(1 1) @ 2012-01-01 08:20:00 , Point(0 0) @ 2012-01-01 08:30:00 ] }
+ * -- Sequence set with step interpolation
+ * Interp=Step;{ [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 ) ,
  *   [ Point(1 1) @ 2012-01-01 08:20:00 , Point(0 0) @ 2012-01-01 08:30:00 ] }
  * @endcode
  * @sqlfn tpoint_in()
@@ -209,9 +213,13 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   if (n > TPOINT_MAX_TYPMOD)
     elog(ERROR, "Incorrect number of type modifiers for temporal points");
 
+  /* Set default values for typmod if they are not given */
   int16 tempsubtype = ANYTEMPSUBTYPE;
   uint8_t geometry_type = 0;
   int hasZ = 0, hasM = 0, srid = SRID_UNKNOWN;
+  bool has_geo = false, has_srid = false;
+
+  /* Get the string values from the input array */
   char *s[3] = {0,0,0};
   for (int i = 0; i < n; i++)
   {
@@ -221,7 +229,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
         errmsg("Empty temporal type modifier")));
   }
 
-  bool has_geo = false, has_srid = false;
+  /* Extract the typmod values */
   if (n == 3)
   {
     /* Type_modifier is (TempSubType, Geometry, SRID) */
@@ -279,15 +287,11 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Invalid temporal point type modifier:")));
 
-  /* Shift to remove the 4 bits of the temporal type */
-  TYPMOD_DEL_SUBTYPE(typmod);
-  /* Set default values */
-  if (is_geography)
-    TYPMOD_SET_SRID(typmod, SRID_DEFAULT);
-  else
-    TYPMOD_SET_SRID(typmod, SRID_UNKNOWN);
+  /* Set the temporal type */
+  if (tempsubtype != ANYTEMPSUBTYPE)
+    TYPMOD_SET_TEMPSUBTYPE(typmod, tempsubtype);
 
-  /* Geometry type */
+  /* Set the geometry type */
   if (has_geo)
   {
     if (geometry_type != POINTTYPE || hasM)
@@ -298,15 +302,18 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
       TYPMOD_SET_Z(typmod);
   }
 
-  /* SRID */
+  /* Set default SRID */
+  if (is_geography)
+    TYPMOD_SET_SRID(typmod, SRID_DEFAULT);
+  else
+    TYPMOD_SET_SRID(typmod, SRID_UNKNOWN);
+
+  /* Set the SRID */
   if (has_srid)
   {
     if (srid != SRID_UNKNOWN)
       TYPMOD_SET_SRID(typmod, srid);
   }
-
-  /* Shift to restore the 4 bits of the temporal type */
-  TYPMOD_SET_SUBTYPE(typmod, tempsubtype);
 
   pfree(elem_values);
   return typmod;
@@ -321,7 +328,7 @@ Datum
 Tgeompoint_typmod_in(PG_FUNCTION_ARGS)
 {
   ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
-  uint32 typmod = tpoint_typmod_in(array, false); /* Not a geography  */;
+  uint32 typmod = tpoint_typmod_in(array, false); /* Not a geography  */
   PG_RETURN_INT32(typmod);
 }
 
@@ -335,9 +342,10 @@ Tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
 {
   ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
   int32 typmod = tpoint_typmod_in(array, true);
-  // int srid = TYPMOD_GET_SRID(typmod);
-  // /* Check the SRID is legal (geographic coordinates) */
-  // srid_is_latlong(fcinfo, srid);
+  int srid = TYPMOD_GET_SRID(typmod);
+  /* Check the SRID is legal (geographic coordinates) */
+  if (! meos_srid_is_latlong(srid))
+    elog(ERROR, "Only lon/lat coordinate systems are supported in geography.");
   PG_RETURN_INT32(typmod);
 }
 
@@ -352,8 +360,7 @@ Tpoint_typmod_out(PG_FUNCTION_ARGS)
   char *s = palloc(64);
   char *str = s;
   int32 typmod = PG_GETARG_INT32(0);
-  int16 tempsubtype = TYPMOD_GET_SUBTYPE(typmod);
-  TYPMOD_DEL_SUBTYPE(typmod);
+  int16 tempsubtype = TYPMOD_GET_TEMPSUBTYPE(typmod);
   int32 srid = TYPMOD_GET_SRID(typmod);
   uint8_t geometry_type = (uint8_t) TYPMOD_GET_TYPE(typmod);
   int32 hasz = TYPMOD_GET_Z(typmod);
