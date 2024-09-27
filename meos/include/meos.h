@@ -1457,6 +1457,7 @@ extern text **ttext_values(const Temporal *temp, int *count);
  *****************************************************************************/
 
 extern double float_degrees(double value, bool normalize);
+extern bool meos_srid_is_latlong(int32_t srid);
 extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *duration);
 extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);
 extern Temporal *temporal_shift_scale_time(const Temporal *temp, const Interval *shift, const Interval *duration);

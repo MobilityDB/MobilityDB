@@ -476,6 +476,21 @@ lwproj_transform_pipeline(const char *pipeline, bool is_forward)
 /*****************************************************************************/
 
 /**
+ * @brief Determine whether an SRID is geodetic
+ * @param[in] srid SRID
+ */
+bool
+meos_srid_is_latlong(int32_t srid)
+{
+	LWPROJ *pj = lwproj_transform(srid, srid);
+	if (! pj)
+		return false;
+	bool result = pj->source_is_latlong;
+  pfree(pj);
+	return result;
+}
+
+/**
  * @brief Transform the point to another SRID
  * @param[in] gs Point
  * @param[in] srid_to SRID
