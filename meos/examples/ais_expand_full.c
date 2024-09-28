@@ -297,8 +297,7 @@ int main(void)
         trips[j].no_trip_instants++;
       }
       /* Ignore the instant if has the same timestamp as the last one */
-      const TInstant *last = TSEQUENCE_INST_N(trips[j].trip,
-        trips[j].trip->count - 1);
+      last = TSEQUENCE_INST_N(trips[j].trip, trips[j].trip->count - 1);
       if (last->t == inst->t)
       {
         free(inst);

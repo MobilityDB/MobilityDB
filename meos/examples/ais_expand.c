@@ -138,7 +138,7 @@ int main(void)
       /* Free memory */
       for (i = 0; i < no_ships; i++)
       {
-        // free(trips[i].trip);
+        free(trips[i].trip);
         free(trips[i].SOG);
       }
       return 1;
@@ -171,12 +171,13 @@ int main(void)
     sprintf(inst_buffer, "SRID=4326;Point(%lf %lf)@%s", rec.Longitude,
       rec.Latitude, t_out);
     free(t_out);
-    // TInstant *inst1 = (TInstant *) tgeogpoint_in(inst_buffer);
-    // if (! trips[ship].trip)
-      // trips[ship].trip = (Temporal *) tsequence_make_exp(
-        // (const TInstant **) &inst1, 1, 2, true, true, LINEAR, false);
-    // else
-      // trips[ship].trip = temporal_append_tinstant(trips[ship].trip, inst1, true);
+    TInstant *inst1 = (TInstant *) tgeogpoint_in(inst_buffer);
+    if (! trips[ship].trip)
+      trips[ship].trip = (Temporal *) tsequence_make_exp(
+        (const TInstant **) &inst1, 1, 2, true, true, LINEAR, false);
+    else
+      trips[ship].trip = temporal_append_tinstant(trips[ship].trip, inst1, 
+        0.0, NULL, true);
     TInstant *inst2 = (TInstant *) tfloatinst_make(rec.SOG, rec.T);
     if (! trips[ship].SOG)
       trips[ship].SOG = (Temporal *) tsequence_make_exp(
@@ -184,7 +185,7 @@ int main(void)
     else
       trips[ship].SOG = temporal_append_tinstant(trips[ship].SOG, inst2,
         0.0, NULL, true);
-    // free(inst1);
+    free(inst1);
     free(inst2);
   } while (!feof(file));
 
@@ -197,8 +198,8 @@ int main(void)
   {
     printf("MMSI: %ld, Number of input instants: %d\n", trips[i].MMSI,
       trips[i].numinstants);
-    // printf("  Trip -> Number of instants: %d, Distance travelled %lf\n",
-      // temporal_num_instants(trips[i].trip), tpoint_length(trips[i].trip));
+    printf("  Trip -> Number of instants: %d, Distance travelled %lf\n",
+      temporal_num_instants(trips[i].trip), tpoint_length(trips[i].trip));
     printf("  SOG -> Number of instants: %d, Time-weighted average %lf\n",
       temporal_num_instants(trips[i].SOG), tnumber_twavg(trips[i].SOG));
   }
@@ -206,7 +207,7 @@ int main(void)
   /* Free memory */
   for (i = 0; i < no_ships; i++)
   {
-    // free(trips[i].trip);
+    free(trips[i].trip);
     free(trips[i].SOG);
   }
 

@@ -241,11 +241,7 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
         if (curSpeed <= P_EPSILON_SPEED)
         {
           noAccel++;
-          /* If we are not approaching a turn */
-          if (k < noFracs)
-            curSpeed = Min(P_EVENT_ACC, maxSpeedEdge);
-          else
-            curSpeed = Min(P_EVENT_ACC, maxSpeedTurn);
+          curSpeed = Min(P_EVENT_ACC, maxSpeedEdge);
           if (verbosity == 3)
             meos_error(INFO, MEOS_SUCCESS,
               "          Acceleration after stop -> Speed = %.3f", curSpeed);

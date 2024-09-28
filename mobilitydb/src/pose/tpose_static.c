@@ -84,22 +84,20 @@ PG_FUNCTION_INFO_V1(Pose_constructor);
 Datum
 Pose_constructor(PG_FUNCTION_ARGS)
 {
-  double x, y, z, theta;
-  double W, X, Y, Z;
+  double x = PG_GETARG_FLOAT8(0);
+  double y = PG_GETARG_FLOAT8(1);
+  double z = PG_GETARG_FLOAT8(2);
+  double theta = z;
+
   Pose *result;
-
-  x = PG_GETARG_FLOAT8(0);
-  y = PG_GETARG_FLOAT8(1);
-  z = theta = PG_GETARG_FLOAT8(2);
-
   if (PG_NARGS() == 3)
     result = pose_make_2d(x, y, theta);
   else /* PG_NARGS() == 7 */
   {
-    W = PG_GETARG_FLOAT8(3);
-    X = PG_GETARG_FLOAT8(4);
-    Y = PG_GETARG_FLOAT8(5);
-    Z = PG_GETARG_FLOAT8(6);
+    double W = PG_GETARG_FLOAT8(3);
+    double X = PG_GETARG_FLOAT8(4);
+    double Y = PG_GETARG_FLOAT8(5);
+    double Z = PG_GETARG_FLOAT8(6);
     result = pose_make_3d(x, y, z, W, X, Y, Z);
   }
 

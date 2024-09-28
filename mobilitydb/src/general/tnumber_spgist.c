@@ -723,7 +723,6 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   TimestampTz *lowTs = palloc(sizeof(TimestampTz) * in->nTuples);
   TimestampTz *highTs = palloc(sizeof(TimestampTz) * in->nTuples);
 
-
   /* Get basetype of span in the datums */
   TBox *box = DatumGetTboxP(in->datums[0]);
   meosType basetype = box->span.basetype;
@@ -768,7 +767,7 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = 0; i < in->nTuples; i++)
   {
-    TBox *box = DatumGetTboxP(in->datums[i]);
+    box = DatumGetTboxP(in->datums[i]);
     uint8 quadrant = getQuadrant4D(centroid, box);
     out->leafTupleDatums[i] = PointerGetDatum(box);
     out->mapTuplesToNodes[i] = quadrant;

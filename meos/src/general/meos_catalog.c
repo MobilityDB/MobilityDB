@@ -184,7 +184,6 @@ static const char *MEOS_TEMPSUBTYPE_NAMES[] =
 #define INTERP_STR_MAXLEN 8
 
 /**
-
  * @brief Global constant array containing the interpolation names
  * corresponding to the enumeration interpType defined in file `meos_catalog.h`
  * @note The names are in lowercase since they are used in error messages

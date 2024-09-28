@@ -2649,7 +2649,6 @@ tnumber_value_time_split(const Temporal *temp, Datum size,
   while (datum_lt(lower_value, end_bin, basetype))
   {
     Datum upper_value = datum_add(lower_value, size, basetype);
-    Span s;
     span_set(lower_value, upper_value, true, false, basetype, spantype, &s);
     Temporal *atspan = tnumber_restrict_span(temp, &s, REST_AT);
     if (atspan != NULL)

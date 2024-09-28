@@ -177,7 +177,7 @@ int main(void)
   free(extent);
   free(interval);
   free(tcount);
-  for (int i = 0; i < seqcount; i++)
+  for (i = 0; i < seqcount; i++)
     free(tcount_seqs[i]);
   free(tcount_seqs);
 

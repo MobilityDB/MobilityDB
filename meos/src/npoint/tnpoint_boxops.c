@@ -146,7 +146,8 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
 {
   Npoint *np = DatumGetNpointP(tinstant_val(instants[0]));
   int64 rid = np->rid;
-  double posmin = np->pos, posmax = np->pos;
+  double posmin, posmax;
+  posmin = posmax = np->pos;
   TimestampTz tmin = instants[0]->t, tmax = instants[count - 1]->t;
   for (int i = 1; i < count; i++)
   {

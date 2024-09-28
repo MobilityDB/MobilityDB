@@ -92,15 +92,16 @@ tnumber_const_to_span_tstzspan(const Node *other, Span **s, Span **p)
 {
   Oid consttypid = ((Const *) other)->consttype;
   meosType type = oid_type(consttypid);
+  Span *span;
   if (numspan_type(type))
   {
-    Span *span = DatumGetSpanP(((Const *) other)->constvalue);
+    span = DatumGetSpanP(((Const *) other)->constvalue);
     *s = span_cp(span);
   }
   else if (type == T_TSTZSPAN)
   {
-    Span *s = DatumGetSpanP(((Const *) other)->constvalue);
-    *p = span_cp(s);
+    span = DatumGetSpanP(((Const *) other)->constvalue);
+    *p = span_cp(span);
   }
   else if (type == T_TBOX)
   {

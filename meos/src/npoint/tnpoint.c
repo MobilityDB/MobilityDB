@@ -258,7 +258,8 @@ tnpointseq_linear_positions(const TSequence *seq)
 {
   Npoint *np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, 0)));
   int64 rid = np->rid;
-  double minPos = np->pos, maxPos = np->pos;
+  double minPos, maxPos;
+  minPos = maxPos = np->pos;
   for (int i = 1; i < seq->count; i++)
   {
     np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, i)));

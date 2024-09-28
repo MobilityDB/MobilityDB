@@ -1219,11 +1219,10 @@ tpoint_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
   /* Set bounding box */
   STBox bounds;
   tspatial_set_stbox(temp, &bounds);
-  int32 srid = SRID_UNKNOWN, gs_srid = SRID_UNKNOWN;
   if (xsize)
   {
-    srid = bounds.srid;
-    gs_srid = gserialized_get_srid(sorigin);
+    int32_t srid = bounds.srid;
+    int32_t gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
       return NULL;
   }

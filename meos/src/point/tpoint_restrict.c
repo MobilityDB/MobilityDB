@@ -675,7 +675,6 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
     upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     GSERIALIZED *p2 = DatumGetGserializedP(tinstant_val(inst2));
     GSERIALIZED *p3, *p4;
-    TInstant *inst1_2d, *inst2_2d;
     bool makeseq = false;
     if (geopoint_eq(p1, p2))
     {
@@ -698,6 +697,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         &p3_inc, &p4_inc);
       if (found)
       {
+        TInstant *inst1_2d, *inst2_2d;
         /* If p2 != p4 or p4_inc is false, we exit the box,
          * so end the previous sequence and start a new one */
         if (! geopoint_eq(p2, p4) || ! p4_inc)
@@ -765,7 +765,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
             tofree[nfree++] = instants[ninsts++];
             lower_inc = p3_inc;
           }
-          else if (t1 == inst2->t)
+          else /* t1 == inst2->t */
           {
             /* We have t1 == t2 == inst2->t and since found = true, we know
              * that we are on an inclusive border (p3_inc == p4_inc == true).
@@ -1204,7 +1204,6 @@ tpointseqset_at_stbox_segm(const TSequenceSet *ss, const STBox *box,
   bool border_inc)
 {
   assert(ss); assert(box); assert(tgeo_type(ss->temptype));
-  const TSequence *seq;
   TSequenceSet *result = NULL;
 
   /* Singleton sequence set */
@@ -1221,7 +1220,7 @@ tpointseqset_at_stbox_segm(const TSequenceSet *ss, const STBox *box,
   for (int i = 0; i < ss->count; i++)
   {
     /* Bounding box test */
-    seq = TSEQUENCESET_SEQ_N(ss, i);
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     STBox box1;
     tspatialseq_set_stbox(seq, &box1);
     if (! overlaps_stbox_stbox(&box1, box))
@@ -1938,9 +1937,9 @@ tpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   if (interp == LINEAR && atfunc)
   {
     temp1 = tpoint_at_stbox_segm(temp, &box2, BORDER_INC);
+    /* This is not redundant with the bounding box check above */
     if (! temp1)
-      /* This is not redundant with the bounding box check above */
-      return atfunc ? NULL : temporal_cp(temp);
+      return NULL;
   }
   else
     temp1 = (Temporal *) temp;

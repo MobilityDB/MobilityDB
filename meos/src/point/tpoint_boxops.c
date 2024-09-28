@@ -916,10 +916,9 @@ multiline_gboxes(const GSERIALIZED *gs, int *count)
   }
 
   int totalpoints = 0;
-  const LWLINE *lwline;
   for (int i = 0; i < nlines; i++)
   {
-    lwline = lwmline->geoms[i];
+    const LWLINE *lwline = lwmline->geoms[i];
     totalpoints += lwline->points->npoints;
   }
   GBOX *result = palloc(sizeof(GBOX) * totalpoints);
@@ -1302,10 +1301,9 @@ multiline_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box,
 
   /* Compute the total number of points */
   int totalpoints = 0;
-  const LWLINE *lwline;
   for (int i = 0; i < nlines; i++)
   {
-    lwline = lwmline->geoms[i];
+    const LWLINE *lwline = lwmline->geoms[i];
     totalpoints += lwline->points->npoints;
   }
 

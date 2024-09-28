@@ -72,9 +72,7 @@ Stbox_space_time_tiles_ext(FunctionCallInfo fcinfo, bool spacetiles,
     /* Initialize to 0 missing parameters */
     double xsize = 0, ysize = 0, zsize = 0;
     Interval *duration = NULL;
-    GSERIALIZED *sorigin;
     TimestampTz torigin = 0;
-    int32 srid = SRID_UNKNOWN, gs_srid = SRID_UNKNOWN;
     bool border_inc = false;
     POINT3DZ pt;
     int i = 1;
@@ -100,7 +98,7 @@ Stbox_space_time_tiles_ext(FunctionCallInfo fcinfo, bool spacetiles,
     }
     if (spacetiles)
     {
-      sorigin = PG_GETARG_GSERIALIZED_P(i++);
+      GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(i++);
       ensure_not_empty(sorigin);
       ensure_point_type(sorigin);
       /* Since we pass by default Point(0 0 0) as origin independently of the
@@ -111,8 +109,8 @@ Stbox_space_time_tiles_ext(FunctionCallInfo fcinfo, bool spacetiles,
         ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin);
       else
         zsize = 0;
-      srid = bounds->srid;
-      gs_srid = gserialized_get_srid(sorigin);
+      int32_t srid = bounds->srid;
+      int32_t gs_srid = gserialized_get_srid(sorigin);
       if (gs_srid != SRID_UNKNOWN)
         ensure_same_srid(srid, gs_srid);
       memset(&pt, 0, sizeof(POINT3DZ));

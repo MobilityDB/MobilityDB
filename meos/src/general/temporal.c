@@ -39,7 +39,7 @@
 #include <float.h>
 #include <geos_c.h>
 #include <limits.h>
-/* POSTGRESQL */
+/* PostgreSQL */
 #include <utils/float.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
@@ -3395,12 +3395,12 @@ mrr_distance_scalar(const TSequence *seq, int start, int end)
 {
   assert(seq);
   assert(seq->temptype == T_TFLOAT);
-  double min_value, max_value, curr_value;
+  double min_value, max_value;
   min_value = DatumGetFloat8(tinstant_val(TSEQUENCE_INST_N(seq, start)));
   max_value = min_value;
   for (int i = start + 1; i < end + 1; ++i)
   {
-    curr_value = DatumGetFloat8(tinstant_val(TSEQUENCE_INST_N(seq, i)));
+    double curr_value = DatumGetFloat8(tinstant_val(TSEQUENCE_INST_N(seq, i)));
     min_value = fmin(min_value, curr_value);
     max_value = fmax(max_value, curr_value);
   }

@@ -653,7 +653,8 @@ geom_nsegment(const GSERIALIZED *gs)
     return NULL;
   }
   int64 rid = points[0]->rid;
-  double minPos = points[0]->pos, maxPos = points[0]->pos;
+  double minPos, maxPos;
+  minPos = maxPos = points[0]->pos;
   for (int i = 1; i < npoints; i++)
   {
     if (points[i]->rid != rid)

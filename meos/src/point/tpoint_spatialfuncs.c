@@ -2400,8 +2400,8 @@ tpointseqset_to_geomeas(const TSequenceSet *ss, const TSequenceSet *meas)
   /* Iterate as in #tpointseq_to_geomeas accumulating the results */
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, i);
-    const TSequence *seq2 = (meas) ? TSEQUENCESET_SEQ_N(meas, i) : NULL;
+    seq1 = TSEQUENCESET_SEQ_N(ss, i);
+    seq2 = (meas) ? TSEQUENCESET_SEQ_N(meas, i) : NULL;
     /* Keep the first point */
     const TInstant *inst = TSEQUENCE_INST_N(seq1, 0);
     const TInstant *m = meas ? TSEQUENCE_INST_N(seq2, 0) : NULL;
@@ -2537,8 +2537,8 @@ tpointseqset_to_geomeas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
   /* Iterate as in #tpointseq_to_geomeas_segm accumulating the results */
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, i);
-    const TSequence *seq2 = (meas) ? TSEQUENCESET_SEQ_N(meas, i) : NULL;
+    seq1 = TSEQUENCESET_SEQ_N(ss, i);
+    seq2 = (meas) ? TSEQUENCESET_SEQ_N(meas, i) : NULL;
     /* Keep the first point */
     const TInstant *inst = TSEQUENCE_INST_N(seq1, 0);
     const TInstant *m = meas ? TSEQUENCE_INST_N(seq2, 0) : NULL;
