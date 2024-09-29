@@ -33,12 +33,12 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-          psql: [13,14,15,16]
+          psql: [13,14,15,16,17]
           postgis: [3]
           os: [ubuntu-latest]
           coverage: [0]
           include:
-            - psql: 16
+            - psql: 17
               postgis: 3
               os: ubuntu-latest
               coverage: 1
