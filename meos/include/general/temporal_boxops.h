@@ -42,13 +42,23 @@
 
 /*****************************************************************************/
 
+/**
+ * @brief Return the size in bytes to read from toast to get the basic
+ * information from a temporal: Temporal struct (i.e., TInstant, TSequence,
+ * or TSequenceSet) and bounding box size
+*/
+#define TEMPORAL_MAX_HEADER_SIZE \
+    DOUBLE_PAD(Max(Max(sizeof(TInstant), sizeof(TSequence)), \
+    sizeof(TSequenceSet))) + DOUBLE_PAD(sizeof(bboxunion))
+
+/*****************************************************************************/
+
 /* Functions on generic bounding boxes of temporal types */
 
 extern bool bbox_type(meosType bboxtype);
 extern bool ensure_bbox_type(meosType bboxtype);
 extern size_t bbox_get_size(meosType bboxtype);
 extern int bbox_max_dims(meosType bboxtype);
-extern size_t temporal_max_header_size(void);
 extern bool temporal_bbox_eq(const void *box1, const void *box2,
   meosType temptype);
 extern int temporal_bbox_cmp(const void *box1, const void *box2,

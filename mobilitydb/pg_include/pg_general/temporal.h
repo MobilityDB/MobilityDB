@@ -174,6 +174,14 @@ typedef enum
 #define TYPMOD_GET_TEMPSUBTYPE(typmod) ((typmod & 0x60000000)>>29)
 #define TYPMOD_SET_TEMPSUBTYPE(typmod, tempsubtype) ((typmod) = (((typmod) & 0x9FFFFFFF) | ((tempsubtype & 0x00000003)<<29)))
 
+/**
+ * @brief Return the size in bytes to read from toast to get the basic
+ * information from a variable-length time type: Time struct (i.e., Set
+ * or SpanSet) and bounding box size
+*/
+#define TIME_MAX_HEADER_SIZE DOUBLE_PAD(Max(sizeof(Set), sizeof(SpanSet)))
+
+
 /*****************************************************************************
  * Miscellaneous
  *****************************************************************************/
