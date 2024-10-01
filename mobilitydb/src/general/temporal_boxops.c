@@ -65,7 +65,7 @@
  * or TSequenceSet) and bounding box size
 */
 size_t
-temporal_max_header_size(void)
+TEMPORAL_MAX_HEADER_SIZE(void)
 {
   size_t sz = Max(Max(sizeof(TInstant), sizeof(TSequence)),
     sizeof(TSequenceSet));

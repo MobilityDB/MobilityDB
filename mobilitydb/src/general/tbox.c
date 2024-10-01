@@ -308,7 +308,7 @@ spanset_tbox_slice(Datum d, TBox *box)
 {
   SpanSet *ss = NULL;
   if (PG_DATUM_NEEDS_DETOAST((struct varlena *) d))
-    ss = (SpanSet *) PG_DETOAST_DATUM_SLICE(d, 0, time_max_header_size());
+    ss = (SpanSet *) PG_DETOAST_DATUM_SLICE(d, 0, TIME_MAX_HEADER_SIZE());
   else
     ss = (SpanSet *) d;
   if (numspan_type(ss->span.spantype))

@@ -94,7 +94,7 @@ _PG_init(void)
  * or SpanSet) and bounding box size
 */
 uint32_t
-time_max_header_size(void)
+TIME_MAX_HEADER_SIZE(void)
 {
   return DOUBLE_PAD(Max(sizeof(Set), sizeof(SpanSet)));
 }
@@ -216,7 +216,7 @@ Temporal_typmod_in(PG_FUNCTION_ARGS)
   uint32 typmod = 0;
   if (tempsubtype != ANYTEMPSUBTYPE)
     TYPMOD_SET_TEMPSUBTYPE(typmod, tempsubtype);
-  
+
   pfree(elem_values);
   PG_RETURN_INT32((int32) typmod);
 }
