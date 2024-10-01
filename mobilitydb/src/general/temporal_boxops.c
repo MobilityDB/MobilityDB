@@ -57,21 +57,6 @@
 /* MobilityDB */
 #include "pg_general/type_util.h"
 
-/*****************************************************************************/
-
-/**
- * @brief Return the size in bytes to read from toast to get the basic
- * information from a temporal: Temporal struct (i.e., TInstant, TSequence,
- * or TSequenceSet) and bounding box size
-*/
-size_t
-TEMPORAL_MAX_HEADER_SIZE(void)
-{
-  size_t sz = Max(Max(sizeof(TInstant), sizeof(TSequence)),
-    sizeof(TSequenceSet));
-  return DOUBLE_PAD(sz) + DOUBLE_PAD(sizeof(bboxunion));
-}
-
 /*****************************************************************************
  * Boxes function
  *****************************************************************************/

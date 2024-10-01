@@ -85,21 +85,6 @@ _PG_init(void)
 }
 
 /*****************************************************************************
- * Miscellaneous
- *****************************************************************************/
-
-/**
- * @brief Return the size in bytes to read from toast to get the basic
- * information from a variable-length time type: Time struct (i.e., Set
- * or SpanSet) and bounding box size
-*/
-uint32_t
-TIME_MAX_HEADER_SIZE(void)
-{
-  return DOUBLE_PAD(Max(sizeof(Set), sizeof(SpanSet)));
-}
-
-/*****************************************************************************
  * Global variables
  *****************************************************************************/
 
@@ -273,7 +258,7 @@ temporal_slice(Datum tempdatum)
   int need_detoast = PG_DATUM_NEEDS_DETOAST((struct varlena *) tempdatum);
   if (need_detoast)
     result = (Temporal *) PG_DETOAST_DATUM_SLICE(tempdatum, 0,
-      temporal_max_header_size());
+      TEMPORAL_MAX_HEADER_SIZE);
   else
     result = (Temporal *) tempdatum;
   if (need_detoast && result->subtype == TINSTANT)

@@ -551,8 +551,7 @@ tstzspanset_stbox_slice(Datum ssdatum, STBox *box)
 {
   SpanSet *ss = NULL;
   if (PG_DATUM_NEEDS_DETOAST((struct varlena *) ssdatum))
-    ss = (SpanSet *) PG_DETOAST_DATUM_SLICE(ssdatum, 0,
-      TIME_MAX_HEADER_SIZE());
+    ss = (SpanSet *) PG_DETOAST_DATUM_SLICE(ssdatum, 0, TIME_MAX_HEADER_SIZE);
   else
     ss = (SpanSet *) ssdatum;
   tstzspanset_set_stbox(ss, box);
