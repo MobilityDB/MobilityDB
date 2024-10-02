@@ -32,7 +32,6 @@
  * @brief R-tree GiST index for temporal points
  */
 
-#include "pg_point/tpoint_gist.h"
 
 /* C */
 #include <float.h>
@@ -44,6 +43,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/stratnum.h"
 #include "general/span.h"
 #include "general/type_util.h"
 #include "point/stbox.h"
@@ -239,10 +239,10 @@ stbox_size(const STBox *box)
    *
    * The less-than cases should not happen, but if they do, say "zero".
    */
-  if ((hasx && (FLOAT8_LE(box->xmax, box->xmin)
-                || FLOAT8_LE(box->ymax, box->ymin)
-                || (hasz && FLOAT8_LE(box->zmax, box->zmin))))
-      || (hast && datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ)))
+  if ((hasx && (FLOAT8_LE(box->xmax, box->xmin) ||
+                FLOAT8_LE(box->ymax, box->ymin) ||
+                (hasz && FLOAT8_LE(box->zmax, box->zmin)))) ||
+      (hast && datum_le(box->period.upper, box->period.lower, T_TIMESTAMPTZ)))
     return 0.0;
 
   /*

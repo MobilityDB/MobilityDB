@@ -31,8 +31,8 @@
  * @brief Basic routines for indexing temporal values
  */
 
-#ifndef __TNUMBER_INDEX_H__
-#define __TNUMBER_INDEX_H__
+#ifndef __TBOX_INDEX_H__
+#define __TBOX_INDEX_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -48,7 +48,8 @@ extern bool tbox_index_leaf_consistent(const TBox *key, const TBox *query,
   StrategyNumber strategy);
 extern bool tbox_gist_inner_consistent(const TBox *key, const TBox *query,
   StrategyNumber strategy);
+extern bool tbox_index_recheck(StrategyNumber strategy);
 
 /*****************************************************************************/
 
-#endif /* __TNUMBER_INDEX_H__ */
+#endif /* __TBOX_INDEX_H__ */

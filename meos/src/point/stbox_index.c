@@ -48,15 +48,14 @@
 #include "point/stbox.h"
 #include "point/stbox_index.h"
 
-
 /*****************************************************************************
  * GiST consistent methods
  *****************************************************************************/
 
 /**
  * @brief Leaf consistency for temporal points
- * @brief Since spatiotemporal boxes do not distinguish between inclusive and
- * exclusive bounds it is necessary to generalize the tests, e.g.,
+ * @details Since spatiotemporal boxes do not distinguish between inclusive
+ * and exclusive bounds it is necessary to generalize the tests, e.g.,
  * - before : (box1->tmax < box2->tmin) => (box1->tmax <= box2->tmin)
  *   e.g., to take into account before([a,b],(b,c])
  * - after : (box1->tmin > box2->tmax) => (box1->tmin >= box2->tmax)
@@ -148,11 +147,9 @@ stbox_index_leaf_consistent(const STBox *key, const STBox *query,
 
 /**
  * @brief Inner consistent method for temporal points
- *
- * Return false if for all data items x below entry, the predicate
+ * @details Return false if for all data items x below entry, the predicate
  * x op query must be false, where op is the oper corresponding to strategy
  * in the pg_amop table.
- *
  * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied

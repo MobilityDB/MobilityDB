@@ -130,7 +130,7 @@ span_gist_inner_consistent(const Span *key, const Span *query,
     default:
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
         "unrecognized span strategy: %d", strategy);
-      return false;    /* keep compiler quiet */
+      return false;
   }
 }
 
@@ -141,17 +141,21 @@ bool
 span_index_recheck(StrategyNumber strategy)
 {
   /* These operators are based on bounding boxes */
-  if (strategy == RTLeftStrategyNumber ||
-      strategy == RTBeforeStrategyNumber ||
-      strategy == RTOverLeftStrategyNumber ||
-      strategy == RTOverBeforeStrategyNumber ||
-      strategy == RTRightStrategyNumber ||
-      strategy == RTAfterStrategyNumber ||
-      strategy == RTOverRightStrategyNumber ||
-      strategy == RTOverAfterStrategyNumber ||
-      strategy == RTKNNSearchStrategyNumber)
-    return false;
-  return true;
+  switch (strategy)
+  {
+    case RTLeftStrategyNumber:
+    case RTBeforeStrategyNumber:
+    case RTOverLeftStrategyNumber:
+    case RTOverBeforeStrategyNumber:
+    case RTRightStrategyNumber:
+    case RTAfterStrategyNumber:
+    case RTOverRightStrategyNumber:
+    case RTOverAfterStrategyNumber:
+    case RTKNNSearchStrategyNumber:
+      return false;
+    default:
+      return true;
+  }
 }
 
 /*****************************************************************************/

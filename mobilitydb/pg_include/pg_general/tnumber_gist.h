@@ -31,8 +31,8 @@
  * @brief R-tree GiST index for temporal integers and temporal floats
  */
 
-#ifndef __TNUMBER_GIST_H__
-#define __TNUMBER_GIST_H__
+#ifndef __PG_TNUMBER_GIST_H__
+#define __PG_TNUMBER_GIST_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -85,4 +85,4 @@ extern bool tbox_index_leaf_consistent(const TBox *key, const TBox *query,
 
 /*****************************************************************************/
 
-#endif
+#endif /* __PG_TNUMBER_GIST_H__ */
