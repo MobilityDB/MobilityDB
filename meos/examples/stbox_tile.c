@@ -60,7 +60,7 @@ int main(void)
   bool timesplit = true;
 
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* Initialize values for tiling */
   STBox *box = stbox_in("STBOX XT(((1,1),(10,10)),[2020-03-01, 2020-03-10])");

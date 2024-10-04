@@ -92,7 +92,7 @@ int main(void)
   t = clock();
 
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* Substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/berlinmod_trips.csv", "r");

@@ -62,7 +62,7 @@ int main(void)
   bool timesplit = false;
 
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* Initialize values for tiling */
   TBox *box = intspan ?

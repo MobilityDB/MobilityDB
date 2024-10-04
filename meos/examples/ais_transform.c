@@ -56,7 +56,7 @@
 int main(void)
 {
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* Input trip in SRID 4326 */
   char *trip_str =

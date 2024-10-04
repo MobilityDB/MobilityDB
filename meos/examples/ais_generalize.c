@@ -74,7 +74,8 @@ int main(void)
   int exit_value = 1;
 
   /* Initialize MEOS */
-  meos_initialize("UTC", NULL);
+  meos_initialize();
+  meos_initialize_timezone("UTC");
 
   /* Get start time */
   clock_t t = clock();

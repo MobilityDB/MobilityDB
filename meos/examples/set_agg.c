@@ -45,7 +45,7 @@
 int main()
 {
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* Add some value to aggregate */
   Set *agg = NULL;

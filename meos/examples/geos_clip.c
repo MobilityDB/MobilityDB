@@ -72,7 +72,7 @@ geos_message_handler(const char* fmt, ...)
 int main()
 {
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* Send notice and error messages to our stdout handler */
   initGEOS(geos_message_handler, geos_message_handler);
