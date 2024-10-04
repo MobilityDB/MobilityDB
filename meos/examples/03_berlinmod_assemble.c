@@ -103,7 +103,7 @@ int main(void)
   t = clock();
 
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* Allocate space to build the trips */
   trip_output_record trips[MAX_TRIPS] = {0};

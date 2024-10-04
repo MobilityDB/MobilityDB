@@ -92,7 +92,7 @@ int main(void)
   t = clock();
 
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* Compute the spatial tiles for trips */
   int no_speed_tiles, no_trip_tiles;

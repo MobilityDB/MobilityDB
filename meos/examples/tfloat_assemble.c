@@ -62,7 +62,7 @@ int main(void)
   tm = clock();
 
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* Input instants that are accumulated */
   TInstant *instants[MAX_INSTANTS] = {0};

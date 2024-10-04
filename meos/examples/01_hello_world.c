@@ -45,7 +45,7 @@
 int main()
 {
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* Input temporal points in WKT format */
   char *inst_wkt = "POINT(1 1)@2000-01-01";

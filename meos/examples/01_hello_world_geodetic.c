@@ -45,7 +45,7 @@
 int main()
 {
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   char *srs = "EPSG:4326";
   /* Input temporal points in WKT format */
