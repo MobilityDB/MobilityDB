@@ -75,6 +75,7 @@ extern Temporal *tnpoint_restrict_geom(const Temporal *temp,
 extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box,
   bool border_inc, bool atfunc);
 
+
 /*****************************************************************************/
 
 #endif /* __TNPOINT_SPATIALFUNCS_H__ */

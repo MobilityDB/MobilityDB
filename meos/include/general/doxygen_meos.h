@@ -95,6 +95,10 @@
  * @ingroup meos_api
  * @brief Functions for box types
  *
+ * @defgroup meos_npoint_types Functions for network points and segments
+ * @ingroup meos_api
+ * @brief Functions for network points and segments
+ *
  * @defgroup meos_temporal Functions for temporal types
  * @ingroup meos_api
  * @brief Functions for temporal types

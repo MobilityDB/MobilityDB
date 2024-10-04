@@ -159,7 +159,7 @@ tinterrel_tpointinst_geom(const TInstant *inst, const GSERIALIZED *gs,
  * @param[in] func PostGIS function to be called
  */
 TSequence *
-tinterrel_tpointseq_discstep_geom(const TSequence *seq, 
+tinterrel_tpointseq_discstep_geom(const TSequence *seq,
   const GSERIALIZED *gs, bool tinter, datum_func2 func)
 {
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
@@ -440,8 +440,8 @@ tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   }
 
   /* 3D only if both arguments are 3D */
-  datum_func2 func = MEOS_FLAGS_GET_Z(temp->flags) &&
-    FLAGS_GET_Z(gs->gflags) ? 
+  datum_func2 func =
+    MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
       &datum_geom_intersects3d : &datum_geom_intersects2d;
 
   Temporal *result = NULL;

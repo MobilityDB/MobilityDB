@@ -154,7 +154,7 @@
  *   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
  *   LiftedFunctionInfo *lfinfo;
  *   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
- *   lfinfo->func = (varfunc) &geom_to_geog;
+ *   lfinfo->func = (varfunc) &datum_geom_to_geog;
  *   lfinfo->numparam = 1;
  *   lfinfo->restype = T_TGEOGPOINT;
  *   lfinfo->tpfunc_base = NULL;
