@@ -62,8 +62,6 @@ extern LWGEOM *box3d_to_lwgeom(BOX3D *box);
 
 /* Functions adapted from lwgeom_functions_basic.c */
 
-/* The implementation of this function changed in PostGIS version 3.2 */
-extern double geo_perimeter(const GSERIALIZED *gs);
 extern GSERIALIZED *geometry_boundary(const GSERIALIZED *gs);
 extern GSERIALIZED *geo_shortestline2d(const GSERIALIZED *gs1,
   const GSERIALIZED *s2);

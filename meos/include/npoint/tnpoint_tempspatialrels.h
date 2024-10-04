@@ -68,7 +68,6 @@ extern Temporal *tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp,
 extern Temporal *tdwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   double dist, bool restr, bool atvalue);
 
-
 /*****************************************************************************/
 
 #endif /* __TNPOINT_TEMPSPATIALRELS_H__ */
