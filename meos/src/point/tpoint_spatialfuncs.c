@@ -44,7 +44,6 @@
 #include <liblwgeom_internal.h>
 #include <lwgeodetic.h>
 #include <lwgeom_geos.h>
-#include <lwgeom_pg.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
