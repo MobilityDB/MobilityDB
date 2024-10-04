@@ -44,7 +44,6 @@
 #include <liblwgeom_internal.h>
 #include <lwgeodetic.h>
 #include <lwgeom_geos.h>
-#include <lwgeom_pg.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -68,6 +67,9 @@
  * select date_part('epoch', timestamp '2000-01-01' - timestamp '1970-01-01')
  * which results in 946684800 */
 #define DELTA_UNIX_POSTGRES_EPOCH 946684800
+
+extern GSERIALIZED *geometry_serialize(LWGEOM *lwgeom);
+extern GSERIALIZED* geography_serialize(LWGEOM *lwgeom);
 
 /*****************************************************************************
  * Utility functions
