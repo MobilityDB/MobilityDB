@@ -65,7 +65,7 @@ int main(void)
   tm = clock();
 
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* Expandable sequence */
   Temporal *seq = NULL;

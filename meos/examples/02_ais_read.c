@@ -67,7 +67,8 @@ typedef struct
 int main(void)
 {
   /* Initialize MEOS */
-  meos_initialize("UTC", NULL);
+  meos_initialize();
+  meos_initialize_timezone("UTC");
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file = fopen("data/ais_instants.csv", "r");

@@ -55,7 +55,7 @@ int main()
   TimestampTz times[MAX_COUNT];
 
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   for (int i = 0; i < 4; i++)
     times[i] = pg_timestamptz_in(times_str[i], -1);
