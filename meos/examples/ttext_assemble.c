@@ -112,7 +112,7 @@ int main(void)
 
   /* Free memory */
   free(seq); free(txt); free(str);
-  for (int i = 0; i < MAX_INSTANTS; i++)
+  for (i = 0; i < MAX_INSTANTS; i++)
     free(instants[i]);
 
   /* Calculate the elapsed time */

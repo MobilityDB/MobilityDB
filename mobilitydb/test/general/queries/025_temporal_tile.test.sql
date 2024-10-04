@@ -46,6 +46,9 @@ SELECT bins(datespan '[2000-01-01, 2000-01-10]', '1 week', '2000-01-01') LIMIT 3
 SELECT bins(tstzspan '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
 SELECT bins(tstzspan '[2000-01-01, 2000-01-10]', '1 week', '2000-01-01') LIMIT 3;
 
+/* Errors */
+SELECT bins(datespan '[2000-01-01, 2000-01-10]', '1 hour') LIMIT 3;
+
 
 SELECT getBin(3, 2);
 SELECT getBin(3, 2, 1);

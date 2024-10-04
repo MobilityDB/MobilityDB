@@ -1120,8 +1120,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
         instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
         result[nseqs++] = tsequence_make((const TInstant **) instants,
           ninsts, lower_inc, true, interp, NORMALIZE);
-        for (int j = 0; j < ninsts; j++)
-          pfree(instants[j]);
+        for (int k = 0; k < ninsts; k++)
+          pfree(instants[k]);
         ninsts = 0;
         lower_inc = false;
         /* Start a new sequence */
@@ -1155,8 +1155,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
            * false if upper_eq */
           result[nseqs++] = tsequence_make((const TInstant **) instants,
             ninsts, lower_inc, lower_eq, interp, NORMALIZE);
-          for (int j = 0; j < ninsts; j++)
-            pfree(instants[j]);
+          for (int k = 0; k < ninsts; k++)
+            pfree(instants[k]);
           ninsts = 0;
           /* The lower_inc of the new sequence is false if lower_eq is true */
           lower_inc = ! lower_eq;
@@ -1170,8 +1170,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
           instants[ninsts++] = tinstant_make(startresult, restype, inttime);
           result[nseqs++] = tsequence_make((const TInstant **) instants,
             ninsts, lower_inc, false, interp, NORMALIZE);
-          for (int j = 0; j < ninsts; j++)
-            pfree(instants[j]);
+          for (int k = 0; k < ninsts; k++)
+            pfree(instants[k]);
           ninsts = 0;
           /* Add a singleton sequence with the crossing */
           instants[0] = tinstant_make_free(intresult, restype, inttime);
@@ -1279,8 +1279,8 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
       instants[ninsts++] = tinstant_make_free(closeresult, restype, end1->t);
       result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
         lower_inc, false, LINEAR, NORMALIZE_NO);
-      for (int j = 0; j < ninsts; j++)
-        pfree(instants[j]);
+      for (int k = 0; k < ninsts; k++)
+        pfree(instants[k]);
       ninsts = 0;
     }
     start1 = end1; start2 = end2;
@@ -1696,8 +1696,8 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
     /* To avoid floating point imprecission, if the lifted function to
      * apply is datum2_eq or datum_point_eq, the equality test is computed in
      * hascross */
-    bool eqfn = ((lfinfo->func == (varfunc) &datum2_eq) ||
-      (lfinfo->func == (varfunc) &datum2_point_eq));
+    bool eqfn = ((lfinfo->func == (varfunc) (&datum2_eq)) ||
+      (lfinfo->func == (varfunc) (&datum2_point_eq)));
     /* Determine whether there is a crossing and if there is one compute the
      * value at the crossing */
     if (tlinearsegm_intersection_value(start, end, value,

@@ -222,11 +222,7 @@ stbox_parse(const char **str)
   {
     if (! span_parse(str, T_TSTZSPAN, false, &period))
       return NULL;
-  }
-
-  /* Parse external closing parenthesis (if both space and time dimensions) */
-  if (hast)
-  {
+    /* Parse external closing parenthesis (if both space and time dimensions) */
     p_whitespace(str);
     if (! ensure_cparen(str, type_str))
       return NULL;

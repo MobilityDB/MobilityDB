@@ -1570,8 +1570,6 @@ numspan_delta_scale_iter(Span *s, Datum origin, Datum delta, bool hasdelta,
 {
   assert(s);
 
-  Datum lower = s->lower;
-  Datum upper = s->upper;
   meosType type = s->basetype;
   /* The default value when shift is not given is 0 */
   if (hasdelta)
@@ -1580,8 +1578,8 @@ numspan_delta_scale_iter(Span *s, Datum origin, Datum delta, bool hasdelta,
     s->upper = datum_add(s->upper, delta, type);
   }
   /* Shifted lower and upper */
-  lower = s->lower;
-  upper = s->upper;
+  Datum lower = s->lower;
+  Datum upper = s->upper;
   /* The default value when scale is not given is 1.0 */
   if (scale != 1.0)
   {

@@ -76,6 +76,9 @@ SELECT bins(tstzspan '[2000-01-01, 2000-01-10]', '1 week', '2000-01-01') LIMIT 3
  (2,"[Sat Jan 08 00:00:00 2000 PST, Sat Jan 15 00:00:00 2000 PST)")
 (2 rows)
 
+/* Errors */
+SELECT bins(datespan '[2000-01-01, 2000-01-10]', '1 hour') LIMIT 3;
+ERROR:  The interval must not have sub-day precision: 01:00:00
 SELECT getBin(3, 2);
  getbin 
 --------

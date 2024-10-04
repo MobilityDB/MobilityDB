@@ -211,6 +211,7 @@ bool
 func_needs_index(Oid funcid, const IndexableFunction *idxfns,
   IndexableFunction *result)
 {
+  assert(idxfns);
   const char *fn_name = get_func_name(funcid);
   do
   {

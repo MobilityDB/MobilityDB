@@ -323,13 +323,13 @@ tposeseqset_parse(const char **str, meosType temptype, interpType interp,
   /* First parsing */
   const char *bak = *str;
   if (! tposeseq_cont_parse(str, temptype, interp, false, tpose_srid, NULL))
-    return false;
+    return NULL;
   int count = 1;
   while (p_comma(str))
   {
     count++;
     if (! tposeseq_cont_parse(str, temptype, interp, false, tpose_srid, NULL))
-      return false;
+      return NULL;
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
     return NULL;
