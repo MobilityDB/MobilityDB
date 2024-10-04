@@ -47,6 +47,10 @@
 /* MEOS */
 #include <meos.h>
 
+/* Functions borrowed from lwgeom_pg.c */
+
+extern GSERIALIZED* geometry_serialize(LWGEOM *lwgeom);
+extern GSERIALIZED* geography_serialize(LWGEOM *lwgeom);
 
 /* Functions adapted from lwgeom_box.c */
 

@@ -74,8 +74,13 @@ void srid_check_latlong(int32_t srid);
 extern GSERIALIZED *geography_from_lwgeom(LWGEOM *geom, int32 typmod);
 
 /*****************************************************************************/
-
 #if MEOS
+/*****************************************************************************/
+
+/*****************************************************************************
+ * Functions borrowed from gserialize.c
+ *****************************************************************************/
+
 /**
  * @brief Return the srid of a geometry
  * @note PostGIS function: @p gserialized_get_srid(const GSERIALIZED *g).
@@ -85,7 +90,43 @@ geo_get_srid(const GSERIALIZED *g)
 {
   return gserialized_get_srid(g);
 }
+
+/*****************************************************************************
+ * Functions borrowed from lwgeom_pg.c
+ *****************************************************************************/
+
+/**
+ * @brief Utility method to call the serialization and then set the
+ * PgSQL varsize header appropriately with the serialized size.
+ */
+GSERIALIZED* geometry_serialize(LWGEOM *lwgeom)
+{
+  size_t ret_size;
+  GSERIALIZED *g;
+
+  g = gserialized_from_lwgeom(lwgeom, &ret_size);
+  SET_VARSIZE(g, ret_size);
+  return g;
+}
+
+/**
+ * @brief Utility method to call the serialization and then set the
+ * PgSQL varsize header appropriately with the serialized size.
+ */
+GSERIALIZED* geography_serialize(LWGEOM *lwgeom)
+{
+  size_t ret_size;
+  GSERIALIZED *g;
+  /** force to geodetic in case it's not **/
+  lwgeom_set_geodetic(lwgeom, true);
+
+  g = gserialized_from_lwgeom(lwgeom,  &ret_size);
+  SET_VARSIZE(g, ret_size);
+  return g;
+}
+/*****************************************************************************/
 #endif /* MEOS */
+/*****************************************************************************/
 
 /*****************************************************************************
  * Functions adapted from lwgeom_box.c

@@ -68,9 +68,6 @@
  * which results in 946684800 */
 #define DELTA_UNIX_POSTGRES_EPOCH 946684800
 
-extern GSERIALIZED *geometry_serialize(LWGEOM *lwgeom);
-extern GSERIALIZED* geography_serialize(LWGEOM *lwgeom);
-
 /*****************************************************************************
  * Utility functions
  *****************************************************************************/
