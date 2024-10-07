@@ -362,7 +362,7 @@ bool
 temptype_subtype_all(tempSubtype subtype)
 {
   if (subtype == ANYTEMPSUBTYPE ||
-    subtype == TINSTANT || subtype == TSEQUENCE || subtype == TSEQUENCESET)
+      subtype == TINSTANT || subtype == TSEQUENCE || subtype == TSEQUENCESET)
     return true;
   return false;
 }

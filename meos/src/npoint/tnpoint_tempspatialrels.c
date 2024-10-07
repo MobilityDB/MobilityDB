@@ -93,11 +93,17 @@ tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_temporal_spatial_rel_temp
  * @brief Return the temporal contains relationship between a geometry and
  * a temporal network point
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal network point
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tcontains_geo_tnpoint()
  */
 Temporal *
-tcontains_geo_tnpoint(GSERIALIZED *gs, const Temporal *temp, bool restr,
+tcontains_geo_tnpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
   if (gserialized_is_empty(gs))
@@ -109,8 +115,14 @@ tcontains_geo_tnpoint(GSERIALIZED *gs, const Temporal *temp, bool restr,
 }
 
 /**
+ * @ingroup meos_temporal_spatial_rel_temp
  * @brief Return the temporal touches relationship between a temporal network
  * point and a geometry
+ * @param[in] temp Temporal network point
+ * @param[in] gs Geometry
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Ttouches_tnpoint_geo()
  */
 Temporal *
 ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
@@ -129,19 +141,14 @@ ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
 }
 
 /**
- * @brief Return the temporal touches relationship between a temporal network
- * point and a geometry
- */
-Temporal *
-ttouches_geo_tnpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
-  bool atvalue)
-{
-  return ttouches_tnpoint_geo(temp, gs, restr, atvalue);
-}
-
-/**
+ * @ingroup meos_temporal_spatial_rel_temp
  * @brief Return the temporal touches relationship between a temporal network
  * point and a network point
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Ttouches_tnpoint_npoint()
  */
 Temporal *
 ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr,
@@ -160,23 +167,19 @@ ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr,
 }
 
 /**
- * @brief Return the temporal touches relationship between a temporal network
- * point and a network point
- */
-Temporal *
-ttouches_npoint_tnpoint(const Npoint *np, const Temporal *temp, bool restr,
-  bool atvalue)
-{
-  return ttouches_tnpoint_npoint(temp, np, restr, atvalue);
-}
-
-/**
+ * @ingroup meos_temporal_spatial_rel_temp
  * @brief Return a temporal Boolean that states whether a geometry and a
  * temporal network point are within a distance
+ * @param[in] temp Temporal network point
+ * @param[in] gs Geometry
+ * @param[in] dist Distance
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tdwithin_tnpoint_geo()
  */
 Temporal *
-tdwithin_tnpoint_geo(const Temporal *temp, GSERIALIZED *gs, double dist, bool restr,
-  bool atvalue)
+tdwithin_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
+  bool restr, bool atvalue)
 {
   if (gserialized_is_empty(gs))
     return NULL;
@@ -187,23 +190,19 @@ tdwithin_tnpoint_geo(const Temporal *temp, GSERIALIZED *gs, double dist, bool re
 }
 
 /**
- * @brief Return a temporal Boolean that states whether a geometry and a
- * temporal network point are within a distance
- */
-Temporal *
-tdwithin_geo_tnpoint(GSERIALIZED *gs, const Temporal *temp, double dist, bool restr,
-  bool atvalue)
-{
-  return tdwithin_tnpoint_geo(temp, gs, dist, restr, atvalue);
-}
-
-/**
+ * @ingroup meos_temporal_spatial_rel_temp
  * @brief Return a temporal Boolean that states whether a network point and
  * a temporal network point are within a distance
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ * @param[in] dist Distance
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tdwithin_tnpoint_npoint()
  */
 Temporal *
-tdwithin_tnpoint_npoint(const Temporal *temp, Npoint *np, double dist, bool restr,
-  bool atvalue)
+tdwithin_tnpoint_npoint(const Temporal *temp, const Npoint *np, double dist,
+  bool restr, bool atvalue)
 {
   GSERIALIZED *geom = npoint_geom(np);
   Temporal *tpoint = tnpoint_tgeompoint(temp);
@@ -213,23 +212,18 @@ tdwithin_tnpoint_npoint(const Temporal *temp, Npoint *np, double dist, bool rest
 }
 
 /**
- * @brief Return a temporal Boolean that states whether a network point and
- * a temporal network point are within a distance
- */
-Temporal *
-tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp, double dist, bool restr,
-  bool atvalue)
-{
-  return tdwithin_tnpoint_npoint(temp, np, dist, restr, atvalue);
-}
-
-/**
+ * @ingroup meos_temporal_spatial_rel_temp
  * @brief Return a temporal Boolean that states whether two temporal network
  * points are within a distance
+ * @param[in] temp1,temp2 Temporal network points
+ * @param[in] dist Distance
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tdwithin_tnpoint_tnpoint()
  */
 Temporal *
-tdwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2, double dist,
-  bool restr, bool atvalue)
+tdwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
+  double dist, bool restr, bool atvalue)
 {
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal points do not intersect in time
@@ -240,7 +234,7 @@ tdwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2, double di
 
   Temporal *tpoint1 = tnpoint_tgeompoint(sync1);
   Temporal *tpoint2 = tnpoint_tgeompoint(sync2);
-  Temporal *result = tdwithin_tpoint_tpoint1(tpoint1, tpoint2, dist, restr,
+  Temporal *result = tdwithin_tpoint_tpoint_sync(tpoint1, tpoint2, dist, restr,
     atvalue);
   pfree(sync1); pfree(sync2); pfree(tpoint1); pfree(tpoint2);
   return result;

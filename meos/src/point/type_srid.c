@@ -64,7 +64,7 @@
  * @param[in] s Set
  * @csqlfn #Geoset_get_srid()
  */
-int
+int32_t
 geoset_srid(const Set *s)
 {
   /* Ensure validity of the arguments */
@@ -84,7 +84,7 @@ geoset_srid(const Set *s)
  * @csqlfn #Geoset_set_srid()
  */
 Set *
-geoset_set_srid(const Set *s, int32 srid)
+geoset_set_srid(const Set *s, int32_t srid)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
@@ -112,7 +112,7 @@ geoset_set_srid(const Set *s, int32 srid)
  * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_get_srid()
  */
-int32
+int32_t
 stbox_srid(const STBox *box)
 {
   /* Ensure validity of the arguments */
@@ -129,7 +129,7 @@ stbox_srid(const STBox *box)
  * @csqlfn #Stbox_set_srid()
  */
 STBox *
-stbox_set_srid(const STBox *box, int32 srid)
+stbox_set_srid(const STBox *box, int32_t srid)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box))
@@ -223,7 +223,7 @@ tpoint_srid(const Temporal *temp)
  * @csqlfn #Tpoint_set_srid()
  */
 TInstant *
-tpointinst_set_srid(const TInstant *inst, int32 srid)
+tpointinst_set_srid(const TInstant *inst, int32_t srid)
 {
   assert(inst); assert(tgeo_type(inst->temptype));
   TInstant *result = tinstant_copy(inst);
@@ -240,7 +240,7 @@ tpointinst_set_srid(const TInstant *inst, int32 srid)
  * @csqlfn #Tpoint_set_srid()
  */
 TSequence *
-tpointseq_set_srid(const TSequence *seq, int32 srid)
+tpointseq_set_srid(const TSequence *seq, int32_t srid)
 {
   assert(seq); assert(tgeo_type(seq->temptype));
   TSequence *result = tsequence_copy(seq);
@@ -266,7 +266,7 @@ tpointseq_set_srid(const TSequence *seq, int32 srid)
  * @csqlfn #Tpoint_set_srid()
  */
 TSequenceSet *
-tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
+tpointseqset_set_srid(const TSequenceSet *ss, int32_t srid)
 {
   assert(ss); assert(tgeo_type(ss->temptype));
   STBox *box;
@@ -304,7 +304,7 @@ tpointseqset_set_srid(const TSequenceSet *ss, int32 srid)
  * @csqlfn #Tpoint_set_srid()
  */
 Temporal *
-tpoint_set_srid(const Temporal *temp, int32 srid)
+tpoint_set_srid(const Temporal *temp, int32_t srid)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
@@ -343,7 +343,9 @@ tnpointinst_srid(const TInstant *inst)
 }
 
 /**
+ * @ingroup meos_temporal_spatial_accessor
  * @brief Return the SRID of a temporal network point
+ * @csqlfn #Tnpoint_srid()
  */
 int
 tnpoint_srid(const Temporal *temp)
@@ -397,7 +399,7 @@ to_dec(POINT4D *pt)
  * combinations for the input and output SRIDs.
  */
 LWPROJ *
-lwproj_transform(int32 srid_from, int32 srid_to)
+lwproj_transform(int32_t srid_from, int32_t srid_to)
 {
   char srid_from_str[MAX_AUTH_SRID_STR];
   char srid_to_str[MAX_AUTH_SRID_STR];
@@ -500,7 +502,7 @@ meos_srid_is_latlong(int32_t srid)
  * file `lwgeom_transform.c`
  */
 static bool
-point_transf_pj(GSERIALIZED *gs, int32 srid_to, const LWPROJ *pj)
+point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
 {
   assert(gs); assert(pj);
   int has_z = FLAGS_GET_Z(gs->gflags);
@@ -546,7 +548,7 @@ point_transf_pj(GSERIALIZED *gs, int32 srid_to, const LWPROJ *pj)
  * @param[in] pj Information about the transformation
  */
 GSERIALIZED *
-point_transform_pj(const GSERIALIZED *gs, int32 srid_to, LWPROJ *pj)
+point_transform_pj(const GSERIALIZED *gs, int32_t srid_to, LWPROJ *pj)
 {
   GSERIALIZED *result = geo_copy(gs);
   if (! point_transf_pj(result, srid_to, pj))
@@ -565,9 +567,9 @@ point_transform_pj(const GSERIALIZED *gs, int32 srid_to, LWPROJ *pj)
  * @param[in] srid_to Target SRID
  */
 GSERIALIZED *
-point_transform(const GSERIALIZED *gs, int32 srid_to)
+point_transform(const GSERIALIZED *gs, int32_t srid_to)
 {
-  int32 srid_from;
+  int32_t srid_from;
   /* Verify validity of arguments */
   if (! ensure_not_null((void *) gs) ||
       ! ensure_srid_known(srid_from = gserialized_get_srid(gs)) ||
@@ -596,9 +598,9 @@ point_transform(const GSERIALIZED *gs, int32 srid_to)
  */
 GSERIALIZED *
 point_transform_pipeline(const GSERIALIZED *gs, const char *pipeline,
-  int32 srid_to, bool is_forward)
+  int32_t srid_to, bool is_forward)
 {
-  int32 srid_from;
+  int32_t srid_from;
   /* Verify validity of arguments */
   if (! ensure_srid_known(srid_from = gserialized_get_srid(gs)))
     return NULL;
@@ -623,7 +625,7 @@ point_transform_pipeline(const GSERIALIZED *gs, const char *pipeline,
  * @param[in] pj Information about the transformation
  */
 static Set *
-geoset_transform_pj(const Set *s, int32 srid_to, LWPROJ *pj)
+geoset_transform_pj(const Set *s, int32_t srid_to, LWPROJ *pj)
 {
   assert(s); assert(pj); assert(geoset_type(s->settype));
   /* Copy the set to be able to transform the points of the set in place */
@@ -649,9 +651,9 @@ geoset_transform_pj(const Set *s, int32 srid_to, LWPROJ *pj)
  * @param[in] srid_to Target SRID
  */
 Set *
-geoset_transform(const Set *s, int32 srid_to)
+geoset_transform(const Set *s, int32_t srid_to)
 {
-  int32 srid_from;
+  int32_t srid_from;
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
       ! ensure_srid_known(srid_from = geoset_srid(s)) ||
@@ -682,10 +684,10 @@ geoset_transform(const Set *s, int32 srid_to)
  * @param[in] is_forward True when the transformation is forward
  */
 Set *
-geoset_transform_pipeline(const Set *s, const char *pipeline, int32 srid_to,
+geoset_transform_pipeline(const Set *s, const char *pipeline, int32_t srid_to,
   bool is_forward)
 {
-  int32 srid_from;
+  int32_t srid_from;
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) pipeline) ||
       ! ensure_geoset_type(s->settype) ||
@@ -715,7 +717,7 @@ geoset_transform_pipeline(const Set *s, const char *pipeline, int32 srid_to,
  * @param[in] pj Information about the transformation
  */
 static bool
-stbox_transf_pj(STBox *box, int32 srid_to, const LWPROJ *pj)
+stbox_transf_pj(STBox *box, int32_t srid_to, const LWPROJ *pj)
 {
   assert(box); assert(pj);
   /* Create the points corresponding to the bounds */
@@ -768,7 +770,7 @@ stbox_transf_pj(STBox *box, int32 srid_to, const LWPROJ *pj)
  * @param[in] pj Information about the transformation
  */
 static STBox *
-stbox_transform_pj(const STBox *box, int32 srid_to, LWPROJ *pj)
+stbox_transform_pj(const STBox *box, int32_t srid_to, LWPROJ *pj)
 {
   assert(box); assert(pj);
   /* Copy the spatiotemporal box to transform its composing points in place */
@@ -789,7 +791,7 @@ stbox_transform_pj(const STBox *box, int32 srid_to, LWPROJ *pj)
  * @param[in] srid_to Target SRID
  */
 STBox *
-stbox_transform(const STBox *box, int32 srid_to)
+stbox_transform(const STBox *box, int32_t srid_to)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_srid_known(box->srid) ||
@@ -820,7 +822,7 @@ stbox_transform(const STBox *box, int32 srid_to)
  */
 STBox *
 stbox_transform_pipeline(const STBox *box, const char *pipeline,
-  int32 srid_to, bool is_forward)
+  int32_t srid_to, bool is_forward)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) pipeline) ||
@@ -848,7 +850,7 @@ stbox_transform_pipeline(const STBox *box, const char *pipeline,
  * @param[in] pj Information about the transformation
  */
 static bool
-tpointinst_transf_pj(const TInstant *inst, int32 srid_to, const LWPROJ *pj)
+tpointinst_transf_pj(const TInstant *inst, int32_t srid_to, const LWPROJ *pj)
 {
   assert(inst); assert(pj); assert(tgeo_type(inst->temptype));
   GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
@@ -865,7 +867,7 @@ tpointinst_transf_pj(const TInstant *inst, int32 srid_to, const LWPROJ *pj)
  * @param[in] pj Information about the transformation
  */
 static bool
-tpointseq_transf_pj(TSequence *seq, int32 srid_to, const LWPROJ *pj)
+tpointseq_transf_pj(TSequence *seq, int32_t srid_to, const LWPROJ *pj)
 {
   assert(seq); assert(pj); assert(tgeo_type(seq->temptype));
   for (int i = 0; i < seq->count; i++)
@@ -889,7 +891,7 @@ tpointseq_transf_pj(TSequence *seq, int32 srid_to, const LWPROJ *pj)
  * @param[in] pj Information about the transformation
  */
 static bool
-tpointseqset_transf_pj(TSequenceSet *ss, int32 srid_to, const LWPROJ *pj)
+tpointseqset_transf_pj(TSequenceSet *ss, int32_t srid_to, const LWPROJ *pj)
 {
   assert(ss); assert(pj); assert(tgeo_type(ss->temptype));
   for (int i = 0; i < ss->count; i++)
@@ -916,7 +918,7 @@ tpointseqset_transf_pj(TSequenceSet *ss, int32 srid_to, const LWPROJ *pj)
  * @param[in] pj Information about the transformation
  */
 Temporal *
-tpoint_transform_pj(const Temporal *temp, int32 srid_to, const LWPROJ *pj)
+tpoint_transform_pj(const Temporal *temp, int32_t srid_to, const LWPROJ *pj)
 {
   assert(temp); assert(pj);
   /* Copy the temporal point to transform its composing points in place */
@@ -950,9 +952,9 @@ tpoint_transform_pj(const Temporal *temp, int32 srid_to, const LWPROJ *pj)
  * @param[in] srid_to Target SRID
  */
 Temporal *
-tpoint_transform(const Temporal *temp, int32 srid_to)
+tpoint_transform(const Temporal *temp, int32_t srid_to)
 {
-  int32 srid_from;
+  int32_t srid_from;
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
       ! ensure_srid_known(srid_from = tpoint_srid(temp)) ||
@@ -987,7 +989,7 @@ tpoint_transform(const Temporal *temp, int32 srid_to)
  */
 Temporal *
 tpoint_transform_pipeline(const Temporal *temp, const char *pipeline,
-  int32 srid_to, bool is_forward)
+  int32_t srid_to, bool is_forward)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||

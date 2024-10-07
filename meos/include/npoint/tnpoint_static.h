@@ -50,7 +50,7 @@ extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
 
 /* Input/output functions */
 
-extern Npoint *npoint_in(const char *str, bool end);
+extern Npoint *npoint_in(const char *str);
 extern char *npoint_out(const Npoint *np, int maxdd);
 
 extern Nsegment *nsegment_in(const char *str);

@@ -52,6 +52,7 @@
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_box_constructor
  * @brief Return the last argument initialized with the spatiotemporal box from
  * a network point value
  * @param[in] np Network point
@@ -67,7 +68,10 @@ npoint_set_stbox(const Npoint *np, STBox *box)
 }
 
 /**
+ * @ingroup meos_box_conversion
  * @brief Return a network point converted to a spatiotemporal box
+ * @param[in] np Network point
+ * @csqlfn #Npoint_to_stbox()
  */
 STBox *
 npoint_to_stbox(const Npoint *np)
@@ -79,6 +83,7 @@ npoint_to_stbox(const Npoint *np)
 }
 
 /**
+ * @ingroup meos_internal_box_constructor
  * @brief Return the last argument initialized with the spatiotemporal box from
  * an array of network point values
  * @param[in] values Temporal network point values
@@ -97,6 +102,7 @@ npointarr_set_stbox(const Datum *values, int count, STBox *box)
   }
   return;
 }
+
 /**
  * @brief Return the last argument initialized with the spatiotemporal box of a
  * temporal network point instant
@@ -226,7 +232,10 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
 }
 
 /**
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return the bounding box of the network segment value
+ * @param[in] ns Network segment
+ * @param[out] box Spatiotemporal box
  */
 bool
 nsegment_set_stbox(const Nsegment *ns, STBox *box)
@@ -238,7 +247,10 @@ nsegment_set_stbox(const Nsegment *ns, STBox *box)
 }
 
 /**
+ * @ingroup meos_box_conversion
  * @brief Return a network segment converted to a spatiotemporal box
+ * @param[in] ns Network segment
+ * @csqlfn #Nsegment_to_stbox()
  */
 STBox *
 nsegment_to_stbox(const Nsegment *ns)
@@ -250,8 +262,12 @@ nsegment_to_stbox(const Nsegment *ns)
 }
 
 /**
+ * @ingroup meos_internal_box_constructor
  * @brief Return in the last argument a spatiotemporal box constructed from a
  * network point and a timestamptz
+ * @param[in] np Network point
+ * @param[in] t Timestamp
+ * @param[out] box Spatiotemporal box
  */
 bool
 npoint_timestamptz_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
@@ -264,8 +280,12 @@ npoint_timestamptz_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
 }
 
 /**
+ * @ingroup meos_box_constructor
  * @brief Return a spatiotemporal box constructed from a network point and a
  * timestamptz
+ * @param[in] np Network point
+ * @param[in] t Timestamp
+ * @csqlfn #Npoint_timestamptz_to_stbox()
  */
 STBox *
 npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t)
@@ -279,8 +299,12 @@ npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t)
 }
 
 /**
+ * @ingroup meos_internal_box_constructor
  * @brief Return in the last argument a spatiotemporal box constructed from a
  * network point and a timestamptz span
+ * @param[in] np Network point
+ * @param[in] s Timestamptz span
+ * @param[out] box Spatiotemporal box
  */
 bool
 npoint_tstzspan_set_stbox(const Npoint *np, const Span *s, STBox *box)
@@ -292,8 +316,12 @@ npoint_tstzspan_set_stbox(const Npoint *np, const Span *s, STBox *box)
 }
 
 /**
+ * @ingroup meos_box_constructor
  * @brief Return a spatiotemporal box constructed from a network point and a
  * timestamptz
+ * @param[in] np Network point
+ * @param[in] s Timestamptz span
+ * @csqlfn #Npoint_tstzspan_to_stbox()
  */
 STBox *
 npoint_tstzspan_to_stbox(const Npoint *np, const Span *s)

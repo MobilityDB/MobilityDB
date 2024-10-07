@@ -47,8 +47,12 @@
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_temporal_agg
  * @brief Transition function for temporal centroid aggregation of temporal
  * network points
+ * @param[in] state Current aggregate value
+ * @param[in] temp Temporal network point
+ * @csqlfn #Tnpoint_tcentroid_transfn()
  */
 SkipList *
 tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
