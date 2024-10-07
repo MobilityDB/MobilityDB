@@ -1278,7 +1278,7 @@ stbox_area(const STBox *box, bool spheroid)
     return (box->xmax - box->xmin) * (box->ymax - box->ymin);
   
   GSERIALIZED *geo = stbox_to_geo(box);
-  double result = pgis_geography_area(geo, spheroid);
+  double result = geog_area(geo, spheroid);
   pfree(geo);
   return result;
 }
@@ -1318,7 +1318,7 @@ stbox_perimeter(const STBox *box, bool spheroid)
 
   GSERIALIZED *geo = stbox_to_geo(box);
   double result = MEOS_FLAGS_GET_GEODETIC(box->flags) ?
-    pgis_geography_perimeter(geo, spheroid) : geo_perimeter(geo);
+    geog_perimeter(geo, spheroid) : geom_perimeter(geo);
   pfree(geo);
   return result;
 }

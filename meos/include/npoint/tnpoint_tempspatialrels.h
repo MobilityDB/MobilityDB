@@ -38,7 +38,7 @@
 #include <postgres.h>
 /* MEOS */
 #include "general/temporal.h"
-#include "npoint/tnpoint_static.h"
+#include "npoint/npoint.h"
 
 /*****************************************************************************/
 

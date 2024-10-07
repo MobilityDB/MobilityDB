@@ -38,11 +38,11 @@
 #include <postgres.h>
 /* MEOS */
 #include "general/temporal.h"
-#include "npoint/tnpoint_static.h"
+#include "npoint/npoint.h"
 
 /*****************************************************************************/
 
-extern Datum npoint_distance(Datum np1, Datum np2);
+extern Datum datum_npoint_distance(Datum np1, Datum np2);
 extern Temporal *distance_tnpoint_point(const Temporal *temp,
   const GSERIALIZED *gs);
 extern Temporal *distance_tnpoint_npoint(const Temporal *temp,

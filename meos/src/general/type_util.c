@@ -52,7 +52,7 @@
 #include "general/span.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
-  #include "npoint/tnpoint_static.h"
+  #include "npoint/npoint.h"
   #include "npoint/tnpoint_parser.h"
 #endif
 #if POSE
@@ -893,7 +893,7 @@ basetype_in(const char *str, meosType type,
     }
     case T_GEOMETRY:
     {
-      GSERIALIZED *gs = pgis_geometry_in((char *) str, -1);
+      GSERIALIZED *gs = geom_in((char *) str, -1);
       if (! gs)
         return false;
       *result = PointerGetDatum(gs);
@@ -901,7 +901,7 @@ basetype_in(const char *str, meosType type,
     }
     case T_GEOGRAPHY:
     {
-      GSERIALIZED *gs = pgis_geography_in((char *) str, -1);
+      GSERIALIZED *gs = geog_in((char *) str, -1);
       if (! gs)
         return false;
       *result = PointerGetDatum(gs);

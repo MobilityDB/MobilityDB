@@ -50,11 +50,11 @@
  * @brief Return the distance between two network points
  */
 Datum
-npoint_distance(Datum np1, Datum np2)
+datum_npoint_distance(Datum np1, Datum np2)
 {
   Datum geom1 = PointerGetDatum(npoint_geom(DatumGetNpointP(np1)));
   Datum geom2 = PointerGetDatum(npoint_geom(DatumGetNpointP(np2)));
-  return pt_distance2d(geom1, geom2);
+  return datum_pt_distance2d(geom1, geom2);
 }
 
 /*****************************************************************************
@@ -205,8 +205,7 @@ nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (gserialized_is_empty(gs))
     return -1;
   GSERIALIZED *traj = tnpoint_trajectory(temp);
-  double result = DatumGetFloat8(geom_distance2d(PointerGetDatum(traj),
-    PointerGetDatum(gs)));
+  double result = geom_distance2d(traj, gs);
   pfree(traj);
   return result;
 }
@@ -224,8 +223,7 @@ nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   GSERIALIZED *geom = npoint_geom(np);
   GSERIALIZED *traj = tnpoint_trajectory(temp);
-  double result = DatumGetFloat8(geom_distance2d(PointerGetDatum(traj),
-    PointerGetDatum(geom)));
+  double result = geom_distance2d(traj, geom);
   pfree(traj); pfree(geom);
   return result;
 }
@@ -263,7 +261,7 @@ shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (gserialized_is_empty(gs))
     return NULL;
   GSERIALIZED *traj = tnpoint_trajectory(temp);
-  GSERIALIZED *result = geo_shortestline2d(traj, gs);
+  GSERIALIZED *result = geom_shortestline2d(traj, gs);
   pfree(traj);
   return result;
 }
@@ -281,7 +279,7 @@ shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   GSERIALIZED *geom = npoint_geom(np);
   GSERIALIZED *traj = tnpoint_trajectory(temp);
-  GSERIALIZED *result = geo_shortestline2d(traj, geom);
+  GSERIALIZED *result = geom_shortestline2d(traj, geom);
   pfree(geom); pfree(traj);
   return result;
 }

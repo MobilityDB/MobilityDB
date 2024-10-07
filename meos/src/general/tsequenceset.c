@@ -181,7 +181,7 @@ datum_distance(Datum value1, Datum value2, meosType type, int16 flags)
   }
 #if NPOINT
   else if (type == T_NPOINT)
-    return DatumGetFloat8(npoint_distance(value1, value2));
+    return DatumGetFloat8(datum_npoint_distance(value1, value2));
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown types for distance between values: %s", meostype_name(type));

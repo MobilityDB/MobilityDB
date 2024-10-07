@@ -53,9 +53,9 @@ int main()
   char *polygon_wkt = "Polygon((1 1,1 2,2 2,2 1,1 1))";
 
   /* Read WKT into geometries */
-  GSERIALIZED *point = pgis_geometry_in(point_wkt, -1);
-  GSERIALIZED *linestring = pgis_geometry_in(linestring_wkt, -1);
-  GSERIALIZED *polygon = pgis_geometry_in(polygon_wkt, -1);
+  GSERIALIZED *point = geom_in(point_wkt, -1);
+  GSERIALIZED *linestring = geom_in(linestring_wkt, -1);
+  GSERIALIZED *polygon = geom_in(polygon_wkt, -1);
 
   /* Convert geometries to WKT */
   char *point_text = geo_as_text(point, 6);
@@ -63,9 +63,9 @@ int main()
   char *polygon_text = geo_as_text(polygon, 6);
 
   /* Revert generated WKT strings into geometries */
-  GSERIALIZED *point1 = pgis_geometry_in(point_text, -1);
-  GSERIALIZED *linestring1 = pgis_geometry_in(linestring_text, -1);
-  GSERIALIZED *polygon1 = pgis_geometry_in(polygon_text, -1);
+  GSERIALIZED *point1 = geom_in(point_text, -1);
+  GSERIALIZED *linestring1 = geom_in(linestring_text, -1);
+  GSERIALIZED *polygon1 = geom_in(polygon_text, -1);
 
   /* Ensure that the reverted types are equal to the original ones */
   if (! geo_same(point, point1))
@@ -105,9 +105,9 @@ int main()
   char *polygon_hexwkb = geo_as_hexewkb(polygon, "XDR");
 
   /* Revert generated GeoJSON strings into geometries */
-  GSERIALIZED *point3 = geometry_from_hexewkb(point_hexwkb);
-  GSERIALIZED *linestring3 = geometry_from_hexewkb(linestring_hexwkb);
-  GSERIALIZED *polygon3 = geometry_from_hexewkb(polygon_hexwkb);
+  GSERIALIZED *point3 = geom_from_hexewkb(point_hexwkb);
+  GSERIALIZED *linestring3 = geom_from_hexewkb(linestring_hexwkb);
+  GSERIALIZED *polygon3 = geom_from_hexewkb(polygon_hexwkb);
 
   /* Ensure that the reverted types are equal to the original ones */
   if (! geo_same(point, point3))

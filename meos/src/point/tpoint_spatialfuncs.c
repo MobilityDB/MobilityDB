@@ -221,8 +221,7 @@ GSERIALIZED *
 geo_serialize(const LWGEOM *geom)
 {
   GSERIALIZED *result = FLAGS_GET_GEODETIC(geom->flags) ?
-    geography_serialize((LWGEOM *) geom) :
-    geometry_serialize((LWGEOM *) geom);
+    geog_serialize((LWGEOM *) geom) : geom_serialize((LWGEOM *) geom);
   return result;
 }
 
@@ -237,10 +236,10 @@ datum_func2
 distance_fn(int16 flags)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags))
-    return &geog_distance;
+    return &datum_geog_distance;
   else
     return MEOS_FLAGS_GET_Z(flags) ?
-      &geom_distance3d : &geom_distance2d;
+      &datum_geom_distance3d : &datum_geom_distance2d;
 }
 
 /**
@@ -250,10 +249,10 @@ datum_func2
 pt_distance_fn(int16 flags)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags))
-    return &geog_distance;
+    return &datum_geog_distance;
   else
     return MEOS_FLAGS_GET_Z(flags) ?
-      &pt_distance3d : &pt_distance2d;
+      &datum_pt_distance3d : &datum_pt_distance2d;
 }
 
 /**
@@ -261,9 +260,9 @@ pt_distance_fn(int16 flags)
  * @pre For PostGIS version > 3 the geometries are NOT toasted
  */
 Datum
-geom_distance2d(Datum geom1, Datum geom2)
+datum_geom_distance2d(Datum geom1, Datum geom2)
 {
-  return Float8GetDatum(geo_distance(DatumGetGserializedP(geom1),
+  return Float8GetDatum(geom_distance2d(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
@@ -271,9 +270,9 @@ geom_distance2d(Datum geom1, Datum geom2)
  * @brief Return the 3D distance between the two geometries
  */
 Datum
-geom_distance3d(Datum geom1, Datum geom2)
+datum_geom_distance3d(Datum geom1, Datum geom2)
 {
-  return Float8GetDatum(geometry_3Ddistance(DatumGetGserializedP(geom1),
+  return Float8GetDatum(geom_distance3d(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
@@ -281,9 +280,9 @@ geom_distance3d(Datum geom1, Datum geom2)
  * @brief Return the distance between the two geographies
  */
 Datum
-geog_distance(Datum geog1, Datum geog2)
+datum_geog_distance(Datum geog1, Datum geog2)
 {
-  return Float8GetDatum(pgis_geography_distance(DatumGetGserializedP(geog1),
+  return Float8GetDatum(geog_distance(DatumGetGserializedP(geog1),
     DatumGetGserializedP(geog2)));
 }
 
@@ -291,7 +290,7 @@ geog_distance(Datum geog1, Datum geog2)
  * @brief Return the 2D distance between the two geometry points
  */
 Datum
-pt_distance2d(Datum geom1, Datum geom2)
+datum_pt_distance2d(Datum geom1, Datum geom2)
 {
   const POINT2D *p1 = DATUM_POINT2D_P(geom1);
   const POINT2D *p2 = DATUM_POINT2D_P(geom2);
@@ -302,7 +301,7 @@ pt_distance2d(Datum geom1, Datum geom2)
  * @brief Return the 3D distance between the two geometry points
  */
 Datum
-pt_distance3d(Datum geom1, Datum geom2)
+datum_pt_distance3d(Datum geom1, Datum geom2)
 {
   const POINT3DZ *p1 = DATUM_POINT3DZ_P(geom1);
   const POINT3DZ *p2 = DATUM_POINT3DZ_P(geom2);
@@ -313,9 +312,9 @@ pt_distance3d(Datum geom1, Datum geom2)
  * @brief Return the 2D intersection between the two geometries
  */
 Datum
-geom_intersection2d(Datum geom1, Datum geom2)
+datum_geom_intersection2d(Datum geom1, Datum geom2)
 {
-  return PointerGetDatum(geometry_intersection(DatumGetGserializedP(geom1),
+  return PointerGetDatum(geom_intersection2d(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
@@ -2021,7 +2020,7 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
   GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   geom->srid = srid;
-  /* Short circuit functions geography_from_geometry and
+  /* Short circuit functions geog_from_geometry and
      geometry_from_geography since we know it is a point */
   if (oper == GEOM_TO_GEOG)
   {
@@ -3624,7 +3623,7 @@ tpointseq_length(const TSequence *seq)
   {
     /* We are sure that the trajectory is a line */
     GSERIALIZED *traj = tpointseq_trajectory(seq);
-    double result = pgis_geography_length(traj, true);
+    double result = geog_length(traj, true);
     pfree(traj);
     return result;
   }
@@ -3780,7 +3779,7 @@ tpoint_convex_hull(const Temporal *temp)
     return NULL;
 
   GSERIALIZED *traj = tpoint_trajectory(temp);
-  GSERIALIZED *result = geometry_convex_hull(traj);
+  GSERIALIZED *result = geom_convex_hull(traj);
   pfree(traj);
   return result;
 }
@@ -4015,7 +4014,7 @@ tpoint_twcentroid(const Temporal *temp)
  * @brief Return the azimuth of two geometry points
  */
 static Datum
-geom_azimuth(Datum geom1, Datum geom2)
+datum_geom_azimuth(Datum geom1, Datum geom2)
 {
   double result;
   azimuth_pt_pt(DATUM_POINT2D_P(geom1), DATUM_POINT2D_P(geom2), &result);
@@ -4026,7 +4025,7 @@ geom_azimuth(Datum geom1, Datum geom2)
  * @brief Return the azimuth two geography points
  */
 static Datum
-geog_azimuth(Datum geog1, Datum geog2)
+datum_geog_azimuth(Datum geog1, Datum geog2)
 {
   const GSERIALIZED *g1 = DatumGetGserializedP(geog1);
   const GSERIALIZED *g2 = DatumGetGserializedP(geog2);
@@ -4059,7 +4058,7 @@ tpointseq_direction(const TSequence *seq, double *result)
 
   /* Determine the PostGIS function to call */
   datum_func2 func = MEOS_FLAGS_GET_GEODETIC(seq->flags) ?
-    &geog_azimuth : &geom_azimuth;
+    &datum_geog_azimuth : &datum_geom_azimuth;
 
   /* We are sure that there are at least 2 instants */
   Datum value1 = tinstant_val(TSEQUENCE_INST_N(seq, 0));
@@ -4090,7 +4089,7 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
 
   /* Determine the PostGIS function to call */
   datum_func2 func = MEOS_FLAGS_GET_GEODETIC(ss->flags) ?
-    &geog_azimuth : &geom_azimuth;
+    &datum_geog_azimuth : &datum_geom_azimuth;
 
   /* We are sure that there are at least 2 instants */
   const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, 0);
@@ -4151,7 +4150,7 @@ tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
 
   /* Determine the PostGIS function to call */
   datum_func2 func = MEOS_FLAGS_GET_GEODETIC(seq->flags) ?
-    &geog_azimuth : &geom_azimuth;
+    &datum_geog_azimuth : &datum_geom_azimuth;
 
   /* We are sure that there are at least 2 instants */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);

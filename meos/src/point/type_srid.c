@@ -46,7 +46,9 @@
 #include "point/stbox.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint_static.h"
+#if NPOINT
+  #include "npoint/npoint.h"
+#endif /* NPOINT */
 
 /*
  * Maximum length of an ESPG string to lookup

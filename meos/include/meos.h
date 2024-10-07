@@ -411,16 +411,15 @@ extern char *geo_as_ewkt(const GSERIALIZED *gs, int precision);
 extern char *geo_as_geojson(const GSERIALIZED *gs, int option, int precision, const char *srs);
 extern char *geo_as_hexewkb(const GSERIALIZED *gs, const char *endian);
 extern char *geo_as_text(const GSERIALIZED *gs, int precision);
+extern GSERIALIZED *geo_from_text(char *wkt, int srid);
 extern GSERIALIZED *geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32 srid);
 extern GSERIALIZED *geo_from_geojson(const char *geojson);
 extern char *geo_out(const GSERIALIZED *gs);
 extern bool geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
-extern GSERIALIZED *geography_from_hexewkb(const char *wkt);
-extern GSERIALIZED *geography_from_text(char *wkt, int srid);
-extern GSERIALIZED *geometry_from_hexewkb(const char *wkt);
-extern GSERIALIZED *geometry_from_text(char *wkt, int srid);
-extern GSERIALIZED *pgis_geography_in(char *str, int32 typmod);
-extern GSERIALIZED *pgis_geometry_in(char *str, int32 typmod);
+extern GSERIALIZED *geog_from_hexewkb(const char *wkt);
+extern GSERIALIZED *geog_in(char *str, int32 typmod);
+extern GSERIALIZED *geom_from_hexewkb(const char *wkt);
+extern GSERIALIZED *geom_in(char *str, int32 typmod);
 
 /*===========================================================================*
  * Functions for set and span types

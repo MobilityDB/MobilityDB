@@ -1,7 +1,7 @@
 # No Postgres version dependant files
 
 SET(LOCAL_FILES
-  081_tnpoint_static
+  081_npoint
   082_npointset
   083_tnpoint
   085_tnpoint_compops

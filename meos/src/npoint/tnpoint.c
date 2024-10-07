@@ -44,7 +44,7 @@
 #include "general/temporal.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "npoint/tnpoint_static.h"
+#include "npoint/npoint.h"
 
 /*****************************************************************************
  * Conversion functions
@@ -167,7 +167,7 @@ tnpoint_to_tgeompoint(const Temporal *temp)
 TInstant *
 tgeompointinst_tnpointinst(const TInstant *inst)
 {
-  assert(inst); assert(inst->temptype == T_TNPOINT);
+  assert(inst); assert(inst->temptype == T_TGEOMPOINT);
   Npoint *np = geom_npoint(DatumGetGserializedP(tinstant_val(inst)));
   if (np == NULL)
     return NULL;
@@ -180,7 +180,7 @@ tgeompointinst_tnpointinst(const TInstant *inst)
 TSequence *
 tgeompointseq_tnpointseq(const TSequence *seq)
 {
-  assert(seq); assert(seq->temptype == T_TNPOINT);
+  assert(seq); assert(seq->temptype == T_TGEOMPOINT);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
@@ -202,7 +202,7 @@ tgeompointseq_tnpointseq(const TSequence *seq)
 TSequenceSet *
 tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
 {
-  assert(ss); assert(ss->temptype == T_TNPOINT);
+  assert(ss); assert(ss->temptype == T_TGEOMPOINT);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
@@ -225,7 +225,7 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
 Temporal *
 tgeompoint_tnpoint(const Temporal *temp)
 {
-  assert(temp); assert(temp->temptype == T_TNPOINT);
+  assert(temp); assert(temp->temptype == T_TGEOMPOINT);
   int32_t srid_tpoint = tpoint_srid(temp);
   int32_t srid_ways = get_srid_ways();
   if (! ensure_same_srid(srid_tpoint, srid_ways))

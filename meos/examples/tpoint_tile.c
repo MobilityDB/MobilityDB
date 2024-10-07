@@ -55,7 +55,7 @@ int main(void)
 
   Temporal *tpoint = tgeompoint_in("[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]");
   Interval *interv = pg_interval_in("2 days", -1);
-  GSERIALIZED *sorigin = pgis_geometry_in("Point(0 0 0)", -1);
+  GSERIALIZED *sorigin = geom_in("Point(0 0 0)", -1);
   TimestampTz torigin = pg_timestamptz_in("2020-03-01", -1);
 
   bool spacesplit = true; /* Set this parameter to enable/disable space split */

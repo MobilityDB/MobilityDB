@@ -50,6 +50,7 @@
 #include "general/temporal_restrict.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
+#include "point/pgis_types.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"
 
@@ -1315,7 +1316,7 @@ tpointinst_restrict_geom_iter(const TInstant *inst, const GSERIALIZED *gs,
   }
 
   /* Restrict to the XY dimension */
-  if (! DatumGetBool(geom_intersects2d(value, PointerGetDatum(gs))))
+  if (! geom_intersects2d(DatumGetGserializedP(value), gs))
     return ! atfunc;
 
   /* Point intersects the geometry and the Z/T spans */
@@ -1471,7 +1472,8 @@ tpointseq_step_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
  * the intersecting geometry is non empty
  */
 Span *
-tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter, int *count)
+tpointseq_interperiods(const TSequence *seq, const GSERIALIZED *gsinter,
+  int *count)
 {
   /* The temporal sequence has at least 2 instants since
    * (1) the test for instantaneous full sequence is done in the calling function
@@ -1649,20 +1651,17 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   TSequence **simpleseqs = tpointseq_make_simple(seq2d, &nsimple);
   Span *allperiods = NULL; /* make compiler quiet */
   int totalpers = 0;
-  GSERIALIZED *traj, *gsinter;
-  Datum inter;
+  GSERIALIZED *traj, *inter;
 
   if (nsimple == 1)
   {
     /* Particular case when the input sequence is simple */
     pfree_array((void **) simpleseqs, nsimple);
     traj = tpointseq_trajectory(seq2d);
-    inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
-    gsinter = DatumGetGserializedP(inter);
-    if (! gserialized_is_empty(gsinter))
-      allperiods = tpointseq_interperiods(seq2d, gsinter, &totalpers);
-    PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
-    pfree(DatumGetPointer(inter)); pfree(traj);
+    inter = geom_intersection2d(traj, gs);
+    if (! gserialized_is_empty(inter))
+      allperiods = tpointseq_interperiods(seq2d, inter, &totalpers);
+    pfree(inter); pfree(traj);
     if (totalpers == 0)
     {
       if (hasz)
@@ -1681,16 +1680,13 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
     for (int i = 0; i < nsimple; i++)
     {
       traj = tpointseq_trajectory(simpleseqs[i]);
-      inter = geom_intersection2d(PointerGetDatum(traj), PointerGetDatum(gs));
-      gsinter = DatumGetGserializedP(inter);
-      if (! gserialized_is_empty(gsinter))
+      inter = geom_intersection2d(traj, gs);
+      if (! gserialized_is_empty(inter))
       {
-        periods[i] = tpointseq_interperiods(simpleseqs[i], gsinter,
-          &npers[i]);
+        periods[i] = tpointseq_interperiods(simpleseqs[i], inter, &npers[i]);
         totalpers += npers[i];
       }
-      PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
-      pfree(DatumGetPointer(inter)); pfree(traj);
+      pfree(inter); pfree(traj);
     }
     pfree_array((void **) simpleseqs, nsimple);
     if (totalpers == 0)

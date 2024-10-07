@@ -46,7 +46,7 @@
 #include "point/stbox.h"
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
-  #include "npoint/tnpoint_static.h"
+  #include "npoint/npoint.h"
 #endif /* NPOINT */
 
 /*****************************************************************************/
