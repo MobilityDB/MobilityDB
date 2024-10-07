@@ -808,6 +808,8 @@ extern TInstant *tnumberinst_restrict_span(const TInstant *inst, const Span *spa
 extern TInstant *tnumberinst_restrict_spanset(const TInstant *inst, const SpanSet *ss, bool atfunc);
 extern TSequenceSet *tnumberseqset_restrict_span(const TSequenceSet *ss, const Span *span, bool atfunc);
 extern TSequenceSet *tnumberseqset_restrict_spanset(const TSequenceSet *ss, const SpanSet *spanset, bool atfunc);
+extern Temporal *tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, const bool atfunc);
+extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc, bool atfunc);
 extern Temporal *tpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, const bool atfunc);
 extern Temporal *tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc, bool atfunc);
 extern TInstant *tpointinst_restrict_geom(const TInstant *inst, const GSERIALIZED *gs, const Span *zspan, bool atfunc);
@@ -926,6 +928,8 @@ extern TInstant *tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper);
 extern TSequence *tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper);
 extern TSequenceSet *tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, bool oper);
 extern Temporal *tgeompoint_tgeogpoint(const Temporal *temp, bool oper);
+extern Temporal *tgeompoint_tnpoint(const Temporal *temp);
+extern Temporal *tnpoint_tgeompoint(const Temporal *temp);
 extern TInstant *tpointinst_set_srid(const TInstant *inst, int32 srid);
 extern TSequence **tpointseq_make_simple(const TSequence *seq, int *count);
 extern TSequence *tpointseq_set_srid(const TSequence *seq, int32 srid);

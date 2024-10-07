@@ -41,8 +41,10 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <libpq/pqformat.h>
-#include <executor/spi.h>
+#if ! MEOS
+  #include <libpq/pqformat.h>
+  #include <executor/spi.h>
+#endif /* ! MEOS */
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */

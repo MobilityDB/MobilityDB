@@ -44,6 +44,7 @@
 /* C */
 #include <assert.h>
 /* MEOS */
+#include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
 #include "point/tpoint_spatialfuncs.h"

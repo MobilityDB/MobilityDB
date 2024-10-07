@@ -37,7 +37,9 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <lib/stringinfo.h>
+#if ! MEOS 
+  #include <lib/stringinfo.h>
+#endif /* ! MEOS */
 /* MEOS */
 #include "npoint/tnpoint.h"
 

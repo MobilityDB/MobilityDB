@@ -79,23 +79,17 @@ option(MEOS
 
 # Option for including geoposes
 option(POSE
-    "Set ON|OFF (default=OFF) to include geoposes
-    "
-    OFF
+  "Set ON|OFF (default=OFF) to include geoposes
+  "
+  OFF
   )
 
-if(NOT MEOS)
-  # Option for including network points
-  option(NPOINT
-    "Set ON|OFF (default=ON) to include network points
-    "
-    ON
+# Option for including network points
+option(NPOINT
+  "Set ON|OFF (default=ON) to include network points
+  "
+  ON
   )
-else()
-  # Set NPOINT option for excluding support for network points, which require a
-  # table named `ways` containing the geometries of the road network
-  set(NPOINT OFF)
-endif()
 
 if(NPOINT)
   message(STATUS "Including network points")

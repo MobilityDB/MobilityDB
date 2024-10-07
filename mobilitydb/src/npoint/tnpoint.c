@@ -39,6 +39,7 @@
 #include <utils/array.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/lifting.h"
 #include "general/set.h"
 #include "general/temporal.h"
