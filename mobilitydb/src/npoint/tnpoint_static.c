@@ -132,7 +132,7 @@ Datum
 Npoint_in(PG_FUNCTION_ARGS)
 {
   const char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_NPOINT_P(npoint_in(str, true));
+  PG_RETURN_NPOINT_P(npoint_in(str));
 }
 
 PGDLLEXPORT Datum Npoint_out(PG_FUNCTION_ARGS);

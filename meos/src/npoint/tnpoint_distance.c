@@ -46,6 +46,7 @@
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_temporal_dist
  * @brief Return the distance between two network points
  */
 Datum
@@ -61,8 +62,10 @@ npoint_distance(Datum np1, Datum np2)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_temporal_dist
  * @brief Return the temporal distance between a geometry point and a temporal
  * network point
+ * @csqlfn #Distance_tnpoint_point()
  */
 Temporal *
 distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
@@ -79,8 +82,12 @@ distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
+ * @ingroup meos_temporal_dist
  * @brief Return the temporal distance between a temporal network point and
  * a network point
+ * @param[in] temp Temporal point
+ * @param[in] np Network point
+ * @csqlfn #Distance_tnpoint_npoint()
  */
 Temporal *
 distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
@@ -93,7 +100,10 @@ distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 }
 
 /**
+ * @ingroup meos_temporal_dist
  * @brief Return the temporal distance between two temporal network points
+ * @param[in] temp1,temp2 Temporal points
+ * @csqlfn #Distance_tnpoint_tnpoint()
  */
 Temporal *
 distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
@@ -110,8 +120,12 @@ distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_temporal_dist
  * @brief Return the nearest approach instant of the temporal network point
  * and a geometry
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @csqlfn #NAI_tnpoint_geo()
  */
 TInstant *
 nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -130,8 +144,12 @@ nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
+ * @ingroup meos_temporal_dist
  * @brief Return the nearest approach instant of the network point and a
  * temporal network point
+ * @param[in] temp Temporal point
+ * @param[in] np Network point
+ * @csqlfn #NAI_tnpoint_npoint()
  */
 TInstant *
 nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
@@ -149,7 +167,10 @@ nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 }
 
 /**
+ * @ingroup meos_temporal_dist
  * @brief Return the nearest approach instant of two temporal network points
+ * @param[in] temp1,temp2 Temporal points
+ * @csqlfn #NAI_tnpoint_tnpoint()
  */
 TInstant *
 nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
@@ -171,15 +192,19 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance of two temporal network point
  * and a geometry
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @csqlfn #NAD_tnpoint_geo()
  */
 double
 nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   if (gserialized_is_empty(gs))
     return -1;
-  GSERIALIZED *traj = tnpoint_geom(temp);
+  GSERIALIZED *traj = tnpoint_trajectory(temp);
   double result = DatumGetFloat8(geom_distance2d(PointerGetDatum(traj),
     PointerGetDatum(gs)));
   pfree(traj);
@@ -187,14 +212,18 @@ nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
+ * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance of a temporal network point
  * and a network point
+ * @param[in] temp Temporal point
+ * @param[in] np Network point
+ * @csqlfn #NAD_tnpoint_npoint()
  */
 double
 nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   GSERIALIZED *geom = npoint_geom(np);
-  GSERIALIZED *traj = tnpoint_geom(temp);
+  GSERIALIZED *traj = tnpoint_trajectory(temp);
   double result = DatumGetFloat8(geom_distance2d(PointerGetDatum(traj),
     PointerGetDatum(geom)));
   pfree(traj); pfree(geom);
@@ -202,7 +231,10 @@ nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 }
 
 /**
+ * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance of two temporal network points
+ * @param[in] temp1,temp2 Temporal points
+ * @csqlfn #NAD_tnpoint_tnpoint()
  */
 double
 nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
@@ -218,37 +250,48 @@ nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_temporal_dist
  * @brief Return the line connecting the nearest approach point between a
  * geometry and a temporal network point
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @csqlfn #Shortestline_tnpoint_geo()
  */
 GSERIALIZED *
 shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   if (gserialized_is_empty(gs))
     return NULL;
-  GSERIALIZED *traj = tnpoint_geom(temp);
+  GSERIALIZED *traj = tnpoint_trajectory(temp);
   GSERIALIZED *result = geo_shortestline2d(traj, gs);
   pfree(traj);
   return result;
 }
 
 /**
+ * @ingroup meos_temporal_dist
  * @brief Return the line connecting the nearest approach point between a
  * network point and a temporal network point
+ * @param[in] temp Temporal point
+ * @param[in] np Network point
+ * @csqlfn #Shortestline_tnpoint_npoint()
  */
 GSERIALIZED *
 shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   GSERIALIZED *geom = npoint_geom(np);
-  GSERIALIZED *traj = tnpoint_geom(temp);
+  GSERIALIZED *traj = tnpoint_trajectory(temp);
   GSERIALIZED *result = geo_shortestline2d(traj, geom);
-  pfree(traj); pfree(geom);
+  pfree(geom); pfree(traj);
   return result;
 }
 
 /**
+ * @ingroup meos_temporal_dist
  * @brief Return the line connecting the nearest approach point between two
  * temporal networks
+ * @param[in] temp1,temp2 Temporal points
+ * @csqlfn #Shortestline_tnpoint_tnpoint()
  */
 GSERIALIZED *
 shortestline_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)

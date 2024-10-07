@@ -155,26 +155,26 @@ tnpointseqset_step_npoints(const TSequenceSet *ss, int *count)
  *****************************************************************************/
 
 /**
- * @brief Return the geometry covered by a temporal network point
+ * @brief Return the trajectory of a temporal network point
  * @param[in] inst Temporal network point
  */
 GSERIALIZED *
-tnpointinst_geom(const TInstant *inst)
+tnpointinst_trajectory(const TInstant *inst)
 {
   const Npoint *np = DatumGetNpointP(tinstant_val(inst));
   return npoint_geom(np);
 }
 
 /**
- * @brief Return the geometry covered by a temporal network point
+ * @brief Return the trajectory a temporal network point
  * @param[in] seq Temporal network point
  */
 GSERIALIZED *
-tnpointseq_geom(const TSequence *seq)
+tnpointseq_trajectory(const TSequence *seq)
 {
   /* Instantaneous sequence */
   if (seq->count == 1)
-    return tnpointinst_geom(TSEQUENCE_INST_N(seq, 0));
+    return tnpointinst_trajectory(TSEQUENCE_INST_N(seq, 0));
 
   GSERIALIZED *result;
   if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
@@ -195,15 +195,15 @@ tnpointseq_geom(const TSequence *seq)
 }
 
 /**
- * @brief Return the geometry covered by a temporal network point
+ * @brief Return the trajectory of a temporal network point
  * @param[in] ss Temporal network point
  */
 GSERIALIZED *
-tnpointseqset_geom(const TSequenceSet *ss)
+tnpointseqset_trajectory(const TSequenceSet *ss)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tnpointseq_geom(TSEQUENCESET_SEQ_N(ss, 0));
+    return tnpointseq_trajectory(TSEQUENCESET_SEQ_N(ss, 0));
 
   int count;
   GSERIALIZED *result;
@@ -223,21 +223,23 @@ tnpointseqset_geom(const TSequenceSet *ss)
 }
 
 /**
+ * @ingroup meos_temporal_spatial_transf
  * @brief Return the geometry covered by a temporal network point
  * @param[in] temp Temporal network point
+ * @csqlfn #Tnpoint_trajectory()
  */
 GSERIALIZED *
-tnpoint_geom(const Temporal *temp)
+tnpoint_trajectory(const Temporal *temp)
 {
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      return tnpointinst_geom((TInstant *) temp);
+      return tnpointinst_trajectory((TInstant *) temp);
     case TSEQUENCE:
-      return tnpointseq_geom((TSequence *) temp);
+      return tnpointseq_trajectory((TSequence *) temp);
     default: /* TSEQUENCESET */
-      return tnpointseqset_geom((TSequenceSet *) temp);
+      return tnpointseqset_trajectory((TSequenceSet *) temp);
   }
 }
 
@@ -330,7 +332,10 @@ tnpointseqset_length(const TSequenceSet *ss)
 }
 
 /**
+ * @ingroup meos_temporal_spatial_accessor
  * @brief Length traversed by a temporal network point
+ * @param[in] temp Temporal point
+ * @csqlfn #Tnpoint_length()
  */
 double
 tnpoint_length(const Temporal *temp)
@@ -348,7 +353,6 @@ tnpoint_length(const Temporal *temp)
 
 /**
  * @brief Return the cumulative length traversed by a temporal point
- * @csqlfn #Tnpoint_cumulative_length()
  * @pre The sequence has linear interpolation
  */
 static TSequence *
@@ -385,7 +389,6 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 
 /**
  * @brief Cumulative length traversed by a temporal network point
- * @csqlfn #Tnpoint_cumulative_length()
  */
 static TSequenceSet *
 tnpointseqset_cumulative_length(const TSequenceSet *ss)
@@ -403,7 +406,9 @@ tnpointseqset_cumulative_length(const TSequenceSet *ss)
 }
 
 /**
+ * @ingroup meos_temporal_spatial_accessor
  * @brief Cumulative length traversed by a temporal network point
+ * @param[in] temp Temporal point
  * @csqlfn #Tnpoint_cumulative_length()
  */
 Temporal *
@@ -481,7 +486,10 @@ tnpointseqset_speed(const TSequenceSet *ss)
 }
 
 /**
+ * @ingroup meos_temporal_spatial_accessor
  * @brief Speed of a temporal network point
+ * @param[in] temp Temporal point
+ * @csqlfn #Tnpoint_speed()
  */
 Temporal *
 tnpoint_speed(const Temporal *temp)
@@ -509,7 +517,10 @@ tnpoint_speed(const Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_temporal_spatial_accessor
  * @brief Return the time-weighed centroid of a temporal network point
+ * @param[in] temp Temporal point
+ * @csqlfn #Tnpoint_twcentroid()
  */
 GSERIALIZED *
 tnpoint_twcentroid(const Temporal *temp)
@@ -674,7 +685,10 @@ tnpointseqset_azimuth(const TSequenceSet *ss)
 }
 
 /**
+ * @ingroup meos_temporal_spatial_accessor
  * @brief Temporal azimuth of a temporal network point
+ * @param[in] temp Temporal point
+ * @csqlfn #Tnpoint_azimuth()
  */
 Temporal *
 tnpoint_azimuth(const Temporal *temp)
@@ -693,6 +707,7 @@ tnpoint_azimuth(const Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_temporal_restrict
  * @brief Return a temporal network point restricted to (the complement of) a
  * geometry
  */
@@ -731,15 +746,58 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   return result;
 }
 
+#if MEOS
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal network point restricted to a geometry
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] zspan Span of values to restrict the Z dimension
+ * @csqlfn #Tnpoint_at_geom()
+ */
+Temporal *
+tnpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs,
+  const Span *zspan)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tpoint_geo(temp, gs))
+    return NULL;
+  return tnpoint_restrict_geom(temp, gs, zspan, REST_AT);
+}
+
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal point restricted to (the complement of) a geometry
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] zspan Span of values to restrict the Z dimension
+ * @csqlfn #Tnpoint_minus_geom()
+ */
+Temporal *
+tnpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
+  const Span *zspan)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tpoint_geo(temp, gs))
+    return NULL;
+  return tnpoint_restrict_geom(temp, gs, zspan, REST_MINUS);
+}
+#endif /* MEOS */
+
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_internal_temporal_restrict
  * @brief Return a temporal network point restricted to (the complement of) a
  * spatiotemporal box
- * @sqlfn Tnpoint_at_stbox()
+ * @param[in] temp Temporal network point
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
+ * @param[in] atfunc True if the restriction is at, false for minus
  */
 Temporal *
-tnpoint_restrict_stbox(const Temporal *temp, STBox *box, bool border_inc, bool atfunc)
+tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
+  bool atfunc)
 {
   Temporal *tgeom = tnpoint_tgeompoint(temp);
   Temporal *tgeomres = tpoint_restrict_stbox(tgeom, box, border_inc, atfunc);
@@ -751,5 +809,35 @@ tnpoint_restrict_stbox(const Temporal *temp, STBox *box, bool border_inc, bool a
   }
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal network point restricted to a geometry
+ * @param[in] temp Temporal network point
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
+ * @sqlfn #Tnpoint_at_stbox()
+ */
+Temporal *
+tnpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
+{
+  return tnpoint_restrict_stbox(temp, box, border_inc, REST_AT);
+}
+
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal point restricted to (the complement of) a geometry
+ * @param[in] temp Temporal network point
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
+ * @sqlfn #Tnpoint_minus_stbox()
+ */
+Temporal *
+tnpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
+{
+  return tnpoint_restrict_stbox(temp, box, border_inc, REST_MINUS);
+}
+#endif /* MEOS */
 
 /*****************************************************************************/

@@ -94,6 +94,7 @@ ea_spatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_temporal_spatial_rel_ever
  * @brief Return true if a geometry ever/always contains a temporal network
  * point
  * @param[in] gs Geometry
@@ -113,7 +114,38 @@ ea_contains_geo_tnpoint(const GSERIALIZED *gs, const Temporal *temp, bool ever)
   return result;
 }
 
+#if MEOS
 /**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points ever satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] gs Geometry
+ * @csqlfn #Econtains_geo_tnpoint()
+ */
+int
+econtains_geo_tnpoint(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return ea_contains_geo_tnpoint(gs, temp, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points always satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] gs Geometry
+ * @csqlfn #Acontains_geo_tnpoint()
+ */
+int
+acontains_geo_tnpoint(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return ea_contains_geo_tnpoint(gs, temp, ALWAYS);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_internal_temporal_spatial_rel_ever
  * @brief Return true if a network point ever/always contains a temporal
  * network point
  * @param[in] np Network point
@@ -121,7 +153,7 @@ ea_contains_geo_tnpoint(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * @param[in] ever True to compute the ever semantics, false for always
  */
 int
-ea_contains_npoint_tnpoint(const Npoint *np, const Temporal *temp, bool ever)
+ea_contains_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool ever)
 {
   assert(np); assert(temp);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
@@ -132,11 +164,40 @@ ea_contains_npoint_tnpoint(const Npoint *np, const Temporal *temp, bool ever)
   return result;
 }
 
+#if MEOS
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points ever satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ */
+int
+econtains_tnpoint_npoint(const Temporal *temp, const Npoint *np)
+{
+  return ea_contains_tnpoint_npoint(temp, np, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points always satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ */
+int
+acontains_tnpoint_npoint(const Temporal *temp, const Npoint *np)
+{
+  return ea_contains_tnpoint_npoint(temp, np, ALWAYS);
+}
+#endif /* MEOS */
+
 /*****************************************************************************
  * Ever/always disjoint
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_temporal_spatial_rel_ever
  * @brief Return true if a geometry and a temporal network point are
  * ever/always disjoint
  * @param[in] temp Temporal network point
@@ -156,7 +217,38 @@ ea_disjoint_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   return result;
 }
 
+#if MEOS
 /**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points ever satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] gs Geometry
+ * @csqlfn #Edisjoint_tnpoint_npoint()
+ */
+int
+edisjoint_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  return ea_disjoint_tnpoint_geo(temp, gs, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points always satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] gs Geometry
+ * @csqlfn #Adisjoint_tnpoint_geo()
+ */
+int
+adisjoint_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  return ea_disjoint_tnpoint_geo(temp, gs, ALWAYS);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_internal_temporal_spatial_rel_ever
  * @brief Return true if a network point and a temporal network point are
  * ever/always disjoint
  * @param[in] temp Temporal network point
@@ -175,11 +267,68 @@ ea_disjoint_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool ever)
   return result;
 }
 
+#if MEOS
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points ever satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ * @csqlfn #Edisjoint_tnpoint_npoint()
+ */
+int
+edisjoint_tnpoint_npoint(const Temporal *temp, const Npoint *np)
+{
+  return ea_disjoint_tnpoint_npoint(temp, np, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points always satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ * @csqlfn #Adisjoint_tnpoint_npoint()
+ */
+int
+adisjoint_tnpoint_npoint(const Temporal *temp, const Npoint *np)
+{
+  return ea_disjoint_tnpoint_npoint(temp, np, ALWAYS);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return 1 if the temporal network points are ever disjoint, 0 if not,
+ * and -1 on error or if the temporal points do not intersect in time
+ * @param[in] temp1,temp2 Temporal network points
+ * @csqlfn #Edisjoint_tnpoint_tnpoint()
+ */
+int
+edisjoint_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
+{
+  return ea_spatialrel_tnpoint_tnpoint(temp1, temp2, &datum2_point_ne, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return 1 if the temporal network points are always disjoint, 0 if
+ * not, and -1 on error or if the temporal points do not intersect in time
+ * @param[in] temp1,temp2 Temporal network points
+ * @csqlfn #Adisjoint_tnpoint_tnpoint()
+ */
+int
+adisjoint_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
+{
+  return ea_spatialrel_tnpoint_tnpoint(temp1, temp2, &datum2_point_ne, ALWAYS);
+}
+#endif /* MEOS */
+
 /*****************************************************************************
  * Ever/always intersects
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_temporal_spatial_rel_ever
  * @brief Return true if a geometry and a temporal network point ever/always
  * intersect
  * @param[in] temp Temporal network point
@@ -200,7 +349,38 @@ ea_intersects_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   return result;
 }
 
+#if MEOS
 /**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points ever satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] gs Geometry
+ * @csqlfn #Eintersects_tnpoint_npoint()
+ */
+int
+eintersects_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  return ea_intersects_tnpoint_geo(temp, gs, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points always satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] gs Geometry
+ * @csqlfn #Aintersects_tnpoint_geo()
+ */
+int
+aintersects_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  return ea_intersects_tnpoint_geo(temp, gs, ALWAYS);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_internal_temporal_spatial_rel_ever
  * @brief Return true if a network point and a temporal network point
  * ever/always intersect
  * @param[in] temp Temporal network point
@@ -219,11 +399,42 @@ ea_intersects_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool ever)
   return result;
 }
 
+#if MEOS
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points ever satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ * @csqlfn #Eintersects_tnpoint_npoint()
+ */
+int
+eintersects_tnpoint_npoint(const Temporal *temp, const Npoint *np)
+{
+  return ea_intersects_tnpoint_npoint(temp, np, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points always satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ * @csqlfn #Aintersects_tnpoint_npoint()
+ */
+int
+aintersects_tnpoint_npoint(const Temporal *temp, const Npoint *np)
+{
+  return ea_intersects_tnpoint_npoint(temp, np, ALWAYS);
+}
+#endif /* MEOS */
+
 /*****************************************************************************
  * Ever/always touches
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_temporal_spatial_rel_ever
  * @brief Return true if a geometry and a temporal network point ever/always
  * touch
  * @param[in] temp Temporal network point
@@ -243,7 +454,38 @@ ea_touches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   return result;
 }
 
+#if MEOS
 /**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points ever satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] gs Geometry
+ * @csqlfn #Etouches_tnpoint_npoint()
+ */
+int
+etouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  return ea_touches_tnpoint_geo(temp, gs, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points always satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] gs Geometry
+ * @csqlfn #Atouches_tnpoint_geo()
+ */
+int
+atouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  return ea_touches_tnpoint_geo(temp, gs, ALWAYS);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_internal_temporal_spatial_rel_ever
  * @brief Return true if a temporal network point and a network point
  * ever/always touch
  * @param[in] temp Temporal network point
@@ -262,11 +504,42 @@ ea_touches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool ever)
   return result;
 }
 
+#if MEOS
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points ever satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ * @csqlfn #Etouches_tnpoint_npoint()
+ */
+int
+etouches_tnpoint_npoint(const Temporal *temp, const Npoint *np)
+{
+  return ea_touches_tnpoint_npoint(temp, np, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points always satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ * @csqlfn #Atouches_tnpoint_npoint()
+ */
+int
+atouches_tnpoint_npoint(const Temporal *temp, const Npoint *np)
+{
+  return ea_touches_tnpoint_npoint(temp, np, ALWAYS);
+}
+#endif /* MEOS */
+
 /*****************************************************************************
  * Ever/always dwithin
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_temporal_spatial_rel_ever
  * @brief Generic spatial relationships for a temporal network point and a
  * geometry
  * @param[in] temp Temporal network point
@@ -288,7 +561,40 @@ ea_dwithin_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs,
   return result;
 }
 
+#if MEOS
 /**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points ever satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] gs Geometry
+ * @param[in] dist Distance
+ * @csqlfn #Edwithin_tnpoint_tnpoint()
+ */
+int
+edwithin_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs, double dist)
+{
+  return ea_dwithin_tnpoint_geom(temp, gs, dist, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points always satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] gs Geometry
+ * @param[in] dist Distance
+ * @csqlfn #Adwithin_tnpoint_tnpoint()
+ */
+int
+adwithin_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs, double dist)
+{
+  return ea_dwithin_tnpoint_geom(temp, gs, dist, ALWAYS);
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_internal_temporal_spatial_rel_ever
  * @brief Generic spatial relationships for a temporal network point and a
  * geometry
  * @param[in] temp Temporal network point
@@ -309,11 +615,47 @@ ea_dwithin_tnpoint_npoint(const Temporal *temp, const Npoint *np, double dist,
   return result;
 }
 
+#if MEOS
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points ever satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ * @param[in] dist Distance
+ * @csqlfn #Edwithin_tnpoint_tnpoint()
+ */
+int
+edwithin_tnpoint_npoint(const Temporal *temp, const Npoint *np, double dist)
+{
+  return ea_dwithin_tnpoint_npoint(temp, np, dist, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points always satisfy the spatial
+ * relationship
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ * @param[in] dist Distance
+ * @csqlfn #Adwithin_tnpoint_tnpoint()
+ */
+int
+adwithin_tnpoint_npoint(const Temporal *temp, const Npoint *np, double dist)
+{
+  return ea_dwithin_tnpoint_npoint(temp, np, dist, ALWAYS);
+}
+#endif /* MEOS */
+
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_internal_temporal_spatial_rel_ever
  * @brief Return true if the temporal network points ever satisfy the spatial
  * relationship
+ * @param[in] temp1,temp2 Temporal network points
+ * @param[in] dist Distance
+ * @param[in] ever True to compute the ever semantics, false for always
  */
 int
 ea_dwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
@@ -333,10 +675,42 @@ ea_dwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
 
   Temporal *tpoint1 = tnpoint_tgeompoint(sync1);
   Temporal *tpoint2 = tnpoint_tgeompoint(sync2);
-  bool result = ea_dwithin_tpoint_tpoint1(tpoint1, tpoint2, dist, ever);
+  bool result = ea_dwithin_tpoint_tpoint_sync(tpoint1, tpoint2, dist, ever);
   pfree(tpoint1); pfree(tpoint2);
   pfree(sync1); pfree(sync2);
   return result ? 1 : 0;
 }
+
+#if MEOS
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points ever satisfy the spatial
+ * relationship
+ * @param[in] temp1,temp2 Temporal network points
+ * @param[in] dist Distance
+ * @csqlfn #Edwithin_tnpoint_tnpoint()
+ */
+int
+edwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
+  double dist)
+{
+  return ea_dwithin_tnpoint_tnpoint(temp1, temp2, dist, EVER);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_rel_ever
+ * @brief Return true if the temporal network points always satisfy the spatial
+ * relationship
+ * @param[in] temp1,temp2 Temporal network points
+ * @param[in] dist Distance
+ * @csqlfn #Adwithin_tnpoint_tnpoint()
+ */
+int
+adwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
+  double dist)
+{
+  return ea_dwithin_tnpoint_tnpoint(temp1, temp2, dist, ALWAYS);
+}
+#endif /* MEOS */
 
 /*****************************************************************************/

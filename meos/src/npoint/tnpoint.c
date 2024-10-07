@@ -56,6 +56,7 @@
 TInstant *
 tnpointinst_tgeompointinst(const TInstant *inst)
 {
+  assert(inst); assert(inst->temptype == T_TNPOINT);
   GSERIALIZED *geom = npoint_geom(DatumGetNpointP(tinstant_val(inst)));
   return tinstant_make_free(PointerGetDatum(geom), T_TGEOMPOINT, inst->t);
 }
@@ -66,6 +67,7 @@ tnpointinst_tgeompointinst(const TInstant *inst)
 TSequence *
 tnpointseq_tgeompointseq_disc(const TSequence *seq)
 {
+  assert(seq); assert(seq->temptype == T_TNPOINT);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     instants[i] = tnpointinst_tgeompointinst(TSEQUENCE_INST_N(seq, i));
@@ -79,6 +81,7 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq)
 TSequence *
 tnpointseq_tgeompointseq_cont(const TSequence *seq)
 {
+  assert(seq); assert(seq->temptype == T_TNPOINT);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
   const Npoint *np = DatumGetNpointP(tinstant_val(inst));
@@ -109,6 +112,7 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
 TSequenceSet *
 tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
 {
+  assert(ss); assert(ss->temptype == T_TNPOINT);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
     sequences[i] = tnpointseq_tgeompointseq_cont(TSEQUENCESET_SEQ_N(ss, i));
@@ -116,11 +120,13 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
 }
 
 /**
+ * @ingroup meos_internal_temporal_spatial_transf
  * @brief Return a temporal network point converted to a temporal geometry point
  */
 Temporal *
 tnpoint_tgeompoint(const Temporal *temp)
 {
+  assert(temp); assert(temp->temptype == T_TNPOINT);
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
@@ -135,6 +141,24 @@ tnpoint_tgeompoint(const Temporal *temp)
   }
 }
 
+#if MEOS
+/**
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Return a temporal network point transformed to a temporal geometry
+ * point
+ * @param[in] temp Temporal point
+ * @csqlfn #Tnpoint_to_tgeompoint()
+ */
+Temporal *
+tnpoint_to_tgeompoint(const Temporal *temp)
+{
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TNPOINT))
+    return NULL;
+  return tnpoint_tgeompoint(temp);
+}
+#endif /* MEOS */
+
 /*****************************************************************************/
 
 /**
@@ -143,6 +167,7 @@ tnpoint_tgeompoint(const Temporal *temp)
 TInstant *
 tgeompointinst_tnpointinst(const TInstant *inst)
 {
+  assert(inst); assert(inst->temptype == T_TNPOINT);
   Npoint *np = geom_npoint(DatumGetGserializedP(tinstant_val(inst)));
   if (np == NULL)
     return NULL;
@@ -155,6 +180,7 @@ tgeompointinst_tnpointinst(const TInstant *inst)
 TSequence *
 tgeompointseq_tnpointseq(const TSequence *seq)
 {
+  assert(seq); assert(seq->temptype == T_TNPOINT);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
@@ -176,6 +202,7 @@ tgeompointseq_tnpointseq(const TSequence *seq)
 TSequenceSet *
 tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
 {
+  assert(ss); assert(ss->temptype == T_TNPOINT);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
@@ -191,11 +218,14 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
 }
 
 /**
+ * @ingroup meos_temporal_spatial_transf
  * @brief Return a temporal geometry point converted to a temporal network point
+ * @csqlfn #Tgeompoint_to_tnpoint()
  */
 Temporal *
 tgeompoint_tnpoint(const Temporal *temp)
 {
+  assert(temp); assert(temp->temptype == T_TNPOINT);
   int32_t srid_tpoint = tpoint_srid(temp);
   int32_t srid_ways = get_srid_ways();
   if (! ensure_same_srid(srid_tpoint, srid_ways))
@@ -212,6 +242,24 @@ tgeompoint_tnpoint(const Temporal *temp)
       return (Temporal *) tgeompointseqset_tnpointseqset((TSequenceSet *) temp);
   }
 }
+
+#if MEOS
+/**
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Return a temporal geometry point transformed to a temporal network
+ * point
+ * @param[in] temp Temporal point
+ * @csqlfn #Tgeompoint_to_tnpoint()
+ */
+Temporal *
+tgeompoint_to_tnpoint(const Temporal *temp)
+{
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TNPOINT))
+    return NULL;
+  return tgeompoint_tnpoint(temp);
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions
@@ -333,7 +381,9 @@ tnpointseqset_positions(const TSequenceSet *ss, int *count)
 }
 
 /**
+ * @ingroup meos_temporal_accessor
  * @brief Return the network segments covered by the temporal network point
+ * @csqlfn #Tnpoint_positions()
  */
 Nsegment **
 tnpoint_positions(const Temporal *temp, int *count)
@@ -364,13 +414,15 @@ tnpointinst_route(const TInstant *inst)
 }
 
 /**
+ * @ingroup meos_temporal_accessor
  * @brief Return the single route of a temporal network point
  * @return On error return @p INT_MAX
+ * @csqlfn #Tnpoint_route()
  */
 int64
 tnpoint_route(const Temporal *temp)
 {
-  if ( temp->subtype != TINSTANT && MEOS_FLAGS_DISCRETE_INTERP(temp->flags) )
+  if (temp->subtype != TINSTANT && MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Input must be a temporal instant or a temporal sequence with continuous interpolation");
@@ -441,7 +493,9 @@ tnpointseqset_routes(const TSequenceSet *ss)
 }
 
 /**
+ * @ingroup meos_temporal_accessor
  * @brief Return the array of routes of a temporal network point
+ * @csqlfn #Tnpoint_routes()
  */
 Set *
 tnpoint_routes(const Temporal *temp)

@@ -66,9 +66,19 @@
  *****************************************************************************/
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return the SRID of the routes in the ways table
  * @return On error return SRID_INVALID
  */
+#if MEOS
+int32_t
+get_srid_ways()
+{
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Function not yet implemented");
+  return SRID_INVALID;
+}
+#else
 int32_t
 get_srid_ways()
 {
@@ -98,6 +108,7 @@ get_srid_ways()
   SPI_finish();
   return srid_ways;
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Transformation functions
@@ -217,16 +228,23 @@ nsegmentarr_normalize(Nsegment **segments, int *count)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return a network point from its string representation
+ * @param[in] str String
+ * @csqlfn #Npoint_in()
  */
 Npoint *
-npoint_in(const char *str, bool end)
+npoint_in(const char *str)
 {
-  return npoint_parse(&str, end);
+  return npoint_parse(&str, true);
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return the string representation of a network point
+ * @param[in] np Network point
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Npoint_out()
  */
 char *
 npoint_out(const Npoint *np, int maxdd)
@@ -246,7 +264,10 @@ npoint_out(const Npoint *np, int maxdd)
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return a network point from its string representation
+ * @param[in] str String
+ * @csqlfn #Nsegment_in()
  */
 Nsegment *
 nsegment_in(const char *str)
@@ -255,7 +276,11 @@ nsegment_in(const char *str)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return the string representation of a network segment
+ * @param[in] ns Network segment
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Nsegment_out()
  */
 char *
 nsegment_out(const Nsegment *ns, int maxdd)
@@ -278,7 +303,11 @@ nsegment_out(const Nsegment *ns, int maxdd)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return a network point from a route identifier and a position
+ * @param[in] rid Route identifier
+ * @param[in] pos Position
+ * @csqlfn #Npoint_constructor()
  */
 Npoint *
 npoint_make(int64 rid, double pos)
@@ -296,7 +325,7 @@ npoint_make(int64 rid, double pos)
 void
 npoint_set(int64 rid, double pos, Npoint *np)
 {
-  if (!route_exists(rid))
+  if (! route_exists(rid))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "There is no route with gid value %ld in table ways", rid);
@@ -317,7 +346,11 @@ npoint_set(int64 rid, double pos, Npoint *np)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return a network segment from a route identifier and two positions
+ * @param[in] rid Route identifier
+ * @param[in] pos1, pos2 Positions
+ * @csqlfn #Nsegment_constructor()
  */
 Nsegment *
 nsegment_make(int64 rid, double pos1, double pos2)
@@ -358,7 +391,10 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return a network point converted to a network segment
+ * @param[in] np Network point
+ * @csqlfn #Npoint_to_nsegment()
  */
 Nsegment *
 npoint_to_nsegment(const Npoint *np)
@@ -371,7 +407,10 @@ npoint_to_nsegment(const Npoint *np)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return the route of a network point
+ * @param[in] np Network point
+ * @csqlfn #Npoint_route()
  */
 int64
 npoint_route(const Npoint *np)
@@ -380,7 +419,10 @@ npoint_route(const Npoint *np)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return the position of a network point
+ * @param[in] np Network point
+ * @csqlfn #Npoint_position()
  */
 double
 npoint_position(const Npoint *np)
@@ -389,7 +431,10 @@ npoint_position(const Npoint *np)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return the route of a network segment
+ * @param[in] ns Network segment
+ * @csqlfn #Nsegment_route()
  */
 int64
 nsegment_route(const Nsegment *ns)
@@ -398,7 +443,10 @@ nsegment_route(const Nsegment *ns)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return the start position of a network segment
+ * @param[in] ns Network segment
+ * @csqlfn #Nsegment_start_position()
  */
 double
 nsegment_start_position(const Nsegment *ns)
@@ -407,7 +455,10 @@ nsegment_start_position(const Nsegment *ns)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return the end position of a network segment
+ * @param[in] ns Network segment
+ * @csqlfn #Nsegment_end_position()
  */
 double
 nsegment_end_position(const Nsegment *ns)
@@ -419,12 +470,23 @@ nsegment_end_position(const Nsegment *ns)
  * Conversions between network and Euclidean space
  *****************************************************************************/
 
-/**
- * @brief Return true if the edge table contains a route with the route
- * identifier
- */
 #define SQL_ROUTE_MAXLEN 64
 
+/**
+ * @ingroup meos_npoint_types
+ * @brief Return true if the edge table contains a route with the route
+ * identifier
+ * @param[in] rid Route identifier
+ */
+#if MEOS
+bool
+route_exists(int64 rid __attribute__((unused)))
+{
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Function not yet implemented");
+  return false;
+}
+#else
 bool
 route_exists(int64 rid)
 {
@@ -445,12 +507,24 @@ route_exists(int64 rid)
   SPI_finish();
   return result;
 }
+#endif /* MEOS */
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Access the edge table to return the route length from the
  * corresponding route identifier
- * @brief On error return -1
+ * @param[in] rid Route identifier
+ * @return On error return -1
  */
+#if MEOS
+double
+route_length(int64 rid __attribute__((unused)))
+{
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Function not yet implemented");
+  return -1.0;
+}
+#else
 double
 route_length(int64 rid)
 {
@@ -478,12 +552,24 @@ route_length(int64 rid)
   }
   return result;
 }
+#endif /* MEOS */
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Access the edge table to get the route geometry from corresponding
  * route identifier
+ * @param[in] rid Route identifier
  * @return On error return @p NULL
  */
+#if MEOS
+GSERIALIZED *
+route_geom(int64 rid __attribute__((unused)))
+{
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Function not yet implemented");
+  return NULL;
+}
+#else
 GSERIALIZED *
 route_geom(int64 rid)
 {
@@ -524,9 +610,13 @@ route_geom(int64 rid)
 
   return result;
 }
+#endif /* MEOS */
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Transform a network point into a geometry
+ * @param[in] np Network point
+ * @csqlfn #Npoint_to_geom()
  */
 GSERIALIZED *
 npoint_geom(const Npoint *np)
@@ -537,12 +627,23 @@ npoint_geom(const Npoint *np)
   return result;
 }
 
-/**
- * @brief Transform a geometry into a network point
- */
-
 #define SQL_MAXLEN 1024
 
+/**
+ * @ingroup meos_npoint_types
+ * @brief Transform a geometry into a network point
+ * @param[in] gs Geometry
+ * @csqlfn #Geom_to_npoint()
+ */
+#if MEOS
+Npoint *
+geom_npoint(const GSERIALIZED *gs __attribute__((unused)))
+{
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Function not yet implemented");
+  return NULL;
+}
+#else
 Npoint *
 geom_npoint(const GSERIALIZED *gs)
 {
@@ -587,9 +688,13 @@ geom_npoint(const GSERIALIZED *gs)
   }
   return result;
 }
+#endif /* MEOS */
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Transform a network segment into a geometry
+ * @param[in] ns Network segment
+ * @csqlfn #Nsegment_to_geom()
  */
 GSERIALIZED *
 nsegment_geom(const Nsegment *ns)
@@ -605,8 +710,11 @@ nsegment_geom(const Nsegment *ns)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Transform a geometry into a network segment
  * @return On error return @p NULL
+ * @param[in] gs Geometry
+ * @csqlfn #Geom_to_nsegment()
  */
 Nsegment *
 geom_nsegment(const GSERIALIZED *gs)
@@ -675,7 +783,10 @@ geom_nsegment(const GSERIALIZED *gs)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return the SRID of a network point
+ * @param[in] np Network point
+ * @csqlfn #Npoint_get_srid()
  */
 int
 npoint_srid(const Npoint *np)
@@ -687,7 +798,10 @@ npoint_srid(const Npoint *np)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return the SRID of a network segment
+ * @param[in] ns Network segment
+ * @csqlfn #Nsegment_get_srid()
  */
 int
 nsegment_srid(const Nsegment *ns)
@@ -703,7 +817,10 @@ nsegment_srid(const Nsegment *ns)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return true if the first network point is equal to the second one
+ * @param[in] np1,np2 Network points
+ * @csqlfn #Npoint_eq()
  */
 bool
 npoint_eq(const Npoint *np1, const Npoint *np2)
@@ -712,7 +829,10 @@ npoint_eq(const Npoint *np1, const Npoint *np2)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return true if the first network point is not equal to the second one
+ * @param[in] np1,np2 Network points
+ * @csqlfn #Npoint_ne()
  */
 bool
 npoint_ne(const Npoint *np1, const Npoint *np2)
@@ -721,8 +841,11 @@ npoint_ne(const Npoint *np1, const Npoint *np2)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return -1, 0, or 1 depending on whether the first network point
  * is less than, equal to, or greater than the second one
+ * @param[in] np1,np2 Network points
+ * @csqlfn #Npoint_cmp()
  */
 int
 npoint_cmp(const Npoint *np1, const Npoint *np2)
@@ -740,7 +863,10 @@ npoint_cmp(const Npoint *np1, const Npoint *np2)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return true if the first network point is less than the second one
+ * @param[in] np1,np2 Network points
+ * @csqlfn #Npoint_lt()
  */
 bool
 npoint_lt(const Npoint *np1, const Npoint *np2)
@@ -750,8 +876,11 @@ npoint_lt(const Npoint *np1, const Npoint *np2)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return true if the first network point is less than or equal to the
  * second one
+ * @param[in] np1,np2 Network points
+ * @csqlfn #Npoint_le()
  */
 bool
 npoint_le(const Npoint *np1, const Npoint *np2)
@@ -761,7 +890,10 @@ npoint_le(const Npoint *np1, const Npoint *np2)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return true if the first network point is greater than the second one
+ * @param[in] np1,np2 Network points
+ * @csqlfn #Npoint_gt()
  */
 bool
 npoint_gt(const Npoint *np1, const Npoint *np2)
@@ -771,8 +903,11 @@ npoint_gt(const Npoint *np1, const Npoint *np2)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return true if the first network point is greater than or equal to
  * the second one
+ * @param[in] np1,np2 Network points
+ * @csqlfn #Npoint_ge()
  */
 bool
 npoint_ge(const Npoint *np1, const Npoint *np2)
@@ -784,7 +919,10 @@ npoint_ge(const Npoint *np1, const Npoint *np2)
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return true if the first network segment is equal to the second one
+ * @param[in] ns1,ns2 Network segments
+ * @csqlfn #Nsegment_eq()
  */
 bool
 nsegment_eq(const Nsegment *ns1, const Nsegment *ns2)
@@ -794,8 +932,11 @@ nsegment_eq(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return true if the first network segment is not equal to the second
  * one
+ * @param[in] ns1,ns2 Network segments
+ * @csqlfn #Nsegment_ne()
  */
 bool
 nsegment_ne(const Nsegment *ns1, const Nsegment *ns2)
@@ -804,8 +945,11 @@ nsegment_ne(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return -1, 0, or 1 depending on whether the first network segment
  * is less than, equal to, or greater than the second one
+ * @param[in] ns1,ns2 Network segments
+ * @csqlfn #Nsegment_cmp()
  */
 int
 nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2)
@@ -828,7 +972,10 @@ nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return true if the first network segment is less than the second one
+ * @param[in] ns1,ns2 Network segments
+ * @csqlfn #Nsegment_lt()
  */
 bool
 nsegment_lt(const Nsegment *ns1, const Nsegment *ns2)
@@ -838,8 +985,11 @@ nsegment_lt(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return true if the first network segment is less than or equal to the
  * second one
+ * @param[in] ns1,ns2 Network segments
+ * @csqlfn #Nsegment_le()
  */
 bool
 nsegment_le(const Nsegment *ns1, const Nsegment *ns2)
@@ -849,8 +999,11 @@ nsegment_le(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return true if the first network segment is greater than the second
  * one
+ * @param[in] ns1,ns2 Network segments
+ * @csqlfn #Nsegment_gt()
  */
 bool
 nsegment_gt(const Nsegment *ns1, const Nsegment *ns2)
@@ -860,8 +1013,11 @@ nsegment_gt(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return true if the first network segment is greater than or equal to
  * the second one
+ * @param[in] ns1,ns2 Network segments
+ * @csqlfn #Nsegment_ge()
  */
 bool
 nsegment_ge(const Nsegment *ns1, const Nsegment *ns2)
@@ -877,7 +1033,9 @@ nsegment_ge(const Nsegment *ns1, const Nsegment *ns2)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return the 32-bit hash value of a network point
+ * @param[in] np Network point
  */
 uint32
 npoint_hash(const Npoint *np)
@@ -894,7 +1052,10 @@ npoint_hash(const Npoint *np)
 }
 
 /**
+ * @ingroup meos_npoint_types
  * @brief Return the 32-bit hash value of a network point
+ * @param[in] np Network point
+ * @param[in] seed Seed
  */
 uint64
 npoint_hash_extended(const Npoint *np, uint64 seed)

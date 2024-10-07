@@ -793,7 +793,7 @@ ea_dwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
  * @pre The temporal points are synchronized
  */
 int
-ea_dwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
+ea_dwithin_tpoint_tpoint_sync(const Temporal *sync1, const Temporal *sync2,
   double dist, bool ever)
 {
   datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
@@ -841,7 +841,7 @@ ea_dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
     &sync1, &sync2))
     return -1;
 
-  bool result = ea_dwithin_tpoint_tpoint1(sync1, sync2, dist, ever);
+  bool result = ea_dwithin_tpoint_tpoint_sync(sync1, sync2, dist, ever);
   pfree(sync1); pfree(sync2);
   return result ? 1 : 0;
 }

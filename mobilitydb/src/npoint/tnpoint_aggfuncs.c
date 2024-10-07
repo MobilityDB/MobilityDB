@@ -37,6 +37,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "general/temporal.h"
 #include "general/skiplist.h"
 #include "npoint/tnpoint_aggfuncs.h"

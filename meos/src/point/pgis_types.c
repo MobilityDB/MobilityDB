@@ -85,10 +85,20 @@ extern GSERIALIZED *geography_from_lwgeom(LWGEOM *geom, int32 typmod);
  * @brief Return the srid of a geometry
  * @note PostGIS function: @p gserialized_get_srid(const GSERIALIZED *g).
  */
-int32
-geo_get_srid(const GSERIALIZED *g)
+int32_t
+geo_srid(const GSERIALIZED *g)
 {
   return gserialized_get_srid(g);
+}
+
+/**
+ * @brief Return true it the geometry is empty
+ * @note PostGIS function: @p gserialized_get_srid(const GSERIALIZED *g).
+ */
+bool
+geo_is_empty(const GSERIALIZED *g)
+{
+  return gserialized_is_empty(g);
 }
 
 /*****************************************************************************
@@ -351,6 +361,23 @@ box3d_to_lwgeom(BOX3D *box)
 /*****************************************************************************
  * Functions adapted from lwgeom_functions_basic.c
  *****************************************************************************/
+
+/**
+ * @brief find the "length of a geometry"
+ *    length(point) = 0
+ *    length(line) = length of line
+ *    length(polygon) = 0  -- could make sense to return sum(ring perimeter)
+ *    uses euclidean 3d/2d length depending on input dimensions.
+ * @note PostGIS function: @p LWGEOM_length_linestring(PG_FUNCTION_ARGS)
+ */
+double
+geo_length_linestring(const GSERIALIZED *geom)
+{
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+  double dist = lwgeom_length(lwgeom);
+  lwgeom_free(lwgeom);
+  return dist;
+}
 
 /**
  * @brief find the "perimeter of a geometry"

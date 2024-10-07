@@ -1307,7 +1307,7 @@ tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @pre The temporal points are synchronized.
  */
 Temporal *
-tdwithin_tpoint_tpoint1(const Temporal *sync1, const Temporal *sync2,
+tdwithin_tpoint_tpoint_sync(const Temporal *sync1, const Temporal *sync2,
   double dist, bool restr, bool atvalue)
 {
   datum_func3 func = get_dwithin_fn(sync1->flags, sync2->flags);
@@ -1407,7 +1407,7 @@ tdwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
     &sync1, &sync2))
     return NULL;
 
-  Temporal *result = tdwithin_tpoint_tpoint1(sync1, sync2, dist, restr,
+  Temporal *result = tdwithin_tpoint_tpoint_sync(sync1, sync2, dist, restr,
     atvalue);
   pfree(sync1); pfree(sync2);
   return result;
