@@ -42,18 +42,18 @@
 
 /*****************************************************************************/
 
-extern Datum geom_contains(Datum geom1, Datum geom2);
-extern Datum geom_covers(Datum geom1, Datum geom2);
-extern Datum geom_disjoint2d(Datum geom1, Datum geom2);
-extern Datum geom_disjoint3d(Datum geom1, Datum geom2);
-extern Datum geog_disjoint(Datum geog1, Datum geog2);
-extern Datum geom_intersects2d(Datum geom1, Datum geom2);
-extern Datum geom_intersects3d(Datum geom1, Datum geom2);
-extern Datum geog_intersects(Datum geog1, Datum geog2);
-extern Datum geom_touches(Datum geom1, Datum geom2);
-extern Datum geom_dwithin2d(Datum geom1, Datum geom2, Datum dist);
-extern Datum geom_dwithin3d(Datum geom1, Datum geom2, Datum dist);
-extern Datum geog_dwithin(Datum geog1, Datum geog2, Datum dist);
+extern Datum datum_geom_contains(Datum geom1, Datum geom2);
+extern Datum datum_geom_covers(Datum geom1, Datum geom2);
+extern Datum datum_geom_disjoint2d(Datum geom1, Datum geom2);
+extern Datum datum_geom_disjoint3d(Datum geom1, Datum geom2);
+extern Datum datum_geog_disjoint(Datum geog1, Datum geog2);
+extern Datum datum_geom_intersects2d(Datum geom1, Datum geom2);
+extern Datum datum_geom_intersects3d(Datum geom1, Datum geom2);
+extern Datum datum_geog_intersects(Datum geog1, Datum geog2);
+extern Datum datum_geom_touches(Datum geom1, Datum geom2);
+extern Datum datum_geom_dwithin2d(Datum geom1, Datum geom2, Datum dist);
+extern Datum datum_geom_dwithin3d(Datum geom1, Datum geom2, Datum dist);
+extern Datum datum_geog_dwithin(Datum geog1, Datum geog2, Datum dist);
 
 extern datum_func2 get_disjoint_fn_gs(int16 flags1, uint8_t flags2);
 extern datum_func2 get_intersects_fn_gs(int16 flags1, uint8_t flags2);

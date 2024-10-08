@@ -35,7 +35,7 @@
  * They are kept if needed in the future.
  */
 
-#include "npoint/tnpoint_static.h"
+#include "npoint/npoint.h"
 
 /* PostgreSQL */
 #include <libpq/pqformat.h>
@@ -48,7 +48,6 @@
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_out.h"
 #include "general/type_round.h"
-#include "npoint/tnpoint_static.h"
 /* MobilityDB */
 #include "pg_point/postgis.h"
 

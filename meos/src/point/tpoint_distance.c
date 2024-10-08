@@ -328,8 +328,8 @@ tgeompoint_min_dist_at_timestamptz(const TInstant *start1, const TInstant *end1,
   /* We know that this function is called only for linear segments */
   Datum value1 = tsegment_value_at_timestamptz(start1, end1, LINEAR, *t);
   Datum value2 = tsegment_value_at_timestamptz(start2, end2, LINEAR, *t);
-  *mindist = hasz ? geom_distance3d(value1, value2) :
-    geom_distance2d(value1, value2);
+  *mindist = hasz ? datum_geom_distance3d(value1, value2) :
+    datum_geom_distance2d(value1, value2);
   return true;
 }
 
@@ -981,8 +981,7 @@ shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   else
   {
     result = MEOS_FLAGS_GET_Z(temp->flags) ?
-      geometry_shortestline3d(traj, gs) :
-      geo_shortestline2d(traj, gs);
+      geom_shortestline3d(traj, gs) : geom_shortestline2d(traj, gs);
   }
   pfree(traj);
   return result;

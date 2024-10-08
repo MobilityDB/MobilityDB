@@ -67,9 +67,9 @@
  * @brief Return a Datum true if the first geometry contains the second one
  */
 Datum
-geom_contains(Datum geom1, Datum geom2)
+datum_geom_contains(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(geometry_spatialrel(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geom_spatialrel(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), CONTAINS));
 }
 
@@ -77,9 +77,9 @@ geom_contains(Datum geom1, Datum geom2)
  * @brief Return a Datum true if the first geometry covers the second one
  */
 Datum
-geom_covers(Datum geom1, Datum geom2)
+datum_geom_covers(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(geometry_spatialrel(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geom_spatialrel(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), COVERS));
 }
 
@@ -87,36 +87,40 @@ geom_covers(Datum geom1, Datum geom2)
  * @brief Return a Datum true if two geometries are disjoint in 2D
  */
 Datum
-geom_disjoint2d(Datum geom1, Datum geom2)
+datum_geom_disjoint2d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(! DatumGetBool(geom_intersects2d(geom1, geom2)));
+  return BoolGetDatum(! geom_intersects2d(DatumGetGserializedP(geom1), 
+    DatumGetGserializedP(geom2)));
 }
 
 /**
  * @brief Return a Datum true if two geometries are disjoint in 3D
  */
 Datum
-geom_disjoint3d(Datum geom1, Datum geom2)
+datum_geom_disjoint3d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(! DatumGetBool(geom_intersects3d(geom1, geom2)));
+  return BoolGetDatum(! geom_intersects3d(DatumGetGserializedP(geom1), 
+    DatumGetGserializedP(geom2)));
 }
 
 /**
  * @brief Return a Datum true if two geographies are disjoint
+ * @note The @p use_spheroid parameter is set to false
  */
 Datum
-geog_disjoint(Datum geog1, Datum geog2)
+datum_geog_disjoint(Datum geog1, Datum geog2)
 {
-  return BoolGetDatum(! DatumGetBool(geog_intersects(geog1, geog2)));
+  return BoolGetDatum(! geog_intersects(DatumGetGserializedP(geog1), 
+    DatumGetGserializedP(geog2), false));
 }
 
 /**
  * @brief Return a Datum true if two geometries intersect in 2D
  */
 Datum
-geom_intersects2d(Datum geom1, Datum geom2)
+datum_geom_intersects2d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(geometry_spatialrel(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geom_spatialrel(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), INTERSECTS));
 }
 
@@ -124,9 +128,9 @@ geom_intersects2d(Datum geom1, Datum geom2)
  * @brief Return a Datum true if two geometries intersect in 3D
  */
 Datum
-geom_intersects3d(Datum geom1, Datum geom2)
+datum_geom_intersects3d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(geometry_3Dintersects(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geom_intersects3d(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
@@ -134,9 +138,9 @@ geom_intersects3d(Datum geom1, Datum geom2)
  * @brief Return a Datum true if two geographies intersect
  */
 Datum
-geog_intersects(Datum geog1, Datum geog2)
+datum_geog_intersects(Datum geog1, Datum geog2)
 {
-  return BoolGetDatum(pgis_geography_dwithin(DatumGetGserializedP(geog1),
+  return BoolGetDatum(geog_dwithin(DatumGetGserializedP(geog1),
     DatumGetGserializedP(geog2), 0.00001, true));
 }
 
@@ -144,9 +148,9 @@ geog_intersects(Datum geog1, Datum geog2)
  * @brief Return a Datum true if two 2D geometries are within a distance
  */
 Datum
-geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
+datum_geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 {
-  return BoolGetDatum(geometry_dwithin2d(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geom_dwithin2d(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
 }
 
@@ -154,9 +158,9 @@ geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
  * @brief Return a Datum true if two 3D geometries are within a distance
  */
 Datum
-geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
+datum_geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 {
-  return BoolGetDatum(geometry_dwithin3d(DatumGetGserializedP(geom1),
+  return BoolGetDatum(geom_dwithin3d(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), DatumGetFloat8(dist)));
 }
 
@@ -164,9 +168,9 @@ geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
  * @brief Return a Datum true if two geographies are within a distance
  */
 Datum
-geog_dwithin(Datum geog1, Datum geog2, Datum dist)
+datum_geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 {
-  return BoolGetDatum(pgis_geography_dwithin(DatumGetGserializedP(geog1),
+  return BoolGetDatum(geog_dwithin(DatumGetGserializedP(geog1),
     DatumGetGserializedP(geog2), DatumGetFloat8(dist), true));
 }
 
@@ -180,11 +184,11 @@ datum_func2
 get_disjoint_fn_gs(int16 flags1, uint8_t flags2)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags1))
-    return &geog_disjoint;
+    return &datum_geog_disjoint;
   else
     /* 3D only if both arguments are 3D */
     return MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
-      &geom_disjoint3d : &geom_disjoint2d;
+      &datum_geom_disjoint3d : &datum_geom_disjoint2d;
 }
 
 /**
@@ -195,11 +199,11 @@ datum_func2
 get_intersects_fn_gs(int16 flags1, uint8_t flags2)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags1))
-    return &geog_intersects;
+    return &datum_geog_intersects;
   else
     /* 3D only if both arguments are 3D */
     return MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
-      &geom_intersects3d : &geom_intersects2d;
+      &datum_geom_intersects3d : &datum_geom_intersects2d;
 }
 
 /**
@@ -210,11 +214,11 @@ datum_func3
 get_dwithin_fn(int16 flags1, int16 flags2)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags1))
-    return &geog_dwithin;
+    return &datum_geog_dwithin;
   else
     /* 3D only if both arguments are 3D */
     return MEOS_FLAGS_GET_Z(flags1) && MEOS_FLAGS_GET_Z(flags2) ?
-      &geom_dwithin3d : &geom_dwithin2d;
+      &datum_geom_dwithin3d : &datum_geom_dwithin2d;
 }
 
 /**
@@ -225,11 +229,11 @@ static datum_func3
 get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags1))
-    return &geog_dwithin;
+    return &datum_geog_dwithin;
   else
     /* 3D only if both arguments are 3D */
     return MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
-      &geom_dwithin3d : &geom_dwithin2d;
+      &datum_geom_dwithin3d : &datum_geom_dwithin2d;
 }
 
 /*****************************************************************************
@@ -336,7 +340,7 @@ econtains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
       ! ensure_has_not_Z_gs(gs) || ! ensure_has_not_Z(temp->flags))
     return -1;
   GSERIALIZED *traj = tpoint_trajectory(temp);
-  bool result = geo_relate_pattern(gs, traj, "T********");
+  bool result = geom_relate_pattern(gs, traj, "T********");
   pfree(traj);
   return result ? 1 : 0;
 }
@@ -360,8 +364,7 @@ acontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
       ! ensure_has_not_Z_gs(gs) || ! ensure_has_not_Z(temp->flags))
     return -1;
   GSERIALIZED *traj = tpoint_trajectory(temp);
-  bool result = DatumGetBool(geom_contains(PointerGetDatum(gs),
-    PointerGetDatum(traj)));
+  bool result = geom_contains(gs, traj);
   pfree(traj);
   return result ? 1 : 0;
 }
@@ -387,7 +390,7 @@ edisjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   /* Ensure validity of the arguments */
   if (! ensure_not_geodetic(temp->flags))
     return -1;
-  datum_func2 func = &geom_covers;
+  datum_func2 func = &datum_geom_covers;
   int result = spatialrel_tpoint_traj_geo(temp, gs, (Datum) NULL,
     (varfunc) func, 2, INVERT);
   return INVERT_RESULT(result);
@@ -538,7 +541,7 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
    * the SQL function definition */
   datum_func2 func = get_intersects_fn_gs(temp->flags, gs->gflags);
   GSERIALIZED *traj = tpoint_trajectory(temp);
-  GSERIALIZED *gsbound = geometry_boundary(gs);
+  GSERIALIZED *gsbound = geom_boundary(gs);
   bool result = false;
   if (gsbound && ! gserialized_is_empty(gsbound))
     result = func(PointerGetDatum(gsbound), PointerGetDatum(traj));
@@ -546,7 +549,7 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   // else if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
   // {
     // /* The geometry is a point or a multipoint -> the boundary is empty */
-    // GSERIALIZED *tempbound = geometry_boundary(traj);
+    // GSERIALIZED *tempbound = geom_boundary(traj);
     // if (tempbound)
     // {
       // result = func(PointerGetDatum(tempbound), PointerGetDatum(gs));
@@ -575,7 +578,7 @@ atouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 
   /* There is no need to do a bounding box test since this is done in
    * the SQL function definition */
-  GSERIALIZED *gsbound = geometry_boundary(gs);
+  GSERIALIZED *gsbound = geom_boundary(gs);
   bool result = false;
   if (gsbound && ! gserialized_is_empty(gsbound))
   {
@@ -632,8 +635,8 @@ adwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
-  GSERIALIZED *buffer = geometry_buffer(gs, dist, "");
-  datum_func2 func = &geom_covers;
+  GSERIALIZED *buffer = geom_buffer(gs, dist, "");
+  datum_func2 func = &datum_geom_covers;
   int result = spatialrel_tpoint_traj_geo(temp, buffer, (Datum) NULL,
     (varfunc) func, 2, INVERT);
   pfree(buffer);

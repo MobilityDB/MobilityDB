@@ -131,7 +131,7 @@ int read_communes(void)
       &communes[no_records].id, communes[no_records].name,
       &communes[no_records].population, geo_buffer);
     /* Transform the string representing the geometry into a geometry value */
-    communes[no_records++].geom = pgis_geometry_in(geo_buffer, -1);
+    communes[no_records++].geom = geom_in(geo_buffer, -1);
 
     if (read != 4 && !feof(file))
     {
@@ -173,7 +173,7 @@ int read_brussels_region(void)
   int read = fscanf(file, "%100[^,],%100000[^\n]\n", brussels_region.name,
     geo_buffer);
   /* Transform the string representing the geometry into a geometry value */
-  brussels_region.geom = pgis_geometry_in(geo_buffer, -1);
+  brussels_region.geom = geom_in(geo_buffer, -1);
 
   if (read != 2 && !feof(file))
   {

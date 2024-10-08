@@ -72,12 +72,12 @@ extern Datum datum_transform(Datum value, Datum srid);
 
 extern datum_func2 distance_fn(int16 flags);
 extern datum_func2 pt_distance_fn(int16 flags);
-extern Datum geom_distance2d(Datum geom1, Datum geom2);
-extern Datum geom_distance3d(Datum geom1, Datum geom2);
-extern Datum geog_distance(Datum geog1, Datum geog2);
-extern Datum pt_distance2d(Datum geom1, Datum geom2);
-extern Datum pt_distance3d(Datum geom1, Datum geom2);
-extern Datum geom_intersection2d(Datum geom1, Datum geom2);
+extern Datum datum_geom_distance2d(Datum geom1, Datum geom2);
+extern Datum datum_geom_distance3d(Datum geom1, Datum geom2);
+extern Datum datum_geog_distance(Datum geog1, Datum geog2);
+extern Datum datum_pt_distance2d(Datum geom1, Datum geom2);
+extern Datum datum_pt_distance3d(Datum geom1, Datum geom2);
+extern Datum datum_geom_intersection2d(Datum geom1, Datum geom2);
 
 /* Parameter tests */
 

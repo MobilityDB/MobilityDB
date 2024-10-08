@@ -35,7 +35,7 @@
  * They are kept if needed in the future.
  */
 
-#include "npoint/tnpoint_static.h"
+#include "npoint/npoint.h"
 
 /* C */
 #include <assert.h>
@@ -159,13 +159,12 @@ nsegmentarr_geom(Nsegment **segments, int count)
     if (segments[i]->pos1 == 0 && segments[i]->pos2 == 1)
       geoms[i] = geo_copy(line);
     else if (segments[i]->pos1 == segments[i]->pos2)
-      geoms[i] = linestring_line_interpolate_point(line, segments[i]->pos1, 0);
+      geoms[i] = line_interpolate_point(line, segments[i]->pos1, 0);
     else
-      geoms[i] = linestring_substring(line, segments[i]->pos1,
-        segments[i]->pos2);
+      geoms[i] = line_substring(line, segments[i]->pos1, segments[i]->pos2);
     pfree(line);
   }
-  GSERIALIZED *result = geometry_array_union(geoms, count);
+  GSERIALIZED *result = geom_array_union(geoms, count);
   pfree_array((void **) geoms, count);
   return result;
 }
@@ -622,7 +621,7 @@ GSERIALIZED *
 npoint_geom(const Npoint *np)
 {
   GSERIALIZED *line = route_geom(np->rid);
-  GSERIALIZED *result = linestring_line_interpolate_point(line, np->pos, 0);
+  GSERIALIZED *result = line_interpolate_point(line, np->pos, 0);
   pfree(line);
   return result;
 }
@@ -702,9 +701,9 @@ nsegment_geom(const Nsegment *ns)
   GSERIALIZED *line = route_geom(ns->rid);
   GSERIALIZED *result;
   if (fabs(ns->pos1 - ns->pos2) < MEOS_EPSILON)
-    result = linestring_line_interpolate_point(line, ns->pos1, 0);
+    result = line_interpolate_point(line, ns->pos1, 0);
   else
-    result = linestring_substring(line, ns->pos1, ns->pos2);
+    result = line_substring(line, ns->pos1, ns->pos2);
   pfree(line);
   return result;
 }

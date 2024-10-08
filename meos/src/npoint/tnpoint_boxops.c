@@ -45,7 +45,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "point/pgis_types.h"
-#include "npoint/tnpoint_static.h"
+#include "npoint/npoint.h"
 
 /*****************************************************************************
  * Transform a temporal Npoint to a STBox
@@ -164,7 +164,7 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
 
   GSERIALIZED *line = route_geom(rid);
   GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? line :
-    linestring_substring(line, posmin, posmax);
+    line_substring(line, posmin, posmax);
   geo_set_stbox(gs, box);
   span_set(TimestampTzGetDatum(tmin), TimestampTzGetDatum(tmax),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
@@ -217,7 +217,7 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
     double posmax = Min(np1->pos, np2->pos);
     GSERIALIZED *line = route_geom(rid);
     GSERIALIZED *gs = (posmin == 0 && posmax == 1) ? line :
-      linestring_substring(line, posmin, posmax);
+      line_substring(line, posmin, posmax);
     geo_set_stbox(gs, &box);
     span_set(TimestampTzGetDatum(last->t), TimestampTzGetDatum(inst->t),
       true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box.period);

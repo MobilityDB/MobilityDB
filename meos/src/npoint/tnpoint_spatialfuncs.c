@@ -257,10 +257,10 @@ tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
 
   GSERIALIZED *traj;
   if (np1->pos < np2->pos)
-    traj = linestring_substring(line, np1->pos, np2->pos);
+    traj = line_substring(line, np1->pos, np2->pos);
   else /* np1->pos >= np2->pos */
   {
-    GSERIALIZED *traj2 = linestring_substring(line, np2->pos, np1->pos);
+    GSERIALIZED *traj2 = line_substring(line, np2->pos, np1->pos);
     traj = geo_reverse(traj2);
     pfree(traj2);
   }
@@ -566,7 +566,7 @@ tnpointsegm_azimuth_iter(const TInstant *inst1, const TInstant *inst2,
     double fraction = linestring_locate_point(traj, vertex2);
     assert(! datum_point_eq(PointerGetDatum(vertex1),
       PointerGetDatum(vertex2)));
-    gserialized_azimuth(vertex1, vertex2, &azimuth);
+    geom_azimuth(vertex1, vertex2, &azimuth);
     result[i] = tinstant_make(Float8GetDatum(azimuth), T_TFLOAT, time);
     pfree(vertex1);
     vertex1 = vertex2;
