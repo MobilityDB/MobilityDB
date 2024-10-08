@@ -1706,13 +1706,12 @@ postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
  * @note PostGIS function: @p LWGEOM_in(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-geom_in(char *str, int32 typmod)
+geom_in(const char *str, int32 typmod)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
 
-  char *str1 = str;
   LWGEOM_PARSER_RESULT lwg_parser_result;
   LWGEOM *lwgeom;
   GSERIALIZED *result;
@@ -1721,30 +1720,41 @@ geom_in(char *str, int32 typmod)
   lwgeom_parser_result_init(&lwg_parser_result);
 
   /* Empty string. */
-  if ( str1[0] == '\0' ) {
+  if (str[0] == '\0')
+  {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT, "parse error - invalid geometry");
     return NULL;
   }
 
   /* Starts with "SRID=" */
+  const char *str1 = str;
   if (pg_strncasecmp(str1, "SRID=", 5) == 0)
   {
     /* Roll forward to semi-colon */
-    char *tmp = str1;
-    while (tmp && *tmp != ';')
-      tmp++;
-
-    /* Check next character to see if we have WKB  */
-    if (tmp && *(tmp+1) == '0')
+    int delim = 0;
+    while ((str1)[delim] != ';' && (str1)[delim] != '\0')
+      delim++;
+    if ((str1)[delim] == '\0')
     {
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+        "Could not parse geometry value: %s", str);
+      return false;
+    }
+
+    /* Check next character to see if we have WKB */
+    if ((str1)[delim + 1] == '0')
+    {
+      char *tmp = palloc(sizeof(char) * (delim + 1));
+      strncpy(tmp, str1, delim);
       /* Null terminate the SRID= string */
-      *tmp = '\0';
+      tmp[delim] = '\0';
       /* Set str1 to the start of the real WKB */
-      str1 = tmp + 1;
-      /* Move tmp to the start of the numeric part */
-      tmp = str + 5;
+      str1 += delim + 1;
+      /* Move str to the start of the numeric part */
+      tmp += 5;
       /* Parse out the SRID number */
       srid = atoi(tmp);
+      pfree(tmp);
     }
   }
 
@@ -1780,7 +1790,8 @@ geom_in(char *str, int32 typmod)
   /* WKT then. */
   else
   {
-    if ( lwgeom_parse_wkt(&lwg_parser_result, str1, LW_PARSER_CHECK_ALL) == LW_FAILURE )
+    if ( lwgeom_parse_wkt(&lwg_parser_result, (char *) str1, 
+      LW_PARSER_CHECK_ALL) == LW_FAILURE )
     {
       PG_PARSER_ERROR(lwg_parser_result);
       return NULL;
@@ -1833,7 +1844,7 @@ geo_out(const GSERIALIZED *gs)
  * @param[in] srid SRID
  */
 GSERIALIZED *
-geo_from_text(char *wkt, int srid)
+geo_from_text(const char *wkt, int srid)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) wkt))
@@ -1843,7 +1854,8 @@ geo_from_text(char *wkt, int srid)
   GSERIALIZED *geo_result = NULL;
   LWGEOM *lwgeom;
 
-  if (lwgeom_parse_wkt(&lwg_parser_result, wkt, LW_PARSER_CHECK_ALL) == LW_FAILURE )
+  if (lwgeom_parse_wkt(&lwg_parser_result, (char *) wkt,
+      LW_PARSER_CHECK_ALL) == LW_FAILURE )
     PG_PARSER_ERROR(lwg_parser_result);
 
   lwgeom = lwg_parser_result.geom;
@@ -1863,7 +1875,6 @@ geo_from_text(char *wkt, int srid)
   /* Clean up */
   lwgeom_free(lwg_parser_result.geom);
   lwgeom_parser_result_free(&lwg_parser_result);
-  pfree(wkt);
 
   return geo_result;
 }
@@ -1926,7 +1937,7 @@ geo_as_ewkt(const GSERIALIZED *gs, int precision)
 GSERIALIZED *
 geom_from_hexewkb(const char *wkt)
 {
-  return geom_in((char *) wkt, -1);
+  return geom_in(wkt, -1);
 }
 
 /**
@@ -1941,7 +1952,7 @@ geom_from_hexewkb(const char *wkt)
 GSERIALIZED *
 geog_from_hexewkb(const char *wkt)
 {
-  return geog_in((char *) wkt, -1);
+  return geog_in(wkt, -1);
 }
 
 /**
@@ -2240,7 +2251,7 @@ geog_from_lwgeom(LWGEOM *lwgeom, int32 typmod)
  * @note PostGIS function: @p geography_in(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-geog_in(char *str, int32 typmod)
+geog_in(const char *str, int32 typmod)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) str))
@@ -2248,7 +2259,7 @@ geog_in(char *str, int32 typmod)
 
   LWGEOM_PARSER_RESULT lwg_parser_result;
   LWGEOM *lwgeom = NULL;
-  GSERIALIZED *g_ser = NULL;
+  GSERIALIZED *result = NULL;
 
   lwgeom_parser_result_init(&lwg_parser_result);
 
@@ -2275,10 +2286,10 @@ geog_in(char *str, int32 typmod)
   /* WKT then. */
   else
   {
-    if ( lwgeom_parse_wkt(&lwg_parser_result, str, LW_PARSER_CHECK_ALL) == LW_FAILURE )
+    if ( lwgeom_parse_wkt(&lwg_parser_result, (char *) str, 
+        LW_PARSER_CHECK_ALL) == LW_FAILURE )
       PG_PARSER_ERROR(lwg_parser_result);
-
-    lwgeom = lwg_parser_result.geom;
+      lwgeom = lwg_parser_result.geom;
   }
 
 #if ! MEOS
@@ -2287,12 +2298,12 @@ geog_in(char *str, int32 typmod)
 #endif /* ! MEOS */
 
   /* Convert to gserialized */
-  g_ser = geog_from_lwgeom(lwgeom, typmod);
+  result = geog_from_lwgeom(lwgeom, typmod);
 
   /* Clean up temporary object */
   lwgeom_free(lwgeom);
 
-  return g_ser;
+  return result;
 }
 
 #if MEOS
@@ -2310,7 +2321,7 @@ geog_from_binary(const char *wkb_bytea)
   uint8_t *wkb = (uint8_t *) VARDATA(wkb_bytea);
   LWGEOM *geom = lwgeom_from_wkb(wkb, wkb_size, LW_PARSER_CHECK_NONE);
 
-  if (!  geom )
+  if (! geom)
   {
     meos_error(ERROR, MEOS_ERR_WKB_INPUT, "Unable to parse WKB string");
     return NULL;
@@ -2319,7 +2330,7 @@ geog_from_binary(const char *wkb_bytea)
   /* Error on any SRID != default */
   // srid_check_latlong(lwgeom->srid);
 
-  GSERIALIZED *result = geo_serialize(geom);
+  GSERIALIZED *result = geog_serialize(geom);
   lwgeom_free(geom);
   return result;
 }

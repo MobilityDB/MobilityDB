@@ -893,7 +893,7 @@ basetype_in(const char *str, meosType type,
     }
     case T_GEOMETRY:
     {
-      GSERIALIZED *gs = geom_in((char *) str, -1);
+      GSERIALIZED *gs = geom_in(str, -1);
       if (! gs)
         return false;
       *result = PointerGetDatum(gs);
@@ -901,7 +901,7 @@ basetype_in(const char *str, meosType type,
     }
     case T_GEOGRAPHY:
     {
-      GSERIALIZED *gs = geog_in((char *) str, -1);
+      GSERIALIZED *gs = geog_in(str, -1);
       if (! gs)
         return false;
       *result = PointerGetDatum(gs);

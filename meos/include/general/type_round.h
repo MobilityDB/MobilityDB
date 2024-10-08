@@ -55,7 +55,6 @@ extern Set *npointset_round(const Set *s, int maxdd);
 extern Temporal *tnpoint_round(const Temporal *temp, Datum size);
 #endif /* NPOINT */
 
-
 /*****************************************************************************/
 
-#endif /* __SET_H__ */
+#endif

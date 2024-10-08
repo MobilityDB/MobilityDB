@@ -329,7 +329,7 @@ intervalstyle_string(int intervalstyle)
  * @brief Check a datestyle string
  */
 static bool
-check_datestyle(char **newval, void **extra)
+check_datestyle(const char **newval, void **extra)
 {
   int newDateStyle = DateStyle;
   int newDateOrder = DateOrder;
@@ -423,11 +423,10 @@ check_datestyle(char **newval, void **extra)
        * We can't simply "return check_datestyle(...)" because we need
        * to handle constructs like "DEFAULT, ISO".
        */
-      char *subval = "ISO, MDY";
+      const char *subval = "ISO, MDY";
       void *subextra = NULL;
       if (!check_datestyle(&subval, &subextra))
       {
-        pfree(subval);
         ok = false;
         break;
       }
@@ -436,7 +435,6 @@ check_datestyle(char **newval, void **extra)
         newDateStyle = myextra[0];
       if (!have_order)
         newDateOrder = myextra[1];
-      pfree(subval);
       pfree(subextra);
     }
     else
@@ -475,7 +473,7 @@ check_datestyle(char **newval, void **extra)
  * @brief Set the DateStyle
  */
 bool
-meos_set_datestyle(char *newval, void *extra)
+meos_set_datestyle(const char *newval, void *extra)
 {
   if (! check_datestyle(&newval, &extra))
     return false;
@@ -506,7 +504,7 @@ meos_get_datestyle(void)
  * @brief Check an IntervalStyle string
  */
 static bool
-check_intervalstyle(char *newval, int *extra)
+check_intervalstyle(const char *newval, int *extra)
 {
   int newIntervalStyle = IntervalStyle;
 
@@ -534,7 +532,7 @@ check_intervalstyle(char *newval, int *extra)
  * @brief Set the IntervalStyle
  */
 bool
-meos_set_intervalstyle(char *newval, int extra)
+meos_set_intervalstyle(const char *newval, int extra)
 {
   if (! check_intervalstyle(newval, &extra))
     return false;
