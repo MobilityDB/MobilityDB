@@ -1826,11 +1826,11 @@ geo_out(const GSERIALIZED *gs)
 
 #if MEOS || DEBUG_BUILD
 /**
+ * @ingroup meos_pgis_types
  * @brief Return a geometry/geography from its WKT representation (and
  * optionally a SRID)
  * @param[in] wkt WKT string
  * @param[in] srid SRID
- * @param[in] geography True if it is a geometry
  */
 GSERIALIZED *
 geo_from_text(char *wkt, int srid)
@@ -2319,7 +2319,7 @@ geog_from_binary(const char *wkb_bytea)
   /* Error on any SRID != default */
   // srid_check_latlong(lwgeom->srid);
 
-  GSERIALIZED *result = geography_serialize(geom, -1);
+  GSERIALIZED *result = geo_serialize(geom);
   lwgeom_free(geom);
   return result;
 }
