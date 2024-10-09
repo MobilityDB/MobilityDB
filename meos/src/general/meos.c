@@ -563,10 +563,10 @@ meos_get_intervalstyle(void)
  * Initialize MEOS library
  */
 void
-meos_initialize(const char *tz_str, error_handler_fn err_handler)
+meos_initialize(void)
 {
-  meos_initialize_error_handler(err_handler);
-  meos_initialize_timezone(tz_str);
+  meos_initialize_error_handler(NULL);
+  meos_initialize_timezone(NULL);
   /* Initialize PROJ */
   proj_initialize();
   /* Initialize GSL */

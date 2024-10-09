@@ -116,7 +116,7 @@ main(int argc, char **argv)
    ***************************************************************************/
 
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* You may substitute the full file path in the first argument of fopen */
   FILE *file_in = fopen("data/ais_instants.csv", "r");

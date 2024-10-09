@@ -45,7 +45,7 @@
 int main()
 {
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* Input spansets in WKT format */
   char *iss_in = "{[1,3], [4,7]}";

@@ -51,7 +51,7 @@ int main(void)
   char output_buffer[MAX_LINE_LENGTH];
 
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   Temporal *tfloat = tfloat_in("[1@2020-03-01, 10@2020-03-10]");
   Interval *interv = pg_interval_in("2 days", -1);

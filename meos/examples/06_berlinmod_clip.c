@@ -294,7 +294,7 @@ int main(void)
   t = clock();
   
   /* Initialize MEOS */
-  meos_initialize(NULL, NULL);
+  meos_initialize();
 
   /* Read communes file */
   read_communes();

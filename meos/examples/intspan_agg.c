@@ -59,7 +59,7 @@ typedef struct
 int main(void)
 {
   /* Initialize MEOS */
-  meos_initialize("", NULL);
+  meos_initialize();
 
   /* Get start time */
   clock_t t;
