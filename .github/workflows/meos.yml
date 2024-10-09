@@ -1,0 +1,54 @@
+name: Test MEOS compilation
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/meos.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'mobilitydb/**'
+      - 'postgis/**'
+      - 'CMakeLists.txt'
+    branch_ignore: gh-pages
+  pull_request:
+    paths:
+      - '.github/workflows/meos.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'mobilitydb/**'
+      - 'postgis/**'
+      - 'CMakeLists.txt'
+    branch_ignore: gh-pages
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgeos-dev \
+            libproj-dev \
+            libjson-c-dev \
+            libgsl-dev
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on ..
+          make -j $(nproc)
+          sudo make install
+
+      - name: Compile and run 01_hello_world.c
+        run: |
+          cd meos/examples
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+          gcc -Wall -g -I/usr/local/include -o 01_hello_world 01_hello_world.c -L/usr/local/lib -lmeos
+          ./01_hello_world
