@@ -46,15 +46,14 @@
 
 extern double float_round(double d, int maxdd);
 extern Datum datum_round_float(Datum value, Datum size);
-
 extern Datum datum_round_geo(Datum value, Datum size);
-
-
+#if NPOINT
 extern Datum datum_npoint_round(Datum npoint, Datum size);
 extern Npoint *npoint_round(const Npoint *np, int maxdd);
 extern Nsegment *nsegment_round(const Nsegment *ns, int maxdd);
 extern Set *npointset_round(const Set *s, int maxdd);
 extern Temporal *tnpoint_round(const Temporal *temp, Datum size);
+#endif /* NPOINT */
 
 
 /*****************************************************************************/
