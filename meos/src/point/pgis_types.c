@@ -1750,10 +1750,8 @@ geom_in(const char *str, int32 typmod)
       tmp[delim] = '\0';
       /* Set str1 to the start of the real WKB */
       str1 += delim + 1;
-      /* Move str to the start of the numeric part */
-      tmp += 5;
-      /* Parse out the SRID number */
-      srid = atoi(tmp);
+      /* Move str to the start of the numeric part and parse the SRID number */
+      srid = atoi(tmp + 5);
       pfree(tmp);
     }
   }
