@@ -430,7 +430,7 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
         MEOS_FLAGS_SET_Z(state->box.flags, false);
     }
     /* Set X dimension */
-    MEOS_FLAGS_SET_X(state->box.flags, false);
+    MEOS_FLAGS_SET_X(state->box.flags, true);
   }
   if (MEOS_FLAGS_GET_T(box->flags))
   {

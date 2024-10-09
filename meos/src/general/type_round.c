@@ -50,6 +50,9 @@
 #include "point/stbox.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
+#if NPOINT
+  #include "npoint/npoint.h"
+#endif /* NPOINT */
 
 /*****************************************************************************
  * Round functions called by the other functions
