@@ -54,9 +54,9 @@ int main(void)
   meos_initialize();
 
   Temporal *tpoint = tgeompoint_in("[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]");
-  Interval *interv = pg_interval_in("2 days", -1);
+  Interval *interv = interval_in("2 days", -1);
   GSERIALIZED *sorigin = geom_in("Point(0 0 0)", -1);
-  TimestampTz torigin = pg_timestamptz_in("2020-03-01", -1);
+  TimestampTz torigin = timestamptz_in("2020-03-01", -1);
 
   bool spacesplit = true; /* Set this parameter to enable/disable space split */
   bool timesplit = true; /* Set this parameter to enable/disable time split */
@@ -92,7 +92,7 @@ int main(void)
   {
     char *space_str = spacesplit ?
       geo_as_ewkt(space_bins[i], 3) : "";
-    char *time_str = timesplit ? pg_timestamptz_out(time_bins[i]) : "";
+    char *time_str = timesplit ? timestamptz_out(time_bins[i]) : "";
     char *temp_str = tpoint_as_ewkt(result[i], 3);
     sprintf(output_buffer, "%s%s%s%s%s\n", space_str, spacesplit ? ", " : "",
       time_str, timesplit ? ", " : "", temp_str);

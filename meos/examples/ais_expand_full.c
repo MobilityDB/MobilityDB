@@ -188,7 +188,7 @@ int main(void)
         switch (field)
         {
           case 0:
-            rec.T = pg_timestamp_in(token, -1);
+            rec.T = timestamp_in(token, -1);
             if (rec.T != 0)
               has_t = true;
             break;
@@ -277,7 +277,7 @@ int main(void)
     /* Create an Trip instant from the record */
     if (has_lat && has_long)
     {
-      char *t_out = pg_timestamp_out(rec.T);
+      char *t_out = timestamp_out(rec.T);
       sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
         rec.Latitude, t_out);
       free(t_out);

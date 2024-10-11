@@ -212,8 +212,8 @@ int main(void)
     free(temp);
 
     /* Minimum tdelta simplification */
-    Interval *secs1 = pg_interval_in("1 second", -1);
-    Interval *secs10 = pg_interval_in("10 seconds", -1);
+    Interval *secs1 = interval_in("1 second", -1);
+    Interval *secs10 = interval_in("10 seconds", -1);
     temp = temporal_simplify_min_tdelta(trips[i].trip, secs1);
     min_tdelta_1 += temporal_mem_size(temp);
     no_min_tdelta_1 += temporal_num_instants(temp);
@@ -224,7 +224,7 @@ int main(void)
     free(temp);
 
     /* Tprecision simplification */
-    TimestampTz origin = pg_timestamp_in("2000-01-01", -1);
+    TimestampTz origin = timestamp_in("2000-01-01", -1);
     temp = temporal_tprecision(trips[i].trip, secs1, origin);
     tprec_1s += temporal_mem_size(temp);
     no_tprec_1s += temporal_num_instants(temp);

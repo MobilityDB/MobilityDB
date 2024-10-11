@@ -40,6 +40,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/pg_types.h"
 #include "general/set.h"
 #include "general/span.h"
 #include "general/tbox.h"

@@ -40,6 +40,7 @@
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom_internal.h>
 /* MEOS */

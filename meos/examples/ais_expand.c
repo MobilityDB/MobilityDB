@@ -121,7 +121,7 @@ int main(void)
     int read = fscanf(file, "%31[^,],%ld,%lf,%lf,%lf\n",
       timestamp_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
     /* Transform the string representing the timestamp into a timestamp value */
-    rec.T = pg_timestamp_in(timestamp_buffer, -1);
+    rec.T = timestamp_in(timestamp_buffer, -1);
 
     if (read == 5)
       no_records++;
@@ -168,7 +168,7 @@ int main(void)
      * - The coordinates are given in the WGS84 geographic coordinate system
      * - The timestamps are given in GMT time zone
      */
-    char *t_out = pg_timestamp_out(rec.T);
+    char *t_out = timestamp_out(rec.T);
     sprintf(inst_buffer, "SRID=4326;Point(%lf %lf)@%s", rec.Longitude,
       rec.Latitude, t_out);
     free(t_out);

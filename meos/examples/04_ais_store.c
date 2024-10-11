@@ -204,7 +204,7 @@ main(int argc, char **argv)
     int read = fscanf(file, "%32[^,],%ld,%lf,%lf,%lf\n",
       text_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
     /* Transform the string representing the timestamp into a timestamp value */
-    rec.T = pg_timestamp_in(text_buffer, -1);
+    rec.T = timestamp_in(text_buffer, -1);
 
     if (read == 5)
     {
@@ -234,7 +234,7 @@ main(int argc, char **argv)
       len = sprintf(insert_buffer,
         "INSERT INTO public.AISInstants(MMSI, location, SOG) VALUES ");
 
-    char *t_out = pg_timestamp_out(rec.T);
+    char *t_out = timestamp_out(rec.T);
     len += sprintf(insert_buffer + len,
       "(%ld, 'SRID=4326;Point(%lf %lf)@%s+00', '%lf@%s+00'),",
       rec.MMSI, rec.Longitude, rec.Latitude, t_out, rec.SOG, t_out);

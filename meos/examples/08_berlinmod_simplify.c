@@ -114,7 +114,7 @@ int main(void)
       &trips[i].tripId, &trips[i].vehId, date_buffer, &trips[i].seq,
         trip_buffer);
     /* Transform the string representing the date into a date value */
-    trips[i].day = pg_date_in(date_buffer);
+    trips[i].day = date_in(date_buffer);
     /* Transform the string representing the trip into a temporal value */
     trips[i].trip = temporal_from_hexwkb(trip_buffer);
 
@@ -147,7 +147,7 @@ int main(void)
   {
     trips_dp[i] = temporal_simplify_dp(trips[i].trip, DELTA_DISTANCE, false);
     trips_sed[i] = temporal_simplify_dp(trips[i].trip, DELTA_DISTANCE, true);
-    char *day_str = pg_date_out(trips[i].day);
+    char *day_str = date_out(trips[i].day);
     printf("Vehicle: %d, Date: %s, Seq: %d, No. of instants: %d, "
       "No. of instants DP: %d, No. of instants SED: %d\n",
       trips[i].vehId, day_str, trips[i].seq,
