@@ -58,11 +58,14 @@
 #include "npoint/tnpoint_parser.h"
 
 /** Buffer size for input and output of npoint and nsegment values */
-#define NPOINT_MAXLEN    128
-#define NSEGMENT_MAXLEN    128
+#define NPOINT_MAXLEN     128
+#define NSEGMENT_MAXLEN   128
+
+/* Global variable saving the SRID of the ways table */
+static int32_t SRID_WAYS = SRID_INVALID;
 
 /*****************************************************************************
- * General functions
+ * Functions that fetch information from the ways table
  *****************************************************************************/
 
 /**
@@ -82,6 +85,11 @@ get_srid_ways()
 int32_t
 get_srid_ways()
 {
+  /* Get the value from the global variable if it has been already set */
+  if (SRID_WAYS != SRID_INVALID)
+    return SRID_WAYS;
+  
+  /* Fetch the SRID value from the table */
   int32_t srid_ways = 0; /* make compiler quiet */
   bool isNull = true;
   SPI_connect();
@@ -106,7 +114,214 @@ get_srid_ways()
     return SRID_INVALID;
   }
   SPI_finish();
+  /* Save the SRID value in a global variable */
+  SRID_WAYS = srid_ways;
   return srid_ways;
+}
+#endif /* MEOS */
+
+#define SQL_ROUTE_MAXLEN 64
+
+/**
+ * @ingroup meos_npoint_types
+ * @brief Return true if the edge table contains a route with the route
+ * identifier
+ * @param[in] rid Route identifier
+ */
+#if MEOS
+bool
+route_exists(int64 rid __attribute__((unused)))
+{
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Function not yet implemented");
+  return false;
+}
+#else
+bool
+route_exists(int64 rid)
+{
+  char sql[SQL_ROUTE_MAXLEN];
+  snprintf(sql, sizeof(sql),
+    "SELECT true FROM public.ways WHERE gid = %ld", rid);
+  bool isNull = true;
+  bool result = false;
+  SPI_connect();
+  int ret = SPI_execute(sql, true, 1);
+  uint64 proc = SPI_processed;
+  if (ret > 0 && proc > 0 && SPI_tuptable != NULL)
+  {
+    SPITupleTable *tuptable = SPI_tuptable;
+    result = DatumGetBool(SPI_getbinval(tuptable->vals[0],
+      tuptable->tupdesc, 1, &isNull));
+  }
+  SPI_finish();
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_npoint_types
+ * @brief Access the edge table to return the route length from the
+ * corresponding route identifier
+ * @param[in] rid Route identifier
+ * @return On error return -1
+ */
+#if MEOS
+double
+route_length(int64 rid __attribute__((unused)))
+{
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Function not yet implemented");
+  return -1.0;
+}
+#else
+double
+route_length(int64 rid)
+{
+  char sql[SQL_ROUTE_MAXLEN];
+  snprintf(sql, sizeof(sql),
+    "SELECT length FROM public.ways WHERE gid = %ld", rid);
+  bool isNull = true;
+  double result = 0;
+  SPI_connect();
+  int ret = SPI_execute(sql, true, 1);
+  uint64 proc = SPI_processed;
+  if (ret > 0 && proc > 0 && SPI_tuptable != NULL)
+  {
+    SPITupleTable *tuptable = SPI_tuptable;
+    result = DatumGetFloat8(SPI_getbinval(tuptable->vals[0],
+      tuptable->tupdesc, 1, &isNull));
+  }
+  SPI_finish();
+
+  if (isNull)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot get the length for route %ld", rid);
+    return -1.0;
+  }
+  return result;
+}
+#endif /* MEOS */
+
+/**
+ * @ingroup meos_npoint_types
+ * @brief Access the edge table to get the route geometry from corresponding
+ * route identifier
+ * @param[in] rid Route identifier
+ * @return On error return @p NULL
+ */
+#if MEOS
+GSERIALIZED *
+route_geom(int64 rid __attribute__((unused)))
+{
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Function not yet implemented");
+  return NULL;
+}
+#else
+GSERIALIZED *
+route_geom(int64 rid)
+{
+  char sql[SQL_ROUTE_MAXLEN];
+  snprintf(sql, sizeof(sql),
+    "SELECT the_geom FROM public.ways WHERE gid = %ld", rid);
+  bool isNull = true;
+  GSERIALIZED *result = NULL;
+  SPI_connect();
+  int ret = SPI_execute(sql, true, 1);
+  uint64 proc = SPI_processed;
+  if (ret > 0 && proc > 0 && SPI_tuptable != NULL)
+  {
+    SPITupleTable *tuptable = SPI_tuptable;
+    Datum line = SPI_getbinval(tuptable->vals[0], tuptable->tupdesc, 1, &isNull);
+    if (! isNull)
+    {
+      /* Must allocate this in upper executor context to keep it alive after SPI_finish() */
+      GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(line);
+      result = (GSERIALIZED *) SPI_palloc(gs->size);
+      memcpy(result, gs, gs->size);
+    }
+  }
+  SPI_finish();
+
+  if (isNull)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot get the geometry for route %ld", rid);
+    return NULL;
+  }
+
+  if (! ensure_not_empty(result))
+  {
+    pfree(result);
+    return NULL;
+  }
+
+  return result;
+}
+#endif /* MEOS */
+
+#define SQL_MAXLEN 1024
+
+/**
+ * @ingroup meos_npoint_types
+ * @brief Transform a geometry into a network point
+ * @param[in] gs Geometry
+ * @csqlfn #Geom_to_npoint()
+ */
+#if MEOS
+Npoint *
+geom_npoint(const GSERIALIZED *gs __attribute__((unused)))
+{
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Function not yet implemented");
+  return NULL;
+}
+#else
+Npoint *
+geom_npoint(const GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
+      ! ensure_point_type(gs))
+    return NULL;
+  int32_t srid_geom = gserialized_get_srid(gs);
+  int32_t srid_ways = get_srid_ways();
+  if (srid_ways == SRID_INVALID || ! ensure_same_srid(srid_geom, srid_ways))
+    return NULL;
+
+  char *geomstr = ewkt_out(PointerGetDatum(gs), 0, OUT_DEFAULT_DECIMAL_DIGITS);
+  char sql[SQL_MAXLEN];
+  snprintf(sql, sizeof(sql),
+    "SELECT npoint(gid, ST_LineLocatePoint(the_geom, '%s')) "
+    "FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "
+    "ORDER BY ST_Distance(the_geom, '%s') LIMIT 1", geomstr, geomstr,
+    DIST_EPSILON, geomstr);
+  pfree(geomstr);
+  Npoint *result = palloc(sizeof(Npoint));
+  bool isNull = true;
+  SPI_connect();
+  int ret = SPI_execute(sql, true, 1);
+  uint64 proc = SPI_processed;
+  if (ret > 0 && proc > 0 && SPI_tuptable != NULL)
+  {
+    SPITupleTable *tuptable = SPI_tuptable;
+    Datum value = SPI_getbinval(tuptable->vals[0], tuptable->tupdesc, 1, &isNull);
+    if (! isNull)
+    {
+      /* Must allocate this in upper executor context to keep it alive after SPI_finish() */
+      Npoint *np = DatumGetNpointP(value);
+      memcpy(result, np, sizeof(Npoint));
+    }
+  }
+  SPI_finish();
+  if (isNull)
+  {
+    pfree(result);
+    return NULL;
+  }
+  return result;
 }
 #endif /* MEOS */
 
@@ -169,7 +384,9 @@ nsegmentarr_geom(Nsegment **segments, int count)
   return result;
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * General functions
+ *****************************************************************************/
 
 /**
  * @brief Comparator function for network segments
@@ -469,148 +686,6 @@ nsegment_end_position(const Nsegment *ns)
  * Conversions between network and Euclidean space
  *****************************************************************************/
 
-#define SQL_ROUTE_MAXLEN 64
-
-/**
- * @ingroup meos_npoint_types
- * @brief Return true if the edge table contains a route with the route
- * identifier
- * @param[in] rid Route identifier
- */
-#if MEOS
-bool
-route_exists(int64 rid __attribute__((unused)))
-{
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Function not yet implemented");
-  return false;
-}
-#else
-bool
-route_exists(int64 rid)
-{
-  char sql[SQL_ROUTE_MAXLEN];
-  snprintf(sql, sizeof(sql),
-    "SELECT true FROM public.ways WHERE gid = %ld", rid);
-  bool isNull = true;
-  bool result = false;
-  SPI_connect();
-  int ret = SPI_execute(sql, true, 1);
-  uint64 proc = SPI_processed;
-  if (ret > 0 && proc > 0 && SPI_tuptable != NULL)
-  {
-    SPITupleTable *tuptable = SPI_tuptable;
-    result = DatumGetBool(SPI_getbinval(tuptable->vals[0],
-      tuptable->tupdesc, 1, &isNull));
-  }
-  SPI_finish();
-  return result;
-}
-#endif /* MEOS */
-
-/**
- * @ingroup meos_npoint_types
- * @brief Access the edge table to return the route length from the
- * corresponding route identifier
- * @param[in] rid Route identifier
- * @return On error return -1
- */
-#if MEOS
-double
-route_length(int64 rid __attribute__((unused)))
-{
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Function not yet implemented");
-  return -1.0;
-}
-#else
-double
-route_length(int64 rid)
-{
-  char sql[SQL_ROUTE_MAXLEN];
-  snprintf(sql, sizeof(sql),
-    "SELECT length FROM public.ways WHERE gid = %ld", rid);
-  bool isNull = true;
-  double result = 0;
-  SPI_connect();
-  int ret = SPI_execute(sql, true, 1);
-  uint64 proc = SPI_processed;
-  if (ret > 0 && proc > 0 && SPI_tuptable != NULL)
-  {
-    SPITupleTable *tuptable = SPI_tuptable;
-    result = DatumGetFloat8(SPI_getbinval(tuptable->vals[0],
-      tuptable->tupdesc, 1, &isNull));
-  }
-  SPI_finish();
-
-  if (isNull)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Cannot get the length for route %ld", rid);
-    return -1.0;
-  }
-  return result;
-}
-#endif /* MEOS */
-
-/**
- * @ingroup meos_npoint_types
- * @brief Access the edge table to get the route geometry from corresponding
- * route identifier
- * @param[in] rid Route identifier
- * @return On error return @p NULL
- */
-#if MEOS
-GSERIALIZED *
-route_geom(int64 rid __attribute__((unused)))
-{
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Function not yet implemented");
-  return NULL;
-}
-#else
-GSERIALIZED *
-route_geom(int64 rid)
-{
-  char sql[SQL_ROUTE_MAXLEN];
-  snprintf(sql, sizeof(sql),
-    "SELECT the_geom FROM public.ways WHERE gid = %ld", rid);
-  bool isNull = true;
-  GSERIALIZED *result = NULL;
-  SPI_connect();
-  int ret = SPI_execute(sql, true, 1);
-  uint64 proc = SPI_processed;
-  if (ret > 0 && proc > 0 && SPI_tuptable != NULL)
-  {
-    SPITupleTable *tuptable = SPI_tuptable;
-    Datum line = SPI_getbinval(tuptable->vals[0], tuptable->tupdesc, 1, &isNull);
-    if (!isNull)
-    {
-      /* Must allocate this in upper executor context to keep it alive after SPI_finish() */
-      GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(line);
-      result = (GSERIALIZED *) SPI_palloc(gs->size);
-      memcpy(result, gs, gs->size);
-    }
-  }
-  SPI_finish();
-
-  if (isNull)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Cannot get the geometry for route %ld", rid);
-    return NULL;
-  }
-
-  if (! ensure_not_empty(result))
-  {
-    pfree(result);
-    return NULL;
-  }
-
-  return result;
-}
-#endif /* MEOS */
-
 /**
  * @ingroup meos_npoint_types
  * @brief Transform a network point into a geometry
@@ -625,69 +700,6 @@ npoint_geom(const Npoint *np)
   pfree(line);
   return result;
 }
-
-#define SQL_MAXLEN 1024
-
-/**
- * @ingroup meos_npoint_types
- * @brief Transform a geometry into a network point
- * @param[in] gs Geometry
- * @csqlfn #Geom_to_npoint()
- */
-#if MEOS
-Npoint *
-geom_npoint(const GSERIALIZED *gs __attribute__((unused)))
-{
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Function not yet implemented");
-  return NULL;
-}
-#else
-Npoint *
-geom_npoint(const GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
-      ! ensure_point_type(gs))
-    return NULL;
-  int32_t srid_geom = gserialized_get_srid(gs);
-  int32_t srid_ways = get_srid_ways();
-  if (srid_ways == SRID_INVALID || ! ensure_same_srid(srid_geom, srid_ways))
-    return NULL;
-
-  char *geomstr = ewkt_out(PointerGetDatum(gs), 0, OUT_DEFAULT_DECIMAL_DIGITS);
-  char sql[SQL_MAXLEN];
-  snprintf(sql, sizeof(sql),
-    "SELECT npoint(gid, ST_LineLocatePoint(the_geom, '%s')) "
-    "FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "
-    "ORDER BY ST_Distance(the_geom, '%s') LIMIT 1", geomstr, geomstr,
-    DIST_EPSILON, geomstr);
-  pfree(geomstr);
-  Npoint *result = palloc(sizeof(Npoint));
-  bool isNull = true;
-  SPI_connect();
-  int ret = SPI_execute(sql, true, 1);
-  uint64 proc = SPI_processed;
-  if (ret > 0 && proc > 0 && SPI_tuptable != NULL)
-  {
-    SPITupleTable *tuptable = SPI_tuptable;
-    Datum value = SPI_getbinval(tuptable->vals[0], tuptable->tupdesc, 1, &isNull);
-    if (!isNull)
-    {
-      /* Must allocate this in upper executor context to keep it alive after SPI_finish() */
-      Npoint *np = DatumGetNpointP(value);
-      memcpy(result, np, sizeof(Npoint));
-    }
-  }
-  SPI_finish();
-  if (isNull)
-  {
-    pfree(result);
-    return NULL;
-  }
-  return result;
-}
-#endif /* MEOS */
 
 /**
  * @ingroup meos_npoint_types
@@ -736,7 +748,7 @@ geom_nsegment(const GSERIALIZED *gs)
   {
     points = palloc0(sizeof(Npoint *));
     np = geom_npoint(gs);
-    if (np != NULL)
+    if (np)
       points[npoints++] = np;
   }
   else /* geomtype == LINETYPE */
@@ -748,7 +760,7 @@ geom_nsegment(const GSERIALIZED *gs)
       /* The composing points are from 1 to numcount */
       GSERIALIZED *point = linestring_point_n(gs, i + 1);
       np = geom_npoint(point);
-      if (np != NULL)
+      if (np)
         points[npoints++] = np;
       /* Cannot pfree(point); */
     }
@@ -786,14 +798,14 @@ geom_nsegment(const GSERIALIZED *gs)
  * @brief Return the SRID of a network point
  * @param[in] np Network point
  * @csqlfn #Npoint_get_srid()
+ * @note Since it is assumed that all network points share the same SRID which
+ * is the one from the @p ways table, for performance reasons we simply get
+ * the SRID of the table
  */
 int
-npoint_srid(const Npoint *np)
+npoint_srid(const Npoint *np __attribute__((unused)))
 {
-  GSERIALIZED *line = route_geom(np->rid);
-  int result = gserialized_get_srid(line);
-  pfree(line);
-  return result;
+  return get_srid_ways();
 }
 
 /**
@@ -801,14 +813,14 @@ npoint_srid(const Npoint *np)
  * @brief Return the SRID of a network segment
  * @param[in] ns Network segment
  * @csqlfn #Nsegment_get_srid()
+ * @note Since it is assumed that all network points share the same SRID which
+ * is the one from the @p ways table, for performance reasons we simply get
+ * the SRID of the table
  */
 int
-nsegment_srid(const Nsegment *ns)
+nsegment_srid(const Nsegment *ns __attribute__((unused)))
 {
-  GSERIALIZED *line = route_geom(ns->rid);
-  int result = gserialized_get_srid(line);
-  pfree(line);
-  return result;
+  return get_srid_ways();
 }
 
 /*****************************************************************************
@@ -940,7 +952,7 @@ nsegment_eq(const Nsegment *ns1, const Nsegment *ns2)
 bool
 nsegment_ne(const Nsegment *ns1, const Nsegment *ns2)
 {
-  return (!nsegment_eq(ns1, ns2));
+  return (! nsegment_eq(ns1, ns2));
 }
 
 /**
