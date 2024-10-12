@@ -1,4 +1,5 @@
 add_library(npoint OBJECT
+  npoint.c
   tnpoint.c
   tnpoint_aggfuncs.c
   tnpoint_boxops.c
@@ -7,6 +8,5 @@ add_library(npoint OBJECT
   tnpoint_routeops.c
   tnpoint_spatialfuncs.c
   tnpoint_spatialrels.c
-  tnpoint_static.c
   tnpoint_tempspatialrels.c
 )
