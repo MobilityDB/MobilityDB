@@ -41,6 +41,7 @@
 /* MEOS */
 #include <meos.h>
 #include "point/tpoint_tempspatialrels.h"
+#include "npoint/tnpoint.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
 #include "pg_point/postgis.h"

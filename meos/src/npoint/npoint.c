@@ -50,6 +50,8 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
+#include <meos_npoint.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/type_out.h"
@@ -59,6 +61,7 @@
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_parser.h"
+#include "npoint/tnpoint.h"
 
 /** Buffer size for input and output of npoint and nsegment values */
 #define NPOINT_MAXLEN     128

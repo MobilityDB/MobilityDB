@@ -40,9 +40,11 @@
 
 /* MEOS */
 #include <meos.h>
+#include <meos_npoint.h>
 #include <meos_internal.h>
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_tempspatialrels.h"
+#include "npoint/tnpoint.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************

@@ -37,7 +37,9 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include "npoint/tnpoint.h"
+#include <meos.h>
+#include <meos_npoint.h>
+// #include "npoint/tnpoint.h"
 
 /*****************************************************************************/
 

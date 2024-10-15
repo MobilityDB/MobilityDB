@@ -38,6 +38,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_npoint.h>
 
 /*****************************************************************************
  * fmgr macros

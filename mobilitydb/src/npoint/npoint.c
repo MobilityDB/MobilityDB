@@ -48,6 +48,7 @@
 #include "general/tnumber_mathfuncs.h"
 #include "general/type_out.h"
 #include "general/type_round.h"
+#include "npoint/tnpoint.h"
 /* MobilityDB */
 #include "pg_point/postgis.h"
 

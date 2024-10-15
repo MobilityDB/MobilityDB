@@ -46,6 +46,7 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 
 /* Functions borrowed from lwgeom_pg.c */
 
