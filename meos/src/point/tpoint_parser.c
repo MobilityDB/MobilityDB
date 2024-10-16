@@ -266,19 +266,19 @@ tpointinst_parse(const char **str, meosType temptype, bool end,
   }
   /* If one of the SRID of the temporal point and of the geometry
    * is SRID_UNKNOWN and the other not, copy the SRID */
-  int geo_srid = gserialized_get_srid(gs);
-  if (*tpoint_srid == SRID_UNKNOWN && geo_srid != SRID_UNKNOWN)
-    *tpoint_srid = geo_srid;
+  int gs_srid = gserialized_get_srid(gs);
+  if (*tpoint_srid == SRID_UNKNOWN && gs_srid != SRID_UNKNOWN)
+    *tpoint_srid = gs_srid;
   else if (*tpoint_srid != SRID_UNKNOWN &&
-    ( geo_srid == SRID_UNKNOWN || geo_srid == SRID_DEFAULT ))
+    ( gs_srid == SRID_UNKNOWN || gs_srid == SRID_DEFAULT ))
     gserialized_set_srid(gs, *tpoint_srid);
   /* If the SRID of the temporal point and of the geometry do not match */
-  else if (*tpoint_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN &&
-    *tpoint_srid != geo_srid)
+  else if (*tpoint_srid != SRID_UNKNOWN && gs_srid != SRID_UNKNOWN &&
+    *tpoint_srid != gs_srid)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Geometry SRID (%d) does not match temporal type SRID (%d)",
-      geo_srid, *tpoint_srid);
+      gs_srid, *tpoint_srid);
     pfree(gs);
     return false;
   }

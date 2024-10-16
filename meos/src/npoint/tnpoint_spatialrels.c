@@ -44,10 +44,12 @@
 /* C */
 #include <assert.h>
 /* MEOS */
+#include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"
+#include "npoint/tnpoint.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
@@ -311,7 +313,7 @@ edisjoint_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_temporal_spatial_rel_ever
- * @brief Return 1 if the temporal network points are always disjoint, 0 if
+ * @brief Return 1 if the temporal network points are always disjoint, 0 if 
  * not, and -1 on error or if the temporal points do not intersect in time
  * @param[in] temp1,temp2 Temporal network points
  * @csqlfn #Adisjoint_tnpoint_tnpoint()

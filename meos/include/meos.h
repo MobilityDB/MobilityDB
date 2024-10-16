@@ -141,7 +141,7 @@ typedef struct
   double xmax;          /**< maximum x value */
   double ymax;          /**< maximum y value */
   double zmax;          /**< maximum z value */
-  int32  srid;          /**< SRID */
+  int32_t  srid;          /**< SRID */
   int16  flags;         /**< flags */
 } STBox;
 
@@ -296,6 +296,7 @@ typedef struct
   SkipListElem *elems;
 } SkipList;
 
+/*****************************************************************************/
 
 /**
  * Structure for the in-memory Rtree index
@@ -401,25 +402,6 @@ extern text *text_upper(const text *txt);
 extern text *textcat_text_text(const text *txt1, const text *txt2);
 extern DateADT timestamp_to_date(Timestamp t);
 extern DateADT timestamptz_to_date(TimestampTz t);
-
-/*===========================================================================*
- * Functions for PostGIS types
- *===========================================================================*/
-
-extern uint8_t *geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size);
-extern char *geo_as_ewkt(const GSERIALIZED *gs, int precision);
-extern char *geo_as_geojson(const GSERIALIZED *gs, int option, int precision, const char *srs);
-extern char *geo_as_hexewkb(const GSERIALIZED *gs, const char *endian);
-extern char *geo_as_text(const GSERIALIZED *gs, int precision);
-extern GSERIALIZED *geo_from_text(const char *wkt, int srid);
-extern GSERIALIZED *geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32 srid);
-extern GSERIALIZED *geo_from_geojson(const char *geojson);
-extern char *geo_out(const GSERIALIZED *gs);
-extern bool geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
-extern GSERIALIZED *geog_from_hexewkb(const char *wkt);
-extern GSERIALIZED *geog_in(const char *str, int32 typmod);
-extern GSERIALIZED *geom_from_hexewkb(const char *wkt);
-extern GSERIALIZED *geom_in(const char *str, int32 typmod);
 
 /*===========================================================================*
  * Functions for set and span types
@@ -574,7 +556,7 @@ extern double floatspanset_lower(const SpanSet *ss);
 extern double floatspanset_upper(const SpanSet *ss);
 extern double floatspanset_width(const SpanSet *ss, bool boundspan);
 extern GSERIALIZED *geoset_end_value(const Set *s);
-extern int geoset_srid(const Set *s);
+extern int32_t geoset_srid(const Set *s);
 extern GSERIALIZED *geoset_start_value(const Set *s);
 extern bool geoset_value_n(const Set *s, int n, GSERIALIZED **result);
 extern GSERIALIZED **geoset_values(const Set *s);
@@ -651,14 +633,14 @@ extern SpanSet *floatspanset_floor(const SpanSet *ss);
 extern SpanSet *floatspanset_round(const SpanSet *ss, int maxdd);
 extern SpanSet *floatspanset_shift_scale(const SpanSet *ss, double shift, double width, bool hasshift, bool haswidth);
 extern Set *geoset_round(const Set *s, int maxdd);
-extern Set *geoset_set_srid(const Set *s, int32 srid);
-extern Set *geoset_transform(const Set *s, int32 srid);
-extern Set *geoset_transform_pipeline(const Set *s, const char *pipelinestr, int32 srid, bool is_forward);
+extern Set *geoset_set_srid(const Set *s, int32_t srid);
+extern Set *geoset_transform(const Set *s, int32_t srid);
+extern Set *geoset_transform_pipeline(const Set *s, const char *pipelinestr, int32_t srid, bool is_forward);
 extern Set *intset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth);
 extern Span *intspan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth);
 extern SpanSet *intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift, bool haswidth);
-extern GSERIALIZED *point_transform(const GSERIALIZED *gs, int32 srid);
-extern GSERIALIZED *point_transform_pipeline(const GSERIALIZED *gs, const char *pipelinestr, int32 srid, bool is_forward);
+extern GSERIALIZED *point_transform(const GSERIALIZED *gs, int32_t srid);
+extern GSERIALIZED *point_transform_pipeline(const GSERIALIZED *gs, const char *pipelinestr, int32_t srid, bool is_forward);
 extern Span *set_spans(const Set *s);
 extern Span *set_split_each_n_spans(const Set *s, int elem_count, int *count);
 extern Span *set_split_n_spans(const Set *s, int span_count, int *count);
@@ -1177,7 +1159,7 @@ extern bool stbox_hasx(const STBox *box);
 extern bool stbox_hasz(const STBox *box);
 extern bool stbox_isgeodetic(const STBox *box);
 extern double stbox_perimeter(const STBox *box, bool spheroid);
-extern int32 stbox_srid(const STBox *box);
+extern int32_t stbox_srid(const STBox *box);
 extern bool stbox_tmax(const STBox *box, TimestampTz *result);
 extern bool stbox_tmax_inc(const STBox *box, bool *result);
 extern bool stbox_tmin(const STBox *box, TimestampTz *result);
@@ -1213,10 +1195,10 @@ extern STBox *stbox_expand_time(const STBox *box, const Interval *interv);
 extern STBox *stbox_get_space(const STBox *box);
 extern STBox *stbox_quad_split(const STBox *box, int *count);
 extern STBox *stbox_round(const STBox *box, int maxdd);
-extern STBox *stbox_set_srid(const STBox *box, int32 srid);
+extern STBox *stbox_set_srid(const STBox *box, int32_t srid);
 extern STBox *stbox_shift_scale_time(const STBox *box, const Interval *shift, const Interval *duration);
-extern STBox *stbox_transform(const STBox *box, int32 srid);
-extern STBox *stbox_transform_pipeline(const STBox *box, const char *pipelinestr, int32 srid, bool is_forward);
+extern STBox *stbox_transform(const STBox *box, int32_t srid);
+extern STBox *stbox_transform_pipeline(const STBox *box, const char *pipelinestr, int32_t srid, bool is_forward);
 extern STBox *stboxarr_round(const STBox *boxarr, int count, int maxdd);
 extern TBox *tbox_expand_time(const TBox *box, const Interval *interv);
 extern TBox *tbox_expand_float(const TBox *box, const double d);
@@ -1991,7 +1973,7 @@ extern Temporal *tpoint_get_z(const Temporal *temp);
 extern bool tpoint_is_simple(const Temporal *temp);
 extern double tpoint_length(const Temporal *temp);
 extern Temporal *tpoint_speed(const Temporal *temp);
-extern int tpoint_srid(const Temporal *temp);
+extern int32_t tpoint_srid(const Temporal *temp);
 extern GSERIALIZED *tpoint_trajectory(const Temporal *temp);
 extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
 
@@ -2006,7 +1988,7 @@ extern Temporal *tgeompoint_to_tgeogpoint(const Temporal *temp);
 extern bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr, int *count);
 extern STBox *tpoint_expand_space(const Temporal *temp, double d);
 extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
-extern Temporal *tpoint_set_srid(const Temporal *temp, int32 srid);
+extern Temporal *tpoint_set_srid(const Temporal *temp, int32_t srid);
 extern bool tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
 
 /*****************************************************************************/
@@ -2065,6 +2047,7 @@ extern SkipList *tint_tsum_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tint_wmax_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *tint_wmin_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *tint_wsum_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
+
 extern TBox *tnumber_extent_transfn(TBox *box, const Temporal *temp);
 extern Temporal *tnumber_tavg_finalfn(SkipList *state);
 extern SkipList *tnumber_tavg_transfn(SkipList *state, const Temporal *temp);

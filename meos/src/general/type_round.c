@@ -52,6 +52,7 @@
 #include "point/tpoint_spatialfuncs.h"
 #if NPOINT
   #include "npoint/npoint.h"
+  #include "npoint/tnpoint.h"
 #endif /* NPOINT */
 
 /*****************************************************************************

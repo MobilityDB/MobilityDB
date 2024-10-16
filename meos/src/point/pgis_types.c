@@ -72,6 +72,30 @@ void srid_check_latlong(int32_t srid);
 #endif
 
 /*****************************************************************************
+ * Functions borrowed from gserialized.c
+ *****************************************************************************/
+
+#if MEOS
+/**
+ * @ingroup meos_pgis_types
+ * @brief Get the SRID of a geometry/geography.
+ */
+int32_t geo_srid(const GSERIALIZED *gs)
+{
+  return gserialized_get_srid(gs);
+}
+
+/**
+ * @ingroup meos_pgis_types
+ * @brief Get the SRID of a geometry/geography.
+ */
+bool geo_is_empty(const GSERIALIZED *gs)
+{
+  return gserialized_is_empty(gs);
+}
+#endif /* MEOS */
+
+/*****************************************************************************
  * Functions borrowed from lwgeom_pg.c
  *****************************************************************************/
 
@@ -334,7 +358,7 @@ box3d_to_lwgeom(BOX3D *box)
  * @note PostGIS function: @p LWGEOM_length_linestring(PG_FUNCTION_ARGS)
  */
 double
-geo_length_linestring(const GSERIALIZED *geom)
+line_length(const GSERIALIZED *geom)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
   double dist = lwgeom_length(lwgeom);
@@ -2199,8 +2223,8 @@ geography_valid_type(uint8_t type)
 
 /**
  * @brief Return a geography from a LWGEOM
- * @note Function derived from 
- *   GSERIALIZED* gserialized_geography_from_lwgeom(LWGEOM *lwgeom, 
+ * @note Function derived from
+ *   GSERIALIZED* gserialized_geography_from_lwgeom(LWGEOM *lwgeom,
  *   int32 geog_typmod)
  */
 GSERIALIZED *
@@ -2404,7 +2428,7 @@ line_interpolate_point(GSERIALIZED *gs, double distance_fraction,
  * @note PostGIS function: @p LWGEOM_line_substring(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-line_substring(GSERIALIZED *geom, double from, double to)
+line_substring(const GSERIALIZED *geom, double from, double to)
 {
   if (from < 0 || from > 1)
   {
@@ -2541,7 +2565,7 @@ line_substring(GSERIALIZED *geom, double from, double to)
  * @return On error return -1.0
  */
 double
-linestring_locate_point(GSERIALIZED *gs1, GSERIALIZED *gs2)
+line_locate_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   LWLINE *lwline;
   LWPOINT *lwpoint;
@@ -2585,14 +2609,14 @@ linestring_locate_point(GSERIALIZED *gs1, GSERIALIZED *gs2)
  * there is no LINESTRING(..) in GEOMETRY or INTEGER is out of bounds.
  */
 GSERIALIZED *
-linestring_point_n(const GSERIALIZED *gs, int where)
+line_point_n(const GSERIALIZED *gs, int n)
 {
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   LWPOINT *point = NULL;
   int type = geom->type;
 
   /* If index is negative, count backward */
-  if (where < 1)
+  if (n < 1)
   {
     int count = -1;
     if ( type == LINETYPE || type == CIRCSTRINGTYPE || type == COMPOUNDTYPE )
@@ -2600,21 +2624,21 @@ linestring_point_n(const GSERIALIZED *gs, int where)
     if (count >0)
     {
       /* only work if we found the total point number */
-      /* converting where to positive backward indexing, +1 because 1 indexing */
-      where = where + count + 1;
+      /* converting nf to positive backward indexing, +1 because 1 indexing */
+      n = n + count + 1;
     }
-    if (where < 1)
+    if (n < 1)
       return NULL;
   }
 
   if ( type == LINETYPE || type == CIRCSTRINGTYPE )
   {
     /* OGC index starts at one, so we substract first. */
-    point = lwline_get_lwpoint((LWLINE*) geom, where - 1);
+    point = lwline_get_lwpoint((LWLINE*) geom, n - 1);
   }
   else if ( type == COMPOUNDTYPE )
   {
-    point = lwcompound_get_lwpoint((LWCOMPOUND*) geom, where - 1);
+    point = lwcompound_get_lwpoint((LWCOMPOUND*) geom, n - 1);
   }
 
   lwgeom_free(geom);
@@ -2631,7 +2655,7 @@ linestring_point_n(const GSERIALIZED *gs, int where)
  * @return On error return -1.0
 */
 int
-linestring_numpoints(const GSERIALIZED *gs)
+line_numpoints(const GSERIALIZED *gs)
 {
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   int count = -1;

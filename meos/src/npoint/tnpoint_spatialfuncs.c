@@ -555,15 +555,15 @@ tnpointsegm_azimuth_iter(const TInstant *inst1, const TInstant *inst2,
 
 /* Find all vertices in the segment */
   GSERIALIZED *traj = DatumGetGserializedP(tnpointseqsegm_trajectory(np1, np2));
-  int countVertices = linestring_numpoints(traj);
+  int countVertices = line_numpoints(traj);
   TInstant **result = palloc(sizeof(TInstant *) * countVertices);
-  GSERIALIZED *vertex1 = linestring_point_n(traj, 1); /* 1-based */
+  GSERIALIZED *vertex1 = line_point_n(traj, 1); /* 1-based */
   double azimuth;
   TimestampTz time = inst1->t;
   for (int i = 0; i < countVertices - 1; i++)
   {
-    GSERIALIZED *vertex2 = linestring_point_n(traj, i + 2); /* 1-based */
-    double fraction = linestring_locate_point(traj, vertex2);
+    GSERIALIZED *vertex2 = line_point_n(traj, i + 2); /* 1-based */
+    double fraction = line_locate_point(traj, vertex2);
     assert(! datum_point_eq(PointerGetDatum(vertex1),
       PointerGetDatum(vertex2)));
     geom_azimuth(vertex1, vertex2, &azimuth);

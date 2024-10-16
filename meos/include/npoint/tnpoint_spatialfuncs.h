@@ -37,8 +37,11 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
+#include <meos.h>
+#include <meos_npoint.h>
 #include "general/temporal.h"
 #include "npoint/npoint.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************/
 
@@ -74,6 +77,7 @@ extern Temporal *tnpoint_restrict_geom(const Temporal *temp,
   const GSERIALIZED *gs, const Span *zspan, bool atfunc);
 extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box,
   bool border_inc, bool atfunc);
+
 
 /*****************************************************************************/
 

@@ -550,7 +550,7 @@ meos_get_intervalstyle(void)
   char *result = palloc(INTERVALSTYLE_STR_MAXLEN);
   if (! result)
     return NULL;
-  snprintf(result, INTERVALSTYLE_STR_MAXLEN, "%s", 
+  snprintf(result, INTERVALSTYLE_STR_MAXLEN, "%s",
     intervalstyle_string(IntervalStyle));
   return result;
 }

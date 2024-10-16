@@ -89,7 +89,7 @@ datum_geom_covers(Datum geom1, Datum geom2)
 Datum
 datum_geom_disjoint2d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(! geom_intersects2d(DatumGetGserializedP(geom1), 
+  return BoolGetDatum(! geom_intersects2d(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
@@ -99,7 +99,7 @@ datum_geom_disjoint2d(Datum geom1, Datum geom2)
 Datum
 datum_geom_disjoint3d(Datum geom1, Datum geom2)
 {
-  return BoolGetDatum(! geom_intersects3d(DatumGetGserializedP(geom1), 
+  return BoolGetDatum(! geom_intersects3d(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2)));
 }
 
@@ -110,7 +110,7 @@ datum_geom_disjoint3d(Datum geom1, Datum geom2)
 Datum
 datum_geog_disjoint(Datum geog1, Datum geog2)
 {
-  return BoolGetDatum(! geog_intersects(DatumGetGserializedP(geog1), 
+  return BoolGetDatum(! geog_intersects(DatumGetGserializedP(geog1),
     DatumGetGserializedP(geog2), false));
 }
 
@@ -544,7 +544,7 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
   GSERIALIZED *gsbound = geom_boundary(gs);
   bool result = false;
   if (gsbound && ! gserialized_is_empty(gsbound))
-    result = func(PointerGetDatum(gsbound), PointerGetDatum(traj));
+    result = func(GserializedPGetDatum(gsbound), GserializedPGetDatum(traj));
   /* TODO */
   // else if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
   // {
@@ -552,7 +552,7 @@ etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
     // GSERIALIZED *tempbound = geom_boundary(traj);
     // if (tempbound)
     // {
-      // result = func(PointerGetDatum(tempbound), PointerGetDatum(gs));
+      // result = func(GserializedPGetDatum(tempbound), GserializedPGetDatum(gs));
       // pfree(tempbound);
     // }
   // }

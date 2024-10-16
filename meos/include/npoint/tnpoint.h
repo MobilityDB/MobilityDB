@@ -38,27 +38,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-
-/*****************************************************************************
- * Struct definitions
- *****************************************************************************/
-
-/* Network-based point */
-
-typedef struct
-{
-  int64 rid;        /**< route identifier */
-  double pos;       /**< position */
-} Npoint;
-
-/* Network-based segment */
-
-typedef struct
-{
-  int64 rid;       /**< route identifier */
-  double pos1;     /**< position1 */
-  double pos2;     /**< position2 */
-} Nsegment;
+#include <meos_npoint.h>
 
 /*****************************************************************************
  * fmgr macros
@@ -90,26 +70,21 @@ extern TInstant *tnpointinst_tgeompointinst(const TInstant *inst);
 extern TSequence *tnpointseq_tgeompointseq_disc(const TSequence *is);
 extern TSequence *tnpointseq_tgeompointseq_cont(const TSequence *seq);
 extern TSequenceSet *tnpointseqset_tgeompointseqset(const TSequenceSet *ss);
-extern Temporal *tnpoint_tgeompoint(const Temporal *temp);
 
 extern TInstant *tgeompointinst_tnpointinst(const TInstant *inst);
 extern TSequence *tgeompointseq_tnpointseq(const TSequence *seq);
 extern TSequenceSet *tgeompointseqset_tnpointseqset(const TSequenceSet *ss);
-extern Temporal *tgeompoint_tnpoint(const Temporal *temp);
 
 /* Accessor functions */
 
 extern Nsegment **tnpointinst_positions(const TInstant *inst);
 extern Nsegment **tnpointseq_positions(const TSequence *seq, int *count);
 extern Nsegment **tnpointseqset_positions(const TSequenceSet *ss, int *count);
-extern Nsegment **tnpoint_positions(const Temporal *temp, int *count);
 extern int64 tnpointinst_route(const TInstant *inst);
-extern int64 tnpoint_route(const Temporal *temp);
 extern Set *tnpointinst_routes(const TInstant *inst);
 extern Set *tnpointseq_disc_routes(const TSequence *is);
 extern Set *tnpointseq_cont_routes(const TSequence *seq);
 extern Set *tnpointseqset_routes(const TSequenceSet *ss);
-extern Set *tnpoint_routes(const Temporal *temp);
 
 extern Nsegment *tnpointseq_linear_positions(const TSequence *seq);
 
