@@ -54,9 +54,9 @@ int main(void)
   meos_initialize();
 
   Temporal *tfloat = tfloat_in("[1@2020-03-01, 10@2020-03-10]");
-  Interval *interv = pg_interval_in("2 days", -1);
+  Interval *interv = interval_in("2 days", -1);
   double vorigin = 0.0;
-  TimestampTz torigin = pg_timestamptz_in("2020-03-01", -1);
+  TimestampTz torigin = timestamptz_in("2020-03-01", -1);
 
   bool valuesplit = true; /* Set this parameter to enable/disable value split */
   bool timesplit = true; /* Set this parameter to enable/disable time split */
@@ -87,7 +87,7 @@ int main(void)
   int i;
   for (i = 0; i < count; i++)
   {
-    char *time_str = timesplit ? pg_timestamptz_out(time_bins[i]) : "";
+    char *time_str = timesplit ? timestamptz_out(time_bins[i]) : "";
     char *temp_str = tfloat_out(result[i], 3);
     if (valuesplit)
       snprintf(output_buffer, sizeof(output_buffer), "%f, %s%s%s\n",

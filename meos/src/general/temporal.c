@@ -49,6 +49,7 @@
 #include <meos_internal.h>
 #include "general/doxygen_meos.h"
 #include "general/lifting.h"
+#include "general/pg_types.h"
 #include "general/temporal_boxops.h"
 #include "general/temporal_tile.h"
 #include "general/tinstant.h"

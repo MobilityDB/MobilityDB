@@ -95,7 +95,7 @@ int main(void)
     int read = fscanf(file, "%31[^,],%ld,%lf,%lf,%lf\n",
       timestamp_buffer, &rec.MMSI, &rec.Latitude, &rec.Longitude, &rec.SOG);
     /* Transform the string representing the timestamp into a timestamp value */
-    rec.T = pg_timestamp_in(timestamp_buffer, -1);
+    rec.T = timestamp_in(timestamp_buffer, -1);
 
     if (read == 5)
       no_records++;
@@ -116,7 +116,7 @@ int main(void)
     /* Print only 1 out of 1000 records */
     if (no_records % 1000 == 0)
     {
-      char *t_out = pg_timestamp_out(rec.T);
+      char *t_out = timestamp_out(rec.T);
       /* See above the assumptions made wrt the input data in the file */
       sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
         rec.Latitude, t_out);

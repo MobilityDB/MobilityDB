@@ -116,7 +116,7 @@ int main(void)
     int read = fscanf(file, "%d,%d,%10[^,],%d,%170000[^\n]\n",
       &tripid, &vehid, date_buffer, &seq, trip_buffer);
     /* Transform the string representing the date into a date value */
-    DateADT day = pg_date_in(date_buffer);
+    DateADT day = date_in(date_buffer);
     /* Transform the string representing the trip into a temporal value */
     Temporal *trip = temporal_from_hexwkb(trip_buffer);
 
@@ -198,9 +198,9 @@ int main(void)
     }
 
     /* Write line in the CSV file */
-    char *date_str = pg_date_out(trips[min_trip].day);
+    char *date_str = date_out(trips[min_trip].day);
     char *geom_str = geo_as_ewkt((GSERIALIZED *) &min_inst->value, 6);
-    char *time_str = pg_timestamptz_out(min_inst->t);
+    char *time_str = timestamptz_out(min_inst->t);
     fprintf(file,"%d,%d,%s,%d,%s,%s\n", trips[min_trip].vehid,
       trips[min_trip].vehid, date_str, trips[min_trip].seq, geom_str, time_str);
     free(date_str); free(geom_str); free(time_str); free(min_inst);

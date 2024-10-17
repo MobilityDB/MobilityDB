@@ -58,7 +58,7 @@ int main()
   meos_initialize();
 
   for (int i = 0; i < 4; i++)
-    times[i] = pg_timestamptz_in(times_str[i], -1);
+    times[i] = timestamptz_in(times_str[i], -1);
 
   /* Input temporal points in WKT format */
   TSequence *seq1 = tpointseq_make_coords(xcoords, ycoords, zcoords, times,

@@ -38,7 +38,12 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#if MEOS
+#include "postgres_int_defs.h"
+#else
+#include <utils/date.h>
 #include <utils/timestamp.h>
+#endif
 
 /* Functions adapted from int.c */
 
@@ -62,7 +67,18 @@ extern float8 pg_datan2(float8 arg1, float8 arg2);
 
 /* Functions adadpted from timestamp.c */
 
+extern DateADT pg_date_in(const char *str);
+extern char *pg_date_out(DateADT d);
+extern int pg_interval_cmp(const Interval *interv1, const Interval *interv2);
+extern Interval *pg_interval_in(const char *str, int32 prec);
 extern Interval *pg_interval_justify_hours(const Interval *span);
+extern char *pg_interval_out(const Interval *interv);
+extern TimeADT pg_time_in(const char *str, int32 typmod);
+extern char *pg_time_out(TimeADT t);
+extern Timestamp pg_timestamp_in(const char *str, int32 typmod);
+extern char *pg_timestamp_out(Timestamp t);
+extern TimestampTz pg_timestamptz_in(const char *str, int32 prec);
+extern char *pg_timestamptz_out(TimestampTz t);
 
 /* Functions adapted from hashfn.h and hashfn.c */
 

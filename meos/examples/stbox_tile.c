@@ -64,9 +64,9 @@ int main(void)
 
   /* Initialize values for tiling */
   STBox *box = stbox_in("STBOX XT(((1,1),(10,10)),[2020-03-01, 2020-03-10])");
-  Interval *interv = pg_interval_in("5 days", -1);
+  Interval *interv = interval_in("5 days", -1);
   GSERIALIZED *sorigin = geom_in("Point(0 0 0)", -1);
-  TimestampTz torigin = pg_timestamptz_in("2020-03-01", -1);
+  TimestampTz torigin = timestamptz_in("2020-03-01", -1);
 
   /* Perform tiling */
   STBox *boxes;

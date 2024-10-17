@@ -102,7 +102,7 @@ int main(void)
   TSequence *seq = NULL, *seq1 = NULL;
   TSequenceSet *ss = NULL;
   /* Interval to add */
-  Interval *onehour = pg_interval_in("1 hour", -1);
+  Interval *onehour = interval_in("1 hour", -1);
   /* Iterator variables */
   int i;
   /* Seed the random number generator with the current time in seconds. */
@@ -113,7 +113,7 @@ int main(void)
   printf("Generating the instants (one '*' marker every %d instants)\n",
     NO_INSTANTS_BATCH);
 
-  TimestampTz t = pg_timestamptz_in("2000-01-01", -1);
+  TimestampTz t = timestamptz_in("2000-01-01", -1);
   for (i = 0; i < MAX_INSTANTS; i++)
   {
     /* Generate the instant */

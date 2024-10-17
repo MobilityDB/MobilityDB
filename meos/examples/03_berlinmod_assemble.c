@@ -145,11 +145,11 @@ int main(void)
       &rec.tripid, &rec.vehid, date_buffer, &rec.seq, point_buffer,
       timestamp_buffer);
     /* Transform the string representing the date into a date value */
-    rec.day = pg_date_in(date_buffer);
+    rec.day = date_in(date_buffer);
     /* Transform the string representing the trip into a temporal value */
     rec.point = geom_in(point_buffer, -1);
     /* Transform the string representing the timestamp into a timestamp value */
-    rec.t = pg_timestamp_in(timestamp_buffer, -1);
+    rec.t = timestamp_in(timestamp_buffer, -1);
     /* Transform the string representing the trip into a temporal value */
     TInstant *inst = tpointinst_make(rec.point, rec.t);
     /* Free the point as it's not needed anymore */
@@ -238,7 +238,7 @@ int main(void)
   for (i = 0; i < no_trips; i++)
   {
     /* Write line in the CSV file */
-    char *date_str = pg_date_out(trips[i].day);
+    char *date_str = date_out(trips[i].day);
     size_t length;
     /* Encode using server machine endian */
     char *trip_str = temporal_as_hexwkb(trips[i].trip, WKB_EXTENDED, &length);

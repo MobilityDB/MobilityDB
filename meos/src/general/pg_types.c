@@ -658,6 +658,11 @@ pg_date_in(const char *str)
  * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
  */
 DateADT
+date_in(const char *str)
+{
+  return pg_date_in(str);
+}
+DateADT
 pg_date_in(const char *str)
 {
   /* Ensure validity of the arguments */
@@ -761,6 +766,11 @@ pg_date_out(DateADT d)
  * @param[in] d Date
  * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
  */
+char *
+date_out(DateADT d)
+{
+  return pg_date_out(d);
+}
 char *
 pg_date_out(DateADT d)
 {
@@ -1112,7 +1122,7 @@ MEOSAdjustTimeForTypmod(TimeADT *time, int32 typmod)
  * @note PostgreSQL function: @p time_in(PG_FUNCTION_ARGS)
  */
 TimeADT
-pg_time_in(const char *str, int32 prec)
+time_in(const char *str, int32 prec)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) str))
@@ -1156,7 +1166,7 @@ pg_time_in(const char *str, int32 prec)
  * @note PostgreSQL function: @p time_out(PG_FUNCTION_ARGS)
  */
 char *
-pg_time_out(TimeADT t)
+time_out(TimeADT t)
 {
   struct pg_tm tt, *tm = &tt;
   fsec_t fsec;
@@ -1360,6 +1370,11 @@ timestamp_in_common(const char *str, int32 typmod, bool withtz)
  * @note PostgreSQL function: @p timestamp_in(PG_FUNCTION_ARGS)
  */
 Timestamp
+timestamp_in(const char *str, int32 prec)
+{
+  return (Timestamp) timestamp_in_common(str, prec, false);
+}
+Timestamp
 pg_timestamp_in(const char *str, int32 prec)
 {
   return (Timestamp) timestamp_in_common(str, prec, false);
@@ -1375,6 +1390,11 @@ pg_timestamp_in(const char *str, int32 prec)
  * @return On error return @p DT_NOEND
  * @note PostgreSQL function: @p timestamptz_in(PG_FUNCTION_ARGS)
  */
+TimestampTz
+timestamptz_in(const char *str, int32 prec)
+{
+  return timestamp_in_common(str, prec, true);
+}
 TimestampTz
 pg_timestamptz_in(const char *str, int32 prec)
 {
@@ -1432,6 +1452,11 @@ timestamp_out_common(TimestampTz t, bool withtz)
  * @note PostgreSQL function: @p timestamp_out(PG_FUNCTION_ARGS)
  */
 char *
+timestamp_out(Timestamp t)
+{
+  return timestamp_out_common((TimestampTz) t, false);
+}
+char *
 pg_timestamp_out(Timestamp t)
 {
   return timestamp_out_common((TimestampTz) t, false);
@@ -1443,6 +1468,11 @@ pg_timestamp_out(Timestamp t)
  * @param[in] t Timestamp
  * @note PostgreSQL function: @p timestamptz_out(PG_FUNCTION_ARGS)
  */
+char *
+timestamptz_out(TimestampTz t)
+{
+  return timestamp_out_common(t, true);
+}
 char *
 pg_timestamptz_out(TimestampTz t)
 {
@@ -1482,19 +1512,7 @@ timestamptz_to_date(TimestampTz t)
 
 /*****************************************************************************/
 
-#if ! MEOS
-/**
- * @brief Return the string representation of an interval
- * @return On error return @p NULL
- * @note PostgreSQL function: @p interval_out(PG_FUNCTION_ARGS)
- */
-char *
-pg_interval_out(const Interval *interv)
-{
-  Datum d = PointerGetDatum(interv);
-  return DatumGetCString(call_function1(interval_out, d));
-}
-#else /*if MEOS */
+#if MEOS
 /*
  *  Adjust interval for specified precision, in both YEAR to SECOND
  *  range and sub-second precision.
@@ -1681,6 +1699,11 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod)
  * for a detailed account of the input syntax and the precision
  */
 Interval *
+interval_in(const char *str, int32 prec)
+{
+  return pg_interval_in(str, prec);
+}
+Interval *
 pg_interval_in(const char *str, int32 prec)
 {
   /* Ensure validity of the arguments */
@@ -1758,6 +1781,7 @@ pg_interval_in(const char *str, int32 prec)
 
   return result;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_pg_types
@@ -1772,7 +1796,7 @@ pg_interval_in(const char *str, int32 prec)
  * @note PostgreSQL function: @p make_interval(PG_FUNCTION_ARGS)
  */
 Interval *
-pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours,
+interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours,
   int32 mins, double secs)
 {
   Interval *result;
@@ -1798,6 +1822,20 @@ pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours
   return result;
 }
 
+
+#if ! MEOS
+/**
+ * @brief Return the string representation of an interval
+ * @return On error return @p NULL
+ * @note PostgreSQL function: @p interval_out(PG_FUNCTION_ARGS)
+ */
+char *
+pg_interval_out(const Interval *interv)
+{
+  Datum d = PointerGetDatum(interv);
+  return DatumGetCString(call_function1(interval_out, d));
+}
+#else
 /**
  * @ingroup meos_pg_types
  * @brief Return the string representation of an interval
@@ -1809,6 +1847,11 @@ pg_interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours
  * style specified at the initialization of the MEOS library (`postgres` by
  * default)
  */
+char *
+interval_out(const Interval *interv)
+{
+  return pg_interval_out(interv);
+}
 char *
 pg_interval_out(const Interval *interv)
 {
@@ -2188,12 +2231,19 @@ interval_cmp_value(const Interval *interval)
   return span;
 }
 
+#if MEOS
 /**
  * @ingroup meos_pg_types
  * @brief Return the comparison of two intervals
  * @param[in] interv1,interv2 Intervals
  * @note PostgreSQL function: @p interval_cmp(PG_FUNCTION_ARGS)
  */
+int
+interval_cmp(const Interval *interv1, const Interval *interv2)
+{
+  return pg_interval_cmp(interv1, interv2);
+}
+#endif /* MEOS */
 int
 pg_interval_cmp(const Interval *interv1, const Interval *interv2)
 {

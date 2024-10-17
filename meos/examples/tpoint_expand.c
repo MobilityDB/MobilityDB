@@ -84,14 +84,14 @@ int main(void)
   /* Sequence constructed from the input instants */
   Temporal *seq = NULL;
   /* Interval to add */
-  Interval *oneday = pg_interval_in("1 day", -1);
+  Interval *oneday = interval_in("1 day", -1);
   /* Iterator variable */
   int i;
 
   printf("Reading the instants (one '*' marker every %d instants)\n",
     NO_INSTANTS_BATCH);
 
-  TimestampTz t = pg_timestamptz_in("1999-12-31", -1);
+  TimestampTz t = timestamptz_in("1999-12-31", -1);
   for (i = 0; i < MAX_INSTANTS; i++)
   {
     if (i % NO_INSTANTS_BATCH == 0)
@@ -100,7 +100,7 @@ int main(void)
       fflush(stdout);
     }
     t = add_timestamptz_interval(t, oneday);
-    char *time_str = pg_timestamptz_out(t);
+    char *time_str = timestamptz_out(t);
     int value = i % 2 + 1;
 #if GEODETIC == true
     sprintf(inst_buffer, "SRID=4326;Point(%d %d)@%s", value, value, time_str);

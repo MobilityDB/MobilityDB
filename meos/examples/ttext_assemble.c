@@ -70,7 +70,7 @@ int main(void)
   /* Sequence constructed from the input instants */
   Temporal *seq = NULL;
   /* Interval to add */
-  Interval *oneday = pg_interval_in("1 day", -1);
+  Interval *oneday = interval_in("1 day", -1);
   /* Iterator variable */
   int i;
   /* Seed the random number generator with the current time in seconds. */
@@ -79,7 +79,7 @@ int main(void)
   printf("Generating the instants (one '*' marker every %d instants)\n",
     NO_INSTANTS_BATCH);
 
-  TimestampTz t = pg_timestamptz_in("1999-12-31", -1);
+  TimestampTz t = timestamptz_in("1999-12-31", -1);
   for (i = 0; i < MAX_INSTANTS; i++)
   {
     /* Generate the instant */

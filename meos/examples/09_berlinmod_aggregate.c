@@ -99,8 +99,8 @@ int main(void)
   /* Variable keeping the current aggregate state */
   SkipList *state = NULL;
   STBox *extent = NULL;
-  Interval *interval = pg_interval_in("1 hour", -1);
-  TimestampTz origin = pg_timestamptz_in("2020-06-01", -1);
+  Interval *interval = interval_in("1 hour", -1);
+  TimestampTz origin = timestamptz_in("2020-06-01", -1);
 
   /* Continue reading the file */
   do
@@ -108,7 +108,7 @@ int main(void)
     int read = fscanf(file, "%d,%d,%10[^,],%d,%170000[^\n]\n",
       &trip_rec.tripid, &trip_rec.vehid, date_buffer, &trip_rec.seq, trip_buffer);
     /* Transform the string representing the date into a date value */
-    DateADT day = pg_date_in(date_buffer);
+    DateADT day = date_in(date_buffer);
     trip_rec.day = day;
     /* Transform the string representing the trip into a temporal value */
     trip_rec.trip = temporal_from_hexwkb(trip_buffer);
