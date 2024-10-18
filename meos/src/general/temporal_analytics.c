@@ -273,7 +273,9 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       {
         start = end; end = NULL;
       }
-      if (interp != DISCRETE)
+      if (interp == DISCRETE)
+        k = 0;
+      else
       {
         /* The instant at the end of the current bin is the start of the next
          * one excepted when the last bin is empty */
