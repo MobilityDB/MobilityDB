@@ -238,25 +238,38 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
     /* Get the next instant */
     TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, i);
     int cmp = timestamptz_cmp_internal(inst->t, upper);
-    /* If the instant is in the current bin consume it */
-    if (cmp <= 0)
+    if (cmp < 0)
     {
+      /* ACCUMULATE the instant since it is WITHIN the current bin */
       ininsts[k++] = inst;
       i++;
     }
-    /* If we have reached the end of the bin */
-    if (cmp >= 0)
+    else
     {
+      /* We have reached the end of the bin or beyond: Add or compute the value
+       * the end of the bin ONLY for continuous interpolation */
       assert(k > 0);
-      /* Compute the value at the end of the bin if we do not have it */
-      if (interp != DISCRETE &&
-          timestamptz_cmp_internal(ininsts[k - 1]->t, upper) < 0)
+      if (interp == STEP)
       {
-        tsequence_value_at_timestamptz(seq, upper, false, &value);
-        ininsts[k++] = end = tinstant_make_free(value, seq->temptype, upper);
+        /* For STEP interpolation ALWAYS generate the end of bin instant */
+        value = ininsts[k - 1]->value;
+        ininsts[k++] = end = tinstant_make(value, seq->temptype, upper);
       }
-      seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
-        NORMALIZE);
+      else if (interp == LINEAR)
+      {
+        /* For LINEAR interpolation generate the end of bin instant ONLY if 
+         * the last instant read is beyond the end of the bin */
+        if (cmp == 0)
+          ininsts[k++] = inst;
+        else
+        {
+          tsequence_value_at_timestamptz(seq, upper, false, &value);
+          ininsts[k++] = end = tinstant_make_free(value, seq->temptype, upper);
+        }
+      }
+      /* Construct the sequence with the accumulated values */
+      seq1 = tsequence_make((const TInstant **) ininsts, k, true,
+        (k == 1) ? true : false, interp, NORMALIZE);
       /* Compute the twAvg/twCentroid for the bin */
       value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
         PointerGetDatum(tpointseq_twcentroid(seq1));
@@ -271,19 +284,27 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       }
       if (end)
       {
-        start = end; end = NULL;
+        /* For STEP interpolation, remove the instant generated for the end of
+           the bin when the last instant READ is equal to the end of the bin */
+        if (interp == STEP && cmp == 0)
+          pfree(end);
+        else 
+          start = end;
+        end = NULL;
       }
-      if (interp != DISCRETE)
+      /* Reinitilize the accumulation by default */
+      k = 0;
+      /* If the last instant READ is the start of the bin */
+      if (cmp == 0)
       {
-        /* The instant at the end of the current bin is the start of the next
-         * one excepted when the last bin is empty */
-        if (i < seq->count || seq->period.upper_inc)
-        {
-          ininsts[0] = ininsts[k - 1];
-          k = 1;
-        }
-        else
-          k = 0;
+        ininsts[0] = inst; i++; k = 1;
+      }
+      /* If the last instant READ is the after the bin and the interpolation
+       * is continuous and thus the start of the bin has been generated */
+      else if(start)
+      {
+        ininsts[0] = start; 
+        ininsts[1] = inst; i++; k = 2;
       }
       lower = upper;
       upper += tunits;
@@ -292,8 +313,8 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
   /* Compute the twAvg/twCentroid of the last bin */
   if (k > 0)
   {
-    seq1 = tsequence_make((const TInstant **) ininsts, k, true, true, interp,
-      NORMALIZE);
+    seq1 = tsequence_make((const TInstant **) ininsts, k, true,
+      (k == 1) ? true : seq->period.upper_inc, interp, NORMALIZE);
     value = twavg ? Float8GetDatum(tnumberseq_twavg(seq1)) :
       PointerGetDatum(tpointseq_twcentroid(seq1));
     outinsts[l++] = tinstant_make(value, temptype_out, lower);
@@ -301,9 +322,9 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       pfree(DatumGetPointer(value));
     pfree(seq1);
   }
-  /* The lower and upper bounds are both true since the tprecision operation
-   * amounts to a granularity change */
-  TSequence *result = tsequence_make_free(outinsts, l, true, true, interp,
+  /* The lower and upper bounds of the result are both true since the 
+   * tprecision operation amounts to a granularity change */
+   TSequence *result = tsequence_make_free(outinsts, l, true, true, interp,
     NORMALIZE);
   pfree(ininsts);
   if (start)
