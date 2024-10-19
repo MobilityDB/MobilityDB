@@ -25,7 +25,7 @@ message(STATUS "Directory of the time zone database: /usr/share/zoneinfo")
 
 # Option to build MEOS as a shared or static library
 option(BUILD_SHARED_LIBS
-  "Set to OFF to build MEOS as a static library (default is ON)"
+  "Set BUILD_SHARED_LIBS (default=ON) to build MEOS as a shared library"
   ON
 )
 
