@@ -23,6 +23,12 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 add_definitions(-DSYSTEMTZDIR="/usr/share/zoneinfo")
 message(STATUS "Directory of the time zone database: /usr/share/zoneinfo")
 
+# Option to build MEOS as a shared or static library
+option(BUILD_SHARED_LIBS
+  "Set BUILD_SHARED_LIBS (default=ON) to build MEOS as a shared library"
+  ON
+)
+
 # Option to show debug messages for analyzing the expandable data structures
 option(DEBUG_EXPAND
   "Set DEBUG_EXPAND (default=OFF) to show debug messages for analyzing the
@@ -168,7 +174,7 @@ set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
 
 # Build the library: All
-add_library(${MEOS_LIB_NAME} SHARED ${PROJECT_OBJECTS})
+add_library(${MEOS_LIB_NAME} ${PROJECT_OBJECTS})
 if(APPLE)
   set_target_properties(${MEOS_LIB_NAME} PROPERTIES
     LINK_FLAGS "-Wl,-undefined,dynamic_lookup")
