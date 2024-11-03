@@ -28,8 +28,8 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
-set parallel_tuple_cost=0;
-set parallel_setup_cost=0;
+-- set parallel_tuple_cost=0;
+-- set parallel_setup_cost=0;
 -------------------------------------------------------------------------------
 -- Geometry rel tnpoint
  -------------------------------------------------------------------------------
@@ -93,8 +93,8 @@ SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE aIntersects(t1.temp, t
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE aDwithin(t1.temp, t2.temp, 0.01) AND t1.k%4 = 0 AND t2.k%4 = 0 AND tempSubtype(t1.temp) != 'SequenceSet';
 
 -------------------------------------------------------------------------------
-set parallel_tuple_cost=100;
-set parallel_setup_cost=100;
+-- set parallel_tuple_cost=100;
+-- set parallel_setup_cost=100;
 -------------------------------------------------------------------------------
 -- Test index support function for ever spatial relationships
 
