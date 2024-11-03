@@ -1,7 +1,3 @@
-set parallel_tuple_cost=0;
-SET
-set parallel_setup_cost=0;
-SET
 SELECT COUNT(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE eContains(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
  count 
 -------
@@ -242,10 +238,6 @@ SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE aDwithin(t1.temp, t2.t
     18
 (1 row)
 
-set parallel_tuple_cost=100;
-SET
-set parallel_setup_cost=100;
-SET
 CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
 CREATE INDEX
 SELECT COUNT(*) FROM tbl_tnpoint WHERE eContains(geometry 'SRID=5676;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
