@@ -97,29 +97,20 @@ SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(6
 			<listitem id="tsample">
 				<indexterm><primary><varname>tsample</varname></primary></indexterm>
 				<para>Muestrear un valor temporal con respecto a un intervalo</para>
-				<para><varname>tsample({tnumber,tgeompoint},duration interval,torigin timestamptz='2000-01-03',</varname></para>
-				<para><varname>  interp='discrete') →{tnumber,tgeompoint}</varname></para>
+				<para><varname>tsample({tnumber,tgeompoint},duration interval,torigin timestamptz='2000-01-03')  →</varname></para>
+				<para><varname>  {tnumber,tgeompoint}</varname></para>
 				<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. El intervalo dado debe ser estrictamente mayor que cero.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tsample(tint '{1@2001-01-01,5@2001-01-05}', '3 days', '2001-01-01');
+SELECT tsample(tint '{1@2001-01-01, 5@2001-01-05}', '3 days', '2001-01-01');
 -- {1@2001-01-01}
-SELECT tsample(tfloat '[1@2001-01-01,5@2001-01-05]', '1 day', '2001-01-01');
--- {1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 4@2001-01-04, 5@2001-01-05}
-SELECT tsample(tfloat '[1@2001-01-01,5@2001-01-05]', '3 days', '2001-01-01');
--- {1@2001-01-01, 4@2001-01-04}
-SELECT tsample(tfloat '[1@2001-01-01,5@2001-01-05]', '3 days', '2001-01-01', 'linear');
--- [1@2001-01-01, 4@2001-01-04]
-SELECT asText(tsample(tgeompoint '{[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05],
-  [Point(1 1)@2001-01-06, Point(5 5)@2001-01-08]}', '3 days', '2001-01-01', 'step'));
--- Interp=Step;[POINT(1 1)@2001-01-01, POINT(4 4)@2001-01-04, POINT(3 3)@2001-01-07]
-</programlisting>
-				<programlisting language="sql" xml:space="preserve">
+SELECT tsample(tfloat '[1@2001-01-01, 5@2001-01-05]', '1 day', '2001-01-01');
+-- [1@2001-01-01, 5@2001-01-05]
 SELECT asText(tsample(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]',
   '2 days', '2001-01-01'));
--- {POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03, POINT(5 5)@2001-01-05}
+-- [POINT(1 1)@2001-01-01, POINT(5 5)@2001-01-05]
 SELECT asText(tsample(tgeompoint '{[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05],
   [Point(1 1)@2001-01-06, Point(5 5)@2001-01-08]}', '3 days', '2001-01-01'));
--- {POINT(1 1)@2001-01-01, POINT(4 4)@2001-01-04, POINT(3 3)@2001-01-07}
+--  {[POINT(1 1)@2001-01-01, POINT(4 4)@2001-01-04], [POINT(3 3)@2001-01-07]}
 </programlisting>
 				<para>La <xref linkend="fig_tsample" /> ilustra el muestreo para números flotantes temporales con varias interpolaciones. Como ilustra la figura, la operación de muestreo es más adecuada para valores temporales con interpolación continua.</para>
 			</listitem>

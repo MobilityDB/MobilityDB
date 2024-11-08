@@ -269,7 +269,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatspan_round"><varname>round</varname></link>: Redondear a un número de decimales</para>
+					<para><link linkend="floatsetspan_round"><varname>round</varname></link>: Redondear a un número de decimales</para>
 				</listitem>
 
 				<listitem>

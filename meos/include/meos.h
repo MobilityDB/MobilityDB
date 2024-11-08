@@ -2066,7 +2066,7 @@ extern Temporal *temporal_simplify_min_tdelta(const Temporal *temp, const Interv
 /* Reduction functions for temporal types */
 
 extern Temporal *temporal_tprecision(const Temporal *temp, const Interval *duration, TimestampTz origin);
-extern Temporal *temporal_tsample(const Temporal *temp, const Interval *duration, TimestampTz origin, interpType interp);
+extern Temporal *temporal_tsample(const Temporal *temp, const Interval *duration, TimestampTz origin);
 
 /*****************************************************************************/
 

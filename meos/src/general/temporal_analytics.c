@@ -301,10 +301,14 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
       }
       /* If the last instant READ is the after the bin and the interpolation
        * is continuous and thus the start of the bin has been generated */
-      else if(start)
+      else if (start)
       {
-        ininsts[0] = start; 
-        ininsts[1] = inst; i++; k = 2;
+        k = 0;
+        ininsts[k++] = start;
+        if (timestamptz_cmp_internal(inst->t, upper) <= 0)
+        {
+          ininsts[k++] = inst; i++;
+        }
       }
       lower = upper;
       upper += tunits;
@@ -554,14 +558,14 @@ tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bin,
  * @param[in] seq Temporal value
  * @param[in] duration Size of the time bins
  * @param[in] torigin Time origin of the bins
- * @param[in] interp Interpolation
  */
 TSequence *
 tsequence_tsample(const TSequence *seq, const Interval *duration,
-  TimestampTz torigin, interpType interp)
+  TimestampTz torigin)
 {
   assert(seq); assert(duration); assert(valid_duration(duration));
 
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
   TimestampTz upper = DatumGetTimestampTz(seq->period.upper);
@@ -583,73 +587,22 @@ tsequence_tsample(const TSequence *seq, const Interval *duration,
  * @param[in] duration Size of the time bins
  * @param[in] torigin Time origin of the bins
  */
-TSequence *
-tsequenceset_disc_tsample(const TSequenceSet *ss, const Interval *duration,
+TSequenceSet *
+tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
   assert(ss); assert(duration); assert(valid_duration(duration));
-
-  int64 tunits = interval_units(duration);
-  TimestampTz lower = tsequenceset_start_timestamptz(ss);
-  TimestampTz upper = tsequenceset_end_timestamptz(ss);
-  TimestampTz lower_bin = timestamptz_get_bin(lower, duration, torigin);
-  /* We need to add tunits to obtain the end timestamp of the last bin */
-  TimestampTz upper_bin = timestamptz_get_bin(upper, duration, torigin) +
-    tunits;
-  /* Number of bins */
-  int count = (int) (((int64) upper_bin - (int64) lower_bin) / tunits) + 1;
-  TInstant **instants = palloc(sizeof(TInstant *) * count);
-  /* Loop for each segment */
-  int ninsts = 0;
-  for (int i = 0; i < ss->count; i++)
-  {
-    ninsts += tsequence_tsample_iter(TSEQUENCESET_SEQ_N(ss, i), lower_bin,
-      upper_bin, tunits, &instants[ninsts]);
-  }
-  return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
-    NORMALIZE);
-}
-
-/**
- * @brief Return a temporal value sampled according to time bins
- * @param[in] ss Temporal value
- * @param[in] duration Size of the time bins
- * @param[in] torigin Time origin of the bins
- * @param[in] interp Interpolation
- */
-TSequenceSet *
-tsequenceset_cont_tsample(const TSequenceSet *ss, const Interval *duration,
-  TimestampTz torigin, interpType interp)
-{
-  assert(ss); assert(duration); assert(valid_duration(duration));
-  assert(interp != DISCRETE);
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
     TSequence *seq = tsequence_tsample(TSEQUENCESET_SEQ_N(ss, i), duration,
-      torigin, interp);
+      torigin);
     if (seq)
       sequences[nseqs++] = seq;
   }
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
-}
-
-/**
- * @brief Return a temporal value sampled according to time bins
- * @param[in] ss Temporal value
- * @param[in] duration Size of the time bins
- * @param[in] torigin Time origin of the bins
- * @param[in] interp Interpolation
- */
-Temporal *
-tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
-  TimestampTz torigin, interpType interp)
-{
-  return (interp == DISCRETE) ?
-    (Temporal *) tsequenceset_disc_tsample(ss, duration, torigin) :
-    (Temporal *) tsequenceset_cont_tsample(ss, duration, torigin, interp);
 }
 
 /**
@@ -658,12 +611,11 @@ tsequenceset_tsample(const TSequenceSet *ss, const Interval *duration,
  * @param[in] temp Temporal value
  * @param[in] duration Size of the time bins
  * @param[in] torigin Time origin of the bins
- * @param[in] interp Interpolation
  * @csqlfn #Temporal_tsample()
  */
 Temporal *
 temporal_tsample(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin, interpType interp)
+  TimestampTz torigin)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
@@ -679,10 +631,10 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
         torigin);
     case TSEQUENCE:
       return (Temporal *) tsequence_tsample((TSequence *) temp, duration,
-        torigin, interp);
+        torigin);
     default: /* TSEQUENCESET */
       return (Temporal *) tsequenceset_tsample((TSequenceSet *) temp,
-        duration, torigin, interp);
+        duration, torigin);
   }
 }
 

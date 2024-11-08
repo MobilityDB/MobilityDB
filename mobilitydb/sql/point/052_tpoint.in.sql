@@ -635,12 +635,12 @@ CREATE FUNCTION tprecision(tgeogpoint, duration interval,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tsample(tgeompoint, duration interval,
-  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  origin timestamptz DEFAULT '2000-01-03')
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_tsample'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tsample(tgeogpoint, duration interval,
-  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  origin timestamptz DEFAULT '2000-01-03')
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_tsample'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
