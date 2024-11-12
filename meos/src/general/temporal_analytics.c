@@ -303,8 +303,14 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
        * is continuous and thus the start of the bin has been generated */
       else if(start)
       {
-        ininsts[0] = start; 
-        ininsts[1] = inst; i++; k = 2;
+        k = 0;
+        ininsts[k++] = start;
+        /* If the next instant is within the next time bin */
+        if (timestamptz_cmp_internal(inst->t, upper) <= 0)
+        {
+          ininsts[k++] = inst; 
+          i++;
+        }
       }
       lower = upper;
       upper += tunits;
