@@ -1078,6 +1078,17 @@ tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @brief Return a Boolean converted to an integer
+ * @param[in] d Value
+ * @note Function used for lifting
+ */
+static Datum
+datum_bool_to_int(Datum d)
+{
+  return Int32GetDatum((int) DatumGetBool(d));
+}
+
+/**
  * @brief Return an integer converted to a float
  * @param[in] d Value
  * @note Function used for lifting
@@ -1097,6 +1108,31 @@ static Datum
 datum_float_to_int(Datum d)
 {
   return Int32GetDatum((int) DatumGetFloat8(d));
+}
+
+/**
+ * @ingroup meos_temporal_conversion
+ * @brief Return a temporal Boolean converted to a temporal int
+ * @param[in] temp Temporal value
+ * @csqlfn #Tbool_to_tint()
+ */
+Temporal *
+tbool_to_tint(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
+    return NULL;
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_bool_to_int;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TBOOL;
+  lfinfo.restype = T_TINT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
 }
 
 /**

@@ -569,6 +569,16 @@ SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]'::stbox;
 </programlisting>
 			</listitem>
 
+			<listitem id="tbool_tint">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<para>Convertir entre un booleano temporal y un entero temporal</para>
+				<para><varname>tbool::tint</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tbool '[true@2001-01-01, false@2001-01-03]'::tint;
+-- [1@2001-01-01, 0@2001-01-03]
+</programlisting>
+			</listitem>
+
 			<listitem id="tint_tfloat">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convertir entre un entero temporal y un flotante temporal</para>
@@ -576,11 +586,11 @@ SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]'::stbox;
 				<para><varname>tfloat::tint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
--- Interp=Step;[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]
+-- Interp=Step;[1@2001-01-01, 2@2001-01-03]
 SELECT tint '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]'::tfloat;
 -- Interp=Step;[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]
 SELECT tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
--- [1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]
+-- [1@2001-01-01, 2@2001-01-03]
 SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 -- ERROR:  Cannot cast temporal float with linear interpolation to temporal integer
 </programlisting>

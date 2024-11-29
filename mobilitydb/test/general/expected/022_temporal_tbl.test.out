@@ -102,6 +102,30 @@ SELECT round(extent(temp::floatspan)) FROM tbl_tfloat;
  [1, 100]
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tbool_inst WHERE tint(inst) IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool_discseq WHERE tint(ti) IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool_seq WHERE tint(seq) IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool_seqset WHERE tint(ss) IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tint_inst WHERE tfloat(inst) IS NOT NULL;
  count 
 -------

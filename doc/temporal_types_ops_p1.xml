@@ -576,6 +576,16 @@ SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]'::stbox;
 </programlisting>
 			</listitem>
 
+			<listitem id="tbool_tint">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<para>Convert between a temporal Boolean and a temporal integer</para>
+				<para><varname>tbool::tint</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT tbool '[true@2001-01-01, false@2001-01-03]'::tint;
+-- [1@2001-01-01, 0@2001-01-03]
+</programlisting>
+			</listitem>
+
 			<listitem id="tint_tfloat">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convert between a temporal integer and a temporal float</para>
