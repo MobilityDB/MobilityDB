@@ -1,14 +1,14 @@
 /*-------------------------------------------------------------------------
  *
  * float.c
- *	  Functions for the built-in floating-point types.
+ *    Functions for the built-in floating-point types.
  *
  * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
  * IDENTIFICATION
- *	  src/backend/utils/adt/float.c
+ *    src/backend/utils/adt/float.c
  *
  *-------------------------------------------------------------------------
  */
@@ -29,7 +29,7 @@
  * get round-trip-accurate results. If 0 or less, then use the old, slow,
  * decimal rounding method.
  */
-int			extra_float_digits = 1;
+int      extra_float_digits = 1;
 
 /*
  * We use these out-of-line ereport() calls to report float overflow,
@@ -41,33 +41,33 @@ int			extra_float_digits = 1;
 pg_noinline void
 float_overflow_error(void)
 {
-	meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
     "value out of range: overflow");
 }
 
 pg_noinline void
 float_underflow_error(void)
 {
-	meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
     "value out of range: underflow");
 }
 
 pg_noinline void
 float_zero_divide_error(void)
 {
-	meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO, "division by zero");
+  meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO, "division by zero");
 }
 
 /*
- *		float8{eq,ne,lt,le,gt,ge}		- float8/float8 comparison operations
+ *    float8{eq,ne,lt,le,gt,ge}    - float8/float8 comparison operations
  */
 int
 float8_cmp_internal(float8 a, float8 b)
 {
-	if (float8_gt(a, b))
-		return 1;
-	if (float8_lt(a, b))
-		return -1;
-	return 0;
+  if (float8_gt(a, b))
+    return 1;
+  if (float8_lt(a, b))
+    return -1;
+  return 0;
 }
 
