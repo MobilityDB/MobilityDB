@@ -1108,11 +1108,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="abs"><varname>abs</varname></link>: Return the absolute value of the temporal number</para>
+					<para><link linkend="abs"><varname>abs</varname></link>: Return the absolute value of a temporal number</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="deltaValue"><varname>deltaValue</varname></link>: Return the value difference between consecutive instants of the temporal number</para>
+					<para><link linkend="deltaValue"><varname>deltaValue</varname></link>: Return the value difference between consecutive instants of a temporal number</para>
 				</listitem>
 
 				<listitem>
@@ -1120,7 +1120,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="round"><varname>round</varname></link>: Round the values to a number of decimal places</para>
+					<para><link linkend="round"><varname>round</varname></link>: Round to a number of decimal places</para>
 				</listitem>
 
 				<listitem>
@@ -1128,7 +1128,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="derivative"><varname>derivative</varname></link>: Return the derivative over time of the temporal float in units per second</para>
+					<para><link linkend="derivative"><varname>derivative</varname></link>: Return the derivative over time of a temporal float in units per second</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ln"><varname>ln</varname>, <varname>log10</varname></link>: Return the natural and base 10 logarithm of a temporal float</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="exp"><varname>exp</varname></link>: Return the exponential (e raised to the given power) of a temporal float</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

@@ -1902,6 +1902,7 @@ extern Temporal *sub_tfloat_float(const Temporal *tnumber, double d);
 extern Temporal *sub_tint_int(const Temporal *tnumber, int i);
 extern Temporal *sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2);
 extern Temporal *tfloat_derivative(const Temporal *temp);
+extern Temporal *tfloat_exp(const Temporal *temp);
 extern Temporal *tfloat_ln(const Temporal *temp);
 extern Temporal *tfloat_log10(const Temporal *temp);
 extern Temporal *tnumber_abs(const Temporal *temp);
