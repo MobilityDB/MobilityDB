@@ -392,4 +392,19 @@ CREATE FUNCTION derivative(tfloat)
   AS 'MODULE_PATHNAME', 'Tfloat_derivative'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION exp(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tfloat_exp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION ln(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tfloat_ln'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION log10(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tfloat_log10'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************/

@@ -1136,11 +1136,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="abs"><varname>abs</varname></link>: Devuelve el valor absoluto del número temporal</para>
+					<para><link linkend="abs"><varname>abs</varname></link>: Devuelve el valor absoluto de un número temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="deltaValue"><varname>deltaValue</varname></link>: Devuelve la diferencia de valor entre instantes consectivos del número temporal</para>
+					<para><link linkend="deltaValue"><varname>deltaValue</varname></link>: Devuelve la diferencia de valor entre instantes consectivos de un número temporal</para>
 				</listitem>
 
 				<listitem>
@@ -1156,7 +1156,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="derivative"><varname>derivative</varname></link>: Devuelve la derivada sobre el tiempo del número temporal en unidades por segundo</para>
+					<para><link linkend="derivative"><varname>derivative</varname></link>: Devuelve la derivada sobre el tiempo de un número flotante temporal en unidades por segundo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ln"><varname>ln</varname>, <varname>log10</varname></link>: Devuelve el logaritmo natural y el logaritmo base 10 de un número flotante temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="exp"><varname>exp</varname></link>: Devuelve el exponencial (e elevado a la potencia dada) de un número flotante temporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

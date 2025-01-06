@@ -727,4 +727,246 @@ tfloat_derivative(const Temporal *temp)
   }
 }
 
+/*****************************************************************************
+ * Exponential functions
+ *****************************************************************************/
+
+/**
+ * @brief Return the exponential of a double
+ * @param[in] d Value
+ * @note PostgreSQL function: dexp(PG_FUNCTION_ARGS)
+ */
+
+double
+pg_exp(double arg1)
+{
+  double result;
+
+	/*
+	 * Handle NaN and Inf cases explicitly.  This avoids needing to assume
+	 * that the platform's exp() conforms to POSIX for these cases, and it
+	 * removes some edge cases for the overflow checks below.
+	 */
+	if (isnan(arg1))
+		result = arg1;
+	else if (isinf(arg1))
+	{
+		/* Per POSIX, exp(-Inf) is 0 */
+		result = (arg1 > 0.0) ? arg1 : 0;
+	}
+	else
+	{
+		/*
+		 * On some platforms, exp() will not set errno but just return Inf or
+		 * zero to report overflow/underflow; therefore, test both cases.
+		 */
+		errno = 0;
+		result = exp(arg1);
+		if (unlikely(errno == ERANGE))
+		{
+			if (result != 0.0)
+				float_overflow_error();
+			else
+				float_underflow_error();
+		}
+		else if (unlikely(isinf(result)))
+			float_overflow_error();
+		else if (unlikely(result == 0.0))
+			float_underflow_error();
+	}
+
+  return result;
+}
+
+
+/**
+ * @brief Return the exponential of a double
+ * @param[in] d Value
+ * @note Function used for lifting
+ */
+static Datum
+datum_exp(Datum d)
+{
+  return Float8GetDatum(pg_exp(DatumGetFloat8(d)));
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the exponential of a double
+ * @param[in] temp Temporal value
+ * @csqlfn #Tfloat_exp()
+ */
+Temporal *
+tfloat_exp(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+  
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_exp;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TFLOAT;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************
+ * Logarithm functions
+ *****************************************************************************/
+
+/**
+ * @brief Return the natural logarithm of a double
+ * @param[in] d Value
+ * @note PostgreSQL function: dlog1(PG_FUNCTION_ARGS)
+ */
+
+double
+pg_ln(double arg1)
+{
+  double result;
+
+  /*
+   * Emit particular SQLSTATE error codes for ln(). This is required by the
+   * SQL standard.
+   */
+  if (arg1 == 0.0)
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "cannot take logarithm of zero");
+  if (arg1 < 0)
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "cannot take logarithm of a negative number");
+
+  result = log(arg1);
+  if (unlikely(isinf(result)) && !isinf(arg1))
+    float_overflow_error();
+  if (unlikely(result == 0.0) && arg1 != 1.0)
+    float_underflow_error();
+
+  return result;
+}
+
+/**
+ * @brief Return the natural logarithm of a double
+ * @param[in] d Value
+ * @note Function used for lifting
+ */
+static Datum
+datum_ln(Datum d)
+{
+  return Float8GetDatum(pg_ln(DatumGetFloat8(d)));
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the natural logarithm of a double
+ * @param[in] temp Temporal value
+ * @csqlfn #Tfloat_ln()
+ */
+Temporal *
+tfloat_ln(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+  /* Cannot compute logarithm of 0 or negative value */
+  if (ever_le_temporal_base(temp, Float8GetDatum(0.0)))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot take logarithm of zero or a negative number");
+    return NULL;
+  }
+  
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_ln;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TFLOAT;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return the logarithm base 10 of a double
+ * @param[in] d Value
+ * @note PostgreSQL function: dlog10(PG_FUNCTION_ARGS)
+ */
+double
+pg_log10(double arg1)
+{
+  double result;
+
+  /*
+   * Emit particular SQLSTATE error codes for log(). The SQL spec doesn't
+   * define log(), but it does define ln(), so it makes sense to emit the
+   * same error code for an analogous error condition.
+   */
+  if (arg1 == 0.0)
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot take logarithm of zero");
+  if (arg1 < 0)
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot take logarithm of a negative number");
+
+  result = log10(arg1);
+  if (unlikely(isinf(result)) && !isinf(arg1))
+    float_overflow_error();
+  if (unlikely(result == 0.0) && arg1 != 1.0)
+    float_underflow_error();
+
+  return result;
+}
+
+/**
+ * @brief Return the logarithm base 10 of a double
+ * @param[in] d Value
+ * @note Function used for lifting
+ */
+static Datum
+datum_log10(Datum d)
+{
+  return Float8GetDatum(pg_log10(DatumGetFloat8(d)));
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the natural logarithm of a double
+ * @param[in] temp Temporal value
+ * @csqlfn #Tfloat_log10()
+ */
+Temporal *
+tfloat_log10(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+  /* Cannot compute logarithm of 0 or negative value */
+  if (ever_le_temporal_base(temp, Float8GetDatum(0.0)))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot take logarithm of zero or a negative number");
+    return NULL;
+  }
+  
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_log10;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TFLOAT;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
 /*****************************************************************************/

@@ -198,7 +198,7 @@ SELECT radians(tfloat '[45@2001-01-01, 135@2001-01-02]');
 
 			<listitem id="derivative">
 				<indexterm><primary><varname>derivative</varname></primary></indexterm>
-				<para>Return the derivative over time of the temporal float in units per second</para>
+				<para>Return the derivative over time of a temporal float in units per second</para>
 				<para><varname>derivative(tfloat) → tfloat</varname></para>
 				<para>The temporal float must have linear interpolation</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -208,6 +208,37 @@ SELECT derivative(tfloat '{[0@2001-01-01, 10@2001-01-02, 5@2001-01-03],
   [1@2001-01-04, 1@2001-01-05]} */
 SELECT derivative(tfloat 'Interp=Step;[0@2001-01-01, 10@2001-01-02, 5@2001-01-03]');
 -- ERROR:  The temporal value must have linear interpolation
+</programlisting>
+			</listitem>
+
+			<listitem id="ln">
+				<indexterm><primary><varname>ln</varname></primary></indexterm>
+				<indexterm><primary><varname>log10</varname></primary></indexterm>
+				<para>Return the natural logarithm and the base 10 logarithm of a temporal float</para>
+				<para><varname>ln(tfloat) → tfloat</varname></para>
+				<para><varname>log10(tfloat) → tfloat</varname></para>
+				<para>The temporal float cannot be zero or negative</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT ln(tfloat '{[1@2001-01-01, 10@2001-01-02, 5@2001-01-03],
+  [1@2001-01-04, 1@2001-01-05]}');
+/* {[0@2001-01-01, 2.302585092994046@2001-01-02, 1.6094379124341@2001-01-03], 
+   [0@2001-01-04, 0@2001-01-05]} */
+SELECT log10(tfloat 'Interp=Step;[-10@2001-01-01, 10@2001-01-02]');
+-- ERROR:  Cannot take logarithm of zero or a negative number
+</programlisting>
+			</listitem>
+
+			<listitem id="exp">
+				<indexterm><primary><varname>exp</varname></primary></indexterm>
+				<para>Return the exponential (e raised to the given power) of a temporal float</para>
+				<para><varname>exp(tfloat) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT exp(tfloat '{[1@2001-01-01, 10@2001-01-02],
+  [1@2001-01-04, 1@2001-01-05]}');
+/* {[2.718281828459045@2001-01-01, 22026.465794806718@2001-01-02], 
+   [2.718281828459045@2001-01-04, 2.718281828459045@2001-01-05]} */
+SELECT exp(tfloat '{-10@2001-01-01, 0@2001-01-02, 10@2001-01-03}');
+-- {0.000045399929762@2001-01-01, 1@2001-01-02, 22026.465794806718@2001-01-03}
 </programlisting>
 			</listitem>
 		</itemizedlist>

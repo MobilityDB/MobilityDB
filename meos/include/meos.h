@@ -380,7 +380,6 @@ extern DateADT minus_date_int(DateADT d, int32 days);
 extern TimestampTz minus_timestamptz_interval(TimestampTz t, const Interval *interv);
 extern Interval *minus_timestamptz_timestamptz(TimestampTz t1, TimestampTz t2);
 extern Interval *mult_interval_double(const Interval *interv, double factor);
-
 extern char *text2cstring(const text *txt);
 extern int text_cmp(const text *txt1, const text *txt2);
 extern text *text_copy(const text *txt);
@@ -1899,6 +1898,9 @@ extern Temporal *sub_tfloat_float(const Temporal *tnumber, double d);
 extern Temporal *sub_tint_int(const Temporal *tnumber, int i);
 extern Temporal *sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2);
 extern Temporal *tfloat_derivative(const Temporal *temp);
+extern Temporal *tfloat_exp(const Temporal *temp);
+extern Temporal *tfloat_ln(const Temporal *temp);
+extern Temporal *tfloat_log10(const Temporal *temp);
 extern Temporal *tnumber_abs(const Temporal *temp);
 extern Temporal *tnumber_angular_difference(const Temporal *temp);
 extern Temporal *tnumber_delta_value(const Temporal *temp);

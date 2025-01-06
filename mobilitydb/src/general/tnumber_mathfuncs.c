@@ -438,4 +438,66 @@ Tfloat_derivative(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+/*****************************************************************************
+ * Exponential function
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tfloat_exp(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloat_exp);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the natural logarithm of a temporal number
+ * @sqlfn ln()
+ */
+Datum
+Tfloat_exp(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tfloat_exp(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+/*****************************************************************************
+ * Logarithm functions
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tfloat_ln(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloat_ln);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the natural logarithm of a temporal number
+ * @sqlfn ln()
+ */
+Datum
+Tfloat_ln(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tfloat_ln(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tfloat_log10(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tfloat_log10);
+/**
+ * @ingroup mobilitydb_temporal_math
+ * @brief Return the natural logarithm of a temporal number
+ * @sqlfn ln()
+ */
+Datum
+Tfloat_log10(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tfloat_log10(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************/
