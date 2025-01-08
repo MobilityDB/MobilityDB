@@ -787,6 +787,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="tbool_tint"><varname>tbool::tint</varname></link>: Convertir entre un booleano temporal y un entero temporal</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname></link>: Convertir entre un entero temporal y un flotante temporal</para>
 				</listitem>
 

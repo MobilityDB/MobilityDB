@@ -770,6 +770,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="tbool_tint"><varname>tbool::int</varname></link>: Convert between a temporal boolean and a temporal integer</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname></link>: Convert between a temporal integer and a temporal float</para>
 				</listitem>
 

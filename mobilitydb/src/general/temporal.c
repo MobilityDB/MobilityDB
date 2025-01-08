@@ -708,6 +708,23 @@ Tsequenceset_from_base_tstzspanset(PG_FUNCTION_ARGS)
  * Conversion functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Tbool_to_tint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbool_to_tint);
+/**
+ * @ingroup mobilitydb_temporal_conversion
+ * @brief Return a temporal Boolean converted to a temporal int
+ * @sqlfn tint()
+ * @sqlop @p ::
+ */
+Datum
+Tbool_to_tint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tbool_to_tint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tint_to_tfloat(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_to_tfloat);
 /**

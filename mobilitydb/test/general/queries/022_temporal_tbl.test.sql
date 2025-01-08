@@ -62,7 +62,7 @@ DROP TABLE tbl_tfloat_tmp;
 DROP TABLE tbl_ttext_tmp;
 
 -------------------------------------------------------------------------------
--- Cast functions
+-- Conversion functions
 -------------------------------------------------------------------------------
 
 SELECT extent(temp::tstzspan) FROM tbl_tbool;
@@ -72,6 +72,11 @@ SELECT extent(temp::tstzspan) FROM tbl_ttext;
 
 SELECT extent(temp::intspan) FROM tbl_tint;
 SELECT round(extent(temp::floatspan)) FROM tbl_tfloat;
+
+SELECT COUNT(*) FROM tbl_tbool_inst WHERE tint(inst) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool_discseq WHERE tint(ti) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool_seq WHERE tint(seq) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool_seqset WHERE tint(ss) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tint_inst WHERE tfloat(inst) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tint_discseq WHERE tfloat(ti) IS NOT NULL;

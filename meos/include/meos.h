@@ -1352,6 +1352,7 @@ extern TSequenceSet *ttextseqset_from_base_tstzspanset(const text *txt, const Sp
  *****************************************************************************/
 
 extern Span *temporal_to_tstzspan(const Temporal *temp);
+extern Temporal *tbool_to_tint(const Temporal *temp);
 extern Temporal *tfloat_to_tint(const Temporal *temp);
 extern Temporal *tint_to_tfloat(const Temporal *temp);
 extern Span *tnumber_to_span(const Temporal *temp);

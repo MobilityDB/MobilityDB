@@ -380,6 +380,12 @@ CREATE CAST (ttext AS tstzspan) WITH FUNCTION timeSpan(ttext);
 CREATE CAST (tint AS intspan) WITH FUNCTION valueSpan(tint);
 CREATE CAST (tfloat AS floatspan) WITH FUNCTION valueSpan(tfloat);
 
+CREATE FUNCTION tint(tbool)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Tbool_to_tint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE CAST (tbool AS tint) WITH FUNCTION tint(tbool);
+
 CREATE FUNCTION tfloat(tint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tint_to_tfloat'
