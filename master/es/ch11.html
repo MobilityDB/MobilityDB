@@ -22,41 +22,41 @@ SELECT npoint 'Npoint(87.5, 1.0)';
 SELECT npoint 'Npoint(87, 2.0)';
 -- Valor rid inexistente en la table ways
 SELECT npoint 'Npoint(99999999, 1.0)';
-</pre><p>Damos a continuación las funciones y operadores para los tipos de redes estáticas.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="constructor_functions"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint"></a><a class="indexterm" name="id7285"></a><p>Constructor de puntos de red</p><p><code class="varname">npoint(bigint,double precision) → npoint</code></p><pre class="programlisting">
+</pre><p>Damos a continuación las funciones y operadores para los tipos de redes estáticas.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="constructor_functions"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint"></a><a class="indexterm" name="id7293"></a><p>Constructor de puntos de red</p><p><code class="varname">npoint(bigint,double precision) → npoint</code></p><pre class="programlisting">
 SELECT npoint(76, 0.3);
-</pre></li><li class="listitem"><a name="nsegment"></a><a class="indexterm" name="id7293"></a><p>Constructor de segmentos de red</p><p><code class="varname">nsegment(bigint,double precision,double precision) → nsegment</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="nsegment"></a><a class="indexterm" name="id7301"></a><p>Constructor de segmentos de red</p><p><code class="varname">nsegment(bigint,double precision,double precision) → nsegment</code></p><pre class="programlisting">
 SELECT nsegment(76, 0.3, 0.5);
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="id796"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_round"></a><a class="indexterm" name="id7303"></a><p>Redondear la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</p><p><code class="varname">round({npoint,nsegment},integer=0) → {npoint,nsegment}</code></p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="id796"></a>Transformaciones</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_round"></a><a class="indexterm" name="id7311"></a><p>Redondear la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</p><p><code class="varname">round({npoint,nsegment},integer=0) → {npoint,nsegment}</code></p><pre class="programlisting">
 SELECT round(npoint(76, 0.123456789), 6);
 --  NPoint(76,0.123457)
 SELECT round(nsegment(76, 0.123456789, 0.223456789), 6);
 --  NSegment(76,0.123457,0.223457)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="accessor_functions"></a>Accesores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="route"></a><a class="indexterm" name="id7314"></a><p>Devuelve el identificador de ruta</p><p><code class="varname">route({npoint,nsegment}) → bigint</code></p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="accessor_functions"></a>Accesores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="route"></a><a class="indexterm" name="id7322"></a><p>Devuelve el identificador de ruta</p><p><code class="varname">route({npoint,nsegment}) → bigint</code></p><pre class="programlisting">
 SELECT route(npoint 'Npoint(63, 0.3)');
 -- 63
 SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');
 -- 76
-</pre></li><li class="listitem"><a name="getPosition"></a><a class="indexterm" name="id7322"></a><p>Devuelve la posición</p><p><code class="varname">getPosition(npoint) → float</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="getPosition"></a><a class="indexterm" name="id7330"></a><p>Devuelve la posición</p><p><code class="varname">getPosition(npoint) → float</code></p><pre class="programlisting">
 SELECT getPosition(npoint 'Npoint(63, 0.3)');
 -- 0.3
-</pre></li><li class="listitem"><a name="startPosition"></a><a class="indexterm" name="id7330"></a><a class="indexterm" name="id7333"></a><p>Devuelve la posición inicial/final</p><p><code class="varname">startPosition(nsegment) → float</code></p><p><code class="varname">endPosition(nsegment) → float</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="startPosition"></a><a class="indexterm" name="id7338"></a><a class="indexterm" name="id7341"></a><p>Devuelve la posición inicial/final</p><p><code class="varname">startPosition(nsegment) → float</code></p><p><code class="varname">endPosition(nsegment) → float</code></p><pre class="programlisting">
 SELECT startPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 0.3
 SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 0.5
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="spatial_functions"></a>Operaciones espaciales</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_srid"></a><a class="indexterm" name="id7346"></a><p>Devuelve el identificador de referencia espacial</p><p><code class="varname">SRID({npoint,nsegment}) → integer</code></p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="spatial_functions"></a>Operaciones espaciales</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_srid"></a><a class="indexterm" name="id7354"></a><p>Devuelve el identificador de referencia espacial</p><p><code class="varname">SRID({npoint,nsegment}) → integer</code></p><pre class="programlisting">
 SELECT SRID(npoint 'Npoint(76, 0.3)');
 -- 5676
 SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 5676
-</pre></li></ul></div><p>Los valores de los tipos <code class="varname">npoint</code> y <code class="varname">nsegment</code> se pueden convertir al tipo <code class="varname">geometry</code> usando un <code class="varname">CAST</code> explícito o usando la notación <code class="varname">::</code> como se muestra a continuación.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_geometry"></a><a class="indexterm" name="id7361"></a><p>Convertir un punto de red en una geometría</p><p><code class="varname">{npoint,nsegment}::geometry</code></p><pre class="programlisting">
+</pre></li></ul></div><p>Los valores de los tipos <code class="varname">npoint</code> y <code class="varname">nsegment</code> se pueden convertir al tipo <code class="varname">geometry</code> usando un <code class="varname">CAST</code> explícito o usando la notación <code class="varname">::</code> como se muestra a continuación.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_geometry"></a><a class="indexterm" name="id7369"></a><p>Convertir un punto de red en una geometría</p><p><code class="varname">{npoint,nsegment}::geometry</code></p><pre class="programlisting">
 SELECT ST_AsText(npoint(76, 0.33)::geometry);
 -- POINT(21.6338731332283 50.0545869554067)
 SELECT ST_AsText(nsegment(76, 0.33, 0.66)::geometry);
 -- LINESTRING(21.6338731332283 50.0545869554067,30.7475989651999 53.9185062927473)
 SELECT ST_AsText(nsegment(76, 0.33, 0.33)::geometry);
 -- POINT(21.6338731332283 50.0545869554067)
-</pre></li></ul></div><p>De manera similar, los valores de tipo <code class="varname">geometry</code> de subtipo <code class="varname">point</code> o <code class="varname">linestring</code> (restringidos a dos puntos) se pueden convertir, respectivamente, en valores <code class="varname">npoint</code> y <code class="varname">nsegment</code> usando un <code class="varname">CAST</code> explícito o usando la notación <code class="varname">::</code>. Para ello se debe encontrar la ruta que interseca los puntos dados, donde se asume una tolerancia de 0.00001 unidades (dependiendo del sistema de coordenadas) por lo que se considera que un punto y una ruta que están cerca se cruzan. Si no se encuentra dicha ruta, se devuelve un valor nulo.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="geometry_npoint"></a><a class="indexterm" name="id7378"></a><p>Convertir una geometría en un punto de red</p><p><code class="varname">geometry::{npoint,nsegment}</code></p><pre class="programlisting">
+</pre></li></ul></div><p>De manera similar, los valores de tipo <code class="varname">geometry</code> de subtipo <code class="varname">point</code> o <code class="varname">linestring</code> (restringidos a dos puntos) se pueden convertir, respectivamente, en valores <code class="varname">npoint</code> y <code class="varname">nsegment</code> usando un <code class="varname">CAST</code> explícito o usando la notación <code class="varname">::</code>. Para ello se debe encontrar la ruta que interseca los puntos dados, donde se asume una tolerancia de 0.00001 unidades (dependiendo del sistema de coordenadas) por lo que se considera que un punto y una ruta que están cerca se cruzan. Si no se encuentra dicha ruta, se devuelve un valor nulo.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="geometry_npoint"></a><a class="indexterm" name="id7386"></a><p>Convertir una geometría en un punto de red</p><p><code class="varname">geometry::{npoint,nsegment}</code></p><pre class="programlisting">
 SELECT geometry 'Point(279.269156511873 811.497076880187)'::npoint;
 -- NPoint(3,0.781413)
 SELECT geometry 'LINESTRING(406.729536784738 702.58583437902,
@@ -66,7 +66,7 @@ SELECT geometry 'Point(279.3 811.5)'::npoint;
 -- NULL
 SELECT geometry 'LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;
 -- NULL
-</pre></li></ul></div><p>Dos valores <code class="varname">npoint</code> pueden tener diferentes identificadores de ruta pero pueden representar el mismo punto espacial en la intersección de las dos rutas. La función <code class="varname">equals</code> se utiliza para verificar la igualdad espacial de los puntos de la red.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_same"></a><a class="indexterm" name="id7390"></a><p>Igualdad espacial para puntos de red</p><p><code class="varname">equals(npoint, npoint)::Boolean</code></p><pre class="programlisting">
+</pre></li></ul></div><p>Dos valores <code class="varname">npoint</code> pueden tener diferentes identificadores de ruta pero pueden representar el mismo punto espacial en la intersección de las dos rutas. La función <code class="varname">equals</code> se utiliza para verificar la igualdad espacial de los puntos de la red.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_same"></a><a class="indexterm" name="id7398"></a><p>Igualdad espacial para puntos de red</p><p><code class="varname">equals(npoint, npoint)::Boolean</code></p><pre class="programlisting">
 WITH inter(geom) AS (
   SELECT st_intersection(t1.the_geom, t2.the_geom)
   FROM ways t1, ways t2 WHERE t1.gid = 1 AND t2.gid = 2),
@@ -75,26 +75,26 @@ fractions(f1, f2) AS (
   FROM ways t1, ways t2, inter i WHERE t1.gid = 1 AND t2.gid = 2)
 SELECT equals(npoint(1, f1), npoint(2, f2)) FROM fractions;
 -- true
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="static_operators"></a>Comparaciones</h3></div></div></div><p>Los operadores de comparación (=, &lt; y así sucesivamente) para tipos de red estáticos requieren que los argumentos izquierdo y derecho sean del mismo tipo. Excepto la igualdad y la desigualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan en tipos de red estáticos.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="static_eq"></a><a class="indexterm" name="id7402"></a><p>¿Son iguales los valores?</p><p><code class="varname">{npoint,nsegment} = {npoint,nsegment}</code></p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="static_operators"></a>Comparaciones</h3></div></div></div><p>Los operadores de comparación (=, &lt; y así sucesivamente) para tipos de red estáticos requieren que los argumentos izquierdo y derecho sean del mismo tipo. Excepto la igualdad y la desigualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan en tipos de red estáticos.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="static_eq"></a><a class="indexterm" name="id7410"></a><p>¿Son iguales los valores?</p><p><code class="varname">{npoint,nsegment} = {npoint,nsegment}</code></p><pre class="programlisting">
 SELECT npoint 'Npoint(3, 0.5)' = npoint 'Npoint(3, 0.5)';
 -- true
 SELECT nsegment 'Nsegment(3, 0.5, 0.5)' = nsegment 'Nsegment(3, 0.5, 0.6)';
 -- false
-</pre></li><li class="listitem"><a name="static_ne"></a><a class="indexterm" name="id7410"></a><p>¿Son diferentes los valores?</p><p><code class="varname">{npoint,nsegment} &lt;&gt; {npoint,nsegment}</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="static_ne"></a><a class="indexterm" name="id7418"></a><p>¿Son diferentes los valores?</p><p><code class="varname">{npoint,nsegment} &lt;&gt; {npoint,nsegment}</code></p><pre class="programlisting">
 SELECT npoint 'Npoint(3, 0.5)' &lt;&gt; npoint 'Npoint(3, 0.6)';
 -- true
 SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &lt;&gt; nsegment 'Nsegment(3, 0.5, 0.5)';
 -- false
-</pre></li><li class="listitem"><a name="static_lt"></a><a class="indexterm" name="id7418"></a><p>¿El primer valor es menor que el segundo?</p><p><code class="varname">{npoint,nsegment} &lt; {npoint,nsegment}</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="static_lt"></a><a class="indexterm" name="id7426"></a><p>¿El primer valor es menor que el segundo?</p><p><code class="varname">{npoint,nsegment} &lt; {npoint,nsegment}</code></p><pre class="programlisting">
 SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &lt; nsegment 'Nsegment(3, 0.5, 0.6)';
 -- true
-</pre></li><li class="listitem"><a name="static_gt"></a><a class="indexterm" name="id7426"></a><p>¿El primer valor es mayor que el segundo?</p><p><code class="varname">{npoint,nsegment} &gt; {npoint,nsegment}</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="static_gt"></a><a class="indexterm" name="id7434"></a><p>¿El primer valor es mayor que el segundo?</p><p><code class="varname">{npoint,nsegment} &gt; {npoint,nsegment}</code></p><pre class="programlisting">
 SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &gt; nsegment 'Nsegment(2, 0.5, 0.5)';
 -- true
-</pre></li><li class="listitem"><a name="static_le"></a><a class="indexterm" name="id7434"></a><p>¿El primer valor es menor o igual que el segundo?</p><p><code class="varname">{npoint,nsegment} &lt;= {npoint,nsegment}</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="static_le"></a><a class="indexterm" name="id7442"></a><p>¿El primer valor es menor o igual que el segundo?</p><p><code class="varname">{npoint,nsegment} &lt;= {npoint,nsegment}</code></p><pre class="programlisting">
 SELECT npoint 'Npoint(1, 0.5)' &lt;= npoint 'Npoint(2, 0.5)';
 -- true
-</pre></li><li class="listitem"><a name="static_ge"></a><a class="indexterm" name="id7442"></a><p>¿El primer valor es mayor o igual que el segundo?</p><p><code class="varname">{npoint,nsegment} &gt;= {npoint,nsegment}</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="static_ge"></a><a class="indexterm" name="id7450"></a><p>¿El primer valor es mayor o igual que el segundo?</p><p><code class="varname">{npoint,nsegment} &gt;= {npoint,nsegment}</code></p><pre class="programlisting">
 SELECT npoint 'Npoint(1, 0.6)' &gt;= npoint 'Npoint(1, 0.5)';
 -- true
 </pre></li></ul></div></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch10s03.html">Anterior</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch11s02.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Estadísticas y selectividad </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Puntos de red temporales</td></tr></table></div></body></html>
