@@ -410,16 +410,13 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  * @param[in] restr True if the atValue function is applied to the result
  * @param[in] atvalue Value to be used for the atValue function
- * @note 3D is not supported because there is no 3D intersection function
- * provided by PostGIS
  */
 Temporal *
 tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   bool restr, bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_has_not_Z_gs(gs) || ! ensure_has_not_Z(temp->flags))
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
   /* Bounding box test */

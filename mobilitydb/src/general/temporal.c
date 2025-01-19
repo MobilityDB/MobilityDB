@@ -89,11 +89,10 @@ _PG_init(void)
  *****************************************************************************/
 
 /**
- * @brief Global variable that saves the PostgreSQL fcinfo
- *
- * This is needed when we need to change the PostgreSQL context, for example,
- * in PostGIS functions such as #transform, #geography_distance, or
- * #geography_azimuth that need to access the proj cache
+ * @brief Global variable that saves the PostgreSQL fcinfo structure
+ * @details This is needed for changing the PostgreSQL context for temporal
+ * aggregation, which uses the MobilitDB skiplist structure. This structure
+¨* needs to persist through successive calls of the aggregate function.
  */
 static FunctionCallInfo MOBDB_PG_FCINFO;
 

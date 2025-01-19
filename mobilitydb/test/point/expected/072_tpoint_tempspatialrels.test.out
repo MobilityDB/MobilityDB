@@ -271,6 +271,30 @@ SELECT tDisjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poi
  
 (1 row)
 
+SELECT tDisjoint(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(2 2 2)');
+           tdisjoint            
+--------------------------------
+ t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDisjoint(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Point(2 2 2)');
+                                            tdisjoint                                             
+--------------------------------------------------------------------------------------------------
+ {t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tDisjoint(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Point(2 2 2)');
+                                                              tdisjoint                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST], (t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Point(2 2 2)');
+                                                                                               tdisjoint                                                                                                
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST], (t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
 SELECT tDisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', true);
  tdisjoint 
 -----------
@@ -420,10 +444,6 @@ SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01
 ERROR:  Operation on mixed SRID
 SELECT tDisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
-SELECT tDisjoint(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The geometry cannot have Z dimension
-SELECT tDisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
-ERROR:  The temporal point cannot have Z dimension
 SELECT tIntersects(NULL::geometry, tgeompoint 'Point(1 1)@2000-01-01');
  tintersects 
 -------------
@@ -584,6 +604,30 @@ SELECT tIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(4 1)@2000-01-02]', 
                                                                               tintersects                                                                               
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST], (f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 08:00:00 2000 PST], (f@Sat Jan 01 08:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(2 2 2)');
+          tintersects           
+--------------------------------
+ f@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tIntersects(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Point(2 2 2)');
+                                           tintersects                                            
+--------------------------------------------------------------------------------------------------
+ {f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT tIntersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Point(2 2 2)');
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST], (f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Point(2 2 2)');
+                                                                                              tintersects                                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST], (f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
 SELECT tIntersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', true);
@@ -747,10 +791,6 @@ SELECT tIntersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-
 ERROR:  Operation on mixed SRID
 SELECT tIntersects(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
-SELECT tIntersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The geometry cannot have Z dimension
-SELECT tIntersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
-ERROR:  The temporal point cannot have Z dimension
 SELECT tTouches(NULL::geometry, tgeompoint 'Point(1 1)@2000-01-01');
  ttouches 
 ----------

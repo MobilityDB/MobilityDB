@@ -32,6 +32,7 @@
 -------------------------------------------------------------------------------
 
 SELECT spaceTiles(b, 2.5, geometry 'Point(10 10)'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT timeTiles(b, interval '1 week'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 SELECT spaceTimeTiles(b, 2.5, interval '1 week'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 SELECT spaceTimeTiles(b, 2.5, interval '1 week', 'Point(10 10)', '2001-06-01'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 

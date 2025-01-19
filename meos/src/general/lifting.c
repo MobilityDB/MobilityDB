@@ -1706,15 +1706,12 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
       if (eqfn)
         res = true;
       else
+	  {
         res = DatumGetBool(tfunc_base_base(intvalue, value, lfinfo));
-      if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
-      {
-        if (! eqfn)
-          DATUM_FREE(intvalue, basetype);
-        return lfinfo->ever ? 1 : 0;
-      }
-      if (! eqfn)
         DATUM_FREE(intvalue, basetype);
+	  }
+      if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
+        return lfinfo->ever ? 1 : 0;
     }
     start = end;
     lower_inc = true;
