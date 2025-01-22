@@ -1520,7 +1520,7 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
  */
 Temporal *
 temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
-  double maxdist, const Interval *maxt)
+  interpType interp, double maxdist, const Interval *maxt)
 {
   /* Null state: create a new temporal sequence with the instant */
   if (! state)
@@ -1528,18 +1528,17 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
 #if ! MEOS
     MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
-    /* Default interpolation depending on the base type */
-    interpType interp = MEOS_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEP;
     /* Arbitrary initialization to 64 elements */
     Temporal *result = (Temporal *) tsequence_make_exp(
-      (const TInstant **) &inst, 1, 64, true, true, interp, NORMALIZE_NO);
+      (const TInstant **) &inst, 1, 64, true, true, interp, 
+      NORMALIZE_NO);
 #if ! MEOS
     unset_aggregation_context(ctx);
 #endif /* ! MEOS */
     return result;
   }
 
-  return temporal_append_tinstant(state, inst, maxdist, maxt, true);
+  return temporal_append_tinstant(state, inst, interp, maxdist, maxt, true);
 }
 
 /*****************************************************************************/

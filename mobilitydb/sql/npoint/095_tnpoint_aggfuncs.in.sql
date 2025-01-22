@@ -118,7 +118,15 @@ CREATE FUNCTION temporal_app_tinst_transfn(tnpoint, tnpoint)
 
 -- The function is not STRICT
 CREATE FUNCTION temporal_app_tinst_transfn(tnpoint, tnpoint,
-    maxdist float DEFAULT NULL, maxt interval DEFAULT NULL)
+    interp text DEFAULT NULL)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+-- The function is not STRICT
+CREATE FUNCTION temporal_app_tinst_transfn(tnpoint, tnpoint,
+    interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
+    maxt interval DEFAULT NULL)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -135,7 +143,14 @@ CREATE AGGREGATE appendInstant(tnpoint) (
   PARALLEL = safe
 );
 
-CREATE AGGREGATE appendInstant(tnpoint, float, interval) (
+CREATE AGGREGATE appendInstant(tnpoint, text) (
+  SFUNC = temporal_app_tinst_transfn,
+  STYPE = tnpoint,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
+CREATE AGGREGATE appendInstant(tnpoint, text, float, interval) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tnpoint,
   FINALFUNC = temporal_append_finalfn,

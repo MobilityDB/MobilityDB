@@ -1966,49 +1966,49 @@ SELECT appendInstant(tfloat '{1@2000-01-01, 2@2000-01-02}', tfloat '2@2000-01-02
  {1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST}
 (1 row)
 
-SELECT appendInstant(tfloat '[1@2000-01-01, 1@2000-01-02]', '1@2000-01-02');
+SELECT appendInstant(tfloat '[1@2000-01-01, 1@2000-01-02]', tfloat '1@2000-01-02');
                           appendinstant                           
 ------------------------------------------------------------------
  [1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
-SELECT appendInstant(tfloat '[1@2000-01-01, 1@2000-01-02)', '1@2000-01-02');
+SELECT appendInstant(tfloat '[1@2000-01-01, 1@2000-01-02)', tfloat '1@2000-01-02');
                           appendinstant                           
 ------------------------------------------------------------------
  [1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
-SELECT appendInstant(tfloat '[1@2000-01-01, 1@2000-01-02)', '2@2000-01-02');
+SELECT appendInstant(tfloat '[1@2000-01-01, 1@2000-01-02)', tfloat '2@2000-01-02');
                                             appendinstant                                             
 ------------------------------------------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST), [2@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT appendInstant(tfloat 'Interp=Step;[1@2000-01-01, 1@2000-01-02)', '2@2000-01-02');
+SELECT appendInstant(tfloat 'Interp=Step;[1@2000-01-01, 1@2000-01-02)', tfloat '2@2000-01-02');
                                 appendinstant                                 
 ------------------------------------------------------------------------------
  Interp=Step;[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
-SELECT appendInstant(tfloat '{[1@2000-01-01, 1@2000-01-02]}', '1@2000-01-02');
+SELECT appendInstant(tfloat '{[1@2000-01-01, 1@2000-01-02]}', tfloat '1@2000-01-02');
                            appendinstant                            
 --------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT appendInstant(tfloat '{[1@2000-01-01, 1@2000-01-02)}', '1@2000-01-02');
+SELECT appendInstant(tfloat '{[1@2000-01-01, 1@2000-01-02)}', tfloat '1@2000-01-02');
                            appendinstant                            
 --------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT appendInstant(tfloat '{[1@2000-01-01, 1@2000-01-02)}', '2@2000-01-02');
+SELECT appendInstant(tfloat '{[1@2000-01-01, 1@2000-01-02)}', tfloat '2@2000-01-02');
                                             appendinstant                                             
 ------------------------------------------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST), [2@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT appendInstant(tfloat 'Interp=Step;{[1@2000-01-01, 1@2000-01-02)}', '2@2000-01-02');
+SELECT appendInstant(tfloat 'Interp=Step;{[1@2000-01-01, 1@2000-01-02)}', tfloat '2@2000-01-02');
                                  appendinstant                                  
 --------------------------------------------------------------------------------
  Interp=Step;{[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST]}
@@ -2017,21 +2017,21 @@ SELECT appendInstant(tfloat 'Interp=Step;{[1@2000-01-01, 1@2000-01-02)}', '2@200
 /* Errors */
 SELECT appendInstant(tfloat '{1@2000-01-01, 2@2000-01-02}', tfloat '2@2000-01-01');
 ERROR:  Timestamps for temporal value must be increasing: Sun Jan 02 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST
-SELECT appendInstant(tfloat '[1@2000-01-01, 1@2000-01-02]', '2@2000-01-02');
+SELECT appendInstant(tfloat '[1@2000-01-01, 1@2000-01-02]', tfloat '2@2000-01-02');
 ERROR:  The temporal values have different value at their common timestamp Sun Jan 02 00:00:00 2000 PST
 SELECT appendInstant(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '[1@2000-01-04, 1@2000-01-05]');
 ERROR:  The temporal value must be of subtype Instant
-SELECT appendInstant(tfloat '{[1@2000-01-01, 1@2000-01-02]}', '2@2000-01-02');
+SELECT appendInstant(tfloat '{[1@2000-01-01, 1@2000-01-02]}', tfloat '2@2000-01-02');
 ERROR:  The temporal values have different value at their common timestamp Sun Jan 02 00:00:00 2000 PST
-SELECT appendInstant(tfloat '[1@2000-01-01, 2@2000-01-03]', '1@2000-01-02');
+SELECT appendInstant(tfloat '[1@2000-01-01, 2@2000-01-03]', tfloat '1@2000-01-02');
 ERROR:  Timestamps for temporal value must be increasing: Mon Jan 03 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST
-SELECT appendSequence(tfloat '{[1@2000-01-01, 1@2000-01-02)}', '[2@2000-01-02]');
+SELECT appendSequence(tfloat '{[1@2000-01-01, 1@2000-01-02)}', tfloat '[2@2000-01-02]');
                                             appendsequence                                            
 ------------------------------------------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST), [2@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT appendSequence(tfloat '{[1@2000-01-01, 2@2000-01-02]}', '[2@2000-01-02]');
+SELECT appendSequence(tfloat '{[1@2000-01-01, 2@2000-01-02]}', tfloat '[2@2000-01-02]');
                            appendsequence                           
 --------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST]}

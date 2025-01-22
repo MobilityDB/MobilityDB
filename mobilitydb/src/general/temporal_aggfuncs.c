@@ -48,6 +48,7 @@
 #include "general/tbool_boolops.h"
 #include "general/tbox.h"
 /* MobilityDB */
+#include "pg_general/meos_catalog.h"
 #include "pg_general/skiplist.h"
 
 /*****************************************************************************
@@ -647,7 +648,6 @@ Temporal_merge_combinefn(PG_FUNCTION_ARGS)
  * Append aggregate functions
  *****************************************************************************/
 
-// TODO generalize for discrete interpolation
 PGDLLEXPORT Datum Temporal_app_tinst_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_app_tinst_transfn);
 /**
@@ -669,28 +669,48 @@ Temporal_app_tinst_transfn(PG_FUNCTION_ARGS)
   }
   Temporal *inst = PG_GETARG_TEMPORAL_P(1);
   unset_aggregation_context(ctx);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+
+  /* Get interpolation */
+  interpType interp;
+  if (PG_NARGS() == 2 || PG_ARGISNULL(2))
+  {
+    /* Set default interpolation according to the base type */
+    meosType temptype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+    interp = temptype_continuous(temptype) ? LINEAR : STEP;
+  }
+  else
+  {
+    /* Input interpolation */
+    text *interp_txt = PG_GETARG_TEXT_P(2);
+    char *interp_str = text2cstring(interp_txt);    
+    interp = interptype_from_string(interp_str);
+    pfree(interp_str);
+  }
+
+  /* Take into account the arguments for the gaps */
   double maxdist = -1.0;
   Interval *maxt = NULL;
-  /* Take into account the arguments for the gaps */
-  assert(PG_NARGS() <= 4);
-  if (PG_NARGS() > 2)
+  if (PG_NARGS() > 3)
   {
-    if (PG_NARGS() == 3)
+    /* Get the maxt and maxdist for the gaps if they are given */
+    if (PG_NARGS() == 4)
     {
-      if (! PG_ARGISNULL(2))
-        maxt = PG_GETARG_INTERVAL_P(2);
-    }
-    else /* PG_NARGS() == 4 */
-    {
-      if (! PG_ARGISNULL(2))
-        maxdist = PG_GETARG_FLOAT8(2);
       if (! PG_ARGISNULL(3))
         maxt = PG_GETARG_INTERVAL_P(3);
     }
+    else /* PG_NARGS() == 5 */
+    {
+      if (! PG_ARGISNULL(3))
+        maxdist = PG_GETARG_FLOAT8(3);
+      if (! PG_ARGISNULL(4))
+        maxt = PG_GETARG_INTERVAL_P(4);
+    }
   }
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  state = temporal_app_tinst_transfn(state, (TInstant *) inst, maxdist, maxt);
+
+  state = temporal_app_tinst_transfn(state, (TInstant *) inst, interp, 
+    maxdist, maxt);
   PG_FREE_IF_COPY(inst, 1);
   PG_RETURN_TEMPORAL_P(state);
 }

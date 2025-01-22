@@ -550,10 +550,79 @@ ERROR:  The temporal values have different value at their common timestamp Sat J
 WITH temp(inst) AS (
   SELECT tint '1@2000-01-01' UNION
   SELECT tint '2@2000-01-02' UNION
+  SELECT tint '3@2000-01-03' UNION
+  SELECT tint '4@2000-01-04' UNION
+  SELECT tint '5@2000-01-05' )
+SELECT appendInstant(inst ORDER BY inst, 'discrete') FROM temp;
+                                                                          appendinstant                                                                           
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST, 3@Mon Jan 03 00:00:00 2000 PST, 4@Tue Jan 04 00:00:00 2000 PST, 5@Wed Jan 05 00:00:00 2000 PST]
+(1 row)
+
+WITH temp(inst) AS (
+  SELECT tint '1@2000-01-01' UNION
+  SELECT tint '1@2000-01-01' UNION
+  SELECT tint '2@2000-01-02' UNION
+  SELECT tint '2@2000-01-02' UNION
+  SELECT tint '3@2000-01-03' UNION
+  SELECT tint '4@2000-01-04' UNION
+  SELECT tint '5@2000-01-05' )
+SELECT appendInstant(inst ORDER BY inst, 'discrete') FROM temp;
+                                                                          appendinstant                                                                           
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST, 3@Mon Jan 03 00:00:00 2000 PST, 4@Tue Jan 04 00:00:00 2000 PST, 5@Wed Jan 05 00:00:00 2000 PST]
+(1 row)
+
+WITH temp(inst) AS (
+  SELECT NULL UNION
+  SELECT tfloat '1@2000-01-01' UNION
+  SELECT tfloat '2@2000-01-02' UNION
+  SELECT tfloat '3@2000-01-03' UNION
+  SELECT tfloat '4@2000-01-04' UNION
+  SELECT tfloat '5@2000-01-05' )
+SELECT appendInstant(inst ORDER BY inst, 'discrete') FROM temp;
+                          appendinstant                           
+------------------------------------------------------------------
+ [1@Sat Jan 01 00:00:00 2000 PST, 5@Wed Jan 05 00:00:00 2000 PST]
+(1 row)
+
+WITH temp(inst) AS (
+  SELECT ttext 'AA@2000-01-01' UNION
+  SELECT ttext 'BB@2000-01-02' UNION
+  SELECT ttext 'CC@2000-01-03' UNION
+  SELECT ttext 'DD@2000-01-04' UNION
+  SELECT ttext 'EE@2000-01-05' )
+SELECT appendInstant(inst ORDER BY inst, 'discrete') FROM temp;
+                                                                                  appendinstant                                                                                  
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ ["AA"@Sat Jan 01 00:00:00 2000 PST, "BB"@Sun Jan 02 00:00:00 2000 PST, "CC"@Mon Jan 03 00:00:00 2000 PST, "DD"@Tue Jan 04 00:00:00 2000 PST, "EE"@Wed Jan 05 00:00:00 2000 PST]
+(1 row)
+
+WITH temp(inst) AS (
+  SELECT tint(extract(day from d)::int % 2, d)
+  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
+SELECT numInstants(appendInstant(inst ORDER BY inst, 'discrete')) FROM temp;
+ numinstants 
+-------------
+       35810
+(1 row)
+
+WITH temp(inst) AS (
+  SELECT tintSeq(tint(extract(day from d)::int % 2, d))
+  FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
+SELECT numInstants(appendSequence(inst ORDER BY inst, 'discrete')) FROM temp;
+ numinstants 
+-------------
+       36534
+(1 row)
+
+WITH temp(inst) AS (
+  SELECT tint '1@2000-01-01' UNION
+  SELECT tint '2@2000-01-02' UNION
   SELECT tint '4@2000-01-04' UNION
   SELECT tint '5@2000-01-05' UNION
   SELECT tint '7@2000-01-07' )
-SELECT appendInstant(inst, 1, NULL ORDER BY inst) FROM temp;
+SELECT appendInstant(inst, NULL, 1, NULL ORDER BY inst) FROM temp;
                                                                              appendinstant                                                                              
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST], [4@Tue Jan 04 00:00:00 2000 PST, 5@Wed Jan 05 00:00:00 2000 PST], [7@Fri Jan 07 00:00:00 2000 PST]}
@@ -565,7 +634,7 @@ WITH temp(inst) AS (
   SELECT tint '4@2000-01-04' UNION
   SELECT tint '5@2000-01-05' UNION
   SELECT tint '7@2000-01-07' )
-SELECT appendInstant(inst, NULL, interval '1 day' ORDER BY inst) FROM temp;
+SELECT appendInstant(inst, NULL, NULL, interval '1 day' ORDER BY inst) FROM temp;
                                                                              appendinstant                                                                              
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST], [4@Tue Jan 04 00:00:00 2000 PST, 5@Wed Jan 05 00:00:00 2000 PST], [7@Fri Jan 07 00:00:00 2000 PST]}
@@ -577,7 +646,7 @@ WITH temp(inst) AS (
   SELECT tfloat '4@2000-01-04' UNION
   SELECT tfloat '5@2000-01-05' UNION
   SELECT tfloat '7@2000-01-07' )
-SELECT appendInstant(inst, 1, NULL ORDER BY inst) FROM temp;
+SELECT appendInstant(inst, NULL, 1, NULL ORDER BY inst) FROM temp;
                                                                              appendinstant                                                                              
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST], [4@Tue Jan 04 00:00:00 2000 PST, 5@Wed Jan 05 00:00:00 2000 PST], [7@Fri Jan 07 00:00:00 2000 PST]}
@@ -589,7 +658,7 @@ WITH temp(inst) AS (
   SELECT tfloat '4@2000-01-04' UNION
   SELECT tfloat '5@2000-01-05' UNION
   SELECT tfloat '7@2000-01-07' )
-SELECT appendInstant(inst, NULL, interval '1 day' ORDER BY inst) FROM temp;
+SELECT appendInstant(inst, NULL, NULL, interval '1 day' ORDER BY inst) FROM temp;
                                                                              appendinstant                                                                              
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST], [4@Tue Jan 04 00:00:00 2000 PST, 5@Wed Jan 05 00:00:00 2000 PST], [7@Fri Jan 07 00:00:00 2000 PST]}
@@ -601,7 +670,7 @@ WITH temp(inst) AS (
   SELECT ttext 'CC@2000-01-04' UNION
   SELECT ttext 'DD@2000-01-05' UNION
   SELECT ttext 'EE@2000-01-07' )
-SELECT appendInstant(inst, interval '1 day' ORDER BY inst) FROM temp;
+SELECT appendInstant(inst, NULL, interval '1 day' ORDER BY inst) FROM temp;
                                                                                      appendinstant                                                                                     
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {["AA"@Sat Jan 01 00:00:00 2000 PST, "BB"@Sun Jan 02 00:00:00 2000 PST], ["CC"@Tue Jan 04 00:00:00 2000 PST, "DD"@Wed Jan 05 00:00:00 2000 PST], ["EE"@Fri Jan 07 00:00:00 2000 PST]}

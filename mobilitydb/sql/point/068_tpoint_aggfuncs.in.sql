@@ -210,12 +210,26 @@ CREATE FUNCTION temporal_app_tinst_transfn(tgeogpoint, tgeogpoint)
 
 -- The function is not STRICT
 CREATE FUNCTION temporal_app_tinst_transfn(tgeompoint, tgeompoint,
-    maxdist float DEFAULT NULL, maxt interval DEFAULT NULL)
+    interp text DEFAULT NULL)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION temporal_app_tinst_transfn(tgeogpoint, tgeogpoint,
-    maxdist float DEFAULT NULL, maxt interval DEFAULT NULL)
+    interp text DEFAULT NULL)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+-- The function is not STRICT
+CREATE FUNCTION temporal_app_tinst_transfn(tgeompoint, tgeompoint,
+    interp text DEFAULT NULL, maxdist float DEFAULT NULL,
+    maxt interval DEFAULT NULL)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION temporal_app_tinst_transfn(tgeogpoint, tgeogpoint,
+    interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
+    maxt interval DEFAULT NULL)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -242,13 +256,26 @@ CREATE AGGREGATE appendInstant(tgeogpoint) (
   PARALLEL = safe
 );
 
-CREATE AGGREGATE appendInstant(tgeompoint, float, interval) (
+CREATE AGGREGATE appendInstant(tgeompoint, text) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tgeompoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstant(tgeogpoint, float, interval) (
+CREATE AGGREGATE appendInstant(tgeogpoint, text) (
+  SFUNC = temporal_app_tinst_transfn,
+  STYPE = tgeogpoint,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
+CREATE AGGREGATE appendInstant(tgeompoint, text, float, interval) (
+  SFUNC = temporal_app_tinst_transfn,
+  STYPE = tgeompoint,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE appendInstant(tgeogpoint, text, float, interval) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tgeogpoint,
   FINALFUNC = temporal_append_finalfn,

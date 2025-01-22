@@ -575,42 +575,60 @@ CREATE AGGREGATE merge(ttext) (
  * Append aggregate functions
  *****************************************************************************/
 
--- The function is not STRICT
+-- Default interpolation based on the base type
 CREATE FUNCTION temporal_app_tinst_transfn(tbool, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_app_tinst_transfn(tint, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_app_tinst_transfn(tfloat, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_app_tinst_transfn(ttext, ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- The function is not STRICT
-CREATE FUNCTION temporal_app_tinst_transfn(tbool, tbool,
-    maxt interval DEFAULT NULL)
+-- Interpolation given by the user
+CREATE FUNCTION temporal_app_tinst_transfn(tbool, tbool, interp text)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_app_tinst_transfn(tint, tint, interp text)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_app_tinst_transfn(tfloat, tfloat, interp text)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_app_tinst_transfn(ttext, ttext, interp text)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- These functions are not strict
+CREATE FUNCTION temporal_app_tinst_transfn(tbool, tbool, interp text,
+    maxt interval)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_tinst_transfn(tint, tint,
-    maxdist float DEFAULT NULL, maxt interval DEFAULT NULL)
+CREATE FUNCTION temporal_app_tinst_transfn(tint, tint, interp text,
+    maxdist float, maxt interval)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_tinst_transfn(tfloat, tfloat,
-    maxdist float DEFAULT NULL, maxt interval DEFAULT NULL)
+CREATE FUNCTION temporal_app_tinst_transfn(tfloat, tfloat, interp text,
+    maxdist float, maxt interval)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION temporal_app_tinst_transfn(ttext, ttext,
-    maxt interval DEFAULT NULL)
+CREATE FUNCTION temporal_app_tinst_transfn(ttext, ttext, interp text,
+    maxt interval)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -618,65 +636,93 @@ CREATE FUNCTION temporal_app_tinst_transfn(ttext, ttext,
 CREATE FUNCTION temporal_append_finalfn(tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_append_finalfn(tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_append_finalfn(tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_append_finalfn(ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE AGGREGATE appendInstant(tbool) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = temporal_app_tinst_transfn(tbool, tbool),
   STYPE = tbool,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
+CREATE AGGREGATE appendInstant(tbool, interp text) (
+  SFUNC = temporal_app_tinst_transfn(tbool, tbool, text),
+  STYPE = tbool,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE appendInstant(tbool, interp text, maxt interval) (
+  SFUNC = temporal_app_tinst_transfn(tbool, tbool, text, maxt),
+  STYPE = tbool,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
 CREATE AGGREGATE appendInstant(tint) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = temporal_app_tinst_transfn(tint, tint),
   STYPE = tint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
+CREATE AGGREGATE appendInstant(tint, interp text) (
+  SFUNC = temporal_app_tinst_transfn(tint, tint, text),
+  STYPE = tint,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE appendInstant(tint, interp text, maxdist float, 
+    maxt interval) (
+  SFUNC = temporal_app_tinst_transfn(tint, tint, text, maxdist, maxt),
+  STYPE = tint,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
 CREATE AGGREGATE appendInstant(tfloat) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = temporal_app_tinst_transfn(tfloat, tfloat),
   STYPE = tfloat,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
+CREATE AGGREGATE appendInstant(tfloat, interp text) (
+  SFUNC = temporal_app_tinst_transfn(tfloat, tfloat, text),
+  STYPE = tfloat,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE appendInstant(tfloat, interp text, maxdist float, 
+    maxt interval) (
+  SFUNC = temporal_app_tinst_transfn(tfloat, tfloat, text, maxdist, maxt),
+  STYPE = tfloat,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
 CREATE AGGREGATE appendInstant(ttext) (
-  SFUNC = temporal_app_tinst_transfn,
+  SFUNC = temporal_app_tinst_transfn(ttext, ttext),
   STYPE = ttext,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
-CREATE AGGREGATE appendInstant(tbool, interval) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tbool,
+CREATE AGGREGATE appendInstant(ttext, interp text) (
+  SFUNC = temporal_app_tinst_transfn(ttext, ttext, text),
+  STYPE = ttext,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstant(tint, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendInstant(tfloat, float, interval) (
-  SFUNC = temporal_app_tinst_transfn,
-  STYPE = tfloat,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendInstant(ttext, interval) (
-  SFUNC = temporal_app_tinst_transfn,
+CREATE AGGREGATE appendInstant(ttext, interp text, maxt interval) (
+  SFUNC = temporal_app_tinst_transfn(ttext, ttext, text, maxt),
   STYPE = ttext,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
