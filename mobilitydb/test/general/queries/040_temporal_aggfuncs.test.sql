@@ -31,6 +31,10 @@ SELECT merge(inst) FROM (VALUES
 (tfloat '1@2000-01-01'),(tfloat '2@2000-01-02')) t(inst);
 SELECT merge(seq) FROM (VALUES
 (tfloat '[1@2000-01-01]'),(tfloat '[2@2000-01-02]')) t(seq);
+SELECT merge(seq) FROM (VALUES
+(tint '{1@2000-01-01, 2@2000-01-02}'),(tint '{2@2000-01-02, 3@2000-01-03}')) t(seq);
+SELECT merge(seq) FROM (VALUES
+(tint '[1@2000-01-01, 2@2000-01-02]'),(tint '[2@2000-01-02, 3@2000-01-03]')) t(seq);
 
 /* Errors */
 SELECT merge(inst) FROM (VALUES
@@ -290,6 +294,12 @@ WITH temp(inst) AS (
   SELECT tintSeq(tint(extract(day from d)::int % 2, d))
   FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
 SELECT numInstants(appendSequence(inst ORDER BY inst)) FROM temp;
+
+-- Coverage
+WITH temp(inst) AS (
+  SELECT tint(i, timestamptz '2001-01-01' + i * interval '1 day')
+  FROM generate_series(1, 64) AS i )
+SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
 /* Errors */
 WITH temp(inst) AS (

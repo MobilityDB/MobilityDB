@@ -64,16 +64,6 @@
  *****************************************************************************/
 
 /**
- * @brief Return a Datum true if the first geometry contains the second one
- */
-Datum
-datum_geom_contains(Datum geom1, Datum geom2)
-{
-  return BoolGetDatum(geom_spatialrel(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2), CONTAINS));
-}
-
-/**
  * @brief Return a Datum true if the first geometry covers the second one
  */
 Datum
@@ -81,37 +71,6 @@ datum_geom_covers(Datum geom1, Datum geom2)
 {
   return BoolGetDatum(geom_spatialrel(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), COVERS));
-}
-
-/**
- * @brief Return a Datum true if two geometries are disjoint in 2D
- */
-Datum
-datum_geom_disjoint2d(Datum geom1, Datum geom2)
-{
-  return BoolGetDatum(! geom_intersects2d(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2)));
-}
-
-/**
- * @brief Return a Datum true if two geometries are disjoint in 3D
- */
-Datum
-datum_geom_disjoint3d(Datum geom1, Datum geom2)
-{
-  return BoolGetDatum(! geom_intersects3d(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2)));
-}
-
-/**
- * @brief Return a Datum true if two geographies are disjoint
- * @note The @p use_spheroid parameter is set to false
- */
-Datum
-datum_geog_disjoint(Datum geog1, Datum geog2)
-{
-  return BoolGetDatum(! geog_intersects(DatumGetGserializedP(geog1),
-    DatumGetGserializedP(geog2), false));
 }
 
 /**
@@ -175,21 +134,6 @@ datum_geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 }
 
 /*****************************************************************************/
-
-/**
- * @brief Select the appropriate disjoint function
- * @note We need two parameters to cope with mixed 2D/3D arguments
- */
-datum_func2
-get_disjoint_fn_gs(int16 flags1, uint8_t flags2)
-{
-  if (MEOS_FLAGS_GET_GEODETIC(flags1))
-    return &datum_geog_disjoint;
-  else
-    /* 3D only if both arguments are 3D */
-    return MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
-      &datum_geom_disjoint3d : &datum_geom_disjoint2d;
-}
 
 /**
  * @brief Select the appropriate intersect function

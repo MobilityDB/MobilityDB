@@ -106,11 +106,12 @@ CREATE FUNCTION tTouches(tgeompoint, geometry, atvalue bool DEFAULT NULL)
  * tDwithin
  *****************************************************************************/
 
+-- ALL the following functions are not STRICT
 CREATE FUNCTION tDwithin(geometry, tgeompoint, dist float,
    atvalue bool DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_geo_tpoint'
-  LANGUAGE C IMMUTABLE  PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tDwithin(tgeompoint, geometry, dist float,
     atvalue bool DEFAULT NULL)
   RETURNS tbool
@@ -120,6 +121,6 @@ CREATE FUNCTION tDwithin(tgeompoint, tgeompoint, dist float,
     atvalue bool DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdwithin_tpoint_tpoint'
-  LANGUAGE C IMMUTABLE  PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************/

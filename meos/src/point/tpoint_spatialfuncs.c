@@ -308,16 +308,6 @@ datum_pt_distance3d(Datum geom1, Datum geom2)
   return Float8GetDatum(distance3d_pt_pt((POINT3D *) p1, (POINT3D *) p2));
 }
 
-/**
- * @brief Return the 2D intersection between the two geometries
- */
-Datum
-datum_geom_intersection2d(Datum geom1, Datum geom2)
-{
-  return PointerGetDatum(geom_intersection2d(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2)));
-}
-
 /*****************************************************************************
  * Parameter tests
  *****************************************************************************/
@@ -2275,21 +2265,12 @@ tpointseq_disc_to_geomeas(const TSequence *seq, const TSequence *meas)
     m = meas ? TSEQUENCE_INST_N(meas, i) : NULL;
     points[i] = tpointinst_to_geomeas_iter(inst, m);
   }
-  GSERIALIZED *result;
-  if (seq->count == 1)
-  {
-    result = geo_serialize(points[0]);
-    lwgeom_free(points[0]); pfree(points);
-  }
-  else
-  {
-    LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, srid,
-      NULL, (uint32_t) seq->count, points);
-    FLAGS_SET_Z(lwresult->flags, hasz);
-    FLAGS_SET_GEODETIC(lwresult->flags, geodetic);
-    result = geo_serialize(lwresult);
-    lwgeom_free(lwresult);
-  }
+  LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, srid,
+    NULL, (uint32_t) seq->count, points);
+  FLAGS_SET_Z(lwresult->flags, hasz);
+  FLAGS_SET_GEODETIC(lwresult->flags, geodetic);
+  GSERIALIZED *result = geo_serialize(lwresult);
+  lwgeom_free(lwresult);
   return result;
 }
 

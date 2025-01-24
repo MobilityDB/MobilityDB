@@ -890,6 +890,7 @@ temporal_cp(const Temporal *temp)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup meos_temporal_constructor
  * @brief Return a copy of a temporal value
@@ -903,6 +904,7 @@ temporal_copy(const Temporal *temp)
     return NULL;
   return temporal_cp(temp);
 }
+#endif /* MEOS */
 
 /**
  * @brief Return a temporal discrete sequence from a base value and time frame

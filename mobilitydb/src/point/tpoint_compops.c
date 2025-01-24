@@ -147,7 +147,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_point_tpoint);
 Datum
 Ever_ne_point_tpoint(PG_FUNCTION_ARGS)
 {
-  return EAcomp_point_tpoint(fcinfo, &always_ne_point_tpoint);
+  return EAcomp_point_tpoint(fcinfo, &ever_ne_point_tpoint);
 }
 
 PGDLLEXPORT Datum Always_ne_point_tpoint(PG_FUNCTION_ARGS);

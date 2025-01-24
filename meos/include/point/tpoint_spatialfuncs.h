@@ -77,7 +77,6 @@ extern Datum datum_geom_distance3d(Datum geom1, Datum geom2);
 extern Datum datum_geog_distance(Datum geog1, Datum geog2);
 extern Datum datum_pt_distance2d(Datum geom1, Datum geom2);
 extern Datum datum_pt_distance3d(Datum geom1, Datum geom2);
-extern Datum datum_geom_intersection2d(Datum geom1, Datum geom2);
 
 /* Parameter tests */
 

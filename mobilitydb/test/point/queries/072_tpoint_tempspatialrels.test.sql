@@ -100,6 +100,12 @@ SELECT tDisjoint(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
 SELECT tDisjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point empty');
 SELECT tDisjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point empty');
 
+--3D
+SELECT tDisjoint(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(2 2 2)');
+SELECT tDisjoint(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Point(2 2 2)');
+SELECT tDisjoint(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Point(2 2 2)');
+SELECT tDisjoint(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Point(2 2 2)');
+
 -- Additional parameter
 SELECT tDisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', true);
 SELECT tDisjoint(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', true);
@@ -134,8 +140,6 @@ SELECT tDisjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poi
 /* Errors */
 SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tDisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
-SELECT tDisjoint(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-SELECT tDisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
 
 -------------------------------------------------------------------------------
 -- tIntersects
@@ -176,6 +180,12 @@ SELECT tIntersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, P
 SELECT tIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'Linestring(1 1,2 2)');
 SELECT tIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(4 1)@2000-01-02]', geometry 'Linestring(1 2,1 0,2 0,2 2)');
 
+--3D
+SELECT tIntersects(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(2 2 2)');
+SELECT tIntersects(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Point(2 2 2)');
+SELECT tIntersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Point(2 2 2)');
+SELECT tIntersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Point(2 2 2)');
+
 -- Additional parameter
 SELECT tIntersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', true);
 SELECT tIntersects(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', true);
@@ -214,8 +224,6 @@ SELECT tIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', 
 /* Errors */
 SELECT tIntersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tIntersects(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
-SELECT tIntersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-SELECT tIntersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
 
 -------------------------------------------------------------------------------
 -- tTouches

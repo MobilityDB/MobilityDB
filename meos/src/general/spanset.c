@@ -852,7 +852,6 @@ spanset_mem_size(const SpanSet *ss)
   assert(ss);
   return (int) VARSIZE(DatumGetPointer(ss));
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_accessor
@@ -868,6 +867,7 @@ spanset_span(const SpanSet *ss)
     return NULL;
   return span_cp(&ss->span);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_setspan_accessor
@@ -1560,6 +1560,7 @@ spanset_span_n(const SpanSet *ss, int i)
   return NULL;
 }
 
+#if MEOS
 /**
  * @ingroup meos_internal_setspan_accessor
  * @brief Return an array of pointers to the spans of a span set
@@ -1579,7 +1580,6 @@ spanset_sps(const SpanSet *ss)
   return spans;
 }
 
-#if MEOS
 /**
  * @ingroup meos_setspan_accessor
  * @brief Return a C array with copies of the spans of a span set

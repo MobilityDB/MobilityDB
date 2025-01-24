@@ -845,29 +845,6 @@ geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @brief Return true if the first geometry covers the second one
- * @param[in] gs1,gs2 Geometries
- * @note PostGIS functions: @p contains(PG_FUNCTION_ARGS)
- */
-bool
-geom_covers(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
-{
-  return geom_spatialrel(gs1, gs2, COVERS);
-}
-
-/**
- * @brief Return true if two geometries intersects
- * @param[in] gs1,gs2 Geometries
- * @note PostGIS functions: @p ST_Intersects(PG_FUNCTION_ARGS),
- * @p contains(PG_FUNCTION_ARGS), @p touches(PG_FUNCTION_ARGS)
- */
-bool
-geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
-{
-  return geom_spatialrel(gs1, gs2, TOUCHES);
-}
-
-/**
  * @brief Return true if two geometries satisfy a spatial relationship given
  * by a pattern
  * @note PostGIS function: @p relate_pattern(PG_FUNCTION_ARGS)
