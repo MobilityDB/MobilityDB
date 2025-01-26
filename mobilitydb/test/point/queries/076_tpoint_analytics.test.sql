@@ -151,6 +151,20 @@ SELECT ST_AsText(geoMeasure(tgeompoint '{[Point(1 1)@2000-01-01],[Point(1 1)@200
 SELECT ST_AsText(geoMeasure(tgeompoint 'Point(1 1)@2000-01-01', '5@2000-01-02'));
 
 -------------------------------------------------------------------------------
+-- Affine transforms
+
+--Rotate a 3d line 180 degrees about the z axis.  Note this is long-hand for doing ST_Rotate();
+SELECT asEWKT(affine(temp, 
+  cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1, 0, 0, 0)) 
+  AS using_affine, asEWKT(rotate(temp, pi())) AS using_rotate
+FROM (SELECT tgeompoint '[POINT(1 2 3)@2001-01-01, POINT(1 4 3)@2001-01-02]' AS temp) AS t;
+
+--Rotate a 3d line 180 degrees in both the x and z axis
+SELECT asEWKT(affine(temp, 
+  cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0))
+FROM (SELECT tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 4 3)@2001-01-02]' AS temp) AS t;
+          
+-------------------------------------------------------------------------------
 
 SELECT numInstants(DouglasPeuckerSimplify(tfloat '[4@2000-01-01, 1@2000-01-02, 3@2000-01-03, 1@2000-01-04, 3@2000-01-05, 0@2000-01-06, 4@2000-01-07]', 1));
 SELECT numInstants(DouglasPeuckerSimplify(tfloat '[4@2000-01-01, 1@2000-01-02, 3@2000-01-03, 1@2000-01-04, 3@2000-01-05, 0@2000-01-06, 4@2000-01-07]', 2));

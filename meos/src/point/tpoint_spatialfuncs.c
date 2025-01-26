@@ -3106,9 +3106,14 @@ tpointseqset_affine(const TSequenceSet *ss, const AFFINE *a)
 }
 
 /**
- * @brief Return the affine transform a temporal point
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Return the 3D affine transform of a temporal point to do things like
+ * translate, rotate, scale in one step
+ * @param[in] temp Temporal points
+ * @param[in] affine Matrix specifying the transformation
+ * @csqlfn #Tpoint_affine()
  */
-static Temporal *
+Temporal *
 tpoint_affine(const Temporal *temp, const AFFINE *a)
 {
   assert(temptype_subtype(temp->subtype));

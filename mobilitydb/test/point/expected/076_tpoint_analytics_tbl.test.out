@@ -166,6 +166,18 @@ SELECT ST_Extent(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeo
  BOX(0.029 0.153451,99.997066 99.896214)
 (1 row)
 
+SELECT MAX(numInstants(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1, 0, 0, 0))) FROM tbl_tgeompoint;
+ max 
+-----
+  56
+(1 row)
+
+SELECT MAX(numInstants(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0))) FROM tbl_tgeompoint;
+ max 
+-----
+  56
+(1 row)
+
 SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tfloat;
  max 
 -----
