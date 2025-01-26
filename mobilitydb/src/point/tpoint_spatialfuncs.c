@@ -299,6 +299,29 @@ Tpoint_affine(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tpoint_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_scale);
+/**
+ * @ingroup mobilitydb_temporal_spatial_transf
+ * @brief Return the temporal point rotated counter-clockwise about the origin point
+ * @sqlfn scale()
+ */
+Datum
+Tpoint_scale(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *scale = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *sorigin = NULL;
+  /* Do we have the optional false origin? */
+  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
+    sorigin = PG_GETARG_GSERIALIZED_P(2);
+  Temporal *result = tpoint_scale(temp, scale, sorigin);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************
  * Mapbox Vector Tile functions for temporal points
  *****************************************************************************/

@@ -153,17 +153,41 @@ SELECT ST_AsText(geoMeasure(tgeompoint 'Point(1 1)@2000-01-01', '5@2000-01-02'))
 -------------------------------------------------------------------------------
 -- Affine transforms
 
---Rotate a 3d line 180 degrees about the z axis.  Note this is long-hand for doing ST_Rotate();
+-- Rotate a 3D temporal point 180 degrees about the z axis.  Note this is long-hand for doing rotate();
 SELECT asEWKT(affine(temp, 
   cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1, 0, 0, 0)) 
   AS using_affine, asEWKT(rotate(temp, pi())) AS using_rotate
 FROM (SELECT tgeompoint '[POINT(1 2 3)@2001-01-01, POINT(1 4 3)@2001-01-02]' AS temp) AS t;
 
---Rotate a 3d line 180 degrees in both the x and z axis
+-- Rotate a 3D temporal point 180 degrees in both the x and z axis
 SELECT asEWKT(affine(temp, 
   cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0))
 FROM (SELECT tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 4 3)@2001-01-02]' AS temp) AS t;
-          
+
+-- Rotate a temporal point 180 degrees
+SELECT asEWKT(rotate(tgeompoint '[POINT(50 160)@2001-01-01, POINT(50 50)@2001-01-02, POINT(100 50)@2001-01-03]', pi()), 6);
+-- Rotate 30 degrees counter-clockwise at x=50, y=160
+SELECT asEWKT(rotate(tgeompoint '[POINT(50 160)@2001-01-01, POINT(50 50)@2001-01-02, POINT(100 50)@2001-01-03]', pi()/6, 50, 160), 6);
+-- Rotate 60 degrees clockwise from centroid
+SELECT asEWKT(rotate(temp, -pi()/3, ST_Centroid(trajectory(temp))), 6)
+FROM (SELECT tgeompoint '[POINT(50 160)@2001-01-01, POINT(50 50)@2001-01-02, POINT(100 50)@2001-01-03]' AS temp) AS t;
+
+SELECT asEWKT(scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', geometry 'POINT(0.5 0.75 0.8)'));
+SELECT asEWKT(scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5, 0.75, 0.8));
+SELECT asEWKT(scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5, 0.75));
+SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(2 2)', geometry 'POINT(1 1)'));
+
+-- Empty geometry
+SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT Empty'));
+SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'POINT Empty'));
+-- Coverage
+SELECT asEWKT(scale(tgeompoint 'Point(1 1)@2001-01-01', geometry 'POINT(1 1)'));
+SELECT asEWKT(scale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],[Point(3 3)@2001-01-03]}', geometry 'POINT(1 1)'));
+
+/* Errors */
+SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Linestring(1 1,2 2)'));
+SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'Linestring(1 1,2 2)'));
+
 -------------------------------------------------------------------------------
 
 SELECT numInstants(DouglasPeuckerSimplify(tfloat '[4@2000-01-01, 1@2000-01-02, 3@2000-01-03, 1@2000-01-04, 3@2000-01-05, 0@2000-01-06, 4@2000-01-07]', 1));

@@ -542,6 +542,77 @@ ramp_color(
 				</figure>
 			</listitem>
 
+			<listitem id="affine">
+				<indexterm><primary><varname>affine</varname></primary></indexterm>
+				<para>Return the 3D affine transform of a temporal point to do things like translate, rotate, scale in one step &Z_support;</para>
+				<para><varname>affine(tpoint,float a, float b, float c, float d, float e, float f, float g,</varname></para>
+				<para><varname>  float h, float i, float xoff, float yoff, float zoff) → tpoint</varname></para>
+				<para><varname>affine(tpoint,float a, float b, float d, float e, float xoff, float yoff) → tpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+-- Rotate a 3D temporal point 180 degrees about the z axis
+SELECT asEWKT(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1,
+  0, 0, 0))
+FROM (SELECT tgeompoint '[POINT(1 2 3)@2001-01-01, POINT(1 4 3)@2001-01-02]' AS temp) t;
+-- [POINT Z (-1 -2 3)@2001-01-01, POINT Z (-1 -4 3)@2001-01-02]
+SELECT asEWKT(rotate(temp, pi()))
+FROM (SELECT tgeompoint '[POINT(1 2 3)@2001-01-01, POINT(1 4 3)@2001-01-02]' AS temp) t;
+-- [POINT Z (-1 -2 3)@2001-01-01, POINT Z (-1 -4 3)@2001-01-02]
+-- Rotate a 3D temporal point 180 degrees in both the x and z axis
+SELECT asEWKT(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), -sin(pi()), 
+   0, sin(pi()), cos(pi()), 0, 0, 0))
+FROM (SELECT tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 4 3)@2001-01-02]' AS temp) t;
+-- [POINT Z (-1 -2 -3)@2001-01-01, POINT Z (-1 -4 -3)@2001-01-02]
+</programlisting>
+			</listitem>
+
+			<listitem id="rotate">
+				<indexterm><primary><varname>rotate</varname></primary></indexterm>
+				<para>Return the temporal point rotated counter-clockwise about the origin point</para>
+				<para><varname>rotate(tpoint,float radians) → tpoint</varname></para>
+				<para><varname>rotate(tpoint,float radians,float x0,float y0) → tpoint</varname></para>
+				<para><varname>rotate(tpoint,float radians,geometry origin) → tpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+-- Rotate a temporal point 180 degrees
+SELECT asEWKT(rotate(tgeompoint '[POINT(50 160)@2001-01-01, POINT(50 50)@2001-01-02, 
+  POINT(100 50)@2001-01-03]', pi()), 6);
+-- [POINT(-50 -160)@2001-01-01, POINT(-50 -50)@2001-01-02, POINT(-100 -50)@2001-01-03]
+-- Rotate 30 degrees counter-clockwise at x=50, y=160
+SELECT asEWKT(rotate(tgeompoint '[POINT(50 160)@2001-01-01, POINT(50 50)@2001-01-02, 
+  POINT(100 50)@2001-01-03]', pi()/6, 50, 160), 6);
+/* [POINT(50 160)@2001-01-01, POINT(105 64.737206)@2001-01-02, 
+    POINT(148.30127 89.737206)@2001-01-03] */
+-- Rotate 60 degrees clockwise from centroid
+SELECT asEWKT(rotate(temp, -pi()/3, ST_Centroid(trajectory(temp))), 6)
+FROM (SELECT tgeompoint '[POINT(50 160)@2001-01-01, POINT(50 50)@2001-01-02, 
+  POINT(100 50)@2001-01-03]' AS temp) AS t;
+/* [POINT(116.422459 130.672073)@2001-01-01, POINT(21.159664 75.672073)@2001-01-02, 
+    POINT(46.159664 32.370803)@2001-01-03] */
+</programlisting>
+			</listitem>
+
+			<listitem id="scale">
+				<indexterm><primary><varname>scale</varname></primary></indexterm>
+				<para>Return a temporal point scaled by given factors &Z_support;</para>
+				<para><varname>scale(tpoint,float Xfactor,float Yfactor,float Zfactor) → tpoint</varname></para>
+				<para><varname>scale(tpoint,float Xfactor,float Yfactor) → tpoint</varname></para>
+				<para><varname>scale(tpoint,geometry factor) → tpoint</varname></para>
+				<para><varname>scale(tpoint,geometry factor,geometry origin) → tpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asEWKT(scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 
+  0.5, 0.75, 0.8));
+--  [POINT Z (0.5 1.5 2.4)@2001-01-01, POINT Z (0.5 0.75 0.8)@2001-01-02]
+SELECT asEWKT(scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 
+  0.5, 0.75));
+-- [POINT Z (0.5 1.5 3)@2001-01-01, POINT Z (0.5 0.75 1)@2001-01-02]
+SELECT asEWKT(scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 
+  geometry 'POINT(0.5 0.75 0.8)'));
+-- [POINT Z (0.5 1.5 2.4)@2001-01-01, POINT Z (0.5 0.75 0.8)@2001-01-02]
+SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', 
+  geometry 'POINT(2 2)', geometry 'POINT(1 1)'));
+--  Point(1 1,3 3)
+</programlisting>
+			</listitem>
+
 			<listitem id="asMVTGeom">
 				<indexterm><primary><varname>asMVTGeom</varname></primary></indexterm>
 				<para>Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile &Z_support;</para>
