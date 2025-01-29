@@ -9,9 +9,6 @@ if(NPOINT)
     npoint/random_tnpoint.sql
     )
 endif()
-
-add_custom_target(datagen_sql_files ALL
-  DEPENDS ${MOBILITYDB_DATAGEN_EXTENSION_FILE})
   
 configure_file(mobilitydb_datagen.control ${CMAKE_BINARY_DIR}/mobilitydb_datagen.control)
 
