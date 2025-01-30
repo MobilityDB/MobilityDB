@@ -321,7 +321,7 @@ WITH temp(inst) AS (
   SELECT tint '3@2000-01-03' UNION
   SELECT tint '4@2000-01-04' UNION
   SELECT tint '5@2000-01-05' )
-SELECT appendInstant(inst ORDER BY inst, 'discrete') FROM temp;
+SELECT appendInstant(inst, 'discrete' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tint '1@2000-01-01' UNION
@@ -331,7 +331,7 @@ WITH temp(inst) AS (
   SELECT tint '3@2000-01-03' UNION
   SELECT tint '4@2000-01-04' UNION
   SELECT tint '5@2000-01-05' )
-SELECT appendInstant(inst ORDER BY inst, 'discrete') FROM temp;
+SELECT appendInstant(inst, 'discrete' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
   SELECT NULL UNION
@@ -340,7 +340,7 @@ WITH temp(inst) AS (
   SELECT tfloat '3@2000-01-03' UNION
   SELECT tfloat '4@2000-01-04' UNION
   SELECT tfloat '5@2000-01-05' )
-SELECT appendInstant(inst ORDER BY inst, 'discrete') FROM temp;
+SELECT appendInstant(inst, 'discrete' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
   SELECT ttext 'AA@2000-01-01' UNION
@@ -348,12 +348,12 @@ WITH temp(inst) AS (
   SELECT ttext 'CC@2000-01-03' UNION
   SELECT ttext 'DD@2000-01-04' UNION
   SELECT ttext 'EE@2000-01-05' )
-SELECT appendInstant(inst ORDER BY inst, 'discrete') FROM temp;
+SELECT appendInstant(inst, 'discrete' ORDER BY inst) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tint(extract(day from d)::int % 2, d)
   FROM generate_series(timestamptz '1900-01-01', '2000-01-10', interval '1 day') AS d )
-SELECT numInstants(appendInstant(inst ORDER BY inst, 'discrete')) FROM temp;
+SELECT numInstants(appendInstant(inst, 'discrete' ORDER BY inst)) FROM temp;
 
 WITH temp(inst) AS (
   SELECT tintSeq(tint(extract(day from d)::int % 2, d))
