@@ -466,7 +466,7 @@ SELECT shiftTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
 </programlisting>
 			</listitem>
 
-			<listitem id="box_scale">
+			<listitem id="box_scaleValue">
 				<indexterm><primary><varname>scaleValue</varname></primary></indexterm>
 				<indexterm><primary><varname>scaleTime</varname></primary></indexterm>
 				<para>Escalar el rango de valores o el período del cuadro delimitador a un valor o intervalo. Si el ancho o el lapso de tiempo del valor de tiempo es cero (es decir, los límites inferior y superior son iguales), el resultado es el cuadro delimitador. El valor o intervalo dado debe ser estrictamente mayor que cero.</para>
@@ -493,7 +493,7 @@ SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
 				<para>Desplazar y escalar el rango de valores o el período del cuadro delimitador con los valores o intervalos</para>
 				<para><varname>shiftScaleValue(tbox,{integer,float},{integer,float}) → tbox</varname></para>
 				<para><varname>shiftScaleTime(box,interval,interval) → box</varname></para>
-				<para>Estas funciones combinan las funciones <link linkend="box_shift"><varname>shiftValue</varname></link> y <link linkend="box_scale"><varname>scaleValue</varname></link> o <link linkend="box_shift"><varname>shiftTime</varname></link> y <link linkend="box_scale"><varname>scaleTime</varname></link></para>
+				<para>Estas funciones combinan las funciones <link linkend="box_shift"><varname>shiftValue</varname></link> y <link linkend="box_scaleValue"><varname>scaleValue</varname></link> o <link linkend="box_shift"><varname>shiftTime</varname></link> y <link linkend="box_scaleValue"><varname>scaleTime</varname></link></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0, 3.0);
 -- TBOXFLOAT XT([3.5, 6.5],[2001-01-01, 2001-01-02])

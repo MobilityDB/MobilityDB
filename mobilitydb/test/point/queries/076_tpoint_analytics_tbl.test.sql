@@ -85,6 +85,13 @@ SELECT ST_Extent(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeo
 
 -------------------------------------------------------------------------------
 
+--Rotate a 3d line 180 degrees about the z axis.  Note this is long-hand for doing ST_Rotate();
+SELECT MAX(numInstants(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1, 0, 0, 0))) FROM tbl_tgeompoint;
+--Rotate a 3d line 180 degrees in both the x and z axis
+SELECT MAX(numInstants(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0))) FROM tbl_tgeompoint;
+
+-------------------------------------------------------------------------------
+
 SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tfloat;
 SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tgeompoint;
 SELECT MAX(numInstants(minDistSimplify(temp, 4))) FROM tbl_tgeogpoint;

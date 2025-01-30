@@ -1107,7 +1107,7 @@ SELECT asText(shiftTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-
 </programlisting>
 			</listitem>
 
-			<listitem id="scale">
+			<listitem id="scaleValue">
 				<indexterm><primary><varname>scaleValue</varname></primary></indexterm>
 				<indexterm><primary><varname>scaleTime</varname></primary></indexterm>
 				<para>Escalear el rango de valores o el intervalo de tiempo de un valor temporal a un valor o intervalo</para>
@@ -1145,7 +1145,7 @@ SELECT scaleTime(tint '1@2001-01-01', '-1 day');
 				<para>Desplazar y escalear el rango de valores o intervalo de tiempo de un valor temporal a los dos valores o intervalos</para>
 				<para><varname>shiftScaleValue(tnumber,base,base) → tnumber</varname></para>
 				<para><varname>shiftScaleTime(ttype,interval,interval) → ttype</varname></para>
-				<para>Estas funciones combinan las funciones <link linkend="shift"><varname>shiftValue</varname></link> y <link linkend="scale"><varname>scaleValue</varname></link> o <link linkend="shift"><varname>shiftTime</varname></link> y <link linkend="scale"><varname>scaleTime</varname></link>.</para>
+				<para>Estas funciones combinan las funciones <link linkend="shift"><varname>shiftValue</varname></link> y <link linkend="scaleValue"><varname>scaleValue</varname></link> o <link linkend="shift"><varname>shiftTime</varname></link> y <link linkend="scaleValue"><varname>scaleTime</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT shiftScaleValue(tint '1@2001-01-01', 1, 1);
 -- 2@2001-01-01

@@ -3106,9 +3106,14 @@ tpointseqset_affine(const TSequenceSet *ss, const AFFINE *a)
 }
 
 /**
- * @brief Return the affine transform a temporal point
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Return the 3D affine transform of a temporal point to do things like
+ * translate, rotate, scale in one step
+ * @param[in] temp Temporal point
+ * @param[in] affine Matrix specifying the transformation
+ * @csqlfn #Tpoint_affine()
  */
-static Temporal *
+Temporal *
 tpoint_affine(const Temporal *temp, const AFFINE *a)
 {
   assert(temptype_subtype(temp->subtype));
@@ -3121,6 +3126,155 @@ tpoint_affine(const Temporal *temp, const AFFINE *a)
     default: /* TSEQUENCESET */
       return (Temporal *) tpointseqset_affine((TSequenceSet *) temp, a);
   }
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return the affine transformation of a temporal point instant
+ * (iterator function)
+ */
+static void
+tpointinst_scale_iter(const TInstant *inst, const POINT4D *factors,
+  TInstant **result)
+{
+  GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  lwgeom_scale(geom, factors);
+  GSERIALIZED *gs1 = geo_serialize(geom);
+  lwgeom_free(geom);
+  *result = tinstant_make_free(PointerGetDatum(gs1), T_TGEOMPOINT, inst->t);
+  return;
+}
+
+/**
+ * @brief Return a temporal point instant scaled by given factors
+ */
+static TInstant *
+tpointinst_scale(const TInstant *inst, const POINT4D *factors)
+{
+  TInstant *result;
+  tpointinst_scale_iter(inst, factors, &result);
+  return result;
+}
+
+/**
+ * @brief Return a temporal point sequence scaled by given factors
+ */
+static TSequence *
+tpointseq_scale(const TSequence *seq, const POINT4D *factors)
+{
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+    tpointinst_scale_iter(TSEQUENCE_INST_N(seq, i), factors, &instants[i]);
+  /* Construct the result */
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
+}
+
+/**
+ * @brief Return a temporal point sequence scaled by given factors
+ * @param[in] ss Temporal point
+ * @param[in] a Affine transformation
+ */
+static TSequenceSet *
+tpointseqset_scale(const TSequenceSet *ss, const POINT4D *factors)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    sequences[i] = tpointseq_scale(TSEQUENCESET_SEQ_N(ss, i), factors);
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Scale a temporal point by given factors
+ * @param[in] temp Temporal point
+ * @param[in] scale Geometry for the scale factors
+ * @param[in] origin Point geometry for the origin
+ * @csqlfn #Tpoint_affine()
+ */
+Temporal *
+tpoint_scale(const Temporal *temp, const GSERIALIZED *scale, 
+  const GSERIALIZED *sorigin)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) scale) ||
+      gserialized_is_empty(scale) || ! ensure_point_type(scale) || 
+      (sorigin != NULL && 
+        (gserialized_is_empty(sorigin) || ! ensure_point_type(sorigin))))
+    return NULL;
+
+  bool translate = false;
+  AFFINE aff;
+
+  /* Transform the scale input */
+  POINT4D factors;
+  datum_point4d(PointerGetDatum(scale), &factors);
+  if (! FLAGS_GET_Z(scale->gflags))
+    factors.z = 1.0;
+  /* We don't use the M value */
+  factors.m = 1.0;
+
+  /* Do we have the optional false origin? */
+  POINT4D origin;
+  if (sorigin)
+  {
+    datum_point4d(PointerGetDatum(sorigin), &origin);
+    translate = true;
+  }
+
+  /* If we have false origin, translate to it before scaling */
+  Temporal *temp1;
+  if (translate)
+  {
+    /* Initialize affine */
+    memset(&aff, 0, sizeof(AFFINE));
+    /* Set rotation/scale/sheer matrix to no-op */
+    aff.afac = aff.efac = aff.ifac = 1.0;
+    /* Strip false origin from all coordinates */
+    aff.xoff = -1 * origin.x;
+    aff.yoff = -1 * origin.y;
+    aff.zoff = -1 * origin.z;
+    temp1 = tpoint_affine(temp, &aff);
+  }
+  else
+    temp1 = (Temporal *) temp;
+
+  /* Scale the temporal point */
+  Temporal *temp2;
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      temp2 = (Temporal *) tpointinst_scale((TInstant *) temp, &factors);
+      break;
+    case TSEQUENCE:
+      temp2 = (Temporal *) tpointseq_scale((TSequence *) temp, &factors);
+      break;
+    default: /* TSEQUENCESET */
+      temp2 = (Temporal *) tpointseqset_scale((TSequenceSet *) temp, &factors);
+  }
+  
+  /* Return to original origin after scaling */
+  Temporal *temp3;
+  if (translate)
+  {
+    aff.xoff *= -1;
+    aff.yoff *= -1;
+    aff.zoff *= -1;
+    temp3 = tpoint_affine(temp2, &aff);
+  }
+  else
+    temp3 = temp2;
+
+  /* Cleanup and return */
+  if (translate)
+  {
+    pfree(temp1);
+    pfree(temp2);
+  }
+  return temp3;
 }
 
 /*****************************************************************************

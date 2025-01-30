@@ -464,7 +464,7 @@ Temporal *
 temporal_merge_array(const Temporal **temparr, int count)
 {
   /* Ensure validity of the arguments */
-  if( ! ensure_not_null((void *) temparr) || ! ensure_positive(count))
+  if ( ! ensure_not_null((void *) temparr) || ! ensure_positive(count))
     return NULL;
 
   if (count == 1)

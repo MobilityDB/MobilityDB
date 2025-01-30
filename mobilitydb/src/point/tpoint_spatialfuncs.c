@@ -266,7 +266,64 @@ Tpoint_tfloat_to_geomeas(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Mapbox Vector Tile functions for temporal points.
+ * Affine transformation for temporal points
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpoint_affine(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_affine);
+/**
+ * @ingroup mobilitydb_temporal_spatial_transf
+ * @brief Return the 3D affine transform of a temporal point to do things like
+ * translate, rotate, scale in one step
+ * @sqlfn affine()
+ */
+Datum
+Tpoint_affine(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  AFFINE affine;
+  affine.afac = PG_GETARG_FLOAT8(1);
+  affine.bfac = PG_GETARG_FLOAT8(2);
+  affine.cfac = PG_GETARG_FLOAT8(3);
+  affine.dfac = PG_GETARG_FLOAT8(4);
+  affine.efac = PG_GETARG_FLOAT8(5);
+  affine.ffac = PG_GETARG_FLOAT8(6);
+  affine.gfac = PG_GETARG_FLOAT8(7);
+  affine.hfac = PG_GETARG_FLOAT8(8);
+  affine.ifac = PG_GETARG_FLOAT8(9);
+  affine.xoff = PG_GETARG_FLOAT8(10);
+  affine.yoff = PG_GETARG_FLOAT8(11);
+  affine.zoff = PG_GETARG_FLOAT8(12);
+  Temporal *result = tpoint_affine(temp, &affine);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tpoint_scale(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_scale);
+/**
+ * @ingroup mobilitydb_temporal_spatial_transf
+ * @brief Return the temporal point rotated counter-clockwise about the origin point
+ * @sqlfn scale()
+ */
+Datum
+Tpoint_scale(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *scale = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *sorigin = NULL;
+  /* Do we have the optional false origin? */
+  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
+    sorigin = PG_GETARG_GSERIALIZED_P(2);
+  Temporal *result = tpoint_scale(temp, scale, sorigin);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+/*****************************************************************************
+ * Mapbox Vector Tile functions for temporal points
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tpoint_AsMVTGeom(PG_FUNCTION_ARGS);

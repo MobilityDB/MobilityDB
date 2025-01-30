@@ -548,7 +548,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_scale"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Scale the span or the period of the bounding box to a value or interval</para>
+					<para><link linkend="box_scaleValue"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Scale the span or the period of the bounding box to a value or interval</para>
 				</listitem>
 
 				<listitem>
@@ -910,7 +910,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="scale"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Scale the value or time span of the temporal value to a value or interval</para>
+					<para><link linkend="scaleValue"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Scale the value or time span of the temporal value to a value or interval</para>
 				</listitem>
 
 				<listitem>
@@ -1329,6 +1329,18 @@
 
 				<listitem>
 					<para><link linkend="geoMeasure"><varname>geoMeasure</varname></link>: Construct a geometry/geography with M measure from a temporal point and a temporal float</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="affine"><varname>affine</varname></link>: Return the 3D affine transform of a temporal point to do things like translate, rotate, scale in one step</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="rotate"><varname>rotate</varname></link>: Return a temporal point rotated counter-clockwise about the origin point</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="scale"><varname>scale</varname></link>: Return a temporal point scaled by given factors</para>
 				</listitem>
 
 				<listitem>
