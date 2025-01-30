@@ -60,10 +60,6 @@
 #include "general/type_parser.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
-#if NPOINT
-  #include "npoint/tnpoint_spatialfuncs.h"
-  #include "npoint/tnpoint_distance.h"
-#endif
 
 /*****************************************************************************
  * Bounding box tests for the restriction functions

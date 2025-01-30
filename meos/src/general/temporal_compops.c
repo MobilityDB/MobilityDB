@@ -45,9 +45,6 @@
 #include "general/span.h"
 #include "general/type_util.h"
 #include "point/tpoint_spatialfuncs.h"
-#if NPOINT
-  #include "npoint/npoint.h"
-#endif
 
 /*****************************************************************************
  * Ever/always functions
