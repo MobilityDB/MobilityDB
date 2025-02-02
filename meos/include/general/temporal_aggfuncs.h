@@ -83,13 +83,8 @@ extern SkipList *temporal_tagg_transfn(SkipList *state, const Temporal *temp,
   datum_func2, bool crossings);
 extern SkipList *temporal_tagg_combinefn(SkipList *state1, SkipList *state2,
   datum_func2 func, bool crossings);
-extern Temporal *temporal_tagg_finalfn(SkipList *state);
 extern SkipList *temporal_tagg_transform_transfn(SkipList *state, const Temporal *temp,
   datum_func2 func, bool crossings, TInstant *(*transform)(const TInstant *));
-
-extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
-  double maxdist, const Interval *maxt);
-extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
   
 /*****************************************************************************/
 

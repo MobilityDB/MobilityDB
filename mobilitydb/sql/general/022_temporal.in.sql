@@ -1199,6 +1199,23 @@ CREATE FUNCTION appendInstant(ttext, ttext)
   AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION appendInstant(tbool, tbool, interp text)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendInstant(tint, tint, interp text)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendInstant(tfloat, tfloat, interp text)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendInstant(ttext, ttext, interp text)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION appendSequence(tbool, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'

@@ -106,7 +106,7 @@ WITH temp(inst) AS (
   SELECT tnpoint 'Npoint(1, 0.4)@2000-01-04' UNION
   SELECT tnpoint 'Npoint(1, 0.5)@2000-01-05' UNION
   SELECT tnpoint 'Npoint(1, 0.7)@2000-01-07' )
-SELECT appendInstant(inst, 1, NULL ORDER BY inst) FROM temp;
+SELECT appendInstant(inst, NULL, 1, NULL ORDER BY inst) FROM temp;
 
 SELECT MAX(numInstants(appendInstant(temp, shiftTime(endInstant(temp), '5 min')))) FROM tbl_tnpoint;
 

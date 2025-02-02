@@ -2030,6 +2030,7 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
  * @brief Append an instant to a temporal value
  * @param[in,out] temp Temporal value
  * @param[in] inst Temporal instant
+ * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance for defining a gap
  * @param[in] maxt Maximum time interval for defining a gap
  * @param[in] expand True when reserving space for additional instants
@@ -2043,8 +2044,8 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
  * @endcode
  */
 Temporal *
-temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
-  const Interval *maxt, bool expand)
+temporal_append_tinstant(Temporal *temp, const TInstant *inst, 
+  interpType interp, double maxdist, const Interval *maxt, bool expand)
 {
   /* Validity tests */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) inst) ||
@@ -2062,8 +2063,6 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst, double maxdist,
   {
     case TINSTANT:
     {
-      /* Default interpolation depending on the base type */
-      interpType interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
       TSequence *seq = tinstant_to_tsequence((const TInstant *) temp, interp);
       Temporal *result = (Temporal *) tsequence_append_tinstant(seq, inst,
         maxdist, maxt, expand);

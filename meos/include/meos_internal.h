@@ -960,7 +960,7 @@ extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
 /* Aggregate functions for temporal types */
 
 extern void skiplist_free(SkipList *list);
-extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, double maxdist, const Interval *maxt);
+extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt);
 extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
 
 /*****************************************************************************/

@@ -325,10 +325,22 @@ WITH temp(inst) AS (
   SELECT tnpoint 'Npoint(1, 0.4)@2000-01-04' UNION
   SELECT tnpoint 'Npoint(1, 0.5)@2000-01-05' UNION
   SELECT tnpoint 'Npoint(1, 0.7)@2000-01-07' )
-SELECT appendInstant(inst, 10, NULL ORDER BY inst) FROM temp;
+SELECT appendInstant(inst, NULL, 10, NULL ORDER BY inst) FROM temp;
                                                                                                            appendinstant                                                                                                            
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[NPoint(1,0.1)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.2)@Sun Jan 02 00:00:00 2000 PST], [NPoint(1,0.4)@Tue Jan 04 00:00:00 2000 PST, NPoint(1,0.5)@Wed Jan 05 00:00:00 2000 PST], [NPoint(1,0.7)@Fri Jan 07 00:00:00 2000 PST]}
+(1 row)
+
+WITH temp(inst) AS (
+  SELECT tnpoint 'Npoint(1, 0.1)@2000-01-01' UNION
+  SELECT tnpoint 'Npoint(1, 0.2)@2000-01-02' UNION
+  SELECT tnpoint 'Npoint(1, 0.4)@2000-01-04' UNION
+  SELECT tnpoint 'Npoint(1, 0.5)@2000-01-05' UNION
+  SELECT tnpoint 'Npoint(1, 0.7)@2000-01-07' )
+SELECT appendInstant(inst, 'step', 10, NULL ORDER BY inst) FROM temp;
+                                                                                                                 appendinstant                                                                                                                  
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[NPoint(1,0.1)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.2)@Sun Jan 02 00:00:00 2000 PST], [NPoint(1,0.4)@Tue Jan 04 00:00:00 2000 PST, NPoint(1,0.5)@Wed Jan 05 00:00:00 2000 PST], [NPoint(1,0.7)@Fri Jan 07 00:00:00 2000 PST]}
 (1 row)
 
 WITH temp1(k, inst) AS (
