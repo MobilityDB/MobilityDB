@@ -10,7 +10,7 @@ if(NPOINT)
     )
 endif()
   
-configure_file(mobilitydb_datagen.control ${CMAKE_BINARY_DIR}/mobilitydb_datagen.control)
+configure_file(mobilitydb_datagen.in.control ${CMAKE_BINARY_DIR}/mobilitydb_datagen.control)
 
 foreach (f ${LOCAL_FILES})
   file(READ ${CMAKE_SOURCE_DIR}/mobilitydb/datagen/${f} CURR_CONTENTS)
