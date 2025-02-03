@@ -11,7 +11,6 @@ configure_file(
 
 # Define list of source files
 set(LOCAL_FILES
-  general/random_geo.sql
   general/random_temporal.sql
   point/random_tpoint.sql
 )
