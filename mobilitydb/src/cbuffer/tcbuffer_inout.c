@@ -210,10 +210,10 @@ Cbufferarr_as_text_ext(FunctionCallInfo fcinfo, bool temporal, bool extended)
   }
   else
   {
-    Datum *geoarr = datumarr_extract(array, &count);
-    strarr = geoarr_as_text(geoarr, count, dbl_dig_for_wkt, extended);
+    Datum *cbufarr = datumarr_extract(array, &count);
+    strarr = cbufferarr_as_text(cbufarr, count, dbl_dig_for_wkt, extended);
     /* We cannot use pfree_array */
-    pfree(geoarr);
+    pfree(cbufarr);
   }
   ArrayType *result = strarr_to_textarray(strarr, count);
   PG_FREE_IF_COPY(array, 0);

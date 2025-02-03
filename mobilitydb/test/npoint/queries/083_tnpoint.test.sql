@@ -172,10 +172,10 @@ SELECT appendSequence(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-0
 -- Cast functions
 -------------------------------------------------------------------------------
 
-SELECT astext(round(tnpoint 'Npoint(1, 0.5)@2000-01-01'::tgeompoint, 6));
-SELECT astext(round(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'::tgeompoint, 6));
-SELECT astext(round(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'::tgeompoint, 6));
-SELECT astext(round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }'::tgeompoint, 6));
+SELECT asText(round(tnpoint 'Npoint(1, 0.5)@2000-01-01'::tgeompoint, 6));
+SELECT asText(round(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'::tgeompoint, 6));
+SELECT asText(round(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'::tgeompoint, 6));
+SELECT asText(round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }'::tgeompoint, 6));
 
 SELECT round((tnpoint 'Npoint(1, 0.5)@2000-01-01'::tgeompoint)::tnpoint, 6);
 SELECT round((tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'::tgeompoint)::tnpoint, 6);

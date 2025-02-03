@@ -113,8 +113,8 @@ SELECT SRID(cbuffer 'Cbuffer(SRID=5676;Point(1 1), 0.3)');
 					<para>TODO Set the spatial reference identifier</para>
 				<para><varname>setSRID(cbuffer) → cbuffer</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT asEWKT(setSRID(cbuffer 'CBuffer(Point(0 0),1)', 4326));
--- SRID=4326;CBuffer(POINT(0 0),1)
+SELECT asEWKT(setSRID(cbuffer 'Cbuffer(Point(0 0),1)', 4326));
+-- SRID=4326;Cbuffer(POINT(0 0),1)
 </programlisting>
 				</listitem>
 
@@ -127,17 +127,17 @@ SELECT asEWKT(setSRID(cbuffer 'CBuffer(Point(0 0),1)', 4326));
 					<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input circular buffer has an unknown SRID (represented by 0).</para>
 					<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. The SRID of the input circular buffer is ignored, and the SRID of the output circular buffer will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT asEWKT(transform(cbuffer 'SRID=4326;CBuffer(Point(4.35 50.85)', 3812));
--- SRID=3812;CBuffer(POINT(648679.018035303 671067.055638114),2)
+SELECT asEWKT(transform(cbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85)', 3812));
+-- SRID=3812;Cbuffer(POINT(648679.018035303 671067.055638114),2)
 </programlisting>
 					<programlisting language="sql" xml:space="preserve">
 WITH test(cbuffer, pipeline) AS (
-  SELECT cbuffer 'CBuffer(SRID=4326;Point(4.3525 50.846667),1)',
+  SELECT cbuffer 'Cbuffer(SRID=4326;Point(4.3525 50.846667),1)',
     text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
 SELECT asEWKT(transformPipeline(transformPipeline(cbuffer, pipeline, 4326),
   pipeline, 4326, false), 6)
 FROM test;
--- SRID=4326;CBuffer(POINT(4.3525 50.846667),1)
+-- SRID=4326;Cbuffer(POINT(4.3525 50.846667),1)
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -265,11 +265,11 @@ SELECT tcbuffer 'Point(0 0)@2001-01-01 08:05:00';
 				<para>Return the Well-Known Text (WKT) representation</para>
 				<para><varname>asText({tcbuffer,tcbuffer[],cbuffer[]}) → {text,text[]}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asText(tcbuffer 'SRID=4326;[CBuffer(Point(0 0),1)@2001-01-01, 
-  CBuffer(Point(1 1),2)@2001-01-02)');
--- [CBuffer(Point(0 0),1)@2001-01-01, CBuffer(Point(1 1),2)@2001-01-02)
-SELECT asText(ARRAY[cbuffer 'CBuffer(Point(0 0),1)', 'CBuffer(Point(1 1),2)']);
--- {"CBuffer(POINT(0 0),1)","CBuffer(POINT(1 1),2)"}
+SELECT asText(tcbuffer 'SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01, 
+  Cbuffer(Point(1 1),2)@2001-01-02)');
+-- [Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)
+SELECT asText(ARRAY[cbuffer 'Cbuffer(Point(0 0),1)', 'Cbuffer(Point(1 1),2)']);
+-- {"Cbuffer(POINT(0 0),1)","Cbuffer(POINT(1 1),2)"}
 </programlisting>
 			</listitem>
 
@@ -278,12 +278,12 @@ SELECT asText(ARRAY[cbuffer 'CBuffer(Point(0 0),1)', 'CBuffer(Point(1 1),2)']);
 				<para>Return the Extended Well-Known Text (EWKT) representation</para>
 				<para><varname>asEWKT({tcbuffer,tcbuffer[],cbuffer[]}) → {text,text[]}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asEWKT(tcbuffer 'SRID=4326;[CBuffer(Point(0 0),1)@2001-01-01, 
-  CBuffer(Point(1 1),2)@2001-01-02)');
--- SRID=4326;[CBuffer(Point(0 0),1)@2001-01-01, CBuffer(Point(1 1),2)@2001-01-02)
-SELECT asEWKT(ARRAY[cbuffer 'CBuffer(SRID=5676;Point(0 0),1)', 
-  'CBuffer(SRID=5676;Point(1 1),2)']);
--- {"CBuffer(SRID=5676;POINT(0 0),1)","CBuffer(SRID=5676;POINT(1 1),2))"}
+SELECT asEWKT(tcbuffer 'SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01, 
+  Cbuffer(Point(1 1),2)@2001-01-02)');
+-- SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)
+SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(0 0),1)', 
+  'Cbuffer(SRID=5676;Point(1 1),2)']);
+-- {"Cbuffer(SRID=5676;POINT(0 0),1)","Cbuffer(SRID=5676;POINT(1 1),2))"}
 </programlisting>
 			</listitem>
 
@@ -306,7 +306,7 @@ SELECT asEWKT(ARRAY[cbuffer 'CBuffer(SRID=5676;Point(0 0),1)',
 				</itemizedlist>
 				<para>The <varname>maxdecdigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asMFJSON(tcbuffer 'CBuffer(Point(1 2),1)@2019-01-01 18:00:00.15+02');
+SELECT asMFJSON(tcbuffer 'Cbuffer(Point(1 2),1)@2019-01-01 18:00:00.15+02');
 /* {"type":"MovingPoint","coordinates":[[1,2]],"datetimes":["2019-01-01T17:00:00.15+01"],
    "interpolation":"None"} */
 SELECT asMFJSON(tcbuffer 'SRID=4326;
@@ -325,7 +325,7 @@ SELECT asMFJSON(tcbuffer 'SRID=4326;
 				<para><varname>asBinary(tcbuffer,endian text='') → bytea</varname></para>
 				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asBinary(tcbuffer 'CBuffer(Point(1 2),1)@2001-01-01');
+SELECT asBinary(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01');
 -- \x012e0011000000000000f03f00000000000000400000000000000840009c57d3c11c0000
 </programlisting>
 			</listitem>
@@ -336,7 +336,7 @@ SELECT asBinary(tcbuffer 'CBuffer(Point(1 2),1)@2001-01-01');
 				<para><varname>asEWKB(tcbuffer,endian text='') → bytea</varname></para>
 				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asEWKB(tcbuffer 'SRID=7844;CBuffer(Point(1 2),1)@2001-01-01');
+SELECT asEWKB(tcbuffer 'SRID=7844;Cbuffer(Point(1 2),1)@2001-01-01');
 -- \x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000
 </programlisting>
 			</listitem>
@@ -347,7 +347,7 @@ SELECT asEWKB(tcbuffer 'SRID=7844;CBuffer(Point(1 2),1)@2001-01-01');
 				<para><varname>asHexEWKB(tcbuffer,endian text='') → text</varname></para>
 				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asHexEWKB(tcbuffer 'SRID=3812;CBuffer(Point(1 2),1)@2001-01-01');
+SELECT asHexEWKB(tcbuffer 'SRID=3812;Cbuffer(Point(1 2),1)@2001-01-01');
 -- 012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000
 </programlisting>
 			</listitem>
@@ -357,9 +357,9 @@ SELECT asHexEWKB(tcbuffer 'SRID=3812;CBuffer(Point(1 2),1)@2001-01-01');
 				<para>Input a temporal point from its Well-Known Text (WKT) representation</para>
 				<para><varname>tcbufferFromText(text) → tcbuffer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asEWKT(tcbufferFromText(text '[CBuffer(Point(1 2),1)@2001-01-01, 
-  CBuffer(Point(3 4),2)@2001-01-02]'));
--- [CBuffer(POINT(1 2),1)@2001-01-01, CBuffer(POINT(3 4),2)@2001-01-02]
+SELECT asEWKT(tcbufferFromText(text '[Cbuffer(Point(1 2),1)@2001-01-01, 
+  Cbuffer(Point(3 4),2)@2001-01-02]'));
+-- [Cbuffer(POINT(1 2),1)@2001-01-01, Cbuffer(POINT(3 4),2)@2001-01-02]
 </programlisting>
 			</listitem>
 
@@ -368,9 +368,9 @@ SELECT asEWKT(tcbufferFromText(text '[CBuffer(Point(1 2),1)@2001-01-01,
 				<para>Input a temporal point from its Extended Well-Known Text (EWKT) representation</para>
 				<para><varname>tcbufferFromEWKT(text) → tcbuffer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asEWKT(tcbufferFromEWKT(text 'SRID=3812;[CBuffer(Point(1 2),1)@2001-01-01,
-  CBuffer(Point(3 4),2)@2001-01-02]'));
--- SRID=3812;[CBuffer(Point(1 2),1)@2001-01-01, CBuffer(Point(3 4),2)@2001-01-02]
+SELECT asEWKT(tcbufferFromEWKT(text 'SRID=3812;[Cbuffer(Point(1 2),1)@2001-01-01,
+  Cbuffer(Point(3 4),2)@2001-01-02]'));
+-- SRID=3812;[Cbuffer(Point(1 2),1)@2001-01-01, Cbuffer(Point(3 4),2)@2001-01-02]
 </programlisting>
 			</listitem>
 
@@ -404,7 +404,7 @@ SELECT asEWKT(tcbufferFromBinary(
 				<programlisting language="sql" xml:space="preserve">
 SELECT asEWKT(tcbufferFromEWKB(
   '\x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000'));
--- SRID=7844;CBuffer(Point(1 1),2)@2001-01-01
+-- SRID=7844;Cbuffer(Point(1 1),2)@2001-01-01
 </programlisting>
 			</listitem>
 
@@ -415,7 +415,7 @@ SELECT asEWKT(tcbufferFromEWKB(
 				<programlisting language="sql" xml:space="preserve">
 SELECT asEWKT(tcbufferFromHexEWKB(
   '012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000'));
--- SRID=3812;CBuffer(POINT(1 2),1)@2001-01-01
+-- SRID=3812;Cbuffer(POINT(1 2),1)@2001-01-01
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -621,8 +621,8 @@ SELECT asText(valueAtTimestamp(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 				<para>TODO Set the spatial reference identifier</para>
 				<para><varname>setSRID(tcbuffer) → tcbuffer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asEWKT(setSRID(tcbuffer '[CBuffer(Point(0 0),1)@2001-01-01, CBuffer(Point(1 1),2)@2001-01-02)', 4326));
--- SRID=4326;[CBuffer(POINT(0 0),1)@2001-01-01, CBuffer(POINT(1 1),2)@2001-01-02)
+SELECT asEWKT(setSRID(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)', 4326));
+-- SRID=4326;[Cbuffer(POINT(0 0),1)@2001-01-01, Cbuffer(POINT(1 1),2)@2001-01-02)
 </programlisting>
 				</listitem>
 
@@ -635,20 +635,20 @@ SELECT asEWKT(setSRID(tcbuffer '[CBuffer(Point(0 0),1)@2001-01-01, CBuffer(Point
 				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input temporal circular buffer has an unknown SRID (represented by 0).</para>
 				<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. The SRID of the input temporal circular buffer is ignored, and the SRID of the output temporal circular buffer will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT asEWKT(transform(tcbuffer 'SRID=4326;CBuffer(Point(4.35 50.85),1)@2001-01-01', 
+SELECT asEWKT(transform(tcbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)@2001-01-01', 
   3812));
--- SRID=3812;CBuffer(POINT(648679.018035303 671067.055638114),2)@2001-01-01
+-- SRID=3812;Cbuffer(POINT(648679.018035303 671067.055638114),2)@2001-01-01
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 WITH test(tcbuffer, pipeline) AS (
-  SELECT tcbuffer 'SRID=4326;{CBuffer(Point(4.3525 50.846667),1)@2001-01-01,
-    CBuffer(Point(-0.1275 51.507222),2)@2001-01-02}',
+  SELECT tcbuffer 'SRID=4326;{Cbuffer(Point(4.3525 50.846667),1)@2001-01-01,
+    Cbuffer(Point(-0.1275 51.507222),2)@2001-01-02}',
     text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
 SELECT asEWKT(transformPipeline(transformPipeline(tcbuffer, pipeline, 4326),
   pipeline, 4326, false), 6)
 FROM test;
-/* SRID=4326;{CBuffer(POINT(4.3525 50.846667),1)@2001-01-01,
-   CBuffer(POINT(-0.1275 51.507222 100),2)@2001-01-02} */
+/* SRID=4326;{Cbuffer(POINT(4.3525 50.846667),1)@2001-01-01,
+   Cbuffer(POINT(-0.1275 51.507222 100),2)@2001-01-02} */
 </programlisting>
 			</listitem>
 

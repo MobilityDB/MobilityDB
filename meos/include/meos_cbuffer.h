@@ -113,11 +113,21 @@ extern STBox *cbuffer_to_stbox(const Cbuffer *cbuf);
  * Functions for temporal types
  *===========================================================================*/
 
+/*****************************************************************************
+ * Input/output functions for temporal types
+ *****************************************************************************/
+
 extern char *tcbuffer_as_text(const Temporal *temp, int maxdd);
 extern char *tcbuffer_as_ewkt(const Temporal *temp, int maxdd);
 extern char *tcbuffer_out(const Temporal *temp, int maxdd);
 extern int32_t tcbuffer_srid(const Temporal *temp);
 extern char **tcbufferarr_as_text(const Temporal **temparr, int count, int maxdd, bool extended);
+
+/*****************************************************************************
+ * Constructor functions for temporal types
+ *****************************************************************************/
+
+extern Temporal *tcbuffer_constructor(const Temporal *tpoint, const Temporal *tfloat);
 
 /*****************************************************************************
  * Restriction functions for temporal types

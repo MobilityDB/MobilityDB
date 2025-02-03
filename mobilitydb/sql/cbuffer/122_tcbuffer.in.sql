@@ -55,10 +55,10 @@ CREATE FUNCTION temporal_send(tcbuffer)
   AS 'MODULE_PATHNAME', 'Temporal_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION tcbuffer_analyze(internal)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_analyze'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tcbuffer_analyze(internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Tpoint_analyze'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE tcbuffer (
   internallength = variable,
@@ -69,8 +69,8 @@ CREATE TYPE tcbuffer (
   typmod_in = temporal_typmod_in,
   typmod_out = temporal_typmod_out,
   storage = extended,
-  alignment = double
-  -- , analyze = tcbuffer_analyze
+  alignment = double,
+  analyze = tcbuffer_analyze
 );
 
 -- Special cast for enforcing the typmod restrictions
@@ -83,14 +83,14 @@ CREATE CAST (tcbuffer AS tcbuffer) WITH FUNCTION tcbuffer(tcbuffer, integer) AS 
 
 -- Input/output in WKT, WKB and HexWKB format
 
--- CREATE FUNCTION tcbufferFromBinary(bytea)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION tcbufferFromHexWKB(text)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tcbufferFromBinary(bytea)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tcbufferFromHexWKB(text)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asText(tcbuffer, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
@@ -109,16 +109,21 @@ CREATE FUNCTION asEWKT(tcbuffer[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Tcbufferarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- CREATE FUNCTION asBinary(tcbuffer, endianenconding text DEFAULT '')
-  -- RETURNS bytea
-  -- AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- CREATE FUNCTION asHexWKB(tcbuffer, endianenconding text DEFAULT '')
+-- CREATE FUNCTION asMFJSON(tcbuffer, options int4 DEFAULT 0,
+    -- flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
   -- RETURNS text
-  -- AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
+  -- AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(tcbuffer, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(tcbuffer, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Constructors
@@ -158,6 +163,13 @@ CREATE FUNCTION tcbufferSeqSetGaps(tcbuffer[], maxt interval DEFAULT NULL,
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/******************************************************************************/
+
+CREATE FUNCTION tcbuffer(tgeompoint, tfloat)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_constructor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Cast functions
@@ -276,16 +288,6 @@ CREATE FUNCTION getValues(tcbuffer)
   RETURNS cbufferset
   AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- CREATE FUNCTION positions(tcbuffer)
-  -- RETURNS nsegment[]
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_positions'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- CREATE FUNCTION route(tcbuffer)
-  -- RETURNS bigint
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_route'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION points(tcbuffer)
   RETURNS geomset

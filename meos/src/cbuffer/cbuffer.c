@@ -66,66 +66,6 @@
  *****************************************************************************/
 
 /**
- * @brief Parse a circular buffer from its string representation
- */
-Cbuffer *
-cbuffer_parse(const char **str, bool end)
-{
-  const char *type_str = "circular buffer";
-  p_whitespace(str);
-  if (pg_strncasecmp(*str, "CBUFFER", 7) != 0)
-  {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse circular buffer");
-    return NULL;
-  }
-
-  *str += 7;
-  p_whitespace(str);
-
-  /* Parse opening parenthesis */
-  if (! ensure_oparen(str, type_str))
-    return NULL;
-
-  /* Parse geo */
-  p_whitespace(str);
-  GSERIALIZED *gs;
-  int32_t srid = SRID_UNKNOWN;
-  /* The following call consumes also the separator passed as parameter */
-  if (! geo_parse(str, T_GEOMETRY, ',', &srid, &gs))
-    return NULL;
-  if (! ensure_point_type(gs) || ! ensure_not_empty(gs) ||
-      ! ensure_has_not_M_gs(gs))
-  {
-    pfree(gs);
-    return false;
-  }
-
-  /* Parse radius */
-  p_whitespace(str);
-  Datum d;
-  if (! elem_parse(str, T_FLOAT8, &d))
-    return NULL;
-  double radius = DatumGetFloat8(d);
-  if (radius < 0)
-  {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "The radius must be a real number greater than or equal to 0");
-    return NULL;
-  }
-
-  /* Parse closing parenthesis */
-  p_whitespace(str);
-  if (! ensure_cparen(str, type_str) ||
-        (end && ! ensure_end_input(str, type_str)))
-    return NULL;
-
-  Cbuffer *result = cbuffer_make(gs, radius);
-  pfree(gs);
-  return result;
-}
-
-/**
  * @ingroup meos_cbuffer_types
  * @brief Return a circular buffer from its string representation
  * @param[in] str String

@@ -47,6 +47,97 @@
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
+ * Constructor functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a temporal circular buffer from a temporal point and a 
+ * temporal float
+ */
+TInstant *
+tcbufferinst_constructor(const TInstant *inst1, const TInstant *inst2)
+{
+  assert(inst1); assert(inst1->temptype == T_TGEOMPOINT);
+  assert(inst2); assert(inst2->temptype == T_TFLOAT);
+  Cbuffer *cbuf = cbuffer_make(DatumGetGserializedP(tinstant_val(inst1)), 
+    DatumGetFloat8(tinstant_val(inst2)));
+  return tinstant_make_free(PointerGetDatum(cbuf), T_TCBUFFER, inst1->t);
+}
+
+/**
+ * @brief Return a temporal circular buffer from a temporal point and a 
+ * temporal float
+ */
+TSequence *
+tcbufferseq_constructor(const TSequence *seq1, const TSequence *seq2)
+{
+  assert(seq1); assert(seq1->temptype == T_TGEOMPOINT);
+  assert(seq2); assert(seq2->temptype == T_TFLOAT);
+  assert(seq1->count == seq2->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq1->count);
+  for (int i = 0; i < seq1->count; i++)
+    instants[i] = tcbufferinst_constructor(TSEQUENCE_INST_N(seq1, i),
+      TSEQUENCE_INST_N(seq2, i));
+  return tsequence_make_free(instants, seq1->count, seq1->period.lower_inc, 
+    seq1->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE_NO);
+}
+
+/**
+ * @brief Return a temporal circular buffer from a temporal point and a 
+ * temporal float
+ */
+TSequenceSet *
+tcbufferseqset_constructor(const TSequenceSet *ss1, const TSequenceSet *ss2)
+{
+  assert(ss1); assert(ss1->temptype == T_TGEOMPOINT);
+  assert(ss2); assert(ss2->temptype == T_TFLOAT);
+  assert(ss1->count == ss2->count);
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss1->count);
+  for (int i = 0; i < ss1->count; i++)
+    sequences[i] = tcbufferseq_constructor(TSEQUENCESET_SEQ_N(ss1, i),
+      TSEQUENCESET_SEQ_N(ss2, i));
+  return tsequenceset_make_free(sequences, ss1->count, NORMALIZE_NO);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal circular buffer from a temporal point and a 
+ * temporal float
+ * @csqlfn #Tcbuffer_constructor()
+ */
+Temporal *
+tcbuffer_constructor(const Temporal *tpoint, const Temporal *tfloat)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) tpoint) || 
+      ! ensure_temporal_isof_type(tpoint, T_TGEOMPOINT) ||
+      ! ensure_not_null((void *) tfloat) || 
+      ! ensure_temporal_isof_type(tfloat, T_TFLOAT))
+    return NULL;
+
+  Temporal *sync1, *sync2;
+  /* Return false if the temporal values do not intersect in time
+   * The operation is synchronization without adding crossings */
+  if (! intersection_temporal_temporal(tpoint, tfloat, SYNCHRONIZE_NOCROSS,
+      &sync1, &sync2))
+    return false;
+
+  assert(temptype_subtype(sync1->subtype));
+  switch (sync1->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tcbufferinst_constructor((TInstant *) sync1, 
+        (TInstant *) sync2);
+    case TSEQUENCE:
+      return (Temporal *) tcbufferseq_constructor((TSequence *) sync1,
+        (TSequence *) sync2);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tcbufferseqset_constructor((TSequenceSet *) sync1, 
+        (TSequenceSet *) sync2);
+  }
+}
+
+/*****************************************************************************
  * Conversion functions
  *****************************************************************************/
 

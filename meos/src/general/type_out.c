@@ -48,6 +48,10 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/temporal.h"
+#if CBUFFER
+  #include <meos_cbuffer.h>
+  #include "cbuffer/tcbuffer.h"
+#endif /* CBUFFER */
 #if NPOINT
   #include "npoint/tnpoint.h"
 #endif /* NPOINT */
@@ -820,6 +824,11 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
     case T_GEOGRAPHY:
       /* The size depends on the number of dimensions (either 2 or 3) */
       return MEOS_WKB_DOUBLE_SIZE * ( MEOS_FLAGS_GET_Z(flags) ? 3 : 2 );
+#if CBUFFER
+    case T_CBUFFER:
+      /* The size of the geometry (see above) and the size of the radius */
+      return MEOS_WKB_DOUBLE_SIZE * 2 + MEOS_WKB_DOUBLE_SIZE;
+#endif /* CBUFFER */
 #if NPOINT
     case T_NPOINT:
       return MEOS_WKB_INT8_SIZE + MEOS_WKB_DOUBLE_SIZE;
@@ -1413,6 +1422,22 @@ coords_to_wkb_buf(Datum value, int16 flags, uint8_t *buf, uint8_t variant)
   return buf;
 }
 
+#if CBUFFER
+/**
+ * @brief Write into the buffer a network point in the Well-Known Binary (WKB)
+ * representation
+ */
+uint8_t *
+cbuffer_to_wkb_buf(const Cbuffer *cbuf, int16 flags, uint8_t *buf,
+  uint8_t variant)
+{
+  Datum d = PointerGetDatum(&cbuf->point);
+  buf = coords_to_wkb_buf(d, flags, buf, variant);
+  buf = double_to_wkb_buf(cbuf->radius, buf, variant);
+  return buf;
+}
+#endif /* CBUFFER */
+
 #if NPOINT
 /**
  * @brief Write into the buffer a network point in the Well-Known Binary (WKB)
@@ -1465,6 +1490,11 @@ basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
     case T_GEOGRAPHY:
       buf = coords_to_wkb_buf(value, flags, buf, variant);
       break;
+#if CBUFFER
+    case T_CBUFFER:
+      buf = cbuffer_to_wkb_buf(DatumGetCbufferP(value), flags, buf, variant);
+      break;
+#endif /* NPOINT */
 #if NPOINT
     case T_NPOINT:
       buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant);

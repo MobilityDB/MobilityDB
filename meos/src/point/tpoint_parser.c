@@ -499,7 +499,8 @@ tpoint_parse(const char **str, meosType temptype)
     tpoint_srid = 0;
     /* Delimiter will be either ',' or ';' depending on whether interpolation
        is given after */
-    while ((*str)[delim] != ',' && (*str)[delim] != ';' && (*str)[delim] != '\0')
+    while ((*str)[delim] != ',' && (*str)[delim] != ';' && 
+      (*str)[delim] != '\0')
     {
       tpoint_srid = tpoint_srid * 10 + (*str)[delim] - '0';
       delim++;

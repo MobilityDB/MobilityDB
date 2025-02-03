@@ -46,7 +46,9 @@
 #include "general/type_parser.h"
 #include "general/type_round.h"
 #include "general/type_util.h"
+#include "point/tpoint_parser.h"
 #include "cbuffer/tcbuffer.h"
+#include "cbuffer/tcbuffer_parser.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/type_util.h"
@@ -66,8 +68,32 @@ Datum
 Tcbuffer_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
-  Oid temptypid = PG_GETARG_OID(1);
-  Temporal *result = temporal_parse(&input, oid_type(temptypid));
+  Temporal *result = tcbuffer_parse(&input);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+/*****************************************************************************
+ * Constructor functions
+ *****************************************************************************/
+
+
+PGDLLEXPORT Datum Tcbuffer_constructor(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_constructor);
+/**
+ * @ingroup mobilitydb_temporal_inout
+ * @brief Return a circular buffer from a temporal point and a temporal float
+ * @sqlfn tcbuffer_constructor()
+ */
+Datum
+Tcbuffer_constructor(PG_FUNCTION_ARGS)
+{
+  Temporal *point = PG_GETARG_TEMPORAL_P(0);
+  Temporal *radius = PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = tcbuffer_constructor(point, radius);
+  PG_FREE_IF_COPY(point, 0);
+  PG_FREE_IF_COPY(radius, 1);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 
