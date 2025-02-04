@@ -326,7 +326,7 @@ SELECT asMFJSON(tcbuffer 'SRID=4326;
 				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asBinary(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01');
--- \x012e0011000000000000f03f00000000000000400000000000000840009c57d3c11c0000
+-- \x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
 </programlisting>
 			</listitem>
 

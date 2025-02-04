@@ -50,26 +50,11 @@ Pose *
 pose_parse(const char **str, bool end)
 {
   Pose *result;
-  int srid = 0;
   bool hasZ = false;
   const char *type_str = "pose";
 
   /* Determine whether the box has an SRID */
-  p_whitespace(str);
-  if (pg_strncasecmp(*str, "SRID=", 5) == 0)
-  {
-    /* Move str to the start of the number part */
-    *str += 5;
-    int delim = 0;
-    /* Delimiter is ';' */
-    while ((*str)[delim] != ';' && (*str)[delim] != '\0')
-    {
-      srid = srid * 10 + (*str)[delim] - '0';
-      delim++;
-    }
-    /* Set str to the start of the temporal pose */
-    *str += delim + 1;
-  }
+  int srid = parse_srid(str);
 
   if (strncasecmp(*str,"POSE",4) == 0)
   {
@@ -355,31 +340,11 @@ tposeseqset_parse(const char **str, meosType temptype, interpType interp,
 Temporal *
 tpose_parse(const char **str, meosType temptype)
 {
-  int tpose_srid = 0;
   const char *bak = *str;
   p_whitespace(str);
 
-  /* Starts with "SRID=". The SRID specification must be gobbled for all
-   * types excepted TInstant. We cannot use the atoi() function
-   * because this requires a string terminated by '\0' and we cannot
-   * modify the string in case it must be passed to the tposeinst_parse
-   * function. */
-  if (pg_strncasecmp(*str, "SRID=", 5) == 0)
-  {
-    /* Move str to the start of the number part */
-    *str += 5;
-    int delim = 0;
-    tpose_srid = 0;
-    /* Delimiter will be either ',' or ';' depending on whether interpolation
-       is given after */
-    while ((*str)[delim] != ',' && (*str)[delim] != ';' && (*str)[delim] != '\0')
-    {
-      tpose_srid = tpose_srid * 10 + (*str)[delim] - '0';
-      delim++;
-    }
-    /* Set str to the start of the temporal pose */
-    *str += delim + 1;
-  }
+  /* Determine whether the box has an SRID */
+  int tpose_srid = parse_srid(str);
 
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   /* Starts with "Interp=Step" */

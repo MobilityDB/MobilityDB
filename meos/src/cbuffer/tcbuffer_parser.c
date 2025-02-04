@@ -339,32 +339,13 @@ tcbufferseqset_parse(const char **str, interpType interp, int *tcbuffer_srid)
 Temporal *
 tcbuffer_parse(const char **str)
 {
-  int tcbuffer_srid = 0;
   const char *bak = *str;
   p_whitespace(str);
 
-  /* Starts with "SRID=". The SRID specification must be gobbled for all
-   * types excepted TInstant. We cannot use the atoi() function
-   * because this requires a string terminated by '\0' and we cannot
-   * modify the string in case it must be passed to the #tcbufferinst_parse
-   * function. */
-  if (pg_strncasecmp(*str, "SRID=", 5) == 0)
-  {
-    /* Move str to the start of the number part */
-    *str += 5;
-    int delim = 0;
-    tcbuffer_srid = 0;
-    /* Delimiter will be either ',' or ';' depending on whether interpolation
-       is given after */
-    while ((*str)[delim] != ',' && (*str)[delim] != ';' && 
-      (*str)[delim] != '\0')
-    {
-      tcbuffer_srid = tcbuffer_srid * 10 + (*str)[delim] - '0';
-      delim++;
-    }
-    /* Set str to the start of the temporal circular buffer */
-    *str += delim + 1;
-  }
+  /* Determine whether there is an SRID. If there is one we decode it and
+   * advance the bak pointer after the SRID to do not parse in the */
+  int tcbuffer_srid = SRID_UNKNOWN;
+  bool has_srid = srid_parse(str, &tcbuffer_srid);
 
   interpType interp = LINEAR;
   /* Starts with "Interp=Step" */
