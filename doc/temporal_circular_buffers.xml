@@ -337,7 +337,7 @@ SELECT asBinary(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01');
 				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asEWKB(tcbuffer 'SRID=7844;Cbuffer(Point(1 2),1)@2001-01-01');
--- \x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000
+-- \x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
 </programlisting>
 			</listitem>
 
@@ -348,7 +348,7 @@ SELECT asEWKB(tcbuffer 'SRID=7844;Cbuffer(Point(1 2),1)@2001-01-01');
 				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asHexEWKB(tcbuffer 'SRID=3812;Cbuffer(Point(1 2),1)@2001-01-01');
--- 012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000
+-- 013A0001000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
 </programlisting>
 			</listitem>
 
@@ -392,7 +392,7 @@ SELECT asEWKT(tcbufferFromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name
 				<para><varname>tcbufferFromBinary(bytea) → tcbuffer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asEWKT(tcbufferFromBinary(
-  '\x012e0011000000000000f03f00000000000000400000000000000840009c57d3c11c0000'));
+  '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
 -- Cbuffer(POINT(1 2),1)@2001-01-01
 </programlisting>
 			</listitem>
@@ -403,7 +403,7 @@ SELECT asEWKT(tcbufferFromBinary(
 				<para><varname>tcbufferFromEWKB(bytea) → tcbuffer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asEWKT(tcbufferFromEWKB(
-  '\x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000'));
+  '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
 -- SRID=7844;Cbuffer(Point(1 1),2)@2001-01-01
 </programlisting>
 			</listitem>
@@ -414,7 +414,7 @@ SELECT asEWKT(tcbufferFromEWKB(
 				<para><varname>tcbufferFromHexEWKB(text) → tcbuffer</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asEWKT(tcbufferFromHexEWKB(
-  '012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000'));
+  '013A0001000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000'));
 -- SRID=3812;Cbuffer(POINT(1 2),1)@2001-01-01
 </programlisting>
 			</listitem>
@@ -488,14 +488,15 @@ SELECT asText(tcbufferSeqSetGaps(ARRAY[tcbuffer 'Cbuffer(Point(1 1),0.1)@2001-01
 
 			<listitem id="tgeompoint_tcbuffer">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>TODO Construct a temporal circular buffer from a temporal geometry point and a temporal float</para>
+				<para>Construct a temporal circular buffer from a temporal geometry point and a temporal float</para>
 				<para><varname>tcbuffer(tgeompoint, tfloat) → tcbuffer</varname></para>
+				<para>The time frame of the result is the intersection of the time frames of the temporal point and the temporal float. If they do not intersect, a null value is returned</para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
-  POINT(48.7117553116406 20.9256801894708)@2001-01-02)'::tcbuffer
--- [Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(1 1),0.3)@2001-01-02)
-SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
-  POINT(48.7117553116406 20.9)@2001-01-02)'::tcbuffer
+SELECT asText(tcbuffer(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
+  tfloat '[1@2001-01-01, 2@2001-01-02)'));
+-- [Cbuffer(Point(1 1),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)
+SELECT asText(tcbuffer(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
+  tfloat '[2@2001-01-03, 3@2001-01-04)'));
 -- NULL
 </programlisting>
 			</listitem>
@@ -588,7 +589,7 @@ SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1),0.123456789)@2001-01-01,
 SELECT asText(getValues(tcbuffer '{[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.5)@2001-01-02)}'));
 -- {"Cbuffer(Point(1 1),0.3)","Cbuffer(Point(1 1),0.5)"}
-SELECT asText(getValues(tcbuffer '{[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+SELECT asEWKT(getValues(tcbuffer 'SRID=5676;{[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.3)@2001-01-02)}'));
 -- {"Cbuffer(Point(1 1),0.3)"}
 </programlisting>

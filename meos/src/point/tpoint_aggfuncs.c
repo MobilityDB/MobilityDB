@@ -290,7 +290,7 @@ tpoint_extent_transfn(STBox *box, const Temporal *temp)
  * @brief Transform a temporal doubleN instant into a point
  */
 static Datum
-doublen_to_point(const TInstant *inst, int srid)
+doublen_to_point(const TInstant *inst, int32_t srid)
 {
   assert(inst->temptype == T_TDOUBLE3 || inst->temptype == T_TDOUBLE4);
   LWPOINT *point;
@@ -325,7 +325,7 @@ doublen_to_point(const TInstant *inst, int srid)
  * @param[in] srid SRID of the values
  */
 TSequence *
-tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
+tpointinst_tcentroid_finalfn(TInstant **instants, int count, int32_t srid)
 {
   TInstant **newinstants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i++)
@@ -346,7 +346,7 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
  * @param[in] srid SRID of the values
  */
 TSequenceSet *
-tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
+tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int32_t srid)
 {
   TSequence **newsequences = palloc(sizeof(TSequence *) * count);
   for (int i = 0; i < count; i++)

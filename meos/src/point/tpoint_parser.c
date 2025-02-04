@@ -49,7 +49,7 @@
 bool
 srid_parse(const char **str, int *srid)
 {
-  int srid_read = SRID_UNKNOWN;
+  int32_t srid_read = SRID_UNKNOWN;
   bool result = false;
   p_whitespace(str);
   /* Starts with "SRID=". The SRID specification must be gobbled for all
@@ -91,7 +91,7 @@ stbox_parse(const char **str)
   const char *type_str = "spatiotemporal box";
 
   /* Determine whether there is an SRID */
-  int srid;
+  int32_t srid;
   bool hassrid = srid_parse(str, &srid);
 
   /* Determine whether the box is geodetic or not */

@@ -76,7 +76,6 @@ Tcbuffer_in(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-
 PGDLLEXPORT Datum Tcbuffer_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcbuffer_constructor);
 /**
@@ -134,45 +133,6 @@ Tcbuffer_to_tfloat(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
-
-// PGDLLEXPORT Datum Tcbuffer_to_tfloat(PG_FUNCTION_ARGS);
-// PG_FUNCTION_INFO_V1(Tcbuffer_to_tfloat);
-// /**
- // * @ingroup mobilitydb_temporal_conversion
- // * @brief Return a temporal circular buffer converted to a temporal float representing
- // * the radius
- // * @sqlfn tfloat()
- // * @sqlop @p ::
- // */
-// Datum
-// Tcbuffer_to_tfloat(PG_FUNCTION_ARGS)
-// {
-  // Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  // Temporal *result = tcbuffer_tfloat(temp);
-  // PG_FREE_IF_COPY(temp, 0);
-  // PG_RETURN_TEMPORAL_P(result);
-// }
-
-// PGDLLEXPORT Datum Tgeompoint_to_tbuffer(PG_FUNCTION_ARGS);
-// PG_FUNCTION_INFO_V1(Tgeompoint_to_tbuffer);
-// /**
- // * @ingroup mobilitydb_temporal_conversion
- // * @brief Return a temporal geometry point converted to a temporal circular buffer
- // * @sqlfn tbuffer()
- // * @sqlop @p ::
- // */
-// Datum
-// Tgeompoint_meas_to_tbuffer(PG_FUNCTION_ARGS)
-// {
-  // Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  // Temporal *meas = PG_GETARG_TEMPORAL_P(1);
-  // Temporal *result = tgeompoint_tbuffer(temp, meas);
-  // PG_FREE_IF_COPY(temp, 0);
-  // PG_FREE_IF_COPY(meas, 0);
-  // if (! result)
-    // PG_RETURN_NULL();
-  // PG_RETURN_TEMPORAL_P(result);
-// }
 
 /*****************************************************************************
  * Transformation functions

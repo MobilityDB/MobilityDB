@@ -1119,7 +1119,7 @@ Datum
 geosegm_interpolate_point(Datum start, Datum end, long double ratio)
 {
   GSERIALIZED *gs = DatumGetGserializedP(start);
-  int srid = gserialized_get_srid(gs);
+  int32_t srid = gserialized_get_srid(gs);
   POINT4D p1, p2, p;
   datum_point4d(start, &p1);
   datum_point4d(end, &p2);
@@ -1542,7 +1542,7 @@ lwline_make(Datum value1, Datum value2)
 {
   /* Obtain the flags and the SRID from the first value */
   GSERIALIZED *gs = DatumGetGserializedP(value1);
-  int srid = gserialized_get_srid(gs);
+  int32_t srid = gserialized_get_srid(gs);
   int hasz = FLAGS_GET_Z(gs->gflags);
   int geodetic = FLAGS_GET_GEODETIC(gs->gflags);
   /* Since there is no M value a 0 value is passed */
@@ -3094,7 +3094,7 @@ tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
  * (iterator function)
  */
 static void
-tpointinst_affine_iter(const TInstant *inst, const AFFINE *a, int srid,
+tpointinst_affine_iter(const TInstant *inst, const AFFINE *a, int32_t srid,
   bool hasz, TInstant **result)
 {
   Datum value = tinstant_val(inst);
@@ -3134,7 +3134,7 @@ tpointinst_affine_iter(const TInstant *inst, const AFFINE *a, int srid,
 static TInstant *
 tpointinst_affine(const TInstant *inst, const AFFINE *a)
 {
-  int srid = tpointinst_srid(inst);
+  int32_t srid = tpointinst_srid(inst);
   bool hasz = MEOS_FLAGS_GET_Z(inst->flags);
   TInstant *result;
   tpointinst_affine_iter(inst, a, srid, hasz, &result);
@@ -3147,7 +3147,7 @@ tpointinst_affine(const TInstant *inst, const AFFINE *a)
 static TSequence *
 tpointseq_affine(const TSequence *seq, const AFFINE *a)
 {
-  int srid = tpointseq_srid(seq);
+  int32_t srid = tpointseq_srid(seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -3376,7 +3376,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
   if (grid->xsize == 0 && grid->ysize == 0 && (hasz ? grid->zsize == 0 : 1))
     return tinstant_copy(inst);
 
-  int srid = tpointinst_srid(inst);
+  int32_t srid = tpointinst_srid(inst);
   Datum value = tinstant_val(inst);
   POINT4D p;
   point_grid(value, hasz, grid, &p);
@@ -3396,7 +3396,7 @@ static TSequence *
 tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 {
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
-  int srid = tpointseq_srid(seq);
+  int32_t srid = tpointseq_srid(seq);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int ninsts = 0;
   for (int i = 0; i < seq->count; i++)
@@ -3522,7 +3522,7 @@ tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
   /* Clip temporal point taking into account the buffer */
   double max = (double) extent + (double) buffer;
   double min = -(double) buffer;
-  int srid = tpoint_srid(tpoint);
+  int32_t srid = tpoint_srid(tpoint);
   STBox clip_box;
   stbox_set(true, false, false, srid, min, max, min, max, 0, 0, NULL,
     &clip_box);
@@ -4131,7 +4131,7 @@ GSERIALIZED *
 tpointseq_twcentroid(const TSequence *seq)
 {
   assert(seq); assert(tgeo_type(seq->temptype));
-  int srid = tpointseq_srid(seq);
+  int32_t srid = tpointseq_srid(seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TSequence *seqx, *seqy, *seqz;
@@ -4157,7 +4157,7 @@ GSERIALIZED *
 tpointseqset_twcentroid(const TSequenceSet *ss)
 {
   assert(ss); assert(tgeo_type(ss->temptype));
-  int srid = tpointseqset_srid(ss);
+  int32_t srid = tpointseqset_srid(ss);
   bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
   TSequence **sequencesx = palloc(sizeof(TSequence *) * ss->count);

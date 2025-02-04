@@ -136,7 +136,7 @@ GSERIALIZED *geog_serialize(LWGEOM *lwgeom)
  * additional argument
  */
 LWGEOM *
-box2d_to_lwgeom(GBOX *box, int srid)
+box2d_to_lwgeom(GBOX *box, int32_t srid)
 {
   POINT4D pt;
   LWGEOM *result;
@@ -1843,7 +1843,7 @@ geo_out(const GSERIALIZED *gs)
  * @param[in] srid SRID
  */
 GSERIALIZED *
-geo_from_text(const char *wkt, int srid)
+geo_from_text(const char *wkt, int32_t srid)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) wkt))

@@ -88,7 +88,7 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
   const Npoint *np = DatumGetNpointP(tinstant_val(inst));
   /* We are sure line is not empty */
   GSERIALIZED *line = route_geom(np->rid);
-  int srid = gserialized_get_srid(line);
+  int32_t srid = gserialized_get_srid(line);
   LWLINE *lwline = (LWLINE *) lwgeom_from_gserialized(line);
   for (int i = 0; i < seq->count; i++)
   {

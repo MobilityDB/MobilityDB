@@ -83,14 +83,36 @@ CREATE CAST (tcbuffer AS tcbuffer) WITH FUNCTION tcbuffer(tcbuffer, integer) AS 
 
 -- Input/output in WKT, WKB and HexWKB format
 
+CREATE FUNCTION tcbufferFromText(text)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tcbufferFromEWKT(text)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- CREATE FUNCTION tcbufferFromMFJSON(text)
+  -- RETURNS tcbuffer
+  -- AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
+
 CREATE FUNCTION tcbufferFromBinary(bytea)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tcbufferFromHexWKB(text)
+
+CREATE FUNCTION tcbufferFromEWKB(bytea)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tcbufferFromHexEWKB(text)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
 
 CREATE FUNCTION asText(tcbuffer, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
@@ -109,6 +131,7 @@ CREATE FUNCTION asEWKT(tcbuffer[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Tcbufferarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- CREATE FUNCTION asMFJSON(tcbuffer, options int4 DEFAULT 0,
     -- flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
   -- RETURNS text
@@ -120,7 +143,12 @@ CREATE FUNCTION asBinary(tcbuffer, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexWKB(tcbuffer, endianenconding text DEFAULT '')
+CREATE FUNCTION asEWKB(tcbuffer, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Tpoint_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexEWKB(tcbuffer, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

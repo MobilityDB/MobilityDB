@@ -54,7 +54,7 @@ pose_parse(const char **str, bool end)
   const char *type_str = "pose";
 
   /* Determine whether the box has an SRID */
-  int srid = parse_srid(str);
+  int32_t srid = parse_srid(str);
 
   if (strncasecmp(*str,"POSE",4) == 0)
   {

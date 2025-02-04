@@ -55,6 +55,11 @@ cbuffer_parse(const char **str, bool end)
 {
   const char *type_str = "circular buffer";
   p_whitespace(str);
+
+  /* Determine whether there is an SRID */
+  int32_t srid;
+  srid_parse(str, &srid);
+
   if (pg_strncasecmp(*str, "CBUFFER", 7) != 0)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
@@ -72,7 +77,6 @@ cbuffer_parse(const char **str, bool end)
   /* Parse geo */
   p_whitespace(str);
   GSERIALIZED *gs;
-  int32_t srid = SRID_UNKNOWN;
   /* The following call consumes also the separator passed as parameter */
   if (! geo_parse(str, T_GEOMETRY, ',', &srid, &gs))
     return NULL;
@@ -83,10 +87,12 @@ cbuffer_parse(const char **str, bool end)
     return false;
   }
 
+  p_comma(str);
+ 
   /* Parse radius */
   p_whitespace(str);
   Datum d;
-  if (! elem_parse(str, T_FLOAT8, &d))
+  if (! basetype_parse(str, T_FLOAT8, ')', &d))
     return NULL;
   double radius = DatumGetFloat8(d);
   if (radius < 0)
@@ -345,7 +351,7 @@ tcbuffer_parse(const char **str)
   /* Determine whether there is an SRID. If there is one we decode it and
    * advance the bak pointer after the SRID to do not parse in the */
   int tcbuffer_srid = SRID_UNKNOWN;
-  bool has_srid = srid_parse(str, &tcbuffer_srid);
+  srid_parse(str, &tcbuffer_srid);
 
   interpType interp = LINEAR;
   /* Starts with "Interp=Step" */

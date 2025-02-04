@@ -543,7 +543,7 @@ char *
 cbufferset_as_ewkt(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
     return NULL;
   return set_out_fn(s, maxdd, &cbuffer_ewkt_out);
 }
@@ -692,7 +692,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   {
     /* Ensure the spatial validity of the elements */
     GSERIALIZED *gs1 = DatumGetGserializedP(values[0]);
-    int srid = gserialized_get_srid(gs1);
+    int32_t srid = gserialized_get_srid(gs1);
     hasz = (bool) FLAGS_GET_Z(gs1->gflags);
     geodetic = FLAGS_GET_GEODETIC(gs1->gflags);
     /* Test the validity of the values */
