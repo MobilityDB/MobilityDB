@@ -71,6 +71,9 @@ typedef struct
  * Functions for circular buffers
  ******************************************************************************/
 
+extern char *cbuffer_wkt_out(Datum value, meosType type, int maxdd);
+extern char *cbuffer_ewkt_out(Datum value, meosType type, int maxdd);
+
 extern char *cbuffer_as_text(const Cbuffer *cbuf, int maxdd);
 extern char *cbuffer_as_ewkt(const Cbuffer *cbuf, int maxdd);
 extern int cbuffer_cmp(const Cbuffer *cbuf1, const Cbuffer *cbuf2);

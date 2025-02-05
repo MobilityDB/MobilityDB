@@ -223,7 +223,7 @@ geom_to_cbuffer(const GSERIALIZED *gs)
   getPoint4d_p(ring->points, 0, &p1);
   getPoint4d_p(ring->points, 1, &p2);
   double radius = (p2.x - p1.x) / 2;
-  LWGEOM *center = (LWGEOM *) lwpoint_make2d(srid, p1.x + radius, p1.y + radius);
+  LWGEOM *center = (LWGEOM *) lwpoint_make2d(srid, p1.x + radius, p1.y);
   GSERIALIZED *gscenter = geom_serialize(center);
   lwgeom_free((LWGEOM *) poly);
   Cbuffer *result = cbuffer_make(gscenter, radius);

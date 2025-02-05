@@ -56,6 +56,7 @@
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"
 #if CBUFFER
+  #include <meos_cbuffer.h>
   #include "cbuffer/tcbuffer_boxops.h"
   #include "cbuffer/tcbuffer_out.h"
 #endif
@@ -330,17 +331,15 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
   char str1[18];
   str1[0] = '\0';
   outfunc value_out1 = value_out;
-  /* Currently, only geoset and cbufferset output the prefix SRID=xxxx;*/
-  if (spatialset_type(s->settype) && 
-     (value_out == ewkt_out || value_out == cbuffer_ewkt_out))
+  if (spatialset_type(s->settype) && value_out == ewkt_out)
   {
-    srid = (s->settype == T_CBUFFERSET) ?cbufferset_srid(s) : geoset_srid(s);
+    srid = geoset_srid(s);
     if (srid > 0)
       /* SRID_MAXIMUM is defined by PostGIS as 999999 */
       snprintf(str1, sizeof(str1), "SRID=%d;", srid);
     /* Since the SRID is output at the begining it is not output for the
      * elements */
-    value_out1 = (s->settype == T_CBUFFERSET) ? cbuffer_wkt_out : wkt_out;
+    value_out1 = wkt_out;
   }
 
   char **strings = palloc(sizeof(char *) * s->count);
