@@ -62,7 +62,7 @@ tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
     return state;
   bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
   /* Ensure validity of the arguments */
-  if (! ensure_geoaggstate(state, tnpoint_srid(temp), hasz))
+  if (! ensure_geoaggstate(state, tspatial_srid(temp), hasz))
     return NULL;
   Temporal *temp1 = tnpoint_tgeompoint(temp);
   datum_func2 func = MEOS_FLAGS_GET_Z(temp1->flags) ?
@@ -77,7 +77,7 @@ tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
     state = skiplist_make((void **) temparr, count);
     struct GeoAggregateState extra =
     {
-      .srid = tpoint_srid(temp1),
+      .srid = tspatial_srid(temp1),
       .hasz = MEOS_FLAGS_GET_Z(temp1->flags) != 0
     };
     aggstate_set_extra(state, &extra, sizeof(struct GeoAggregateState));

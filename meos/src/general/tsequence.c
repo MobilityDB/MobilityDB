@@ -62,12 +62,13 @@
 #if CBUFFER
   #include <meos_cbuffer.h>
   #include "cbuffer/tcbuffer.h"
+  #include "cbuffer/tcbuffer_spatialfuncs.h"
 #endif
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
 #if POSE
-  #include "pose/tpose_static.h"
+  #include "pose/pose.h"
   #include "pose/tpose_spatialfuncs.h"
 #endif
 

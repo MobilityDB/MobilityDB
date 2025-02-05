@@ -34,7 +34,7 @@
 
 CREATE FUNCTION SRID(pose)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Pose_get_srid'
+  AS 'MODULE_PATHNAME', 'Pose_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION setSRID(pose, integer)
@@ -44,12 +44,12 @@ CREATE FUNCTION setSRID(pose, integer)
 
 CREATE FUNCTION SRID(tpose)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Tpose_get_srid'
+  AS 'MODULE_PATHNAME', 'Tspatial_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION setSRID(tpose, integer)
   RETURNS tpose
-  AS 'MODULE_PATHNAME', 'Tpose_set_srid'
+  AS 'MODULE_PATHNAME', 'Tspatial_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

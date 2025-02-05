@@ -182,7 +182,6 @@ extern Nsegment **tnpoint_positions(const Temporal *temp, int *count);
 extern int64 tnpoint_route(const Temporal *temp);
 extern Set *tnpoint_routes(const Temporal *temp);
 extern Temporal *tnpoint_speed(const Temporal *temp);
-extern int32_t tnpoint_srid(const Temporal *temp);
 extern GSERIALIZED *tnpoint_trajectory(const Temporal *temp);
 extern GSERIALIZED *tnpoint_twcentroid(const Temporal *temp);
 

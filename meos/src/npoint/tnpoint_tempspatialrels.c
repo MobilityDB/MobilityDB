@@ -61,7 +61,7 @@ tinterrel_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool tinter,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) np) ||
-      ! ensure_same_srid(tnpoint_srid(temp), npoint_srid(np)))
+      ! ensure_same_srid(tspatial_srid(temp), npoint_srid(np)))
     return NULL;
 
   Temporal *tpoint = tnpoint_tgeompoint(temp);
@@ -83,7 +83,7 @@ tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       gserialized_is_empty(gs) ||
-      ! ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs)))
+      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
     return NULL;
 
   Temporal *tpoint = tnpoint_tgeompoint(temp);
@@ -133,7 +133,7 @@ ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
 {
   /* Ensure validity of the arguments */
   if (gserialized_is_empty(gs) ||
-      ! ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs)))
+      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
     return NULL;
 
   Temporal *tpoint = tnpoint_tgeompoint(temp);
@@ -158,7 +158,7 @@ ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr,
   bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_same_srid(tnpoint_srid(temp), npoint_srid(np)))
+  if (! ensure_same_srid(tspatial_srid(temp), npoint_srid(np)))
     return NULL;
 
   Temporal *tpoint = tnpoint_tgeompoint(temp);

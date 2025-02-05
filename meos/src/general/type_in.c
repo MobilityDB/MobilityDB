@@ -48,10 +48,10 @@
 #include "point/tpoint_spatialfuncs.h"
 #if CBUFFER
   #include "cbuffer/tcbuffer.h"
-#endif /* CBUFFER */
+#endif
 #if NPOINT
   #include "npoint/npoint.h"
-#endif /* NPOINT */
+#endif
 
 /*****************************************************************************/
 

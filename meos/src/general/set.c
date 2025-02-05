@@ -333,7 +333,7 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
   outfunc value_out1 = value_out;
   if (spatialset_type(s->settype) && value_out == ewkt_out)
   {
-    srid = geoset_srid(s);
+    srid = spatialset_srid(s);
     if (srid > 0)
       /* SRID_MAXIMUM is defined by PostGIS as 999999 */
       snprintf(str1, sizeof(str1), "SRID=%d;", srid);

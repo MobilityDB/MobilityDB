@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief SRID functions for geo sets, spatiotemporal boxes and temporal points
+ * @brief SRID functions for spatial types
  */
 
 /* PostgreSQL */
@@ -49,17 +49,81 @@
 #include "point/tpoint_spatialfuncs.h"
 #if CBUFFER
   #include "cbuffer/tcbuffer.h"
-#endif /* CBUFFER */
+#endif
 #if NPOINT
   #include "npoint/npoint.h"
   #include "npoint/tnpoint.h"
-#endif /* NPOINT */
+#endif
+#if POSE
+  #include "pose/pose.h"
+#endif
 
 /*
  * Maximum length of an ESPG string to lookup
  * Notice that SRID_MAXIMUM is defined by PostGIS as 999999
  */
 #define MAX_AUTH_SRID_STR 12 /* EPSG:999999 */
+
+/*****************************************************************************
+ * Generic functions
+ *****************************************************************************/
+
+/**
+ * @brief Return the SRID of a spatial type
+ */
+int32_t
+spatialtype_srid(Datum d, meosType basetype)
+{
+  assert(spatial_basetype(basetype));
+  switch (basetype)
+  {
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+      return gserialized_get_srid(DatumGetGserializedP(d));
+#if CBUFFER
+    case T_CBUFFER:
+      return cbuffer_srid(DatumGetCbufferP(d));
+#endif
+#if NPOINT
+    case T_NPOINT:
+      return npoint_srid(DatumGetNpointP(d));
+#endif
+#if POSE
+    case T_POSE:
+      return pose_srid(DatumGetPoseP(d));
+#endif
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown SRID function for type: %s", meostype_name(basetype));
+    return SRID_INVALID;
+  }
+}
+
+/**
+ * @brief Return true if the first argument has been successfully transformed
+ * to another SRID
+ */
+bool
+spatialtype_set_srid(Datum d, meosType basetype, int32_t srid)
+{
+  assert(spatial_basetype(basetype));
+  switch (basetype)
+  {
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+      gserialized_set_srid(DatumGetGserializedP(d), srid);
+      return true;
+#if CBUFFER
+    case T_CBUFFER:
+      cbuffer_set_srid(DatumGetCbufferP(d), srid);
+      return true;
+#endif
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown setSRID function for type: %s", meostype_name(basetype));
+    return false;
+  }
+}
 
 /*****************************************************************************
  * Functions for spatial reference systems
@@ -69,17 +133,16 @@
  * @ingroup meos_setspan_accessor
  * @brief Return the SRID of a geo set
  * @param[in] s Set
- * @csqlfn #Geoset_get_srid()
+ * @csqlfn #Spatialset_srid()
  */
 int32_t
-geoset_srid(const Set *s)
+spatialset_srid(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
     return SRID_INVALID;
 
-  GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(s, 0));
-  return gserialized_get_srid(gs);
+  return spatialtype_srid(SET_VAL_N(s, 0), s->basetype);
 }
 
 /**
@@ -88,79 +151,30 @@ geoset_srid(const Set *s)
  * @param[in] s Set
  * @param[in] srid SRID
  * @return On error return @p NULL
- * @csqlfn #Geoset_set_srid()
+ * @csqlfn #Spatialset_set_srid()
  */
 Set *
-geoset_set_srid(const Set *s, int32_t srid)
+spatialset_set_srid(const Set *s, int32_t srid)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
     return NULL;
-
 
   Set *result = set_cp(s);
   /* Set the SRID of the composing points */
   for (int i = 0; i < s->count; i++)
   {
-    GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(result, i));
-    gserialized_set_srid(gs, srid);
+    if (! spatialtype_set_srid(SET_VAL_N(result, i), s->basetype, srid))
+    {
+      pfree(result); 
+      return NULL;
+    }
   }
   /* Set the SRID of the bounding box */
   STBox *box = SET_BBOX_PTR(result);
   box->srid = srid;
   return result;
 }
-
-/*****************************************************************************/
-
-#if CBUFFER
-/**
- * @ingroup meos_setspan_accessor
- * @brief Return the SRID of a circular buffer set
- * @param[in] s Set
- * @csqlfn #Geoset_get_srid()
- */
-int32_t
-cbufferset_srid(const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
-    return SRID_INVALID;
-
-  Cbuffer *cbuf = DatumGetCbufferP(SET_VAL_N(s, 0));
-  GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
-  return gserialized_get_srid(gs);
-}
-
-/**
- * @ingroup meos_setspan_transf
- * @brief Return a circular buffer set with the coordinates set to an SRID
- * @param[in] s Set
- * @param[in] srid SRID
- * @return On error return @p NULL
- * @csqlfn #Geoset_set_srid()
- */
-Set *
-cbufferset_set_srid(const Set *s, int32_t srid)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
-    return NULL;
-
-
-  Set *result = set_cp(s);
-  /* Set the SRID of the composing points */
-  for (int i = 0; i < s->count; i++)
-  {
-    GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(result, i));
-    gserialized_set_srid(gs, srid);
-  }
-  /* Set the SRID of the bounding box */
-  STBox *box = SET_BBOX_PTR(result);
-  box->srid = srid;
-  return result;
-}
-#endif /* CBUFFER */
 
 /*****************************************************************************/
 
@@ -168,7 +182,7 @@ cbufferset_set_srid(const Set *s, int32_t srid)
  * @ingroup meos_box_accessor
  * @brief Return the SRID of a spatiotemporal box
  * @param[in] box Spatiotemporal box
- * @csqlfn #Stbox_get_srid()
+ * @csqlfn #Stbox_srid()
  */
 int32_t
 stbox_srid(const STBox *box)
@@ -200,74 +214,49 @@ stbox_set_srid(const STBox *box, int32_t srid)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
- * @brief Return the SRID of a temporal point instant
- * @param[in] inst Temporal instant
- * @csqlfn #Tpoint_get_srid()
+ * @ingroup meos_temporal_spatial_accessor
+ * @brief Return the SRID of a temporal spatial instant
+ * @return On error return @p SRID_INVALID
+ * @param[in] temp Temporal spatial type
+ * @csqlfn #Tspatial_srid()
  */
 int
-tpointinst_srid(const TInstant *inst)
+tspatialinst_srid(const TInstant *inst)
 {
-  assert(inst); assert(tgeo_type(inst->temptype));
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
-  return gserialized_get_srid(gs);
-}
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) inst) || 
+      ! ensure_tspatial_type(inst->temptype))
+    return SRID_INVALID;
 
-/**
- * @ingroup meos_internal_temporal_spatial_accessor
- * @brief Return the SRID of a temporal point sequence
- * @param[in] seq Temporal sequence
- * @csqlfn #Tpoint_get_srid()
- */
-int
-tpointseq_srid(const TSequence *seq)
-{
-  assert(seq);
-  /* This function is also called for tnpoint */
-  assert(tspatial_type(seq->temptype));
-  STBox *box = TSEQUENCE_BBOX_PTR(seq);
-  return box->srid;
-}
-
-/**
- * @ingroup meos_internal_temporal_spatial_accessor
- * @brief Return the SRID of a temporal point sequence set
- * @param[in] ss Temporal sequence set
- * @csqlfn #Tpoint_get_srid()
- */
-int
-tpointseqset_srid(const TSequenceSet *ss)
-{
-  assert(ss);
-  /* This function is also called for tnpoint */
-  assert(tspatial_type(ss->temptype));
-  STBox *box = TSEQUENCESET_BBOX_PTR(ss);
-  return box->srid;
+  Datum value = tinstant_value(inst);
+  meosType basetype = temptype_basetype(inst->temptype);
+  return spatialtype_srid(value, basetype);
 }
 
 /**
  * @ingroup meos_temporal_spatial_accessor
- * @brief Return the SRID of a temporal point
+ * @brief Return the SRID of a temporal spatial type
  * @return On error return @p SRID_INVALID
- * @param[in] temp Temporal point
- * @csqlfn #Tpoint_get_srid()
+ * @param[in] temp Temporal value
+ * @csqlfn #Tspatial_srid()
  */
 int
-tpoint_srid(const Temporal *temp)
+tspatial_srid(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_not_null((void *) temp) || 
+      ! ensure_tspatial_type(temp->temptype))
     return SRID_INVALID;
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      return tpointinst_srid((TInstant *) temp);
+      return tspatialinst_srid((TInstant *) temp);
     case TSEQUENCE:
-      return tpointseq_srid((TSequence *) temp);
+      return ((STBox *) TSEQUENCE_BBOX_PTR((TSequence *) temp))->srid;
     default: /* TSEQUENCESET */
-      return tpointseqset_srid((TSequenceSet *) temp);
+      return ((STBox *) TSEQUENCESET_BBOX_PTR((TSequenceSet *) temp))->srid;
   }
 }
 
@@ -275,308 +264,105 @@ tpoint_srid(const Temporal *temp)
 
 /**
  * @ingroup meos_internal_temporal_spatial_transf
- * @brief Return a temporal point instant with the coordinates set to an SRID
+ * @brief Set the coordinates of a temporal spatial instant to an SRID
  * @param[in] inst Temporal instant
  * @param[in] srid SRID
- * @csqlfn #Tpoint_set_srid()
+ * @csqlfn #Tspatial_set_srid()
  */
-TInstant *
-tpointinst_set_srid(const TInstant *inst, int32_t srid)
+void
+tspatialinst_set_srid(const TInstant *inst, int32_t srid)
 {
-  assert(inst); assert(tgeo_type(inst->temptype));
-  TInstant *result = tinstant_copy(inst);
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(result));
-  gserialized_set_srid(gs, srid);
-  return result;
+  assert(inst); assert(tspatial_type(inst->temptype));
+  meosType basetype = temptype_basetype(inst->temptype);
+  spatialtype_set_srid(tinstant_val(inst), basetype, srid);
+  return;
 }
 
 /**
  * @ingroup meos_internal_temporal_spatial_transf
- * @brief Return a temporal point sequence with the coordinates set to an SRID
+ * @brief Set the coordinates of a temporal spatial sequence to an SRID
  * @param[in] seq Temporal sequence
  * @param[in] srid SRID
- * @csqlfn #Tpoint_set_srid()
+ * @csqlfn #Tspatial_set_srid()
  */
-TSequence *
-tpointseq_set_srid(const TSequence *seq, int32_t srid)
+void
+tspatialseq_set_srid(const TSequence *seq, int32_t srid)
 {
-  assert(seq); assert(tgeo_type(seq->temptype));
-  TSequence *result = tsequence_copy(seq);
+  assert(seq); assert(tspatial_type(seq->temptype));
   /* Set the SRID of the composing points */
   for (int i = 0; i < seq->count; i++)
-  {
-    GSERIALIZED *gs = DatumGetGserializedP(
-      tinstant_val(TSEQUENCE_INST_N(result, i)));
-    gserialized_set_srid(gs, srid);
-  }
+    tspatialinst_set_srid(TSEQUENCE_INST_N(seq, i), srid);
   /* Set the SRID of the bounding box */
-  STBox *box = TSEQUENCE_BBOX_PTR(result);
+  STBox *box = TSEQUENCE_BBOX_PTR(seq);
   box->srid = srid;
-  return result;
+  return;
 }
 
 /**
  * @ingroup meos_internal_temporal_spatial_transf
- * @brief Return a temporal point sequence set with the coordinates set to an
- * SRID
+ * @brief Set the coordinates of a temporal spatial sequence set to an SRID
  * @param[in] ss Temporal sequence set
  * @param[in] srid SRID
- * @csqlfn #Tpoint_set_srid()
+ * @csqlfn #Tspatial_set_srid()
  */
-TSequenceSet *
-tpointseqset_set_srid(const TSequenceSet *ss, int32_t srid)
+void
+tspatialseqset_set_srid(const TSequenceSet *ss, int32_t srid)
 {
-  assert(ss); assert(tgeo_type(ss->temptype));
-  STBox *box;
-  TSequenceSet *result = tsequenceset_copy(ss);
+  assert(ss); assert(tspatial_type(ss->temptype));
   /* Loop for every composing sequence */
   for (int i = 0; i < ss->count; i++)
   {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(result, i);
-    for (int j = 0; j < seq->count; j++)
-    {
-      /* Set the SRID of the composing points */
-      GSERIALIZED *gs = DatumGetGserializedP(
-        tinstant_val(TSEQUENCE_INST_N(seq, j)));
-      gserialized_set_srid(gs, srid);
-    }
-    /* Set the SRID of the bounding box */
-    box = TSEQUENCE_BBOX_PTR(seq);
-    box->srid = srid;
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    tspatialseq_set_srid(seq, srid);
   }
   /* Set the SRID of the bounding box */
-  box = TSEQUENCESET_BBOX_PTR(result);
+  STBox *box = TSEQUENCESET_BBOX_PTR(ss);
   box->srid = srid;
-  return result;
+  return;
 }
 
 /**
  * @ingroup meos_temporal_spatial_transf
- * @brief Return a temporal point with the coordinates set to an SRID
- * @param[in] temp Temporal point
+ * @brief Return a temporal spatial vqlue with the coordinates set to an SRID
+ * @param[in] temp Temporal spatial value
  * @param[in] srid SRID
  * @return On error return @p NULL
- * @see #tpointinst_set_srid()
- * @see #tpointseq_set_srid()
- * @see #tpointseqset_set_srid()
- * @csqlfn #Tpoint_set_srid()
+ * @see #tspatialinst_set_srid()
+ * @see #tspatialseq_set_srid()
+ * @see #tspatialseqset_set_srid()
+ * @csqlfn #Tspatial_set_srid()
  */
 Temporal *
-tpoint_set_srid(const Temporal *temp, int32_t srid)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
-    return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return (Temporal *) tpointinst_set_srid((TInstant *) temp, srid);
-    case TSEQUENCE:
-      return (Temporal *) tpointseq_set_srid((TSequence *) temp, srid);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tpointseqset_set_srid((TSequenceSet *) temp, srid);
-  }
-}
-
-/*****************************************************************************
- * Functions for spatial reference systems of temporal circular buffers
- * For temporal points of duration distinct from TInstant the Spatial
- * reference system identifier (SRID) is obtained from the bounding box.
- *****************************************************************************/
-
-#if CBUFFER
-/**
- * @brief Return the SRID of a temporal circular buffer of subtype instant
- */
-int
-tcbufferinst_srid(const TInstant *inst)
-{
-  const Cbuffer *cbuf = DatumGetCbufferP(tinstant_val(inst));
-  const GSERIALIZED *point = cbuffer_point(cbuf);
-  return gserialized_get_srid(point);
-}
-
-/**
- * @ingroup meos_temporal_spatial_accessor
- * @brief Return the SRID of a temporal circular buffer
- * @csqlfn #Tcbuffer_srid()
- */
-int
-tcbuffer_srid(const Temporal *temp)
-{
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return tcbufferinst_srid((const TInstant *) temp);
-    case TSEQUENCE:
-      return tpointseq_srid((TSequence *) temp);
-    default: /* TSEQUENCESET */
-      return tpointseqset_srid((TSequenceSet *) temp);
-  }
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup meos_internal_temporal_spatial_transf
- * @brief Return a temporal circular buffer with the coordinates set to an SRID
- * @param[in] inst Temporal instant
- * @param[in] srid SRID
- * @csqlfn #Tcbuffer_set_srid()
- */
-TInstant *
-tcbufferinst_set_srid(const TInstant *inst, int32_t srid)
-{
-  assert(inst); assert(inst->temptype == T_TCBUFFER);
-  TInstant *result = tinstant_copy(inst);
-  Cbuffer *cbuf = DatumGetCbufferP(tinstant_val(result));
-  GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
-  gserialized_set_srid(gs, srid);
-  return result;
-}
-
-/**
- * @ingroup meos_internal_temporal_spatial_transf
- * @brief Return a temporal circular buffer with the coordinates set to an SRID
- * @param[in] seq Temporal sequence
- * @param[in] srid SRID
- * @csqlfn #Tcbuffer_set_srid()
- */
-TSequence *
-tcbufferseq_set_srid(const TSequence *seq, int32_t srid)
-{
-  assert(seq); assert(seq->temptype == T_TCBUFFER);
-  TSequence *result = tsequence_copy(seq);
-  /* Set the SRID of the composing points */
-  for (int i = 0; i < seq->count; i++)
-  {
-    Cbuffer *cbuf = DatumGetCbufferP(tinstant_val(TSEQUENCE_INST_N(result, i)));
-    GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
-    gserialized_set_srid(gs, srid);
-  }
-  /* Set the SRID of the bounding box */
-  STBox *box = TSEQUENCE_BBOX_PTR(result);
-  box->srid = srid;
-  return result;
-}
-
-/**
- * @ingroup meos_internal_temporal_spatial_transf
- * @brief Return a temporal circular buffer with the coordinates set to an SRID
- * @param[in] ss Temporal sequence set
- * @param[in] srid SRID
- * @csqlfn #Tcbuffer_set_srid()
- */
-TSequenceSet *
-tcbufferseqset_set_srid(const TSequenceSet *ss, int32_t srid)
-{
-  assert(ss); assert(ss->temptype == T_TCBUFFER);
-  STBox *box;
-  TSequenceSet *result = tsequenceset_copy(ss);
-  /* Loop for every composing sequence */
-  for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(result, i);
-    for (int j = 0; j < seq->count; j++)
-    {
-      Cbuffer *cbuf = DatumGetCbufferP(tinstant_val(TSEQUENCE_INST_N(seq, i)));
-      GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
-      gserialized_set_srid(gs, srid);
-    }
-    /* Set the SRID of the bounding box */
-    box = TSEQUENCE_BBOX_PTR(seq);
-    box->srid = srid;
-  }
-  /* Set the SRID of the bounding box */
-  box = TSEQUENCESET_BBOX_PTR(result);
-  box->srid = srid;
-  return result;
-}
-
-/**
- * @ingroup meos_temporal_spatial_transf
- * @brief Return a temporal circular buffer with the coordinates set to an SRID
- * @param[in] temp Temporal point
- * @param[in] srid SRID
- * @return On error return @p NULL
- * @see #tcbufferinst_set_srid()
- * @see #tcbufferseq_set_srid()
- * @see #tcbufferseqset_set_srid()
- * @csqlfn #Tcbuffer_set_srid()
- */
-Temporal *
-tcbuffer_set_srid(const Temporal *temp, int32_t srid)
+tspatial_set_srid(const Temporal *temp, int32_t srid)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || 
-      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
+      ! ensure_tspatial_type(temp->temptype))
     return NULL;
 
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  Temporal *result = temporal_cp(temp);
+  assert(temptype_subtype(result->subtype));
+  switch (result->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tcbufferinst_set_srid((TInstant *) temp, srid);
+      tspatialinst_set_srid((TInstant *) result, srid);
+      break;
     case TSEQUENCE:
-      return (Temporal *) tcbufferseq_set_srid((TSequence *) temp, srid);
+      tspatialseq_set_srid((TSequence *) result, srid);
+      break;
     default: /* TSEQUENCESET */
-      return (Temporal *) tcbufferseqset_set_srid((TSequenceSet *) temp, srid);
+      tspatialseqset_set_srid((TSequenceSet *) result, srid);
   }
-}
-
-#endif /* CBUFFER */
-
-/*****************************************************************************
- * Functions for spatial reference systems of temporal network points
- * For temporal points of duration distinct from TInstant the Spatial
- * reference system identifier (SRID) is obtained from the bounding box.
- *****************************************************************************/
-
-#if NPOINT
-/**
- * @brief Return the SRID of a temporal network point of subtype instant
- */
-int
-tnpointinst_srid(const TInstant *inst)
-{
-  const Npoint *np = DatumGetNpointP(tinstant_val(inst));
-  GSERIALIZED *line = route_geom(np->rid);
-  int result = gserialized_get_srid(line);
-  pfree(line);
   return result;
 }
 
-/**
- * @ingroup meos_temporal_spatial_accessor
- * @brief Return the SRID of a temporal network point
- * @csqlfn #Tnpoint_srid()
- */
-int
-tnpoint_srid(const Temporal *temp)
-{
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return tnpointinst_srid((const TInstant *) temp);
-    case TSEQUENCE:
-      return tpointseq_srid((TSequence *) temp);
-    default: /* TSEQUENCESET */
-      return tpointseqset_srid((TSequenceSet *) temp);
-  }
-}
-#endif /* NPOINT */
-
 /*****************************************************************************
- * Transformation functions for spatial reference systems
+ * Defitions taken from file lwgeom_transform.c
  *****************************************************************************/
-
-/* Defitions taken from file lwgeom_transform.c */
-
-/** convert decimal degress to radians */
+ 
+/**
+ * @brief Convert decimal degress to radians 
+ */
 static void
 to_rad(POINT4D *pt)
 {
@@ -584,7 +370,9 @@ to_rad(POINT4D *pt)
   pt->y *= M_PI/180.0;
 }
 
-/** convert radians to decimal degress */
+/**
+ * @brief Convert radians to decimal degress
+ */
 static void
 to_dec(POINT4D *pt)
 {
@@ -824,26 +612,165 @@ point_transform_pipeline(const GSERIALIZED *gs, const char *pipeline,
 
 /*****************************************************************************/
 
+#if CBUFFER
 /**
- * @brief Return a temporal point transformed to another SRID
- * @param[in] s Set point
+ * @brief Return a circular buffer transformed to another SRID using a
+ * pipeline
+ * @param[in] cbuf Circular buffer
+ * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN for pipeline
+ * transformation
+ * @param[in] pj Information about the transformation
+ */
+static bool
+cbuffer_transf_pj(Cbuffer *cbuf, int32_t srid_to, const LWPROJ *pj)
+{
+  assert(cbuf); assert(pj);
+  /* We are working on a copy of the input circular buffer for the 
+   * transformation so we can remove the const qualifier */
+  GSERIALIZED *gs = 
+    (GSERIALIZED *) DatumGetGserializedP(PointerGetDatum(&cbuf->point));
+  return point_transf_pj(gs, srid_to, pj);
+}
+
+/**
+ * @brief Return a circular buffer transformed to another SRID
+ * @param[in] cbuf Circular buffer
+ * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN for pipeline
+ * transformation
+ * @param[in] pj Information about the transformation
+ */
+Cbuffer *
+cbuffer_transform_pj(const Cbuffer *cbuf, int32_t srid_to, const LWPROJ *pj)
+{
+  assert(cbuf); assert(pj);
+  /* Copy the circular buffer to transform its composing points in place */
+  Cbuffer *result = cbuffer_cp(cbuf);
+  if (! cbuffer_transf_pj(result, srid_to, pj))
+  {
+    pfree(result);
+    result = NULL;
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Return a circular buffer transformed to another SRID
+ * @param[in] cbuf Circular buffer
+ * @param[in] srid_to Target SRID
+ */
+Cbuffer *
+cbuffer_transform(const Cbuffer *cbuf, int32_t srid_to)
+{
+  int32_t srid_from;
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) cbuf) || 
+      ! ensure_srid_known(srid_from = cbuffer_srid(cbuf)) ||
+      ! ensure_srid_known(srid_to))
+    return NULL;
+
+  /* Input and output SRIDs are equal, noop */
+  if (srid_from == srid_to)
+    return cbuffer_cp(cbuf);
+
+  /* Get the structure with information about the projection */
+  LWPROJ *pj = lwproj_transform(srid_from, srid_to);
+  if (! pj)
+    return NULL;
+
+  /* Transform the circular buffer */
+  Cbuffer * result = cbuffer_transform_pj(cbuf, srid_to, pj);
+
+  proj_destroy(pj->pj); pfree(pj);
+
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Return a circular buffer transformed to another SRID using a
+ * pipeline
+ * @param[in] cbuf Circular buffer
+ * @param[in] pipeline Pipeline string
+ * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
+ * @param[in] is_forward True when the transformation is forward
+ */
+Cbuffer *
+cbuffer_transform_pipeline(const Cbuffer *cbuf, const char *pipeline,
+  int32_t srid_to, bool is_forward)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) cbuf) ||
+      ! ensure_not_null((void *) pipeline))
+    return NULL;
+
+  /* There is NO test verifying whether the input and output SRIDs are equal */
+
+  /* Get the structure with information about the projection */
+  LWPROJ *pj = lwproj_transform_pipeline(pipeline, is_forward);
+  if (! pj)
+    return NULL;
+
+  /* Transform the circular buffer */
+  Cbuffer * result = cbuffer_transform_pj(cbuf, srid_to, pj);
+
+  proj_destroy(pj->pj); pfree(pj);
+
+  return result;
+}
+#endif /* CBUFFER */
+
+/*****************************************************************************
+ * Generic functions
+ *****************************************************************************/
+
+/**
+ * @brief Return true if the first argument has been successfully transformed
+ * to another SRID
+ */
+bool
+datum_transf_pj(Datum d, meosType basetype, int32_t srid_to, const LWPROJ *pj)
+{
+  assert(spatial_type(basetype));
+  switch (basetype)
+  {
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+      return point_transf_pj(DatumGetGserializedP(d), srid_to, pj);
+#if CBUFFER
+    case T_CBUFFER:
+      return cbuffer_transf_pj(DatumGetCbufferP(d), srid_to, pj);
+#endif
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown transformation function for type: %s", 
+          meostype_name(basetype));
+    return false;
+  }
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return a spatial set transformed to another SRID
+ * @param[in] s Set
  * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN for pipeline
  * transformation
  * @param[in] pj Information about the transformation
  */
 static Set *
-geoset_transform_pj(const Set *s, int32_t srid_to, LWPROJ *pj)
+spatialset_transform_pj(const Set *s, int32_t srid_to, LWPROJ *pj)
 {
-  assert(s); assert(pj); assert(geoset_type(s->settype));
+  assert(s); assert(pj); assert(spatialset_type(s->settype));
   /* Copy the set to be able to transform the points of the set in place */
   Set *result = set_cp(s);
   /* Transform the points of the set */
   for (int i = 0; i < s->count; i++)
   {
-    GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(s, i));
-    if (! point_transf_pj(gs, srid_to, pj))
+    if (! datum_transf_pj(SET_VAL_N(s, i), s->basetype, srid_to, pj))
     {
-      pfree(result); proj_destroy(pj->pj); pfree(pj); return NULL;
+      pfree(result); proj_destroy(pj->pj); pfree(pj); 
+      return NULL;
     }
   }
   /* Clean up and return */
@@ -853,17 +780,17 @@ geoset_transform_pj(const Set *s, int32_t srid_to, LWPROJ *pj)
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a temporal point transformed to another SRID
- * @param[in] s Set point
+ * @brief Return a spatial set transformed to another SRID
+ * @param[in] s Set
  * @param[in] srid_to Target SRID
  */
 Set *
-geoset_transform(const Set *s, int32_t srid_to)
+spatialset_transform(const Set *s, int32_t srid_to)
 {
   int32_t srid_from;
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype) ||
-      ! ensure_srid_known(srid_from = geoset_srid(s)) ||
+  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype) ||
+      ! ensure_srid_known(srid_from = spatialset_srid(s)) ||
       ! ensure_srid_known(srid_to))
     return NULL;
 
@@ -878,12 +805,12 @@ geoset_transform(const Set *s, int32_t srid_to)
 
   /* Transform the geo set */
   Set *result = set_cp(s);
-  return geoset_transform_pj(result, srid_to, pj);
+  return spatialset_transform_pj(result, srid_to, pj);
 }
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a temporal point transformed to another SRID using a
+ * @brief Return a spatial set transformed to another SRID using a
  * pipeline
  * @param[in] s Set point
  * @param[in] pipeline Pipeline string
@@ -891,14 +818,14 @@ geoset_transform(const Set *s, int32_t srid_to)
  * @param[in] is_forward True when the transformation is forward
  */
 Set *
-geoset_transform_pipeline(const Set *s, const char *pipeline, int32_t srid_to,
-  bool is_forward)
+spatialset_transform_pipeline(const Set *s, const char *pipeline,
+  int32_t srid_to, bool is_forward)
 {
   int32_t srid_from;
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) pipeline) ||
-      ! ensure_geoset_type(s->settype) ||
-      ! ensure_srid_known(srid_from = geoset_srid(s)))
+      ! ensure_spatialset_type(s->settype) ||
+      ! ensure_srid_known(srid_from = spatialset_srid(s)))
     return NULL;
 
   /* There is NO test verifying whether the input and output SRIDs are equal */
@@ -910,7 +837,7 @@ geoset_transform_pipeline(const Set *s, const char *pipeline, int32_t srid_to,
 
   /* Transform the geo set */
   Set *result = set_cp(s);
-  return geoset_transform_pj(result, srid_to, pj);
+  return spatialset_transform_pj(result, srid_to, pj);
 }
 
 /*****************************************************************************/
@@ -1050,37 +977,37 @@ stbox_transform_pipeline(const STBox *box, const char *pipeline,
 /*****************************************************************************/
 
 /**
- * @brief Return a temporal point transformed to another SRID
- * @param[in] inst Temporal point instant
+ * @brief Return a temporal spatial type transformed to another SRID
+ * @param[in] inst Temporal spatial instant
  * @param[in] srid_to SRID, may be @p SRID_UNKNOWN for pipeline
  * transformations
  * @param[in] pj Information about the transformation
  */
 static bool
-tpointinst_transf_pj(const TInstant *inst, int32_t srid_to, const LWPROJ *pj)
+tspatialinst_transf_pj(const TInstant *inst, int32_t srid_to, const LWPROJ *pj)
 {
-  assert(inst); assert(pj); assert(tgeo_type(inst->temptype));
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+  assert(inst); assert(pj); assert(tspatial_type(inst->temptype));
+  meosType basetype = temptype_basetype(inst->temptype);
   /* The SRID of the geometry is set in the following function */
-  if (! point_transf_pj(gs, srid_to, pj))
+  if (! datum_transf_pj(tinstant_val(inst), basetype, srid_to, pj))
     return false;
   return true;
 }
 
 /**
- * @brief Return a temporal point transformed to another SRID
- * @param[in] seq Temporal point sequence
+ * @brief Return a temporal spatial type transformed to another SRID
+ * @param[in] seq Temporal spatial sequence
  * @param[in] srid_to SRID
  * @param[in] pj Information about the transformation
  */
 static bool
-tpointseq_transf_pj(TSequence *seq, int32_t srid_to, const LWPROJ *pj)
+tspatialseq_transf_pj(TSequence *seq, int32_t srid_to, const LWPROJ *pj)
 {
-  assert(seq); assert(pj); assert(tgeo_type(seq->temptype));
+  assert(seq); assert(pj); assert(tspatial_type(seq->temptype));
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) TSEQUENCE_INST_N(seq, i);
-    if (! tpointinst_transf_pj(inst, srid_to, pj))
+    if (! tspatialinst_transf_pj(inst, srid_to, pj))
       return false;
   }
   /* Transform and set the SRID of the bounding box */
@@ -1092,19 +1019,19 @@ tpointseq_transf_pj(TSequence *seq, int32_t srid_to, const LWPROJ *pj)
 }
 
 /**
- * @brief Return a temporal point transformed to another SRID
- * @param[in] ss Temporal point sequence set
+ * @brief Return a temporal spatial type transformed to another SRID
+ * @param[in] ss Temporal spatial sequence set
  * @param[in] srid_to SRID
  * @param[in] pj Information about the transformation
  */
 static bool
-tpointseqset_transf_pj(TSequenceSet *ss, int32_t srid_to, const LWPROJ *pj)
+tspatialseqset_transf_pj(TSequenceSet *ss, int32_t srid_to, const LWPROJ *pj)
 {
-  assert(ss); assert(pj); assert(tgeo_type(ss->temptype));
+  assert(ss); assert(pj); assert(tspatial_type(ss->temptype));
   for (int i = 0; i < ss->count; i++)
   {
     TSequence *seq = (TSequence *) TSEQUENCESET_SEQ_N(ss, i);
-    if (! tpointseq_transf_pj(seq, srid_to, pj))
+    if (! tspatialseq_transf_pj(seq, srid_to, pj))
       return false;
   }
   /* Transform and set the SRID of the bounding box */
@@ -1115,35 +1042,33 @@ tpointseqset_transf_pj(TSequenceSet *ss, int32_t srid_to, const LWPROJ *pj)
   return true;
 }
 
-/*****************************************************************************/
-
 /**
- * @brief Return a temporal point transformed to another SRID
- * @param[in] temp Temporal point
+ * @brief Return a temporal spatial type transformed to another SRID
+ * @param[in] temp Temporal spatial
  * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN for pipeline
  * transformation
  * @param[in] pj Information about the transformation
  */
 Temporal *
-tpoint_transform_pj(const Temporal *temp, int32_t srid_to, const LWPROJ *pj)
+tspatial_transform_pj(const Temporal *temp, int32_t srid_to, const LWPROJ *pj)
 {
   assert(temp); assert(pj);
-  /* Copy the temporal point to transform its composing points in place */
+  /* Copy the temporal spatial type to transform its composing points in place */
   Temporal *result = temporal_cp(temp);
   assert(temptype_subtype(temp->subtype));
-  bool ok;
+  bool success;
   switch (temp->subtype)
   {
     case TINSTANT:
-      ok = tpointinst_transf_pj((TInstant *) result, srid_to, pj);
+      success = tspatialinst_transf_pj((TInstant *) result, srid_to, pj);
       break;
     case TSEQUENCE:
-      ok = tpointseq_transf_pj((TSequence *) result, srid_to, pj);
+      success = tspatialseq_transf_pj((TSequence *) result, srid_to, pj);
       break;
     default: /* TSEQUENCESET */
-      ok = tpointseqset_transf_pj((TSequenceSet *) result, srid_to, pj);
+      success = tspatialseqset_transf_pj((TSequenceSet *) result, srid_to, pj);
   }
-  if (! ok)
+  if (! success)
   {
     pfree(result);
     result = NULL;
@@ -1154,18 +1079,18 @@ tpoint_transform_pj(const Temporal *temp, int32_t srid_to, const LWPROJ *pj)
 
 /**
  * @ingroup meos_temporal_spatial_transf
- * @brief Return a temporal point transformed to another SRID
- * @param[in] temp Temporal point
+ * @brief Return a temporal spatial type transformed to another SRID
+ * @param[in] temp Temporal spatial
  * @param[in] srid_to Target SRID
  */
 Temporal *
-tpoint_transform(const Temporal *temp, int32_t srid_to)
+tspatial_transform(const Temporal *temp, int32_t srid_to)
 {
-  int32_t srid_from;
+  int32_t srid_from = tspatial_srid(temp);
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
-      ! ensure_srid_known(srid_from = tpoint_srid(temp)) ||
-      ! ensure_srid_known(srid_to))
+  if (! ensure_not_null((void *) temp) || 
+      ! ensure_tspatial_type(temp->temptype) ||
+      ! ensure_srid_known(srid_from) || ! ensure_srid_known(srid_to))
     return NULL;
 
   /* Input and output SRIDs are equal, noop */
@@ -1177,8 +1102,8 @@ tpoint_transform(const Temporal *temp, int32_t srid_to)
   if (! pj)
     return NULL;
 
-  /* Transform the temporal point */
-  Temporal * result = tpoint_transform_pj(temp, srid_to, pj);
+  /* Transform the temporal spatial type */
+  Temporal * result = tspatial_transform_pj(temp, srid_to, pj);
 
   proj_destroy(pj->pj); pfree(pj);
 
@@ -1187,21 +1112,21 @@ tpoint_transform(const Temporal *temp, int32_t srid_to)
 
 /**
  * @ingroup meos_temporal_spatial_transf
- * @brief Return a temporal point transformed to another SRID using a
+ * @brief Return a temporal spatial type transformed to another SRID using a
  * pipeline
- * @param[in] temp Temporal point
+ * @param[in] temp Temporal spatial
  * @param[in] pipeline Pipeline string
  * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
  * @param[in] is_forward True when the transformation is forward
  */
 Temporal *
-tpoint_transform_pipeline(const Temporal *temp, const char *pipeline,
+tspatial_transform_pipeline(const Temporal *temp, const char *pipeline,
   int32_t srid_to, bool is_forward)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_not_null((void *) pipeline) ||
-      ! ensure_tgeo_type(temp->temptype))
+      ! ensure_tspatial_type(temp->temptype))
     return NULL;
 
   /* There is NO test verifying whether the input and output SRIDs are equal */
@@ -1211,8 +1136,8 @@ tpoint_transform_pipeline(const Temporal *temp, const char *pipeline,
   if (! pj)
     return NULL;
 
-  /* Transform the temporal point */
-  Temporal * result = tpoint_transform_pj(temp, srid_to, pj);
+  /* Transform the temporal spatial type */
+  Temporal * result = tspatial_transform_pj(temp, srid_to, pj);
 
   proj_destroy(pj->pj); pfree(pj);
 

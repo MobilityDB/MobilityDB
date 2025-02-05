@@ -546,7 +546,6 @@ extern double floatspanset_lower(const SpanSet *ss);
 extern double floatspanset_upper(const SpanSet *ss);
 extern double floatspanset_width(const SpanSet *ss, bool boundspan);
 extern GSERIALIZED *geoset_end_value(const Set *s);
-extern int32_t geoset_srid(const Set *s);
 extern GSERIALIZED *geoset_start_value(const Set *s);
 extern bool geoset_value_n(const Set *s, int n, GSERIALIZED **result);
 extern GSERIALIZED **geoset_values(const Set *s);
@@ -578,6 +577,7 @@ extern Span *spanset_span_n(const SpanSet *ss, int i);
 extern Span **spanset_spanarr(const SpanSet *ss);
 extern Span *spanset_start_span(const SpanSet *ss);
 extern bool spanset_upper_inc(const SpanSet *ss);
+extern int32_t spatialset_srid(const Set *s);
 extern text *textset_end_value(const Set *s);
 extern text *textset_start_value(const Set *s);
 extern bool textset_value_n(const Set *s, int n, text **result);
@@ -623,9 +623,9 @@ extern SpanSet *floatspanset_floor(const SpanSet *ss);
 extern SpanSet *floatspanset_round(const SpanSet *ss, int maxdd);
 extern SpanSet *floatspanset_shift_scale(const SpanSet *ss, double shift, double width, bool hasshift, bool haswidth);
 extern Set *geoset_round(const Set *s, int maxdd);
-extern Set *geoset_set_srid(const Set *s, int32_t srid);
-extern Set *geoset_transform(const Set *s, int32_t srid);
-extern Set *geoset_transform_pipeline(const Set *s, const char *pipelinestr, int32_t srid, bool is_forward);
+extern Set *spatialset_set_srid(const Set *s, int32_t srid);
+extern Set *spatialset_transform(const Set *s, int32_t srid);
+extern Set *spatialset_transform_pipeline(const Set *s, const char *pipelinestr, int32_t srid, bool is_forward);
 extern Set *intset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth);
 extern Span *intspan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth);
 extern SpanSet *intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift, bool haswidth);
@@ -1450,11 +1450,10 @@ extern Temporal *tint_scale_value(const Temporal *temp, int width);
 extern Temporal *tint_shift_scale_value(const Temporal *temp, int shift, int width);
 extern Temporal *tint_shift_value(const Temporal *temp, int shift);
 extern Temporal *tpoint_round(const Temporal *temp, int maxdd);
-extern Temporal *tpoint_transform(const Temporal *temp, int32 srid);
-extern Temporal *tpoint_transform_pipeline(const Temporal *temp, const char *pipelinestr, int32 srid, bool is_forward);
-extern Temporal *tpoint_transform_pj(const Temporal *temp, int32 srid, const LWPROJ *pj);
 extern LWPROJ *lwproj_transform(int32 srid_from, int32 srid_to);
 extern Temporal **tpointarr_round(const Temporal **temp, int count, int maxdd);
+extern Temporal *tspatial_transform(const Temporal *temp, int32 srid);
+extern Temporal *tspatial_transform_pipeline(const Temporal *temp, const char *pipelinestr, int32 srid, bool is_forward);
 
 /*****************************************************************************
  * Modification functions for temporal types
@@ -1967,9 +1966,9 @@ extern Temporal *tpoint_get_z(const Temporal *temp);
 extern bool tpoint_is_simple(const Temporal *temp);
 extern double tpoint_length(const Temporal *temp);
 extern Temporal *tpoint_speed(const Temporal *temp);
-extern int32_t tpoint_srid(const Temporal *temp);
 extern GSERIALIZED *tpoint_trajectory(const Temporal *temp);
 extern GSERIALIZED *tpoint_twcentroid(const Temporal *temp);
+extern int32_t tspatial_srid(const Temporal *temp);
 
 /*****************************************************************************/
 
@@ -1984,7 +1983,7 @@ extern bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t 
 extern STBox *tpoint_expand_space(const Temporal *temp, double d);
 extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
 extern Temporal *tpoint_scale(const Temporal *temp, const GSERIALIZED *scale, const GSERIALIZED *sorigin);
-extern Temporal *tpoint_set_srid(const Temporal *temp, int32_t srid);
+extern Temporal *tspatial_set_srid(const Temporal *temp, int32_t srid);
 extern bool tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
 
 /*****************************************************************************/

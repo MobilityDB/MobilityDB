@@ -60,7 +60,7 @@
   #include "npoint/tnpoint_parser.h"
 #endif
 #if POSE
-  #include "pose/tpose_static.h"
+  #include "pose/pose.h"
   #include "pose/tpose_parser.h"
 #endif
 

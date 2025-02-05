@@ -1124,12 +1124,12 @@ geom_nsegment(const GSERIALIZED *gs)
  * @ingroup meos_npoint_types
  * @brief Return the SRID of a network point
  * @param[in] np Network point
- * @csqlfn #Npoint_get_srid()
+ * @csqlfn #Npoint_srid()
  * @note Since it is assumed that all network points share the same SRID which
  * is the one from the @p ways table, for performance reasons we simply get
  * the SRID of the table
  */
-int
+int32_t
 npoint_srid(const Npoint *np __attribute__((unused)))
 {
   return get_srid_ways();
@@ -1139,12 +1139,12 @@ npoint_srid(const Npoint *np __attribute__((unused)))
  * @ingroup meos_npoint_types
  * @brief Return the SRID of a network segment
  * @param[in] ns Network segment
- * @csqlfn #Nsegment_get_srid()
+ * @csqlfn #Nsegment_srid()
  * @note Since it is assumed that all network points share the same SRID which
  * is the one from the @p ways table, for performance reasons we simply get
  * the SRID of the table
  */
-int
+int32_t
 nsegment_srid(const Nsegment *ns __attribute__((unused)))
 {
   return get_srid_ways();

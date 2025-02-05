@@ -280,6 +280,7 @@ extern bool ensure_tnumber_basetype(meosType type);
 extern bool tnumber_settype(meosType type);
 extern bool tnumber_spantype(meosType type);
 extern bool tnumber_spansettype(meosType type);
+extern bool spatial_type(meosType type);
 extern bool tspatial_type(meosType type);
 extern bool ensure_tspatial_type(meosType type);
 extern bool tspatial_basetype(meosType type);

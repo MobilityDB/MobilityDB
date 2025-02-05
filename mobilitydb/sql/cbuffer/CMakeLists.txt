@@ -7,7 +7,7 @@ SET(LOCAL_FILES
   125_tcbuffer_spatialfuncs
   128_tcbuffer_boxops
   129_tcbuffer_posops
-  # 130_tcbuffer_distance
+  130_tcbuffer_distance
   131_tcbuffer_aggfuncs
   132_tcbuffer_indexes
   )

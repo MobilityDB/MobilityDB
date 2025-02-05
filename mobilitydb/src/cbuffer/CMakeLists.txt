@@ -6,7 +6,7 @@ add_library(pg_buffer OBJECT
   # tcbuffer_analyze.c
   tcbuffer_boxops.c
   tcbuffer_posops.c
-  # tcbuffer_distance.c
+  tcbuffer_distance.c
   tcbuffer_spatialfuncs.c
   # tcbuffer_spatialrels.c
   # tcbuffer_tempspatialrels.c

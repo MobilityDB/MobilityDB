@@ -177,7 +177,7 @@ tcbuffer_as_ewkt(const Temporal *temp, int maxdd)
       ! ensure_not_negative(maxdd))
     return NULL;
 
-  int32_t srid = tcbuffer_srid(temp);
+  int32_t srid = tspatial_srid(temp);
   char str1[18];
   if (srid > 0)
     /* SRID_MAXIMUM is defined by PostGIS as 999999 */

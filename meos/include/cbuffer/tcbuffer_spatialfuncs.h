@@ -28,29 +28,28 @@
  *****************************************************************************/
 
 /**
- * @brief Bounding box operators for temporal pose objects.
+ * @brief Temporal distance for temporal network points.
  */
 
-#ifndef __TPOSE_BOXOPS_H__
-#define __TPOSE_BOXOPS_H__
+#ifndef __TCBUFFER_SPATIALFUNCS_H__
+#define __TCBUFFER_SPATIALFUNCS_H__
 
+/* PostgreSQL */
+#include <postgres.h>
+/* MEOS */
 #include "general/temporal.h"
-#include "pose/pose.h"
+#include "cbuffer/tcbuffer.h"
 
 /*****************************************************************************/
 
-extern bool pose_set_stbox(const Pose *pose, STBox *box);
-extern bool pose_timestamp_set_stbox(const Pose *pose, TimestampTz t,
-  STBox *box);
-extern bool pose_period_set_stbox(const Pose *pose, const Span *p,
-  STBox *box);
-/* Functions computing the bounding box at the creation of a temporal pose */
-
-extern void tposeinst_set_stbox(const TInstant *inst, STBox *box);
-extern void tposeinstarr_set_stbox(const TInstant **instants, int count,
-  STBox *box);
-extern void tposeseq_expand_stbox(TSequence *seq, const TInstant *inst);
+extern Datum cbuffersegm_interpolate_point(Datum start, Datum end,
+  long double ratio);
+extern bool ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1, 
+  const Temporal *temp2);
+extern bool ensure_valid_stbox_cbuffer(const STBox *box, const Cbuffer *cbuf);
+extern bool ensure_valid_tcbuffer_geo(const Temporal *temp, 
+  const GSERIALIZED *gs);
 
 /*****************************************************************************/
 
-#endif /* __TPOSE_BOXOPS_H__ */
+#endif /* __TCBUFFER_SPATIALFUNCS_H__ */

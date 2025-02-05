@@ -113,12 +113,23 @@ CREATE FUNCTION radius(cbuffer)
 
 CREATE FUNCTION SRID(cbuffer)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Cbuffer_get_srid'
+  AS 'MODULE_PATHNAME', 'Cbuffer_srid'
   LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION setSRID(cbuffer, integer)
   RETURNS cbuffer
   AS 'MODULE_PATHNAME', 'Cbuffer_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transform(cbuffer, integer)
+  RETURNS cbuffer
+  AS 'MODULE_PATHNAME', 'Cbuffer_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transformPipeline(cbuffer, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS cbuffer
+  AS 'MODULE_PATHNAME', 'Cbuffer_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

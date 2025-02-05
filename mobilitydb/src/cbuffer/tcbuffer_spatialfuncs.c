@@ -51,27 +51,27 @@
  * Return the geometric positions covered by a temporal circular buffer
  *****************************************************************************/
 
-// PGDLLEXPORT Datum Tcbuffer_trajectory(PG_FUNCTION_ARGS);
-// PG_FUNCTION_INFO_V1(Tcbuffer_trajectory);
-// /**
- // * @ingroup mobilitydb_temporal_spatial_accessor
- // * @brief Return the geometry covered by a temporal circular buffer
- // * @sqlfn trajectory()
- // */
-// Datum
-// Tcbuffer_trajectory(PG_FUNCTION_ARGS)
-// {
-  // Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  // GSERIALIZED *result = tcbuffer_trajectory(temp);
-  // PG_FREE_IF_COPY(temp, 0);
-  // PG_RETURN_TEMPORAL_P(result);
-// }
+PGDLLEXPORT Datum Tcbuffer_traversed_area(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_traversed_area);
+/**
+ * @ingroup mobilitydb_temporal_spatial_accessor
+ * @brief Return the geometry covered by a temporal circular buffer
+ * @sqlfn traversedArea()
+ */
+Datum
+Tcbuffer_traversed_area(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *result = tcbuffer_traversed_area(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
 
 /*****************************************************************************
  * Geographical equality for circular buffers
  *****************************************************************************/
 
-PGDLLEXPORT Datum Cbuffer_same(PG_FUNCTION_ARGS);
+// PGDLLEXPORT Datum Cbuffer_same(PG_FUNCTION_ARGS);
 // PG_FUNCTION_INFO_V1(Cbuffer_same);
 // /**
  // * @ingroup mobilitydb_temporal_spatial_accessor

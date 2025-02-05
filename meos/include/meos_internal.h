@@ -899,14 +899,13 @@ extern Datum nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
 
 /* Spatial accessor functions for temporal points */
 
-extern int tpointinst_srid(const TInstant *inst);
+extern int tspatialinst_srid(const TInstant *inst);
 extern GSERIALIZED *tpointseq_trajectory(const TSequence *seq);
 extern TSequenceSet *tpointseq_azimuth(const TSequence *seq);
 extern TSequence *tpointseq_cumulative_length(const TSequence *seq, double prevlength);
 extern bool tpointseq_is_simple(const TSequence *seq);
 extern double tpointseq_length(const TSequence *seq);
 extern TSequence *tpointseq_speed(const TSequence *seq);
-extern int tpointseq_srid(const TSequence *seq);
 extern STBox *tpointseq_stboxes(const TSequence *seq, int *count);
 extern STBox *tpointseq_split_n_stboxes(const TSequence *seq, int max_count, int *count);
 extern TSequenceSet *tpointseqset_azimuth(const TSequenceSet *ss);
@@ -914,7 +913,6 @@ extern TSequenceSet *tpointseqset_cumulative_length(const TSequenceSet *ss);
 extern bool tpointseqset_is_simple(const TSequenceSet *ss);
 extern double tpointseqset_length(const TSequenceSet *ss);
 extern TSequenceSet *tpointseqset_speed(const TSequenceSet *ss);
-extern int tpointseqset_srid(const TSequenceSet *ss);
 extern STBox *tpointseqset_stboxes(const TSequenceSet *ss, int *count);
 extern STBox *tpointseqset_split_n_stboxes(const TSequenceSet *ss, int max_count, int *count);
 extern GSERIALIZED *tpointseqset_trajectory(const TSequenceSet *ss);
@@ -930,11 +928,11 @@ extern TSequenceSet *tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, b
 extern Temporal *tgeompoint_tgeogpoint(const Temporal *temp, bool oper);
 extern Temporal *tgeompoint_tnpoint(const Temporal *temp);
 extern Temporal *tnpoint_tgeompoint(const Temporal *temp);
-extern TInstant *tpointinst_set_srid(const TInstant *inst, int32 srid);
+extern void tpointinst_set_srid(const TInstant *inst, int32 srid);
 extern TSequence **tpointseq_make_simple(const TSequence *seq, int *count);
-extern TSequence *tpointseq_set_srid(const TSequence *seq, int32 srid);
+extern void tpointseq_set_srid(const TSequence *seq, int32 srid);
 extern TSequence **tpointseqset_make_simple(const TSequenceSet *ss, int *count);
-extern TSequenceSet *tpointseqset_set_srid(const TSequenceSet *ss, int32 srid);
+extern void tpointseqset_set_srid(const TSequenceSet *ss, int32 srid);
 
 /*****************************************************************************/
 

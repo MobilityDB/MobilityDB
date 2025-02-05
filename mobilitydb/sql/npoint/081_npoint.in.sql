@@ -135,7 +135,7 @@ CREATE FUNCTION getPosition(npoint)
 
 CREATE FUNCTION srid(npoint)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Npoint_get_srid'
+  AS 'MODULE_PATHNAME', 'Npoint_srid'
   LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION route(nsegment)
@@ -155,7 +155,7 @@ CREATE FUNCTION endPosition(nsegment)
 
 CREATE FUNCTION srid(nsegment)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Nsegment_get_srid'
+  AS 'MODULE_PATHNAME', 'Nsegment_srid'
   LANGUAGE C IMMUTABLE STRICT;
 
 /*****************************************************************************

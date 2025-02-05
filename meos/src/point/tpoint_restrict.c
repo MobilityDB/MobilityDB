@@ -88,7 +88,7 @@ tpoint_force2d(const Temporal *temp)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &point_force2d;
   lfinfo.numparam = 1;
-  int32 srid = tpoint_srid(temp);
+  int32 srid = tspatial_srid(temp);
   lfinfo.param[0] = Int32GetDatum(srid);
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = T_TGEOMPOINT;
@@ -1030,7 +1030,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   /* Ensure validity of the arguments */
   if (! ensure_same_geodetic(temp->flags, box->flags) ||
       (MEOS_FLAGS_GET_X(box->flags) &&
-        ! ensure_same_srid(tpoint_srid(temp), stbox_srid(box))))
+        ! ensure_same_srid(tspatial_srid(temp), stbox_srid(box))))
     return NULL;
 
   /* Short-circuit restriction to only T dimension */
@@ -1038,7 +1038,7 @@ tpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
     return temporal_restrict_tstzspan(temp, &box->period, atfunc);
 
   /* Parameter test */
-  assert(tpoint_srid(temp) == stbox_srid(box));
+  assert(tspatial_srid(temp) == stbox_srid(box));
   assert(MEOS_FLAGS_GET_GEODETIC(temp->flags) ==
     MEOS_FLAGS_GET_GEODETIC(box->flags));
 
@@ -1267,11 +1267,11 @@ tpoint_at_stbox_segm(const Temporal *temp, const STBox *box, bool border_inc)
   /* Ensure validity of the arguments */
   if (! ensure_same_geodetic(temp->flags, box->flags) ||
       (MEOS_FLAGS_GET_X(box->flags) &&
-        ! ensure_same_srid(tpoint_srid(temp), stbox_srid(box))))
+        ! ensure_same_srid(tspatial_srid(temp), stbox_srid(box))))
     return NULL;
 
   /* Parameter test */
-  assert(tpoint_srid(temp) == stbox_srid(box));
+  assert(tspatial_srid(temp) == stbox_srid(box));
   assert(MEOS_FLAGS_GET_GEODETIC(temp->flags) ==
     MEOS_FLAGS_GET_GEODETIC(box->flags));
 
@@ -1907,7 +1907,7 @@ tpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   if (gserialized_is_empty(gs))
     return atfunc ? NULL : temporal_cp(temp);
   /* Ensure validity of the arguments */
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+  ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
   if (zspan)
     ensure_has_Z(temp->flags);

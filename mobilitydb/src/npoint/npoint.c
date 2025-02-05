@@ -485,30 +485,30 @@ Geom_to_nsegment(PG_FUNCTION_ARGS)
  * SRID functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Npoint_get_srid(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Npoint_get_srid);
+PGDLLEXPORT Datum Npoint_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Npoint_srid);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the SRID of a network point
  * @sqlfn SRID()
  */
 Datum
-Npoint_get_srid(PG_FUNCTION_ARGS)
+Npoint_srid(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
   int result = npoint_srid(np);
   PG_RETURN_INT32(result);
 }
 
-PGDLLEXPORT Datum Nsegment_get_srid(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Nsegment_get_srid);
+PGDLLEXPORT Datum Nsegment_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Nsegment_srid);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the SRID of a network segment
  * @sqlfn SRID()
  */
 Datum
-Nsegment_get_srid(PG_FUNCTION_ARGS)
+Nsegment_srid(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
   int result = nsegment_srid(ns);

@@ -47,32 +47,6 @@
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
- * Utility functions
- *****************************************************************************/
-
-/**
- * @brief Return a cbuffer interpolated from a cbuffer segment with respect to 
- * the fraction of its total length
- * @param[in] start,end Circular buffers defining the segment
- * @param[in] ratio Float between 0 and 1 representing the fraction of the
- * total length of the segment where the interpolated buffer must be located
- */
-Datum
-cbuffersegm_interpolate_point(Datum start, Datum end, long double ratio)
-{
-  Cbuffer *cbuf1 = DatumGetCbufferP(start);
-  Cbuffer *cbuf2 = DatumGetCbufferP(end);
-  Datum d1 = PointerGetDatum(&cbuf1->point);
-  Datum d2 = PointerGetDatum(&cbuf2->point);
-  GSERIALIZED *point = 
-    DatumGetGserializedP(geosegm_interpolate_point(d1, d2, ratio));
-  double radius = cbuf1->radius + 
-    (double) ((long double)(cbuf2->radius - cbuf1->radius) * ratio);
-  Cbuffer *result = cbuffer_make(point, radius);
-  return PointerGetDatum(result);
-}
-  
-/*****************************************************************************
  * Constructor functions
  *****************************************************************************/
 
@@ -394,7 +368,7 @@ tcbuffer_to_tfloat(const Temporal *temp)
 // tgeompoint_tcbuffer(const Temporal *temp)
 // {
   // assert(temp); assert(temp->temptype == T_TGEOMPOINT);
-  // int32_t srid_tpoint = tpoint_srid(temp);
+  // int32_t srid_tpoint = tspatial_srid(temp);
   // int32_t srid_ways = get_srid_ways();
   // if (! ensure_same_srid(srid_tpoint, srid_ways))
     // return NULL;

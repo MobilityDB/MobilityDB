@@ -166,7 +166,7 @@ cbuffer_parse_elem(const char **str, char sep, int *srid, Cbuffer **result)
  * @param[in] str Input string
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
- * @param[in,out] tpoint_srid SRID of the temporal circular buffer
+ * @param[in,out] tcbuffer_srid SRID of the temporal circular buffer
  * @param[out] result New instant, may be NULL
  */
 bool 
@@ -178,6 +178,7 @@ tcbufferinst_parse(const char **str, bool end, int *tcbuffer_srid,
     return false;
 
   p_sepchar(str, '@');
+
   TimestampTz t = timestamp_parse(str);
   if (t == DT_NOEND ||
     /* Ensure there is no more input */

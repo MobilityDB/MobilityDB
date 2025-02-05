@@ -38,8 +38,9 @@
 #include <meos_internal.h>
 #include "general/temporal.h"
 #include "general/type_parser.h"
-// #include "pose/tpose.h"
-#include "pose/tpose_static.h"
+#include "point/tpoint_parser.h"
+#include "pose/pose.h"
+#include "pose/tpose.h"
 
 /*****************************************************************************/
 
@@ -54,7 +55,8 @@ pose_parse(const char **str, bool end)
   const char *type_str = "pose";
 
   /* Determine whether the box has an SRID */
-  int32_t srid = parse_srid(str);
+  int32_t srid;
+  srid_parse(str, &srid);
 
   if (strncasecmp(*str,"POSE",4) == 0)
   {
@@ -156,18 +158,18 @@ tposeinst_parse(const char **str, meosType temptype, bool end,
   Pose *pose = DatumGetPoseP(value);
   /* If one of the SRID of the temporal pose and of the geometry
    * is SRID_UNKNOWN and the other not, copy the SRID */
-  int pose_srid = pose_get_srid(pose);
-  if (*tpose_srid == SRID_UNKNOWN && pose_srid != SRID_UNKNOWN)
-    *tpose_srid = pose_srid;
-  else if (*tpose_srid != SRID_UNKNOWN && pose_srid == SRID_UNKNOWN)
+  int32_t srid = pose_srid(pose);
+  if (*tpose_srid == SRID_UNKNOWN && srid != SRID_UNKNOWN)
+    *tpose_srid = srid;
+  else if (*tpose_srid != SRID_UNKNOWN && srid == SRID_UNKNOWN)
     pose_set_srid(pose, *tpose_srid);
   /* If the SRID of the temporal pose and of the geometry do not match */
-  else if (*tpose_srid != SRID_UNKNOWN && pose_srid != SRID_UNKNOWN &&
-    *tpose_srid != pose_srid)
+  else if (*tpose_srid != SRID_UNKNOWN && srid != SRID_UNKNOWN &&
+    *tpose_srid != srid)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Pose SRID (%d) does not match temporal type SRID (%d)",
-      pose_srid, *tpose_srid);
+      srid, *tpose_srid);
     pfree(pose);
     return false;
   }
@@ -345,7 +347,8 @@ tpose_parse(const char **str, meosType temptype)
   p_whitespace(str);
 
   /* Determine whether the box has an SRID */
-  int tpose_srid = parse_srid(str);
+  int tpose_srid;
+  srid_parse(str, &tpose_srid);
 
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   /* Starts with "Interp=Step" */

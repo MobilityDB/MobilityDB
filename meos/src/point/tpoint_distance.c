@@ -296,7 +296,7 @@ point3d_min_dist(const POINT3DZ *p1, const POINT3DZ *p2, const POINT3DZ *p3,
  * is at `Point(2 2)@t2` instead of `Point(1.5 1.5)@(t1 + (t2 - t1)/2)`.
  * @pre The segments are not both constants.
  */
-static bool
+bool
 tgeompoint_min_dist_at_timestamptz(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *mindist, TimestampTz *t)
 {
