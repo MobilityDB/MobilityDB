@@ -135,7 +135,7 @@ int main(void)
     }
 
     /* Add the current value to the running aggregates */
-    STBox *new_extent = tpoint_extent_transfn(extent, trip_rec.trip);
+    STBox *new_extent = tspatial_extent_transfn(extent, trip_rec.trip);
     if (extent != NULL)
       free(extent);
     extent = new_extent;

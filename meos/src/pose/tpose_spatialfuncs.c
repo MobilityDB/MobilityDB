@@ -41,7 +41,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
 #include "pose/tpose.h"
 

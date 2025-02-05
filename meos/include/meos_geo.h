@@ -48,6 +48,9 @@
 #endif
 /* PostGIS */
 #include <liblwgeom.h>
+/* MEOS */
+#include "general/temporal.h"
+
 
 /*===========================================================================*
  * Functions for PostGIS types
@@ -77,7 +80,7 @@ extern bool geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool
 extern double geog_length(const GSERIALIZED *g, bool use_spheroid);
 extern double geog_perimeter(const GSERIALIZED *g, bool use_spheroid);
 extern bool geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result);
-extern GSERIALIZED *geom_collect_garray(GSERIALIZED **gsarr, int nelems);
+extern GSERIALIZED *geo_collect_garray(GSERIALIZED **gsarr, int nelems);
 
 extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int nelems);
 extern GSERIALIZED *geom_boundary(const GSERIALIZED *gs);
@@ -89,11 +92,13 @@ extern double geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern double geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance);
 extern bool geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance);
+extern int geo_equals(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_from_geog(GSERIALIZED *geog);
 extern GSERIALIZED *geom_from_hexewkb(const char *wkt);
 extern GSERIALIZED *geom_from_text(const char *wkt, int32_t srid);
 extern GSERIALIZED *geom_in(const char *str, int32 typmod);
 extern GSERIALIZED *geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern GSERIALIZED *geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern double geom_perimeter(const GSERIALIZED *gs);
@@ -106,9 +111,54 @@ extern GSERIALIZED *line_interpolate_point(GSERIALIZED *gs, double distance_frac
 extern double line_length(const GSERIALIZED *gs);
 extern int line_numpoints(const GSERIALIZED *gs);
 extern double line_locate_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern const char *geo_typename(int type);
 extern GSERIALIZED *line_point_n(const GSERIALIZED *geom, int n);
 extern GSERIALIZED *line_substring(const GSERIALIZED *gs, double from, double to);
 
+/*****************************************************************************/
+
+extern TInstant *tgeoinst_make(const GSERIALIZED *gs, TimestampTz t);
+extern bool ensure_valid_tgeo_box(const Temporal *temp, const STBox *box);
+extern Temporal *distance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern GSERIALIZED *tgeo_traversed_area(const Temporal *temp);
+
+extern Datum datum2_geo_eq(Datum geo1, Datum geo2);
+extern Datum datum2_geo_ne(Datum geo1, Datum geo2);
+
+extern Temporal *distance_tgeo_geo(const Temporal *temp,
+  const GSERIALIZED *gs);
+extern Temporal *distance_tgeo_tgeo(const Temporal *temp1,
+  const Temporal *temp2);
+extern TInstant *nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern TInstant *nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
+extern double nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern double nad_tgeo_stbox(const Temporal *temp, const STBox *box);
+extern double nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
+extern GSERIALIZED *shortestline_tgeo_geo(const Temporal *temp,
+  const GSERIALIZED *gs);
+extern GSERIALIZED *shortestline_tgeo_tgeo(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern int ea_spatialrel_tgeo_tgeo(const Temporal *temp1, 
+  const Temporal *temp2, datum_func2 func, bool ever);
+  
+extern int econtains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int acontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int edisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int adisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int eintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int aintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int etouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int atouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  double dist);
+extern int adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  double dist);
+extern int edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
+  double dist);
+extern int adwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
+  double dist);
+  
 /*****************************************************************************/
 
 #endif

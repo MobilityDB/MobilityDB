@@ -44,7 +44,7 @@
 #include "general/lifting.h"
 #include "general/temporal.h"
 #include "general/type_util.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Constructor functions

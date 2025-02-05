@@ -44,7 +44,7 @@
 #include "general/lifting.h"
 #include "general/span.h"
 #include "general/type_util.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Ever/always functions
@@ -742,7 +742,7 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2) ||
-	  (tgeo_type(temp1->temptype) && (
+	  (tpoint_type(temp1->temptype) && (
           ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
           ! ensure_same_dimensionality(temp1->flags, temp2->flags))))
     return NULL;
@@ -765,7 +765,7 @@ tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2) ||
-      (tgeo_type(temp1->temptype) && (
+      (tpoint_type(temp1->temptype) && (
           ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
           ! ensure_same_dimensionality(temp1->flags, temp2->flags))))
     return NULL;

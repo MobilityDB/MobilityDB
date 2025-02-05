@@ -73,10 +73,16 @@ SELECT set(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
 /* Errors */
 SELECT set('{}'::timestamptz[]);
 ERROR:  The input array cannot be empty
-SELECT set(ARRAY[geometry 'Point(1 1)', 'Point(2 2)', 'Point(3 3)']);
-                                                                    set                                                                     
---------------------------------------------------------------------------------------------------------------------------------------------
- {"0101000000000000000000F03F000000000000F03F", "010100000000000000000000400000000000000040", "010100000000000000000008400000000000000840"}
+SELECT asText(set(ARRAY[geometry 'Point(1 1)', 'Point(2 2)', 'Point(3 3)']));
+                   astext                   
+--------------------------------------------
+ {"POINT(1 1)", "POINT(2 2)", "POINT(3 3)"}
+(1 row)
+
+SELECT asText(set(ARRAY[geometry 'Point(1 1)', 'Linestring(1 1,2 2)']));
+                astext                 
+---------------------------------------
+ {"POINT(1 1)", "LINESTRING(1 1,2 2)"}
 (1 row)
 
 /* Errors */
@@ -84,8 +90,6 @@ SELECT set(ARRAY[geometry 'Point(1 1)', 'Point(1 1 1)']);
 ERROR:  Operation on mixed 2D/3D dimensions
 SELECT set(ARRAY[geometry 'Point(1 1)', 'Point empty']);
 ERROR:  Only non-empty geometries accepted
-SELECT set(ARRAY[geometry 'Point(1 1)', 'Linestring(1 1,2 2)']);
-ERROR:  Only point geometries accepted
 SELECT set(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
 ERROR:  Operation on mixed SRID
 SELECT set(date '2000-01-01');

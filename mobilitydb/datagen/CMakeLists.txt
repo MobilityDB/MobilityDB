@@ -12,10 +12,13 @@ configure_file(
 # Define list of source files
 set(LOCAL_FILES
   general/random_temporal.sql
-  point/random_tpoint.sql
+  geo/random_tpoint.sql
   )
 if(CBUFFER)
   list(APPEND LOCAL_FILES cbuffer/random_tcbuffer.sql)
+endif()
+if(GEO)
+  list(APPEND LOCAL_FILES geo/random_tgeo.sql)
 endif()
 if(NPOINT)
   list(APPEND LOCAL_FILES npoint/random_tnpoint.sql)

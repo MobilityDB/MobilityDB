@@ -38,7 +38,7 @@
 #include <meos_internal.h>
 #include "general/temporal.h"
 #include "general/type_parser.h"
-#include "point/tpoint_parser.h"
+#include "geo/tgeo_parser.h"
 #include "pose/pose.h"
 #include "pose/tpose.h"
 

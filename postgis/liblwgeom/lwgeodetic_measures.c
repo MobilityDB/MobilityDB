@@ -36,7 +36,7 @@
  * These functions are not needed in MobilityDB.
  */
 
-// #include "point/geography_funcs.h"
+// #include "geo/geography_funcs.h"
 
 /* C */
 #include <float.h>

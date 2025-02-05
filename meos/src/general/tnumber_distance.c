@@ -42,8 +42,47 @@
 #include "general/lifting.h"
 #include "general/span.h"
 #include "general/tbox.h"
+#include "general/tinstant.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
+#include "geo/tgeo_distance.h"
+
+/*****************************************************************************
+ * Compute the distance between two instants depending on their type
+ *****************************************************************************/
+
+/**
+ * @brief Return the distance between two temporal instants
+ * @param[in] inst1,inst2 Temporal instants
+ */
+double
+tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
+{
+  return fabs(tnumberinst_double(inst1) - tnumberinst_double(inst2));
+}
+
+/**
+ * @brief Return the distance between two temporal instants
+ * @param[in] inst1,inst2 Temporal instants
+ * @param[in] func Distance function
+ */
+double
+tinstant_distance(const TInstant *inst1, const TInstant *inst2,
+  datum_func2 func)
+{
+  assert(tnumber_type(inst1->temptype) || tgeo_type(inst1->temptype));
+  if (tnumber_type(inst1->temptype))
+    return tnumberinst_distance(inst1, inst2);
+  else if (tgeo_type(inst1->temptype))
+    return tgeoinst_distance(inst1, inst2, func);
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Unknown distance function for type: %s", 
+      meostype_name(inst1->temptype));
+    return DBL_MAX;
+  }
+}
 
 /*****************************************************************************
  * Temporal distance

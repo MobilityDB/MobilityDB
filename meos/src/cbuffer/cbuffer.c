@@ -52,12 +52,12 @@
 #include "general/pg_types.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
-#include "point/pgis_types.h"
-#include "point/tpoint.h"
-#include "point/tpoint_out.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/pgis_types.h"
+#include "geo/tgeo.h"
+#include "geo/tgeo_out.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "general/type_parser.h"
-#include "point/tpoint_parser.h"
+#include "geo/tgeo_parser.h"
 #include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_parser.h"
 
@@ -116,7 +116,9 @@ Cbuffer *
 cbuffer_make(const GSERIALIZED *point, double radius)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) point) || 
+  if (! ensure_not_null((void *) point) || ! ensure_point_type(point) ||
+      ! ensure_not_empty(point) || ! ensure_has_not_Z_geo(point) || 
+      ! ensure_has_not_M_geo(point) || ! ensure_not_geodetic_geo(point) ||
       ! ensure_not_negative_datum(Float8GetDatum(radius), T_FLOAT8))
     return NULL;
 
@@ -182,8 +184,6 @@ cbuffer_radius(const Cbuffer *cbuf)
  * Conversions between circular point and geometry
  *****************************************************************************/
 
-extern LWCIRCSTRING *lwcircstring_from_lwpointarray(int32_t srid, uint32_t npoints, LWPOINT **points);
-
 /**
  * @ingroup meos_cbuffer_types
  * @brief Transform a circular buffer into a geometry
@@ -197,24 +197,10 @@ cbuffer_geom(const Cbuffer *cbuf)
   if (! ensure_not_null((void *) cbuf))
     return NULL;
 
-  Datum d = PointerGetDatum(&cbuf->point);
-  GSERIALIZED *gs = DatumGetGserializedP(d);
-  int32_t srid = gserialized_get_srid(gs);
-  LWPOINT *points[3];
-  points[1] = (LWPOINT *) lwgeom_from_gserialized(gs);
-  /* Shift the X coordinate of cbuf->point by +- cbuf->radius */
+  GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
   POINT2D *p = (POINT2D *) GS_POINT_PTR(gs);
-  points[0] = points[2] = lwpoint_make2d(srid, p->x - cbuf->radius, p->y);
-  points[1] = lwpoint_make2d(srid, p->x + cbuf->radius, p->y);
-  /* Construct the circle */
-  LWGEOM *ring = lwcircstring_as_lwgeom(
-    lwcircstring_from_lwpointarray(srid, 3, points));
-  LWCURVEPOLY *poly = lwcurvepoly_construct_empty(srid, 0, 0);
-  lwcurvepoly_add_ring(poly, ring);
-  GSERIALIZED *result = geom_serialize((LWGEOM *) poly);
-  /* Clean up and return */
-  lwpoint_free(points[0]); lwpoint_free(points[1]); lwgeom_free(ring);
-  return result;
+  int32_t srid = gserialized_get_srid(gs);
+  return geocircle_make(p->x, p->y, cbuf->radius, srid);
 }
 
 /**
@@ -278,7 +264,7 @@ cbufferarr_geom(Cbuffer **cbufarr, int nelems)
     }
     geoms[i] = cbuffer_geom(cbufarr[i]);
   }
-  GSERIALIZED *result = geom_collect_garray(geoms, nelems);
+  GSERIALIZED *result = geo_collect_garray(geoms, nelems);
   pfree_array((void **) geoms, nelems);
   return result;
 }
@@ -317,6 +303,26 @@ cbuffer_set_srid(Cbuffer *cbuf, int32_t srid)
   GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
   gserialized_set_srid(gs, srid);
   return;
+}
+
+/*****************************************************************************
+ * Approximate equality for circular buffers
+ *****************************************************************************/
+
+/**
+ * @brief Return true if two circular buffers are approximately equal with
+ * respect to an epsilon value
+ */
+bool
+cbuffer_same(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
+{
+  /* Same radius */
+  if (fabs(cbuf1->radius - cbuf2->radius) > MEOS_EPSILON)
+    return false;
+  /* Same points */
+  Datum point1 = PointerGetDatum(&cbuf1->point);
+  Datum point2 = PointerGetDatum(&cbuf2->point);
+  return datum_point_same(point1, point2);
 }
 
 /*****************************************************************************

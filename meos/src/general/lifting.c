@@ -180,7 +180,7 @@
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
 #include "general/type_util.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Functions where the argument is a temporal type.

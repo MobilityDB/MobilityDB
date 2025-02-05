@@ -41,22 +41,22 @@
 #include <utils/float.h> /* For get_float8_infinity() */
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
 #include "general/set.h"
 #include "general/span.h"
 #include "general/spanset.h"
 #include "general/tbox.h"
-#include "point/stbox.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
-#if NPOINT
-  #include "npoint/npoint.h"
-  #include "npoint/tnpoint.h"
-#endif /* NPOINT */
+#include "geo/stbox.h"
+#include "geo/tgeo.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include "cbuffer/tcbuffer.h"
-#endif /* CBUFFER */
+#endif
+#if NPOINT
+  #include "npoint/tnpoint.h"
+#endif
 
 /*****************************************************************************
  * Round functions called by the other functions
@@ -548,7 +548,7 @@ round_linestring(GSERIALIZED *gs,int maxdd)
   LWLINE *line = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
   round_lwline(line, maxdd, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) line);
-  lwfree(line);
+  lwline_free(line);
   return PointerGetDatum(result);
 }
 
@@ -644,7 +644,7 @@ round_polygon(GSERIALIZED *gs, int maxdd)
   LWPOLY *poly = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs));
   round_lwpoly(poly, maxdd, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) poly);
-  lwfree(poly);
+  lwpoly_free(poly);
   return PointerGetDatum(result);
 }
 
@@ -750,6 +750,141 @@ round_multipolygon(GSERIALIZED *gs, int maxdd)
 }
 
 /**
+ * @brief Set the precision of the coordinates of a compound curve to a
+ * number of decimal places
+ * @note A CompoundCurve is a single continuous curve that may contain both
+ * circular arc segments and linear segments. That means that in addition to 
+ * having well-formed components, the end point of every component (except the
+ * last) must be coincident with the start point of the following component.
+ * https://postgis.net/docs/using_postgis_dbmanagement.html#CompoundCurve
+ */
+static void
+round_lwcompound(LWCOMPOUND *comp, int maxdd, bool hasz, bool hasm)
+{
+  int ngeoms = comp->ngeoms;
+  for (int i = 0; i < ngeoms; i++)
+  {
+    LWGEOM *geom = comp->geoms[i];
+    assert(geom->type == LINETYPE || geom->type == CIRCSTRINGTYPE);
+    if (geom->type == LINETYPE)
+      round_lwline(lwgeom_as_lwline(geom), maxdd, hasz, hasm);
+    else /* geom->type == CIRCSTRINGTYPE */
+      round_lwcircstring(lwgeom_as_lwcircstring(geom), maxdd, hasz, hasm);
+  }
+  return;
+}
+
+/**
+ * @brief Set the precision of the coordinates of a geometry collection to a
+ * number of decimal places
+ * @note In function #lwgeom_free, the case for COMPOUNDTYPE is
+ *   @p lwcollection_free((LWCOLLECTION *)lwgeom);
+ */
+static Datum
+round_compoundcurve(GSERIALIZED *gs, int maxdd)
+{
+  assert(gserialized_get_type(gs) == COMPOUNDTYPE);
+  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
+  LWCOMPOUND *comp = lwgeom_as_lwcompound(lwgeom_from_gserialized(gs));
+  round_lwcompound(comp, maxdd, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) comp);
+  lwcollection_free((LWCOLLECTION *) comp);
+  return PointerGetDatum(result);
+}
+
+/**
+ * @brief Set the precision of the coordinates of a compound curve to a
+ * number of decimal places
+ * @note A MultiCurve is a collection of curves which can include LineStrings, 
+ * CircularStrings or CompoundCurves.
+ * https://postgis.net/docs/using_postgis_dbmanagement.html#MultiCurve
+ */
+static void
+round_lwmcurve(LWMCURVE *mcurve, int maxdd, bool hasz, bool hasm)
+{
+  int ngeoms = mcurve->ngeoms;
+  for (int i = 0; i < ngeoms; i++)
+  {
+    LWGEOM *geom = mcurve->geoms[i];
+    assert(geom->type == LINETYPE || geom->type == CIRCSTRINGTYPE || 
+      geom->type == COMPOUNDTYPE);
+    if (geom->type == LINETYPE)
+      round_lwline(lwgeom_as_lwline(geom), maxdd, hasz, hasm);
+    else if (geom->type == CIRCSTRINGTYPE)
+      round_lwcircstring(lwgeom_as_lwcircstring(geom), maxdd, hasz, hasm);
+    else /* geom->type == COMPOUNDTYPE */
+      round_lwcompound(lwgeom_as_lwcompound(geom), maxdd, hasz, hasm);
+  }
+  return;
+}
+
+/**
+ * @brief Set the precision of the coordinates of a geometry collection to a
+ * number of decimal places
+ * @note In function #lwgeom_free, the case for MULTICURVETYPE is
+ *   @p lwcollection_free((LWCOLLECTION *)lwgeom);
+ */
+static Datum
+round_multicurve(GSERIALIZED *gs, int maxdd)
+{
+  assert(gserialized_get_type(gs) == MULTICURVETYPE);
+  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
+  LWMCURVE *mcurv = (LWMCURVE *) lwgeom_from_gserialized(gs);
+  round_lwmcurve(mcurv, maxdd, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) mcurv);
+  lwcollection_free((LWCOLLECTION *) mcurv);
+  return PointerGetDatum(result);
+}
+
+/**
+ * @brief Set the precision of the coordinates of a curve polygon to a
+ * number of decimal places
+ * @note A CurvePolygon is like a polygon, with an outer ring and zero or more
+ * inner rings. The difference is that a ring can be a CircularString or 
+ * CompoundCurve as well as a LineString.
+ * https://postgis.net/docs/using_postgis_dbmanagement.html#CurvePolygon
+ */
+static void
+round_lwcurvepoly(LWCURVEPOLY *cpoly, int maxdd, bool hasz, bool hasm)
+{
+  int nrings = cpoly->nrings;
+  for (int i = 0; i < nrings; i++)
+  {
+    LWGEOM *ring = cpoly->rings[i];
+    assert(ring->type == LINETYPE || ring->type == CIRCSTRINGTYPE ||
+      ring->type == COMPOUNDTYPE);
+    if (ring->type == LINETYPE)
+      round_lwline(lwgeom_as_lwline(ring), maxdd, hasz, hasm);
+    else if (ring->type == CIRCSTRINGTYPE)
+      round_lwcircstring(lwgeom_as_lwcircstring(ring), maxdd, hasz, hasm);
+    else /* ring->type == COMPOUNDTYPE */
+      round_lwcompound(lwgeom_as_lwcompound(ring), maxdd, hasz, hasm);
+  }
+  return;
+}
+
+/**
+ * @brief Reuturn a curve polygon with the precision of the coordinates set to
+ * a number of decimal places
+ * @note In function #lwgeom_free, the case for CURVEPOLYTYPE is
+ *   @p lwcollection_free((LWCOLLECTION *)lwgeom);
+ */
+static Datum
+round_curvepolygon(GSERIALIZED *gs, int maxdd)
+{
+  assert(gserialized_get_type(gs) == CURVEPOLYTYPE);
+  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
+  LWCURVEPOLY *poly = lwgeom_as_lwcurvepoly(lwgeom_from_gserialized(gs));
+  round_lwcurvepoly(poly, maxdd, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) poly);
+  lwcollection_free((LWCOLLECTION *) poly);
+  return PointerGetDatum(result);
+}
+
+/**
  * @brief Set the precision of the coordinates of a geometry collection to a
  * number of decimal places
  */
@@ -764,31 +899,53 @@ round_geometrycollection(GSERIALIZED *gs, int maxdd)
   for (int i = 0; i < ngeoms; i++)
   {
     LWGEOM *geom = coll->geoms[i];
-    if (geom->type == POINTTYPE)
-      round_point_n((lwgeom_as_lwpoint(geom))->point, 0, maxdd, hasz, hasm);
-    else if (geom->type == LINETYPE)
-      round_lwline(lwgeom_as_lwline(geom), maxdd, hasz, hasm);
-    else if (geom->type == TRIANGLETYPE)
-      round_lwtriangle(lwgeom_as_lwtriangle(geom), maxdd, hasz, hasm);
-    else if (geom->type == CIRCSTRINGTYPE)
-      round_lwcircstring(lwgeom_as_lwcircstring(geom), maxdd, hasz, hasm);
-    else if (geom->type == POLYGONTYPE)
-      round_lwpoly(lwgeom_as_lwpoly(geom), maxdd, hasz, hasm);
-    else if (geom->type == MULTIPOINTTYPE)
-      round_lwmpoint(lwgeom_as_lwmpoint(geom), maxdd, hasz, hasm);
-    else if (geom->type == MULTILINETYPE)
-      round_lwmline(lwgeom_as_lwmline(geom), maxdd, hasz, hasm);
-    else if (geom->type == MULTIPOLYGONTYPE)
-      round_lwmpoly(lwgeom_as_lwmpoly(geom), maxdd, hasz, hasm);
-    else
+    switch (geom->type)
     {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "Unsupported geometry type");
-      return PointerGetDatum(NULL);
-    }
+      case POINTTYPE:
+        round_point_n((lwgeom_as_lwpoint(geom))->point, 0, maxdd, hasz, hasm);
+        break;
+      case LINETYPE:
+        round_lwline(lwgeom_as_lwline(geom), maxdd, hasz, hasm);
+        break;
+      case TRIANGLETYPE:
+        round_lwtriangle(lwgeom_as_lwtriangle(geom), maxdd, hasz, hasm);
+        break;
+      case CIRCSTRINGTYPE:
+        round_lwcircstring(lwgeom_as_lwcircstring(geom), maxdd, hasz, hasm);
+        break;
+      case COMPOUNDTYPE:
+        round_lwcompound(lwgeom_as_lwcompound(geom), maxdd, hasz, hasm);
+        break;
+      case MULTICURVETYPE:
+        round_lwmcurve((LWMCURVE *) geom, maxdd, hasz, hasm);
+        break;
+      case POLYGONTYPE:
+        round_lwpoly(lwgeom_as_lwpoly(geom), maxdd, hasz, hasm);
+        break;
+      case CURVEPOLYTYPE:
+        round_lwcurvepoly(lwgeom_as_lwcurvepoly(geom), maxdd, hasz, hasm);
+        break;
+      case MULTIPOINTTYPE:
+        round_lwmpoint(lwgeom_as_lwmpoint(geom), maxdd, hasz, hasm);
+        break;
+      case MULTILINETYPE:
+        round_lwmline(lwgeom_as_lwmline(geom), maxdd, hasz, hasm);
+        break;
+      case MULTIPOLYGONTYPE:
+        round_lwmpoly(lwgeom_as_lwmpoly(geom), maxdd, hasz, hasm);\
+        break;
+      default:
+      {
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Unsupported geometry type in round function: %s",
+          geo_typename(geom->type));
+        lwcollection_free(coll);
+        return PointerGetDatum(NULL);
+      }
+    }    
   }
   GSERIALIZED *result = geo_serialize((LWGEOM *) coll);
-  lwfree(coll);
+  lwcollection_free(coll);
   return PointerGetDatum(result);
 }
 
@@ -810,10 +967,6 @@ datum_round_geo(Datum value, Datum size)
     return round_point(gs, maxdd);
   if (type == LINETYPE)
     return round_linestring(gs, maxdd);
-  if (type == TRIANGLETYPE)
-    return round_triangle(gs, maxdd);
-  if (type == CIRCSTRINGTYPE)
-    return round_circularstring(gs, maxdd);
   if (type == POLYGONTYPE)
     return round_polygon(gs, maxdd);
   if (type == MULTIPOINTTYPE)
@@ -824,24 +977,35 @@ datum_round_geo(Datum value, Datum size)
     return round_multipolygon(gs, maxdd);
   if (type == COLLECTIONTYPE)
     return round_geometrycollection(gs, maxdd);
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Unsupported geometry type");
+  if (type == CIRCSTRINGTYPE)
+    return round_circularstring(gs, maxdd);
+  if (type == MULTICURVETYPE)
+    return round_multicurve(gs, maxdd);
+  if (type == COMPOUNDTYPE)
+    return round_compoundcurve(gs, maxdd);
+  if (type == CURVEPOLYTYPE)
+    return round_curvepolygon(gs, maxdd);
+  if (type == TRIANGLETYPE)
+    return round_triangle(gs, maxdd);
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unsupported geometry type in round function: %s", geo_typename(type));
   return PointerGetDatum(NULL);
 }
 
 /*****************************************************************************
- * Temporal Point
+ * Temporal geo
  *****************************************************************************/
 
 /**
  * @ingroup meos_temporal_transf
- * @brief Return a temporal point with the precision of the coordinates set to
- * a number of decimal places
- * @param[in] temp Temporal point
+ * @brief Return a temporal geometry/geography with the precision of the 
+ * coordinates set to a number of decimal places
+ * @param[in] temp Temporal geometry
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Tpoint_round()
+ * @csqlfn #Tgeo_round()
  */
 Temporal *
-tpoint_round(const Temporal *temp, int maxdd)
+tgeo_round(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
@@ -863,15 +1027,15 @@ tpoint_round(const Temporal *temp, int maxdd)
 
 /**
  * @ingroup meos_temporal_transf
- * @brief Return an array of temporal points with the precision of the
- * coordinates set to a number of decimal places
- * @param[in] temparr Array of temporal points
+ * @brief Return an array of temporal geometries/geographies with the precision
+ * of the coordinates set to a number of decimal places
+ * @param[in] temparr Array of temporal geometries/geographies
  * @param[in] count Number of elements in the array
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Tpointarr_round()
+ * @csqlfn #Tgeoarr_round()
  */
 Temporal **
-tpointarr_round(const Temporal **temparr, int count, int maxdd)
+tgeoarr_round(const Temporal **temparr, int count, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temparr) ||
@@ -882,7 +1046,7 @@ tpointarr_round(const Temporal **temparr, int count, int maxdd)
 
   Temporal **result = palloc(sizeof(Temporal *) * count);
   for (int i = 0; i < count; i++)
-    result[i] = tpoint_round(temparr[i], maxdd);
+    result[i] = tgeo_round(temparr[i], maxdd);
   return result;
 }
 

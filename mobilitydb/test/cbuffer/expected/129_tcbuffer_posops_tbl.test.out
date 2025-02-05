@@ -1,0 +1,344 @@
+DROP INDEX IF EXISTS tbl_tcbuffer_rtree_idx;
+NOTICE:  index "tbl_tcbuffer_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tcbuffer_quadtree_idx;
+NOTICE:  index "tbl_tcbuffer_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tcbuffer_kdtree_idx;
+NOTICE:  index "tbl_tcbuffer_kdtree_idx" does not exist, skipping
+DROP INDEX
+DROP TABLE IF EXISTS test_tcbuffer_posops;
+NOTICE:  table "test_tcbuffer_posops" does not exist, skipping
+DROP TABLE
+CREATE TABLE test_tcbuffer_posops(
+  op char(3),
+  leftarg text,
+  rightarg text,
+  no_idx BIGINT,
+  rtree_idx BIGINT,
+  quadtree_idx BIGINT,
+  kdtree_idx BIGINT
+);
+CREATE TABLE
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tstzspan', 'tcbuffer', COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t <<# temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tstzspan', 'tcbuffer', COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t #>> temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tstzspan', 'tcbuffer', COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t &<# temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tstzspan', 'tcbuffer', COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t #&> temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tcbuffer', 'tstzspan', COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp <<# t;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tcbuffer', 'tstzspan', COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp #>> t;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tcbuffer', 'tstzspan', COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp &<# t;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tcbuffer', 'tstzspan', COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp #&> t;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<', 'tcbuffer', 'tcbuffer', COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp << t2.temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '>>', 'tcbuffer', 'tcbuffer', COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp >> t2.temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<', 'tcbuffer', 'tcbuffer', COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &< t2.temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '&>', 'tcbuffer', 'tcbuffer', COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &> t2.temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<|', 'tcbuffer', 'tcbuffer', COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp <<| t2.temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '|>>', 'tcbuffer', 'tcbuffer', COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp |>> t2.temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<|', 'tcbuffer', 'tcbuffer', COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &<| t2.temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '|&>', 'tcbuffer', 'tcbuffer', COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp |&> t2.temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '<<#', 'tcbuffer', 'tcbuffer', COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp <<# t2.temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '#>>', 'tcbuffer', 'tcbuffer', COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp #>> t2.temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '&<#', 'tcbuffer', 'tcbuffer', COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &<# t2.temp;
+INSERT 0 1
+INSERT INTO test_tcbuffer_posops(op, leftarg, rightarg, no_idx)
+SELECT '#&>', 'tcbuffer', 'tcbuffer', COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp #&> t2.temp;
+INSERT 0 1
+CREATE INDEX tbl_tcbuffer_rtree_idx ON tbl_tcbuffer USING GIST(temp);
+CREATE INDEX
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t <<# temp )
+WHERE op = '<<#' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t #>> temp )
+WHERE op = '#>>' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t &<# temp )
+WHERE op = '&<#' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t #&> temp )
+WHERE op = '#&>' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp <<| t2.temp )
+WHERE op = '<<|' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp |>> t2.temp )
+WHERE op = '|>>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &<| t2.temp )
+WHERE op = '&<|' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp |&> t2.temp )
+WHERE op = '|&>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+DROP INDEX tbl_tcbuffer_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tcbuffer_quadtree_idx ON tbl_tcbuffer USING SPGIST(temp);
+CREATE INDEX
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t <<# temp )
+WHERE op = '<<#' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t #>> temp )
+WHERE op = '#>>' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t &<# temp )
+WHERE op = '&<#' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t #&> temp )
+WHERE op = '#&>' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp <<| t2.temp )
+WHERE op = '<<|' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp |>> t2.temp )
+WHERE op = '|>>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &<| t2.temp )
+WHERE op = '&<|' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp |&> t2.temp )
+WHERE op = '|&>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+DROP INDEX IF EXISTS tbl_tcbuffer_quadtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tcbuffer_kdtree_idx ON tbl_tcbuffer USING SPGIST(temp tcbuffer_kdtree_ops);
+CREATE INDEX
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t <<# temp )
+WHERE op = '<<#' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t #>> temp )
+WHERE op = '#>>' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t &<# temp )
+WHERE op = '&<#' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t #&> temp )
+WHERE op = '#&>' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp <<# t )
+WHERE op = '<<#' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp #>> t )
+WHERE op = '#>>' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp &<# t )
+WHERE op = '&<#' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp #&> t )
+WHERE op = '#&>' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp << t2.temp )
+WHERE op = '<<' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp >> t2.temp )
+WHERE op = '>>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &< t2.temp )
+WHERE op = '&<' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &> t2.temp )
+WHERE op = '&>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp <<| t2.temp )
+WHERE op = '<<|' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp |>> t2.temp )
+WHERE op = '|>>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &<| t2.temp )
+WHERE op = '&<|' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp |&> t2.temp )
+WHERE op = '|&>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp <<# t2.temp )
+WHERE op = '<<#' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp #>> t2.temp )
+WHERE op = '#>>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp &<# t2.temp )
+WHERE op = '&<#' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+UPDATE test_tcbuffer_posops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp #&> t2.temp )
+WHERE op = '#&>' and leftarg = 'tcbuffer' and rightarg = 'tcbuffer';
+UPDATE 1
+DROP INDEX tbl_tcbuffer_kdtree_idx;
+DROP INDEX
+SELECT * FROM test_tcbuffer_posops
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx OR
+  no_idx IS NULL OR rtree_idx IS NULL OR quadtree_idx IS NULL OR kdtree_idx IS NULL
+ORDER BY op, leftarg, rightarg;
+ op | leftarg | rightarg | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
+----+---------+----------+--------+-----------+--------------+------------
+(0 rows)
+
+DROP TABLE test_tcbuffer_posops;
+DROP TABLE

@@ -39,11 +39,11 @@
 /* MEOS */
 #include <meos.h>
 #if NPOINT
-  #include "npoint/npoint.h"
-#endif /* NPOINT */
+  #include "npoint/tnpoint.h"
+#endif
 #if CBUFFER
   #include "cbuffer/tcbuffer.h"
-#endif /* BUFFER */
+#endif
 
 /*****************************************************************************/
 

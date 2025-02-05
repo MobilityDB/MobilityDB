@@ -53,8 +53,8 @@
 #include "general/ttext_textfuncs.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "point/tpoint_out.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_out.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include <meos_cbuffer.h>
   #include "cbuffer/tcbuffer_boxops.h"
@@ -331,7 +331,7 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
   char str1[18];
   str1[0] = '\0';
   outfunc value_out1 = value_out;
-  if (spatialset_type(s->settype) && value_out == ewkt_out)
+  if (spatialset_type(s->settype) && value_out == geo_ewkt_out)
   {
     srid = spatialset_srid(s);
     if (srid > 0)
@@ -339,7 +339,7 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
       snprintf(str1, sizeof(str1), "SRID=%d;", srid);
     /* Since the SRID is output at the begining it is not output for the
      * elements */
-    value_out1 = wkt_out;
+    value_out1 = geo_wkt_out;
   }
 
   char **strings = palloc(sizeof(char *) * s->count);
@@ -497,7 +497,7 @@ geoset_as_text(const Set *s, int maxdd)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
-  return set_out_fn(s, maxdd, &wkt_out);
+  return set_out_fn(s, maxdd, &geo_wkt_out);
 }
 
 /**
@@ -513,7 +513,7 @@ geoset_as_ewkt(const Set *s, int maxdd)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
-  return set_out_fn(s, maxdd, &ewkt_out);
+  return set_out_fn(s, maxdd, &geo_ewkt_out);
 }
 
 #if CBUFFER
@@ -701,9 +701,8 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
     {
       /* Test that the geometry is not empty */
       GSERIALIZED *gs2 = DatumGetGserializedP(values[i]);
-      if (! ensure_point_type(gs2) ||
-          ! ensure_same_srid(srid, gserialized_get_srid(gs2)) ||
-          ! ensure_same_dimensionality_gs(gs1, gs2) ||
+      if (! ensure_same_srid(srid, gserialized_get_srid(gs2)) ||
+          ! ensure_same_dimensionality_geo(gs1, gs2) ||
           ! ensure_not_empty(gs2))
         return NULL;
     }

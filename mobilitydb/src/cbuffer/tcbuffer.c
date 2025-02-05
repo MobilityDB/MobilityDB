@@ -46,7 +46,7 @@
 #include "general/type_parser.h"
 #include "general/type_round.h"
 #include "general/type_util.h"
-#include "point/tpoint_parser.h"
+#include "geo/tgeo_parser.h"
 #include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_parser.h"
 /* MobilityDB */

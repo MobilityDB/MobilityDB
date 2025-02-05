@@ -1,0 +1,258 @@
+SELECT asText(cbuffer 'Cbuffer(Point(1 1),0.5)');
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(cbuffer ' cbuffer   (  Point  ( 1  1  ) ,	0.5   )   ');
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.5)
+(1 row)
+
+/* Errors */
+SELECT cbuffer 'point(1,0.5)';
+ERROR:  Could not parse circular buffer: Missing prefix 'Cbuffer'
+LINE 2: SELECT cbuffer 'point(1,0.5)';
+                       ^
+SELECT cbuffer 'cbuffer 1,0.5)';
+ERROR:  Could not parse circular buffer: Missing opening parenthesis
+LINE 1: SELECT cbuffer 'cbuffer 1,0.5)';
+                       ^
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5';
+ERROR:  Missing separator character ')': 0.5
+LINE 1: SELECT cbuffer 'Cbuffer(Point(1 1),0.5';
+                       ^
+SELECT cbuffer 'Cbuffer(Point(1 1) 0.5)';
+ERROR:  Missing separator character ',': Point(1 1) 0.5)
+LINE 1: SELECT cbuffer 'Cbuffer(Point(1 1) 0.5)';
+                       ^
+SELECT cbuffer 'Cbuffer(Point(1 1)000,0.5)';
+ERROR:  parse error - invalid geometry
+LINE 1: SELECT cbuffer 'Cbuffer(Point(1 1)000,0.5)';
+                       ^
+HINT:  "Point(1 1)000" <-- parse error at position 14 within geometry
+SELECT cbuffer 'Cbuffer(Point(1 1),-1.5)';
+ERROR:  The radius must be a real number greater than or equal to 0
+LINE 1: SELECT cbuffer 'Cbuffer(Point(1 1),-1.5)';
+                       ^
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)xxx';
+ERROR:  Could not parse circular buffer value: Extraneous characters at the end
+LINE 1: SELECT cbuffer 'Cbuffer(Point(1 1),0.5)xxx';
+                       ^
+SELECT asText(cbuffer('Point(1 1)', 0.5));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(cbuffer(ST_Point(1,1), 0.5));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.5)
+(1 row)
+
+/* Errors */
+SELECT cbuffer(1000,0.5);
+ERROR:  function cbuffer(integer, numeric) does not exist
+LINE 2: SELECT cbuffer(1000,0.5);
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT cbuffer('Linestring(1 1,2 2)',1.5);
+ERROR:  Only point geometries accepted
+SELECT cbuffer('Point Z(1 1 1)',1.5);
+ERROR:  The geometry cannot have Z dimension
+SELECT cbuffer('Point M(1 1 1)',1.5);
+ERROR:  Only geometries without M dimension accepted
+SELECT cbuffer(geography 'Point(1 1)',1.5);
+ERROR:  function cbuffer(geography, numeric) does not exist
+LINE 1: SELECT cbuffer(geography 'Point(1 1)',1.5);
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT cbuffer('Point(1 1)',-1.5);
+ERROR:  The value cannot be negative: -1.500000
+SELECT ST_AsText(point(cbuffer 'Cbuffer(Point(1 1),0.5)'));
+ st_astext  
+------------
+ POINT(1 1)
+(1 row)
+
+SELECT radius(cbuffer 'Cbuffer(Point(1 1),0.5)');
+ radius 
+--------
+    0.5
+(1 row)
+
+SELECT srid(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
+ srid 
+------
+ 5676
+(1 row)
+
+SELECT asText(round(cbuffer 'Cbuffer(Point(1.123456789 1.123456789), 0.123456789)', 6));
+                   astext                   
+--------------------------------------------
+ Cbuffer(POINT(1.123457 1.123457),0.123457)
+(1 row)
+
+SELECT ST_AsText(round(cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry, 6));
+                    st_astext                    
+-------------------------------------------------
+ CURVEPOLYGON(CIRCULARSTRING(0.8 1,1.2 1,0.8 1))
+(1 row)
+
+SELECT asText(round((cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry)::cbuffer, 6));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.2)
+(1 row)
+
+/* Errors */
+-------------------------------------------------------------------------------
+-- Comparisons
+-------------------------------------------------------------------------------
+-- true
+SELECT cbuffer 'Cbuffer(Point(1.000001 1),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1.000001),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5000001)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1.00001 1),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1.00001),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.500001)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' = cbuffer 'Cbuffer(Point(1 1),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' = cbuffer 'Cbuffer(Point(1 1),0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' = cbuffer 'Cbuffer(Point(2 2),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' != cbuffer 'Cbuffer(Point(1 1),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' != cbuffer 'Cbuffer(Point(1 1),0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' != cbuffer 'Cbuffer(Point(2 2),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' < cbuffer 'Cbuffer(Point(1 1),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' < cbuffer 'Cbuffer(Point(1 1),0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' < cbuffer 'Cbuffer(Point(2 2),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' <= cbuffer 'Cbuffer(Point(1 1),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' <= cbuffer 'Cbuffer(Point(1 1),0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' <= cbuffer 'Cbuffer(Point(2 2),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' > cbuffer 'Cbuffer(Point(1 1),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' > cbuffer 'Cbuffer(Point(1 1),0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' > cbuffer 'Cbuffer(Point(2 2),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' >= cbuffer 'Cbuffer(Point(1 1),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' >= cbuffer 'Cbuffer(Point(1 1),0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' >= cbuffer 'Cbuffer(Point(2 2),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+

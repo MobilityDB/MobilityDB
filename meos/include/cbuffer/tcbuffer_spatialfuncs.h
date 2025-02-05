@@ -44,6 +44,8 @@
 
 extern Datum cbuffersegm_interpolate(Datum start, Datum end,
   long double ratio);
+extern bool ensure_valid_tcbuffer_cbuffer(const Temporal *temp, 
+  const Cbuffer *cbuf);
 extern bool ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1, 
   const Temporal *temp2);
 extern bool ensure_valid_stbox_cbuffer(const STBox *box, const Cbuffer *cbuf);

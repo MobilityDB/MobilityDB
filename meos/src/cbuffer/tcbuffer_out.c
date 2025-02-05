@@ -215,7 +215,7 @@ cbufferarr_as_text(const Datum *cbufarr, int count, int maxdd, bool extended)
 
   char **result = palloc(sizeof(char *) * count);
   for (int i = 0; i < count; i++)
-    /* The wkt_out and ewkt_out functions do not use the second argument */
+    /* The geo_wkt_out and geo_ewkt_out functions do not use the second argument */
     result[i] = extended ? cbuffer_ewkt_out(cbufarr[i], 0, maxdd) : 
       cbuffer_wkt_out(cbufarr[i], 0, maxdd);
   return result;

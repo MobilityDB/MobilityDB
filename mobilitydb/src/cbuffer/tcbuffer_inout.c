@@ -42,7 +42,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal.h"
-#include "point/tpoint_parser.h"
+#include "geo/tgeo_parser.h"
 #include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_parser.h"
 /* MobilityDB */
@@ -185,7 +185,7 @@ Tcbuffer_as_ewkt(PG_FUNCTION_ARGS)
  * geometry/geography
  */
 static Datum
-Cbufferarr_as_text_ext(FunctionCallInfo fcinfo, bool temporal, bool extended)
+Tcbufferarr_as_text_ext(FunctionCallInfo fcinfo, bool temporal, bool extended)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   /* Return NULL on empty array */
@@ -231,7 +231,7 @@ PG_FUNCTION_INFO_V1(Cbufferarr_as_text);
 Datum
 Cbufferarr_as_text(PG_FUNCTION_ARGS)
 {
-  return Cbufferarr_as_text_ext(fcinfo, false, false);
+  return Tcbufferarr_as_text_ext(fcinfo, false, false);
 }
 
 PGDLLEXPORT Datum Cbufferarr_as_ewkt(PG_FUNCTION_ARGS);
@@ -246,7 +246,7 @@ PG_FUNCTION_INFO_V1(Cbufferarr_as_ewkt);
 Datum
 Cbufferarr_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return Cbufferarr_as_text_ext(fcinfo, false, true);
+  return Tcbufferarr_as_text_ext(fcinfo, false, true);
 }
 
 PGDLLEXPORT Datum Tcbufferarr_as_text(PG_FUNCTION_ARGS);
@@ -260,7 +260,7 @@ PG_FUNCTION_INFO_V1(Tcbufferarr_as_text);
 Datum
 Tcbufferarr_as_text(PG_FUNCTION_ARGS)
 {
-  return Cbufferarr_as_text_ext(fcinfo, true, false);
+  return Tcbufferarr_as_text_ext(fcinfo, true, false);
 }
 
 PGDLLEXPORT Datum Tcbufferarr_as_ewkt(PG_FUNCTION_ARGS);
@@ -275,7 +275,7 @@ PG_FUNCTION_INFO_V1(Tcbufferarr_as_ewkt);
 Datum
 Tcbufferarr_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return Cbufferarr_as_text_ext(fcinfo, true, true);
+  return Tcbufferarr_as_text_ext(fcinfo, true, true);
 }
 
 /*****************************************************************************/

@@ -93,7 +93,7 @@ static const int16 TNumberStrategies[] =
   [ALWAYS_EQ_IDX]                = RTOverlapStrategyNumber,
 };
 
-static const int16 TPointStrategies[] =
+static const int16 TSpatialStrategies[] =
 {
   /* Ever/always comparison functions */
   [EVER_EQ_IDX]                  = RTOverlapStrategyNumber,
@@ -112,42 +112,6 @@ static const int16 TPointStrategies[] =
   [ADWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
 
-#if CBUFFER
-static const int16 TCbufferStrategies[] =
-{
-  /* Ever spatial relationships */
-  [ECONTAINS_IDX]                 = RTOverlapStrategyNumber,
-  [EDISJOINT_IDX]                 = RTOverlapStrategyNumber,
-  [EINTERSECTS_IDX]               = RTOverlapStrategyNumber,
-  [ETOUCHES_IDX]                  = RTOverlapStrategyNumber,
-  [EDWITHIN_IDX]                  = RTOverlapStrategyNumber,
-  /* Always spatial relationships */
-  [ACONTAINS_IDX]                 = RTOverlapStrategyNumber,
-  [ADISJOINT_IDX]                 = RTOverlapStrategyNumber,
-  [AINTERSECTS_IDX]               = RTOverlapStrategyNumber,
-  [ATOUCHES_IDX]                  = RTOverlapStrategyNumber,
-  [ADWITHIN_IDX]                  = RTOverlapStrategyNumber,
-};
-#endif /* CBUFFER */
-
-#if NPOINT
-static const int16 TNPointStrategies[] =
-{
-  /* Ever spatial relationships */
-  [ECONTAINS_IDX]                 = RTOverlapStrategyNumber,
-  [EDISJOINT_IDX]                 = RTOverlapStrategyNumber,
-  [EINTERSECTS_IDX]               = RTOverlapStrategyNumber,
-  [ETOUCHES_IDX]                  = RTOverlapStrategyNumber,
-  [EDWITHIN_IDX]                  = RTOverlapStrategyNumber,
-  /* Always spatial relationships */
-  [ACONTAINS_IDX]                 = RTOverlapStrategyNumber,
-  [ADISJOINT_IDX]                 = RTOverlapStrategyNumber,
-  [AINTERSECTS_IDX]               = RTOverlapStrategyNumber,
-  [ATOUCHES_IDX]                  = RTOverlapStrategyNumber,
-  [ADWITHIN_IDX]                  = RTOverlapStrategyNumber,
-};
-#endif /* NPOINT */
-
 /*
 * Metadata currently scanned from start to back,
 * so most common functions first. Could be sorted
@@ -165,7 +129,7 @@ static const IndexableFunction TNumberIndexableFunctions[] = {
   {NULL, 0, 0, 0}
 };
 
-static const IndexableFunction TPointIndexableFunctions[] = {
+static const IndexableFunction TSpatialIndexableFunctions[] = {
   /* Ever/always comparison functions */
   {"ever_eq", EVER_EQ_IDX, 2, 0},
   {"always_eq", ALWAYS_EQ_IDX, 2, 0},
@@ -184,39 +148,13 @@ static const IndexableFunction TPointIndexableFunctions[] = {
   {NULL, 0, 0, 0}
 };
 
-#if NPOINT
-static const IndexableFunction TNPointIndexableFunctions[] = {
-  /* Ever spatial relationships */
-  {"econtains", ECONTAINS_IDX, 2, 0},
-  {"edisjoint", EDISJOINT_IDX, 2, 0},
-  {"eintersects", EINTERSECTS_IDX, 2, 0},
-  {"etouches", ETOUCHES_IDX, 2, 0},
-  {"edwithin", EDWITHIN_IDX, 3, 3},
-  /* Always spatial relationships */
-  {"acontains", ECONTAINS_IDX, 2, 0},
-  {"adisjoint", EDISJOINT_IDX, 2, 0},
-  {"aintersects", EINTERSECTS_IDX, 2, 0},
-  {"atouches", ETOUCHES_IDX, 2, 0},
-  {"adwithin", EDWITHIN_IDX, 3, 3},
-  {NULL, 0, 0, 0}
-};
-#endif /* NPOINT */
-
 static int16
 temporal_get_strategy_by_type(meosType temptype, uint16_t index)
 {
   if (tnumber_type(temptype))
     return TNumberStrategies[index];
-  if (tgeo_type(temptype))
-    return TPointStrategies[index];
-#if CBUFFER
-  if (temptype == T_TCBUFFER)
-    return TCbufferStrategies[index];
-#endif /* CBUFFER */
-#if NPOINT
-  if (temptype == T_TNPOINT)
-    return TNPointStrategies[index];
-#endif /* NPOINT */
+  if (tspatial_type(temptype))
+    return TSpatialStrategies[index];
   return InvalidStrategy;
 }
 
@@ -294,6 +232,9 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
   meosType argtype = oid_type(argoid);
   if (argtype == T_GEOMETRY || argtype == T_GEOGRAPHY || argtype == T_STBOX ||
       argtype == T_TGEOMPOINT || argtype == T_TGEOGPOINT
+#if CBUFFER
+      || argtype == T_TCBUFFER
+#endif /* CBUFFER */
 #if NPOINT
       || argtype == T_TNPOINT
 #endif /* NPOINT */
@@ -335,6 +276,9 @@ makeBboxExpr(Node *arg, Oid argoid, Oid retoid, Oid callingfunc)
     funcname = "tbox";
   else if (argtype == T_GEOMETRY || argtype == T_GEOGRAPHY ||
       argtype == T_TGEOMPOINT || argtype == T_TGEOGPOINT
+#if CBUFFER
+      || argtype == T_CBUFFER || argtype == T_TCBUFFER
+#endif /* CBUFFER */
 #if NPOINT
       || argtype == T_NPOINT || argtype == T_TNPOINT
 #endif /* NPOINT */
@@ -392,11 +336,7 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 
   /* Return estimated selectivity */
   assert (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
-    tempfamily == TPOINTTYPE
-#if NPOINT
-    || tempfamily == TNPOINTTYPE
-#endif /* NPOINT */
-    );
+    tempfamily == TSPATIALTYPE );
   if (IsA(rawreq, SupportRequestSelectivity))
   {
     SupportRequestSelectivity *req = (SupportRequestSelectivity *) rawreq;
@@ -459,12 +399,8 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
         funcarr = TemporalIndexableFunctions;
       else if (tempfamily == TNUMBERTYPE)
         funcarr = TNumberIndexableFunctions;
-      else if (tempfamily == TPOINTTYPE)
-        funcarr = TPointIndexableFunctions;
-#if NPOINT
-      else if (tempfamily == TNPOINTTYPE)
-        funcarr = TNPointIndexableFunctions;
-#endif /* NPOINT */
+      else if (tempfamily == TSPATIALTYPE)
+        funcarr = TSpatialIndexableFunctions;
       else
       {
         /* We should never arrive here */
@@ -550,6 +486,9 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
       else if (righttype == T_GEOMETRY || righttype == T_GEOGRAPHY ||
           righttype == T_TGEOMPOINT || righttype == T_TGEOGPOINT ||
           righttype == T_STBOX
+#if CBUFFER
+          || righttype == T_CBUFFER || righttype == T_TCBUFFER
+#endif /* CBUFFER */
 #if NPOINT
           || righttype == T_NPOINT || righttype == T_TNPOINT
 #endif /* NPOINT */
@@ -653,28 +592,15 @@ Tnumber_supportfn(PG_FUNCTION_ARGS)
   return Temporal_supportfn(fcinfo, TNUMBERTYPE);
 }
 
-PGDLLEXPORT Datum Tpoint_supportfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_supportfn);
+PGDLLEXPORT Datum Tspatial_supportfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tspatial_supportfn);
 /**
  * @brief Support function for temporal number types
  */
 Datum
-Tpoint_supportfn(PG_FUNCTION_ARGS)
+Tspatial_supportfn(PG_FUNCTION_ARGS)
 {
-  return Temporal_supportfn(fcinfo, TPOINTTYPE);
+  return Temporal_supportfn(fcinfo, TSPATIALTYPE);
 }
-
-#if NPOINT
-PGDLLEXPORT Datum Tnpoint_supportfn(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnpoint_supportfn);
-/**
- * @brief Support function for temporal number types
- */
-Datum
-Tnpoint_supportfn(PG_FUNCTION_ARGS)
-{
-  return Temporal_supportfn(fcinfo, TNPOINTTYPE);
-}
-#endif /* NPOINT */
 
 /*****************************************************************************/

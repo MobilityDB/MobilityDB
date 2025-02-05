@@ -44,13 +44,14 @@
 #include "general/set.h"
 #include "general/span.h"
 #include "general/tbox.h"
-#include "point/stbox.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/pgis_types.h"
+#include "geo/stbox.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include "cbuffer/tcbuffer.h"
 #endif
 #if NPOINT
-  #include "npoint/npoint.h"
+  #include "npoint/tnpoint.h"
 #endif
 
 /*****************************************************************************/
@@ -78,7 +79,7 @@ typedef struct
   bool has_srid;          /**< SRID? */
   interpType interp;      /**< Interpolation */
   const uint8_t *pos;     /**< Current parse position */
-} wkb_parse_state;
+} meos_wkb_parse_state;
 
 /*****************************************************************************
  * Input in MF-JSON representation
@@ -870,7 +871,7 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
     return NULL;
   }
 
-  bool isgeo = tgeo_type(temptype);
+  bool isgeo = tpoint_type(temptype);
   if (isgeo)
   {
     /* Parse crs and set SRID of temporal point */
@@ -1027,7 +1028,7 @@ tgeogpoint_from_mfjson(const char *mfjson)
  * @brief Check that we are not about to read off the end of the WKB array
  */
 static inline void
-wkb_parse_state_check(wkb_parse_state *s, size_t next)
+wkb_parse_state_check(meos_wkb_parse_state *s, size_t next)
 {
   if ((s->pos + next) > (s->wkb + s->wkb_size))
   {
@@ -1041,7 +1042,7 @@ wkb_parse_state_check(wkb_parse_state *s, size_t next)
  * @brief Read a byte and advance the parse state forward
  */
 uint8_t
-byte_from_wkb_state(wkb_parse_state *s)
+byte_from_wkb_state(meos_wkb_parse_state *s)
 {
   uint8_t byte_value = 0;
   /* Does the data we want to read exist? */
@@ -1056,7 +1057,7 @@ byte_from_wkb_state(wkb_parse_state *s)
  * @brief Read a 2-byte integer and advance the parse state forward
  */
 int16_t
-int16_from_wkb_state(wkb_parse_state *s)
+int16_from_wkb_state(meos_wkb_parse_state *s)
 {
   int16_t i = 0;
   /* Does the data we want to read exist? */
@@ -1081,7 +1082,7 @@ int16_from_wkb_state(wkb_parse_state *s)
  * @brief Read a 4-byte integer and advance the parse state forward
  */
 int32_t
-int32_from_wkb_state(wkb_parse_state *s)
+int32_from_wkb_state(meos_wkb_parse_state *s)
 {
   int32_t i = 0;
   /* Does the data we want to read exist? */
@@ -1106,7 +1107,7 @@ int32_from_wkb_state(wkb_parse_state *s)
  * @brief Read an 8-byte integer and advance the parse state forward
  */
 int64_t
-int64_from_wkb_state(wkb_parse_state *s)
+int64_from_wkb_state(meos_wkb_parse_state *s)
 {
   int64_t i = 0;
   /* Does the data we want to read exist? */
@@ -1131,7 +1132,7 @@ int64_from_wkb_state(wkb_parse_state *s)
  * @brief Read an 8-byte double and advance the parse state forward
  */
 double
-double_from_wkb_state(wkb_parse_state *s)
+double_from_wkb_state(meos_wkb_parse_state *s)
 {
   double d = 0;
   /* Does the data we want to read exist? */
@@ -1156,7 +1157,7 @@ double_from_wkb_state(wkb_parse_state *s)
  * @brief Read an 8-byte timestamp and advance the parse state forward
  */
 DateADT
-date_from_wkb_state(wkb_parse_state *s)
+date_from_wkb_state(meos_wkb_parse_state *s)
 {
   int32_t d = 0;
   /* Does the data we want to read exist? */
@@ -1181,7 +1182,7 @@ date_from_wkb_state(wkb_parse_state *s)
  * @brief Read an 8-byte timestamp and advance the parse state forward
  */
 TimestampTz
-timestamp_from_wkb_state(wkb_parse_state *s)
+timestamp_from_wkb_state(meos_wkb_parse_state *s)
 {
   int64_t t = 0;
   /* Does the data we want to read exist? */
@@ -1206,7 +1207,7 @@ timestamp_from_wkb_state(wkb_parse_state *s)
  * @brief Read a text and advance the parse state forward
  */
 text *
-text_from_wkb_state(wkb_parse_state *s)
+text_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Get the size of the text value */
   size_t size = int64_from_wkb_state(s);
@@ -1223,24 +1224,91 @@ text_from_wkb_state(wkb_parse_state *s)
   return result;
 }
 
+/*****************************************************************************/
+
+// /**
+ // * @brief Return a point from its WKB representation
+ // * @note A WKB point has just a set of doubles, with the quantity depending on
+ // * the dimension of the point
+ // */
+// Datum
+// point_from_wkb_state(meos_wkb_parse_state *s)
+// {
+  // double x, y, z = 0; /* make compiler quiet */
+  // x = double_from_wkb_state(s);
+  // y = double_from_wkb_state(s);
+  // if (s->hasz)
+    // z = double_from_wkb_state(s);
+  // LWPOINT *point = s->hasz ? lwpoint_make3dz(s->srid, x, y, z) :
+    // lwpoint_make2d(s->srid, x, y);
+  // FLAGS_SET_GEODETIC(point->flags, s->geodetic);
+  // Datum result = PointerGetDatum(geo_serialize((LWGEOM *) point));
+  // lwpoint_free(point);
+  // return result;
+// }
+
 /**
- * @brief Return a point from its WKB representation
- * @note A WKB point has just a set of doubles, with the quantity depending on
- * the dimension of the point
+ * @brief Structure used in PostGIS for passing the parse state between the
+ * parsing functions.
  */
-Datum
-point_from_wkb_state(wkb_parse_state *s)
+typedef struct
 {
-  double x, y, z = 0; /* make compiler quiet */
-  x = double_from_wkb_state(s);
-  y = double_from_wkb_state(s);
-  if (s->hasz)
-    z = double_from_wkb_state(s);
-  LWPOINT *point = s->hasz ? lwpoint_make3dz(s->srid, x, y, z) :
-    lwpoint_make2d(s->srid, x, y);
-  FLAGS_SET_GEODETIC(point->flags, s->geodetic);
-  Datum result = PointerGetDatum(geo_serialize((LWGEOM *) point));
-  lwpoint_free(point);
+  const uint8_t *wkb; /* Points to start of WKB */
+  int32_t srid;    /* Current SRID we are handling */
+  size_t wkb_size; /* Expected size of WKB */
+  int8_t swap_bytes;  /* Do an endian flip? */
+  int8_t check;       /* Simple validity checks on geometries */
+  int8_t lwtype;      /* Current type we are handling */
+  int8_t has_z;       /* Z? */
+  int8_t has_m;       /* M? */
+  int8_t has_srid;    /* SRID? */
+  int8_t error;       /* An error was found (not enough bytes to read) */
+  uint8_t depth;      /* Current recursion level (to prevent stack overflows). 
+                         Maxes at LW_PARSER_MAX_DEPTH */
+  const uint8_t *pos; /* Current parse position */
+} wkb_parse_state;
+
+extern LWGEOM* lwgeom_from_wkb_state(wkb_parse_state *s);
+
+/**
+ * @brief Read a geo value from its WKB representation
+ * @note We cannot call directly #lwgeom_from_wkb since we need to know
+ * the number of bytes read from the buffer after decoding a geometry
+ */
+GSERIALIZED *
+geo_from_wkb_state(meos_wkb_parse_state *s)
+{
+  /* PostGIS parse structure, which is different from the MEOS one */
+  wkb_parse_state s1;
+  /* Initialize the state appropriately */
+  s1.wkb = s1.pos = s->pos;
+  s1.wkb_size = s->wkb_size - (s->pos - s->wkb);
+  s1.swap_bytes = s->swap_bytes;
+  s1.check = LW_PARSER_CHECK_ALL;
+  s1.lwtype = 0;
+  s1.srid = s->srid;
+  s1.has_z = s->hasz;
+  s1.has_m = LW_FALSE;
+  s1.has_srid = s->has_srid;
+  s1.error = LW_FALSE;
+  s1.depth = 1;
+
+  /* Read for the geometry */
+  LWGEOM *geo = lwgeom_from_wkb_state(&s1);
+  if (! geo)
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "Unable to parse geometry from WKB");
+    return NULL;
+  }
+  /* Advance the state by the number of bytes read for the geometry */
+  s->pos += (s1.pos - s1.wkb);
+  /* Create the geometry. We cannot call gserialized_from_lwgeom since it does 
+   * not set the geodetic flag. Therefore we need to call the corresponding
+   * MEOS function for doing this */
+  GSERIALIZED *result = s->geodetic ? 
+    geog_serialize(geo) : geom_serialize(geo);
+  lwgeom_free(geo);
   return result;
 }
 
@@ -1249,14 +1317,18 @@ point_from_wkb_state(wkb_parse_state *s)
  * @brief Read a circular buffer and advance the parse state forward
  */
 Cbuffer *
-cbuffer_from_wkb_state(wkb_parse_state *s)
+cbuffer_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MEOS_WKB_DOUBLE_SIZE * 2 + MEOS_WKB_DOUBLE_SIZE);
+  wkb_parse_state_check(s, MEOS_WKB_INT4_SIZE + MEOS_WKB_DOUBLE_SIZE * 3);
   /* Get the data */
-  GSERIALIZED *gs = DatumGetGserializedP(point_from_wkb_state(s));
+  int32_t srid = int32_from_wkb_state(s);
+  double x = double_from_wkb_state(s);
+  double y = double_from_wkb_state(s);
   double radius = double_from_wkb_state(s);
+  GSERIALIZED *gs = geopoint_make(x, y, 0.0, false, false, srid);
   Cbuffer *result = cbuffer_make(gs, radius);
+  pfree(gs);
   return result;
 }
 #endif /* CBUFFER */
@@ -1266,7 +1338,7 @@ cbuffer_from_wkb_state(wkb_parse_state *s)
  * @brief Read a network point and advance the parse state forward
  */
 Npoint *
-npoint_from_wkb_state(wkb_parse_state *s)
+npoint_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Does the data we want to read exist? */
   wkb_parse_state_check(s, MEOS_WKB_INT8_SIZE + MEOS_WKB_DOUBLE_SIZE);
@@ -1285,7 +1357,7 @@ npoint_from_wkb_state(wkb_parse_state *s)
  * @brief Return a base value from its WKB representation
  */
 static Datum
-basevalue_from_wkb_state(wkb_parse_state *s)
+base_from_wkb_state(meos_wkb_parse_state *s)
 {
   switch (s->basetype)
   {
@@ -1306,7 +1378,8 @@ basevalue_from_wkb_state(wkb_parse_state *s)
     case T_GEOMETRY:
     case T_GEOGRAPHY:
       /* Notice that only point geometries/geographies are allowed */
-      return point_from_wkb_state(s);
+      // return point_from_wkb_state(s);
+      return PointerGetDatum(geo_from_wkb_state(s));
 #if CBUFFER
     case T_CBUFFER:
       return PointerGetDatum(cbuffer_from_wkb_state(s));
@@ -1327,7 +1400,7 @@ basevalue_from_wkb_state(wkb_parse_state *s)
  * @brief Return the size of a span base value from its WKB representation
  */
 static size_t
-span_basevalue_from_wkb_size(wkb_parse_state *s)
+span_basevalue_from_wkb_size(meos_wkb_parse_state *s)
 {
   assert(span_basetype(s->basetype));
   switch (s->basetype)
@@ -1367,7 +1440,7 @@ bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
  * (iterator function)
  */
 static void
-span_from_wkb_state_iter(wkb_parse_state *s, Span *result)
+span_from_wkb_state_iter(meos_wkb_parse_state *s, Span *result)
 {
   /* Read the span bounds */
   uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
@@ -1379,8 +1452,8 @@ span_from_wkb_state_iter(wkb_parse_state *s, Span *result)
   wkb_parse_state_check(s, size);
 
   /* Read the values and create the span */
-  Datum lower = basevalue_from_wkb_state(s);
-  Datum upper = basevalue_from_wkb_state(s);
+  Datum lower = base_from_wkb_state(s);
+  Datum upper = base_from_wkb_state(s);
   span_set(lower, upper, lower_inc, upper_inc, s->basetype, s->spantype,
     result);
   return;
@@ -1390,7 +1463,7 @@ span_from_wkb_state_iter(wkb_parse_state *s, Span *result)
  * @brief Return a span from its WKB representation
  */
 Span
-span_from_wkb_state(wkb_parse_state *s)
+span_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Read the span type */
   uint16_t wkb_spantype = int16_from_wkb_state(s);
@@ -1407,7 +1480,7 @@ span_from_wkb_state(wkb_parse_state *s)
  * @brief Return a span set from its WKB representation
  */
 static SpanSet *
-spanset_from_wkb_state(wkb_parse_state *s)
+spanset_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Read the span type */
   uint16_t wkb_spansettype = int16_from_wkb_state(s);
@@ -1432,7 +1505,7 @@ spanset_from_wkb_state(wkb_parse_state *s)
  * @brief Parse the WKB flags
  */
 void
-set_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
+set_flags_from_wkb_state(meos_wkb_parse_state *s, uint8_t wkb_flags)
 {
   s->hasz = false;
   s->geodetic = false;
@@ -1456,7 +1529,7 @@ set_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
  * @brief Return a set from its WKB representation
  */
 static Set *
-set_from_wkb_state(wkb_parse_state *s)
+set_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Read the set type */
   uint16_t wkb_settype = int16_from_wkb_state(s);
@@ -1476,7 +1549,7 @@ set_from_wkb_state(wkb_parse_state *s)
 
   /* Read and create the set */
   for (int i = 0; i < count; i++)
-    values[i] = basevalue_from_wkb_state(s);
+    values[i] = base_from_wkb_state(s);
   return set_make_free(values, count, s->basetype, ORDER_NO);
 }
 
@@ -1487,7 +1560,7 @@ set_from_wkb_state(wkb_parse_state *s)
  * from the buffer
  */
 static void
-tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
+tbox_flags_from_wkb_state(meos_wkb_parse_state *s, uint8_t wkb_flags)
 {
   assert(wkb_flags & MEOS_WKB_XFLAG || wkb_flags & MEOS_WKB_TFLAG);
   s->hasx = false;
@@ -1503,7 +1576,7 @@ tbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
  * @brief Return a temporal box from its WKB representation
  */
 static TBox *
-tbox_from_wkb_state(wkb_parse_state *s)
+tbox_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Read the temporal flags */
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
@@ -1528,7 +1601,7 @@ tbox_from_wkb_state(wkb_parse_state *s)
  * buffer
  */
 static void
-stbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
+stbox_flags_from_wkb_state(meos_wkb_parse_state *s, uint8_t wkb_flags)
 {
   assert(wkb_flags & MEOS_WKB_XFLAG || wkb_flags & MEOS_WKB_TFLAG);
   s->hasx = false;
@@ -1553,7 +1626,7 @@ stbox_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
  * @brief Return a spatiotemporal box from its WKB representation
  */
 static STBox *
-stbox_from_wkb_state(wkb_parse_state *s)
+stbox_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Read the temporal flags */
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
@@ -1592,7 +1665,7 @@ stbox_from_wkb_state(wkb_parse_state *s)
  * flags masked onto the high bits
  */
 void
-temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
+temporal_flags_from_wkb_state(meos_wkb_parse_state *s, uint8_t wkb_flags)
 {
   s->hasx = true;
   s->hast = true;
@@ -1612,8 +1685,8 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
       s->has_srid = true;
   }
   /* Mask off the upper flags to get the subtype */
-  wkb_flags &= (uint8_t) 0x03;
-  switch (wkb_flags)
+  uint8 subtype = wkb_flags & (uint8_t) 0x03;
+  switch (subtype)
   {
     case TINSTANT:
       s->subtype = TINSTANT;
@@ -1640,10 +1713,10 @@ temporal_flags_from_wkb_state(wkb_parse_state *s, uint8_t wkb_flags)
  * flags byte.
  */
 static TInstant *
-tinstant_from_wkb_state(wkb_parse_state *s)
+tinstant_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Read the values from the buffer and create the instant */
-  Datum value = basevalue_from_wkb_state(s);
+  Datum value = base_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
   return tinstant_make_free(value, s->temptype, t);
 }
@@ -1652,13 +1725,13 @@ tinstant_from_wkb_state(wkb_parse_state *s)
  * @brief Return a temporal instant array from its WKB representation
  */
 static TInstant **
-tinstarr_from_wkb_state(wkb_parse_state *s, int count)
+tinstarr_from_wkb_state(meos_wkb_parse_state *s, int count)
 {
   TInstant **result = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i++)
   {
     /* Parse the point and the timestamp to create the instant point */
-    Datum value = basevalue_from_wkb_state(s);
+    Datum value = base_from_wkb_state(s);
     TimestampTz t = timestamp_from_wkb_state(s);
     result[i] = tinstant_make_free(value, s->temptype, t);
   }
@@ -1669,7 +1742,7 @@ tinstarr_from_wkb_state(wkb_parse_state *s, int count)
  * @brief Return a temporal sequence value from its WKB representation
  */
 static TSequence *
-tsequence_from_wkb_state(wkb_parse_state *s)
+tsequence_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Get the number of instants */
   int count = int32_from_wkb_state(s);
@@ -1688,7 +1761,7 @@ tsequence_from_wkb_state(wkb_parse_state *s)
  * @brief Return a temporal sequence set value from its WKB representation
  */
 static TSequenceSet *
-tsequenceset_from_wkb_state(wkb_parse_state *s)
+tsequenceset_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Get the number of sequences */
   int count = int32_from_wkb_state(s);
@@ -1708,7 +1781,7 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
     for (int j = 0; j < ninst; j++)
     {
       /* Parse the value and the timestamp to create the temporal instant */
-      Datum value = basevalue_from_wkb_state(s);
+      Datum value = base_from_wkb_state(s);
       TimestampTz t = timestamp_from_wkb_state(s);
       instants[j] = tinstant_make_free(value, s->temptype, t);
     }
@@ -1722,7 +1795,7 @@ tsequenceset_from_wkb_state(wkb_parse_state *s)
  * @brief Return a temporal value from its WKB representation
  */
 static Temporal *
-temporal_from_wkb_state(wkb_parse_state *s)
+temporal_from_wkb_state(meos_wkb_parse_state *s)
 {
   /* Read the temporal type */
   uint16_t wkb_temptype = int16_from_wkb_state(s);
@@ -1761,8 +1834,8 @@ static Datum
 datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
 {
   /* Initialize the state appropriately */
-  wkb_parse_state s;
-  memset(&s, 0, sizeof(wkb_parse_state));
+  meos_wkb_parse_state s;
+  memset(&s, 0, sizeof(meos_wkb_parse_state));
   s.wkb = s.pos = wkb;
   s.wkb_size = size;
   /* Fail when handed incorrect starting byte */
@@ -1798,6 +1871,10 @@ datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
     return PointerGetDatum(tbox_from_wkb_state(&s));
   if (type == T_STBOX)
     return PointerGetDatum(stbox_from_wkb_state(&s));
+#if CBUFFER
+  if (type == T_CBUFFER)
+    return PointerGetDatum(cbuffer_from_wkb_state(&s));
+#endif /* CBUFFER */
   if (temporal_type(type))
     return PointerGetDatum(temporal_from_wkb_state(&s));
   /* Error! */
@@ -1997,6 +2074,46 @@ stbox_from_hexwkb(const char *hexwkb)
   size_t size = strlen(hexwkb);
   return DatumGetSTboxP(datum_from_hexwkb(hexwkb, size, T_STBOX));
 }
+
+/*****************************************************************************
+ * WKB and HexWKB input functions for circular buffers
+ *****************************************************************************/
+
+#if CBUFFER
+/**
+ * @ingroup meos_cbuffer_inout
+ * @brief Return a circular buffer from its Well-Known Binary (WKB) 
+ * representation
+ * @param[in] wkb WKB string
+ * @param[in] size Size of the string
+ * @csqlfn #Cbuffer_recv(), #Cbuffer_from_wkb()
+ */
+Cbuffer *
+cbuffer_from_wkb(const uint8_t *wkb, size_t size)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) wkb))
+    return NULL;
+  return DatumGetCbufferP(datum_from_wkb(wkb, size, T_CBUFFER));
+}
+
+/**
+ * @ingroup meos_setcbuffer_inout
+ * @brief Return a circular buffer from its hex-encoded ASCII Well-Known Binary
+ * (WKB) representation
+ * @param[in] hexwkb HexWKB string
+ * @csqlfn #Cbuffer_from_hexwkb()
+ */
+Cbuffer *
+cbuffer_from_hexwkb(const char *hexwkb)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) hexwkb))
+    return NULL;
+  size_t size = strlen(hexwkb);
+  return DatumGetCbufferP(datum_from_hexwkb(hexwkb, size, T_CBUFFER));
+}
+#endif /* CBUFFER */
 
 /*****************************************************************************
  * WKB and HexWKB input functions for temporal types

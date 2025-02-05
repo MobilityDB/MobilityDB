@@ -125,7 +125,7 @@ tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
+      ! ensure_tpoint_type(temp->temptype))
     return NULL;
   return temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
 }
@@ -210,7 +210,7 @@ tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
+      ! ensure_tpoint_type(temp->temptype))
     return NULL;
   return temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
 }
@@ -370,7 +370,7 @@ tpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
-      ! ensure_tgeo_type(temp->temptype))
+      ! ensure_tpoint_type(temp->temptype))
     return false;
 
   Datum res;

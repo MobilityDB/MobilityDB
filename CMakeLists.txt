@@ -84,6 +84,13 @@ option(CBUFFER
   OFF
   )
 
+# Option for including temporal geometries/geographies
+option(GEO
+  "Set ON|OFF (default=OFF) to include temporal geometries/geographies
+  "
+  OFF
+  )
+
 # Option for including network points
 option(NPOINT
   "Set ON|OFF (default=ON) to include network points
@@ -104,6 +111,14 @@ if(CBUFFER)
 else()
   message(STATUS "Excluding circular buffers")
   add_definitions(-DCBUFFER=0)
+endif()
+
+if(GEO)
+  message(STATUS "Including temporal geometries/geographies")
+  add_definitions(-DGEO=1)
+else()
+  message(STATUS "Excluding temporal geometries/geographies")
+  add_definitions(-DGEO=0)
 endif()
 
 if(NPOINT)

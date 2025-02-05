@@ -57,8 +57,8 @@
 #include "general/temporal_boxops.h"
 #include "general/type_util.h"
 #include "general/type_parser.h"
-#include "point/tpoint_parser.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_parser.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include <meos_cbuffer.h>
   #include "cbuffer/tcbuffer.h"
@@ -877,7 +877,7 @@ tsequence_make_exp1(const TInstant **instants, int count, int maxcount,
   MEOS_FLAGS_SET_INTERP(result->flags, interp);
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_T(result->flags, true);
-  if (tgeo_type(instants[0]->temptype))
+  if (tspatial_type(instants[0]->temptype))
   {
     MEOS_FLAGS_SET_Z(result->flags, MEOS_FLAGS_GET_Z(instants[0]->flags));
     MEOS_FLAGS_SET_GEODETIC(result->flags,
@@ -2347,7 +2347,7 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
     dresult->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
     return Double4PGetDatum(dresult);
   }
-  if (tgeo_type(inst1->temptype))
+  if (tpoint_type(inst1->temptype))
   {
     return geosegm_interpolate_point(value1, value2, ratio);
   }
@@ -2777,7 +2777,7 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   bool result = false; /* make compiler quiet */
   if (inst1->temptype == T_TFLOAT)
     result = tfloatsegm_intersection_value(inst1, inst2, value, basetype, t);
-  else if (tgeo_type(inst1->temptype))
+  else if (tpoint_type(inst1->temptype))
     result = tpointsegm_intersection_value(inst1, inst2, value, t);
 #if CBUFFER
   else if (inst1->temptype == T_TCBUFFER)

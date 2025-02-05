@@ -56,7 +56,7 @@
 #include "general/span.h"
 #include "general/type_util.h"
 #include "general/type_util.h"
-#include "point/tpoint_boxops.h"
+#include "geo/tspatial_boxops.h"
 #if CBUFFER
   #include "cbuffer/tcbuffer_boxops.h"
 #endif
@@ -227,7 +227,7 @@ tinstant_set_bbox(const TInstant *inst, void *box)
   else if (tnumber_type(inst->temptype))
     tnumberinst_set_tbox(inst, (TBox *) box);
   else if (tgeo_type(inst->temptype))
-    tpointinst_set_stbox(inst, (STBox *) box);
+    tgeoinst_set_stbox(inst, (STBox *) box);
 #if CBUFFER
   else if (inst->temptype == T_TCBUFFER)
     tcbufferinst_set_stbox(inst, (STBox *) box);
@@ -423,7 +423,7 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
     tnumberinstarr_set_tbox(instants, count, lower_inc, upper_inc,
       interp, (TBox *) box);
   else if (tgeo_type(temptype))
-    tpointinstarr_set_stbox(instants, count, (STBox *) box);
+    tgeoinstarr_set_stbox(instants, count, (STBox *) box);
 #if CBUFFER
   else if (temptype == T_TCBUFFER)
     tcbufferinstarr_set_stbox(instants, count, (STBox *) box);
@@ -483,7 +483,7 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
   else if (tnumber_type(seq->temptype))
     tnumberseq_expand_tbox(seq, inst);
   else if (tgeo_type(seq->temptype))
-    tpointseq_expand_stbox(seq, inst);
+    tgeoseq_expand_stbox(seq, inst);
 #if NPOINT
   else if (seq->temptype == T_TNPOINT)
     tnpointseq_expand_stbox(seq, inst);
@@ -575,7 +575,7 @@ tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
   else if (tnumber_type(sequences[0]->temptype))
     tnumberseqarr_set_tbox(sequences, count, (TBox *) box);
   else if (tspatial_type(sequences[0]->temptype))
-    tpointseqarr_set_stbox(sequences, count, (STBox *) box);
+    tgeoseqarr_set_stbox(sequences, count, (STBox *) box);
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Unknown temporal type for bounding box function: %s",

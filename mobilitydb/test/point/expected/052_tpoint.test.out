@@ -42,11 +42,11 @@ ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeogpoint 'Point empty@2012-01-01 08:00:00';
                           ^
 SELECT tgeompoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
-ERROR:  Could not parse temporal point value: Extraneous characters at the end
+ERROR:  Could not parse temporal geo value: Extraneous characters at the end
 LINE 1: SELECT tgeompoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
                           ^
 SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
-ERROR:  Could not parse temporal point value: Extraneous characters at the end
+ERROR:  Could not parse temporal geo value: Extraneous characters at the end
 LINE 1: SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
                           ^
 SELECT tgeogpoint 'Point M(1 1 1)@2000-01-01 00:00:00+01';
@@ -95,19 +95,19 @@ ERROR:  The arguments must be of the same dimensionality
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Could not parse temporal point value: Missing closing brace
+ERROR:  Could not parse temporal geo value: Missing closing brace
 LINE 1: SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Could not parse temporal point value: Missing closing brace
+ERROR:  Could not parse temporal geo value: Missing closing brace
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00} xxx';
-ERROR:  Could not parse temporal point value: Extraneous characters at the end
+ERROR:  Could not parse temporal geo value: Extraneous characters at the end
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00} xxx';
-ERROR:  Could not parse temporal point value: Extraneous characters at the end
+ERROR:  Could not parse temporal geo value: Extraneous characters at the end
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT asText(tgeompoint ' [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ] ');
@@ -158,19 +158,19 @@ ERROR:  The arguments must be of the same dimensionality
 LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
-ERROR:  Could not parse temporal point value: Missing closing bracket/parenthesis
+ERROR:  Could not parse temporal geo value: Missing closing bracket/parenthesis
 LINE 1: SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
-ERROR:  Could not parse temporal point value: Missing closing bracket/parenthesis
+ERROR:  Could not parse temporal geo value: Missing closing bracket/parenthesis
 LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00] xxx';
-ERROR:  Could not parse temporal point value: Extraneous characters at the end
+ERROR:  Could not parse temporal geo value: Extraneous characters at the end
 LINE 1: SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00] xxx';
-ERROR:  Could not parse temporal point value: Extraneous characters at the end
+ERROR:  Could not parse temporal geo value: Extraneous characters at the end
 LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT asText(tgeompoint '  { [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ],
@@ -221,19 +221,19 @@ ERROR:  The arguments must be of the same dimensionality
 LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Could not parse temporal point value: Missing closing brace
+ERROR:  Could not parse temporal geo value: Missing closing brace
 LINE 1: SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Could not parse temporal point value: Missing closing brace
+ERROR:  Could not parse temporal geo value: Missing closing brace
 LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]} xxx';
-ERROR:  Could not parse temporal point value: Extraneous characters at the end
+ERROR:  Could not parse temporal geo value: Extraneous characters at the end
 LINE 1: SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]} xxx';
-ERROR:  Could not parse temporal point value: Extraneous characters at the end
+ERROR:  Could not parse temporal geo value: Extraneous characters at the end
 LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 1)@2000-01-01, Point(0 1)@2000-01-02]');
@@ -335,7 +335,7 @@ SELECT format_type(oid, -1) FROM (SELECT oid FROM pg_type WHERE typname = 'tgeom
  tgeompoint
 (1 row)
 
-SELECT format_type(oid, tgeompoint_typmod_in(ARRAY[cstring 'Instant','PointZ','5676']))
+SELECT format_type(oid, tgeometry_typmod_in(ARRAY[cstring 'Instant','PointZ','5676']))
 FROM (SELECT oid FROM pg_type WHERE typname = 'tgeompoint') t;
            format_type           
 ---------------------------------
@@ -343,9 +343,9 @@ FROM (SELECT oid FROM pg_type WHERE typname = 'tgeompoint') t;
 (1 row)
 
 /* Errors */
-SELECT tgeompoint_typmod_in(ARRAY[cstring 'Instant', NULL,'5676']);
+SELECT tgeometry_typmod_in(ARRAY[cstring 'Instant', NULL,'5676']);
 ERROR:  typmod array must not contain nulls
-SELECT tgeompoint_typmod_in(ARRAY[[cstring 'Instant'],[cstring 'PointZ'],[cstring '5676']]);
+SELECT tgeometry_typmod_in(ARRAY[[cstring 'Instant'],[cstring 'PointZ'],[cstring '5676']]);
 ERROR:  typmod array must be one-dimensional
 SELECT asEWKT(tgeompoint('') 'Point(0 1)@2000-01-01');
 ERROR:  Empty temporal type modifier
@@ -614,7 +614,6 @@ SELECT tgeompoint(1, 2) '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}';
 ERROR:  Invalid geometry type modifier: 1
 LINE 1: SELECT tgeompoint(1, 2) '{Point(1 1)@2000-01-01, Point(1 1)@...
                ^
-/* Errors */
 SELECT asEWKT(tgeompoint(Instant, PointZ) 'Point(0 1)@2000-01-01');
 ERROR:  Column has Z dimension but temporal point does not
 SELECT asEWKT(tgeompoint(Instant, Point, 4326) 'Point(0 1)@2000-01-01');
@@ -633,7 +632,6 @@ SELECT asEWKT(tgeompoint(SequenceSet, Point) 'Point(0 1)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
 SELECT asEWKT(tgeompoint(SequenceSet, PointZ) 'Point(0 1)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
-/* Errors */
 SELECT asEWKT(tgeompoint(Instant, Point) 'Point(0 1 0)@2000-01-01');
 ERROR:  Temporal point has Z dimension but column does not
 SELECT asEWKT(tgeompoint(Instant, PointZ, 4326) 'Point(0 1 0)@2000-01-01');
@@ -652,7 +650,6 @@ SELECT asEWKT(tgeompoint(SequenceSet, Point) 'Point(0 1 0)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
 SELECT asEWKT(tgeompoint(SequenceSet, PointZ) 'Point(0 1 0)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
-/* Errors */
 SELECT asEWKT(tgeompoint(Instant, Point) '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
 SELECT asEWKT(tgeompoint(Instant, PointZ) '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
@@ -669,7 +666,6 @@ SELECT asEWKT(tgeompoint(SequenceSet, Point) '{Point(0 1)@2000-01-01, Point(1 1)
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 SELECT asEWKT(tgeompoint(SequenceSet, PointZ) '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
-/* Errors */
 SELECT asEWKT(tgeompoint(Instant, Point) '{Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
 SELECT asEWKT(tgeompoint(Instant, PointZ) '{Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
@@ -686,7 +682,6 @@ SELECT asEWKT(tgeompoint(SequenceSet, Point) '{Point(0 1 0)@2000-01-01, Point(1 
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 SELECT asEWKT(tgeompoint(SequenceSet, PointZ) '{Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
-/* Errors */
 SELECT asEWKT(tgeompoint(Instant, Point) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
 SELECT asEWKT(tgeompoint(Instant, PointZ) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
@@ -703,7 +698,6 @@ SELECT asEWKT(tgeompoint(SequenceSet, Point) '[Point(0 1)@2000-01-01, Point(1 1)
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 SELECT asEWKT(tgeompoint(SequenceSet, PointZ) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
-/* Errors */
 SELECT asEWKT(tgeompoint(Instant, Point) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
 SELECT asEWKT(tgeompoint(Instant, PointZ) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
@@ -720,7 +714,6 @@ SELECT asEWKT(tgeompoint(SequenceSet, Point) '[Point(0 1 0)@2000-01-01, Point(1 
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 SELECT asEWKT(tgeompoint(SequenceSet, PointZ) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
-/* Errors */
 SELECT asEWKT(tgeompoint(Instant, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
   [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
@@ -748,7 +741,6 @@ ERROR:  Temporal point SRID (5434) does not match column SRID (4326)
 SELECT asEWKT(tgeompoint(SequenceSet, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
   [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Column has Z dimension but temporal point does not
-/* Errors */
 SELECT asEWKT(tgeompoint(Instant, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
   [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
@@ -841,7 +833,6 @@ SELECT asEWKT(tgeogpoint(SequenceSet, Point) 'Point(0 1)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
 SELECT asEWKT(tgeogpoint(SequenceSet, PointZ) 'Point(0 1)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
-/* Errors */
 SELECT asEWKT(tgeogpoint(Instant, Point) 'Point(0 1 0)@2000-01-01');
 ERROR:  Temporal point has Z dimension but column does not
 SELECT asEWKT(tgeogpoint(Sequence, Point) 'Point(0 1 0)@2000-01-01');
@@ -856,7 +847,6 @@ SELECT asEWKT(tgeogpoint(SequenceSet, Point) 'Point(0 1 0)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
 SELECT asEWKT(tgeogpoint(SequenceSet, PointZ) 'Point(0 1 0)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
-/* Errors */
 SELECT asEWKT(tgeogpoint(Instant, Point) '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
 SELECT asEWKT(tgeogpoint(Instant, PointZ) '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
@@ -869,7 +859,6 @@ SELECT asEWKT(tgeogpoint(SequenceSet, Point) '{Point(0 1)@2000-01-01, Point(1 1)
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 SELECT asEWKT(tgeogpoint(SequenceSet, PointZ) '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
-/* Errors */
 SELECT asEWKT(tgeogpoint(Instant, Point) '{Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
 SELECT asEWKT(tgeogpoint(Instant, PointZ) '{Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
@@ -882,7 +871,6 @@ SELECT asEWKT(tgeogpoint(SequenceSet, Point) '{Point(0 1 0)@2000-01-01, Point(1 
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 SELECT asEWKT(tgeogpoint(SequenceSet, PointZ) '{Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
-/* Errors */
 SELECT asEWKT(tgeogpoint(Instant, Point) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
 SELECT asEWKT(tgeogpoint(Instant, PointZ) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
@@ -895,7 +883,6 @@ SELECT asEWKT(tgeogpoint(SequenceSet, Point) '[Point(0 1)@2000-01-01, Point(1 1)
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 SELECT asEWKT(tgeogpoint(SequenceSet, PointZ) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
-/* Errors */
 SELECT asEWKT(tgeogpoint(Instant, Point) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
 SELECT asEWKT(tgeogpoint(Instant, PointZ) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
@@ -908,7 +895,6 @@ SELECT asEWKT(tgeogpoint(SequenceSet, Point) '[Point(0 1 0)@2000-01-01, Point(1 
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 SELECT asEWKT(tgeogpoint(SequenceSet, PointZ) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
-/* Errors */
 SELECT asEWKT(tgeogpoint(Instant, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
   [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
@@ -930,7 +916,6 @@ ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT asEWKT(tgeogpoint(SequenceSet, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
   [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Column has Z dimension but temporal point does not
-/* Errors */
 SELECT asEWKT(tgeogpoint(Instant, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
   [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
@@ -3244,15 +3229,23 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> geometry 'Point empty';
  
 (1 row)
 
-/* Errors */
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'Linestring(1 1,2 2)';
-ERROR:  Only point geometries accepted
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' ?= geography 'Linestring(1 1,2 2)';
+ ?column? 
+----------
+ f
+(1 row)
+
+/* Errors */
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'SRID=5676;Point(1 1)';
 ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'Point(1 1 1)';
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT tgeogpoint 'Point(1 1)@2000-01-01' ?= geography 'Linestring(1 1,2 2)';
-ERROR:  Only point geometries accepted
 SELECT tgeogpoint 'Point(1 1)@2000-01-01' ?= geography 'SRID=4283;Point(1 1)';
 ERROR:  Operation on mixed SRID
 SELECT tgeogpoint 'Point(1 1)@2000-01-01' ?= geography 'Point(1 1 1)';
@@ -3365,15 +3358,23 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' %<> geometry 'Point empty';
  
 (1 row)
 
-/* Errors */
 SELECT tgeompoint 'Point(1 1)@2000-01-01' %= geometry 'Linestring(1 1,2 2)';
-ERROR:  Only point geometries accepted
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' %= geography 'Linestring(1 1,2 2)';
+ ?column? 
+----------
+ f
+(1 row)
+
+/* Errors */
 SELECT tgeompoint 'Point(1 1)@2000-01-01' %= geometry 'SRID=5676;Point(1 1)';
 ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' %= geometry 'Point(1 1 1)';
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT tgeogpoint 'Point(1 1)@2000-01-01' %= geography 'Linestring(1 1,2 2)';
-ERROR:  Only point geometries accepted
 SELECT tgeogpoint 'Point(1 1)@2000-01-01' %= geography 'SRID=4283;Point(1 1)';
 ERROR:  Operation on mixed SRID
 SELECT tgeogpoint 'Point(1 1)@2000-01-01' %= geography 'Point(1 1 1)';
@@ -3493,15 +3494,23 @@ SELECT asText(atValues(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02
  {[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST]}
 (1 row)
 
+SELECT asText(atValues(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atValues(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring(1 1,2 2)'));
+ astext 
+--------
+ 
+(1 row)
+
 /* Errors */
-SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)');
-ERROR:  Only point geometries accepted
 SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
 SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT atValues(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring(1 1,2 2)');
-ERROR:  Only point geometries accepted
 SELECT atValues(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)');
 ERROR:  Operation on mixed SRID
 SELECT atValues(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Point(1 1 1)');
@@ -3621,15 +3630,23 @@ SELECT asText(minusValues(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01
  {(POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
+SELECT asText(minusValues(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)'));
+                 astext                  
+-----------------------------------------
+ POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(minusValues(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring(1 1,2 2)'));
+                 astext                  
+-----------------------------------------
+ POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
 /* Errors */
-SELECT minusValues(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)');
-ERROR:  Only point geometries accepted
 SELECT minusValues(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
 SELECT minusValues(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT minusValues(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring(1 1,2 2)');
-ERROR:  Only point geometries accepted
 SELECT minusValues(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)');
 ERROR:  Operation on mixed SRID
 SELECT minusValues(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Point(1 1 1)');
@@ -3682,15 +3699,23 @@ SELECT asText(atValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2
  {[POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST], [POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
+SELECT asText(atValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'Linestring(1 1,2 2)')));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(atValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'Linestring(1 1,2 2)')));
+ astext 
+--------
+ 
+(1 row)
+
 /* Errors */
-SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'Linestring(1 1,2 2)'));
-ERROR:  Only point geometries accepted
 SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'SRID=5676;Point(1 1)'));
 ERROR:  Operation on mixed SRID
 SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'Point(1 1 1)'));
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT atValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'Linestring(1 1,2 2)'));
-ERROR:  Only point geometries accepted
 SELECT atValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'SRID=4283;Point(1 1)'));
 ERROR:  Operation on mixed SRID
 SELECT atValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'Point(1 1 1)'));
@@ -3743,15 +3768,23 @@ SELECT asText(minusValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5
  {(POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST), [POINT(3.5 3.5)@Tue Jan 04 00:00:00 2000 PST, POINT(3.5 3.5)@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+SELECT asText(minusValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'Linestring(1 1,2 2)')));
+                 astext                  
+-----------------------------------------
+ POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(minusValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'Linestring(1 1,2 2)')));
+                 astext                  
+-----------------------------------------
+ POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
 /* Errors */
-SELECT minusValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'Linestring(1 1,2 2)'));
-ERROR:  Only point geometries accepted
 SELECT minusValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'SRID=5676;Point(1 1)'));
 ERROR:  Operation on mixed SRID
 SELECT minusValues(tgeompoint 'Point(1 1)@2000-01-01', set(geometry 'Point(1 1 1)'));
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT minusValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'Linestring(1 1,2 2)'));
-ERROR:  Only point geometries accepted
 SELECT minusValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'SRID=4283;Point(1 1)'));
 ERROR:  Operation on mixed SRID
 SELECT minusValues(tgeogpoint 'Point(1 1)@2000-01-01', set(geography 'Point(1 1 1)'));

@@ -51,7 +51,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "point/stbox.h"
+#include "geo/stbox.h"
 
 /*****************************************************************************
  * Type definitions
@@ -75,11 +75,16 @@ typedef struct
 
 extern char *cbuffer_wkt_out(Datum value, meosType type, int maxdd);
 extern char *cbuffer_ewkt_out(Datum value, meosType type, int maxdd);
+
 extern char *cbuffer_as_text(const Cbuffer *cbuf, int maxdd);
 extern char *cbuffer_as_ewkt(const Cbuffer *cbuf, int maxdd);
+extern uint8_t *cbuffer_as_wkb(const Cbuffer *cbuf, uint8_t variant, size_t *size_out);
+extern char *cbuffer_as_hexwkb(const Cbuffer *cbuf, uint8_t variant, size_t *size);
 extern int cbuffer_cmp(const Cbuffer *cbuf1, const Cbuffer *cbuf2);
 extern Cbuffer *cbuffer_cp(const Cbuffer *cbuf);
 extern bool cbuffer_eq(const Cbuffer *cbuf1, const Cbuffer *cbuf2);
+extern Cbuffer *cbuffer_from_wkb(const uint8_t *wkb, size_t size);
+extern Cbuffer *cbuffer_from_hexwkb(const char *hexwkb);
 extern bool cbuffer_ge(const Cbuffer *cbuf1, const Cbuffer *cbuf2);
 extern GSERIALIZED *cbuffer_geom(const Cbuffer *cbuf);
 extern bool cbuffer_gt(const Cbuffer *cbuf1, const Cbuffer *cbuf2);
@@ -90,8 +95,9 @@ extern bool cbuffer_lt(const Cbuffer *cbuf1, const Cbuffer *cbuf2);
 extern Cbuffer *cbuffer_make(const GSERIALIZED *point, double radius);
 extern bool cbuffer_ne(const Cbuffer *cbuf1, const Cbuffer *cbuf2);
 extern char *cbuffer_out(const Cbuffer *cbuf, int maxdd);
-extern double cbuffer_radius(const Cbuffer *cbuf);
 extern const GSERIALIZED *cbuffer_point(const Cbuffer *cbuf);
+extern double cbuffer_radius(const Cbuffer *cbuf);
+extern bool cbuffer_same(const Cbuffer *cbuf1, const Cbuffer *cbuf2);
 extern int32_t cbuffer_srid(const Cbuffer *cbuf);
 extern void cbuffer_set_srid(Cbuffer *cbuf, int32_t srid);
 extern Cbuffer *cbuffer_transform(const Cbuffer *cbuf, int32 srid);

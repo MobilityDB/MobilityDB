@@ -69,9 +69,9 @@ int main()
     4, 4326, true, true, true, true, true);
 
   /* Print result in WKT */
-  char *seq1_wkt = tpoint_as_ewkt((Temporal *) seq1, 2);
-  char *seq2_wkt = tpoint_as_ewkt((Temporal *) seq2, 2);
-  char *seq3_wkt = tpoint_as_ewkt((Temporal *) seq3, 2);
+  char *seq1_wkt = tgeo_as_ewkt((Temporal *) seq1, 2);
+  char *seq2_wkt = tgeo_as_ewkt((Temporal *) seq2, 2);
+  char *seq3_wkt = tgeo_as_ewkt((Temporal *) seq3, 2);
   printf("\nSequence l: %s\nSequence 2: %s\nSequence 3: %s\n\n",
     seq1_wkt, seq2_wkt, seq3_wkt);
 

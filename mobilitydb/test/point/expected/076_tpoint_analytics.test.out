@@ -488,7 +488,7 @@ SELECT asEWKT(scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-0
 SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(2 2)', geometry 'POINT(1 1)'));
                                        asewkt                                       
 ------------------------------------------------------------------------------------
- [POINT(3 3)@Mon Jan 01 00:00:00 2001 PST, POINT(5 5)@Tue Jan 02 00:00:00 2001 PST]
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST, POINT(3 3)@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT Empty'));

@@ -38,8 +38,8 @@
 #include <meos.h>
 #include <meos_cbuffer.h>
 #include <meos_internal.h>
-#include "point/pgis_types.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/pgis_types.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_spatialfuncs.h"
 
@@ -142,7 +142,7 @@ distance_tcbuffer_point(const Temporal *temp, const GSERIALIZED *gs)
     return NULL;
 
   Temporal *tpoint = tcbuffer_tgeompoint(temp);
-  Temporal *result = distance_tpoint_point((const Temporal *) tpoint, gs);
+  Temporal *result = distance_tgeo_geo((const Temporal *) tpoint, gs);
   pfree(tpoint);
   return result;
 }
@@ -160,7 +160,7 @@ distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
   GSERIALIZED *geom = cbuffer_geom(cbuf);
   Temporal *tpoint = tcbuffer_tgeompoint(temp);
-  Temporal *result = distance_tpoint_point(tpoint, geom);
+  Temporal *result = distance_tgeo_geo(tpoint, geom);
   pfree(geom);
   return result;
 }
@@ -176,7 +176,7 @@ distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *tpoint1 = tcbuffer_tgeompoint(temp1);
   Temporal *tpoint2 = tcbuffer_tgeompoint(temp2);
-  Temporal *result = distance_tpoint_tpoint(tpoint1, tpoint2);
+  Temporal *result = distance_tgeo_tgeo(tpoint1, tpoint2);
   pfree(tpoint1); pfree(tpoint2);
   return result;
 }
@@ -198,7 +198,7 @@ nad_stbox_cbuffer(const STBox *box, const Cbuffer *cbuf)
 {
   /* Ensure validity of the arguments */
   if (! ensure_valid_stbox_cbuffer(box, cbuf))
-      // ! ensure_same_spatial_dimensionality_stbox_gs(box, cbuf))
+      // ! ensure_same_spatial_dimensionality_stbox_geo(box, cbuf))
     return -1.0;
 
   Datum geobox = PointerGetDatum(stbox_to_geo(box));
@@ -224,7 +224,7 @@ nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (gserialized_is_empty(gs))
     return NULL;
   Temporal *tpoint = tcbuffer_tgeompoint(temp);
-  TInstant *resultgeom = nai_tpoint_geo(tpoint, gs);
+  TInstant *resultgeom = nai_tgeo_geo(tpoint, gs);
   /* We do not call the function tgeompointinst_tcbufferinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
@@ -247,7 +247,7 @@ nai_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
   GSERIALIZED *geom = cbuffer_geom(cbuf);
   Temporal *tpoint = tcbuffer_tgeompoint(temp);
-  TInstant *resultgeom = nai_tpoint_geo(tpoint, geom);
+  TInstant *resultgeom = nai_tgeo_geo(tpoint, geom);
   /* We do not call the function tgeompointinst_tcbufferinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
@@ -415,7 +415,7 @@ shortestline_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *tpoint1 = tcbuffer_tgeompoint(temp1);
   Temporal *tpoint2 = tcbuffer_tgeompoint(temp2);
-  GSERIALIZED *result = shortestline_tpoint_tpoint(tpoint1, tpoint2);
+  GSERIALIZED *result = shortestline_tgeo_tgeo(tpoint1, tpoint2);
   pfree(tpoint1); pfree(tpoint2);
   return result;
 }
