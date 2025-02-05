@@ -105,17 +105,22 @@ CREATE FUNCTION point(cbuffer)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Cbuffer_point'
   LANGUAGE C IMMUTABLE STRICT;
-  
+
 CREATE FUNCTION radius(cbuffer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Cbuffer_radius'
   LANGUAGE C IMMUTABLE STRICT;
-  
-CREATE FUNCTION srid(cbuffer)
+
+CREATE FUNCTION SRID(cbuffer)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Cbuffer_get_srid'
   LANGUAGE C IMMUTABLE STRICT;
-  
+
+CREATE FUNCTION setSRID(cbuffer, integer)
+  RETURNS cbuffer
+  AS 'MODULE_PATHNAME', 'Cbuffer_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Modification functions
  *****************************************************************************/

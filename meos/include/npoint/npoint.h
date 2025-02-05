@@ -46,9 +46,9 @@
 /* General functions */
 
 extern int32_t get_srid_ways(void);
-extern GSERIALIZED *npointarr_geom(Npoint **points, int count);
-extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int count);
-extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
+extern GSERIALIZED *npointarr_geom(Npoint **points, int nelems);
+extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int nelems);
+extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *nelems);
 
 /* Input/output functions */
 

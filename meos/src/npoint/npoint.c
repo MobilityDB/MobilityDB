@@ -659,15 +659,15 @@ geom_npoint(const GSERIALIZED *gs)
 /**
  * @brief Return an array of network points converted into a geometry
  * @param[in] points Array of network points
- * @param[in] count Number of elements in the input array
- * @pre The argument @p count is greater than 1
+ * @param[in] nelems Number of elements in the input array
+ * @pre The argument @p nelems is greater than 1
  */
 GSERIALIZED *
-npointarr_geom(Npoint **points, int count)
+npointarr_geom(Npoint **points, int nelems)
 {
-  assert(count > 1);
-  LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
-  for (int i = 0; i < count; i++)
+  assert(nelems > 1);
+  LWGEOM **geoms = palloc(sizeof(LWGEOM *) * nelems);
+  for (int i = 0; i < nelems; i++)
   {
     GSERIALIZED *gsline = route_geom(points[i]->rid);
     int32_t srid = gserialized_get_srid(gsline);
@@ -676,26 +676,26 @@ npointarr_geom(Npoint **points, int count)
     pfree(gsline); pfree(line);
   }
   int newcount;
-  LWGEOM **newgeoms = lwpointarr_remove_duplicates(geoms, count, &newcount);
+  LWGEOM **newgeoms = lwpointarr_remove_duplicates(geoms, nelems, &newcount);
   LWGEOM *geom = lwpointarr_make_trajectory(newgeoms, newcount, STEP);
   GSERIALIZED *result = geo_serialize(geom);
   pfree(newgeoms); pfree(geom);
-  pfree_array((void **) geoms, count);
+  pfree_array((void **) geoms, nelems);
   return result;
 }
 
 /**
  * @brief Return an array of network segments converted into a geometry
  * @param[in] segments Array of network segments
- * @param[in] count Number of elements in the input array
- * @pre The argument @p count is greater than 1
+ * @param[in] nelems Number of elements in the input array
+ * @pre The argument @p nelems is greater than 1
  */
 GSERIALIZED *
-nsegmentarr_geom(Nsegment **segments, int count)
+nsegmentarr_geom(Nsegment **segments, int nelems)
 {
-  assert(count > 1);
-  GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * count);
-  for (int i = 0; i < count; i++)
+  assert(nelems > 1);
+  GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * nelems);
+  for (int i = 0; i < nelems; i++)
   {
     GSERIALIZED *line = route_geom(segments[i]->rid);
     if (segments[i]->pos1 == 0 && segments[i]->pos2 == 1)
@@ -706,8 +706,8 @@ nsegmentarr_geom(Nsegment **segments, int count)
       geoms[i] = line_substring(line, segments[i]->pos1, segments[i]->pos2);
     pfree(line);
   }
-  GSERIALIZED *result = geom_array_union(geoms, count);
-  pfree_array((void **) geoms, count);
+  GSERIALIZED *result = geom_array_union(geoms, nelems);
+  pfree_array((void **) geoms, nelems);
   return result;
 }
 
@@ -728,9 +728,9 @@ nsegment_sort_cmp(Nsegment **l, Nsegment **r)
  * @brief Sort function for network segments
  */
 static void
-nsegmentarr_sort(Nsegment **segments, int count)
+nsegmentarr_sort(Nsegment **segments, int nelems)
 {
-  qsort(segments, (size_t) count, sizeof(Nsegment *),
+  qsort(segments, (size_t) nelems, sizeof(Nsegment *),
       (qsort_comparator) &nsegment_sort_cmp);
   return;
 }
@@ -739,14 +739,14 @@ nsegmentarr_sort(Nsegment **segments, int count)
  * @brief Normalize an array of temporal segments
  */
 Nsegment **
-nsegmentarr_normalize(Nsegment **segments, int *count)
+nsegmentarr_normalize(Nsegment **segments, int *nelems)
 {
-  assert(*count != 0);
-  nsegmentarr_sort(segments, *count);
+  assert(*nelems != 0);
+  nsegmentarr_sort(segments, *nelems);
   int newcount = 0;
-  Nsegment **result = palloc(sizeof(Nsegment *) * *count);
+  Nsegment **result = palloc(sizeof(Nsegment *) * *nelems);
   Nsegment *current = segments[0];
-  for (int i = 1; i < *count; i++)
+  for (int i = 1; i < *nelems; i++)
   {
     Nsegment *seg = segments[i];
     if (current->rid == seg->rid)
@@ -762,7 +762,7 @@ nsegmentarr_normalize(Nsegment **segments, int *count)
     }
   }
   result[newcount++] = current;
-  *count = newcount;
+  *nelems = newcount;
   return result;
 }
 

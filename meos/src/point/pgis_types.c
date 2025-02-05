@@ -616,6 +616,75 @@ geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result)
   return true;
 }
 
+/**
+ * @brief Collect the array of geometries into a geometry collection
+ * @note PostGIS function: @p LWGEOM_collect_garray(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+geom_collect_garray(GSERIALIZED **gsarr, int nelems)
+{
+  assert(nelems > 0);
+
+  uint32 outtype = 0;
+  int count = 0;
+  int32_t srid = SRID_UNKNOWN;
+  GBOX *box = NULL;
+  LWGEOM **lwgeoms = palloc(sizeof(LWGEOM *) * nelems);
+  for (int i = 0; i < nelems; i++)
+  {
+    GSERIALIZED *geom = gsarr[i];
+    uint8_t intype = gserialized_get_type(geom);
+    lwgeoms[count] = lwgeom_from_gserialized(geom);
+    if (! count)
+    {
+      /* Get first geometry SRID */
+      srid = lwgeoms[count]->srid;
+
+      /* COMPUTE_BBOX WHEN_SIMPLE */
+      if (lwgeoms[count]->bbox)
+        box = gbox_copy(lwgeoms[count]->bbox);
+    }
+    else
+    {
+      /* Check SRID homogeneity */
+      if (! ensure_same_srid(srid, gserialized_get_srid(geom)))
+        return NULL;
+
+      /* COMPUTE_BBOX WHEN_SIMPLE */
+      if (box)
+      {
+        if (lwgeoms[count]->bbox)
+          gbox_merge(lwgeoms[count]->bbox, box);
+        else
+        {
+          pfree(box);
+          box = NULL;
+        }
+      }
+    }
+    lwgeom_drop_srid(lwgeoms[count]);
+    lwgeom_drop_bbox(lwgeoms[count]);
+
+    /* Output type not initialized */
+    if (! outtype)
+      outtype = lwtype_get_collectiontype(intype);
+    /* Input type not compatible with output */
+    /* make output type a collection */
+    else if (outtype != COLLECTIONTYPE && 
+        lwtype_get_collectiontype(intype) != outtype)
+      outtype = COLLECTIONTYPE;
+
+    count++;
+  }
+
+  assert(! outtype);
+  GSERIALIZED *result = NULL;
+  LWGEOM *outlwg = (LWGEOM *)lwcollection_construct(outtype, srid, box, count,
+    lwgeoms);
+  result = geom_serialize(outlwg);
+  return result;
+}
+
 /*****************************************************************************
  * Functions adapted from lwgeom_geos.c
  *****************************************************************************/
@@ -916,7 +985,7 @@ geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
 /**
  * @brief Return the union of an array of geometries
- * @details The funciton will iteratively call @p GEOSUnion on the
+ * @details The function will iteratively call @p GEOSUnion on the
  * GEOS-converted versions of them and return PGIS-converted version back.
  * Changing the combination order *might* speed up performance.
  * @note PostGIS function: @p pgis_union_geometry_array(PG_FUNCTION_ARGS)

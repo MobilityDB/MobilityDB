@@ -152,6 +152,7 @@ tposeinst_parse(const char **str, meosType temptype, bool end,
   Datum value;
   if (! basetype_parse(str, basetype, '@', &value))
     return false;
+  p_sepchar(str, '@');
   Pose *pose = DatumGetPoseP(value);
   /* If one of the SRID of the temporal pose and of the geometry
    * is SRID_UNKNOWN and the other not, copy the SRID */

@@ -349,15 +349,15 @@ ensure_positive(int i)
  * @brief Return true if the number is not negative
  */
 bool
-not_negative_datum(Datum size, meosType basetype)
+not_negative_datum(Datum d, meosType basetype)
 {
   assert(span_basetype(basetype));
-  if (basetype == T_INT4 && DatumGetInt32(size) < 0)
+  if (basetype == T_INT4 && DatumGetInt32(d) < 0)
     return false;
-  else if (basetype == T_FLOAT8 && DatumGetFloat8(size) < 0.0)
+  else if (basetype == T_FLOAT8 && DatumGetFloat8(d) < 0.0)
     return false;
   /* basetype == T_TIMESTAMPTZ */
-  else if (DatumGetInt64(size) < 0)
+  else if (DatumGetInt64(d) < 0)
     return false;
   return true;
 }
@@ -366,19 +366,19 @@ not_negative_datum(Datum size, meosType basetype)
  * @brief Ensure that the number is not negative
  */
 bool
-ensure_not_negative_datum(Datum size, meosType basetype)
+ensure_not_negative_datum(Datum d, meosType basetype)
 {
-  if (not_negative_datum(size, basetype))
+  if (not_negative_datum(d, basetype))
     return true;
   char str[256];
   assert(basetype == T_INT4 || basetype == T_FLOAT8 ||
     basetype == T_TIMESTAMPTZ);
   if (basetype == T_INT4)
-    snprintf(str, sizeof(str), "%d", DatumGetInt32(size));
+    snprintf(str, sizeof(str), "%d", DatumGetInt32(d));
   else if (basetype == T_FLOAT8)
-    snprintf(str, sizeof(str), "%f", DatumGetFloat8(size));
+    snprintf(str, sizeof(str), "%f", DatumGetFloat8(d));
   else /* basetype == T_TIMESTAMPTZ */
-    snprintf(str, sizeof(str), INT64_FORMAT, DatumGetInt64(size));
+    snprintf(str, sizeof(str), INT64_FORMAT, DatumGetInt64(d));
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "The value cannot be negative: %s", str);
   return false;
@@ -388,21 +388,21 @@ ensure_not_negative_datum(Datum size, meosType basetype)
  * @brief Return true if the number is strictly positive
  */
 bool
-positive_datum(Datum size, meosType basetype)
+positive_datum(Datum d, meosType basetype)
 {
   assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8 ||
     basetype == T_DATE || basetype == T_TIMESTAMPTZ);
-  if (basetype == T_INT4 && DatumGetInt32(size) <= 0)
+  if (basetype == T_INT4 && DatumGetInt32(d) <= 0)
     return false;
-  if (basetype == T_INT8 && DatumGetInt64(size) <= 0)
+  if (basetype == T_INT8 && DatumGetInt64(d) <= 0)
     return false;
-  if (basetype == T_FLOAT8 && DatumGetFloat8(size) <= 0.0)
+  if (basetype == T_FLOAT8 && DatumGetFloat8(d) <= 0.0)
     return false;
   /* For dates the value expected are integers */
-  if (basetype == T_DATE && DatumGetInt32(size) <= 0.0)
+  if (basetype == T_DATE && DatumGetInt32(d) <= 0.0)
     return false;
   /* basetype == T_TIMESTAMPTZ */
-  if (DatumGetInt64(size) <= 0)
+  if (DatumGetInt64(d) <= 0)
     return false;
   return true;
 }
@@ -411,15 +411,15 @@ positive_datum(Datum size, meosType basetype)
  * @brief Ensure that the number is strictly positive
  */
 bool
-ensure_positive_datum(Datum size, meosType basetype)
+ensure_positive_datum(Datum d, meosType basetype)
 {
-  if (positive_datum(size, basetype))
+  if (positive_datum(d, basetype))
     return true;
   char str[256];
   if (basetype == T_INT4)
-    snprintf(str, sizeof(str), "%d", DatumGetInt32(size));
+    snprintf(str, sizeof(str), "%d", DatumGetInt32(d));
   else if (basetype == T_FLOAT8)
-    snprintf(str, sizeof(str), "%f", DatumGetFloat8(size));
+    snprintf(str, sizeof(str), "%f", DatumGetFloat8(d));
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "The value must be strictly positive: %s", str);
   return false;

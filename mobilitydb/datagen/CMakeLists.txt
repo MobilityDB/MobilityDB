@@ -26,8 +26,6 @@ if(NPOINT)
     npoint/random_tnpoint.sql
     )
 endif()
-  
-configure_file(mobilitydb_datagen.control ${CMAKE_BINARY_DIR}/mobilitydb_datagen.control)
 
 if(NPOINT)
   list(APPEND LOCAL_FILES npoint/random_tnpoint.sql)

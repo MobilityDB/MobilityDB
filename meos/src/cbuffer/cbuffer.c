@@ -115,6 +115,11 @@ cbuffer_out(const Cbuffer *cbuf, int maxdd)
 Cbuffer *
 cbuffer_make(const GSERIALIZED *point, double radius)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) point) || 
+      ! ensure_not_negative_datum(Float8GetDatum(radius), T_FLOAT8))
+    return NULL;
+
   size_t value_offset = sizeof(Cbuffer) - sizeof(Datum);
   size_t size = value_offset;
   /* Create the circular buffer */
@@ -151,7 +156,7 @@ cbuffer_point(const Cbuffer *cbuf)
  * @ingroup meos_cbuffer_types
  * @brief Return the radius of a circular buffer
  * @param[in] cbuf Circular buffer
- * @csqlfn #CBuffer_position()
+ * @csqlfn #Cbuffer_radius()
  */
 double
 cbuffer_radius(const Cbuffer *cbuf)
@@ -172,7 +177,7 @@ extern LWCIRCSTRING *lwcircstring_from_lwpointarray(int32_t srid, uint32_t npoin
  * @csqlfn #Cbuffer_to_geom()
  */
 GSERIALIZED *
-cbuffer_to_geom(const Cbuffer *cbuf)
+cbuffer_geom(const Cbuffer *cbuf)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) cbuf))
@@ -185,9 +190,8 @@ cbuffer_to_geom(const Cbuffer *cbuf)
   points[1] = (LWPOINT *) lwgeom_from_gserialized(gs);
   /* Shift the X coordinate of cbuf->point by +- cbuf->radius */
   POINT2D *p = (POINT2D *) GS_POINT_PTR(gs);
-  points[0] = points[2] = lwpoint_make2d(srid, p->x - cbuf->radius, 
-    p->y - cbuf->radius);
-  points[1] = lwpoint_make2d(srid, p->x + cbuf->radius, p->y + cbuf->radius);
+  points[0] = points[2] = lwpoint_make2d(srid, p->x - cbuf->radius, p->y);
+  points[1] = lwpoint_make2d(srid, p->x + cbuf->radius, p->y);
   /* Construct the circle */
   LWGEOM *ring = lwcircstring_as_lwgeom(
     lwcircstring_from_lwpointarray(srid, 3, points));
@@ -224,7 +228,40 @@ geom_to_cbuffer(const GSERIALIZED *gs)
   lwgeom_free((LWGEOM *) poly);
   Cbuffer *result = cbuffer_make(gscenter, radius);
   lwgeom_free(center); pfree(gscenter);
-  return cbuffer_make(gscenter, radius);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_cbuffer_types
+ * @brief Return an array of circular buffers converted into a geometry
+ * @param[in] cbufarr Array of circular buffers
+ * @param[in] nelems Number of elements in the input array
+ * @pre The argument @p count is greater than 1
+ */
+GSERIALIZED *
+cbufferarr_geom(Cbuffer **cbufarr, int nelems)
+{
+  assert(nelems > 1);
+  GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * nelems);
+  /* SRID of the first element of the array */
+  int32_t srid = cbuffer_srid(cbufarr[0]);
+  for (int i = 0; i < nelems; i++)
+  {
+    int32_t srid_elem = cbuffer_srid(cbufarr[i]);
+    if (! ensure_same_srid(srid, srid_elem))
+    {
+      for (int j = 0; j < i; j++)
+        pfree(geoms[i]);
+      pfree(geoms);
+      return NULL;
+    }
+    geoms[i] = cbuffer_geom(cbufarr[i]);
+  }
+  GSERIALIZED *result = geom_collect_garray(geoms, nelems);
+  pfree_array((void **) geoms, nelems);
+  return result;
 }
 
 /*****************************************************************************
@@ -237,44 +274,37 @@ geom_to_cbuffer(const GSERIALIZED *gs)
  * @param[in] cbuf Circular buffer
  * @csqlfn #Cbuffer_get_srid()
  */
-int
+int32_t
 cbuffer_srid(const Cbuffer *cbuf)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) cbuf))
+    return SRID_INVALID;
   Datum d = PointerGetDatum(&cbuf->point);
   return gserialized_get_srid(DatumGetGserializedP(d));
 }
 
-/*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
 /**
- * @brief Return an array of circular buffers converted into a geometry
- * @param[in] points Array of circular buffers
- * @param[in] count Number of elements in the input array
- * @pre The argument @p count is greater than 1
+ * @ingroup meos_cbuffer_types
+ * @brief Return a circular buffer with the coordinates of the point set to 
+ * an SRID
+ * @param[in] cbuf Circular buffer
+ * @param[in] srid SRID
+ * @csqlfn #Cbuffer_set_srid()
  */
-// GSERIALIZED *
-// cbufferarr_geom(Cbuffer **points, int count)
-// {
-  // assert(count > 1);
-  // LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
-  // for (int i = 0; i < count; i++)
-  // {
-    // GSERIALIZED *gsline = route_geom(points[i]->point);
-    // int32_t srid = gserialized_get_srid(gsline);
-    // LWGEOM *line = lwgeom_from_gserialized(gsline);
-    // geoms[i] = lwgeom_line_interpolate_point(line, points[i]->radius, srid, 0);
-    // pfree(gsline); pfree(line);
-  // }
-  // int newcount;
-  // LWGEOM **newgeoms = lwpointarr_remove_duplicates(geoms, count, &newcount);
-  // LWGEOM *geom = lwpointarr_make_trajectory(newgeoms, newcount, STEP);
-  // GSERIALIZED *result = geo_serialize(geom);
-  // pfree(newgeoms); pfree(geom);
-  // pfree_array((void **) geoms, count);
-  // return result;
-// }
+Cbuffer *
+cbuffer_set_srid(const Cbuffer *cbuf, int32_t srid)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) cbuf))
+    return NULL;
+  Datum d = PointerGetDatum(&cbuf->point);
+  GSERIALIZED *gs = DatumGetGserializedP(datum_copy(d, T_CBUFFER));
+  gserialized_set_srid(gs, srid);
+  Cbuffer *result = cbuffer_make(gs, cbuf->radius);
+  pfree(gs);
+  return result;
+}
 
 /*****************************************************************************
  * Comparison functions for defining B-tree indexes

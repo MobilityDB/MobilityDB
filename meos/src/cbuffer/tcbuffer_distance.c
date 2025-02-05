@@ -56,7 +56,7 @@ datum_cbuffer_distance(Datum cbuf1, Datum cbuf2)
 {
   Datum geom1 = PointerGetDatum(cbuffer_geom(DatumGetCBufferP(cbuf1)));
   Datum geom2 = PointerGetDatum(cbuffer_geom(DatumGetCBufferP(cbuf2)));
-  return datum_pt_distance2d(geom1, geom2);
+  return datum_geom_distance2d(geom1, geom2);
 }
 
 /*****************************************************************************

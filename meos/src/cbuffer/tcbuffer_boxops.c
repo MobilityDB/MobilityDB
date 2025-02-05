@@ -61,6 +61,7 @@
 bool
 cbuffer_set_stbox(const Cbuffer *cbuf, STBox *box)
 {
+  assert(cbuf); assert(box);
   const GSERIALIZED *point = cbuffer_point(cbuf);
   bool result = geo_set_stbox(point, box);
   /* Expand spatial coordinates with respect to radius */

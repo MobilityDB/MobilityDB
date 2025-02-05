@@ -53,12 +53,15 @@
 /**
  * @brief Return a temporal circular buffer from a temporal point and a 
  * temporal float
+ * @note This function is called after synchronization done in function 
+ * #tcbuffer_constructor
  */
 TInstant *
 tcbufferinst_constructor(const TInstant *inst1, const TInstant *inst2)
 {
   assert(inst1); assert(inst1->temptype == T_TGEOMPOINT);
   assert(inst2); assert(inst2->temptype == T_TFLOAT);
+  assert(inst1->t == inst2->t);
   Cbuffer *cbuf = cbuffer_make(DatumGetGserializedP(tinstant_val(inst1)), 
     DatumGetFloat8(tinstant_val(inst2)));
   return tinstant_make_free(PointerGetDatum(cbuf), T_TCBUFFER, inst1->t);
@@ -67,6 +70,8 @@ tcbufferinst_constructor(const TInstant *inst1, const TInstant *inst2)
 /**
  * @brief Return a temporal circular buffer from a temporal point and a 
  * temporal float
+ * @note This function is called after synchronization done in function 
+ * #tcbuffer_constructor
  */
 TSequence *
 tcbufferseq_constructor(const TSequence *seq1, const TSequence *seq2)
@@ -85,6 +90,8 @@ tcbufferseq_constructor(const TSequence *seq1, const TSequence *seq2)
 /**
  * @brief Return a temporal circular buffer from a temporal point and a 
  * temporal float
+ * @note This function is called after synchronization done in function 
+ * #tcbuffer_constructor
  */
 TSequenceSet *
 tcbufferseqset_constructor(const TSequenceSet *ss1, const TSequenceSet *ss2)

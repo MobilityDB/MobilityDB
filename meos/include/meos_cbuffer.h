@@ -88,7 +88,8 @@ extern char *cbuffer_out(const Cbuffer *cbuf, int maxdd);
 extern double cbuffer_radius(const Cbuffer *cbuf);
 extern const GSERIALIZED *cbuffer_point(const Cbuffer *cbuf);
 extern int32_t cbuffer_srid(const Cbuffer *cbuf);
-extern GSERIALIZED *cbuffer_to_geom(const Cbuffer *cbuf);
+extern Cbuffer *cbuffer_set_srid(const Cbuffer *cbuf, int32_t srid);
+extern GSERIALIZED *cbuffer_geom(const Cbuffer *cbuf);
 extern char **cbufferarr_as_text(const Datum *cbufarr, int count, int maxdd, bool extended);
 extern Cbuffer *geom_to_cbuffer(const GSERIALIZED *gs);
 

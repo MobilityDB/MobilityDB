@@ -260,6 +260,7 @@ stbox_parse(const char **str)
  * @brief Parse a geometry/gegraphy from the buffer
  * @param[in] str Input string
  * @param[in] basetype Base type
+ * @param[in] sep Separation character
  * @param[in,out] srid SRID of the result. If it is SRID_UNKNOWN, it may take
  * the value from the geometry if it is not SRID_UNKNOWN.
  * @param[out] result New geometry, may be NULL
@@ -322,10 +323,9 @@ tpointinst_parse(const char **str, meosType temptype, bool end,
 {
   meosType basetype = temptype_basetype(temptype);
   GSERIALIZED *gs;
-  bool success = geo_parse(str, basetype, '@', tpoint_srid, &gs);
-  if (! success)
+  if (! geo_parse(str, basetype, '@', tpoint_srid, &gs))
     return false;
-  
+  p_sepchar(str, '@');
   TimestampTz t = timestamp_parse(str);
   if (t == DT_NOEND ||
     /* Ensure there is no more input */

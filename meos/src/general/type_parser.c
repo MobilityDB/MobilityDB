@@ -79,6 +79,21 @@ p_whitespace(const char **str)
  * @brief Input an opening brace from the buffer
  */
 bool
+p_sepchar(const char **str, char sep)
+{
+  p_whitespace(str);
+  if (**str == sep)
+  {
+    *str += 1;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @brief Input an opening brace from the buffer
+ */
+bool
 p_obrace(const char **str)
 {
   p_whitespace(str);
@@ -652,6 +667,7 @@ tinstant_parse(const char **str, meosType temptype, bool end,
   Datum elem;
   if (! basetype_parse(str, basetype, '@', &elem))
     return false;
+  p_sepchar(str, '@');
   TimestampTz t = timestamp_parse(str);
   if (t == DT_NOEND ||
     /* Ensure there is no more input */

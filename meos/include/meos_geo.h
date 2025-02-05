@@ -76,9 +76,10 @@ extern GSERIALIZED *geog_in(const char *str, int32 typmod);
 extern bool geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool use_spheroid);
 extern double geog_length(const GSERIALIZED *g, bool use_spheroid);
 extern double geog_perimeter(const GSERIALIZED *g, bool use_spheroid);
+extern bool geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result);
+extern GSERIALIZED *geom_collect_garray(GSERIALIZED **gsarr, int nelems);
 
 extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int nelems);
-extern bool geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result);
 extern GSERIALIZED *geom_boundary(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_buffer(const GSERIALIZED *gs, double size, char *params);
 extern bool geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2);

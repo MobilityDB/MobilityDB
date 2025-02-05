@@ -115,7 +115,7 @@ cbuffer_as_text(const Cbuffer *cbuf, int maxdd)
  * @ingroup meos_temporal_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation of a
  * circular buffer
- * @param[in] temp Circular buffer
+ * @param[in] cbuf Circular buffer
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Tcbuffer_as_ewkt()
  */
@@ -203,7 +203,7 @@ tcbuffer_as_ewkt(const Temporal *temp, int maxdd)
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Maximum number of decimal digits to output
  * @param[in] extended True if the output is in EWKT
- * @csqlfn #Cbufarr_as_text(), #Cbufarr_as_ewkt()
+ * @csqlfn #Cbufferarr_as_text()
  */
 char **
 cbufferarr_as_text(const Datum *cbufarr, int count, int maxdd, bool extended)

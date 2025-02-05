@@ -231,6 +231,23 @@ Cbuffer_get_srid(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(result);
 }
 
+PGDLLEXPORT Datum Cbuffer_set_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbuffer_set_srid);
+/**
+ * @ingroup mobilitydb_temporal_spatial_accessor
+ * @brief Return a circular buffer with the coordinates of the point set to 
+ * an SRID
+ * @sqlfn setSRID()
+ */
+Datum
+Cbuffer_set_srid(PG_FUNCTION_ARGS)
+{
+  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  int32_t srid = PG_GETARG_INT32(1);
+  Cbuffer *result = cbuffer_set_srid(cbuf, srid);
+  PG_RETURN_CBUFFER_P(result);
+}
+
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
@@ -267,7 +284,7 @@ Datum
 Cbuffer_to_geom(PG_FUNCTION_ARGS)
 {
   Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
-  PG_RETURN_GSERIALIZED_P(cbuffer_to_geom(cbuf));
+  PG_RETURN_GSERIALIZED_P(cbuffer_geom(cbuf));
 }
 
 PGDLLEXPORT Datum Geom_to_cbuffer(PG_FUNCTION_ARGS);

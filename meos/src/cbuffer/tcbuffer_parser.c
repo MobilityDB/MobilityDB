@@ -84,7 +84,7 @@ cbuffer_parse(const char **str, bool end)
       ! ensure_has_not_M_gs(gs))
   {
     pfree(gs);
-    return false;
+    return NULL;
   }
 
   p_comma(str);
@@ -116,6 +116,7 @@ cbuffer_parse(const char **str, bool end)
 /**
  * @brief Parse a circular buffer from the input buffer
  * @param[in] str Input string
+ * @param[in] sep Character separator
  * @param[in,out] srid SRID of the result. If it is SRID_UNKNOWN, it may take
  * the value from the circular buffer if it is not SRID_UNKNOWN.
  * @param[out] result New circular buffer, may be NULL
@@ -173,10 +174,10 @@ tcbufferinst_parse(const char **str, bool end, int *tcbuffer_srid,
   TInstant **result)
 {
   Cbuffer *cbuf;
-  bool success = cbuffer_parse_elem(str, '@', tcbuffer_srid, &cbuf);
-  if (! success)
+  if (! cbuffer_parse_elem(str, '@', tcbuffer_srid, &cbuf))
     return false;
-  
+
+  p_sepchar(str, '@');
   TimestampTz t = timestamp_parse(str);
   if (t == DT_NOEND ||
     /* Ensure there is no more input */

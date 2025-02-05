@@ -46,9 +46,9 @@
 #include "general/tbox.h"
 #include "point/stbox.h"
 #include "point/tpoint_spatialfuncs.h"
-#if NPOINT
+#if CBUFFER
   #include "cbuffer/tcbuffer.h"
-#endif /* NPOINT */
+#endif /* CBUFFER */
 #if NPOINT
   #include "npoint/npoint.h"
 #endif /* NPOINT */

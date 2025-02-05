@@ -42,6 +42,7 @@
 
 extern bool ensure_end_input(const char **str, const char *type);
 extern void p_whitespace(const char **str);
+bool p_sepchar(const char **str, char sep);
 extern bool p_obrace(const char **str);
 extern bool ensure_obrace(const char **str, const char *type);
 extern bool p_cbrace(const char **str);

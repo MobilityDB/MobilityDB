@@ -3177,7 +3177,7 @@ tpointseqset_affine(const TSequenceSet *ss, const AFFINE *a)
  * @brief Return the 3D affine transform of a temporal point to do things like
  * translate, rotate, scale in one step
  * @param[in] temp Temporal point
- * @param[in] affine Matrix specifying the transformation
+ * @param[in] a Matrix specifying the transformation
  * @csqlfn #Tpoint_affine()
  */
 Temporal *
@@ -3242,7 +3242,7 @@ tpointseq_scale(const TSequence *seq, const POINT4D *factors)
 /**
  * @brief Return a temporal point sequence scaled by given factors
  * @param[in] ss Temporal point
- * @param[in] a Affine transformation
+ * @param[in] factors Scale factors
  */
 static TSequenceSet *
 tpointseqset_scale(const TSequenceSet *ss, const POINT4D *factors)
@@ -3258,7 +3258,7 @@ tpointseqset_scale(const TSequenceSet *ss, const POINT4D *factors)
  * @brief Scale a temporal point by given factors
  * @param[in] temp Temporal point
  * @param[in] scale Geometry for the scale factors
- * @param[in] origin Point geometry for the origin
+ * @param[in] sorigin Point geometry for the origin
  * @csqlfn #Tpoint_affine()
  */
 Temporal *
