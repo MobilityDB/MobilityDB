@@ -83,11 +83,6 @@ CREATE FUNCTION setSRID(tgeompoint, integer)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpoint_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setSRID(tgeogpoint, integer)
-  RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tpoint_set_srid'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION transform(tgeompoint, integer)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpoint_transform'
@@ -98,6 +93,10 @@ CREATE FUNCTION transformPipeline(tgeompoint, text, srid integer DEFAULT 0,
   AS 'MODULE_PATHNAME', 'Tpoint_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION setSRID(tgeogpoint, integer)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tpoint_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION transform(tgeogpoint, integer)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tpoint_transform'

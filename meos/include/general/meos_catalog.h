@@ -109,9 +109,12 @@ typedef enum
   T_TNPOINT        = 51,  /**< temporal network point type */
   T_POSE           = 54,  /**< pose type */
   T_TPOSE          = 55,  /**< temporal pose type */
+  T_CBUFFER        = 56,  /**< buffer type */
+  T_CBUFFERSET     = 57,  /**< buffer set type */
+  T_TCBUFFER        = 58,  /**< temporal buffer type */
 } meosType;
 
-#define NO_MEOS_TYPES 56
+#define NO_MEOS_TYPES 59
 
 /**
  * Enumeration that defines the classes of Boolean operators used in

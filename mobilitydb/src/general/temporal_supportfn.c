@@ -112,6 +112,24 @@ static const int16 TPointStrategies[] =
   [ADWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
 
+#if CBUFFER
+static const int16 TCbufferStrategies[] =
+{
+  /* Ever spatial relationships */
+  [ECONTAINS_IDX]                 = RTOverlapStrategyNumber,
+  [EDISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [EINTERSECTS_IDX]               = RTOverlapStrategyNumber,
+  [ETOUCHES_IDX]                  = RTOverlapStrategyNumber,
+  [EDWITHIN_IDX]                  = RTOverlapStrategyNumber,
+  /* Always spatial relationships */
+  [ACONTAINS_IDX]                 = RTOverlapStrategyNumber,
+  [ADISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [AINTERSECTS_IDX]               = RTOverlapStrategyNumber,
+  [ATOUCHES_IDX]                  = RTOverlapStrategyNumber,
+  [ADWITHIN_IDX]                  = RTOverlapStrategyNumber,
+};
+#endif /* CBUFFER */
+
 #if NPOINT
 static const int16 TNPointStrategies[] =
 {
@@ -191,6 +209,10 @@ temporal_get_strategy_by_type(meosType temptype, uint16_t index)
     return TNumberStrategies[index];
   if (tgeo_type(temptype))
     return TPointStrategies[index];
+#if CBUFFER
+  if (temptype == T_TCBUFFER)
+    return TCbufferStrategies[index];
+#endif /* CBUFFER */
 #if NPOINT
   if (temptype == T_TNPOINT)
     return TNPointStrategies[index];

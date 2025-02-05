@@ -165,7 +165,7 @@ tposeinst_parse(const char **str, meosType temptype, bool end,
   meosType basetype = temptype_basetype(temptype);
   /* The next instruction will throw an exception if it fails */
   Datum value;
-  if (! temporal_basetype_parse(str, basetype, &value))
+  if (! basetype_parse(str, basetype, '@', &value))
     return false;
   Pose *pose = DatumGetPoseP(value);
   /* If one of the SRID of the temporal pose and of the geometry

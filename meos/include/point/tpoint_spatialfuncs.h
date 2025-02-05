@@ -56,6 +56,7 @@ extern POINT3DZ datum_point3dz(Datum value);
 extern void gs_point4d(const GSERIALIZED *gs, POINT4D *p);
 extern void datum_point4d(Datum value, POINT4D *p);
 
+extern int geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geopoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
@@ -108,6 +109,7 @@ extern bool ensure_has_not_Z_gs(const GSERIALIZED *gs);
 extern bool ensure_has_M_gs(const GSERIALIZED *gs);
 extern bool ensure_has_not_M_gs(const GSERIALIZED *gs);
 extern bool ensure_point_type(const GSERIALIZED *gs);
+extern bool ensure_circle_type(const GSERIALIZED *gs);
 extern bool ensure_not_empty(const GSERIALIZED *gs);
 extern bool ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs);
 extern bool ensure_valid_tpoint_geo(const Temporal *temp,

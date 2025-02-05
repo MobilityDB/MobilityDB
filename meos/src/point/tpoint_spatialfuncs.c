@@ -100,6 +100,37 @@ datum_point4d(Datum value, POINT4D *p)
 /*****************************************************************************/
 
 /**
+ * @brief Return -1, 0, or 1 depending on whether the first point is less than,
+ * equal to, or greater than the second one
+ */
+int
+geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  if (FLAGS_GET_Z(gs1->gflags))
+  {
+    const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
+    const POINT3DZ *point2 = GSERIALIZED_POINT3DZ_P(gs2);
+    if (float8_lt(point1->x, point2->x) || float8_lt(point1->y, point2->y) || 
+        float8_lt(point1->z, point2->z))
+      return -1;
+    if (float8_gt(point1->x, point2->x) || float8_gt(point1->y, point2->y) || 
+        float8_gt(point1->z, point2->z))
+      return 1;
+    return 0;
+  }
+  else
+  {
+    const POINT2D *point1 = GSERIALIZED_POINT2D_P(gs1);
+    const POINT2D *point2 = GSERIALIZED_POINT2D_P(gs2);
+    if (float8_lt(point1->x, point2->x) || float8_lt(point1->y, point2->y))
+      return -1;
+    if (float8_gt(point1->x, point2->x) || float8_gt(point1->y, point2->y))
+      return 1;
+    return 0;
+  }
+}
+
+/**
  * @brief Return true if the points are equal
  * @note This function is called in the iterations over sequences where we
  * are sure that their SRID, Z, and GEODETIC are equal
@@ -622,6 +653,42 @@ ensure_point_type(const GSERIALIZED *gs)
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "Only point geometries accepted");
   return false;
+}
+
+/**
+ * @brief Ensure that the geometry/geography is a circle
+ */
+bool
+ensure_circle_type(const GSERIALIZED *gs)
+{
+  if (gserialized_get_type(gs) != CURVEPOLYTYPE)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only circle geometries accepted");
+    return false;
+  }
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  if (lwgeom_count_rings(lwgeom) != 1)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only circle geometries accepted"); 
+    return false;
+  }
+  LWCURVEPOLY *circle = (LWCURVEPOLY *) lwgeom;
+  LWCIRCSTRING *ring = (LWCIRCSTRING *) circle->rings[0];
+  if (ring->points->npoints != 3)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only circle geometries accepted"); 
+    return false;
+  }
+  if (! ptarray_is_closed(ring->points))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only circle geometries accepted");
+    return false;
+  }
+  return true;
 }
 
 /**

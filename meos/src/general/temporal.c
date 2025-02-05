@@ -659,7 +659,7 @@ mobilitydb_full_version(void)
   const char *json_c_vers = json_c_version();
 
   char *result = palloc(MOBDB_VERSION_STR_MAXLEN);
-  int len = snprintf(result, MOBDB_VERSION_STR_MAXLEN,
+  size_t len = snprintf(result, MOBDB_VERSION_STR_MAXLEN,
     "%s, %s, %s, GEOS %s, PROJ %s, JSON-C %s, GSL %s",
     MOBILITYDB_VERSION_STRING, POSTGRESQL_VERSION_STRING,
     POSTGIS_VERSION_STRING, geos_vers, proj_vers, json_c_vers,

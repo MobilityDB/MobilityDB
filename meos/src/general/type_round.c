@@ -54,6 +54,9 @@
   #include "npoint/npoint.h"
   #include "npoint/tnpoint.h"
 #endif /* NPOINT */
+#if CBUFFER
+  #include "cbuffer/tcbuffer.h"
+#endif /* CBUFFER */
 
 /*****************************************************************************
  * Round functions called by the other functions
@@ -166,6 +169,23 @@ geoset_round(const Set *s, int maxdd)
     return NULL;
   return set_round(s, maxdd, &datum_round_geo);
 }
+
+#if CBUFFER
+/**
+ * @brief Return a circular buffer set with the precision of the geometries and
+ * of the radius set to a number of decimal places
+ * @csqlfn #CBufferset_round()
+ */
+Set *
+cbufferset_round(const Set *s, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) ||
+      ! ensure_set_isof_type(s, T_CBUFFERSET))
+    return NULL;
+  return set_round(s, maxdd, &datum_cbuffer_round);
+}
+#endif /* CBUFFER */
 
 #if NPOINT
 /**
@@ -935,5 +955,65 @@ tnpoint_round(const Temporal *temp, Datum size)
   return tfunc_temporal(temp, &lfinfo);
 }
 #endif /* NPOINT */
+
+/*****************************************************************************
+ * Circular buffer
+ *****************************************************************************/
+
+#if CBUFFER
+/**
+ * @brief Return a circular buffer with the precision of the radius set to a
+ * number of decimal places
+ */
+Cbuffer *
+cbuffer_round(const Cbuffer *cbuf, int maxdd)
+{
+  /* Set precision of the point and the radius */
+  Datum d = PointerGetDatum(&cbuf->point);
+  GSERIALIZED *point = DatumGetGserializedP(
+    round_point(DatumGetGserializedP(d), maxdd));
+  double radius = float_round(cbuf->radius, maxdd);
+  return cbuffer_make(point, radius);
+}
+
+/**
+ * @brief Return a circular buffer with the precision of the radius set to a
+ * number of decimal places
+ * @note Funcion used by the lifting infrastructure
+ */
+Datum
+datum_cbuffer_round(Datum cbuffer, Datum size)
+{
+  /* Set precision of radius */
+  return PointerGetDatum(cbuffer_round(DatumGetCbufferP(cbuffer),
+    DatumGetInt32(size)));
+}
+#endif /* CBUFFER */
+
+/*****************************************************************************
+ * Temporal circular buffer
+ *****************************************************************************/
+
+#if CBUFFER
+/**
+ * @brief Return a temporal circular buffer with the precision of the fractions
+ * set to a number of decimal places
+ */
+Temporal *
+tcbuffer_round(const Temporal *temp, int maxdd)
+{
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_cbuffer_round;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Int32GetDatum(maxdd);
+  lfinfo.argtype[0]= temp->temptype;
+  lfinfo.restype = temp->temptype;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+#endif /* CBUFFER */
 
 /*****************************************************************************/

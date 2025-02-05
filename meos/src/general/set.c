@@ -55,6 +55,10 @@
 #include "general/type_util.h"
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"
+#if CBUFFER
+  #include "cbuffer/tcbuffer_boxops.h"
+  #include "cbuffer/tcbuffer_out.h"
+#endif
 #if NPOINT
   #include "npoint/tnpoint_boxops.h"
 #endif
@@ -511,6 +515,40 @@ geoset_as_ewkt(const Set *s, int maxdd)
   return set_out_fn(s, maxdd, &ewkt_out);
 }
 
+#if CBUFFER
+/**
+ * @ingroup meos_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a circular
+ * buffer set
+ * @csqlfn #Cbufferset_as_text()
+ */
+char *
+cbufferset_as_text(const Set *s, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
+    return NULL;
+  return set_out_fn(s, maxdd, &cbuffer_wkt_out);
+}
+
+/**
+ * @ingroup meos_setspan_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a 
+ * circular buffer set
+ * @param[in] s Set
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Geoset_as_ewkt()
+ */
+char *
+cbufferset_as_ewkt(const Set *s, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+    return NULL;
+  return set_out_fn(s, maxdd, &cbuffer_ewkt_out);
+}
+#endif /* CBUFFER */
+
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
@@ -547,6 +585,10 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
   assert(set_basetype(basetype)); assert(! alphanum_basetype(basetype));
   if (geo_basetype(basetype))
     geoarr_set_stbox(values, count, (STBox *) box);
+#if CBUFFER
+  else if (basetype == T_CBUFFER)
+    cbufferarr_set_stbox(values, count, (STBox *) box);
+#endif
 #if NPOINT
   else if (basetype == T_NPOINT)
     npointarr_set_stbox(values, count, (STBox *) box);

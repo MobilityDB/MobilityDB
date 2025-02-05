@@ -41,12 +41,21 @@
 #if NPOINT
   #include "npoint/npoint.h"
 #endif /* NPOINT */
+#if CBUFFER
+  #include "cbuffer/tcbuffer.h"
+#endif /* BUFFER */
 
 /*****************************************************************************/
 
 extern double float_round(double d, int maxdd);
 extern Datum datum_round_float(Datum value, Datum size);
 extern Datum datum_round_geo(Datum value, Datum size);
+#if CBUFFER
+extern Datum datum_cbuffer_round(Datum buffer, Datum size);
+extern Cbuffer *cbuffer_round(const Cbuffer *buffer, int maxdd);
+extern Set *cbufferset_round(const Set *s, int maxdd);
+extern Temporal *tcbuffer_round(const Temporal *temp, int maxdd);
+#endif /* NPOINT */
 #if NPOINT
 extern Datum datum_npoint_round(Datum npoint, Datum size);
 extern Npoint *npoint_round(const Npoint *np, int maxdd);

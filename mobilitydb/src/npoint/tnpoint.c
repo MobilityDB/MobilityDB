@@ -160,7 +160,9 @@ Npointset_round(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   Datum size = PG_GETARG_DATUM(1);
-  PG_RETURN_SET_P(npointset_round(s, size));
+  Set *result = npointset_round(s, size);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SET_P(result);
 }
 
 /*****************************************************************************

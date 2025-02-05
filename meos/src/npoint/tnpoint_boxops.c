@@ -48,7 +48,7 @@
 #include "npoint/npoint.h"
 
 /*****************************************************************************
- * Transform a temporal Npoint to a STBox
+ * Transform a temporal network point to a STBox
  *****************************************************************************/
 
 /**

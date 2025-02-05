@@ -144,6 +144,7 @@ typedef enum
   TEMPORALTYPE,
   TNUMBERTYPE,
   TPOINTTYPE,
+  TCBUFFERTYPE,
   TNPOINTTYPE,
 } TemporalFamily;
 

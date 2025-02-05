@@ -239,6 +239,57 @@ stbox_parse(const char **str)
 /*****************************************************************************/
 
 /**
+ * @brief Parse a geometry/gegraphy from the buffer
+ * @param[in] str Input string
+ * @param[in] basetype Base type
+ * @param[in,out] srid SRID of the result. If it is SRID_UNKNOWN, it may take
+ * the value from the geometry if it is not SRID_UNKNOWN.
+ * @param[out] result New geometry, may be NULL
+ */
+bool 
+geo_parse(const char **str, meosType basetype, char sep, int *srid,
+  GSERIALIZED **result)
+{
+  p_whitespace(str);
+  /* The next instruction will throw an exception if it fails */
+  Datum geo;
+  if (! basetype_parse(str, basetype, sep, &geo))
+    return false;
+  GSERIALIZED *gs = DatumGetGserializedP(geo);
+  if (! ensure_point_type(gs) || ! ensure_not_empty(gs) ||
+      ! ensure_has_not_M_gs(gs))
+  {
+    pfree(gs);
+    return false;
+  }
+  /* If one of the SRID of the temporal point and of the geometry
+   * is SRID_UNKNOWN and the other not, copy the SRID */
+  int gs_srid = gserialized_get_srid(gs);
+  if (*srid == SRID_UNKNOWN && gs_srid != SRID_UNKNOWN)
+    *srid = gs_srid;
+  else if (*srid != SRID_UNKNOWN &&
+    ( gs_srid == SRID_UNKNOWN || gs_srid == SRID_DEFAULT ))
+    gserialized_set_srid(gs, *srid);
+  /* If the SRID of the temporal point and of the geometry do not match */
+  else if (*srid != SRID_UNKNOWN && gs_srid != SRID_UNKNOWN &&
+    *srid != gs_srid)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Geometry SRID (%d) does not match temporal type SRID (%d)",
+      gs_srid, *srid);
+    pfree(gs);
+    return false;
+  }
+  if (result)
+    *result = gs;
+  else 
+    pfree(gs);
+  return true;
+}
+
+/*****************************************************************************/
+
+/**
  * @brief Parse a temporal instant point from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -251,37 +302,12 @@ bool
 tpointinst_parse(const char **str, meosType temptype, bool end, 
   int *tpoint_srid, TInstant **result)
 {
-  p_whitespace(str);
   meosType basetype = temptype_basetype(temptype);
-  /* The next instruction will throw an exception if it fails */
-  Datum geo;
-  if (! temporal_basetype_parse(str, basetype, &geo))
+  GSERIALIZED *gs;
+  bool success = geo_parse(str, basetype, '@', tpoint_srid, &gs);
+  if (! success)
     return false;
-  GSERIALIZED *gs = DatumGetGserializedP(geo);
-  if (! ensure_point_type(gs) || ! ensure_not_empty(gs) ||
-      ! ensure_has_not_M_gs(gs))
-  {
-    pfree(gs);
-    return false;
-  }
-  /* If one of the SRID of the temporal point and of the geometry
-   * is SRID_UNKNOWN and the other not, copy the SRID */
-  int gs_srid = gserialized_get_srid(gs);
-  if (*tpoint_srid == SRID_UNKNOWN && gs_srid != SRID_UNKNOWN)
-    *tpoint_srid = gs_srid;
-  else if (*tpoint_srid != SRID_UNKNOWN &&
-    ( gs_srid == SRID_UNKNOWN || gs_srid == SRID_DEFAULT ))
-    gserialized_set_srid(gs, *tpoint_srid);
-  /* If the SRID of the temporal point and of the geometry do not match */
-  else if (*tpoint_srid != SRID_UNKNOWN && gs_srid != SRID_UNKNOWN &&
-    *tpoint_srid != gs_srid)
-  {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Geometry SRID (%d) does not match temporal type SRID (%d)",
-      gs_srid, *tpoint_srid);
-    pfree(gs);
-    return false;
-  }
+  
   TimestampTz t = timestamp_parse(str);
   if (t == DT_NOEND ||
     /* Ensure there is no more input */
@@ -290,6 +316,7 @@ tpointinst_parse(const char **str, meosType temptype, bool end,
     pfree(gs);
     return false;
   }
+
   if (result)
     *result = tinstant_make(PointerGetDatum(gs), temptype, t);
   pfree(gs);

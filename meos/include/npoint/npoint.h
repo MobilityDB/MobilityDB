@@ -65,4 +65,4 @@ extern void nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns);
 
 /*****************************************************************************/
 
-#endif /* __TNPOINT_STATIC_H__ */
+#endif /* __NPOINT_H__ */

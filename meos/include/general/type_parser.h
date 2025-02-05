@@ -53,7 +53,7 @@ extern bool ensure_oparen(const char **str, const char *type);
 extern bool p_cparen(const char **str);
 extern bool ensure_cparen(const char **str, const char *type);
 extern bool p_comma(const char **str);
-extern bool temporal_basetype_parse(const char **str, meosType basetypid, Datum *result);
+extern bool basetype_parse(const char **str, meosType basetypid, char sep, Datum *result);
 extern bool double_parse(const char **str, double *result);
 extern bool elem_parse(const char **str, meosType basetype, Datum *result);
 extern Set *set_parse(const char **str, meosType basetype);

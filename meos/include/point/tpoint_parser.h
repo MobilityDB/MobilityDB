@@ -41,7 +41,8 @@
 #include "general/meos_catalog.h"
 
 /*****************************************************************************/
-
+extern bool geo_parse(const char **str, meosType basetype, char sep, int *srid,
+  GSERIALIZED **result);
 extern STBox *stbox_parse(const char **str);
 extern TSequence *tpointseq_parse(const char **str, meosType temptype,
   interpType interp, bool end, bool make, int *tpoint_srid);

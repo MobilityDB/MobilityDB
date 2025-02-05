@@ -265,8 +265,7 @@ double_parse(const char **str, double *result)
  * @return On error return false
  */
 bool
-temporal_basetype_parse(const char **str, meosType basetype,
-  Datum *result)
+basetype_parse(const char **str, meosType basetype, char sep, Datum *result)
 {
   p_whitespace(str);
   int delim = 0;
@@ -284,7 +283,7 @@ temporal_basetype_parse(const char **str, meosType basetype,
   }
   else
   {
-    while ((*str)[delim] != '@' && (*str)[delim] != '\0')
+    while ((*str)[delim] != sep && (*str)[delim] != '\0')
       delim++;
   }
   if ((*str)[delim] == '\0')
@@ -300,7 +299,7 @@ temporal_basetype_parse(const char **str, meosType basetype,
   pfree(str1);
   if (! success)
     return false;
-  /* since there's an @ here, let's take it with us */
+  /* since there's a separator sep here, let's take it with us */
   *str += delim + 1;
   return true;
 }
@@ -666,7 +665,7 @@ tinstant_parse(const char **str, meosType temptype, bool end,
   meosType basetype = temptype_basetype(temptype);
   /* The next two instructions will throw an exception if they fail */
   Datum elem;
-  if (! temporal_basetype_parse(str, basetype, &elem))
+  if (! basetype_parse(str, basetype, '@', &elem))
     return false;
   TimestampTz t = timestamp_parse(str);
   if (t == DT_NOEND ||
