@@ -1,3 +1,5 @@
+
+
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
@@ -48,22 +50,22 @@ CREATE FUNCTION cbuffer_out(cbuffer)
   AS 'MODULE_PATHNAME', 'Cbuffer_out'
   LANGUAGE C IMMUTABLE STRICT;
 
-/*CREATE FUNCTION cbuffer_recv(internal)
+CREATE FUNCTION cbuffer_recv(internal)
   RETURNS cbuffer
   AS 'MODULE_PATHNAME', 'Cbuffer_recv'
-  LANGUAGE C IMMUTABLE STRICT;*/
+  LANGUAGE C IMMUTABLE STRICT;
 
-/*CREATE FUNCTION cbuffer_send(cbuffer)
+CREATE FUNCTION cbuffer_send(cbuffer)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Cbuffer_send'
-  LANGUAGE C IMMUTABLE STRICT;*/
+  LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE cbuffer (
   internallength = variable,
   input = cbuffer_in,
   output = cbuffer_out,
---receive = cbuffer_recv,
---send = cbuffer_send,
+  receive = cbuffer_recv,
+  send = cbuffer_send,
   storage = plain,
   alignment = double
 );
@@ -157,6 +159,22 @@ CREATE FUNCTION cbuffer(geometry)
 
 CREATE CAST (cbuffer AS geometry) WITH FUNCTION geometry(cbuffer);
 CREATE CAST (geometry AS cbuffer) WITH FUNCTION cbuffer(geometry);
+
+/*****************************************************************************
+ * Equals
+ *****************************************************************************/
+
+CREATE FUNCTION cbuffer_same(cbuffer, cbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Cbuffer_same'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ~= (
+  PROCEDURE = cbuffer_same,
+  LEFTARG = cbuffer, RIGHTARG = cbuffer,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
 
 /******************************************************************************
  * Operators

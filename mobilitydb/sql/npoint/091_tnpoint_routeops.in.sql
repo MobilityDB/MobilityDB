@@ -32,18 +32,6 @@
  * Route operators for temporal network points.
  */
 
-/*****************************************************************************/
-
--- CREATE FUNCTION tnpoint_sel(internal, oid, internal, integer)
-  -- RETURNS float
-  -- AS 'MODULE_PATHNAME', 'Tnpoint_sel'
-  -- LANGUAGE C IMMUTABLE STRICT;
-
--- CREATE FUNCTION tnpoint_joinsel(internal, oid, internal, smallint, internal)
-  -- RETURNS float
-  -- AS 'MODULE_PATHNAME', 'Tnpoint_joinsel'
-  -- LANGUAGE C IMMUTABLE STRICT;
-
 /*****************************************************************************
  * Overlaps
  *****************************************************************************/
@@ -57,7 +45,7 @@ CREATE OPERATOR @@ (
   PROCEDURE = overlaps_rid,
   LEFTARG = bigintset, RIGHTARG = tnpoint,
   COMMUTATOR = @@
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE FUNCTION overlaps_rid(tnpoint, bigintset)
@@ -73,13 +61,13 @@ CREATE OPERATOR @@ (
   PROCEDURE = overlaps_rid,
   LEFTARG = tnpoint, RIGHTARG = bigintset,
   COMMUTATOR = @@
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @@ (
   PROCEDURE = overlaps_rid,
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
   COMMUTATOR = @@
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************
@@ -95,7 +83,7 @@ CREATE OPERATOR @? (
   PROCEDURE = contains_rid,
   LEFTARG = bigintset, RIGHTARG = tnpoint,
   COMMUTATOR = ?@
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE FUNCTION contains_rid(tnpoint, bigint)
@@ -119,25 +107,25 @@ CREATE OPERATOR @? (
   PROCEDURE = contains_rid,
   LEFTARG = tnpoint, RIGHTARG = bigint,
   COMMUTATOR = ?@
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @? (
   PROCEDURE = contains_rid,
   LEFTARG = tnpoint, RIGHTARG = bigintset,
   COMMUTATOR = ?@
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @? (
   PROCEDURE = contains_rid,
   LEFTARG = tnpoint, RIGHTARG = npoint,
   COMMUTATOR = ?@
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @? (
   PROCEDURE = contains_rid,
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
   COMMUTATOR = ?@
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************
@@ -161,19 +149,19 @@ CREATE OPERATOR ?@ (
   PROCEDURE = contained_rid,
   LEFTARG = bigint, RIGHTARG = tnpoint,
   COMMUTATOR = @?
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ?@ (
   PROCEDURE = contained_rid,
   LEFTARG = bigintset, RIGHTARG = tnpoint,
   COMMUTATOR = @?
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ?@ (
   PROCEDURE = contained_rid,
   LEFTARG = npoint, RIGHTARG = tnpoint,
   COMMUTATOR = @?
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE FUNCTION contained_rid(tnpoint, bigintset)
@@ -189,13 +177,13 @@ CREATE OPERATOR ?@ (
   PROCEDURE = contained_rid,
   LEFTARG = tnpoint, RIGHTARG = bigintset,
   COMMUTATOR = @?
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ?@ (
   PROCEDURE = contained_rid,
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
   COMMUTATOR = @?
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************
@@ -219,19 +207,19 @@ CREATE OPERATOR @= (
   PROCEDURE = same_rid,
   LEFTARG = bigint, RIGHTARG = tnpoint,
   COMMUTATOR = @=
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @= (
   PROCEDURE = same_rid,
   LEFTARG = bigintset, RIGHTARG = tnpoint,
   COMMUTATOR = @=
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @= (
   PROCEDURE = same_rid,
   LEFTARG = npoint, RIGHTARG = tnpoint,
   COMMUTATOR = @=
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE FUNCTION same_rid(tnpoint, bigint)
@@ -255,25 +243,25 @@ CREATE OPERATOR @= (
   PROCEDURE = same_rid,
   LEFTARG = tnpoint, RIGHTARG = bigint,
   COMMUTATOR = @=
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @= (
   PROCEDURE = same_rid,
   LEFTARG = tnpoint, RIGHTARG = bigintset,
   COMMUTATOR = @=
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @= (
   PROCEDURE = same_rid,
   LEFTARG = tnpoint, RIGHTARG = npoint,
   COMMUTATOR = @=
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @= (
   PROCEDURE = same_rid,
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
   COMMUTATOR = @=
-  -- , RESTRICT = tnpoint_sel, JOIN = tnpoint_joinsel
+  -- , RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************/

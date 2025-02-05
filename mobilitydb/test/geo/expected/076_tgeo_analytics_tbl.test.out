@@ -1,0 +1,12 @@
+SELECT MAX(numInstants(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1, 0, 0, 0))) FROM tbl_tgeometry;
+ max 
+-----
+  56
+(1 row)
+
+SELECT MAX(numInstants(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0))) FROM tbl_tgeometry;
+ max 
+-----
+  56
+(1 row)
+

@@ -281,7 +281,7 @@ overlap2D(const SpanNode *nodebox, const Span *query)
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
     nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
-  return over_span_span(&s, query);
+  return overlaps_span_span(&s, query);
 }
 
 /**
@@ -293,7 +293,7 @@ contain2D(const SpanNode *nodebox, const Span *query)
   Span s;
   span_set(nodebox->left.lower, nodebox->right.upper, nodebox->left.lower_inc,
     nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
-  return cont_span_span(&s, query);
+  return contains_span_span(&s, query);
 }
 
 /**
@@ -302,7 +302,7 @@ contain2D(const SpanNode *nodebox, const Span *query)
 bool
 left2D(const SpanNode *nodebox, const Span *query)
 {
-  return lf_span_span(&nodebox->right, query);
+  return left_span_span(&nodebox->right, query);
 }
 
 /**
@@ -311,7 +311,7 @@ left2D(const SpanNode *nodebox, const Span *query)
 bool
 overLeft2D(const SpanNode *nodebox, const Span *query)
 {
-  return ovlf_span_span(&nodebox->right, query);
+  return overleft_span_span(&nodebox->right, query);
 }
 
 /**
@@ -320,7 +320,7 @@ overLeft2D(const SpanNode *nodebox, const Span *query)
 bool
 right2D(const SpanNode *nodebox, const Span *query)
 {
-  return ri_span_span(&nodebox->left, query);
+  return right_span_span(&nodebox->left, query);
 }
 
 /**
@@ -329,7 +329,7 @@ right2D(const SpanNode *nodebox, const Span *query)
 bool
 overRight2D(const SpanNode *nodebox, const Span *query)
 {
-  return ovri_span_span(&nodebox->left, query);
+  return overright_span_span(&nodebox->left, query);
 }
 
 /**
@@ -338,8 +338,8 @@ overRight2D(const SpanNode *nodebox, const Span *query)
 bool
 adjacent2D(const SpanNode *nodebox, const Span *query)
 {
-  return adj_span_span(&nodebox->left, query) ||
-    adj_span_span(&nodebox->right, query);
+  return adjacent_span_span(&nodebox->left, query) ||
+    adjacent_span_span(&nodebox->right, query);
 }
 
 /**
@@ -698,7 +698,7 @@ Span_kdtree_picksplit(PG_FUNCTION_ARGS)
   }
   qsort(sorted, (size_t) in->nTuples, sizeof(SortedSpan),
     (in->level % 2) ? span_lower_qsort_cmp : span_upper_qsort_cmp);
-  Span *centroid = span_cp(&sorted[median].s);
+  Span *centroid = span_copy(&sorted[median].s);
 
   /* Fill the output data structure */
   out->hasPrefix = true;
@@ -718,7 +718,7 @@ Span_kdtree_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = 0; i < in->nTuples; i++)
   {
-    Span *s = span_cp(&sorted[i].s);
+    Span *s = span_copy(&sorted[i].s);
     int n = sorted[i].i;
     out->mapTuplesToNodes[n] = (i < median) ? 0 : 1;
     out->leafTupleDatums[n] = SpanPGetDatum(s);

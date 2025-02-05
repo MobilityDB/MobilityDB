@@ -53,8 +53,8 @@
 #include "general/tsequenceset.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "point/tpoint_parser.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_parser.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_distance.h"
   #include "npoint/tnpoint_spatialfuncs.h"
@@ -81,6 +81,113 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 
 /**
  * @ingroup meos_internal_temporal_modif
+ * @brief Merge two temporal instants
+ * @param[in] gsarr Array of geometries
+ * @param[in] count Number of elements in the array
+ * @csqlfn #Temporal_merge()
+ */
+GSERIALIZED *
+geoarr_merge(GSERIALIZED **gsarr, int count)
+{
+  assert(gsarr); assert(count > 0);
+  GSERIALIZED *result = geom_array_union(gsarr, count);
+  /*
+   * ST_Union creates MultiLineString and does not sew LineStrings into a 
+   * single LineString. Use ST_LineMerge to sew LineStrings.
+   * https://postgis.net/docs/ST_Union.html 
+   */
+  if (gserialized_get_type(result) == MULTILINETYPE)
+  {
+    LWGEOM *geom = lwgeom_from_gserialized(result);
+    LWGEOM *geom1 = lwgeom_linemerge_directed(geom, 0);
+    GSERIALIZED *tmp = gserialized_from_lwgeom(geom1, NULL);
+    pfree(result);
+    result = tmp;
+  }
+  return result;
+}
+
+/**
+ * @brief Merge an array of temporal geo instants performing a spatial union
+ * of the values that have the same timestamp (iterator function)
+ * @param[in] instants Array of temporal instants
+ * @param[in] count Number of elements in the array
+ * @param[out] newcount Number of values in the output array
+ * @pre The number of elements in the array is greater than 1 and the instants
+ * are sorted
+ */
+TInstant **
+tgeoinst_merge_array_iter(const TInstant **instants, int count, int *newcount)
+{
+  assert(instants); assert(count > 1); 
+  assert(tgeo_type(instants[0]->temptype));
+
+  TInstant **newinstants = palloc(sizeof(TInstant *) * count);
+  int i = 0, count1 = 0;
+  while (i < count)
+  {
+    int j = i;
+    TimestampTz t = instants[i]->t;
+    while (j < count && instants[j]->t == t)
+      j++;
+    if (j == i + 1)
+    {
+      newinstants[count1++] = tinstant_copy(instants[i++]);
+      continue;
+    }
+    int ngeos = j - i;
+    GSERIALIZED **gsarr = palloc(sizeof(GSERIALIZED *) * ngeos);
+    for (int k = 0; k < ngeos; k++)
+      gsarr[k] = DatumGetGserializedP(tinstant_val(instants[k + i]));
+    GSERIALIZED *gs = geoarr_merge(gsarr, ngeos);
+    pfree(gsarr);
+    newinstants[count1++] = tinstant_make(PointerGetDatum(gs), 
+      instants[i]->temptype, instants[i]->t);
+    i = j;
+  }
+  *newcount = count1;
+  return newinstants;
+}
+
+/**
+ * @brief Merge an array of temporal instants (iterator function)
+ * @param[in] instants Array of temporal instants
+ * @param[in] count Number of elements in the array
+ * @param[out] newcount Number of values in the output array
+ * @pre The number of elements in the array is greater than 1 and the elemets
+ * are sorted
+ */
+TInstant **
+tinstant_merge_array_iter(const TInstant **instants, int count, int *newcount)
+{
+  assert(instants); assert(count > 1);
+
+  /* For temporal geo types, we need to perform the spatial union of the
+   * values having the same timestamp */
+  TInstant **instants1;
+  int count1;
+  if (tgeo_type(instants[0]->temptype))
+    instants1 = tgeoinst_merge_array_iter(instants, count, &count1);
+  else
+  {
+    instants1 = (TInstant **) instants;
+    count1 = count;
+  }
+  
+  /* Ensure validity of the arguments and compute the bounding box */
+  if (! ensure_valid_tinstarr((const TInstant **) instants1, count1, MERGE, 
+      DISCRETE))
+    return NULL;
+
+  TInstant **newinstants = palloc(sizeof(TInstant *) * count1);
+  memcpy(newinstants, instants1, sizeof(TInstant *) * count1);
+  *newcount = tinstarr_remove_duplicates((const TInstant **) newinstants, 
+    count1);
+  return newinstants;
+}
+
+/**
+ * @ingroup meos_internal_temporal_modif
  * @brief Merge an array of temporal instants
  * @param[in] instants Array of temporal instants
  * @param[in] count Number of elements in the array
@@ -92,18 +199,24 @@ tinstant_merge_array(const TInstant **instants, int count)
 {
   assert(instants); assert(count > 1);
   tinstarr_sort((TInstant **) instants, count);
-  /* Ensure validity of the arguments and compute the bounding box */
-  if (! ensure_valid_tinstarr(instants, count, MERGE, DISCRETE))
+  int count1;
+  TInstant **instants1 = tinstant_merge_array_iter(instants, count, &count1);
+
+  /* Ensure validity of the arguments and TODO compute the bounding box */
+  if (! ensure_valid_tinstarr((const TInstant **) instants1, count1, MERGE,
+      DISCRETE))
     return NULL;
 
-  const TInstant **newinstants = palloc(sizeof(TInstant *) * count);
-  memcpy(newinstants, instants, sizeof(TInstant *) * count);
-  int newcount = tinstarr_remove_duplicates(newinstants, count);
+  const TInstant **newinstants = palloc(sizeof(TInstant *) * count1);
+  memcpy(newinstants, instants1, sizeof(TInstant *) * count1);
+  int newcount = tinstarr_remove_duplicates(newinstants, count1);
   Temporal *result = (newcount == 1) ?
     (Temporal *) tinstant_copy(newinstants[0]) :
     (Temporal *) tsequence_make_exp1(newinstants, newcount, newcount, true,
       true, DISCRETE, NORMALIZE_NO, NULL);
   pfree(newinstants);
+  if (tgeo_type(instants[0]->temptype))
+    pfree_array((void **) instants1, count1);
   return result;
 }
 
@@ -146,13 +259,90 @@ tdiscseq_merge_array(const TSequence **sequences, int count)
   const TInstant **instants = palloc0(sizeof(TInstant *) * totalcount);
   int ninsts = 0;
   for (int i = 0; i < count; i++)
-  {
     for (int j = 0; j < sequences[i]->count; j++)
       instants[ninsts++] = TSEQUENCE_INST_N(sequences[i], j);
-  }
   /* Create the result */
   Temporal *result = tinstant_merge_array(instants, totalcount);
   pfree(instants);
+  return result;
+}
+
+/**
+ * @brief Merge an array of temporal geo sequences (iterator function)
+ * @param[in] sequences Array of values
+ * @param[in] count Number of elements in the array
+ * @param[out] totalcount Number of elements in the resulting array
+ * @note The values in the array may overlap on a single instant.
+ */
+static TSequence **
+tgeoseq_merge_array_iter(const TSequence **sequences, int count,
+  int *totalcount)
+{
+  assert(sequences); assert(count > 0); assert(totalcount);
+
+  /* Test the validity of the composing sequences, while performing spatial 
+   * union of the values for the instants with the same timestamp */
+  TSequence **newsequences = palloc(sizeof(TSequence *) * count);
+  TSequence **tofree = palloc(sizeof(TSequence *) * count);
+  int nfree = 0;
+  /* Test the validity of the composing sequences */
+  const TSequence *seq1 = sequences[0];
+  for (int i = 1; i < count; i++)
+  {
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq1, seq1->count - 1);
+    const TSequence *seq2 = sequences[i];
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq2, 0);
+    TInstant *newinst = NULL;
+    if (inst1->t > inst2->t)
+    {
+      char *str1 = pg_timestamptz_out(inst1->t);
+      char *str2 = pg_timestamptz_out(inst2->t);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The temporal values cannot overlap on time: %s, %s", str1, str2);
+      pfree(str1); pfree(str2);
+      return NULL;
+    }
+    else if (inst1->t == inst2->t && seq1->period.upper_inc &&
+      seq2->period.lower_inc)
+    {
+      GSERIALIZED *gsarr[2];
+      gsarr[0] = DatumGetGserializedP(tinstant_val(inst1));
+      gsarr[1] = DatumGetGserializedP(tinstant_val(inst2));
+      GSERIALIZED *gs = geoarr_merge(gsarr, 2);
+      newinst = tinstant_make(PointerGetDatum(gs), inst1->temptype, inst1->t);
+      pfree(gs);
+    }
+    if (newinst)
+    {
+      int ninsts = Max(seq1->count, seq2->count);
+      const TInstant **instants = palloc(sizeof(TInstant *) * ninsts);
+      for (int j = 0; j < seq1->count - 1; j++)
+        instants[j] = TSEQUENCE_INST_N(seq1, j);
+      instants[seq1->count - 1] = newinst;
+      TSequence *newseq1 = tsequence_make_exp1(instants, seq1->count, 
+        seq1->count, seq1->period.lower_inc, seq1->period.upper_inc, STEP, 
+        NORMALIZE_NO, NULL);
+      instants[0] = newinst;
+      for (int j = 1; j < seq2->count; j++)
+        instants[j] = TSEQUENCE_INST_N(seq2, j);
+      TSequence *newseq2 = tsequence_make_exp1(instants, seq2->count, 
+        seq2->count, seq2->period.lower_inc, seq2->period.upper_inc, STEP, 
+        NORMALIZE_NO, NULL);
+      tofree[nfree++] = newsequences[i - 1] = newseq1;
+      tofree[nfree++] = newseq2;
+      pfree(instants); pfree(newinst);
+      seq1 = newseq2;
+    }
+    else
+    {
+      newsequences[i - 1] = (TSequence *) seq1;
+      seq1 = seq2;
+    }
+  }
+  newsequences[count - 1] = (TSequence *) seq1;
+  TSequence **result = tseqarr_normalize((const TSequence **) newsequences,
+    count, totalcount);
+  pfree_array((void **) tofree, nfree);
   return result;
 }
 
@@ -164,12 +354,18 @@ tdiscseq_merge_array(const TSequence **sequences, int count)
  * @note The values in the array may overlap on a single instant.
  */
 static TSequence **
-tsequence_merge_array1(const TSequence **sequences, int count,
+tcontseq_merge_array_iter(const TSequence **sequences, int count,
   int *totalcount)
 {
   assert(sequences); assert(totalcount);
   if (count > 1)
     tseqarr_sort((TSequence **) sequences, count);
+
+  /* For temporal geo types, we need to perform the spatial union of the
+   * values having the same timestamp */
+  if (tgeo_type(sequences[0]->temptype))
+    return tgeoseq_merge_array_iter(sequences, count, totalcount);
+  
   /* Test the validity of the composing sequences */
   const TSequence *seq1 = sequences[0];
   meosType basetype = temptype_basetype(seq1->temptype);
@@ -227,7 +423,7 @@ tsequence_merge_array(const TSequence **sequences, int count)
 
   /* Continuous sequences */
   int totalcount;
-  TSequence **newseqs = tsequence_merge_array1(sequences, count, &totalcount);
+  TSequence **newseqs = tcontseq_merge_array_iter(sequences, count, &totalcount);
   Temporal *result;
   if (totalcount == 1)
   {
@@ -235,7 +431,7 @@ tsequence_merge_array(const TSequence **sequences, int count)
     pfree(newseqs);
   }
   else
-    /* Normalization was done at function tsequence_merge_array1 */
+    /* Normalization was done at function tcontseq_merge_array_iter */
     result = (Temporal *) tsequenceset_make_free(newseqs, totalcount,
       NORMALIZE_NO);
   return result;
@@ -278,14 +474,10 @@ tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
   const TSequence **sequences = palloc0(sizeof(TSequence *) * totalcount);
   int nseqs = 0;
   for (int i = 0; i < count; i++)
-  {
     for (int j = 0; j < seqsets[i]->count; j++)
       sequences[nseqs++] = TSEQUENCESET_SEQ_N(seqsets[i], j);
-  }
-  /* We cannot call directly #tsequence_merge_array since the result must be of
-   * subtype TSEQUENCESET */
   int newcount;
-  TSequence **newseqs = tsequence_merge_array1(sequences, totalcount,
+  TSequence **newseqs = tcontseq_merge_array_iter(sequences, totalcount,
     &newcount);
   return tsequenceset_make_free(newseqs, newcount, NORMALIZE);
 }
@@ -382,9 +574,9 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
     return NULL;
   /* One argument is null, return a copy of the other temporal */
   if (! temp1)
-    return temporal_cp(temp2);
+    return temporal_copy(temp2);
   if (! temp2)
-    return temporal_cp(temp1);
+    return temporal_copy(temp1);
 
   /* Ensure validity of the arguments */
   if (! ensure_same_temporal_type(temp1, temp2) ||
@@ -437,7 +629,7 @@ temporalarr_convert_subtype(const Temporal **temparr, int count, uint8 subtype,
     uint8 subtype1 = temparr[i]->subtype;
     assert(subtype >= subtype1);
     if (subtype == subtype1)
-      result[i] = temporal_cp(temparr[i]);
+      result[i] = temporal_copy(temparr[i]);
     else if (subtype1 == TINSTANT)
     {
       if (subtype == TSEQUENCE)
@@ -468,7 +660,7 @@ temporal_merge_array(const Temporal **temparr, int count)
     return NULL;
 
   if (count == 1)
-    return temporal_cp(temparr[0]);
+    return temporal_copy(temparr[0]);
 
   /* Ensure all values have the same interpolation and, if they are spatial,
    * have the same SRID and dimensionality, and determine subtype of the
@@ -476,7 +668,7 @@ temporal_merge_array(const Temporal **temparr, int count)
   uint8 subtype, origsubtype;
   subtype = origsubtype = temparr[0]->subtype;
   interpType interp = MEOS_FLAGS_GET_INTERP(temparr[0]->flags);
-  bool spatial = tgeo_type(temparr[0]->temptype);
+  bool spatial = tspatial_type(temparr[0]->temptype);
   bool convert = false;
   for (int i = 1; i < count; i++)
   {
@@ -554,7 +746,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
   const TSequence **sequences = palloc(sizeof(TSequence *) * 3);
   sequences[0] = seq1;
   int nseqs = 1;
-  if (lf_span_span(&seq1->period, &seq2->period))
+  if (left_span_span(&seq1->period, &seq2->period))
   {
     if (seq1->period.upper_inc && seq2->period.lower_inc)
     {
@@ -583,7 +775,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
   sequences[nseqs++] = (TSequence *) seq2;
 
   int count;
-  TSequence **newseqs = tsequence_merge_array1(sequences, nseqs, &count);
+  TSequence **newseqs = tcontseq_merge_array_iter(sequences, nseqs, &count);
   Temporal *result;
   if (count == 1)
   {
@@ -591,7 +783,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
     pfree(newseqs);
   }
   else
-    /* Normalization was done at function tsequence_merge_array1 */
+    /* Normalization was done at function tcontseq_merge_array_iter */
     result = (Temporal *) tsequenceset_make_free(newseqs, count, NORMALIZE_NO);
   if (tofree)
     pfree(tofree);
@@ -713,7 +905,7 @@ tcontseq_delete_tstzset(const TSequence *seq, const Set *s)
   /* Bounding box test */
   Span p;
   set_set_span(s, &p);
-  if (! over_span_span(&seq->period, &p))
+  if (! overlaps_span_span(&seq->period, &p))
     return tsequence_copy(seq);
 
   const TInstant *inst;
@@ -808,7 +1000,7 @@ tcontseq_delete_tstzspan(const TSequence *seq, const Span *s)
 {
   assert(seq); assert(s);
   /* Bounding box test */
-  if (! over_span_span(&seq->period, s))
+  if (! overlaps_span_span(&seq->period, s))
     return tsequence_copy(seq);
 
   /* Instantaneous sequence */
@@ -875,7 +1067,7 @@ tcontseq_delete_tstzspanset(const TSequence *seq, const SpanSet *ss)
 {
   assert(seq); assert(ss);
   /* Bounding box test */
-  if (! over_span_span(&seq->period, &ss->span))
+  if (! overlaps_span_span(&seq->period, &ss->span))
     return tsequence_copy(seq);
 
   /* Instantaneous sequence */
@@ -962,7 +1154,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
   const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss1, 0);
   const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss2, 0);
   const TSequenceSet *ss; /* for swaping */
-  if (lf_span_span(&seq2->period, &seq1->period))
+  if (left_span_span(&seq2->period, &seq1->period))
   {
     ss = ss1; ss1 = ss2; ss2 = ss;
   }
@@ -978,7 +1170,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
 
   /* If one sequence set is before the other one add the potential gap between
    * the two and call directly the merge function */
-  if (lf_span_span(&ss1->period, &ss2->period))
+  if (left_span_span(&ss1->period, &ss2->period))
   {
     if (ss1->period.upper_inc && ss2->period.lower_inc)
     {
@@ -1170,7 +1362,7 @@ tsequenceset_delete_tstzset(const TSequenceSet *ss, const Set *s)
   /* Bounding box test */
   Span s1;
   set_set_span(s, &s1);
-  if (! over_span_span(&ss->period, &s1))
+  if (! overlaps_span_span(&ss->period, &s1))
     return tsequenceset_copy(ss);
 
   TSequence *seq;
@@ -1225,7 +1417,7 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
 {
   assert(ss); assert(ps);
   /* Bounding box test */
-  if (! over_span_span(&ss->period, &ps->span))
+  if (! overlaps_span_span(&ss->period, &ps->span))
     return tsequenceset_copy(ss);
 
   TSequence *seq;
@@ -1365,7 +1557,7 @@ temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
   SpanSet *ss = temporal_time(temp2);
   Temporal *rest = temporal_restrict_tstzspanset(temp1, ss, REST_MINUS);
   if (! rest)
-    return temporal_cp((Temporal *) temp2);
+    return temporal_copy((Temporal *) temp2);
   Temporal *result = temporal_insert(rest, temp2, connect);
   pfree(rest); pfree(ss);
   return (Temporal *) result;
@@ -1586,7 +1778,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
   }
 
   /* Take into account the maximum distance and/or the maximum interval */
-  if (maxdist > 0.0 || maxt != NULL)
+  if (maxdist > 0.0 || maxt)
   {
     bool split = false;
     if (maxdist > 0.0 && ! datum_eq(value1, value, basetype))
@@ -1596,7 +1788,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
         split = true;
     }
     /* If there is not already a split by distance */
-    if (maxt != NULL && ! split)
+    if (maxt && ! split)
     {
       Interval *duration = minus_timestamptz_timestamptz(inst->t, last->t);
       if (pg_interval_cmp(duration, maxt) > 0)

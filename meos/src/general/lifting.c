@@ -180,7 +180,7 @@
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
 #include "general/type_util.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Functions where the argument is a temporal type.
@@ -362,7 +362,7 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
        intermediate turning point before adding the new instant */
     Datum intervalue;
     TimestampTz intertime;
-    if (lfinfo->tpfunc_base != NULL && interp == LINEAR &&
+    if (lfinfo->tpfunc_base && interp == LINEAR &&
       ! datum_eq(value1, value2, temptype_basetype(seq->temptype)) &&
       lfinfo->tpfunc_base(inst1, inst2, value, lfinfo->argtype[1],
         &intervalue, &intertime))
@@ -567,7 +567,7 @@ tfunc_tlinearseq_base(const TSequence *seq, Datum value,
   else
   {
     /* We are sure that the result is a single sequence */
-    if (lfinfo->tpfunc_base != NULL)
+    if (lfinfo->tpfunc_base)
       tfunc_tlinearseq_base_turnpt(seq, value, lfinfo, sequences);
     else
       sequences[0] = tfunc_tsequence_base(seq, value, lfinfo);
@@ -598,7 +598,7 @@ tfunc_tsequenceset_base(const TSequenceSet *ss, Datum value,
     if (lfinfo->discont)
       nseqs += tfunc_tlinearseq_base_discfn(seq, value, lfinfo,
         &sequences[nseqs]);
-    else if (lfinfo->tpfunc_base != NULL)
+    else if (lfinfo->tpfunc_base)
       nseqs += tfunc_tlinearseq_base_turnpt(seq, value, lfinfo,
         &sequences[nseqs]);
     else
@@ -925,7 +925,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
    * seq2 =    <*       *   *   * ...
    * result =  <S T S T S T * T S T S>
    * where S, T, and * are values computed, respectively, at the
-   * Synchronization points, optional Turning points, and common points
+   * synchronization points, optional turning points, and common points
    */
   TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
   TInstant *inst2 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
@@ -950,7 +950,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
   while (i < seq1->count && j < seq2->count &&
     (inst1->t <= upper || inst2->t <= upper))
   {
-    /* Synchronize two start instant */
+    /* Synchronize the two start instants */
     int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
@@ -970,7 +970,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
     }
     /* If not the first instant compute the function on the potential
        turning point before adding the new instants */
-    if (lfinfo->tpfunc != NULL && ninsts > 0)
+    if (lfinfo->tpfunc && ninsts > 0)
     {
       TimestampTz tptime;
       bool found = lfinfo->tpfunc(prev1, inst1, prev2, inst2, &value, &tptime);
@@ -1038,7 +1038,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
   TInstant *start1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
   TInstant *start2 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
   int i = 1, j = 1, nseqs = 0, ninsts = 0, nfree = 0;
-  /* Synchronize two start instant */
+  /* Synchronize the two start instants */
   if (start1->t < DatumGetTimestampTz(inter->lower))
   {
     start1 = tsequence_at_timestamptz(seq1, inter->lower);
@@ -1061,7 +1061,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     startvalue1 = tinstant_val(start1);
     startvalue2 = tinstant_val(start2);
     startresult = tfunc_base_base(startvalue1, startvalue2, lfinfo);
-    /* Synchronize two end instants */
+    /* Synchronize the two end instants */
     TInstant *end1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
     TInstant *end2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);
     int cmp = timestamptz_cmp_internal(end1->t, end2->t);
@@ -1219,7 +1219,7 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
   TInstant *start1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
   TInstant *start2 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
   int i = 1, j = 1, nfree = 0, ninsts = 0, nseqs = 0;
-  /* Synchronize two start instant */
+  /* Synchronize the two start instant */
   if (start1->t < DatumGetTimestampTz(inter->lower))
   {
     start1 = tsequence_at_timestamptz(seq1, inter->lower);
@@ -1242,7 +1242,7 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
   /* One sequence is produced for each instant of the step sequence */
   while (i < seq1->count && j < seq2->count)
   {
-    /* Synchronize two end instants */
+    /* Synchronize the two end instants */
     TInstant *end1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
     TInstant *end2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);
     int cmp = timestamptz_cmp_internal(end1->t, end2->t);
@@ -1504,7 +1504,7 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Span s1, s2;
   temporal_set_tstzspan(temp1, &s1);
   temporal_set_tstzspan(temp2, &s2);
-  if (! over_span_span(&s1, &s2))
+  if (! overlaps_span_span(&s1, &s2))
     return NULL;
 
   tempSubtype subtype1 = temp1->subtype;
@@ -2081,7 +2081,7 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
   TInstant *start1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
   TInstant *start2 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
   int i = 1, j = 1, nfree = 0;
-  /* Synchronize two start instant */
+  /* Synchronize the two start instant */
   if (start1->t < DatumGetTimestampTz(inter->lower))
   {
     start1 = tsequence_at_timestamptz(seq1, inter->lower);
@@ -2114,7 +2114,7 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
         return lfinfo->ever ? 1 : 0;
       }
     }
-    /* Synchronize two end instants */
+    /* Synchronize the two end instants */
     TInstant *end1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
     TInstant *end2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);
     int cmp = timestamptz_cmp_internal(end1->t, end2->t);
@@ -2183,6 +2183,86 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
 
 /**
  * @brief Synchronize two temporal values and apply to them a lifted function
+ * @details This function is applied when both temporal values have step 
+ * interpolation. The other  possible case when one temporal value has step
+ * interpolation and the other has linear interpolation is NOT YET IMPLEMENTED
+ * since this case does not currently occur.
+ * @param[in] seq1,seq2 Temporal values
+ * @param[in] lfinfo Information about the lifted function
+ * @param[in] inter Overlapping period of the two sequences
+ * @pre The sequences are both linear or both step
+ */
+static int
+eafunc_tstepseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
+  LiftedFunctionInfo *lfinfo, Span *inter)
+{
+  /*
+   * General case
+   * seq1 =  ...    *       *       *>
+   * seq2 =    <*       *   *   * ...
+   * result =  <S   S   S   *   S   S>
+   * where S and * are values computed, respectively, at the synchronization
+   * points and common points
+   */
+  assert(MEOS_FLAGS_GET_INTERP(seq1->flags) == STEP);
+  assert(MEOS_FLAGS_GET_INTERP(seq2->flags) == STEP);
+  TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
+  TInstant *inst2 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
+  TimestampTz lower = DatumGetTimestampTz(inter->lower);
+  TimestampTz upper = DatumGetTimestampTz(inter->upper);
+  int i = 0, j = 0, nfree = 0;
+  if (inst1->t < lower)
+  {
+    i = tcontseq_find_timestamptz(seq1, inter->lower) + 1;
+    inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
+  }
+  else if (inst2->t < lower)
+  {
+    j = tcontseq_find_timestamptz(seq2, inter->lower) + 1;
+    inst2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);
+  }
+  int count = (seq1->count - i + seq2->count - j) * 2;
+  TInstant **tofree = palloc(sizeof(TInstant *) * count);
+  bool res = false;
+  while (i < seq1->count && j < seq2->count &&
+    (inst1->t <= upper || inst2->t <= upper))
+  {
+    /* Synchronize the two start instants */
+    int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
+    if (cmp == 0)
+    {
+      i++; j++;
+    }
+    else if (cmp < 0)
+    {
+      i++;
+      inst2 = tcontseq_at_timestamptz(seq2, inst1->t);
+      tofree[nfree++] = inst2;
+    }
+    else
+    {
+      j++;
+      inst1 = tcontseq_at_timestamptz(seq1, inst2->t);
+      tofree[nfree++] = inst1;
+    }
+    /* Compute the function on the synchronized instants */
+    res = DatumGetBool(tfunc_base_base(tinstant_val(inst1),
+      tinstant_val(inst2), lfinfo));
+    if (res || i == seq1->count || j == seq2->count)
+      break;
+    inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
+    inst2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);
+  }
+  pfree_array((void **) tofree, nfree);
+  if (lfinfo->ever && res)
+    return 1;
+  else if (! lfinfo->ever && ! res)
+    return 0;
+  return lfinfo->ever ? 0 : 1;
+}
+
+/**
+ * @brief Synchronize two temporal values and apply to them a lifted function
  * (dispatch function)
  * @note This function is called for each composing sequence of a temporal
  * sequence set and therefore the bounding period test is repeated
@@ -2208,13 +2288,16 @@ eafunc_tcontseq_tcontseq(const TSequence *seq1,
     DATUM_FREE(value2, temptype_basetype(seq2->temptype));
     return result;
   }
-  /* All ever/always functions currently available, that is, comparisons
-   * (=, <, ...) and spatial relationship (contains, intersects, ...), are
-   * discontinuous. When this is no longer the case, additional functions
-   * must be added to take account of the remaining cases
-   */
-  assert(lfinfo->discont);
-  return eafunc_tcontseq_tcontseq_discfn(seq1, seq2, lfinfo, &inter);
+
+  /* General case */
+  if (lfinfo->discont)
+    return eafunc_tcontseq_tcontseq_discfn(seq1, seq2, lfinfo, &inter);
+
+  /* The case where one sequence is step and another one is linear has
+   * not been yet implemented */
+  assert(MEOS_FLAGS_GET_INTERP(seq1->flags) == STEP);
+  assert(MEOS_FLAGS_GET_INTERP(seq2->flags) == STEP);
+  return eafunc_tstepseq_tstepseq(seq1, seq2, lfinfo, &inter);
 }
 
 /*****************************************************************************/
@@ -2335,7 +2418,7 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Span s1, s2;
   temporal_set_tstzspan(temp1, &s1);
   temporal_set_tstzspan(temp2, &s2);
-  if (! over_span_span(&s1, &s2))
+  if (! overlaps_span_span(&s1, &s2))
     return -1;
 
   assert(temptype_subtype(temp1->subtype));

@@ -111,10 +111,12 @@ typedef enum
   T_TPOSE          = 55,  /**< temporal pose type */
   T_CBUFFER        = 56,  /**< buffer type */
   T_CBUFFERSET     = 57,  /**< buffer set type */
-  T_TCBUFFER        = 58,  /**< temporal buffer type */
+  T_TCBUFFER       = 58,  /**< temporal buffer type */
+  T_TGEOMETRY      = 59,  /**< temporal geometry type */
+  T_TGEOGRAPHY     = 60,  /**< temporal geography type */
 } meosType;
 
-#define NO_MEOS_TYPES 59
+#define NO_MEOS_TYPES 61
 
 /**
  * Enumeration that defines the classes of Boolean operators used in
@@ -280,13 +282,18 @@ extern bool ensure_tnumber_basetype(meosType type);
 extern bool tnumber_settype(meosType type);
 extern bool tnumber_spantype(meosType type);
 extern bool tnumber_spansettype(meosType type);
-extern bool spatial_type(meosType type);
+extern bool spatial_basetype(meosType type);
 extern bool tspatial_type(meosType type);
 extern bool ensure_tspatial_type(meosType type);
-extern bool tspatial_basetype(meosType type);
+extern bool tpoint_type(meosType type);
+extern bool ensure_tpoint_type(meosType type);
 extern bool tgeo_type(meosType type);
 extern bool ensure_tgeo_type(meosType type);
-extern bool ensure_tnumber_tgeo_type(meosType type);
+extern bool tgeo_type_all(meosType type);
+extern bool ensure_tgeo_type_all(meosType type);
+extern bool tgeo_type_all(meosType type);
+extern bool tgeodetic_type(meosType type);
+extern bool ensure_tnumber_tpoint_type(meosType type);
 
 /*****************************************************************************/
 

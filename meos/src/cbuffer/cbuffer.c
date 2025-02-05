@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Static buffer type
+ * @brief Static circular buffer type
  */
 
 #include "cbuffer/tcbuffer.h"
@@ -50,23 +50,47 @@
 #include <meos_cbuffer.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/set.h"
+#include "general/tsequence.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
-#include "point/pgis_types.h"
-#include "point/tpoint.h"
-#include "point/tpoint_out.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/pgis_types.h"
+#include "geo/tgeo.h"
+#include "geo/tgeo_out.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "general/type_parser.h"
-#include "point/tpoint_parser.h"
+#include "geo/tgeo_parser.h"
 #include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_parser.h"
+
+/*****************************************************************************
+ * Collinear function
+ *****************************************************************************/
+
+/**
+ * @brief Return true if the three values are collinear
+ * @param[in] cbuf1,cbuf2,cbuf3 Input values
+ * @param[in] ratio Value in [0,1] representing the duration of the
+ * timestamps associated to `cbuf1` and `cbuf2` divided by the duration
+ * of the timestamps associated to `cbuf1` and `cbuf3`
+ */
+bool
+cbuffer_collinear(Cbuffer *cbuf1, Cbuffer *cbuf2, Cbuffer *cbuf3, double ratio)
+{
+  Datum value1 = PointerGetDatum(&cbuf1->point);
+  Datum value2 = PointerGetDatum(&cbuf2->point);
+  Datum value3 = PointerGetDatum(&cbuf3->point);
+  if (! geopoint_collinear(value1, value2, value3, ratio, false, false))
+    return false;
+  return float_collinear(cbuf1->radius, cbuf2->radius, cbuf3->radius, ratio);
+}
 
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_inout
  * @brief Return a circular buffer from its string representation
  * @param[in] str String
  * @csqlfn #Cbuffer_in()
@@ -78,7 +102,7 @@ cbuffer_in(const char *str)
 }
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_inout
  * @brief Return the string representation of a circular buffer
  * @param[in] cbuf Circular buffer
  * @param[in] maxdd Maximum number of decimal digits
@@ -106,7 +130,7 @@ cbuffer_out(const Cbuffer *cbuf, int maxdd)
  *****************************************************************************/
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_constructor
  * @brief Return a circular buffer from a point and a radius
  * @param[in] point Point
  * @param[in] radius Radius
@@ -116,7 +140,9 @@ Cbuffer *
 cbuffer_make(const GSERIALIZED *point, double radius)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) point) || 
+  if (! ensure_not_null((void *) point) || ! ensure_point_type(point) ||
+      ! ensure_not_empty(point) || ! ensure_has_not_Z_geo(point) || 
+      ! ensure_has_not_M_geo(point) || ! ensure_not_geodetic_geo(point) ||
       ! ensure_not_negative_datum(Float8GetDatum(radius), T_FLOAT8))
     return NULL;
 
@@ -136,14 +162,21 @@ cbuffer_make(const GSERIALIZED *point, double radius)
 }
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_constructor
  * @brief Return a copy of a circular buffer
  * @param[in] cbuf Circular buffer
  */
 Cbuffer *
-cbuffer_cp(const Cbuffer *cbuf)
+cbuffer_copy(const Cbuffer *cbuf)
 {
+#if MEOS
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) cbuf))
+    return NULL;
+#else
   assert(cbuf);
+#endif /* MEOS */
+
   Cbuffer *result = palloc(VARSIZE(cbuf));
   memcpy(result, cbuf, VARSIZE(cbuf));
   return result;
@@ -154,7 +187,7 @@ cbuffer_cp(const Cbuffer *cbuf)
  *****************************************************************************/
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_accessor
  * @brief Return the point of a circular buffer
  * @param[in] cbuf Circular buffer
  * @csqlfn #Cbuffer_point()
@@ -167,7 +200,7 @@ cbuffer_point(const Cbuffer *cbuf)
 }
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_accessor
  * @brief Return the radius of a circular buffer
  * @param[in] cbuf Circular buffer
  * @csqlfn #Cbuffer_radius()
@@ -179,13 +212,11 @@ cbuffer_radius(const Cbuffer *cbuf)
 }
 
 /*****************************************************************************
- * Conversions between circular point and geometry
+ * Conversions functions
  *****************************************************************************/
 
-extern LWCIRCSTRING *lwcircstring_from_lwpointarray(int32_t srid, uint32_t npoints, LWPOINT **points);
-
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_conversion
  * @brief Transform a circular buffer into a geometry
  * @param[in] cbuf Circular buffer
  * @csqlfn #Cbuffer_to_geom()
@@ -193,42 +224,36 @@ extern LWCIRCSTRING *lwcircstring_from_lwpointarray(int32_t srid, uint32_t npoin
 GSERIALIZED *
 cbuffer_geom(const Cbuffer *cbuf)
 {
+#if MEOS
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) cbuf))
     return NULL;
+#else
+  assert(cbuf);
+#endif /* MEOS */
 
-  Datum d = PointerGetDatum(&cbuf->point);
-  GSERIALIZED *gs = DatumGetGserializedP(d);
-  int32_t srid = gserialized_get_srid(gs);
-  LWPOINT *points[3];
-  points[1] = (LWPOINT *) lwgeom_from_gserialized(gs);
-  /* Shift the X coordinate of cbuf->point by +- cbuf->radius */
+  GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
   POINT2D *p = (POINT2D *) GS_POINT_PTR(gs);
-  points[0] = points[2] = lwpoint_make2d(srid, p->x - cbuf->radius, p->y);
-  points[1] = lwpoint_make2d(srid, p->x + cbuf->radius, p->y);
-  /* Construct the circle */
-  LWGEOM *ring = lwcircstring_as_lwgeom(
-    lwcircstring_from_lwpointarray(srid, 3, points));
-  LWCURVEPOLY *poly = lwcurvepoly_construct_empty(srid, 0, 0);
-  lwcurvepoly_add_ring(poly, ring);
-  GSERIALIZED *result = geom_serialize((LWGEOM *) poly);
-  /* Clean up and return */
-  lwpoint_free(points[0]); lwpoint_free(points[1]); lwgeom_free(ring);
-  return result;
+  int32_t srid = gserialized_get_srid(gs);
+  return geocircle_make(p->x, p->y, cbuf->radius, srid);
 }
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_conversion
  * @brief Transform a geometry into a circular buffer
  * @param[in] gs Geometry
  * @csqlfn #Geom_to_cbuffer()
  */
 Cbuffer *
-geom_to_cbuffer(const GSERIALIZED *gs)
+geom_cbuffer(const GSERIALIZED *gs)
 {
+#if MEOS
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_circle_type(gs))
     return NULL;
+#else
+  assert(gs); assert(circle_type(gs));
+#endif /* MEOS */
 
   int32_t srid = gserialized_get_srid(gs);
   LWCURVEPOLY *poly = (LWCURVEPOLY *) lwgeom_from_gserialized(gs);
@@ -253,7 +278,7 @@ geom_to_cbuffer(const GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_internal_temporal_conversion
  * @brief Return an array of circular buffers converted into a geometry
  * @param[in] cbufarr Array of circular buffers
  * @param[in] nelems Number of elements in the input array
@@ -262,7 +287,7 @@ geom_to_cbuffer(const GSERIALIZED *gs)
 GSERIALIZED *
 cbufferarr_geom(Cbuffer **cbufarr, int nelems)
 {
-  assert(nelems > 1);
+  assert(cbufarr); assert(nelems > 1);
   GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * nelems);
   /* SRID of the first element of the array */
   int32_t srid = cbuffer_srid(cbufarr[0]);
@@ -278,7 +303,7 @@ cbufferarr_geom(Cbuffer **cbufarr, int nelems)
     }
     geoms[i] = cbuffer_geom(cbufarr[i]);
   }
-  GSERIALIZED *result = geom_collect_garray(geoms, nelems);
+  GSERIALIZED *result = geo_collect_garray(geoms, nelems);
   pfree_array((void **) geoms, nelems);
   return result;
 }
@@ -288,7 +313,7 @@ cbufferarr_geom(Cbuffer **cbufarr, int nelems)
  *****************************************************************************/
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_spatial_srid
  * @brief Return the SRID of a circular buffer
  * @param[in] cbuf Circular buffer
  * @csqlfn #Cbuffer_srid()
@@ -304,7 +329,7 @@ cbuffer_srid(const Cbuffer *cbuf)
 }
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_spatial_srid
  * @brief Set the coordinates of the circular buffer to an SRID
  * @param[in] cbuf Circular buffer
  * @param[in] srid SRID
@@ -320,11 +345,32 @@ cbuffer_set_srid(Cbuffer *cbuf, int32_t srid)
 }
 
 /*****************************************************************************
+ * Approximate equality for circular buffers
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_comp_trad
+ * @brief Return true if two circular buffers are approximately equal with
+ * respect to an epsilon value
+ */
+bool
+cbuffer_same(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
+{
+  /* Same radius */
+  if (fabs(cbuf1->radius - cbuf2->radius) > MEOS_EPSILON)
+    return false;
+  /* Same points */
+  Datum point1 = PointerGetDatum(&cbuf1->point);
+  Datum point2 = PointerGetDatum(&cbuf2->point);
+  return datum_point_same(point1, point2);
+}
+
+/*****************************************************************************
  * Comparison functions for defining B-tree indexes
  *****************************************************************************/
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_comp_trad
  * @brief Return true if the first buffer is equal to the second one
  * @param[in] cbuf1,cbuf2 Buffers
  * @csqlfn #Cbuffer_eq()
@@ -339,7 +385,7 @@ cbuffer_eq(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 }
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_comp_trad
  * @brief Return true if the first buffer is not equal to the second one
  * @param[in] cbuf1,cbuf2 Buffers
  * @csqlfn #Cbuffer_ne()
@@ -351,7 +397,7 @@ cbuffer_ne(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 }
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first buffer
  * is less than, equal to, or greater than the second one
  * @param[in] cbuf1,cbuf2 Buffers
@@ -374,7 +420,7 @@ cbuffer_cmp(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 }
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_comp_trad
  * @brief Return true if the first buffer is less than the second one
  * @param[in] cbuf1,cbuf2 Buffers
  * @csqlfn #Cbuffer_lt()
@@ -387,7 +433,7 @@ cbuffer_lt(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 }
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_comp_trad
  * @brief Return true if the first buffer is less than or equal to the
  * second one
  * @param[in] cbuf1,cbuf2 Buffers
@@ -401,7 +447,7 @@ cbuffer_le(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 }
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_comp_trad
  * @brief Return true if the first buffer is greater than the second one
  * @param[in] cbuf1,cbuf2 Buffers
  * @csqlfn #Cbuffer_gt()
@@ -414,7 +460,7 @@ cbuffer_gt(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 }
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_comp_trad
  * @brief Return true if the first buffer is greater than or equal to
  * the second one
  * @param[in] cbuf1,cbuf2 Buffers
@@ -430,11 +476,11 @@ cbuffer_ge(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 /*****************************************************************************
  * Function for defining hash index
  * The function reuses the approach for span types for combining the hash of
- * the lower and upper bounds.
+ * the point and the hash.
  *****************************************************************************/
 
 /**
- * @ingroup meos_cbuffer_types
+ * @ingroup meos_temporal_acccessor
  * @brief Return the 32-bit hash value of a circular buffer
  * @param[in] cbuf Circular buffer
  */

@@ -46,6 +46,10 @@
 #include "general/set.h"
 #include "general/temporal.h"
 #include "general/type_util.h"
+#if CBUFFER
+  #include "cbuffer/tcbuffer.h"
+  #include "cbuffer/tcbuffer_boxops.h"
+#endif
 #if NPOINT
   #include "npoint/tnpoint_boxops.h"
 #endif
@@ -72,6 +76,14 @@ set_expand_bbox(Datum value, meosType basetype, void *box)
     geo_set_stbox(DatumGetGserializedP(value), &box1);
     stbox_expand(&box1, (STBox *) box);
   }
+#if CBUFFER
+  else if (basetype == T_CBUFFER)
+  {
+    STBox box1;
+    cbuffer_set_stbox(DatumGetCbufferP(value), &box1);
+    stbox_expand(&box1, (STBox *) box);
+  }
+#endif
 #if NPOINT
   else if (basetype == T_NPOINT)
   {
@@ -274,6 +286,59 @@ text_union_transfn(Set *state, const text *txt)
     return NULL;
   return value_union_transfn(state, PointerGetDatum(txt), T_TEXT);
 }
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of geometries/geographies
+ * @param[in,out] state Current aggregate state
+ * @param[in] gs Value
+ */
+Set *
+geo_union_transfn(Set *state, const GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) gs) ||
+      (state && ! ensure_geoset_type(state->settype)))
+    return NULL;
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  return value_union_transfn(state, PointerGetDatum(gs), geotype);
+}
+
+#if CBUFFER
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of circular buffers
+ * @param[in,out] state Current aggregate state
+ * @param[in] cbuf Value
+ */
+Set *
+cbuffer_union_transfn(Set *state, const Cbuffer *cbuf)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) cbuf) ||
+      (state && ! ensure_set_isof_type(state, T_CBUFFERSET)))
+    return NULL;
+  return value_union_transfn(state, PointerGetDatum(cbuf), T_CBUFFER);
+}
+#endif /* CBUFFER */
+
+#if NPOINT
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of network points
+ * @param[in,out] state Current aggregate state
+ * @param[in] np Value
+ */
+Set *
+npoint_union_transfn(Set *state, const Npoint *np)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) np) ||
+      (state && ! ensure_set_isof_type(state, T_NPOINTSET)))
+    return NULL;
+  return value_union_transfn(state, PointerGetDatum(np), T_NPOINT);
+}
+#endif /* NPOINT */
 
 /**
  * @ingroup meos_setspan_agg

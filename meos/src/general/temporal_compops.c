@@ -44,7 +44,7 @@
 #include "general/lifting.h"
 #include "general/span.h"
 #include "general/type_util.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Ever/always functions
@@ -165,7 +165,7 @@ ever_eq_temporal_base(const Temporal *temp, Datum value)
 
 /**
  * @ingroup meos_internal_temporal_comp_ever
- * @brief Return true if a temporal value is ever different to a base value
+ * @brief Return true if a temporal value is ever different from a base value
  * @param[in] temp Temporal value
  * @param[in] value Value
  * @csqlfn #Ever_ne_temporal_base()
@@ -247,7 +247,7 @@ ever_eq_base_temporal(Datum value, const Temporal *temp)
 
 /**
  * @ingroup meos_internal_temporal_comp_ever
- * @brief Return true if a temporal value is ever different to a base value
+ * @brief Return true if a temporal value is ever different from a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ne_base_temporal()
@@ -411,7 +411,7 @@ always_eq_base_temporal(Datum value, const Temporal *temp)
 
 /**
  * @ingroup meos_internal_temporal_comp_ever
- * @brief Return true if a temporal value is always different to a base value
+ * @brief Return true if a temporal value is always different from a base value
  * @param[in] value Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_ne_base_temporal()
@@ -742,9 +742,9 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2) ||
-	  (tgeo_type(temp1->temptype) && (
-          ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
-          ! ensure_same_dimensionality(temp1->flags, temp2->flags))))
+      (tspatial_type(temp1->temptype) && (
+        ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
+        ! ensure_same_dimensionality(temp1->flags, temp2->flags))))
     return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
 }
@@ -765,9 +765,9 @@ tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2) ||
-      (tgeo_type(temp1->temptype) && (
-          ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
-          ! ensure_same_dimensionality(temp1->flags, temp2->flags))))
+      (tspatial_type(temp1->temptype) && (
+        ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
+        ! ensure_same_dimensionality(temp1->flags, temp2->flags))))
     return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
 }

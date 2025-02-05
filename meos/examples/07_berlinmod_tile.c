@@ -176,7 +176,7 @@ int main(void)
     for (i = 0; i < no_trip_tiles; i++)
     {
       split = tpoint_at_stbox(trip, &trip_tiles[k], false);
-      if (split != NULL)
+      if (split)
       {
         trip_splits[k].count++;
         trip_splits[k].distance += tpoint_length(split) / 1e3;
@@ -193,7 +193,7 @@ int main(void)
     for (i = 0; i < no_speed_tiles; i++)
     {
       split = tnumber_at_tbox(speed, &speed_tiles[k]);
-      if (split != NULL)
+      if (split)
       {
         speed_splits[k].count++;
         dur1 = temporal_duration(split, false);

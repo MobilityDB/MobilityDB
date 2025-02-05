@@ -123,19 +123,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (Well-Known Binary o WKB)</para>
+					<para><link linkend="setspan_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Devuelve la representación binaria conocida (Well-Known Binary o WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_asHexWKB"><varname>asHexWKB</varname></link>: Devuelve la representación hexadecimal binaria conocida (HexWKB)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_FromBinary"><varname>settypeFromBinary</varname>, <varname>spantypeFromBinary</varname>, <varname>spansettypeFromBinary</varname></link>: Devuelve a partir de la representación binaria conocida (WKB)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_FromHexWKB"><varname>settypeFromHexWKB</varname>, <varname>spantypeFromHexWKB</varname>, <varname>spansettypeFromHexWKB</varname></link>: Devuelve a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><link linkend="setspan_FromBinary"><varname>settypeFromBinary</varname>, <varname>spantypeFromBinary</varname>, <varname>spansettypeFromBinary</varname>, <varname>settypeFromHexWKB</varname>, <varname>spantypeFromHexWKB</varname>, <varname>spansettypeFromHexWKB</varname></link>: Entrar a partir de la representación binaria conocida (WKB) o a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -269,7 +261,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatspan_round"><varname>round</varname></link>: Redondear a un número de decimales</para>
+					<para><link linkend="floatsetspan_round"><varname>round</varname></link>: Redondear a un número de decimales</para>
 				</listitem>
 
 				<listitem>
@@ -286,36 +278,6 @@
 
 				<listitem>
 					<para><link linkend="time_tprecision"><varname>tprecision</varname></link>: Establecer la precisión temporal al intervalo con respecto al origen</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
-			<title>Comparaciones</title>
-
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="setspan_eq"><varname>=</varname></link>: ¿Son iguales los valores?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los valores?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_lt"><varname>&lt;</varname></link>: ¿Es el primer valor menor que el segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_gt"><varname>&gt;</varname></link>: ¿Es el primer valor mayor que el segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_le"><varname>&lt;=</varname></link>: ¿Es el primer valor menor o igual que el segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_ge"><varname>&gt;=</varname></link>: ¿Es el primer valor mayor o igual que el segundo?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -424,6 +386,16 @@
 		</sect2>
 
 		<sect2>
+			<title>Comparaciones</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="setspan_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Agregaciones</title>
 
 			<itemizedlist>
@@ -453,19 +425,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (Well-Known Binary o WKB)</para>
+					<para><link linkend="box_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Devuelve la representación binaria conocida (Well-Known Binary o WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_asHexWKB"><varname>asHexWKB</varname></link>: Devuelve la representación hexadecimal binaria conocida (HexWKB)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_FromBinary"><varname>tboxFromBinary</varname>, <varname>stboxFromBinary</varname></link>: Devuelve a partir de la representación binaria conocida (WKB)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_FromHexWKB"><varname>tboxFromHexWKB</varname>, <varname>stboxFromHexWKB</varname></link>: Devuelve a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
+					<para><link linkend="box_FromBinary"><varname>tboxFromBinary</varname>, <varname>stboxFromBinary</varname>, <varname>tboxFromHexWKB</varname>, <varname>stboxFromHexWKB</varname></link>: Entrar a partir de la representación binaria conocida (WKB) o a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -596,7 +560,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Funciones de división</title>
+			<title>Operaciones de división</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="quadSplit"><varname>quadSplit</varname></link>: Dividir el cuadro delimitador en cuadrantes u octantes </para>
@@ -689,27 +653,7 @@
 			<title>Comparaciones</title>
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="box_eq"><varname>=</varname></link>: ¿Son iguales los cuadros delimitadores?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los cuadros delimitadores?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_lt"><varname>&lt;</varname></link>: ¿Es el primer cuadro delimitador menor que el segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_gt"><varname>&gt;</varname></link>: ¿Es el primer cuadro delimitador mayor que el segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_le"><varname>&lt;=</varname></link>: ¿Es el primer cuadro delimitador menor o igual que el segundo?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_ge"><varname>&gt;=</varname></link>: ¿Es el primer cuadro delimitador menor que el segundo?</para>
+				<para><link linkend="box_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -736,11 +680,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_asBinary"><varname>asBinary</varname></link>: Devuelve la representación Well-Known Binary (WKB)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="temporal_asHexWKB"><varname>asHexWKB</varname></link>: Devuelve la representación Hexadecimal Well-Known Binary (HexWKB) como texto</para>
+					<para><link linkend="temporal_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Devuelve la representación Well-Known Binary (WKB) o la representación Hexadecimal Well-Known Binary (HexWKB)</para>
 				</listitem>
 
 				<listitem>
@@ -748,15 +688,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_FromBinary"><varname>ttypeFromBinary</varname></link>: Devuelve a partir de la representación Well-Known Binary (WKB)</para>
+					<para><link linkend="temporal_FromBinary"><varname>ttypeFromBinary</varname>, <varname>ttypeFromHexWKB</varname></link>: Entrar a partir de la representación Well-Known Binary (WKB) o a partir de la representación Hexadecimal Well-Known Binary (HexWKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_FromHexWKB"><varname>ttypeFromHexWKB</varname></link>: Devuelve a partir de la representación Hexadecimal Well-Known Binary (HexWKB)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="temporal_FromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Devuelve a partir de la representación Moving Features JSON (MF-JSON)</para>
+					<para><link linkend="temporal_FromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Entrar a partir de la representación Moving Features JSON (MF-JSON)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -795,7 +731,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeompoint_tgeogpoint"><varname>tgeompoint::tgeogpoint</varname>, <varname>tgeogpoint::tgeompoint</varname></link>: Convertir entre un punto geométrico temporal y un punto geográfico temporal</para>
+					<para><link linkend="tgeometry_tgeography"><varname>tgeometry::tgeography</varname>, <varname>tgeography::tgeometry</varname>, <varname>tgeompoint::tgeogpoint</varname>, <varname>tgeogpoint::tgeompoint</varname></link>: Convertir entre una geometría temporal y una geografía temporal</para>
 				</listitem>
 
 				<listitem>
@@ -1011,95 +947,19 @@
 		<sect2>
 			<title>Comparaciones</title>
 
-			<sect3>
-				<title>Comparaciones tradicionales</title>
-
 				<itemizedlist>
 					<listitem>
-					<para><link linkend="ttype_eq"><varname>=</varname></link>: ¿Son iguales los valores temporales?</para>
+					<para><link linkend="ttype_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los valores temporales?</para>
+						<para><link linkend="ttype_eveq"><varname>?=</varname>, <varname>%=</varname>, <varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname>, <varname>?&lt;</varname>, <varname>%&lt;</varname>, <varname>?&gt;</varname>, <varname>%&gt;</varname>, <varname>?&lt;=</varname>, <varname>%&lt;=</varname>, <varname>?&gt;=</varname>, <varname>%&gt;=</varname></link>: Comparaciones alguna vez y siempre</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_lt"><varname>&lt;</varname></link>: ¿Es el primer valor temporal menor que el segundo?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_gt"><varname>&gt;</varname></link>: ¿Es el primer valor temporal mayor que el segundo?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_le"><varname>&lt;=</varname></link>: ¿Es el primer valor temporal menor o igual que el segundo?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_ge"><varname>&gt;=</varname></link>: ¿Es el primer valor temporal mayor o igual que el segundo?</para>
+						<para><link linkend="ttype_teq"><varname>#=</varname>, <varname>#&lt;&gt;</varname>, <varname>#&lt;</varname>, <varname>#&gt;</varname>, <varname>#&lt;=</varname>, <varname>#&gt;=</varname></link>: Comparaciones temporales</para>
 					</listitem>
 				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Comparaciones alguna vez y siempre</title>
-
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="ttype_eveq"><varname>?=</varname>, <varname>%=</varname></link>: ¿Es el valor temporal alguna vez o siempre igual al valor?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_evne"><varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname></link>: ¿Es el valor temporal alguna vez o siempre diferente del valor?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_evlt"><varname>?&lt;</varname>, <varname>%&lt;</varname></link>: ¿Es el valor temporal alguna vez o siempre menor que el valor?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_evgt"><varname>?&gt;</varname>, <varname>%&gt;</varname></link>: ¿Es el valor temporal alguna vez o siempre mayor que el valor?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_evle"><varname>?&lt;=</varname>, <varname>%&lt;=</varname></link>: ¿Es el valor temporal alguna vez o siempre menor o igual que el valor?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_evge"><varname>?&gt;=</varname>, <varname>%&gt;=</varname></link>: ¿Es el valor temporal alguna vez o siempre mayor o igual que el valor?</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Comparaciones temporales</title>
-
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="ttype_teq"><varname>#=</varname></link>: Igual temporal</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_tne"><varname>#&lt;&gt;</varname></link>: Diferente temporal </para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_tlt"><varname>#&lt;</varname></link>: Menor que temporal </para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_tgt"><varname>#&gt;</varname></link>: Mayor que temporal </para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_tle"><varname>#&lt;=</varname></link>: Menor o igual que temporal </para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_tge"><varname>#&gt;=</varname></link>: Mayor o igual que temporal </para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
 		</sect2>
 
 		<sect2>
@@ -1218,11 +1078,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="asText"><varname>asText</varname></link>: Devuelve la representación de texto conocido (Well-Known Text o WKT)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="asEWKT"><varname>asEWKT</varname></link>: Devuelve la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					<para><link linkend="asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
 				</listitem>
 
 				<listitem>
@@ -1230,39 +1086,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asBinary"><varname>asBinary</varname></link>: Devuelve la representación binaria conocida (Well-Known Binary o WKB)</para>
+					<para><link linkend="asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asEWKB"><varname>asEWKB</varname></link>: Devuelve la representación extendida binaria conocida (Extended Well-Known Binary o EWKB)</para>
+					<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname>, <varname>tgeogpointFromText</varname>, <varname>tgeompointFromEWKT</varname>, <varname>tgeogpointFromEWKT</varname></link>: Entrar a partir de la representación de texto conocido (Well-Known Text o WKT) o de la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asHexEWKB"><varname>asHexEWKB</varname></link>: Devuelve la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
+					<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname>, <varname>tgeogpointFromMFJSON</varname></link>: Entrar a partir de la representación JSON de características móviles (Moving Features)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname>, <varname>tgeogpointFromText</varname></link>: Entrar un punto temporal en representación de texto conocido (Well-Known Text o WKT)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromEWKT"><varname>tgeompointFromEWKT</varname>, <varname>tgeogpointFromEWKT</varname></link>: Entrar un punto temporal en representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname>, <varname>tgeogpointFromMFJSON</varname></link>: Entrar un punto temporal geométrico en una representación JSON de características móviles (Moving Features)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname>, <varname>tgeogpointFromBinary</varname></link>: Entrar un punto temporal en representación binaria conocida (Well-Known Binary o WKB)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname>, <varname>tgeogpointFromEWKB</varname></link>: Entrar un punto temporal en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromHexEWKB"><varname>tgeompointFromHexEWKB</varname>, <varname>tgeogpointFromHexEWKB</varname></link>: Entrar un punto temporal en representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
+					<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname>, <varname>tgeogpointFromBinary</varname>, <varname>tgeompointFromEWKB</varname>, <varname>tgeogpointFromEWKB</varname>, <varname>tgeompointFromHexEWKB</varname>, <varname>tgeogpointFromHexEWKB</varname></link>: Entrar a partir de la representación binaria conocida (Well-Known Binary o WKB), de la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o de la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1271,15 +1107,15 @@
 			<title>Sistema de referencia espacial</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tpoint_SRID"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial</para>
+					<para><link linkend="tgeo_SRID"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tpoint_setSRID"><varname>setSRID</varname></link>: Establecer el identificador de referencia espacial </para>
+					<para><link linkend="tgeo_setSRID"><varname>setSRID</varname></link>: Establecer el identificador de referencia espacial </para>
 					</listitem>
 
 				<listitem>
-					<para><link linkend="tpoint_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transformar a una referencia espacial diferente</para>
+					<para><link linkend="tgeo_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transformar a una referencia espacial diferente</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1599,7 +1435,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Operaciones de fragmentación</title>
+				<title>Operaciones de división</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1625,10 +1461,8 @@
 			</sect3>
 		</sect2>
 
-	</sect1>
-
-	<sect1>
-		<title>Tipos temporales: Agregaciones</title>
+		<sect2>
+			<title>Agregaciones</title>
 
 			<itemizedlist>
 				<listitem>
@@ -1688,6 +1522,7 @@
 				</listitem>
 
 			</itemizedlist>
+		</sect2>
 	</sect1>
 
 	<sect1>
@@ -1710,6 +1545,15 @@
 			</sect3>
 
 			<sect3>
+				<title>Conversiones de tipo</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="npoint_geometry"><varname>npoint::geometry</varname>, <varname>nsegment::geometry</varname>, <varname>geometry::npoint</varname>, <varname>geometry::nsegmnt</varname></link>: Convertir entre un punto o un segmento de red y una geometría</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
 				<title>Accesores</title>
 				<itemizedlist>
 					<listitem>
@@ -1722,10 +1566,6 @@
 
 					<listitem>
 						<para><link linkend="startPosition"><varname>startPosition</varname>, <varname>endPosition</varname></link>: Devuelve la posición inicial o final</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1743,11 +1583,7 @@
 				<title>Operaciones espaciales</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="npoint_geometry"><varname>::</varname></link>: Convertir un punto de red en una geometría</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="geometry_npoint"><varname>::</varname></link>: Convertir una geometría en un punto de red</para>
+						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Devuelve el identificador de referencia espacial</para>
 					</listitem>
 
 					<listitem>
@@ -1760,27 +1596,7 @@
 				<title>Comparaciones</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="static_eq"><varname>=</varname></link>: ¿Son iguales los valores?</para>
-						</listitem>
-
-					<listitem>
-						<para><link linkend="static_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los valores?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="static_lt"><varname>&lt;</varname></link>: ¿El primer valor es menor que el segundo?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="static_gt"><varname>&gt;</varname></link>: ¿El primer valor es mayor que el segundo?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="static_le"><varname>&lt;=</varname></link>: ¿El primer valor es menor o igual que el segundo?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="static_ge"><varname>&gt;=</varname></link>: ¿El primer valor es mayor o igual que el segundo?</para>
+						<para><link linkend="npoint_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1801,7 +1617,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpointSeqSet"><varname>tnpointSeqSet</varname></link>: Constructor para puntos de red temporal de subtipo conjunto de secuencias</para>
+						<para><link linkend="tnpointSeqSet"><varname>tnpointSeqSet</varname>, <varname>tnpointSeqSetGaps</varname></link>: Constructor para puntos de red temporal de subtipo conjunto de secuencias</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1810,30 +1626,14 @@
 				<title>Conversión de tipos</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_tgeompoint"><varname>::</varname></link>: Convertir un punto de red temporal en un punto de geometría temporal</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tgeompoint_tnpoint"><varname>::</varname></link>: Convertir un punto de geometría temporal en un punto de red temporal</para>
+						<para><link linkend="tnpoint_tgeompoint"><varname>tnpoint::tgeompoint</varname>, <varname>tgeompoint::tnpoint</varname></link>: Convertir entre un punto de red temporal en un punto de geometría temporal</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 
 			<sect3>
-				<title>Operaciones</title>
+				<title>Accesores</title>
 				<itemizedlist>
-					<listitem>
-						<para><link linkend="tnpoint_subtype"><varname>tnpointInst, tnpointSeq, tnpointSeqSet</varname></link>: Transformar un punto de red temporal en otro subtipo</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_setInterp"><varname>setInterp</varname></link>: Transformar un punto de red temporal en otra interpolación</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_round"><varname>round</varname></link>: Redondear la fracción del punto de red temporal en el número de posiciones decimales</para>
-					</listitem>
-
 					<listitem>
 						<para><link linkend="tnpoint_getValues"><varname>getValues</varname></link>: Devuelve los valores</para>
 					</listitem>
@@ -1857,19 +1657,42 @@
 					<listitem>
 						<para><link linkend="tnpoint_speed"><varname>speed</varname></link>: Devuelve la velocidad del punto de red temporal en unidades por segundo</para>
 					</listitem>
+				</itemizedlist>
+			</sect3>
 
+			<sect3>
+				<title>Transformaciones</title>
+				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_stbox"><varname>stbox</varname></link>: Construir el cuadro delimitador a partir de un punto de red y, opcionalmente, una marca de tiempo o un período</para>
+						<para><link linkend="tnpoint_subtype"><varname>tnpointInst, tnpointSeq, tnpointSeqSet</varname></link>: Transformar un punto de red temporal en otro subtipo</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_twCentroid"><varname>twCentroid</varname></link>: Devuelve el centroide ponderado en el tiempo</para>
+						<para><link linkend="tnpoint_setInterp"><varname>setInterp</varname></link>: Transformar un punto de red temporal en otra interpolación</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_azimuth"><varname>azimuth</varname></link>: Devuelve el acimut temporal</para>
+						<para><link linkend="tnpoint_round"><varname>round</varname></link>: Redondear la fracción del punto de red temporal en el número de posiciones decimales</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Restricciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restringir a (al complemento de) un valor</para>
 					</listitem>
 
+					<listitem>
+						<para><link linkend="tnpoint_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restringir a (al complemento de) una geometría</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operadores de distancia</title>
+				<itemizedlist>
 					<listitem>
 						<para><link linkend="tnpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Devuelve el instante del primer punto de red temporal en el que los dos argumentos están a la distancia más cercana</para>
 					</listitem>
@@ -1883,47 +1706,71 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_atValue"><varname>atValue</varname>, <varname>minusValue</varname></link>: Restringir a (al complemento de) un valor</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restringir a (al complemento de) una geometría</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_comp"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Operadores de comparación tradicionales</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_tcomp"><varname>#=, #&lt;&gt;</varname></link>: Operadores de comparación temporales</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_ever_always"><varname>?=, &amp;=</varname></link>: Operadores de igualdad siempre y alguna vez</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_pos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Operadores de posición relativa</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Operadores topológicos</para>
-					</listitem>
-
-					<listitem>
 						<para><link linkend="tnpoint_smallestDistance"><varname>|=|</varname></link>: Devuelve la distancia más pequeña entre los dos argumentos</para>
 					</listitem>
 
 					<listitem>
 						<para><link linkend="tnpoint_distance"><varname>&lt;-&gt;</varname></link>: Devuelve la distancia temporal</para>
 					</listitem>
+				</itemizedlist>
+			</sect3>
 
+			<sect3>
+				<title>Operaciones espaciales</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_stbox"><varname>stbox</varname></link>: Construir el cuadro delimitador a partir de un punto de red y, opcionalmente, una marca de tiempo o un período</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_twCentroid"><varname>twCentroid</varname></link>: Devuelve el centroide ponderado en el tiempo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_azimuth"><varname>azimuth</varname></link>: Devuelve el acimut temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones de cuadro delimitador</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Operadores topológicos</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_pos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Operadores de posición relativa</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Relaciones espaciales</title>
+				<itemizedlist>
 					<listitem>
 						<para><link linkend="tnpoint_espatialrels"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>aTouches</varname>, <varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Relaciones espaciales alguna vez o siempre</para>
 					</listitem>
 
 					<listitem>
 						<para><link linkend="tnpoint_tspatialrels"><varname>tContains</varname>, <varname>tDisjoint</varname>, <varname>tIntersects</varname>, <varname>tTouches</varname>, <varname>tDwithin</varname></link>: Relaciones espaciales temporales</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Comparaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_comp"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Comparaciones tradicionales</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_ever_always"><varname>?=, &amp;=</varname></link>: Comparaciones siempre y alguna vez</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_tcomp"><varname>#=, #&lt;&gt;</varname></link>: Comparaciones temporales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

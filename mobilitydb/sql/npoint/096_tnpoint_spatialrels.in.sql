@@ -49,13 +49,13 @@
 CREATE FUNCTION eContains(geometry, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Econtains_geo_tnpoint'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION aContains(geometry, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Acontains_geo_tnpoint'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -139,33 +139,33 @@ CREATE FUNCTION aIntersects(tnpoint, npoint)
 CREATE FUNCTION eIntersects(geometry, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_geo_tnpoint'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eIntersects(tnpoint, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_tnpoint_geo'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eIntersects(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_tnpoint_tnpoint'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION aIntersects(geometry, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Aintersects_geo_tnpoint'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(tnpoint, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Aintersects_tnpoint_geo'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(tnpoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Aintersects_tnpoint_tnpoint'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -203,23 +203,23 @@ CREATE FUNCTION aTouches(tnpoint, npoint)
 CREATE FUNCTION eTouches(geometry, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Etouches_geo_tnpoint'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eTouches(tnpoint, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Etouches_tnpoint_geo'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION aTouches(geometry, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Atouches_geo_tnpoint'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aTouches(tnpoint, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Atouches_tnpoint_geo'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -257,33 +257,33 @@ CREATE FUNCTION aDwithin(tnpoint, npoint, dist float)
 CREATE FUNCTION eDwithin(geometry, tnpoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_geo_tnpoint'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDwithin(tnpoint, geometry, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tnpoint_geo'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDwithin(tnpoint, tnpoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tnpoint_tnpoint'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION aDwithin(geometry, tnpoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adwithin_geo_tnpoint'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(tnpoint, geometry, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adwithin_tnpoint_geo'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(tnpoint, tnpoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adwithin_tnpoint_tnpoint'
-  SUPPORT tnpoint_supportfn
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

@@ -49,7 +49,7 @@
 #include "general/span.h"
 #include "general/spanset.h"
 #include "general/temporal_restrict.h"
-#include "general/tbool_boolops.h"
+#include "general/tbool_ops.h"
 #include "general/tinstant.h"
 #include "general/tsequence.h"
 #include "general/tsequenceset.h"
@@ -196,7 +196,7 @@ tinstant_tagg(const TInstant **instants1, int count1, const TInstant **instants2
     int cmp = timestamptz_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
-      if (func != NULL)
+      if (func)
         result[count++] = tinstant_make(
           func(tinstant_val(inst1), tinstant_val(inst2)), inst1->temptype,
           inst1->t);
@@ -255,7 +255,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   {
     const TSequence *sequences[2];
     /* The two sequences do not intersect: copy the sequences in the right order */
-    if (span_cmp_int(&seq1->period, &seq2->period) < 0)
+    if (span_cmp(&seq1->period, &seq2->period) < 0)
     {
       sequences[0] = (TSequence *) seq1;
       sequences[1] = (TSequence *) seq2;
@@ -332,7 +332,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   {
     const TInstant *inst1 = TSEQUENCE_INST_N(syncseq1, i);
     const TInstant *inst2 = TSEQUENCE_INST_N(syncseq2, i);
-    if (func != NULL)
+    if (func)
       instants[i] = tinstant_make(
         func(tinstant_val(inst1), tinstant_val(inst2)), seq1->temptype,
         inst1->t);

@@ -195,8 +195,10 @@ SELECT asText(floatspanset '{[1.55,2.55],[4,5]}',0);
 
 			<listitem id="setspan_asBinary">
 				<indexterm><primary><varname>asBinary</varname></primary></indexterm>
-				<para>Return the Well-Known Binary (WKB) representation</para>
+				<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
+				<para>Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				<para><varname>asBinary({set,spans},endian text='') → bytea</varname></para>
+				<para><varname>asHexWKB({set,spans},endian text='') → text</varname></para>
 				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asBinary(dateset '{2001-01-01, 2001-01-03}');
@@ -205,15 +207,6 @@ SELECT asBinary(intspan '[1, 3)');
 -- \x011300010100000003000000
 SELECT asBinary(floatspanset '{[1, 2], [4, 5]}', 'XDR');
 -- \x00000e00000002033ff000000000000040000000000000000340100000000000004014000000000000
-</programlisting>
-			</listitem>
-
-			<listitem id="setspan_asHexWKB">
-				<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
-				<para>Return the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
-				<para><varname>asHexWKB({set,spans},endian text='') → text</varname></para>
-				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(dateset '{2001-01-01, 2001-01-03}');
 -- 01050001020000006E01000070010000
 SELECT asHexWKB(intspan '[1, 3)');
@@ -227,7 +220,7 @@ SELECT asHexWKB(floatspanset '{[1, 2], [4, 5]}', 'XDR');
 				<indexterm><primary><varname>settypeFromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>spantypeFromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>spansettypeFromBinary</varname></primary></indexterm>
-				<para>Input from a Well-Known Binary (WKB) representation</para>
+				<para>Input from the Well-Known Binary (WKB) representation</para>
 				<para><varname>settypeFromBinary(bytea) → set</varname></para>
 				<para><varname>spantypeFromBinary(bytea) → span</varname></para>
 				<para><varname>spansettypeFromBinary(bytea) → spanset</varname></para>
@@ -247,7 +240,7 @@ SELECT floatspansetFromBinary(
 				<indexterm><primary><varname>settypeFromHexWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>spantypeFromHexWKB</varname></primary></indexterm>
 				<indexterm><primary><varname>spansettypeFromHexWKB</varname></primary></indexterm>
-				<para>Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+				<para>Input from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				<para><varname>settypeFromHexWKB(text) → set</varname></para>
 				<para><varname>spantypeFromHexWKB(text) → span</varname></para>
 				<para><varname>spansettypeFromHexWKB(text) → spanset</varname></para>
@@ -907,9 +900,10 @@ SELECT setSRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),
 			<listitem id="geoset_transform">
 				<indexterm><primary><varname>transform</varname></primary></indexterm>
 				<indexterm><primary><varname>transformPipeline</varname></primary></indexterm>
-				<para>Transform to a different spatial reference</para>
+				<para>Transform to a spatial reference identifier</para>
 				<para><varname>transform(geoset,to_srid integer) → geoset</varname></para>
-				<para><varname>transform(geoset,pipeline text,to_srid integer,is_forward bool=true) → geoset</varname></para>
+				<para><varname>transformPipeline(geoset,pipeline text,to_srid integer,is_forward bool=true) →</varname></para>
+				<para><varname>  geoset</varname></para>
 				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input set has an unknown SRID (represented by 0).</para>
 				<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. The SRID of the input set is ignored, and the SRID of the output set will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -1143,8 +1137,8 @@ SELECT timestamp '2001-01-01' #&amp;&gt; tstzspan '[2001-01-01, 2001-01-05)';
 			</itemizedlist>
 		</sect2>
 
-		<sect2 id="setspan_bbox_split">
-			<title>Bounding Box Splitting</title>
+		<sect2 id="setspan_splitting">
+			<title>Splitting Operations</title>
 
 			<para>When creating indexes for set or span set types, what is stored in the index is not the actual value but instead, a bounding box that <emphasis>represents</emphasis> the value. In this case, the index will provide a list of candidate values that <emphasis>may</emphasis> satisfy the query predicate, and a second step is needed to filter out candidate values by computing the query predicate on the actual values.</para>
 
@@ -1239,78 +1233,40 @@ SELECT dateset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 		<itemizedlist>
 			<listitem id="setspan_eq">
 				<indexterm><primary><varname>=</varname></primary></indexterm>
-				<para>Are the values equal?</para>
+				<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;</varname></primary></indexterm>
+				<indexterm><primary><varname>&gt;</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
+				<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
+				<para>Traditional comparisons</para>
 				<para><varname>{set,spans} = {set,spans} → boolean</varname></para>
+				<para><varname>{set,spans} &lt;&gt; {set,spans} → boolean</varname></para>
+				<para><varname>{set,spans} &lt; {set,spans} → boolean</varname></para>
+				<para><varname>{set,spans} &gt; {set,spans} → boolean</varname></para>
+				<para><varname>{set,spans} &lt;= {set,spans} → boolean</varname></para>
+				<para><varname>{set,spans} &gt;= {set,spans} → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
-SELECT tstzset '{2001-01-01, 2001-01-02}' = tstzset '{2001-01-01, 2001-01-04}';
--- false
 SELECT intspan '[1,3]' = intspan '[1,4)';
--- true
-SELECT tstzspan '[2001-01-01, 2001-01-04)' = tstzspan '[2001-01-01, 2001-01-04)';
 -- true
 SELECT floatspanset '{[1, 2),[2,3)}' = floatspanset '{[1,3)}';
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="setspan_ne">
-				<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
-				<para>Are the values different?</para>
-				<para><varname>{set,spans} &lt;&gt; {set,spans} → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tstzset '{2001-01-01, 2001-01-04}' &lt;&gt; tstzset '{2001-01-01, 2001-01-05}';
 -- false
 SELECT tstzspan '[2001-01-01, 2001-01-04)' &lt;&gt; tstzspan '[2001-01-03, 2001-01-05)';
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="setspan_lt">
-				<indexterm><primary><varname>&lt;</varname></primary></indexterm>
-				<para>Is the first value less than the second one?</para>
-				<para><varname>{set,spans} &lt; {set,spans} → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT tstzset '{2001-01-01, 2001-01-04}' &lt; tstzset '{2001-01-01, 2001-01-05}';
--- true
 SELECT floatspan '[3, 4]' &lt; floatspan '(3, 4]';
--- true
-SELECT tstzspan '[2001-01-01, 2001-01-04)' &lt; tstzspan '[2001-01-01, 2001-01-04]';
 -- true
 SELECT intspanset '{[1,2],[3,4]}' &lt; intspanset '{[3, 4]}';
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="setspan_gt">
-				<indexterm><primary><varname>&gt;</varname></primary></indexterm>
-				<para>Is the first value greater than the second one?</para>
-				<para><varname>{set,spans} &gt; {set,spans} → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[3, 4]' &gt; floatspan '[3, 4)';
 -- true
 SELECT tstzspan '[2001-01-03, 2001-01-04)' &gt; tstzspan '[2001-01-02, 2001-01-05)';
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="setspan_le">
-				<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
-				<para>Is the first value less than or equal to the second one?</para>
-				<para><varname>{set,spans} &lt;= {set,spans} → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT floatspanset '{[1, 4)}' &lt;= floatspanset '{[1, 5), [6, 7)}';
 -- true
 SELECT tstzspanset '{[2001-01-01, 2001-01-04)}' &lt;=
   tstzspanset '{[2001-01-01, 2001-01-05), [2001-01-06, 2001-01-07)}';
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="setspan_ge">
-				<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
-				<para>Is the first value greater than or equal to the second one?</para>
-				<para><varname>{set,spans} &gt;= {set,spans} → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tstzspan '[2001-01-03, 2001-01-05)' &gt;= tstzspan '[2001-01-03, 2001-01-04)';
 -- true
 SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';

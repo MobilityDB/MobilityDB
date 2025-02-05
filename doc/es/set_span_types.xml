@@ -205,8 +205,10 @@ SELECT asText(floatspanset '{[1.55,2.55],[4,5]}',0);
 
 			<listitem id="setspan_asBinary">
 				<indexterm><primary><varname>asBinary</varname></primary></indexterm>
-				<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB)</para>
+				<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
+				<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
 				<para><varname>asBinary({set,spans},endian text='') → bytea</varname></para>
+				<para><varname>asHexWKB({set,spans},endian text='') → text</varname></para>
 				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asBinary(dateset '{2001-01-01, 2001-01-03}');
@@ -215,15 +217,6 @@ SELECT asBinary(intspan '[1, 3)');
 -- \x011300010100000003000000
 SELECT asBinary(floatspanset '{[1, 2], [4, 5]}', 'XDR');
 -- \x00000e00000002033ff000000000000040000000000000000340100000000000004014000000000000
-</programlisting>
-			</listitem>
-
-			<listitem id="setspan_asHexWKB">
-				<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
-				<para>Devuelve la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
-				<para><varname>asHexWKB({set,spans},endian text='') → text</varname></para>
-				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(dateset '{2001-01-01, 2001-01-03}');
 -- 01050001020000006E01000070010000
 SELECT asHexWKB(intspan '[1, 3)');
@@ -237,10 +230,16 @@ SELECT asHexWKB(floatspanset '{[1, 2], [4, 5]}', 'XDR');
 				<indexterm><primary><varname>settypeFromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>spantypeFromBinary</varname></primary></indexterm>
 				<indexterm><primary><varname>spansettypeFromBinary</varname></primary></indexterm>
-				<para>Devuelve a partir de la representación binaria conocida (WKB)</para>
+				<indexterm><primary><varname>settypeFromHexWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>spantypeFromHexWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>spansettypeFromHexWKB</varname></primary></indexterm>
+				<para>Entrar a partir de la representación binaria conocida (WKB) o a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
 				<para><varname>settypeFromBinary(bytea) → set</varname></para>
 				<para><varname>spantypeFromBinary(bytea) → span</varname></para>
 				<para><varname>spansettypeFromBinary(bytea) → spanset</varname></para>
+				<para><varname>settypeFromHexWKB(text) → set</varname></para>
+				<para><varname>spantypeFromHexWKB(text) → span</varname></para>
+				<para><varname>spansettypeFromHexWKB(text) → spanset</varname></para>
 				<para>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT datesetFromBinary('\x01050001020000006e01000070010000');
@@ -250,19 +249,6 @@ SELECT intspanFromBinary('\x011300010100000003000000');
 SELECT floatspansetFromBinary(
   '\x00000e00000002033ff000000000000040000000000000000340100000000000004014000000000000');
 -- {[1, 2], [4, 5]}
-</programlisting>
-			</listitem>
-
-			<listitem id="setspan_FromHexWKB">
-				<indexterm><primary><varname>settypeFromHexWKB</varname></primary></indexterm>
-				<indexterm><primary><varname>spantypeFromHexWKB</varname></primary></indexterm>
-				<indexterm><primary><varname>spansettypeFromHexWKB</varname></primary></indexterm>
-				<para>Devuelve a partir de la representación hexadecimal binaria conocida (HexWKB)</para>
-				<para><varname>settypeFromHexWKB(text) → set</varname></para>
-				<para><varname>spantypeFromHexWKB(text) → span</varname></para>
-				<para><varname>spansettypeFromHexWKB(text) → spanset</varname></para>
-				<para>Hay una función por tipo de conjunto o de rango, el nombre de la función tiene como prefijo el nombre del tipo.</para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT datesetFromHexWKB('01050001020000006E01000070010000');
 -- {2001-01-01, 2001-01-03}
 SELECT intspanFromHexWKB('011300010100000003000000');
@@ -922,7 +908,8 @@ SELECT setSRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),
 				<indexterm><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transformar a una referencia espacial diferente</para>
 				<para><varname>transform(geoset,to_srid integer) → geoset</varname></para>
-				<para><varname>transform(geoset,pipeline text,to_srid integer,is_forward bool=true) → geoset</varname></para>
+				<para><varname>transformPipeline(geoset,pipeline text,to_srid integer,is_forward bool=true) →</varname></para>
+				<para><varname>  geoset</varname></para>
 				<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el conjunto tiene un SRID desconocido (representado por 0).</para>
 				<para>La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. El SRID del conjunto de entrada se ignora y el SRID de la conjunto de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>to_srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -1158,7 +1145,7 @@ SELECT timestamp '2001-01-01' #&amp;&gt; tstzspan '[2001-01-01, 2001-01-05)';
 			</itemizedlist>
 		</sect2>
 
-		<sect2 id="setspan_bbox_split">
+		<sect2 id="setspan_splitting">
 			<title>Operaciones de división</title>
 
 			<para>Al crear índices para tipos de conjuntos o conjunto de rangos, lo que se almacena en el índice no es el valor real, sino un cuadro delimitador que <emphasis>representa</emphasis> el valor. En este caso, el índice proporcionará una lista de valores candidatos que <emphasis>pueden</emphasis> satisfacer el predicado de la consulta, y se necesita un segundo paso para filtrar los valores candidatos calculando el predicado de la consulta sobre los valores reales.</para>
@@ -1254,82 +1241,44 @@ SELECT dateset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 		<itemizedlist>
 			<listitem id="setspan_eq">
 				<indexterm><primary><varname>=</varname></primary></indexterm>
-				<para>¿Son iguales los valores?</para>
+				<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;</varname></primary></indexterm>
+				<indexterm><primary><varname>&gt;</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
+				<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
+				<para>Comparaciones tradicionales</para>
 				<para><varname>{set,spans} = {set,spans} → boolean</varname></para>
+					<para><varname>{set,spans} &lt;&gt; {set,spans} → boolean</varname></para>
+				<para><varname>{set,spans} &lt; {set,spans} → boolean</varname></para>
+				<para><varname>{set,spans} &gt; {set,spans} → boolean</varname></para>
+				<para><varname>{set,spans} &lt;= {set,spans} → boolean</varname></para>
+				<para><varname>{set,spans} &gt;= {set,spans} → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[1,3]' = intspan '[1,4)';
 -- true
 SELECT floatspanset '{[1, 2),[2,3)}' = floatspanset '{[1,3)}';
 -- true
-SELECT tstzspan '[2001-01-01, 2001-01-04)' = tstzspan '[2001-01-01, 2001-01-04)';
--- true
-SELECT tstzset '{2001-01-01, 2001-01-02}' = tstzset '{2001-01-01, 2001-01-04}';
--- false
-</programlisting>
-			</listitem>
-
-			<listitem id="setspan_ne">
-				<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
-				<para>¿Son diferentes los valores?</para>
-					<para><varname>{set,spans} &lt;&gt; {set,spans} → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT tstzspan '[2001-01-01, 2001-01-04)' &lt;&gt; tstzspan '[2001-01-03, 2001-01-05)';
--- true
 SELECT tstzset '{2001-01-01, 2001-01-04}' &lt;&gt; tstzset '{2001-01-01, 2001-01-05}';
 -- false
-</programlisting>
-			</listitem>
-
-			<listitem id="setspan_lt">
-				<indexterm><primary><varname>&lt;</varname></primary></indexterm>
-				<para>¿Es el primer valor menor que el segundo?</para>
-				<para><varname>{set,spans} &lt; {set,spans} → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT intspanset '{[1,2],[3,4]}' &lt; intspanset '{[3, 4]}';
+SELECT tstzspan '[2001-01-01, 2001-01-04)' &lt;&gt; tstzspan '[2001-01-03, 2001-01-05)';
 -- true
 SELECT floatspan '[3, 4]' &lt; floatspan '(3, 4]';
 -- true
-SELECT tstzspan '[2001-01-01, 2001-01-04)' &lt; tstzspan '[2001-01-01, 2001-01-04]';
+SELECT intspanset '{[1,2],[3,4]}' &lt; intspanset '{[3, 4]}';
 -- true
-SELECT tstzset '{2001-01-01, 2001-01-04}' &lt; tstzset '{2001-01-01, 2001-01-05}';
--- true
-</programlisting>
-			</listitem>
-
-			<listitem id="setspan_gt">
-				<indexterm><primary><varname>&gt;</varname></primary></indexterm>
-				<para>¿Es el primer valor mayor que el segundo?</para>
-				<para><varname>{set,spans} &gt; {set,spans} → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT floatspan '[3, 4]' &gt; floatspan '[3, 4)';
 -- true
 SELECT tstzspan '[2001-01-03, 2001-01-04)' &gt; tstzspan '[2001-01-02, 2001-01-05)';
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="setspan_le">
-				<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
-				<para>¿Es el primer valor menor o igual que el segundo?</para>
-				<para><varname>{set,spans} &lt;= {set,spans} → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT floatspanset '{[1, 4)}' &lt;= floatspanset '{[1, 5), [6, 7)}';
 -- true
 SELECT tstzspanset '{[2001-01-01, 2001-01-04)}' &lt;=
   tstzspanset '{[2001-01-01, 2001-01-05), [2001-01-06, 2001-01-07)}';
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="setspan_ge">
-				<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
-				<para>¿Es el primer valor mayor o igual que el segundo?</para>
-				<para><varname>{set,spans} &gt;= {set,spans} → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
--- false
 SELECT tstzspan '[2001-01-03, 2001-01-05)' &gt;= tstzspan '[2001-01-03, 2001-01-04)';
 -- true
+SELECT intspanset '{[1, 4)}' &gt;= intspanset '{[1, 5), [6, 7)}';
+-- false
 </programlisting>
 			</listitem>
 		</itemizedlist>

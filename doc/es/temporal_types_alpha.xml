@@ -12,7 +12,7 @@
 	<title>Tipos temporales: Operaciones alfanuméricas</title>
 
 	<sect1 id="temporal_types_bool">
-		<title>Operaciones booleanos</title>
+		<title>Operaciones booleanas</title>
 		<itemizedlist>
 			<listitem id="tbool_and">
 				<indexterm><primary><varname>&amp;</varname></primary></indexterm>

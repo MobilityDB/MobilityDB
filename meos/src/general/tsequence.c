@@ -57,11 +57,9 @@
 #include "general/temporal_boxops.h"
 #include "general/type_util.h"
 #include "general/type_parser.h"
-#include "point/tpoint_parser.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_parser.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
-  #include <meos_cbuffer.h>
-  #include "cbuffer/tcbuffer.h"
   #include "cbuffer/tcbuffer_spatialfuncs.h"
 #endif
 #if NPOINT
@@ -85,7 +83,7 @@
  * timestamps associated to `x1` and `x2` divided by the duration
  * of the timestamps associated to `x1` and `x3`
  */
-static bool
+bool
 float_collinear(double x1, double x2, double x3, double ratio)
 {
   double x = x1 + (x3 - x1) * ratio;
@@ -149,41 +147,6 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
     fabs(x2->b - x.b) <= MEOS_EPSILON && fabs(x2->c - x.c) <= MEOS_EPSILON &&
     fabs(x2->d - x.d) <= MEOS_EPSILON);
 }
-
-#if CBUFFER
-/**
- * @brief Return true if the three values are collinear
- * @param[in] np1,np2,np3 Input values
- * @param[in] ratio Value in [0,1] representing the duration of the
- * timestamps associated to `cbuf1` and `cbuf2` divided by the duration
- * of the timestamps associated to `cbuf1` and `cbuf3`
- */
-static bool
-cbuffer_collinear(Cbuffer *cbuf1, Cbuffer *cbuf2, Cbuffer *cbuf3, double ratio)
-{
-  Datum value1 = PointerGetDatum(&cbuf1->point);
-  Datum value2 = PointerGetDatum(&cbuf2->point);
-  Datum value3 = PointerGetDatum(&cbuf3->point);
-  if (! geopoint_collinear(value1, value2, value3, ratio, false, false))
-    return false;
-  return float_collinear(cbuf1->radius, cbuf2->radius, cbuf3->radius, ratio);
-}
-#endif
-
-#if NPOINT
-/**
- * @brief Return true if the three values are collinear
- * @param[in] np1,np2,np3 Input values
- * @param[in] ratio Value in [0,1] representing the duration of the
- * timestamps associated to `np1` and `np2` divided by the duration
- * of the timestamps associated to `np1` and `np3`
- */
-static bool
-npoint_collinear(Npoint *np1, Npoint *np2, Npoint *np3, double ratio)
-{
-  return float_collinear(np1->pos, np2->pos, np3->pos, ratio);
-}
-#endif
 
 /**
  * @brief Return true if the three values are collinear
@@ -604,97 +567,7 @@ tsequence_in(const char *str, meosType temptype, interpType interp)
     return NULL;
   return result;
 }
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal sequence boolean from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- * @param[in] interp Interpolation
- */
-TSequence *
-tboolseq_in(const char *str, interpType interp)
-{
-  return tsequence_in(str, T_TBOOL, interp);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal sequence integer from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- * @param[in] interp Interpolation
- */
-TSequence *
-tintseq_in(const char *str, interpType interp)
-{
-  return tsequence_in(str, T_TINT, interp);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal sequence float from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- * @param[in] interp Interpolation
- */
-TSequence *
-tfloatseq_in(const char *str, interpType interp)
-{
-  return tsequence_in(str, T_TFLOAT, interp);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal sequence text from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- * @param[in] interp Interpolation
- */
-TSequence *
-ttextseq_in(const char *str, interpType interp)
-{
-  return tsequence_in(str, T_TTEXT, interp);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal sequence geometry point from its Well-Known Text
- * (WKT) representation
- * @param[in] str String
- * @param[in] interp Interpolation
- */
-TSequence *
-tgeompointseq_in(const char *str, interpType interp __attribute__((unused)))
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
-  if (! temp)
-    return NULL;
-  assert (temp->subtype == TSEQUENCE);
-  return (TSequence *) temp;
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal sequence geography point from its Well-Known Text
- * (WKT) representation
- * @param[in] str String
- * @param[in] interp Interpolation
- */
-TSequence *
-tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
-  if (! temp)
-    return NULL;
-  assert (temp->subtype == TSEQUENCE);
-  return (TSequence *) temp;
-}
-#endif
+#endif /* MEOS */
 
 /**
  * @brief Return the Well-Known Text (WKT) representation of a temporal
@@ -877,7 +750,7 @@ tsequence_make_exp1(const TInstant **instants, int count, int maxcount,
   MEOS_FLAGS_SET_INTERP(result->flags, interp);
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_T(result->flags, true);
-  if (tgeo_type(instants[0]->temptype))
+  if (tspatial_type(instants[0]->temptype))
   {
     MEOS_FLAGS_SET_Z(result->flags, MEOS_FLAGS_GET_Z(instants[0]->flags));
     MEOS_FLAGS_SET_GEODETIC(result->flags,
@@ -888,7 +761,7 @@ tsequence_make_exp1(const TInstant **instants, int count, int maxcount,
   if (bbox)
     memcpy(TSEQUENCE_BBOX_PTR(result), bbox, bboxsize);
   else
-    tinstarr_compute_bbox((const TInstant **) norminsts, newcount, lower_inc,
+    tinstarr_set_bbox((const TInstant **) norminsts, newcount, lower_inc,
       upper_inc, interp, TSEQUENCE_BBOX_PTR(result));
   /* Store the composing instants */
   size_t pdata = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
@@ -958,47 +831,6 @@ bbox_expand(const void *box1, void *box2, meosType temptype)
 }
 
 /**
- * @brief Ensure that all temporal instants of the array are valid
- * @details For this, the instants must have increasing timestamp (or may be
- * equal if the merge parameter is true), and if they are temporal points, have
- * the same SRID and the same dimensionality. If the bounding box output
- * argument is not NULL, the bounding box of the resulting sequence is computed
- * @param[in] instants Array of temporal instants
- * @param[in] count Number of elements in the input array
- * @param[in] merge True if a merge operation, which implies that two
- * consecutive instants may be equal
- * @param[in] interp Interpolation
- * @note The argument @p interp is only used for temporal network points.
- */
-bool
-ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
-  interpType interp __attribute__((unused)))
-{
-  for (int i = 0; i < count; i++)
-  {
-    if (instants[i]->subtype != TINSTANT)
-    {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-        "Input values must be temporal instants");
-      return false;
-    }
-    if (i > 0)
-    {
-      if (! ensure_increasing_timestamps(instants[i - 1], instants[i], merge) ||
-          ! ensure_spatial_validity((Temporal *) instants[i - 1],
-            (Temporal *) instants[i]))
-        return false;
-#if NPOINT
-      if (interp != DISCRETE && instants[i]->temptype == T_TNPOINT &&
-          ! ensure_same_rid_tnpointinst(instants[i - 1], instants[i]))
-        return false;
-#endif /* NPOINT */
-    }
-  }
-  return true;
-}
-
-/**
  * @brief Ensure the validity of the arguments when creating a temporal sequence
  */
 bool
@@ -1023,6 +855,57 @@ ensure_valid_tinstarr_common(const TInstant **instants, int count,
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Invalid end value for temporal sequence with step interpolation");
     return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Ensure that all temporal instants of the array are valid
+ * @details For this, the instants must have increasing timestamp (or may be
+ * equal if the merge parameter is true), and if they are temporal points, have
+ * the same SRID and the same dimensionality. If the bounding box output
+ * argument is not NULL, the bounding box of the resulting sequence is computed
+ * @param[in] instants Array of temporal instants
+ * @param[in] count Number of elements in the input array
+ * @param[in] merge True if a merge operation, which implies that two
+ * consecutive instants may be equal
+ * @param[in] interp Interpolation
+ * @note The argument @p interp is only used for temporal network points.
+ */
+bool
+ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
+#if NPOINT
+  interpType interp)
+#else
+  interpType interp __attribute__((unused)))
+#endif /* NPOINT */
+{
+  for (int i = 0; i < count; i++)
+  {
+    if (instants[i]->subtype != TINSTANT)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Input values must be temporal instants");
+      return false;
+    }
+    /* Ensure that only point geometries for temporal points */
+    if (tpoint_type(instants[i]->temptype) &&
+        ! ensure_point_type(DatumGetGserializedP(tinstant_val(instants[i]))))
+      return false;
+    if (i > 0)
+    {
+      if (! ensure_increasing_timestamps(instants[i - 1], instants[i], merge) ||
+          // TODO Should we bypass the tests on tnpoint ?
+          (instants[i - 1]->temptype != T_TNPOINT &&
+            ! ensure_spatial_validity((Temporal *) instants[i - 1],
+            (Temporal *) instants[i])))
+        return false;
+#if NPOINT
+      if (interp != DISCRETE && instants[i]->temptype == T_TNPOINT &&
+          ! ensure_same_rid_tnpointinst(instants[i - 1], instants[i]))
+        return false;
+#endif /* NPOINT */
+    }
   }
   return true;
 }
@@ -1149,7 +1032,8 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
 TSequence *
 tpointseq_make_coords(const double *xcoords, const double *ycoords,
   const double *zcoords, const TimestampTz *times, int count, int32 srid,
-  bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize)
+  bool geodetic, bool lower_inc, bool upper_inc, interpType interp,
+  bool normalize)
 {
   assert(xcoords); assert(ycoords); assert(times); assert(count > 0);
   bool hasz = (zcoords != NULL);
@@ -1195,7 +1079,7 @@ tsequence_copy(const TSequence *seq)
 TSequence *
 tsequence_from_base_tstzset(Datum value, meosType temptype, const Set *s)
 {
-  assert(s);
+  assert(s); assert(s->settype == T_TSTZSET);
   TInstant **instants = palloc(sizeof(TInstant *) * s->count);
   for (int i = 0; i < s->count; i++)
     instants[i] = tinstant_make(value, temptype,
@@ -1203,91 +1087,6 @@ tsequence_from_base_tstzset(Datum value, meosType temptype, const Set *s)
   return tsequence_make_free(instants, s->count, true, true, DISCRETE,
     NORMALIZE_NO);
 }
-
-#if MEOS
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal boolean discrete sequence from a boolean and a
- * timestamptz set
- * @param[in] b Value
- * @param[in] s Set
- */
-TSequence *
-tboolseq_from_base_tstzset(bool b, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s))
-    return NULL;
-  return tsequence_from_base_tstzset(BoolGetDatum(b), T_TBOOL, s);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal integer discrete sequence from an integer and a
- * timestamptz set
- * @param[in] i Value
- * @param[in] s Set
- */
-TSequence *
-tintseq_from_base_tstzset(int i, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s))
-    return NULL;
-  return tsequence_from_base_tstzset(Int32GetDatum(i), T_TINT, s);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal float discrete sequence from a float and a
- * timestamptz set
- * @param[in] d Value
- * @param[in] s Set
- */
-TSequence *
-tfloatseq_from_base_tstzset(double d, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s))
-    return NULL;
-  return tsequence_from_base_tstzset(Float8GetDatum(d), T_TFLOAT, s);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal text discrete sequence from a text and a
- * timestamptz set
- * @param[in] txt Value
- * @param[in] s Set
- */
-TSequence *
-ttextseq_from_base_tstzset(const text *txt, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt))
-    return NULL;
-  return tsequence_from_base_tstzset(PointerGetDatum(txt), T_TTEXT, s);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal geometry point discrete sequence from a point
- * and a timestamptz set
- * @param[in] gs Value
- * @param[in] s Set
- */
-TSequence *
-tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || gserialized_is_empty(gs) ||
-      ! ensure_not_null((void *) s))
-    return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
-    T_TGEOGPOINT : T_TGEOMPOINT;
-  return tsequence_from_base_tstzset(PointerGetDatum(gs), temptype, s);
-}
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -1319,93 +1118,6 @@ tsequence_from_base_tstzspan(Datum value, meosType temptype, const Span *s,
     pfree(instants[1]);
   return result;
 }
-
-#if MEOS
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal boolean sequence from a boolean and a timestamptz
- * span
- * @param[in] b Value
- * @param[in] s Span
- */
-TSequence *
-tboolseq_from_base_tstzspan(bool b, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if ( ! ensure_not_null((void *) s))
-    return NULL;
-  return tsequence_from_base_tstzspan(BoolGetDatum(b), T_TBOOL, s, STEP);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal integer sequence from an integer and a timestamptz
- * span
- * @param[in] i Value
- * @param[in] s Span
- */
-TSequence *
-tintseq_from_base_tstzspan(int i, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if ( ! ensure_not_null((void *) s))
-    return NULL;
-  return tsequence_from_base_tstzspan(Int32GetDatum(i), T_TINT, s, STEP);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal float sequence from a float and a timestamptz
- * span
- * @param[in] d Value
- * @param[in] s Span
- * @param[in] interp Interpolation
- */
-TSequence *
-tfloatseq_from_base_tstzspan(double d, const Span *s, interpType interp)
-{
-  /* Ensure validity of the arguments */
-  if ( ! ensure_not_null((void *) s))
-    return NULL;
-  return tsequence_from_base_tstzspan(Float8GetDatum(d), T_TFLOAT, s, interp);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal text sequence from a text and a timestamptz span
- * @param[in] txt Value
- * @param[in] s Span
- */
-TSequence *
-ttextseq_from_base_tstzspan(const text *txt, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if ( ! ensure_not_null((void *) txt) || ! ensure_not_null((void *) s))
-    return NULL;
-  return tsequence_from_base_tstzspan(PointerGetDatum(txt), T_TTEXT, s, STEP);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal geometry point sequence from a point and a
- * timestamptz span
- * @param[in] gs Value
- * @param[in] s Span
- * @param[in] interp Interpolation
- */
-TSequence *
-tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
-  interpType interp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || gserialized_is_empty(gs) ||
-      ! ensure_not_null((void *) s))
-    return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
-    T_TGEOGPOINT : T_TGEOMPOINT;
-  return tsequence_from_base_tstzspan(PointerGetDatum(gs), temptype, s, interp);
-}
-#endif /* MEOS */
 
 /*****************************************************************************
  * Transformation functions
@@ -1488,7 +1200,7 @@ tsequence_restart(TSequence *seq, int count)
 
 /**
  * @ingroup meos_internal_temporal_transf
- * @brief Return a subsequence specified by the two component instants
+ * @brief Return a subsequence of a temporal sequence specified by two instants
  * @param[in] seq Temporal sequence
  * @param[in] from,to Indexes
  * @param[in] lower_inc,upper_inc True when the bounds are inclusive
@@ -1823,7 +1535,7 @@ tnumberseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width,
   Datum delta;
   double scale;
   TBox *box = TSEQUENCE_BBOX_PTR(result);
-  numspan_shift_scale1(&box->span, shift, width, hasshift, haswidth,
+  numspan_shift_scale_iter(&box->span, shift, width, hasshift, haswidth,
     &delta, &scale);
   Datum origin = box->span.lower;
 
@@ -2084,8 +1796,7 @@ tsequence_duration(const TSequence *seq)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the last argument initialized with the time span of a temporal
- * sequence
+ * @brief Return in the last argument the time span of a temporal sequence
  * @param[in] seq Temporal sequence
  * @param[out] s Span
  */
@@ -2307,7 +2018,7 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   long double duration1 = (long double) (t - inst1->t);
   long double duration2 = (long double) (inst2->t - inst1->t);
   long double ratio = duration1 / duration2;
-  // TEST !!!! USED FOR ASSESSING FLOATINGING POINT PRECISION IN MEOS !!!
+  // TEST !!!! USED FOR ASSESSING FLOATING POINT PRECISION IN MEOS !!!
   // long double ratio = (double)(t - inst1->t) / (double)(inst2->t - inst1->t);
   assert(temptype_continuous(inst1->temptype));
   if (inst1->temptype == T_TFLOAT)
@@ -2347,25 +2058,15 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
     dresult->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
     return Double4PGetDatum(dresult);
   }
-  if (tgeo_type(inst1->temptype))
-  {
-    return geosegm_interpolate_point(value1, value2, ratio);
-  }
+  if (tpoint_type(inst1->temptype))
+    return pointsegm_interpolate_point(value1, value2, ratio);
 #if CBUFFER
   if (inst1->temptype == T_TCBUFFER)
-  {
     return cbuffersegm_interpolate(value1, value2, ratio);
-  }
 #endif
 #if NPOINT
   if (inst1->temptype == T_TNPOINT)
-  {
-    Npoint *np1 = DatumGetNpointP(value1);
-    Npoint *np2 = DatumGetNpointP(value2);
-    double pos = np1->pos + (double) ((long double)(np2->pos - np1->pos) * ratio);
-    Npoint *result = npoint_make(np1->rid, pos);
-    return PointerGetDatum(result);
-  }
+    return npointsegm_interpolate(value1, value2, ratio);
 #endif
 #if POSE
   if (inst1->temptype == T_TPOSE)
@@ -2384,8 +2085,8 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the last argument initialized with (a copy of) the value of a
- * temporal sequence at a timestamptz
+ * @brief Return in the last argument a copy of the value of a temporal
+ * sequence at a timestamptz
  * @param[in] seq Temporal sequence
  * @param[in] t Timestamp
  * @param[in] strict True if inclusive/exclusive bounds are taken into account
@@ -2602,7 +2303,7 @@ intersection_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   assert(inter1); assert(inter2);
   /* The temporal types of the arguments may be different */
   /* Bounding period test */
-  if (! over_span_span(&seq1->period, &seq2->period))
+  if (! overlaps_span_span(&seq1->period, &seq2->period))
     return false;
 
   int count = Min(seq1->count, seq2->count);
@@ -2652,7 +2353,7 @@ intersection_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
   assert(inter1); assert(inter2);
   /* The temporal types of the arguments may be different */
   /* Test whether the bounding period of the two temporal values overlap */
-  if (! over_span_span(&seq1->period, &seq2->period))
+  if (! overlaps_span_span(&seq1->period, &seq2->period))
     return false;
 
   TInstant **instants1 = palloc(sizeof(TInstant *) * seq2->count);
@@ -2736,7 +2437,7 @@ tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   if (fraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < fraction)
     return false;
 
-  if (t != NULL)
+  if (t)
   {
     double duration = (double) (inst2->t - inst1->t);
     /* Note that due to roundoff errors it may be the case that the
@@ -2777,58 +2478,11 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   bool result = false; /* make compiler quiet */
   if (inst1->temptype == T_TFLOAT)
     result = tfloatsegm_intersection_value(inst1, inst2, value, basetype, t);
-  else if (tgeo_type(inst1->temptype))
+  else if (tpoint_type(inst1->temptype))
     result = tpointsegm_intersection_value(inst1, inst2, value, t);
 #if CBUFFER
   else if (inst1->temptype == T_TCBUFFER)
-  {
-    Cbuffer *cbuf = DatumGetCbufferP(value);
-    Cbuffer *cbuf1 = DatumGetCbufferP(value1);
-    Cbuffer *cbuf2 = DatumGetCbufferP(value2);
-    const GSERIALIZED *gs1 = cbuffer_point(cbuf1);
-    const GSERIALIZED *gs2 = cbuffer_point(cbuf2);
-    TimestampTz t1, t2;
-    bool result1, result2;
-    if (! datum_point_eq(PointerGetDatum(gs1), PointerGetDatum(gs2)))
-    {
-      TInstant *point1 = tcbufferinst_tgeompointinst(inst1);
-      TInstant *point2 = tcbufferinst_tgeompointinst(inst2); 
-      Datum point = PointerGetDatum(&cbuf->point);
-      result1 = tpointsegm_intersection_value(point1, point2, point, &t1);
-      pfree(point1); pfree(point2); 
-      if (! result1)
-        return false;
-    }
-    else
-      result1 = false;
-    if (! float8_eq(cbuf1->radius, cbuf2->radius))
-    {
-      TInstant *radius1 = tcbufferinst_tfloatinst(inst1);
-      TInstant *radius2 = tcbufferinst_tfloatinst(inst2);   
-      result2 = tfloatsegm_intersection_value(radius1, radius2, 
-        Float8GetDatum(cbuf->radius), T_FLOAT8, &t2);
-      pfree(radius1); pfree(radius2); 
-      if (! result2)
-        return false;
-    }   
-    else
-      result2 = false;
-    if (result1 && result2 & (t1 == t2))
-    {
-      *t = t1;
-      result = true;
-    }
-    else if (! result1 && result2)
-    {
-      *t = t2;
-      result = true;
-    }
-    else /* result1 && ! result2 */
-    {
-      *t = t1;
-      result = true;
-    }
-  }
+    result = tcbuffersegm_intersection_value(inst1, inst2, value, t);
 #endif
 #if NPOINT
   else if (inst1->temptype == T_TNPOINT)
@@ -2846,7 +2500,7 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
     return NULL;
   }
 
-  if (result && inter != NULL)
+  if (result && inter)
     /* We are sure it is linear interpolation */
     *inter = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, *t);
   return result;
@@ -2963,7 +2617,7 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
   if (interp1 != LINEAR)
   {
     value = tinstant_val(start1);
-    if (inter1 != NULL)
+    if (inter1)
       *inter1 = value;
     result = tlinearsegm_intersection_value(start2, end2, value, basetype1,
       inter2, t);
@@ -2971,7 +2625,7 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
   else if (interp2 != LINEAR)
   {
     value = tinstant_val(start2);
-    if (inter2 != NULL)
+    if (inter2)
       *inter2 = value;
     result = tlinearsegm_intersection_value(start1, end1, value, basetype2,
       inter1, t);
@@ -2987,9 +2641,9 @@ tsegment_intersection(const TInstant *start1, const TInstant *end1,
     else if (start1->temptype == T_TGEOGPOINT)
       result = tgeogpointsegm_intersection(start1, end1, start2, end2, t);
     /* We are sure it is linear interpolation */
-    if (result && inter1 != NULL)
+    if (result && inter1)
       *inter1 = tsegment_value_at_timestamptz(start1, end1, LINEAR, *t);
-    if (result && inter2 != NULL)
+    if (result && inter2)
       *inter2 = tsegment_value_at_timestamptz(start2, end2, LINEAR, *t);
   }
   return result;
@@ -3044,7 +2698,7 @@ tnumberseq_integral(const TSequence *seq)
 {
   assert(seq);
   assert(tnumber_type(seq->temptype));
-  double result = 0;
+  double result = 0.0;
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   for (int i = 1; i < seq->count; i++)
   {

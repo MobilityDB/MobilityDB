@@ -48,7 +48,7 @@
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/type_util.h"
-#include "pg_point/postgis.h"
+#include "pg_geo/postgis.h"
 
 /*****************************************************************************
  * Output in WKT and EWKT representation
@@ -117,52 +117,6 @@ Geoset_as_ewkt(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(result);
 }
 
-#if CBUFFER
-PGDLLEXPORT Datum Cbufferset_as_text(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Cbufferset_as_text);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a circular 
- * buffer set
- * @sqlfn asText()
- */
-Datum
-Cbufferset_as_text(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = cbufferset_as_text(s, dbl_dig_for_wkt);
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_TEXT_P(result);
-}
-
-PGDLLEXPORT Datum Cbufferset_as_ewkt(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Cbufferset_as_ewkt);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the Extended Well-Known Text (EWKT) representation of a
- * circular buffer set
- * @sqlfn asEWKT()
- */
-Datum
-Cbufferset_as_ewkt(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = cbufferset_as_ewkt(s, dbl_dig_for_wkt);
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_TEXT_P(result);
-}
-#endif /* CBUFFER */
-
 PGDLLEXPORT Datum Span_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_as_text);
 /**
@@ -200,6 +154,7 @@ Spanset_as_text(PG_FUNCTION_ARGS)
   char *str = spanset_out(ss, Int32GetDatum(dbl_dig_for_wkt));
   text *result = cstring2text(str);
   pfree(str);
+  PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_TEXT_P(result);
 }
 
@@ -287,7 +242,6 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
 
   /* Get the temporal value */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  bool isgeo = tgeo_type(temp->temptype);
 
   /* Retrieve output option
    * 0 = without option (default)
@@ -298,7 +252,7 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
    option = PG_GETARG_INT32(1);
 
-  if (isgeo)
+  if (tgeo_type_all(temp->temptype))
   {
     /* Even if the option does not request to output the crs, we output the
      * short crs when the SRID is different from SRID_UNKNOWN. Otherwise,
@@ -340,6 +294,8 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
 
   char *mfjson = temporal_as_mfjson(temp, with_bbox, flags, precision, srs);
   text *result = cstring2text(mfjson);
+  // CURRENTLY we cannot pfree since we get the error message
+  // pfree called with invalid pointer
   // pfree(mfjson);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
@@ -614,17 +570,17 @@ Temporal_as_wkb(PG_FUNCTION_ARGS)
   PG_RETURN_BYTEA_P(result);
 }
 
-PGDLLEXPORT Datum Tpoint_as_ewkb(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_as_ewkb);
+PGDLLEXPORT Datum Tspatial_as_ewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tspatial_as_ewkb);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Return the Extended Well-Known Binary (WKB) representation of a
- * temporal point
- * @note This will have 'SRID=#;' for temporal points
+ * temporal spatial value
+ * @note This will have 'SRID=#;' for temporal spatial values
  * @sqlfn asEWKB()
  */
 Datum
-Tpoint_as_ewkb(PG_FUNCTION_ARGS)
+Tspatial_as_ewkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);

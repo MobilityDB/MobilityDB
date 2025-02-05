@@ -279,9 +279,9 @@ SELECT tstzspanset '{[2000-01-01,2000-01-02]}'::tbox;
 
 /* Errors */
 SELECT tbox 'TBOX T((2000-01-01,2000-01-02))'::floatspan;
-ERROR:  The box must have value dimension
+ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::tstzspan;
-ERROR:  The box must have time dimension
+ERROR:  The tbox must have T dimension
 SELECT tbox 'TBOXINT XT([1,2),[2000-01-01, 2000-01-02))'::intspan;
  intspan 
 ---------
@@ -308,9 +308,9 @@ SELECT tbox 'TBOXFLOAT XT([1,2),[2000-01-01, 2000-01-02))'::floatspan;
 
 /* Errors */
 SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::intspan;
-ERROR:  The box must have value dimension
+ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::floatspan;
-ERROR:  The box must have value dimension
+ERROR:  The tbox must have X dimension
 SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan))::numeric, 6) FROM tbl_tboxfloat;
   round   
 ----------
@@ -626,7 +626,7 @@ ERROR:  The value must be strictly positive: -1.000000
 SELECT scaleTime(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', '-1 hour');
 ERROR:  The interval must be positive: -01:00:00
 SELECT expandValue(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
-ERROR:  The box must have value dimension
+ERROR:  The tbox must have X dimension
 SELECT expandValue(tbox 'TBOXINT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2.0);
 ERROR:  invalid input syntax for type integer: "1.0"
 LINE 1: SELECT expandValue(tbox 'TBOXINT XT([1.0,2.0],[2000-01-01,20...
@@ -634,9 +634,9 @@ LINE 1: SELECT expandValue(tbox 'TBOXINT XT([1.0,2.0],[2000-01-01,20...
 SELECT expandValue(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', 2);
 ERROR:  The span must be of type intspan
 SELECT expandTime(tbox 'TBOXFLOAT X([1,2])', interval '1 day');
-ERROR:  The box must have time dimension
+ERROR:  The tbox must have T dimension
 SELECT round(tbox 'TBOX T([2000-01-01,2000-01-02])', 2);
-ERROR:  The box must have value dimension
+ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])' && tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])';
  ?column? 
 ----------
@@ -794,21 +794,21 @@ SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])' #&> tbox 'TBOXFLOA
 
 /* Errors */
 SELECT tbox 'TBOXFLOAT X([1,2])' << tbox 'TBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have value dimension
+ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXFLOAT X([1,2])' &< tbox 'TBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have value dimension
+ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXFLOAT X([1,2])' >> tbox 'TBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have value dimension
+ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXFLOAT X([1,2])' &> tbox 'TBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have value dimension
+ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXFLOAT X([1,2])' <<# tbox 'TBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have time dimension
+ERROR:  The tbox must have T dimension
 SELECT tbox 'TBOXFLOAT X([1,2])' &<# tbox 'TBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have time dimension
+ERROR:  The tbox must have T dimension
 SELECT tbox 'TBOXFLOAT X([1,2])' #>> tbox 'TBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have time dimension
+ERROR:  The tbox must have T dimension
 SELECT tbox 'TBOXFLOAT X([1,2])' #&> tbox 'TBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have time dimension
+ERROR:  The tbox must have T dimension
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b << t2.b;
  count 
 -------

@@ -235,7 +235,7 @@ Number_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_TBOX_P(number_to_tbox(value, basetype));
+  PG_RETURN_TBOX_P(number_tbox(value, basetype));
 }
 
 PGDLLEXPORT Datum Numeric_to_tbox(PG_FUNCTION_ARGS);
@@ -250,7 +250,7 @@ Numeric_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum num = PG_GETARG_DATUM(0);
   Datum d = call_function1(numeric_float8, num);
-  PG_RETURN_TBOX_P(number_to_tbox(d, T_FLOAT8));
+  PG_RETURN_TBOX_P(number_tbox(d, T_FLOAT8));
 }
 
 PGDLLEXPORT Datum Timestamptz_to_tbox(PG_FUNCTION_ARGS);
@@ -264,7 +264,7 @@ Datum
 Timestamptz_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PG_RETURN_TBOX_P(timestamptz_to_tbox(t));
+  PG_RETURN_TBOX_P(timestamptz_tbox(t));
 }
 
 PGDLLEXPORT Datum Set_to_tbox(PG_FUNCTION_ARGS);
@@ -278,7 +278,7 @@ Datum
 Set_to_tbox(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  TBox *result = set_to_tbox(s);
+  TBox *result = set_tbox(s);
   PG_FREE_IF_COPY_P(s, 0);
   PG_RETURN_TBOX_P(result);
 }
@@ -294,7 +294,7 @@ Datum
 Span_to_tbox(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  TBox *result = span_to_tbox(s);
+  TBox *result = span_tbox(s);
   PG_RETURN_TBOX_P(result);
 }
 
@@ -348,7 +348,7 @@ Datum
 Tbox_to_intspan(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  PG_RETURN_SPAN_P(tbox_to_intspan(box));
+  PG_RETURN_SPAN_P(tbox_intspan(box));
 }
 
 PGDLLEXPORT Datum Tbox_to_floatspan(PG_FUNCTION_ARGS);
@@ -362,7 +362,7 @@ Datum
 Tbox_to_floatspan(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  PG_RETURN_SPAN_P(tbox_to_floatspan(box));
+  PG_RETURN_SPAN_P(tbox_floatspan(box));
 }
 
 PGDLLEXPORT Datum Tbox_to_tstzspan(PG_FUNCTION_ARGS);
@@ -376,7 +376,7 @@ Datum
 Tbox_to_tstzspan(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  PG_RETURN_SPAN_P(tbox_to_tstzspan(box));
+  PG_RETURN_SPAN_P(tbox_tstzspan(box));
 }
 
 /*****************************************************************************
@@ -1011,7 +1011,7 @@ Tbox_extent_combinefn(PG_FUNCTION_ARGS)
     PG_RETURN_TBOX_P(box2);
   /* Both boxes are not null */
   ensure_same_dimensionality_tbox(box1, box2);
-  TBox *result = tbox_cp(box1);
+  TBox *result = tbox_copy(box1);
   tbox_expand(box2, result);
   PG_RETURN_TBOX_P(result);
 }

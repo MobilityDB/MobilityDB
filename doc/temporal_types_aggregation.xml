@@ -205,7 +205,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 				</listitem>
 
 				<listitem>
-					<para>the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types.</para>
+					<para>the <varname>stbox</varname> type for the <varname>tgeompoint</varname>, <varname>tgeogpoint</varname>, <varname>tgeometry</varname> and <varname>tgeography</varname> types.</para>
 				</listitem>
 			</itemizedlist>
 		</para>

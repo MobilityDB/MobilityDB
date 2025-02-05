@@ -1,0 +1,372 @@
+SELECT round(extent(inst), 6) FROM tbl_tgeometry_inst;
+                                                              round                                                               
+----------------------------------------------------------------------------------------------------------------------------------
+ SRID=3812;STBOX XT(((-98.552147,-99.810574),(99.194758,97.632698)),[Sat Jan 06 00:45:00 2001 PST, Fri Dec 28 20:54:00 2001 PST])
+(1 row)
+
+SELECT round(extent(inst), 6) FROM tbl_tgeography_inst;
+                                                                 round                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------
+ SRID=7844;GEODSTBOX XT(((-174.757969,-89.388082),(179.199931,87.853573)),[Mon Jan 01 07:16:00 2001 PST, Sat Dec 15 02:36:00 2001 PST])
+(1 row)
+
+SELECT round(extent(ti), 6) FROM tbl_tgeometry_discseq;
+                                                              round                                                               
+----------------------------------------------------------------------------------------------------------------------------------
+ SRID=3812;STBOX XT(((-99.735332,-99.270058),(99.511247,99.306297)),[Tue Jan 02 20:41:00 2001 PST, Wed Dec 26 12:49:00 2001 PST])
+(1 row)
+
+SELECT round(extent(ti), 6) FROM tbl_tgeography_discseq;
+                                                                 round                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ SRID=7844;GEODSTBOX XT(((-179.755281,-89.45372),(177.721126,89.958212)),[Sun Dec 31 23:29:00 2000 PST, Sun Dec 23 22:35:00 2001 PST])
+(1 row)
+
+SELECT round(extent(seq), 6) FROM tbl_tgeometry_seq;
+                                                              round                                                               
+----------------------------------------------------------------------------------------------------------------------------------
+ SRID=3812;STBOX XT(((-99.589654,-99.420521),(99.777599,99.966767)),(Tue Jan 02 10:59:00 2001 PST, Thu Dec 27 00:09:00 2001 PST])
+(1 row)
+
+SELECT round(extent(seq), 6) FROM tbl_tgeography_seq;
+                                                                 round                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ SRID=7844;GEODSTBOX XT(((-179.85416,-89.315074),(179.613501,89.693867)),[Thu Jan 11 12:58:00 2001 PST, Fri Dec 28 08:39:00 2001 PST])
+(1 row)
+
+SELECT round(extent(ss), 6) FROM tbl_tgeometry_seqset;
+                                                              round                                                               
+----------------------------------------------------------------------------------------------------------------------------------
+ SRID=3812;STBOX XT(((-99.834851,-99.971837),(99.962578,99.941028)),[Thu Jan 04 03:08:00 2001 PST, Thu Dec 27 06:28:00 2001 PST))
+(1 row)
+
+SELECT round(extent(ss), 6) FROM tbl_tgeography_seqset;
+                                                                 round                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ SRID=7844;GEODSTBOX XT(((-179.972847,-89.965104),(179.857597,89.99752)),(Wed Jan 10 06:05:00 2001 PST, Sat Dec 29 14:40:00 2001 PST))
+(1 row)
+
+SELECT round(extent(temp), 6) FROM tbl_tgeometry;
+                                                              round                                                               
+----------------------------------------------------------------------------------------------------------------------------------
+ SRID=3812;STBOX XT(((-99.735332,-99.577057),(99.890133,99.941028)),[Fri Jan 05 09:50:00 2001 PST, Thu Dec 27 06:28:00 2001 PST))
+(1 row)
+
+SELECT round(extent(temp), 6) FROM tbl_tgeography;
+                                                                 round                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ SRID=7844;GEODSTBOX XT(((-179.85416,-89.143138),(179.737757,89.686877)),[Tue Jan 09 14:58:00 2001 PST, Sat Dec 22 05:09:00 2001 PST])
+(1 row)
+
+SELECT round(extent(inst), 6) FROM tbl_tgeometry3D_inst;
+                                                                         round                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=3812;STBOX ZT(((-98.168412,-97.316813,-99.798958),(97.487645,99.219765,99.495716)),[Sun Jan 07 09:10:00 2001 PST, Mon Dec 24 16:25:00 2001 PST])
+(1 row)
+
+SELECT round(extent(inst), 6) FROM tbl_tgeography3D_inst;
+                                                                           round                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=7844;GEODSTBOX ZT(((-176.801226,-89.232632,0.052802),(178.598503,89.992217,99.982969)),[Wed Jan 03 02:49:00 2001 PST, Fri Dec 28 11:09:00 2001 PST])
+(1 row)
+
+SELECT round(extent(ti), 6) FROM tbl_tgeometry3D_discseq;
+                                                                         round                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=3812;STBOX ZT(((-99.813385,-99.821995,-99.918561),(99.893878,99.734502,99.888854)),[Thu Jan 04 12:26:00 2001 PST, Sat Dec 22 05:38:00 2001 PST])
+(1 row)
+
+SELECT round(extent(ti), 6) FROM tbl_tgeography3D_discseq;
+                                                                          round                                                                           
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=7844;GEODSTBOX ZT(((-179.931736,-89.544173,0.264923),(179.69817,89.923881,99.947817)),[Fri Jan 05 17:10:00 2001 PST, Mon Dec 17 18:51:00 2001 PST])
+(1 row)
+
+SELECT round(extent(seq), 6) FROM tbl_tgeometry3D_seq;
+                                                                         round                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=3812;STBOX ZT(((-99.720803,-99.753706,-99.846433),(99.931615,99.903386,99.989416)),(Sat Jan 06 22:48:00 2001 PST, Tue Dec 18 17:34:00 2001 PST])
+(1 row)
+
+SELECT round(extent(seq), 6) FROM tbl_tgeography3D_seq;
+                                                                           round                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=7844;GEODSTBOX ZT(((-179.771004,-89.970778,0.367675),(179.487073,89.804709,99.814673)),(Tue Jan 02 19:28:00 2001 PST, Wed Dec 26 14:31:00 2001 PST])
+(1 row)
+
+SELECT round(extent(ss), 6) FROM tbl_tgeometry3D_seqset;
+                                                                        round                                                                         
+------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=3812;STBOX ZT(((-99.951229,-99.954406,-99.974618),(99.941624,99.877536,99.92672)),(Fri Jan 05 14:51:00 2001 PST, Thu Dec 27 05:39:00 2001 PST))
+(1 row)
+
+SELECT round(extent(ss), 6) FROM tbl_tgeography3D_seqset;
+                                                                           round                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=7844;GEODSTBOX ZT(((-179.994834,-89.964124,0.011626),(179.969407,89.965007,99.998884)),[Tue Jan 02 18:55:00 2001 PST, Fri Dec 28 01:51:00 2001 PST])
+(1 row)
+
+SELECT round(extent(temp), 6) FROM tbl_tgeometry3D;
+                                                                        round                                                                        
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=3812;STBOX ZT(((-99.75443,-99.821486,-99.949598),(99.931615,99.903386,99.92672)),[Thu Jan 04 12:26:00 2001 PST, Thu Dec 27 05:39:00 2001 PST))
+(1 row)
+
+SELECT round(extent(temp), 6) FROM tbl_tgeography3D;
+                                                                           round                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=7844;GEODSTBOX ZT(((-179.994834,-89.964124,0.052802),(179.797694,89.965007,99.947817)),[Fri Jan 05 17:10:00 2001 PST, Fri Dec 28 01:51:00 2001 PST])
+(1 row)
+
+SELECT numInstants(tcount(inst)) FROM tbl_tgeometry_inst;
+ numinstants 
+-------------
+         100
+(1 row)
+
+SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeometry_inst GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          10
+        1 |          10
+        2 |          10
+        3 |          10
+        4 |          10
+        5 |          10
+        6 |          10
+        7 |          10
+        8 |          10
+        9 |          10
+(10 rows)
+
+SELECT numInstants(tcount(ti)) FROM tbl_tgeometry_discseq;
+ numinstants 
+-------------
+         484
+(1 row)
+
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeometry_discseq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          47
+        1 |          41
+        2 |          49
+        3 |          52
+        4 |          54
+        5 |          46
+        6 |          44
+        7 |          51
+        8 |          52
+        9 |          49
+(10 rows)
+
+SELECT numSequences(tcount(seq)) FROM tbl_tgeometry_seq;
+ numsequences 
+--------------
+          100
+(1 row)
+
+SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeometry_seq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           10
+        1 |           10
+        2 |           10
+        3 |           10
+        4 |           10
+        5 |           10
+        6 |           10
+        7 |           10
+        8 |           10
+        9 |           10
+(10 rows)
+
+SELECT numSequences(tcount(ss)) FROM tbl_tgeometry_seqset;
+ numsequences 
+--------------
+          543
+(1 row)
+
+SELECT k%10, numSequences(tcount(ss)) FROM tbl_tgeometry_seqset GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           63
+        1 |           75
+        2 |           59
+        3 |           56
+        4 |           53
+        5 |           46
+        6 |           43
+        7 |           63
+        8 |           45
+        9 |           41
+(10 rows)
+
+SELECT numInstants(tcount(inst)) FROM tbl_tgeometry3D_inst;
+ numinstants 
+-------------
+         100
+(1 row)
+
+SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeometry3D_inst GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          10
+        1 |          10
+        2 |          10
+        3 |          10
+        4 |          10
+        5 |          10
+        6 |          10
+        7 |          10
+        8 |          10
+        9 |          10
+(10 rows)
+
+SELECT numInstants(tcount(ti)) FROM tbl_tgeometry3D_discseq;
+ numinstants 
+-------------
+         531
+(1 row)
+
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeometry3D_discseq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          56
+        1 |          60
+        2 |          70
+        3 |          50
+        4 |          50
+        5 |          45
+        6 |          55
+        7 |          52
+        8 |          48
+        9 |          45
+(10 rows)
+
+SELECT numSequences(tcount(seq)) FROM tbl_tgeometry3D_seq;
+ numsequences 
+--------------
+          100
+(1 row)
+
+SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeometry3D_seq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           10
+        1 |           10
+        2 |           10
+        3 |           10
+        4 |           10
+        5 |           10
+        6 |           10
+        7 |           10
+        8 |           10
+        9 |           10
+(10 rows)
+
+SELECT numSequences(tcount(ss)) FROM tbl_tgeometry3D_seqset;
+ numsequences 
+--------------
+          571
+(1 row)
+
+SELECT k%10, numSequences(tcount(ss)) FROM tbl_tgeometry3D_seqset GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           67
+        1 |           69
+        2 |           62
+        3 |           57
+        4 |           50
+        5 |           48
+        6 |           54
+        7 |           63
+        8 |           55
+        9 |           46
+(10 rows)
+
+SELECT numInstants(tcount(inst)) FROM tbl_tgeography_inst;
+ numinstants 
+-------------
+         100
+(1 row)
+
+SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeography_inst GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          10
+        1 |          10
+        2 |          10
+        3 |          10
+        4 |          10
+        5 |          10
+        6 |          10
+        7 |          10
+        8 |          10
+        9 |          10
+(10 rows)
+
+SELECT numInstants(tcount(ti)) FROM tbl_tgeography_discseq;
+ numinstants 
+-------------
+         510
+(1 row)
+
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeography_discseq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          51
+        1 |          44
+        2 |          40
+        3 |          55
+        4 |          61
+        5 |          59
+        6 |          40
+        7 |          41
+        8 |          63
+        9 |          56
+(10 rows)
+
+SELECT numSequences(tcount(seq)) FROM tbl_tgeography_seq;
+ numsequences 
+--------------
+           99
+(1 row)
+
+SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeography_seq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           10
+        1 |           10
+        2 |           10
+        3 |           10
+        4 |           10
+        5 |           10
+        6 |           10
+        7 |           10
+        8 |           10
+        9 |           10
+(10 rows)
+
+SELECT numSequences(tcount(ss)) FROM tbl_tgeography_seqset;
+ numsequences 
+--------------
+          583
+(1 row)
+
+SELECT k%10, numSequences(tcount(ss)) FROM tbl_tgeography_seqset GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           71
+        1 |           47
+        2 |           53
+        3 |           67
+        4 |           61
+        5 |           52
+        6 |           54
+        7 |           50
+        8 |           73
+        9 |           51
+(10 rows)
+

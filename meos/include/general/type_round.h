@@ -39,11 +39,11 @@
 /* MEOS */
 #include <meos.h>
 #if NPOINT
-  #include "npoint/npoint.h"
-#endif /* NPOINT */
+  #include "npoint/tnpoint.h"
+#endif
 #if CBUFFER
   #include "cbuffer/tcbuffer.h"
-#endif /* BUFFER */
+#endif
 
 /*****************************************************************************/
 
@@ -55,7 +55,7 @@ extern Datum datum_cbuffer_round(Datum buffer, Datum size);
 extern Cbuffer *cbuffer_round(const Cbuffer *buffer, int maxdd);
 extern Set *cbufferset_round(const Set *s, int maxdd);
 extern Temporal *tcbuffer_round(const Temporal *temp, int maxdd);
-#endif /* NPOINT */
+#endif /* CBUFFER */
 #if NPOINT
 extern Datum datum_npoint_round(Datum npoint, Datum size);
 extern Npoint *npoint_round(const Npoint *np, int maxdd);

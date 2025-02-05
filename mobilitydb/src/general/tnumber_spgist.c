@@ -812,7 +812,7 @@ Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
     qsortfn = (qsort_comparator) &tbox_tmax_cmp;
   qsort(sorted, in->nTuples, sizeof(SortedTbox), qsortfn);
   int median = in->nTuples >> 1;
-  TBox *centroid = tbox_cp(&sorted[median].box);
+  TBox *centroid = tbox_copy(&sorted[median].box);
 
   /* Fill the output data structure */
   out->hasPrefix = true;
@@ -832,7 +832,7 @@ Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = 0; i < in->nTuples; i++)
   {
-    TBox *box = tbox_cp(&sorted[i].box);
+    TBox *box = tbox_copy(&sorted[i].box);
     int n = sorted[i].i;
     out->mapTuplesToNodes[n] = (i < median) ? 0 : 1;
     out->leafTupleDatums[n] = TboxPGetDatum(box);

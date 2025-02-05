@@ -41,7 +41,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
 #include "pose/tpose.h"
 
@@ -69,22 +69,24 @@ tposesegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum geom = datum_pose_geom(value);
   double dist;
   /* Compute the value taking into account position only */
-  double fraction = (double) geosegm_locate_point(geom_start, geom_end, geom, &dist);
+  double fraction = (double) pointsegm_locate_point(geom_start, geom_end, geom,
+    &dist);
   pfree(DatumGetPointer(geom_start));
   pfree(DatumGetPointer(geom_end));
   pfree(DatumGetPointer(geom));
   if (fabs(dist) >= MEOS_EPSILON)
     return false;
-  /* Compare value with interpolated pose to take into account orientation as well */
+  /* Compare value with interpolated pose to take into account orientation as
+   * well */
   Pose *pose1 = DatumGetPoseP(start);
   Pose *pose2 = DatumGetPoseP(end);
   Pose *pose = DatumGetPoseP(value);
   Pose *pose_interp = pose_interpolate(pose1, pose2, fraction);
   bool same = pose_same(pose, pose_interp);
   pfree(pose_interp);
-  if (!same)
+  if (! same)
     return false;
-  if (t != NULL)
+  if (t)
   {
     double duration = (double) (inst2->t - inst1->t);
     /* Note that due to roundoff errors it may be the case that the

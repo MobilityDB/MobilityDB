@@ -357,7 +357,7 @@ skiplist_make(void **values, int count)
   /* Fill values first */
   result->elems[0].value = NULL; /* set head value to NULL */
   for (int i = 0; i < count - 2; i++)
-    result->elems[i + 1].value = temporal_cp((Temporal *) values[i]);
+    result->elems[i + 1].value = temporal_copy((Temporal *) values[i]);
   result->elems[count - 1].value = NULL; /* set tail value to NULL */
   result->tail = count - 1;
 #if ! MEOS
@@ -400,9 +400,9 @@ pos_span_timestamptz(const Span *s, TimestampTz t)
 static RelativeTimePos
 pos_span_span(const Span *s1, const Span *s2)
 {
-  if (lf_span_span(s1, s2))
+  if (left_span_span(s1, s2))
     return BEFORE;
-  if (lf_span_span(s2, s1))
+  if (left_span_span(s2, s1))
     return AFTER;
   return DURING;
 }
@@ -593,7 +593,7 @@ skiplist_splice(SkipList *list, void **values, int count, datum_func2 func,
 #if ! MEOS
     oldctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
-    newelm->value = temporal_cp(values[i]);
+    newelm->value = temporal_copy(values[i]);
 #if ! MEOS
     unset_aggregation_context(oldctx);
 #endif /* ! MEOS */
@@ -651,7 +651,7 @@ skiplist_temporal_values(SkipList *list)
   int count = 0;
   while (cur != list->tail)
   {
-    result[count++] = temporal_cp(list->elems[cur].value);
+    result[count++] = temporal_copy(list->elems[cur].value);
     cur = list->elems[cur].next[0];
   }
   return result;

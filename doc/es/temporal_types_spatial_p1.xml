@@ -1,0 +1,421 @@
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter id="temporal_types_spatial_p1">
+	<title>Tipos temporales: Operaciones espaciales</title>
+	<para>A continuación, especificamos con el símbolo &Z_support; que la función admite puntos 3D y con el  símbolo &geography_support; que la función está disponible para geografías.</para>
+
+	<sect1 id="tpoint_inout">
+		<title>Entrada y salida</title>
+
+		<itemizedlist>
+			<listitem id="asText">
+				<indexterm><primary><varname>asText</varname></primary></indexterm>
+				<indexterm><primary><varname>asEWKT</varname></primary></indexterm>
+				<para>Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT)&Z_support; &geography_support;</para>
+				<para><varname>asText({tgeo,tgeo[],geo[]}) → {text,text[]}</varname></para>
+				<para><varname>asEWKT({tgeo,tgeo[],geo[]}) → {text,text[]}</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asText(tgeompoint 'SRID=4326;[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02)');
+-- [POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02)
+SELECT asText(ARRAY[geometry 'Point(0 0)', 'Point(1 1)']);
+-- {"POINT(0 0)","POINT(1 1)"}
+SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02)');
+-- SRID=4326;[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02)
+SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
+-- {"SRID=5676;POINT(0 0)","SRID=5676;POINT(1 1)"}
+</programlisting>
+			</listitem>
+
+			<listitem id="asMFJSON">
+				<indexterm><primary><varname>asMFJSON</varname></primary></indexterm>
+				<para>Devuelve la representación JSON de características móviles (Moving Features JSON o MF-JSON) &Z_support; &geography_support;</para>
+				<para><varname>asMFJSON(tpoint,options=0,flags=0,maxdecdigits=15) → text</varname></para>
+				<para>El argumento <varname>options</varname> puede usarse para agregar BBOX y/o CRS en la salida MFJSON:</para>
+				<itemizedlist>
+					<listitem><para>0: significa que no hay opción (valor por defecto)</para></listitem>
+					<listitem><para>1: MFJSON BBOX</para></listitem>
+					<listitem><para>2: MFJSON Short CRS (e.g., EPSG:4326)</para></listitem>
+					<listitem><para>4: MFJSON Long CRS (e.g., urn:ogc:def:crs:EPSG::4326)</para></listitem>
+				</itemizedlist>
+				<para>El argumento <varname>flags</varname> puede usarse para personalizar la salida JSON, por ejemplo, para producir una salida JSON fácil de leer (para lectores humanos). Consulte la documentación de la biblioteca <varname>json-c</varname> para conocer los valores posibles. Los valores típicos son los siguientes:</para>
+				<itemizedlist>
+					<listitem><para>0: means no option (default value)</para></listitem>
+					<listitem><para>1: JSON_C_TO_STRING_SPACED</para></listitem>
+					<listitem><para>2: JSON_C_TO_STRING_PRETTY</para></listitem>
+				</itemizedlist>
+				<para>El argumento <varname>maxdecdigits</varname> puede usarse para establecer el número máximo de decimales en la salida de los valores en punto flotante (por defecto 15).</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asMFJSON(tgeompoint 'Point(1 2)@2001-01-01 18:00:00.15+02');
+/* {"type":"MovingPoint","coordinates":[[1,2]],"datetimes":["2001-01-01T17:00:00.15+01"],
+   "interpolation":"None"} */
+SELECT asMFJSON(tgeompoint 'SRID=4326;
+  Point(50.813810 4.384260)@2001-01-01 18:00:00.15+02', 3, 2);
+/* {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},
+   "stBoundedBy":{"bbox":[50.81,4.38,50.81,4.38],
+   "period":{"begin":"2001-01-01 17:00:00.15+01","end":"2001-01-01 17:00:00.15+01"}},
+   "coordinates":[[50.81,4.38]],"datetimes":["2001-01-01T17:00:00.15+01"],
+   "interpolation":"None"} */
+</programlisting>
+			</listitem>
+
+			<listitem id="asBinary">
+				<indexterm><primary><varname>asBinary</varname></primary></indexterm>
+				<indexterm><primary><varname>asEWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>asHexEWKB</varname></primary></indexterm>
+				<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o la representación hexadecimal extendida binaria conocida (Extended Well-Known Binary o EWKB) &Z_support; &geography_support;</para>
+				<para><varname>asBinary(tgeo,endian text='') → bytea</varname></para>
+				<para><varname>asEWKB(tgeo,endian text='') → bytea</varname></para>
+				<para><varname>asHexEWKB(tgeo,endian text='') → text</varname></para>
+				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asBinary(tgeompoint 'Point(1 2 3)@2001-01-01');
+-- \x012e0011000000000000f03f00000000000000400000000000000840009c57d3c11c0000
+SELECT asEWKB(tgeogpoint 'SRID=7844;Point(1 2 3)@2001-01-01');
+-- \x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000
+SELECT asHexEWKB(tgeompoint 'SRID=3812;Point(1 2 3)@2001-01-01');
+-- 012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000
+</programlisting>
+			</listitem>
+
+			<listitem id="tgeompointFromText">
+				<indexterm><primary><varname>tgeompointFromText</varname></primary></indexterm>
+				<indexterm><primary><varname>tgeogpointFromText</varname></primary></indexterm>
+				<indexterm><primary><varname>tgeompointFromEWKT</varname></primary></indexterm>
+				<indexterm><primary><varname>tgeogpointFromEWKT</varname></primary></indexterm>
+				<para>Entrar a partir de la representación de texto conocido (Well-Known Text o WKT) o de la representación extendida de texto conocido (Extended Well-Known Text o EWKT) &Z_support; &geography_support;</para>
+				<para><varname>tgeompointFromText(text) → tgeompoint</varname></para>
+				<para><varname>tgeogpointFromText(text) → tgeogpoint</varname></para>
+				<para><varname>tgeompointFromEWKT(text) → tgeompoint</varname></para>
+				<para><varname>tgeogpointFromEWKT(text) → tgeogpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asEWKT(tgeompointFromText(text '[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]'));
+-- [POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
+SELECT asEWKT(tgeogpointFromText(text '[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]'));
+-- SRID=4326;[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
+SELECT asEWKT(tgeompointFromEWKT(text 'SRID=3812;[POINT(1 2)@2001-01-01,
+  POINT(3 4)@2001-01-02]'));
+-- SRID=3812;[POINT(1 2)@2001-01-01 00:00:00+01, POINT(3 4)@2001-01-02 00:00:00+01]
+SELECT asEWKT(tgeogpointFromEWKT(text 'SRID=7844;[POINT(1 2)@2001-01-01,
+	POINT(3 4)@2001-01-02]'));
+-- SRID=7844;[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
+</programlisting>
+			</listitem>
+
+			<listitem id="tgeompointFromMFJSON">
+				<indexterm><primary><varname>tgeompointFromMFJSON</varname></primary></indexterm>
+				<indexterm><primary><varname>tgeogpointFromMFJSON</varname></primary></indexterm>
+				<para>Entrar a partir de la representación JSON de características móviles (Moving Features) &Z_support; &geography_support;</para>
+				<para><varname>tgeompointFromMFJSON(text) → tgeompoint</varname></para>
+				<para><varname>tgeogpointFromMFJSON(text) → tgeogpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asEWKT(tgeompointFromMFJSON(text '{"type":"MovingGeomPoint","crs":{"type":"name",
+  "properties":{"name":"EPSG:4326"}},"coordinates":[[50.81,4.38]],
+  "datetimes":["2001-01-01T17:00:00.15+01"],"interpolation":"None"}'));
+-- SRID=4326;POINT(50.81 4.38)@2001-01-01 17:00:00.15+01
+SELECT asEWKT(tgeogpointFromMFJSON(text '{"type":"MovingGeogPoint","crs":{"type":"name",
+  "properties":{"name":"EPSG:4326"}},"coordinates":[[50.81,4.38]],
+  "datetimes":["2001-01-01T17:00:00.15+01"],"interpolation":"None"}'));
+-- SRID=4326;POINT(50.81 4.38)@2001-01-01 17:00:00.15+01
+</programlisting>
+			</listitem>
+
+			<listitem id="tgeompointFromBinary">
+				<indexterm><primary><varname>tgeompointFromBinary</varname></primary></indexterm>
+				<indexterm><primary><varname>tgeogpointFromBinary</varname></primary></indexterm>
+				<indexterm><primary><varname>tgeompointFromEWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>tgeogpointFromEWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>tgeompointFromHexEWKB</varname></primary></indexterm>
+				<indexterm><primary><varname>tgeogpointFromHexEWKB</varname></primary></indexterm>
+				<para>Entrar a partir de su representación binaria conocida (WKB), de la representación extendida binaria conocida (EWKB), o de la representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
+				<para><varname>tgeompointFromBinary(bytea) → tgeompoint</varname></para>
+				<para><varname>tgeogpointFromBinary(bytea) → tgeogpoint</varname></para>
+				<para><varname>tgeompointFromEWKB(bytea) → tgeompoint</varname></para>
+				<para><varname>tgeogpointFromEWKB(bytea) → tgeogpoint</varname></para>
+				<para><varname>tgeompointFromHexEWKB(text) → tgeompoint</varname></para>
+				<para><varname>tgeogpointFromHexEWKB(text) → tgeogpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asEWKT(tgeompointFromBinary(
+  '\x012e0011000000000000f03f00000000000000400000000000000840009c57d3c11c0000'));
+-- POINT Z (1 2 3)@2001-01-01
+SELECT asEWKT(tgeogpointFromEWKB(
+  '\x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000'));
+-- SRID=7844;POINT Z (1 1 1)@2001-01-01
+SELECT asEWKT(tgeompointFromHexEWKB(
+  '012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000'));
+-- SRID=3812;POINT(1 2 3)@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="tgeo_spatial_srid">
+		<title>Sistema de referencia espacial</title>
+		<itemizedlist>
+			<listitem id="tgeo_SRID">
+				<indexterm><primary><varname>SRID</varname></primary></indexterm>
+				<para>Devuelve el identificador de referencia espacial &Z_support; &geography_support;</para>
+				<para><varname>SRID(tgeo) → integer</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT SRID(tgeompoint 'Point(0 0)@2001-01-01');
+-- 0
+</programlisting>
+			</listitem>
+
+			<listitem id="tgeo_setSRID">
+				<indexterm><primary><varname>setSRID</varname></primary></indexterm>
+				<para>Establecer el identificador de referencia espacial &Z_support; &geography_support;</para>
+				<para><varname>setSRID(tgeo) → tgeo</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)', 4326));
+-- SRID=4326;[POINT(0 0)@2001-01-01 00:00:00+00, POINT(1 1)@2001-01-02 00:00:00+00)
+</programlisting>
+				</listitem>
+
+			<listitem id="tgeo_transform">
+				<indexterm><primary><varname>transform</varname></primary></indexterm>
+				<indexterm><primary><varname>transformPipeline</varname></primary></indexterm>
+				<para>Transformar a una referencia espacial diferente &Z_support; &geography_support;</para>
+				<para><varname>transform(tgeo,to_srid integer) → tgeo</varname></para>
+				<para><varname>transformPipeline(tgeo,pipeline text,to_srid integer,is_forward bool=true) → tgeo</varname></para>
+				<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el punto temporal tiene un SRID desconocido (representado por 0).</para>
+				<para>La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. El SRID del punto temporal de entrada se ignora y el SRID del punto temporal de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>to_srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 3812));
+-- SRID=3812;POINT(648679.018035303 671067.055638114)@2001-01-01 00:00:00+00
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
+WITH test(tpoint, pipeline) AS (
+  SELECT tgeogpoint 'SRID=4326;{Point(4.3525 50.846667 100.0)@2001-01-01,
+    Point(-0.1275 51.507222 100.0)@2001-01-02}',
+    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT asEWKT(transformPipeline(transformPipeline(tpoint, pipeline, 4326),
+  pipeline, 4326, false), 6)
+FROM test;
+/* SRID=4326;{POINT Z (4.3525 50.846667 100)@2001-01-01,
+   POINT Z (-0.1275 51.507222 100)@2001-01-02} */
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="tpoint_spatial_bbox">
+		<title>Operaciones de cuadro delimitador</title>
+
+		<itemizedlist>
+			<listitem id="tpoint_expandSpace">
+				<indexterm><primary><varname>expandSpace</varname></primary></indexterm>
+				<para>Devuelve el cuadro delimitador espaciotemporal expandido en la dimensión espacial por un valor flotante &Z_support; &geography_support;</para>
+				<para><varname>expandSpace({geo,tgeo},float) → stbox</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT expandSpace(geography 'Linestring(0 0,1 1)', 2);
+-- SRID=4326;GEODSTBOX X((-2,-2),(3,3))
+SELECT expandSpace(tgeompoint 'Point(0 0)@2001-01-01', 2);
+-- STBOX XT(((-2,-2),(2,2)),[2001-01-01,2001-01-01])
+</programlisting>
+			</listitem>
+	</itemizedlist>
+	</sect1>
+
+	<sect1 id="tpoint_spatial_accessors">
+		<title>Accessores</title>
+		<itemizedlist>
+			<listitem id="trajectory">
+				<indexterm><primary><varname>trajectory</varname></primary></indexterm>
+				<indexterm><primary><varname>traversedArea</varname></primary></indexterm>
+				<para>Obtenir la trayectoria o et área atravesada &Z_support; &geography_support;</para>
+				<para><varname>trajectory(tpoint) → geo</varname></para>
+				<para><varname>traversedArea(tgeo) → geo</varname></para>
+				<para>Esta función es equivalente a <link linkend="getValues"><varname>getValues</varname></link> para los valores temporales alphanuméricos</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
+  [Point(0 1)@2001-01-03, Point(0 0)@2001-01-04)}'));
+-- LINESTRING(0 0,0 1)
+SELECT ST_AsText(trajectory(tgeompoint 'Interp=Step;{[Point(0 0)@2001-01-01,
+  Point(0 1)@2001-01-02], [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04]}'));
+-- MULTIPOINT((0 0),(0 1),(1 1))
+SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
+  [Point(1 1)@2001-01-03, Point(1 1)@2001-01-04),
+  [Point(2 1)@2001-01-05, Point(2 2)@2001-01-06)}'));
+-- GEOMETRYCOLLECTION(POINT(1 1),MULTILINESTRING((0 0,0 1),(2 1,2 2)))
+SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01, 
+  Linestring(1 1,2 2)@2001-01-02, Point(2 2)@2001-01-03]'));
+-- LINESTRING(1 1,2 2)
+</programlisting>
+			</listitem>
+
+			<listitem id="getX">
+				<indexterm><primary><varname>getX</varname></primary></indexterm>
+				<indexterm><primary><varname>getY</varname></primary></indexterm>
+				<indexterm><primary><varname>getZ</varname></primary></indexterm>
+				<para>Devuelve los valores de las coordenadas X/Y/Z como un número flotante temporal &Z_support; &geography_support;</para>
+				<para><varname>getX(tpoint) → tfloat</varname></para>
+				<para><varname>getY(tpoint) → tfloat</varname></para>
+				<para><varname>getZ(tpoint) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT getX(tgeompoint '{Point(1 2)@2001-01-01, Point(3 4)@2001-01-02,
+  Point(5 6)@2001-01-03}');
+-- {1@2001-01-01, 3@2001-01-02, 5@2001-01-03}
+SELECT getX(tgeogpoint 'Interp=Step;[Point(1 2 3)@2001-01-01, Point(4 5 6)@2001-01-02,
+  Point(7 8 9)@2001-01-03]');
+-- Interp=Step;[1@2001-01-01, 4@2001-01-02, 7@2001-01-03]
+SELECT getY(tgeompoint '{Point(1 2)@2001-01-01, Point(3 4)@2001-01-02,
+  Point(5 6)@2001-01-03}');
+-- {2@2001-01-01, 4@2001-01-02, 6@2001-01-03}
+SELECT getY(tgeogpoint 'Interp=Step;[Point(1 2 3)@2001-01-01, Point(4 5 6)@2001-01-02,
+  Point(7 8 9)@2001-01-03]');
+-- Interp=Step;[2@2001-01-01, 5@2001-01-02, 8@2001-01-03]
+SELECT getZ(tgeompoint '{Point(1 2)@2001-01-01, Point(3 4)@2001-01-02,
+  Point(5 6)@2001-01-03}');
+-- The temporal point must have Z dimension
+SELECT getZ(tgeogpoint 'Interp=Step;[Point(1 2 3)@2001-01-01, Point(4 5 6)@2001-01-02,
+  Point(7 8 9)@2001-01-03]');
+-- Interp=Step;[3@2001-01-01, 6@2001-01-02, 9@2001-01-03]
+</programlisting>
+			</listitem>
+
+			<listitem id="isSimple">
+				<indexterm><primary><varname>isSimple</varname></primary></indexterm>
+				<para>Devuelve verdadero si el punto temporal no se auto-intersecta espacialmente &Z_support;</para>
+				<para><varname>isSimple(tpoint) → boolean</varname></para>
+				<para>Nótese que un punto temporal de conjunto de secuencias es simple si cada una de las secuencias que lo componen es simple.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT isSimple(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
+  Point(0 0)@2001-01-03]');
+-- false
+SELECT isSimple(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02,
+  Point(2 0 2)@2001-01-03, Point(0 0 0)@2001-01-04]');
+-- false
+SELECT isSimple(tgeompoint '{[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02],
+  [Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-04]}');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem id="length">
+				<indexterm><primary><varname>length</varname></primary></indexterm>
+				<para>Devuelve la longitud atravesada por el punto temporal &Z_support; &geography_support;</para>
+				<para><varname>length(tpoint) → float</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02]');
+-- 1.73205080756888
+SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02,
+  Point(0 0 0)@2001-01-03]');
+-- 3.46410161513775
+SELECT length(tgeompoint 'Interp=Step;[Point(0 0 0)@2001-01-01,
+  Point(1 1 1)@2001-01-02, Point(0 0 0)@2001-01-03]');
+-- 0
+</programlisting>
+			</listitem>
+
+			<listitem id="cumulativeLength">
+				<indexterm><primary><varname>cumulativeLength</varname></primary></indexterm>
+				<para>Devuelve la longitud acumulada atravesada por el punto temporal &Z_support; &geography_support;</para>
+				<para><varname>cumulativeLength(tpoint) → tfloatSeq</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
+  Point(1 0)@2001-01-03], [Point(1 0)@2001-01-04, Point(0 0)@2001-01-05]}'), 6);
+-- {[0@2001-01-01, 1.414214@2001-01-02, 2.414214@2001-01-03],
+  [2.414214@2001-01-04, 3.414214@2001-01-05]}
+SELECT cumulativeLength(tgeompoint 'Interp=Step;[Point(0 0 0)@2001-01-01,
+  Point(1 1 1)@2001-01-02, Point(0 0 0)@2001-01-03]');
+-- Interp=Step;[0@2001-01-01, 0@2001-01-03]
+</programlisting>
+			</listitem>
+
+			<listitem id="speed">
+				<indexterm><primary><varname>speed</varname></primary></indexterm>
+				<para>Devuelve la velocidad del punto temporal en unidades por segundo &Z_support; &geography_support;</para>
+				<para><varname>speed(tpoint) → tfloatSeqSet</varname></para>
+				<para>El punto temporal debe tener interpolación linear</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT speed(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
+  Point(1 0)@2001-01-03], [Point(1 0)@2001-01-04, Point(0 0)@2001-01-05]}') * 3600 * 24;
+/* Interp=Step;{[1.4142135623731@2001-01-01, 1@2001-01-02, 1@2001-01-03],
+   [1@2001-01-04, 1@2001-01-05]} */
+SELECT speed(tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
+  Point(1 0)@2001-01-03]');
+-- ERROR:  The temporal value must have linear interpolation
+</programlisting>
+			</listitem>
+
+			<listitem id="twCentroid">
+				<indexterm><primary><varname>twCentroid</varname></primary></indexterm>
+				<para>Devuelve el centroide ponderado en el tiempo &Z_support;</para>
+				<para><varname>twCentroid(tgeompoint) → point</varname></para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2001-01-01,
+  Point(0 1 1)@2001-01-02, Point(0 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)}'));
+-- POINT Z (0 0.666666666666667 0.666666666666667)
+</programlisting>
+			</listitem>
+
+			<listitem id="direction">
+				<indexterm><primary><varname>direction</varname></primary></indexterm>
+				<para>Devuelve la dirección, es decir, el acimut entre las ubicaciones inicial y final &Z_support; &geography_support;</para>
+				<para><varname>direction(tpoint) → float</varname></para>
+				<para>El resultado se expresa en radianes. Es NULL si solo hay una ubicación o si las ubicaciones inicial y final son iguales.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT round(degrees(direction(tgeompoint '[Point(0 0)@2001-01-01,
+  Point(-1 -1)@2001-01-02, Point(1 1)@2001-01-03]'))::numeric, 6);
+-- 45.000000
+SELECT direction(tgeompoint '{[Point(0 0 0)@2001-01-01,
+  Point(0 1 1)@2001-01-02, Point(0 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)}');
+-- NULL
+</programlisting>
+			</listitem>
+
+			<listitem id="azimuth">
+				<indexterm><primary><varname>azimuth</varname></primary></indexterm>
+				<para>Devuelve el acimut temporal &Z_support; &geography_support;</para>
+				<para><varname>azimuth(tpoint) → tfloat</varname></para>
+				<para>El resultado se expresa en radianes. El azimut es indefinido cuando dos localizaciones sucesivas son iguales y en este caso se añade una brecha de tempo.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT round(degrees(azimuth(tgeompoint '[Point(0 0 0)@2001-01-01,
+  Point(1 1 1)@2001-01-02, Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-04)')));
+-- Interp=Step;{[45@2001-01-01, 45@2001-01-02], [225@2001-01-03, 225@2001-01-04)}
+</programlisting>
+			</listitem>
+
+			<listitem id="angularDifference">
+				<indexterm><primary><varname>angularDifference</varname></primary></indexterm>
+				<para>Devuelve la diferencia angular temporal &geography_support;</para>
+				<para><varname>angularDifference(tpoint) → tfloat</varname></para>
+				<para>El resultado se expresa en grados.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT round(angularDifference(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03]'), 3);
+-- {0@2001-01-01, 180@2001-01-02, 0@2001-01-03}
+SELECT round(degrees(angularDifference(tgeompoint '{[Point(1 1)@2001-01-01,
+  Point(2 2)@2001-01-02], [Point(2 2)@2001-01-03, Point(1 1)@2001-01-04]}')), 3);
+-- {0@2001-01-01, 0@2001-01-02, 0@2001-01-03, 0@2001-01-04}
+</programlisting>
+			</listitem>
+
+			<listitem id="bearing">
+				<indexterm><primary><varname>bearing</varname></primary></indexterm>
+				<para>Devuelve el rumbo temporal &Z_support; &geography_support;</para>
+				<para><varname>bearing({tpoint, point}, {tpoint, point}) → tfloat</varname></para>
+				<para>Nótese que esta función no acepta dos puntos geográficos temporales.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]',
+  geometry 'Point(2 2)'));
+-- [45@2001-01-01, 0@2001-01-02, 225@2001-01-03]
+SELECT round(degrees(bearing(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]',
+  tgeompoint '[Point(2 1)@2001-01-01, Point(0 1)@2001-01-03]')), 3);
+--  [63.435@2001-01-01, 0@2001-01-02, 296.565@2001-01-03]
+SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2001-01-01, Point(0 1)@2001-01-03]',
+  tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]')), 3);
+-- [243.435@2001-01-01, 116.565@2001-01-03]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+</chapter>
+

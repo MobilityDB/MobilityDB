@@ -34,630 +34,882 @@
 
 #include "general/temporal.h"
 
+/* C */
+#include <assert.h>
+#include <float.h>
+#include <geos_c.h>
+#include <limits.h>
+/* PostgreSQL */
+#include <utils/float.h>
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  #include "varatt.h"
+#endif
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/set.h"
-#include "general/span.h"
-#include "general/spanset.h"
+#include "general/doxygen_meos.h"
+#include "general/lifting.h"
+#include "general/pg_types.h"
+#include "general/temporal_boxops.h"
+#include "general/temporal_tile.h"
+#include "general/tinstant.h"
+#include "general/tsequence.h"
+#include "general/tsequenceset.h"
+#include "general/type_parser.h"
+#include "general/type_util.h"
+#include "geo/tgeo.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
- * Restriction Functions
+ * Input/output functions
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal boolean restricted to a boolean
- * @param[in] temp Temporal value
- * @param[in] b Value
- * @csqlfn #Temporal_at_value()
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal boolean from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
  */
 Temporal *
-tbool_at_value(const Temporal *temp, bool b)
+tbool_in(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return temporal_parse(&str, T_TBOOL);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal integer from its Well-Known Text (WKT) 
+ * representation
+ * @param[in] str String
+ */
+Temporal *
+tint_in(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return temporal_parse(&str, T_TINT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal float from its Well-Known Text (WKT) representation
+ * @param[in] str String
+ */
+Temporal *
+tfloat_in(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return temporal_parse(&str, T_TFLOAT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal text from its Well-Known Text (WKT) representation
+ * @param[in] str String
+ */
+Temporal *
+ttext_in(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return temporal_parse(&str, T_TTEXT);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal boolean
+ * @param[in] temp Temporal boolean
+ */
+char *
+tbool_out(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
-  return temporal_restrict_value(temp, BoolGetDatum(b), REST_AT);
+  return temporal_out(temp, 0);
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal integer restricted to an integer
- * @param[in] temp Temporal value
- * @param[in] i Value
- * @csqlfn #Temporal_at_value()
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal integer
+ * @param[in] temp Temporal integer
  */
-Temporal *
-tint_at_value(const Temporal *temp, int i)
+char *
+tint_out(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
-  return temporal_restrict_value(temp, Int32GetDatum(i), REST_AT);
+  return temporal_out(temp, 0);
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal float restricted to a float
- * @param[in] temp Temporal value
- * @param[in] d Value
- * @csqlfn #Temporal_at_value()
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal float
+ * @param[in] temp Temporal float
+ * @param[in] maxdd Maximum number of decimal digits
  */
-Temporal *
-tfloat_at_value(const Temporal *temp, double d)
+char *
+tfloat_out(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
-  return temporal_restrict_value(temp, Float8GetDatum(d), REST_AT);
+  return temporal_out(temp, maxdd);
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal text restricted to a text
- * @param[in] temp Temporal value
- * @param[in] txt Value
- * @csqlfn #Temporal_at_value()
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal text
+ * @param[in] temp Temporal text
  */
-Temporal *
-ttext_at_value(const Temporal *temp, text *txt)
+char *
+ttext_out(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
+  if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
-  return temporal_restrict_value(temp, PointerGetDatum(txt), REST_AT);
+  return temporal_out(temp, 0);
+}
+
+/*****************************************************************************
+ * Constructor functions
+ ****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal boolean from a boolean and the time frame of
+ * another temporal value
+ * @param[in] b Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tbool_from_base_temp(bool b, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+  return temporal_from_base_temp(BoolGetDatum(b), T_TBOOL, temp);
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal point restricted to a point
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal integer from an integer and the time frame of
+ * another temporal value
+ * @param[in] i Value
  * @param[in] temp Temporal value
- * @param[in] gs Value
- * @csqlfn #Temporal_at_value()
  */
 Temporal *
-tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
+tint_from_base_temp(int i, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+  return temporal_from_base_temp(Int32GetDatum(i), T_TINT, temp);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal float from a float and the time frame of
+ * another temporal value
+ * @param[in] d Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tfloat_from_base_temp(double d, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+  return temporal_from_base_temp(Float8GetDatum(d), T_TFLOAT, temp);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal text from a text and the time frame of
+ * another temporal value
+ * @param[in] txt Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+ttext_from_base_temp(const text *txt, const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt))
+    return NULL;
+  return temporal_from_base_temp(PointerGetDatum(txt), T_TTEXT, temp);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal point from a point and the time frame of another
+ * temporal value
+ * @param[in] gs Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
+      ! ensure_not_empty(gs) || ! ensure_point_type(gs))
     return NULL;
-  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_TGEOGPOINT :
+    T_TGEOMPOINT;
+  return temporal_from_base_temp(PointerGetDatum(gs), geotype, temp);
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal boolean restricted to the complement of a boolean
- * @param[in] temp Temporal value
- * @param[in] b Value
- * @csqlfn #Temporal_minus_value()
- */
-Temporal *
-tbool_minus_value(const Temporal *temp, bool b)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TBOOL))
-    return NULL;
-  return temporal_restrict_value(temp, BoolGetDatum(b), REST_MINUS);
-}
-
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal integer restricted to the complement of an integer
- * @param[in] temp Temporal value
- * @param[in] i Value
- * @csqlfn #Temporal_minus_value()
- */
-Temporal *
-tint_minus_value(const Temporal *temp, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return NULL;
-  return temporal_restrict_value(temp, Int32GetDatum(i), REST_MINUS);
-}
-
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal float restricted to the complement of a float
- * @param[in] temp Temporal value
- * @param[in] d Value
- * @csqlfn #Temporal_minus_value()
- */
-Temporal *
-tfloat_minus_value(const Temporal *temp, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
-  return temporal_restrict_value(temp, Float8GetDatum(d), REST_MINUS);
-}
-
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal text restricted to the complement of a text
- * @param[in] temp Temporal value
- * @param[in] txt Value
- * @csqlfn #Temporal_minus_value()
- */
-Temporal *
-ttext_minus_value(const Temporal *temp, text *txt)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_temporal_isof_type(temp, T_TTEXT))
-    return NULL;
-  return temporal_restrict_value(temp, PointerGetDatum(txt), REST_MINUS);
-}
-
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal point restricted to the complement of a point
- * @param[in] temp Temporal value
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal geo from a geometry/geography and the time frame of
+ * another temporal value
  * @param[in] gs Value
- * @csqlfn #Temporal_minus_value()
+ * @param[in] temp Temporal value
  */
 Temporal *
-tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
+tgeo_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
+      ! ensure_not_empty(gs))
     return NULL;
-  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
+  meosType tgeotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_TGEOGRAPHY :
+    T_TGEOMETRY;
+  return temporal_from_base_temp(PointerGetDatum(gs), tgeotype, temp);
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to a set of values
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal integer whose value dimension is shifted by a value
+ * @csqlfn #Tnumber_shift_value()
  * @param[in] temp Temporal value
- * @param[in] s Set
- * @csqlfn #Temporal_at_values()
+ * @param[in] shift Value for shifting the temporal value
  */
 Temporal *
-temporal_at_values(const Temporal *temp, const Set *s)
+tint_shift_value(const Temporal *temp, int shift)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_temporal_isof_basetype(temp, s->basetype))
-    return NULL;
-  return temporal_restrict_values(temp, s, REST_AT);
-}
-
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to the complement of a set of
- * values
- * @param[in] temp Temporal value
- * @param[in] s Set
- * @csqlfn #Temporal_minus_values()
- */
-Temporal *
-temporal_minus_values(const Temporal *temp, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_temporal_isof_basetype(temp, s->basetype))
-    return NULL;
-  return temporal_restrict_values(temp, s, REST_MINUS);
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup meos_temporal_accessor
- * @brief Return the value of a temporal boolean at a timestamptz
- * @param[in] temp Temporal value
- * @param[in] t Timestamp
- * @param[in] strict True if the timestamp must belong to the temporal value,
- * false when it may be at an exclusive bound
- * @param[out] value Resulting value
- * @csqlfn #Temporal_value_at_timestamptz()
- */
-bool
-tbool_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
-  bool *value)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
-      ! ensure_temporal_isof_type(temp, T_TBOOL))
-    return false;
-
-  Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
-  *value = DatumGetBool(res);
-  return result;
-}
-
-/**
- * @ingroup meos_temporal_accessor
- * @brief Return the value of a temporal integer at a timestamptz
- * @param[in] temp Temporal value
- * @param[in] t Timestamp
- * @param[in] strict True if the timestamp must belong to the temporal value,
- * false when it may be at an exclusive bound
- * @param[out] value Resulting value
- * @csqlfn #Temporal_value_at_timestamptz()
- */
-bool
-tint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
-  int *value)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
+  if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
-    return false;
-
-  Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
-  *value = DatumGetInt32(res);
-  return result;
+    return NULL;
+  return tnumber_shift_scale_value(temp, Int32GetDatum(shift), 0, true, false);
 }
 
 /**
- * @ingroup meos_temporal_accessor
- * @brief Return the value of a temporal integer at a timestamptz
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal integer whose value dimension is shifted by a value
+ * @csqlfn #Tnumber_shift_value()
  * @param[in] temp Temporal value
- * @param[in] t Timestamp
- * @param[in] strict True if the timestamp must belong to the temporal value,
- * false when it may be at an exclusive bound
- * @param[out] value Resulting value
- * @csqlfn #Temporal_value_at_timestamptz()
+ * @param[in] shift Value for shifting the temporal value
  */
-bool
-tfloat_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
-  double *value)
+Temporal *
+tfloat_shift_value(const Temporal *temp, double shift)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
+  if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return false;
+    return NULL;
+  return tnumber_shift_scale_value(temp, Float8GetDatum(shift), 0, true, false);
+}
 
-  Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
-  *value = DatumGetFloat8(res);
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal integer whose value dimension is scaled by a value
+ * @param[in] temp Temporal value
+ * @param[in] width Width of the result
+ * @csqlfn #Tnumber_scale_value()
+ */
+Temporal *
+tint_scale_value(const Temporal *temp, int width)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return NULL;
+  return tnumber_shift_scale_value(temp, 0, Int32GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal float whose value dimension is scaled by a value
+ * @param[in] temp Temporal value
+ * @param[in] width Width of the result
+ * @csqlfn #Tnumber_scale_value()
+ */
+Temporal *
+tfloat_scale_value(const Temporal *temp, double width)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+  return tnumber_shift_scale_value(temp, 0, Float8GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal integer whose value dimension is shifted and scaled
+ * by two values
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
+ * @param[in] width Width of the result
+ * @csqlfn #Tnumber_shift_scale_value()
+ */
+Temporal *
+tint_shift_scale_value(const Temporal *temp, int shift, int width)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return NULL;
+  return tnumber_shift_scale_value(temp, Int32GetDatum(shift),
+    Int32GetDatum(width), true, true);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal number whose value dimension is shifted and scaled
+ * by two values
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
+ * @param[in] width Width of the result
+ * @csqlfn #Tnumber_shift_scale_value()
+ */
+Temporal *
+tfloat_shift_scale_value(const Temporal *temp, double shift, double width)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+  return tnumber_shift_scale_value(temp, Float8GetDatum(shift),
+    Float8GetDatum(width), true, true);
+}
+
+/*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the array of base values of a temporal boolean
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Temporal_valueset()
+ */
+bool *
+tbool_values(const Temporal *temp, int *count)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
+    return NULL;
+
+  Datum *datumarr = temporal_vals(temp, count);
+  bool *result = palloc(sizeof(bool) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = DatumGetBool(datumarr[i]);
+  pfree(datumarr);
   return result;
 }
 
 /**
  * @ingroup meos_temporal_accessor
- * @brief Return the value of a temporal integer at a timestamptz
+ * @brief Return the array of base values of a temporal integer
  * @param[in] temp Temporal value
- * @param[in] t Timestamp
- * @param[in] strict True if the timestamp must belong to the temporal value,
- * false when it may be at an exclusive bound
- * @param[out] value Resulting value
- * @csqlfn #Temporal_value_at_timestamptz()
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Temporal_valueset()
  */
-bool
-ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
-  text **value)
+int *
+tint_values(const Temporal *temp, int *count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return NULL;
+
+  Datum *datumarr = temporal_vals(temp, count);
+  int *result = palloc(sizeof(int) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = DatumGetInt32(datumarr[i]);
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the array of base values of a temporal float
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Temporal_valueset()
+ */
+double *
+tfloat_values(const Temporal *temp, int *count)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+
+  Datum *datumarr = temporal_vals(temp, count);
+  double *result = palloc(sizeof(double) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = DatumGetFloat8(datumarr[i]);
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the array of copies of base values of a temporal text
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Temporal_valueset()
+ */
+text **
+ttext_values(const Temporal *temp, int *count)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
 
-  Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
-  *value = DatumGetTextP(res);
+  Datum *datumarr = temporal_vals(temp, count);
+  text **result = palloc(sizeof(text *) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = text_copy(DatumGetTextP(datumarr[i]));
+  pfree(datumarr);
   return result;
 }
 
 /**
  * @ingroup meos_temporal_accessor
- * @brief Return the value of a temporal geometry point at a timestamptz
+ * @brief Return the array of copies of base values of a temporal geo
  * @param[in] temp Temporal value
- * @param[in] t Timestamp
- * @param[in] strict True if the timestamp must belong to the temporal value,
- * false when it may be at an exclusive bound
- * @param[out] value Resulting value
- * @csqlfn #Temporal_value_at_timestamptz()
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Temporal_valueset()
  */
-bool
-tpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
-  GSERIALIZED **value)
+GSERIALIZED **
+tgeo_values(const Temporal *temp, int *count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
-      ! ensure_tgeo_type(temp->temptype))
-    return false;
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
+      ! ensure_tgeo_type_all(temp->temptype))
+    return NULL;
 
-  Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
-  *value = DatumGetGserializedP(res);
+  Datum *datumarr = temporal_vals(temp, count);
+  GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = geo_copy(DatumGetGserializedP(datumarr[i]));
+  pfree(datumarr);
   return result;
 }
 
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to its minimum base value
+ * @ingroup meos_temporal_accessor
+ * @brief Return the start value of a temporal boolean
  * @param[in] temp Temporal value
- * @csqlfn #Temporal_at_min()
+ * @csqlfn #Temporal_start_value()
  */
-Temporal *
-temporal_at_min(const Temporal *temp)
+bool
+tbool_start_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp))
-    return NULL;
-  return temporal_restrict_minmax(temp, GET_MIN, REST_AT);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
+    return false;
+  return DatumGetBool(temporal_start_value(temp));
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to the complement of its minimum
- * base value
+ * @ingroup meos_temporal_accessor
+ * @brief Return the start value of a temporal integer
  * @param[in] temp Temporal value
- * @csqlfn #Temporal_minus_min()
+ * @return On error return @p INT_MAX
+ * @csqlfn #Temporal_start_value()
  */
-Temporal *
-temporal_minus_min(const Temporal *temp)
+int
+tint_start_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp))
-    return NULL;
-  return temporal_restrict_minmax(temp, GET_MIN, REST_MINUS);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return INT_MAX;
+  return DatumGetInt32(temporal_start_value(temp));
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to its maximum base value
+ * @ingroup meos_temporal_accessor
+ * @brief Return the start value of a temporal float
  * @param[in] temp Temporal value
- * @csqlfn #Temporal_at_max()
+ * @return On error return @p DBL_MAX
+ * @csqlfn #Temporal_start_value()
  */
-Temporal *
-temporal_at_max(const Temporal *temp)
+double
+tfloat_start_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp))
-    return NULL;
-  return temporal_restrict_minmax(temp, GET_MAX, REST_AT);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return DBL_MAX;
+  return DatumGetFloat8(temporal_start_value(temp));
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to the complement of its maximum
- * base value
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the start value of a temporal text
  * @param[in] temp Temporal value
- * @csqlfn #Temporal_minus_max()
+ * @return On error return @p NULL
+ * @csqlfn #Temporal_start_value()
  */
-Temporal *
-temporal_minus_max(const Temporal *temp)
+text *
+ttext_start_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp))
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
-  return temporal_restrict_minmax(temp, GET_MAX, REST_MINUS);
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to a span of base values
- * @param[in] temp Temporal value
- * @param[in] s Span
- * @csqlfn #Tnumber_at_span()
- */
-Temporal *
-tnumber_at_span(const Temporal *temp, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_valid_tnumber_span(temp, s))
-    return NULL;
-  return tnumber_restrict_span(temp, s, REST_AT);
+  return DatumGetTextP(temporal_start_value(temp));
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to the complement of a span of
- * base values
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the start value of a temporal geo
  * @param[in] temp Temporal value
- * @param[in] s Span
- * @csqlfn #Tnumber_minus_span()
+ * @return On error return @p NULL
+ * @csqlfn #Temporal_start_value()
  */
-Temporal *
-tnumber_minus_span(const Temporal *temp, const Span *s)
+GSERIALIZED *
+tgeo_start_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_valid_tnumber_span(temp, s))
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_tgeo_type_all(temp->temptype))
     return NULL;
-  return tnumber_restrict_span(temp, s, REST_MINUS);
-}
-
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to an array of spans of base
- * values
- * @param[in] temp Temporal value
- * @param[in] ss Span set
- * @csqlfn #Tnumber_at_spanset()
- */
-Temporal *
-tnumber_at_spanset(const Temporal *temp, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
-      ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_valid_tnumber_spanset(temp, ss))
-    return NULL;
-  return tnumber_restrict_spanset(temp, ss, REST_AT);
-}
-
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to the complement of an array of
- * spans
- * of base values
- * @param[in] temp Temporal value
- * @param[in] ss Span set
- * @csqlfn #Tnumber_minus_spanset()
- */
-Temporal *
-tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
-      ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_valid_tnumber_spanset(temp, ss))
-    return NULL;
-  return tnumber_restrict_spanset(temp, ss, REST_MINUS);
+  return DatumGetGserializedP(temporal_start_value(temp));
 }
 
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to a timestamptz
+ * @ingroup meos_temporal_accessor
+ * @brief Return the end value of a temporal boolean
  * @param[in] temp Temporal value
- * @param[in] t Timestamp
- * @csqlfn #Temporal_at_timestamptz()
+ * @csqlfn #Temporal_end_value()
  */
-Temporal *
-temporal_at_timestamptz(const Temporal *temp, TimestampTz t)
+bool
+tbool_end_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp))
-    return NULL;
-  return temporal_restrict_timestamptz(temp, t, REST_AT);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
+    return false;
+  return DatumGetBool(temporal_end_value(temp));
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to the complement of a timestamptz
+ * @ingroup meos_temporal_accessor
+ * @brief Return the end value of a temporal integer
  * @param[in] temp Temporal value
- * @param[in] t Timestamp
- * @csqlfn #Temporal_minus_timestamptz()
+ * @return On error return @p INT_MAX
+ * @csqlfn #Temporal_end_value()
  */
-Temporal *
-temporal_minus_timestamptz(const Temporal *temp, TimestampTz t)
+int
+tint_end_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp))
-    return NULL;
-  return temporal_restrict_timestamptz(temp, t, REST_MINUS);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return INT_MAX;
+  return DatumGetInt32(temporal_end_value(temp));
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to a timestamptz set
+ * @ingroup meos_temporal_accessor
+ * @brief Return the end value of a temporal float
  * @param[in] temp Temporal value
- * @param[in] s Timestamp set
- * @csqlfn #Temporal_at_tstzset()
+ * @return On error return @p DBL_MAX
+ * @csqlfn #Temporal_end_value()
  */
-Temporal *
-temporal_at_tstzset(const Temporal *temp, const Set *s)
+double
+tfloat_end_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_TSTZSET))
-    return NULL;
-  return temporal_restrict_tstzset(temp, s, REST_AT);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return DBL_MAX;
+  return DatumGetFloat8(temporal_end_value(temp));
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to the complement of a timestamptz
- * set
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the end value of a temporal text
  * @param[in] temp Temporal value
- * @param[in] s Timestamp set
- * @csqlfn #Temporal_minus_tstzset()
+ * @return On error return @p NULL
+ * @csqlfn #Temporal_end_value()
  */
-Temporal *
-temporal_minus_tstzset(const Temporal *temp, const Set *s)
+text *
+ttext_end_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_TSTZSET))
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
-  return temporal_restrict_tstzset(temp, s, REST_MINUS);
+  return DatumGetTextP(temporal_end_value(temp));
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to a timestamptz span
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the end value of a temporal geo
  * @param[in] temp Temporal value
- * @param[in] s Timestamp span
- * @csqlfn #Temporal_at_tstzspan()
+ * @return On error return @p NULL
+ * @csqlfn #Temporal_end_value()
  */
-Temporal *
-temporal_at_tstzspan(const Temporal *temp, const Span *s)
+GSERIALIZED *
+tgeo_end_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_span_isof_type(s, T_TSTZSPAN))
+  if (! ensure_not_null((void *) temp) || 
+      ! ensure_tgeo_type_all(temp->temptype))
     return NULL;
-  return temporal_restrict_tstzspan(temp, s, REST_AT);
+  return DatumGetGserializedP(temporal_end_value(temp));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the minimum value of a temporal integer
+ * @param[in] temp Temporal value
+ * @return On error return @p INT_MAX
+ * @csqlfn #Temporal_min_value()
+ */
+int
+tint_min_value(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return INT_MAX;
+  return DatumGetInt32(temporal_min_value(temp));
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to the complement of a timestamptz
- * span
+ * @ingroup meos_temporal_accessor
+ * @brief Return the minimum value of a temporal float
  * @param[in] temp Temporal value
- * @param[in] s Timestamp span
- * @csqlfn #Temporal_minus_tstzspan()
+ * @return On error return @p DBL_MAX
+ * @csqlfn #Temporal_min_value()
  */
-Temporal *
-temporal_minus_tstzspan(const Temporal *temp, const Span *s)
+double
+tfloat_min_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return NULL;
-  return temporal_restrict_tstzspan(temp, s, REST_MINUS);
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return DBL_MAX;
+  return DatumGetFloat8(temporal_min_value(temp));
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to a timestamptz span set
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the minimum value of a temporal text
  * @param[in] temp Temporal value
- * @param[in] ss Timestamp span set
- * @csqlfn #Temporal_at_tstzspanset()
+ * @return On error return @p NULL
+ * @csqlfn #Temporal_min_value()
  */
-Temporal *
-temporal_at_tstzspanset(const Temporal *temp, const SpanSet *ss)
+text *
+ttext_min_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
-  return temporal_restrict_tstzspanset(temp, ss, REST_AT);
+  return DatumGetTextP(temporal_min_value(temp));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the maximum value of a temporal integer
+ * @param[in] temp Temporal value
+ * @return On error return @p INT_MAX
+ * @csqlfn #Temporal_max_value()
+ */
+int
+tint_max_value(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return INT_MAX;
+  return DatumGetInt32(temporal_max_value(temp));
 }
 
 /**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal value restricted to the complement of a timestamptz
- * span set
+ * @ingroup meos_temporal_accessor
+ * @brief Return the maximum value of a temporal float
  * @param[in] temp Temporal value
- * @param[in] ss Timestamp span set
- * @csqlfn #Temporal_minus_tstzspanset()
+ * @return On error return @p DBL_MAX
+ * @csqlfn #Temporal_max_value()
  */
-Temporal *
-temporal_minus_tstzspanset(const Temporal *temp, const SpanSet *ss)
+double
+tfloat_max_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return DBL_MAX;
+  return DatumGetFloat8(temporal_max_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the maximum value of a temporal text
+ * @param[in] temp Temporal value
+ * @return On error return @p NULL
+ * @csqlfn #Temporal_max_value()
+ */
+text *
+ttext_max_value(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
-  return temporal_restrict_tstzspanset(temp, ss, REST_MINUS);
+  return DatumGetTextP(temporal_max_value(temp));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the n-th value of a temporal boolean
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tbool_value_n(const Temporal *temp, int n, bool *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TBOOL))
+    return false;
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetBool(dresult);
+  return true;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the n-th value of a temporal integer
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tint_value_n(const Temporal *temp, int n, int *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TINT))
+    return false;
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetInt32(dresult);
+  return true;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the n-th value of a temporal float
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tfloat_value_n(const Temporal *temp, int n, double *result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return false;
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetFloat8(dresult);
+  return true;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the n-th value of a temporal text
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+ttext_value_n(const Temporal *temp, int n, text **result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TTEXT))
+    return false;
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetTextP(dresult);
+  return true;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the n-th value of a temporal geo
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_tgeo_type_all(temp->temptype))
+    return false;
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetGserializedP(dresult);
+  return true;
 }
 
 /*****************************************************************************/

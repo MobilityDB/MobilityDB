@@ -45,7 +45,7 @@
 #include "general/set.h"
 #include "general/skiplist.h"
 #include "general/span.h"
-#include "general/tbool_boolops.h"
+#include "general/tbool_ops.h"
 #include "general/tbox.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"

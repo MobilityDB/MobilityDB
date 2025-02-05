@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Output of types in WKB, EWKB, HexWKB, and MF-JSON representation
+ * @brief Output of types in MF-JSON, WKB, EWKB, and HexWKB representation
  */
 
 /* C */
@@ -41,20 +41,22 @@
   #include "varatt.h"
 #endif
 /* PostGIS */
+#include <liblwgeom.h>
 #include <liblwgeom_internal.h>
 #include <stringbuffer.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_geo.h>
 #include "general/pg_types.h"
 #include "general/temporal.h"
 #if CBUFFER
   #include <meos_cbuffer.h>
   #include "cbuffer/tcbuffer.h"
-#endif /* CBUFFER */
+#endif
 #if NPOINT
   #include "npoint/tnpoint.h"
-#endif /* NPOINT */
+#endif
 
 #define MEOS_WKT_BOOL_SIZE sizeof("false")
 #define MEOS_WKT_INT4_SIZE sizeof("+2147483647")
@@ -66,6 +68,87 @@
 #define OUT_SHOW_DIGS_DOUBLE 20
 #define OUT_MAX_DOUBLE_PRECISION 15
 #define OUT_MAX_DIGS_DOUBLE (OUT_SHOW_DIGS_DOUBLE + 2) /* +2 mean add dot and sign */
+
+/* Functions in lwout_wkb.c */
+uint8_t* lwgeom_to_wkb_buf(const LWGEOM *geom, uint8_t *buf, uint8_t variant);
+size_t lwgeom_to_wkb_size(const LWGEOM *geom, uint8_t variant);
+
+/*****************************************************************************
+ * Output of base types
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_pg_types
+ * @brief Return the string representation of a text value
+ * @param[in] txt Text
+ */
+char *
+text_out(const text *txt)
+{
+  assert(txt);
+  char *str = text2cstring(txt);
+  size_t size = strlen(str) + 4;
+  char *result = palloc(size);
+  snprintf(result, size, "\"%s\"", str);
+  pfree(str);
+  return result;
+}
+
+/**
+ * @brief Return the string representation of a base value
+ * @return On error return @p NULL
+ */
+char *
+basetype_out(Datum value, meosType type, int maxdd)
+{
+  assert(meos_basetype(type));
+  assert(maxdd >= 0);
+
+  switch (type)
+  {
+    case T_TIMESTAMPTZ:
+      return pg_timestamptz_out(DatumGetTimestampTz(value));
+    case T_DATE:
+      return pg_date_out(DatumGetTimestampTz(value));
+    case T_BOOL:
+      return bool_out(DatumGetBool(value));
+    case T_INT4:
+      return int4_out(DatumGetInt32(value));
+    case T_INT8:
+      return int8_out(DatumGetInt64(value));
+    case T_FLOAT8:
+      return float8_out(DatumGetFloat8(value), maxdd);
+    case T_TEXT:
+      return text_out(DatumGetTextP(value));
+#if DEBUG_BUILD
+    case T_DOUBLE2:
+      return double2_out(DatumGetDouble2P(value), maxdd);
+    case T_DOUBLE3:
+      return double3_out(DatumGetDouble3P(value), maxdd);
+    case T_DOUBLE4:
+      return double4_out(DatumGetDouble4P(value), maxdd);
+#endif
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+      return geo_out(DatumGetGserializedP(value));
+#if CBUFFER
+    case T_CBUFFER:
+      return cbuffer_out(DatumGetCbufferP(value), maxdd);
+#endif
+#if NPOINT
+    case T_NPOINT:
+      return npoint_out(DatumGetNpointP(value), maxdd);
+#endif
+#if POSE
+    case T_POSE:
+      return pose_out(DatumGetPoseP(value), maxdd);
+#endif
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown output function for type: %s", meostype_name(type));
+      return NULL;
+  }
+}
 
 /*****************************************************************************
  * Output in MF-JSON representation
@@ -115,39 +198,6 @@ text_as_mfjson_sb(stringbuffer_t *sb, const text *txt)
 }
 
 /**
- * @brief Write into the buffer a base value in the MF-JSON representation
- */
-static bool
-temporal_basevalue_as_mfjson_sb(stringbuffer_t *sb, Datum value,
-  meosType temptype, int precision)
-{
-  assert(talphanum_type(temptype));
-  switch (temptype)
-  {
-    case T_TBOOL:
-      bool_as_mfjson_sb(sb, DatumGetBool(value));
-      break;
-    case T_TINT:
-      int32_as_mfjson_sb(sb, DatumGetInt32(value));
-      break;
-    case T_TFLOAT:
-      double_as_mfjson_sb(sb, DatumGetFloat8(value), precision);
-      break;
-    case T_TTEXT:
-      text_as_mfjson_sb(sb, DatumGetTextP(value));
-      break;
-    default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
-        "Unknown temporal type in MFJSON output: %s",
-        meostype_name(temptype));
-      return false;
-  }
-  return true;
-}
-
-/*****************************************************************************/
-
-/**
  * @brief Write into the buffer a coordinate array in the MF-JSON
  * representation
  */
@@ -177,6 +227,39 @@ coordinates_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision
 }
 
 /**
+ * @brief Write into the buffer a base value in the MF-JSON representation
+ */
+static bool
+temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, meosType temptype,
+  int precision)
+{
+  assert(talphanum_type(temptype));
+  switch (temptype)
+  {
+    case T_TBOOL:
+      bool_as_mfjson_sb(sb, DatumGetBool(value));
+      break;
+    case T_TINT:
+      int32_as_mfjson_sb(sb, DatumGetInt32(value));
+      break;
+    case T_TFLOAT:
+      double_as_mfjson_sb(sb, DatumGetFloat8(value), precision);
+      break;
+    case T_TTEXT:
+      text_as_mfjson_sb(sb, DatumGetTextP(value));
+      break;
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
+        "Unknown temporal type in MFJSON output: %s",
+        meostype_name(temptype));
+      return false;
+  }
+  return true;
+}
+
+/*****************************************************************************/
+
+/**
  * @brief Write into the buffer a timestamptz in the MF-JSON representation
  */
 static void
@@ -202,8 +285,7 @@ srs_as_mfjson_sb(stringbuffer_t *sb, const char *srs)
 }
 
 /**
- * @brief Write into the buffer a period bounding box in the MF-JSON
- * representation
+ * @brief Write into the buffer a tstzspan in the MF-JSON representation
  */
 static void
 tstzspan_as_mfjson_sb(stringbuffer_t *sb, const Span *s)
@@ -218,8 +300,7 @@ tstzspan_as_mfjson_sb(stringbuffer_t *sb, const Span *s)
 }
 
 /**
- * @brief Write into the buffer a temporal bounding box in the MF-JSON
- * representation
+ * @brief Write into the buffer a temporal box in the MF-JSON representation
  */
 static void
 tbox_as_mfjson_sb(stringbuffer_t *sb, const TBox *bbox, int precision)
@@ -247,8 +328,8 @@ tbox_as_mfjson_sb(stringbuffer_t *sb, const TBox *bbox, int precision)
 }
 
 /**
- * @brief Write into the buffer a spatiotemporal bounding box in the
- * MF-JSON representation
+ * @brief Write into the buffer a spatiotemporal box in the MF-JSON
+ * representation
  */
 static void
 stbox_as_mfjson_sb(stringbuffer_t *sb, const STBox *bbox, bool hasz,
@@ -304,6 +385,8 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, meosType temptype, const bboxunion *bbox,
       break;
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
+    case T_TGEOMETRY:
+    case T_TGEOGRAPHY:
       stbox_as_mfjson_sb(sb, (STBox *) bbox, hasz, precision);
       break;
     default: /* Error! */
@@ -340,6 +423,10 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, meosType temptype)
     case T_TGEOGPOINT:
       stringbuffer_append_len(sb, "{\"type\":\"MovingPoint\",", 22);
       break;
+    case T_TGEOMETRY:
+    case T_TGEOGRAPHY:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingGeometry\",", 25);
+      break;
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal type in MFJSON output: %s",
@@ -359,27 +446,42 @@ static bool
 tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, bool isgeo,
   bool hasz, const bboxunion *bbox, int precision, const char *srs)
 {
-  bool result = temptype_as_mfjson_sb(sb, inst->temptype);
+  bool success = temptype_as_mfjson_sb(sb, inst->temptype);
   /* Propagate errors up */
-  if (! result)
+  if (! success)
     return false;
-  if (srs) srs_as_mfjson_sb(sb, srs);
+  if (srs)
+    srs_as_mfjson_sb(sb, srs);
   if (bbox)
   {
-    result = bbox_as_mfjson_sb(sb, inst->temptype, bbox, hasz, precision);
+    success = bbox_as_mfjson_sb(sb, inst->temptype, bbox, hasz, precision);
     /* Propagate errors up */
-    if (! result)
+    if (! success)
       return false;
   }
-  stringbuffer_aprintf(sb, "\"%s\":[", isgeo ? "coordinates" : "values");
   if (isgeo)
-    coordinates_as_mfjson_sb(sb, inst, precision);
+  {
+    if (tpoint_type(inst->temptype))
+    {
+      stringbuffer_append_len(sb, "\"coordinates\":[", 15);
+      coordinates_as_mfjson_sb(sb, inst, precision);
+    }
+    else /* tgeo_type_all(inst->temptype) */
+    {
+      const GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+      /* Do not repeat the crs for the composing geometries */
+      char *str = geo_as_geojson(gs, 0, precision, NULL);
+      stringbuffer_aprintf(sb, "\"values\":[%s", str);
+      // pfree(str);
+    }
+  }
   else
   {
-    result = temporal_basevalue_as_mfjson_sb(sb, tinstant_val(inst),
+    stringbuffer_append_len(sb, "\"values\":[", 10);
+    success = temporal_base_as_mfjson_sb(sb, tinstant_val(inst),
       inst->temptype, precision);
     /* Propagate errors up */
-    if (! result)
+    if (! success)
       return false;
   }
   stringbuffer_append_len(sb, "],\"datetimes\":[", 15);
@@ -387,77 +489,6 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, bool isgeo,
   stringbuffer_append_len(sb, "],\"interpolation\":\"None\"}", 25);
   return true;
 }
-
-#if MEOS
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal instant boolean
- * @csqlfn #Temporal_as_mfjson()
- * @param[in] inst Temporal instant
- * @param[in] with_bbox True when the output value has bounding box
- */
-char *
-tboolinst_as_mfjson(const TInstant *inst, bool with_bbox)
-{
-  return temporal_as_mfjson((Temporal *) inst, with_bbox, 0, 0, NULL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal instant integer
- * @param[in] inst Temporal instant
- * @param[in] with_bbox True when the output value has bounding box
- * @csqlfn #Temporal_as_mfjson()
- */
-char *
-tintinst_as_mfjson(const TInstant *inst, bool with_bbox)
-{
-  return temporal_as_mfjson((Temporal *) inst, with_bbox, 0, 0, NULL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal instant float
- * @param[in] inst Temporal instant
- * @param[in] with_bbox True when the output value has bounding box
- * @param[in] precision Number of decimal digits
- * @csqlfn #Temporal_as_mfjson()
- */
-char *
-tfloatinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision)
-{
-  return temporal_as_mfjson((Temporal *) inst, with_bbox, 0, precision, NULL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal instant text
- * @param[in] inst Temporal instant
- * @param[in] with_bbox True when the output value has bounding box
- * @csqlfn #Temporal_as_mfjson()
- */
-char *
-ttextinst_as_mfjson(const TInstant *inst, bool with_bbox)
-{
-  return temporal_as_mfjson((Temporal *) inst, with_bbox, 0, 0, NULL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal instant point
- * @param[in] inst Temporal instant
- * @param[in] with_bbox True when the output value has bounding box
- * @param[in] precision Number of decimal digits
- * @param[in] srs Spatial reference system
- * @csqlfn #Temporal_as_mfjson()
- */
-char *
-tpointinst_as_mfjson(const TInstant *inst, bool with_bbox, int precision,
-  char *srs)
-{
-  return temporal_as_mfjson((Temporal *) inst, with_bbox, 0, precision, srs);
-}
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -469,32 +500,48 @@ static bool
 tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq, bool isgeo,
   bool hasz, const bboxunion *bbox, int precision, const char *srs)
 {
-  bool result = temptype_as_mfjson_sb(sb, seq->temptype);
+  bool success = temptype_as_mfjson_sb(sb, seq->temptype);
   /* Propagate errors up */
-  if (! result)
+  if (! success)
     return false;
-  if (srs) srs_as_mfjson_sb(sb, srs);
+  if (srs)
+    srs_as_mfjson_sb(sb, srs);
   if (bbox)
   {
-    result = bbox_as_mfjson_sb(sb, seq->temptype, bbox, hasz, precision);
+    success = bbox_as_mfjson_sb(sb, seq->temptype, bbox, hasz, precision);
     /* Propagate errors up */
-    if (! result)
+    if (! success)
       return false;
   }
-  stringbuffer_aprintf(sb, "\"%s\":[", isgeo ? "coordinates" : "values");
+  if (tpoint_type(seq->temptype))
+    stringbuffer_aprintf(sb, "\"%s\":[", "coordinates");
+  else
+    stringbuffer_aprintf(sb, "\"%s\":[", "values");
   const TInstant *inst;
   for (int i = 0; i < seq->count; i++)
   {
-    if (i) stringbuffer_append_char(sb, ',');
+    if (i)
+      stringbuffer_append_char(sb, ',');
     inst = TSEQUENCE_INST_N(seq, i);
     if (isgeo)
-      coordinates_as_mfjson_sb(sb, inst, precision);
+    {  
+      if (tpoint_type(inst->temptype))
+        coordinates_as_mfjson_sb(sb, inst, precision);
+      else
+      {
+        const GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+        /* Do not repeat the crs for the composing geometries */
+        char *str = geo_as_geojson(gs, 0, precision, NULL);
+        stringbuffer_aprintf(sb, "%s", str);      
+        // pfree(str);
+      }
+    }
     else
     {
-      result = temporal_basevalue_as_mfjson_sb(sb, tinstant_val(inst),
+      success = temporal_base_as_mfjson_sb(sb, tinstant_val(inst), 
         inst->temptype, precision);
       /* Propagate errors up */
-      if (! result)
+      if (! success)
         return false;
     }
   }
@@ -512,77 +559,6 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq, bool isgeo,
   return true;
 }
 
-#if MEOS
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence boolean
- * @csqlfn #Temporal_as_mfjson()
- * @param[in] seq Temporal sequence
- * @param[in] with_bbox True when the output value has bounding box
- */
-char *
-tboolseq_as_mfjson(const TSequence *seq, bool with_bbox)
-{
-  return temporal_as_mfjson((Temporal *) seq, with_bbox, 0, 0, NULL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence integer
- * @param[in] seq Temporal sequence
- * @param[in] with_bbox True when the output value has bounding box
- * @csqlfn #Temporal_as_mfjson()
- */
-char *
-tintseq_as_mfjson(const TSequence *seq, bool with_bbox)
-{
-  return temporal_as_mfjson((Temporal *) seq, with_bbox, 0, 0, NULL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence float
- * @param[in] seq Temporal sequence
- * @param[in] with_bbox True when the output value has bounding box
- * @param[in] precision Number of decimal digits
- * @csqlfn #Temporal_as_mfjson()
- */
-char *
-tfloatseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision)
-{
-  return temporal_as_mfjson((Temporal *) seq, with_bbox, precision, 0, NULL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence text
- * @param[in] seq Temporal sequence
- * @param[in] with_bbox True when the output value has bounding box
- * @csqlfn #Temporal_as_mfjson()
- */
-char *
-ttextseq_as_mfjson(const TSequence *seq, bool with_bbox)
-{
-  return temporal_as_mfjson((Temporal *) seq, with_bbox, 0, 0, NULL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence point
- * @csqlfn #Temporal_as_mfjson()
- * @param[in] seq Temporal sequence
- * @param[in] with_bbox True when the output value has bounding box
- * @param[in] precision Number of decimal digits
- * @param[in] srs Spatial reference system
- */
-char *
-tpointseq_as_mfjson(const TSequence *seq, bool with_bbox, int precision,
-  char *srs)
-{
-  return temporal_as_mfjson((Temporal *) seq, with_bbox, precision, 0, srs);
-}
-#endif /* MEOS */
-
 /*****************************************************************************/
 
 /**
@@ -593,16 +569,17 @@ static bool
 tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss, bool isgeo,
   bool hasz, const bboxunion *bbox, int precision, const char *srs)
 {
-  bool result = temptype_as_mfjson_sb(sb, ss->temptype);
+  bool success = temptype_as_mfjson_sb(sb, ss->temptype);
   /* Propagate errors up */
-  if (! result)
+  if (! success)
     return false;
-  if (srs) srs_as_mfjson_sb(sb, srs);
+  if (srs)
+    srs_as_mfjson_sb(sb, srs);
   if (bbox)
   {
-    result = bbox_as_mfjson_sb(sb, ss->temptype, bbox, hasz, precision);
+    success = bbox_as_mfjson_sb(sb, ss->temptype, bbox, hasz, precision);
     /* Propagate errors up */
-    if (! result)
+    if (! success)
       return false;
   }
   stringbuffer_append_len(sb, "\"sequences\":[", 13);
@@ -610,20 +587,36 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss, bool isgeo
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    if (i) stringbuffer_append_char(sb, ',');
-    stringbuffer_aprintf(sb, "{\"%s\":[", isgeo ? "coordinates" : "values");
+    if (i)
+      stringbuffer_append_char(sb, ',');
+    if (tpoint_type(seq->temptype))
+      stringbuffer_append_len(sb, "{\"coordinates\":[", 16);
+    else
+      stringbuffer_append_len(sb, "{\"values\":[", 11);
     for (int j = 0; j < seq->count; j++)
     {
-      if (j) stringbuffer_append_char(sb, ',');
+      if (j)
+        stringbuffer_append_char(sb, ',');
       inst = TSEQUENCE_INST_N(seq, j);
       if (isgeo)
-        coordinates_as_mfjson_sb(sb, inst, precision);
+      {  
+        if (tpoint_type(inst->temptype))
+          coordinates_as_mfjson_sb(sb, inst, precision);
+        else
+        {
+          const GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+          /* Do not repeat the crs for the composing geometries */
+          char *str = geo_as_geojson(gs, 0, precision, NULL);
+          stringbuffer_aprintf(sb, "%s", str);      
+          // pfree(str);
+        }
+      }
       else
       {
-        result = temporal_basevalue_as_mfjson_sb(sb, tinstant_val(inst),
+        success = temporal_base_as_mfjson_sb(sb, tinstant_val(inst),
           inst->temptype, precision);
         /* Propagate errors up */
-        if (! result)
+        if (! success)
           return false;
       }
     }
@@ -634,85 +627,14 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss, bool isgeo
       inst = TSEQUENCE_INST_N(seq, j);
       datetimes_as_mfjson_sb(sb, inst->t);
     }
-    stringbuffer_aprintf(sb, "],\"lower_inc\":%s,\"upper_inc\":%s}",
-      seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ?
-        "true" : "false");
+      stringbuffer_aprintf(sb, "],\"lower_inc\":%s,\"upper_inc\":%s}",
+      seq->period.lower_inc ? "true" : "false", 
+      seq->period.upper_inc ? "true" : "false");
   }
   stringbuffer_aprintf(sb, "],\"interpolation\":\"%s\"}",
     MEOS_FLAGS_LINEAR_INTERP(ss->flags) ? "Linear" : "Step");
   return true;
 }
-
-#if MEOS
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence set boolean
- * @param[in] ss Temporal sequence set
- * @param[in] with_bbox True when the output value has bounding box
- * @csqlfn #Temporal_as_mfjson()
- */
-char *
-tboolseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
-{
-  return temporal_as_mfjson((Temporal *) ss, with_bbox, 0, 0, NULL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence set integer
- * @param[in] ss Temporal sequence set
- * @param[in] with_bbox True when the output value has bounding box
- * @csqlfn #Temporal_as_mfjson()
- */
-char *
-tintseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
-{
-  return temporal_as_mfjson((Temporal *) ss, with_bbox, 0, 0, NULL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence set float
- * @param[in] ss Temporal sequence set
- * @param[in] with_bbox True when the output value has bounding box
- * @param[in] precision Number of decimal digits
- * @csqlfn #Temporal_as_mfjson()
- */
-char *
-tfloatseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision)
-{
-  return temporal_as_mfjson((Temporal *) ss, with_bbox, precision, 0, NULL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence set text
- * @param[in] ss Temporal sequence set
- * @param[in] with_bbox True when the output value has bounding box
- * @csqlfn #Temporal_as_mfjson()
- */
-char *
-ttextseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox)
-{
-  return temporal_as_mfjson((Temporal *) ss, with_bbox, 0, 0, NULL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the MF-JSON representation of a temporal sequence set point
- * @param[in] ss Temporal sequence set
- * @param[in] with_bbox True when the output value has bounding box
- * @param[in] precision Number of decimal digits
- * @param[in] srs Spatial reference system
- * @csqlfn #Temporal_as_mfjson()
- */
-char *
-tpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision,
-  char *srs)
-{
-  return temporal_as_mfjson((Temporal *) ss, with_bbox, precision, 0, srs);
-}
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -722,7 +644,8 @@ tpointseqset_as_mfjson(const TSequenceSet *ss, bool with_bbox, int precision,
  * @param[in] temp Temporal value
  * @param[in] with_bbox True when the output value has bounding box
  * @param[in] flags Flags
- * @param[in] precision Number of decimal digits
+ * @param[in] precision Number of decimal digits. It is only used when the base
+ * type has floating point components, such as tfloat or tgeometry
  * @param[in] srs Spatial reference system
  * @return On error return @p NULL
  * @csqlfn #Temporal_as_mfjson()
@@ -742,7 +665,7 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
     temporal_set_bbox(temp, &tmp);
     bbox = &tmp;
   }
-  bool isgeo = tgeo_type(temp->temptype);
+  bool isgeo = tgeo_type_all(temp->temptype);
   bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
 
   /* Create the string buffer */
@@ -766,15 +689,19 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
   }
   /* Convert the string buffer to a C string */
   char *result = ! res ? NULL : stringbuffer_getstringcopy(sb);
+
+  /* Destroy the string buffer */
   stringbuffer_destroy(sb);
 
   if (flags == 0)
     return result;
 
   /* Convert to JSON and back to a C string to apply flags using json-c */
-  struct json_object *jobj = json_tokener_parse(result);
+  json_tokener *jstok = json_tokener_new();
+  struct json_object *jobj = json_tokener_parse_ex(jstok, result, -1);
   pfree(result);
   result = strdup(json_object_to_json_string_ext(jobj, flags));
+  json_tokener_free(jstok);
   json_object_put(jobj);
   return result;
 }
@@ -794,15 +721,63 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
  *****************************************************************************/
 
 /*****************************************************************************
- * Determine the size of the WKB representation of the various types
+ * Determine the size of the WKB representation
  *****************************************************************************/
+
+/**
+ * @brief Return true if a circular buffer needs to output the SRID in the
+ * Well-Known Binary (WKB) representation
+ */
+static bool
+spatial_wkb_needs_srid(int32_t srid, uint8_t variant)
+{
+  /* Add an SRID if the WKB form is extended and if the srid received is known */
+  if ((variant & WKB_EXTENDED) && srid != SRID_UNKNOWN)
+    return true;
+  /* Everything else doesn't get an SRID */
+  return false;
+}
+
+/**
+ * @brief Return the size of the WKB representation of the geo value
+ * @note Since the geo is embedded in a container such as a set or a temporal
+ * value, the SRID value (if any) is only output for the container
+ */
+static size_t
+geo_to_wkb_size(const GSERIALIZED *gs, uint8_t variant)
+{
+  LWGEOM *geo = lwgeom_from_gserialized(gs);
+  size_t result = lwgeom_to_wkb_size(geo, variant);
+  lwgeom_free(geo);
+  return result;
+}
+
+#if CBUFFER
+/**
+ * @brief Return the size in bytes of a circular buffer in the Well-Known
+ * Binary (WKB) representation
+ */
+static size_t
+cbuffer_to_wkb_size(const Cbuffer *cbuf, uint8_t variant, bool component)
+{
+  size_t size = 0;
+  if (! component)
+    /* Endian flag */
+    size += MEOS_WKB_BYTE_SIZE;
+  /* One 2D coordinates + radius */
+  size +=  MEOS_WKB_DOUBLE_SIZE * 3;
+  if (spatial_wkb_needs_srid(cbuffer_srid(cbuf), variant))
+    size += MEOS_WKB_INT4_SIZE;
+  return size;
+}
+#endif /* CBUFFER */
 
 /**
  * @brief Return the size of the WKB representation of a base value
  * @return On error return SIZE_MAX
  */
 static size_t
-basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
+base_to_wkb_size(Datum value, meosType basetype, uint8_t variant)
 {
   switch (basetype)
   {
@@ -822,12 +797,10 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
       return MEOS_WKB_INT8_SIZE + VARSIZE_ANY_EXHDR(DatumGetTextP(value)) + 1;
     case T_GEOMETRY:
     case T_GEOGRAPHY:
-      /* The size depends on the number of dimensions (either 2 or 3) */
-      return MEOS_WKB_DOUBLE_SIZE * ( MEOS_FLAGS_GET_Z(flags) ? 3 : 2 );
+      return geo_to_wkb_size(DatumGetGserializedP(value), variant);
 #if CBUFFER
     case T_CBUFFER:
-      /* The size of the geometry (see above) and the size of the radius */
-      return MEOS_WKB_DOUBLE_SIZE * 2 + MEOS_WKB_DOUBLE_SIZE;
+      return cbuffer_to_wkb_size(DatumGetCbufferP(value), variant, true);
 #endif /* CBUFFER */
 #if NPOINT
     case T_NPOINT:
@@ -842,90 +815,41 @@ basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
 }
 
 /**
- * @brief Return the size of the WKB representation of the base value of a
- * set type
- */
-static size_t
-set_basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
-{
-  assert(set_basetype(basetype));
-  return basetype_to_wkb_size(value, basetype, flags);
-}
-
-/**
- * @brief Return true if the temporal point needs to output the SRID
- */
-bool
-geoset_wkb_needs_srid(const Set *set, uint8_t variant)
-{
-  if (geoset_type(set->settype))
-  {
-    /* Add an SRID if the WKB form is extended and if the set has one */
-    if ((variant & WKB_EXTENDED) && spatialset_srid(set) != SRID_UNKNOWN)
-      return true;
-  }
-
-  /* Everything else doesn't get an SRID */
-  return false;
-}
-
-/**
  * @brief Return the size in bytes of a set in the Well-Known Binary
  * (WKB) representation
  */
 static size_t
 set_to_wkb_size(const Set *set, uint8_t variant)
 {
-  size_t result = 0;
-  meosType basetype = settype_basetype(set->settype);
+  /* Endian flag (byte) + settype (int2) + set flags (byte) + count (int4) */
+  size_t result = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE +
+    MEOS_WKB_INT4_SIZE;
+  if (spatialset_type(set->settype) &&
+      spatial_wkb_needs_srid(spatialset_srid(set), variant))
+    result += MEOS_WKB_INT4_SIZE;
   /* Compute the size of the values which may be of variable length*/
   for (int i = 0; i < set->count; i++)
-    result += set_basetype_to_wkb_size(SET_VAL_N(set, i), basetype,
-      set->flags);
-  if (geoset_wkb_needs_srid(set, variant))
-    result += MEOS_WKB_INT4_SIZE;
-  /* Endian flag + settype + set flags + count + values */
-  result += MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE +
-    MEOS_WKB_INT4_SIZE;
+    result += base_to_wkb_size(SET_VAL_N(set, i), set->basetype, variant);
   return result;
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Return the size of the WKB representation of the base value of a span
- * type
- */
-static size_t
-span_basetype_to_wkb_size(const Span *s)
-{
-  assert(span_basetype(s->basetype));
-  /* Only the second parameter is used for spans */
-  return basetype_to_wkb_size(0, s->basetype, 0);
-}
-
-/**
- * @brief Return the size in bytes of a component span in the Well-Known Binary
- * (WKB) representation
- */
-size_t
-span_to_wkb_size_int(const Span *s)
-{
-  /* spantype + bounds flag + basetype values */
-  size_t size = MEOS_WKB_INT2_SIZE + MEOS_WKB_BYTE_SIZE +
-    span_basetype_to_wkb_size(s) * 2;
-  return size;
-}
-
-/**
  * @brief Return the size in bytes of a span in the Well-Known Binary (WKB)
  * representation
  */
 size_t
-span_to_wkb_size(const Span *s)
+span_to_wkb_size(const Span *s __attribute__((unused)), bool component)
 {
-  /* Endian flag + size of a component span */
-  size_t size = MEOS_WKB_BYTE_SIZE + span_to_wkb_size_int(s);
+  size_t size = 0;
+  if (! component)
+    /* Write the endian flag (byte) */
+    size += MEOS_WKB_BYTE_SIZE;
+  /* spantype + bounds flag + basetype values */
+  size += MEOS_WKB_INT2_SIZE + MEOS_WKB_BYTE_SIZE +
+    /* Only the second parameter is used for spans */
+    base_to_wkb_size(0, s->basetype, 0) * 2;
   return size;
 }
 
@@ -940,7 +864,7 @@ span_to_wkb_size(const Span *s)
 static size_t
 spanset_to_wkb_size(const SpanSet *ss)
 {
-  size_t sizebase = span_basetype_to_wkb_size(&ss->elems[0]);
+  size_t sizebase = base_to_wkb_size(0, ss->basetype, 0);
   /* Endian flag + spansettype + count + (bound flag + 2 values) * count */
   size_t size = MEOS_WKB_BYTE_SIZE + MEOS_WKB_INT2_SIZE +
     MEOS_WKB_INT4_SIZE + (MEOS_WKB_BYTE_SIZE + sizebase * 2) * ss->count;
@@ -960,28 +884,14 @@ tbox_to_wkb_size(const TBox *box)
   size_t size = MEOS_WKB_BYTE_SIZE * 2;
   /* If there is a value dimension */
   if (MEOS_FLAGS_GET_X(box->flags))
-    size += span_to_wkb_size_int(&box->span);
+    size += span_to_wkb_size(&box->span, true);
   /* If there is a time dimension */
   if (MEOS_FLAGS_GET_T(box->flags))
-    size += span_to_wkb_size_int(&box->period);
+    size += span_to_wkb_size(&box->period, true);
   return size;
 }
 
 /*****************************************************************************/
-
-/**
- * @brief Return true if the spatiotemporal box needs to output the SRID
- */
-static bool
-stbox_wkb_needs_srid(const STBox *box, uint8_t variant)
-{
-  /* Add an SRID if the WKB form is extended and if the temporal point has one */
-  if ((variant & WKB_EXTENDED) && box->srid != SRID_UNKNOWN)
-    return true;
-
-  /* Everything else doesn't get an SRID */
-  return false;
-}
 
 /**
  * @brief Return the size in bytes of a spatiotemporal box in the Well-Known
@@ -994,11 +904,11 @@ stbox_to_wkb_size(const STBox *box, uint8_t variant)
   size_t size = MEOS_WKB_BYTE_SIZE * 2;
   /* If there is a time dimension */
   if (MEOS_FLAGS_GET_T(box->flags))
-    size += span_to_wkb_size_int(&box->period);
+    size += span_to_wkb_size(&box->period, true);
   /* If there is a value dimension */
   if (MEOS_FLAGS_GET_X(box->flags))
   {
-    if (stbox_wkb_needs_srid(box, variant))
+    if (spatial_wkb_needs_srid(box->srid, variant))
       size += MEOS_WKB_INT4_SIZE;
     size += MEOS_WKB_DOUBLE_SIZE * 4;
     if (MEOS_FLAGS_GET_Z(box->flags))
@@ -1010,48 +920,22 @@ stbox_to_wkb_size(const STBox *box, uint8_t variant)
 /*****************************************************************************/
 
 /**
- * @brief Return the size of the WKB representation of a base value of a
- * temporal type
- */
-static size_t
-temporal_basetype_to_wkb_size(Datum value, meosType basetype, int16 flags)
-{
-  assert(temporal_basetype(basetype));
-  return basetype_to_wkb_size(value, basetype, flags);
-}
-
-/**
  * @brief Return the maximum size in bytes of an array of temporal instants
  * in the Well-Known Binary (WKB) representation
  */
 static size_t
-tinstarr_to_wkb_size(const TInstant **instants, int count)
+tinstarr_to_wkb_size(const TInstant **instants, int count, uint8_t variant)
 {
   size_t result = 0;
   meosType basetype = temptype_basetype(instants[0]->temptype);
   for (int i = 0; i < count; i++)
   {
     Datum value = tinstant_val(instants[i]);
-    result += temporal_basetype_to_wkb_size(value, basetype,
-      instants[i]->flags);
+    result += base_to_wkb_size(value, basetype, variant);
   }
   /* size of the TInstant array */
   result += count * MEOS_WKB_TIMESTAMP_SIZE;
   return result;
-}
-
-/**
- * @brief Return true if the temporal point needs to output the SRID
- */
-bool
-tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
-{
-  /* Add an SRID if the WKB form is extended and if the temporal point has one */
-  if ((variant & WKB_EXTENDED) && tspatial_srid(temp) != SRID_UNKNOWN)
-    return true;
-
-  /* Everything else doesn't get an SRID */
-  return false;
 }
 
 /**
@@ -1061,15 +945,15 @@ tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
 static size_t
 tinstant_to_wkb_size(const TInstant *inst, uint8_t variant)
 {
-  /* Endian flag + temporal type + temporal flag */
-  size_t size = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE;
+  /* Endian flag (byte) + temporal type (int2) + temporal flag (byte) */
+  size_t result = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
-  if (tgeo_type(inst->temptype) &&
-      tpoint_wkb_needs_srid((Temporal *) inst, variant))
-    size += MEOS_WKB_INT4_SIZE;
+  if (tspatial_type(inst->temptype) &&
+      spatial_wkb_needs_srid(tspatial_srid((Temporal *) inst), variant))
+    result += MEOS_WKB_INT4_SIZE;
   /* TInstant */
-  size += tinstarr_to_wkb_size(&inst, 1);
-  return size;
+  result += tinstarr_to_wkb_size(&inst, 1, variant);
+  return result;
 }
 
 /**
@@ -1080,18 +964,18 @@ static size_t
 tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
 {
   /* Endian flag + temporal type + temporal flag */
-  size_t size = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE;
+  size_t result = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
-  if (tgeo_type(seq->temptype) &&
-      tpoint_wkb_needs_srid((Temporal *) seq, variant))
-    size += MEOS_WKB_INT4_SIZE;
+  if (tspatial_type(seq->temptype) &&
+      spatial_wkb_needs_srid(tspatial_srid((Temporal *) seq), variant))
+    result += MEOS_WKB_INT4_SIZE;
   /* Include the number of instants and the period bounds flag */
-  size += MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE;
+  result += MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE;
   const TInstant **instants = tsequence_insts(seq);
   /* Include the TInstant array */
-  size += tinstarr_to_wkb_size(instants, seq->count);
+  result += tinstarr_to_wkb_size(instants, seq->count, variant);
   pfree(instants);
-  return size;
+  return result;
 }
 
 /**
@@ -1102,20 +986,20 @@ static size_t
 tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
 {
   /* Endian flag + temporal type + temporal flag */
-  size_t size = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE;
+  size_t result = MEOS_WKB_BYTE_SIZE * 2 + MEOS_WKB_INT2_SIZE;
   /* Extended WKB needs space for optional SRID integer */
-  if (tgeo_type(ss->temptype) &&
-      tpoint_wkb_needs_srid((Temporal *) ss, variant))
-    size += MEOS_WKB_INT4_SIZE;
+  if (tspatial_type(ss->temptype) &&
+      spatial_wkb_needs_srid(tspatial_srid((Temporal *) ss), variant))
+    result += MEOS_WKB_INT4_SIZE;
   /* Include the number of sequences */
-  size += MEOS_WKB_INT4_SIZE;
+  result += MEOS_WKB_INT4_SIZE;
   /* For each sequence include the number of instants and the period bounds flag */
-  size += ss->count * (MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE);
+  result += ss->count * (MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE);
   /* Include all the instants of all the sequences */
   const TInstant **instants = tsequenceset_insts(ss);
-  size += tinstarr_to_wkb_size(instants, ss->totalcount);
+  result += tinstarr_to_wkb_size(instants, ss->totalcount, variant);
   pfree(instants);
-  return size;
+  return result;
 }
 
 /**
@@ -1149,13 +1033,18 @@ datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
   if (set_type(type))
     return set_to_wkb_size((Set *) DatumGetPointer(value), variant);
   if (span_type(type))
-    return span_to_wkb_size((Span *) DatumGetPointer(value));
+    return span_to_wkb_size((Span *) DatumGetPointer(value), false);
   if (spanset_type(type))
     return spanset_to_wkb_size((SpanSet *) DatumGetPointer(value));
   if (type == T_TBOX)
     return tbox_to_wkb_size((TBox *) DatumGetPointer(value));
   if (type == T_STBOX)
     return stbox_to_wkb_size((STBox *) DatumGetPointer(value), variant);
+#if CBUFFER
+  if (type == T_CBUFFER)
+    return cbuffer_to_wkb_size((Cbuffer *) DatumGetPointer(value), variant,
+      false);
+#endif /* CBUFFER */
   if (temporal_type(type))
     return temporal_to_wkb_size((Temporal *) DatumGetPointer(value), variant);
   /* Error! */
@@ -1396,7 +1285,7 @@ text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * @brief Write into the buffer the coordinates of the temporal instant point
+ * @brief Write into the buffer the coordinates of the temporal point instant
  * in the Well-Known Binary (WKB) representation
  * @details The ouput is as follows
  * - 2 or 3 doubles for the coordinates depending on whether there is Z
@@ -1422,17 +1311,39 @@ coords_to_wkb_buf(Datum value, int16 flags, uint8_t *buf, uint8_t variant)
   return buf;
 }
 
-#if CBUFFER
 /**
- * @brief Write into the buffer a network point in the Well-Known Binary (WKB)
+ * @brief Write into the buffer a geo value in the Well-Known Binary (WKB)
  * representation
  */
-uint8_t *
-cbuffer_to_wkb_buf(const Cbuffer *cbuf, int16 flags, uint8_t *buf,
-  uint8_t variant)
+static uint8_t *
+geo_to_wkb_buf(const GSERIALIZED *gs, uint8_t *buf, uint8_t variant)
 {
+  LWGEOM *geo = lwgeom_from_gserialized(gs);
+  buf = lwgeom_to_wkb_buf(geo, buf, variant);
+  lwgeom_free(geo);
+  return buf;
+}
+
+#if CBUFFER
+/**
+ * @brief Write into the buffer a component circular buffer in the Well-Known 
+ * Binary (WKB) representation
+ * @details SRID (int32), coordinates of a 2D point and radius (3 doubles)
+ */
+static uint8_t *
+cbuffer_to_wkb_buf(const Cbuffer *cbuf, uint8_t *buf, uint8_t variant,
+  bool component)
+{
+  if (! component)
+    /* Write the endian flag (byte) */
+    buf = endian_to_wkb_buf(buf, variant);
   Datum d = PointerGetDatum(&cbuf->point);
-  buf = coords_to_wkb_buf(d, flags, buf, variant);
+  int32_t srid = gserialized_get_srid(DatumGetGserializedP(d));
+  if (spatial_wkb_needs_srid(cbuffer_srid(cbuf), variant))
+    buf = int32_to_wkb_buf(srid, buf, variant);
+  const POINT2D *point = DATUM_POINT2D_P(d);
+  buf = double_to_wkb_buf(point->x, buf, variant);
+  buf = double_to_wkb_buf(point->y, buf, variant);
   buf = double_to_wkb_buf(cbuf->radius, buf, variant);
   return buf;
 }
@@ -1440,12 +1351,17 @@ cbuffer_to_wkb_buf(const Cbuffer *cbuf, int16 flags, uint8_t *buf,
 
 #if NPOINT
 /**
- * @brief Write into the buffer a network point in the Well-Known Binary (WKB)
- * representation
+ * @brief Write into the buffer a network point in the Well-Known Binary
+ * (WKB) representation
  */
-uint8_t *
-npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
+static uint8_t *
+npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant,
+  bool component)
 {
+  if (! component)
+    /* Write the endian flag (byte) */
+    buf = endian_to_wkb_buf(buf, variant);
+  /* Write the network point */
   buf = int64_to_wkb_buf(np->rid, buf, variant);
   buf = double_to_wkb_buf(np->pos, buf, variant);
   return buf;
@@ -1460,7 +1376,7 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
  * - timestamp
  */
 static uint8_t *
-basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
+base_to_wkb_buf(Datum value, meosType basetype, uint8_t *buf,
   uint8_t variant)
 {
   switch (basetype)
@@ -1488,16 +1404,18 @@ basevalue_to_wkb_buf(Datum value, meosType basetype, int16 flags, uint8_t *buf,
       break;
     case T_GEOMETRY:
     case T_GEOGRAPHY:
-      buf = coords_to_wkb_buf(value, flags, buf, variant);
+      /* This was the case BEFORE tgeometry/tgeography types were introduced */
+      // buf = coords_to_wkb_buf(value, flags, buf, variant);
+      buf = geo_to_wkb_buf(DatumGetGserializedP(value), buf, variant);
       break;
 #if CBUFFER
     case T_CBUFFER:
-      buf = cbuffer_to_wkb_buf(DatumGetCbufferP(value), flags, buf, variant);
+      buf = cbuffer_to_wkb_buf(DatumGetCbufferP(value), buf, variant, true);
       break;
 #endif /* NPOINT */
 #if NPOINT
     case T_NPOINT:
-      buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant);
+      buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant, true);
       break;
 #endif /* NPOINT */
     default: /* Error! */
@@ -1524,13 +1442,14 @@ set_flags_to_wkb_buf(const Set *set, uint8_t *buf, uint8_t variant)
 {
   /* Set the flags */
   uint8_t wkb_flags = MEOS_WKB_ORDERED;
-  if (geo_basetype(set->basetype))
+  if (spatial_basetype(set->basetype))
   {
     if (MEOS_FLAGS_GET_Z(set->flags))
       wkb_flags |= MEOS_WKB_ZFLAG;
     if (MEOS_FLAGS_GET_GEODETIC(set->flags))
       wkb_flags |= MEOS_WKB_GEODETICFLAG;
-    if (geoset_wkb_needs_srid(set, variant))
+    if (spatialset_type(set->settype) &&
+        spatial_wkb_needs_srid(spatialset_srid(set), variant))
       wkb_flags |= MEOS_WKB_SRIDFLAG;
   }
   /* Write the flags */
@@ -1549,21 +1468,21 @@ set_flags_to_wkb_buf(const Set *set, uint8_t *buf, uint8_t variant)
 static uint8_t *
 set_to_wkb_buf(const Set *set, uint8_t *buf, uint8_t variant)
 {
-  /* Write the endian flag */
+  /* Write the endian flag (byte) */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the set type */
   buf = int16_to_wkb_buf(set->settype, buf, variant);
-  /* Write the set flags */
+  /* Write the set flags (byte) */
   buf = set_flags_to_wkb_buf(set, buf, variant);
   /* Write the optional SRID for extended variant */
-  if (geoset_wkb_needs_srid(set, variant))
+  if (spatialset_type(set->settype) &&
+      spatial_wkb_needs_srid(spatialset_srid(set), variant))
     buf = int32_to_wkb_buf(spatialset_srid(set), buf, variant);
   /* Write the count */
   buf = int32_to_wkb_buf(set->count, buf, variant);
   /* Write the values */
   for (int i = 0; i < set->count; i++)
-    buf = basevalue_to_wkb_buf(SET_VAL_N(set, i), set->basetype, set->flags,
-      buf, variant);
+    buf = base_to_wkb_buf(SET_VAL_N(set, i), set->basetype, buf, variant);
   return buf;
 }
 
@@ -1647,7 +1566,7 @@ lower_upper_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
  * - Two base type values
  */
 static uint8_t *
-span_to_wkb_buf_int_iter(const Span *s, uint8_t *buf, uint8_t variant)
+span_to_wkb_buf_iter(const Span *s, uint8_t *buf, uint8_t variant)
 {
   /* Write the span bounds */
   buf = bounds_to_wkb_buf(s->lower_inc, s->upper_inc, buf, variant);
@@ -1660,36 +1579,21 @@ span_to_wkb_buf_int_iter(const Span *s, uint8_t *buf, uint8_t variant)
  * @brief Write into the buffer a span that is a component of another type
  * in the Well-Known Binary (WKB) representation
  * @details The output is as follows
- * - Span type
- * - Bounds byte stating whether the bounds are inclusive
- * - Two base type values
- */
-uint8_t *
-span_to_wkb_buf_int(const Span *s, uint8_t *buf, uint8_t variant)
-{
-  /* Write the span type */
-  buf = int16_to_wkb_buf(s->spantype, buf, variant);
-  /* Write the span bounds and values */
-  buf = span_to_wkb_buf_int_iter(s, buf, variant);
-  return buf;
-}
-
-/**
- * @brief Write into the buffer a span in the Well-Known Binary (WKB)
- * representation
- * @details The output is as follows
- * - Endian byte
+ * - Endian byte (if not a component)
  * - Basetype @p int16
  * - Bounds byte stating whether the bounds are inclusive
  * - Two base type values
  */
 uint8_t *
-span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
+span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant, bool component)
 {
-  /* Write the endian flag */
-  buf = endian_to_wkb_buf(buf, variant);
-  /* Write the span */
-  buf = span_to_wkb_buf_int(s, buf, variant);
+  if (! component)
+    /* Write the endian flag (byte) */
+    buf = endian_to_wkb_buf(buf, variant);
+  /* Write the span type */
+  buf = int16_to_wkb_buf(s->spantype, buf, variant);
+  /* Write the span bounds and values */
+  buf = span_to_wkb_buf_iter(s, buf, variant);
   return buf;
 }
 
@@ -1707,7 +1611,7 @@ span_to_wkb_buf(const Span *s, uint8_t *buf, uint8_t variant)
 static uint8_t *
 spanset_to_wkb_buf(const SpanSet *ss, uint8_t *buf, uint8_t variant)
 {
-  /* Write the endian flag */
+  /* Write the endian flag (byte) */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the span type */
   buf = int16_to_wkb_buf(ss->spansettype, buf, variant);
@@ -1715,7 +1619,7 @@ spanset_to_wkb_buf(const SpanSet *ss, uint8_t *buf, uint8_t variant)
   buf = int32_to_wkb_buf(ss->count, buf, variant);
   /* Write the periods */
   for (int i = 0; i < ss->count; i++)
-    buf = span_to_wkb_buf_int_iter(SPANSET_SP_N(ss, i), buf, variant);
+    buf = span_to_wkb_buf_iter(SPANSET_SP_N(ss, i), buf, variant);
   /* Write the temporal dimension if any */
   return buf;
 }
@@ -1764,16 +1668,16 @@ tbox_to_wkb_flags_buf(const TBox *box, uint8_t *buf, uint8_t variant)
 static uint8_t *
 tbox_to_wkb_buf(const TBox *box, uint8_t *buf, uint8_t variant)
 {
-  /* Write the endian flag */
+  /* Write the endian flag (byte) */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal flags */
   buf = tbox_to_wkb_flags_buf(box, buf, variant);
   /* Write the temporal dimension if any */
   if (MEOS_FLAGS_GET_T(box->flags))
-    buf = span_to_wkb_buf_int(&box->period, buf, variant);
+    buf = span_to_wkb_buf(&box->period, buf, variant, true);
   /* Write the value dimension if any */
   if (MEOS_FLAGS_GET_X(box->flags))
-    buf = span_to_wkb_buf_int(&box->span, buf, variant);
+    buf = span_to_wkb_buf(&box->span, buf, variant, true);
   return buf;
 }
 
@@ -1800,7 +1704,7 @@ stbox_flags_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
     wkb_flags |= MEOS_WKB_TFLAG;
   if (MEOS_FLAGS_GET_GEODETIC(box->flags))
     wkb_flags |= MEOS_WKB_GEODETICFLAG;
-  if (stbox_wkb_needs_srid(box, variant))
+  if (spatial_wkb_needs_srid(box->srid, variant))
     wkb_flags |= MEOS_WKB_SRIDFLAG;
   /* Write the flags */
   return uint8_to_wkb_buf(wkb_flags, buf, variant);
@@ -1821,16 +1725,16 @@ stbox_flags_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
 static uint8_t *
 stbox_to_wkb_buf(const STBox *box, uint8_t *buf, uint8_t variant)
 {
-  /* Write the endian flag */
+  /* Write the endian flag (byte) */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal flags */
   buf = stbox_flags_to_wkb_buf(box, buf, variant);
   /* Write the optional SRID for extended variant */
-  if (stbox_wkb_needs_srid(box, variant))
+  if (spatial_wkb_needs_srid(box->srid, variant))
     buf = int32_to_wkb_buf(stbox_srid(box), buf, variant);
   /* Write the temporal dimension if any */
   if (MEOS_FLAGS_GET_T(box->flags))
-    buf = span_to_wkb_buf_int(&box->period, buf, variant);
+    buf = span_to_wkb_buf(&box->period, buf, variant, true);
   /* Write the value dimension if any */
   if (MEOS_FLAGS_GET_X(box->flags))
   {
@@ -1868,13 +1772,13 @@ temporal_flags_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
   uint8_t wkb_flags = (uint8_t) temp->subtype;
   MEOS_WKB_SET_INTERP(wkb_flags, MEOS_FLAGS_GET_INTERP(temp->flags));
   /* Set the flags */
-  if (tgeo_type(temp->temptype))
+  if (tspatial_type(temp->temptype))
   {
     if (MEOS_FLAGS_GET_Z(temp->flags))
       wkb_flags |= MEOS_WKB_ZFLAG;
     if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
       wkb_flags |= MEOS_WKB_GEODETICFLAG;
-    if (tpoint_wkb_needs_srid(temp, variant))
+    if (spatial_wkb_needs_srid(tspatial_srid(temp), variant))
       wkb_flags |= MEOS_WKB_SRIDFLAG;
   }
   /* Write the flags */
@@ -1889,13 +1793,12 @@ temporal_flags_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
  * - timestamp
  */
 static uint8_t *
-tinstant_basevalue_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
+tinstant_base_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
   uint8_t variant)
 {
-  Datum value = tinstant_val(inst);
   meosType basetype = temptype_basetype(inst->temptype);
   assert(temporal_basetype(basetype));
-  buf = basevalue_to_wkb_buf(value, basetype, inst->flags, buf, variant);
+  buf = base_to_wkb_buf(tinstant_val(inst), basetype, buf, variant);
   buf = timestamptz_to_wkb_buf(inst->t, buf, variant);
   return buf;
 }
@@ -1913,17 +1816,17 @@ tinstant_basevalue_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
 static uint8_t *
 tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 {
-  /* Write the endian flag */
+  /* Write the endian flag (byte) */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal type */
   buf = int16_to_wkb_buf(inst->temptype, buf, variant);
   /* Write the temporal flags */
   buf = temporal_flags_to_wkb_buf((Temporal *) inst, buf, variant);
   /* Write the optional SRID for extended variant */
-  if (tgeo_type(inst->temptype) &&
-      tpoint_wkb_needs_srid((Temporal *) inst, variant))
+  if (tspatial_type(inst->temptype) &&
+      spatial_wkb_needs_srid(tspatial_srid((Temporal *) inst), variant))
     buf = int32_to_wkb_buf(tspatialinst_srid(inst), buf, variant);
-  return tinstant_basevalue_time_to_wkb_buf(inst, buf, variant);
+  return tinstant_base_time_to_wkb_buf(inst, buf, variant);
 }
 
 /**
@@ -1940,15 +1843,15 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 static uint8_t *
 tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
 {
-  /* Write the endian flag */
+  /* Write the endian flag (byte) */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal type */
   buf = int16_to_wkb_buf(seq->temptype, buf, variant);
-  /* Write the temporal flags and interpolation */
+  /* Write the temporal and interpolation flags */
   buf = temporal_flags_to_wkb_buf((Temporal *) seq, buf, variant);
   /* Write the optional SRID for extended variant */
-  if (tgeo_type(seq->temptype) &&
-      tpoint_wkb_needs_srid((Temporal *) seq, variant))
+  if (tspatial_type(seq->temptype) &&
+      spatial_wkb_needs_srid(tspatial_srid((Temporal *) seq), variant))
     buf = int32_to_wkb_buf(tspatial_srid((Temporal *) seq), buf, variant);
   /* Write the count */
   buf = int32_to_wkb_buf(seq->count, buf, variant);
@@ -1957,7 +1860,7 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
     variant);
   /* Write the array of instants */
   for (int i = 0; i < seq->count; i++)
-    buf = tinstant_basevalue_time_to_wkb_buf(TSEQUENCE_INST_N(seq, i), buf,
+    buf = tinstant_base_time_to_wkb_buf(TSEQUENCE_INST_N(seq, i), buf,
       variant);
   return buf;
 }
@@ -1978,15 +1881,15 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
 static uint8_t *
 tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
 {
-  /* Write the endian flag */
+  /* Write the endian flag (byte) */
   buf = endian_to_wkb_buf(buf, variant);
   /* Write the temporal type */
   buf = int16_to_wkb_buf(ss->temptype, buf, variant);
   /* Write the temporal and interpolation flags */
   buf = temporal_flags_to_wkb_buf((Temporal *) ss, buf, variant);
   /* Write the optional SRID for extended variant */
-  if (tgeo_type(ss->temptype) &&
-      tpoint_wkb_needs_srid((Temporal *) ss, variant))
+  if (tspatial_type(ss->temptype) &&
+      spatial_wkb_needs_srid(tspatial_srid((Temporal *) ss), variant))
     buf = int32_to_wkb_buf(tspatial_srid((Temporal *) ss), buf, variant);
   /* Write the count */
   buf = int32_to_wkb_buf(ss->count, buf, variant);
@@ -2001,7 +1904,7 @@ tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
       variant);
     /* Write the array of instants */
     for (int j = 0; j < seq->count; j++)
-      buf = tinstant_basevalue_time_to_wkb_buf(TSEQUENCE_INST_N(seq, j), buf,
+      buf = tinstant_base_time_to_wkb_buf(TSEQUENCE_INST_N(seq, j), buf,
         variant);
   }
   return buf;
@@ -2039,13 +1942,26 @@ datum_to_wkb_buf(Datum value, meosType type, uint8_t *buf, uint8_t variant)
   if (set_type(type))
     buf = set_to_wkb_buf((Set *) DatumGetPointer(value), buf, variant);
   else if (span_type(type))
-    buf = span_to_wkb_buf((Span *) DatumGetPointer(value), buf, variant);
+    buf = span_to_wkb_buf((Span *) DatumGetPointer(value), buf, variant, 
+      false);
   else if (spanset_type(type))
     buf = spanset_to_wkb_buf((SpanSet *) DatumGetPointer(value), buf, variant);
   else if (type == T_TBOX)
     buf = tbox_to_wkb_buf((TBox *) DatumGetPointer(value), buf, variant);
+  else if (type == T_TBOX)
+    buf = tbox_to_wkb_buf((TBox *) DatumGetPointer(value), buf, variant);
   else if (type == T_STBOX)
     buf = stbox_to_wkb_buf((STBox *) DatumGetPointer(value), buf, variant);
+#if CBUFFER
+  else if (type == T_CBUFFER)
+    buf = cbuffer_to_wkb_buf((Cbuffer *) DatumGetPointer(value), buf, variant,
+      false);
+#endif /* CBUFFER */
+#if NPOINT
+  else if (type == T_NPOINT)
+    buf = npoint_to_wkb_buf((Npoint *) DatumGetPointer(value), buf, variant,
+      false);
+#endif /* NPOINT */
   else if (temporal_type(type))
     buf = temporal_to_wkb_buf((Temporal *) DatumGetPointer(value), buf,
       variant);
@@ -2359,6 +2275,50 @@ stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
     variant | (uint8_t) WKB_HEX, size_out);
 }
 #endif /* MEOS */
+
+/*****************************************************************************
+ * WKB and HexWKB output functions for circular buffers
+ *****************************************************************************/
+
+#if CBUFFER
+/**
+ * @ingroup meos_cbuffer_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a circular
+ * buffer
+ * @param[in] cbuf Circular buffer
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Cbuffer_recv(), #Cbuffer_as_wkb()
+ */
+uint8_t *
+cbuffer_as_wkb(const Cbuffer *cbuf, uint8_t variant, size_t *size_out)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) size_out))
+    return NULL;
+  return datum_as_wkb(PointerGetDatum(cbuf), T_CBUFFER, variant,
+    size_out);
+}
+
+/**
+ * @ingroup meos_cbuffer_inout
+ * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * representation of a circular buffer
+ * @param[in] cbuf Circular buffer
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Cbuffer_as_hexwkb()
+ */
+char *
+cbuffer_as_hexwkb(const Cbuffer *cbuf, uint8_t variant, size_t *size_out)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) size_out))
+    return NULL;
+  return (char *) datum_as_wkb(PointerGetDatum(cbuf), T_CBUFFER,
+    variant | (uint8_t) WKB_HEX, size_out);
+}
+#endif /* CBUFFER */
 
 /*****************************************************************************
  * WKB and HexWKB output functions for temporal types

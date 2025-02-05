@@ -29,7 +29,7 @@
 
 /**
  * tcbuffer.sql
- * Basic functions for temporal circular buffers.
+ * Basic functions for temporal circular buffers
  */
 
 CREATE TYPE tcbuffer;
@@ -55,9 +55,13 @@ CREATE FUNCTION temporal_send(tcbuffer)
   AS 'MODULE_PATHNAME', 'Temporal_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tcbuffer_analyze(internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tpoint_analyze'
+CREATE FUNCTION tcbuffer_typmod_in(cstring[])
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_typmod_in'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tcbuffer_typmod_out(integer)
+  RETURNS cstring
+  AS 'MODULE_PATHNAME', 'Tcbuffer_typmod_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE tcbuffer (
@@ -66,17 +70,17 @@ CREATE TYPE tcbuffer (
   output = temporal_out,
   receive = tcbuffer_recv,
   send = temporal_send,
-  typmod_in = temporal_typmod_in,
-  typmod_out = temporal_typmod_out,
+  typmod_in = tcbuffer_typmod_in,
+  typmod_out = tcbuffer_typmod_out,
   storage = extended,
   alignment = double,
-  analyze = tcbuffer_analyze
+  analyze = tspatial_analyze
 );
 
 -- Special cast for enforcing the typmod restrictions
 CREATE FUNCTION tcbuffer(tcbuffer, integer)
   RETURNS tcbuffer
-  AS 'MODULE_PATHNAME','Temporal_enforce_typmod'
+  AS 'MODULE_PATHNAME','Tcbuffer_enforce_typmod'
   LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tcbuffer AS tcbuffer) WITH FUNCTION tcbuffer(tcbuffer, integer) AS IMPLICIT;
@@ -92,10 +96,6 @@ CREATE FUNCTION tcbufferFromEWKT(text)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Tcbuffer_from_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- CREATE FUNCTION tcbufferFromMFJSON(text)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
 
 CREATE FUNCTION tcbufferFromBinary(bytea)
   RETURNS tcbuffer
@@ -132,12 +132,6 @@ CREATE FUNCTION asEWKT(tcbuffer[], maxdecimaldigits int4 DEFAULT 15)
   AS 'MODULE_PATHNAME', 'Tcbufferarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION asMFJSON(tcbuffer, options int4 DEFAULT 0,
-    -- flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
-  -- RETURNS text
-  -- AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION asBinary(tcbuffer, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
@@ -145,7 +139,7 @@ CREATE FUNCTION asBinary(tcbuffer, endianenconding text DEFAULT '')
 
 CREATE FUNCTION asEWKB(tcbuffer, endianenconding text DEFAULT '')
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Tpoint_as_ewkb'
+  AS 'MODULE_PATHNAME', 'Tspatial_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asHexEWKB(tcbuffer, endianenconding text DEFAULT '')
@@ -212,19 +206,19 @@ CREATE FUNCTION tfloat(tcbuffer)
   AS 'MODULE_PATHNAME', 'Tcbuffer_to_tfloat'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION tcbuffer(tgeompoint)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Tgeompoint_to_tcbuffer'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION timeSpan(tcbuffer)
-  -- RETURNS tstzspan
-  -- AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tcbuffer(tgeompoint)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tgeompoint_to_tcbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION timeSpan(tcbuffer)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tcbuffer AS tgeompoint) WITH FUNCTION tgeompoint(tcbuffer);
 CREATE CAST (tcbuffer AS tfloat) WITH FUNCTION tfloat(tcbuffer);
--- CREATE CAST (tgeompoint AS tcbuffer) WITH FUNCTION tcbuffer(tgeompoint);
--- CREATE CAST (tcbuffer AS tstzspan) WITH FUNCTION timeSpan(tcbuffer);
+CREATE CAST (tgeompoint AS tcbuffer) WITH FUNCTION tcbuffer(tgeompoint);
+CREATE CAST (tcbuffer AS tstzspan) WITH FUNCTION timeSpan(tcbuffer);
 
 /******************************************************************************
  * Transformation functions
@@ -476,67 +470,6 @@ CREATE FUNCTION unnest(tcbuffer)
   RETURNS SETOF cbuffer_tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_unnest'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
- * Index Support Functions
- *****************************************************************************/
-
--- CREATE FUNCTION tcbuffer_supportfn(internal)
-  -- RETURNS internal
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_supportfn'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
- * Ever/Always Comparison Functions
- *****************************************************************************/
-
-CREATE FUNCTION ever_eq(tcbuffer, cbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_eq_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ?= (
-  LEFTARG = tcbuffer, RIGHTARG = cbuffer,
-  PROCEDURE = ever_eq,
-  NEGATOR = %<>,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
-);
-
-CREATE FUNCTION always_eq(tcbuffer, cbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR %= (
-  LEFTARG = tcbuffer, RIGHTARG = cbuffer,
-  PROCEDURE = always_eq,
-  NEGATOR = ?<>,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
-);
-
-CREATE FUNCTION ever_ne(tcbuffer, cbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_ne_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ?<> (
-  LEFTARG = tcbuffer, RIGHTARG = cbuffer,
-  PROCEDURE = ever_ne,
-  NEGATOR = %=,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
-);
-
-CREATE FUNCTION always_ne(tcbuffer, cbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR %<> (
-  LEFTARG = tcbuffer, RIGHTARG = cbuffer,
-  PROCEDURE = always_ne,
-  NEGATOR = ?=,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
-);
 
 /******************************************************************************
  * Restriction functions

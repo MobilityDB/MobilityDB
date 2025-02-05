@@ -91,14 +91,14 @@
 					<entry><varname>geomset</varname></entry>
 					<entry><varname></varname></entry>
 					<entry><varname></varname></entry>
-					<entry><varname>tgeompoint</varname></entry>
+					<entry><varname>tgeompoint</varname>, <varname>tgeometry</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>geography</varname></emphasis></entry>
 					<entry><varname>geogset</varname></entry>
 					<entry><varname></varname></entry>
 					<entry><varname></varname></entry>
-					<entry><varname>tgeogpoint</varname></entry>
+					<entry><varname>tgeogpoint</varname>, <varname>tgeography</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>npoint</varname></emphasis></entry>
@@ -106,6 +106,13 @@
 					<entry><varname></varname></entry>
 					<entry><varname></varname></entry>
 					<entry><varname>tnpoint</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>cbuffer</varname></emphasis></entry>
+					<entry><varname>cbufferset</varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname></varname></entry>
+					<entry><varname>tcbuffer</varname></entry>
 				</row>
 			</tbody>
 			</tgroup>
@@ -123,19 +130,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) representation</para>
+					<para><link linkend="setspan_asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_asHexWKB"><varname>asHexWKB</varname></link>: Return the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
+					<para><link linkend="setspan_FromBinary"><varname>settypeFromBinary</varname>, <varname>spantypeFromBinary</varname>, <varname>spansettypeFromBinary</varname></link>: Input from the Well-Known Binary (WKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_FromBinary"><varname>settypeFromBinary</varname>, <varname>spantypeFromBinary</varname>, <varname>spansettypeFromBinary</varname></link>: Input from a Well-Known Binary (WKB) representation</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_FromHexWKB"><varname>settypeFromHexWKB</varname>, <varname>spantypeFromHexWKB</varname>, <varname>spansettypeFromHexWKB</varname></link>: Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="setspan_FromHexWKB"><varname>settypeFromHexWKB</varname>, <varname>spantypeFromHexWKB</varname>, <varname>spansettypeFromHexWKB</varname></link>: Input from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -302,7 +305,7 @@
 					</listitem>
 
 				<listitem>
-					<para><link linkend="geoset_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a different spatial reference</para>
+					<para><link linkend="geoset_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -371,7 +374,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Bounding Box Splitting</title>
+				<title>Splitting Operations</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="splitNSpans"><varname>splitNSpans</varname></link>: Return an array of N spans obtained by merging the elements of a set or the spans of a spanset</para>
@@ -399,27 +402,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_eq"><varname>=</varname></link>: Are the values equal?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_ne"><varname>&lt;&gt;</varname></link>: Are the values different?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_lt"><varname>&lt;</varname></link>: Is the first value less than the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_gt"><varname>&gt;</varname></link>: Is the first value greater than the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_le"><varname>&lt;=</varname></link>: Is the first value less than or equal to the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_ge"><varname>&gt;=</varname></link>: Is the first value greater than or equal to the second one?</para>
+					<para><link linkend="setspan_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -454,19 +437,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) representation</para>
+					<para><link linkend="box_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_asHexWKB"><varname>asHexWKB</varname></link>: Return the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_FromBinary"><varname>tboxFromBinary</varname>, <varname>stboxFromBinary</varname></link>: Input from a Well-Known Binary (WKB) representation</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_FromHexWKB"><varname>tboxFromHexWKB</varname>, <varname>stboxFromHexWKB</varname></link>: Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="box_FromBinary"><varname>tboxFromBinary</varname>, <varname>stboxFromBinary</varname>, <varname>tboxFromHexWKB</varname>, <varname>stboxFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -591,13 +566,13 @@
 					</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a different spatial reference</para>
+					<para><link linkend="stbox_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
 
 		<sect2>
-			<title>Split Operations</title>
+			<title>Splitting Operations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="quadSplit"><varname>quadSplit</varname></link>: Split the bounding box in quadrants or octants</para>
@@ -672,27 +647,7 @@
 			<title>Comparisons</title>
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="box_eq"><varname>=</varname></link>: Are the bounding boxes equal?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_ne"><varname>&lt;&gt;</varname></link>: Are the bounding boxes different?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_lt"><varname>&lt;</varname></link>: Is the first bounding box less than the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_gt"><varname>&gt;</varname></link>: Is the first bounding box greater than the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_le"><varname>&lt;=</varname></link>: Is the first bounding box less than or equal to the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_ge"><varname>&gt;=</varname></link>: Is the first bounding box greater than or equal to the second one?</para>
+				<para><link linkend="box_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -719,11 +674,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) representation</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="temporal_asHexWKB"><varname>asHexWKB</varname></link>: Return the Hexadecimal Well-Known Binary (HexWKB) representation as text</para>
+					<para><link linkend="temporal_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 
 				<listitem>
@@ -731,11 +682,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_FromBinary"><varname>ttypeFromBinary</varname></link>: Input from a Well-Known Binary (WKB) representation</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="temporal_FromHexWKB"><varname>ttypeFromHexWKB</varname></link>: Input from an Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="temporal_FromBinary"><varname>ttypeFromBinary</varname>, <varname>ttypeFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 
 				<listitem>
@@ -778,9 +725,8 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeompoint_tgeogpoint"><varname>tgeompoint::tgeogpoint</varname>, <varname>tgeogpoint::tgeompoint</varname></link>: Convert between a temporal geometry point and a temporal geography point</para>
+					<para><link linkend="tgeometry_tgeography"><varname>tgeometry::tgeography</varname>, <varname>tgeography::tgeometry</varname>, <varname>tgeompoint::tgeogpoint</varname>, <varname>tgeogpoint::tgeompoint</varname></link>: Convert between a temporal geometry and a temporal geography</para>
 				</listitem>
-
 
 				<listitem>
 					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname>, <varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Convert between a temporal point and a PostGIS trajectory</para>
@@ -996,95 +942,32 @@
 		<sect2>
 			<title>Comparisons</title>
 
-			<sect3>
-				<title>Traditional Comparisons</title>
+			<itemizedlist>
+				<listitem>
+				<para><link linkend="ttype_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+				</listitem>
 
-				<itemizedlist>
-					<listitem>
-					<para><link linkend="ttype_eq"><varname>=</varname></link>: Are the temporal values equal?</para>
-					</listitem>
+				<listitem>
+					<para><link linkend="ttype_eveq"><varname>?=</varname>, <varname>%=</varname>, <varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname>, <varname>?&lt;</varname>, <varname>%&lt;</varname>, <varname>?&gt;</varname>, <varname>%&gt;</varname>, <varname>?&lt;=</varname>, <varname>%&lt;=</varname>, <varname>?&gt;=</varname>, <varname>%&gt;=</varname></link>: Ever and always comparisons</para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="ttype_ne"><varname>&lt;&gt;</varname></link>: Are the temporal values different?</para>
-					</listitem>
+				<listitem>
+					<para><link linkend="ttype_teq"><varname>#=</varname>, <varname>#&lt;&gt;</varname>, <varname>#&lt;</varname>, <varname>#&gt;</varname>, <varname>#&lt;=</varname>, <varname>#&gt;=</varname></link>: Temporal comparisons</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 
-					<listitem>
-						<para><link linkend="ttype_lt"><varname>&lt;</varname></link>: Is the first temporal value less than the second one?</para>
-					</listitem>
+		<sect2>
+			<title>Miscellaneous</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="mobilitydb_version"><varname>mobilitydb_version</varname></link>: Return the version of the MobilityDB extension</para>
+				</listitem>
 
-					<listitem>
-						<para><link linkend="ttype_gt"><varname>&gt;</varname></link>: Is the first temporal value greater than the second one?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_le"><varname>&lt;=</varname></link>: Is the first temporal value less than or equal to the second one?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_ge"><varname>&gt;=</varname></link>: Is the first temporal value greater than or equal to the second one?</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Ever and Always Comparisons</title>
-
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="ttype_eveq"><varname>?=</varname>, <varname>%=</varname></link>: Is the temporal value ever or always equal to the value?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_evne"><varname>?&lt;&gt;</varname>, <varname>%&lt;&gt;</varname></link>: Is the temporal value ever or always different from the value?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_evlt"><varname>?&lt;</varname>, <varname>%&lt;</varname></link>: Is the temporal value ever or always less than the value?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_evgt"><varname>?&gt;</varname>, <varname>%&gt;</varname></link>: Is the temporal value ever or always greater than the value?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_evle"><varname>?&lt;=</varname>, <varname>%&lt;=</varname></link>: Is the temporal value ever or always less than or equal to the value?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_evge"><varname>?&gt;=</varname>, <varname>%&gt;=</varname></link>: Is the temporal value ever or always greater than or equal to the value?</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Temporal Comparisons</title>
-
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="ttype_teq"><varname>#=</varname></link>: Temporal equal</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_tne"><varname>#&lt;&gt;</varname></link>: Temporal different</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_tlt"><varname>#&lt;</varname></link>: Temporal less than</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_tgt"><varname>#&gt;</varname></link>: Temporal greater than</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_tle"><varname>#&lt;=</varname></link>: Temporal less than or equal to</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttype_tge"><varname>#&gt;=</varname></link>: Temporal greater than or equal to</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
+				<listitem>
+					<para><link linkend="mobilitydb_full_version"><varname>mobilitydb_full_version</varname></link>: Return the versions of the MobilityDB extension and its dependencies</para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 	</sect1>
 
@@ -1190,11 +1073,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="asText"><varname>asText</varname></link>: Return the Well-Known Text (WKT) representation</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="asEWKT"><varname>asEWKT</varname></link>: Return the Extended Well-Known Text (EWKT) representation</para>
+					<para><link linkend="asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation</para>
 				</listitem>
 
 				<listitem>
@@ -1202,39 +1081,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) representation</para>
+					<para><link linkend="asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), or the Hexadecimal Extended Well-Known Binary (EWKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asEWKB"><varname>asEWKB</varname></link>: Return the Extended Well-Known Binary (EWKB) representation</para>
+					<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname>, <varname>tgeogpointFromText</varname>, <varname>tgeometryFromText</varname>, <varname>tgeographyFromText</varname>, <varname>tgeompointFromEWKT</varname>, <varname>tgeogpointFromEWKT</varname>, <varname>tgeometryFromEWKT</varname>, <varname>tgeographyFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asHexEWKB"><varname>asHexEWKB</varname></link>: Return the Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
+					<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname>, <varname>tgeogpointFromMFJSON</varname>, <varname>tgeometryFromMFJSON</varname>, <varname>tgeographyFromMFJSON</varname></link>: Input from the Moving Features JSON representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname>, <varname>tgeogpointFromText</varname></link>: Input a temporal geometry/geography point from a Well-Known Text (WKT) representation</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromEWKT"><varname>tgeompointFromEWKT</varname>, <varname>tgeogpointFromEWKT</varname></link>: Input a temporal geometry/geography point from an Extended Well-Known Text (EWKT) representation</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname>, <varname>tgeogpointFromMFJSON</varname></link>: Input a temporal geometry/geography point from a Moving Features JSON representation</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname>, <varname>tgeogpointFromBinary</varname></link>: Input a temporal geometry/geography point from a Well-Known Binary (WKB) representation</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname>, <varname>tgeogpointFromEWKB</varname></link>: Input a temporal geometry/geography point from an Extended Well-Known Binary (EWKB) representation</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromHexEWKB"><varname>tgeompointFromHexEWKB</varname>, <varname>tgeogpointFromHexEWKB</varname></link>: Input a temporal geometry/geography point from an Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
+					<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname>, <varname>tgeogpointFromBinary</varname>, <varname>tgeometryFromBinary</varname>, <varname>tgeographyFromBinary</varname>, <varname>tgeompointFromEWKB</varname>, <varname>tgeogpointFromEWKB</varname>, <varname>tgeometryFromEWKB</varname>, <varname>tgeographyFromEWKB</varname>, <varname>tgeompointFromHexEWKB</varname>, <varname>tgeogpointFromHexEWKB</varname>, <varname>tgeometryFromHexEWKB</varname>, <varname>tgeographyFromHexEWKB</varname></link>: Input  from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (EWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1244,15 +1103,15 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tpoint_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
+					<para><link linkend="tgeo_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tpoint_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
+					<para><link linkend="tgeo_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
 					</listitem>
 
 				<listitem>
-					<para><link linkend="tpoint_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a different spatial reference</para>
+					<para><link linkend="tgeo_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1271,7 +1130,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trajectory"><varname>trajectory</varname></link>: Return the trajectory</para>
+					<para><link linkend="trajectory"><varname>trajectory</varname>, <varname>traversedArea</varname></link>: Return the trajectory or the traversed area</para>
 				</listitem>
 
 				<listitem>
@@ -1486,7 +1345,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Bounding Box Splitting</title>
+			<title>Splitting Operations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="temporal_splitNSpans"><varname>splitNSpans</varname></link>: Return an array of N time spans obtained by merging the instants or segments of a temporal value</para>
@@ -1576,7 +1435,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Split Operations</title>
+				<title>Splitting Operations</title>
 
 				<itemizedlist>
 					<listitem>
@@ -1664,23 +1523,10 @@
 
 			</itemizedlist>
 		</sect2>
-
-		<sect2>
-			<title>Utility Operations</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="mobilitydb_version"><varname>mobilitydb_version</varname></link>: Return the version of the MobilityDB extension</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="mobilitydb_full_version"><varname>mobilitydb_full_version</varname></link>: Return the versions of the MobilityDB extension and its dependencies</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
 	</sect1>
 
 	<sect1>
-		<title>Operations for Temporal Network Points</title>
+		<title>Temporal Network Points</title>
 
 		<sect2>
 			<title>Static Network Types</title>
@@ -1699,6 +1545,15 @@
 			</sect3>
 
 			<sect3>
+				<title>Conversions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="npoint_geometry"><varname>npoint::geometry</varname>, <varname>nsegment::geometry</varname>, <varname>geometry::npoint</varname>, <varname>geometry::nsegment</varname></link>: Convert between a network point or segment and a geometry</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
 				<title>Accessors</title>
 				<itemizedlist>
 					<listitem>
@@ -1711,11 +1566,6 @@
 
 					<listitem>
 						<para><link linkend="startPosition"><varname>startPosition</varname>, <varname>endPosition</varname></link>: Return the start or end position</para>
-					</listitem>
-
-
-					<listitem>
-						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1733,15 +1583,11 @@
 				<title>Spatial Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="npoint_geometry"><varname>::</varname></link>: Convert a network point to a geometry</para>
+						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="geometry_npoint"><varname>::</varname></link>: Convert a geometry to a network point</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="npoint_same"><varname>equals</varname></link>: Spatial equality for network points</para>
+						<para><link linkend="npoint_same"><varname>equals</varname></link>: Spatial similarity</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1750,35 +1596,14 @@
 				<title>Comparisons</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="static_eq"><varname>=</varname></link>: Are the values equal?</para>
+						<para><link linkend="npoint_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
 						</listitem>
-
-					<listitem>
-						<para><link linkend="static_ne"><varname>&lt;&gt;</varname></link>: Are the values different?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="static_lt"><varname>&lt;</varname></link>: Is the first value less than the second one?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="static_gt"><varname>&gt;</varname></link>: Is the first value greater than the second one?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="static_le"><varname>&lt;=</varname></link>: Is the first value less than or equal to the second one?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="static_ge"><varname>&gt;=</varname></link>: Is the first value greater than or equal to the second one?</para>
-					</listitem>
 				</itemizedlist>
 			</sect3>
 		</sect2>
 
 		<sect2>
 			<title>Temporal Network Points</title>
-
 			<sect3>
 				<title>Constructors</title>
 				<itemizedlist>
@@ -1791,7 +1616,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpointSeqSet"><varname>tnpointSeqSet</varname></link>: Constructor for temporal network points of sequence set subtype</para>
+						<para><link linkend="tnpointSeqSet"><varname>tnpointSeqSet</varname>, <varname>tnpointSeqSetGaps</varname></link>: Constructor for temporal network points of sequence set subtype</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1800,30 +1625,14 @@
 				<title>Conversions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_tgeompoint"><varname>tnpoint::tgeompoint</varname></link>: Convert a temporal network point to a temporal geometry point</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tgeompoint_tnpoint"><varname>tgeompoint::tnpoint</varname></link>: Convert a temporal geometry point to a temporal network point</para>
+						<para><link linkend="tnpoint_tgeompoint"><varname>tnpoint::tgeompoint</varname>, <varname>tgeompoint::tnpoint</varname></link>: Convert between a temporal network point and a temporal geometry point</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
 
 			<sect3>
-				<title>Operations</title>
+				<title>Accessors</title>
 				<itemizedlist>
-					<listitem>
-						<para><link linkend="tnpoint_subtype"><varname>tnpointInst</varname>, <varname>tnpointSeq</varname>, <varname>tnpointSeqSet</varname></link>: Transform a temporal network to another subtype</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_setInterp"><varname>setInterp</varname></link>: Transform a temporal network point in another interpolation</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_round"><varname>round</varname></link>: Round the fraction of the temporal network point to the number of decimal places</para>
-					</listitem>
-
 					<listitem>
 						<para><link linkend="tnpoint_getValues"><varname>getValues</varname></link>: Return the values</para>
 					</listitem>
@@ -1848,18 +1657,46 @@
 						<para><link linkend="tnpoint_speed"><varname>speed</varname></link>: Return the speed of the temporal network point in units per second</para>
 					</listitem>
 
+
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Transformations</title>
+				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_stbox"><varname>stbox</varname></link>: Construct the bounding box from a npoint and, optionally, a timestamp or a period</para>
+						<para><link linkend="tnpoint_subtype"><varname>tnpointInst</varname>, <varname>tnpointSeq</varname>, <varname>tnpointSeqSet</varname></link>: Transform a temporal network point to another subtype</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_twCentroid"><varname>twCentroid</varname></link>: Return the time-weighted centroid</para>
+						<para><link linkend="tnpoint_setInterp"><varname>setInterp</varname></link>: Transform a temporal network point to another interpolation</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_azimuth"><varname>azimuth</varname></link>: Return the temporal azimuth</para>
+						<para><link linkend="tnpoint_round"><varname>round</varname></link>: Round the fraction of the temporal network point to the number of decimal places</para>
 					</listitem>
 
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Restrictions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a set of values</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) a geometry</para>
+					</listitem>
+
+
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Distance Operations</title>
+				<itemizedlist>
 					<listitem>
 						<para><link linkend="tnpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal network point at which the two arguments are at the nearest distance</para>
 					</listitem>
@@ -1873,41 +1710,49 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_atValue"><varname>atValue</varname>, <varname>minusValue</varname></link>: Restrict to (the complement of) a value</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) a geometry</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_comp"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Traditional comparison operators</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_tcomp"><varname>#=, #&lt;&gt;</varname></link>: Temporal comparison operators</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_ever_always"><varname>?=, &amp;=</varname></link>: Ever and always equal operators</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_pos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Position operators</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Topological operators</para>
-					</listitem>
-
-					<listitem>
 						<para><link linkend="tnpoint_smallestDistance"><varname>|=|</varname></link>: Return the smallest distance ever between the two arguments</para>
 					</listitem>
 
 					<listitem>
 						<para><link linkend="tnpoint_distance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
 					</listitem>
+				</itemizedlist>
+			</sect3>
 
+			<sect3>
+				<title>Spatial Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_stbox"><varname>stbox</varname></link>: Construct the bounding box from a network point and, optionally, a timestamp or a period</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_twCentroid"><varname>twCentroid</varname></link>: Return the time-weighted centroid</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_azimuth"><varname>azimuth</varname></link>: Return the temporal azimuth</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Bounding Box Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Topological operators</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_pos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Position operators</para>
+					</listitem>
+
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Spatial Relationships</title>
+				<itemizedlist>
 					<listitem>
 						<para><link linkend="tnpoint_espatialrels"><varname>eContains, eDisjoint, eIntersects, eTouches, eDwithin</varname></link>: Possible spatial relationships</para>
 					</listitem>
@@ -1915,6 +1760,24 @@
 					<listitem>
 						<para><link linkend="tnpoint_tspatialrels"><varname>tContains, tDisjoint, tIntersects, tTouches, tDwithin</varname></link>: Temporal spatial relationships</para>
 					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Comparisons</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_comp"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Traditional comparisons</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_ever_always"><varname>?=, &amp;=</varname></link>: Ever and always comparisons</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_tcomp"><varname>#=, #&lt;&gt;</varname></link>: Temporal comparisons</para>
+					</listitem>
+
 				</itemizedlist>
 			</sect3>
 
@@ -1938,4 +1801,292 @@
 		</sect2>
 	</sect1>
 
+	<sect1>
+		<title>Temporal Circular Buffers</title>
+
+		<sect2>
+			<title>Static Circular Buffers</title>
+
+			<sect3>
+				<title>Constructors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="cbuffer"><varname>cbuffer</varname></link>: Constructor for circular buffers</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Conversions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="cbuffer_geometry"><varname>cbuffer::geometry</varname>, <varname>geometry::cbuffer</varname></link>: Convert betwwen a circular buffer and a geometry point</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Accessors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="point"><varname>point</varname></link>: Return the point</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="radius"><varname>radius</varname></link>: Return the radius</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Transformations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="cbuffer_round"><varname>round</varname></link>: Round the point and the radius of the circular buffer to the number of decimal places</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Spatial Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="cbuffer_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="cbuffer_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="cbuffer_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Comparisons</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="cbuffer_comp"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+						</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Temporal Circular Buffers</title>
+
+			<sect3>
+				<title>Input and Output</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation</para>
+					</listitem>
+          
+					<listitem>
+						<para><link linkend="tcbuffer_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname></link>: Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation as text</para>
+					</listitem>
+          
+					<listitem>
+						<para><link linkend="tcbufferFromText"><varname>tcbufferFromText</varname>, <varname>tcbufferFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
+					</listitem>
+          
+					<listitem>
+						<para><link linkend="tcbufferFromBinary"><varname>tcbufferFromBinary</varname>, <varname>tcbufferFromEWKB</varname>, <varname>tcbufferFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Constructors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_const"><varname>tcbuffer</varname></link>: Constructor for temporal circular buffers having a constant value</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbufferSeq"><varname>tcbufferSeq</varname></link>: Constructors for temporal circular buffers of sequence subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbufferSeqSet"><varname>tcbufferSeqSet</varname>, <varname>tcbufferSeqSetGaps</varname></link>: Constructor for temporal circular buffers of sequence set subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeompoint_tfloat_tcbuffer"><varname>tcbuffer</varname></link>: Construct a temporal circular buffer from a temporal geometry point and a temporal float</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Conversions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_tgeompoint"><varname>tcbuffer::tgeompoint</varname></link>: Convert a temporal circular buffer to a temporal geometry point</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tcbuffer_tfloat"><varname>tcbuffer::tfloat</varname></link>: Convert a temporal circular buffer to a temporal float</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Accessors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_getValues"><varname>getValues</varname></link>: Return the values</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_points"><varname>points</varname></link>: Return the points</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Return the value at a timestamp</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Transformations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_subtype"><varname>tcbufferInst</varname>, <varname>tcbufferSeq</varname>, <varname>tcbufferSeqSet</varname></link>: Transform a temporal circular buffer to another subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_setInterp"><varname>setInterp</varname></link>: Transform a temporal circular buffer to another interpolation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_round"><varname>round</varname></link>: Round the points and the radii of the temporal circular buffer to the number of decimal places</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Restrictions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_atValues"><varname>atValues</varname>, <varname>minusValue</varname></link>: Restrict to (the complement of) a set of values</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) a geometry</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Distance Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal circular buffer at which the two arguments are at the nearest distance</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>: Return the smallest distance ever between the two arguments</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_shortestLine"><varname>shortestLine</varname></link>: Return the line connecting the nearest approach point between the two arguments</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_smallestDistance"><varname>|=|</varname></link>: Return the smallest distance ever between the two arguments</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_distance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Spatial Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_SRID"><varname>SRID</varname></link>: Get the spatial reference identifier</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_traversedArea"><varname>traversedArea</varname></link>: Return the area traversed by the temporal circular buffer</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_stbox"><varname>stbox</varname></link>: Construct a spatiotemporal box from a circular buffer and, optionally, a timestamp or a period</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Bounding Box Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Topological operators</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tcbuffer_pos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Position operators</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Spatial Relationships</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_espatialrels"><varname>eContains, eDisjoint, eIntersects, eTouches, eDwithin</varname></link>: Possible spatial relationships</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_tspatialrels"><varname>tContains, tDisjoint, tIntersects, tTouches, tDwithin</varname></link>: Temporal spatial relationships</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Comparisons</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_comp"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Traditional comparisons</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_ever_always"><varname>?=, &amp;=</varname></link>: Ever and always comparisons</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_tcomp"><varname>#=, #&lt;&gt;</varname></link>: Temporal comparisons</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Aggregations</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcbuffer_tCount"><varname>tCount</varname></link>: Temporal count</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_wCount"><varname>wCount</varname></link>: Window count</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcbuffer_tCentroid"><varname>tCentroid</varname></link>: Temporal centroid</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+	</sect1>
 </appendix>

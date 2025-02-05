@@ -35,7 +35,7 @@
  * They are kept if needed in the future.
  */
 
-#include "npoint/npoint.h"
+#include "npoint/tnpoint.h"
 
 /* PostgreSQL */
 #include <libpq/pqformat.h>
@@ -50,7 +50,7 @@
 #include "general/type_round.h"
 #include "npoint/tnpoint.h"
 /* MobilityDB */
-#include "pg_point/postgis.h"
+#include "pg_geo/postgis.h"
 
 /*****************************************************************************
  * Input/Output functions for network point
@@ -298,7 +298,7 @@ Datum
 Npoint_to_nsegment(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_NSEGMENT_P(npoint_to_nsegment(np));
+  PG_RETURN_NSEGMENT_P(npoint_nsegment(np));
 }
 
 /*****************************************************************************

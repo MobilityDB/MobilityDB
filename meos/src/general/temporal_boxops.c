@@ -56,16 +56,7 @@
 #include "general/span.h"
 #include "general/type_util.h"
 #include "general/type_util.h"
-#include "point/tpoint_boxops.h"
-#if CBUFFER
-  #include "cbuffer/tcbuffer_boxops.h"
-#endif
-#if NPOINT
-  #include "npoint/tnpoint_boxops.h"
-#endif
-#if POSE
-  #include "pose/tpose_boxops.h"
-#endif
+#include "geo/tspatial_boxops.h"
 
 /*****************************************************************************
  * Functions on generic bounding boxes of temporal types
@@ -122,7 +113,7 @@ temporal_bbox_eq(const void *box1, const void *box2, meosType temptype)
 {
   assert(temporal_type(temptype));
   if (talpha_type(temptype))
-    return span_eq_int((Span *) box1, (Span *) box2);
+    return span_eq((Span *) box1, (Span *) box2);
   if (tnumber_type(temptype))
     return tbox_eq((TBox *) box1, (TBox *) box2);
   if (tspatial_type(temptype))
@@ -151,7 +142,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, meosType temptype)
 {
   assert(temporal_type(temptype));
   if (talpha_type(temptype))
-    return span_cmp_int((Span *) box1, (Span *) box2);
+    return span_cmp((Span *) box1, (Span *) box2);
   if (tnumber_type(temptype))
     return tbox_cmp((TBox *) box1, (TBox *) box2);
   if (tspatial_type(temptype))
@@ -186,9 +177,9 @@ temporal_bbox_size(meosType temptype)
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
- * @brief Return the last argument initialized with the s of a
- * temporal instant
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return in the last argument the temporal box of a temporal number
+ * instant
  * @param[in] inst Temporal value
  * @param[out] box Result
  */
@@ -199,7 +190,7 @@ tnumberinst_set_tbox(const TInstant *inst, TBox *box)
   assert(tnumber_type(inst->temptype));
   meosType basetype = temptype_basetype(inst->temptype);
   meosType spantype = basetype_spantype(basetype);
-    Datum value = tinstant_val(inst);
+  Datum value = tinstant_val(inst);
   Datum time = TimestampTzGetDatum(inst->t);
   TBox *tbox = (TBox *) box;
   memset(tbox, 0, sizeof(TBox));
@@ -211,9 +202,8 @@ tnumberinst_set_tbox(const TInstant *inst, TBox *box)
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
- * @brief Return the last argument initialized with the bounding box of a
- * temporal instant
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return in the last argument the bounding box of a temporal instant
  * @param[in] inst Temporal value
  * @param[out] box Result
  */
@@ -226,20 +216,8 @@ tinstant_set_bbox(const TInstant *inst, void *box)
       true, true, T_TIMESTAMPTZ, T_TSTZSPAN, (Span *) box);
   else if (tnumber_type(inst->temptype))
     tnumberinst_set_tbox(inst, (TBox *) box);
-  else if (tgeo_type(inst->temptype))
-    tpointinst_set_stbox(inst, (STBox *) box);
-#if CBUFFER
-  else if (inst->temptype == T_TCBUFFER)
-    tcbufferinst_set_stbox(inst, (STBox *) box);
-#endif
-#if NPOINT
-  else if (inst->temptype == T_TNPOINT)
-    tnpointinst_set_stbox(inst, (STBox *) box);
-#endif
-#if POSE
-  else if (inst->temptype == T_TPOSE)
-    tposeinst_set_stbox(inst, (STBox *) box);
-#endif
+  else if (tspatial_type(inst->temptype))
+    tspatialinst_set_stbox(inst, (STBox *) box);
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Unknown temporal type for bounding box function: %s",
@@ -248,9 +226,9 @@ tinstant_set_bbox(const TInstant *inst, void *box)
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
- * @brief Return the last argument initialized with the temporal box of a
- * temporal sequence number
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return int the last argument the temporal box of a temporal number
+ * sequence
  * @param[in] seq Temporal sequence
  * @param[out] box Temporal box
  */
@@ -264,8 +242,7 @@ tnumberseq_set_tbox(const TSequence *seq, TBox *box)
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return the last argument initialized with the bounding box of a
- * temporal sequence
+ * @brief Return in the last argument the bounding box of a temporal sequence
  * @param[in] seq Temporal sequence
  * @param[out] box Bounding box
  */
@@ -279,9 +256,9 @@ tsequence_set_bbox(const TSequence *seq, void *box)
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
- * @brief Return the last argument initialized with the temporal box of a
- * temporal sequence number
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return in the last argument the temporal box of a temporal number
+ * sequence
  * @param[in] ss Temporal sequence set
  * @param[out] box Temporal box
  */
@@ -295,8 +272,8 @@ tnumberseqset_set_tbox(const TSequenceSet *ss, TBox *box)
 
 /**
  * @ingroup meos_internal_temporal_bbox
- * @brief Return the last argument initialized with the bounding box of a
- * temporal sequence set
+ * @brief Return in the last argument the bounding box of a temporal sequence
+ * set
  * @param[in] ss Temporal sequence set
  * @param[out] box Bounding box
  */
@@ -310,9 +287,8 @@ tsequenceset_set_bbox(const TSequenceSet *ss, void *box)
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
- * @brief Return the last argument initialized with the temporal box of a
- * temporal number
+ * @ingroup meos_internal_temporal_bbox
+ * @brief Return in the last argument the temporal box of a temporal number
  * @param[in] temp Temporal number
  * @param[out] box Temporal box
  */
@@ -410,7 +386,7 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, bool lower_inc,
  * @param[out] box Bounding box
  */
 void
-tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
+tinstarr_set_bbox(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, void *box)
 {
   meosType temptype = instants[0]->temptype;
@@ -422,20 +398,9 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
   else if (tnumber_type(temptype))
     tnumberinstarr_set_tbox(instants, count, lower_inc, upper_inc,
       interp, (TBox *) box);
-  else if (tgeo_type(temptype))
-    tpointinstarr_set_stbox(instants, count, (STBox *) box);
-#if CBUFFER
-  else if (temptype == T_TCBUFFER)
-    tcbufferinstarr_set_stbox(instants, count, (STBox *) box);
-#endif
-#if NPOINT
-  else if (temptype == T_TNPOINT)
-    tnpointinstarr_set_stbox(instants, count, interp, (STBox *) box);
-#endif
-#if POSE
-  else if (temptype == T_TPOSE)
-    tposeinstarr_set_stbox(instants, count, (STBox *) box);
-#endif
+  else if (tspatial_type(temptype))
+    tspatialinstarr_set_stbox(instants, count, lower_inc, upper_inc, 
+      interp, (STBox *) box);
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -482,16 +447,8 @@ tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
       T_TSTZSPAN, (Span *) TSEQUENCE_BBOX_PTR(seq));
   else if (tnumber_type(seq->temptype))
     tnumberseq_expand_tbox(seq, inst);
-  else if (tgeo_type(seq->temptype))
-    tpointseq_expand_stbox(seq, inst);
-#if NPOINT
-  else if (seq->temptype == T_TNPOINT)
-    tnpointseq_expand_stbox(seq, inst);
-#endif
-#if POSE
-  else if (seq->temptype == T_TPOSE)
-    tposeseq_expand_stbox(seq, inst);
-#endif
+  else if (tspatial_type(seq->temptype))
+    tspatialseq_expand_stbox(seq, inst);
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Unknown temporal type for bounding box function: %s",
@@ -527,9 +484,9 @@ tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
 }
 
 /**
- * @brief Return the last argument initialized with the timestamptz span of an
+ * @brief Return in the last argument a timestamptz span constructed from an
  * array of temporal sequences
- * @param[in] sequences Temporal instants
+ * @param[in] sequences Temporal sequences
  * @param[in] count Number of elements in the array
  * @param[out] s Result
  */
@@ -544,7 +501,7 @@ tseqarr_set_tstzspan(const TSequence **sequences, int count, Span *s)
 }
 
 /**
- * @brief Return the last argument initialized with the temporal box of an
+ * @brief Return in the last argument a temporal box constructed from an
  * array of temporal number sequences
  * @param[in] box Box
  * @param[in] sequences Temporal instants
@@ -563,7 +520,7 @@ tnumberseqarr_set_tbox(const TSequence **sequences, int count, TBox *box)
 }
 
 /**
- * @brief Return the last argument initialized with the bounding box from an
+ * @brief Return in the last argument a bounding box constructed from an
  * array of temporal sequences
  */
 void
@@ -575,7 +532,7 @@ tseqarr_compute_bbox(const TSequence **sequences, int count, void *box)
   else if (tnumber_type(sequences[0]->temptype))
     tnumberseqarr_set_tbox(sequences, count, (TBox *) box);
   else if (tspatial_type(sequences[0]->temptype))
-    tpointseqarr_set_stbox(sequences, count, (STBox *) box);
+    tspatialseqarr_set_stbox(sequences, count, (STBox *) box);
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Unknown temporal type for bounding box function: %s",
@@ -598,7 +555,7 @@ tsequence_compute_bbox(TSequence *seq)
   for (int i = 0; i < seq->count; i++)
     instants[i] = TSEQUENCE_INST_N(seq, i);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  tinstarr_compute_bbox(instants, seq->count, seq->period.lower_inc,
+  tinstarr_set_bbox(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, interp, TSEQUENCESET_BBOX_PTR(seq));
   pfree(instants);
   return;

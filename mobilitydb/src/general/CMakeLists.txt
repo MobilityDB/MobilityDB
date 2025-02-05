@@ -16,7 +16,7 @@ add_library(pg_general OBJECT
   span_selfuncs.c
   spanset.c
   spanset_ops.c
-  tbool_boolops.c
+  tbool_ops.c
   tbox.c
   temporal.c
   temporal_aggfuncs.c
@@ -34,7 +34,7 @@ add_library(pg_general OBJECT
   tnumber_gist.c
   tnumber_mathfuncs.c
   tnumber_spgist.c
-  ttext_textfuncs.c
+  ttext_funcs.c
   type_in.c
   type_out.c
   type_util.c

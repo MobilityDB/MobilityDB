@@ -44,7 +44,7 @@
 #include "general/pg_types.h"
 #include "general/temporal.h"
 #include "general/type_util.h"
-#include "point/tpoint_parser.h"
+#include "geo/tgeo_parser.h"
 
 /*****************************************************************************/
 

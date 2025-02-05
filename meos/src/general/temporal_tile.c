@@ -2107,12 +2107,11 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bin, Datum size,
 {
   assert(inst); assert(bins); assert(newcount);
 
-  Datum value = tinstant_val(inst);
   meosType basetype = temptype_basetype(inst->temptype);
   TInstant **result = palloc(sizeof(TInstant *));
   Datum *values = palloc(sizeof(Datum));
   result[0] = tinstant_copy(inst);
-  values[0] = datum_bin(value, size, start_bin, basetype);
+  values[0] = datum_bin(tinstant_val(inst), size, start_bin, basetype);
   *bins = values;
   *newcount = 1;
   return result;
@@ -2651,7 +2650,7 @@ tnumber_value_time_split(const Temporal *temp, Datum size,
     Datum upper_value = datum_add(lower_value, size, basetype);
     span_set(lower_value, upper_value, true, false, basetype, spantype, &s);
     Temporal *atspan = tnumber_restrict_span(temp, &s, REST_AT);
-    if (atspan != NULL)
+    if (atspan)
     {
       int num_time_splits;
       TimestampTz *times;

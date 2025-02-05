@@ -179,7 +179,7 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GISTENTRY *ent = entryvec->vector;
-  TBox *result = tbox_cp(DatumGetTboxP(ent[0].key));
+  TBox *result = tbox_copy(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     tbox_adjust((void *)result, DatumGetPointer(ent[i].key));
   PG_RETURN_TBOX_P(result);

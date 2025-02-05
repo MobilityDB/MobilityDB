@@ -66,23 +66,6 @@ CREATE AGGREGATE wcount(tcbuffer, interval) (
   PARALLEL = SAFE
 );
 
--- CREATE FUNCTION tcentroid_transfn(internal, tcbuffer)
-  -- RETURNS internal
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_tcentroid_transfn'
-  -- LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
--- CREATE AGGREGATE tcentroid(tcbuffer) (
-  -- SFUNC = tcentroid_transfn,
-  -- STYPE = internal,
--- #if POSTGRESQL_VERSION_NUMBER >= 130000
-  -- COMBINEFUNC = tcentroid_combinefn,
--- #endif //POSTGRESQL_VERSION_NUMBER >= 130000
-  -- FINALFUNC = tcentroid_finalfn,
-  -- SERIALFUNC = taggstate_serialize,
-  -- DESERIALFUNC = taggstate_deserialize,
-  -- PARALLEL = SAFE
--- );
-
 /*****************************************************************************/
 
 CREATE FUNCTION temporal_merge_transfn(internal, tcbuffer)

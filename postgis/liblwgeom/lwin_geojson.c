@@ -46,7 +46,8 @@
 #include <string.h>
 
 /* Prototype */
-static LWGEOM *parse_geojson(json_object *geojson, int *hasz);
+// MEOS removed static
+LWGEOM *parse_geojson(json_object *geojson, int *hasz);
 
 static inline json_object *
 findMemberByName(json_object *poObj, const char *pszName)
@@ -359,7 +360,8 @@ parse_geojson_geometrycollection(json_object *geojson, int *hasz)
 	return geom;
 }
 
-static inline LWGEOM *
+// MEOS removed static
+inline LWGEOM *
 parse_geojson(json_object *geojson, int *hasz)
 {
 	json_object *type = NULL;

@@ -1,15 +1,15 @@
 add_test(
-  NAME load_buffer_tables
+  NAME load_cbuffer_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
-    -D TEST_NAME=load_buffer_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_buffer.sql.xz
+    -D TEST_NAME=load_cbuffer_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_cbuffer.sql.xz
     -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
 )
 
-set_tests_properties(load_buffer_tables PROPERTIES
+set_tests_properties(load_cbuffer_tables PROPERTIES
   DEPENDS test_setup
-  FIXTURES_SETUP DBBUFFER
-  FIXTURES_REQUIRED "DB;DBPOINT")
+  FIXTURES_SETUP DBCBUFFER
+  FIXTURES_REQUIRED "DB;DBGEO")
 
 file(GLOB testfiles "queries/*.sql")
 list(SORT testfiles)
@@ -32,7 +32,7 @@ foreach(file ${testfiles})
         -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
       )
     set_tests_properties(${TESTNAME} PROPERTIES
-      FIXTURES_REQUIRED "DB;DBPOINT;DBBUFFER"
+      FIXTURES_REQUIRED "DB;DBGEO;DBCBUFFER"
       RESOURCE_LOCK DBLOCK)
   endif()
 endforeach()

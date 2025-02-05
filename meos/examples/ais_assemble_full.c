@@ -181,7 +181,7 @@ int main(void)
     char *token = strtok(line_buffer, ",");
     bool has_t = false, has_mmsi = false, has_lat = false,
       has_long = false, has_sog = false;
-    while (token != NULL)
+    while (token)
     {
       if (strlen(token) != 0 && strcmp(token, "Unknown") != 0)
       {
