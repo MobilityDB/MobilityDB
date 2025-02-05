@@ -41,10 +41,10 @@ CREATE FUNCTION SRID(tcbuffer)
   AS 'MODULE_PATHNAME', 'Tcbuffer_get_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION setSRID(tcbuffer, integer)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_set_srid'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setSRID(tcbuffer, integer)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- CREATE FUNCTION transform(tcbuffer, integer)
   -- RETURNS tcbuffer

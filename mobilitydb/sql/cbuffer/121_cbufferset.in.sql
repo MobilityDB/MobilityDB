@@ -173,15 +173,15 @@ CREATE FUNCTION getValues(cbufferset)
  * SRID
  ******************************************************************************/
 
--- CREATE FUNCTION SRID(cbufferset)
-  -- RETURNS integer
-  -- AS 'MODULE_PATHNAME', 'Cbufferset_get_srid'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION SRID(cbufferset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Cbufferset_get_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION setSRID(cbufferset, integer)
-  -- RETURNS cbufferset
-  -- AS 'MODULE_PATHNAME', 'Cbufferset_set_srid'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setSRID(cbufferset, integer)
+  RETURNS cbufferset
+  AS 'MODULE_PATHNAME', 'Cbufferset_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- CREATE FUNCTION transform(cbufferset, integer)
   -- RETURNS cbufferset

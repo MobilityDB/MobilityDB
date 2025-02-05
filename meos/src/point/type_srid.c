@@ -42,6 +42,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
 #include "general/type_util.h"
 #include "point/stbox.h"
 #include "point/tpoint.h"
@@ -109,6 +110,57 @@ geoset_set_srid(const Set *s, int32_t srid)
   box->srid = srid;
   return result;
 }
+
+/*****************************************************************************/
+
+#if CBUFFER
+/**
+ * @ingroup meos_setspan_accessor
+ * @brief Return the SRID of a circular buffer set
+ * @param[in] s Set
+ * @csqlfn #Geoset_get_srid()
+ */
+int32_t
+cbufferset_srid(const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
+    return SRID_INVALID;
+
+  Cbuffer *cbuf = DatumGetCbufferP(SET_VAL_N(s, 0));
+  GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
+  return gserialized_get_srid(gs);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a circular buffer set with the coordinates set to an SRID
+ * @param[in] s Set
+ * @param[in] srid SRID
+ * @return On error return @p NULL
+ * @csqlfn #Geoset_set_srid()
+ */
+Set *
+cbufferset_set_srid(const Set *s, int32_t srid)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
+    return NULL;
+
+
+  Set *result = set_cp(s);
+  /* Set the SRID of the composing points */
+  for (int i = 0; i < s->count; i++)
+  {
+    GSERIALIZED *gs = DatumGetGserializedP(SET_VAL_N(result, i));
+    gserialized_set_srid(gs, srid);
+  }
+  /* Set the SRID of the bounding box */
+  STBox *box = SET_BBOX_PTR(result);
+  box->srid = srid;
+  return result;
+}
+#endif /* CBUFFER */
 
 /*****************************************************************************/
 
@@ -365,6 +417,116 @@ tcbuffer_srid(const Temporal *temp)
       return tpointseqset_srid((TSequenceSet *) temp);
   }
 }
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_spatial_transf
+ * @brief Return a temporal circular buffer with the coordinates set to an SRID
+ * @param[in] inst Temporal instant
+ * @param[in] srid SRID
+ * @csqlfn #Tcbuffer_set_srid()
+ */
+TInstant *
+tcbufferinst_set_srid(const TInstant *inst, int32_t srid)
+{
+  assert(inst); assert(inst->temptype == T_TCBUFFER);
+  TInstant *result = tinstant_copy(inst);
+  Cbuffer *cbuf = DatumGetCbufferP(tinstant_val(result));
+  GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
+  gserialized_set_srid(gs, srid);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_spatial_transf
+ * @brief Return a temporal circular buffer with the coordinates set to an SRID
+ * @param[in] seq Temporal sequence
+ * @param[in] srid SRID
+ * @csqlfn #Tcbuffer_set_srid()
+ */
+TSequence *
+tcbufferseq_set_srid(const TSequence *seq, int32_t srid)
+{
+  assert(seq); assert(seq->temptype == T_TCBUFFER);
+  TSequence *result = tsequence_copy(seq);
+  /* Set the SRID of the composing points */
+  for (int i = 0; i < seq->count; i++)
+  {
+    Cbuffer *cbuf = DatumGetCbufferP(tinstant_val(TSEQUENCE_INST_N(result, i)));
+    GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
+    gserialized_set_srid(gs, srid);
+  }
+  /* Set the SRID of the bounding box */
+  STBox *box = TSEQUENCE_BBOX_PTR(result);
+  box->srid = srid;
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_spatial_transf
+ * @brief Return a temporal circular buffer with the coordinates set to an SRID
+ * @param[in] ss Temporal sequence set
+ * @param[in] srid SRID
+ * @csqlfn #Tcbuffer_set_srid()
+ */
+TSequenceSet *
+tcbufferseqset_set_srid(const TSequenceSet *ss, int32_t srid)
+{
+  assert(ss); assert(ss->temptype == T_TCBUFFER);
+  STBox *box;
+  TSequenceSet *result = tsequenceset_copy(ss);
+  /* Loop for every composing sequence */
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(result, i);
+    for (int j = 0; j < seq->count; j++)
+    {
+      Cbuffer *cbuf = DatumGetCbufferP(tinstant_val(TSEQUENCE_INST_N(seq, i)));
+      GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
+      gserialized_set_srid(gs, srid);
+    }
+    /* Set the SRID of the bounding box */
+    box = TSEQUENCE_BBOX_PTR(seq);
+    box->srid = srid;
+  }
+  /* Set the SRID of the bounding box */
+  box = TSEQUENCESET_BBOX_PTR(result);
+  box->srid = srid;
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_spatial_transf
+ * @brief Return a temporal circular buffer with the coordinates set to an SRID
+ * @param[in] temp Temporal point
+ * @param[in] srid SRID
+ * @return On error return @p NULL
+ * @see #tcbufferinst_set_srid()
+ * @see #tcbufferseq_set_srid()
+ * @see #tcbufferseqset_set_srid()
+ * @csqlfn #Tcbuffer_set_srid()
+ */
+Temporal *
+tcbuffer_set_srid(const Temporal *temp, int32_t srid)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || 
+      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
+    return NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tcbufferinst_set_srid((TInstant *) temp, srid);
+    case TSEQUENCE:
+      return (Temporal *) tcbufferseq_set_srid((TSequence *) temp, srid);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tcbufferseqset_set_srid((TSequenceSet *) temp, srid);
+  }
+}
+
 #endif /* CBUFFER */
 
 /*****************************************************************************

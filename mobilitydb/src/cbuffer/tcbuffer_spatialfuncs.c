@@ -47,26 +47,6 @@
 #include "pg_point/postgis.h"
 
 /*****************************************************************************
- * Functions for spatial reference systems
- *****************************************************************************/
-
-PGDLLEXPORT Datum Tcbuffer_get_srid(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tcbuffer_get_srid);
-/**
- * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Return the SRID of a temporal circular buffer
- * @sqlfn SRID()
- */
-Datum
-Tcbuffer_get_srid(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int result = tcbuffer_srid(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_INT32(result);
-}
-
-/*****************************************************************************
  * Geometric positions (Trajectory) functions
  * Return the geometric positions covered by a temporal circular buffer
  *****************************************************************************/

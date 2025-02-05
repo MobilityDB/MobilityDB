@@ -68,9 +68,8 @@ typedef struct
 } Cbuffer;
 
 /******************************************************************************
- * Functions for buffer types
+ * Functions for circular buffers
  ******************************************************************************/
-
 
 extern char *cbuffer_as_text(const Cbuffer *cbuf, int maxdd);
 extern char *cbuffer_as_ewkt(const Cbuffer *cbuf, int maxdd);
@@ -92,6 +91,13 @@ extern Cbuffer *cbuffer_set_srid(const Cbuffer *cbuf, int32_t srid);
 extern GSERIALIZED *cbuffer_geom(const Cbuffer *cbuf);
 extern char **cbufferarr_as_text(const Datum *cbufarr, int count, int maxdd, bool extended);
 extern Cbuffer *geom_to_cbuffer(const GSERIALIZED *gs);
+
+/******************************************************************************
+ * Functions for circular buffer sets
+ ******************************************************************************/
+
+extern int32_t cbufferset_srid(const Set *s);
+extern Set *cbufferset_set_srid(const Set *s, int32_t srid);
 
 /*===========================================================================*
  * Functions for box types
@@ -118,9 +124,10 @@ extern STBox *cbuffer_to_stbox(const Cbuffer *cbuf);
  * Input/output functions for temporal types
  *****************************************************************************/
 
-extern char *tcbuffer_as_text(const Temporal *temp, int maxdd);
 extern char *tcbuffer_as_ewkt(const Temporal *temp, int maxdd);
+extern char *tcbuffer_as_text(const Temporal *temp, int maxdd);
 extern char *tcbuffer_out(const Temporal *temp, int maxdd);
+extern Temporal *tcbuffer_set_srid(const Temporal *temp, int32_t srid);
 extern int32_t tcbuffer_srid(const Temporal *temp);
 extern char **tcbufferarr_as_text(const Temporal **temparr, int count, int maxdd, bool extended);
 
