@@ -20,10 +20,12 @@
 <!ENTITY temporal_types_ops_p1 SYSTEM "temporal_types_ops_p1.xml">
 <!ENTITY temporal_types_ops_p2 SYSTEM "temporal_types_ops_p2.xml">
 <!ENTITY temporal_types_alpha SYSTEM "temporal_types_alpha.xml">
-<!ENTITY temporal_types_spatial SYSTEM "temporal_types_spatial.xml">
+<!ENTITY temporal_types_spatial_p1 SYSTEM "temporal_types_spatial_p1.xml">
+<!ENTITY temporal_types_spatial_p2 SYSTEM "temporal_types_spatial_p2.xml">
 <!ENTITY temporal_types_analytics SYSTEM "temporal_types_analytics.xml">
 <!ENTITY temporal_types_aggregation SYSTEM "temporal_types_aggregation.xml">
 <!ENTITY temporal_network_points SYSTEM "temporal_network_points.xml">
+<!ENTITY temporal_circular_buffers SYSTEM "temporal_circular_buffers.xml">
 <!ENTITY reference SYSTEM "reference.xml">
 <!ENTITY data_generator SYSTEM "data_generator.xml">
 
@@ -118,10 +120,12 @@
 	&temporal_types_ops_p1;
 	&temporal_types_ops_p2;
 	&temporal_types_alpha;
-	&temporal_types_spatial;
+	&temporal_types_spatial_p1;
+	&temporal_types_spatial_p2;
 	&temporal_types_analytics;
 	&temporal_types_aggregation;
 	&temporal_network_points;
+	&temporal_circular_buffers;
 	&reference;
 	&data_generator;
 <!--

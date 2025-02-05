@@ -94,7 +94,7 @@ Geo_stboxes(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   int count;
   GBOX *gboxes = geo_gboxes(gs, &count);
-  int srid = gserialized_get_srid(gs);
+  int32_t srid = gserialized_get_srid(gs);
   PG_FREE_IF_COPY(gs, 0);
   if (! gboxes)
     PG_RETURN_NULL();
@@ -148,7 +148,7 @@ Geo_split_n_stboxes(PG_FUNCTION_ARGS)
   int box_count = PG_GETARG_INT32(1);
   int count;
   GBOX *gboxes = geo_split_n_gboxes(gs, box_count, &count);
-  int srid = gserialized_get_srid(gs);
+  int32_t srid = gserialized_get_srid(gs);
   PG_FREE_IF_COPY(gs, 0);
   if (! gboxes)
     PG_RETURN_NULL();
@@ -201,7 +201,7 @@ Geo_split_each_n_stboxes(PG_FUNCTION_ARGS)
   int elems_per_box = PG_GETARG_INT32(1);
   int count;
   GBOX *gboxes = geo_split_each_n_gboxes(gs, elems_per_box, &count);
-  int srid = gserialized_get_srid(gs);
+  int32_t srid = gserialized_get_srid(gs);
   PG_FREE_IF_COPY(gs, 0);
   if (! gboxes)
     PG_RETURN_NULL();

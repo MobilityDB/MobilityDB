@@ -1514,6 +1514,7 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
  * @brief Transition function for append temporal instant aggregate
  * @param[in,out] state Current aggregate state
  * @param[in] inst Temporal value to aggregate
+ * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance
  * @param[in] maxt Maximum duration
  * @csqlfn #Temporal_app_tinst_transfn()

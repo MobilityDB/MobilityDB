@@ -47,6 +47,9 @@
 #if NPOINT
   #include "npoint/tnpoint.h"
 #endif
+#if CBUFFER
+  #include "cbuffer/tcbuffer.h"
+#endif
 
 /*****************************************************************************
  * Global constants
@@ -114,6 +117,9 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_TNPOINT] = "tnpoint",
   [T_POSE] = "pose",
   [T_TPOSE] = "tpose",
+  [T_CBUFFER] = "cbuffer",
+  [T_CBUFFERSET] = "cbufferset",
+  [T_TCBUFFER] = "tcbuffer",
 };
 
 /**
@@ -214,6 +220,7 @@ static const settype_catalog_struct MEOS_SETTYPE_CATALOG[] =
   {T_GEOMSET,       T_GEOMETRY},
   {T_GEOGSET,       T_GEOGRAPHY},
   {T_NPOINTSET,     T_NPOINT},
+  {T_CBUFFERSET,    T_CBUFFER},
 };
 
 /**
@@ -262,6 +269,7 @@ static const temptype_catalog_struct MEOS_TEMPTYPE_CATALOG[] =
   {T_TGEOGPOINT, T_GEOGRAPHY},
   {T_TNPOINT,    T_NPOINT},
   {T_TPOSE,      T_POSE},
+  {T_TCBUFFER,   T_CBUFFER},
 };
 
 /*****************************************************************************/
@@ -575,8 +583,17 @@ meos_basetype(meosType type)
     type == T_TEXT || type == T_DATE || type == T_TIMESTAMPTZ ||
     /* The doubleX are internal types used for temporal aggregation */
     type == T_DOUBLE2 || type == T_DOUBLE3 || type == T_DOUBLE4 ||
-    type == T_GEOMETRY || type == T_GEOGRAPHY || type == T_NPOINT ||
-    type == T_POSE)
+    type == T_GEOMETRY || type == T_GEOGRAPHY
+#if CBUFFER
+    || type == T_CBUFFER
+#endif
+#if NPOINT
+    || type == T_NPOINT
+#endif
+#if POSE
+    || type == T_POSE
+#endif
+    )
     return true;
   return false;
 }
@@ -631,6 +648,10 @@ basetype_length(meosType type)
     return -1;
   if (type == T_GEOMETRY || type == T_GEOGRAPHY)
     return -1;
+#if CBUFFER
+  if (type == T_CBUFFER)
+    return -1;
+#endif
 #if NPOINT
   if (type == T_NPOINT)
     return sizeof(Npoint);
@@ -676,7 +697,13 @@ geo_basetype(meosType type)
 bool
 spatial_basetype(meosType type)
 {
-  if (type == T_GEOMETRY || type == T_GEOGRAPHY || type == T_NPOINT
+  if (type == T_GEOMETRY || type == T_GEOGRAPHY 
+#if CBUFFER
+    || type == T_CBUFFER
+#endif
+#if NPOINT
+    || type == T_NPOINT
+#endif
 #if POSE
     || type == T_POSE
 #endif
@@ -712,7 +739,14 @@ set_basetype(meosType type)
 {
   if (type == T_TIMESTAMPTZ || type == T_DATE || type == T_INT4 ||
       type == T_INT8 || type == T_FLOAT8 || type == T_TEXT ||
-      type == T_GEOMETRY || type == T_GEOGRAPHY || type == T_NPOINT)
+      type == T_GEOMETRY || type == T_GEOGRAPHY
+#if CBUFFER
+	    || type == T_CBUFFER
+#endif
+#if NPOINT
+      || type == T_NPOINT
+#endif
+      )
     return true;
   return false;
 }
@@ -726,7 +760,14 @@ set_type(meosType type)
 {
   if (type == T_TSTZSET || type == T_DATESET || type == T_INTSET ||
       type == T_BIGINTSET || type == T_FLOATSET || type == T_TEXTSET ||
-      type == T_GEOMSET || type == T_GEOGSET || type == T_NPOINTSET)
+      type == T_GEOMSET || type == T_GEOGSET
+#if CBUFFER
+	    || type == T_CBUFFERSET
+#endif
+#if NPOINT
+      || type == T_NPOINTSET
+#endif
+      )
     return true;
   return false;
 }
@@ -835,7 +876,14 @@ ensure_geoset_type(meosType type)
 bool
 spatialset_type(meosType type)
 {
-  if (type == T_GEOMSET || type == T_GEOGSET || type == T_NPOINTSET)
+  if (type == T_GEOMSET || type == T_GEOGSET
+#if CBUFFER
+    || type == T_CBUFFERSET
+#endif
+#if NPOINT
+    || type == T_NPOINTSET
+#endif
+    )
     return true;
   return false;
 }
@@ -1015,6 +1063,9 @@ temporal_type(meosType type)
       type == T_TTEXT || type == T_TGEOMPOINT || type == T_TGEOGPOINT ||
       /* The doubleX are internal types used for temporal aggregation */
       type == T_TDOUBLE2 || type == T_TDOUBLE3 || type == T_TDOUBLE4
+#if CBUFFER
+    || type == T_TCBUFFER
+#endif
 #if NPOINT
     || type == T_TNPOINT
 #endif
@@ -1038,6 +1089,9 @@ temporal_basetype(meosType type)
     /* The doubleX are internal types used for temporal aggregation */
     type == T_DOUBLE2 || type == T_DOUBLE3 || type == T_DOUBLE4 ||
     type == T_GEOMETRY || type == T_GEOGRAPHY
+#if CBUFFER
+    || type == T_CBUFFER
+#endif
 #if NPOINT
     || type == T_NPOINT
 #endif
@@ -1058,6 +1112,9 @@ temptype_continuous(meosType type)
 {
   if (type == T_TFLOAT || type == T_TDOUBLE2 || type == T_TDOUBLE3 ||
       type == T_TDOUBLE4 || type == T_TGEOMPOINT || type == T_TGEOGPOINT
+#if CBUFFER
+    || type == T_TCBUFFER
+#endif
 #if NPOINT
     || type == T_TNPOINT
 #endif
@@ -1180,6 +1237,9 @@ bool
 tspatial_type(meosType type)
 {
   if (type == T_TGEOMPOINT || type == T_TGEOGPOINT
+#if CBUFFER
+      || type == T_TCBUFFER
+#endif
 #if NPOINT
       || type == T_TNPOINT
 #endif
@@ -1214,6 +1274,9 @@ bool
 tspatial_basetype(meosType type)
 {
   if (type == T_GEOMETRY || type == T_GEOGRAPHY
+#if CBUFFER
+    || type == T_CBUFFER
+#endif
 #if NPOINT
     || type == T_NPOINT
 #endif

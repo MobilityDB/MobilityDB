@@ -92,7 +92,7 @@ SELECT npoint 'Npoint(99999999, 1.0)';
 				<listitem id="npoint">
 					<indexterm><primary><varname>npoint</varname></primary></indexterm>
 					<para>Constructor for network points</para>
-					<para><varname>npoint(bigint,double precision) → npoint</varname></para>
+					<para><varname>npoint(bigint,float) → npoint</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT npoint(76, 0.3);
 </programlisting>
@@ -101,7 +101,7 @@ SELECT npoint(76, 0.3);
 				<listitem id="nsegment">
 					<indexterm><primary><varname>nsegment</varname></primary></indexterm>
 					<para>Constructor for network segments</para>
-					<para><varname>nsegment(bigint,double precision,double precision) → nsegment</varname></para>
+					<para><varname>nsegment(bigint,float,float) → nsegment</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT nsegment(76, 0.3, 0.5);
 </programlisting>
@@ -169,7 +169,7 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 		</sect2>
 
 		<sect2 id="spatial_functions">
-			<title>Spatial Operations</title>
+			<title>Spatial Functions</title>
 
 			<itemizedlist>
 				<listitem id="npoint_srid">
@@ -318,7 +318,7 @@ SELECT npoint 'Npoint(1, 0.6)' &gt;= npoint 'Npoint(1, 0.5)';
 	<sect1 id="temp_network_points">
 		<title>Temporal Network Points</title>
 
-		<para>The temporal network point type <varname>tnpoint</varname> allows to represent the movement of objects over a network. It corresponds to the temporal point type <varname>tgeompoint</varname> restricted to two-dimensional coordinates. As all the other temporal types it comes in trhee subtypes, namely, instant, sequence, and sequence set. Examples of <varname>tnpoint</varname> values in these subtypes are given next.</para>
+		<para>The temporal network point type <varname>tnpoint</varname> allows to represent the movement of objects over a network. It corresponds to the temporal point type <varname>tgeompoint</varname> restricted to two-dimensional coordinates. As all the other temporal types it comes in three subtypes, namely, instant, sequence, and sequence set. Examples of <varname>tnpoint</varname> values in these subtypes are given next.</para>
 		<programlisting language="sql" xml:space="preserve">
 SELECT tnpoint 'Npoint(1, 0.5)@2001-01-01';
 SELECT tnpoint '{Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-02,
@@ -374,16 +374,16 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 0
 
 			<itemizedlist>
 				<listitem id="tnpoint_const">
-					<indexterm><primary><varname>tnpointInst</varname></primary></indexterm>
+					<indexterm><primary><varname>tnpoint</varname></primary></indexterm>
 					<indexterm><primary><varname>tnpointSeq</varname></primary></indexterm>
 					<indexterm><primary><varname>tnpointSeqSet</varname></primary></indexterm>
 					<para>Constructor for temporal network points having a constant value</para>
-					<para><varname>tnpointInst(npoint,timestamptz) → tnpointInst</varname></para>
-					<para><varname>tnpointSeq(npoint,tstzset) → tnpointDiscSeq</varname></para>
-					<para><varname>tnpointSeq(npoint,tstzspan,interp='linear') → tnpointContSeq</varname></para>
-					<para><varname>tnpointSeqSet(npoint,tstzspanset,interp='linear') → tnpointSeqSet</varname></para>
+					<para><varname>tnpoint(npoint,timestamptz) → tnpointInst</varname></para>
+					<para><varname>tnpoint(npoint,tstzset) → tnpointDiscSeq</varname></para>
+					<para><varname>tnpoint(npoint,tstzspan,interp='linear') → tnpointContSeq</varname></para>
+					<para><varname>tnpoint(npoint,tstzspanset,interp='linear') → tnpointSeqSet</varname></para>
 					<programlisting language="sql" xml:space="preserve">
-SELECT tnpointInst('Npoint(1, 0.5)', timestamptz '2001-01-01');
+SELECT tnpoint('Npoint(1, 0.5)', timestamptz '2001-01-01');
 -- NPoint(1,0.5)@2001-01-01
 SELECT tnpointSeq('Npoint(1, 0.3)', tstzset '{2001-01-01, 2001-01-03, 2001-01-05}');
 -- {NPoint(1,0.3)@2001-01-01, NPoint(1,0.3)@2001-01-03, NPoint(1,0.3)@2001-01-05}
@@ -512,7 +512,7 @@ SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-
 			<listitem id="tnpoint_getValues">
 				<indexterm><primary><varname>getValues</varname></primary></indexterm>
 				<para>Return the values</para>
-				<para><varname>getValues(tnpoint) → npoint[]</varname></para>
+				<para><varname>getValues(tnpoint) → npointset</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-02)}');
 -- {"NPoint(1,0.3)","NPoint(1,0.5)"}

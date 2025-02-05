@@ -316,7 +316,7 @@ liangBarskyClip(GSERIALIZED *point1, GSERIALIZED *point2, const STBox *box,
   assert(! hasz || (MEOS_FLAGS_GET_Z(box->flags) &&
     (bool) FLAGS_GET_Z(point1->gflags) && (bool) FLAGS_GET_Z(point2->gflags)));
 
-  int srid = box->srid;
+  int32_t srid = box->srid;
   assert(srid == gserialized_get_srid(point1) &&
     srid == gserialized_get_srid(point2));
 

@@ -62,9 +62,9 @@ extern bool ensure_geoaggstate_state(const SkipList *state1,
 extern Temporal **tpoint_transform_tcentroid(const Temporal *temp, int *count);
 extern SkipList * tpoint_tcentroid_transfn(SkipList *state, Temporal *temp);
 extern TSequence *tpointinst_tcentroid_finalfn(TInstant **instants, int count,
-  int srid);
+  int32_t srid);
 extern TSequenceSet *tpointseq_tcentroid_finalfn(TSequence **sequences,
-  int count, int srid);
+  int count, int32_t srid);
 extern Temporal *tpoint_tcentroid_finalfn(SkipList *state);
 
 /*****************************************************************************/

@@ -405,6 +405,8 @@ extern Span *bigintspan_in(const char *str);
 extern char *bigintspan_out(const Span *s);
 extern SpanSet *bigintspanset_in(const char *str);
 extern char *bigintspanset_out(const SpanSet *ss);
+extern char *cbufferset_as_ewkt(const Set *set, int maxdd);
+extern char *cbufferset_as_text(const Set *set, int maxdd);
 extern Set *dateset_in(const char *str);
 extern char *dateset_out(const Set *s);
 extern Span *datespan_in(const char *str);

@@ -100,6 +100,37 @@ datum_point4d(Datum value, POINT4D *p)
 /*****************************************************************************/
 
 /**
+ * @brief Return -1, 0, or 1 depending on whether the first point is less than,
+ * equal to, or greater than the second one
+ */
+int
+geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  if (FLAGS_GET_Z(gs1->gflags))
+  {
+    const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
+    const POINT3DZ *point2 = GSERIALIZED_POINT3DZ_P(gs2);
+    if (float8_lt(point1->x, point2->x) || float8_lt(point1->y, point2->y) || 
+        float8_lt(point1->z, point2->z))
+      return -1;
+    if (float8_gt(point1->x, point2->x) || float8_gt(point1->y, point2->y) || 
+        float8_gt(point1->z, point2->z))
+      return 1;
+    return 0;
+  }
+  else
+  {
+    const POINT2D *point1 = GSERIALIZED_POINT2D_P(gs1);
+    const POINT2D *point2 = GSERIALIZED_POINT2D_P(gs2);
+    if (float8_lt(point1->x, point2->x) || float8_lt(point1->y, point2->y))
+      return -1;
+    if (float8_gt(point1->x, point2->x) || float8_gt(point1->y, point2->y))
+      return 1;
+    return 0;
+  }
+}
+
+/**
  * @brief Return true if the points are equal
  * @note This function is called in the iterations over sequences where we
  * are sure that their SRID, Z, and GEODETIC are equal
@@ -625,6 +656,42 @@ ensure_point_type(const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Ensure that the geometry/geography is a circle
+ */
+bool
+ensure_circle_type(const GSERIALIZED *gs)
+{
+  if (gserialized_get_type(gs) != CURVEPOLYTYPE)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only circle geometries accepted");
+    return false;
+  }
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  if (lwgeom_count_rings(lwgeom) != 1)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only circle geometries accepted"); 
+    return false;
+  }
+  LWCURVEPOLY *circle = (LWCURVEPOLY *) lwgeom;
+  LWCIRCSTRING *ring = (LWCIRCSTRING *) circle->rings[0];
+  if (ring->points->npoints != 3)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only circle geometries accepted"); 
+    return false;
+  }
+  if (! ptarray_is_closed(ring->points))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only circle geometries accepted");
+    return false;
+  }
+  return true;
+}
+
+/**
  * @brief Ensure that the geometry/geography is not empty
  */
 bool
@@ -1052,7 +1119,7 @@ Datum
 geosegm_interpolate_point(Datum start, Datum end, long double ratio)
 {
   GSERIALIZED *gs = DatumGetGserializedP(start);
-  int srid = gserialized_get_srid(gs);
+  int32_t srid = gserialized_get_srid(gs);
   POINT4D p1, p2, p;
   datum_point4d(start, &p1);
   datum_point4d(end, &p2);
@@ -1475,7 +1542,7 @@ lwline_make(Datum value1, Datum value2)
 {
   /* Obtain the flags and the SRID from the first value */
   GSERIALIZED *gs = DatumGetGserializedP(value1);
-  int srid = gserialized_get_srid(gs);
+  int32_t srid = gserialized_get_srid(gs);
   int hasz = FLAGS_GET_Z(gs->gflags);
   int geodetic = FLAGS_GET_GEODETIC(gs->gflags);
   /* Since there is no M value a 0 value is passed */
@@ -3027,7 +3094,7 @@ tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
  * (iterator function)
  */
 static void
-tpointinst_affine_iter(const TInstant *inst, const AFFINE *a, int srid,
+tpointinst_affine_iter(const TInstant *inst, const AFFINE *a, int32_t srid,
   bool hasz, TInstant **result)
 {
   Datum value = tinstant_val(inst);
@@ -3067,7 +3134,7 @@ tpointinst_affine_iter(const TInstant *inst, const AFFINE *a, int srid,
 static TInstant *
 tpointinst_affine(const TInstant *inst, const AFFINE *a)
 {
-  int srid = tpointinst_srid(inst);
+  int32_t srid = tpointinst_srid(inst);
   bool hasz = MEOS_FLAGS_GET_Z(inst->flags);
   TInstant *result;
   tpointinst_affine_iter(inst, a, srid, hasz, &result);
@@ -3080,7 +3147,7 @@ tpointinst_affine(const TInstant *inst, const AFFINE *a)
 static TSequence *
 tpointseq_affine(const TSequence *seq, const AFFINE *a)
 {
-  int srid = tpointseq_srid(seq);
+  int32_t srid = tpointseq_srid(seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -3110,7 +3177,7 @@ tpointseqset_affine(const TSequenceSet *ss, const AFFINE *a)
  * @brief Return the 3D affine transform of a temporal point to do things like
  * translate, rotate, scale in one step
  * @param[in] temp Temporal point
- * @param[in] affine Matrix specifying the transformation
+ * @param[in] a Matrix specifying the transformation
  * @csqlfn #Tpoint_affine()
  */
 Temporal *
@@ -3175,7 +3242,7 @@ tpointseq_scale(const TSequence *seq, const POINT4D *factors)
 /**
  * @brief Return a temporal point sequence scaled by given factors
  * @param[in] ss Temporal point
- * @param[in] a Affine transformation
+ * @param[in] factors Scale factors
  */
 static TSequenceSet *
 tpointseqset_scale(const TSequenceSet *ss, const POINT4D *factors)
@@ -3191,7 +3258,7 @@ tpointseqset_scale(const TSequenceSet *ss, const POINT4D *factors)
  * @brief Scale a temporal point by given factors
  * @param[in] temp Temporal point
  * @param[in] scale Geometry for the scale factors
- * @param[in] origin Point geometry for the origin
+ * @param[in] sorigin Point geometry for the origin
  * @csqlfn #Tpoint_affine()
  */
 Temporal *
@@ -3309,7 +3376,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
   if (grid->xsize == 0 && grid->ysize == 0 && (hasz ? grid->zsize == 0 : 1))
     return tinstant_copy(inst);
 
-  int srid = tpointinst_srid(inst);
+  int32_t srid = tpointinst_srid(inst);
   Datum value = tinstant_val(inst);
   POINT4D p;
   point_grid(value, hasz, grid, &p);
@@ -3329,7 +3396,7 @@ static TSequence *
 tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 {
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
-  int srid = tpointseq_srid(seq);
+  int32_t srid = tpointseq_srid(seq);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int ninsts = 0;
   for (int i = 0; i < seq->count; i++)
@@ -3455,7 +3522,7 @@ tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
   /* Clip temporal point taking into account the buffer */
   double max = (double) extent + (double) buffer;
   double min = -(double) buffer;
-  int srid = tpoint_srid(tpoint);
+  int32_t srid = tpoint_srid(tpoint);
   STBox clip_box;
   stbox_set(true, false, false, srid, min, max, min, max, 0, 0, NULL,
     &clip_box);
@@ -4064,7 +4131,7 @@ GSERIALIZED *
 tpointseq_twcentroid(const TSequence *seq)
 {
   assert(seq); assert(tgeo_type(seq->temptype));
-  int srid = tpointseq_srid(seq);
+  int32_t srid = tpointseq_srid(seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TSequence *seqx, *seqy, *seqz;
@@ -4090,7 +4157,7 @@ GSERIALIZED *
 tpointseqset_twcentroid(const TSequenceSet *ss)
 {
   assert(ss); assert(tgeo_type(ss->temptype));
-  int srid = tpointseqset_srid(ss);
+  int32_t srid = tpointseqset_srid(ss);
   bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
   TSequence **sequencesx = palloc(sizeof(TSequence *) * ss->count);

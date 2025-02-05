@@ -164,7 +164,7 @@ Stbox_constructor(FunctionCallInfo fcinfo, bool hasx, bool hasz,
   bool hast, bool geodetic)
 {
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  int srid = 0;
+  int32_t srid = 0;
   Span *period = NULL;
 
   int i = 0;

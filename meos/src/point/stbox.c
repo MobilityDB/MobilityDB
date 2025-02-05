@@ -645,7 +645,7 @@ spatialset_to_stbox(const Set *s)
  * @param[out] result Spatiotemporal box
  */
 void
-gbox_set_stbox(const GBOX *box, int srid, STBox *result)
+gbox_set_stbox(const GBOX *box, int32_t srid, STBox *result)
 {
   assert(box);
   bool hasz = (bool) FLAGS_GET_Z(box->flags);

@@ -51,6 +51,10 @@
 #include "general/pg_types.h"
 #include "general/span.h"
 #include "point/tpoint_spatialfuncs.h"
+#if CBUFFER
+  #include "cbuffer/tcbuffer.h"
+  #include "cbuffer/tcbuffer_parser.h"
+#endif
 #if NPOINT
   #include "npoint/npoint.h"
   #include "npoint/tnpoint_parser.h"
@@ -95,6 +99,10 @@ datum_cmp(Datum l, Datum r, meosType type)
     case T_GEOMETRY:
     case T_GEOGRAPHY:
       return gserialized_cmp(DatumGetGserializedP(l), DatumGetGserializedP(r));
+#if CBUFFER
+    case T_CBUFFER:
+      return cbuffer_cmp(DatumGetCbufferP(l), DatumGetCbufferP(r));
+#endif
 #if NPOINT
     case T_NPOINT:
       return npoint_cmp(DatumGetNpointP(l), DatumGetNpointP(r));
@@ -181,6 +189,10 @@ datum_eq(Datum l, Datum r, meosType type)
       return datum_point_eq(l, r);
     case T_GEOGRAPHY:
       return datum_point_same(l, r);
+#if CBUFFER
+    case T_CBUFFER:
+      return cbuffer_eq(DatumGetCbufferP(l), DatumGetCbufferP(r));
+#endif
 #if NPOINT
     case T_NPOINT:
       return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
@@ -395,6 +407,10 @@ datum_hash(Datum d, meosType type)
     case T_GEOMETRY:
     case T_GEOGRAPHY:
       return gserialized_hash(DatumGetGserializedP(d));
+#if CBUFFER
+    case T_CBUFFER:
+      return cbuffer_hash(DatumGetCbufferP(d));
+#endif
 #if NPOINT
     case T_NPOINT:
       return npoint_hash(DatumGetNpointP(d));
@@ -825,7 +841,7 @@ hypot3d(double x, double y, double z)
  * @brief Call input function of the base type
  */
 bool
-#if NPOINT || POSE
+#if CBUFFER || NPOINT || POSE
 basetype_in(const char *str, meosType type, bool end, Datum *result)
 #else
 basetype_in(const char *str, meosType type,
@@ -907,6 +923,16 @@ basetype_in(const char *str, meosType type,
       *result = PointerGetDatum(gs);
       return true;
     }
+#if CBUFFER
+    case T_CBUFFER:
+    {
+      Cbuffer *cbuf = cbuffer_parse(&str, end);
+      if (! cbuf)
+        return false;
+      *result = PointerGetDatum(cbuf);
+      return true;
+    }
+#endif
 #if NPOINT
     case T_NPOINT:
     {
@@ -988,6 +1014,10 @@ basetype_out(Datum value, meosType type, int maxdd)
     case T_GEOMETRY:
     case T_GEOGRAPHY:
       return geo_out(DatumGetGserializedP(value));
+#if CBUFFER
+    case T_CBUFFER:
+      return cbuffer_out(DatumGetCbufferP(value), maxdd);
+#endif
 #if NPOINT
     case T_NPOINT:
       return npoint_out(DatumGetNpointP(value), maxdd);

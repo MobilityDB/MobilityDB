@@ -44,6 +44,7 @@
 #include "general/pg_types.h"
 #include "general/temporal.h"
 #include "general/type_util.h"
+#include "point/tpoint_parser.h"
 
 /*****************************************************************************/
 
@@ -72,6 +73,21 @@ p_whitespace(const char **str)
   while (**str == ' ' || **str == '\n' || **str == '\r' || **str == '\t')
     *str += 1;
   return;
+}
+
+/**
+ * @brief Input an opening brace from the buffer
+ */
+bool
+p_sepchar(const char **str, char sep)
+{
+  p_whitespace(str);
+  if (**str == sep)
+  {
+    *str += 1;
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -265,8 +281,7 @@ double_parse(const char **str, double *result)
  * @return On error return false
  */
 bool
-temporal_basetype_parse(const char **str, meosType basetype,
-  Datum *result)
+basetype_parse(const char **str, meosType basetype, char sep, Datum *result)
 {
   p_whitespace(str);
   int delim = 0;
@@ -284,13 +299,13 @@ temporal_basetype_parse(const char **str, meosType basetype,
   }
   else
   {
-    while ((*str)[delim] != '@' && (*str)[delim] != '\0')
+    while ((*str)[delim] != sep && (*str)[delim] != '\0')
       delim++;
   }
   if ((*str)[delim] == '\0')
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse temporal value: %s", origstr);
+      "Missing separator character '%c': %s", sep, origstr);
     return false;
   }
   char *str1 = palloc(sizeof(char) * (delim + 1));
@@ -300,8 +315,8 @@ temporal_basetype_parse(const char **str, meosType basetype,
   pfree(str1);
   if (! success)
     return false;
-  /* since there's an @ here, let's take it with us */
-  *str += delim + 1;
+  /* The separator is NOT consumed */
+  *str += delim;
   return true;
 }
 
@@ -448,8 +463,8 @@ elem_parse(const char **str, meosType basetype, Datum *result)
   }
   else
   {
-    while ((*str)[delim] != ',' && (*str)[delim] != ']' &&
-      (*str)[delim] != '}' && (*str)[delim] != ')' && (*str)[delim] != '\0')
+    while ((*str)[delim] != ',' && (*str)[delim] != '}' && 
+        (*str)[delim] != '\0')
       delim++;
   }
   char *str1 = palloc(sizeof(char) * (delim + 1));
@@ -470,33 +485,16 @@ elem_parse(const char **str, meosType basetype, Datum *result)
 Set *
 set_parse(const char **str, meosType settype)
 {
+  const char *bak = *str;
   const char *type_str = "set";
-  int set_srid = 0;
   p_whitespace(str);
 
-  /* Starts with "SRID=". The SRID specification must be gobbled. We cannot use
-   * the atoi() function because this requires a string terminated by '\0'
-   * and we cannot modify the string. */
-  if (pg_strncasecmp(*str, "SRID=", 5) == 0)
-  {
-    if (! ensure_geoset_type(settype))
-      return NULL;
-    /* Move str to the start of the number part */
-    *str += 5;
-    int delim = 0;
-    set_srid = 0;
-    /* Delimiter will be either ',' or ';' depending on whether interpolation
-       is given after */
-    while ((*str)[delim] != ',' && (*str)[delim] != ';' && (*str)[delim] != '\0')
-    {
-      set_srid = set_srid * 10 + (*str)[delim] - '0';
-      delim++;
-    }
-    /* Set str to the start of the temporal point */
-    *str += delim + 1;
-  }
-  /* For the second pass we start after the SRID=xxx;{ including the '{' */
-  const char *bak = *str + 1;
+  /* Determine whether there is an SRID. If there is one we decode it and
+   * advance the bak pointer after the SRID to do not parse it again in the
+   * second parsing */
+  int set_srid = SRID_UNKNOWN;
+  if (srid_parse(str, &set_srid))
+    bak = *str;
 
   if (! ensure_obrace(str, type_str))
     return NULL;
@@ -521,6 +519,7 @@ set_parse(const char **str, meosType settype)
 
   /* Second parsing */
   *str = bak;
+  p_obrace(str);
   Datum *values = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; i++)
   {
@@ -666,8 +665,9 @@ tinstant_parse(const char **str, meosType temptype, bool end,
   meosType basetype = temptype_basetype(temptype);
   /* The next two instructions will throw an exception if they fail */
   Datum elem;
-  if (! temporal_basetype_parse(str, basetype, &elem))
+  if (! basetype_parse(str, basetype, '@', &elem))
     return false;
+  p_sepchar(str, '@');
   TimestampTz t = timestamp_parse(str);
   if (t == DT_NOEND ||
     /* Ensure there is no more input */

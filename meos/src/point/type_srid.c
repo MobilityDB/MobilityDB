@@ -46,6 +46,9 @@
 #include "point/stbox.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
+#if CBUFFER
+  #include "cbuffer/tcbuffer.h"
+#endif /* CBUFFER */
 #if NPOINT
   #include "npoint/npoint.h"
   #include "npoint/tnpoint.h"
@@ -324,6 +327,45 @@ tpoint_set_srid(const Temporal *temp, int32_t srid)
       return (Temporal *) tpointseqset_set_srid((TSequenceSet *) temp, srid);
   }
 }
+
+/*****************************************************************************
+ * Functions for spatial reference systems of temporal circular buffers
+ * For temporal points of duration distinct from TInstant the Spatial
+ * reference system identifier (SRID) is obtained from the bounding box.
+ *****************************************************************************/
+
+#if CBUFFER
+/**
+ * @brief Return the SRID of a temporal circular buffer of subtype instant
+ */
+int
+tcbufferinst_srid(const TInstant *inst)
+{
+  const Cbuffer *cbuf = DatumGetCbufferP(tinstant_val(inst));
+  const GSERIALIZED *point = cbuffer_point(cbuf);
+  return gserialized_get_srid(point);
+}
+
+/**
+ * @ingroup meos_temporal_spatial_accessor
+ * @brief Return the SRID of a temporal circular buffer
+ * @csqlfn #Tcbuffer_srid()
+ */
+int
+tcbuffer_srid(const Temporal *temp)
+{
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return tcbufferinst_srid((const TInstant *) temp);
+    case TSEQUENCE:
+      return tpointseq_srid((TSequence *) temp);
+    default: /* TSEQUENCESET */
+      return tpointseqset_srid((TSequenceSet *) temp);
+  }
+}
+#endif /* CBUFFER */
 
 /*****************************************************************************
  * Functions for spatial reference systems of temporal network points

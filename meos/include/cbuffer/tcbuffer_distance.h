@@ -28,23 +28,47 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for parsing temporal points.
+ * @brief Temporal distance for temporal network points.
  */
 
-#ifndef __TPOINT_PARSER_H__
-#define __TPOINT_PARSER_H__
+#ifndef __TCBUFFER_DISTANCE_H__
+#define __TCBUFFER_DISTANCE_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include <meos.h>
-#include "general/meos_catalog.h"
+#include "general/temporal.h"
+#include "cbuffer/cbuffer.h"
+#include "cbuffer/tcbuffer.h"
 
 /*****************************************************************************/
 
-extern STBox *stbox_parse(char **str);
-extern Temporal *tpoint_parse(char **str, meosType temptype);
+extern Datum datum_cbuffer_distance(Datum cbuf1, Datum cbuf2);
+extern Temporal *distance_tcbuffer_point(const Temporal *temp,
+  const GSERIALIZED *gs);
+extern Temporal *distance_tcbuffer_cbuffer(const Temporal *temp,
+  const Cbuffer *cbuf);
+extern Temporal *distance_tcbuffer_tcbuffer(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern TInstant *nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern TInstant *nai_tcbuffer_cbuffer(const Temporal *temp, 
+  const Cbuffer *cbuf);
+extern TInstant *nai_tcbuffer_tcbuffer(const Temporal *temp,
+  const Temporal *temp2);
+
+extern double nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern double nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf);
+extern double nad_tcbuffer_tcbuffer(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern GSERIALIZED *shortestline_tcbuffer_geo(const Temporal *temp,
+  const GSERIALIZED *geo);
+extern GSERIALIZED *shortestline_tcbuffer_cbuffer(const Temporal *temp,
+  const Cbuffer *cbuf);
+extern GSERIALIZED *shortestline_tcbuffer_tcbuffer(const Temporal *temp1,
+  const Temporal *temp2);
 
 /*****************************************************************************/
 
-#endif
+#endif /* __TCBUFFER_DISTANCE_H__ */

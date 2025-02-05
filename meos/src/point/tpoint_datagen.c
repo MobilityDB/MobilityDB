@@ -120,7 +120,7 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
   /* Variables */
 
   /* SRID of the geometries being manipulated */
-  int srid;
+  int32_t srid;
   /* Number of points in an edge, number of fractions of size
    * P_EVENT_LENGTH in a segment */
   uint32_t noPoints, noFracs;

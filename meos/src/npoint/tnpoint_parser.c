@@ -66,7 +66,7 @@ npoint_parse(const char **str, bool end)
   /* Parse rid */
   p_whitespace(str);
   Datum d;
-  if (! elem_parse(str, T_INT8, &d))
+  if (! basetype_parse(str, T_INT8, ',', &d)) 
     return NULL;
   int64 rid = DatumGetInt64(d);
 
@@ -74,7 +74,7 @@ npoint_parse(const char **str, bool end)
 
   /* Parse pos */
   p_whitespace(str);
-  if (! elem_parse(str, T_FLOAT8, &d))
+  if (! basetype_parse(str, T_FLOAT8, ')', &d))
     return NULL;
   double pos = DatumGetFloat8(d);
   if (pos < 0 || pos > 1)
@@ -119,7 +119,7 @@ nsegment_parse(const char **str)
   /* Parse rid */
   p_whitespace(str);
   Datum d;
-  if (! elem_parse(str, T_INT8, &d))
+  if (! basetype_parse(str, T_INT8, ',', &d))
     return NULL;
   int64 rid = DatumGetInt64(d);
 
@@ -127,7 +127,7 @@ nsegment_parse(const char **str)
 
   /* Parse pos1 */
   p_whitespace(str);
-  if (! elem_parse(str, T_FLOAT8, &d))
+  if (! basetype_parse(str, T_FLOAT8, ',', &d))
     return NULL;
   double pos1 = DatumGetFloat8(d);
   if (pos1 < 0 || pos1 > 1)
@@ -140,7 +140,7 @@ nsegment_parse(const char **str)
 
   /* Parse pos2 */
   p_whitespace(str);
-  if (! elem_parse(str, T_FLOAT8, &d))
+  if (! basetype_parse(str, T_FLOAT8, ')', &d))
     return NULL;
   double pos2 = DatumGetFloat8(d);
   if (pos2 < 0 || pos2 > 1)
