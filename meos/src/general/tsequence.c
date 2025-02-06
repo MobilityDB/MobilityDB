@@ -60,6 +60,7 @@
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
 #if CBUFFER
+  #include <meos_cbuffer.h>
   #include "cbuffer/tcbuffer.h"
 #endif
 #if NPOINT
@@ -2352,16 +2353,7 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
 #if CBUFFER
   if (inst1->temptype == T_TCBUFFER)
   {
-    Cbuffer *cbuf1 = DatumGetCbufferP(value1);
-    Cbuffer *cbuf2 = DatumGetCbufferP(value2);
-    Datum d1 = PointerGetDatum(&cbuf1->point);
-    Datum d2 = PointerGetDatum(&cbuf2->point);
-    GSERIALIZED *point = 
-      DatumGetGserializedP(geosegm_interpolate_point(d1, d2, ratio));
-    double radius = cbuf1->radius + 
-      (double) ((long double)(cbuf2->radius - cbuf1->radius) * ratio);
-    Cbuffer *result = cbuffer_make(point, radius);
-    return PointerGetDatum(result);
+    return cbuffersegm_interpolate_point(value1, value2, ratio);
   }
 #endif
 #if NPOINT

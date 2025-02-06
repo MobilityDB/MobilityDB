@@ -46,16 +46,16 @@ CREATE FUNCTION setSRID(tcbuffer, integer)
   AS 'MODULE_PATHNAME', 'Tcbuffer_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION transform(tcbuffer, integer)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_transform'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transform(tcbuffer, integer)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION transformPipeline(tcbuffer, text, srid integer DEFAULT 0,
-    -- is_forward boolean DEFAULT true)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_transform_pipeline'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transformPipeline(tcbuffer, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_transform_pipeline'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Trajectory

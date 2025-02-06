@@ -42,8 +42,8 @@
 
 /*****************************************************************************/
 
-extern char *cbuffer_wkt_out(Datum value, meosType type, int maxdd);
-extern char *cbuffer_ewkt_out(Datum value, meosType type, int maxdd);
+// extern char *cbuffer_wkt_out(Datum value, meosType type, int maxdd);
+// extern char *cbuffer_ewkt_out(Datum value, meosType type, int maxdd);
 // extern bool tcbuffer__wkb_needs_srid(const Temporal *temp, uint8_t variant);
 // extern uint8_t *coords_to_wkb_buf(const TInstant *inst, uint8_t *buf,
   // uint8_t variant);

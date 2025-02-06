@@ -50,6 +50,7 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 
 /*****************************************************************************
  * Type definitions
@@ -132,12 +133,15 @@ extern char *tcbuffer_as_text(const Temporal *temp, int maxdd);
 extern char *tcbuffer_out(const Temporal *temp, int maxdd);
 extern Temporal *tcbuffer_set_srid(const Temporal *temp, int32_t srid);
 extern int32_t tcbuffer_srid(const Temporal *temp);
+extern Temporal *tcbuffer_transform(const Temporal *temp, int32 srid);
+extern Temporal *tcbuffer_transform_pipeline(const Temporal *temp, const char *pipelinestr, int32 srid, bool is_forward);
 extern char **tcbufferarr_as_text(const Temporal **temparr, int count, int maxdd, bool extended);
 
 /*****************************************************************************
  * Constructor functions for temporal types
  *****************************************************************************/
 
+extern Datum cbuffersegm_interpolate_point(Datum start, Datum end, long double ratio);
 extern Temporal *tcbuffer_constructor(const Temporal *tpoint, const Temporal *tfloat);
 
 /*****************************************************************************
