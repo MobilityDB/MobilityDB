@@ -49,6 +49,9 @@
 #include "point/tpoint_spatialfuncs.h"
 #include "point/stbox.h"
 #include "point/tpoint_restrfuncs.h"
+#if CBUFFER
+  #include <meos_cbuffer.h>
+#endif /* CBUFFER */
 /* MobilityDB */
 #include "pg_general/temporal.h"
 #include "pg_general/type_util.h"
@@ -90,6 +93,43 @@ Geoset_set_srid(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SET_P(result);
 }
+
+/*****************************************************************************/
+
+#if CBUFFER
+PGDLLEXPORT Datum Cbufferset_get_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbufferset_get_srid);
+/**
+ * @ingroup mobilitydb_setspan_accessor
+ * @brief Return the SRID of a circular buffer set
+ * @sqlfn SRID()
+ */
+Datum
+Cbufferset_get_srid(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int result = cbufferset_srid(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Cbufferset_set_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbufferset_set_srid);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a circular buffer set with the coordinates set to an SRID
+ * @sqlfn setSRID()
+ */
+Datum
+Cbufferset_set_srid(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int32 srid = PG_GETARG_INT32(1);
+  Set *result = cbufferset_set_srid(s, srid);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SET_P(result);
+}
+#endif /* CBUFFER */
 
 /*****************************************************************************/
 
@@ -157,6 +197,43 @@ Tpoint_set_srid(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+/*****************************************************************************/
+
+#if CBUFFER
+PGDLLEXPORT Datum Tcbuffer_get_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_get_srid);
+/**
+ * @ingroup mobilitydb_temporal_spatial_accessor
+ * @brief Return the SRID of a temporal circular buffer
+ * @sqlfn SRID()
+ */
+Datum
+Tcbuffer_get_srid(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int result = tcbuffer_srid(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Tcbuffer_set_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_set_srid);
+/**
+ * @ingroup mobilitydb_temporal_spatial_transf 
+ * @brief Return a temporal point with the SRID set to a value
+ * @sqlfn setSRID()
+ */
+Datum
+Tcbuffer_set_srid(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int32 srid = PG_GETARG_INT32(1);
+  Temporal *result = tcbuffer_set_srid(temp, srid);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+#endif /* CBUFFER */
+
 /*****************************************************************************
  * Functions for transforming between spatial reference systems
  *****************************************************************************/
@@ -193,7 +270,7 @@ Geoset_transform_pipeline(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   text *pipelinetxt = PG_GETARG_TEXT_P(1);
-  int srid = PG_GETARG_INT32(2);
+  int32_t srid = PG_GETARG_INT32(2);
   bool is_forward = PG_GETARG_BOOL(3);
   char *pipelinestr = text2cstring(pipelinetxt);
   Set *result = geoset_transform_pipeline(s, pipelinestr, srid, is_forward);
@@ -239,7 +316,7 @@ Stbox_transform_pipeline(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   text *pipelinetxt = PG_GETARG_TEXT_P(1);
-  int srid = PG_GETARG_INT32(2);
+  int32_t srid = PG_GETARG_INT32(2);
   bool is_forward = PG_GETARG_BOOL(3);
   char *pipelinestr = text2cstring(pipelinetxt);
   STBox *result = stbox_transform_pipeline(box, pipelinestr, srid, is_forward);
@@ -262,7 +339,7 @@ Datum
 Tpoint_transform(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int srid = PG_GETARG_INT32(1);
+  int32_t srid = PG_GETARG_INT32(1);
   Temporal *result = tpoint_transform(temp, srid);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
@@ -281,7 +358,7 @@ Tpoint_transform_pipeline(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   text *pipelinetxt = PG_GETARG_TEXT_P(1);
-  int srid = PG_GETARG_INT32(2);
+  int32_t srid = PG_GETARG_INT32(2);
   bool is_forward = PG_GETARG_BOOL(3);
   char *pipelinestr = text2cstring(pipelinetxt);
   Temporal *result = tpoint_transform_pipeline(temp, pipelinestr, srid,
@@ -291,5 +368,51 @@ Tpoint_transform_pipeline(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(pipelinetxt, 1);
   PG_RETURN_TEMPORAL_P(result);
 }
+
+/*****************************************************************************/
+
+#if CBUFFER
+PGDLLEXPORT Datum Tcbuffer_transform(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_transform);
+/**
+ * @ingroup mobilitydb_temporal_spatial_transf
+ * @brief Return a temporal circular buffer transformed to another spatial
+ * reference system
+ * @sqlfn transform()
+ */
+Datum
+Tcbuffer_transform(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int32_t srid = PG_GETARG_INT32(1);
+  Temporal *result = tcbuffer_transform(temp, srid);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tcbuffer_transform_pipeline(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_transform_pipeline);
+/**
+ * @ingroup mobilitydb_temporal_spatial_transf
+ * @brief Return a temporal circular buffer transformed to another spatial
+ * reference system using a transformation pipeline
+ * @sqlfn transformPipeline()
+ */
+Datum
+Tcbuffer_transform_pipeline(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  text *pipelinetxt = PG_GETARG_TEXT_P(1);
+  int32_t srid = PG_GETARG_INT32(2);
+  bool is_forward = PG_GETARG_BOOL(3);
+  char *pipelinestr = text2cstring(pipelinetxt);
+  Temporal *result = tcbuffer_transform_pipeline(temp, pipelinestr, srid,
+    is_forward);
+  pfree(pipelinestr);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(pipelinetxt, 1);
+  PG_RETURN_TEMPORAL_P(result);
+}
+#endif /* CBUFFER */
 
 /*****************************************************************************/

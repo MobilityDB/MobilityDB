@@ -356,10 +356,10 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT k, random_tnpoint_seqset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10, 10, 10) AS ts
+SELECT k, random_tnpoint_seqset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10, 10, 10) AS seqset
 FROM generate_series (1, 15) AS k;
 
-SELECT k, random_tnpoint_seqset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10, 10, 10, false) AS ts
+SELECT k, random_tnpoint_seqset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10, 10, 10, false) AS seqset
 FROM generate_series (1, 15) AS k;
 */
 

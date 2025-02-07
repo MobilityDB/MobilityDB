@@ -59,6 +59,10 @@
 #include "general/type_parser.h"
 #include "point/tpoint_parser.h"
 #include "point/tpoint_spatialfuncs.h"
+#if CBUFFER
+  #include <meos_cbuffer.h>
+  #include "cbuffer/tcbuffer.h"
+#endif
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
@@ -145,6 +149,26 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
     fabs(x2->d - x.d) <= MEOS_EPSILON);
 }
 
+#if CBUFFER
+/**
+ * @brief Return true if the three values are collinear
+ * @param[in] np1,np2,np3 Input values
+ * @param[in] ratio Value in [0,1] representing the duration of the
+ * timestamps associated to `cbuf1` and `cbuf2` divided by the duration
+ * of the timestamps associated to `cbuf1` and `cbuf3`
+ */
+static bool
+cbuffer_collinear(Cbuffer *cbuf1, Cbuffer *cbuf2, Cbuffer *cbuf3, double ratio)
+{
+  Datum value1 = PointerGetDatum(&cbuf1->point);
+  Datum value2 = PointerGetDatum(&cbuf2->point);
+  Datum value3 = PointerGetDatum(&cbuf3->point);
+  if (! geopoint_collinear(value1, value2, value3, ratio, false, false))
+    return false;
+  return float_collinear(cbuf1->radius, cbuf2->radius, cbuf3->radius, ratio);
+}
+#endif
+
 #if NPOINT
 /**
  * @brief Return true if the three values are collinear
@@ -192,6 +216,11 @@ datum_collinear(Datum value1, Datum value2, Datum value3, meosType basetype,
   if (basetype == T_DOUBLE4)
     return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2),
       DatumGetDouble4P(value3), ratio);
+#if CBUFFER
+  if (basetype == T_CBUFFER)
+    return cbuffer_collinear(DatumGetCbufferP(value1), DatumGetCbufferP(value2),
+      DatumGetCbufferP(value3), ratio);
+#endif
 #if NPOINT
   if (basetype == T_NPOINT)
     return npoint_collinear(DatumGetNpointP(value1), DatumGetNpointP(value2),
@@ -2321,6 +2350,12 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   {
     return geosegm_interpolate_point(value1, value2, ratio);
   }
+#if CBUFFER
+  if (inst1->temptype == T_TCBUFFER)
+  {
+    return cbuffersegm_interpolate_point(value1, value2, ratio);
+  }
+#endif
 #if NPOINT
   if (inst1->temptype == T_TNPOINT)
   {
@@ -2743,6 +2778,57 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
     result = tfloatsegm_intersection_value(inst1, inst2, value, basetype, t);
   else if (tgeo_type(inst1->temptype))
     result = tpointsegm_intersection_value(inst1, inst2, value, t);
+#if CBUFFER
+  else if (inst1->temptype == T_TCBUFFER)
+  {
+    Cbuffer *cbuf = DatumGetCbufferP(value);
+    Cbuffer *cbuf1 = DatumGetCbufferP(value1);
+    Cbuffer *cbuf2 = DatumGetCbufferP(value2);
+    const GSERIALIZED *gs1 = cbuffer_point(cbuf1);
+    const GSERIALIZED *gs2 = cbuffer_point(cbuf2);
+    TimestampTz t1, t2;
+    bool result1, result2;
+    if (! datum_point_eq(PointerGetDatum(gs1), PointerGetDatum(gs2)))
+    {
+      TInstant *point1 = tcbufferinst_tgeompointinst(inst1);
+      TInstant *point2 = tcbufferinst_tgeompointinst(inst2); 
+      Datum point = PointerGetDatum(&cbuf->point);
+      result1 = tpointsegm_intersection_value(point1, point2, point, &t1);
+      pfree(point1); pfree(point2); 
+      if (! result1)
+        return false;
+    }
+    else
+      result1 = false;
+    if (! float8_eq(cbuf1->radius, cbuf2->radius))
+    {
+      TInstant *radius1 = tcbufferinst_tfloatinst(inst1);
+      TInstant *radius2 = tcbufferinst_tfloatinst(inst2);   
+      result2 = tfloatsegm_intersection_value(radius1, radius2, 
+        Float8GetDatum(cbuf->radius), T_FLOAT8, &t2);
+      pfree(radius1); pfree(radius2); 
+      if (! result2)
+        return false;
+    }   
+    else
+      result2 = false;
+    if (result1 && result2 & (t1 == t2))
+    {
+      *t = t1;
+      result = true;
+    }
+    else if (! result1 && result2)
+    {
+      *t = t2;
+      result = true;
+    }
+    else /* result1 && ! result2 */
+    {
+      *t = t1;
+      result = true;
+    }
+  }
+#endif
 #if NPOINT
   else if (inst1->temptype == T_TNPOINT)
     result = tnpointsegm_intersection_value(inst1, inst2, value, t);

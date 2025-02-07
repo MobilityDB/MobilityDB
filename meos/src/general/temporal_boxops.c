@@ -57,6 +57,9 @@
 #include "general/type_util.h"
 #include "general/type_util.h"
 #include "point/tpoint_boxops.h"
+#if CBUFFER
+  #include "cbuffer/tcbuffer_boxops.h"
+#endif
 #if NPOINT
   #include "npoint/tnpoint_boxops.h"
 #endif
@@ -225,6 +228,10 @@ tinstant_set_bbox(const TInstant *inst, void *box)
     tnumberinst_set_tbox(inst, (TBox *) box);
   else if (tgeo_type(inst->temptype))
     tpointinst_set_stbox(inst, (STBox *) box);
+#if CBUFFER
+  else if (inst->temptype == T_TCBUFFER)
+    tcbufferinst_set_stbox(inst, (STBox *) box);
+#endif
 #if NPOINT
   else if (inst->temptype == T_TNPOINT)
     tnpointinst_set_stbox(inst, (STBox *) box);
@@ -417,6 +424,10 @@ tinstarr_compute_bbox(const TInstant **instants, int count, bool lower_inc,
       interp, (TBox *) box);
   else if (tgeo_type(temptype))
     tpointinstarr_set_stbox(instants, count, (STBox *) box);
+#if CBUFFER
+  else if (temptype == T_TCBUFFER)
+    tcbufferinstarr_set_stbox(instants, count, (STBox *) box);
+#endif
 #if NPOINT
   else if (temptype == T_TNPOINT)
     tnpointinstarr_set_stbox(instants, count, interp, (STBox *) box);

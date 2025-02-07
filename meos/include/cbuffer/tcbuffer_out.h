@@ -28,11 +28,11 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for parsing temporal points.
+ * @brief Output of temporal points in WKT, EWKT and MF-JSON format
  */
 
-#ifndef __TPOINT_PARSER_H__
-#define __TPOINT_PARSER_H__
+#ifndef __TCBUFFER_OUT_H__
+#define __TCBUFFER_OUT_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -42,9 +42,12 @@
 
 /*****************************************************************************/
 
-extern STBox *stbox_parse(char **str);
-extern Temporal *tpoint_parse(char **str, meosType temptype);
+// extern char *cbuffer_wkt_out(Datum value, meosType type, int maxdd);
+// extern char *cbuffer_ewkt_out(Datum value, meosType type, int maxdd);
+// extern bool tcbuffer__wkb_needs_srid(const Temporal *temp, uint8_t variant);
+// extern uint8_t *coords_to_wkb_buf(const TInstant *inst, uint8_t *buf,
+  // uint8_t variant);
 
 /*****************************************************************************/
 
-#endif
+#endif /* __TCBUFFER_OUT_H__ */

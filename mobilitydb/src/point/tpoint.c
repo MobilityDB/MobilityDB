@@ -342,7 +342,7 @@ Tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
 {
   ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
   int32 typmod = tpoint_typmod_in(array, true);
-  int srid = TYPMOD_GET_SRID(typmod);
+  int32_t srid = TYPMOD_GET_SRID(typmod);
   /* Check the SRID is legal (geographic coordinates) */
   if (! meos_srid_is_latlong(srid))
     elog(ERROR, "Only lon/lat coordinate systems are supported in geography.");

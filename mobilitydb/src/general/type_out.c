@@ -117,6 +117,52 @@ Geoset_as_ewkt(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(result);
 }
 
+#if CBUFFER
+PGDLLEXPORT Datum Cbufferset_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbufferset_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a circular 
+ * buffer set
+ * @sqlfn asText()
+ */
+Datum
+Cbufferset_as_text(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = cbufferset_as_text(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Cbufferset_as_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbufferset_as_ewkt);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a
+ * circular buffer set
+ * @sqlfn asEWKT()
+ */
+Datum
+Cbufferset_as_ewkt(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = cbufferset_as_ewkt(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
+#endif /* CBUFFER */
+
 PGDLLEXPORT Datum Span_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_as_text);
 /**

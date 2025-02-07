@@ -77,9 +77,9 @@ option(MEOS
   OFF
 )
 
-# Option for including geoposes
-option(POSE
-  "Set ON|OFF (default=OFF) to include geoposes
+# Option for including circular buffers
+option(CBUFFER
+  "Set ON|OFF (default=OFF) to include circular buffers
   "
   OFF
   )
@@ -90,6 +90,21 @@ option(NPOINT
   "
   ON
   )
+
+# Option for including geoposes
+option(POSE
+  "Set ON|OFF (default=OFF) to include geoposes
+  "
+  OFF
+  )
+
+if(CBUFFER)
+  message(STATUS "Including circular buffers")
+  add_definitions(-DCBUFFER=1)
+else()
+  message(STATUS "Excluding circular buffers")
+  add_definitions(-DCBUFFER=0)
+endif()
 
 if(NPOINT)
   message(STATUS "Including network points")

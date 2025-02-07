@@ -738,7 +738,7 @@ tfloat_derivative(const Temporal *temp)
  */
 
 double
-pg_exp(double arg1)
+pg_exp(double d)
 {
   double result;
 
@@ -747,12 +747,12 @@ pg_exp(double arg1)
 	 * that the platform's exp() conforms to POSIX for these cases, and it
 	 * removes some edge cases for the overflow checks below.
 	 */
-	if (isnan(arg1))
-		result = arg1;
-	else if (isinf(arg1))
+	if (isnan(d))
+		result = d;
+	else if (isinf(d))
 	{
 		/* Per POSIX, exp(-Inf) is 0 */
-		result = (arg1 > 0.0) ? arg1 : 0;
+		result = (d > 0.0) ? d : 0;
 	}
 	else
 	{
@@ -761,7 +761,7 @@ pg_exp(double arg1)
 		 * zero to report overflow/underflow; therefore, test both cases.
 		 */
 		errno = 0;
-		result = exp(arg1);
+		result = exp(d);
 		if (unlikely(errno == ERANGE))
 		{
 			if (result != 0.0)
@@ -826,7 +826,7 @@ tfloat_exp(const Temporal *temp)
  */
 
 double
-pg_ln(double arg1)
+pg_ln(double d)
 {
   double result;
 
@@ -834,17 +834,17 @@ pg_ln(double arg1)
    * Emit particular SQLSTATE error codes for ln(). This is required by the
    * SQL standard.
    */
-  if (arg1 == 0.0)
+  if (d == 0.0)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "cannot take logarithm of zero");
-  if (arg1 < 0)
+  if (d < 0)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "cannot take logarithm of a negative number");
 
-  result = log(arg1);
-  if (unlikely(isinf(result)) && !isinf(arg1))
+  result = log(d);
+  if (unlikely(isinf(result)) && !isinf(d))
     float_overflow_error();
-  if (unlikely(result == 0.0) && arg1 != 1.0)
+  if (unlikely(result == 0.0) && d != 1.0)
     float_underflow_error();
 
   return result;
@@ -901,7 +901,7 @@ tfloat_ln(const Temporal *temp)
  * @note PostgreSQL function: dlog10(PG_FUNCTION_ARGS)
  */
 double
-pg_log10(double arg1)
+pg_log10(double d)
 {
   double result;
 
@@ -910,17 +910,17 @@ pg_log10(double arg1)
    * define log(), but it does define ln(), so it makes sense to emit the
    * same error code for an analogous error condition.
    */
-  if (arg1 == 0.0)
+  if (d == 0.0)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot take logarithm of zero");
-  if (arg1 < 0)
+  if (d < 0)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot take logarithm of a negative number");
 
-  result = log10(arg1);
-  if (unlikely(isinf(result)) && !isinf(arg1))
+  result = log10(d);
+  if (unlikely(isinf(result)) && !isinf(d))
     float_overflow_error();
-  if (unlikely(result == 0.0) && arg1 != 1.0)
+  if (unlikely(result == 0.0) && d != 1.0)
     float_underflow_error();
 
   return result;

@@ -56,6 +56,7 @@ extern POINT3DZ datum_point3dz(Datum value);
 extern void gs_point4d(const GSERIALIZED *gs, POINT4D *p);
 extern void datum_point4d(Datum value, POINT4D *p);
 
+extern int geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geopoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
@@ -108,6 +109,7 @@ extern bool ensure_has_not_Z_gs(const GSERIALIZED *gs);
 extern bool ensure_has_M_gs(const GSERIALIZED *gs);
 extern bool ensure_has_not_M_gs(const GSERIALIZED *gs);
 extern bool ensure_point_type(const GSERIALIZED *gs);
+extern bool ensure_circle_type(const GSERIALIZED *gs);
 extern bool ensure_not_empty(const GSERIALIZED *gs);
 extern bool ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs);
 extern bool ensure_valid_tpoint_geo(const Temporal *temp,
@@ -175,11 +177,11 @@ extern GSERIALIZED *tpointseq_trajectory(const TSequence *seq);
 
 /* Functions for spatial reference systems */
 
-extern TInstant *tpointinst_transform(const TInstant *inst, int srid);
-extern TSequence *tpointseq_disc_transform(const TSequence *is, int srid);
-extern TSequence *tpointseq_cont_transform(const TSequence *seq, int srid);
-extern TSequenceSet *tpointseqset_transform(const TSequenceSet *ss, int srid);
-extern Temporal *tpoint_transform(const Temporal *temp, int srid);
+extern TInstant *tpointinst_transform(const TInstant *inst, int32_t srid);
+extern TSequence *tpointseq_disc_transform(const TSequence *is, int32_t srid);
+extern TSequence *tpointseq_cont_transform(const TSequence *seq, int32_t srid);
+extern TSequenceSet *tpointseqset_transform(const TSequenceSet *ss, int32_t srid);
+extern Temporal *tpoint_transform(const Temporal *temp, int32_t srid);
 extern Temporal *tpoint_transform_pj(const Temporal *temp, int32 srid, const LWPROJ* pj);
 
 /* Stop function */

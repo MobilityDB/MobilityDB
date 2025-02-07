@@ -44,6 +44,41 @@
 /*****************************************************************************/
 
 /**
+ * @brief Parse a SRID specification from the buffer
+ */
+bool
+srid_parse(const char **str, int *srid)
+{
+  int32_t srid_read = SRID_UNKNOWN;
+  bool result = false;
+  p_whitespace(str);
+  /* Starts with "SRID=". The SRID specification must be gobbled for all
+   * types excepted TInstant. We cannot use the atoi() function
+   * because this requires a string terminated by '\0' and we cannot
+   * modify the string in case it must be passed to the #tcbufferinst_parse
+   * function. */
+  if (pg_strncasecmp(*str, "SRID=", 5) == 0)
+  {
+    /* Move str to the start of the number part */
+    *str += 5;
+    int delim = 0;
+    /* Delimiter will be either ',' or ';' depending on whether interpolation
+       is given after */
+    while ((*str)[delim] != ',' && (*str)[delim] != ';' && 
+      (*str)[delim] != '\0')
+    {
+      srid_read = srid_read * 10 + (*str)[delim] - '0';
+      delim++;
+    }
+    /* Set str after the separator */
+    *str += delim + 1;
+    result = true;
+  }
+  *srid = srid_read;
+  return result;
+}
+
+/**
  * @brief Parse a spatiotemporal box from the buffer
  */
 STBox *
@@ -53,28 +88,11 @@ stbox_parse(const char **str)
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
   Span period;
   bool hasx = false, hasz = false, hast = false, geodetic = false;
-  int srid = 0;
-  bool hassrid = false;
   const char *type_str = "spatiotemporal box";
 
-  /* Determine whether the box has an SRID */
-  p_whitespace(str);
-  if (pg_strncasecmp(*str,"SRID=",5) == 0)
-  {
-    /* Move str to the start of the number part */
-    *str += 5;
-    int delim = 0;
-    /* Delimiter will be either ',' or ';' depending on whether interpolation
-       is given after */
-    while ((*str)[delim] != ',' && (*str)[delim] != ';' && (*str)[delim] != '\0')
-    {
-      srid = srid * 10 + (*str)[delim] - '0';
-      delim++;
-    }
-    /* Set str to the start of the temporal point */
-    *str += delim + 1;
-    hassrid = true;
-  }
+  /* Determine whether there is an SRID */
+  int32_t srid;
+  bool hassrid = srid_parse(str, &srid);
 
   /* Determine whether the box is geodetic or not */
   if (pg_strncasecmp(*str, "STBOX", 5) == 0)
@@ -239,6 +257,58 @@ stbox_parse(const char **str)
 /*****************************************************************************/
 
 /**
+ * @brief Parse a geometry/gegraphy from the buffer
+ * @param[in] str Input string
+ * @param[in] basetype Base type
+ * @param[in] sep Separation character
+ * @param[in,out] srid SRID of the result. If it is SRID_UNKNOWN, it may take
+ * the value from the geometry if it is not SRID_UNKNOWN.
+ * @param[out] result New geometry, may be NULL
+ */
+bool 
+geo_parse(const char **str, meosType basetype, char sep, int *srid,
+  GSERIALIZED **result)
+{
+  p_whitespace(str);
+  /* The next instruction will throw an exception if it fails */
+  Datum geo;
+  if (! basetype_parse(str, basetype, sep, &geo))
+    return false;
+  GSERIALIZED *gs = DatumGetGserializedP(geo);
+  if (! ensure_point_type(gs) || ! ensure_not_empty(gs) ||
+      ! ensure_has_not_M_gs(gs))
+  {
+    pfree(gs);
+    return false;
+  }
+  /* If one of the SRID of the temporal point and of the geometry
+   * is SRID_UNKNOWN and the other not, copy the SRID */
+  int gs_srid = gserialized_get_srid(gs);
+  if (*srid == SRID_UNKNOWN && gs_srid != SRID_UNKNOWN)
+    *srid = gs_srid;
+  else if (*srid != SRID_UNKNOWN &&
+    ( gs_srid == SRID_UNKNOWN || gs_srid == SRID_DEFAULT ))
+    gserialized_set_srid(gs, *srid);
+  /* If the SRID of the temporal point and of the geometry do not match */
+  else if (*srid != SRID_UNKNOWN && gs_srid != SRID_UNKNOWN &&
+    *srid != gs_srid)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Geometry SRID (%d) does not match temporal type SRID (%d)",
+      gs_srid, *srid);
+    pfree(gs);
+    return false;
+  }
+  if (result)
+    *result = gs;
+  else 
+    pfree(gs);
+  return true;
+}
+
+/*****************************************************************************/
+
+/**
  * @brief Parse a temporal instant point from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -251,37 +321,11 @@ bool
 tpointinst_parse(const char **str, meosType temptype, bool end, 
   int *tpoint_srid, TInstant **result)
 {
-  p_whitespace(str);
   meosType basetype = temptype_basetype(temptype);
-  /* The next instruction will throw an exception if it fails */
-  Datum geo;
-  if (! temporal_basetype_parse(str, basetype, &geo))
+  GSERIALIZED *gs;
+  if (! geo_parse(str, basetype, '@', tpoint_srid, &gs))
     return false;
-  GSERIALIZED *gs = DatumGetGserializedP(geo);
-  if (! ensure_point_type(gs) || ! ensure_not_empty(gs) ||
-      ! ensure_has_not_M_gs(gs))
-  {
-    pfree(gs);
-    return false;
-  }
-  /* If one of the SRID of the temporal point and of the geometry
-   * is SRID_UNKNOWN and the other not, copy the SRID */
-  int gs_srid = gserialized_get_srid(gs);
-  if (*tpoint_srid == SRID_UNKNOWN && gs_srid != SRID_UNKNOWN)
-    *tpoint_srid = gs_srid;
-  else if (*tpoint_srid != SRID_UNKNOWN &&
-    ( gs_srid == SRID_UNKNOWN || gs_srid == SRID_DEFAULT ))
-    gserialized_set_srid(gs, *tpoint_srid);
-  /* If the SRID of the temporal point and of the geometry do not match */
-  else if (*tpoint_srid != SRID_UNKNOWN && gs_srid != SRID_UNKNOWN &&
-    *tpoint_srid != gs_srid)
-  {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Geometry SRID (%d) does not match temporal type SRID (%d)",
-      gs_srid, *tpoint_srid);
-    pfree(gs);
-    return false;
-  }
+  p_sepchar(str, '@');
   TimestampTz t = timestamp_parse(str);
   if (t == DT_NOEND ||
     /* Ensure there is no more input */
@@ -290,6 +334,7 @@ tpointinst_parse(const char **str, meosType temptype, bool end,
     pfree(gs);
     return false;
   }
+
   if (result)
     *result = tinstant_make(PointerGetDatum(gs), temptype, t);
   pfree(gs);
@@ -455,31 +500,12 @@ tpointseqset_parse(const char **str, meosType temptype, interpType interp,
 Temporal *
 tpoint_parse(const char **str, meosType temptype)
 {
-  int tpoint_srid = 0;
   const char *bak = *str;
   p_whitespace(str);
 
-  /* Starts with "SRID=". The SRID specification must be gobbled for all
-   * types excepted TInstant. We cannot use the atoi() function
-   * because this requires a string terminated by '\0' and we cannot
-   * modify the string in case it must be passed to the #tpointinst_parse
-   * function. */
-  if (pg_strncasecmp(*str, "SRID=", 5) == 0)
-  {
-    /* Move str to the start of the number part */
-    *str += 5;
-    int delim = 0;
-    tpoint_srid = 0;
-    /* Delimiter will be either ',' or ';' depending on whether interpolation
-       is given after */
-    while ((*str)[delim] != ',' && (*str)[delim] != ';' && (*str)[delim] != '\0')
-    {
-      tpoint_srid = tpoint_srid * 10 + (*str)[delim] - '0';
-      delim++;
-    }
-    /* Set str to the start of the temporal point */
-    *str += delim + 1;
-  }
+  /* Determine whether there is an SRID */
+  int tpoint_srid;
+  srid_parse(str, &tpoint_srid);
 
   /* Ensure that the SRID is geodetic for geography */
   if (temptype == T_TGEOGPOINT && tpoint_srid != SRID_UNKNOWN && 
@@ -487,7 +513,7 @@ tpoint_parse(const char **str, meosType temptype)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Only lon/lat coordinate systems are supported in geography.");
-    return NULL;    
+    return NULL;
   }
 
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;

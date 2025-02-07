@@ -42,7 +42,10 @@
 
 /*****************************************************************************/
 
+extern bool srid_parse(const char **str, int *srid);
 extern STBox *stbox_parse(const char **str);
+extern bool geo_parse(const char **str, meosType basetype, char sep, int *srid,
+  GSERIALIZED **result);
 extern TSequence *tpointseq_parse(const char **str, meosType temptype,
   interpType interp, bool end, bool make, int *tpoint_srid);
 extern Temporal *tpoint_parse(const char **str, meosType temptype);

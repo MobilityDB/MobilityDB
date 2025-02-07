@@ -13,10 +13,14 @@ configure_file(
 set(LOCAL_FILES
   general/random_temporal.sql
   point/random_tpoint.sql
-)
+  )
 
 if(NPOINT)
   list(APPEND LOCAL_FILES npoint/random_tnpoint.sql)
+endif()
+
+if(CBUFFER)
+  list(APPEND LOCAL_FILES cbuffer/random_tcbuffer.sql)
 endif()
 
 # Append each source file with license removed

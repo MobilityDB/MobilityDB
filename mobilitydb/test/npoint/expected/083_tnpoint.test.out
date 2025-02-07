@@ -507,25 +507,25 @@ SELECT appendSequence(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-0
 /* Errors */
 SELECT appendSequence(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02]', tnpoint '[Npoint(2, 0.6)@2000-01-03]');
 ERROR:  All network points composing a temporal sequence must have same route identifier
-SELECT astext(round(tnpoint 'Npoint(1, 0.5)@2000-01-01'::tgeompoint, 6));
+SELECT asText(round(tnpoint 'Npoint(1, 0.5)@2000-01-01'::tgeompoint, 6));
                          astext                          
 ---------------------------------------------------------
  POINT(48.718663 77.764071)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT astext(round(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'::tgeompoint, 6));
+SELECT asText(round(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'::tgeompoint, 6));
                                                                                    astext                                                                                    
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {POINT(62.786633 80.143556)@Sat Jan 01 00:00:00 2000 PST, POINT(48.718663 77.764071)@Sun Jan 02 00:00:00 2000 PST, POINT(48.718663 77.764071)@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT astext(round(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'::tgeompoint, 6));
+SELECT asText(round(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'::tgeompoint, 6));
                                                                                    astext                                                                                    
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  [POINT(69.790369 81.452098)@Sat Jan 01 00:00:00 2000 PST, POINT(55.752648 78.953813)@Sun Jan 02 00:00:00 2000 PST, POINT(48.718663 77.764071)@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
-SELECT astext(round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }'::tgeompoint, 6));
+SELECT asText(round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }'::tgeompoint, 6));
                                                                                                                                               astext                                                                                                                                               
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT(69.790369 81.452098)@Sat Jan 01 00:00:00 2000 PST, POINT(55.752648 78.953813)@Sun Jan 02 00:00:00 2000 PST, POINT(48.718663 77.764071)@Mon Jan 03 00:00:00 2000 PST], [POINT(27.252917 77.656661)@Tue Jan 04 00:00:00 2000 PST, POINT(27.252917 77.656661)@Wed Jan 05 00:00:00 2000 PST]}

@@ -55,7 +55,7 @@ extern GSERIALIZED* geog_serialize(LWGEOM *lwgeom);
 
 /* Functions adapted from lwgeom_box.c */
 
-extern LWGEOM *box2d_to_lwgeom(GBOX *box, int srid);
+extern LWGEOM *box2d_to_lwgeom(GBOX *box, int32_t srid);
 
 /* Functions adapted from lwgeom_box3d.c */
 

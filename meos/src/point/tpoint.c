@@ -44,7 +44,12 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal.h"
-#include "npoint/tnpoint_boxops.h"
+#if CBUFFER
+  #include "cbuffer/tcbuffer_boxops.h"
+#endif 
+#if NPOINT
+  #include "npoint/tnpoint_boxops.h"
+#endif 
 
 /*****************************************************************************
  * General functions
@@ -85,6 +90,10 @@ tspatial_set_stbox(const Temporal *temp, STBox *box)
     case TINSTANT:
       if (tgeo_type(temp->temptype))
         tpointinst_set_stbox((TInstant *) temp, box);
+#if CBUFFER
+      else if (temp->temptype == T_TCBUFFER)
+        tcbufferinst_set_stbox((TInstant *) temp, box);
+#endif
 #if NPOINT
       else if (temp->temptype == T_TNPOINT)
         tnpointinst_set_stbox((TInstant *) temp, box);

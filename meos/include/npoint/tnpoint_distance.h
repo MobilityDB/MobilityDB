@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal distance for temporal network points.
+ * @brief Temporal distance for temporal circular buffers.
  */
 
 #ifndef __TNPOINT_DISTANCE_H__

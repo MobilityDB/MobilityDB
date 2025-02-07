@@ -55,6 +55,11 @@
 #include "general/type_util.h"
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"
+#if CBUFFER
+  #include <meos_cbuffer.h>
+  #include "cbuffer/tcbuffer_boxops.h"
+  #include "cbuffer/tcbuffer_out.h"
+#endif
 #if NPOINT
   #include "npoint/tnpoint_boxops.h"
 #endif
@@ -326,7 +331,7 @@ set_out_fn(const Set *s, int maxdd, outfunc value_out)
   char str1[18];
   str1[0] = '\0';
   outfunc value_out1 = value_out;
-  if (geoset_type(s->settype) && value_out == ewkt_out)
+  if (spatialset_type(s->settype) && value_out == ewkt_out)
   {
     srid = geoset_srid(s);
     if (srid > 0)
@@ -511,6 +516,40 @@ geoset_as_ewkt(const Set *s, int maxdd)
   return set_out_fn(s, maxdd, &ewkt_out);
 }
 
+#if CBUFFER
+/**
+ * @ingroup meos_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a circular
+ * buffer set
+ * @csqlfn #Cbufferset_as_text()
+ */
+char *
+cbufferset_as_text(const Set *s, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
+    return NULL;
+  return set_out_fn(s, maxdd, &cbuffer_wkt_out);
+}
+
+/**
+ * @ingroup meos_setspan_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a 
+ * circular buffer set
+ * @param[in] s Set
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Geoset_as_ewkt()
+ */
+char *
+cbufferset_as_ewkt(const Set *s, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
+    return NULL;
+  return set_out_fn(s, maxdd, &cbuffer_ewkt_out);
+}
+#endif /* CBUFFER */
+
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
@@ -547,6 +586,10 @@ valuearr_compute_bbox(const Datum *values, meosType basetype, int count,
   assert(set_basetype(basetype)); assert(! alphanum_basetype(basetype));
   if (geo_basetype(basetype))
     geoarr_set_stbox(values, count, (STBox *) box);
+#if CBUFFER
+  else if (basetype == T_CBUFFER)
+    cbufferarr_set_stbox(values, count, (STBox *) box);
+#endif
 #if NPOINT
   else if (basetype == T_NPOINT)
     npointarr_set_stbox(values, count, (STBox *) box);
@@ -650,7 +693,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   {
     /* Ensure the spatial validity of the elements */
     GSERIALIZED *gs1 = DatumGetGserializedP(values[0]);
-    int srid = gserialized_get_srid(gs1);
+    int32_t srid = gserialized_get_srid(gs1);
     hasz = (bool) FLAGS_GET_Z(gs1->gflags);
     geodetic = FLAGS_GET_GEODETIC(gs1->gflags);
     /* Test the validity of the values */

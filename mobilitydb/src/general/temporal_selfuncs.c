@@ -402,6 +402,26 @@ tpoint_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
   return false;
 }
 
+#if CBUFFER
+/**
+ * @brief Get the enum value associated to the operator
+ */
+bool
+tcbuffer_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
+  meosType rtype)
+{
+  if ((timespan_basetype(ltype) || timeset_type(ltype) ||
+        timespan_type(ltype) || timespanset_type(ltype) ||
+        spatial_basetype(ltype) || ltype == T_STBOX || tspatial_type(ltype)) &&
+      (timespan_basetype(rtype) || timeset_type(rtype) ||
+        timespan_type(rtype) || timespanset_type(rtype) ||
+        spatial_basetype(rtype) || rtype == T_STBOX || tspatial_type(rtype)))
+    return true;
+  return false;
+}
+#endif /* CBUFFER */
+
+#if NPOINT
 /**
  * @brief Get the enum value associated to the operator
  */
@@ -418,6 +438,7 @@ tnpoint_oper_sel(Oid operid __attribute__((unused)), meosType ltype,
     return true;
   return false;
 }
+#endif /* NPOINT */
 
 /**
  * @brief Get enumeration value associated to the operator according to the
@@ -442,8 +463,14 @@ temporal_oper_sel_family(meosOper oper __attribute__((unused)), meosType ltype,
     return tnumber_oper_sel(oper, ltype, rtype);
   else if (tempfamily == TPOINTTYPE)
     return tpoint_oper_sel(oper, ltype, rtype);
+#if CBUFFER
+  else if (tempfamily == TCBUFFERTYPE)
+    return tcbuffer_oper_sel(oper, ltype, rtype);
+#endif /* CBUFFER */
+#if NPOINT
   else /* tempfamily == TNPOINTTYPE */
     return tnpoint_oper_sel(oper, ltype, rtype);
+#endif /* NPOINT */
 }
 
 /*****************************************************************************/
@@ -606,7 +633,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
       return tnumber_sel_default(oper);
     else if (tempfamily == TPOINTTYPE)
       return tpoint_sel_default(oper);
-    else /* tempfamily == TNPOINTTYPE */
+    else /* tempfamily == TNPOINTTYPE || tempfamily == TCBUFFERTYPE */
       return tpoint_sel_default(oper);
   }
 
@@ -620,7 +647,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
       return temporal_sel_default(oper);
     else if(tempfamily == TNUMBERTYPE)
       return tnumber_sel_default(oper);
-    else /* tempfamily == TPOINTYPE */
+    else /* tempfamily == TPOINTYPE || tempfamily == TCBUFFERTYPE */
       return tpoint_sel_default(oper);
   }
 
@@ -650,7 +677,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
         return temporal_sel_default(oper);
       else if (tempfamily == TNUMBERTYPE)
         return tnumber_sel_default(oper);
-      else /* tempfamily == TPOINTTYPE */
+      else /* tempfamily == TPOINTTYPE || tempfamily == TCBUFFERTYPE */
         return tpoint_sel_default(oper);
     }
   }
@@ -784,6 +811,21 @@ Tpoint_sel(PG_FUNCTION_ARGS)
   return Float8GetDatum(temporal_sel_family(fcinfo, TPOINTTYPE));
 }
 
+#if CBUFFER
+PGDLLEXPORT Datum Tcbuffer_sel(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_sel);
+/**
+ * @brief Estimate the restriction selectivity of the operators for temporal
+ * network points
+ */
+Datum
+Tcbuffer_sel(PG_FUNCTION_ARGS)
+{
+  return Float8GetDatum(temporal_sel_family(fcinfo, TCBUFFERTYPE));
+}
+#endif /* CBUFFER */
+
+#if NPOINT
 PGDLLEXPORT Datum Tnpoint_sel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_sel);
 /**
@@ -795,6 +837,7 @@ Tnpoint_sel(PG_FUNCTION_ARGS)
 {
   return Float8GetDatum(temporal_sel_family(fcinfo, TNPOINTTYPE));
 }
+#endif /* NPOINT */
 
 /*****************************************************************************
  * Estimate the join selectivity
@@ -1076,6 +1119,21 @@ Tpoint_joinsel(PG_FUNCTION_ARGS)
   return Float8GetDatum((float8) temporal_joinsel_family(fcinfo, TPOINTTYPE));
 }
 
+#if CBUFFER
+PGDLLEXPORT Datum Tcbuffer_joinsel(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_joinsel);
+/**
+ * @brief Estimate the join selectivity of the operators for temporal circular
+ * buffers
+ */
+Datum
+Tcbuffer_joinsel(PG_FUNCTION_ARGS)
+{
+  return Float8GetDatum((float8) temporal_joinsel_family(fcinfo, TCBUFFERTYPE));
+}
+#endif /* CBUFFER */
+
+#if NPOINT
 PGDLLEXPORT Datum Tnpoint_joinsel(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_joinsel);
 /**
@@ -1087,5 +1145,6 @@ Tnpoint_joinsel(PG_FUNCTION_ARGS)
 {
   return Float8GetDatum((float8) temporal_joinsel_family(fcinfo, TNPOINTTYPE));
 }
+#endif /* NPOINT */
 
 /*****************************************************************************/

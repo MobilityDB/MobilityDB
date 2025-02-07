@@ -46,6 +46,9 @@
 #include "general/tbox.h"
 #include "point/stbox.h"
 #include "point/tpoint_spatialfuncs.h"
+#if CBUFFER
+  #include "cbuffer/tcbuffer.h"
+#endif /* CBUFFER */
 #if NPOINT
   #include "npoint/npoint.h"
 #endif /* NPOINT */
@@ -1241,9 +1244,26 @@ point_from_wkb_state(wkb_parse_state *s)
   return result;
 }
 
+#if CBUFFER
+/**
+ * @brief Read a circular buffer and advance the parse state forward
+ */
+Cbuffer *
+cbuffer_from_wkb_state(wkb_parse_state *s)
+{
+  /* Does the data we want to read exist? */
+  wkb_parse_state_check(s, MEOS_WKB_DOUBLE_SIZE * 2 + MEOS_WKB_DOUBLE_SIZE);
+  /* Get the data */
+  GSERIALIZED *gs = DatumGetGserializedP(point_from_wkb_state(s));
+  double radius = double_from_wkb_state(s);
+  Cbuffer *result = cbuffer_make(gs, radius);
+  return result;
+}
+#endif /* CBUFFER */
+
 #if NPOINT
 /**
- * @brief Read an npoint and advance the parse state forward
+ * @brief Read a network point and advance the parse state forward
  */
 Npoint *
 npoint_from_wkb_state(wkb_parse_state *s)
@@ -1257,7 +1277,7 @@ npoint_from_wkb_state(wkb_parse_state *s)
   npoint_set(rid, pos, result);
   return result;
 }
-#endif /* ! MEOS */
+#endif /* NPOINT */
 
 /*****************************************************************************/
 
@@ -1287,6 +1307,10 @@ basevalue_from_wkb_state(wkb_parse_state *s)
     case T_GEOGRAPHY:
       /* Notice that only point geometries/geographies are allowed */
       return point_from_wkb_state(s);
+#if CBUFFER
+    case T_CBUFFER:
+      return PointerGetDatum(cbuffer_from_wkb_state(s));
+#endif /* NPOINT */
 #if NPOINT
     case T_NPOINT:
       return PointerGetDatum(npoint_from_wkb_state(s));
