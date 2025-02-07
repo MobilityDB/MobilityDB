@@ -1,43 +1,45 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Indexing</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch10.html" title="Chapter 10. Temporal Types: Aggregation and Indexing"><link rel="prev" href="ch10.html" title="Chapter 10. Temporal Types: Aggregation and Indexing"><link rel="next" href="ch10s03.html" title="Statistics and Selectivity"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Indexing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch10.html">Prev</a> </td><th width="60%" align="center">Chapter 10. Temporal Types: Aggregation and Indexing</th><td width="20%" align="right"> <a accesskey="n" href="ch10s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_types_indexing"></a>Indexing</h2></div></div></div><p>GiST and SP-GiST indexes can be created for table columns of temporal types. The GiST index implements an R-tree and the SP-GiST index implements an n-dimensional quad-tree. Examples of index creation are as follows:
-			</p><pre class="programlisting">
-CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);
-CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
-</pre><p>
-		</p><p>The GiST and SP-GiST indexes store the bounding box for the temporal types. As explained in <a class="xref" href="ch04.html" title="Chapter 4. Temporal Types">Chapter 4, <i>Temporal Types</i></a>, these are
-			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>the <code class="varname">tstzspan</code> type for the <code class="varname">tbool</code> and <code class="varname">ttext</code> types,</p></li><li class="listitem"><p>the <code class="varname">tbox</code> type for the <code class="varname">tint</code> and <code class="varname">tfloat</code> types,</p></li><li class="listitem"><p>the <code class="varname">stbox</code> type for the <code class="varname">tgeompoint</code> and <code class="varname">tgeogpoint</code> types.</p></li></ul></div><p>
-		</p><p>A GiST or SP-GiST index can accelerate queries involving the following operators (see <a class="xref" href="ch06s04.html" title="Bounding Box Operators">the section called “Bounding Box Operators”</a> for more information):
-			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="varname">&lt;&lt;</code>, <code class="varname">&amp;&lt;</code>, <code class="varname">&amp;&gt;</code>, <code class="varname">&gt;&gt;</code>, which only consider the value dimension in temporal alphanumeric types,</p></li><li class="listitem"><p><code class="varname">&lt;&lt;</code>, <code class="varname">&amp;&lt;</code>, <code class="varname">&amp;&gt;</code>, <code class="varname">&gt;&gt;</code>, <code class="varname">&lt;&lt;|</code>, <code class="varname">&amp;&lt;|</code>, <code class="varname">|&amp;&gt;</code>, <code class="varname">|&gt;&gt;</code>, <code class="varname">&amp;&lt;/</code>, <code class="varname">&lt;&lt;/</code>, <code class="varname">/&gt;&gt;</code>, and <code class="varname">/&amp;&gt;</code>, which only consider the spatial dimension in temporal point types,</p></li><li class="listitem"><p><code class="varname">&amp;&lt;#</code>, <code class="varname">&lt;&lt;#</code>, <code class="varname">#&gt;&gt;</code>, <code class="varname">#&amp;&gt;</code>, which only consider the time dimension for all temporal types,</p></li><li class="listitem"><p><code class="varname">&amp;&amp;</code>, <code class="varname">@&gt;</code>, <code class="varname">&lt;@</code>, <code class="varname">~=</code>, and <code class="varname">|=|</code>, which consider as many dimensions as they are shared by the indexed column and the query argument. These operators work on bounding boxes (that is, <code class="varname">tstzspan</code>, <code class="varname">tbox</code>, or <code class="varname">stbox</code>), not the entire values.</p></li></ul></div><p>
-		</p><p>For example, given the index defined above on the <code class="varname">Department</code> table and a query that involves a condition with the <code class="varname">&amp;&amp;</code> (overlaps) operator, if the right argument is a temporal float then both the value and the time dimensions are considered for filtering the tuples of the relation, while if the right argument is a float value, a float span, or a time type, then either the value or the time dimension will be used for filtering the tuples of the relation. Furthermore, a bounding box can be constructed from a value/span and/or a timestamp/period, which can be used for filtering the tuples of the relation. Examples of queries using the index on the <code class="varname">Department</code> table defined above are given next.
-			</p><pre class="programlisting">
-SELECT * FROM Department WHERE NoEmps &amp;&amp; intspan '[1, 5)';
-SELECT * FROM Department WHERE NoEmps &amp;&amp; tstzspan '[2001-04-01, 2001-05-01)';
-SELECT * FROM Department WHERE NoEmps &amp;&amp;
-  tbox(intspan '[1, 5)', tstzspan '[2001-04-01, 2001-05-01)');
-SELECT * FROM Department WHERE NoEmps &amp;&amp;
-  tfloat '{[1@2001-01-01, 1@2001-02-01), [5@2001-04-01, 5@2001-05-01)}';
-</pre><p>
-		</p><p>Similarly, examples of queries using the index on the <code class="varname">Trips</code> table defined above are given next.
-			</p><pre class="programlisting">
-SELECT * FROM Trips WHERE Trip &amp;&amp; geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))';
-SELECT * FROM Trips WHERE Trip &amp;&amp; timestamptz '2001-01-01';
-SELECT * FROM Trips WHERE Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-05)';
-SELECT * FROM Trips WHERE Trip &amp;&amp;
-  stbox(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', tstzspan '[2001-01-01, 2001-01-05]');
-SELECT * FROM Trips WHERE Trip &amp;&amp;
-  tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-05)}';
-</pre><p>
-		</p><p>Finally, B-tree indexes can be created for table columns of all temporal types. For this index type, the only useful operation is equality. There is a B-tree sort ordering defined for values of temporal types, with corresponding <code class="varname">&lt;</code>, <code class="varname">&lt;=</code>, <code class="varname">&gt;</code>, <code class="varname">&gt;=</code> and operators, but the ordering is rather arbitrary and not usually useful in the real world. B-tree support for temporal types is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</p><p>In order to speed up several of the functions for temporal types, we can add in the <code class="varname">WHERE</code> clause of queries a bounding box comparison that make uses of the available indexes. For example, this would be typically the case for the functions that project the temporal types to the value/spatial and/or time dimensions. This will filter out the tuples with an index as shown in the following query.
-			</p><pre class="programlisting">
-SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)')
-FROM Trips T
--- Bouding box index filtering
-WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
-</pre><p>
-		</p><p>In the case of temporal points, all spatial relationships with the ever semantics (see <a class="xref" href="ch08s07.html" title="Spatial Relationships">the section called “Spatial Relationships”</a>) automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
-			</p><pre class="programlisting">
-SELECT tintersects(T.Trip, R.Geom)
-FROM Trips T, Regions R
--- Bouding box index filtering
-WHERE intersects(T.Trip, R.Geom);
-</pre><p>
-		</p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch10.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch10.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch10s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 10. Temporal Types: Aggregation and Indexing </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Statistics and Selectivity</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Reduction</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch10.html" title="Chapter 10. Temporal Types: Analytics Operations"><link rel="prev" href="ch10.html" title="Chapter 10. Temporal Types: Analytics Operations"><link rel="next" href="ch10s03.html" title="Similarity"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Reduction</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch10.html">Prev</a> </td><th width="60%" align="center">Chapter 10. Temporal Types: Analytics Operations</th><td width="20%" align="right"> <a accesskey="n" href="ch10s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_types_reduction"></a>Reduction</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tsample"></a><a class="indexterm" name="id6755"></a><p>Sample a temporal value with respect to an interval</p><p><code class="varname">tsample({tnumber,tgeompoint},duration interval,torigin timestamptz='2000-01-03',</code></p><p><code class="varname">  interp='discrete') →{tnumber,tgeompoint}</code></p><p>If the origin is not specified, it is set by default to Monday, January 3, 2000. The given interval must be strictly greater than zero.</p><pre class="programlisting">
+SELECT tsample(tint '{1@2001-01-01,5@2001-01-05}', '3 days', '2001-01-01');
+-- {1@2001-01-01}
+SELECT tsample(tfloat '[1@2001-01-01,5@2001-01-05]', '1 day', '2001-01-01');
+-- {1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 4@2001-01-04, 5@2001-01-05}
+SELECT tsample(tfloat '[1@2001-01-01,5@2001-01-05]', '3 days', '2001-01-01');
+-- {1@2001-01-01, 4@2001-01-04}
+SELECT tsample(tfloat '[1@2001-01-01,5@2001-01-05]', '3 days', '2001-01-01', 'linear');
+-- [1@2001-01-01, 4@2001-01-04]
+</pre><pre class="programlisting">
+SELECT asText(tsample(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]',
+  '2 days', '2001-01-01'));
+-- {POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03, POINT(5 5)@2001-01-05}
+SELECT asText(tsample(tgeompoint '{[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05],
+  [Point(1 1)@2001-01-06, Point(5 5)@2001-01-08]}', '3 days', '2001-01-01'));
+-- {POINT(1 1)@2001-01-01, POINT(4 4)@2001-01-04, POINT(3 3)@2001-01-07}
+SELECT asText(tsample(tgeompoint '{[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05],
+  [Point(1 1)@2001-01-06, Point(5 5)@2001-01-08]}', '3 days', '2001-01-01', 'step'));
+-- Interp=Step;[POINT(1 1)@2001-01-01, POINT(4 4)@2001-01-04, POINT(3 3)@2001-01-07]
+</pre><p><a class="xref" href="ch10s02.html#fig_tsample" title="Figure 10.2. Sampling of temporal floats with discrete, step, and linear interpolation.">Figure 10.2, “Sampling of temporal floats with discrete, step, and linear interpolation.”</a> illustrates the sampling of temporal floats with various interpolations. As shown in the figure, the sampling operation is best suited for temporal values with continuous interpolation.</p><div class="figure-float"><div class="figure"><a name="fig_tsample"></a><p class="title"><b>Figure 10.2. Sampling of temporal floats with discrete, step, and linear interpolation.</b></p><div class="figure-contents"><div class="mediaobject"><object type="image/svg+xml" data="images/tsample.svg" width="405"></object></div></div></div><br class="figure-break"></div></li><li class="listitem"><a name="tprecision"></a><a class="indexterm" name="id6778"></a><p>Reduce the temporal precision of a temporal value with respect to an interval computing the time-weighted average/centroid in each time bin</p><p><code class="varname">tprecision({tnumber,tgeompoint},duration interval,torigin timestamptz='2000-01-03')</code></p><p><code class="varname"> → {tnumber,tpoint}</code></p><p>If the origin is not specified, it is set by default to Monday, January 3, 2000. The given interval must be strictly greater than zero.</p><pre class="programlisting">
+SELECT tprecision(tint '[1@2001-01-01,5@2001-01-05,1@2001-01-09]','1 day',
+  '2001-01-01');
+-- Interp=Step;[1@2001-01-01, 5@2001-01-05, 1@2001-01-09]
+SELECT tprecision(tfloat '[1@2001-01-01,5@2001-01-05,1@2001-01-09)','1 day',
+  '2001-01-01');
+-- [1.5@2001-01-01, 4.5@2001-01-04, 4.5@2001-01-05, 1.5@2001-01-08]
+SELECT tprecision(tfloat '[1@2001-01-01,5@2001-01-05,1@2001-01-09]','1 day',
+  '2001-01-01');
+-- [1.5@2001-01-01, 4.5@2001-01-04, 4.5@2001-01-05, 1.5@2001-01-08, 1@2001-01-09]
+SELECT tprecision(tfloat '[1@2001-01-01,5@2001-01-05,1@2001-01-09)','2 days',
+  '2001-01-01');
+-- [2@2001-01-01, 4@2001-01-03, 4@2001-01-05, 2@2001-01-07]
+</pre><pre class="programlisting">
+SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05,
+  Point(1 1)@2001-01-09)', '1 day', '2001-01-01'));
+/* [POINT(1.5 1.5)@2001-01-01, POINT(4.5 4.5)@2001-01-04, POINT(4.5 4.5)@2001-01-05,
+   POINT(1.5 1.5)@2001-01-08] */
+SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05,
+  Point(1 1)@2001-01-09)', '2 days', '2001-01-01'));
+/* [POINT(2 2)@2001-01-01, POINT(4 4)@2001-01-03, POINT(4 4)@2001-01-05,
+   POINT(2 2)@2001-01-07] */
+SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05,
+  Point(1 1)@2001-01-09)', '4 days', '2001-01-01'));
+-- [POINT(3 3)@2001-01-01, POINT(3 3)@2001-01-05]
+</pre><p>Changing the precision of a temporal value is akin to changing its <span class="emphasis"><em>temporal granularity</em></span>, for example, from timestamps to hours or days, although the precision can be set to an arbitrary interval, such as 2 hours and 15 minutes. <a class="xref" href="ch10s02.html#fig_tprecision" title="Figure 10.3. Changing the precision of temporal floats with discrete, step, and linear interpolation.">Figure 10.3, “Changing the precision of temporal floats with discrete, step, and linear interpolation.”</a> illustrates a change of temporal precision for temporal floats with various interpolations.</p><div class="figure-float"><div class="figure"><a name="fig_tprecision"></a><p class="title"><b>Figure 10.3. Changing the precision of temporal floats with discrete, step, and linear interpolation.</b></p><div class="figure-contents"><div class="mediaobject"><object type="image/svg+xml" data="images/tprecision.svg" width="405"></object></div></div></div><br class="figure-break"></div></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch10.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch10.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch10s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 10. Temporal Types: Analytics Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Similarity</td></tr></table></div></body></html>

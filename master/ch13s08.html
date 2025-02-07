@@ -1,0 +1,36 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Aggregations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch13.html" title="Chapter 13. Temporal Circular Buffers"><link rel="prev" href="ch13s07.html" title="Operations"><link rel="next" href="ch13s09.html" title="Indexing"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Aggregations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s07.html">Prev</a> </td><th width="60%" align="center">Chapter 13. Temporal Circular Buffers</th><td width="20%" align="right"> <a accesskey="n" href="ch13s09.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_circular_buffers_aggregations"></a>Aggregations</h2></div></div></div><p>The three aggregate functions for temporal circular buffers are illustrated next.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_tCount"></a><a class="indexterm" name="id9391"></a><p>Temporal count</p><p><code class="varname">tCount(tcbuffer) → {tintSeq,tintSeqSet}</code></p><pre class="programlisting">
+WITH Temp(temp) AS (
+  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
+    Cbuffer(Point(1 1), 0.3)@2001-01-03)' UNION
+  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-02, 
+    Cbuffer(Point(1 1), 0.4)@2001-01-04)' UNION
+  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03, 
+    Cbuffer(Point(1 1), 0.5)@2001-01-05)' )
+SELECT tCount(Temp)
+FROM Temp;
+-- {[1@2001-01-01, 2@2001-01-02, 1@2001-01-04, 1@2001-01-05)}
+</pre></li><li class="listitem"><a name="tcbuffer_wCount"></a><a class="indexterm" name="id9399"></a><p>Window count</p><p><code class="varname">wCount(tcbuffer) → {tintSeq,tintSeqSet}</code></p><pre class="programlisting">
+WITH Temp(temp) AS (
+  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
+    Cbuffer(Point(1 1), 0.3)@2001-01-03)' UNION
+  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-02, 
+    Cbuffer(Point(1 1), 0.4)@2001-01-04)' UNION
+  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03, 
+    Cbuffer(Point(1 1), 0.5)@2001-01-05)' )
+SELECT wCount(Temp, '1 day')
+FROM Temp;
+/* {[1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 2@2001-01-04, 1@2001-01-05,
+   1@2001-01-06)} */
+</pre></li><li class="listitem"><a name="tcbuffer_tCentroid"></a><a class="indexterm" name="id9407"></a><p>TODO Temporal centroid</p><p><code class="varname">tCentroid(tcbuffer) → tgeompoint</code></p><pre class="programlisting">
+WITH Temp(temp) AS (
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.3)@2001-01-03)' UNION
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.4)@2001-01-03)' UNION
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-03)' )
+SELECT astext(tCentroid(Temp))
+FROM Temp;
+/* {[POINT(72.451531682218 76.5231414472853)@2001-01-01,
+   POINT(55.7001249027598 72.9552602410653)@2001-01-03)} */
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Indexing</td></tr></table></div></body></html>

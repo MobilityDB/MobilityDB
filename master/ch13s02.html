@@ -1,0 +1,23 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Temporal Circular Buffers</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch13.html" title="Chapter 13. Temporal Circular Buffers"><link rel="prev" href="ch13.html" title="Chapter 13. Temporal Circular Buffers"><link rel="next" href="ch13s03.html" title="Validity of Temporal Circular Buffers"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Temporal Circular Buffers</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13.html">Prev</a> </td><th width="60%" align="center">Chapter 13. Temporal Circular Buffers</th><td width="20%" align="right"> <a accesskey="n" href="ch13s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temp_circular_buffers"></a>Temporal Circular Buffers</h2></div></div></div><p>The temporal circular buffer type <code class="varname">tcbuffer</code> allows to represent the movement of objects together with a circular radius around them. It corresponds to the temporal point type <code class="varname">tgeompoint</code> restricted to two-dimensional coordinates. As all the other temporal types it comes in trhee subtypes, namely, instant, sequence, and sequence set. Examples of <code class="varname">tcbuffer</code> values in these subtypes are given next.</p><pre class="programlisting">
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01';
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02,
+  Cbuffer(Point(1 1), 0.5)@2001-01-03}';
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02,
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]';
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 1)@2001-01-01, Cbuffer(Point(2 2), 1)@2001-01-02],
+  [Cbuffer(Point(2 2), 2)@2001-01-04, Cbuffer(Point(2 2), 3)@2001-01-05]}';
+</pre><p>The temporal circular buffer type accepts type modifiers (or <code class="varname">typmod</code> in PostgreSQL terminology). The possible values for the type modifier are <code class="varname">Instant</code>, <code class="varname">Sequence</code>, and <code class="varname">SequenceSet</code>. If no type modifier is specified for a column, values of any subtype are allowed.</p><pre class="programlisting">
+SELECT tcbuffer(Sequence) '[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
+SELECT tcbuffer(Sequence) 'Cbuffer(Point(1 1), 0.2)@2001-01-01';
+-- ERROR: Temporal type (Instant) does not match column type (Sequence)
+</pre><p>Temporal circular buffer values of sequence or sequence set subtype are converted into a normal form so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. Three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into a normal form are as follows.</p><pre class="programlisting">
+SELECT asText(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
+  Cbuffer(Point(2 2), 0.4)@2001-01-02, Cbuffer(Point(3 3), 0.6)@2001-01-03)');
+-- [Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(3 3),0.6)@2001-01-03)
+SELECT asText(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
+  Cbuffer(Point(2 2), 0.3)@2001-01-02, Cbuffer(Point(2 2), 0.5)@2001-01-03), 
+  [Cbuffer(Point(2 2), 0.5)@2001-01-03, Cbuffer(Point(2 2), 0.7)@2001-01-04)}');
+/* {[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(2 2),0.3)@2001-01-02, 
+   Cbuffer(Point(2 2),0.7)@2001-01-04)} */
+</pre></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 13. Temporal Circular Buffers </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Validity of Temporal Circular Buffers</td></tr></table></div></body></html>

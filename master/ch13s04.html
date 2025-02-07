@@ -1,0 +1,59 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Input and Output</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch13.html" title="Chapter 13. Temporal Circular Buffers"><link rel="prev" href="ch13s03.html" title="Validity of Temporal Circular Buffers"><link rel="next" href="ch13s05.html" title="Constructors"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Input and Output</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s03.html">Prev</a> </td><th width="60%" align="center">Chapter 13. Temporal Circular Buffers</th><td width="20%" align="right"> <a accesskey="n" href="ch13s05.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_inout"></a>Input and Output</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_asText"></a><a class="indexterm" name="id8820"></a><p>Return the Well-Known Text (WKT) representation</p><p><code class="varname">asText({tcbuffer,tcbuffer[],cbuffer[]}) → {text,text[]}</code></p><pre class="programlisting">
+SELECT asText(tcbuffer 'SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01, 
+  Cbuffer(Point(1 1),2)@2001-01-02)');
+-- [Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)
+SELECT asText(ARRAY[cbuffer 'Cbuffer(Point(0 0),1)', 'Cbuffer(Point(1 1),2)']);
+-- {"Cbuffer(POINT(0 0),1)","Cbuffer(POINT(1 1),2)"}
+</pre></li><li class="listitem"><a name="tcbuffer_asEWKT"></a><a class="indexterm" name="id8828"></a><p>Return the Extended Well-Known Text (EWKT) representation</p><p><code class="varname">asEWKT({tcbuffer,tcbuffer[],cbuffer[]}) → {text,text[]}</code></p><pre class="programlisting">
+SELECT asEWKT(tcbuffer 'SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01, 
+  Cbuffer(Point(1 1),2)@2001-01-02)');
+-- SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)
+SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(0 0),1)', 
+  'Cbuffer(SRID=5676;Point(1 1),2)']);
+-- {"Cbuffer(SRID=5676;POINT(0 0),1)","Cbuffer(SRID=5676;POINT(1 1),2))"}
+</pre></li><li class="listitem"><a name="tcbuffer_asMFJSON"></a><a class="indexterm" name="id8836"></a><p>TODO Return the Moving Features JSON representation</p><p><code class="varname">asMFJSON(tcbuffer,options=0,flags=0,maxdecdigits=15) → bytea</code></p><p>The <code class="varname">options</code> argument can be used to add BBOX and/or CRS in MFJSON output:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: MFJSON BBOX</p></li><li class="listitem"><p>2: MFJSON Short CRS (e.g., EPSG:4326)</p></li><li class="listitem"><p>4: MFJSON Long CRS (e.g., urn:ogc:def:crs:EPSG::4326)</p></li></ul></div><p>The <code class="varname">flags</code> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Refer to the documentation of the <code class="varname">json-c</code> library for the possible values. Typical values are as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: JSON_C_TO_STRING_SPACED</p></li><li class="listitem"><p>2: JSON_C_TO_STRING_PRETTY</p></li></ul></div><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
+SELECT asMFJSON(tcbuffer 'Cbuffer(Point(1 2),1)@2019-01-01 18:00:00.15+02');
+/* {"type":"MovingPoint","coordinates":[[1,2]],"datetimes":["2019-01-01T17:00:00.15+01"],
+   "interpolation":"None"} */
+SELECT asMFJSON(tcbuffer 'SRID=4326;
+  Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 3, 2);
+/* {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},
+   "stBoundedBy":{"bbox":[50.81,4.38,50.81,4.38],
+   "period":{"begin":"2019-01-01 17:00:00.15+01","end":"2019-01-01 17:00:00.15+01"}},
+   "coordinates":[[50.81,4.38]],"datetimes":["2019-01-01T17:00:00.15+01"],
+   "interpolations":"None"} */
+</pre></li><li class="listitem"><a name="tcbuffer_asBinary"></a><a class="indexterm" name="id8867"></a><p>Return the Well-Known Binary (WKB) representation</p><p><code class="varname">asBinary(tcbuffer,endian text='') → bytea</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
+SELECT asBinary(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01');
+-- \x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
+</pre></li><li class="listitem"><a name="tcbuffer_asEWKB"></a><a class="indexterm" name="id8876"></a><p>Return the Extended Well-Known Binary (EWKB) representation</p><p><code class="varname">asEWKB(tcbuffer,endian text='') → bytea</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
+SELECT asEWKB(tcbuffer 'SRID=7844;Cbuffer(Point(1 2),1)@2001-01-01');
+-- \x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
+</pre></li><li class="listitem"><a name="tcbuffer_asHexEWKB"></a><a class="indexterm" name="id8885"></a><p>Return the Hexadecimal Extended Well-Known Binary (EWKB) representation as text</p><p><code class="varname">asHexEWKB(tcbuffer,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
+SELECT asHexEWKB(tcbuffer 'SRID=3812;Cbuffer(Point(1 2),1)@2001-01-01');
+-- 013A0001000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
+</pre></li><li class="listitem"><a name="tcbuffer_tcbufferFromText"></a><a class="indexterm" name="id8894"></a><p>Input a temporal point from its Well-Known Text (WKT) representation</p><p><code class="varname">tcbufferFromText(text) → tcbuffer</code></p><pre class="programlisting">
+SELECT asEWKT(tcbufferFromText(text '[Cbuffer(Point(1 2),1)@2001-01-01, 
+  Cbuffer(Point(3 4),2)@2001-01-02]'));
+-- [Cbuffer(POINT(1 2),1)@2001-01-01, Cbuffer(POINT(3 4),2)@2001-01-02]
+</pre></li><li class="listitem"><a name="tcbuffer_tcbufferFromEWKT"></a><a class="indexterm" name="id8902"></a><p>Input a temporal point from its Extended Well-Known Text (EWKT) representation</p><p><code class="varname">tcbufferFromEWKT(text) → tcbuffer</code></p><pre class="programlisting">
+SELECT asEWKT(tcbufferFromEWKT(text 'SRID=3812;[Cbuffer(Point(1 2),1)@2001-01-01,
+  Cbuffer(Point(3 4),2)@2001-01-02]'));
+-- SRID=3812;[Cbuffer(Point(1 2),1)@2001-01-01, Cbuffer(Point(3 4),2)@2001-01-02]
+</pre></li><li class="listitem"><a name="tcbuffer_tcbufferFromMFJSON"></a><a class="indexterm" name="id8910"></a><p>TODO Input a temporal point from its Moving Features JSON representation</p><p><code class="varname">tcbufferFromMFJSON(text) → tcbuffer</code></p><pre class="programlisting">
+SELECT asEWKT(tcbufferFromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
+  "properties":{"name":"EPSG:4326"}},"coordinates":[[50.81,4.38]],
+  "datetimes":["2019-01-01T17:00:00.15+01"],"interpolation":"None"}'));
+-- SRID=4326;Cbuffer(POINT(50.81 4.38),1)@2019-01-01 17:00:00.15+01
+</pre></li><li class="listitem"><a name="tcbuffer_tcbufferFromBinary"></a><a class="indexterm" name="id8918"></a><p>Input a temporal point from its Well-Known Binary (WKB) representation</p><p><code class="varname">tcbufferFromBinary(bytea) → tcbuffer</code></p><pre class="programlisting">
+SELECT asEWKT(tcbufferFromBinary(
+  '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
+-- Cbuffer(POINT(1 2),1)@2001-01-01
+</pre></li><li class="listitem"><a name="tcbuffer_tcbufferFromEWKB"></a><a class="indexterm" name="id8926"></a><p>Input a temporal point from its Extended Well-Known Binary (EWKB) representation</p><p><code class="varname">tcbufferFromEWKB(bytea) → tcbuffer</code></p><pre class="programlisting">
+SELECT asEWKT(tcbufferFromEWKB(
+  '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
+-- SRID=7844;Cbuffer(Point(1 1),2)@2001-01-01
+</pre></li><li class="listitem"><a name="tcbuffer_tcbufferFromHexEWKB"></a><a class="indexterm" name="id8934"></a><p>Input a temporal point from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><p><code class="varname">tcbufferFromHexEWKB(text) → tcbuffer</code></p><pre class="programlisting">
+SELECT asEWKT(tcbufferFromHexEWKB(
+  '013A0001000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000'));
+-- SRID=3812;Cbuffer(POINT(1 2),1)@2001-01-01
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Validity of Temporal Circular Buffers </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Constructors</td></tr></table></div></body></html>

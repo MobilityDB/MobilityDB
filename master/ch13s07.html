@@ -1,0 +1,195 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch13.html" title="Chapter 13. Temporal Circular Buffers"><link rel="prev" href="ch13s06.html" title="Conversions"><link rel="next" href="ch13s08.html" title="Aggregations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s06.html">Prev</a> </td><th width="60%" align="center">Chapter 13. Temporal Circular Buffers</th><td width="20%" align="right"> <a accesskey="n" href="ch13s08.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_circular_buffers_ops"></a>Operations</h2></div></div></div><p>Most functions for temporal types described in the previous chapters can be applied for temporal circular buffer types. Therefore, in the signatures of the functions, the notation <code class="varname">base</code> represents a <code class="varname">cbuffer</code> and the notations <code class="varname">ttype</code>, <code class="varname">tpoint</code>, and <code class="varname">tgeompoint</code> also represent a <code class="varname">tcbuffer</code>. Furthermore, the functions that have an argument of type <code class="varname">geometry</code> accept in addition an argument of type <code class="varname">cbuffer</code>. To avoid redundancy, we only present next some examples of these functions and operators for temporal circular buffers.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_subtype"></a><a class="indexterm" name="id9032"></a><a class="indexterm" name="id9035"></a><a class="indexterm" name="id9038"></a><p>Transform a temporal circular buffer to another subtype</p><p><code class="varname">tcbufferInst(tcbuffer) → tcbufferInst</code></p><p><code class="varname">tcbufferSeq(tcbuffer) → tcbufferSeq</code></p><p><code class="varname">tcbufferSeqSet(tcbuffer) → tcbufferSeqSet</code></p><pre class="programlisting">
+SELECT asText(tcbufferSeq(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 'discrete'));
+-- {Cbuffer(Point(1 1),0.5)@2001-01-01}
+SELECT asText(tcbufferSeq(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'));
+-- [Cbuffer(Point(1 1),0.5)@2001-01-01]
+SELECT asText(tcbufferSeqSet(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'));
+-- {[Cbuffer(Point(1 1),0.5)@2001-01-01]}
+</pre></li><li class="listitem"><a name="tcbuffer_setInterp"></a><a class="indexterm" name="id9050"></a><p>Transform a temporal circular buffer to another interpolation</p><p><code class="varname">setInterp(tcbuffer, interp) → tcbuffer</code></p><pre class="programlisting">
+SELECT asText(setInterp(tcbuffer 'Cbuffer(Point(1 1),0.2)@2001-01-01','linear'));
+-- [Cbuffer(Point(1 1),0.2)@2001-01-01]
+SELECT asText(setInterp(tcbuffer '{[Cbuffer(Point(1 1),0.1)@2001-01-01], 
+  [Cbuffer(Point(1 1),0.2)@2001-01-02]}', 'discrete'));
+-- {Cbuffer(Point(1 1),0.1)@2001-01-01, Cbuffer(Point(1 1),0.2)@2001-01-02}
+</pre></li><li class="listitem"><a name="tcbuffer_round"></a><a class="indexterm" name="id9058"></a><p>Round the fraction of the temporal circular buffer to the number of decimal places</p><p><code class="varname">round(tcbuffer,integer) → tcbuffer</code></p><pre class="programlisting">
+SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1),0.123456789)@2001-01-01, 
+  Cbuffer(Point(1 1),0.5)@2001-01-02)}', 6));
+/* {[Cbuffer(Point(1 1),0.123457)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-02)} */
+</pre></li><li class="listitem"><a name="tcbuffer_getValues"></a><a class="indexterm" name="id9066"></a><p>Return the values</p><p><code class="varname">getValues(tcbuffer) → cbufferset</code></p><pre class="programlisting">
+SELECT asText(getValues(tcbuffer '{[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-02)}'));
+-- {"Cbuffer(Point(1 1),0.3)","Cbuffer(Point(1 1),0.5)"}
+SELECT asEWKT(getValues(tcbuffer 'SRID=5676;{[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.3)@2001-01-02)}'));
+-- {"Cbuffer(Point(1 1),0.3)"}
+</pre></li><li class="listitem"><a name="tcbuffer_points"></a><a class="indexterm" name="id9074"></a><p>Return the points</p><p><code class="varname">points(tcbuffer) → bigintset</code></p><pre class="programlisting">
+SELECT asText(points(tcbuffer '{Cbuffer(Point(3 3), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-02}'));
+-- {Point(1 1), Point(3 3)}
+</pre></li><li class="listitem"><a name="tcbuffer_valueAtTimestamp"></a><a class="indexterm" name="id9082"></a><p>Return the value at a timestamp</p><p><code class="varname">valueAtTimestamp(tcbuffer,timestamptz) → cbuffer</code></p><pre class="programlisting">
+SELECT asText(valueAtTimestamp(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(3 3), 0.5)@2001-01-03)', '2001-01-02'));
+-- Cbuffer(Point(2 2),0.4)
+</pre></li><li class="listitem"><a name="tcbuffer_setSRID"></a><a class="indexterm" name="id9090"></a><p>TODO Set the spatial reference identifier</p><p><code class="varname">setSRID(tcbuffer) → tcbuffer</code></p><pre class="programlisting">
+SELECT asEWKT(setSRID(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)', 4326));
+-- SRID=4326;[Cbuffer(POINT(0 0),1)@2001-01-01, Cbuffer(POINT(1 1),2)@2001-01-02)
+</pre></li><li class="listitem"><a name="tcbuffer_transform"></a><a class="indexterm" name="id9098"></a><a class="indexterm" name="id9101"></a><p>TODO Transform to a different spatial reference</p><p><code class="varname">transform(tcbuffer,integer) → tcbuffer</code></p><p><code class="varname">transform(tcbuffer,pipeline text,to_srid integer,is_forward bool=true) → tcbuffer</code></p><p>The <code class="varname">transform</code> function specifies the transformation with a target SRID. An error is raised when the input temporal circular buffer has an unknown SRID (represented by 0).</p><p>The <code class="varname">transformPipeline</code> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code>. The SRID of the input temporal circular buffer is ignored, and the SRID of the output temporal circular buffer will be set to zero unless a value is provided via the optional <code class="varname">to_srid</code> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</p><pre class="programlisting">
+SELECT asEWKT(transform(tcbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)@2001-01-01', 
+  3812));
+-- SRID=3812;Cbuffer(POINT(648679.018035303 671067.055638114),2)@2001-01-01
+</pre><pre class="programlisting">
+WITH test(tcbuffer, pipeline) AS (
+  SELECT tcbuffer 'SRID=4326;{Cbuffer(Point(4.3525 50.846667),1)@2001-01-01,
+    Cbuffer(Point(-0.1275 51.507222),2)@2001-01-02}',
+    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT asEWKT(transformPipeline(transformPipeline(tcbuffer, pipeline, 4326),
+  pipeline, 4326, false), 6)
+FROM test;
+/* SRID=4326;{Cbuffer(POINT(4.3525 50.846667),1)@2001-01-01,
+   Cbuffer(POINT(-0.1275 51.507222 100),2)@2001-01-02} */
+</pre></li><li class="listitem"><a name="tcbuffer_traversedArea"></a><a class="indexterm" name="id9118"></a><p>TODO Return the area traversed by the temporal circular buffer</p><p><code class="varname">traversedArea(tcbuffer) → geometry</code></p><pre class="programlisting">
+SELECT traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]');
+-- 54.3757408468784
+</pre></li><li class="listitem"><a name="tcbuffer_stbox"></a><a class="indexterm" name="id9126"></a><p>Construct the bounding box from a cbuffer and, optionally, a timestamp or a period</p><p><code class="varname">stbox(cbuffer) → stbox</code></p><p><code class="varname">stbox(cbuffer,{timestamptz,tstzspan}) → stbox</code></p><pre class="programlisting">
+SELECT stbox(cbuffer 'Cbuffer(Point(1 1),0.3)');
+-- STBOX X((0.7,0.7),(1.3,1.3))
+SELECT stbox(cbuffer 'Cbuffer(Point(1 1),0.3)', timestamptz '2001-01-01');
+-- STBOX XT(((0.7,0.7),(1.3,1.3)),[2001-01-01, 2001-01-01])
+SELECT stbox(cbuffer 'Cbuffer(Point(1 1),0.3)', tstzspan '[2001-01-01,2001-01-02]');
+-- STBOX XT(((0.7,0.7),(1.3,1.3)),[2001-01-01 00:00:00+01, 2001-01-02 00:00:00+01])
+</pre></li><li class="listitem"><a name="tcbuffer_nearestApproachInstant"></a><a class="indexterm" name="id9136"></a><p>TODO Return the instant of the first temporal circular buffer at which the two arguments are at the nearest distance </p><p><code class="varname">nearestApproachInstant({geo,cbuffer,tpoint},{geo,cbuffer,tpoint}) → tpoint</code></p><pre class="programlisting">
+SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
+-- Cbuffer(Point(2 2),0.349928)@2001-01-01 02:59:44.402905+01
+SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1), 0.5)');
+-- Cbuffer(Point(2 2),0.592181)@2001-01-01 17:31:51.080405+01
+</pre></li><li class="listitem"><a name="tcbuffer_nearestApproachDistance"></a><a class="indexterm" name="id9144"></a><p>TODO Return the smallest distance ever between the two arguments</p><p><code class="varname">nearestApproachDistance({geo,cbuffer,tpoint},{geo,cbuffer,tpoint}) → float</code></p><pre class="programlisting">
+SELECT nearestApproachDistance(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
+-- 1.41793220500979
+SELECT nearestApproachDistance(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1), 0.5)');
+-- Cbuffer(Point(2 2),0.592181)@2001-01-01 17:31:51.080405+01
+</pre><p>Function <code class="varname">nearestApproachDistance</code> has an associated operator <code class="varname">|=|</code> that can be used for doing nearest neightbor searches using a GiST index (see <a class="xref" href="ch11s02.html" title="Indexing">the section called “Indexing”</a>).</p></li><li class="listitem"><a name="tcbuffer_shortestLine"></a><a class="indexterm" name="id9156"></a><p>TODO Return the line connecting the nearest approach point between the two arguments</p><p><code class="varname">shortestLine({geo,cbuffer,tpoint},{geo,cbuffer,tpoint}) → geometry</code></p><p>The function will only return the first line that it finds if there are more than one</p><pre class="programlisting">
+SELECT st_astext(shortestLine(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));
+-- LINESTRING(50.7960725266492 48.8266286733015,50 50)
+SELECT st_astext(shortestLine(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
+-- LINESTRING(77.0902838115125 66.6659083092593,90.8134936900394 46.4385792121146)
+</pre></li><li class="listitem"><a name="tcbuffer_atValue"></a><a class="indexterm" name="id9165"></a><a class="indexterm" name="id9168"></a><p>TODO Restrict to (the complement of) a value</p><p><code class="varname">atValue(tcbuffer,base) → tcbuffer</code></p><p><code class="varname">minusValue(tcbuffer,base) → tcbuffer</code></p><pre class="programlisting">
+SELECT atValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01, 
+  Cbuffer(Point(2 2), 0.7)@2001-01-03]', 'Cbuffer(Point(2 2), 0.5)');
+-- {[Cbuffer(Point(2 2),0.5)@2001-01-02]}
+SELECT minusValue(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01, 
+  Cbuffer(Point(2 2), 0.7)@2001-01-03]', 'Cbuffer(Point(2 2), 0.5)');
+/* {[Cbuffer(Point(2 2),0.3)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02),
+   (Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(2 2),0.7)@2001-01-03]} */
+</pre></li><li class="listitem"><a name="tcbuffer_atGeometry"></a><a class="indexterm" name="id9178"></a><a class="indexterm" name="id9181"></a><p>TODO Restrict to a geometry</p><p><code class="varname">atGeometry(tcbuffer,geometry) → tcbuffer</code></p><p><code class="varname">minusGeometry(tcbuffer,geometry) → tcbuffer</code></p><pre class="programlisting">
+SELECT atGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01, 
+  Cbuffer(Point(2 2), 0.7)@2001-01-03]',
+  'Polygon((40 40,40 50,50 50,50 40,40 40))');
+SELECT minusGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01, 
+  Cbuffer(Point(2 2), 0.7)@2001-01-03]',
+  'Polygon((40 40,40 50,50 50,50 40,40 40))');
+/* {(Cbuffer(Point(2 2),0.342593)@2001-01-01 05:06:40.364673+01,
+   Cbuffer(Point(2 2),0.7)@2001-01-03 00:00:00+01]} */
+</pre></li><li class="listitem"><a name="tcbuffer_comp"></a><a class="indexterm" name="id9191"></a><p>Traditional comparison operators</p><p><code class="varname">tcbuffer = tcbuffer → boolean</code></p><p><code class="varname">tcbuffer &lt;&gt; tcbuffer → boolean</code></p><p><code class="varname">tcbuffer &lt; tcbuffer → boolean</code></p><p><code class="varname">tcbuffer &gt; tcbuffer → boolean</code></p><p><code class="varname">tcbuffer &lt;= tcbuffer → boolean</code></p><p><code class="varname">tcbuffer &gt;= tcbuffer → boolean</code></p><pre class="programlisting">
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.3)@2001-01-02),
+  [Cbuffer(Point(1 1), 0.3)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]}' =
+  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
+-- true
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]}' &lt;&gt;
+  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
+-- false
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;
+  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.6)@2001-01-03]';
+-- true
+</pre></li><li class="listitem"><a name="tcbuffer_tcomp"></a><a class="indexterm" name="id9209"></a><p>Temporal comparison operators</p><p><code class="varname">tcbuffer #= tcbuffer → tbool</code></p><p><code class="varname">tcbuffer #&lt;&gt; tcbuffer → tbool</code></p><pre class="programlisting">
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.4)@2001-01-03)' #= cbuffer 'Cbuffer(Point(1 1), 0.3)';
+-- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.8)@2001-01-03)' #&lt;&gt;
+  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.7)@2001-01-03)';
+-- {[t@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
+</pre></li><li class="listitem"><a name="tcbuffer_ever_always"></a><a class="indexterm" name="id9219"></a><a class="indexterm" name="id9222"></a><p>Ever and always equal operators</p><p><code class="varname">tcbuffer ?= tcbuffer → boolean</code></p><p><code class="varname">tcbuffer %= tcbuffer → boolean</code></p><pre class="programlisting">
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.4)@2001-01-04)' ?= Cbuffer(Point(1 1), 0.3);
+-- true
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.2)@2001-01-04)' &amp;= Cbuffer(Point(1 1), 0.2);
+-- true
+</pre></li><li class="listitem"><a name="tcbuffer_pos"></a><a class="indexterm" name="id9232"></a><p>Position operators</p><p><code class="varname">tcbuffer &lt;&lt; tcbuffer → boolean</code></p><p><code class="varname">tcbuffer &amp;&lt; tcbuffer → boolean</code></p><p><code class="varname">tcbuffer &gt;&gt; tcbuffer → boolean</code></p><p><code class="varname">tcbuffer &amp;&gt; tcbuffer → boolean</code></p><p><code class="varname">tcbuffer &lt;&lt;| tcbuffer → boolean</code></p><p><code class="varname">tcbuffer &amp;&lt;| tcbuffer → boolean</code></p><p><code class="varname">tcbuffer |&gt;&gt; tcbuffer → boolean</code></p><p><code class="varname">tcbuffer |&amp;&gt; tcbuffer → boolean</code></p><p><code class="varname">tcbuffer &lt;&lt;# tcbuffer → boolean</code></p><p><code class="varname">tcbuffer &amp;&lt;# tcbuffer → boolean</code></p><p><code class="varname">tcbuffer #&gt;&gt; tcbuffer → boolean</code></p><p><code class="varname">tcbuffer #&amp;&gt; tcbuffer → boolean</code></p><pre class="programlisting">
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt; cbuffer 'Cbuffer(Point(1 1), 0.2)'
+-- false
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;| stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)')
+-- false
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &amp;&gt; cbuffer 'Cbuffer(Point(1 1), 0.3)'::geometry
+-- true
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &gt;&gt;#
+  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-03, Cbuffer(Point(1 1), 0.5)@2001-01-05]'
+-- true
+</pre></li><li class="listitem"><a name="tcbuffer_topo"></a><a class="indexterm" name="id9262"></a><a class="indexterm" name="id9265"></a><a class="indexterm" name="id9268"></a><a class="indexterm" name="id9271"></a><a class="indexterm" name="id9274"></a><p>Topological operators</p><p><code class="varname">tcbuffer &amp;&amp; tcbuffer → boolean</code></p><p><code class="varname">tcbuffer &lt;@ tcbuffer → boolean</code></p><p><code class="varname">tcbuffer @&gt; tcbuffer → boolean</code></p><p><code class="varname">tcbuffer ~= tcbuffer → boolean</code></p><p><code class="varname">tcbuffer -|- tcbuffer → boolean</code></p><pre class="programlisting">
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &amp;&amp; cbuffer 'Cbuffer(Point(1 1), 0.5)'
+-- true
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' @&gt; stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)')
+-- true
+SELECT cbuffer 'Cbuffer(Point(1 1), 0.5)'::geometry &lt;@
+  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]'
+-- true
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]' ~= tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.35)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]'
+-- true
+</pre></li><li class="listitem"><a name="tcbuffer_smallestDistance"></a><a class="indexterm" name="id9290"></a><p>TODO Return the smallest distance ever between the two arguments</p><p><code class="varname">tgeompoint |=| tcbuffer → float</code></p><pre class="programlisting">
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]' |=| cbuffer 'Cbuffer(Point(1 1), 0.2)';
+-- 2.34988300875063
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]' |=| geometry 'Linestring(2 2,2 1,3 1)';
+-- 82.2059262761477
+</pre></li><li class="listitem"><a name="tcbuffer_distance"></a><a class="indexterm" name="id9298"></a><p>TODO Return the temporal distance</p><p><code class="varname">tgeompoint &lt;-&gt; tcbuffer → tfloat</code></p><pre class="programlisting">
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt; cbuffer 'Cbuffer(Point(1 1), 0.2)';
+-- [2.34988300875063@2001-01-02 00:00:00+01, 2.34988300875063@2001-01-03 00:00:00+01]
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt; geometry 'Point(50 50)';
+-- [25.0496666945044@2001-01-01 00:00:00+01, 26.4085688426232@2001-01-03 00:00:00+01]
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt;
+  tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-04]'
+-- [2.34988300875063@2001-01-02 00:00:00+01, 2.34988300875063@2001-01-03 00:00:00+01]
+</pre></li><li class="listitem"><a name="tcbuffer_espatialrels"></a><a class="indexterm" name="id9306"></a><a class="indexterm" name="id9309"></a><a class="indexterm" name="id9312"></a><a class="indexterm" name="id9315"></a><a class="indexterm" name="id9318"></a><a class="indexterm" name="id9321"></a><a class="indexterm" name="id9324"></a><a class="indexterm" name="id9327"></a><a class="indexterm" name="id9330"></a><a class="indexterm" name="id9333"></a><p>TODO Ever and always spatial relationships</p><p><code class="varname">eContains(geometry,tcbuffer) → boolean</code></p><p><code class="varname">aContains(geometry,tcbuffer) → boolean</code></p><p><code class="varname">eDisjoint({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</code></p><p><code class="varname">aDisjoint({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</code></p><p><code class="varname">eIntersects({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</code></p><p><code class="varname">aIntersects({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</code></p><p><code class="varname">eTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</code></p><p><code class="varname">aTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</code></p><p><code class="varname">eDwithin({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer},float) → boolean</code></p><p><code class="varname">aDwithin({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer},float) → boolean</code></p><pre class="programlisting">
+SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
+-- false
+SELECT eDisjoint(cbuffer 'Cbuffer(Point(2 2), 0.0)',
+  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
+-- true
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.3)@2001-01-03)',
+  tcbuffer '[Cbuffer(Point(2 2), 0.0)@2001-01-01, Cbuffer(Point(2 2), 1)@2001-01-03)');
+-- false
+</pre></li><li class="listitem"><a name="tcbuffer_tspatialrels"></a><a class="indexterm" name="id9359"></a><a class="indexterm" name="id9362"></a><a class="indexterm" name="id9365"></a><a class="indexterm" name="id9368"></a><a class="indexterm" name="id9371"></a><p>TODO Temporal spatial relationships</p><p><code class="varname">tContains(geometry,tcbuffer) → boolean</code></p><p><code class="varname">tDisjoint({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</code></p><p><code class="varname">tIntersects({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</code></p><p><code class="varname">tTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</code></p><p><code class="varname">tDwithin({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer},float) → boolean</code></p><pre class="programlisting">
+SELECT tDisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
+-- {[t@2001-01-01 00:00:00+01, t@2001-01-03 00:00:00+01)}
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.5)@2001-01-03)', tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01, 
+  Cbuffer(Point(1 1), 0.3)@2001-01-03)', 1);
+/* {[t@2001-01-01 00:00:00+01, t@2001-01-01 22:35:55.379053+01],
+   (f@2001-01-01 22:35:55.379053+01, t@2001-01-02 01:24:04.620946+01,
+   t@2001-01-03 00:00:00+01)} */
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s06.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s08.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Conversions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Aggregations</td></tr></table></div></body></html>

@@ -1,0 +1,40 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Constructors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch13.html" title="Chapter 13. Temporal Circular Buffers"><link rel="prev" href="ch13s04.html" title="Input and Output"><link rel="next" href="ch13s06.html" title="Conversions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Constructors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s04.html">Prev</a> </td><th width="60%" align="center">Chapter 13. Temporal Circular Buffers</th><td width="20%" align="right"> <a accesskey="n" href="ch13s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_circular_buffers_constructors"></a>Constructors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_const"></a><a class="indexterm" name="id8945"></a><a class="indexterm" name="id8948"></a><a class="indexterm" name="id8951"></a><p>Constructor for temporal circular buffers having a constant value</p><p><code class="varname">tcbuffer(cbuffer,timestamptz) → tcbufferInst</code></p><p><code class="varname">tcbuffer(cbuffer,tstzset) → tcbufferDiscSeq</code></p><p><code class="varname">tcbuffer(cbuffer,tstzspan,interp='linear') → tcbufferContSeq</code></p><p><code class="varname">tcbuffer(cbuffer,tstzspanset,interp='linear') → tcbufferSeqSet</code></p><pre class="programlisting">
+SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.5)', timestamptz '2001-01-01'));
+-- Cbuffer(Point(1 1),0.5)@2001-01-01
+SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.3)', 
+  tstzset '{2001-01-01, 2001-01-03, 2001-01-05}'));
+/* {Cbuffer(Point(1 1),0.3)@2001-01-01, Cbuffer(Point(1 1),0.3)@2001-01-03, 
+   Cbuffer(Point(1 1),0.3)@2001-01-05} */
+SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.5)', 
+  tstzspan '[2001-01-01, 2001-01-02]'));
+-- [Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(1 1),0.5)@2001-01-02]
+SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.2)', 
+  tstzspanset '{[2001-01-01, 2001-01-03]}', 'step'));
+-- Interp=Step;{[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(1 1),0.2)@2001-01-03]}
+</pre></li><li class="listitem"><a name="tcbufferSeq"></a><a class="indexterm" name="id8965"></a><p>Constructor for temporal circular buffers of sequence subtype</p><p><code class="varname">tcbufferSeq(tcbufferInst[],interp={'step','linear'},leftInc bool=true,</code></p><p><code class="varname">  rightInc bool=true) →tcbufferSeq</code></p><pre class="programlisting">
+SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
+  'Cbuffer(Point(2 2), 0.5)@2001-01-02', 'Cbuffer(Point(1 1), 0.5)@2001-01-03']));
+/* {Cbuffer(Point(1 1),0.3)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, 
+   Cbuffer(Point(1 1),0.5)@2001-01-03} */
+SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.2)@2001-01-01',
+  'Cbuffer(Point(1 1), 0.4)@2001-01-02', 'Cbuffer(Point(1 1), 0.5)@2001-01-03']));
+/* [Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(1 1),0.4)@2001-01-02, 
+   Cbuffer(Point(1 1),0.5)@2001-01-03] */
+</pre></li><li class="listitem"><a name="tcbufferSeqSet"></a><a class="indexterm" name="id8975"></a><p>Constructor for temporal circular buffers of sequence set subtype</p><p><code class="varname">tcbufferSeqset(tcbuffer[]) → tcbufferSeqSet</code></p><p><code class="varname">tcbufferSeqSetGaps(tcbufferInst[],maxt=NULL,maxdist=NULL,interp='linear') →</code></p><p><code class="varname">  tcbufferSeqSet</code></p><pre class="programlisting">
+SELECT asText(tcbufferSeqSet(ARRAY[tcbuffer 
+  '[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(2 2),0.4)@2001-01-02]', 
+  '[Cbuffer(Point(2 2),0.6)@2001-01-03, Cbuffer(Point(2 2),0.8)@2001-01-04]']));
+/* {[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(2 2),0.4)@2001-01-02],
+   [Cbuffer(Point(2 2),0.6)@2001-01-03, Cbuffer(Point(2 2),0.6)@2001-01-04]} */
+SELECT asText(tcbufferSeqSetGaps(ARRAY[tcbuffer 'Cbuffer(Point(1 1),0.1)@2001-01-01',
+  'Cbuffer(Point(1 1),0.3)@2001-01-03', 'Cbuffer(Point(1 1),0.5)@2001-01-05'], '1 day'));
+/* {[Cbuffer(Point(1 1),0.1)@2001-01-01], [Cbuffer(Point(1 1),0.3)@2001-01-03], 
+   [Cbuffer(Point(1 1),0.5)@2001-01-05]} */
+</pre></li><li class="listitem"><a name="tgeompoint_tcbuffer"></a><a class="indexterm" name="id8987"></a><p>Construct a temporal circular buffer from a temporal geometry point and a temporal float</p><p><code class="varname">tcbuffer(tgeompoint, tfloat) → tcbuffer</code></p><p>The time frame of the result is the intersection of the time frames of the temporal point and the temporal float. If they do not intersect, a null value is returned</p><pre class="programlisting">
+SELECT asText(tcbuffer(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
+  tfloat '[1@2001-01-01, 2@2001-01-02)'));
+-- [Cbuffer(Point(1 1),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)
+SELECT asText(tcbuffer(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
+  tfloat '[2@2001-01-03, 3@2001-01-04)'));
+-- NULL
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Input and Output </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Conversions</td></tr></table></div></body></html>
