@@ -55,7 +55,7 @@
  * total length of the segment where the interpolated buffer must be located
  */
 Datum
-cbuffersegm_interpolate_point(Datum start, Datum end, long double ratio)
+cbuffersegm_interpolate(Datum start, Datum end, long double ratio)
 {
   Cbuffer *cbuf1 = DatumGetCbufferP(start);
   Cbuffer *cbuf2 = DatumGetCbufferP(end);

@@ -2354,7 +2354,7 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
 #if CBUFFER
   if (inst1->temptype == T_TCBUFFER)
   {
-    return cbuffersegm_interpolate_point(value1, value2, ratio);
+    return cbuffersegm_interpolate(value1, value2, ratio);
   }
 #endif
 #if NPOINT

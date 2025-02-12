@@ -42,7 +42,7 @@
 
 /*****************************************************************************/
 
-extern Datum cbuffersegm_interpolate_point(Datum start, Datum end,
+extern Datum cbuffersegm_interpolate(Datum start, Datum end,
   long double ratio);
 extern bool ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1, 
   const Temporal *temp2);

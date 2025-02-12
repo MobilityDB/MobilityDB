@@ -43,7 +43,7 @@ CREATE FUNCTION SRID(tcbuffer)
 
 CREATE FUNCTION setSRID(tcbuffer, integer)
   RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Tcbuffer_set_srid'
+  AS 'MODULE_PATHNAME', 'Tspatial_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION transform(tcbuffer, integer)

@@ -311,11 +311,10 @@ cbuffer_srid(const Cbuffer *cbuf)
  * @csqlfn #Cbuffer_set_srid()
  */
 void
-cbuffer_set_srid(const Cbuffer *cbuf, int32_t srid)
+cbuffer_set_srid(Cbuffer *cbuf, int32_t srid)
 {
   assert(cbuf);
-  Cbuffer *result = cbuffer_cp(cbuf);
-  GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&result->point));
+  GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
   gserialized_set_srid(gs, srid);
   return;
 }

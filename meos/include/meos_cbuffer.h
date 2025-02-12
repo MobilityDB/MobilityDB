@@ -93,7 +93,7 @@ extern char *cbuffer_out(const Cbuffer *cbuf, int maxdd);
 extern double cbuffer_radius(const Cbuffer *cbuf);
 extern const GSERIALIZED *cbuffer_point(const Cbuffer *cbuf);
 extern int32_t cbuffer_srid(const Cbuffer *cbuf);
-extern void cbuffer_set_srid(const Cbuffer *cbuf, int32_t srid);
+extern void cbuffer_set_srid(Cbuffer *cbuf, int32_t srid);
 extern Cbuffer *cbuffer_transform(const Cbuffer *cbuf, int32 srid);
 extern Cbuffer *cbuffer_transform_pipeline(const Cbuffer *cbuf, const char *pipelinestr, int32 srid, bool is_forward);
 extern char **cbufferarr_as_text(const Datum *cbufarr, int count, int maxdd, bool extended);
@@ -142,12 +142,6 @@ extern char **tcbufferarr_as_text(const Temporal **temparr, int count, int maxdd
 extern bool ensure_valid_stbox_cbuffer(const STBox *box, const Cbuffer *cbuf);
 extern bool ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tcbuffer_constructor(const Temporal *tpoint, const Temporal *tfloat);
-
-/*****************************************************************************
- * Transformation functions for temporal types
- *****************************************************************************/
-
-extern Temporal *tcbuffer_set_srid(const Temporal *temp, int32_t srid);
 
 /*****************************************************************************
  * Restriction functions for temporal types

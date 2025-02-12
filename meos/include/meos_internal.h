@@ -928,11 +928,11 @@ extern TSequenceSet *tgeompointseqset_tgeogpointseqset(const TSequenceSet *ss, b
 extern Temporal *tgeompoint_tgeogpoint(const Temporal *temp, bool oper);
 extern Temporal *tgeompoint_tnpoint(const Temporal *temp);
 extern Temporal *tnpoint_tgeompoint(const Temporal *temp);
-extern void tpointinst_set_srid(const TInstant *inst, int32 srid);
+extern void tpointinst_set_srid(TInstant *inst, int32 srid);
 extern TSequence **tpointseq_make_simple(const TSequence *seq, int *count);
-extern void tpointseq_set_srid(const TSequence *seq, int32 srid);
+extern void tpointseq_set_srid(TSequence *seq, int32 srid);
 extern TSequence **tpointseqset_make_simple(const TSequenceSet *ss, int *count);
-extern void tpointseqset_set_srid(const TSequenceSet *ss, int32 srid);
+extern void tpointseqset_set_srid(TSequenceSet *ss, int32 srid);
 
 /*****************************************************************************/
 
