@@ -32,7 +32,7 @@
  */
 
 
-#include "pose/tpose_static.h"
+#include "pose/pose.h"
 
 /* C */
 #include <common/hashfn.h>
@@ -179,7 +179,7 @@ pose_copy(Pose *pose)
  *****************************************************************************/
 
 int32
-pose_get_srid(const Pose *pose)
+pose_srid(const Pose *pose)
 {
   int32 srid = 0;
   srid = srid | (pose->srid[0] << 16);
@@ -223,10 +223,10 @@ pose_geom(const Pose *pose)
 {
   LWPOINT *point;
   if (MEOS_FLAGS_GET_Z(pose->flags))
-    point = lwpoint_make3dz(pose_get_srid(pose),
+    point = lwpoint_make3dz(pose_srid(pose),
       pose->data[0], pose->data[1], pose->data[2]);
   else
-    point = lwpoint_make2d(pose_get_srid(pose),
+    point = lwpoint_make2d(pose_srid(pose),
       pose->data[0], pose->data[1]);
   GSERIALIZED *gs = geo_serialize((LWGEOM *)point);
   lwpoint_free(point);
@@ -362,7 +362,7 @@ bool
 pose_eq(const Pose *pose1, const Pose *pose2)
 {
   if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags) ||
-      pose_get_srid(pose1) != pose_get_srid(pose2))
+      pose_srid(pose1) != pose_srid(pose2))
     return false;
   bool result = (
     float8_eq(pose1->data[0], pose2->data[0]) &&
@@ -395,7 +395,7 @@ bool
 pose_same(const Pose *pose1, const Pose *pose2)
 {
   if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags) ||
-      pose_get_srid(pose1) != pose_get_srid(pose2))
+      pose_srid(pose1) != pose_srid(pose2))
     return false;
   bool result = (
     MEOS_FP_EQ(pose1->data[0], pose2->data[0]) &&
@@ -436,8 +436,8 @@ pose_cmp(const Pose *pose1, const Pose *pose2)
   if (hasz1 != hasz2)
     return (hasz1 ? 1 : -1);
 
-  int32 srid1 = pose_get_srid(pose1),
-        srid2 = pose_get_srid(pose2);
+  int32 srid1 = pose_srid(pose1),
+        srid2 = pose_srid(pose2);
   if (srid1 < srid2)
     return -1;
   else if (srid1 > srid2)
@@ -520,7 +520,7 @@ pose_hash(const Pose *pose)
   size_t sz1 = VARSIZE(pose);
   size_t bsz1 = sz1 - hsz1;
   /* Calculate size of srid/type/coordinate buffer */
-  int32_t srid = pose_get_srid(pose);
+  int32_t srid = pose_srid(pose);
   size_t bsz2 = bsz1 + sizeof(int);
   uint8_t *b2 = palloc(bsz2);
   /* Copy srid into front of combined buffer */

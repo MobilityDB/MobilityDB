@@ -861,7 +861,7 @@ geoset_wkb_needs_srid(const Set *set, uint8_t variant)
   if (geoset_type(set->settype))
   {
     /* Add an SRID if the WKB form is extended and if the set has one */
-    if ((variant & WKB_EXTENDED) && geoset_srid(set) != SRID_UNKNOWN)
+    if ((variant & WKB_EXTENDED) && spatialset_srid(set) != SRID_UNKNOWN)
       return true;
   }
 
@@ -1047,7 +1047,7 @@ bool
 tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
 {
   /* Add an SRID if the WKB form is extended and if the temporal point has one */
-  if ((variant & WKB_EXTENDED) && tpoint_srid(temp) != SRID_UNKNOWN)
+  if ((variant & WKB_EXTENDED) && tspatial_srid(temp) != SRID_UNKNOWN)
     return true;
 
   /* Everything else doesn't get an SRID */
@@ -1557,7 +1557,7 @@ set_to_wkb_buf(const Set *set, uint8_t *buf, uint8_t variant)
   buf = set_flags_to_wkb_buf(set, buf, variant);
   /* Write the optional SRID for extended variant */
   if (geoset_wkb_needs_srid(set, variant))
-    buf = int32_to_wkb_buf(geoset_srid(set), buf, variant);
+    buf = int32_to_wkb_buf(spatialset_srid(set), buf, variant);
   /* Write the count */
   buf = int32_to_wkb_buf(set->count, buf, variant);
   /* Write the values */
@@ -1922,7 +1922,7 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   /* Write the optional SRID for extended variant */
   if (tgeo_type(inst->temptype) &&
       tpoint_wkb_needs_srid((Temporal *) inst, variant))
-    buf = int32_to_wkb_buf(tpointinst_srid(inst), buf, variant);
+    buf = int32_to_wkb_buf(tspatialinst_srid(inst), buf, variant);
   return tinstant_basevalue_time_to_wkb_buf(inst, buf, variant);
 }
 
@@ -1949,7 +1949,7 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   /* Write the optional SRID for extended variant */
   if (tgeo_type(seq->temptype) &&
       tpoint_wkb_needs_srid((Temporal *) seq, variant))
-    buf = int32_to_wkb_buf(tpointseq_srid(seq), buf, variant);
+    buf = int32_to_wkb_buf(tspatial_srid((Temporal *) seq), buf, variant);
   /* Write the count */
   buf = int32_to_wkb_buf(seq->count, buf, variant);
   /* Write the period bounds */
@@ -1987,7 +1987,7 @@ tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
   /* Write the optional SRID for extended variant */
   if (tgeo_type(ss->temptype) &&
       tpoint_wkb_needs_srid((Temporal *) ss, variant))
-    buf = int32_to_wkb_buf(tpointseqset_srid(ss), buf, variant);
+    buf = int32_to_wkb_buf(tspatial_srid((Temporal *) ss), buf, variant);
   /* Write the count */
   buf = int32_to_wkb_buf(ss->count, buf, variant);
   /* Write the sequences */

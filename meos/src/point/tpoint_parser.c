@@ -325,7 +325,9 @@ tpointinst_parse(const char **str, meosType temptype, bool end,
   GSERIALIZED *gs;
   if (! geo_parse(str, basetype, '@', tpoint_srid, &gs))
     return false;
+
   p_sepchar(str, '@');
+
   TimestampTz t = timestamp_parse(str);
   if (t == DT_NOEND ||
     /* Ensure there is no more input */

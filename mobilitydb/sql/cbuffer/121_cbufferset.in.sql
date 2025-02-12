@@ -175,24 +175,24 @@ CREATE FUNCTION getValues(cbufferset)
 
 CREATE FUNCTION SRID(cbufferset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Cbufferset_get_srid'
+  AS 'MODULE_PATHNAME', 'Spatialset_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION setSRID(cbufferset, integer)
   RETURNS cbufferset
-  AS 'MODULE_PATHNAME', 'Cbufferset_set_srid'
+  AS 'MODULE_PATHNAME', 'Spatialset_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION transform(cbufferset, integer)
-  -- RETURNS cbufferset
-  -- AS 'MODULE_PATHNAME', 'Cbufferset_transform'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transform(cbufferset, integer)
+  RETURNS cbufferset
+  AS 'MODULE_PATHNAME', 'Spatialset_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION transformPipeline(cbufferset, text, srid integer DEFAULT 0,
-    -- is_forward boolean DEFAULT true)
-  -- RETURNS cbufferset
-  -- AS 'MODULE_PATHNAME', 'Cbufferset_transform_pipeline'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transformPipeline(cbufferset, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS cbufferset
+  AS 'MODULE_PATHNAME', 'Spatialset_transform_pipeline'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Transformation set of values <-> set

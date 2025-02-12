@@ -38,7 +38,7 @@
 
 CREATE FUNCTION SRID(tnpoint)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Tnpoint_get_srid'
+  AS 'MODULE_PATHNAME', 'Tspatial_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

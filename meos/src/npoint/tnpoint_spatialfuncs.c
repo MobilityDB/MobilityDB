@@ -717,7 +717,7 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs)))
+      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
     return NULL;
 
   if (gserialized_is_empty(gs))

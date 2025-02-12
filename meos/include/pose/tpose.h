@@ -35,14 +35,11 @@
 #define __TPOSE_H__
 
 #include "general/temporal.h"
-#include "pose/tpose_static.h"
+#include "pose/pose.h"
 
 /*****************************************************************************/
 
 extern Temporal *tpose_to_tgeompoint(const Temporal *temp);
-
-extern int tpose_srid(const Temporal *temp);
-extern Temporal *tpose_set_srid(const Temporal *temp, int32 srid);
 
 /*****************************************************************************/
 

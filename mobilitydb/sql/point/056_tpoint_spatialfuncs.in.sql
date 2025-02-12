@@ -36,7 +36,7 @@
 
 CREATE FUNCTION SRID(stbox)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Stbox_get_srid'
+  AS 'MODULE_PATHNAME', 'Stbox_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setSRID(stbox, integer)
   RETURNS stbox
@@ -72,39 +72,39 @@ CREATE FUNCTION round(geography, integer DEFAULT 0)
 
 CREATE FUNCTION SRID(tgeompoint)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Tpoint_get_srid'
+  AS 'MODULE_PATHNAME', 'Tspatial_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION SRID(tgeogpoint)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Tpoint_get_srid'
+  AS 'MODULE_PATHNAME', 'Tspatial_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION setSRID(tgeompoint, integer)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpoint_set_srid'
+  AS 'MODULE_PATHNAME', 'Tspatial_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION transform(tgeompoint, integer)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpoint_transform'
+  AS 'MODULE_PATHNAME', 'Tspatial_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION transformPipeline(tgeompoint, text, srid integer DEFAULT 0,
     is_forward boolean DEFAULT true)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpoint_transform_pipeline'
+  AS 'MODULE_PATHNAME', 'Tspatial_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION setSRID(tgeogpoint, integer)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tpoint_set_srid'
+  AS 'MODULE_PATHNAME', 'Tspatial_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION transform(tgeogpoint, integer)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tpoint_transform'
+  AS 'MODULE_PATHNAME', 'Tspatial_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION transformPipeline(tgeogpoint, text, srid integer DEFAULT 0,
     is_forward boolean DEFAULT true)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tpoint_transform_pipeline'
+  AS 'MODULE_PATHNAME', 'Tspatial_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Gauss Kruger transformation

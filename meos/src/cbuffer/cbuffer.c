@@ -135,6 +135,20 @@ cbuffer_make(const GSERIALIZED *point, double radius)
   return result;
 }
 
+/**
+ * @ingroup meos_cbuffer_types
+ * @brief Return a copy of a circular buffer
+ * @param[in] cbuf Circular buffer
+ */
+Cbuffer *
+cbuffer_cp(const Cbuffer *cbuf)
+{
+  assert(cbuf);
+  Cbuffer *result = palloc(VARSIZE(cbuf));
+  memcpy(result, cbuf, VARSIZE(cbuf));
+  return result;
+}
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
@@ -277,7 +291,7 @@ cbufferarr_geom(Cbuffer **cbufarr, int nelems)
  * @ingroup meos_cbuffer_types
  * @brief Return the SRID of a circular buffer
  * @param[in] cbuf Circular buffer
- * @csqlfn #Cbuffer_get_srid()
+ * @csqlfn #Cbuffer_srid()
  */
 int32_t
 cbuffer_srid(const Cbuffer *cbuf)
@@ -291,24 +305,18 @@ cbuffer_srid(const Cbuffer *cbuf)
 
 /**
  * @ingroup meos_cbuffer_types
- * @brief Return a circular buffer with the coordinates of the point set to 
- * an SRID
+ * @brief Set the coordinates of the circular buffer to an SRID
  * @param[in] cbuf Circular buffer
  * @param[in] srid SRID
  * @csqlfn #Cbuffer_set_srid()
  */
-Cbuffer *
-cbuffer_set_srid(const Cbuffer *cbuf, int32_t srid)
+void
+cbuffer_set_srid(Cbuffer *cbuf, int32_t srid)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) cbuf))
-    return NULL;
-  Datum d = PointerGetDatum(&cbuf->point);
-  GSERIALIZED *gs = DatumGetGserializedP(datum_copy(d, T_CBUFFER));
+  assert(cbuf);
+  GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
   gserialized_set_srid(gs, srid);
-  Cbuffer *result = cbuffer_make(gs, cbuf->radius);
-  pfree(gs);
-  return result;
+  return;
 }
 
 /*****************************************************************************

@@ -42,8 +42,8 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "point/tpoint_spatialfuncs.h"
+#include "pose/pose.h"
 #include "pose/tpose.h"
-#include "pose/tpose_static.h"
 
 /*****************************************************************************
  * Interpolation functions defining functionality required by tsequence.c
@@ -105,7 +105,7 @@ bool
 tpose_ever_eq(const Temporal *temp, const Pose *pose)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_same_srid(tpose_srid(temp), pose_get_srid(pose)) ||
+  if (! ensure_same_srid(tspatial_srid(temp), pose_srid(pose)) ||
       ! ensure_same_spatial_dimensionality(temp->flags, pose->flags))
     return false;
   return ever_eq_temporal_base(temp, PosePGetDatum(pose));
@@ -120,7 +120,7 @@ bool
 tpose_always_eq(const Temporal *temp, const Pose *pose)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_same_srid(tpose_srid(temp), pose_get_srid(pose)) ||
+  if (! ensure_same_srid(tspatial_srid(temp), pose_srid(pose)) ||
       ! ensure_same_spatial_dimensionality(temp->flags, pose->flags))
     return false;
   return always_eq_temporal_base(temp, PosePGetDatum(pose));

@@ -38,32 +38,32 @@
 
 CREATE FUNCTION SRID(tcbuffer)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Tcbuffer_get_srid'
+  AS 'MODULE_PATHNAME', 'Tspatial_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION setSRID(tcbuffer, integer)
   RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Tcbuffer_set_srid'
+  AS 'MODULE_PATHNAME', 'Tspatial_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION transform(tcbuffer, integer)
   RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Tcbuffer_transform'
+  AS 'MODULE_PATHNAME', 'Tspatial_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION transformPipeline(tcbuffer, text, srid integer DEFAULT 0,
     is_forward boolean DEFAULT true)
   RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Tcbuffer_transform_pipeline'
+  AS 'MODULE_PATHNAME', 'Tspatial_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Trajectory
+ * Traversed area
  *****************************************************************************/
 
--- CREATE FUNCTION trajectory(tcbuffer)
+-- CREATE FUNCTION traversedArea(tcbuffer)
   -- RETURNS geometry
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_trajectory'
+  -- AS 'MODULE_PATHNAME', 'Tcbuffer_traversed_area'
   -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

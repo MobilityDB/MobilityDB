@@ -46,7 +46,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "pose/tpose_static.h"
+#include "pose/pose.h"
 
 /*****************************************************************************
  * Transform a temporal Pose to a STBox

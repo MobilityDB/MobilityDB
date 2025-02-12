@@ -77,7 +77,7 @@ int main(void)
   printf("----------------------------\n%s\n", str_out);
   free(str_out);
 
-  Temporal *trip_out = tpoint_transform(trip, 25832);
+  Temporal *trip_out = tspatial_transform(trip, 25832);
   str_out = tpoint_as_ewkt(trip_out, 6);
   printf("--------------------------------\n");
   printf(" Transformed trip in SRID 25832\n");

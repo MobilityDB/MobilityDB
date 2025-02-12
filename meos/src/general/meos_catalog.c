@@ -1228,6 +1228,27 @@ tnumber_spansettype(meosType type)
 #endif /* MEOS */
 
 /**
+ * @brief Return true if the type is a spatial type
+ */
+bool
+spatial_type(meosType type)
+{
+  if (type == T_GEOMETRY || type == T_GEOGRAPHY
+#if CBUFFER
+      || type == T_CBUFFER
+#endif
+#if NPOINT
+      || type == T_NPOINT
+#endif
+#if POSE
+      || type == T_POSE
+#endif
+      )
+    return true;
+  return false;
+}
+
+/**
  * @brief Return true if the type is a spatiotemporal type
  * @details This function is used for features common to all spatiotemporal
  * types, in particular, all of them use the same bounding box @ STBox.

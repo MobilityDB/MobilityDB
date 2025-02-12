@@ -35,7 +35,7 @@
 #define __TPOSE_SPATIALFUNCS_H__
 
 #include "general/temporal.h"
-#include "pose/tpose_static.h"
+#include "pose/pose.h"
 
 /*****************************************************************************/
 

@@ -304,7 +304,7 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
      * short crs when the SRID is different from SRID_UNKNOWN. Otherwise,
      * it is not possible to reconstruct the temporal point from the output
      * of this function without loosing the SRID */
-    int32_t srid = tpoint_srid(temp);
+    int32_t srid = tspatial_srid(temp);
     if (srid != SRID_UNKNOWN && !(option & 2) && !(option & 4))
       option |= 2;
     if (srid != SRID_UNKNOWN)

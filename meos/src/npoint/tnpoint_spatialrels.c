@@ -67,7 +67,7 @@ int
 ea_spatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   datum_func2 func, bool ever)
 {
-  assert(tnpoint_srid(temp1) == tnpoint_srid(temp2));
+  assert(tspatial_srid(temp1) == tspatial_srid(temp2));
   /* Transform the temporal network points */
   Temporal *tpoint1 = tnpoint_tgeompoint(temp1);
   Temporal *tpoint2 = tnpoint_tgeompoint(temp2);
@@ -666,7 +666,7 @@ ea_dwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2)))
+      ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
     return -1;
 
   Temporal *sync1, *sync2;

@@ -37,27 +37,26 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-/* MobilityDB */
+#include "pose/pose.h"
 #include "pose/tpose.h"
-#include "pose/tpose_static.h"
 #include "pose/tpose_spatialfuncs.h"
 
 /*****************************************************************************
  * Functions for spatial reference systems
  *****************************************************************************/
 
-PGDLLEXPORT Datum Pose_get_srid(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Pose_get_srid);
+PGDLLEXPORT Datum Pose_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_srid);
 /**
  * @ingroup mobilitydb_temporal_spatial_accessor
  * @brief Return the SRID of a temporal pose
  * @sqlfn SRID()
  */
 Datum
-Pose_get_srid(PG_FUNCTION_ARGS)
+Pose_srid(PG_FUNCTION_ARGS)
 {
   Pose *pose = PG_GETARG_POSE_P(0);
-  int result = pose_get_srid(pose);
+  int32_t result = pose_srid(pose);
   PG_FREE_IF_COPY(pose, 0);
   PG_RETURN_INT32(result);
 }
@@ -73,44 +72,11 @@ Datum
 Pose_set_srid(PG_FUNCTION_ARGS)
 {
   Pose *pose = PG_GETARG_POSE_P(0);
-  int32 srid = PG_GETARG_INT32(1);
+  int32_t srid = PG_GETARG_INT32(1);
   Pose *result = pose_copy(pose);
   pose_set_srid(result, srid);
   PG_FREE_IF_COPY(pose, 0);
   PG_RETURN_POSE_P(result);
-}
-
-PGDLLEXPORT Datum Tpose_get_srid(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_get_srid);
-/**
- * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Return the SRID of a temporal pose
- * @sqlfn SRID()
- */
-Datum
-Tpose_get_srid(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int result = tpose_srid(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_INT32(result);
-}
-
-PGDLLEXPORT Datum Tpose_set_srid(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_set_srid);
-/**
- * @ingroup mobilitydb_temporal_spatial_transf
- * @brief Set the SRID of a temporal pose
- * @sqlfn setSRID()
- */
-Datum
-Tpose_set_srid(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int32 srid = PG_GETARG_INT32(1);
-  Temporal *result = tpose_set_srid(temp, srid);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************

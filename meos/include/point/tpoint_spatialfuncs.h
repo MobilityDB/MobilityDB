@@ -181,8 +181,6 @@ extern TInstant *tpointinst_transform(const TInstant *inst, int32_t srid);
 extern TSequence *tpointseq_disc_transform(const TSequence *is, int32_t srid);
 extern TSequence *tpointseq_cont_transform(const TSequence *seq, int32_t srid);
 extern TSequenceSet *tpointseqset_transform(const TSequenceSet *ss, int32_t srid);
-extern Temporal *tpoint_transform(const Temporal *temp, int32_t srid);
-extern Temporal *tpoint_transform_pj(const Temporal *temp, int32 srid, const LWPROJ* pj);
 
 /* Stop function */
 

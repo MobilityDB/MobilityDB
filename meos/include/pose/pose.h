@@ -31,8 +31,8 @@
  * @brief Basic functions for static pose objects.
  */
 
-#ifndef __TPOSE_STATIC_H__
-#define __TPOSE_STATIC_H__
+#ifndef __POSE_H__
+#define __POSE_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -80,8 +80,8 @@ extern Pose *pose_make_3d(double x, double y, double z,
   double W, double X, double Y, double Z);
 extern Pose *pose_copy(Pose *pose);
 
-extern int32 pose_get_srid(const Pose *pose);
-extern void pose_set_srid(Pose *pose, int32 srid);
+extern int32_t pose_srid(const Pose *pose);
+extern void pose_set_srid(Pose *pose, int32_t srid);
 
 extern GSERIALIZED *pose_geom(const Pose *pose);
 extern Datum datum_pose_geom(Datum pose);
@@ -116,4 +116,4 @@ extern uint64 pose_hash_extended(const Pose *pose, uint64 seed);
 
 /*****************************************************************************/
 
-#endif /* __TPOSE_STATIC_H__ */
+#endif /* __POSE_H__ */

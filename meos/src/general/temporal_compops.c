@@ -743,7 +743,7 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2) ||
 	  (tgeo_type(temp1->temptype) && (
-          ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+          ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
           ! ensure_same_dimensionality(temp1->flags, temp2->flags))))
     return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
@@ -766,7 +766,7 @@ tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2) ||
       (tgeo_type(temp1->temptype) && (
-          ! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+          ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
           ! ensure_same_dimensionality(temp1->flags, temp2->flags))))
     return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);

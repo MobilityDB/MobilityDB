@@ -108,7 +108,7 @@ mobilitydb_init()
 static Temporal *
 tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 {
-  int32 srid = tpoint_srid(temp);
+  int32 srid = tspatial_srid(temp);
   uint8 subtype = temp->subtype;
   uint8 typmod_subtype = TYPMOD_GET_TEMPSUBTYPE(typmod);
   /* If there is no geometry type */

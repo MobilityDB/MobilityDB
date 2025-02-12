@@ -87,7 +87,7 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
     /* Test that the geometry is not empty */
     GSERIALIZED *gs = DatumGetGserializedP(value);
     assert(gserialized_get_type(gs) == POINTTYPE);
-    assert(tpoint_srid(temp) == gserialized_get_srid(gs));
+    assert(tspatial_srid(temp) == gserialized_get_srid(gs));
     assert(MEOS_FLAGS_GET_Z(temp->flags) == FLAGS_GET_Z(gs->gflags));
     if (gserialized_is_empty(gs))
       return false;
@@ -142,7 +142,7 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
   {
     GSERIALIZED *gs = DatumGetGserializedP(value);
     if (! ensure_point_type(gs) ||
-        ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
+        ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
         ! ensure_same_dimensionality_tpoint_gs(temp, gs))
     return NULL;
   }
@@ -221,7 +221,7 @@ temporal_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
   assert(temp); assert(s);
   if (tgeo_type(temp->temptype))
   {
-    assert(tpoint_srid(temp) == geoset_srid(s));
+    assert(tspatial_srid(temp) == spatialset_srid(s));
     assert(same_spatial_dimensionality(temp->flags, s->flags));
   }
 

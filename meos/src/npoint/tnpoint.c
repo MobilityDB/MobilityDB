@@ -227,7 +227,7 @@ Temporal *
 tgeompoint_tnpoint(const Temporal *temp)
 {
   assert(temp); assert(temp->temptype == T_TGEOMPOINT);
-  int32_t srid_tpoint = tpoint_srid(temp);
+  int32_t srid_tpoint = tspatial_srid(temp);
   int32_t srid_ways = get_srid_ways();
   if (! ensure_same_srid(srid_tpoint, srid_ways))
     return NULL;

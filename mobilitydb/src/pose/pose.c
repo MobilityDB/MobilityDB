@@ -32,7 +32,7 @@
  */
 
 
-#include "pose/tpose_static.h"
+#include "pose/pose.h"
 
 /* C */
 #include <assert.h>

@@ -215,7 +215,7 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
   bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
   /* Ensure validity of the arguments */
   if (! ensure_tgeo_type(temp->temptype) ||
-      ! ensure_geoaggstate(state, tpoint_srid(temp), hasz))
+      ! ensure_geoaggstate(state, tspatial_srid(temp), hasz))
     return NULL;
 
   datum_func2 func = hasz ? &datum_sum_double4 : &datum_sum_double3;
@@ -229,7 +229,7 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
     state = skiplist_make((void **) temparr, count);
     struct GeoAggregateState extra =
     {
-      .srid = tpoint_srid(temp),
+      .srid = tspatial_srid(temp),
       .hasz = hasz
     };
     aggstate_set_extra(state, &extra, sizeof(struct GeoAggregateState));
@@ -272,7 +272,7 @@ tpoint_extent_transfn(STBox *box, const Temporal *temp)
   }
 
   /* Both box and temporal are not null */
-  if (! ensure_same_srid(tpoint_srid(temp), stbox_srid(box)) ||
+  if (! ensure_same_srid(tspatial_srid(temp), stbox_srid(box)) ||
       ! ensure_same_dimensionality(temp->flags, box->flags) ||
       ! ensure_same_geodetic(temp->flags, box->flags))
     return NULL;

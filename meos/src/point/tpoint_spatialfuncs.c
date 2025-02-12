@@ -351,7 +351,7 @@ bool
 ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 {
   if (tgeo_type(temp1->temptype) &&
-      (! ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)) ||
+      (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
        ! ensure_same_dimensionality(temp1->flags, temp2->flags)))
     return false;
   return true;
@@ -731,7 +731,7 @@ ensure_valid_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
     FLAGS_GET_GEODETIC(gs->gflags) ? T_TGEOGPOINT : T_TGEOMPOINT;
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_tgeo_type(temp->temptype) ||
-      ! ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs)) ||
+      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_temporal_isof_type(temp, tgeotype))
     return false;
   return true;
@@ -760,7 +760,7 @@ ensure_valid_tpoint_box(const Temporal *temp, const STBox *box)
   if (ensure_not_null((void *) temp) && ensure_not_null((void *) box) &&
       ensure_tgeo_type(temp->temptype) && ensure_has_X_stbox(box) &&
       ensure_same_geodetic(temp->flags, box->flags) &&
-      ensure_same_srid(tpoint_srid(temp), stbox_srid(box)))
+      ensure_same_srid(tspatial_srid(temp), stbox_srid(box)))
     return true;
   return false;
 }
@@ -774,7 +774,7 @@ ensure_valid_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
   if (ensure_not_null((void *) temp1) && ensure_not_null((void *) temp2) &&
       ensure_tgeo_type(temp1->temptype) &&
       ensure_same_temporal_type(temp1, temp2) &&
-      ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2)))
+      ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
     return true;
   return false;
 }
@@ -2073,7 +2073,7 @@ TInstant *
 tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 {
   assert(inst); assert(tgeo_type(inst->temptype));
-  int32_t srid = tpointinst_srid(inst);
+  int32_t srid = tspatialinst_srid(inst);
   GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   geom->srid = srid;
@@ -2322,7 +2322,7 @@ tpointseq_disc_to_geomeas(const TSequence *seq, const TSequence *meas)
     return tpointinst_to_geomeas(inst, m);
 
   /* General case */
-  int32_t srid = tpointseq_srid(seq);
+  int32_t srid = tspatial_srid((Temporal *) seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
@@ -2362,7 +2362,7 @@ tpointseq_cont_to_geomeas(const TSequence *seq, const TSequence *meas)
       meas ? TSEQUENCE_INST_N(meas, 0) : NULL);
 
   /* General case */
-  int32_t srid = tpointseq_srid(seq);
+  int32_t srid = tspatial_srid((Temporal *) seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
@@ -2437,7 +2437,7 @@ tpointseqset_to_geomeas(const TSequenceSet *ss, const TSequenceSet *meas)
     return tpointseq_cont_to_geomeas(seq1, seq2);
   }
 
-  int32_t srid = tpointseqset_srid(ss);
+  int32_t srid = tspatial_srid((Temporal *) ss);
   bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
   bool linear = MEOS_FLAGS_LINEAR_INTERP(ss->flags);
@@ -2513,7 +2513,7 @@ tpointseq_cont_to_geomeas_segm(const TSequence *seq, const TSequence *meas)
       meas ? TSEQUENCE_INST_N(meas, 0) : NULL);
 
   /* General case */
-  int32_t srid = tpointseq_srid(seq);
+  int32_t srid = tspatial_srid((Temporal *) seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
@@ -2575,7 +2575,7 @@ tpointseqset_to_geomeas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
     return tpointseq_cont_to_geomeas_segm(seq1, seq2);
   }
 
-  int32_t srid = tpointseqset_srid(ss);
+  int32_t srid = tspatial_srid((Temporal *) ss);
   bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(ss->flags);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ss->totalcount);
@@ -3134,7 +3134,7 @@ tpointinst_affine_iter(const TInstant *inst, const AFFINE *a, int32_t srid,
 static TInstant *
 tpointinst_affine(const TInstant *inst, const AFFINE *a)
 {
-  int32_t srid = tpointinst_srid(inst);
+  int32_t srid = tspatialinst_srid(inst);
   bool hasz = MEOS_FLAGS_GET_Z(inst->flags);
   TInstant *result;
   tpointinst_affine_iter(inst, a, srid, hasz, &result);
@@ -3147,7 +3147,7 @@ tpointinst_affine(const TInstant *inst, const AFFINE *a)
 static TSequence *
 tpointseq_affine(const TSequence *seq, const AFFINE *a)
 {
-  int32_t srid = tpointseq_srid(seq);
+  int32_t srid = tspatial_srid((Temporal *) seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -3376,7 +3376,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
   if (grid->xsize == 0 && grid->ysize == 0 && (hasz ? grid->zsize == 0 : 1))
     return tinstant_copy(inst);
 
-  int32_t srid = tpointinst_srid(inst);
+  int32_t srid = tspatialinst_srid(inst);
   Datum value = tinstant_val(inst);
   POINT4D p;
   point_grid(value, hasz, grid, &p);
@@ -3396,7 +3396,7 @@ static TSequence *
 tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 {
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
-  int32_t srid = tpointseq_srid(seq);
+  int32_t srid = tspatial_srid((Temporal *) seq);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int ninsts = 0;
   for (int i = 0; i < seq->count; i++)
@@ -3522,7 +3522,7 @@ tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
   /* Clip temporal point taking into account the buffer */
   double max = (double) extent + (double) buffer;
   double min = -(double) buffer;
-  int32_t srid = tpoint_srid(tpoint);
+  int32_t srid = tspatial_srid(tpoint);
   STBox clip_box;
   stbox_set(true, false, false, srid, min, max, min, max, 0, 0, NULL,
     &clip_box);
@@ -4131,7 +4131,7 @@ GSERIALIZED *
 tpointseq_twcentroid(const TSequence *seq)
 {
   assert(seq); assert(tgeo_type(seq->temptype));
-  int32_t srid = tpointseq_srid(seq);
+  int32_t srid = tspatial_srid((Temporal *) seq);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   TSequence *seqx, *seqy, *seqz;
@@ -4157,7 +4157,7 @@ GSERIALIZED *
 tpointseqset_twcentroid(const TSequenceSet *ss)
 {
   assert(ss); assert(tgeo_type(ss->temptype));
-  int32_t srid = tpointseqset_srid(ss);
+  int32_t srid = tspatial_srid((Temporal *) ss);
   bool hasz = MEOS_FLAGS_GET_Z(ss->flags);
   interpType interp = MEOS_FLAGS_GET_INTERP(ss->flags);
   TSequence **sequencesx = palloc(sizeof(TSequence *) * ss->count);
@@ -4613,7 +4613,7 @@ tpoint_geo_min_bearing_at_timestamptz(const TInstant *start,
     geographic_point_init(p->x, -89.999999, &(e1.end));
     edge_intersection(&e, &e1, &inter);
     proj = PointerGetDatum(geopoint_make(rad2deg(inter.lon),
-      rad2deg(inter.lat), 0, false, true, tpointinst_srid(start)));
+      rad2deg(inter.lat), 0, false, true, tspatialinst_srid(start)));
     fraction = geosegm_locate_point(dstart, dend, proj, NULL);
   }
   else
