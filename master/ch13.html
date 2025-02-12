@@ -22,12 +22,12 @@ SELECT radius(cbuffer 'Cbuffer(Point(1 1), 0.3)');
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="cbuffer_spatial_functions"></a>Spatial Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_srid"></a><a class="indexterm" name="id8697"></a><p>Return the spatial reference identifier</p><p><code class="varname">srid(cbuffer) → integer</code></p><pre class="programlisting">
 SELECT SRID(cbuffer 'Cbuffer(SRID=5676;Point(1 1), 0.3)');
 -- 5676
-</pre></li><li class="listitem"><a name="cbuffer_setSRID"></a><a class="indexterm" name="id8705"></a><p>TODO Set the spatial reference identifier</p><p><code class="varname">setSRID(cbuffer) → cbuffer</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="cbuffer_setSRID"></a><a class="indexterm" name="id8705"></a><p>Set the spatial reference identifier</p><p><code class="varname">setSRID(cbuffer) → cbuffer</code></p><pre class="programlisting">
 SELECT asEWKT(setSRID(cbuffer 'Cbuffer(Point(0 0),1)', 4326));
--- SRID=4326;Cbuffer(POINT(0 0),1)
-</pre></li><li class="listitem"><a name="cbuffer_transform"></a><a class="indexterm" name="id8713"></a><a class="indexterm" name="id8716"></a><p>TODO Transform to a different spatial reference</p><p><code class="varname">transform(cbuffer,integer) → cbuffer</code></p><p><code class="varname">transform(cbuffer,pipeline text,to_srid integer,is_forward bool=true) → cbuffer</code></p><p>The <code class="varname">transform</code> function specifies the transformation with a target SRID. An error is raised when the input circular buffer has an unknown SRID (represented by 0).</p><p>The <code class="varname">transformPipeline</code> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code>. The SRID of the input circular buffer is ignored, and the SRID of the output circular buffer will be set to zero unless a value is provided via the optional <code class="varname">to_srid</code> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</p><pre class="programlisting">
-SELECT asEWKT(transform(cbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85)', 3812));
--- SRID=3812;Cbuffer(POINT(648679.018035303 671067.055638114),2)
+-- Cbuffer(SRID=4326;POINT(0 0),1)
+</pre></li><li class="listitem"><a name="cbuffer_transform"></a><a class="indexterm" name="id8713"></a><a class="indexterm" name="id8716"></a><p>Transform to a different spatial reference</p><p><code class="varname">transform(cbuffer,integer) → cbuffer</code></p><p><code class="varname">transform(cbuffer,pipeline text,to_srid integer,is_forward bool=true) → cbuffer</code></p><p>The <code class="varname">transform</code> function specifies the transformation with a target SRID. An error is raised when the input circular buffer has an unknown SRID (represented by 0).</p><p>The <code class="varname">transformPipeline</code> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code>. The SRID of the input circular buffer is ignored, and the SRID of the output circular buffer will be set to zero unless a value is provided via the optional <code class="varname">to_srid</code> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</p><pre class="programlisting">
+SELECT asEWKT(transform(cbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)', 3812));
+-- Cbuffer(SRID=3812;POINT(648679.0180353033 671067.0556381135),1)
 </pre><pre class="programlisting">
 WITH test(cbuffer, pipeline) AS (
   SELECT cbuffer 'Cbuffer(SRID=4326;Point(4.3525 50.846667),1)',
@@ -35,7 +35,7 @@ WITH test(cbuffer, pipeline) AS (
 SELECT asEWKT(transformPipeline(transformPipeline(cbuffer, pipeline, 4326),
   pipeline, 4326, false), 6)
 FROM test;
--- SRID=4326;Cbuffer(POINT(4.3525 50.846667),1)
+-- Cbuffer(SRID=4326;POINT(4.3525 50.846667),1)
 </pre></li></ul></div><p>Values of the <code class="varname">cbuffer</code> type can be converted to the <code class="varname">geometry</code> type using an explicit <code class="varname">CAST</code> or using the <code class="varname">::</code> notation as shown next.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="cbuffer_geometry"></a><a class="indexterm" name="id8739"></a><p>Convert a circular buffer to a geometry</p><p><code class="varname">cbuffer::geometry</code></p><pre class="programlisting">
 SELECT ST_AsText(cbuffer(ST_Point(1,1), 1)::geometry);
 --  CURVEPOLYGON(CIRCULARSTRING(0 0,2 2,0 0))

@@ -30,13 +30,14 @@ SELECT asText(points(tcbuffer '{Cbuffer(Point(3 3), 0.3)@2001-01-01,
 SELECT asText(valueAtTimestamp(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(3 3), 0.5)@2001-01-03)', '2001-01-02'));
 -- Cbuffer(Point(2 2),0.4)
-</pre></li><li class="listitem"><a name="tcbuffer_setSRID"></a><a class="indexterm" name="id9090"></a><p>TODO Set the spatial reference identifier</p><p><code class="varname">setSRID(tcbuffer) → tcbuffer</code></p><pre class="programlisting">
-SELECT asEWKT(setSRID(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)', 4326));
+</pre></li><li class="listitem"><a name="tcbuffer_setSRID"></a><a class="indexterm" name="id9090"></a><p>Set the spatial reference identifier</p><p><code class="varname">setSRID(tcbuffer) → tcbuffer</code></p><pre class="programlisting">
+SELECT asEWKT(setSRID(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, 
+  Cbuffer(Point(1 1),2)@2001-01-02)', 4326));
 -- SRID=4326;[Cbuffer(POINT(0 0),1)@2001-01-01, Cbuffer(POINT(1 1),2)@2001-01-02)
-</pre></li><li class="listitem"><a name="tcbuffer_transform"></a><a class="indexterm" name="id9098"></a><a class="indexterm" name="id9101"></a><p>TODO Transform to a different spatial reference</p><p><code class="varname">transform(tcbuffer,integer) → tcbuffer</code></p><p><code class="varname">transform(tcbuffer,pipeline text,to_srid integer,is_forward bool=true) → tcbuffer</code></p><p>The <code class="varname">transform</code> function specifies the transformation with a target SRID. An error is raised when the input temporal circular buffer has an unknown SRID (represented by 0).</p><p>The <code class="varname">transformPipeline</code> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code>. The SRID of the input temporal circular buffer is ignored, and the SRID of the output temporal circular buffer will be set to zero unless a value is provided via the optional <code class="varname">to_srid</code> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbuffer_transform"></a><a class="indexterm" name="id9098"></a><a class="indexterm" name="id9101"></a><p>Transform to a different spatial reference</p><p><code class="varname">transform(tcbuffer,integer) → tcbuffer</code></p><p><code class="varname">transform(tcbuffer,pipeline text,to_srid integer,is_forward bool=true) → tcbuffer</code></p><p>The <code class="varname">transform</code> function specifies the transformation with a target SRID. An error is raised when the input temporal circular buffer has an unknown SRID (represented by 0).</p><p>The <code class="varname">transformPipeline</code> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code>. The SRID of the input temporal circular buffer is ignored, and the SRID of the output temporal circular buffer will be set to zero unless a value is provided via the optional <code class="varname">to_srid</code> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</p><pre class="programlisting">
 SELECT asEWKT(transform(tcbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)@2001-01-01', 
   3812));
--- SRID=3812;Cbuffer(POINT(648679.018035303 671067.055638114),2)@2001-01-01
+-- SRID=3812;Cbuffer(POINT(648679.0180353033 671067.0556381135),1)@2001-01-01
 </pre><pre class="programlisting">
 WITH test(tcbuffer, pipeline) AS (
   SELECT tcbuffer 'SRID=4326;{Cbuffer(Point(4.3525 50.846667),1)@2001-01-01,
@@ -45,8 +46,8 @@ WITH test(tcbuffer, pipeline) AS (
 SELECT asEWKT(transformPipeline(transformPipeline(tcbuffer, pipeline, 4326),
   pipeline, 4326, false), 6)
 FROM test;
-/* SRID=4326;{Cbuffer(POINT(4.3525 50.846667),1)@2001-01-01,
-   Cbuffer(POINT(-0.1275 51.507222 100),2)@2001-01-02} */
+/* SRID=4326;{Cbuffer(POINT(4.3525 50.846667),1)@2001-01-01, 
+   Cbuffer(POINT(-0.1275 51.507222),2)@2001-01-02} */
 </pre></li><li class="listitem"><a name="tcbuffer_traversedArea"></a><a class="indexterm" name="id9118"></a><p>TODO Return the area traversed by the temporal circular buffer</p><p><code class="varname">traversedArea(tcbuffer) → geometry</code></p><pre class="programlisting">
 SELECT traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.5)@2001-01-02]');
@@ -57,7 +58,7 @@ SELECT stbox(cbuffer 'Cbuffer(Point(1 1),0.3)');
 SELECT stbox(cbuffer 'Cbuffer(Point(1 1),0.3)', timestamptz '2001-01-01');
 -- STBOX XT(((0.7,0.7),(1.3,1.3)),[2001-01-01, 2001-01-01])
 SELECT stbox(cbuffer 'Cbuffer(Point(1 1),0.3)', tstzspan '[2001-01-01,2001-01-02]');
--- STBOX XT(((0.7,0.7),(1.3,1.3)),[2001-01-01 00:00:00+01, 2001-01-02 00:00:00+01])
+-- STBOX XT(((0.7,0.7),(1.3,1.3)),[2001-01-01, 2001-01-02])
 </pre></li><li class="listitem"><a name="tcbuffer_nearestApproachInstant"></a><a class="indexterm" name="id9136"></a><p>TODO Return the instant of the first temporal circular buffer at which the two arguments are at the nearest distance </p><p><code class="varname">nearestApproachInstant({geo,cbuffer,tpoint},{geo,cbuffer,tpoint}) → tpoint</code></p><pre class="programlisting">
 SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
