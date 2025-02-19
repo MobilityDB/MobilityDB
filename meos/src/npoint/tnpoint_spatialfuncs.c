@@ -40,8 +40,8 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/type_util.h"
-#include "point/pgis_types.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/pgis_types.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Parameter tests
@@ -269,11 +269,12 @@ tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
 }
 
 /*****************************************************************************
- * Geographical equality for network points
+ * Approximate equality for network points
  *****************************************************************************/
 
 /**
- * @brief Return true if two network points are spatially equal
+ * @brief Return true if two network points are approximately equal with
+ * respect to an epsilon value
  * @details Two network points may be have different route identifier but
  * represent the same spatial point at the intersection of the two route
  * identifiers
@@ -281,12 +282,13 @@ tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
 bool
 npoint_same(const Npoint *np1, const Npoint *np2)
 {
-  /* Same route identifier */
-  if (np1->rid == np2->rid)
-    return fabs(np1->pos - np2->pos) < MEOS_EPSILON;
+  /* Equal route identifier and same position */
+  if (np1->rid == np2->rid && fabs(np1->pos - np2->pos) > MEOS_EPSILON)
+    return false;
+  /* Same point */
   Datum point1 = PointerGetDatum(npoint_geom(np1));
   Datum point2 = PointerGetDatum(npoint_geom(np2));
-  bool result = datum_eq(point1, point2, T_GEOMETRY);
+  bool result = datum_point_same(point1, point2);
   pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
   return result;
 }
@@ -727,7 +729,7 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
       return NULL;
     return result;
   }
-  if (! ensure_has_not_Z_gs(gs))
+  if (! ensure_has_not_Z_geo(gs))
     return NULL;
 
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
@@ -760,7 +762,7 @@ tnpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs))
+  if (! ensure_valid_tgeo_geo(temp, gs))
     return NULL;
   return tnpoint_restrict_geom(temp, gs, zspan, REST_AT);
 }
@@ -778,7 +780,7 @@ tnpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs))
+  if (! ensure_valid_tgeo_geo(temp, gs))
     return NULL;
   return tnpoint_restrict_geom(temp, gs, zspan, REST_MINUS);
 }

@@ -38,8 +38,8 @@
 #include <meos.h>
 #include <meos_cbuffer.h>
 #include <meos_internal.h>
-#include "point/pgis_types.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/pgis_types.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/tcbuffer.h"
 // #include "cbuffer/tcbuffer_spatialfuncs.h"
 
@@ -67,6 +67,19 @@ cbuffersegm_interpolate(Datum start, Datum end, long double ratio)
     (double) ((long double)(cbuf2->radius - cbuf1->radius) * ratio);
   Cbuffer *result = cbuffer_make(point, radius);
   return PointerGetDatum(result);
+}
+
+/**
+ * @brief Ensure the validity of a temporal circular buffer and a circular buffer
+ */
+bool
+ensure_valid_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
+{
+  if (ensure_not_null((void *) temp) && ensure_not_null((void *) cbuf) &&
+      ensure_temporal_isof_type(temp, T_TCBUFFER) &&
+      ensure_same_srid(tspatial_srid(temp), cbuffer_srid(cbuf)))
+    return true;
+  return false;
 }
 
 /**

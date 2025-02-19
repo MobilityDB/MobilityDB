@@ -109,7 +109,7 @@ CREATE OPERATOR CLASS tnpoint_rtree_ops
   -- functions
   FUNCTION  1 tnpoint_gist_consistent(internal, tnpoint, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
-  FUNCTION  3 tpoint_gist_compress(internal),
+  FUNCTION  3 tspatial_gist_compress(internal),
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal);
@@ -187,7 +187,7 @@ CREATE OPERATOR CLASS tnpoint_quadtree_ops
   FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
   FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6 tpoint_spgist_compress(internal);
+  FUNCTION  6 tspatial_spgist_compress(internal);
 
 /******************************************************************************/
 
@@ -261,6 +261,6 @@ CREATE OPERATOR CLASS tnpoint_kdtree_ops
   FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
   FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6 tpoint_spgist_compress(internal);
+  FUNCTION  6 tspatial_spgist_compress(internal);
 
 /******************************************************************************/

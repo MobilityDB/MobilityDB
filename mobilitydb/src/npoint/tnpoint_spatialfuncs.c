@@ -38,12 +38,12 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/span.h"
-#include "point/stbox.h"
-#include "point/tpoint_restrfuncs.h"
+#include "geo/stbox.h"
+#include "geo/tpoint_restrfuncs.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_point/postgis.h"
+#include "pg_geo/postgis.h"
 
 /*****************************************************************************
  * Geometric positions (Trajectory) functions
@@ -67,7 +67,7 @@ Tnpoint_trajectory(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Geographical equality for network points
+ * Approximate equality for network points
  *****************************************************************************/
 
 PGDLLEXPORT Datum Npoint_same(PG_FUNCTION_ARGS);

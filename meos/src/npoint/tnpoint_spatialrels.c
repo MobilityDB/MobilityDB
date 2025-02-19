@@ -47,8 +47,8 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
-#include "point/tpoint_spatialfuncs.h"
-#include "point/tpoint_spatialrels.h"
+#include "geo/tgeo_spatialfuncs.h"
+#include "geo/tgeo_spatialrels.h"
 #include "npoint/tnpoint.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 
@@ -110,8 +110,8 @@ ea_contains_geo_tnpoint(const GSERIALIZED *gs, const Temporal *temp, bool ever)
   if (gserialized_is_empty(gs))
     return -1;
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  int result = ever ? econtains_geo_tpoint(gs, tempgeom) :
-    acontains_geo_tpoint(gs, tempgeom);
+  int result = ever ? econtains_geo_tgeo(gs, tempgeom) :
+    acontains_geo_tgeo(gs, tempgeom);
   pfree(tempgeom);
   return result;
 }
@@ -160,8 +160,8 @@ ea_contains_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool ever)
   assert(np); assert(temp);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = npoint_geom(np);
-  int result = ever ? econtains_geo_tpoint(gs, tempgeom) :
-    acontains_geo_tpoint(gs, tempgeom);
+  int result = ever ? econtains_geo_tgeo(gs, tempgeom) :
+    acontains_geo_tgeo(gs, tempgeom);
   pfree(tempgeom); pfree(gs);
   return result;
 }
@@ -213,8 +213,8 @@ ea_disjoint_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   if (gserialized_is_empty(gs))
     return -1;
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  int result = ever ? edisjoint_tpoint_geo(tempgeom, gs) :
-    adisjoint_tpoint_geo(tempgeom, gs);
+  int result = ever ? edisjoint_tgeo_geo(tempgeom, gs) :
+    adisjoint_tgeo_geo(tempgeom, gs);
   pfree(tempgeom);
   return result;
 }
@@ -263,8 +263,8 @@ ea_disjoint_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool ever)
   assert(temp); assert(np);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = npoint_geom(np);
-  int result = ever ? edisjoint_tpoint_geo(tempgeom, gs) :
-    adisjoint_tpoint_geo(tempgeom, gs);
+  int result = ever ? edisjoint_tgeo_geo(tempgeom, gs) :
+    adisjoint_tgeo_geo(tempgeom, gs);
   pfree(tempgeom); pfree(gs);
   return result;
 }
@@ -345,8 +345,8 @@ ea_intersects_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (gserialized_is_empty(gs))
     return -1;
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  int result = ever ? eintersects_tpoint_geo(tempgeom, gs) :
-    aintersects_tpoint_geo(tempgeom, gs);
+  int result = ever ? eintersects_tgeo_geo(tempgeom, gs) :
+    aintersects_tgeo_geo(tempgeom, gs);
   pfree(tempgeom);
   return result;
 }
@@ -395,8 +395,8 @@ ea_intersects_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool ever)
   assert(temp); assert(np);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = npoint_geom(np);
-  int result = ever ? eintersects_tpoint_geo(tempgeom, gs) :
-    aintersects_tpoint_geo(tempgeom, gs);
+  int result = ever ? eintersects_tgeo_geo(tempgeom, gs) :
+    aintersects_tgeo_geo(tempgeom, gs);
   pfree(tempgeom); pfree(gs);
   return result;
 }
@@ -450,8 +450,8 @@ ea_touches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   if (gserialized_is_empty(gs))
     return -1;
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  int result = ever ? etouches_tpoint_geo(tempgeom, gs) :
-    atouches_tpoint_geo(tempgeom, gs);
+  int result = ever ? etouches_tgeo_geo(tempgeom, gs) :
+    atouches_tgeo_geo(tempgeom, gs);
   pfree(tempgeom);
   return result;
 }
@@ -500,8 +500,8 @@ ea_touches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool ever)
   assert(temp); assert(np);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = npoint_geom(np);
-  int result = ever ? etouches_tpoint_geo(tempgeom, gs) :
-    atouches_tpoint_geo(tempgeom, gs);
+  int result = ever ? etouches_tgeo_geo(tempgeom, gs) :
+    atouches_tgeo_geo(tempgeom, gs);
   pfree(tempgeom); pfree(gs);
   return result;
 }
@@ -557,8 +557,8 @@ ea_dwithin_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs,
   if (gserialized_is_empty(gs))
     return -1;
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  int result = ever ? edwithin_tpoint_geo(tempgeom, gs, dist) :
-    adwithin_tpoint_geo(tempgeom, gs, dist);
+  int result = ever ? edwithin_tgeo_geo(tempgeom, gs, dist) :
+    adwithin_tgeo_geo(tempgeom, gs, dist);
   pfree(tempgeom);
   return result;
 }
@@ -611,8 +611,8 @@ ea_dwithin_tnpoint_npoint(const Temporal *temp, const Npoint *np, double dist,
   assert(temp); assert(np);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = npoint_geom(np);
-  int result = ever ? edwithin_tpoint_geo(tempgeom, gs, dist) :
-    adwithin_tpoint_geo(tempgeom, gs, dist);
+  int result = ever ? edwithin_tgeo_geo(tempgeom, gs, dist) :
+    adwithin_tgeo_geo(tempgeom, gs, dist);
   pfree(tempgeom); pfree(gs);
   return result;
 }
@@ -677,7 +677,7 @@ ea_dwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
 
   Temporal *tpoint1 = tnpoint_tgeompoint(sync1);
   Temporal *tpoint2 = tnpoint_tgeompoint(sync2);
-  bool result = ea_dwithin_tpoint_tpoint_sync(tpoint1, tpoint2, dist, ever);
+  bool result = ea_dwithin_tgeo_tgeo_sync(tpoint1, tpoint2, dist, ever);
   pfree(tpoint1); pfree(tpoint2);
   pfree(sync1); pfree(sync2);
   return result ? 1 : 0;

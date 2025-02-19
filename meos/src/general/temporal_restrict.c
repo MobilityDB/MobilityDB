@@ -58,8 +58,8 @@
 #include "general/tsequenceset.h"
 #include "general/type_util.h"
 #include "general/type_parser.h"
-#include "point/tpoint_parser.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_parser.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Bounding box tests for the restriction functions
@@ -82,20 +82,23 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
     value_set_span(value, temptype_basetype(temp->temptype), &span2);
     return cont_span_span(&span1, &span2);
   }
-  if (tgeo_type(temp->temptype))
+  if (tspatial_type(temp->temptype))
   {
-    /* Test that the geometry is not empty */
-    GSERIALIZED *gs = DatumGetGserializedP(value);
-    assert(gserialized_get_type(gs) == POINTTYPE);
-    assert(tspatial_srid(temp) == gserialized_get_srid(gs));
-    assert(MEOS_FLAGS_GET_Z(temp->flags) == FLAGS_GET_Z(gs->gflags));
-    if (gserialized_is_empty(gs))
-      return false;
+    meosType basetype = temptype_basetype(temp->temptype);
+    assert(tspatial_srid(temp) == spatial_srid(value, basetype));
+    if (tgeo_type(temp->temptype))
+    {
+      /* Test that the geometry is not empty */
+      GSERIALIZED *gs = DatumGetGserializedP(value);
+      assert(MEOS_FLAGS_GET_Z(temp->flags) == FLAGS_GET_Z(gs->gflags));
+      if (gserialized_is_empty(gs))
+        return false;
+    }
     if (temp->subtype != TINSTANT)
     {
       STBox box1, box2;
       tspatial_set_stbox(temp, &box1);
-      geo_set_stbox(gs, &box2);
+      spatial_set_stbox(value, basetype, &box2);
       return contains_stbox_stbox(&box1, &box2);
     }
   }
@@ -141,9 +144,8 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
   if (tgeo_type(temp->temptype))
   {
     GSERIALIZED *gs = DatumGetGserializedP(value);
-    if (! ensure_point_type(gs) ||
-        ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
-        ! ensure_same_dimensionality_tpoint_gs(temp, gs))
+    if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
+        ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return NULL;
   }
 
@@ -197,7 +199,7 @@ temporal_bbox_restrict_set(const Temporal *temp, const Set *s)
     set_set_span(s, &span2);
     return over_span_span(&span1, &span2);
   }
-  if (tgeo_type(temp->temptype) && temp->subtype != TINSTANT)
+  if (tpoint_type(temp->temptype) && temp->subtype != TINSTANT)
   {
     STBox box;
     tspatial_set_stbox(temp, &box);
@@ -219,7 +221,7 @@ Temporal *
 temporal_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
 {
   assert(temp); assert(s);
-  if (tgeo_type(temp->temptype))
+  if (tpoint_type(temp->temptype))
   {
     assert(tspatial_srid(temp) == spatialset_srid(s));
     assert(same_spatial_dimensionality(temp->flags, s->flags));

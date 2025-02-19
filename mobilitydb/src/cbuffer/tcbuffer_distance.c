@@ -38,7 +38,7 @@
 #include <meos.h>
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_point/postgis.h"
+#include "pg_geo/postgis.h"
 
 /*****************************************************************************
  * Temporal distance

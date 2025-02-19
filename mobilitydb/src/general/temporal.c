@@ -53,12 +53,12 @@
 #include "general/temporal_boxops.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
-#include "point/tpoint.h"
+#include "geo/tgeo.h"
 /* MobilityDB */
 #include "pg_general/doxygen_mobilitydb_api.h"
 #include "pg_general/meos_catalog.h"
 #include "pg_general/type_util.h"
-#include "pg_point/tpoint_spatialfuncs.h"
+#include "pg_geo/tpoint_spatialfuncs.h"
 
 /* To avoid including fmgrprotos.h */
 extern PGDLLEXPORT Datum timestamp_mi(PG_FUNCTION_ARGS);

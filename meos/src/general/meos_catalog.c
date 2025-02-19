@@ -120,6 +120,8 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_CBUFFER] = "cbuffer",
   [T_CBUFFERSET] = "cbufferset",
   [T_TCBUFFER] = "tcbuffer",
+  [T_TGEOMETRY] = "tgeometry",
+  [T_TGEOGRAPHY] = "tgeography",
 };
 
 /**
@@ -270,6 +272,8 @@ static const temptype_catalog_struct MEOS_TEMPTYPE_CATALOG[] =
   {T_TNPOINT,    T_NPOINT},
   {T_TPOSE,      T_POSE},
   {T_TCBUFFER,   T_CBUFFER},
+  {T_TGEOMETRY,  T_GEOMETRY},
+  {T_TGEOGRAPHY, T_GEOGRAPHY},
 };
 
 /*****************************************************************************/
@@ -741,7 +745,7 @@ set_basetype(meosType type)
       type == T_INT8 || type == T_FLOAT8 || type == T_TEXT ||
       type == T_GEOMETRY || type == T_GEOGRAPHY
 #if CBUFFER
-	    || type == T_CBUFFER
+      || type == T_CBUFFER
 #endif
 #if NPOINT
       || type == T_NPOINT
@@ -762,7 +766,7 @@ set_type(meosType type)
       type == T_BIGINTSET || type == T_FLOATSET || type == T_TEXTSET ||
       type == T_GEOMSET || type == T_GEOGSET
 #if CBUFFER
-	    || type == T_CBUFFERSET
+      || type == T_CBUFFERSET
 #endif
 #if NPOINT
       || type == T_NPOINTSET
@@ -1066,6 +1070,9 @@ temporal_type(meosType type)
 #if CBUFFER
     || type == T_TCBUFFER
 #endif
+#if GEO
+    || type == T_TGEOMETRY || type == T_TGEOGRAPHY
+#endif
 #if NPOINT
     || type == T_TNPOINT
 #endif
@@ -1261,6 +1268,9 @@ tspatial_type(meosType type)
 #if CBUFFER
       || type == T_TCBUFFER
 #endif
+#if GEO
+      || type == T_TGEOMETRY || type == T_TGEOGRAPHY
+#endif
 #if NPOINT
       || type == T_TNPOINT
 #endif
@@ -1313,7 +1323,7 @@ tspatial_basetype(meosType type)
  * @brief Return true if the type is a temporal point type
  */
 bool
-tgeo_type(meosType type)
+tpoint_type(meosType type)
 {
   if (type == T_TGEOMPOINT || type == T_TGEOGPOINT)
     return true;
@@ -1324,12 +1334,37 @@ tgeo_type(meosType type)
  * @brief Ensure that a temporal value is a temporal point type
  */
 bool
+ensure_tpoint_type(meosType type)
+{
+  if (tpoint_type(type))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The temporal value must be a temporal point type");
+  return false;
+}
+
+/**
+ * @brief Return true if the type is a temporal point type
+ */
+bool
+tgeo_type(meosType type)
+{
+  meosType basetype = temptype_basetype(type);
+  if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Ensure that a temporal value is a temporal geometry/geography type
+ */
+bool
 ensure_tgeo_type(meosType type)
 {
   if (tgeo_type(type))
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-    "The temporal value must be a temporal point type");
+    "The temporal value must be a temporal geometry/geography type");
   return false;
 }
 
@@ -1338,9 +1373,9 @@ ensure_tgeo_type(meosType type)
  * type
  */
 bool
-ensure_tnumber_tgeo_type(meosType type)
+ensure_tnumber_tpoint_type(meosType type)
 {
-  if (tnumber_type(type) || tgeo_type(type))
+  if (tnumber_type(type) || tpoint_type(type))
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
     "The temporal value must be a temporal number or a temporal point type");

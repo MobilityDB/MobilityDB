@@ -35,7 +35,7 @@
  * They are kept if needed in the future.
  */
 
-#include "npoint/npoint.h"
+#include "npoint/tnpoint.h"
 
 /* PostgreSQL */
 #include <libpq/pqformat.h>
@@ -50,7 +50,7 @@
 #include "general/type_round.h"
 #include "npoint/tnpoint.h"
 /* MobilityDB */
-#include "pg_point/postgis.h"
+#include "pg_geo/postgis.h"
 
 /*****************************************************************************
  * Input/Output functions for network point

@@ -121,7 +121,7 @@ int main(void)
       sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
         rec.Latitude, t_out);
       Temporal *inst1 = tgeogpoint_in(point_buffer);
-      char *inst1_out = tpoint_as_text(inst1, 2);
+      char *inst1_out = tgeo_as_text(inst1, 2);
 
       TInstant *inst2 = tfloatinst_make(rec.SOG, rec.T);
       char *inst2_out = tfloat_out((Temporal *) inst2, 2);

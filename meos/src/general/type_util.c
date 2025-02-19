@@ -50,13 +50,13 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/span.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include "cbuffer/tcbuffer.h"
   #include "cbuffer/tcbuffer_parser.h"
 #endif
 #if NPOINT
-  #include "npoint/npoint.h"
+  #include "npoint/tnpoint.h"
   #include "npoint/tnpoint_parser.h"
 #endif
 #if POSE
@@ -185,10 +185,15 @@ datum_eq(Datum l, Datum r, meosType type)
       return double3_eq(DatumGetDouble3P(l), DatumGetDouble3P(r));
     case T_DOUBLE4:
       return double4_eq(DatumGetDouble4P(l), DatumGetDouble4P(r));
+    /* This was the case BEFORE tgeometry/tgeography types were introduced */
+    // case T_GEOMETRY:
+      // return datum_point_eq(l, r);
+    // case T_GEOGRAPHY:
+      // return datum_point_same(l, r);
     case T_GEOMETRY:
-      return datum_point_eq(l, r);
+      return geo_equals(DatumGetGserializedP(l), DatumGetGserializedP(r));
     case T_GEOGRAPHY:
-      return datum_point_same(l, r);
+      return geo_same(DatumGetGserializedP(l), DatumGetGserializedP(r));
 #if CBUFFER
     case T_CBUFFER:
       return cbuffer_eq(DatumGetCbufferP(l), DatumGetCbufferP(r));

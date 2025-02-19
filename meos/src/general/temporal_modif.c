@@ -53,8 +53,8 @@
 #include "general/tsequenceset.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "point/tpoint_parser.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_parser.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_distance.h"
   #include "npoint/tnpoint_spatialfuncs.h"
@@ -476,7 +476,7 @@ temporal_merge_array(const Temporal **temparr, int count)
   uint8 subtype, origsubtype;
   subtype = origsubtype = temparr[0]->subtype;
   interpType interp = MEOS_FLAGS_GET_INTERP(temparr[0]->flags);
-  bool spatial = tgeo_type(temparr[0]->temptype);
+  bool spatial = tspatial_type(temparr[0]->temptype);
   bool convert = false;
   for (int i = 1; i < count; i++)
   {

@@ -22,7 +22,7 @@
  *
  **********************************************************************/
 
-/* MobilityDB: We only include from the original file the functions necessary
+/* MEOS: We only include from the original file the functions necessary
  * to test the inclusion of a point in a polygon. This file is originally
  * located in the /postgis directory */
 

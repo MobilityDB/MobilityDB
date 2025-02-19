@@ -1,0 +1,96 @@
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geom_point WHERE g #= temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography, tbl_geog_point WHERE g #= temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+ count 
+-------
+   152
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+ count 
+-------
+   148
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geom_point3D WHERE g #= temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D, tbl_geog_point3D WHERE g #= temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+ count 
+-------
+   150
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+ count 
+-------
+   150
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geom_point WHERE g #<> temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography, tbl_geog_point WHERE g #<> temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+ count 
+-------
+   152
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+ count 
+-------
+   148
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geom_point3D WHERE g #<> temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D, tbl_geog_point3D WHERE g #<> temp IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+ count 
+-------
+   150
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+ count 
+-------
+   150
+(1 row)
+

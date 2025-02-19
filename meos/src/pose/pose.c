@@ -47,7 +47,7 @@
 #include "meos.h"
 #include "meos_internal.h"
 #include "general/pg_types.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "pose/tpose_parser.h"
 
 /** Buffer size for input and output of pose values */

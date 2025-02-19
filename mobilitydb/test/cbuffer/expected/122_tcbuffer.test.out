@@ -1,0 +1,2268 @@
+SELECT asText(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+                                                                                     astext                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05] }');
+                                                                                                                                             astext                                                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbuffer '  Cbuffer (  Point(1 1)  ,   0.5  )  @  2000-01-01  ');
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tcbuffer '  {  Cbuffer( Point(1 1) , 0.3 ) @ 2000-01-01  , Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5) @  2000-01-03   }   ');
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbuffer '  [  Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbuffer '  {  [  Cbuffer(Point(1 1), 0.2)@2000-01-01 ,  Cbuffer  (  Point(1 1) , 0.4 ) @2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbuffer'{[Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05, Cbuffer(Point(2 2), 0.6)@2000-01-06]}');
+                                                                                                            astext                                                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Thu Jan 06 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbuffer 'Cbuffer(Point(1 1), 0.123456789)@2000-01-01', 6);
+                          astext                           
+-----------------------------------------------------------
+ Cbuffer(POINT(1 1),0.123457)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tcbuffer '{Cbuffer(Point(1 1), 0.123456789)@2000-01-01, Cbuffer(Point(1 1), 0.523456789)@2000-01-02, Cbuffer(Point(1 1), 0.123456789)@2000-01-03}', 6);
+                                                                                      astext                                                                                       
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.123457)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.523457)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.123457)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbuffer '[Cbuffer(Point(1 1), 0.123456789)@2000-01-01, Cbuffer(Point(1 1), 0.523456789)@2000-01-02, Cbuffer(Point(1 1), 0.123456789)@2000-01-03]', 6);
+                                                                                      astext                                                                                       
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.123457)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.523457)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.123457)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbuffer '{[Cbuffer(Point(1 1), 0.123456789)@2000-01-01, Cbuffer(Point(1 1), 0.523456789)@2000-01-02, Cbuffer(Point(1 1), 0.123456789)@2000-01-03],[Cbuffer(Point(2 2), 0.723456789)@2000-01-04, Cbuffer(Point(2 2), 0.723456789)@2000-01-05]}', 6);
+                                                                                                                                                   astext                                                                                                                                                    
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.123457)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.523457)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.123457)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.723457)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.723457)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.123456789)@2000-01-01, Cbuffer(Point(1 1), 0.523456789)@2000-01-02, Cbuffer(Point(1 1), 0.123456789)@2000-01-03]', 6);
+                                                                                            astext                                                                                             
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[Cbuffer(POINT(1 1),0.123457)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.523457)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.123457)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1), 0.123456789)@2000-01-01, Cbuffer(Point(1 1), 0.523456789)@2000-01-02, Cbuffer(Point(1 1), 0.123456789)@2000-01-03],[Cbuffer(Point(2 2), 0.723456789)@2000-01-04, Cbuffer(Point(2 2), 0.723456789)@2000-01-05]}', 6);
+                                                                                                                                                         astext                                                                                                                                                          
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[Cbuffer(POINT(1 1),0.123457)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.523457)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.123457)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.723457)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.723457)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01')));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}')));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]')));
+                                                                                     astext                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05] }')));
+                                                                                                                                             astext                                                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 'NDR')));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', 'NDR')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 'NDR')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', 'NDR')));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 'NDR')));
+                                                                                     astext                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05] }', 'NDR')));
+                                                                                                                                             astext                                                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 'XDR')));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', 'XDR')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 'XDR')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', 'XDR')));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 'XDR')));
+                                                                                     astext                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromBinary(asBinary(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05] }', 'XDR')));
+                                                                                                                                             astext                                                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01')));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}')));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]')));
+                                                                                     astext                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05] }')));
+                                                                                                                                             astext                                                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 'NDR')));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', 'NDR')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 'NDR')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', 'NDR')));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 'NDR')));
+                                                                                     astext                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05] }', 'NDR')));
+                                                                                                                                             astext                                                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 'XDR')));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', 'XDR')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 'XDR')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', 'XDR')));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 'XDR')));
+                                                                                     astext                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05] }', 'XDR')));
+                                                                                                                                             astext                                                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbuffer('Cbuffer(Point(1 1),0)'::cbuffer, '2012-01-01'::timestamp));
+                       astext                       
+----------------------------------------------------
+ Cbuffer(POINT(1 1),0)@Sun Jan 01 00:00:00 2012 PST
+(1 row)
+
+SELECT asText(tcbufferSeq(ARRAY['Cbuffer(Point(1 1),0)@2012-01-01'::tcbuffer, 'Cbuffer(Point(2 2),1)@2012-02-01'::tcbuffer], 'discrete'));
+                                                  astext                                                  
+----------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0)@Sun Jan 01 00:00:00 2012 PST, Cbuffer(POINT(2 2),1)@Wed Feb 01 00:00:00 2012 PST}
+(1 row)
+
+SELECT asText(tcbufferSeq(ARRAY['Cbuffer(Point(1 1),0)@2012-01-01'::tcbuffer, 'Cbuffer(Point(1 1),1)@2012-02-01'::tcbuffer], 'linear', true, false));
+                                                  astext                                                  
+----------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0)@Sun Jan 01 00:00:00 2012 PST, Cbuffer(POINT(1 1),1)@Wed Feb 01 00:00:00 2012 PST)
+(1 row)
+
+SELECT asText(tcbufferSeqSet(ARRAY[tcbuffer '[Cbuffer(Point(1 1),0)@2012-01-01, Cbuffer(Point(1 1),1)@2012-02-01]', '[Cbuffer(Point(2 2),0)@2012-03-01, Cbuffer(Point(2 2),1)@2012-04-01]']));
+                                                                                                        astext                                                                                                        
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0)@Sun Jan 01 00:00:00 2012 PST, Cbuffer(POINT(1 1),1)@Wed Feb 01 00:00:00 2012 PST], [Cbuffer(POINT(2 2),0)@Thu Mar 01 00:00:00 2012 PST, Cbuffer(POINT(2 2),1)@Sun Apr 01 00:00:00 2012 PDT]}
+(1 row)
+
+SELECT asText(tcbufferInst(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(setInterp(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 'discrete'));
+                         astext                         
+--------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbufferSeq(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01'));
+                         astext                         
+--------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferSeqSet(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01'));
+                          astext                          
+----------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferInst(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01}'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(setInterp(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', 'discrete'));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbufferSeq(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01}'));
+                         astext                         
+--------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbufferSeqSet(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}'));
+                                                                                  astext                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST], [Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST], [Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferInst(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2000-01-01]'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(setInterp(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2000-01-01]', 'discrete'));
+                         astext                         
+--------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbufferSeq(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]'));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferSeqSet(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]'));
+                                                                                astext                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferInst(tcbuffer '{[Cbuffer(Point(1 1), 0.3)@2000-01-01]}'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(setInterp(tcbuffer '{[Cbuffer(Point(1 1), 0.3)@2000-01-01], [Cbuffer(Point(2 2), 0.6)@2000-01-04]}', 'discrete'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbufferSeq(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]}'));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferSeqSet(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}'));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(setInterp(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 'linear'));
+                                                                                                                                        astext                                                                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.2)@Sun Jan 02 00:00:00 2000 PST), [Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Mon Jan 03 00:00:00 2000 PST), [Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(setInterp(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', 'linear'));
+                                                                                                                                                                                               astext                                                                                                                                                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.2)@Sun Jan 02 00:00:00 2000 PST), [Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Mon Jan 03 00:00:00 2000 PST), [Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1), 0.123456789)@2012-01-01, Cbuffer(Point(1 1), 0.5)@2012-01-02)}', 6));
+                                                       astext                                                        
+---------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.123457)@Sun Jan 01 00:00:00 2012 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 02 00:00:00 2012 PST)}
+(1 row)
+
+SELECT asText(appendInstant(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1), 0.7)@2000-01-02'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.7)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(appendInstant(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', tcbuffer 'Cbuffer(Point(1 1), 0.7)@2000-01-04'));
+                                                                                                          astext                                                                                                          
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.7)@Tue Jan 04 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(appendInstant(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', tcbuffer 'Cbuffer(Point(1 1), 0.7)@2000-01-04'));
+                                                                                                          astext                                                                                                          
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.7)@Tue Jan 04 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(appendInstant(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05] }', tcbuffer 'Cbuffer(Point(2 2), 0.7)@2000-01-06'));
+                                                                                                                                                                  astext                                                                                                                                                                  
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.7)@Thu Jan 06 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(appendSequence(tcbuffer '{Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(2 2), 0.4)@2000-01-02}', tcbuffer '{Cbuffer(Point(3 3), 0.6)@2000-01-03}'));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(3 3),0.6)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02]', tcbuffer '[Cbuffer(Point(1 1), 0.6)@2000-01-03]'));
+                                                                                 astext                                                                                 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST], [Cbuffer(POINT(1 1),0.6)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01'::tgeompoint, 6));
+                 astext                  
+-----------------------------------------
+ POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}'::tgeompoint, 6));
+                                                           astext                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ {POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(1 1)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]'::tgeompoint, 6));
+                                       astext                                       
+------------------------------------------------------------------------------------
+ [POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05] }'::tgeompoint, 6));
+                                                                                  astext                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST], [POINT(2 2)@Tue Jan 04 00:00:00 2000 PST, POINT(2 2)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT round(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01'::tfloat, 6);
+              round               
+----------------------------------
+ 0.5@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT round(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}'::tfloat, 6);
+                                                 round                                                  
+--------------------------------------------------------------------------------------------------------
+ {0.3@Sat Jan 01 00:00:00 2000 PST, 0.5@Sun Jan 02 00:00:00 2000 PST, 0.5@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]'::tfloat, 6);
+                                                 round                                                  
+--------------------------------------------------------------------------------------------------------
+ [0.2@Sat Jan 01 00:00:00 2000 PST, 0.4@Sun Jan 02 00:00:00 2000 PST, 0.5@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05] }'::tfloat, 6);
+                                                                                     round                                                                                      
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[0.2@Sat Jan 01 00:00:00 2000 PST, 0.4@Sun Jan 02 00:00:00 2000 PST, 0.5@Mon Jan 03 00:00:00 2000 PST], [0.6@Tue Jan 04 00:00:00 2000 PST, 0.6@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tempSubtype(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT tempSubtype(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT tempSubtype(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+ tempsubtype 
+-------------
+ Sequence
+(1 row)
+
+SELECT tempSubtype(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+ tempsubtype 
+-------------
+ SequenceSet
+(1 row)
+
+SELECT memSize(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+ memsize 
+---------
+      64
+(1 row)
+
+SELECT memSize(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+ memsize 
+---------
+     320
+(1 row)
+
+SELECT memSize(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+ memsize 
+---------
+     320
+(1 row)
+
+SELECT memSize(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+ memsize 
+---------
+     688
+(1 row)
+
+SELECT asText(getValue(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01'));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(getValues(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01'));
+           astext            
+-----------------------------
+ {"Cbuffer(POINT(1 1),0.5)"}
+(1 row)
+
+SELECT asText(getValues(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}'));
+                         astext                         
+--------------------------------------------------------
+ {"Cbuffer(POINT(1 1),0.3)", "Cbuffer(POINT(1 1),0.5)"}
+(1 row)
+
+SELECT asText(getValues(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]'));
+                                      astext                                       
+-----------------------------------------------------------------------------------
+ {"Cbuffer(POINT(1 1),0.2)", "Cbuffer(POINT(1 1),0.4)", "Cbuffer(POINT(1 1),0.5)"}
+(1 row)
+
+SELECT asText(getValues(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ {"Cbuffer(POINT(1 1),0.2)", "Cbuffer(POINT(1 1),0.4)", "Cbuffer(POINT(1 1),0.5)", "Cbuffer(POINT(2 2),0.6)"}
+(1 row)
+
+SELECT getTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+                            gettime                             
+----------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]}
+(1 row)
+
+SELECT getTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+                                                                                          gettime                                                                                           
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST], [Sun Jan 02 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST], [Mon Jan 03 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT getTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+                            gettime                             
+----------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT getTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+                                                           gettime                                                            
+------------------------------------------------------------------------------------------------------------------------------
+ {[Sat Jan 01 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST], [Tue Jan 04 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT timeSpan(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+                           timespan                           
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST]
+(1 row)
+
+SELECT timeSpan(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+                           timespan                           
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT timeSpan(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+                           timespan                           
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT timeSpan(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+                           timespan                           
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST]
+(1 row)
+
+SELECT duration(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', true);
+ duration 
+----------
+ 00:00:00
+(1 row)
+
+SELECT duration(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', true);
+ duration 
+----------
+ 2 days
+(1 row)
+
+SELECT duration(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', true);
+ duration 
+----------
+ 2 days
+(1 row)
+
+SELECT duration(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', true);
+ duration 
+----------
+ 4 days
+(1 row)
+
+SELECT duration(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+ duration 
+----------
+ 00:00:00
+(1 row)
+
+SELECT duration(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+ duration 
+----------
+ 00:00:00
+(1 row)
+
+SELECT duration(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+ duration 
+----------
+ 2 days
+(1 row)
+
+SELECT duration(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+ duration 
+----------
+ 3 days
+(1 row)
+
+SELECT getTimestamp(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+         gettimestamp         
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(shiftTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', '5 min'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:05:00 2000 PST
+(1 row)
+
+SELECT asText(shiftTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', '5 min'));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:05:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:05:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:05:00 2000 PST}
+(1 row)
+
+SELECT asText(shiftTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', '5 min'));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:05:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:05:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:05:00 2000 PST]
+(1 row)
+
+SELECT asText(shiftTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', '5 min'));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:05:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:05:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:05:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:05:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:05:00 2000 PST]}
+(1 row)
+
+SELECT asText(scaleTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', '1 day'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(scaleTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', '1 day'));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sat Jan 01 12:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(scaleTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', '1 day'));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sat Jan 01 12:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(scaleTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', '1 day'));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sat Jan 01 06:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sat Jan 01 12:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Sat Jan 01 18:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' ?= 'Cbuffer(Point(1 1), 0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' ?= 'Cbuffer(Point(1 1), 0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' ?= 'Cbuffer(Point(1 1), 0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' ?= 'Cbuffer(Point(1 1), 0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' %= 'Cbuffer(Point(1 1), 0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' %= 'Cbuffer(Point(1 1), 0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' %= 'Cbuffer(Point(1 1), 0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' %= 'Cbuffer(Point(1 1), 0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT asText(shiftTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', '1 year'::interval));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(shiftTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', '1 year'::interval));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST}
+(1 row)
+
+SELECT asText(shiftTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', '1 year'::interval));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(shiftTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', '1 year'::interval));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(startValue(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01'));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(startValue(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}'));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.3)
+(1 row)
+
+SELECT asText(startValue(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]'));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.2)
+(1 row)
+
+SELECT asText(startValue(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}'));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.2)
+(1 row)
+
+SELECT asText(endValue(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01'));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(endValue(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}'));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(endValue(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]'));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(endValue(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}'));
+         astext          
+-------------------------
+ Cbuffer(POINT(2 2),0.6)
+(1 row)
+
+SELECT asText(valueN(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 1));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(valueN(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', 1));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.3)
+(1 row)
+
+SELECT asText(valueN(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 1));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.2)
+(1 row)
+
+SELECT asText(valueN(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', 1));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.2)
+(1 row)
+
+SELECT numInstants(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+ numinstants 
+-------------
+           1
+(1 row)
+
+SELECT numInstants(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+ numinstants 
+-------------
+           3
+(1 row)
+
+SELECT numInstants(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+ numinstants 
+-------------
+           3
+(1 row)
+
+SELECT numInstants(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+ numinstants 
+-------------
+           5
+(1 row)
+
+SELECT asText(startInstant(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(startInstant(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(startInstant(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(startInstant(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(endInstant(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(endInstant(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(endInstant(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(endInstant(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(instantN(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 1));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(instantN(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', 1));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(instantN(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 1));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(instantN(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', 1));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(instants(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01'));
+                          astext                          
+----------------------------------------------------------
+ {"Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT asText(instants(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}'));
+                                                                                 astext                                                                                 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST","Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST","Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST"}
+(1 row)
+
+SELECT asText(instants(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]'));
+                                                                                 astext                                                                                 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST","Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST","Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST"}
+(1 row)
+
+SELECT asText(instants(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}'));
+                                                                                                                                        astext                                                                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST","Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST","Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST","Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST","Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST"}
+(1 row)
+
+SELECT numTimestamps(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+ numtimestamps 
+---------------
+             1
+(1 row)
+
+SELECT numTimestamps(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+ numtimestamps 
+---------------
+             3
+(1 row)
+
+SELECT numTimestamps(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+ numtimestamps 
+---------------
+             3
+(1 row)
+
+SELECT numTimestamps(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+ numtimestamps 
+---------------
+             5
+(1 row)
+
+SELECT startTimestamp(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+        starttimestamp        
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT startTimestamp(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+        starttimestamp        
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT startTimestamp(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+        starttimestamp        
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT startTimestamp(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+        starttimestamp        
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT endTimestamp(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+         endtimestamp         
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT endTimestamp(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+         endtimestamp         
+------------------------------
+ Mon Jan 03 00:00:00 2000 PST
+(1 row)
+
+SELECT endTimestamp(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+         endtimestamp         
+------------------------------
+ Mon Jan 03 00:00:00 2000 PST
+(1 row)
+
+SELECT endTimestamp(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+         endtimestamp         
+------------------------------
+ Wed Jan 05 00:00:00 2000 PST
+(1 row)
+
+SELECT timestampN(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 1);
+          timestampn          
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT timestampN(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', 1);
+          timestampn          
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT timestampN(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 1);
+          timestampn          
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT timestampN(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', 1);
+          timestampn          
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT timestamps(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+            timestamps            
+----------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT timestamps(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+                                           timestamps                                           
+------------------------------------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST","Sun Jan 02 00:00:00 2000 PST","Mon Jan 03 00:00:00 2000 PST"}
+(1 row)
+
+SELECT timestamps(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+                                           timestamps                                           
+------------------------------------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST","Sun Jan 02 00:00:00 2000 PST","Mon Jan 03 00:00:00 2000 PST"}
+(1 row)
+
+SELECT timestamps(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+                                                                          timestamps                                                                          
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST","Sun Jan 02 00:00:00 2000 PST","Mon Jan 03 00:00:00 2000 PST","Tue Jan 04 00:00:00 2000 PST","Wed Jan 05 00:00:00 2000 PST"}
+(1 row)
+
+SELECT numSequences(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+ numsequences 
+--------------
+            2
+(1 row)
+
+SELECT asText(startSequence(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}'));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(endSequence(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(sequenceN(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', 1));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(sequences(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}'));
+                                                                                                                                        astext                                                                                                                                         
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]","[Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]"}
+(1 row)
+
+SELECT startTimestamp(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+        starttimestamp        
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT startTimestamp(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+        starttimestamp        
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT startTimestamp(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+        starttimestamp        
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT startTimestamp(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+        starttimestamp        
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT endTimestamp(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+         endtimestamp         
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT endTimestamp(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+         endtimestamp         
+------------------------------
+ Mon Jan 03 00:00:00 2000 PST
+(1 row)
+
+SELECT endTimestamp(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+         endtimestamp         
+------------------------------
+ Mon Jan 03 00:00:00 2000 PST
+(1 row)
+
+SELECT endTimestamp(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+         endtimestamp         
+------------------------------
+ Wed Jan 05 00:00:00 2000 PST
+(1 row)
+
+SELECT timestampN(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 1);
+          timestampn          
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT timestampN(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', 1);
+          timestampn          
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT timestampN(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 1);
+          timestampn          
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT timestampN(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', 1);
+          timestampn          
+------------------------------
+ Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT timestamps(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
+            timestamps            
+----------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST"}
+(1 row)
+
+SELECT timestamps(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
+                                           timestamps                                           
+------------------------------------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST","Sun Jan 02 00:00:00 2000 PST","Mon Jan 03 00:00:00 2000 PST"}
+(1 row)
+
+SELECT timestamps(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
+                                           timestamps                                           
+------------------------------------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST","Sun Jan 02 00:00:00 2000 PST","Mon Jan 03 00:00:00 2000 PST"}
+(1 row)
+
+SELECT timestamps(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
+                                                                          timestamps                                                                          
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"Sat Jan 01 00:00:00 2000 PST","Sun Jan 02 00:00:00 2000 PST","Mon Jan 03 00:00:00 2000 PST","Tue Jan 04 00:00:00 2000 PST","Wed Jan 05 00:00:00 2000 PST"}
+(1 row)
+
+SELECT asText(atValues(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(atValues(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(atValues(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
+                          astext                          
+----------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(atValues(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
+                          astext                          
+----------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(minusValues(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(minusValues(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
+                         astext                         
+--------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(minusValues(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
+                                                                                astext                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST)}
+(1 row)
+
+SELECT asText(minusValues(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST), [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(atValues(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', cbufferset '{"Cbuffer(Point(1 1), 0.5)"}'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(atValues(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', cbufferset '{"Cbuffer(Point(1 1), 0.5)"}'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(atValues(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', cbufferset '{"Cbuffer(Point(1 1), 0.5)"}'));
+                          astext                          
+----------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(atValues(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', cbufferset '{"Cbuffer(Point(1 1), 0.5)"}'));
+                          astext                          
+----------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(minusValues(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', cbufferset '{"Cbuffer(Point(1 1), 0.5)"}'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(minusValues(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', cbufferset '{"Cbuffer(Point(1 1), 0.5)"}'));
+                         astext                         
+--------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(minusValues(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', cbufferset '{"Cbuffer(Point(1 1), 0.5)"}'));
+                                                                                astext                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST)}
+(1 row)
+
+SELECT asText(minusValues(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', cbufferset '{"Cbuffer(Point(1 1), 0.5)"}'));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST), [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(atTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(atTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(atTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(atTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', timestamptz '2000-01-01'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(valueAtTimestamp(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', '2000-01-01'));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(valueAtTimestamp(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', '2000-01-01'));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.3)
+(1 row)
+
+SELECT asText(valueAtTimestamp(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', '2000-01-01'));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.2)
+(1 row)
+
+SELECT asText(valueAtTimestamp(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', '2000-01-01'));
+         astext          
+-------------------------
+ Cbuffer(POINT(1 1),0.2)
+(1 row)
+
+SELECT asText(minusTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(minusTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(minusTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01'));
+                                                                                astext                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(minusTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', timestamptz '2000-01-01'));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(atTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', tstzset '{2000-01-01}'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(atTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', tstzset '{2000-01-01}'));
+                         astext                         
+--------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(atTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', tstzset '{2000-01-01}'));
+                         astext                         
+--------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(atTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', tstzset '{2000-01-01}'));
+                         astext                         
+--------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(minusTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', tstzset '{2000-01-01}'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(minusTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', tstzset '{2000-01-01}'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(minusTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', tstzset '{2000-01-01}'));
+                                                                                astext                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(minusTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', tstzset '{2000-01-01}'));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(atTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', tstzspan '[2000-01-01, 2000-01-02]'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(atTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', tstzspan '[2000-01-01, 2000-01-02]'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(atTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', tstzspan '[2000-01-01, 2000-01-02]'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(atTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', tstzspan '[2000-01-01, 2000-01-02]'));
+                                                     astext                                                     
+----------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(minusTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', tstzspan '[2000-01-01, 2000-01-02]'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(minusTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', tstzspan '[2000-01-01, 2000-01-02]'));
+                         astext                         
+--------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(minusTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', tstzspan '[2000-01-01, 2000-01-02]'));
+                                                     astext                                                     
+----------------------------------------------------------------------------------------------------------------
+ {(Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(minusTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', tstzspan '[2000-01-01, 2000-01-02]'));
+                                                                                                            astext                                                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(atTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(atTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(atTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+                                                     astext                                                     
+----------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(atTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+                                                     astext                                                     
+----------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(minusTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(minusTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+                         astext                         
+--------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(minusTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+                                                     astext                                                     
+----------------------------------------------------------------------------------------------------------------
+ {(Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(minusTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+                                                                                                            astext                                                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01'));
+                                                                                astext                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', timestamptz '2000-01-01'));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', tstzset '{2000-01-01}'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', tstzset '{2000-01-01}'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', tstzset '{2000-01-01}'));
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', tstzset '{2000-01-01}'));
+                                                                                                            astext                                                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', tstzspan '[2000-01-01, 2000-01-02]'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', tstzspan '[2000-01-01, 2000-01-02]'));
+                         astext                         
+--------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', tstzspan '[2000-01-01, 2000-01-02]'));
+                         astext                         
+--------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', tstzspan '[2000-01-01, 2000-01-02]'));
+                                                                                                            astext                                                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+                         astext                         
+--------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+                         astext                         
+--------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(deleteTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', tstzspanset '{[2000-01-01, 2000-01-02]}'));
+                                                                                                            astext                                                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' = tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' = tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' = tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' = tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' = tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' = tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' = tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' = tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' = tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' = tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' = tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' = tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' = tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' = tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' = tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' = tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' != tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' != tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' != tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' != tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' != tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' != tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' != tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' != tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' != tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' != tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' != tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' != tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' != tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' != tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' != tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' != tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' < tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' < tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' < tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' < tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' < tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' < tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' < tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' < tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' < tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' < tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' < tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' < tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' < tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' < tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' < tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' < tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' <= tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' <= tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' <= tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' <= tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' <= tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' <= tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' <= tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' <= tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' <= tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' <= tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' <= tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' <= tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' <= tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' <= tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' <= tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' <= tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' > tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' > tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' > tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' > tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' > tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' > tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' > tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' > tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' > tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' > tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' > tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' > tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' > tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' > tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' > tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' > tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' >= tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' >= tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' >= tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' >= tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' >= tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' >= tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' >= tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' >= tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' >= tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' >= tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' >= tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' >= tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' >= tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' >= tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' >= tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' >= tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+

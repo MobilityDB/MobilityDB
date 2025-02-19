@@ -55,11 +55,6 @@ CREATE FUNCTION temporal_send(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tnpoint_analyze(internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tnpoint_analyze'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE TYPE tnpoint (
   internallength = variable,
   input = tnpoint_in,
@@ -70,7 +65,7 @@ CREATE TYPE tnpoint (
   typmod_out = temporal_typmod_out,
   storage = extended,
   alignment = double,
-  analyze = tnpoint_analyze
+  analyze = tspatial_analyze
 );
 
 -- Special cast for enforcing the typmod restrictions
@@ -433,15 +428,6 @@ CREATE FUNCTION unnest(tnpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Index Support Functions
- *****************************************************************************/
-
-CREATE FUNCTION tnpoint_supportfn(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tnpoint_supportfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
  * Ever/Always Comparison Functions
  *****************************************************************************/
 
@@ -454,7 +440,7 @@ CREATE OPERATOR ?= (
   LEFTARG = tnpoint, RIGHTARG = npoint,
   PROCEDURE = ever_eq,
   NEGATOR = %<>,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE FUNCTION always_eq(tnpoint, npoint)
@@ -466,7 +452,7 @@ CREATE OPERATOR %= (
   LEFTARG = tnpoint, RIGHTARG = npoint,
   PROCEDURE = always_eq,
   NEGATOR = ?<>,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE FUNCTION ever_ne(tnpoint, npoint)
@@ -478,7 +464,7 @@ CREATE OPERATOR ?<> (
   LEFTARG = tnpoint, RIGHTARG = npoint,
   PROCEDURE = ever_ne,
   NEGATOR = %=,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE FUNCTION always_ne(tnpoint, npoint)
@@ -490,7 +476,7 @@ CREATE OPERATOR %<> (
   LEFTARG = tnpoint, RIGHTARG = npoint,
   PROCEDURE = always_ne,
   NEGATOR = ?=,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /******************************************************************************

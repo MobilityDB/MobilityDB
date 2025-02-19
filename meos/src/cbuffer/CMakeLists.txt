@@ -7,6 +7,6 @@ add_library(cbuffer OBJECT
   tcbuffer_out.c
   tcbuffer_parser.c
   tcbuffer_spatialfuncs.c
-  # tcbuffer_spatialrels.c
+  tcbuffer_spatialrels.c
   # tcbuffer_tempspatialrels.c
 )

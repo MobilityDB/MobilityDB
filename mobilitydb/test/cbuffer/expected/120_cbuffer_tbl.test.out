@@ -1,0 +1,77 @@
+COPY tbl_cbuffer TO '/tmp/tbl_cbuffer' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_cbuffer_tmp;
+NOTICE:  table "tbl_cbuffer_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_cbuffer_tmp AS TABLE tbl_cbuffer WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_cbuffer_tmp FROM '/tmp/tbl_cbuffer' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer_tmp t2 WHERE t1.k = t2.k AND t1.cbuf <> t2.cbuf;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_cbuffer_tmp;
+DROP TABLE
+SELECT ST_AsEWKT(MAX(point(cbuf)), 6) FROM tbl_cbuffer;
+               st_asewkt               
+---------------------------------------
+ SRID=5676;POINT(67.317663 -43.262378)
+(1 row)
+
+SELECT MAX(radius(cbuf)) FROM tbl_cbuffer;
+        max        
+-------------------
+ 9.928276062012003
+(1 row)
+
+SELECT COUNT(*) FROM tbl_cbuffer WHERE cbuf::geometry IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_cbuffer WHERE cbuf ~= (cbuf::geometry)::cbuffer;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cbuf = t2.cbuf;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cbuf != t2.cbuf;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cbuf < t2.cbuf;
+ count 
+-------
+  7374
+(1 row)
+
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cbuf <= t2.cbuf;
+ count 
+-------
+  7474
+(1 row)
+
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cbuf > t2.cbuf;
+ count 
+-------
+  2526
+(1 row)
+
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cbuf >= t2.cbuf;
+ count 
+-------
+  2626
+(1 row)
+

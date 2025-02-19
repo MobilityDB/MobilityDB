@@ -1,4 +1,8 @@
 
+message(STATUS "--------------------")
+message(STATUS "Tests for MobilityDB")
+message(STATUS "--------------------")
+
 add_test(
   NAME load_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}

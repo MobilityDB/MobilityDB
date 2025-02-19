@@ -40,8 +40,8 @@
 #include <meos_internal.h>
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "point/tpoint_parser.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_parser.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_parser.h"
 
@@ -63,7 +63,7 @@ cbuffer_parse(const char **str, bool end)
   if (pg_strncasecmp(*str, "CBUFFER", 7) != 0)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse circular buffer");
+      "Could not parse circular buffer: Missing prefix 'Cbuffer'");
     return NULL;
   }
 
@@ -81,7 +81,7 @@ cbuffer_parse(const char **str, bool end)
   if (! geo_parse(str, T_GEOMETRY, ',', &srid, &gs))
     return NULL;
   if (! ensure_point_type(gs) || ! ensure_not_empty(gs) ||
-      ! ensure_has_not_M_gs(gs))
+      ! ensure_has_not_M_geo(gs))
   {
     pfree(gs);
     return NULL;

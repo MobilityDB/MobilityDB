@@ -10,6 +10,10 @@ endif(NOT TEST_OPER)
 # Global variables
 #-----------------------------------------
 
+message(STATUS "----------------------")
+message(STATUS "Testing for MobilityDB")
+message(STATUS "----------------------")
+
 # Parameters modified by configure_file()
 set(SOURCE_DIR "@CMAKE_SOURCE_DIR@")
 set(POSTGRESQL_BIN_DIR "@POSTGRESQL_BIN_DIR@")

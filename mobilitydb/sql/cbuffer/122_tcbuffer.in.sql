@@ -55,11 +55,6 @@ CREATE FUNCTION temporal_send(tcbuffer)
   AS 'MODULE_PATHNAME', 'Temporal_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tcbuffer_analyze(internal)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Tpoint_analyze'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE TYPE tcbuffer (
   internallength = variable,
   input = tcbuffer_in,
@@ -70,7 +65,7 @@ CREATE TYPE tcbuffer (
   typmod_out = temporal_typmod_out,
   storage = extended,
   alignment = double,
-  analyze = tcbuffer_analyze
+  analyze = tspatial_analyze
 );
 
 -- Special cast for enforcing the typmod restrictions
@@ -145,7 +140,7 @@ CREATE FUNCTION asBinary(tcbuffer, endianenconding text DEFAULT '')
 
 CREATE FUNCTION asEWKB(tcbuffer, endianenconding text DEFAULT '')
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Tpoint_as_ewkb'
+  AS 'MODULE_PATHNAME', 'Tspatial_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asHexEWKB(tcbuffer, endianenconding text DEFAULT '')
@@ -216,15 +211,15 @@ CREATE FUNCTION tfloat(tcbuffer)
   -- RETURNS tcbuffer
   -- AS 'MODULE_PATHNAME', 'Tgeompoint_to_tcbuffer'
   -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION timeSpan(tcbuffer)
-  -- RETURNS tstzspan
-  -- AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION timeSpan(tcbuffer)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tcbuffer AS tgeompoint) WITH FUNCTION tgeompoint(tcbuffer);
 CREATE CAST (tcbuffer AS tfloat) WITH FUNCTION tfloat(tcbuffer);
 -- CREATE CAST (tgeompoint AS tcbuffer) WITH FUNCTION tcbuffer(tgeompoint);
--- CREATE CAST (tcbuffer AS tstzspan) WITH FUNCTION timeSpan(tcbuffer);
+CREATE CAST (tcbuffer AS tstzspan) WITH FUNCTION timeSpan(tcbuffer);
 
 /******************************************************************************
  * Transformation functions
@@ -478,15 +473,6 @@ CREATE FUNCTION unnest(tcbuffer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Index Support Functions
- *****************************************************************************/
-
--- CREATE FUNCTION tcbuffer_supportfn(internal)
-  -- RETURNS internal
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_supportfn'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
  * Ever/Always Comparison Functions
  *****************************************************************************/
 
@@ -499,7 +485,7 @@ CREATE OPERATOR ?= (
   LEFTARG = tcbuffer, RIGHTARG = cbuffer,
   PROCEDURE = ever_eq,
   NEGATOR = %<>,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE FUNCTION always_eq(tcbuffer, cbuffer)
@@ -511,7 +497,7 @@ CREATE OPERATOR %= (
   LEFTARG = tcbuffer, RIGHTARG = cbuffer,
   PROCEDURE = always_eq,
   NEGATOR = ?<>,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE FUNCTION ever_ne(tcbuffer, cbuffer)
@@ -523,7 +509,7 @@ CREATE OPERATOR ?<> (
   LEFTARG = tcbuffer, RIGHTARG = cbuffer,
   PROCEDURE = ever_ne,
   NEGATOR = %=,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE FUNCTION always_ne(tcbuffer, cbuffer)
@@ -535,7 +521,7 @@ CREATE OPERATOR %<> (
   LEFTARG = tcbuffer, RIGHTARG = cbuffer,
   PROCEDURE = always_ne,
   NEGATOR = ?=,
-  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /******************************************************************************

@@ -37,7 +37,7 @@
 /* MEOS */
 #include <meos.h>
 #include "general/type_parser.h"
-#include "npoint/npoint.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************/
 

@@ -71,14 +71,14 @@ int main(void)
     "POINT(6.352097 55.232548)@2023-01-08 18:33:15+01,"
     "POINT(6.351793 55.23299)@2023-01-08 18:33:34+01]";
   Temporal *trip = tgeompoint_in(trip_str);
-  char *str_out = tpoint_as_ewkt(trip, 6);
+  char *str_out = tgeo_as_ewkt(trip, 6);
   printf("----------------------------\n");
   printf(" Original trip in SRID 4326\n");
   printf("----------------------------\n%s\n", str_out);
   free(str_out);
 
   Temporal *trip_out = tspatial_transform(trip, 25832);
-  str_out = tpoint_as_ewkt(trip_out, 6);
+  str_out = tgeo_as_ewkt(trip_out, 6);
   printf("--------------------------------\n");
   printf(" Transformed trip in SRID 25832\n");
   printf("--------------------------------\n%s\n", str_out);

@@ -53,8 +53,8 @@
 #include "general/temporal_tile.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
-#include "point/tpoint_distance.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_distance.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Time precision functions for time values
@@ -205,7 +205,8 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
 {
   assert(seq); assert(duration); assert(valid_duration(duration));
   assert(seq->temptype == T_TINT || seq->temptype == T_TFLOAT ||
-    seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT );
+    seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT ||
+    seq->temptype == T_TGEOMETRY || seq->temptype == T_TGEOGRAPHY );
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
@@ -1259,7 +1260,7 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_tnumber_tpoint_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
@@ -1355,7 +1356,7 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) mint) ||
-      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_tnumber_tpoint_type(temp->temptype) ||
       ! ensure_valid_duration(mint))
     return NULL;
 
@@ -1631,7 +1632,7 @@ tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
     /* For temporal floats only Synchronized Distance is used */
     if (seq->temptype == T_TFLOAT)
       tfloatseq_findsplit(seq, start, i, &split, &d);
-    else /* tgeo_type(seq->temptype) */
+    else /* tpoint_type(seq->temptype) */
       tpointseq_findsplit(seq, start, i, syncdist, &split, &d);
     bool dosplit = (d >= 0 && (d > dist || start + i + 1 < minpts));
     if (dosplit)
@@ -1690,7 +1691,7 @@ temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_tnumber_tpoint_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
@@ -1745,7 +1746,7 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
   double d;
 
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-  assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype));
+  assert(seq->temptype == T_TFLOAT || tpoint_type(seq->temptype));
   /* Do not try to simplify really short things */
   if (seq->count < 3)
     return tsequence_copy(seq);
@@ -1771,7 +1772,7 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
     /* For temporal floats only Synchronized Distance is used */
     if (seq->temptype == T_TFLOAT)
       tfloatseq_findsplit(seq, i1, stack[sp], &split, &d);
-    else /* tgeo_type(seq->temptype) */
+    else /* tpoint_type(seq->temptype) */
       tpointseq_findsplit(seq, i1, stack[sp], syncdist, &split, &d);
     bool dosplit = (d >= 0 && (d > dist || outn + sp + 1 < minpts));
     if (dosplit)
@@ -1842,7 +1843,7 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_tnumber_tpoint_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 

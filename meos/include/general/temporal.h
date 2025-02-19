@@ -143,9 +143,7 @@ typedef enum
 {
   TEMPORALTYPE,
   TNUMBERTYPE,
-  TPOINTTYPE,
-  TCBUFFERTYPE,
-  TNPOINTTYPE,
+  TSPATIALTYPE,
 } TemporalFamily;
 
 /** Enumeration for the set operations of span and temporal types */

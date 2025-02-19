@@ -39,12 +39,12 @@
 #include <meos_cbuffer.h>
 #include <meos_internal.h>
 #include "general/span.h"
-#include "point/stbox.h"
-#include "point/tpoint_restrfuncs.h"
+#include "geo/stbox.h"
+#include "geo/tpoint_restrfuncs.h"
 // #include "cbuffer/tcbuffer_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_point/postgis.h"
+#include "pg_geo/postgis.h"
 
 /*****************************************************************************
  * Geometric positions (Trajectory) functions
@@ -66,25 +66,6 @@ Tcbuffer_traversed_area(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
-
-/*****************************************************************************
- * Geographical equality for circular buffers
- *****************************************************************************/
-
-// PGDLLEXPORT Datum Cbuffer_same(PG_FUNCTION_ARGS);
-// PG_FUNCTION_INFO_V1(Cbuffer_same);
-// /**
- // * @ingroup mobilitydb_temporal_spatial_accessor
- // * @brief Return true if two circular buffers are spatially equal
- // * @sqlfn same()
- // */
-// Datum
-// Cbuffer_same(PG_FUNCTION_ARGS)
-// {
-  // Cbuffer *cbuf1 = PG_GETARG_CBUFFER_P(0);
-  // Cbuffer *cbuf2 = PG_GETARG_CBUFFER_P(1);
-  // PG_RETURN_BOOL(cbuffer_same(cbuf1, cbuf2));
-// }
 
 /*****************************************************************************
  * Length functions

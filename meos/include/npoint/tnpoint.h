@@ -56,7 +56,33 @@
 #define PG_GETARG_NSEGMENT_P(X)    DatumGetNsegmentP(PG_GETARG_DATUM(X))
 #define PG_RETURN_NSEGMENT_P(X)    PG_RETURN_POINTER(X)
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Cbuffer functions
+ *****************************************************************************/
+
+/* General functions */
+
+extern int32_t get_srid_ways(void);
+extern GSERIALIZED *npointarr_geom(Npoint **points, int nelems);
+extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int nelems);
+extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *nelems);
+
+/* Input/output functions */
+
+extern Npoint *npoint_in(const char *str);
+extern char *npoint_out(const Npoint *np, int maxdd);
+
+extern Nsegment *nsegment_in(const char *str);
+extern char *nsegment_out(const Nsegment *ns, int maxdd);
+
+/* Constructor functions */
+
+extern void npoint_set(int64 rid, double pos, Npoint *np);
+extern void nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns);
+
+/*****************************************************************************
+ * Tcbuffer functions
+ *****************************************************************************/
 
 /* Input/output functions */
 

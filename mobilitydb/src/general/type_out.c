@@ -48,7 +48,7 @@
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/type_util.h"
-#include "pg_point/postgis.h"
+#include "pg_geo/postgis.h"
 
 /*****************************************************************************
  * Output in WKT and EWKT representation
@@ -287,7 +287,7 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
 
   /* Get the temporal value */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  bool isgeo = tgeo_type(temp->temptype);
+  bool isgeo = tpoint_type(temp->temptype);
 
   /* Retrieve output option
    * 0 = without option (default)
@@ -614,17 +614,17 @@ Temporal_as_wkb(PG_FUNCTION_ARGS)
   PG_RETURN_BYTEA_P(result);
 }
 
-PGDLLEXPORT Datum Tpoint_as_ewkb(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpoint_as_ewkb);
+PGDLLEXPORT Datum Tspatial_as_ewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tspatial_as_ewkb);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Return the Extended Well-Known Binary (WKB) representation of a
- * temporal point
- * @note This will have 'SRID=#;' for temporal points
+ * temporal spatial value
+ * @note This will have 'SRID=#;' for temporal spatial values
  * @sqlfn asEWKB()
  */
 Datum
-Tpoint_as_ewkb(PG_FUNCTION_ARGS)
+Tspatial_as_ewkb(PG_FUNCTION_ARGS)
 {
   /* Ensure that the value is detoasted if necessary */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);

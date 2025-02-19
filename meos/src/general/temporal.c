@@ -57,8 +57,8 @@
 #include "general/tsequenceset.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Parameter tests
@@ -845,8 +845,7 @@ char *
 tpoint_out(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
     return NULL;
   return temporal_out(temp, maxdd);
 }
@@ -2160,7 +2159,7 @@ tpoint_values(const Temporal *temp, int *count)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_tgeo_type(temp->temptype))
+      ! ensure_tpoint_type(temp->temptype))
     return NULL;
 
   Datum *datumarr = temporal_vals(temp, count);
@@ -2326,8 +2325,7 @@ GSERIALIZED *
 tpoint_start_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
     return NULL;
   return DatumGetGserializedP(temporal_start_value(temp));
 }
@@ -2437,8 +2435,7 @@ GSERIALIZED *
 tpoint_end_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
     return NULL;
   return DatumGetGserializedP(temporal_end_value(temp));
 }
@@ -2750,8 +2747,7 @@ bool
 tpoint_value_n(const Temporal *temp, int n, GSERIALIZED **result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_tgeo_type(temp->temptype))
+  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
     return false;
   Datum dresult;
   if (! temporal_value_n(temp, n, &dresult))
@@ -3114,6 +3110,31 @@ temporal_num_instants(const Temporal *temp)
 }
 
 /**
+ * @ingroup meos_temporal_internal_accessor
+ * @brief Return a pointer to the start instant of a temporal value
+ * @param[in] temp Temporal value
+ * @return On error return @p NULL
+ */
+const TInstant *
+temporal_start_inst(const Temporal *temp)
+{
+  assert(temp);
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (TInstant *) temp;
+    case TSEQUENCE:
+      return TSEQUENCE_INST_N((TSequence *) temp, 0);
+    default: /* TSEQUENCESET */
+    {
+      const TSequence *seq = TSEQUENCESET_SEQ_N((TSequenceSet *) temp, 0);
+      return TSEQUENCE_INST_N(seq, 0);
+    }
+  }
+}
+
+/**
  * @ingroup meos_temporal_accessor
  * @brief Return a copy of the start instant of a temporal value
  * @param[in] temp Temporal value
@@ -3126,32 +3147,20 @@ temporal_start_instant(const Temporal *temp)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return tinstant_copy((TInstant *) temp);
-    case TSEQUENCE:
-      return tinstant_copy(TSEQUENCE_INST_N((TSequence *) temp, 0));
-    default: /* TSEQUENCESET */
-    {
-      const TSequence *seq = TSEQUENCESET_SEQ_N((TSequenceSet *) temp, 0);
-      return tinstant_copy(TSEQUENCE_INST_N(seq, 0));
-    }
-  }
+  const TInstant *result = temporal_start_inst(temp);
+  return result ? tinstant_copy(result) : NULL;
 }
 
 /**
- * @ingroup meos_temporal_accessor
- * @brief Return a copy of the end instant of a temporal value
+ * @ingroup meos_temporal_internal_accessor
+ * @brief Return a pointer to the end instant of a temporal value
  * @param[in] temp Temporal value
  * @return On error return @p NULL
  * @note This function is used for validity testing.
- * @csqlfn #Temporal_end_instant()
+ * @csqlfn #Temporal_end_inst()
  */
-TInstant *
-temporal_end_instant(const Temporal *temp)
+const TInstant *
+temporal_end_inst(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
@@ -3176,6 +3185,67 @@ temporal_end_instant(const Temporal *temp)
 
 /**
  * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the end instant of a temporal value
+ * @param[in] temp Temporal value
+ * @return On error return @p NULL
+ * @note This function is used for validity testing.
+ * @csqlfn #Temporal_end_instant()
+ */
+TInstant *
+temporal_end_instant(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+  const TInstant *result = temporal_end_inst(temp);
+  return result ? tinstant_copy(result) : NULL;
+}
+
+/**
+ * @ingroup meos_temporal_internal_accessor
+ * @brief Return a pointer to the n-th instant of a temporal value
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @return On error return @p NULL
+ * @note n is assumed 1-based
+ */
+const TInstant *
+temporal_inst_n(const Temporal *temp, int n)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+    {
+      if (n == 1)
+        return (TInstant *) temp;
+      return NULL;
+    }
+    case TSEQUENCE:
+    {
+      if (n >= 1 && n <= ((TSequence *) temp)->count)
+        return TSEQUENCE_INST_N((TSequence *) temp, n - 1);
+      return NULL;
+    }
+    default: /* TSEQUENCESET */
+    {
+      /* This test is necessary since the n-th DISTINCT instant is requested */
+      if (n >= 1 && n <= ((TSequenceSet *) temp)->totalcount)
+      {
+        const TInstant *inst = tsequenceset_inst_n((TSequenceSet *) temp, n);
+        return inst;
+      }
+      return NULL;
+    }
+  }
+}
+
+/**
+ * @ingroup meos_temporal_accessor
  * @brief Return a copy of the n-th instant of a temporal value
  * @param[in] temp Temporal value
  * @param[in] n Number
@@ -3189,33 +3259,8 @@ temporal_instant_n(const Temporal *temp, int n)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
-
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-    {
-      if (n == 1)
-        return tinstant_copy((const TInstant *) temp);
-      return NULL;
-    }
-    case TSEQUENCE:
-    {
-      if (n >= 1 && n <= ((TSequence *) temp)->count)
-        return tinstant_copy(TSEQUENCE_INST_N((TSequence *) temp, n - 1));
-      return NULL;
-    }
-    default: /* TSEQUENCESET */
-    {
-      /* This test is necessary since the n-th DISTINCT instant is requested */
-      if (n >= 1 && n <= ((TSequenceSet *) temp)->totalcount)
-      {
-        const TInstant *inst = tsequenceset_inst_n((TSequenceSet *) temp, n);
-        return inst ? tinstant_copy(inst) : NULL;
-      }
-      return NULL;
-    }
-  }
+  const TInstant *result = temporal_inst_n(temp, n);
+  return result ? tinstant_copy(result) : NULL;
 }
 
 /**
@@ -3678,6 +3723,12 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return false;
+  if (tgeo_type(temp1->temptype))
+  {
+    if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
+        ! ensure_same_spatial_dimensionality(temp1->flags, temp2->flags))
+    return NULL;
+  }
 
   assert(temptype_subtype(temp1->subtype));
   assert(temptype_subtype(temp2->subtype));

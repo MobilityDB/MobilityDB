@@ -35,7 +35,7 @@
  * They are kept if needed in the future.
  */
 
-#include "npoint/npoint.h"
+#include "npoint/tnpoint.h"
 
 /* C */
 #include <assert.h>
@@ -56,10 +56,10 @@
 #include "general/pg_types.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
-#include "point/pgis_types.h"
-#include "point/tpoint.h"
-#include "point/tpoint_out.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/pgis_types.h"
+#include "geo/tgeo.h"
+#include "geo/tgeo_out.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "npoint/tnpoint_parser.h"
 #include "npoint/tnpoint.h"
 
@@ -618,7 +618,7 @@ geom_npoint(const GSERIALIZED *gs)
   if (srid_ways == SRID_INVALID || ! ensure_same_srid(srid_geom, srid_ways))
     return NULL;
 
-  char *geomstr = ewkt_out(PointerGetDatum(gs), 0, OUT_DEFAULT_DECIMAL_DIGITS);
+  char *geomstr = geo_ewkt_out(PointerGetDatum(gs), 0, OUT_DEFAULT_DECIMAL_DIGITS);
   char sql[SQL_MAXLEN];
   snprintf(sql, sizeof(sql),
     "SELECT npoint(gid, ST_LineLocatePoint(the_geom, '%s')) "

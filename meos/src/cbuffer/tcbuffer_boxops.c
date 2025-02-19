@@ -44,7 +44,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "point/pgis_types.h"
+#include "geo/pgis_types.h"
 #include "cbuffer/tcbuffer.h"
 
 /*****************************************************************************

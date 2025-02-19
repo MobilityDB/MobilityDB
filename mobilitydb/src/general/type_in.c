@@ -45,7 +45,7 @@
 #include "general/span.h"
 #include "general/tbox.h"
 #include "general/temporal.h"
-#include "point/stbox.h"
+#include "geo/stbox.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 
