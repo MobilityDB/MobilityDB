@@ -24,7 +24,8 @@ COPY . .
 RUN mkdir -p build \
     && cd build \
     && rm -rf * \
-    && cmake -DCMAKE_BUILD_TYPE=Release -DNPOINT=on -DCBUFFER=on .. \
+    && cmake -DCMAKE_BUILD_TYPE=Release \
+             -DNPOINT=on -DCBUFFER=on -DPOSE=on .. \
     && make -j$(nproc) \
     && make install
 
