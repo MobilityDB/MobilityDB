@@ -75,7 +75,6 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">tnpoint.h File Reference</div></div>
@@ -83,20 +82,14 @@ $(function() {
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__npoint_8h_source.html">meos_npoint.h</a>&gt;</code><br />
 </div>
 <p><a href="tnpoint_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
-Data Structures</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNpoint.html">Npoint</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for temporal network points.  <a href="structNpoint.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNsegment.html">Nsegment</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:aac1eb8489d5b40183019800c432c03e5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_aac1eb8489d5b40183019800c432c03e5.html#aac1eb8489d5b40183019800c432c03e5">DatumGetNpointP</a>(X)&#160;&#160;&#160;((<a class="el" href="structNpoint.html">Npoint</a> *) <a class="el" href="postgres__ext__defs_8in_8h_a728d1259d508437d9be53bf0b19c89da.html#a728d1259d508437d9be53bf0b19c89da">DatumGetPointer</a>(X))</td></tr>
+<tr class="memdesc:aac1eb8489d5b40183019800c432c03e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for temporal network points.  <a href="tnpoint_8h_aac1eb8489d5b40183019800c432c03e5.html#aac1eb8489d5b40183019800c432c03e5">More...</a><br /></td></tr>
 <tr class="separator:aac1eb8489d5b40183019800c432c03e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaaf3ab464ff5f6367b9550f01d3238fb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_aaaf3ab464ff5f6367b9550f01d3238fb.html#aaaf3ab464ff5f6367b9550f01d3238fb">DatumGetNsegmentP</a>(X)&#160;&#160;&#160;((<a class="el" href="structNsegment.html">Nsegment</a> *) <a class="el" href="postgres__ext__defs_8in_8h_a728d1259d508437d9be53bf0b19c89da.html#a728d1259d508437d9be53bf0b19c89da">DatumGetPointer</a>(X))</td></tr>
 <tr class="separator:aaaf3ab464ff5f6367b9550f01d3238fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -120,9 +113,6 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a5fa602a67d5c7403983af6e9c1442f34"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_a5fa602a67d5c7403983af6e9c1442f34.html#a5fa602a67d5c7403983af6e9c1442f34">tgeompoint_tnpoint</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
-<tr class="memdesc:a5fa602a67d5c7403983af6e9c1442f34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal geometry point converted to a temporal network point.  <a href="tnpoint_8h_a5fa602a67d5c7403983af6e9c1442f34.html#a5fa602a67d5c7403983af6e9c1442f34">More...</a><br /></td></tr>
-<tr class="separator:a5fa602a67d5c7403983af6e9c1442f34"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a11d0b7149f9c033a542610219a198ed5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_a11d0b7149f9c033a542610219a198ed5.html#a11d0b7149f9c033a542610219a198ed5">tgeompointinst_tnpointinst</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst)</td></tr>
 <tr class="memdesc:a11d0b7149f9c033a542610219a198ed5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal geometry point converted to a temporal network point.  <a href="tnpoint_8h_a11d0b7149f9c033a542610219a198ed5.html#a11d0b7149f9c033a542610219a198ed5">More...</a><br /></td></tr>
 <tr class="separator:a11d0b7149f9c033a542610219a198ed5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -132,18 +122,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a53e94d9a21debe114875eb43596254e6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTSequenceSet.html">TSequenceSet</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_a53e94d9a21debe114875eb43596254e6.html#a53e94d9a21debe114875eb43596254e6">tgeompointseqset_tnpointseqset</a> (const <a class="el" href="structTSequenceSet.html">TSequenceSet</a> *ss)</td></tr>
 <tr class="memdesc:a53e94d9a21debe114875eb43596254e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal geometry point converted to a temporal network point.  <a href="tnpoint_8h_a53e94d9a21debe114875eb43596254e6.html#a53e94d9a21debe114875eb43596254e6">More...</a><br /></td></tr>
 <tr class="separator:a53e94d9a21debe114875eb43596254e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a26613c920fbd0d3f97a69a7eb80742a2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structNsegment.html">Nsegment</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_a26613c920fbd0d3f97a69a7eb80742a2.html#a26613c920fbd0d3f97a69a7eb80742a2">tnpoint_positions</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, int *count)</td></tr>
-<tr class="memdesc:a26613c920fbd0d3f97a69a7eb80742a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the network segments covered by the temporal network point.  <a href="tnpoint_8h_a26613c920fbd0d3f97a69a7eb80742a2.html#a26613c920fbd0d3f97a69a7eb80742a2">More...</a><br /></td></tr>
-<tr class="separator:a26613c920fbd0d3f97a69a7eb80742a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aec5af905e7c29b00a22660d97e1a0a94"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_aff4f6741ca6dfe40c797f4105e39fe59.html#aff4f6741ca6dfe40c797f4105e39fe59">int64</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_aec5af905e7c29b00a22660d97e1a0a94.html#aec5af905e7c29b00a22660d97e1a0a94">tnpoint_route</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
-<tr class="memdesc:aec5af905e7c29b00a22660d97e1a0a94"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the single route of a temporal network point.  <a href="tnpoint_8h_aec5af905e7c29b00a22660d97e1a0a94.html#aec5af905e7c29b00a22660d97e1a0a94">More...</a><br /></td></tr>
-<tr class="separator:aec5af905e7c29b00a22660d97e1a0a94"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27675c6e4a00faf75bd92b5cf993699b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_a27675c6e4a00faf75bd92b5cf993699b.html#a27675c6e4a00faf75bd92b5cf993699b">tnpoint_routes</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
-<tr class="memdesc:a27675c6e4a00faf75bd92b5cf993699b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the array of routes of a temporal network point.  <a href="tnpoint_8h_a27675c6e4a00faf75bd92b5cf993699b.html#a27675c6e4a00faf75bd92b5cf993699b">More...</a><br /></td></tr>
-<tr class="separator:a27675c6e4a00faf75bd92b5cf993699b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab9205fee19d165b305eef070ecffb01b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_ab9205fee19d165b305eef070ecffb01b.html#ab9205fee19d165b305eef070ecffb01b">tnpoint_tgeompoint</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
-<tr class="memdesc:ab9205fee19d165b305eef070ecffb01b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal network point converted to a temporal geometry point.  <a href="tnpoint_8h_ab9205fee19d165b305eef070ecffb01b.html#ab9205fee19d165b305eef070ecffb01b">More...</a><br /></td></tr>
-<tr class="separator:ab9205fee19d165b305eef070ecffb01b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab402f610f2c7076ac2556aafa7ec95cc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structNsegment.html">Nsegment</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnpoint_8h_ab402f610f2c7076ac2556aafa7ec95cc.html#ab402f610f2c7076ac2556aafa7ec95cc">tnpointinst_positions</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst)</td></tr>
 <tr class="memdesc:ab402f610f2c7076ac2556aafa7ec95cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the network segments covered by the temporal network point.  <a href="tnpoint_8h_ab402f610f2c7076ac2556aafa7ec95cc.html#ab402f610f2c7076ac2556aafa7ec95cc">More...</a><br /></td></tr>
 <tr class="separator:ab402f610f2c7076ac2556aafa7ec95cc"><td class="memSeparator" colspan="2">&#160;</td></tr>

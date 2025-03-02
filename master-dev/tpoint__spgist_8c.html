@@ -93,6 +93,7 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &quot;general/span.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="include_2general_2stratnum_8h_source.html">general/stratnum.h</a>&quot;</code><br />
 <code>#include &quot;general/temporal.h&quot;</code><br />
 <code>#include &quot;general/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="stbox_8h_source.html">point/stbox.h</a>&quot;</code><br />
@@ -100,7 +101,6 @@ $(function() {
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__general_2meos__catalog_8h_source.html">pg_general/meos_catalog.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__general_2temporal_8h_source.html">pg_general/temporal.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tnumber__spgist_8h_source.html">pg_general/tnumber_spgist.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="tpoint__gist_8h_source.html">pg_point/tpoint_gist.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
@@ -271,8 +271,8 @@ Functions</h2></td></tr>
 <div class="line">             |                               |</div>
 <div class="line">             |                               |</div>
 <div class="line">           <a class="code hl_variable" href="tpoint__restrict_8c_a74b36851d26bfffaded0029d686e7421.html#a74b36851d26bfffaded0029d686e7421">FRONT</a>                           <a class="code hl_variable" href="tpoint__restrict_8c_a4cef41b7dca1dc40f5cf35dd78b1b4dc.html#a4cef41b7dca1dc40f5cf35dd78b1b4dc">BACK</a></div>
-<div class="ttc" id="atpoint__restrict_8c_a4cef41b7dca1dc40f5cf35dd78b1b4dc_html_a4cef41b7dca1dc40f5cf35dd78b1b4dc"><div class="ttname"><a href="tpoint__restrict_8c_a4cef41b7dca1dc40f5cf35dd78b1b4dc.html#a4cef41b7dca1dc40f5cf35dd78b1b4dc">BACK</a></div><div class="ttdeci">const int BACK</div><div class="ttdef"><b>Definition:</b> tpoint_restrict.c:193</div></div>
-<div class="ttc" id="atpoint__restrict_8c_a74b36851d26bfffaded0029d686e7421_html_a74b36851d26bfffaded0029d686e7421"><div class="ttname"><a href="tpoint__restrict_8c_a74b36851d26bfffaded0029d686e7421.html#a74b36851d26bfffaded0029d686e7421">FRONT</a></div><div class="ttdeci">const int FRONT</div><div class="ttdef"><b>Definition:</b> tpoint_restrict.c:192</div></div>
+<div class="ttc" id="atpoint__restrict_8c_a4cef41b7dca1dc40f5cf35dd78b1b4dc_html_a4cef41b7dca1dc40f5cf35dd78b1b4dc"><div class="ttname"><a href="tpoint__restrict_8c_a4cef41b7dca1dc40f5cf35dd78b1b4dc.html#a4cef41b7dca1dc40f5cf35dd78b1b4dc">BACK</a></div><div class="ttdeci">const int BACK</div><div class="ttdef"><b>Definition:</b> tpoint_restrict.c:194</div></div>
+<div class="ttc" id="atpoint__restrict_8c_a74b36851d26bfffaded0029d686e7421_html_a74b36851d26bfffaded0029d686e7421"><div class="ttname"><a href="tpoint__restrict_8c_a74b36851d26bfffaded0029d686e7421.html#a74b36851d26bfffaded0029d686e7421">FRONT</a></div><div class="ttdeci">const int FRONT</div><div class="ttdef"><b>Definition:</b> tpoint_restrict.c:193</div></div>
 </div><!-- fragment --><p> We are using <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> data type as the prefix, but we are treating them as points in 8-dimensional space, because 4D boxes are not enough to represent the quadrant boundaries in 8D space. They however are sufficient to point out the additional boundaries of the next quadrant.</p>
 <p >We are using traversal values provided by SP-GiST to calculate and to store the bounds of the quadrants, while traversing into the tree. Traversal value has all the boundaries in the 8D space, and is is capable of transferring the required boundaries to the following traversal values. In conclusion, three things are necessary to calculate the next traversal value:</p>
 <ol type="1">

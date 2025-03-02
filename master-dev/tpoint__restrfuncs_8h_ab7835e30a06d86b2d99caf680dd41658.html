@@ -79,8 +79,6 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="tpoint__restrfuncs_8h_a4aa656aa643ba2daab08cb1efa1b70a2.html#a4aa656aa643ba2daab08cb1efa1b70a2">REST_TIME</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tpoint__restrfuncs_8h_adca1332bd5ed0cc080a75e6715be0517.html#adca1332bd5ed0cc080a75e6715be0517">REST_TIME_NO</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__restrfuncs_8h_abdfc3c6b408e6682d5f83b1a77ca685c.html#abdfc3c6b408e6682d5f83b1a77ca685c">tpointseq_at_geom</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="tpoint__restrfuncs_8h_ab7835e30a06d86b2d99caf680dd41658.html#ab7835e30a06d86b2d99caf680dd41658">tpointseq_interperiods</a></td></tr>
         </table>
@@ -103,7 +101,7 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em>, </td>
+          <td class="paramname"><em>gsinter</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -118,6 +116,17 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Get the periods at which a temporal sequence point with linear interpolation intersects a geometry. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">seq</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gsinter</td><td>Intersection of the temporal point and the geometry </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the resulting array </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section pre"><dt>Precondition</dt><dd>The temporal sequence is simple, that is, non self-intersecting and the intersecting geometry is non empty </dd></dl>
 
 </div>
 </div>

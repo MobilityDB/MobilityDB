@@ -87,6 +87,7 @@ $(function() {
 <code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="pg__types_8h_source.html">general/pg_types.h</a>&quot;</code><br />
 <code>#include &quot;general/span.h&quot;</code><br />
 <code>#include &quot;general/spanset.h&quot;</code><br />
 <code>#include &quot;general/temporal_boxops.h&quot;</code><br />
@@ -95,9 +96,8 @@ $(function() {
 <code>#include &quot;<a class="el" href="tsequenceset_8h_source.html">general/tsequenceset.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="type__parser_8h_source.html">general/type_parser.h</a>&quot;</code><br />
 <code>#include &quot;general/type_util.h&quot;</code><br />
-<code>#include &quot;point/tpoint_parser.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="tpoint__parser_8h_source.html">point/tpoint_parser.h</a>&quot;</code><br />
 <code>#include &quot;point/tpoint_spatialfuncs.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="tnpoint__distance_8h_source.html">npoint/tnpoint_distance.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -119,9 +119,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a9c2b64a0e5ffe6884ba993f4ebdc4ec5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__modif_8c_a9c2b64a0e5ffe6884ba993f4ebdc4ec5.html#a9c2b64a0e5ffe6884ba993f4ebdc4ec5">tdiscseq_merge_array</a> (const <a class="el" href="structTSequence.html">TSequence</a> **sequences, int count)</td></tr>
 <tr class="memdesc:a9c2b64a0e5ffe6884ba993f4ebdc4ec5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merge an array of temporal discrete sequences.  <a href="temporal__modif_8c_a9c2b64a0e5ffe6884ba993f4ebdc4ec5.html#a9c2b64a0e5ffe6884ba993f4ebdc4ec5">More...</a><br /></td></tr>
 <tr class="separator:a9c2b64a0e5ffe6884ba993f4ebdc4ec5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga7fdca8ae653d65d0af5e9c4fce4b919c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__modif_ga7fdca8ae653d65d0af5e9c4fce4b919c.html#ga7fdca8ae653d65d0af5e9c4fce4b919c">temporal_append_tinstant</a> (<a class="el" href="structTemporal.html">Temporal</a> *temp, const <a class="el" href="structTInstant.html">TInstant</a> *inst, double maxdist, const <a class="el" href="structInterval.html">Interval</a> *maxt, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> expand)</td></tr>
-<tr class="memdesc:ga7fdca8ae653d65d0af5e9c4fce4b919c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append an instant to a temporal value.  <a href="group__meos__temporal__modif_ga7fdca8ae653d65d0af5e9c4fce4b919c.html#ga7fdca8ae653d65d0af5e9c4fce4b919c">More...</a><br /></td></tr>
-<tr class="separator:ga7fdca8ae653d65d0af5e9c4fce4b919c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8c88be47cfcb1a4c6b0668d6ed5b3672"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__modif_ga8c88be47cfcb1a4c6b0668d6ed5b3672.html#ga8c88be47cfcb1a4c6b0668d6ed5b3672">temporal_append_tinstant</a> (<a class="el" href="structTemporal.html">Temporal</a> *temp, const <a class="el" href="structTInstant.html">TInstant</a> *inst, <a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a> interp, double maxdist, const <a class="el" href="structInterval.html">Interval</a> *maxt, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> expand)</td></tr>
+<tr class="memdesc:ga8c88be47cfcb1a4c6b0668d6ed5b3672"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append an instant to a temporal value.  <a href="group__meos__temporal__modif_ga8c88be47cfcb1a4c6b0668d6ed5b3672.html#ga8c88be47cfcb1a4c6b0668d6ed5b3672">More...</a><br /></td></tr>
+<tr class="separator:ga8c88be47cfcb1a4c6b0668d6ed5b3672"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga20088eb838f7416a0e37e608543f812d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__modif_ga20088eb838f7416a0e37e608543f812d.html#ga20088eb838f7416a0e37e608543f812d">temporal_append_tsequence</a> (<a class="el" href="structTemporal.html">Temporal</a> *temp, const <a class="el" href="structTSequence.html">TSequence</a> *seq, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> expand)</td></tr>
 <tr class="memdesc:ga20088eb838f7416a0e37e608543f812d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append a sequence to a temporal value.  <a href="group__meos__temporal__modif_ga20088eb838f7416a0e37e608543f812d.html#ga20088eb838f7416a0e37e608543f812d">More...</a><br /></td></tr>
 <tr class="separator:ga20088eb838f7416a0e37e608543f812d"><td class="memSeparator" colspan="2">&#160;</td></tr>

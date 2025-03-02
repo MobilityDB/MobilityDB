@@ -81,14 +81,11 @@ $(function() {
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="tnpoint__static_8h_source.html">npoint/tnpoint_static.h</a>&quot;</code><br />
 </div>
 <p><a href="type__round_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a4f8434f346428f8dd3e5dbe23d8a9e47"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__round_8h_a4f8434f346428f8dd3e5dbe23d8a9e47.html#a4f8434f346428f8dd3e5dbe23d8a9e47">datum_npoint_round</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> npoint, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> size)</td></tr>
-<tr class="separator:a4f8434f346428f8dd3e5dbe23d8a9e47"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed305e775796e02abce61233f48e833c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__round_8h_aed305e775796e02abce61233f48e833c.html#aed305e775796e02abce61233f48e833c">datum_round_float</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> size)</td></tr>
 <tr class="memdesc:aed305e775796e02abce61233f48e833c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a float number rounded to a given number of decimal places.  <a href="type__round_8h_aed305e775796e02abce61233f48e833c.html#aed305e775796e02abce61233f48e833c">More...</a><br /></td></tr>
 <tr class="separator:aed305e775796e02abce61233f48e833c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -98,14 +95,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ad7455cf356764a1c1df528836ce13dd8"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__round_8h_ad7455cf356764a1c1df528836ce13dd8.html#ad7455cf356764a1c1df528836ce13dd8">float_round</a> (double d, int maxdd)</td></tr>
 <tr class="memdesc:ad7455cf356764a1c1df528836ce13dd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic functions for rounding the float components of types.  <a href="type__round_8h_ad7455cf356764a1c1df528836ce13dd8.html#ad7455cf356764a1c1df528836ce13dd8">More...</a><br /></td></tr>
 <tr class="separator:ad7455cf356764a1c1df528836ce13dd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afc47ed8b5d4e9366e7e0067540d90c2f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structNpoint.html">Npoint</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__round_8h_afc47ed8b5d4e9366e7e0067540d90c2f.html#afc47ed8b5d4e9366e7e0067540d90c2f">npoint_round</a> (const <a class="el" href="structNpoint.html">Npoint</a> *np, int maxdd)</td></tr>
-<tr class="separator:afc47ed8b5d4e9366e7e0067540d90c2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6396e0e5cc30e853f5ff0422add895bb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__round_8h_a6396e0e5cc30e853f5ff0422add895bb.html#a6396e0e5cc30e853f5ff0422add895bb">npointset_round</a> (const <a class="el" href="structSet.html">Set</a> *s, int maxdd)</td></tr>
-<tr class="separator:a6396e0e5cc30e853f5ff0422add895bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a772b79d3ffb970ccb59d0be337debf30"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structNsegment.html">Nsegment</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__round_8h_a772b79d3ffb970ccb59d0be337debf30.html#a772b79d3ffb970ccb59d0be337debf30">nsegment_round</a> (const <a class="el" href="structNsegment.html">Nsegment</a> *ns, int maxdd)</td></tr>
-<tr class="separator:a772b79d3ffb970ccb59d0be337debf30"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae8128365792221c15c4cfbe1ed3fe952"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__round_8h_ae8128365792221c15c4cfbe1ed3fe952.html#ae8128365792221c15c4cfbe1ed3fe952">tnpoint_round</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> size)</td></tr>
-<tr class="separator:ae8128365792221c15c4cfbe1ed3fe952"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->

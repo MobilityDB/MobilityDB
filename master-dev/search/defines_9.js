@@ -39,7 +39,7 @@ var searchData=
   ['invalid_5ffor_5finterval_36',['INVALID_FOR_INTERVAL',['../formatting_8c_a9c632166447360432b8f02672c0bf838.html#a9c632166447360432b8f02672c0bf838',1,'formatting.c']]],
   ['invalidcommandid_37',['InvalidCommandId',['../c_8h_a03c0e26f6d9f41f389b70a5d0ea979bc.html#a03c0e26f6d9f41f389b70a5d0ea979bc',1,'c.h']]],
   ['invalidoid_38',['InvalidOid',['../postgres__ext_8h_a1a1256f66b711d08dd73f7314e64c52c.html#a1a1256f66b711d08dd73f7314e64c52c',1,'postgres_ext.h']]],
-  ['invalidstrategy_39',['InvalidStrategy',['../stratnum_8h_a53ef816a9d9bed973a893efe4817a9ce.html#a53ef816a9d9bed973a893efe4817a9ce',1,'stratnum.h']]],
+  ['invalidstrategy_39',['InvalidStrategy',['../postgres_2access_2stratnum_8h_a53ef816a9d9bed973a893efe4817a9ce.html#a53ef816a9d9bed973a893efe4817a9ce',1,'stratnum.h']]],
   ['invalidsubtransactionid_40',['InvalidSubTransactionId',['../c_8h_a5422425ddded19ba6b90c988ce8cbe18.html#a5422425ddded19ba6b90c988ce8cbe18',1,'c.h']]],
   ['invert_41',['INVERT',['../meos_2include_2general_2temporal_8h_a95febca84b9b6b5b9cfd278e44ffc56f.html#a95febca84b9b6b5b9cfd278e44ffc56f',1,'temporal.h']]],
   ['invert_5fcompare_5fresult_42',['INVERT_COMPARE_RESULT',['../c_8h_a2112936d57caf1822c97bb59a1307d0b.html#a2112936d57caf1822c97bb59a1307d0b',1,'c.h']]],

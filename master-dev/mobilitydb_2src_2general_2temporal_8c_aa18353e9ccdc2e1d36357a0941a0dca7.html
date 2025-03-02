@@ -88,6 +88,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__misc_ga2f0de38c76cd85858e190fa1df87a76f.html#ga2f0de38c76cd85858e190fa1df87a76f">Mobilitydb_version</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2temporal_8c_a509119277abe280e6db17c34f79e01cf.html#a509119277abe280e6db17c34f79e01cf">PG_MODULE_MAGIC</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2temporal_8c_a98fb1626ed4d0406deef10d2008557c9.html#a98fb1626ed4d0406deef10d2008557c9">store_fcinfo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__temporal__conversion_gac09b8e66c186898f41780f7af417676d.html#gac09b8e66c186898f41780f7af417676d">Tbool_to_tint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__temporal__modif_gab35b45ad6782583246d1071a524fdc3e.html#gab35b45ad6782583246d1071a524fdc3e">Temporal_append_tinstant</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__temporal__modif_ga6e217d6d6cab84efdf0ba957e2ea1658.html#ga6e217d6d6cab84efdf0ba957e2ea1658">Temporal_append_tsequence</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__temporal__restrict_ga3f3a5b263f7859097acb910ec0d270da.html#ga3f3a5b263f7859097acb910ec0d270da">Temporal_at_max</a></td></tr>
@@ -187,7 +188,6 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__temporal__transf_gab47bb4f9027c549940ad410ffcb9ddfe.html#gab47bb4f9027c549940ad410ffcb9ddfe">Tfloat_round</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__temporal__conversion_gaa6c51417e531c6074cbde999cbbcb1c1.html#gaa6c51417e531c6074cbde999cbbcb1c1">Tfloat_to_tint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__temporal__transf_gaa0a667594e5aab4b6fc4c0d730fc078b.html#gaa0a667594e5aab4b6fc4c0d730fc078b">Tfloatarr_round</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2temporal_8c_a03f918a96e26e381f77c4387405fbe30.html#a03f918a96e26e381f77c4387405fbe30">time_max_header_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2temporal_8c_abaecae5fa010fe1bbb6ed80e5508afe7.html#abaecae5fa010fe1bbb6ed80e5508afe7">timestamp_mi</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__temporal__constructor_ga7b173611749d0b72b536b401fdc92ff5.html#ga7b173611749d0b72b536b401fdc92ff5">Tinstant_constructor</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2general_2temporal_8c_a6f48f061659ce5ffa6c9dbaf80f002b2.html#a6f48f061659ce5ffa6c9dbaf80f002b2">tinstant_recv</a></td></tr>
@@ -244,8 +244,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Global variable that saves the PostgreSQL fcinfo. </p>
-<p >This is needed when we need to change the PostgreSQL context, for example, in PostGIS functions such as <a class="el" href="postgis_8h_a735c1d7c7c5777ed809bb3fa651a3c56.html#a735c1d7c7c5777ed809bb3fa651a3c56">transform</a>, <a class="el" href="postgis_8h_a82e22f7c0eda7df3c9c150b94f4e207e.html#a82e22f7c0eda7df3c9c150b94f4e207e">geography_distance</a>, or <a class="el" href="postgis_8h_a29328bc371c9e1c89ce0cc3e4b711863.html#a29328bc371c9e1c89ce0cc3e4b711863">geography_azimuth</a> that need to access the proj cache </p>
+<p>Global variable that saves the PostgreSQL fcinfo structure. </p>
+<p >This is needed for changing the PostgreSQL context for temporal aggregation, which uses the MobilitDB skiplist structure. This structure ¨* needs to persist through successive calls of the aggregate function. </p>
 
 </div>
 </div>
