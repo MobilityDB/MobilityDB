@@ -1,47 +1,55 @@
-ARG POSTGRES_VERSION
-ARG POSTGIS_VERSION
+# Build stage
+ARG POSTGRES_VERSION=17
+ARG POSTGIS_VERSION=3.5
 
-FROM postgis/postgis:$POSTGRES_VERSION-$POSTGIS_VERSION
+FROM postgis/postgis:${POSTGRES_VERSION}-${POSTGIS_VERSION} AS builder
+
+# Install build dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        libproj-dev \
+        libjson-c-dev \
+        libgsl-dev \
+        libgeos-dev \
+        postgresql-server-dev-${PG_MAJOR} \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy local MobilityDB source instead of downloading
+WORKDIR /usr/local/src/MobilityDB
+COPY . .
+
+# Build MobilityDB
+RUN mkdir -p build \
+    && cd build \
+    && rm -rf * \
+    && cmake -DCMAKE_BUILD_TYPE=Release \
+             -DNPOINT=on -DCBUFFER=on -DPOSE=on .. \
+    && make -j$(nproc) \
+    && make install
+
+# Prepare initialization script
+RUN cp docker/initdb-mobilitydb.sh /tmp/11_mobilitydb.sh
+
+# Final stage
+FROM postgis/postgis:${POSTGRES_VERSION}-${POSTGIS_VERSION}
 
 # Configuration Parameters
 LABEL maintainer="MobilityDB Project - https://github.com/MobilityDB/MobilityDB"
+LABEL org.opencontainers.image.description="MobilityDB - An open source geospatial trajectory data management & analysis platform"
+LABEL org.opencontainers.image.source="https://github.com/MobilityDB/MobilityDB"
 
-# Fix the Release file expired problem
-RUN printf "Acquire::Check-Valid-Until \"false\";\nAcquire::Check-Date \"false\";" | cat > /etc/apt/apt.conf.d/10no--check-valid-until
-
-ARG MOBILITYDB_TAG
-
-# 1. Install Prerequisites
-# 2. Get, build and install MobilityDB
-# 3. Uninstall prerequisites
+# Install runtime dependencies only
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
-    build-essential \
-    cmake \
-    wget \
-    libproj-dev \
-    libjson-c-dev \
-    libgsl-dev \
-    libgeos-dev \
-    postgresql-server-dev-"${PG_MAJOR}" \
-  && rm -rf /var/lib/apt/lists/* \
-  && wget -O MobilityDB.tar.gz "https://github.com/MobilityDB/MobilityDB/archive/$MOBILITYDB_TAG.tar.gz" \
-  && mkdir -p /usr/local/src/MobilityDB/build \
-  && tar \
-    --extract \
-    --file MobilityDB.tar.gz \
-    --directory /usr/local/src/MobilityDB \
-    --strip-components 1 \
-  && rm MobilityDB.tar.gz \
-  && cd /usr/local/src/MobilityDB/build \
-  && cmake .. \
-  && make -j"$(nproc)" \
-  && make install \
-  && cp ../docker/initdb-mobilitydb.sh /docker-entrypoint-initdb.d/11_mobilitydb.sh \
-  && cd / \
-  && rm -rf /usr/local/src/MobilityDB \
-  && apt-get purge -y --auto-remove \
-    build-essential \
-    cmake \
-    wget \
-    postgresql-server-dev-"${PG_MAJOR}"
+    && apt-get install -y --no-install-recommends \
+        libproj-dev \
+        libjson-c-dev \
+        libgsl-dev \
+        libgeos-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy MobilityDB installed files from builder
+COPY --from=builder /usr/share/postgresql/${PG_MAJOR}/extension/mobilitydb* /usr/share/postgresql/${PG_MAJOR}/extension/
+COPY --from=builder /usr/lib/postgresql/${PG_MAJOR}/lib/libMobilityDB* /usr/lib/postgresql/${PG_MAJOR}/lib/
+COPY --from=builder /tmp/11_mobilitydb.sh /docker-entrypoint-initdb.d/11_mobilitydb.sh
