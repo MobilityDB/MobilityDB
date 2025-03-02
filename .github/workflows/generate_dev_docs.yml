@@ -1,15 +1,15 @@
 # Automatic generation of developer documentation will be copied
 # and checked into the gh-pages branch.
-name: Generate MEOS documentation with Doxygen
+name: Generate MEOS dev documentation
 
 on:
   workflow_dispatch:
   push:
     paths:
       - '.github/workflows/generate_dev_docs.yml'
-      - './meos/**'
-      - './mobilitydb/**'
-      - './doxygen/**'
+      - 'meos/**'
+      - 'mobilitydb/**'
+      - 'doxygen/**'
     branches:
       - 'master'
       - 'stable-[0-9]+.[0-9]+'

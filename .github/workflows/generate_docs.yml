@@ -1,6 +1,6 @@
 # Automatic generation of documentation will be copied and checked into the
 # gh-pages branch.
-name: Documentation generation CI
+name: Generate MobilityDB documentation
 
 on:
   workflow_dispatch:
