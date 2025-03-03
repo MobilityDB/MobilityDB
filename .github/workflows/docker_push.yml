@@ -1,0 +1,17 @@
+name: Trigger MobilityDB-Docker Build
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  trigger-docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send repository dispatch event
+        run: |
+          curl -X POST -H "Accept: application/vnd.github.everest-preview+json" \
+          -H "Authorization: token ${{ secrets.DOCKER_WORKFLOW_TOKEN }}" \
+          --data '{"event_type": "mobilitydb-master-update"}' \
+          https://api.github.com/repos/MobilityDB/MobilityDB-docker/dispatches
