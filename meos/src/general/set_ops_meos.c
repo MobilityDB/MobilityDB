@@ -42,10 +42,6 @@
 #include "general/set.h"
 #include "general/temporal.h"
 #include "general/type_util.h"
-#include "geo/tgeo_spatialfuncs.h"
-#if CBUFFER
-  #include "cbuffer/tcbuffer.h"
-#endif
 
 /*****************************************************************************
  * Validity functions
@@ -59,7 +55,7 @@ bool
 ensure_valid_set_int(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT4))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_INTSET))
     return false;
   return true;
 }
@@ -72,7 +68,7 @@ bool
 ensure_valid_set_bigint(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_INT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_BIGINTSET))
     return false;
   return true;
 }
@@ -85,7 +81,7 @@ bool
 ensure_valid_set_float(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_FLOAT8))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
     return false;
   return true;
 }
@@ -100,7 +96,7 @@ ensure_valid_set_text(const Set *s, const text *txt)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
-       ! ensure_set_isof_basetype(s, T_TEXT))
+       ! ensure_set_isof_type(s, T_TEXTSET))
     return false;
   return true;
 }
@@ -113,7 +109,7 @@ bool
 ensure_valid_set_date(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_basetype(s, T_DATE))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_DATESET))
     return false;
   return true;
 }
@@ -125,47 +121,10 @@ bool
 ensure_valid_set_timestamptz(const Set *s)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_basetype(s, T_TIMESTAMPTZ))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
     return false;
   return true;
 }
-/**
- * @brief Return true if a set and a geometry/geography are valid for set
- * operations
- * @param[in] s Set
- * @param[in] gs Value
- */
-bool
-ensure_valid_set_geo(const Set *s, const GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
-       ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs))
-    return false;
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  if (! ensure_set_isof_basetype(s, geotype))
-    return false;
-  return true;
-}
-
-#if CBUFFER
-/**
- * @brief Return true if a set and a circular buffer are valid for set
- * operations
- * @param[in] s Set
- * @param[in] cbuf Value
- */
-bool
-ensure_valid_set_cbuffer(const Set *s, const Cbuffer *cbuf)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) cbuf) ||
-       ! ensure_set_isof_type(s, T_CBUFFERSET))
-    return false;
-  return true;
-}
-#endif /* CBUFFER */
 
 /*****************************************************************************
  * Contains
@@ -267,40 +226,6 @@ contains_set_timestamptz(const Set *s, TimestampTz t)
   return contains_set_value(s, TimestampTzGetDatum(t));
 }
 
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a set contains a geometry/geography
- * @param[in] s Set
- * @param[in] gs Value
- * @csqlfn #Contains_set_value()
- */
-bool
-contains_set_geo(const Set *s, GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_set_geo(s, gs))
-    return false;
-  return contains_set_value(s, PointerGetDatum(gs));
-}
-
-#if CBUFFER
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a set contains a circular buffer
- * @param[in] s Set
- * @param[in] gs Value
- * @csqlfn #Contains_set_value()
- */
-bool
-contains_set_cbuffer(const Set *s, Cbuffer *cbuf)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_set_cbuffer(s, cbuf))
-    return false;
-  return contains_set_value(s, PointerGetDatum(cbuf));
-}
-#endif /* CBUFFER */
-
 /*****************************************************************************
  * Contained
  *****************************************************************************/
@@ -400,40 +325,6 @@ contained_timestamptz_set(TimestampTz t, const Set *s)
     return false;
   return contains_set_value(s, TimestampTzGetDatum(t));
 }
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a geometry/geography is contained in a set
- * @param[in] gs Value
- * @param[in] s Set
- * @csqlfn #Contained_value_set()
- */
-bool
-contained_geo_set(const GSERIALIZED *gs, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_set_geo(s, gs))
-    return false;
-  return contained_value_set(PointerGetDatum(gs), s);
-}
-
-#if CBUFFER
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a circular buffer is contained in a set
- * @param[in] cbuf Value
- * @param[in] s Set
- * @csqlfn #Contained_value_set()
- */
-bool
-contained_cbuffer_set(const Cbuffer *cbuf, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_set_cbuffer(s, cbuf))
-    return false;
-  return contained_value_set(PointerGetDatum(cbuf), s);
-}
-#endif /* CBUFFER */
 
 /*****************************************************************************
  * Strictly to the left of
@@ -1326,40 +1217,6 @@ union_set_timestamptz(const Set *s, const TimestampTz t)
   return union_set_value(s, TimestampTzGetDatum(t));
 }
 
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a set and a geometry/geography
- * @param[in] s Set
- * @param[in] gs Value
- * @csqlfn #Union_set_value()
- */
-Set *
-union_set_geo(const Set *s, const GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_set_geo(s, gs))
-    return NULL;
-  return union_set_value(s, PointerGetDatum(gs));
-}
-
-#if CBUFFER
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a set and a circular buffer
- * @param[in] s Set
- * @param[in] cbuf Value
- * @csqlfn #Union_set_value()
- */
-Set *
-union_set_cbuffer(const Set *s, const Cbuffer *cbuf)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_set_cbuffer(s, cbuf))
-    return NULL;
-  return union_set_value(s, PointerGetDatum(cbuf));
-}
-#endif /* CBUFFER */
-
 /*****************************************************************************/
 
 /**
@@ -1439,34 +1296,6 @@ union_timestamptz_set(const TimestampTz t, const Set *s)
 {
   return union_set_timestamptz(s, t);
 }
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a geometry/geography and a set
- * @param[in] s Set
- * @param[in] gs Value
- * @csqlfn #Union_set_value()
- */
-Set *
-union_geo_set(const GSERIALIZED *gs, const Set *s)
-{
-  return union_set_geo(s, gs);
-}
-
-#if CBUFFER
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a circular buffer and a set
- * @param[in] s Set
- * @param[in] cbuf Value
- * @csqlfn #Union_set_value()
- */
-Set *
-union_cbuffer_set(const Cbuffer *cbuf, const Set *s)
-{
-  return union_set_cbuffer(s, cbuf);
-}
-#endif /* CBUFFER */
 
 /*****************************************************************************
  * Set intersection
@@ -1567,40 +1396,6 @@ intersection_set_timestamptz(const Set *s, TimestampTz t)
   return intersection_set_value(s, TimestampTzGetDatum(t));
 }
 
-/**
- * @ingroup meos_setspan_set
- * @brief Return the intersection of a set and a geometry/geography
- * @param[in] s Set
- * @param[in] gs Value
- * @csqlfn #Intersection_set_value()
- */
-Set *
-intersection_set_geo(const Set *s, const GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_set_geo(s, gs))
-    return NULL;
-  return intersection_set_value(s, PointerGetDatum(gs));
-}
-
-#if CBUFFER
-/**
- * @ingroup meos_setspan_set
- * @brief Return the intersection of a set and a circular buffer
- * @param[in] s Set
- * @param[in] cbuf Value
- * @csqlfn #Intersection_set_value()
- */
-Set *
-intersection_set_cbuffer(const Set *s, const Cbuffer *cbuf)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_set_cbuffer(s, cbuf))
-    return NULL;
-  return intersection_set_value(s, PointerGetDatum(cbuf));
-}
-#endif /* CBUFFER */
-
 /*****************************************************************************/
 
 /**
@@ -1680,34 +1475,6 @@ intersection_timestamptz_set(const TimestampTz t, const Set *s)
 {
   return intersection_set_timestamptz(s, t);
 }
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the intersection of a geometry/geography and a set
- * @param[in] s Set
- * @param[in] gs Value
- * @csqlfn #Union_set_value()
- */
-Set *
-intersection_geo_set(const GSERIALIZED *gs, const Set *s)
-{
-  return intersection_set_geo(s, gs);
-}
-
-#if CBUFFER
-/**
- * @ingroup meos_setspan_set
- * @brief Return the intersection of a circular buffer and a set
- * @param[in] s Set
- * @param[in] cbuf Value
- * @csqlfn #Union_set_value()
- */
-Set *
-intersection_cbuffer_set(const Cbuffer *cbuf, const Set *s)
-{
-  return intersection_set_cbuffer(s, cbuf);
-}
-#endif /* CBUFFER */
 
 /*****************************************************************************
  * Set difference
@@ -1810,40 +1577,6 @@ minus_timestamptz_set(TimestampTz t, const Set *s)
   return minus_value_set(TimestampTzGetDatum(t), s);
 }
 
-/**
- * @ingroup meos_setspan_set
- * @brief Return the difference of a geometry/geography and a set
- * @param[in] gs Value
- * @param[in] s Set
- * @csqlfn #Minus_value_set()
- */
-Set *
-minus_geo_set(const GSERIALIZED *gs, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_set_geo(s, gs))
-    return NULL;
-  return minus_value_set(PointerGetDatum(gs), s);
-}
-
-#if CBUFFER
-/**
- * @ingroup meos_setspan_set
- * @brief Return the difference of a circular buffer and a set
- * @param[in] cbuf Value
- * @param[in] s Set
- * @csqlfn #Minus_value_set()
- */
-Set *
-minus_cbuffer_set(const Cbuffer *cbuf, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_set_cbuffer(s, cbuf))
-    return NULL;
-  return minus_value_set(PointerGetDatum(cbuf), s);
-}
-#endif /* CBUFFER */
-
 /*****************************************************************************/
 
 /**
@@ -1941,40 +1674,6 @@ minus_set_timestamptz(const Set *s, TimestampTz t)
     return NULL;
   return minus_set_value(s, TimestampTzGetDatum(t));
 }
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the difference of a set and a geometry/geography
- * @param[in] s Set
- * @param[in] gs Value
- * @csqlfn #Minus_set_value()
- */
-Set *
-minus_set_geo(const Set *s, const GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_set_geo(s, gs))
-    return NULL;
-  return minus_set_value(s, PointerGetDatum(gs));
-}
-
-#if CBUFFER
-/**
- * @ingroup meos_setspan_set
- * @brief Return the difference of a set and a circular buffer
- * @param[in] s Set
- * @param[in] cbuf Value
- * @csqlfn #Minus_set_value()
- */
-Set *
-minus_set_cbuffer(const Set *s, const Cbuffer *cbuf)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_valid_set_cbuffer(s, cbuf))
-    return NULL;
-  return minus_set_value(s, PointerGetDatum(cbuf));
-}
-#endif /* CBUFFER */
 
 /******************************************************************************
  * Distance functions
@@ -2079,7 +1778,7 @@ int
 distance_intset_intset(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_basetype(s1, T_INT4))
+  if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_INTSET))
     return -1;
   return DatumGetInt32(distance_set_set(s1, s2));
 }
@@ -2095,7 +1794,7 @@ int64
 distance_bigintset_bigintset(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_basetype(s1, T_INT8))
+  if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_INTSET))
     return -1;
   return DatumGetInt64(distance_set_set(s1, s2));
 }
@@ -2111,7 +1810,7 @@ double
 distance_floatset_floatset(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_basetype(s1, T_FLOAT8))
+  if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_FLOATSET))
     return -1.0;
   return DatumGetFloat8(distance_set_set(s1, s2));
 }
@@ -2127,7 +1826,7 @@ int
 distance_dateset_dateset(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_basetype(s1, T_DATE))
+  if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_DATESET))
     return -1;
   return DatumGetInt32(distance_set_set(s1, s2));
 }
@@ -2143,7 +1842,7 @@ double
 distance_tstzset_tstzset(const Set *s1, const Set *s2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_basetype(s1, T_TIMESTAMPTZ))
+  if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_TSTZSET))
     return -1.0;
   return DatumGetFloat8(distance_set_set(s1, s2));
 }

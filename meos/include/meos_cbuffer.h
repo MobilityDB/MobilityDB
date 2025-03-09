@@ -38,43 +38,23 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-/* PostgreSQL */
-#if MEOS
-#include "postgres_int_defs.h"
-#else
-#include <postgres.h>
-#include <utils/date.h>
-#include <utils/timestamp.h>
-#endif
-/* PostGIS */
-#include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
-#include "geo/stbox.h"
+// #include "geo/stbox.h"
 
 /*****************************************************************************
  * Type definitions
  *****************************************************************************/
 
-/* Structure to represent buffers */
+/* Structure to represent circular buffers */
 
-typedef struct
-{
-  int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  double radius;        /**< radius */
-  Datum point;          /**< First 8 bytes of the point which is passed by 
-                             reference. The extra bytes needed are added upon 
-                             creation. */
-  /* variable-length data follows */
-} Cbuffer;
+typedef struct Cbuffer Cbuffer;
 
 /******************************************************************************
  * Functions for circular buffers
  ******************************************************************************/
-
-extern char *cbuffer_wkt_out(Datum value, meosType type, int maxdd);
-extern char *cbuffer_ewkt_out(Datum value, meosType type, int maxdd);
 
 extern char *cbuffer_as_text(const Cbuffer *cbuf, int maxdd);
 extern char *cbuffer_as_ewkt(const Cbuffer *cbuf, int maxdd);
@@ -102,14 +82,11 @@ extern int32_t cbuffer_srid(const Cbuffer *cbuf);
 extern void cbuffer_set_srid(Cbuffer *cbuf, int32_t srid);
 extern Cbuffer *cbuffer_transform(const Cbuffer *cbuf, int32 srid);
 extern Cbuffer *cbuffer_transform_pipeline(const Cbuffer *cbuf, const char *pipelinestr, int32 srid, bool is_forward);
-extern char **cbufferarr_as_text(const Datum *cbufarr, int count, int maxdd, bool extended);
 extern Cbuffer *geom_cbuffer(const GSERIALIZED *gs);
 
 /******************************************************************************
  * Functions for circular buffer sets
  ******************************************************************************/
-
-extern Set *cbufferset_set_srid(const Set *s, int32_t srid);
 
 /*===========================================================================*
  * Functions for box types
@@ -139,7 +116,7 @@ extern STBox *cbuffer_stbox(const Cbuffer *cbuf);
 extern char *tcbuffer_as_ewkt(const Temporal *temp, int maxdd);
 extern char *tcbuffer_as_text(const Temporal *temp, int maxdd);
 extern char *tcbuffer_out(const Temporal *temp, int maxdd);
-extern char **tcbufferarr_as_text(const Temporal **temparr, int count, int maxdd, bool extended);
+extern char **tcbufferarr_as_text(const Temporal **temparr, int count, int maxdd);
 
 /*****************************************************************************
  * Constructor functions for temporal types
@@ -147,7 +124,7 @@ extern char **tcbufferarr_as_text(const Temporal **temparr, int count, int maxdd
 
 extern bool ensure_valid_stbox_cbuffer(const STBox *box, const Cbuffer *cbuf);
 extern bool ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
-extern Temporal *tcbuffer_constructor(const Temporal *tpoint, const Temporal *tfloat);
+extern Temporal *tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat);
 
 /*****************************************************************************
  * Restriction functions for temporal types
@@ -169,18 +146,18 @@ extern double distance_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box);
 extern double distance_cbuffer_cbuffer(const Cbuffer *cbuf1, const Cbuffer *cbuf2);
 extern Temporal *distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf);
 extern Temporal *distance_tcbuffer_point(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *distance_tcbuffer_tbuffer(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern double nad_stbox_tcbuffer(const STBox *box, const Temporal *temp);
 extern double nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern double nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf);
 extern double nad_tcbuffer_stbox(const Temporal *temp, const STBox *box);
-extern double nad_tcbuffer_tbuffer(const Temporal *temp1, const Temporal *temp2);
+extern double nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern TInstant *nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern TInstant *nai_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf);
-extern TInstant *nai_tcbuffer_tbuffer(const Temporal *temp1, const Temporal *temp2);
+extern TInstant *nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern GSERIALIZED *shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern GSERIALIZED *shortestline_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf);
-extern GSERIALIZED *shortestline_tcbuffer_tbuffer(const Temporal *temp1, const Temporal *temp2);
+extern GSERIALIZED *shortestline_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 
 /*****************************************************************************
  * Spatial functions for temporal points
@@ -196,10 +173,8 @@ extern GSERIALIZED *tcbuffer_traversed_area(const Temporal *temp);
 /* Spatial transformation functions for temporal points */
 
 extern Temporal *tcbuffer_tgeompoint(const Temporal *temp);
-extern Temporal *tcbuffer_tgeompoint(const Temporal *temp);
 extern TInstant *tcbufferinst_tgeompointinst(const TInstant *inst);
 
-extern Temporal *tcbuffer_tfloat(const Temporal *temp);
 extern Temporal *tcbuffer_tfloat(const Temporal *temp);
 extern TInstant *tcbufferinst_tfloatinst(const TInstant *inst);
 
@@ -229,30 +204,30 @@ extern Temporal *tne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 
 /* Ever and always spatial relationship functions for temporal circular buffers */
 
-extern int acontains_geo_tbuffer(const GSERIALIZED *gs, const Temporal *temp);
+extern int acontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp);
 extern int acontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp);
 extern int adisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int adisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf);
-extern int adisjoint_tcbuffer_tbuffer(const Temporal *temp1, const Temporal *temp2);
+extern int adisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern int adwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
 extern int adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf, double dist);
-extern int adwithin_tcbuffer_tbuffer(const Temporal *temp1, const Temporal *temp2, double dist);
+extern int adwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, double dist);
 extern int aintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int aintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf);
-extern int aintersects_tcbuffer_tbuffer(const Temporal *temp1, const Temporal *temp2);
+extern int aintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern int atouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int atouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf);
-extern int atouches_tcbuffer_tbuffer(const Temporal *temp1, const Temporal *temp2);
-extern int econtains_geo_tbuffer(const GSERIALIZED *gs, const Temporal *temp);
+extern int atouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
+extern int econtains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp);
 extern int edisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int edisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf);
 extern int edisjoint_tcbuffer_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern int edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
 extern int edwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf, double dist);
-extern int edwithin_tcbuffer_tbuffer(const Temporal *temp1, const Temporal *temp2, double dist);
+extern int edwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, double dist);
 extern int eintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int eintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf);
-extern int eintersects_tcbuffer_tbuffer(const Temporal *temp1, const Temporal *temp2);
+extern int eintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern int etouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int etouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf);
 
@@ -260,10 +235,10 @@ extern int etouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf);
 
 /* Temporal spatial relationship functions for temporal points */
 
-extern Temporal *tcontains_geo_tbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
+extern Temporal *tcontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
 extern Temporal *tdwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist, bool restr, bool atvalue);
 extern Temporal *tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf, double dist, bool restr, bool atvalue);
-extern Temporal *tdwithin_tcbuffer_tbuffer(const Temporal *temp1, const Temporal *temp2, double dist, bool restr, bool atvalue);
+extern Temporal *tdwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, double dist, bool restr, bool atvalue);
 extern Temporal *ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
 extern Temporal *ttouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf, bool restr, bool atvalue);
 

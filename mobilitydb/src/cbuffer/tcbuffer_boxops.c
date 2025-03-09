@@ -46,10 +46,11 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_cbuffer.h>
 #include "general/set.h"
 #include "general/span.h"
 #include "geo/stbox.h"
-#include "cbuffer/tcbuffer.h"
+#include "cbuffer/cbuffer.h"
 /* MobilityDB */
 #include "pg_geo/tspatial_boxops.h"
 

@@ -28,12 +28,11 @@
  *****************************************************************************/
 
 /*
- * tpoint_boxops.sql
- * Bounding box operators for temporal points.
+ * @brief Bounding box operators for temporal points
  */
 
 /*****************************************************************************
- * Casting
+ * Conversions
  *****************************************************************************/
 
 CREATE FUNCTION stbox(tgeompoint)

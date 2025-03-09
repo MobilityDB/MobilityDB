@@ -55,20 +55,11 @@
 
 /* Structure to represent network-based points */
 
-typedef struct
-{
-  int64 rid;        /**< route identifier */
-  double pos;       /**< position */
-} Npoint;
+typedef struct Npoint Npoint;
 
 /* Structure to represent network-based segments */
 
-typedef struct
-{
-  int64 rid;       /**< route identifier */
-  double pos1;     /**< position1 */
-  double pos2;     /**< position2 */
-} Nsegment;
+typedef struct Nsegment Nsegment;
 
 /*****************************************************************************
  * Initialization of the MEOS library

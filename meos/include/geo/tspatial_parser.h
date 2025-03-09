@@ -28,23 +28,30 @@
  *****************************************************************************/
 
 /**
- * @brief Spatial functions for temporal points.
+ * @brief Functions for parsing temporal points.
  */
 
-#ifndef __PG_TPOINT_SPATIALFUNCS_H__
-#define __PG_TPOINT_SPATIALFUNCS_H__
+#ifndef __TSPATIAL_PARSER_H__
+#define __TSPATIAL_PARSER_H__
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-
-
-/*****************************************************************************/
-
-/* Fetch from and store in the cache the fcinfo of the external function */
-extern FunctionCallInfo fetch_fcinfo(void);
-extern void store_fcinfo(FunctionCallInfo fcinfo);
+/* MEOS */
+#include <meos.h>
+#include <meos_geo.h>
+#include "general/meos_catalog.h"
 
 /*****************************************************************************/
 
-#endif /* __PG_TPOINT_SPATIALFUNCS_H__ */
+extern bool srid_parse(const char **str, int *srid);
+extern bool geo_parse(const char **str, meosType basetype, char delim, 
+  int *srid, GSERIALIZED **result);
+extern STBox *stbox_parse(const char **str);
+extern TSequence *tpointseq_parse(const char **str, meosType temptype,
+  interpType interp, bool end, bool make, int *tpoint_srid);
+extern Temporal *tpoint_parse(const char **str, meosType temptype);
+extern Temporal *tspatial_parse(const char **str, meosType temptype);
+
+/*****************************************************************************/
+
+#endif /* __TSPATIAL_PARSER_H__ */

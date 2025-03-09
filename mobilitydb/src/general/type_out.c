@@ -43,120 +43,12 @@
 #include "general/set.h"
 #include "general/span.h"
 #include "general/temporal.h"
-#include "general/type_out.h"
+#include "general/type_inout.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/type_util.h"
 #include "pg_geo/postgis.h"
-
-/*****************************************************************************
- * Output in WKT and EWKT representation
- *****************************************************************************/
-
-PGDLLEXPORT Datum Set_as_text(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Set_as_text);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a set
- * @sqlfn asText()
- */
-Datum
-Set_as_text(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = set_out(s, dbl_dig_for_wkt);
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_TEXT_P(result);
-}
-
-PGDLLEXPORT Datum Geoset_as_text(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geoset_as_text);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a geo set
- * @sqlfn asText()
- */
-Datum
-Geoset_as_text(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = geoset_as_text(s, dbl_dig_for_wkt);
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_TEXT_P(result);
-}
-
-PGDLLEXPORT Datum Geoset_as_ewkt(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geoset_as_ewkt);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the Extended Well-Known Text (EWKT) representation of a geo set
- * @sqlfn asEWKT()
- */
-Datum
-Geoset_as_ewkt(PG_FUNCTION_ARGS)
-{
-  Set *s = PG_GETARG_SET_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = geoset_as_ewkt(s, dbl_dig_for_wkt);
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_TEXT_P(result);
-}
-
-PGDLLEXPORT Datum Span_as_text(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_as_text);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a span
- * @sqlfn asText()
- */
-Datum
-Span_as_text(PG_FUNCTION_ARGS)
-{
-  Span *s = PG_GETARG_SPAN_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = span_out(s, Int32GetDatum(dbl_dig_for_wkt));
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_RETURN_TEXT_P(result);
-}
-
-PGDLLEXPORT Datum Spanset_as_text(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Spanset_as_text);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a span set
- * @sqlfn asText()
- */
-Datum
-Spanset_as_text(PG_FUNCTION_ARGS)
-{
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
-  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-    dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = spanset_out(ss, Int32GetDatum(dbl_dig_for_wkt));
-  text *result = cstring2text(str);
-  pfree(str);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_TEXT_P(result);
-}
 
 /*****************************************************************************
  * Output in WKT and EWKT representation
@@ -331,7 +223,7 @@ get_endian_variant(const text *txt)
  * @brief Output a value in the Well-Known Binary (WKB) or Extended Well-Known
  * Binary (EWKB) representation
  */
-static bytea *
+bytea *
 Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, meosType type,
   bool extended)
 {
@@ -357,7 +249,7 @@ Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, meosType type,
  * @brief Output a value in the Well-Known Binary (WKB) or Extended Well-Known
  * Binary (EWKB) representation in hex-encoded ASCII
  */
-static text *
+text *
 Datum_as_hexwkb(FunctionCallInfo fcinfo, Datum value, meosType type)
 {
   uint8_t variant = 0;
@@ -378,179 +270,6 @@ Datum_as_hexwkb(FunctionCallInfo fcinfo, Datum value, meosType type)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Set_as_wkb(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Set_as_wkb);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the Well-Known Binary (WKB) representation of a set
- * @sqlfn asBinary()
- */
-Datum
-Set_as_wkb(PG_FUNCTION_ARGS)
-{
-  /* Ensure that the value is detoasted if necessary */
-  Set *s = PG_GETARG_SET_P(0);
-  meosType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(s), settype, true);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_BYTEA_P(result);
-}
-
-PGDLLEXPORT Datum Set_as_hexwkb(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Set_as_hexwkb);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
- * representation of a set
- * @sqlfn asHexWKB()
- */
-Datum
-Set_as_hexwkb(PG_FUNCTION_ARGS)
-{
-  /* Ensure that the value is detoasted if necessary */
-  Set *s = PG_GETARG_SET_P(0);
-  meosType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(s), settype);
-  PG_FREE_IF_COPY(s, 0);
-  PG_RETURN_TEXT_P(result);
-}
-
-/*****************************************************************************/
-
-PGDLLEXPORT Datum Span_as_wkb(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_as_wkb);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the Well-Known Binary (WKB) representation of a span
- * @sqlfn asBinary()
- */
-Datum
-Span_as_wkb(PG_FUNCTION_ARGS)
-{
-  Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, PointerGetDatum(s), s->spantype,
-    false));
-}
-
-PGDLLEXPORT Datum Span_as_hexwkb(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Span_as_hexwkb);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
- * representation of a span
- * @sqlfn asHexWKB()
- */
-Datum
-Span_as_hexwkb(PG_FUNCTION_ARGS)
-{
-  Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(s), s->spantype));
-}
-
-/*****************************************************************************/
-
-PGDLLEXPORT Datum Spanset_as_wkb(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Spanset_as_wkb);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the Well-Known Binary (WKB) representation of a span set
- * @sqlfn asBinary()
- */
-Datum
-Spanset_as_wkb(PG_FUNCTION_ARGS)
-{
-  /* Ensure that the value is detoasted if necessary */
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(ss), ss->spansettype,
-    false);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_BYTEA_P(result);
-}
-
-PGDLLEXPORT Datum Spanset_as_hexwkb(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Spanset_as_hexwkb);
-/**
- * @ingroup mobilitydb_setspan_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
- * representation of a span set
- * @sqlfn asHexWKB()
- */
-Datum
-Spanset_as_hexwkb(PG_FUNCTION_ARGS)
-{
-  /* Ensure that the value is detoasted if necessary */
-  SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(ss), ss->spansettype);
-  PG_FREE_IF_COPY(ss, 0);
-  PG_RETURN_TEXT_P(result);
-}
-
-/*****************************************************************************/
-
-PGDLLEXPORT Datum Tbox_as_wkb(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_as_wkb);
-/**
- * @ingroup mobilitydb_box_inout
- * @brief Return the Well-Known Binary (WKB) representation of a temporal box
- * @sqlfn asBinary()
- */
-Datum
-Tbox_as_wkb(PG_FUNCTION_ARGS)
-{
-  Datum box = PG_GETARG_DATUM(0);
-  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_TBOX, false));
-}
-
-PGDLLEXPORT Datum Tbox_as_hexwkb(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_as_hexwkb);
-/**
- * @ingroup mobilitydb_box_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
- * representation of a temporal box
- * @sqlfn asHexWKB()
- */
-Datum
-Tbox_as_hexwkb(PG_FUNCTION_ARGS)
-{
-  Datum box = PG_GETARG_DATUM(0);
-  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_TBOX));
-}
-
-/*****************************************************************************/
-
-PGDLLEXPORT Datum Stbox_as_wkb(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_as_wkb);
-/**
- * @ingroup mobilitydb_box_inout
- * @brief Return the Well-Known Binary (WKB) representation of a spatiotemporal
- * box
- * @sqlfn asBinary()
- */
-Datum
-Stbox_as_wkb(PG_FUNCTION_ARGS)
-{
-  Datum box = PG_GETARG_DATUM(0);
-  /* A spatiotemporal box always outputs the SRID */
-  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_STBOX, true));
-}
-
-PGDLLEXPORT Datum Stbox_as_hexwkb(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_as_hexwkb);
-/**
- * @ingroup mobilitydb_box_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
- * representation of a spatiotemporal box
- * @sqlfn asHexWKB()
- */
-Datum
-Stbox_as_hexwkb(PG_FUNCTION_ARGS)
-{
-  Datum box = PG_GETARG_DATUM(0);
-  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_STBOX));
-}
-
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Temporal_as_wkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_as_wkb);
 /**
@@ -566,26 +285,6 @@ Temporal_as_wkb(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(temp), temp->temptype,
     false);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_BYTEA_P(result);
-}
-
-PGDLLEXPORT Datum Tspatial_as_ewkb(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tspatial_as_ewkb);
-/**
- * @ingroup mobilitydb_temporal_inout
- * @brief Return the Extended Well-Known Binary (WKB) representation of a
- * temporal spatial value
- * @note This will have 'SRID=#;' for temporal spatial values
- * @sqlfn asEWKB()
- */
-Datum
-Tspatial_as_ewkb(PG_FUNCTION_ARGS)
-{
-  /* Ensure that the value is detoasted if necessary */
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(temp), temp->temptype,
-    true);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BYTEA_P(result);
 }

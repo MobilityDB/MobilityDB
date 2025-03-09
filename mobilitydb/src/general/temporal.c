@@ -51,14 +51,14 @@
 #include "general/tbox.h"
 #include "general/temporal.h"
 #include "general/temporal_boxops.h"
-#include "general/type_out.h"
+#include "general/type_inout.h"
 #include "general/type_util.h"
 #include "geo/tgeo.h"
 /* MobilityDB */
 #include "pg_general/doxygen_mobilitydb_api.h"
 #include "pg_general/meos_catalog.h"
 #include "pg_general/type_util.h"
-#include "pg_geo/tpoint_spatialfuncs.h"
+#include "pg_geo/tspatial.h"
 
 /* To avoid including fmgrprotos.h */
 extern PGDLLEXPORT Datum timestamp_mi(PG_FUNCTION_ARGS);
@@ -406,11 +406,11 @@ Temporal_in(PG_FUNCTION_ARGS)
   const char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
   Temporal *result = temporal_in(input, oid_type(temptypid));
-  int32 temp_typmod = -1;
+  int32 typmod = -1;
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
-    temp_typmod = PG_GETARG_INT32(2);
-  if (temp_typmod >= 0)
-    result = temporal_valid_typmod(result, temp_typmod);
+    typmod = PG_GETARG_INT32(2);
+  if (typmod >= 0)
+    result = temporal_valid_typmod(result, typmod);
   PG_RETURN_TEMPORAL_P(result);
 }
 
@@ -498,10 +498,9 @@ Datum
 Temporal_send(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  /* Add SRID to binary representation */
-  uint8_t variant = WKB_EXTENDED;
   size_t wkb_size = VARSIZE_ANY_EXHDR(temp);
-  uint8_t *wkb = temporal_as_wkb(temp, variant, &wkb_size);
+  /* Add SRID to binary representation */
+  uint8_t *wkb = temporal_as_wkb(temp, WKB_EXTENDED, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
   PG_FREE_IF_COPY(temp, 0);

@@ -44,7 +44,7 @@
 #include "general/set.h"
 #include "general/span.h"
 #include "general/temporal.h"
-#include "general/type_out.h"
+#include "general/type_inout.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
@@ -120,16 +120,16 @@ Datum
 Tbox_send(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
-  uint8_t variant = 0;
   size_t wkb_size;
-  uint8_t *wkb = tbox_as_wkb(box, variant, &wkb_size);
+  /* A span does not have an extended variant */
+  uint8_t *wkb = tbox_as_wkb(box, 0, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
   PG_RETURN_BYTEA_P(result);
 }
 
 /*****************************************************************************
- * Output in WKT format
+ * Input/output in WKT, WKB, and HexWKB format
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tbox_as_text(PG_FUNCTION_ARGS);
@@ -150,6 +150,75 @@ Tbox_as_text(PG_FUNCTION_ARGS)
   text *result = cstring2text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Tbox_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_from_wkb);
+/**
+ * @ingroup mobilitydb_box_inout
+ * @brief Return a temporal box from its Well-Known Binary (WKB) representation
+ * @sqlfn tboxFromBinary()
+ */
+Datum
+Tbox_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  TBox *result = tbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_TBOX_P(result);
+}
+
+PGDLLEXPORT Datum Tbox_from_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_from_hexwkb);
+/**
+ * @ingroup mobilitydb_box_inout
+ * @brief Return a temporal box from its hex-encoded ASCII Well-Known Binary
+ * (HexWKB) representation
+ * @sqlfn tboxFromHexWKB()
+ */
+Datum
+Tbox_from_hexwkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text2cstring(hexwkb_text);
+  TBox *result = tbox_from_hexwkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_TBOX_P(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Tbox_as_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_as_wkb);
+/**
+ * @ingroup mobilitydb_box_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a temporal box
+ * @sqlfn asBinary()
+ */
+Datum
+Tbox_as_wkb(PG_FUNCTION_ARGS)
+{
+  Datum box = PG_GETARG_DATUM(0);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_TBOX, false));
+}
+
+PGDLLEXPORT Datum Tbox_as_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_as_hexwkb);
+/**
+ * @ingroup mobilitydb_box_inout
+ * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * representation of a temporal box
+ * @sqlfn asHexWKB()
+ */
+Datum
+Tbox_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  Datum box = PG_GETARG_DATUM(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_TBOX));
 }
 
 /*****************************************************************************
@@ -668,7 +737,8 @@ PGDLLEXPORT Datum Tbox_expand_float(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_expand_float);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Return a temporal box with the value span expanded by a double
+ * @brief Return a temporal box with the value span expanded/shrinked by a
+ * double
  * @sqlfn expandValue()
  */
 Datum
@@ -676,14 +746,18 @@ Tbox_expand_float(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   double d = PG_GETARG_FLOAT8(1);
-  PG_RETURN_TBOX_P(tbox_expand_float(box, d));
+  TBox *result = tbox_expand_float(box, d);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TBOX_P(result);
 }
 
 PGDLLEXPORT Datum Tbox_expand_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_expand_time);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Return a temporal box with the the time span expanded by an interval
+ * @brief Return a temporal box with the the time span expanded/shrinked by an
+ * interval
  * @sqlfn expandTime()
  */
 Datum
@@ -691,7 +765,10 @@ Tbox_expand_time(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
-  PG_RETURN_TBOX_P(tbox_expand_time(box, interval));
+  TBox *result = tbox_expand_time(box, interval);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TBOX_P(result);
 }
 
 PGDLLEXPORT Datum Tbox_round(PG_FUNCTION_ARGS);

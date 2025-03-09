@@ -37,9 +37,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "pose/pose.h"
+#include <meos_pose.h>
 #include "pose/tpose.h"
 #include "pose/tpose_spatialfuncs.h"
+/* MobilityDB */
+#include "pg_general/temporal.h"
+#include "pg_geo/postgis.h"
 
 /*****************************************************************************
  * Functions for spatial reference systems
@@ -48,7 +51,7 @@
 PGDLLEXPORT Datum Pose_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_srid);
 /**
- * @ingroup mobilitydb_temporal_spatial_accessor
+ * @ingroup mobilitydb_temporal_spatial_srid
  * @brief Return the SRID of a temporal pose
  * @sqlfn SRID()
  */
@@ -64,7 +67,7 @@ Pose_srid(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Pose_set_srid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_set_srid);
 /**
- * @ingroup mobilitydb_temporal_spatial_accessor
+ * @ingroup mobilitydb_temporal_spatial_srid
  * @brief Return the SRID of a temporal pose
  * @sqlfn SRID()
  */
@@ -80,76 +83,93 @@ Pose_set_srid(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Ever/always functions
+ * Restriction functions
  *****************************************************************************/
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Specific function for the ever/always comparison
+ * @brief Return a temporal pose restricted to (the complement of) a
+ * geometry
  */
 static Datum
-tpose_ev_al_comp_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, const Pose *))
+Tpose_restrict_geom(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Pose *pose = PG_GETARG_POSE_P(1);
-  bool result = func(temp, pose);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  Temporal *result = tpose_restrict_geom(temp, gs, NULL, atfunc);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(pose, 1);
-  PG_RETURN_BOOL(result);
+  PG_FREE_IF_COPY(gs, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Tpose_ever_eq(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_ever_eq);
+PGDLLEXPORT Datum Tpose_at_geom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_at_geom);
 /**
- * @ingroup mobilitydb_temporal_comp_ever
- * @brief Return true if a temporal pose is ever equal to a pose
- * @sqlfn ever_eq()
+ * @ingroup mobilitydb_temporal_restrict
+ * @brief Return a temporal pose restricted to a geometry
+ * @sqlfn atGeometry()
  */
 Datum
-Tpose_ever_eq(PG_FUNCTION_ARGS)
+Tpose_at_geom(PG_FUNCTION_ARGS)
 {
-  return tpose_ev_al_comp_ext(fcinfo, &tpose_ever_eq);
+  return Tpose_restrict_geom(fcinfo, REST_AT);
 }
 
-PGDLLEXPORT Datum Tpose_always_eq(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_always_eq);
+PGDLLEXPORT Datum Tpose_minus_geom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_minus_geom);
 /**
- * @ingroup mobilitydb_temporal_comp_ever
- * @brief Return true if a temporal pose is always equal to a pose
- * @sqlfn always_eq()
+ * @ingroup mobilitydb_temporal_restrict
+ * @brief Return a temporal pose restricted to the complement of a geometry
+ * @sqlfn minusGeometry()
  */
 Datum
-Tpose_always_eq(PG_FUNCTION_ARGS)
+Tpose_minus_geom(PG_FUNCTION_ARGS)
 {
-  return tpose_ev_al_comp_ext(fcinfo, &tpose_always_eq);
+  return Tpose_restrict_geom(fcinfo, REST_MINUS);
 }
 
-PGDLLEXPORT Datum Tpose_ever_ne(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_ever_ne);
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Tpose_at_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_at_stbox);
 /**
- * @ingroup mobilitydb_temporal_comp_ever
- * @brief Return true if a temporal pose is ever different from a pose
- * @sqlfn ever_ne()
+ * @ingroup mobilitydb_temporal_restrict
+ * @brief Return a temporal pose restricted to a spatiotemporal box
+ * @sqlfn atStbox()
  */
 Datum
-Tpose_ever_ne(PG_FUNCTION_ARGS)
+Tpose_at_stbox(PG_FUNCTION_ARGS)
 {
-  return ! tpose_ev_al_comp_ext(fcinfo, &tpose_always_eq);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *box = PG_GETARG_STBOX_P(1);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tpose_restrict_stbox(temp, box, border_inc, REST_AT);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Tpose_always_ne(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_always_ne);
+PGDLLEXPORT Datum Tpose_minus_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_minus_stbox);
 /**
- * @ingroup mobilitydb_temporal_comp_ever
- * @brief Return true if a temporal pose is always different from a pose
- * @sqlfn always_ne()
+ * @ingroup mobilitydb_temporal_restrict
+ * @brief Return a temporal pose restricted to the complement of a
+ * spatiotemporal box
+ * @sqlfn minusStbox()
  */
 Datum
-Tpose_always_ne(PG_FUNCTION_ARGS)
+Tpose_minus_stbox(PG_FUNCTION_ARGS)
 {
-  return ! tpose_ev_al_comp_ext(fcinfo, &tpose_ever_eq);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *box = PG_GETARG_STBOX_P(1);
+  bool border_inc = PG_GETARG_BOOL(2);
+  Temporal *result = tpose_restrict_stbox(temp, box, border_inc, REST_MINUS);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************/

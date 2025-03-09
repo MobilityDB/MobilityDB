@@ -50,6 +50,7 @@
 #include "geo/pgis_types.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_spatialrels.h"
+#include "cbuffer/cbuffer.h"
 #include "cbuffer/tcbuffer_spatialfuncs.h"
 // #include "cbuffer/tcbuffer_tempspatialrels.h"
 

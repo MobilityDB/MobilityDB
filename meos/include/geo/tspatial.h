@@ -27,29 +27,26 @@
  *
  *****************************************************************************/
 
-/*
- * tpose_spatialfuncs.sql
- * Spatial functions for temporal poses.
+/**
+ * @brief Bounding box operators for temporal spatial values
  */
 
-CREATE FUNCTION SRID(pose)
-  RETURNS integer
-  AS 'MODULE_PATHNAME', 'Pose_srid'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#ifndef __TSPATIAL_BOXOPS_H__
+#define __TSPATIAL_BOXOPS_H__
 
-CREATE FUNCTION setSRID(pose, integer)
-  RETURNS pose
-  AS 'MODULE_PATHNAME', 'Pose_set_srid'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION SRID(tpose)
-  RETURNS integer
-  AS 'MODULE_PATHNAME', 'Tspatial_srid'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION setSRID(tpose, integer)
-  RETURNS tpose
-  AS 'MODULE_PATHNAME', 'Tspatial_set_srid'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+/* PostgreSQL */
+#include <postgres.h>
+/* PostGIS */
+#include <liblwgeom.h>
+/* MEOS */
+#include <meos.h>
+#include "general/meos_catalog.h"
 
 /*****************************************************************************/
+
+extern char **spatialarr_wkt_out(const Datum *spatialarr, meosType basetype,
+  int count, int maxdd, bool extended);
+
+/*****************************************************************************/
+
+#endif /* __TSPATIAL_BOXOPS_H__ */

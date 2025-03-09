@@ -35,11 +35,12 @@
 #define __TPOSE_BOXOPS_H__
 
 #include "general/temporal.h"
-#include "pose/pose.h"
+#include <meos_pose.h>
 
 /*****************************************************************************/
 
 extern bool pose_set_stbox(const Pose *pose, STBox *box);
+extern void posearr_set_stbox(const Datum *values, int count, STBox *box);
 extern bool pose_timestamp_set_stbox(const Pose *pose, TimestampTz t,
   STBox *box);
 extern bool pose_period_set_stbox(const Pose *pose, const Span *p,

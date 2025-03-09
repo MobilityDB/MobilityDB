@@ -41,7 +41,6 @@
 /*****************************************************************************/
 
 extern Cbuffer *cbuffer_parse(const char **str, bool end);
-extern Temporal *tcbuffer_parse(const char **str);
 
 /*****************************************************************************/
 

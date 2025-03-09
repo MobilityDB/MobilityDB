@@ -44,8 +44,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_cbuffer.h>
 #include "geo/pgis_types.h"
-#include "cbuffer/tcbuffer.h"
+#include "cbuffer/cbuffer.h"
 
 /*****************************************************************************
  * Transform a temporal circular buffer to a STBox
@@ -81,6 +82,13 @@ cbuffer_set_stbox(const Cbuffer *cbuf, STBox *box)
 STBox *
 cbuffer_stbox(const Cbuffer *cbuf)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) cbuf))
+    return NULL;
+#else
+  assert(cbuf);
+#endif /* MEOS */
   STBox box;
   if (! cbuffer_set_stbox(cbuf, &box))
     return NULL;
@@ -190,8 +198,14 @@ cbuffer_timestamptz_set_stbox(const Cbuffer *cbuf, TimestampTz t, STBox *box)
 STBox *
 cbuffer_timestamptz_to_stbox(const Cbuffer *cbuf, TimestampTz t)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) cbuf))
     return NULL;
+#else
+  assert(cbuf);
+#endif /* MEOS */
+
   STBox box;
   if (! cbuffer_timestamptz_set_stbox(cbuf, t, &box))
     return NULL;
@@ -226,8 +240,13 @@ cbuffer_tstzspan_set_stbox(const Cbuffer *cbuf, const Span *s, STBox *box)
 STBox *
 cbuffer_tstzspan_to_stbox(const Cbuffer *cbuf, const Span *s)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) s))
     return NULL;
+#else
+  assert(cbuf); assert(s);
+#endif /* MEOS */
   STBox box;
   if (! cbuffer_tstzspan_set_stbox(cbuf, s, &box))
     return NULL;

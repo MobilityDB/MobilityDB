@@ -479,8 +479,8 @@ span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
 Span *
 span_copy(const Span *s)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s))
     return NULL;
 #else
@@ -565,8 +565,8 @@ set_set_span(const Set *s, Span *result)
 Span *
 set_span(const Set *s)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_spantype(s->settype))
     return NULL;
 #else
@@ -603,8 +603,8 @@ intspan_set_floatspan(const Span *s1, Span *s2)
 Span *
 intspan_floatspan(const Span *s)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
     return NULL;
 #else
@@ -682,8 +682,8 @@ datespan_set_tstzspan(const Span *s1, Span *s2)
 Span *
 datespan_tstzspan(const Span *s)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
     return NULL;
 #else
@@ -730,8 +730,8 @@ tstzspan_set_datespan(const Span *s1, Span *s2)
 Span *
 tstzspan_datespan(const Span *s)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
 #else
@@ -770,8 +770,12 @@ Interval *
 datespan_duration(const Span *s)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
     return NULL;
+#else
+  assert(s); assert(s->spantype == T_DATESPAN);
+#endif /* MEOS */
   Interval *result = palloc0(sizeof(Interval));
   result->day = DateADTGetDatum(s->upper) - DateADTGetDatum(s->lower);
   return result;
@@ -787,8 +791,12 @@ Interval *
 tstzspan_duration(const Span *s)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
+#else
+  assert(s); assert(s->spantype == T_TSTZSPAN);
+#endif /* MEOS */
   return minus_timestamptz_timestamptz(s->upper, s->lower);
 }
 
@@ -846,6 +854,53 @@ floatspan_ceil(const Span *s)
 
   Span *result = span_copy(s);
   floatspan_floor_ceil_iter(result, &datum_ceil);
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float span with the values converted to degrees
+ * @param[in] s Span
+ * @param[in] normalize True when the result must be normalized
+ * @csqlfn #Floatspan_degrees()
+ */
+Span *
+floatspan_degrees(const Span *s, bool normalize)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
+    return NULL;
+#else
+  assert(s); assert(s->spantype == T_FLOATSPAN);
+#endif /* MEOS */
+
+  Span *result = span_copy(s);
+  result->lower = datum_degrees(s->lower, normalize);
+  result->upper = datum_degrees(s->upper, normalize);
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float span with the values converted to radians
+ * @param[in] s Span
+ * @csqlfn #Floatspan_radians()
+ */
+Span *
+floatspan_radians(const Span *s)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
+    return NULL;
+#else
+  assert(s); assert(s->spantype == T_FLOATSPAN);
+#endif /* MEOS */
+
+  Span *result = span_copy(s);
+  result->lower = datum_radians(s->lower);
+  result->upper = datum_radians(s->upper);
   return result;
 }
 
@@ -1128,9 +1183,14 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
   const Interval *duration)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || 
-      ! ensure_span_isof_type(s, T_TSTZSPAN) ||
-      ! ensure_one_not_null((void *) shift, (void *) duration) ||
+#if MEOS
+  if (! ensure_not_null((void *) s) ||
+      ! ensure_span_isof_type(s, T_TSTZSPAN))
+    return NULL;
+#else
+  assert(s); assert(s->spantype == T_TSTZSPAN);
+#endif /* MEOS */
+  if (! ensure_one_not_null((void *) shift, (void *) duration) ||
       (duration && ! ensure_valid_duration(duration)))
     return NULL;
 
@@ -1160,8 +1220,12 @@ Span *
 set_spans(const Set *s)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s))
     return NULL;
+#else
+  assert(s);
+#endif /* MEOS */
 
   /* Output the composing spans */
   Span *result = palloc(sizeof(Span) * s->count);
@@ -1183,12 +1247,16 @@ Span *
 set_split_n_spans(const Set *s, int span_count, int *count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
-      ! ensure_numset_type(s->settype) || ! ensure_positive(span_count))
+#if MEOS
+  if (! ensure_not_null((void *) s) || ! ensure_numset_type(s->settype))
+    return NULL;
+#else
+  assert(s); assert(numset_type(s->settype));
+#endif /* MEOS */
+  if (! ensure_not_null((void *) count) || ! ensure_positive(span_count))
     return NULL;
 
   Span *result = palloc(sizeof(Span) * s->count);
-
   /* Output the composing spans */
   if (s->count <= span_count)
   {
@@ -1231,8 +1299,13 @@ Span *
 set_split_each_n_spans(const Set *s, int32 elems_per_span, int *count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
-      ! ensure_numset_type(s->settype) || ! ensure_positive(elems_per_span))
+#if MEOS
+  if (! ensure_not_null((void *) s) || ! ensure_numset_type(s->settype))
+    return NULL;
+#else
+  assert(s); assert(numset_type(s->settype));
+#endif /* MEOS */
+  if (! ensure_not_null((void *) count) || ! ensure_positive(elems_per_span))
     return NULL;
 
   int nspans = ceil((double) s->count / (double) elems_per_span);
@@ -1268,8 +1341,8 @@ set_split_each_n_spans(const Set *s, int32 elems_per_span, int *count)
 bool
 span_eq(const Span *s1, const Span *s2)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
     return false;
@@ -1306,8 +1379,8 @@ span_ne(const Span *s1, const Span *s2)
 int
 span_cmp(const Span *s1, const Span *s2)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
     return INT_MAX;
@@ -1394,8 +1467,12 @@ uint32
 span_hash(const Span *s)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s))
     return INT_MAX;
+#else
+  assert(s);
+#endif /* MEOS */
 
   /* Create flags from the lower_inc and upper_inc values */
   char flags = '\0';
@@ -1435,8 +1512,12 @@ uint64
 span_hash_extended(const Span *s, uint64 seed)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s))
     return INT_MAX;
+#else
+  assert(s);
+#endif /* MEOS */
 
   uint64 result;
   char flags = '\0';

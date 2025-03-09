@@ -3,12 +3,12 @@ set(GEO_SRCS
   pgis_types.c
   stbox.c
   stbox_index.c
+  tgeo.c
   tgeo_aggfuncs.c
   tgeo_boxops.c
   tgeo_compops.c
   tgeo_distance.c
-  tgeo_out.c
-  tgeo_parser.c
+  tgeo_inout.c
   tgeo_restrict.c
   tgeo_spatialfuncs.c
   tgeo_spatialrels.c
@@ -17,6 +17,7 @@ set(GEO_SRCS
   tpoint_datagen.c
   tpoint_spatialfuncs.c
   tspatial.c
+  tspatial_parser.c
   tspatial_srid.c
 )
 

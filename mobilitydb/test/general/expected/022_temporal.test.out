@@ -72,11 +72,11 @@ ERROR:  invalid input syntax for type double precision: "ABC"
 LINE 1: SELECT tfloat 'ABC@2012-01-01 08:00:00';
                       ^
 SELECT tfloat '25';
-ERROR:  Missing separator character '@': 25
+ERROR:  Missing delimeter character '@': 25
 LINE 1: SELECT tfloat '25';
                       ^
 SELECT tfloat '2@2012-01-01 08:00:00,';
-ERROR:  Could not parse temporal value: Extraneous characters at the end
+ERROR:  Could not parse tfloat value: Extraneous characters at the end
 LINE 1: SELECT tfloat '2@2012-01-01 08:00:00,';
                       ^
 SELECT tbool ' { true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 } ';
@@ -145,11 +145,11 @@ ERROR:  Timestamps for temporal value must be increasing: Mon Jan 03 00:00:00 20
 LINE 1: SELECT ttextSeq(ttext '{AA@2000-01-01, BB@2000-01-03, AA@200...
                               ^
 SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03';
-ERROR:  Could not parse temporal value: Missing closing brace
+ERROR:  Could not parse tint value: Missing closing brace
 LINE 1: SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03';
                     ^
 SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03},';
-ERROR:  Could not parse temporal value: Extraneous characters at the end
+ERROR:  Could not parse tint value: Extraneous characters at the end
 LINE 1: SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03},';
                     ^
 SELECT tbool ' [ true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 ] ';
@@ -226,11 +226,11 @@ ERROR:  Invalid end value for temporal sequence with step interpolation
 LINE 1: SELECT tbool '[true@2001-01-01 08:00:00, false@2001-01-01 08...
                      ^
 SELECT tbool '[true@2001-01-01, true@2001-01-02';
-ERROR:  Could not parse temporal value: Missing closing bracket/parenthesis
+ERROR:  Could not parse tbool value: Missing closing bracket/parenthesis
 LINE 1: SELECT tbool '[true@2001-01-01, true@2001-01-02';
                      ^
 SELECT tbool '[true@2001-01-01, true@2001-01-02],';
-ERROR:  Could not parse temporal value: Extraneous characters at the end
+ERROR:  Could not parse tbool value: Extraneous characters at the end
 LINE 1: SELECT tbool '[true@2001-01-01, true@2001-01-02],';
                      ^
 SELECT tbool '  { [ true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 ],
@@ -327,11 +327,11 @@ ERROR:  Timestamps for temporal value must be increasing: Mon Jan 03 00:00:00 20
 LINE 1: SELECT ttextSeqSet(ttext '{[AA@2000-01-01, AA@2000-01-03], [...
                                  ^
 SELECT tfloatSeqSet(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@2000-01-02, 1@2000-01-04]');
-ERROR:  Could not parse temporal value: Missing closing brace
+ERROR:  Could not parse tfloat value: Missing closing brace
 LINE 1: SELECT tfloatSeqSet(tfloat '{[1@2000-01-01, 2@2000-01-03], [...
                                    ^
 SELECT tfloatSeqSet(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@2000-01-02, 1@2000-01-04]},');
-ERROR:  Could not parse temporal value: Extraneous characters at the end
+ERROR:  Could not parse tfloat value: Extraneous characters at the end
 LINE 1: SELECT tfloatSeqSet(tfloat '{[1@2000-01-01, 2@2000-01-03], [...
                                    ^
 SELECT tfloatSeqSet(tfloat '{1@2000-01-01, 2@2000-01-02}', 'Discrete');
@@ -2043,7 +2043,7 @@ ERROR:  Timestamps for temporal value must be increasing: Mon Jan 03 00:00:00 20
 SELECT appendSequence(tfloat '[1@2000-01-01, 2@2000-01-02]', tfloat '[1@2000-01-02]');
 ERROR:  The temporal values have different value at their common timestamp Sun Jan 02 00:00:00 2000 PST
 SELECT appendSequence(tfloat '{[1@2000-01-01, 1@2000-01-02)}', tfloat '2@2000-01-02');
-ERROR:  The temporal value must be of subtype Sequence
+ERROR:  The temporal values must have the same interpolation
 SELECT appendSequence(tfloat '{1@2000-01-01, 2@2000-01-02}', tfloat '[2@2000-01-01]');
 ERROR:  The temporal values must have the same interpolation
 SELECT appendSequence(tfloat '{[1@2000-01-01, 1@2000-01-03]}', tfloat '[2@2000-01-02]');

@@ -33,7 +33,7 @@
  * values
  */
 
-#include "pg_geo/tpoint_selfuncs.h"
+#include "pg_geo/tspatial_selfuncs.h"
 
 /* C */
 #include <math.h>

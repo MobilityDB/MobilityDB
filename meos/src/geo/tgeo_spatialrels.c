@@ -263,7 +263,7 @@ spatialrel_tgeo_traj_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] func Spatial relationship
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
-int
+static int
 ea_spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   datum_func2 func, bool ever)
 {

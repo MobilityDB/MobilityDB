@@ -38,6 +38,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include "general/doublen.h"
 #include "general/meos_catalog.h"
 

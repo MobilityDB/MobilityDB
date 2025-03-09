@@ -60,6 +60,10 @@
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
+#if POSE
+  #include <meos_pose.h>
+  #include "pose/pose.h"
+#endif
 
 /*****************************************************************************
  * Utility functions
@@ -778,12 +782,12 @@ tgeominst_tgeoginst(const TInstant *inst, bool oper)
   assert(inst); assert(tgeo_type_all(inst->temptype));
   GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
   GSERIALIZED *res;
-  if (oper == GEOM_TO_GEOG)
+  if (oper == TGEOMP_TO_TGEOGP)
     res = geog_from_geom(gs);
   else
     res = geom_from_geog(gs);
   meosType temptype;
-  if (oper == GEOM_TO_GEOG)
+  if (oper == TGEOMP_TO_TGEOGP)
     temptype = (inst->temptype == T_TGEOMPOINT) ? T_TGEOGPOINT : T_TGEOGRAPHY;
   else
     temptype = (inst->temptype == T_TGEOGPOINT) ? T_TGEOMPOINT : T_TGEOMETRY;
@@ -878,7 +882,7 @@ tgeometry_tgeography(const Temporal *temp)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TGEOMETRY))
     return NULL;
-  return tgeom_tgeog(temp, GEOM_TO_GEOG);
+  return tgeom_tgeog(temp, TGEOMP_TO_TGEOGP);
 }
 
 /**
@@ -894,7 +898,7 @@ tgeography_tgeometry(const Temporal *temp)
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TGEOGPOINT))
     return NULL;
-  return tgeom_tgeog(temp, GEOG_TO_GEOM);
+  return tgeom_tgeog(temp, TGEOGP_TO_TGEOMP);
 }
 #endif /* MEOS */
 
@@ -1436,10 +1440,15 @@ GSERIALIZED *
 tgeo_traversed_area(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || 
       ! ensure_tgeo_type_all(temp->temptype) ||
       ! ensure_nonlinear_interp(temp->flags))
     return NULL;
+#else
+  assert(temp); assert(tgeo_type_all(temp->temptype));
+  assert(! MEOS_FLAGS_LINEAR_INTERP(temp->flags));
+#endif /* MEOS */
 
   /* Get the array of pointers to the component values */
   int count;

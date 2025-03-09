@@ -83,7 +83,7 @@ SELECT COUNT(*) FROM tbl_datespanset WHERE datespansetFromHexWKB(asHexWKB(d)) <>
 SELECT COUNT(*) FROM tbl_tstzspanset WHERE tstzspansetFromHexWKB(asHexWKB(t)) <> t;
 
 -------------------------------------------------------------------------------
--- Casting
+-- Conversions
 -------------------------------------------------------------------------------
 
 SELECT MAX(lower(spanset(i))) FROM tbl_intspan;

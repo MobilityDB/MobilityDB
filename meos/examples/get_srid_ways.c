@@ -117,7 +117,7 @@ int main(void)
       rec.the_geom = geom_in(geo_buffer, -1);
 
       /* Find the SRID */
-      srid = geo_srid(rec.the_geom);
+      srid = gserialized_get_srid(rec.the_geom);
       break;
     }
 

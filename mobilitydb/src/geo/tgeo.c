@@ -40,9 +40,11 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_geo.h>
+#include "general/set.h"
 #include "general/temporal.h"
+#include "general/type_inout.h"
 #include "geo/stbox.h"
-#include "geo/tgeo_parser.h"
+#include "geo/tspatial_parser.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"
@@ -92,14 +94,14 @@ mobilitydb_init()
  * Input/output functions
  *****************************************************************************/
 
-#define TGEO_MAX_TYPMOD 3
+#define TSPATIAL_MAX_TYPMOD 3
 
 /**
  * @brief Check the consistency of the metadata specified in the typmod: SRID,
  * type, and dimensionality. If things are inconsistent, shut down the query.
  */
-static Temporal *
-tgeo_valid_typmod(Temporal *temp, int32_t typmod)
+Temporal *
+tspatial_valid_typmod(Temporal *temp, int32_t typmod)
 {
   int32 srid = tspatial_srid(temp);
   uint8 subtype = temp->subtype;
@@ -107,33 +109,32 @@ tgeo_valid_typmod(Temporal *temp, int32_t typmod)
   /* If there is no geometry type */
   if (typmod == 0)
     typmod = -1;
-  int32 tpoint_z = MEOS_FLAGS_GET_Z(temp->flags);
+  int32 hasz = MEOS_FLAGS_GET_Z(temp->flags);
   int32 typmod_srid = TYPMOD_GET_SRID(typmod);
   int32 typmod_type = TYPMOD_GET_TYPE(typmod);
-  int32 typmod_z = TYPMOD_GET_Z(typmod);
+  int32 typmod_hasz = TYPMOD_GET_Z(typmod);
 
   /* No typmod (-1) */
   if (typmod < 0 && typmod_subtype == ANYTEMPSUBTYPE)
     return temp;
+  const char *type_str = meostype_name(temp->temptype);
   /* Typmod has a preference for SRID? Geometry SRID had better match */
   if (typmod_srid > 0 && typmod_srid != srid)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Temporal geometry SRID (%d) does not match column SRID (%d)",
-        srid, typmod_srid) ));
+      errmsg("SRID of the %s value (%d) does not match column SRID (%d)",
+        type_str, srid, typmod_srid) ));
   /* Typmod has a preference for temporal subtype */
-  if (typmod_type > 0 && typmod_subtype != ANYTEMPSUBTYPE && 
-      typmod_subtype != subtype)
+  if (typmod_subtype != ANYTEMPSUBTYPE && typmod_subtype != subtype)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Temporal subtype (%s) does not match column type (%s)",
-        tempsubtype_name(subtype), tempsubtype_name(typmod_subtype)) ));
-  /* Mismatched Z dimensionality.  */
-  if (typmod_z && ! tpoint_z)
+      errmsg("Temporal subtype of the %s value (%s) does not match column subtype (%s)",
+        type_str, tempsubtype_name(subtype), tempsubtype_name(typmod_subtype))));
+  /* Mismatched Z dimensionality in both ways  */
+  if (typmod_hasz && ! hasz)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Column has Z dimension but temporal geometry does not" )));
-  /* Mismatched Z dimensionality (other way) */
-  if (typmod_type > 0 && tpoint_z && ! typmod_z)
+      errmsg("Column has Z dimension but the %s value does not", type_str)));
+  if (typmod_type > 0 && hasz && ! typmod_hasz)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Temporal geometry has Z dimension but column does not" )));
+      errmsg("The %s value has Z dimension but column does not", type_str)));
 
   return temp;
 }
@@ -167,7 +168,13 @@ Tpoint_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  PG_RETURN_TEMPORAL_P(tpoint_parse(&input, oid_type(temptypid)));
+  Temporal *result = tpoint_parse(&input, oid_type(temptypid));
+  int32 typmod = -1;
+  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
+    typmod = PG_GETARG_INT32(2);
+  if (typmod >= 0)
+    result = tspatial_valid_typmod(result, typmod);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tgeo_in(PG_FUNCTION_ARGS);
@@ -183,20 +190,21 @@ Tgeo_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Temporal *result = tgeo_parse(&input, oid_type(temptypid));
+  Temporal *result = tspatial_parse(&input, oid_type(temptypid));
+  int32 typmod = -1;
+  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
+    typmod = PG_GETARG_INT32(2);
+  if (typmod >= 0)
+    result = tspatial_valid_typmod(result, typmod);
   PG_RETURN_TEMPORAL_P(result);
 }
 
 /**
  * @brief Input typmod information for temporal geos
  */
-static uint32
-tgeo_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
+uint32
+tspatial_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
 {
-  uint32 typmod = 0;
-  Datum *elem_values;
-  int n = 0;
-
   if (ARR_ELEMTYPE(arr) != CSTRINGOID)
     ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
       errmsg("typmod array must be type cstring[]")));
@@ -219,13 +227,15 @@ tgeo_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
    * For example, if the user did not set the temporal subtype, we can use any
    * temporal subtype in the same column. Similarly for all generic modifiers.
    */
+  Datum *elem_values;
+  int n = 0;
   deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
-  if (n > TGEO_MAX_TYPMOD)
-    elog(ERROR, "Incorrect number of type modifiers for temporal geometries");
+  if (n > TSPATIAL_MAX_TYPMOD)
+    elog(ERROR, "Incorrect number of type modifiers for temporal spatial values");
 
   /* Set default values for typmod if they are not given */
   int16 tempsubtype = ANYTEMPSUBTYPE;
-  uint8_t geometry_type = 0;
+  uint8_t geo_type = 0;
   int hasZ = 0, hasM = 0, srid = SRID_UNKNOWN;
   bool has_geo = false, has_srid = false;
 
@@ -246,7 +256,7 @@ tgeo_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
     if (tempsubtype_from_string(s[0], &tempsubtype) == false)
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Invalid temporal subtype modifier: %s", s[0])));
-    if (geometry_type_from_string(s[1], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
+    if (geometry_type_from_string(s[1], &geo_type, &hasZ, &hasM) == LW_FAILURE)
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Invalid geometry type modifier: %s", s[1])));
 #if POSTGRESQL_VERSION_NUMBER >= 150000
@@ -262,14 +272,14 @@ tgeo_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
     /* Type modifier is either (TempSubType, Geometry) or (Geometry, SRID) */
     if (tempsubtype_from_string(s[0], &tempsubtype))
     {
-      if (geometry_type_from_string(s[1], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
+      if (geometry_type_from_string(s[1], &geo_type, &hasZ, &hasM) == LW_FAILURE)
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
             errmsg("Invalid geometry type modifier: %s", s[1])));
       has_geo = true;
     }
     else
     {
-      if (geometry_type_from_string(s[0], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
+      if (geometry_type_from_string(s[0], &geo_type, &hasZ, &hasM) == LW_FAILURE)
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
             errmsg("Invalid geometry type modifier: %s", s[0])));
 #if POSTGRESQL_VERSION_NUMBER >= 150000
@@ -287,7 +297,7 @@ tgeo_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
     has_srid = false;
     if (tempsubtype_from_string(s[0], &tempsubtype))
       ;
-    else if (geometry_type_from_string(s[0], &geometry_type, &hasZ, &hasM))
+    else if (geometry_type_from_string(s[0], &geo_type, &hasZ, &hasM))
       has_geo = true;
     else
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -298,16 +308,17 @@ tgeo_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
       errmsg("Invalid temporal geometry type modifier:")));
 
   /* Set the temporal type */
+  uint32 typmod = 0;
   if (tempsubtype != ANYTEMPSUBTYPE)
     TYPMOD_SET_TEMPSUBTYPE(typmod, tempsubtype);
 
   /* Set the geometry type */
   if (has_geo)
   {
-    if (is_point && (geometry_type != POINTTYPE || hasM))
+    if (is_point && (geo_type != POINTTYPE || hasM))
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Only point geometries without M dimension accepted")));
-    TYPMOD_SET_TYPE(typmod, geometry_type);
+    TYPMOD_SET_TYPE(typmod, geo_type);
     if (hasZ)
       TYPMOD_SET_Z(typmod);
   }
@@ -338,7 +349,7 @@ Datum
 Tgeometry_typmod_in(PG_FUNCTION_ARGS)
 {
   ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
-  uint32 typmod = tgeo_typmod_in(array, false, false); /* Not a geography  */
+  uint32 typmod = tspatial_typmod_in(array, false, false); /* Not a geography  */
   PG_RETURN_INT32(typmod);
 }
 
@@ -351,7 +362,7 @@ Datum
 Tgeography_typmod_in(PG_FUNCTION_ARGS)
 {
   ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
-  int32 typmod = tgeo_typmod_in(array, false, true);
+  int32 typmod = tspatial_typmod_in(array, false, true);
   int32_t srid = TYPMOD_GET_SRID(typmod);
   /* Check the SRID is legal (geographic coordinates) */
   if (! ensure_srid_is_latlong(srid))
@@ -368,7 +379,7 @@ Datum
 Tgeompoint_typmod_in(PG_FUNCTION_ARGS)
 {
   ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
-  uint32 typmod = tgeo_typmod_in(array, true, false); /* Not a geography  */
+  uint32 typmod = tspatial_typmod_in(array, true, false); /* Not a geography  */
   PG_RETURN_INT32(typmod);
 }
 
@@ -381,7 +392,7 @@ Datum
 Tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
 {
   ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
-  int32 typmod = tgeo_typmod_in(array, true, true);
+  int32 typmod = tspatial_typmod_in(array, true, true);
   int32_t srid = TYPMOD_GET_SRID(typmod);
   /* Check the SRID is legal (geographic coordinates) */
   if (! ensure_srid_is_latlong(srid))
@@ -389,25 +400,25 @@ Tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(typmod);
 }
 
-PGDLLEXPORT Datum Tgeo_typmod_out(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tgeo_typmod_out);
+PGDLLEXPORT Datum Tspatial_typmod_out(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tspatial_typmod_out);
 /**
- * @brief Output typmod information for temporal geos
+ * @brief Output typmod information for temporal spatial values
  */
 Datum
-Tgeo_typmod_out(PG_FUNCTION_ARGS)
+Tspatial_typmod_out(PG_FUNCTION_ARGS)
 {
   char *s = palloc(64);
   char *str = s;
   int32 typmod = PG_GETARG_INT32(0);
   int16 tempsubtype = TYPMOD_GET_TEMPSUBTYPE(typmod);
   int32 srid = TYPMOD_GET_SRID(typmod);
-  uint8_t geometry_type = (uint8_t) TYPMOD_GET_TYPE(typmod);
+  uint8_t geo_type = (uint8_t) TYPMOD_GET_TYPE(typmod);
   int32 hasz = TYPMOD_GET_Z(typmod);
 
   /* No temporal subtype or geometry type? Then no typmod at all.
     Return empty string. */
-  if (typmod < 0 || (tempsubtype == ANYTEMPSUBTYPE && !geometry_type))
+  if (typmod < 0 || (tempsubtype == ANYTEMPSUBTYPE && ! geo_type))
   {
     *str = '\0';
     PG_RETURN_CSTRING(str);
@@ -417,11 +428,11 @@ Tgeo_typmod_out(PG_FUNCTION_ARGS)
   /* Has temporal subtype?  */
   if (tempsubtype != ANYTEMPSUBTYPE)
     str += sprintf(str, "%s", tempsubtype_name(tempsubtype));
-  if (geometry_type)
+  if (geo_type)
   {
     if (tempsubtype != ANYTEMPSUBTYPE)
       str += sprintf(str, ",");
-    str += sprintf(str, "%s", lwtype_name(geometry_type));
+    str += sprintf(str, "%s", lwtype_name(geo_type));
     /* Has Z?  */
     if (hasz)
       str += sprintf(str, "Z");
@@ -447,7 +458,7 @@ Tgeo_enforce_typmod(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 typmod = PG_GETARG_INT32(1);
   /* Check if typmod of the temporal geo is consistent with the supplied one */
-  temp = tgeo_valid_typmod(temp, typmod);
+  temp = tspatial_valid_typmod(temp, typmod);
   PG_RETURN_TEMPORAL_P(temp);
 }
 
@@ -551,6 +562,8 @@ Tspatial_expand_space(PG_FUNCTION_ARGS)
   double d = PG_GETARG_FLOAT8(1);
   STBox *result = tspatial_expand_space(temp, d);
   PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_STBOX_P(result);
 }
 

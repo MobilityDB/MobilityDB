@@ -57,11 +57,11 @@ CREATE FUNCTION temporal_send(tcbuffer)
 
 CREATE FUNCTION tcbuffer_typmod_in(cstring[])
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Tcbuffer_typmod_in'
+  AS 'MODULE_PATHNAME', 'Tgeompoint_typmod_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tcbuffer_typmod_out(integer)
   RETURNS cstring
-  AS 'MODULE_PATHNAME', 'Tcbuffer_typmod_out'
+  AS 'MODULE_PATHNAME', 'Tspatial_typmod_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE tcbuffer (
@@ -120,7 +120,7 @@ CREATE FUNCTION asText(tcbuffer, maxdecimaldigits int4 DEFAULT 15)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asText(tcbuffer[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
-  AS 'MODULE_PATHNAME', 'Tcbufferarr_as_text'
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asEWKT(tcbuffer, maxdecimaldigits int4 DEFAULT 15)
@@ -129,7 +129,7 @@ CREATE FUNCTION asEWKT(tcbuffer, maxdecimaldigits int4 DEFAULT 15)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asEWKT(tcbuffer[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
-  AS 'MODULE_PATHNAME', 'Tcbufferarr_as_ewkt'
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(tcbuffer, endianenconding text DEFAULT '')

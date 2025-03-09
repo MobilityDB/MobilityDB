@@ -46,7 +46,7 @@
 #include "general/set.h"
 #include "general/span.h"
 #include "general/temporal.h"
-#include "general/type_out.h"
+#include "general/type_inout.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
@@ -118,12 +118,113 @@ Datum
 Spanset_send(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  uint8_t variant = 0;
   size_t wkb_size = VARSIZE_ANY_EXHDR(ss);
-  uint8_t *wkb = spanset_as_wkb(ss, variant, &wkb_size);
+  /* A span set does not have an extended variant */
+  uint8_t *wkb = spanset_as_wkb(ss, 0, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
   PG_RETURN_BYTEA_P(result);
+}
+
+/*****************************************************************************
+ * Input/output in WKT, WKB, and HexWKB representation
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Spanset_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a span set
+ * @sqlfn asText()
+ */
+Datum
+Spanset_as_text(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = spanset_out(ss, Int32GetDatum(dbl_dig_for_wkt));
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Spanset_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_from_wkb);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return a span set from its Well-Known Binary (WKB) representation
+ * @sqlfn instspansetFromBinary(), floatspansetFromBinary(), ...
+ */
+Datum
+Spanset_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  SpanSet *result = spanset_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_SPANSET_P(result);
+}
+
+PGDLLEXPORT Datum Spanset_from_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_from_hexwkb);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return a span set from its hex-encoded ASCII Well-Known Binary
+ * (HexWKB) representation
+ * @sqlfn intspansetFromHexWKB(), floatspansetFromHexWKB(), ...
+ */
+Datum
+Spanset_from_hexwkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text2cstring(hexwkb_text);
+  SpanSet *result = spanset_from_hexwkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_SPANSET_P(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Spanset_as_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_as_wkb);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a span set
+ * @sqlfn asBinary()
+ */
+Datum
+Spanset_as_wkb(PG_FUNCTION_ARGS)
+{
+  /* Ensure that the value is detoasted if necessary */
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(ss), ss->spansettype,
+    false);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PGDLLEXPORT Datum Spanset_as_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spanset_as_hexwkb);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * representation of a span set
+ * @sqlfn asHexWKB()
+ */
+Datum
+Spanset_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  /* Ensure that the value is detoasted if necessary */
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(ss), ss->spansettype);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_TEXT_P(result);
 }
 
 /*****************************************************************************
@@ -885,6 +986,41 @@ Floatspanset_round(PG_FUNCTION_ARGS)
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   int maxdd = PG_GETARG_INT32(1);
   SpanSet *result = floatspanset_round(ss, maxdd);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_SPANSET_P(result);
+}
+
+PGDLLEXPORT Datum Floatspanset_degrees(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatspanset_degrees);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a float span set with the values converted to degrees
+ * @sqlfn degrees()
+ */
+Datum
+Floatspanset_degrees(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  bool normalize = false;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    normalize = PG_GETARG_BOOL(1);
+  SpanSet *result = floatspanset_degrees(ss, normalize);
+  PG_FREE_IF_COPY(ss, 0);
+  PG_RETURN_SPANSET_P(result);
+}
+
+PGDLLEXPORT Datum Floatspanset_radians(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Floatspanset_radians);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a float set with the values converted to radians
+ * @sqlfn radians()
+ */
+Datum
+Floatspanset_radians(PG_FUNCTION_ARGS)
+{
+  SpanSet *ss = PG_GETARG_SPANSET_P(0);
+  SpanSet *result = floatspanset_radians(ss);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_SPANSET_P(result);
 }
