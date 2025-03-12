@@ -129,6 +129,10 @@
  * @ingroup meos_setspan
  * @brief Transformation functions for set and span types
  *
+ * @defgroup meos_setspan_srid Spatial reference system functions
+ * @ingroup meos_setspan
+ * @brief Spatial reference system functions for set and span types
+ *
  * @defgroup meos_setspan_comp Comparison functions
  * @ingroup meos_setspan
  * @brief Comparison functions for set and span types
@@ -178,6 +182,10 @@
  * @defgroup meos_box_transf Transformation functions
  * @ingroup meos_box
  * @brief Transformation functions for box types
+ *
+ * @defgroup meos_box_srid Spatial reference system functions
+ * @ingroup meos_box
+ * @brief Spatial reference system functions for box types
  *
  * @defgroup meos_box_set Set functions
  * @ingroup meos_box
@@ -275,27 +283,31 @@
  *
  * @defgroup meos_temporal_spatial Spatial functions
  * @ingroup meos_temporal
- * @brief Spatial functions for temporal points
+ * @brief Spatial functions for temporal geos
  *
  * @defgroup meos_temporal_spatial_accessor Spatial accessor functions
  * @ingroup meos_temporal_spatial
- * @brief Spatial accessor functions for temporal points
+ * @brief Spatial accessor functions for temporal geos
  *
  * @defgroup meos_temporal_spatial_transf Spatial transformation functions
  * @ingroup meos_temporal_spatial
- * @brief Spatial transformation functions for temporal points
+ * @brief Spatial transformation functions for temporal geos
+ *
+ * @defgroup meos_temporal_spatial_srid Spatial reference system functions
+ * @ingroup meos_temporal_spatial
+ * @brief Spatial reference system functions for temporal geos
  *
  * @defgroup meos_temporal_spatial_rel Spatial relationship functions
  * @ingroup meos_temporal_spatial
- * @brief Spatial relationship functions for temporal points
+ * @brief Spatial relationship functions for temporal geos
  *
  * @defgroup meos_temporal_spatial_rel_ever Ever and always spatial relationship functions
  * @ingroup meos_temporal_spatial_rel
- * @brief Ever and always spatial relationship functions for temporal points
+ * @brief Ever and always spatial relationship functions for temporal geos
  *
  * @defgroup meos_temporal_spatial_rel_temp Temporal spatial relationship functions
  * @ingroup meos_temporal_spatial_rel
- * @brief Temporal spatial relationship functions for temporal points
+ * @brief Temporal spatial relationship functions for temporal geos
  *
  * @defgroup meos_temporal_agg Aggregate functions
  * @ingroup meos_temporal
@@ -468,15 +480,15 @@
  *
  * @defgroup meos_internal_temporal_spatial Spatial functions
  * @ingroup meos_internal_temporal
- * @brief Spatial functions for temporal points
+ * @brief Spatial functions for temporal geos
  *
  * @defgroup meos_internal_temporal_spatial_accessor Spatial accessor functions
  * @ingroup meos_internal_temporal_spatial
- * @brief Spatial accessor functions for temporal points
+ * @brief Spatial accessor functions for temporal geos
  *
  * @defgroup meos_internal_temporal_spatial_transf Spatial transformation functions
  * @ingroup meos_internal_temporal_spatial
- * @brief Spatial transformation functions for temporal points
+ * @brief Spatial transformation functions for temporal geos
  *
  * @defgroup meos_internal_temporal_agg Aggregate functions
  * @ingroup meos_internal_temporal

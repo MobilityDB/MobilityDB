@@ -81,8 +81,10 @@ SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 
 				<listitem id="box_asBinary">
 					<indexterm><primary><varname>asBinary</varname></primary></indexterm>
-					<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB)</para>
+					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
+					<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
 					<para><varname>asBinary(box,endian text='') → bytea</varname></para>
+					<para><varname>asHexWKB(box,endian text='') → text</varname></para>
 					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))');
@@ -91,15 +93,6 @@ SELECT asBinary(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))', 'XDR');
 -- \x000300270100001cc1d3579c0000001cd5f12efc00000d013ff00000000000004000000000000000
 SELECT asBinary(stbox 'STBOX X((1,1),(2,2))');
 -- \x0101000000000000f03f0000000000000040000000000000f03f0000000000000040
-</programlisting>
-				</listitem>
-
-				<listitem id="box_asHexWKB">
-					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
-					<para>Devuelve la representación hexadecimal binaria conocida (HexWKB) en formato texto</para>
-					<para><varname>asHexWKB(box,endian text='') → text</varname></para>
-					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
-					<programlisting language="sql" xml:space="preserve">
 SELECT asHexWKB(tbox 'TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02))');
 -- 0103270001009C57D3C11C000000FC2EF1D51C00000D0001000000000000F03F0000000000000040
 SELECT asHexWKB(tbox 'TBOXFLOAT XT([1,2)[2001-01-01,2001-01-02))', 'XDR');
@@ -112,9 +105,13 @@ SELECT asHexWKB(stbox 'STBOX X((1,1),(2,2))');
 				<listitem id="box_FromBinary">
 					<indexterm><primary><varname>tboxFromBinary</varname></primary></indexterm>
 					<indexterm><primary><varname>stboxFromBinary</varname></primary></indexterm>
-					<para>Entrar un cuadro delimitador en una representación binaria conocida (WKB)</para>
+					<indexterm><primary><varname>tboxFromHexWKB</varname></primary></indexterm>
+					<indexterm><primary><varname>stboxFromHexWKB</varname></primary></indexterm>
+					<para>Entrar a partir de representación binaria conocida (WKB) o de la representación hexadecimal binaria conocida (HexWKB)</para>
 					<para><varname>tboxFromBinary(bytea) → tbox</varname></para>
 					<para><varname>stboxFromBinary(bytea) → stbox</varname></para>
+					<para><varname>tboxFromHexWKB(text) → tbox</varname></para>
+					<para><varname>stboxFromHexWKB(text) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tboxFromBinary(
   '\x0103270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040');
@@ -122,16 +119,6 @@ SELECT tboxFromBinary(
 SELECT stboxFromBinary(
   '\x0101000000000000f03f0000000000000040000000000000f03f0000000000000040');
 --  STBOX X((1,1),(2,2))
-</programlisting>
-				</listitem>
-
-				<listitem id="box_FromHexWKB">
-					<indexterm><primary><varname>tboxFromHexWKB</varname></primary></indexterm>
-					<indexterm><primary><varname>stboxFromHexWKB</varname></primary></indexterm>
-					<para>Entrar un cuadro delimitador temporal en una representación hexadecimal binaria conocida (HexWKB)</para>
-					<para><varname>tboxFromHexWKB(text) → tbox</varname></para>
-					<para><varname>stboxFromHexWKB(text) → stbox</varname></para>
-					<programlisting language="sql" xml:space="preserve">
 SELECT tboxFromHexWKB(
   '0103270001009C57D3C11C000000FC2EF1D51C00000D0001000000000000F03F0000000000000040');
 -- TBOXFLOAT XT([1,2),[2001-01-01,2001-01-02)))
@@ -294,8 +281,8 @@ SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan
 			<listitem id="stbox_convert_from">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Convertir otro tipo a un <varname>stbox</varname></para>
-				<para><varname>{box2d,box3d,geo,times,tpoint}::stbox</varname></para>
-				<para><varname>stbox({box2d,box3d,geo,times,tpoint}) → stbox</varname></para>
+				<para><varname>{box2d,box3d,geo,times,tgeo}::stbox</varname></para>
+				<para><varname>stbox({box2d,box3d,geo,times,tgeo}) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT geometry 'Linestring(1 1 1,2 2 2)'::box3d::stbox;
 -- STBOX Z((1,1,1),(2,2,2))
@@ -608,7 +595,8 @@ SELECT setSRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),
 				<indexterm><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transformar a una referencia espacial diferente</para>
 				<para><varname>transform(stbox,to_srid integer) → stbox</varname></para>
-				<para><varname>transform(stbox,pipeline text,to_srid integer,is_forward bool=true) → stbox</varname></para>
+				<para><varname>transformPipeline(stbox,pipeline text,to_srid integer,is_forward bool=true) →</varname></para>
+				<para><varname> stbox</varname></para>
 				<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el cuadro de entrada tiene un SRID desconocido (representado por 0).</para>
 				<para>La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. El SRID del cuadro de entrada se ignora y el SRID del cuadro de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>to_srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -630,8 +618,8 @@ FROM test;
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id ="box_types_split">
-		<title>Funciones de división</title>
+	<sect1 id ="box_types_splitting">
+		<title>Operaciones de división</title>
 
 		<itemizedlist>
 			<listitem id="quadSplit">
@@ -912,64 +900,34 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' #&amp;&gt;
 		<itemizedlist>
 			<listitem id="box_eq">
 				<indexterm><primary><varname>=</varname></primary></indexterm>
-				<para>¿Son iguales los cuadros delimitadores?</para>
+				<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;</varname></primary></indexterm>
+				<indexterm><primary><varname>&gt;</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
+				<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
+				<para>Comparaciones tradicionales</para>
 				<para><varname>box = box → boolean</varname></para>
+				<para><varname>box &lt;&gt; box → boolean</varname></para>
+				<para><varname>box &lt; box → boolean</varname></para>
+				<para><varname>box &gt; box → boolean</varname></para>
+				<para><varname>box &lt;= box → boolean</varname></para>
+				<para><varname>box &gt;= box → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXINT XT([1,1],[2001-01-01,2001-01-04])' =
   tbox 'TBOXINT XT([2,2],[2001-01-03,2001-01-05])';
 -- false
-</programlisting>
-			</listitem>
-
-			<listitem id="box_ne">
-				<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
-				<para>¿Son diferentes los cuadros delimitadores?</para>
-				<para><varname>box &lt;&gt; box → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXFLOAT XT([1,1],[2001-01-01,2001-01-04])' &lt;&gt;
   tbox 'TBOXFLOAT XT([2,2],[2001-01-03,2001-01-05])';
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="box_lt">
-				<indexterm><primary><varname>&lt;</varname></primary></indexterm>
-				<para>¿Es el primer cuadro delimitador menor que el segundo?</para>
-				<para><varname>box &lt; box → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXINT XT([1,1],[2001-01-01,2001-01-04])' &lt;
   tbox 'TBOXINT XT([1,2],[2001-01-03,2001-01-05])';
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="box_gt">
-				<indexterm><primary><varname>&gt;</varname></primary></indexterm>
-				<para>¿Es el primer cuadro delimitador mayor que el segundo?</para>
-				<para><varname>box &gt; box → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXFLOAT XT([1,1],[2001-01-03,2001-01-04])' &gt;
   tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-05])';
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="box_le">
-				<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
-				<para>¿Es el primer cuadro delimitador menor o igual que el segundo?</para>
-				<para><varname>box &lt;= box → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXINT XT([1,1],[2001-01-01,2001-01-04])' &lt;=
   tbox 'TBOXINT XT([2,2],[2001-01-03,2001-01-05])';
 -- true
-</programlisting>
-			</listitem>
-
-			<listitem id="box_ge">
-				<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
-				<para>¿Es el primer cuadro delimitador mayor o igual que el segundo?</para>
-				<para><varname>box &gt;= box → boolean</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXFLOAT XT([1,1],[2001-01-01,2001-01-04])' &gt;=
   tbox 'TBOXFLOAT XT([2,2],[2001-01-03,2001-01-05])';
 -- false

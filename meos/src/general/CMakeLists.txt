@@ -14,7 +14,7 @@ add_library(general OBJECT
   span_ops.c
   spanset.c
   spanset_ops.c
-  tbool_boolops.c
+  tbool_ops.c
   tbox.c
   tbox_index.c
   temporal.c
@@ -31,7 +31,7 @@ add_library(general OBJECT
   tnumber_mathfuncs.c
   tsequence.c
   tsequenceset.c
-  ttext_textfuncs.c
+  ttext_funcs.c
   type_in.c
   type_out.c
   type_parser.c
@@ -41,13 +41,23 @@ add_library(general OBJECT
 
 add_library(general_meos OBJECT
   set_aggfuncs_meos.c
+  set_meos.c
+  set_ops_meos.c
+  span_meos.c
   span_aggfuncs_meos.c
-  tbool_boolops_meos.c
+  span_ops_meos.c
+  spanset_meos.c
+  spanset_ops_meos.c
+  tbool_ops_meos.c
   temporal_boxops_meos.c
   temporal_compops_meos.c
   temporal_meos.c
   temporal_posops_meos.c
+  temporal_restrict_meos.c
+  tinstant_meos.c
   tnumber_mathfuncs_meos.c
-  ttext_textfuncs_meos.c
+  tsequence_meos.c
+  tsequenceset_meos.c
+  ttext_funcs_meos.c
 )
 

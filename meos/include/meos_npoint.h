@@ -99,7 +99,7 @@ extern char *npoint_out(const Npoint *np, int maxdd);
 extern double npoint_position(const Npoint *np);
 extern int64 npoint_route(const Npoint *np);
 extern int32_t npoint_srid(const Npoint *np);
-extern Nsegment *npoint_to_nsegment(const Npoint *np);
+extern Nsegment *npoint_nsegment(const Npoint *np);
 extern int nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2);
 extern double nsegment_end_position(const Nsegment *ns);
 extern bool nsegment_eq(const Nsegment *ns1, const Nsegment *ns2);
@@ -134,8 +134,8 @@ extern STBox *npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t);
  * Conversion functions for box types
  *****************************************************************************/
 
-extern STBox *npoint_to_stbox(const Npoint *np);
-extern STBox *nsegment_to_stbox(const Nsegment *np);
+extern STBox *npoint_stbox(const Npoint *np);
+extern STBox *nsegment_stbox(const Nsegment *np);
 
 /*===========================================================================*
  * Functions for temporal types

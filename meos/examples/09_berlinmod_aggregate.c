@@ -135,8 +135,8 @@ int main(void)
     }
 
     /* Add the current value to the running aggregates */
-    STBox *new_extent = tpoint_extent_transfn(extent, trip_rec.trip);
-    if (extent != NULL)
+    STBox *new_extent = tspatial_extent_transfn(extent, trip_rec.trip);
+    if (extent)
       free(extent);
     extent = new_extent;
     /* Get the time of the trip at an hour granularity */

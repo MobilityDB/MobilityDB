@@ -5,11 +5,12 @@ SET(LOCAL_FILES
   # 123_tcbuffer_inout
   124_tcbuffer_compops
   125_tcbuffer_spatialfuncs
-  128_tcbuffer_boxops
+  128_tcbuffer_topoops
   129_tcbuffer_posops
-  130_tcbuffer_distance
+  # 130_tcbuffer_distance
   131_tcbuffer_aggfuncs
-  132_tcbuffer_indexes
+  132_tcbuffer_spatialrels
+  134_tcbuffer_indexes
   )
 
 foreach (f ${LOCAL_FILES})

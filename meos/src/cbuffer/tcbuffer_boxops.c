@@ -44,7 +44,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "point/pgis_types.h"
+#include "geo/pgis_types.h"
 #include "cbuffer/tcbuffer.h"
 
 /*****************************************************************************
@@ -53,8 +53,8 @@
 
 /**
  * @ingroup meos_internal_box_constructor
- * @brief Return the last argument initialized with the spatiotemporal box from
- * a circular buffer value
+ * @brief Return in the last argument the spatiotemporal box of a circular
+ * buffer
  * @param[in] cbuf Circular buffer
  * @param[out] box Spatiotemporal box
  */
@@ -79,19 +79,19 @@ cbuffer_set_stbox(const Cbuffer *cbuf, STBox *box)
  * @csqlfn #Cbuffer_to_stbox()
  */
 STBox *
-cbuffer_to_stbox(const Cbuffer *cbuf)
+cbuffer_stbox(const Cbuffer *cbuf)
 {
   STBox box;
   if (! cbuffer_set_stbox(cbuf, &box))
     return NULL;
-  return stbox_cp(&box);
+  return stbox_copy(&box);
 }
 
 /**
  * @ingroup meos_internal_box_constructor
- * @brief Return the last argument initialized with the spatiotemporal box from
- * an array of circular buffer values
- * @param[in] values Temporal circular buffer values
+ * @brief Return in the last argument a spatiotemporal box contructed from
+ * an array of circular buffers
+ * @param[in] values Circular buffers
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
  */
@@ -109,8 +109,8 @@ cbufferarr_set_stbox(const Datum *values, int count, STBox *box)
 }
 
 /**
- * @brief Return the last argument initialized with the spatiotemporal box of a
- * temporal circular buffer instant
+ * @brief Return in the last argument the spatiotemporal box of a temporal
+ * circular buffer instant
  * @param[in] inst Temporal circular buffer
  * @param[out] box Spatiotemporal box
  */
@@ -125,7 +125,7 @@ tcbufferinst_set_stbox(const TInstant *inst, STBox *box)
 }
 
 /**
- * @brief Return the last argument initialized with the spatiotemporal box of
+ * @brief Return in the last argument a spatiotemporal box constructed from
  * an array of temporal circular buffer instants
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
@@ -195,7 +195,7 @@ cbuffer_timestamptz_to_stbox(const Cbuffer *cbuf, TimestampTz t)
   STBox box;
   if (! cbuffer_timestamptz_set_stbox(cbuf, t, &box))
     return NULL;
-  return stbox_cp(&box);
+  return stbox_copy(&box);
 }
 
 /**
@@ -231,7 +231,7 @@ cbuffer_tstzspan_to_stbox(const Cbuffer *cbuf, const Span *s)
   STBox box;
   if (! cbuffer_tstzspan_set_stbox(cbuf, s, &box))
     return NULL;
-  return stbox_cp(&box);
+  return stbox_copy(&box);
 }
 
 /*****************************************************************************/

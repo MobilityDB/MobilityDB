@@ -49,6 +49,7 @@
 #include "general/span.h"
 #include "general/tbox.h"
 #include "general/temporal.h"
+#include "geo/tgeo_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/type_util.h"
@@ -334,13 +335,13 @@ Tbox_value_time_tiles_ext(FunctionCallInfo fcinfo, bool valuetiles,
     int i = 1;
     if (valuetiles)
     {
-      ensure_has_X_tbox(bounds);
+      ensure_has_X(T_TBOX, bounds->flags);
       xsize = PG_GETARG_FLOAT8(i++);
       ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8);
     }
     if (timetiles)
     {
-      ensure_has_T_tbox(bounds);
+      ensure_has_T(T_TBOX, bounds->flags);
       duration = PG_GETARG_INTERVAL_P(i++);
       ensure_valid_duration(duration);
     }

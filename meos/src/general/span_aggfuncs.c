@@ -159,7 +159,7 @@ set_extent_transfn(Span *state, const Set *s)
     return NULL;
   /* Null period and non-null set: return the bbox of the timestamp set */
   if (! state)
-    return set_to_span(s);
+    return set_span(s);
   /* Non-null period and null set: return the period */
   if (! s)
     return state;
@@ -189,7 +189,7 @@ span_extent_transfn(Span *state, const Span *s)
     return NULL;
   /* Null span and non-null span, return the span */
   if (! state)
-    return span_cp(s);
+    return span_copy(s);
   /* Non-null span and null span, return the span */
   if (! s)
     return state;
@@ -216,7 +216,7 @@ spanset_extent_transfn(Span *state, const SpanSet *ss)
     return NULL;
   /* Null  and non-null span set, return the bbox of the span set */
   if (! state)
-    return span_cp(&ss->span);
+    return span_copy(&ss->span);
   /* Non-null span and null temporal, return the span */
   if (! ss)
     return state;

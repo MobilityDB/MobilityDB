@@ -181,7 +181,7 @@ int main(void)
     char *token = strtok(line_buffer, ",");
     bool has_t = false, has_mmsi = false, has_lat = false,
       has_long = false, has_sog = false;
-    while (token != NULL)
+    while (token)
     {
       if (strlen(token) != 0 && strcmp(token, "Unknown") != 0)
       {
@@ -385,14 +385,14 @@ int main(void)
   {
     printf("| %.9ld |   %5d |   %5d |   %5d |", trips[i].MMSI,
       trips[i].no_records, trips[i].no_trip_instants, trips[i].no_SOG_instants);
-    if (trips[i].trip != NULL)
+    if (trips[i].trip)
     {
       printf(" %15.6lf |", tpointseq_length(trips[i].trip));
     }
     else
       printf("        ---      |");
 
-    if (trips[i].SOG != NULL)
+    if (trips[i].SOG)
     {
       printf(" %13.6lf |\n", tnumberseq_twavg(trips[i].SOG));
     }

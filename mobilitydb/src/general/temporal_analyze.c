@@ -325,8 +325,8 @@ temporal_analyze(FunctionCallInfo fcinfo,
   assert(temptype_subtype_all(TYPMOD_GET_TEMPSUBTYPE(stats->attrtypmod)));
   temporal_extra_info(stats);
 
-  /* Set the callback function to compute statistics. */
-  assert(func != NULL);
+  /* Set the callback function to compute statistics */
+  assert(func);
   stats->compute_stats = func;
 
   PG_RETURN_BOOL(true);

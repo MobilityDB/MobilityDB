@@ -131,6 +131,10 @@
 #define UPPER_EXC       true
 #define TIME_SEL        false
 
+/** Symbolic constants for trajectory function */
+#define UNARY_UNION     true
+#define UNARY_UNION_NO  false
+
 /** Enumeration for the intersection/synchronization functions */
 typedef enum
 {
@@ -143,9 +147,7 @@ typedef enum
 {
   TEMPORALTYPE,
   TNUMBERTYPE,
-  TPOINTTYPE,
-  TCBUFFERTYPE,
-  TNPOINTTYPE,
+  TSPATIALTYPE,
 } TemporalFamily;
 
 /** Enumeration for the set operations of span and temporal types */
@@ -155,6 +157,14 @@ typedef enum
   INTER,
   MINUS
 } SetOper;
+
+/* PostgreSQL removed pg_atoi in version 15 */
+#if POSTGRESQL_VERSION_NUMBER >= 150000
+  extern int32 pg_strtoint32(const char *s);
+#else
+  /* To avoid including <utils/builtins.h> */
+  extern int32 pg_atoi(const char *s, int size, int c);
+#endif /* POSTGRESQL_VERSION_NUMBER >= 150000 */
 
 /*****************************************************************************
  * Additional operator strategy numbers used in the GiST and SP-GiST temporal
@@ -335,6 +345,10 @@ typedef Datum (*datum_func3) (Datum, Datum, Datum);
 
 /* Parameter tests */
 
+extern bool ensure_has_X(meosType type, int16 flags);
+extern bool ensure_has_Z(meosType type, int16 flags);
+extern bool ensure_has_T(meosType type, int16 flags);
+extern bool ensure_has_not_Z(meosType type, int16 flags);
 extern bool ensure_not_null(void *ptr);
 extern bool ensure_one_not_null(void *ptr1, void *ptr2);
 extern bool ensure_one_true(bool hasshift, bool haswidth);

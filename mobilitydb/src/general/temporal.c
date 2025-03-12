@@ -53,12 +53,12 @@
 #include "general/temporal_boxops.h"
 #include "general/type_out.h"
 #include "general/type_util.h"
-#include "point/tpoint.h"
+#include "geo/tgeo.h"
 /* MobilityDB */
 #include "pg_general/doxygen_mobilitydb_api.h"
 #include "pg_general/meos_catalog.h"
 #include "pg_general/type_util.h"
-#include "pg_point/tpoint_spatialfuncs.h"
+#include "pg_geo/tpoint_spatialfuncs.h"
 
 /* To avoid including fmgrprotos.h */
 extern PGDLLEXPORT Datum timestamp_mi(PG_FUNCTION_ARGS);
@@ -719,7 +719,7 @@ Datum
 Tbool_to_tint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tbool_to_tint(temp);
+  Temporal *result = tbool_tint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -736,7 +736,7 @@ Datum
 Tint_to_tfloat(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tint_to_tfloat(temp);
+  Temporal *result = tint_tfloat(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -753,7 +753,7 @@ Datum
 Tfloat_to_tint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tfloat_to_tint(temp);
+  Temporal *result = tfloat_tint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -788,7 +788,7 @@ Datum
 Tnumber_to_span(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Span *result = tnumber_to_span(temp);
+  Span *result = tnumber_span(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_SPAN_P(result);
 }
@@ -1712,7 +1712,7 @@ temporal_unnest_state_make(const Temporal *temp)
   state->i = 0;
   state->count = count;
   state->values = values;
-  state->temp = temporal_cp(temp);
+  state->temp = temporal_copy(temp);
   return state;
 }
 

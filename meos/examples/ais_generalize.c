@@ -117,7 +117,7 @@ int main(void)
 
     int field = 0;
     char *token = strtok(line_buffer, ",");
-    while (token != NULL)
+    while (token)
     {
       switch (field)
       {

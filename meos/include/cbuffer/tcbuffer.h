@@ -52,8 +52,10 @@
 
 /*****************************************************************************/
 
-/* Constructor functions */
+/* Collinear functions */
 
+extern bool cbuffer_collinear(Cbuffer *cbuf1, Cbuffer *cbuf2, Cbuffer *cbuf3,
+  double ratio);
 
 /*****************************************************************************/
 

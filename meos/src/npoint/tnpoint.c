@@ -44,8 +44,8 @@
 #include "general/lifting.h"
 #include "general/temporal.h"
 #include "general/type_util.h"
-#include "point/tpoint_spatialfuncs.h"
-#include "npoint/npoint.h"
+#include "geo/tgeo_spatialfuncs.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************
  * Conversion functions
@@ -121,13 +121,23 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_transf
- * @brief Return a temporal network point converted to a temporal geometry point
+ * @ingroup meos_temporal_conversion
+ * @brief Return a temporal network point transformed to a temporal geometry
+ * point
+ * @param[in] temp Temporal point
+ * @csqlfn #Tnpoint_to_tgeompoint()
  */
 Temporal *
 tnpoint_tgeompoint(const Temporal *temp)
 {
+#if MEOS
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TNPOINT))
+    return NULL;
+#else
   assert(temp); assert(temp->temptype == T_TNPOINT);
+#endif /* MEOS */
+
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
@@ -141,24 +151,6 @@ tnpoint_tgeompoint(const Temporal *temp)
       return (Temporal *) tnpointseqset_tgeompointseqset((TSequenceSet *) temp);
   }
 }
-
-#if MEOS
-/**
- * @ingroup meos_temporal_spatial_transf
- * @brief Return a temporal network point transformed to a temporal geometry
- * point
- * @param[in] temp Temporal point
- * @csqlfn #Tnpoint_to_tgeompoint()
- */
-Temporal *
-tnpoint_to_tgeompoint(const Temporal *temp)
-{
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TNPOINT))
-    return NULL;
-  return tnpoint_tgeompoint(temp);
-}
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -219,14 +211,23 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_temporal_spatial_transf
- * @brief Return a temporal geometry point converted to a temporal network point
+ * @ingroup meos_temporal_conversion
+ * @brief Return a temporal geometry point transformed to a temporal network
+ * point
+ * @param[in] temp Temporal point
  * @csqlfn #Tgeompoint_to_tnpoint()
  */
 Temporal *
 tgeompoint_tnpoint(const Temporal *temp)
 {
+#if MEOS
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TNPOINT))
+    return NULL;
+#else
   assert(temp); assert(temp->temptype == T_TGEOMPOINT);
+#endif /* MEOS */
+
   int32_t srid_tpoint = tspatial_srid(temp);
   int32_t srid_ways = get_srid_ways();
   if (! ensure_same_srid(srid_tpoint, srid_ways))
@@ -243,24 +244,6 @@ tgeompoint_tnpoint(const Temporal *temp)
       return (Temporal *) tgeompointseqset_tnpointseqset((TSequenceSet *) temp);
   }
 }
-
-#if MEOS
-/**
- * @ingroup meos_temporal_spatial_transf
- * @brief Return a temporal geometry point transformed to a temporal network
- * point
- * @param[in] temp Temporal point
- * @csqlfn #Tgeompoint_to_tnpoint()
- */
-Temporal *
-tgeompoint_to_tnpoint(const Temporal *temp)
-{
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TNPOINT))
-    return NULL;
-  return tgeompoint_tnpoint(temp);
-}
-#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions

@@ -228,7 +228,7 @@ free_stringlist(_stringlist **listhead)
 {
   if (listhead == NULL || *listhead == NULL)
     return;
-  if ((*listhead)->next != NULL)
+  if ((*listhead)->next)
     free_stringlist(&((*listhead)->next));
   free((*listhead)->str);
   free(*listhead);

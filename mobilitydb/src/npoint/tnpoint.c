@@ -46,7 +46,7 @@
 #include "general/type_parser.h"
 #include "general/type_round.h"
 #include "general/type_util.h"
-#include "npoint/npoint.h"
+#include "npoint/tnpoint.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 

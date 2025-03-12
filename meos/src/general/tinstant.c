@@ -46,12 +46,13 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/meos_catalog.h"
 #include "general/pg_types.h"
 #include "general/tsequence.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "point/tpoint_parser.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_parser.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * General functions
@@ -145,87 +146,7 @@ tinstant_in(const char *str, meosType temptype)
     return NULL;
   return result;
 }
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal boolean instant from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- */
-TInstant *
-tboolinst_in(const char *str)
-{
-  return tinstant_in(str, T_TBOOL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal integer instant from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- */
-TInstant *
-tintinst_in(const char *str)
-{
-  return tinstant_in(str, T_TINT);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal float instant from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- */
-TInstant *
-tfloatinst_in(const char *str)
-{
-  return tinstant_in(str, T_TFLOAT);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal text instant from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- */
-TInstant *
-ttextinst_in(const char *str)
-{
-  return tinstant_in(str, T_TTEXT);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal instant geometry point from its Well-Known Text
- * (WKT) representation
- * @param[in] str String
- */
-TInstant *
-tgeompointinst_in(const char *str)
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
-  assert (temp->subtype == TINSTANT);
-  return (TInstant *) temp;
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal instant geography point from its Well-Known Text
- * (WKT) representation
- * @param[in] str String
- */
-TInstant *
-tgeogpointinst_in(const char *str)
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
-  assert (temp->subtype == TINSTANT);
-  return (TInstant *) temp;
-}
-#endif
+#endif /* MEOS */
 
 /**
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant
@@ -286,6 +207,18 @@ tinstant_out(const TInstant *inst, int maxdd)
 TInstant *
 tinstant_make(Datum value, meosType temptype, TimestampTz t)
 {
+  /* Ensure validity of arguments */
+  if (tgeo_type_all(temptype))
+  {
+    meosType basetype = temptype_basetype(temptype);
+    int32_t tgeo_srid = spatial_srid(value, basetype);
+    if (! ensure_not_empty(DatumGetGserializedP(value)) ||
+        /* Ensure that the SRID is geodetic for geography */
+        (tgeodetic_type(temptype) && tgeo_srid != SRID_UNKNOWN && 
+          ! ensure_srid_is_latlong(tgeo_srid)))
+    return NULL;
+  }
+
   size_t value_offset = sizeof(TInstant) - sizeof(Datum);
   size_t size = value_offset;
   /* Create the temporal instant */
@@ -321,7 +254,7 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
   MEOS_FLAGS_SET_CONTINUOUS(result->flags, temptype_continuous(temptype));
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_T(result->flags, true);
-  if (tgeo_type(temptype))
+  if (tgeo_type_all(temptype))
   {
     GSERIALIZED *gs = DatumGetGserializedP(value);
     MEOS_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(gs->gflags));
@@ -346,66 +279,9 @@ tinstant_make_free(Datum value, meosType temptype, TimestampTz t)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_temporal_constructor
- * @brief Return a temporal boolean instant from a boolean and a timestamptz
- * @param[in] b Value
- * @param[in] t Timestamp
- * @csqlfn #Tinstant_constructor()
- */
-TInstant *
-tboolinst_make(bool b, TimestampTz t)
-{
-  return tinstant_make(BoolGetDatum(b), T_TBOOL, t);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal integer instant from an integer and a timestamptz
- * @param[in] i Value
- * @param[in] t Timestamp
- * @csqlfn #Tinstant_constructor()
- */
-TInstant *
-tintinst_make(int i, TimestampTz t)
-{
-  return tinstant_make(Int32GetDatum(i), T_TINT, t);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal float instant from a float and a timestamptz
- * @param[in] d Value
- * @param[in] t Timestamp
- * @csqlfn #Tinstant_constructor()
- */
-TInstant *
-tfloatinst_make(double d, TimestampTz t)
-{
-  return tinstant_make(Float8GetDatum(d), T_TFLOAT, t);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal text instant from a text and a timestamptz
- * @param[in] txt Value
- * @param[in] t Timestamp
- * @csqlfn #Tinstant_constructor()
- */
-TInstant *
-ttextinst_make(const text *txt, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) txt))
-    return NULL;
-  return tinstant_make(PointerGetDatum(txt), T_TTEXT, t);
-}
-#endif /* MEOS */
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal instant point from a point and a timestamptz
+ * @brief Return a temporal point instant from a point and a timestamptz
  * @param[in] gs Value
  * @param[in] t Timestamp
  * @csqlfn #Tinstant_constructor()
@@ -415,10 +291,28 @@ tpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
-      ! ensure_point_type(gs) || ! ensure_has_not_M_gs(gs))
+      ! ensure_point_type(gs) || ! ensure_has_not_M_geo(gs))
     return NULL;
   meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;
+  return tinstant_make(PointerGetDatum(gs), temptype, t);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal instant geo from a geometry and a timestamptz
+ * @param[in] gs Value
+ * @param[in] t Timestamp
+ * @csqlfn #Tinstant_constructor()
+ */
+TInstant *
+tgeoinst_make(const GSERIALIZED *gs, TimestampTz t)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs))
+    return NULL;
+  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
+    T_TGEOGRAPHY : T_TGEOMETRY;
   return tinstant_make(PointerGetDatum(gs), temptype, t);
 }
 
@@ -486,13 +380,12 @@ SpanSet *
 tinstant_time(const TInstant *inst)
 {
   assert(inst);
-  return timestamptz_to_spanset(inst->t);
+  return value_spanset(inst->t, T_TIMESTAMPTZ);
 }
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the last argument initialized with the time span of a temporal
- * instant
+ * @brief Return in the last argument the time span of a temporal instant
  * @param[in] inst Temporal instant
  * @param[out] s Result
  */
@@ -543,8 +436,8 @@ tinstant_insts(const TInstant *inst, int *count)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the last argument initialized with the value of a temporal
- * instant at a timestamptz
+ * @brief Return in the last argument the value of a temporal instant at a
+ * timestamptz
  * @param[in] inst Temporal instant
  * @param[in] t Timestamp
  * @param[out] result Result
@@ -741,10 +634,9 @@ uint32
 tinstant_hash(const TInstant *inst)
 {
   assert(inst);
-  Datum value = tinstant_val(inst);
   meosType basetype = temptype_basetype(inst->temptype);
   /* Apply the hash function to the base type */
-  uint32 value_hash = datum_hash(value, basetype);
+  uint32 value_hash = datum_hash(tinstant_val(inst), basetype);
   /* Apply the hash function to the timestamp */
   uint32 time_hash = pg_hashint8(inst->t);
   /* Merge hashes of value and timestamp */

@@ -168,7 +168,7 @@ Value_to_set(PG_FUNCTION_ARGS)
   /* Detoast the value if necessary */
   if (basetype_varlength(basetype))
     d = PointerGetDatum(PG_DETOAST_DATUM(d));
-  PG_RETURN_SET_P(value_to_set(d, basetype));
+  PG_RETURN_SET_P(value_set(d, basetype));
 }
 
 PGDLLEXPORT Datum Intset_to_floatset(PG_FUNCTION_ARGS);
@@ -496,7 +496,7 @@ Floatset_round(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   int maxdd = PG_GETARG_INT32(1);
-  Set *result = floatset_rnd(s, maxdd);
+  Set *result = floatset_round(s, maxdd);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SET_P(result);
 }
@@ -515,7 +515,7 @@ Floatset_degrees(PG_FUNCTION_ARGS)
   bool normalize = false;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     normalize = PG_GETARG_BOOL(1);
-  Set *result = floatset_deg(s, normalize);
+  Set *result = floatset_degrees(s, normalize);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SET_P(result);
 }
@@ -531,7 +531,7 @@ Datum
 Floatset_radians(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Set *result = floatset_rad(s);
+  Set *result = floatset_radians(s);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SET_P(result);
 }

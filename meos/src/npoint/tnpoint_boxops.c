@@ -44,8 +44,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "point/pgis_types.h"
-#include "npoint/npoint.h"
+#include "geo/pgis_types.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************
  * Transform a temporal network point to a STBox
@@ -53,8 +53,7 @@
 
 /**
  * @ingroup meos_internal_box_constructor
- * @brief Return the last argument initialized with the spatiotemporal box from
- * a network point value
+ * @brief Return in the last argument the spatiotemporal box of a network point
  * @param[in] np Network point
  * @param[out] box Spatiotemporal box
  */
@@ -74,19 +73,19 @@ npoint_set_stbox(const Npoint *np, STBox *box)
  * @csqlfn #Npoint_to_stbox()
  */
 STBox *
-npoint_to_stbox(const Npoint *np)
+npoint_stbox(const Npoint *np)
 {
   STBox box;
   if (! npoint_set_stbox(np, &box))
     return NULL;
-  return stbox_cp(&box);
+  return stbox_copy(&box);
 }
 
 /**
  * @ingroup meos_internal_box_constructor
- * @brief Return the last argument initialized with the spatiotemporal box from
- * an array of network point values
- * @param[in] values Temporal network point values
+ * @brief Return in the last argument a spatiotemporal box constructed from
+ * an array of network points
+ * @param[in] values Network points
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
  */
@@ -104,8 +103,8 @@ npointarr_set_stbox(const Datum *values, int count, STBox *box)
 }
 
 /**
- * @brief Return the last argument initialized with the spatiotemporal box of a
- * temporal network point instant
+ * @brief Return in the last argument the spatiotemporal box of a temporal
+ * network point instant
  * @param[in] inst Temporal network point
  * @param[out] box Spatiotemporal box
  */
@@ -120,7 +119,7 @@ tnpointinst_set_stbox(const TInstant *inst, STBox *box)
 }
 
 /**
- * @brief Return the last argument initialized with the spatiotemporal box of
+ * @brief Return in the last argument a spatiotemporal box constructed from
  * an array of temporal network point instants
  * @param[in] instants Temporal network point values
  * @param[in] count Number of elements in the array
@@ -140,7 +139,7 @@ tnpointinstarr_step_set_stbox(const TInstant **instants, int count, STBox *box)
 }
 
 /**
- * @brief Return the last argument initialized with the spatiotemporal box of
+ * @brief Return in the last argument q spatiotemporal box constructed from
  * an array of temporal network point instants
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
@@ -176,7 +175,7 @@ tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
 }
 
 /**
- * @brief Return the last argument initialized with the spatiotemporal box of
+ * @brief Return in the last argument a spatiotemporal box constructed from
  * an array of temporal network point instants
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
@@ -253,12 +252,12 @@ nsegment_set_stbox(const Nsegment *ns, STBox *box)
  * @csqlfn #Nsegment_to_stbox()
  */
 STBox *
-nsegment_to_stbox(const Nsegment *ns)
+nsegment_stbox(const Nsegment *ns)
 {
   STBox box;
   if (! nsegment_set_stbox(ns, &box))
     return NULL;
-  return stbox_cp(&box);
+  return stbox_copy(&box);
 }
 
 /**
@@ -295,7 +294,7 @@ npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t)
   STBox box;
   if (! npoint_timestamptz_set_stbox(np, t, &box))
     return NULL;
-  return stbox_cp(&box);
+  return stbox_copy(&box);
 }
 
 /**
@@ -331,7 +330,7 @@ npoint_tstzspan_to_stbox(const Npoint *np, const Span *s)
   STBox box;
   if (! npoint_tstzspan_set_stbox(np, s, &box))
     return NULL;
-  return stbox_cp(&box);
+  return stbox_copy(&box);
 }
 
 /*****************************************************************************/

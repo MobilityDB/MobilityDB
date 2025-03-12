@@ -69,76 +69,6 @@ contains_spanset_value(const SpanSet *ss, Datum value)
   return true;
 }
 
-#if MEOS
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set contains an integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Contains_spanset_value()
- */
-bool
-contains_spanset_int(const SpanSet *ss, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return false;
-  return contains_spanset_value(ss, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set contains a big integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Contains_spanset_value()
- */
-bool
-contains_spanset_bigint(const SpanSet *ss, int64 i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return false;
-  return contains_spanset_value(ss, Int64GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set contains a float
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Contains_spanset_value()
- */
-bool
-contains_spanset_float(const SpanSet *ss, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return false;
-  return contains_spanset_value(ss, Float8GetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set contains a date
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Contains_spanset_value()
- */
-bool
-contains_spanset_date(const SpanSet *ss, DateADT d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return false;
-  return contains_spanset_value(ss, DateADTGetDatum(d));
-}
-#endif /* MEOS */
-
 /**
  * @ingroup meos_setspan_topo
  * @brief Return true if a span set contains a timestamptz
@@ -176,12 +106,12 @@ contains_spanset_span(const SpanSet *ss, const Span *s)
     return false;
 
   /* Bounding box test */
-  if (! cont_span_span(&ss->span, s))
+  if (! contains_span_span(&ss->span, s))
     return false;
 
   int loc;
   spanset_find_value(ss, s->lower, &loc);
-  return cont_span_span(SPANSET_SP_N(ss, loc), s);
+  return contains_span_span(SPANSET_SP_N(ss, loc), s);
 }
 
 /**
@@ -218,7 +148,7 @@ contains_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     return false;
 
   /* Bounding box test */
-  if (! cont_span_span(&ss1->span, &ss2->span))
+  if (! contains_span_span(&ss1->span, &ss2->span))
     return false;
 
   int i = 0, j = 0;
@@ -226,14 +156,14 @@ contains_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   {
     const Span *s1 = SPANSET_SP_N(ss1, i);
     const Span *s2 = SPANSET_SP_N(ss2, j);
-    if (lf_span_span(s1, s2))
+    if (left_span_span(s1, s2))
       i++;
-    else if (lf_span_span(s2, s1))
+    else if (left_span_span(s2, s1))
       return false;
     else
     {
       /* s1 and s2 overlap */
-      if (cont_span_span(s1, s2))
+      if (contains_span_span(s1, s2))
       {
         if (s1->upper == s2->upper)
         {
@@ -266,93 +196,6 @@ contained_value_spanset(Datum value, const SpanSet *ss)
 {
   return contains_spanset_value(ss, value);
 }
-
-#if MEOS
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if an integer is contained in a span set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Contained_value_spanset()
- */
-bool
-contained_int_spanset(int i, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return false;
-  return contained_value_spanset(Int32GetDatum(i), ss);
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a big integer is contained in a span set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Contained_value_spanset()
- */
-bool
-contained_bigint_spanset(int64 i, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return false;
-  return contained_value_spanset(Int64GetDatum(i), ss);
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a float is contained in a span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Contained_value_spanset()
- */
-bool
-contained_float_spanset(double d, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return false;
-  return contained_value_spanset(Float8GetDatum(d), ss);
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a date is contained in a span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Contained_value_spanset()
- */
-bool
-contained_date_spanset(DateADT d, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return false;
-  return contained_value_spanset(DateADTGetDatum(d), ss);
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a timestamptz is contained in a span set
- * @param[in] t Value
- * @param[in] ss Span set
- * @csqlfn #Contained_value_spanset()
- */
-bool
-contained_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return false;
-  return contained_value_spanset(TimestampTzGetDatum(t), ss);
-}
-#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_topo
@@ -416,7 +259,7 @@ overlaps_spanset_span(const SpanSet *ss, const Span *s)
     return false;
 
   /* Bounding box test */
-  if (! over_span_span(s, &ss->span))
+  if (! overlaps_span_span(s, &ss->span))
     return false;
 
   /* Binary search of lower bound of span */
@@ -425,7 +268,7 @@ overlaps_spanset_span(const SpanSet *ss, const Span *s)
   for (int i = loc; i < ss->count; i++)
   {
     const Span *s1 = SPANSET_SP_N(ss, i);
-    if (over_span_span(s1, s))
+    if (overlaps_span_span(s1, s))
       return true;
     if (s->upper < s1->upper)
       break;
@@ -467,7 +310,7 @@ overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     return false;
 
   /* Bounding box test */
-  if (! over_span_span(&ss1->span, &ss2->span))
+  if (! overlaps_span_span(&ss1->span, &ss2->span))
     return false;
 
   int i = 0, j = 0;
@@ -475,7 +318,7 @@ overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   {
     const Span *s1 = SPANSET_SP_N(ss1, i);
     const Span *s2 = SPANSET_SP_N(ss2, j);
-    if (over_span_span(s1, s2))
+    if (overlaps_span_span(s1, s2))
       return true;
     int cmp = datum_cmp(s1->upper, s2->upper, s1->basetype);
     if (cmp == 0)
@@ -525,93 +368,6 @@ adjacent_value_spanset(Datum value, const SpanSet *ss)
 {
   return adjacent_spanset_value(ss, value);
 }
-
-#if MEOS
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set and an integer are adjacent
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Adjacent_spanset_value()
- */
-bool
-adjacent_spanset_int(const SpanSet *ss, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return false;
-  return adjacent_spanset_value(ss, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set and a big integer are adjacent
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Adjacent_spanset_value()
- */
-bool
-adjacent_spanset_bigint(const SpanSet *ss, int64 i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return false;
-  return adjacent_spanset_value(ss, Int64GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set and a float are adjacent
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Adjacent_spanset_value()
- */
-bool
-adjacent_spanset_float(const SpanSet *ss, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return false;
-  return adjacent_spanset_value(ss, Float8GetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set and a date are adjacent
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Adjacent_spanset_value()
- */
-bool
-adjacent_spanset_date(const SpanSet *ss, DateADT d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return false;
-  return adjacent_spanset_value(ss, DateADTGetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_topo
- * @brief Return true if a span set and a timestamptz are adjacent
- * @param[in] ss Span set
- * @param[in] t Value
- * @csqlfn #Adjacent_spanset_value()
- */
-bool
-adjacent_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return false;
-  return adjacent_spanset_value(ss, TimestampTzGetDatum(t));
-}
-#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_topo
@@ -704,93 +460,6 @@ left_value_spanset(Datum value, const SpanSet *ss)
   return left_value_span(value, SPANSET_SP_N(ss, 0));
 }
 
-#if MEOS
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if an integer is to the left of a span set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Left_value_spanset()
- */
-bool
-left_int_spanset(int i, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return false;
-  return left_value_spanset(Int32GetDatum(i), ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a big integer is to the left of a span set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Left_value_spanset()
- */
-bool
-left_bigint_spanset(int64 i, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return false;
-  return left_value_spanset(Int64GetDatum(i), ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a float is to the left of a span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Left_value_spanset()
- */
-bool
-left_float_spanset(double d, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return false;
-  return left_value_spanset(Float8GetDatum(d), ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a date is before a span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Left_value_spanset()
- */
-bool
-before_date_spanset(DateADT d, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return false;
-  return left_value_spanset(DateADTGetDatum(d), ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a timestamptz is before a span set
- * @param[in] t Value
- * @param[in] ss Span set
- * @csqlfn #Left_value_spanset()
- */
-bool
-before_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return false;
-  return left_value_spanset(TimestampTzGetDatum(t), ss);
-}
-#endif /* MEOS */
-
 /**
  * @ingroup meos_setspan_pos
  * @brief Return true if a span is before a span set
@@ -805,7 +474,7 @@ left_span_spanset(const Span *s, const SpanSet *ss)
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_same_spanset_span_type(ss, s))
     return false;
-  return lf_span_span(s, SPANSET_SP_N(ss, 0));
+  return left_span_span(s, SPANSET_SP_N(ss, 0));
 }
 
 /**
@@ -821,93 +490,6 @@ left_spanset_value(const SpanSet *ss, Datum value)
   return left_span_value(SPANSET_SP_N(ss, ss->count - 1), value);
 }
 
-#if MEOS
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is to the left of an integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Left_spanset_value()
- */
-bool
-left_spanset_int(const SpanSet *ss, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return false;
-  return left_spanset_value(ss, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is to the left of a big integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Left_spanset_value()
- */
-bool
-left_spanset_bigint(const SpanSet *ss, int64 i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return false;
-  return left_spanset_value(ss, Int64GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is to the left of a float
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Left_spanset_value()
- */
-bool
-left_spanset_float(const SpanSet *ss, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return false;
-  return left_spanset_value(ss, Float8GetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is before a date
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Left_spanset_value()
- */
-bool
-before_spanset_date(const SpanSet *ss, DateADT d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return false;
-  return left_spanset_value(ss, DateADTGetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is before a timestamptz
- * @param[in] ss Span set
- * @param[in] t Value
- * @csqlfn #Left_spanset_value()
- */
-bool
-before_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return false;
-  return left_spanset_value(ss, TimestampTzGetDatum(t));
-}
-#endif /* MEOS */
-
 /**
  * @ingroup meos_setspan_pos
  * @brief Return true if a span set is to the left a span
@@ -922,7 +504,7 @@ left_spanset_span(const SpanSet *ss, const Span *s)
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_same_spanset_span_type(ss, s))
     return false;
-  return lf_span_span(SPANSET_SP_N(ss, ss->count - 1), s);
+  return left_span_span(SPANSET_SP_N(ss, ss->count - 1), s);
 }
 
 /**
@@ -938,7 +520,7 @@ left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_same_spanset_type(ss1, ss2))
     return false;
-  return lf_span_span(SPANSET_SP_N(ss1, ss1->count - 1), SPANSET_SP_N(ss2, 0));
+  return left_span_span(SPANSET_SP_N(ss1, ss1->count - 1), SPANSET_SP_N(ss2, 0));
 }
 
 /*****************************************************************************
@@ -956,73 +538,6 @@ right_value_spanset(Datum value, const SpanSet *ss)
 {
   return left_spanset_value(ss, value);
 }
-
-#if MEOS
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if an integer is to the right of a span set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Right_value_spanset()
- */
-bool
-right_int_spanset(int i, const SpanSet *ss)
-{
-  return left_spanset_int(ss, i);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a big integer is to the right of a span set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Right_value_spanset()
- */
-bool
-right_bigint_spanset(int64 i, const SpanSet *ss)
-{
-  return left_spanset_bigint(ss, i);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a float is to the right of a span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Right_value_spanset()
- */
-bool
-right_float_spanset(double d, const SpanSet *ss)
-{
-  return left_spanset_float(ss, d);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a date is after a span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Right_value_spanset()
- */
-bool
-after_date_spanset(DateADT d, const SpanSet *ss)
-{
-  return before_spanset_date(ss, d);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a timestamptz is after a span set
- * @param[in] t Value
- * @param[in] ss Span set
- * @csqlfn #Right_value_spanset()
- */
-bool
-after_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
-{
-  return before_spanset_timestamptz(ss, t);
-}
-#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_pos
@@ -1048,73 +563,6 @@ right_spanset_value(const SpanSet *ss, Datum value)
 {
   return left_value_spanset(value, ss);
 }
-
-#if MEOS
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is to the right of an integer.
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Right_spanset_value()
- */
-bool
-right_spanset_int(const SpanSet *ss, int i)
-{
-  return left_int_spanset(i, ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is to the right of a big integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Right_spanset_value()
- */
-bool
-right_spanset_bigint(const SpanSet *ss, int64 i)
-{
-  return left_bigint_spanset(i, ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is to the right of a float
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Right_spanset_value()
- */
-bool
-right_spanset_float(const SpanSet *ss, double d)
-{
-  return left_float_spanset(d, ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is after a date
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Right_spanset_value()
- */
-bool
-after_spanset_date(const SpanSet *ss, DateADT d)
-{
-  return before_date_spanset(d, ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is after a timestamptz
- * @param[in] ss Span set
- * @param[in] t Value
- * @csqlfn #Right_spanset_value()
- */
-bool
-after_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
-{
-  return before_timestamptz_spanset(t, ss);
-}
-#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_pos
@@ -1158,94 +606,6 @@ overleft_spanset_value(const SpanSet *ss, Datum value)
   return overleft_span_value(SPANSET_SP_N(ss, ss->count - 1), value);
 }
 
-#if MEOS
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set does not extend to the right of an integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Overleft_spanset_value()
- */
-bool
-overleft_spanset_int(const SpanSet *ss, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return false;
-  return overleft_spanset_value(ss, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set does not extend to the right of a big
- * integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Overleft_spanset_value()
- */
-bool
-overleft_spanset_bigint(const SpanSet *ss, int64 i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return false;
-  return overleft_spanset_value(ss, Int64GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set does not extend to the right of a float
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Overleft_spanset_value()
- */
-bool
-overleft_spanset_float(const SpanSet *ss, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return false;
-  return overleft_spanset_value(ss, Float8GetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is not after a date
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Overleft_spanset_value()
- */
-bool
-overbefore_spanset_date(const SpanSet *ss, DateADT d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return false;
-  return overleft_spanset_value(ss, DateADTGetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is not after a timestamptz
- * @param[in] ss Span set
- * @param[in] t Value
- * @csqlfn #Overleft_spanset_value()
- */
-bool
-overbefore_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return false;
-  return overleft_spanset_value(ss, TimestampTzGetDatum(t));
-}
-#endif /* MEOS */
-
 /**
  * @ingroup meos_internal_setspan_pos
  * @brief Return true if a value does not extend to the right of a span set
@@ -1258,94 +618,6 @@ overleft_value_spanset(Datum value, const SpanSet *ss)
   assert(ss);
   return overleft_value_span(value, SPANSET_SP_N(ss, ss->count - 1));
 }
-
-#if MEOS
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if an integer does not extend to the right of a span set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Overleft_value_spanset()
- */
-bool
-overleft_int_spanset(int i, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return false;
-  return overleft_value_spanset(Int32GetDatum(i), ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a big integer does not extend to the right of a span
- * set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Overleft_value_spanset()
- */
-bool
-overleft_bigint_spanset(int64 i, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return false;
-  return overleft_value_spanset(Int64GetDatum(i), ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a float does not extend to the right of a span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Overleft_value_spanset()
- */
-bool
-overleft_float_spanset(double d, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return false;
-  return overleft_value_spanset(Float8GetDatum(d), ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a date is not after a span set.
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Overleft_value_spanset()
- */
-bool
-overbefore_date_spanset(DateADT d, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return false;
-  return overleft_value_spanset(DateADTGetDatum(d), ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a timestamptz is not after a span set
- * @param[in] t Value
- * @param[in] ss Span set
- * @csqlfn #Overleft_value_spanset()
- */
-bool
-overbefore_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return false;
-  return overleft_value_spanset(TimestampTzGetDatum(t), ss);
-}
-#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_pos
@@ -1361,7 +633,7 @@ overleft_span_spanset(const Span *s, const SpanSet *ss)
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_same_spanset_span_type(ss, s))
     return false;
-  return ovlf_span_span(s, SPANSET_SP_N(ss, ss->count - 1));
+  return overleft_span_span(s, SPANSET_SP_N(ss, ss->count - 1));
 }
 
 /**
@@ -1378,7 +650,7 @@ overleft_spanset_span(const SpanSet *ss, const Span *s)
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_same_spanset_span_type(ss, s))
     return false;
-  return ovlf_span_span(SPANSET_SP_N(ss, ss->count - 1), s);
+  return overleft_span_span(SPANSET_SP_N(ss, ss->count - 1), s);
 }
 
 /**
@@ -1395,7 +667,7 @@ overleft_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_same_spanset_type(ss1, ss2))
     return false;
-  return ovlf_span_span(SPANSET_SP_N(ss1, ss1->count - 1),
+  return overleft_span_span(SPANSET_SP_N(ss1, ss1->count - 1),
     SPANSET_SP_N(ss2, ss2->count - 1));
 }
 
@@ -1416,93 +688,6 @@ overright_value_spanset(Datum value, const SpanSet *ss)
   return overright_value_span(value, SPANSET_SP_N(ss, 0));
 }
 
-#if MEOS
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if an integer does not extend to the left of a span set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Overright_value_spanset()
- */
-bool
-overright_int_spanset(int i, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return false;
-  return overright_value_spanset(Int32GetDatum(i), ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a big integer does not extend to the left of a span set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Overright_value_spanset()
- */
-bool
-overright_bigint_spanset(int64 i, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return false;
-  return overright_value_spanset(Int64GetDatum(i), ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a float does not extend to the left of a span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Overright_value_spanset()
- */
-bool
-overright_float_spanset(double d, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return false;
-  return overright_value_spanset(Float8GetDatum(d), ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a date is not before a span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Overright_value_spanset()
- */
-bool
-overafter_date_spanset(DateADT d, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return false;
-  return overright_value_spanset(DateADTGetDatum(d), ss);
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a timestamptz is not before a span set
- * @param[in] t Value
- * @param[in] ss Span set
- * @csqlfn #Overright_value_spanset()
- */
-bool
-overafter_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return false;
-  return overright_value_spanset(TimestampTzGetDatum(t), ss);
-}
-#endif /* MEOS */
-
 /**
  * @ingroup meos_setspan_pos
  * @brief Return true if a span does not extend to the left of a span set
@@ -1517,7 +702,7 @@ overright_span_spanset(const Span *s, const SpanSet *ss)
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_same_spanset_span_type(ss, s))
     return false;
-  return ovri_span_span(s, SPANSET_SP_N(ss, 0));
+  return overright_span_span(s, SPANSET_SP_N(ss, 0));
 }
 
 /**
@@ -1533,92 +718,6 @@ overright_spanset_value(const SpanSet *ss, Datum value)
   return overright_span_value(SPANSET_SP_N(ss, 0), value);
 }
 
-#if MEOS
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set does not extend to the left of an integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Overright_spanset_value()
- */
-bool
-overright_spanset_int(const SpanSet *ss, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return false;
-  return overright_spanset_value(ss, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set does not extend to the left of a big integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Overright_spanset_value()
- */
-bool
-overright_spanset_bigint(const SpanSet *ss, int64 i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return false;
-  return overright_spanset_value(ss, Int64GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set does not extend to the left of a float
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Overright_spanset_value()
- */
-bool
-overright_spanset_float(const SpanSet *ss, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return false;
-  return overright_spanset_value(ss, Float8GetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is before a date
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Overright_spanset_value()
- */
-bool
-overafter_spanset_date(const SpanSet *ss, DateADT d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return false;
-  return overright_spanset_value(ss, DateADTGetDatum(d));
-}
-/**
- * @ingroup meos_setspan_pos
- * @brief Return true if a span set is before a timestamptz
- * @param[in] ss Span set
- * @param[in] t Value
- * @csqlfn #Overright_spanset_value()
- */
-bool
-overafter_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return false;
-  return overright_spanset_value(ss, TimestampTzGetDatum(t));
-}
-#endif /* MEOS */
-
 /**
  * @ingroup meos_setspan_pos
  * @brief Return true if a span set does not extend to the left of a span
@@ -1633,7 +732,7 @@ overright_spanset_span(const SpanSet *ss, const Span *s)
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_same_spanset_span_type(ss, s))
     return false;
-  return ovri_span_span(SPANSET_SP_N(ss, 0), s);
+  return overright_span_span(SPANSET_SP_N(ss, 0), s);
 }
 
 /**
@@ -1650,7 +749,7 @@ overright_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_same_spanset_type(ss1, ss2))
     return false;
-  return ovri_span_span(SPANSET_SP_N(ss1, 0), SPANSET_SP_N(ss2, 0));
+  return overright_span_span(SPANSET_SP_N(ss1, 0), SPANSET_SP_N(ss2, 0));
 }
 
 /*****************************************************************************
@@ -1684,178 +783,6 @@ union_value_spanset(Datum value, const SpanSet *ss)
   return union_spanset_value(ss, value);
 }
 
-#if MEOS
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a span set and an integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Union_spanset_value()
- */
-SpanSet *
-union_int_spanset(int i, SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return NULL;
-  return union_spanset_value(ss, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a span set and a big integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Union_spanset_value()
- */
-SpanSet *
-union_bigint_spanset(int64 i, SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return NULL;
-  return union_spanset_value(ss, Int64GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a span set and a float
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Union_spanset_value()
- */
-SpanSet *
-union_float_spanset(double d, SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return NULL;
-  return union_spanset_value(ss, Float8GetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a span set and a date
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Union_spanset_value()
- */
-SpanSet *
-union_date_spanset(DateADT d, SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return NULL;
-  return union_spanset_value(ss, DateADTGetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a span set and a timestamptz
- * @param[in] ss Span set
- * @param[in] t Value
- * @csqlfn #Union_spanset_value()
- */
-SpanSet *
-union_timestamptz_spanset(TimestampTz t, SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return NULL;
-  return union_spanset_value(ss, TimestampTzGetDatum(t));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a span set and an integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Union_spanset_value()
- */
-SpanSet *
-union_spanset_int(const SpanSet *ss, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return NULL;
-  return union_spanset_value(ss, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a span set and a big integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Union_spanset_value()
- */
-SpanSet *
-union_spanset_bigint(const SpanSet *ss, int64 i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return NULL;
-  return union_spanset_value(ss, Int64GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a span set and a float
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Union_spanset_value()
- */
-SpanSet *
-union_spanset_float(const SpanSet *ss, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return NULL;
-  return union_spanset_value(ss, Float8GetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a span set and a date
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Union_spanset_value()
- */
-SpanSet *
-union_spanset_date(const SpanSet *ss, DateADT d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return NULL;
-  return union_spanset_value(ss, DateADTGetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the union of a span set and a timestamptz
- * @param[in] ss Span set
- * @param[in] t Value
- * @csqlfn #Union_spanset_value()
- */
-SpanSet *
-union_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return NULL;
-  return union_spanset_value(ss, TimestampTzGetDatum(t));
-}
-#endif /* MEOS */
-
 /**
  * @ingroup meos_setspan_set
  * @brief Return the union of a span set and a span
@@ -1876,7 +803,7 @@ union_spanset_span(const SpanSet *ss, const Span *s)
     return NULL;
 
   /* Is the span set fully contained in the span? */
-  if (cont_span_span(s, &ss->span))
+  if (contains_span_span(s, &ss->span))
     return span_spanset(s);
 
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
@@ -2049,7 +976,7 @@ intersection_spanset_value(const SpanSet *ss, Datum value)
   assert(ss);
   if (! contains_spanset_value(ss, value))
     return NULL;
-  return value_to_spanset(value, ss->basetype);
+  return value_spanset(value, ss->basetype);
 }
 
 /**
@@ -2063,93 +990,6 @@ intersection_value_spanset(Datum value, const SpanSet *ss)
 {
   return intersection_spanset_value(ss, value);
 }
-
-#if MEOS
-/**
- * @ingroup meos_setspan_set
- * @brief Return the intersection of a span set and an integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Intersection_spanset_value()
- */
-SpanSet *
-intersection_spanset_int(const SpanSet *ss, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return NULL;
-  return intersection_spanset_value(ss, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the intersection of a span set and a big integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Intersection_spanset_value()
- */
-SpanSet *
-intersection_spanset_bigint(const SpanSet *ss, int64 i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return NULL;
-  return intersection_spanset_value(ss, Int64GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the intersection of a span set and a float
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Intersection_spanset_value()
- */
-SpanSet *
-intersection_spanset_float(const SpanSet *ss, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return NULL;
-  return intersection_spanset_value(ss, Float8GetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the intersection of a span set and a date
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Intersection_spanset_value()
- */
-SpanSet *
-intersection_spanset_date(const SpanSet *ss, DateADT d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return NULL;
-  return intersection_spanset_value(ss, DateADTGetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the intersection of a span set and a timestamptz
- * @param[in] ss Span set
- * @param[in] t Value
- * @csqlfn #Intersection_spanset_value()
- */
-SpanSet *
-intersection_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return NULL;
-  return intersection_spanset_value(ss, TimestampTzGetDatum(t));
-}
-#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_set
@@ -2176,12 +1016,12 @@ intersection_spanset_span(const SpanSet *ss, const Span *s)
     return NULL;
 
   /* Bounding box test */
-  if (! over_span_span(s, &ss->span))
+  if (! overlaps_span_span(s, &ss->span))
     return NULL;
 
   /* Is the span set fully contained in the span? */
-  if (cont_span_span(s, &ss->span))
-    return spanset_cp(ss);
+  if (contains_span_span(s, &ss->span))
+    return spanset_copy(ss);
 
   /* General case */
   int loc;
@@ -2280,99 +1120,11 @@ minus_value_spanset(Datum value, const SpanSet *ss)
   assert(ss);
   if (contains_spanset_value(ss, value))
     return NULL;
-  return value_to_spanset(value, ss->basetype);
-}
-
-#if MEOS
-/**
- * @ingroup meos_setspan_set
- * @brief Return the difference of an integer and a span set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Minus_value_spanset()
- */
-SpanSet *
-minus_int_spanset(int i, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return NULL;
-  return minus_value_spanset(Int32GetDatum(i), ss);
+  return value_spanset(value, ss->basetype);
 }
 
 /**
- * @ingroup meos_setspan_set
- * @brief Return the difference of a big integer and a span set
- * @param[in] i Value
- * @param[in] ss Span set
- * @csqlfn #Minus_value_spanset()
- */
-SpanSet *
-minus_bigint_spanset(int64 i, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return NULL;
-  return minus_value_spanset(Int64GetDatum(i), ss);
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the difference of a float and a span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Minus_value_spanset()
- */
-SpanSet *
-minus_float_spanset(double d, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return NULL;
-  return minus_value_spanset(Float8GetDatum(d), ss);
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the difference of a date and a span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @csqlfn #Minus_value_spanset()
- */
-SpanSet *
-minus_date_spanset(DateADT d, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return NULL;
-  return minus_value_spanset(DateADTGetDatum(d), ss);
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the difference of a timestamptz and a span set
- * @param[in] t Value
- * @param[in] ss Span set
- * @csqlfn #Minus_value_spanset()
- */
-SpanSet *
-minus_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return NULL;
-  return minus_value_spanset(TimestampTzGetDatum(t), ss);
-}
-#endif /* MEOS */
-
-/**
- * @brief Return the last argument initialized with the difference of a span
- * and a span set
+ * @brief Return in the last argument the difference of a span and a span set
  */
 static int
 mi_span_spanset(const Span *s, const SpanSet *ss, int from, int to,
@@ -2432,7 +1184,7 @@ minus_span_spanset(const Span *s, const SpanSet *ss)
     return NULL;
 
   /* Bounding box test */
-  if (! over_span_span(s, &ss->span))
+  if (! overlaps_span_span(s, &ss->span))
     return span_spanset(s);
 
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
@@ -2452,7 +1204,7 @@ minus_spanset_value(const SpanSet *ss, Datum value)
   assert(ss);
   /* Bounding box test */
   if (! contains_span_value(&ss->span, value))
-    return spanset_cp(ss);
+    return spanset_copy(ss);
 
   /* At most one composing span can be split into two */
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
@@ -2461,93 +1213,6 @@ minus_spanset_value(const SpanSet *ss, Datum value)
     nspans += mi_span_value(SPANSET_SP_N(ss, i), value, &spans[nspans]);
   return spanset_make_free(spans, nspans, NORMALIZE_NO, ORDER_NO);
 }
-
-#if MEOS
-/**
- * @ingroup meos_setspan_set
- * @brief Return the difference of a span set and an integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Minus_spanset_value()
- */
-SpanSet *
-minus_spanset_int(const SpanSet *ss, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return NULL;
-  return minus_spanset_value(ss, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the difference of a span set and a big integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @csqlfn #Minus_spanset_value()
- */
-SpanSet *
-minus_spanset_bigint(const SpanSet *ss, int64 i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return NULL;
-  return minus_spanset_value(ss, Int64GetDatum(i));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the difference of a span set and a float
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Minus_spanset_value()
- */
-SpanSet *
-minus_spanset_float(const SpanSet *ss, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return NULL;
-  return minus_spanset_value(ss, Float8GetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the difference of a span set and a date
- * @param[in] ss Span set
- * @param[in] d Value
- * @csqlfn #Minus_spanset_value()
- */
-SpanSet *
-minus_spanset_date(const SpanSet *ss, DateADT d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return NULL;
-  return minus_spanset_value(ss, DateADTGetDatum(d));
-}
-
-/**
- * @ingroup meos_setspan_set
- * @brief Return the difference of a span set and a timestamptz
- * @param[in] ss Span set
- * @param[in] t Value
- * @csqlfn #Minus_spanset_value()
- */
-SpanSet *
-minus_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return NULL;
-  return minus_spanset_value(ss, TimestampTzGetDatum(t));
-}
-#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_set
@@ -2569,8 +1234,8 @@ minus_spanset_span(const SpanSet *ss, const Span *s)
     return NULL;
 
   /* Bounding box test */
-  if (! over_span_span(&ss->span, s))
-    return spanset_cp(ss);
+  if (! overlaps_span_span(&ss->span, s))
+    return spanset_copy(ss);
 
   /* At most one composing span can be split into two */
   Span *spans = palloc(sizeof(Span) * (ss->count + 1));
@@ -2604,8 +1269,8 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     return NULL;
 
   /* Bounding box test */
-  if (! over_span_span(&ss1->span, &ss2->span))
-    return spanset_cp(ss1);
+  if (! overlaps_span_span(&ss1->span, &ss2->span))
+    return spanset_copy(ss1);
 
   Span *spans = palloc(sizeof(Span) * (ss1->count + ss2->count));
   int i = 0, j = 0, nspans = 0;
@@ -2614,7 +1279,7 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
     const Span *s1 = SPANSET_SP_N(ss1, i);
     const Span *s2 = SPANSET_SP_N(ss2, j);
     /* The spans do not overlap, copy the first span */
-    if (! over_span_span(s1, s2))
+    if (! overlaps_span_span(s1, s2))
     {
       spans[nspans++] = *s1;
       i++;
@@ -2631,7 +1296,7 @@ minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
       for (k = j; k < ss2->count; k++)
       {
         const Span *s3 = SPANSET_SP_N(ss2, k);
-        if (! over_span_span(s1, s3))
+        if (! overlaps_span_span(s1, s3))
           break;
       }
       int to = Min(k, ss2->count);
@@ -2664,99 +1329,6 @@ distance_spanset_value(const SpanSet *ss, Datum value)
   return distance_span_value(&ss->span, value);
 }
 
-#if MEOS
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance between a span set and an integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_value()
- */
-int
-distance_spanset_int(const SpanSet *ss, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4))
-    return -1;
-  return DatumGetInt32(distance_spanset_value(ss, Int32GetDatum(i)));
-}
-
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance between a span set and a big integer
- * @param[in] ss Span set
- * @param[in] i Value
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_value()
- */
-int64
-distance_spanset_bigint(const SpanSet *ss, int64 i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8))
-    return -1;
-  return DatumGetInt64(distance_spanset_value(ss, Int64GetDatum(i)));
-}
-
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance between a span set and a float
- * @param[in] ss Span set
- * @param[in] d Value
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_value()
- */
-double
-distance_spanset_float(const SpanSet *ss, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8))
-    return -1.0;
-  return DatumGetFloat8(distance_spanset_value(ss, Float8GetDatum(d)));
-}
-
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance in seconds between a span set and a date as a
- * double
- * @param[in] ss Span set
- * @param[in] d Value
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_value()
- */
-int
-distance_spanset_date(const SpanSet *ss, DateADT d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_DATE))
-    return -1;
-  return DatumGetInt32(distance_spanset_value(ss, DateADTGetDatum(d)));
-}
-
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance in seconds between a span set and a timestamptz
- * @param[in] ss Span set
- * @param[in] t Value
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_value()
- */
-double
-distance_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ))
-    return -1.0;
-  return DatumGetFloat8(distance_spanset_value(ss, TimestampTzGetDatum(t)));
-}
-#endif /* MEOS */
-
 /**
  * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between a span set and a span
@@ -2772,104 +1344,6 @@ distance_spanset_span(const SpanSet *ss, const Span *s)
   return dist_span_span(&ss->span, s);
 }
 
-#if MEOS
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance between an integer span set and a span
- * @param[in] ss Spanset
- * @param[in] s Span
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_span()
- */
-int
-distance_intspanset_intspan(const SpanSet *ss, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT4) ||
-      ! ensure_span_isof_basetype(s, T_INT4))
-    return -1;
-  return DatumGetInt32(distance_spanset_span(ss, s));
-}
-
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance between a big integer span set and a span
- * @param[in] ss Spanset
- * @param[in] s Span
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_span()
- */
-int64
-distance_bigintspanset_bigintspan(const SpanSet *ss, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_spanset_isof_basetype(ss, T_INT8) ||
-      ! ensure_span_isof_basetype(s, T_INT8))
-    return -1;
-  return DatumGetInt64(distance_spanset_span(ss, s));
-}
-
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance between a float span set and a span
- * @param[in] ss Spanset
- * @param[in] s Span
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_span()
- */
-double
-distance_floatspanset_floatspan(const SpanSet *ss, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_spanset_isof_basetype(ss, T_FLOAT8) ||
-      ! ensure_span_isof_basetype(s, T_FLOAT8))
-    return -1.0;
-  return DatumGetFloat8(distance_spanset_span(ss, s));
-}
-
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance in days between a date span set and a span
- * @param[in] ss Spanset
- * @param[in] s Span
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_span()
- */
-int
-distance_datespanset_datespan(const SpanSet *ss, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-     ! ensure_spanset_isof_basetype(ss, T_DATE) ||
-     ! ensure_span_isof_basetype(s, T_DATE))
-    return -1;
-  return DatumGetInt32(distance_spanset_span(ss, s));
-}
-
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance in seconds between a timestamptz span set and a
- * span
- * @param[in] ss Spanset
- * @param[in] s Span
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_span()
- */
-double
-distance_tstzspanset_tstzspan(const SpanSet *ss, const Span *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_spanset_isof_basetype(ss, T_TIMESTAMPTZ) ||
-      ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
-    return -1.0;
-  return DatumGetFloat8(distance_spanset_span(ss, s));
-}
-#endif /* MEOS */
-
 /**
  * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two span sets
@@ -2883,97 +1357,5 @@ distance_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   assert(ss1); assert(ss2); assert(ss1->spansettype == ss2->spansettype);
   return dist_span_span(&ss1->span, &ss2->span);
 }
-
-#if MEOS
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance between two integer span sets
- * @param[in] ss1,ss2 Spanset
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_spanset()
- */
-int
-distance_intspanset_intspanset(const SpanSet *ss1, const SpanSet *ss2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_spanset_isof_basetype(ss1, T_INT4) ||
-      ! ensure_spanset_isof_basetype(ss2, T_INT4))
-    return -1;
-  return DatumGetInt32(distance_spanset_spanset(ss1, ss2));
-}
-
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance between two big integer span sets
- * @param[in] ss1,ss2 Spanset
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_spanset()
- */
-int64
-distance_bigintspanset_bigintspanset(const SpanSet *ss1, const SpanSet *ss2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_spanset_isof_basetype(ss1, T_INT8) ||
-      ! ensure_spanset_isof_basetype(ss2, T_INT8))
-    return -1;
-  return DatumGetInt64(distance_spanset_spanset(ss1, ss2));
-}
-
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance between two float span sets
- * @param[in] ss1,ss2 Spanset
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_spanset()
- */
-double
-distance_floatspanset_floatspanset(const SpanSet *ss1, const SpanSet *ss2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_spanset_isof_basetype(ss1, T_FLOAT8) ||
-      ! ensure_spanset_isof_basetype(ss2, T_FLOAT8))
-    return -1.0;
-  return DatumGetFloat8(distance_spanset_spanset(ss1, ss2));
-}
-
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance in days between two date span sets
- * @param[in] ss1,ss2 Spanset
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_spanset()
- */
-int
-distance_datespanset_datespanset(const SpanSet *ss1, const SpanSet *ss2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-     ! ensure_spanset_isof_basetype(ss1, T_DATE) ||
-     ! ensure_spanset_isof_basetype(ss2, T_DATE))
-    return -1;
-  return DatumGetInt32(distance_spanset_spanset(ss1, ss2));
-}
-
-/**
- * @ingroup meos_setspan_dist
- * @brief Return the distance in seconds between two timestamptz span sets
- * @param[in] ss1,ss2 Spanset
- * @return On error return -1.0
- * @csqlfn #Distance_spanset_spanset()
- */
-double
-distance_tstzspanset_tstzspanset(const SpanSet *ss1, const SpanSet *ss2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_spanset_isof_basetype(ss1, T_TIMESTAMPTZ) ||
-      ! ensure_spanset_isof_basetype(ss2, T_TIMESTAMPTZ))
-    return -1.0;
-  return DatumGetFloat8(distance_spanset_spanset(ss1, ss2));
-}
-#endif /* MEOS */
 
 /******************************************************************************/

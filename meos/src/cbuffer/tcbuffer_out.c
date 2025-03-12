@@ -126,7 +126,19 @@ cbuffer_as_ewkt(const Cbuffer *cbuf, int maxdd)
   if (! ensure_not_null((void *) cbuf) || ! ensure_not_negative(maxdd))
     return NULL;
 
-  return cbuffer_ewkt_out(PointerGetDatum(cbuf), 0, maxdd);
+  int32_t srid = cbuffer_srid(cbuf);
+  char str1[18];
+  if (srid > 0)
+    /* SRID_MAXIMUM is defined by PostGIS as 999999 */
+    snprintf(str1, sizeof(str1), "SRID=%d;", srid);
+  else
+    str1[0] = '\0';
+  char *str2 = cbuffer_wkt_out(PointerGetDatum(cbuf), 0, maxdd);
+  char *result = palloc(strlen(str1) + strlen(str2) + 1);
+  strcpy(result, str1);
+  strcat(result, str2);
+  pfree(str2);
+  return result;
 }
 
 /*****************************************************************************/
@@ -215,7 +227,7 @@ cbufferarr_as_text(const Datum *cbufarr, int count, int maxdd, bool extended)
 
   char **result = palloc(sizeof(char *) * count);
   for (int i = 0; i < count; i++)
-    /* The wkt_out and ewkt_out functions do not use the second argument */
+    /* The geo_wkt_out and geo_ewkt_out functions do not use the second argument */
     result[i] = extended ? cbuffer_ewkt_out(cbufarr[i], 0, maxdd) : 
       cbuffer_wkt_out(cbufarr[i], 0, maxdd);
   return result;

@@ -38,8 +38,8 @@
 #include <meos.h>
 #include <meos_cbuffer.h>
 #include <meos_internal.h>
-#include "point/pgis_types.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/pgis_types.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_spatialfuncs.h"
 
@@ -92,11 +92,11 @@ distance_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) box) ||
-      ! ensure_has_X_stbox(box))
+      ! ensure_has_X(T_STBOX, box->flags))
     return -1.0;
 
   GSERIALIZED *geo1 = cbuffer_geom(cbuf);
-  GSERIALIZED *geo2 = stbox_to_geo(box);
+  GSERIALIZED *geo2 = stbox_geo(box);
   double result = geom_distance2d(geo1, geo2);
   pfree(geo1); pfree(geo2); 
   return result;
@@ -104,9 +104,9 @@ distance_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box)
 
 /**
  * @ingroup meos_temporal_dist
- * @brief Return the distance between a circular buffer and a geometry
+ * @brief Return the distance between two circular buffers
  * @return On error return -1.0
- * @csqlfn #Distance_geo_cbuffer()
+ * @csqlfn #Distance_cbuffer_cbuffer()
  */
 double
 distance_cbuffer_cbuffer(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
@@ -129,20 +129,20 @@ distance_cbuffer_cbuffer(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 
 /**
  * @ingroup meos_temporal_dist
- * @brief Return the temporal distance between a geometry point and a temporal
+ * @brief Return the temporal distance between a geometry and a temporal
  * circular buffer
- * @csqlfn #Distance_tcbuffer_point()
+ * @csqlfn #Distance_tcbuffer_geo()
  */
 Temporal *
-distance_tcbuffer_point(const Temporal *temp, const GSERIALIZED *gs)
+distance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      gserialized_is_empty(gs) || ! ensure_point_type(gs))
+      gserialized_is_empty(gs))
     return NULL;
 
   Temporal *tpoint = tcbuffer_tgeompoint(temp);
-  Temporal *result = distance_tpoint_point((const Temporal *) tpoint, gs);
+  Temporal *result = distance_tgeo_geo((const Temporal *) tpoint, gs);
   pfree(tpoint);
   return result;
 }
@@ -151,7 +151,7 @@ distance_tcbuffer_point(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_temporal_dist
  * @brief Return the temporal distance between a temporal circular buffer and
  * a circular buffer
- * @param[in] temp Temporal point
+ * @param[in] temp Temporal circular buffer
  * @param[in] cbuf Circular buffer
  * @csqlfn #Distance_tcbuffer_cbuffer()
  */
@@ -160,7 +160,7 @@ distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
   GSERIALIZED *geom = cbuffer_geom(cbuf);
   Temporal *tpoint = tcbuffer_tgeompoint(temp);
-  Temporal *result = distance_tpoint_point(tpoint, geom);
+  Temporal *result = distance_tgeo_geo(tpoint, geom);
   pfree(geom);
   return result;
 }
@@ -168,7 +168,7 @@ distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 /**
  * @ingroup meos_temporal_dist
  * @brief Return the temporal distance between two temporal circular buffers
- * @param[in] temp1,temp2 Temporal points
+ * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Distance_tcbuffer_tcbuffer()
  */
 Temporal *
@@ -176,7 +176,7 @@ distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *tpoint1 = tcbuffer_tgeompoint(temp1);
   Temporal *tpoint2 = tcbuffer_tgeompoint(temp2);
-  Temporal *result = distance_tpoint_tpoint(tpoint1, tpoint2);
+  Temporal *result = distance_tgeo_tgeo(tpoint1, tpoint2);
   pfree(tpoint1); pfree(tpoint2);
   return result;
 }
@@ -187,24 +187,25 @@ distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_temporal_dist
- * @brief Return the nearest approach distance between a spatiotemporal box
- * and a geometry
- * @param[in] box Spatiotemporal box
+ * @brief Return the nearest approach distance between a circular buffer
+ * and a spatiotemporal box
  * @param[in] cbuf Circular buffer
- * @csqlfn #NAD_stbox_cbuffer()
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #NAD_cbuffer_stbox()
  */
 double
-nad_stbox_cbuffer(const STBox *box, const Cbuffer *cbuf)
+nad_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_stbox_cbuffer(box, cbuf))
-      // ! ensure_same_spatial_dimensionality_stbox_gs(box, cbuf))
+  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) box) || 
+      ! ensure_valid_stbox_cbuffer(box, cbuf))
+      // ! ensure_same_spatial_dimensionality_stbox_geo(box, cbuf))
     return -1.0;
 
-  Datum geobox = PointerGetDatum(stbox_to_geo(box));
   Datum geocbuf = PointerGetDatum(cbuffer_geom(cbuf));
-  double result = DatumGetFloat8(datum_geom_distance2d(geobox, geocbuf));
-  pfree(DatumGetPointer(geobox)); pfree(DatumGetPointer(geocbuf));
+  Datum geobox = PointerGetDatum(stbox_geo(box));
+  double result = DatumGetFloat8(datum_geom_distance2d(geocbuf, geobox));
+  pfree(DatumGetPointer(geocbuf)); pfree(DatumGetPointer(geobox)); 
   return result;
 }
 
@@ -214,17 +215,20 @@ nad_stbox_cbuffer(const STBox *box, const Cbuffer *cbuf)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach instant of the temporal circular buffer
  * and a geometry
- * @param[in] temp Temporal point
+ * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @csqlfn #NAI_tcbuffer_geo()
  */
 TInstant *
 nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) || 
+      gserialized_is_empty(gs))
     return NULL;
+
   Temporal *tpoint = tcbuffer_tgeompoint(temp);
-  TInstant *resultgeom = nai_tpoint_geo(tpoint, gs);
+  TInstant *resultgeom = nai_tgeo_geo(tpoint, gs);
   /* We do not call the function tgeompointinst_tcbufferinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
@@ -238,7 +242,7 @@ nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach instant of the circular buffer and a
  * temporal circular buffer
- * @param[in] temp Temporal point
+ * @param[in] temp Temporal circular buffer
  * @param[in] cbuf Circular buffer
  * @csqlfn #NAI_tcbuffer_cbuffer()
  */
@@ -247,7 +251,7 @@ nai_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
   GSERIALIZED *geom = cbuffer_geom(cbuf);
   Temporal *tpoint = tcbuffer_tgeompoint(temp);
-  TInstant *resultgeom = nai_tpoint_geo(tpoint, geom);
+  TInstant *resultgeom = nai_tgeo_geo(tpoint, geom);
   /* We do not call the function tgeompointinst_tcbufferinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
@@ -260,7 +264,7 @@ nai_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 /**
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach instant of two temporal circular buffers
- * @param[in] temp1,temp2 Temporal points
+ * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #NAI_tcbuffer_tcbuffer()
  */
 TInstant *
@@ -286,7 +290,7 @@ nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance of a temporal circular buffer
  * and a geometry
- * @param[in] temp Temporal point
+ * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @csqlfn #NAD_tcbuffer_geo()
  */
@@ -309,8 +313,8 @@ nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance of a temporal circular buffer
  * and a spatiotemporal box
- * @param[in] temp Temporal point
- * @param[in] gs Geometry
+ * @param[in] temp Temporal circular buffer
+ * @param[in] box Spatiotemporal box
  * @csqlfn #NAD_tcbuffer_geo()
  */
 double
@@ -319,11 +323,11 @@ nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER) || 
-      ! ensure_has_X_stbox(box))
+      ! ensure_has_X(T_STBOX, box->flags))
     return -1.0;
 
   GSERIALIZED *trav = tcbuffer_traversed_area(temp);
-  GSERIALIZED *geo = stbox_to_geo(box);
+  GSERIALIZED *geo = stbox_geo(box);
   double result = geom_distance2d(trav, geo);
   pfree(trav);
   return result;
@@ -333,7 +337,7 @@ nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance of a temporal circular buffer
  * and a circular buffer
- * @param[in] temp Temporal point
+ * @param[in] temp Temporal circular buffer
  * @param[in] cbuf Circular buffer
  * @csqlfn #NAD_tcbuffer_cbuffer()
  */
@@ -350,7 +354,7 @@ nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 /**
  * @ingroup meos_temporal_dist
  * @brief Return the nearest approach distance of two temporal circular buffers
- * @param[in] temp1,temp2 Temporal points
+ * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #NAD_tcbuffer_tcbuffer()
  */
 double
@@ -370,15 +374,18 @@ nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_temporal_dist
  * @brief Return the line connecting the nearest approach point between a
  * geometry and a temporal circular buffer
- * @param[in] temp Temporal point
+ * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @csqlfn #Shortestline_tcbuffer_geo()
  */
 GSERIALIZED *
 shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      gserialized_is_empty(gs))
     return NULL;
+
   GSERIALIZED *trav = tcbuffer_traversed_area(temp);
   GSERIALIZED *result = geom_shortestline2d(trav, gs);
   pfree(trav);
@@ -389,7 +396,7 @@ shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_temporal_dist
  * @brief Return the line connecting the nearest approach point between a
  * circular buffer and a temporal circular buffer
- * @param[in] temp Temporal point
+ * @param[in] temp Temporal circular buffer
  * @param[in] cbuf Circular buffer
  * @csqlfn #Shortestline_tcbuffer_cbuffer()
  */
@@ -407,7 +414,7 @@ shortestline_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
  * @ingroup meos_temporal_dist
  * @brief Return the line connecting the nearest approach point between two
  * temporal circular buffers
- * @param[in] temp1,temp2 Temporal points
+ * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Shortestline_tcbuffer_tcbuffer()
  */
 GSERIALIZED *
@@ -415,7 +422,7 @@ shortestline_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *tpoint1 = tcbuffer_tgeompoint(temp1);
   Temporal *tpoint2 = tcbuffer_tgeompoint(temp2);
-  GSERIALIZED *result = shortestline_tpoint_tpoint(tpoint1, tpoint2);
+  GSERIALIZED *result = shortestline_tgeo_tgeo(tpoint1, tpoint2);
   pfree(tpoint1); pfree(tpoint2);
   return result;
 }

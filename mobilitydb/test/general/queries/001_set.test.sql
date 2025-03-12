@@ -58,11 +58,11 @@ SELECT set(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
 /* Errors */
 SELECT set('{}'::timestamptz[]);
 
-SELECT set(ARRAY[geometry 'Point(1 1)', 'Point(2 2)', 'Point(3 3)']);
+SELECT asText(set(ARRAY[geometry 'Point(1 1)', 'Point(2 2)', 'Point(3 3)']));
+SELECT asText(set(ARRAY[geometry 'Point(1 1)', 'Linestring(1 1,2 2)']));
 /* Errors */
 SELECT set(ARRAY[geometry 'Point(1 1)', 'Point(1 1 1)']);
 SELECT set(ARRAY[geometry 'Point(1 1)', 'Point empty']);
-SELECT set(ARRAY[geometry 'Point(1 1)', 'Linestring(1 1,2 2)']);
 SELECT set(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
 
 -------------------------------------------------------------------------------

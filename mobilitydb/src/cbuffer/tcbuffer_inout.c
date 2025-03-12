@@ -41,8 +41,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
 #include "general/temporal.h"
-#include "point/tpoint_parser.h"
+#include "geo/tgeo_parser.h"
 #include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_parser.h"
 /* MobilityDB */
@@ -130,6 +131,52 @@ Cbuffer_as_ewkt(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Cbufferset_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbufferset_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a circular 
+ * buffer set
+ * @sqlfn asText()
+ */
+Datum
+Cbufferset_as_text(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = cbufferset_as_text(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Cbufferset_as_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbufferset_as_ewkt);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a
+ * circular buffer set
+ * @sqlfn asEWKT()
+ */
+Datum
+Cbufferset_as_ewkt(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = cbufferset_as_ewkt(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************/
+
 /**
  * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation of
  * a temporal circular buffer
@@ -185,7 +232,7 @@ Tcbuffer_as_ewkt(PG_FUNCTION_ARGS)
  * geometry/geography
  */
 static Datum
-Cbufferarr_as_text_ext(FunctionCallInfo fcinfo, bool temporal, bool extended)
+Tcbufferarr_as_text_ext(FunctionCallInfo fcinfo, bool temporal, bool extended)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   /* Return NULL on empty array */
@@ -231,7 +278,7 @@ PG_FUNCTION_INFO_V1(Cbufferarr_as_text);
 Datum
 Cbufferarr_as_text(PG_FUNCTION_ARGS)
 {
-  return Cbufferarr_as_text_ext(fcinfo, false, false);
+  return Tcbufferarr_as_text_ext(fcinfo, false, false);
 }
 
 PGDLLEXPORT Datum Cbufferarr_as_ewkt(PG_FUNCTION_ARGS);
@@ -246,7 +293,7 @@ PG_FUNCTION_INFO_V1(Cbufferarr_as_ewkt);
 Datum
 Cbufferarr_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return Cbufferarr_as_text_ext(fcinfo, false, true);
+  return Tcbufferarr_as_text_ext(fcinfo, false, true);
 }
 
 PGDLLEXPORT Datum Tcbufferarr_as_text(PG_FUNCTION_ARGS);
@@ -260,7 +307,7 @@ PG_FUNCTION_INFO_V1(Tcbufferarr_as_text);
 Datum
 Tcbufferarr_as_text(PG_FUNCTION_ARGS)
 {
-  return Cbufferarr_as_text_ext(fcinfo, true, false);
+  return Tcbufferarr_as_text_ext(fcinfo, true, false);
 }
 
 PGDLLEXPORT Datum Tcbufferarr_as_ewkt(PG_FUNCTION_ARGS);
@@ -275,7 +322,7 @@ PG_FUNCTION_INFO_V1(Tcbufferarr_as_ewkt);
 Datum
 Tcbufferarr_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return Cbufferarr_as_text_ext(fcinfo, true, true);
+  return Tcbufferarr_as_text_ext(fcinfo, true, true);
 }
 
 /*****************************************************************************/

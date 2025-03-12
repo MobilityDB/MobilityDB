@@ -287,8 +287,8 @@ SELECT dynTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="temporal_types_bbox_split">
-		<title>Operaciones de división del cuadro delimitador</title>
+	<sect1 id="temporal_types_splitting">
+		<title>Operaciones de división</title>
 
 		<para>Al crear índices para tipos temporales, lo que se almacena en el índice no es el valor real sino un cuadro delimitador que <emphasis>representa</emphasis> el valor. En este caso, el índice proporcionará una lista de valores candidatos que <emphasis>pueden</emphasis> satisfacer el predicado de la consulta, y se necesita un segundo paso para filtrar los valores candidatos calculando el predicado de la consulta sobre los valores reales.</para>
 
@@ -738,7 +738,7 @@ SELECT getSspaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 d
 
 		<sect2 id="boxes_functions">
 			<title>Operaciones de cuadro delimitador</title>
-			<para>Estas operaciones fragmentan el cuadro delimitador de un valor temporal con respecto a un mosaico multidimensional. Ofrecen una alternativa a las operaciones de la <xref linkend="temporal_types_bbox_split" /> para dividir los cuadros delimitadores especificando el tamaño máximo de los cuadros en las distintas dimensiones.</para>
+			<para>Estas operaciones fragmentan el cuadro delimitador de un valor temporal con respecto a un mosaico multidimensional. Ofrecen una alternativa a las operaciones de la <xref linkend="temporal_types_splitting" /> para dividir los cuadros delimitadores especificando el tamaño máximo de los cuadros en las distintas dimensiones.</para>
 			<itemizedlist>
 				<listitem id="timeSpans">
 					<indexterm><primary><varname>timeSpans</varname></primary></indexterm>
@@ -843,7 +843,7 @@ SELECT spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01
 		</sect2>
 
 		<sect2 id="split_functions">
-			<title>Operaciones de fragmentación</title>
+			<title>Operaciones de división</title>
 			<para>Estas funciones fragmentan un valor temporal con respecto a una secuencia de intervalos (ver la <xref linkend="bin_functions" />) o un mosaico multidimensional (ver la <xref linkend="tile_functions" />).</para>
 			<itemizedlist>
 				<listitem id="valueSplit">

@@ -1,0 +1,738 @@
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry
+WHERE geometrytype(traversedArea(temp)) <> 'GEOMETRYCOLLECTION' AND eContains(g, temp);
+ count 
+-------
+    98
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry
+WHERE geometrytype(traversedArea(temp)) <> 'GEOMETRYCOLLECTION' AND aContains(g, temp);
+ count 
+-------
+    74
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eDisjoint(g, temp);
+ count 
+-------
+  9365
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eDisjoint(temp, g);
+ count 
+-------
+  9365
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eDisjoint(t1.temp, t2.temp);
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE eDisjoint(g, temp);
+ count 
+-------
+  9359
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE eDisjoint(temp, g);
+ count 
+-------
+  9359
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE eDisjoint(t1.temp, t2.temp);
+ count 
+-------
+  9898
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE eDisjoint(t1.temp, t2.temp);
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE eDisjoint(t1.temp, t2.temp);
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE aDisjoint(g, temp);
+ count 
+-------
+  8170
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE aDisjoint(temp, g);
+ count 
+-------
+  8170
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aDisjoint(t1.temp, t2.temp);
+ count 
+-------
+     4
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE aDisjoint(g, temp);
+ count 
+-------
+  9378
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE aDisjoint(temp, g);
+ count 
+-------
+  9378
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE aDisjoint(t1.temp, t2.temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geography, tbl_tgeography WHERE aDisjoint(g, temp);
+ count 
+-------
+  9993
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography, tbl_geography WHERE aDisjoint(temp, g);
+ count 
+-------
+  9993
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE aDisjoint(t1.temp, t2.temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeography3D WHERE aDisjoint(g, temp);
+ count 
+-------
+  9990
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D, tbl_geography3D WHERE aDisjoint(temp, g);
+ count 
+-------
+  9990
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE aDisjoint(t1.temp, t2.temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eIntersects(g, temp);
+ count 
+-------
+  1230
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eIntersects(temp, g);
+ count 
+-------
+  1230
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eIntersects(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE eIntersects(g, temp);
+ count 
+-------
+    22
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE eIntersects(temp, g);
+ count 
+-------
+    22
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE eIntersects(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE eIntersects(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeography3D WHERE eIntersects(g, temp);
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D, tbl_geography3D WHERE eIntersects(temp, g);
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE eIntersects(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE aIntersects(g, temp);
+ count 
+-------
+    35
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE aIntersects(temp, g);
+ count 
+-------
+    35
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aIntersects(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE aIntersects(g, temp);
+ count 
+-------
+    51
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE aIntersects(temp, g);
+ count 
+-------
+    51
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE aIntersects(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE aIntersects(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE aIntersects(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE eTouches(g, temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE eTouches(temp, g);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE aTouches(g, temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE aTouches(temp, g);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eDwithin(g, temp, 10);
+ count 
+-------
+  3397
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eDwithin(temp, g, 10);
+ count 
+-------
+  3397
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eDwithin(t1.temp, t2.temp, 10);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seq WHERE eDwithin(g, seq, 10);
+ count 
+-------
+  3237
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seqset WHERE eDwithin(g, ss, 10);
+ count 
+-------
+  6187
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry_seq t1, tbl_tgeometry t2 WHERE eDwithin(t1.seq, t2.temp, 10);
+ count 
+-------
+    25
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE eDwithin(g, temp, 10);
+ count 
+-------
+  1090
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE eDwithin(temp, g, 10);
+ count 
+-------
+  1090
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE eDwithin(t1.temp, t2.temp, 10);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geography, tbl_tgeography WHERE eDwithin(g, temp, 10);
+ count 
+-------
+     7
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography, tbl_geography WHERE eDwithin(temp, g, 10);
+ count 
+-------
+     7
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE eDwithin(t1.temp, t2.temp, 10);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeography3D WHERE eDwithin(g, temp, 10);
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D, tbl_geography3D WHERE eDwithin(temp, g, 10);
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE eDwithin(t1.temp, t2.temp, 10);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE aDwithin(g, temp, 10);
+ count 
+-------
+   245
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE aDwithin(temp, g, 10);
+ count 
+-------
+   245
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aDwithin(t1.temp, t2.temp, 10);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seq WHERE aDwithin(g, seq, 10);
+ count 
+-------
+   135
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seqset WHERE aDwithin(g, ss, 10);
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry_seq t1, tbl_tgeometry t2 WHERE aDwithin(t1.seq, t2.temp, 10);
+ count 
+-------
+    25
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2 WHERE aDwithin(t1.temp, t2.temp, 10);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography t2 WHERE aDwithin(t1.temp, t2.temp, 10);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE aDwithin(t1.temp, t2.temp, 10);
+ count 
+-------
+   100
+(1 row)
+
+CREATE INDEX tbl_tgeometry_rtree_idx ON tbl_tgeometry USING gist(temp);
+CREATE INDEX
+CREATE INDEX tbl_tgeography_rtree_idx ON tbl_tgeography USING gist(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eContains(geometry 'SRID=3812;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aContains(geometry 'SRID=3812;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eIntersects(temp, geometry 'SRID=3812;Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eIntersects(geometry 'SRID=3812;Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eIntersects(temp, tgeometry 'SRID=3812;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aIntersects(temp, geometry 'SRID=3812;Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aIntersects(geometry 'SRID=3812;Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aIntersects(temp, tgeometry 'SRID=3812;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE eIntersects(temp, geography 'SRID=7844;Linestring(0 0,25 25)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE eIntersects(geography 'SRID=7844;Linestring(0 0,25 25)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE eIntersects(temp, tgeography 'SRID=7844;[Point(0 0)@2001-01-01, Point(25 25)@2001-02-01]');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE aIntersects(temp, tgeography 'SRID=7844;[Point(0 0)@2001-01-01, Point(25 25)@2001-02-01]');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eTouches(temp, geometry 'SRID=3812;Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eTouches(geometry 'SRID=3812;Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aTouches(temp, geometry 'SRID=3812;Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aTouches(geometry 'SRID=3812;Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eDwithin(temp, geometry 'SRID=3812;Linestring(0 0,15 15)', 5);
+ count 
+-------
+     8
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eDwithin(geometry 'SRID=3812;Linestring(0 0,5 5)', temp, 5);
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eDwithin(temp, tgeometry 'SRID=3812;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aDwithin(temp, geometry 'SRID=3812;Linestring(0 0,15 15)', 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aDwithin(geometry 'SRID=3812;Linestring(0 0,5 5)', temp, 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aDwithin(temp, tgeometry 'SRID=3812;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE eDwithin(temp, geography 'SRID=7844;Linestring(0 0,5 5)', 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE eDwithin(geography 'SRID=7844;Linestring(0 0,5 5)', temp, 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE eDwithin(temp, tgeography 'SRID=7844;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE aDwithin(temp, tgeography 'SRID=7844;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
+ count 
+-------
+     0
+(1 row)
+
+DROP INDEX tbl_tgeometry_rtree_idx;
+DROP INDEX
+DROP INDEX tbl_tgeography_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tgeometry_quadtree_idx ON tbl_tgeometry USING spgist(temp);
+CREATE INDEX
+CREATE INDEX tbl_tgeography_quadtree_idx ON tbl_tgeography USING spgist(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eContains(geometry 'SRID=3812;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aContains(geometry 'SRID=3812;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eIntersects(temp, geometry 'SRID=3812;Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eIntersects(geometry 'SRID=3812;Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eIntersects(temp, tgeometry 'SRID=3812;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aIntersects(temp, geometry 'SRID=3812;Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aIntersects(geometry 'SRID=3812;Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aIntersects(temp, tgeometry 'SRID=3812;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE eIntersects(temp, geography 'SRID=7844;Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE eIntersects(geography 'SRID=7844;Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE eIntersects(temp, tgeography 'SRID=7844;[Point(0 0)@2001-01-01, Point(50 50)@2001-02-01]');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE aIntersects(temp, tgeography 'SRID=7844;[Point(0 0)@2001-01-01, Point(50 50)@2001-02-01]');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eTouches(temp, geometry 'SRID=3812;Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eTouches(geometry 'SRID=3812;Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aTouches(temp, geometry 'SRID=3812;Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aTouches(geometry 'SRID=3812;Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eDwithin(temp, geometry 'SRID=3812;Linestring(0 0,5 5)', 5);
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eDwithin(geometry 'SRID=3812;Linestring(0 0,5 5)', temp, 5);
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE eDwithin(temp, tgeometry 'SRID=3812;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aDwithin(temp, geometry 'SRID=3812;Linestring(0 0,5 5)', 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aDwithin(geometry 'SRID=3812;Linestring(0 0,5 5)', temp, 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry WHERE aDwithin(temp, tgeometry 'SRID=3812;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE eDwithin(temp, geography 'SRID=7844;Linestring(0 0,5 5)', 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE eDwithin(geography 'SRID=7844;Linestring(0 0,5 5)', temp, 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE eDwithin(temp, tgeography 'SRID=7844;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography WHERE aDwithin(temp, tgeography 'SRID=7844;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
+ count 
+-------
+     0
+(1 row)
+
+DROP INDEX tbl_tgeometry_quadtree_idx;
+DROP INDEX
+DROP INDEX tbl_tgeography_quadtree_idx;
+DROP INDEX

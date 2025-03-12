@@ -41,22 +41,23 @@
 #include <utils/float.h> /* For get_float8_infinity() */
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
 #include "general/set.h"
 #include "general/span.h"
 #include "general/spanset.h"
 #include "general/tbox.h"
-#include "point/stbox.h"
-#include "point/tpoint.h"
-#include "point/tpoint_spatialfuncs.h"
-#if NPOINT
-  #include "npoint/npoint.h"
-  #include "npoint/tnpoint.h"
-#endif /* NPOINT */
+#include "geo/pgis_types.h"
+#include "geo/stbox.h"
+#include "geo/tgeo.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include "cbuffer/tcbuffer.h"
-#endif /* CBUFFER */
+#endif
+#if NPOINT
+  #include "npoint/tnpoint.h"
+#endif
 
 /*****************************************************************************
  * Round functions called by the other functions
@@ -118,22 +119,6 @@ set_round(const Set *s, int maxdd, datum_func2 func)
 }
 
 /**
- * @ingroup meos_internal_setspan_transf
- * @brief Return a float set with the precision of the values set to a number
- * of decimal places
- * @param[in] s Set
- * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Floatset_round()
- */
-Set *
-floatset_rnd(const Set *s, int maxdd)
-{
-  assert(s); assert(maxdd >= 0); assert(s->settype == T_FLOATSET);
-  return set_round(s, maxdd, &datum_round_float);
-}
-
-#if MEOS
-/**
  * @ingroup meos_setspan_transf
  * @brief Return a float set with the precision of the values set to a number
  * of decimal places
@@ -144,13 +129,17 @@ floatset_rnd(const Set *s, int maxdd)
 Set *
 floatset_round(const Set *s, int maxdd)
 {
+#if MEOS
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) ||
       ! ensure_set_isof_type(s, T_FLOATSET))
     return NULL;
+#else
+  assert(s); assert(maxdd >= 0); assert(s->settype == T_FLOATSET);
+#endif /* MEOS */
+
   return set_round(s, maxdd, &datum_round_float);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_transf
@@ -210,14 +199,14 @@ npointset_round(const Set *s, int maxdd)
 
 /**
  * @ingroup meos_internal_setspan_transf
- * @brief Return the last argument initialized to a float span with the
- * precision set to a number of decimal places
+ * @brief Return in the last argument a float span with the precision set to a
+ * number of decimal places
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
  * @param[out] result Result span
  */
 void
-floatspan_rnd_set(const Span *s, int maxdd, Span *result)
+floatspan_round_set(const Span *s, int maxdd, Span *result)
 {
   assert(s); assert(s->spantype == T_FLOATSPAN); assert(result);
   /* Set precision of bounds */
@@ -240,24 +229,6 @@ floatspan_rnd_set(const Span *s, int maxdd, Span *result)
 }
 
 /**
- * @ingroup meos_internal_setspan_transf
- * @brief Return a float span with the precision of the bounds set to a
- * number of decimal places
- * @param[in] s Span
- * @param[in] maxdd Maximum number of decimal digits
- * @return On error return @p NULL
- */
-Span *
-floatspan_rnd(const Span *s, int maxdd)
-{
-  assert(s); assert(maxdd >=0); assert(s->spantype == T_FLOATSPAN);
-  Span *result = palloc(sizeof(Span));
-  floatspan_rnd_set(s, maxdd, result);
-  return result;
-}
-
-#if MEOS
-/**
  * @ingroup meos_setspan_transf
  * @brief Return a float span with the precision of the bounds set to a
  * number of decimal places
@@ -268,13 +239,19 @@ floatspan_rnd(const Span *s, int maxdd)
 Span *
 floatspan_round(const Span *s, int maxdd)
 {
+#if MEOS
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) ||
       ! ensure_span_isof_type(s, T_FLOATSPAN))
     return NULL;
-  return floatspan_rnd(s, maxdd);
-}
+#else
+  assert(s); assert(maxdd >=0); assert(s->spantype == T_FLOATSPAN);
 #endif /* MEOS */
+
+  Span *result = palloc(sizeof(Span));
+  floatspan_round_set(s, maxdd, result);
+  return result;
+}
 
 /*****************************************************************************
  * SpanSet
@@ -289,34 +266,22 @@ floatspan_round(const Span *s, int maxdd)
  * @csqlfn #Floatspanset_round()
  */
 SpanSet *
-floatspanset_rnd(const SpanSet *ss, int maxdd)
-{
-  assert(ss); assert(maxdd >= 0); assert(ss->spansettype == T_FLOATSPANSET);
-  Span *spans = palloc(sizeof(Span) * ss->count);
-  for (int i = 0; i < ss->count; i++)
-    floatspan_rnd_set(SPANSET_SP_N(ss, i), maxdd, &spans[i]);
-  return spanset_make_free(spans, ss->count, NORMALIZE, ORDER_NO);
-}
-
-#if MEOS
-/**
- * @ingroup meos_setspan_transf
- * @brief Return a float span set with the precision of the spans set to a
- * number of decimal places
- * @param[in] ss Span set
- * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Floatspanset_round()
- */
-SpanSet *
 floatspanset_round(const SpanSet *ss, int maxdd)
 {
+#if MEOS
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_negative(maxdd) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return NULL;
-  return floatspanset_rnd(ss, maxdd);
-}
+#else
+  assert(ss); assert(ss->spansettype == T_FLOATSPANSET); assert(maxdd >= 0);
 #endif /* MEOS */
+
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    floatspan_round_set(SPANSET_SP_N(ss, i), maxdd, &spans[i]);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDER_NO);
+}
 
 /*****************************************************************************
  * Tbox
@@ -333,14 +298,20 @@ floatspanset_round(const SpanSet *ss, int maxdd)
 TBox *
 tbox_round(const TBox *box, int maxdd)
 {
+#if MEOS
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X_tbox(box) ||
-      ! ensure_span_isof_basetype(&box->span, T_FLOAT8) ||
-      ! ensure_not_negative(maxdd))
+  if (! ensure_not_null((void *) box))
     return NULL;
+#else
+  assert(box);
+#endif /* MEOS */
 
-  TBox *result = tbox_cp(box);
-  floatspan_rnd_set(&box->span, maxdd, &result->span);
+  /* Ensure validity of the arguments */
+  if (! ensure_has_X(T_TBOX, box->flags) || ! ensure_not_negative(maxdd) ||
+      ! ensure_span_isof_basetype(&box->span, T_FLOAT8))
+    return NULL;
+  TBox *result = tbox_copy(box);
+  floatspan_round_set(&box->span, maxdd, &result->span);
   return result;
 }
 
@@ -350,8 +321,8 @@ tbox_round(const TBox *box, int maxdd)
 
 /**
  * @ingroup meos_internal_box_transf
- * @brief Return the last argument initialized to a spatiotemporal box with the
- * precision set to a number of decimal places
+ * @brief Return in the last argument a spatiotemporal box with the precision
+ * set to a number of decimal places
  * @param[in] box Spatiotemporal box
  * @param[in] maxdd Maximum number of decimal digits
  * @param[out] result Result box
@@ -385,12 +356,18 @@ stbox_round_set(const STBox *box, int maxdd, STBox *result)
 STBox *
 stbox_round(const STBox *box, int maxdd)
 {
+#if MEOS
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X_stbox(box) ||
-      ! ensure_not_negative(maxdd))
+  if (! ensure_not_null((void *) box))
     return NULL;
+#else
+  assert(box);
+#endif /* MEOS */
 
-  STBox *result = stbox_cp(box);
+  /* Ensure validity of the arguments */
+  if (! ensure_has_X(T_STBOX, box->flags) || ! ensure_not_negative(maxdd))
+    return NULL;
+  STBox *result = stbox_copy(box);
   stbox_round_set(box, maxdd, result);
   return result;
 }
@@ -548,7 +525,7 @@ round_linestring(GSERIALIZED *gs,int maxdd)
   LWLINE *line = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
   round_lwline(line, maxdd, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) line);
-  lwfree(line);
+  lwline_free(line);
   return PointerGetDatum(result);
 }
 
@@ -632,7 +609,7 @@ round_lwpoly(LWPOLY *poly, int maxdd, bool hasz, bool hasm)
 }
 
 /**
- * @brief Reuturn a polygon with the precision of the coordinates set to a
+ * @brief Return a polygon with the precision of the coordinates set to a
  * number of decimal places
  */
 static Datum
@@ -644,7 +621,7 @@ round_polygon(GSERIALIZED *gs, int maxdd)
   LWPOLY *poly = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs));
   round_lwpoly(poly, maxdd, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) poly);
-  lwfree(poly);
+  lwpoly_free(poly);
   return PointerGetDatum(result);
 }
 
@@ -750,6 +727,141 @@ round_multipolygon(GSERIALIZED *gs, int maxdd)
 }
 
 /**
+ * @brief Set the precision of the coordinates of a compound curve to a
+ * number of decimal places
+ * @note A CompoundCurve is a single continuous curve that may contain both
+ * circular arc segments and linear segments. That means that in addition to 
+ * having well-formed components, the end point of every component (except the
+ * last) must be coincident with the start point of the following component.
+ * https://postgis.net/docs/using_postgis_dbmanagement.html#CompoundCurve
+ */
+static void
+round_lwcompound(LWCOMPOUND *comp, int maxdd, bool hasz, bool hasm)
+{
+  int ngeoms = comp->ngeoms;
+  for (int i = 0; i < ngeoms; i++)
+  {
+    LWGEOM *geom = comp->geoms[i];
+    assert(geom->type == LINETYPE || geom->type == CIRCSTRINGTYPE);
+    if (geom->type == LINETYPE)
+      round_lwline(lwgeom_as_lwline(geom), maxdd, hasz, hasm);
+    else /* geom->type == CIRCSTRINGTYPE */
+      round_lwcircstring(lwgeom_as_lwcircstring(geom), maxdd, hasz, hasm);
+  }
+  return;
+}
+
+/**
+ * @brief Set the precision of the coordinates of a geometry collection to a
+ * number of decimal places
+ * @note In PostGIS function lwgeom_free, the case for COMPOUNDTYPE is
+ *   @p lwcollection_free((LWCOLLECTION *)lwgeom);
+ */
+static Datum
+round_compoundcurve(GSERIALIZED *gs, int maxdd)
+{
+  assert(gserialized_get_type(gs) == COMPOUNDTYPE);
+  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
+  LWCOMPOUND *comp = lwgeom_as_lwcompound(lwgeom_from_gserialized(gs));
+  round_lwcompound(comp, maxdd, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) comp);
+  lwcollection_free((LWCOLLECTION *) comp);
+  return PointerGetDatum(result);
+}
+
+/**
+ * @brief Set the precision of the coordinates of a compound curve to a
+ * number of decimal places
+ * @note A MultiCurve is a collection of curves which can include LineStrings, 
+ * CircularStrings or CompoundCurves.
+ * https://postgis.net/docs/using_postgis_dbmanagement.html#MultiCurve
+ */
+static void
+round_lwmcurve(LWMCURVE *mcurve, int maxdd, bool hasz, bool hasm)
+{
+  int ngeoms = mcurve->ngeoms;
+  for (int i = 0; i < ngeoms; i++)
+  {
+    LWGEOM *geom = mcurve->geoms[i];
+    assert(geom->type == LINETYPE || geom->type == CIRCSTRINGTYPE || 
+      geom->type == COMPOUNDTYPE);
+    if (geom->type == LINETYPE)
+      round_lwline(lwgeom_as_lwline(geom), maxdd, hasz, hasm);
+    else if (geom->type == CIRCSTRINGTYPE)
+      round_lwcircstring(lwgeom_as_lwcircstring(geom), maxdd, hasz, hasm);
+    else /* geom->type == COMPOUNDTYPE */
+      round_lwcompound(lwgeom_as_lwcompound(geom), maxdd, hasz, hasm);
+  }
+  return;
+}
+
+/**
+ * @brief Set the precision of the coordinates of a geometry collection to a
+ * number of decimal places
+ * @note In PostGIS function lwgeom_free, the case for MULTICURVETYPE is
+ *   @p lwcollection_free((LWCOLLECTION *)lwgeom);
+ */
+static Datum
+round_multicurve(GSERIALIZED *gs, int maxdd)
+{
+  assert(gserialized_get_type(gs) == MULTICURVETYPE);
+  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
+  LWMCURVE *mcurv = (LWMCURVE *) lwgeom_from_gserialized(gs);
+  round_lwmcurve(mcurv, maxdd, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) mcurv);
+  lwcollection_free((LWCOLLECTION *) mcurv);
+  return PointerGetDatum(result);
+}
+
+/**
+ * @brief Set the precision of the coordinates of a curve polygon to a
+ * number of decimal places
+ * @note A CurvePolygon is like a polygon, with an outer ring and zero or more
+ * inner rings. The difference is that a ring can be a CircularString or 
+ * CompoundCurve as well as a LineString.
+ * https://postgis.net/docs/using_postgis_dbmanagement.html#CurvePolygon
+ */
+static void
+round_lwcurvepoly(LWCURVEPOLY *cpoly, int maxdd, bool hasz, bool hasm)
+{
+  int nrings = cpoly->nrings;
+  for (int i = 0; i < nrings; i++)
+  {
+    LWGEOM *ring = cpoly->rings[i];
+    assert(ring->type == LINETYPE || ring->type == CIRCSTRINGTYPE ||
+      ring->type == COMPOUNDTYPE);
+    if (ring->type == LINETYPE)
+      round_lwline(lwgeom_as_lwline(ring), maxdd, hasz, hasm);
+    else if (ring->type == CIRCSTRINGTYPE)
+      round_lwcircstring(lwgeom_as_lwcircstring(ring), maxdd, hasz, hasm);
+    else /* ring->type == COMPOUNDTYPE */
+      round_lwcompound(lwgeom_as_lwcompound(ring), maxdd, hasz, hasm);
+  }
+  return;
+}
+
+/**
+ * @brief Return a curve polygon with the precision of the coordinates set to
+ * a number of decimal places
+ * @note In PostGIS function lwgeom_free, the case for CURVEPOLYTYPE is
+ *   @p lwcollection_free((LWCOLLECTION *)lwgeom);
+ */
+static Datum
+round_curvepolygon(GSERIALIZED *gs, int maxdd)
+{
+  assert(gserialized_get_type(gs) == CURVEPOLYTYPE);
+  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
+  LWCURVEPOLY *poly = lwgeom_as_lwcurvepoly(lwgeom_from_gserialized(gs));
+  round_lwcurvepoly(poly, maxdd, hasz, hasm);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) poly);
+  lwcollection_free((LWCOLLECTION *) poly);
+  return PointerGetDatum(result);
+}
+
+/**
  * @brief Set the precision of the coordinates of a geometry collection to a
  * number of decimal places
  */
@@ -764,31 +876,53 @@ round_geometrycollection(GSERIALIZED *gs, int maxdd)
   for (int i = 0; i < ngeoms; i++)
   {
     LWGEOM *geom = coll->geoms[i];
-    if (geom->type == POINTTYPE)
-      round_point_n((lwgeom_as_lwpoint(geom))->point, 0, maxdd, hasz, hasm);
-    else if (geom->type == LINETYPE)
-      round_lwline(lwgeom_as_lwline(geom), maxdd, hasz, hasm);
-    else if (geom->type == TRIANGLETYPE)
-      round_lwtriangle(lwgeom_as_lwtriangle(geom), maxdd, hasz, hasm);
-    else if (geom->type == CIRCSTRINGTYPE)
-      round_lwcircstring(lwgeom_as_lwcircstring(geom), maxdd, hasz, hasm);
-    else if (geom->type == POLYGONTYPE)
-      round_lwpoly(lwgeom_as_lwpoly(geom), maxdd, hasz, hasm);
-    else if (geom->type == MULTIPOINTTYPE)
-      round_lwmpoint(lwgeom_as_lwmpoint(geom), maxdd, hasz, hasm);
-    else if (geom->type == MULTILINETYPE)
-      round_lwmline(lwgeom_as_lwmline(geom), maxdd, hasz, hasm);
-    else if (geom->type == MULTIPOLYGONTYPE)
-      round_lwmpoly(lwgeom_as_lwmpoly(geom), maxdd, hasz, hasm);
-    else
+    switch (geom->type)
     {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "Unsupported geometry type");
-      return PointerGetDatum(NULL);
-    }
+      case POINTTYPE:
+        round_point_n((lwgeom_as_lwpoint(geom))->point, 0, maxdd, hasz, hasm);
+        break;
+      case LINETYPE:
+        round_lwline(lwgeom_as_lwline(geom), maxdd, hasz, hasm);
+        break;
+      case TRIANGLETYPE:
+        round_lwtriangle(lwgeom_as_lwtriangle(geom), maxdd, hasz, hasm);
+        break;
+      case CIRCSTRINGTYPE:
+        round_lwcircstring(lwgeom_as_lwcircstring(geom), maxdd, hasz, hasm);
+        break;
+      case COMPOUNDTYPE:
+        round_lwcompound(lwgeom_as_lwcompound(geom), maxdd, hasz, hasm);
+        break;
+      case MULTICURVETYPE:
+        round_lwmcurve((LWMCURVE *) geom, maxdd, hasz, hasm);
+        break;
+      case POLYGONTYPE:
+        round_lwpoly(lwgeom_as_lwpoly(geom), maxdd, hasz, hasm);
+        break;
+      case CURVEPOLYTYPE:
+        round_lwcurvepoly(lwgeom_as_lwcurvepoly(geom), maxdd, hasz, hasm);
+        break;
+      case MULTIPOINTTYPE:
+        round_lwmpoint(lwgeom_as_lwmpoint(geom), maxdd, hasz, hasm);
+        break;
+      case MULTILINETYPE:
+        round_lwmline(lwgeom_as_lwmline(geom), maxdd, hasz, hasm);
+        break;
+      case MULTIPOLYGONTYPE:
+        round_lwmpoly(lwgeom_as_lwmpoly(geom), maxdd, hasz, hasm);\
+        break;
+      default:
+      {
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Unsupported geometry type in round function: %s",
+          geo_typename(geom->type));
+        lwcollection_free(coll);
+        return PointerGetDatum(NULL);
+      }
+    }    
   }
   GSERIALIZED *result = geo_serialize((LWGEOM *) coll);
-  lwfree(coll);
+  lwcollection_free(coll);
   return PointerGetDatum(result);
 }
 
@@ -810,10 +944,6 @@ datum_round_geo(Datum value, Datum size)
     return round_point(gs, maxdd);
   if (type == LINETYPE)
     return round_linestring(gs, maxdd);
-  if (type == TRIANGLETYPE)
-    return round_triangle(gs, maxdd);
-  if (type == CIRCSTRINGTYPE)
-    return round_circularstring(gs, maxdd);
   if (type == POLYGONTYPE)
     return round_polygon(gs, maxdd);
   if (type == MULTIPOINTTYPE)
@@ -824,28 +954,39 @@ datum_round_geo(Datum value, Datum size)
     return round_multipolygon(gs, maxdd);
   if (type == COLLECTIONTYPE)
     return round_geometrycollection(gs, maxdd);
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Unsupported geometry type");
+  if (type == CIRCSTRINGTYPE)
+    return round_circularstring(gs, maxdd);
+  if (type == MULTICURVETYPE)
+    return round_multicurve(gs, maxdd);
+  if (type == COMPOUNDTYPE)
+    return round_compoundcurve(gs, maxdd);
+  if (type == CURVEPOLYTYPE)
+    return round_curvepolygon(gs, maxdd);
+  if (type == TRIANGLETYPE)
+    return round_triangle(gs, maxdd);
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unsupported geometry type in round function: %s", geo_typename(type));
   return PointerGetDatum(NULL);
 }
 
 /*****************************************************************************
- * Temporal Point
+ * Temporal geo
  *****************************************************************************/
 
 /**
  * @ingroup meos_temporal_transf
- * @brief Return a temporal point with the precision of the coordinates set to
- * a number of decimal places
- * @param[in] temp Temporal point
+ * @brief Return a temporal geo with the precision of the coordinates set to a
+ * number of decimal places
+ * @param[in] temp Temporal geometry
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Tpoint_round()
+ * @csqlfn #Tgeo_round()
  */
 Temporal *
-tpoint_round(const Temporal *temp, int maxdd)
+tgeo_round(const Temporal *temp, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype) ||
-      ! ensure_not_negative(maxdd))
+  if (! ensure_not_null((void *) temp) || 
+      ! ensure_tgeo_type_all(temp->temptype) || ! ensure_not_negative(maxdd))
     return NULL;
 
   /* We only need to fill these parameters for tfunc_temporal */
@@ -863,28 +1004,88 @@ tpoint_round(const Temporal *temp, int maxdd)
 
 /**
  * @ingroup meos_temporal_transf
- * @brief Return an array of temporal points with the precision of the
+ * @brief Return an array of temporal geos with the precision of the
  * coordinates set to a number of decimal places
- * @param[in] temparr Array of temporal points
+ * @param[in] temparr Array of temporal geometries/geographies
  * @param[in] count Number of elements in the array
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Tpointarr_round()
+ * @csqlfn #Tgeoarr_round()
  */
 Temporal **
-tpointarr_round(const Temporal **temparr, int count, int maxdd)
+tgeoarr_round(const Temporal **temparr, int count, int maxdd)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temparr) ||
       /* Ensure that the FIRST element is a temporal point */
-      ! ensure_tgeo_type(temparr[0]->temptype) ||
+      ! ensure_tgeo_type_all(temparr[0]->temptype) ||
       ! ensure_positive(count) || ! ensure_not_negative(maxdd))
     return NULL;
 
   Temporal **result = palloc(sizeof(Temporal *) * count);
   for (int i = 0; i < count; i++)
-    result[i] = tpoint_round(temparr[i], maxdd);
+    result[i] = tgeo_round(temparr[i], maxdd);
   return result;
 }
+
+/*****************************************************************************
+ * Circular buffer
+ *****************************************************************************/
+
+#if CBUFFER
+/**
+ * @brief Return a circular buffer with the precision of the values set to a
+ * number of decimal places
+ */
+Cbuffer *
+cbuffer_round(const Cbuffer *cbuf, int maxdd)
+{
+  /* Set precision of the point and the radius */
+  Datum d = PointerGetDatum(&cbuf->point);
+  GSERIALIZED *point = DatumGetGserializedP(
+    round_point(DatumGetGserializedP(d), maxdd));
+  double radius = float_round(cbuf->radius, maxdd);
+  return cbuffer_make(point, radius);
+}
+
+/**
+ * @brief Return a circular buffer with the precision of the values set to a
+ * number of decimal places
+ * @note Funcion used by the lifting infrastructure
+ */
+Datum
+datum_cbuffer_round(Datum cbuffer, Datum size)
+{
+  /* Set precision of radius */
+  return PointerGetDatum(cbuffer_round(DatumGetCbufferP(cbuffer),
+    DatumGetInt32(size)));
+}
+#endif /* CBUFFER */
+
+/*****************************************************************************
+ * Temporal circular buffer
+ *****************************************************************************/
+
+#if CBUFFER
+/**
+ * @brief Return a temporal circular buffer with the precision of values
+ * set to a number of decimal places
+ */
+Temporal *
+tcbuffer_round(const Temporal *temp, int maxdd)
+{
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_cbuffer_round;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Int32GetDatum(maxdd);
+  lfinfo.argtype[0]= temp->temptype;
+  lfinfo.restype = temp->temptype;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+#endif /* CBUFFER */
 
 /*****************************************************************************
  * Network Point
@@ -955,65 +1156,5 @@ tnpoint_round(const Temporal *temp, Datum size)
   return tfunc_temporal(temp, &lfinfo);
 }
 #endif /* NPOINT */
-
-/*****************************************************************************
- * Circular buffer
- *****************************************************************************/
-
-#if CBUFFER
-/**
- * @brief Return a circular buffer with the precision of the radius set to a
- * number of decimal places
- */
-Cbuffer *
-cbuffer_round(const Cbuffer *cbuf, int maxdd)
-{
-  /* Set precision of the point and the radius */
-  Datum d = PointerGetDatum(&cbuf->point);
-  GSERIALIZED *point = DatumGetGserializedP(
-    round_point(DatumGetGserializedP(d), maxdd));
-  double radius = float_round(cbuf->radius, maxdd);
-  return cbuffer_make(point, radius);
-}
-
-/**
- * @brief Return a circular buffer with the precision of the radius set to a
- * number of decimal places
- * @note Funcion used by the lifting infrastructure
- */
-Datum
-datum_cbuffer_round(Datum cbuffer, Datum size)
-{
-  /* Set precision of radius */
-  return PointerGetDatum(cbuffer_round(DatumGetCbufferP(cbuffer),
-    DatumGetInt32(size)));
-}
-#endif /* CBUFFER */
-
-/*****************************************************************************
- * Temporal circular buffer
- *****************************************************************************/
-
-#if CBUFFER
-/**
- * @brief Return a temporal circular buffer with the precision of the fractions
- * set to a number of decimal places
- */
-Temporal *
-tcbuffer_round(const Temporal *temp, int maxdd)
-{
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_cbuffer_round;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = Int32GetDatum(maxdd);
-  lfinfo.argtype[0]= temp->temptype;
-  lfinfo.restype = temp->temptype;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  return tfunc_temporal(temp, &lfinfo);
-}
-#endif /* CBUFFER */
 
 /*****************************************************************************/

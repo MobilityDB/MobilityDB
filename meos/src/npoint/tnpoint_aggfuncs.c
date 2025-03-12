@@ -41,7 +41,7 @@
 #include "general/skiplist.h"
 #include "general/temporal_aggfuncs.h"
 #include "general/type_util.h"
-#include "point/tpoint_aggfuncs.h"
+#include "geo/tgeo_aggfuncs.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************/

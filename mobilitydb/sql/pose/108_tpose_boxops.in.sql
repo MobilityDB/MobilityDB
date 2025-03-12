@@ -53,7 +53,7 @@ CREATE FUNCTION stbox(pose, tstzspan)
 
 CREATE FUNCTION stbox(tpose)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Tpoint_to_stbox'
+  AS 'MODULE_PATHNAME', 'Tspatial_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (pose AS stbox) WITH FUNCTION stbox(pose);
@@ -63,7 +63,7 @@ CREATE CAST (tpose AS stbox) WITH FUNCTION stbox(tpose);
 
 CREATE FUNCTION expandSpace(tpose, float)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Tpoint_expand_space'
+  AS 'MODULE_PATHNAME', 'Tspatial_expand_space'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

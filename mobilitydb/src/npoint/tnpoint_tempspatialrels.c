@@ -40,11 +40,11 @@
 
 /* MEOS */
 #include <meos.h>
-#include "point/tpoint_tempspatialrels.h"
+#include "geo/tgeo_tempspatialrels.h"
 #include "npoint/tnpoint.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
-#include "pg_point/postgis.h"
+#include "pg_geo/postgis.h"
 
 /*****************************************************************************
  * Generic functions

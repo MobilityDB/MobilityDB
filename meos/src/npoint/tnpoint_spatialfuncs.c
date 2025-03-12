@@ -40,8 +40,8 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/type_util.h"
-#include "point/pgis_types.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/pgis_types.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Parameter tests
@@ -67,6 +67,23 @@ ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
  * Interpolation functions defining functionality required by tsequence.c
  * that must be implemented by each temporal type
  *****************************************************************************/
+
+/**
+ * @brief Return a npoint interpolated from a npoint segment with respect to 
+ * the fraction of its total length
+ * @param[in] start,end Circular buffers defining the segment
+ * @param[in] ratio Float between 0 and 1 representing the fraction of the
+ * total length of the segment where the interpolated buffer must be located
+ */
+Datum
+npointsegm_interpolate(Datum start, Datum end, long double ratio)
+{
+  Npoint *np1 = DatumGetNpointP(start);
+  Npoint *np2 = DatumGetNpointP(end);
+  double pos = np1->pos + (double) ((long double)(np2->pos - np1->pos) * ratio);
+  Npoint *result = npoint_make(np1->rid, pos);
+  return PointerGetDatum(result);
+}
 
 /**
  * @brief Return true if a segment of a temporal network point value intersects
@@ -97,7 +114,7 @@ tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   if (fabs(fraction) < MEOS_EPSILON || fabs(fraction - 1.0) < MEOS_EPSILON)
     return false;
 
-  if (t != NULL)
+  if (t)
   {
     double duration = (double) (inst2->t - inst1->t);
     *t = inst1->t + (long) (duration * fraction);
@@ -269,11 +286,12 @@ tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
 }
 
 /*****************************************************************************
- * Geographical equality for network points
+ * Approximate equality for network points
  *****************************************************************************/
 
 /**
- * @brief Return true if two network points are spatially equal
+ * @brief Return true if two network points are approximately equal with
+ * respect to an epsilon value
  * @details Two network points may be have different route identifier but
  * represent the same spatial point at the intersection of the two route
  * identifiers
@@ -281,12 +299,13 @@ tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
 bool
 npoint_same(const Npoint *np1, const Npoint *np2)
 {
-  /* Same route identifier */
-  if (np1->rid == np2->rid)
-    return fabs(np1->pos - np2->pos) < MEOS_EPSILON;
+  /* Equal route identifier and same position */
+  if (np1->rid == np2->rid && fabs(np1->pos - np2->pos) > MEOS_EPSILON)
+    return false;
+  /* Same point */
   Datum point1 = PointerGetDatum(npoint_geom(np1));
   Datum point2 = PointerGetDatum(npoint_geom(np2));
-  bool result = datum_eq(point1, point2, T_GEOMETRY);
+  bool result = datum_point_same(point1, point2);
   pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
   return result;
 }
@@ -325,7 +344,7 @@ tnpointseq_length(const TSequence *seq)
 double
 tnpointseqset_length(const TSequenceSet *ss)
 {
-  double result = 0;
+  double result = 0.0;
   for (int i = 0; i < ss->count; i++)
     result += tnpointseq_length(TSEQUENCESET_SEQ_N(ss, i));
   return result;
@@ -478,7 +497,7 @@ tnpointseqset_speed(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     TSequence *seq = tnpointseq_speed(TSEQUENCESET_SEQ_N(ss, i));
-    if (seq != NULL)
+    if (seq)
       sequences[nseqs++] = seq;
   }
   /* The resulting sequence set has step interpolation */
@@ -591,7 +610,7 @@ tsequence_assemble_instants(TInstant ***instants, int *countinsts,
   {
     for (int j = 0; j < countinsts[i]; j++)
       allinstants[ninsts++] = instants[i][j];
-    if (instants[i] != NULL)
+    if (instants[i])
       pfree(instants[i]);
   }
   /* Add closing instant */
@@ -717,23 +736,18 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
+      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
+      ! ensure_has_not_Z_geo(gs))
     return NULL;
 
+  /* Empty geometry */
   if (gserialized_is_empty(gs))
-  {
-    Temporal *result = atfunc ? NULL : temporal_cp(temp);
-    if (atfunc)
-      return NULL;
-    return result;
-  }
-  if (! ensure_has_not_Z_gs(gs))
-    return NULL;
+    return atfunc ? NULL : temporal_copy(temp);
 
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *resgeom = tpoint_restrict_geom(tempgeom, gs, zspan, atfunc);
+  Temporal *resgeom = tgeo_restrict_geom(tempgeom, gs, zspan, atfunc);
   Temporal *result = NULL;
-  if (resgeom != NULL)
+  if (resgeom)
   {
     /* We do not call the function tgeompoint_tnpoint to avoid
      * roundoff errors */
@@ -760,7 +774,7 @@ tnpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs))
+  if (! ensure_valid_tgeo_geo(temp, gs))
     return NULL;
   return tnpoint_restrict_geom(temp, gs, zspan, REST_AT);
 }
@@ -778,7 +792,7 @@ tnpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tpoint_geo(temp, gs))
+  if (! ensure_valid_tgeo_geo(temp, gs))
     return NULL;
   return tnpoint_restrict_geom(temp, gs, zspan, REST_MINUS);
 }
@@ -800,7 +814,7 @@ tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   bool atfunc)
 {
   Temporal *tgeom = tnpoint_tgeompoint(temp);
-  Temporal *tgeomres = tpoint_restrict_stbox(tgeom, box, border_inc, atfunc);
+  Temporal *tgeomres = tgeo_restrict_stbox(tgeom, box, border_inc, atfunc);
   Temporal *result = NULL;
   if (tgeomres)
   {

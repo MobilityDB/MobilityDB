@@ -73,7 +73,7 @@ extern char *stringarr_to_string(char **strings, int count, size_t outlen,
 /* Sort functions */
 
 extern void datumarr_sort(Datum *values, int count, meosType basetype);
-extern void timestamparr_sort(TimestampTz *times, int count);
+extern void tstzarr_sort(TimestampTz *times, int count);
 extern void double2arr_sort(double2 *doubles, int count);
 extern void double3arr_sort(double3 *triples, int count);
 extern void spanarr_sort(Span *spans, int count);
@@ -84,7 +84,7 @@ extern void tseqarr_sort(TSequence **sequences, int count);
 
 extern int datumarr_remove_duplicates(Datum *values, int count,
   meosType basetype);
-extern int timestamparr_remove_duplicates(TimestampTz *values, int count);
+extern int tstzarr_remove_duplicates(TimestampTz *values, int count);
 extern int tinstarr_remove_duplicates(const TInstant **instants, int count);
 
 /* Text functions */

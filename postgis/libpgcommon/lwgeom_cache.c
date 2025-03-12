@@ -266,7 +266,7 @@ ToastCacheGetGeometry(FunctionCallInfo fcinfo, uint32_t argnum)
  * Could return SRS as short one (i.e EPSG:4326)
  * or as long one: (i.e urn:ogc:def:crs:EPSG::4326)
  */
-/* MobilityDB removed static */
+/* MEOS removed static */
 char *
 getSRSbySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
 {

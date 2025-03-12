@@ -38,9 +38,8 @@
 #include <meos.h>
 #include <meos_npoint.h>
 #include <meos_internal.h>
-#include "point/pgis_types.h"
-#include "point/tpoint_spatialfuncs.h"
-#include "npoint/npoint.h"
+#include "geo/pgis_types.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "npoint/tnpoint.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 
@@ -79,7 +78,7 @@ distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
     return NULL;
 
   Temporal *tpoint = tnpoint_tgeompoint(temp);
-  Temporal *result = distance_tpoint_point((const Temporal *) tpoint, gs);
+  Temporal *result = distance_tgeo_geo((const Temporal *) tpoint, gs);
   pfree(tpoint);
   return result;
 }
@@ -97,7 +96,7 @@ distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   GSERIALIZED *geom = npoint_geom(np);
   Temporal *tpoint = tnpoint_tgeompoint(temp);
-  Temporal *result = distance_tpoint_point(tpoint, geom);
+  Temporal *result = distance_tgeo_geo(tpoint, geom);
   pfree(geom);
   return result;
 }
@@ -113,7 +112,7 @@ distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *tpoint1 = tnpoint_tgeompoint(temp1);
   Temporal *tpoint2 = tnpoint_tgeompoint(temp2);
-  Temporal *result = distance_tpoint_tpoint(tpoint1, tpoint2);
+  Temporal *result = distance_tgeo_tgeo(tpoint1, tpoint2);
   pfree(tpoint1); pfree(tpoint2);
   return result;
 }
@@ -133,10 +132,13 @@ distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 TInstant *
 nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) || 
+      gserialized_is_empty(gs))
     return NULL;
+
   Temporal *tpoint = tnpoint_tgeompoint(temp);
-  TInstant *resultgeom = nai_tpoint_geo(tpoint, gs);
+  TInstant *resultgeom = nai_tgeo_geo(tpoint, gs);
   /* We do not call the function tgeompointinst_tnpointinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
@@ -159,7 +161,7 @@ nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   GSERIALIZED *geom = npoint_geom(np);
   Temporal *tpoint = tnpoint_tgeompoint(temp);
-  TInstant *resultgeom = nai_tpoint_geo(tpoint, geom);
+  TInstant *resultgeom = nai_tgeo_geo(tpoint, geom);
   /* We do not call the function tgeompointinst_tnpointinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
@@ -205,8 +207,11 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 double
 nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      gserialized_is_empty(gs))
     return -1;
+
   GSERIALIZED *traj = tnpoint_trajectory(temp);
   double result = geom_distance2d(traj, gs);
   pfree(traj);
@@ -261,8 +266,11 @@ nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 GSERIALIZED *
 shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(gs))
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      gserialized_is_empty(gs))
     return NULL;
+
   GSERIALIZED *traj = tnpoint_trajectory(temp);
   GSERIALIZED *result = geom_shortestline2d(traj, gs);
   pfree(traj);
@@ -299,7 +307,7 @@ shortestline_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *tpoint1 = tnpoint_tgeompoint(temp1);
   Temporal *tpoint2 = tnpoint_tgeompoint(temp2);
-  GSERIALIZED *result = shortestline_tpoint_tpoint(tpoint1, tpoint2);
+  GSERIALIZED *result = shortestline_tgeo_tgeo(tpoint1, tpoint2);
   pfree(tpoint1); pfree(tpoint2);
   return result;
 }

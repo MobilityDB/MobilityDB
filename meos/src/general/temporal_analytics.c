@@ -53,8 +53,8 @@
 #include "general/temporal_tile.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
-#include "point/tpoint_distance.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_distance.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Time precision functions for time values
@@ -189,8 +189,7 @@ tinstant_tprecision(const TInstant *inst, const Interval *duration,
 {
   assert(inst); assert(duration); assert(valid_duration(duration));
   TimestampTz lower = timestamptz_get_bin(inst->t, duration, torigin);
-  Datum value = tinstant_val(inst);
-  return tinstant_make(value, inst->temptype, lower);
+  return tinstant_make(tinstant_val(inst), inst->temptype, lower);
 }
 
 /**
@@ -205,7 +204,8 @@ tsequence_tprecision(const TSequence *seq, const Interval *duration,
 {
   assert(seq); assert(duration); assert(valid_duration(duration));
   assert(seq->temptype == T_TINT || seq->temptype == T_TFLOAT ||
-    seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT );
+    seq->temptype == T_TGEOMPOINT || seq->temptype == T_TGEOGPOINT ||
+    seq->temptype == T_TGEOMETRY || seq->temptype == T_TGEOGRAPHY );
 
   int64 tunits = interval_units(duration);
   TimestampTz lower = DatumGetTimestampTz(seq->period.lower);
@@ -697,6 +697,29 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
  *****************************************************************************/
 
 /**
+ * @brief Return the distance between two temporal instants
+ * @param[in] inst1,inst2 Temporal instants
+ * @param[in] func Distance function
+ */
+double
+tinstant_distance(const TInstant *inst1, const TInstant *inst2,
+  datum_func2 func)
+{
+  assert(tnumber_type(inst1->temptype) || tgeo_type_all(inst1->temptype));
+  if (tnumber_type(inst1->temptype))
+    return tnumberinst_distance(inst1, inst2);
+  else if (tgeo_type_all(inst1->temptype))
+    return tgeoinst_distance(inst1, inst2, func);
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Unknown distance function for type: %s", 
+      meostype_name(inst1->temptype));
+    return DBL_MAX;
+  }
+}
+
+/**
  * @brief Linear space computation of the similarity distance between two
  * temporal values
  * @param[in] instants1,instants2 Arrays of temporal instants
@@ -1186,7 +1209,7 @@ temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
  ***********************************************************************/
 
 /**
- * @brief Return a temporal sequence float/point simplified ensuring that
+ * @brief Return a temporal float/point sequence simplified ensuring that
  * consecutive values are at least a given distance apart
  * @param[in] seq Temporal value
  * @param[in] dist Minimum distance
@@ -1225,7 +1248,7 @@ tsequence_simplify_min_dist(const TSequence *seq, double dist)
 }
 
 /**
- * @brief Return a temporal sequence float/point simplified ensuring that
+ * @brief Return a temporal float/point sequence simplified ensuring that
  * consecutive values are at least a given distance apart
  * @param[in] ss Temporal value
  * @param[in] dist Distance
@@ -1241,7 +1264,7 @@ tsequenceset_simplify_min_dist(const TSequenceSet *ss, double dist)
 
 /**
  * @ingroup meos_temporal_analytics_simplify
- * @brief Return a temporal sequence float/point simplified ensuring that
+ * @brief Return a temporal float/point sequence simplified ensuring that
  * consecutive values are at least a given distance apart
  * @details This function is inspired from the Moving Pandas function
  * MinDistanceGeneralizer
@@ -1259,7 +1282,7 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_tnumber_tpoint_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
@@ -1267,7 +1290,7 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
   switch (temp->subtype)
   {
     case TINSTANT:
-      return temporal_cp(temp);
+      return temporal_copy(temp);
     case TSEQUENCE:
       return (Temporal *) tsequence_simplify_min_dist((TSequence *) temp, dist);
     default: /* TSEQUENCESET */
@@ -1283,7 +1306,7 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
  ***********************************************************************/
 
 /**
- * @brief Return a temporal sequence float/point simplified ensuring that
+ * @brief Return a temporal float/point sequence simplified ensuring that
  * consecutive values are at least a certain time interval apart
  * @param[in] seq Temporal value
  * @param[in] mint Minimum time interval
@@ -1322,7 +1345,7 @@ tsequence_simplify_min_tdelta(const TSequence *seq, const Interval *mint)
 }
 
 /**
- * @brief Return a temporal sequence float/point simplified ensuring that
+ * @brief Return a temporal float/point sequence simplified ensuring that
  * consecutive values are at least a certain time interval apart
  * @param[in] ss Temporal value
  * @param[in] mint Minimum time interval
@@ -1338,7 +1361,7 @@ tsequenceset_simplify_min_tdelta(const TSequenceSet *ss, const Interval *mint)
 
 /**
  * @ingroup meos_temporal_analytics_simplify
- * @brief Return a temporal sequence float/point simplified ensuring that
+ * @brief Return a temporal float/point sequence simplified ensuring that
  * consecutive values are at least a certain time interval apart
  * @details This function is inspired from the Moving Pandas function
  * MinTimeDeltaGeneralizer
@@ -1355,7 +1378,7 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) mint) ||
-      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_tnumber_tpoint_type(temp->temptype) ||
       ! ensure_valid_duration(mint))
     return NULL;
 
@@ -1363,9 +1386,9 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
   switch (temp->subtype)
   {
     case TINSTANT:
-      return temporal_cp(temp);
+      return temporal_copy(temp);
     case TSEQUENCE:
-      return ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ? temporal_cp(temp) :
+      return ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ? temporal_copy(temp) :
         (Temporal *) tsequence_simplify_min_tdelta((TSequence *) temp, mint);
     default: /* TSEQUENCESET */
       return (Temporal *) tsequenceset_simplify_min_tdelta((TSequenceSet *) temp,
@@ -1378,7 +1401,7 @@ temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
  ***********************************************************************/
 
 /**
- * @brief Find a split when simplifying the temporal sequence float using the
+ * @brief Find a split when simplifying the temporal float sequence using the
  * Douglas-Peucker line simplification algorithm
  * @param[in] seq Temporal sequence
  * @param[in] i1,i2 Indexes of the reference instants
@@ -1517,7 +1540,7 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
 }
 
 /**
- * @brief Find a split when simplifying the temporal sequence point using the
+ * @brief Find a split when simplifying the temporal point sequence using the
  * Douglas-Peucker line simplification algorithm
  * @param[in] seq Temporal sequence
  * @param[in] i1,i2 Indexes of the reference instants
@@ -1599,7 +1622,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
 /*****************************************************************************/
 
 /**
- * @brief Return a temporal sequence float/point simplified using a single-pass
+ * @brief Return a temporal float/point sequence simplified using a single-pass
  * implementation of the Douglas-Peucker line simplification algorithm that
  * checks whether the provided distance threshold is exceeded
  * @param[in] seq Temporal value
@@ -1631,7 +1654,7 @@ tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
     /* For temporal floats only Synchronized Distance is used */
     if (seq->temptype == T_TFLOAT)
       tfloatseq_findsplit(seq, start, i, &split, &d);
-    else /* tgeo_type(seq->temptype) */
+    else /* tpoint_type(seq->temptype) */
       tpointseq_findsplit(seq, start, i, syncdist, &split, &d);
     bool dosplit = (d >= 0 && (d > dist || start + i + 1 < minpts));
     if (dosplit)
@@ -1652,7 +1675,7 @@ tsequence_simplify_max_dist(const TSequence *seq, double dist, bool syncdist,
 }
 
 /**
- * @brief Return a temporal sequence set float/point simplified using a
+ * @brief Return a temporal float sequence set/point simplified using a
  * single-pass Douglas-Peucker line simplification algorithm
  * @param[in] ss Temporal point
  * @param[in] dist Distance
@@ -1690,7 +1713,7 @@ temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_tnumber_tpoint_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
@@ -1698,9 +1721,9 @@ temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
   switch (temp->subtype)
   {
     case TINSTANT:
-      return temporal_cp(temp);
+      return temporal_copy(temp);
     case TSEQUENCE:
-      return ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ? temporal_cp(temp) :
+      return ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ? temporal_copy(temp) :
         (Temporal *) tsequence_simplify_max_dist((TSequence *) temp, dist,
           syncdist, 2);
     default: /* TSEQUENCESET */
@@ -1728,7 +1751,7 @@ int_cmp(const void *a, const void *b)
 #define DP_STACK_SIZE 256
 
 /**
- * @brief Return a temporal sequence set float/point simplified using the
+ * @brief Return a temporal float sequence set/point simplified using the
  * Douglas-Peucker line simplification algorithm
  */
 static TSequence *
@@ -1745,7 +1768,7 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
   double d;
 
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
-  assert(seq->temptype == T_TFLOAT || tgeo_type(seq->temptype));
+  assert(seq->temptype == T_TFLOAT || tpoint_type(seq->temptype));
   /* Do not try to simplify really short things */
   if (seq->count < 3)
     return tsequence_copy(seq);
@@ -1771,7 +1794,7 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
     /* For temporal floats only Synchronized Distance is used */
     if (seq->temptype == T_TFLOAT)
       tfloatseq_findsplit(seq, i1, stack[sp], &split, &d);
-    else /* tgeo_type(seq->temptype) */
+    else /* tpoint_type(seq->temptype) */
       tpointseq_findsplit(seq, i1, stack[sp], syncdist, &split, &d);
     bool dosplit = (d >= 0 && (d > dist || outn + sp + 1 < minpts));
     if (dosplit)
@@ -1804,7 +1827,7 @@ tsequence_simplify_dp(const TSequence *seq, double dist, bool syncdist,
 }
 
 /**
- * @brief Return a temporal sequence set float/point simplified using the
+ * @brief Return a temporal float sequence set/point simplified using the
  * Douglas-Peucker line simplification algorithm
  * @param[in] ss Temporal point
  * @param[in] dist Distance
@@ -1842,7 +1865,7 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_tgeo_type(temp->temptype) ||
+      ! ensure_tnumber_tpoint_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
@@ -1850,9 +1873,9 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
   switch (temp->subtype)
   {
     case TINSTANT:
-      return temporal_cp(temp);
+      return temporal_copy(temp);
     case TSEQUENCE:
-      return ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ? temporal_cp(temp) :
+      return ! MEOS_FLAGS_LINEAR_INTERP(temp->flags) ? temporal_copy(temp) :
         (Temporal *) tsequence_simplify_dp((TSequence *) temp, dist, syncdist, 2);
     default: /* TSEQUENCESET */
       return (Temporal *) tsequenceset_simplify_dp((TSequenceSet *) temp, dist,

@@ -50,61 +50,18 @@
 #include "cbuffer/tcbuffer.h"
 /* MobilityDB */
 #include "pg_general/type_util.h"
-#include "pg_point/postgis.h"
+#include "pg_geo/postgis.h"
 
 /*****************************************************************************
  * Input/Output functions for circular buffers
  *****************************************************************************/
-
- /*****************************************************************************
- * Send/receive functions
- *****************************************************************************/
-
-/**
- * @brief Return a circular buffer from its binary representation read
- * from a buffer
- */
-Cbuffer *
-cbuffer_recv(StringInfo buf)
-{
-  int size = pq_getmsgint(buf, 4);
-  StringInfoData cbuf2 =
-  {
-    .cursor = 0,
-    .len = size,
-    .maxlen = size,
-    .data = buf->data + buf->cursor
-  };
-  Cbuffer *result = DatumGetCbufferP(call_recv(T_CBUFFER, &cbuf2));
-  buf->cursor += size;
-  return result;
-}
-
-/**
- * @brief Return the binary representation of a circular buffer
- * @param[in] cbuf Circular buffer
- */
-bytea *
-cbuffer_send(const Cbuffer *cbuf)
-{
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  // pq_sendint64(&buf, (uint64) cbuf->point);
-  bytea *bv = call_send(T_CBUFFER, cbuf->point);
-  pq_sendbytes(&buf, VARDATA(bv), VARSIZE(bv) - VARHDRSZ);
-  pq_sendfloat8(&buf, cbuf->radius);
-  return pq_endtypsend(&buf);
-}
-
-/*****************************************************************************/
 
 PGDLLEXPORT Datum Cbuffer_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Cbuffer_in);
 /**
  * @ingroup mobilitydb_temporal_inout
  * @brief Return a circular buffer from its Well-Known Text (WKT) representation
- *
- * Example of input:
+ * @details Example of input:
  * @code
  *    Cbuffer(Point(1 1), 10)
  * @endcode
@@ -143,21 +100,31 @@ Datum
 Cbuffer_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_CBUFFER_P(cbuffer_recv(buf));
+  Cbuffer *result = cbuffer_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+  PG_RETURN_CBUFFER_P(result);
 }
 
 PGDLLEXPORT Datum Cbuffer_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Cbuffer_send);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Return the Well-Known Binary (WKB) representation of a circular buffer
+ * @brief Return the Well-Known Binary (WKB) representation of a circular
+ * buffer
  * @sqlfn cbuffer_send()
  */
 Datum
 Cbuffer_send(PG_FUNCTION_ARGS)
 {
   Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
-  PG_RETURN_BYTEA_P(cbuffer_send(cbuf));
+  /* A circular buffer always outputs the SRID */
+  uint8_t variant = WKB_EXTENDED;
+  size_t wkb_size = VARSIZE_ANY_EXHDR(cbuf);
+  uint8_t *wkb = cbuffer_as_wkb(cbuf, variant, &wkb_size);
+  bytea *result = bstring2bytea(wkb, wkb_size);
+  pfree(wkb);
+  PG_RETURN_BYTEA_P(result);
 }
 
 /*****************************************************************************
@@ -244,7 +211,7 @@ Cbuffer_set_srid(PG_FUNCTION_ARGS)
 {
   Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
   int32_t srid = PG_GETARG_INT32(1);
-  Cbuffer *result = cbuffer_cp(cbuf);
+  Cbuffer *result = cbuffer_copy(cbuf);
   cbuffer_set_srid(result, srid);
   PG_RETURN_CBUFFER_P(result);
 }
@@ -300,10 +267,30 @@ Datum
 Geom_to_cbuffer(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Cbuffer *result = geom_to_cbuffer(gs);
+  Cbuffer *result = geom_cbuffer(gs);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_CBUFFER_P(result);
+}
+
+/*****************************************************************************
+ * Approximate equality for circular buffers
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Cbuffer_same(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbuffer_same);
+/**
+ * @ingroup mobilitydb_temporal_spatial_accessor
+ * @brief Return true if two circular buffers are approximately equal with 
+ * respect to an epsilon value
+ * @sqlfn same()
+ */
+Datum
+Cbuffer_same(PG_FUNCTION_ARGS)
+{
+  Cbuffer *cbuf1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cbuf2 = PG_GETARG_CBUFFER_P(1);
+  PG_RETURN_BOOL(cbuffer_same(cbuf1, cbuf2));
 }
 
 /*****************************************************************************

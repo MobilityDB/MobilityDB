@@ -42,8 +42,24 @@
 #include "general/lifting.h"
 #include "general/span.h"
 #include "general/tbox.h"
+#include "general/tinstant.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
+#include "geo/tgeo_spatialfuncs.h"
+
+/*****************************************************************************
+ * Compute the distance between two instants depending on their type
+ *****************************************************************************/
+
+/**
+ * @brief Return the distance between two temporal instants
+ * @param[in] inst1,inst2 Temporal instants
+ */
+double
+tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
+{
+  return fabs(tnumberinst_double(inst1) - tnumberinst_double(inst2));
+}
 
 /*****************************************************************************
  * Temporal distance
@@ -243,14 +259,15 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X_tbox(box1) || ! ensure_has_X_tbox(box2) ||
+      ! ensure_has_X(T_TBOX, box1->flags) || 
+      ! ensure_has_X(T_TBOX, box2->flags) ||
       ! ensure_same_span_type(&box1->span, &box2->span))
     return (box1->span.basetype == T_INT4) ?
       Int32GetDatum(-1) : Float8GetDatum(-1.0);
 
   /* If the boxes do not intersect in the time dimension return -1 */
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
-  if (hast && ! over_span_span(&box1->period, &box2->period))
+  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
     return (box1->span.basetype == T_INT4) ?
       Int32GetDatum(-1) : Float8GetDatum(-1.0);
 
@@ -271,7 +288,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_has_X_tbox(box) ||
+      ! ensure_has_X(T_TBOX, box->flags) ||
       ! ensure_temporal_isof_basetype(temp, box->span.basetype))
     return (box->span.basetype == T_INT4) ?
       Int32GetDatum(-1) : Float8GetDatum(-1.0);
@@ -380,7 +397,6 @@ nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2)
 
   return DatumGetFloat8(nad_tbox_tbox(box1, box2));
 }
-
 #endif /* MEOS */
 
 /**

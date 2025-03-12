@@ -52,8 +52,8 @@
 #include "general/temporal_boxops.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "point/tpoint_parser.h"
-#include "point/tpoint_spatialfuncs.h"
+#include "geo/tgeo_parser.h"
+#include "geo/tgeo_spatialfuncs.h"
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
   #include "npoint/tnpoint_distance.h"
@@ -365,7 +365,7 @@ tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
     MEOS_FLAGS_GET_INTERP(normseqs[0]->flags));
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_T(result->flags, true);
-  if (tgeo_type(normseqs[0]->temptype))
+  if (tspatial_type(normseqs[0]->temptype))
   {
     MEOS_FLAGS_SET_Z(result->flags, MEOS_FLAGS_GET_Z(normseqs[0]->flags));
     MEOS_FLAGS_SET_GEODETIC(result->flags,
@@ -481,7 +481,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
         split = true;
     }
     /* If there is not already a split by distance */
-    if (maxt != NULL && ! split)
+    if (maxt && ! split)
     {
       Interval *duration = minus_timestamptz_timestamptz(instants[i]->t,
         instants[i - 1]->t);
@@ -664,102 +664,6 @@ tsequenceset_from_base_tstzspanset(Datum value, meosType temptype,
       SPANSET_SP_N(ss, i), interp);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
-
-#if MEOS
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal boolean sequence set from a boolean and a
- * timestamptz span set
- * @param[in] b Value
- * @param[in] ss Span set
- */
-TSequenceSet *
-tboolseqset_from_base_tstzspanset(bool b, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return NULL;
-  return tsequenceset_from_base_tstzspanset(BoolGetDatum(b), T_TBOOL, ss, STEP);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal integer sequence set from an integer and a
- * timestamptz span set
- * @param[in] i Value
- * @param[in] ss Span set
- */
-TSequenceSet *
-tintseqset_from_base_tstzspanset(int i, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return NULL;
-  return tsequenceset_from_base_tstzspanset(Int32GetDatum(i), T_TINT, ss, STEP);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal float sequence set from a float and a timestamptz
- * span set
- * @param[in] d Value
- * @param[in] ss Span set
- * @param[in] interp Interpolation
- */
-TSequenceSet *
-tfloatseqset_from_base_tstzspanset(double d, const SpanSet *ss, interpType interp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return NULL;
-  return tsequenceset_from_base_tstzspanset(Float8GetDatum(d), T_TFLOAT, ss,
-    interp);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal text sequence set from a text and a timestamptz
- * span set
- * @param[in] txt Value
- * @param[in] ss Span set
- */
-TSequenceSet *
-ttextseqset_from_base_tstzspanset(const text *txt, const SpanSet *ss)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) txt) || ! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return NULL;
-  return tsequenceset_from_base_tstzspanset(PointerGetDatum(txt), T_TTEXT, ss,
-    STEP);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal geometry point sequence set from a point and a
- * timestamptz span set
- * @param[in] gs Value
- * @param[in] ss Span set
- * @param[in] interp Interpolation
- */
-TSequenceSet *
-tpointseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
-  interpType interp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
-      ! ensure_point_type(gs) || ! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
-    T_TGEOGPOINT : T_TGEOMPOINT;
-  return tsequenceset_from_base_tstzspanset(PointerGetDatum(gs), temptype, ss,
-    interp);
-}
-#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions
@@ -1062,8 +966,7 @@ tsequenceset_duration(const TSequenceSet *ss, bool boundspan)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the last argument initialized with the time span of a temporal
- * sequence set
+ * @brief Return in the last argument the time span of a temporal sequence set
  * @param[in] ss Temporal sequence set
  * @param[out] s Span
  */
@@ -1266,8 +1169,8 @@ tsequenceset_num_timestamps(const TSequenceSet *ss)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the last argument initialized with the n-th distinct
- * timestamptz of a temporal sequence set
+ * @brief Return in the last argument the n-th distinct timestamptz of a
+ * temporal sequence set
  * @param[in] ss Temporal sequence set
  * @param[in] n Number
  * @param[out] result Timestamps
@@ -1335,8 +1238,8 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
       &result[ntimes]);
   if (ntimes > 1)
   {
-    timestamparr_sort(result, ntimes);
-    ntimes = timestamparr_remove_duplicates(result, ntimes);
+    tstzarr_sort(result, ntimes);
+    ntimes = tstzarr_remove_duplicates(result, ntimes);
   }
   *count = ntimes;
   return result;
@@ -1344,8 +1247,8 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the last argument initialized with the value of a temporal
- * sequence set at a timestamptz
+ * @brief Return in the last argument the value of a temporal sequence set at a
+ * timestamptz
  * @param[in] ss Temporal sequence set
  * @param[in] t Timestamp
  * @param[in] strict True if exclusive bounds are taken into account
@@ -1775,8 +1678,8 @@ tnumberseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
   Datum delta;
   double scale;
   TBox *box = TSEQUENCESET_BBOX_PTR(result);
-  numspan_shift_scale1(&box->span, shift, width, hasshift, haswidth, &delta,
-    &scale);
+  numspan_shift_scale_iter(&box->span, shift, width, hasshift, haswidth, 
+    &delta, &scale);
   Datum origin = box->span.lower;
 
   /* Shift and/or scale each composing sequence */
@@ -1853,7 +1756,7 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
   assert(inter1); assert(inter2);
   /* The temporal types of the arguments may be different */
   /* Bounding period test */
-  if (! over_span_span(&ss->period, &seq->period))
+  if (! overlaps_span_span(&ss->period, &seq->period))
     return false;
 
   int loc;
@@ -1902,7 +1805,7 @@ synchronize_tsequenceset_tsequenceset(const TSequenceSet *ss1,
   /* The temporal types of the arguments may be different */
   assert(inter1); assert(inter2);
   /* Bounding period test */
-  if (! over_span_span(&ss1->period, &ss2->period))
+  if (! overlaps_span_span(&ss1->period, &ss2->period))
     return false;
 
   int count = ss1->count + ss2->count;
@@ -1994,7 +1897,7 @@ intersection_tsequenceset_tdiscseq(const TSequenceSet *ss,
   /* The temporal types of the arguments may be different */
   assert(inter1); assert(inter2);
   /* Bounding period test */
-  if (! over_span_span(&ss->period, &seq->period))
+  if (! overlaps_span_span(&ss->period, &seq->period))
     return false;
 
   TInstant **instants1 = palloc(sizeof(TInstant *) * seq->count);
@@ -2080,93 +1983,7 @@ tsequenceset_in(const char *str, meosType temptype, interpType interp)
   assert(str);
   return tsequenceset_parse(&str, temptype, interp);
 }
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal sequence set boolean from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- */
-TSequenceSet *
-tboolseqset_in(const char *str)
-{
-  assert(str);
-  return tsequenceset_parse(&str, T_TBOOL, true);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal sequence set integer from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- */
-TSequenceSet *
-tintseqset_in(const char *str)
-{
-  assert(str);
-  return tsequenceset_parse(&str, T_TINT, true);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal sequence set float from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- */
-TSequenceSet *
-tfloatseqset_in(const char *str)
-{
-  assert(str);
-  /* Call the superclass function to read the interpolation at the beginning (if any) */
-  Temporal *temp = temporal_parse(&str, T_TFLOAT);
-  assert(temp->subtype == TSEQUENCE);
-  return (TSequenceSet *) temp;
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal sequence set text from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- */
-TSequenceSet *
-ttextseqset_in(const char *str)
-{
-  assert(str);
-  return tsequenceset_parse(&str, T_TTEXT, true);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal sequence set geometry point from its Well-Known Text
- * (WKT) representation
- * @param[in] str String
- */
-TSequenceSet *
-tgeompointseqset_in(const char *str)
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
-  assert(temp->subtype == TSEQUENCESET);
-  return (TSequenceSet *) temp;
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal sequence set geography point from its Well-Known
- * Text (WKT) representation
- * @param[in] str String
- */
-TSequenceSet *
-tgeogpointseqset_in(const char *str)
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
-  assert(temp->subtype == TSEQUENCESET);
-  return (TSequenceSet *) temp;
-}
-#endif
+#endif /* MEOS */
 
 /**
  * @brief Return the Well-Known Text (WKT) representation of a temporal
@@ -2228,7 +2045,7 @@ tnumberseqset_integral(const TSequenceSet *ss)
 {
   assert(ss);
   assert(tnumber_type(ss->temptype));
-  double result = 0;
+  double result = 0.0;
   for (int i = 0; i < ss->count; i++)
     result += tnumberseq_integral(TSEQUENCESET_SEQ_N(ss, i));
   return result;
@@ -2242,7 +2059,7 @@ tsequenceset_interval_double(const TSequenceSet *ss)
 {
   assert(ss);
   assert(tnumber_type(ss->temptype));
-  double result = 0;
+  double result = 0.0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);

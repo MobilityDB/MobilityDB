@@ -74,9 +74,7 @@ double2_make(double a, double b)
 char *
 double2_out(const double2 *d, int maxdd)
 {
-  assert(d != NULL);
-  assert(maxdd >= 0);
-
+  assert(d); assert(maxdd >= 0);
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);
   size_t size = strlen(astr) + strlen(bstr) + 4;
@@ -144,9 +142,7 @@ double3_make(double a, double b, double c)
 char *
 double3_out(const double3 *d, int maxdd)
 {
-  assert(d != NULL);
-  assert(maxdd >= 0);
-
+  assert(d); assert(maxdd >= 0);
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);
   char *cstr = float8_out(d->c, maxdd);
@@ -217,9 +213,7 @@ double4_make(double a, double b, double c, double d)
 char *
 double4_out(const double4 *d, int maxdd)
 {
-  assert(d != NULL);
-  assert(maxdd >= 0);
-
+  assert(d); assert(maxdd >= 0);
   char *astr = float8_out(d->a, maxdd);
   char *bstr = float8_out(d->b, maxdd);
   char *cstr = float8_out(d->c, maxdd);

@@ -1,0 +1,328 @@
+SELECT round(MAX(maxValue(g <-> temp))::numeric, 6) FROM tbl_geometry t1, tbl_tgeometry t2
+WHERE g <-> temp IS NOT NULL;
+   round    
+------------
+ 256.309315
+(1 row)
+
+SELECT round(MAX(maxValue(temp <-> g))::numeric, 6) FROM tbl_tgeometry t1, tbl_geometry t2
+WHERE temp <-> g IS NOT NULL;
+   round    
+------------
+ 256.309315
+(1 row)
+
+SELECT round(MAX(maxValue(t1.temp <-> t2.temp))::numeric, 6) FROM tbl_tgeometry t1, tbl_tgeometry t2
+WHERE t1.temp <-> t2.temp IS NOT NULL;
+   round   
+-----------
+ 39.250769
+(1 row)
+
+SELECT round(MAX(maxValue(g <-> temp))::numeric, 6) FROM tbl_geography t1, tbl_tgeography t2
+WHERE g <-> temp IS NOT NULL;
+      round      
+-----------------
+ 19920107.818810
+(1 row)
+
+SELECT round(MAX(maxValue(temp <-> g))::numeric, 6) FROM tbl_tgeography t1, tbl_geography t2
+WHERE temp <-> g IS NOT NULL;
+      round      
+-----------------
+ 19920107.818810
+(1 row)
+
+SELECT round(MAX(maxValue(t1.temp <-> t2.temp))::numeric, 6) FROM tbl_tgeography t1, tbl_tgeography t2
+WHERE t1.temp <-> t2.temp IS NOT NULL;
+      round      
+-----------------
+ 18356064.883326
+(1 row)
+
+SELECT round(MAX(maxValue(g <-> temp))::numeric, 6) FROM tbl_geometry3D t1, tbl_tgeometry3D t2
+WHERE g <-> temp IS NOT NULL ORDER BY 1 LIMIT 10;
+   round    
+------------
+ 284.191395
+(1 row)
+
+SELECT round(MAX(maxValue(temp <-> g))::numeric, 6) FROM tbl_tgeometry3D t1, tbl_geometry3D t2
+WHERE temp <-> g IS NOT NULL ORDER BY 1 LIMIT 10;
+   round    
+------------
+ 284.191395
+(1 row)
+
+SELECT round(MAX(maxValue(t1.temp <-> t2.temp))::numeric, 6) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
+WHERE t1.temp <-> t2.temp IS NOT NULL ORDER BY 1 LIMIT 10;
+   round    
+------------
+ 218.130888
+(1 row)
+
+SELECT round(MAX(maxValue(g <-> temp))::numeric, 6) FROM tbl_geography3D t1, tbl_tgeography3D t2
+WHERE g <-> temp IS NOT NULL ORDER BY 1 LIMIT 10;
+      round      
+-----------------
+ 19955197.495734
+(1 row)
+
+SELECT round(MAX(maxValue(temp <-> g))::numeric, 6) FROM tbl_tgeography3D t1, tbl_geography3D t2
+WHERE temp <-> g IS NOT NULL ORDER BY 1 LIMIT 10;
+      round      
+-----------------
+ 19955197.495734
+(1 row)
+
+SELECT round(MAX(maxValue(t1.temp <-> t2.temp))::numeric, 6) FROM tbl_tgeography3D t1, tbl_tgeography3D t2
+WHERE t1.temp <-> t2.temp IS NOT NULL ORDER BY 1 LIMIT 10;
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry,
+( SELECT * FROM tbl_geometry LIMIT 10 ) t
+WHERE NearestApproachInstant(temp, g) IS NOT NULL;
+ count 
+-------
+   900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1,
+( SELECT * FROM tbl_tgeometry t2 LIMIT 10 ) t2
+WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D
+WHERE NearestApproachInstant(temp, g) IS NOT NULL;
+ count 
+-------
+  9400
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
+WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   102
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography,
+( SELECT * FROM tbl_geography LIMIT 10 ) t
+WHERE NearestApproachInstant(temp, g) IS NOT NULL;
+ count 
+-------
+  1000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography t1,
+( SELECT * FROM tbl_tgeography t2  LIMIT 10 ) t2
+WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D, tbl_geography3D
+WHERE NearestApproachInstant(temp, g) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2
+WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry,
+( SELECT * FROM tbl_geometry LIMIT 10 ) t
+WHERE NearestApproachDistance(temp, g) IS NOT NULL;
+ count 
+-------
+   900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1,
+( SELECT * FROM tbl_tgeometry t2 LIMIT 10 ) t2
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D,
+( SELECT * FROM tbl_geometry3D LIMIT 10 ) t
+WHERE NearestApproachDistance(temp, g) IS NOT NULL;
+ count 
+-------
+   900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D t1,
+( SELECT * FROM tbl_tgeometry3D LIMIT 10 ) t2
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography,
+( SELECT * FROM tbl_geography LIMIT 10 ) t
+WHERE NearestApproachDistance(temp, g) IS NOT NULL;
+ count 
+-------
+  1000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography t1,
+( SELECT * FROM tbl_tgeography t2 LIMIT 10 ) t2
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D,
+( SELECT * FROM tbl_geography3D LIMIT 10 ) t
+WHERE NearestApproachDistance(temp, g) IS NOT NULL;
+ count 
+-------
+  1000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D t1,
+( SELECT * FROM tbl_tgeography3D LIMIT 10 ) t2
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry,
+( SELECT * FROM tbl_geometry LIMIT 10 ) t
+WHERE g |=| temp IS NOT NULL;
+ count 
+-------
+   900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1,
+( SELECT * FROM tbl_tgeometry t2 LIMIT 10 ) t2
+WHERE t1.temp |=| t2.temp IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D,
+( SELECT * FROM tbl_geometry3D LIMIT 10 ) t
+WHERE g |=| temp IS NOT NULL;
+ count 
+-------
+   900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D t1,
+(SELECT * FROM tbl_tgeometry3D LIMIT 10 ) t2
+WHERE t1.temp |=| t2.temp IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography,
+( SELECT * FROM tbl_geography LIMIT 10 ) t
+WHERE g |=| temp IS NOT NULL;
+ count 
+-------
+  1000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography t1,
+( SELECT * FROM tbl_tgeography t2 LIMIT 10 ) t2
+WHERE t1.temp |=| t2.temp IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D,
+( SELECT * FROM tbl_geography3D LIMIT 10 ) t
+WHERE g |=| temp IS NOT NULL;
+ count 
+-------
+  1000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D t1,
+(SELECT * FROM tbl_tgeography3D LIMIT 10 ) t2
+WHERE t1.temp |=| t2.temp IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry,
+( SELECT * FROM tbl_geometry LIMIT 10 ) t
+WHERE shortestLine(g, temp) IS NOT NULL;
+ count 
+-------
+   900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry t1,
+( SELECT * FROM tbl_tgeometry t2 LIMIT 10 ) t2
+WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D,
+( SELECT * FROM tbl_geometry3D LIMIT 10 ) t
+WHERE shortestLine(g, temp) IS NOT NULL;
+ count 
+-------
+   900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeometry3D t1,
+( SELECT * FROM tbl_tgeometry3D LIMIT 10 ) t2
+WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography,
+( SELECT * FROM tbl_geography LIMIT 10 ) t
+WHERE shortestLine(g, temp) IS NOT NULL;
+ count 
+-------
+  1000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography t1,
+( SELECT * FROM tbl_tgeography t2 LIMIT 10 ) t2
+WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeography3D t1,
+( SELECT * FROM tbl_tgeography3D LIMIT 10 ) t2
+WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+

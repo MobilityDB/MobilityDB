@@ -43,6 +43,10 @@
 
 /*****************************************************************************/
 
+/* Collinear function */
+
+extern bool float_collinear(double x1, double x2, double x3, double ratio);
+
 /* Normalization functions */
 
 extern bool tsequence_norm_test(Datum value1, Datum value2, Datum value3,
