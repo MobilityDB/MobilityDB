@@ -12,7 +12,7 @@ var searchData=
   ['restype_9',['restype',['../structLiftedFunctionInfo_aa9f049e818402d49f42e8c533e691394.html#aa9f049e818402d49f42e8c533e691394',1,'LiftedFunctionInfo']]],
   ['rid_10',['rid',['../structNpoint_a0560de3edeea8503ecadb1f5038e60af.html#a0560de3edeea8503ecadb1f5038e60af',1,'Npoint::rid()'],['../structNsegment_a95f22aa9e6246931d2eca7534ff2a2d7.html#a95f22aa9e6246931d2eca7534ff2a2d7',1,'Nsegment::rid()']]],
   ['right_11',['right',['../structSpanNode_a7d50dd13b4e824e4303bd48d3a1790e9.html#a7d50dd13b4e824e4303bd48d3a1790e9',1,'SpanNode::right()'],['../structTboxNode_ad320507fdac0871fecc5ad762e4cdbfe.html#ad320507fdac0871fecc5ad762e4cdbfe',1,'TboxNode::right()'],['../structSTboxNode_ac05a610d1803f84878426220ea77f535.html#ac05a610d1803f84878426220ea77f535',1,'STboxNode::right()']]],
-  ['right_12',['RIGHT',['../tpoint__restrict_8c_a088fe0153a918af361dc8f4e775d020e.html#a088fe0153a918af361dc8f4e775d020e',1,'tpoint_restrict.c']]],
+  ['right_12',['RIGHT',['../tgeo__restrict_8c_a088fe0153a918af361dc8f4e775d020e.html#a088fe0153a918af361dc8f4e775d020e',1,'tgeo_restrict.c']]],
   ['right_5flower_13',['right_lower',['../structConsiderSplitContext_a162416d9eb39cd01736aa3ae1d46ac23.html#a162416d9eb39cd01736aa3ae1d46ac23',1,'ConsiderSplitContext']]],
   ['rightlower_14',['rightLower',['../structConsiderSplitContext_a429305c1628a73ce14433a3ff20bc673.html#a429305c1628a73ce14433a3ff20bc673',1,'ConsiderSplitContext']]],
   ['rings_15',['rings',['../structLWPOLY_a2b0a8b89f0af409f4bd4527255bc1bbf.html#a2b0a8b89f0af409f4bd4527255bc1bbf',1,'LWPOLY::rings()'],['../structLWCURVEPOLY_a7697b8eddb636d429009fd5f84b95089.html#a7697b8eddb636d429009fd5f84b95089',1,'LWCURVEPOLY::rings()']]],

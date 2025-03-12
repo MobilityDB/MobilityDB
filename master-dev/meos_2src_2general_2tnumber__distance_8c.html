@@ -90,8 +90,10 @@ $(function() {
 <code>#include &quot;<a class="el" href="lifting_8h_source.html">general/lifting.h</a>&quot;</code><br />
 <code>#include &quot;general/span.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tbox_8h_source.html">general/tbox.h</a>&quot;</code><br />
+<code>#include &quot;general/tinstant.h&quot;</code><br />
 <code>#include &quot;general/tsequence.h&quot;</code><br />
 <code>#include &quot;general/type_util.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -146,6 +148,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a6c0014d311d70481834cb782d308720c"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2general_2tnumber__distance_8c_a6c0014d311d70481834cb782d308720c.html#a6c0014d311d70481834cb782d308720c">tnumber_min_dist_at_timestamptz</a> (const <a class="el" href="structTInstant.html">TInstant</a> *start1, const <a class="el" href="structTInstant.html">TInstant</a> *end1, const <a class="el" href="structTInstant.html">TInstant</a> *start2, const <a class="el" href="structTInstant.html">TInstant</a> *end2, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> *value, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *t)</td></tr>
 <tr class="memdesc:a6c0014d311d70481834cb782d308720c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if two segments of the temporal numbers intersect at a timestamptz.  <a href="meos_2src_2general_2tnumber__distance_8c_a6c0014d311d70481834cb782d308720c.html#a6c0014d311d70481834cb782d308720c">More...</a><br /></td></tr>
 <tr class="separator:a6c0014d311d70481834cb782d308720c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66f1035a1823db3930d6842decb7c11f"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2general_2tnumber__distance_8c_a66f1035a1823db3930d6842decb7c11f.html#a66f1035a1823db3930d6842decb7c11f">tnumberinst_distance</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst1, const <a class="el" href="structTInstant.html">TInstant</a> *inst2)</td></tr>
+<tr class="memdesc:a66f1035a1823db3930d6842decb7c11f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distance between two temporal instants.  <a href="meos_2src_2general_2tnumber__distance_8c_a66f1035a1823db3930d6842decb7c11f.html#a66f1035a1823db3930d6842decb7c11f">More...</a><br /></td></tr>
+<tr class="separator:a66f1035a1823db3930d6842decb7c11f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Distance functions for temporal numbers. </p>

@@ -76,7 +76,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Spatial accessor functions for temporal points.  
+<p>Spatial accessor functions for temporal geos.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -93,6 +93,12 @@ Functions</h2></td></tr>
 <tr class="memitem:gae4777e2eda111a33968ec6bbaacabf74"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__spatial__accessor_gae4777e2eda111a33968ec6bbaacabf74.html#gae4777e2eda111a33968ec6bbaacabf74">tcbuffer_traversed_area</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
 <tr class="memdesc:gae4777e2eda111a33968ec6bbaacabf74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the traversed area of a temporal circular buffer.  <a href="group__meos__temporal__spatial__accessor_gae4777e2eda111a33968ec6bbaacabf74.html#gae4777e2eda111a33968ec6bbaacabf74">More...</a><br /></td></tr>
 <tr class="separator:gae4777e2eda111a33968ec6bbaacabf74"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga15d8c6fb7a7d79273085a5fd5a012c35"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__spatial__accessor_ga15d8c6fb7a7d79273085a5fd5a012c35.html#ga15d8c6fb7a7d79273085a5fd5a012c35">tgeo_convex_hull</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
+<tr class="memdesc:ga15d8c6fb7a7d79273085a5fd5a012c35"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the convex hull of a temporal geo.  <a href="group__meos__temporal__spatial__accessor_ga15d8c6fb7a7d79273085a5fd5a012c35.html#ga15d8c6fb7a7d79273085a5fd5a012c35">More...</a><br /></td></tr>
+<tr class="separator:ga15d8c6fb7a7d79273085a5fd5a012c35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1de49ea5a0b8a51c8e504265c948ef04"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__spatial__accessor_ga1de49ea5a0b8a51c8e504265c948ef04.html#ga1de49ea5a0b8a51c8e504265c948ef04">tgeo_traversed_area</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
+<tr class="memdesc:ga1de49ea5a0b8a51c8e504265c948ef04"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the traversed area of a temporal geo or the trajectory for a temporal point with discrete or step interpolation.  <a href="group__meos__temporal__spatial__accessor_ga1de49ea5a0b8a51c8e504265c948ef04.html#ga1de49ea5a0b8a51c8e504265c948ef04">More...</a><br /></td></tr>
+<tr class="separator:ga1de49ea5a0b8a51c8e504265c948ef04"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga3e1903dc9daf8bf7cb8efb360be7205c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__spatial__accessor_ga3e1903dc9daf8bf7cb8efb360be7205c.html#ga3e1903dc9daf8bf7cb8efb360be7205c">tnpoint_azimuth</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
 <tr class="memdesc:ga3e1903dc9daf8bf7cb8efb360be7205c"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> azimuth of a temporal network point.  <a href="group__meos__temporal__spatial__accessor_ga3e1903dc9daf8bf7cb8efb360be7205c.html#ga3e1903dc9daf8bf7cb8efb360be7205c">More...</a><br /></td></tr>
 <tr class="separator:ga3e1903dc9daf8bf7cb8efb360be7205c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -114,9 +120,6 @@ Functions</h2></td></tr>
 <tr class="memitem:gaebde3714b7cd60eaf7cab6dd9a4ccae4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__spatial__accessor_gaebde3714b7cd60eaf7cab6dd9a4ccae4.html#gaebde3714b7cd60eaf7cab6dd9a4ccae4">tpoint_azimuth</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
 <tr class="memdesc:gaebde3714b7cd60eaf7cab6dd9a4ccae4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the temporal azimuth of a temporal geometry point.  <a href="group__meos__temporal__spatial__accessor_gaebde3714b7cd60eaf7cab6dd9a4ccae4.html#gaebde3714b7cd60eaf7cab6dd9a4ccae4">More...</a><br /></td></tr>
 <tr class="separator:gaebde3714b7cd60eaf7cab6dd9a4ccae4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6473db75d2b8fa9194f5d198e4452fea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__spatial__accessor_ga6473db75d2b8fa9194f5d198e4452fea.html#ga6473db75d2b8fa9194f5d198e4452fea">tpoint_convex_hull</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
-<tr class="memdesc:ga6473db75d2b8fa9194f5d198e4452fea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the convex hull of a temporal point.  <a href="group__meos__temporal__spatial__accessor_ga6473db75d2b8fa9194f5d198e4452fea.html#ga6473db75d2b8fa9194f5d198e4452fea">More...</a><br /></td></tr>
-<tr class="separator:ga6473db75d2b8fa9194f5d198e4452fea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gab5740f3b4189e082769b9b2b221376d4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__spatial__accessor_gab5740f3b4189e082769b9b2b221376d4.html#gab5740f3b4189e082769b9b2b221376d4">tpoint_cumulative_length</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
 <tr class="memdesc:gab5740f3b4189e082769b9b2b221376d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the cumulative length traversed by a temporal point.  <a href="group__meos__temporal__spatial__accessor_gab5740f3b4189e082769b9b2b221376d4.html#gab5740f3b4189e082769b9b2b221376d4">More...</a><br /></td></tr>
 <tr class="separator:gab5740f3b4189e082769b9b2b221376d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -147,15 +150,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga247c57db37e2fd570535dd45744be159"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__spatial__accessor_ga247c57db37e2fd570535dd45744be159.html#ga247c57db37e2fd570535dd45744be159">tpoint_twcentroid</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
 <tr class="memdesc:ga247c57db37e2fd570535dd45744be159"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the time-weighed centroid of a temporal geometry point.  <a href="group__meos__temporal__spatial__accessor_ga247c57db37e2fd570535dd45744be159.html#ga247c57db37e2fd570535dd45744be159">More...</a><br /></td></tr>
 <tr class="separator:ga247c57db37e2fd570535dd45744be159"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1a37fb95a8871700e32d05c38d051902"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__spatial__accessor_ga1a37fb95a8871700e32d05c38d051902.html#ga1a37fb95a8871700e32d05c38d051902">tspatial_srid</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp)</td></tr>
-<tr class="memdesc:ga1a37fb95a8871700e32d05c38d051902"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the SRID of a temporal spatial type.  <a href="group__meos__temporal__spatial__accessor_ga1a37fb95a8871700e32d05c38d051902.html#ga1a37fb95a8871700e32d05c38d051902">More...</a><br /></td></tr>
-<tr class="separator:ga1a37fb95a8871700e32d05c38d051902"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga9ea3ac84319815e68b0ae7e2f15e5de1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__spatial__accessor_ga9ea3ac84319815e68b0ae7e2f15e5de1.html#ga9ea3ac84319815e68b0ae7e2f15e5de1">tspatialinst_srid</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst)</td></tr>
-<tr class="memdesc:ga9ea3ac84319815e68b0ae7e2f15e5de1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the SRID of a temporal spatial instant.  <a href="group__meos__temporal__spatial__accessor_ga9ea3ac84319815e68b0ae7e2f15e5de1.html#ga9ea3ac84319815e68b0ae7e2f15e5de1">More...</a><br /></td></tr>
-<tr class="separator:ga9ea3ac84319815e68b0ae7e2f15e5de1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<p >Spatial accessor functions for temporal points. </p>
+<p >Spatial accessor functions for temporal geos. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

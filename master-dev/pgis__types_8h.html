@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos/include/point/pgis_types.h File Reference</title>
+<title>MobilityDB: meos/include/geo/pgis_types.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_13b2f2defea7d30712f022550d37492b.html">point</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_2ccc8e21bc632b65d862788272be30c6.html">geo</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -98,9 +98,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a239989d44283bbf6e735fed379751809"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pgis__types_8h_a239989d44283bbf6e735fed379751809.html#a239989d44283bbf6e735fed379751809">box3d_to_lwgeom</a> (<a class="el" href="structBOX3D.html">BOX3D</a> *box)</td></tr>
 <tr class="memdesc:a239989d44283bbf6e735fed379751809"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a geometry from a <code><a class="el" href="structBOX3D.html">BOX3D</a></code>.  <a href="pgis__types_8h_a239989d44283bbf6e735fed379751809.html#a239989d44283bbf6e735fed379751809">More...</a><br /></td></tr>
 <tr class="separator:a239989d44283bbf6e735fed379751809"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a669d964041574900ef08d177bbd88574"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pgis__types_8h_a669d964041574900ef08d177bbd88574.html#a669d964041574900ef08d177bbd88574">geo_reverse</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *geom)</td></tr>
-<tr class="memdesc:a669d964041574900ef08d177bbd88574"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reverse vertex order of geometry.  <a href="pgis__types_8h_a669d964041574900ef08d177bbd88574.html#a669d964041574900ef08d177bbd88574">More...</a><br /></td></tr>
-<tr class="separator:a669d964041574900ef08d177bbd88574"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadae62576fac32cf2a1ab666dd5792e8f"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__pgis__types_gadae62576fac32cf2a1ab666dd5792e8f.html#gadae62576fac32cf2a1ab666dd5792e8f">geo_typename</a> (int type)</td></tr>
+<tr class="memdesc:gadae62576fac32cf2a1ab666dd5792e8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a string representation of a geometry's type.  <a href="group__meos__pgis__types_gadae62576fac32cf2a1ab666dd5792e8f.html#gadae62576fac32cf2a1ab666dd5792e8f">More...</a><br /></td></tr>
+<tr class="separator:gadae62576fac32cf2a1ab666dd5792e8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a813350b37b325f8910939a176a60fd1b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pgis__types_8h_a813350b37b325f8910939a176a60fd1b.html#a813350b37b325f8910939a176a60fd1b">geog_serialize</a> (<a class="el" href="structLWGEOM.html">LWGEOM</a> *lwgeom)</td></tr>
 <tr class="memdesc:a813350b37b325f8910939a176a60fd1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Utility method to call the serialization and then set the PgSQL varsize header appropriately with the serialized size.  <a href="pgis__types_8h_a813350b37b325f8910939a176a60fd1b.html#a813350b37b325f8910939a176a60fd1b">More...</a><br /></td></tr>
 <tr class="separator:a813350b37b325f8910939a176a60fd1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -111,11 +111,13 @@ Functions</h2></td></tr>
 <tr class="memdesc:a48db7a31d804d6a03631bd26b9d52f52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if two geometries satisfy a given spatial relationship, where the function called depend on the third argument.  <a href="pgis__types_8h_a48db7a31d804d6a03631bd26b9d52f52.html#a48db7a31d804d6a03631bd26b9d52f52">More...</a><br /></td></tr>
 <tr class="separator:a48db7a31d804d6a03631bd26b9d52f52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0cf408979b0df0f98f08476d9a8c7a1b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pgis__types_8h_a0cf408979b0df0f98f08476d9a8c7a1b.html#a0cf408979b0df0f98f08476d9a8c7a1b">GEOS2POSTGIS</a> (GEOSGeom geom, char want3d)</td></tr>
+<tr class="memdesc:a0cf408979b0df0f98f08476d9a8c7a1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tranform a GEOS geometry to a PostGIS one.  <a href="pgis__types_8h_a0cf408979b0df0f98f08476d9a8c7a1b.html#a0cf408979b0df0f98f08476d9a8c7a1b">More...</a><br /></td></tr>
 <tr class="separator:a0cf408979b0df0f98f08476d9a8c7a1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9f76a07e05a6fe026093052f95ce745a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pgis__types_8h_a9f76a07e05a6fe026093052f95ce745a.html#a9f76a07e05a6fe026093052f95ce745a">lwgeom_line_interpolate_point</a> (<a class="el" href="structLWGEOM.html">LWGEOM</a> *geom, double fraction, int32_t srid, char repeat)</td></tr>
-<tr class="memdesc:a9f76a07e05a6fe026093052f95ce745a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a geometry from a geography.  <a href="pgis__types_8h_a9f76a07e05a6fe026093052f95ce745a.html#a9f76a07e05a6fe026093052f95ce745a">More...</a><br /></td></tr>
+<tr class="memdesc:a9f76a07e05a6fe026093052f95ce745a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolate a point from a line.  <a href="pgis__types_8h_a9f76a07e05a6fe026093052f95ce745a.html#a9f76a07e05a6fe026093052f95ce745a">More...</a><br /></td></tr>
 <tr class="separator:a9f76a07e05a6fe026093052f95ce745a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f06431f5889fbede1f96ca1da4656af"><td class="memItemLeft" align="right" valign="top">GEOSGeometry *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pgis__types_8h_a4f06431f5889fbede1f96ca1da4656af.html#a4f06431f5889fbede1f96ca1da4656af">POSTGIS2GEOS</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *pglwgeom)</td></tr>
+<tr class="memdesc:a4f06431f5889fbede1f96ca1da4656af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tranform a PostGIS geometry to a GEOS one.  <a href="pgis__types_8h_a4f06431f5889fbede1f96ca1da4656af.html#a4f06431f5889fbede1f96ca1da4656af">More...</a><br /></td></tr>
 <tr class="separator:a4f06431f5889fbede1f96ca1da4656af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>

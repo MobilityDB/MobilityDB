@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: mobilitydb/pg_include/pg_point/tpoint_selfuncs.h File Reference</title>
+<title>MobilityDB: mobilitydb/pg_include/pg_geo/tpoint_selfuncs.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_b060bd5020a833a37671e1e10417da21.html">mobilitydb</a></li><li class="navelem"><a class="el" href="dir_2efad10f9b025383b2c143a7cb768edd.html">pg_include</a></li><li class="navelem"><a class="el" href="dir_83e0820b98898b6ced4340f8b49b43ff.html">pg_point</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_b060bd5020a833a37671e1e10417da21.html">mobilitydb</a></li><li class="navelem"><a class="el" href="dir_2efad10f9b025383b2c143a7cb768edd.html">pg_include</a></li><li class="navelem"><a class="el" href="dir_ee7f4b180a4597d6fd63e1a9b1043874.html">pg_geo</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -84,7 +84,7 @@ $(function() {
 <code>#include &lt;catalog/pg_statistic.h&gt;</code><br />
 <code>#include &lt;utils/selfuncs.h&gt;</code><br />
 <code>#include &quot;general/meos_catalog.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="tpoint__analyze_8h_source.html">pg_point/tpoint_analyze.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tspatial__analyze_8h_source.html">pg_geo/tspatial_analyze.h</a>&quot;</code><br />
 </div>
 <p><a href="tpoint__selfuncs_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -127,17 +127,17 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a65e26f1dc33f5a2a403fcbb18e1bf07e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a9155724ff2560eea2c49383a4d08fbd4.html#a9155724ff2560eea2c49383a4d08fbd4">float8</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpoint__selfuncs_8h_a65e26f1dc33f5a2a403fcbb18e1bf07e.html#a65e26f1dc33f5a2a403fcbb18e1bf07e">geo_joinsel</a> (const <a class="el" href="tpoint__analyze_8h_a05587ace59851dc97099d67c9ed27b0b.html#a05587ace59851dc97099d67c9ed27b0b">ND_STATS</a> *s1, const <a class="el" href="tpoint__analyze_8h_a05587ace59851dc97099d67c9ed27b0b.html#a05587ace59851dc97099d67c9ed27b0b">ND_STATS</a> *s2)</td></tr>
+<tr class="memitem:a65e26f1dc33f5a2a403fcbb18e1bf07e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a9155724ff2560eea2c49383a4d08fbd4.html#a9155724ff2560eea2c49383a4d08fbd4">float8</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpoint__selfuncs_8h_a65e26f1dc33f5a2a403fcbb18e1bf07e.html#a65e26f1dc33f5a2a403fcbb18e1bf07e">geo_joinsel</a> (const <a class="el" href="tspatial__analyze_8h_a05587ace59851dc97099d67c9ed27b0b.html#a05587ace59851dc97099d67c9ed27b0b">ND_STATS</a> *s1, const <a class="el" href="tspatial__analyze_8h_a05587ace59851dc97099d67c9ed27b0b.html#a05587ace59851dc97099d67c9ed27b0b">ND_STATS</a> *s2)</td></tr>
 <tr class="memdesc:a65e26f1dc33f5a2a403fcbb18e1bf07e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given two statistics histograms, what is the selectivity of a join driven by the &amp;&amp; operator?  <a href="tpoint__selfuncs_8h_a65e26f1dc33f5a2a403fcbb18e1bf07e.html#a65e26f1dc33f5a2a403fcbb18e1bf07e">More...</a><br /></td></tr>
 <tr class="separator:a65e26f1dc33f5a2a403fcbb18e1bf07e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d0f76db252ec377ebe976e6a46286f6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a9155724ff2560eea2c49383a4d08fbd4.html#a9155724ff2560eea2c49383a4d08fbd4">float8</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpoint__selfuncs_8h_a0d0f76db252ec377ebe976e6a46286f6.html#a0d0f76db252ec377ebe976e6a46286f6">geo_sel</a> (VariableStatData *vardata, const <a class="el" href="structSTBox.html">STBox</a> *box, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073">meosOper</a> oper)</td></tr>
 <tr class="memdesc:a0d0f76db252ec377ebe976e6a46286f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an estimate of the selectivity of a spatiotemporal search box by looking at data in the ND_STATS structure.  <a href="tpoint__selfuncs_8h_a0d0f76db252ec377ebe976e6a46286f6.html#a0d0f76db252ec377ebe976e6a46286f6">More...</a><br /></td></tr>
 <tr class="separator:a0d0f76db252ec377ebe976e6a46286f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5bc186419112dc710573e0fe5f70fc6d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tpoint__analyze_8h_a05587ace59851dc97099d67c9ed27b0b.html#a05587ace59851dc97099d67c9ed27b0b">ND_STATS</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpoint__selfuncs_8h_a5bc186419112dc710573e0fe5f70fc6d.html#a5bc186419112dc710573e0fe5f70fc6d">pg_get_nd_stats</a> (const <a class="el" href="postgres__ext_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a> tableid, AttrNumber att_num, int mode, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> only_parent)</td></tr>
+<tr class="memitem:a5bc186419112dc710573e0fe5f70fc6d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tspatial__analyze_8h_a05587ace59851dc97099d67c9ed27b0b.html#a05587ace59851dc97099d67c9ed27b0b">ND_STATS</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpoint__selfuncs_8h_a5bc186419112dc710573e0fe5f70fc6d.html#a5bc186419112dc710573e0fe5f70fc6d">pg_get_nd_stats</a> (const <a class="el" href="postgres__ext_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a> tableid, AttrNumber att_num, int mode, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> only_parent)</td></tr>
 <tr class="memdesc:a5bc186419112dc710573e0fe5f70fc6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pull the stats object from the PgSQL system catalogs.  <a href="tpoint__selfuncs_8h_a5bc186419112dc710573e0fe5f70fc6d.html#a5bc186419112dc710573e0fe5f70fc6d">More...</a><br /></td></tr>
 <tr class="separator:a5bc186419112dc710573e0fe5f70fc6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab02e61e33eacd473aa554bf4cc873049"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tpoint__analyze_8h_a05587ace59851dc97099d67c9ed27b0b.html#a05587ace59851dc97099d67c9ed27b0b">ND_STATS</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpoint__selfuncs_8h_ab02e61e33eacd473aa554bf4cc873049.html#ab02e61e33eacd473aa554bf4cc873049">pg_nd_stats_from_tuple</a> (HeapTuple stats_tuple, int mode)</td></tr>
-<tr class="memdesc:ab02e61e33eacd473aa554bf4cc873049"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the statistics from the tuple.  <a href="tpoint__selfuncs_8h_ab02e61e33eacd473aa554bf4cc873049.html#ab02e61e33eacd473aa554bf4cc873049">More...</a><br /></td></tr>
+<tr class="memitem:ab02e61e33eacd473aa554bf4cc873049"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tspatial__analyze_8h_a05587ace59851dc97099d67c9ed27b0b.html#a05587ace59851dc97099d67c9ed27b0b">ND_STATS</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpoint__selfuncs_8h_ab02e61e33eacd473aa554bf4cc873049.html#ab02e61e33eacd473aa554bf4cc873049">pg_nd_stats_from_tuple</a> (HeapTuple stats_tuple, int mode)</td></tr>
+<tr class="memdesc:ab02e61e33eacd473aa554bf4cc873049"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the statistics from a tuple.  <a href="tpoint__selfuncs_8h_ab02e61e33eacd473aa554bf4cc873049.html#ab02e61e33eacd473aa554bf4cc873049">More...</a><br /></td></tr>
 <tr class="separator:ab02e61e33eacd473aa554bf4cc873049"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->

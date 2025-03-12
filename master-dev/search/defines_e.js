@@ -2,7 +2,7 @@ var searchData=
 [
   ['namedatalen_0',['NAMEDATALEN',['../pg__config__manual_8h_a71e0c76941519434dcc92f266c6ecbfa.html#a71e0c76941519434dcc92f266c6ecbfa',1,'pg_config_manual.h']]],
   ['namegetdatum_1',['NameGetDatum',['../postgres_8h_abc9e7f9e5615dc0075a81335fda4bc8f.html#abc9e7f9e5615dc0075a81335fda4bc8f',1,'postgres.h']]],
-  ['nd_5fdims_2',['ND_DIMS',['../tpoint__analyze_8h_a616cd2d7d958cabddbc1798a9473f9b7.html#a616cd2d7d958cabddbc1798a9473f9b7',1,'ND_DIMS():&#160;tpoint_analyze.h'],['../tpoint__selfuncs_8h_a616cd2d7d958cabddbc1798a9473f9b7.html#a616cd2d7d958cabddbc1798a9473f9b7',1,'ND_DIMS():&#160;tpoint_selfuncs.h']]],
+  ['nd_5fdims_2',['ND_DIMS',['../tpoint__selfuncs_8h_a616cd2d7d958cabddbc1798a9473f9b7.html#a616cd2d7d958cabddbc1798a9473f9b7',1,'ND_DIMS():&#160;tpoint_selfuncs.h'],['../tspatial__analyze_8h_a616cd2d7d958cabddbc1798a9473f9b7.html#a616cd2d7d958cabddbc1798a9473f9b7',1,'ND_DIMS():&#160;tspatial_analyze.h']]],
   ['ndr_3',['NDR',['../meos_2include_2general_2temporal_8h_a9919032ede208dc71b7e0947db6955c7.html#a9919032ede208dc71b7e0947db6955c7',1,'temporal.h']]],
   ['ngettext_4',['ngettext',['../c_8h_a46d87a8398f9129cdf8099a719b9c471.html#a46d87a8398f9129cdf8099a719b9c471',1,'c.h']]],
   ['no_5fbulk_5finsert_5',['NO_BULK_INSERT',['../04__ais__store_8c_a4e9bf5b7600277284348c87728a323e6.html#a4e9bf5b7600277284348c87728a323e6',1,'04_ais_store.c']]],
@@ -31,7 +31,7 @@ var searchData=
   ['nsegment_5fmaxlen_28',['NSEGMENT_MAXLEN',['../meos_2src_2npoint_2npoint_8c_acdefd36fcfd200c832353d85db163f50.html#acdefd36fcfd200c832353d85db163f50',1,'npoint.c']]],
   ['nsegmentpgetdatum_29',['NsegmentPGetDatum',['../tnpoint_8h_ace39b95a6aeb15d485e39e32b79f52c9.html#ace39b95a6aeb15d485e39e32b79f52c9',1,'tnpoint.h']]],
   ['num_5fatomics_5fsemaphores_30',['NUM_ATOMICS_SEMAPHORES',['../pg__config__manual_8h_a4af51f43d874710bf915fb77fd300e81.html#a4af51f43d874710bf915fb77fd300e81',1,'pg_config_manual.h']]],
-  ['num_5fbins_31',['NUM_BINS',['../tpoint__analyze_8c_a2ddaf84376563f5fa15a4fa59372d8f6.html#a2ddaf84376563f5fa15a4fa59372d8f6',1,'tpoint_analyze.c']]],
+  ['num_5fbins_31',['NUM_BINS',['../tspatial__analyze_8c_a2ddaf84376563f5fa15a4fa59372d8f6.html#a2ddaf84376563f5fa15a4fa59372d8f6',1,'tspatial_analyze.c']]],
   ['num_5fflag_32',['NUM_FLAG',['../formatting_8c_a76cd81964ebba4dd1dc0a354ad5f279a.html#a76cd81964ebba4dd1dc0a354ad5f279a',1,'formatting.c']]],
   ['num_5fspinlock_5fsemaphores_33',['NUM_SPINLOCK_SEMAPHORES',['../pg__config__manual_8h_adaf7854447caaa10def6e09bfdc1e489.html#adaf7854447caaa10def6e09bfdc1e489',1,'pg_config_manual.h']]],
   ['number_5fgroups_34',['NUMBER_GROUPS',['../floatspanset__agg_8c_a76ed7fecff7e4af8a1510d647548fd54.html#a76ed7fecff7e4af8a1510d647548fd54',1,'floatspanset_agg.c']]]

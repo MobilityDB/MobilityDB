@@ -76,65 +76,38 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Structure used for passing the parse state between the parsing functions.  
+<p>Structure used in PostGIS for passing the parse state between the parsing functions.  
  <a href="structwkb__parse__state.html#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:ae3be6b80b343f17fbe28072ccae9c2b6"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_ae3be6b80b343f17fbe28072ccae9c2b6.html#ae3be6b80b343f17fbe28072ccae9c2b6">basetype</a></td></tr>
-<tr class="memdesc:ae3be6b80b343f17fbe28072ccae9c2b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current base type we are handling.  <a href="structwkb__parse__state_ae3be6b80b343f17fbe28072ccae9c2b6.html#ae3be6b80b343f17fbe28072ccae9c2b6">More...</a><br /></td></tr>
-<tr class="separator:ae3be6b80b343f17fbe28072ccae9c2b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adf0011d1fa95160887a2ed37865e66fe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_adf0011d1fa95160887a2ed37865e66fe.html#adf0011d1fa95160887a2ed37865e66fe">geodetic</a></td></tr>
-<tr class="memdesc:adf0011d1fa95160887a2ed37865e66fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Geodetic?  <a href="structwkb__parse__state_adf0011d1fa95160887a2ed37865e66fe.html#adf0011d1fa95160887a2ed37865e66fe">More...</a><br /></td></tr>
-<tr class="separator:adf0011d1fa95160887a2ed37865e66fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acc80f61b242160f0050c722fb2c3efcf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_acc80f61b242160f0050c722fb2c3efcf.html#acc80f61b242160f0050c722fb2c3efcf">has_srid</a></td></tr>
-<tr class="memdesc:acc80f61b242160f0050c722fb2c3efcf"><td class="mdescLeft">&#160;</td><td class="mdescRight">SRID?  <a href="structwkb__parse__state_acc80f61b242160f0050c722fb2c3efcf.html#acc80f61b242160f0050c722fb2c3efcf">More...</a><br /></td></tr>
-<tr class="separator:acc80f61b242160f0050c722fb2c3efcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6cae06a47e35eb30d64775d85429da7b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a6cae06a47e35eb30d64775d85429da7b.html#a6cae06a47e35eb30d64775d85429da7b">hast</a></td></tr>
-<tr class="memdesc:a6cae06a47e35eb30d64775d85429da7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">T?  <a href="structwkb__parse__state_a6cae06a47e35eb30d64775d85429da7b.html#a6cae06a47e35eb30d64775d85429da7b">More...</a><br /></td></tr>
-<tr class="separator:a6cae06a47e35eb30d64775d85429da7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a642e623bde1b494bcdea015abe7b2f26"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a642e623bde1b494bcdea015abe7b2f26.html#a642e623bde1b494bcdea015abe7b2f26">hasx</a></td></tr>
-<tr class="memdesc:a642e623bde1b494bcdea015abe7b2f26"><td class="mdescLeft">&#160;</td><td class="mdescRight">X?  <a href="structwkb__parse__state_a642e623bde1b494bcdea015abe7b2f26.html#a642e623bde1b494bcdea015abe7b2f26">More...</a><br /></td></tr>
-<tr class="separator:a642e623bde1b494bcdea015abe7b2f26"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6db0fd8f74910d05585865a923dcb8fb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a6db0fd8f74910d05585865a923dcb8fb.html#a6db0fd8f74910d05585865a923dcb8fb">hasz</a></td></tr>
-<tr class="memdesc:a6db0fd8f74910d05585865a923dcb8fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Z?  <a href="structwkb__parse__state_a6db0fd8f74910d05585865a923dcb8fb.html#a6db0fd8f74910d05585865a923dcb8fb">More...</a><br /></td></tr>
-<tr class="separator:a6db0fd8f74910d05585865a923dcb8fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5191fbdd48c46b6cb13d975ea3379bc7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a5191fbdd48c46b6cb13d975ea3379bc7.html#a5191fbdd48c46b6cb13d975ea3379bc7">interp</a></td></tr>
-<tr class="memdesc:a5191fbdd48c46b6cb13d975ea3379bc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolation.  <a href="structwkb__parse__state_a5191fbdd48c46b6cb13d975ea3379bc7.html#a5191fbdd48c46b6cb13d975ea3379bc7">More...</a><br /></td></tr>
-<tr class="separator:a5191fbdd48c46b6cb13d975ea3379bc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a055ad89b1d46090220da5d681f2d6b5f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a055ad89b1d46090220da5d681f2d6b5f.html#a055ad89b1d46090220da5d681f2d6b5f">ordered</a></td></tr>
-<tr class="memdesc:a055ad89b1d46090220da5d681f2d6b5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Is the set ordered?  <a href="structwkb__parse__state_a055ad89b1d46090220da5d681f2d6b5f.html#a055ad89b1d46090220da5d681f2d6b5f">More...</a><br /></td></tr>
-<tr class="separator:a055ad89b1d46090220da5d681f2d6b5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a550b25b3b818ccd3b892651757807bc2"><td class="memItemLeft" align="right" valign="top">int8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a550b25b3b818ccd3b892651757807bc2.html#a550b25b3b818ccd3b892651757807bc2">check</a></td></tr>
+<tr class="separator:a550b25b3b818ccd3b892651757807bc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66c7b492910f1a8824722e88f05cef92"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a66c7b492910f1a8824722e88f05cef92.html#a66c7b492910f1a8824722e88f05cef92">depth</a></td></tr>
+<tr class="separator:a66c7b492910f1a8824722e88f05cef92"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92d041e312e31aadb7450ec905429333"><td class="memItemLeft" align="right" valign="top">int8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a92d041e312e31aadb7450ec905429333.html#a92d041e312e31aadb7450ec905429333">error</a></td></tr>
+<tr class="separator:a92d041e312e31aadb7450ec905429333"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a251d9d5dda4e1edeb26a3b272de01373"><td class="memItemLeft" align="right" valign="top">int8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a251d9d5dda4e1edeb26a3b272de01373.html#a251d9d5dda4e1edeb26a3b272de01373">has_m</a></td></tr>
+<tr class="separator:a251d9d5dda4e1edeb26a3b272de01373"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c260a8a91ed5126819955c0babe12ae"><td class="memItemLeft" align="right" valign="top">int8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a6c260a8a91ed5126819955c0babe12ae.html#a6c260a8a91ed5126819955c0babe12ae">has_srid</a></td></tr>
+<tr class="separator:a6c260a8a91ed5126819955c0babe12ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0089d14289f64fbbc403829daee85424"><td class="memItemLeft" align="right" valign="top">int8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a0089d14289f64fbbc403829daee85424.html#a0089d14289f64fbbc403829daee85424">has_z</a></td></tr>
+<tr class="separator:a0089d14289f64fbbc403829daee85424"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7df2c151b1c2f9459823390410d58b82"><td class="memItemLeft" align="right" valign="top">int8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a7df2c151b1c2f9459823390410d58b82.html#a7df2c151b1c2f9459823390410d58b82">lwtype</a></td></tr>
+<tr class="separator:a7df2c151b1c2f9459823390410d58b82"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a22af6f50d895a7bb503ae84f02e823fd"><td class="memItemLeft" align="right" valign="top">const uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a22af6f50d895a7bb503ae84f02e823fd.html#a22af6f50d895a7bb503ae84f02e823fd">pos</a></td></tr>
-<tr class="memdesc:a22af6f50d895a7bb503ae84f02e823fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current parse position.  <a href="structwkb__parse__state_a22af6f50d895a7bb503ae84f02e823fd.html#a22af6f50d895a7bb503ae84f02e823fd">More...</a><br /></td></tr>
 <tr class="separator:a22af6f50d895a7bb503ae84f02e823fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a28d21bad697d5bbc77eab6b394adc4c0"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a28d21bad697d5bbc77eab6b394adc4c0.html#a28d21bad697d5bbc77eab6b394adc4c0">spantype</a></td></tr>
-<tr class="memdesc:a28d21bad697d5bbc77eab6b394adc4c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current span type we are handling.  <a href="structwkb__parse__state_a28d21bad697d5bbc77eab6b394adc4c0.html#a28d21bad697d5bbc77eab6b394adc4c0">More...</a><br /></td></tr>
-<tr class="separator:a28d21bad697d5bbc77eab6b394adc4c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7fbb209fdc69ad99cc0b76c1695631ab"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a7fbb209fdc69ad99cc0b76c1695631ab.html#a7fbb209fdc69ad99cc0b76c1695631ab">srid</a></td></tr>
-<tr class="memdesc:a7fbb209fdc69ad99cc0b76c1695631ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current SRID we are handling.  <a href="structwkb__parse__state_a7fbb209fdc69ad99cc0b76c1695631ab.html#a7fbb209fdc69ad99cc0b76c1695631ab">More...</a><br /></td></tr>
 <tr class="separator:a7fbb209fdc69ad99cc0b76c1695631ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf22526ea1d6aa766e2731b359e49442"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_abf22526ea1d6aa766e2731b359e49442.html#abf22526ea1d6aa766e2731b359e49442">subtype</a></td></tr>
-<tr class="memdesc:abf22526ea1d6aa766e2731b359e49442"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current temporal subtype we are handling.  <a href="structwkb__parse__state_abf22526ea1d6aa766e2731b359e49442.html#abf22526ea1d6aa766e2731b359e49442">More...</a><br /></td></tr>
-<tr class="separator:abf22526ea1d6aa766e2731b359e49442"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43d208ebea144d5ea4700c5171954287"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a43d208ebea144d5ea4700c5171954287.html#a43d208ebea144d5ea4700c5171954287">swap_bytes</a></td></tr>
-<tr class="memdesc:a43d208ebea144d5ea4700c5171954287"><td class="mdescLeft">&#160;</td><td class="mdescRight">Do an endian flip?  <a href="structwkb__parse__state_a43d208ebea144d5ea4700c5171954287.html#a43d208ebea144d5ea4700c5171954287">More...</a><br /></td></tr>
-<tr class="separator:a43d208ebea144d5ea4700c5171954287"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf2a4c970d6947dfbd503638e3215cbb"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_aaf2a4c970d6947dfbd503638e3215cbb.html#aaf2a4c970d6947dfbd503638e3215cbb">temptype</a></td></tr>
-<tr class="memdesc:aaf2a4c970d6947dfbd503638e3215cbb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current temporal type we are handling.  <a href="structwkb__parse__state_aaf2a4c970d6947dfbd503638e3215cbb.html#aaf2a4c970d6947dfbd503638e3215cbb">More...</a><br /></td></tr>
-<tr class="separator:aaf2a4c970d6947dfbd503638e3215cbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5265c54f8d8e16c8d8e483c5f485cbb3"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a5265c54f8d8e16c8d8e483c5f485cbb3.html#a5265c54f8d8e16c8d8e483c5f485cbb3">type</a></td></tr>
-<tr class="memdesc:a5265c54f8d8e16c8d8e483c5f485cbb3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current type we are handling.  <a href="structwkb__parse__state_a5265c54f8d8e16c8d8e483c5f485cbb3.html#a5265c54f8d8e16c8d8e483c5f485cbb3">More...</a><br /></td></tr>
-<tr class="separator:a5265c54f8d8e16c8d8e483c5f485cbb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50c6228261f0af150d6b05f760107900"><td class="memItemLeft" align="right" valign="top">int8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a50c6228261f0af150d6b05f760107900.html#a50c6228261f0af150d6b05f760107900">swap_bytes</a></td></tr>
+<tr class="separator:a50c6228261f0af150d6b05f760107900"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a539a905e8bca447511caa714e0dd23ea"><td class="memItemLeft" align="right" valign="top">const uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a539a905e8bca447511caa714e0dd23ea.html#a539a905e8bca447511caa714e0dd23ea">wkb</a></td></tr>
-<tr class="memdesc:a539a905e8bca447511caa714e0dd23ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Points to start of WKB.  <a href="structwkb__parse__state_a539a905e8bca447511caa714e0dd23ea.html#a539a905e8bca447511caa714e0dd23ea">More...</a><br /></td></tr>
 <tr class="separator:a539a905e8bca447511caa714e0dd23ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9110e9495ca5121be4ce3b62da3bddb4"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwkb__parse__state_a9110e9495ca5121be4ce3b62da3bddb4.html#a9110e9495ca5121be4ce3b62da3bddb4">wkb_size</a></td></tr>
-<tr class="memdesc:a9110e9495ca5121be4ce3b62da3bddb4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expected size of WKB.  <a href="structwkb__parse__state_a9110e9495ca5121be4ce3b62da3bddb4.html#a9110e9495ca5121be4ce3b62da3bddb4">More...</a><br /></td></tr>
 <tr class="separator:a9110e9495ca5121be4ce3b62da3bddb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Structure used for passing the parse state between the parsing functions. </p>
+<div class="textblock"><p >Structure used in PostGIS for passing the parse state between the parsing functions. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>meos/src/general/<a class="el" href="meos_2src_2general_2type__in_8c.html">type_in.c</a></li>
 </ul>

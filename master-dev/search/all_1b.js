@@ -7,7 +7,7 @@ var searchData=
   ['year_5flengths_4',['year_lengths',['../localtime_8c_ae10ec8d75a1d5b504dbe44f8daa79c6c.html#ae10ec8d75a1d5b504dbe44f8daa79c6c',1,'localtime.c']]],
   ['yearsperrepeat_5',['YEARSPERREPEAT',['../private_8h_abfda64cd9c2adcfb0d9d7780f06e08a5.html#abfda64cd9c2adcfb0d9d7780f06e08a5',1,'private.h']]],
   ['yesterday_6',['YESTERDAY',['../datetime_8h_adcfa18f693083515b2a2d2c172cb9498.html#adcfa18f693083515b2a2d2c172cb9498',1,'datetime.h']]],
-  ['ymax_7',['YMAX',['../tpoint__restrict_8c_a689b73289e27812fea68db3702a4cb82.html#a689b73289e27812fea68db3702a4cb82',1,'tpoint_restrict.c']]],
+  ['ymax_7',['YMAX',['../tgeo__restrict_8c_a689b73289e27812fea68db3702a4cb82.html#a689b73289e27812fea68db3702a4cb82',1,'tgeo_restrict.c']]],
   ['ymax_8',['ymax',['../structGBOX_a56074efe89e48b42fb4c10d7c424a459.html#a56074efe89e48b42fb4c10d7c424a459',1,'GBOX::ymax()'],['../structBOX3D_a89a2d11734babfe4bb024293156839d2.html#a89a2d11734babfe4bb024293156839d2',1,'BOX3D::ymax()'],['../structSTBox_af5ef5aaecc02815303dbf0bf72fec9d8.html#af5ef5aaecc02815303dbf0bf72fec9d8',1,'STBox::ymax()']]],
   ['ymin_9',['ymin',['../structGBOX_ab7fcbb32dcb794fcd782f210c80ad9f1.html#ab7fcbb32dcb794fcd782f210c80ad9f1',1,'GBOX::ymin()'],['../structBOX3D_aa7e8d9681f3f5ce103596eb0ac0554fc.html#aa7e8d9681f3f5ce103596eb0ac0554fc',1,'BOX3D::ymin()'],['../structSTBox_a3be6f2174918fa7b79e83a36504d4adf.html#a3be6f2174918fa7b79e83a36504d4adf',1,'STBox::ymin()']]],
   ['yoff_10',['yoff',['../structAFFINE_af9fd3a6ca055ccb837fc1c171d2631d4.html#af9fd3a6ca055ccb837fc1c171d2631d4',1,'AFFINE']]],

@@ -44,7 +44,7 @@ var searchData=
   ['invert_41',['INVERT',['../meos_2include_2general_2temporal_8h_a95febca84b9b6b5b9cfd278e44ffc56f.html#a95febca84b9b6b5b9cfd278e44ffc56f',1,'temporal.h']]],
   ['invert_5fcompare_5fresult_42',['INVERT_COMPARE_RESULT',['../c_8h_a2112936d57caf1822c97bb59a1307d0b.html#a2112936d57caf1822c97bb59a1307d0b',1,'c.h']]],
   ['invert_5fno_43',['INVERT_NO',['../meos_2include_2general_2temporal_8h_a0f175497f6345122d6436c3ec25bd8c0.html#a0f175497f6345122d6436c3ec25bd8c0',1,'temporal.h']]],
-  ['invert_5fresult_44',['INVERT_RESULT',['../meos_2src_2point_2tpoint__spatialrels_8c_a4373a420900cc2fe5d2ef975ed868427.html#a4373a420900cc2fe5d2ef975ed868427',1,'tpoint_spatialrels.c']]],
+  ['invert_5fresult_44',['INVERT_RESULT',['../tgeo__spatialrels_8h_a4373a420900cc2fe5d2ef975ed868427.html#a4373a420900cc2fe5d2ef975ed868427',1,'INVERT_RESULT():&#160;tgeo_spatialrels.h'],['../meos_2src_2geo_2tgeo__spatialrels_8c_a4373a420900cc2fe5d2ef975ed868427.html#a4373a420900cc2fe5d2ef975ed868427',1,'INVERT_RESULT():&#160;tgeo_spatialrels.c']]],
   ['ipc_5fcreat_45',['IPC_CREAT',['../win32__port_8h_ace43f23fcb66ddaad964bb8ea8de6e9c.html#ace43f23fcb66ddaad964bb8ea8de6e9c',1,'win32_port.h']]],
   ['ipc_5fexcl_46',['IPC_EXCL',['../win32__port_8h_acd312ab97691605718a3ee9a1c7c63e9.html#acd312ab97691605718a3ee9a1c7c63e9',1,'win32_port.h']]],
   ['ipc_5fnowait_47',['IPC_NOWAIT',['../win32__port_8h_a5afdf5fc48bb22fa27fbd85627b189b9.html#a5afdf5fc48bb22fa27fbd85627b189b9',1,'win32_port.h']]],
