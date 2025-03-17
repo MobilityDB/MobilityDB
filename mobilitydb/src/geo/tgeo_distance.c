@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -52,7 +52,7 @@
 PGDLLEXPORT Datum Distance_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_geo_tgeo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the temporal distance between a geometry/geography and a
  * temporal geo
  * @sqlfn tDistance()
@@ -74,7 +74,7 @@ Distance_geo_tgeo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Distance_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_tgeo_geo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the temporal distance between a temporal geo and a
  * geometry/geography
  * @sqlfn tDistance()
@@ -96,7 +96,7 @@ Distance_tgeo_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Distance_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_tgeo_tgeo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the temporal distance between two temporal geos
  * @sqlfn tDistance()
  * @sqlop @p <->
@@ -122,7 +122,7 @@ Distance_tgeo_tgeo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAI_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_geo_tgeo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach instant between a geometry and a temporal
  * geo
  * @sqlfn nearestApproachInstant()
@@ -143,7 +143,7 @@ NAI_geo_tgeo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAI_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_tgeo_geo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach instant between a temporal geo
  * and a geometry
  * @sqlfn nearestApproachInstant()
@@ -164,7 +164,7 @@ NAI_tgeo_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAI_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_tgeo_tgeo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach instant between two temporal geos
  * @sqlfn nearestApproachInstant()
  */
@@ -189,7 +189,7 @@ NAI_tgeo_tgeo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_geo_tgeo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between a geometry and a
  * temporal geo
  * @sqlfn nearestApproachDistance()
@@ -211,7 +211,7 @@ NAD_geo_tgeo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tgeo_geo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between a temporal geo and a
  * geometry
  * @sqlfn nearestApproachDistance()
@@ -233,7 +233,7 @@ NAD_tgeo_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_geo_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_geo_stbox);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between a geometry and
  * a spatiotemporal box
  * @sqlfn nearestApproachDistance()
@@ -254,7 +254,7 @@ NAD_geo_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_stbox_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_stbox_geo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between a spatiotemporal box
  * and a geometry
  * @sqlfn nearestApproachDistance()
@@ -275,7 +275,7 @@ NAD_stbox_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_stbox_stbox);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between two spatiotemporal boxes
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
@@ -294,7 +294,7 @@ NAD_stbox_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_stbox_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_stbox_tgeo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between a spatiotemporal box
  * and a temporal geo
  * @sqlfn nearestApproachDistance()
@@ -315,7 +315,7 @@ NAD_stbox_tgeo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_tgeo_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tgeo_stbox);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between a temporal geo and a
  * spatiotemporal box
  * @sqlfn nearestApproachDistance()
@@ -336,7 +336,7 @@ NAD_tgeo_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tgeo_tgeo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between two temporal geos
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
@@ -362,7 +362,7 @@ NAD_tgeo_tgeo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Shortestline_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_geo_tgeo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the line connecting the nearest approach point between a
  * geometry and a temporal geo
  * @sqlfn shortestLine()
@@ -383,7 +383,7 @@ Shortestline_geo_tgeo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Shortestline_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tgeo_geo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the line connecting the nearest approach point between a
  * temporal geo and a geometry/geography
  * @sqlfn shortestLine()
@@ -404,7 +404,7 @@ Shortestline_tgeo_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Shortestline_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tgeo_tgeo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_geo_dist
  * @brief Return the line connecting the nearest approach point between two
  * temporal geos
  * @sqlfn shortestLine()

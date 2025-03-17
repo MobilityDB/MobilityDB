@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -45,76 +45,12 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_cbuffer.h>
-#include "geo/pgis_types.h"
+#include "geo/postgis_funcs.h"
 #include "cbuffer/cbuffer.h"
 
 /*****************************************************************************
  * Transform a temporal circular buffer to a STBox
  *****************************************************************************/
-
-/**
- * @ingroup meos_internal_box_constructor
- * @brief Return in the last argument the spatiotemporal box of a circular
- * buffer
- * @param[in] cbuf Circular buffer
- * @param[out] box Spatiotemporal box
- */
-bool
-cbuffer_set_stbox(const Cbuffer *cbuf, STBox *box)
-{
-  assert(cbuf); assert(box);
-  const GSERIALIZED *point = cbuffer_point(cbuf);
-  bool result = geo_set_stbox(point, box);
-  /* Expand spatial coordinates with respect to radius */
-  box->xmin -= cbuf->radius;
-  box->ymin -= cbuf->radius;
-  box->xmax += cbuf->radius;
-  box->ymax += cbuf->radius;
-  return result;
-}
-
-/**
- * @ingroup meos_box_conversion
- * @brief Return a circular buffer converted to a spatiotemporal box
- * @param[in] cbuf Circular buffer
- * @csqlfn #Cbuffer_to_stbox()
- */
-STBox *
-cbuffer_stbox(const Cbuffer *cbuf)
-{
-  /* Ensure validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) cbuf))
-    return NULL;
-#else
-  assert(cbuf);
-#endif /* MEOS */
-  STBox box;
-  if (! cbuffer_set_stbox(cbuf, &box))
-    return NULL;
-  return stbox_copy(&box);
-}
-
-/**
- * @ingroup meos_internal_box_constructor
- * @brief Return in the last argument a spatiotemporal box contructed from
- * an array of circular buffers
- * @param[in] values Circular buffers
- * @param[in] count Number of elements in the array
- * @param[out] box Spatiotemporal box
- */
-void
-cbufferarr_set_stbox(const Datum *values, int count, STBox *box)
-{
-  cbuffer_set_stbox(DatumGetCbufferP(values[0]), box);
-  for (int i = 1; i < count; i++)
-  {
-    STBox box1;
-    cbuffer_set_stbox(DatumGetCbufferP(values[i]), &box1);
-    stbox_expand(&box1, box);
-  }
-  return;
-}
 
 /**
  * @brief Return in the last argument the spatiotemporal box of a temporal
@@ -169,6 +105,8 @@ tcbufferseq_expand_stbox(const TSequence *seq, const TInstant *inst)
   return;
 }
 
+/*****************************************************************************/
+
 /**
  * @ingroup meos_internal_box_constructor
  * @brief Return in the last argument a spatiotemporal box constructed from a
@@ -188,7 +126,7 @@ cbuffer_timestamptz_set_stbox(const Cbuffer *cbuf, TimestampTz t, STBox *box)
 }
 
 /**
- * @ingroup meos_box_constructor
+ * @ingroup meos_cbuffer_box
  * @brief Return a spatiotemporal box constructed from a circular buffer and a
  * timestamptz
  * @param[in] cbuf Circular buffer
@@ -230,7 +168,7 @@ cbuffer_tstzspan_set_stbox(const Cbuffer *cbuf, const Span *s, STBox *box)
 }
 
 /**
- * @ingroup meos_box_constructor
+ * @ingroup meos_cbuffer_box
  * @brief Return a spatiotemporal box constructed from a circular buffer and a
  * timestamptz
  * @param[in] cbuf Circular buffer

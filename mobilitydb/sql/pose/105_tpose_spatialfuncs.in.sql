@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -27,20 +27,14 @@
  *
  *****************************************************************************/
 
-/*
- * tpose_spatialfuncs.sql
- * Spatial functions for temporal poses.
+/**
+ * @file
+ * @brief Spatial functions for temporal poses
  */
 
-CREATE FUNCTION SRID(pose)
-  RETURNS integer
-  AS 'MODULE_PATHNAME', 'Pose_srid'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION setSRID(pose, integer)
-  RETURNS pose
-  AS 'MODULE_PATHNAME', 'Pose_set_srid'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+/*****************************************************************************
+ * SRID
+ *****************************************************************************/
 
 CREATE FUNCTION SRID(tpose)
   RETURNS integer
@@ -50,6 +44,17 @@ CREATE FUNCTION SRID(tpose)
 CREATE FUNCTION setSRID(tpose, integer)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Tspatial_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transform(tpose, integer)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tspatial_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transformPipeline(tpose, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tspatial_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

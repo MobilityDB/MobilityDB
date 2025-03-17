@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -70,11 +70,16 @@ extern int tdwithin_add_solutions(int solutions, TimestampTz lower,
 
 extern int ea_dwithin_tgeo_tgeo_sync(const Temporal *sync1,
   const Temporal *sync2, double dist, bool ever);
+extern int ea_dwithin_tgeo_tgeo(const Temporal *temp1,
+  const Temporal *temp2, double dist, bool ever);
 extern int ea_intersects_tgeo_tgeo(const Temporal *temp1,
   const Temporal *temp2, bool ever);
 extern int ea_disjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool ever);
 
+extern int ea_spatialrel_tspatial_tspatial(const Temporal *temp1,
+  const Temporal *temp2, datum_func2 func, bool ever);
+  
 /*****************************************************************************/
 
 #endif 

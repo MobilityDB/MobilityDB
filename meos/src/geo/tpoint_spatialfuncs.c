@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -53,7 +53,7 @@
 #include "general/tnumber_mathfuncs.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
-#include "geo/pgis_types.h"
+#include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_distance.h"
@@ -106,7 +106,7 @@ point_get_z(Datum point)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return one of the coordinates of a temporal point as a temporal float
  * @param[in] temp Temporal point
  * @param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
@@ -136,7 +136,7 @@ tpoint_get_coord(const Temporal *temp, int coord)
 
 #if MEOS
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the X coordinates of a temporal point as a temporal float
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_get_x()
@@ -150,7 +150,7 @@ tpoint_get_x(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the Y coordinates of a temporal point as a temporal float
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_get_y()
@@ -164,7 +164,7 @@ tpoint_get_y(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the Z coordinates of a temporal point as a temporal float
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_get_z()
@@ -507,6 +507,7 @@ bool
 tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
+  assert(inst1); assert(inst2);
   assert(! gserialized_is_empty(DatumGetGserializedP(value)));
 
   /* We are sure that the trajectory is a line */
@@ -963,7 +964,7 @@ geopointlinearr_make_trajectory(GSERIALIZED **points, int npoints,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the trajectory of a temporal point sequence
  * @param[in] seq Temporal sequence
  * @param[in] unary_union True when the ST_UnaryUnion function is applied to
@@ -1010,7 +1011,7 @@ tpointseq_linear_trajectory(const TSequence *seq, bool unary_union)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the trajectory of a temporal point sequence set
  * @param[in] ss Temporal sequence set
  * @param[in] unary_union True when the ST_UnaryUnion function is applied to
@@ -1054,7 +1055,7 @@ tpointseqset_linear_trajectory(const TSequenceSet *ss, bool unary_union)
 }
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the trajectory of a temporal point
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_trajectory()
@@ -1502,9 +1503,9 @@ tpointseqset_to_geomeas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_spatial_transf
- * @brief Return a geometry/geography with M measure from a temporal point
- * point and optionally a temporal float
+ * @ingroup meos_geo_conversion
+ * @brief Return a geometry/geography with M measure from a temporal point and
+ * optionally a temporal float
  * @details If a temporal float is given the M coordinates of the result encode
  * the float values. Otherwise, the M coordinates encode the time information
  * of the temporal point in Unix time, that is, the number of seconds since
@@ -1799,7 +1800,7 @@ geomeas_tpointseqset(const LWGEOM *geom, bool hasz, bool geodetic)
 }
 
 /**
- * @ingroup meos_temporal_spatial_transf
+ * @ingroup meos_geo_conversion
  * @brief Return a geometry/geography with M measure encoding timestamps
  * transformed to a temporal point
  * @param[in] gs Geometry
@@ -2307,7 +2308,7 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_spatial_transf
+ * @ingroup meos_geo_conversion
  * @brief Return a temporal point transformed to Mapbox Vector Tile format
  * @param[in] temp Temporal point
  * @param[in] bounds Bounds
@@ -2423,7 +2424,7 @@ tpointseq_length_3d(const TSequence *seq)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the length traversed by a temporal point sequence
  * @param[in] seq Temporal sequence
  * @csqlfn #Tpoint_length()
@@ -2454,7 +2455,7 @@ tpointseq_length(const TSequence *seq)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the length traversed by a temporal point sequence set
  * @param[in] ss Temporal sequence set
  * @csqlfn #Tpoint_length()
@@ -2471,7 +2472,7 @@ tpointseqset_length(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the length traversed by a temporal point sequence (set)
  * @param[in] temp Temporal point
  * @return On error return -1.0
@@ -2496,7 +2497,7 @@ tpoint_length(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the cumulative length traversed by a temporal point sequence
  * @param[in] seq Temporal sequence
  * @param[in] prevlength Previous length to be added to the current sequence
@@ -2538,7 +2539,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the cumulative length traversed by a temporal point sequence
  * set
  * @param[in] ss Temporal sequence set
@@ -2564,7 +2565,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the cumulative length traversed by a temporal point
  * @param[in] temp Temporal point
  * @return On error return @p NULL
@@ -2591,7 +2592,7 @@ tpoint_cumulative_length(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the speed of a temporal point sequence
  * @param[in] seq Temporal sequence
  * @pre The temporal point has linear interpolation
@@ -2634,7 +2635,7 @@ tpointseq_speed(const TSequence *seq)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the speed of a temporal point sequence set
  * @param[in] ss Temporal sequence set
  * @csqlfn #Tpoint_speed()
@@ -2657,7 +2658,7 @@ tpointseqset_speed(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the speed of a temporal point
  * @param[in] temp Temporal point
  * @return On error return @p NULL
@@ -2721,7 +2722,7 @@ tpointseq_twcentroid_iter(const TSequence *seq, bool hasz, interpType interp,
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the time-weighed centroid of a temporal geometry point
  * sequence
  * @param[in] seq Temporal sequence
@@ -2747,7 +2748,7 @@ tpointseq_twcentroid(const TSequence *seq)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the time-weighed centroid of a temporal geometry point
  * sequence set
  * @param[in] ss Temporal sequence set
@@ -2783,7 +2784,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the time-weighed centroid of a temporal geometry point
  * @param[in] temp Temporal point
  * @return On error return @p NULL
@@ -2842,7 +2843,7 @@ datum_geog_azimuth(Datum geog1, Datum geog2)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the direction of a temporal point sequence
  * @param[in] seq Temporal sequence
  * @param[out] result Azimuth between the first and last point
@@ -2873,7 +2874,7 @@ tpointseq_direction(const TSequence *seq, double *result)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the direction of a temporal point sequence set
  * @param[in] ss Temporal sequence set
  * @param[out] result Azimuth between the first and last point
@@ -2906,7 +2907,7 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
 }
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the direction of a temporal point
  * @param[in] temp Temporal point
  * @param[out] result Azimuth between the first and last point
@@ -3003,7 +3004,7 @@ tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the temporal azimuth of a temporal geometry point sequence
  * @param[in] seq Temporal sequence
  * @csqlfn #Tpoint_azimuth()
@@ -3019,7 +3020,7 @@ tpointseq_azimuth(const TSequence *seq)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return the temporal azimuth of a temporal geometry point sequence set
  * @param[in] ss Temporal sequence set
  * @csqlfn #Tpoint_azimuth()
@@ -3042,7 +3043,7 @@ tpointseqset_azimuth(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the temporal azimuth of a temporal geometry point
  * @param[in] temp Temporal point
  * @return On error return @p NULL
@@ -3065,7 +3066,7 @@ tpoint_azimuth(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the temporal angular difference of a temporal geometry point
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_angular_difference()
@@ -3308,7 +3309,7 @@ tpointsegm_min_bearing_at_timestamptz(const TInstant *start1,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the temporal bearing between two geometry/geography points
  * @param[in] gs1,gs2 Geometries
  * @param[out] result Result
@@ -3335,7 +3336,7 @@ bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 }
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the temporal bearing between a temporal point and a point
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
@@ -3347,7 +3348,7 @@ Temporal *
 bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_point_type(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return NULL;
@@ -3368,7 +3369,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 }
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the temporal bearing between two temporal points
  * @param[in] temp1,temp2 Temporal points
  * @return On error return @p NULL
@@ -3378,7 +3379,7 @@ Temporal *
 bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
+  if (! ensure_valid_tspatial_tspatial(temp1, temp2) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags) )
     return NULL;
 
@@ -4060,7 +4061,7 @@ tpointseq_discstep_is_simple(const TSequence *seq)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return true if a temporal point does not self-intersect
  * @param[in] seq Temporal point
  * @csqlfn #Tpoint_is_simple()
@@ -4083,7 +4084,7 @@ tpointseq_is_simple(const TSequence *seq)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_accessor
+ * @ingroup meos_internal_geo_accessor
  * @brief Return true if a temporal point does not self-intersect
  * @param[in] ss Temporal sequence set
  * @csqlfn #Tpoint_is_simple()
@@ -4103,7 +4104,7 @@ tpointseqset_is_simple(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return true if a temporal point does not self-intersect
  * @param[in] temp Temporal point
  * @csqlfn #Tpoint_is_simple()
@@ -4228,7 +4229,7 @@ tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_transf
+ * @ingroup meos_internal_geo_transf
  * @brief Return a temporal point sequence split into an array of non
  * self-intersecting fragments
  * @param[in] seq temporal point sequence
@@ -4274,7 +4275,7 @@ tpointseq_make_simple(const TSequence *seq, int *count)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_transf
+ * @ingroup meos_internal_geo_transf
  * @brief Return a temporal point sequence set split into an array of non
  * self-intersecting fragments
  * @param[in] ss Temporal point sequence set
@@ -4304,7 +4305,7 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
 }
 
 /**
- * @ingroup meos_temporal_spatial_transf
+ * @ingroup meos_geo_transf
  * @brief Return a temporal point split into an array of non self-intersecting
  * fragments
  * @param[in] temp Temporal point

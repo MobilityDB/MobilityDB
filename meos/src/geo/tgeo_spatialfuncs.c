@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -49,11 +49,12 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/lifting.h"
+#include "general/temporal.h"
 #include "general/temporal_compops.h"
 #include "general/tnumber_mathfuncs.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
-#include "geo/pgis_types.h"
+#include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_distance.h"
@@ -61,7 +62,6 @@
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
 #if POSE
-  #include <meos_pose.h>
   #include "pose/pose.h"
 #endif
 
@@ -309,26 +309,6 @@ datum_pt_distance3d(Datum geom1, Datum geom2)
   return Float8GetDatum(distance3d_pt_pt((POINT3D *) p1, (POINT3D *) p2));
 }
 
-/**
- * @brief Return the 2D intersection between the two geometries
- */
-Datum
-datum_geom_intersection2d(Datum geom1, Datum geom2)
-{
-  return GserializedPGetDatum(geom_intersection2d(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2)));
-}
-
-/**
- * @brief Return the 2D difference between the two geographies
- */
-Datum
-datum_geom_difference2d(Datum geom1, Datum geom2)
-{
-  return GserializedPGetDatum(geom_difference2d(DatumGetGserializedP(geom1),
-    DatumGetGserializedP(geom2)));
-}
-
 /*****************************************************************************/
 
 /**
@@ -370,6 +350,20 @@ npoint_flags(void)
 }
 #endif /* NPOINT */ 
 
+#if POSE
+/**
+ * @brief Get the MEOS flags from a pose
+ */
+static int16
+pose_flags(Pose *pose)
+{
+  int16 result = 0; /* Set all flags to false */
+  MEOS_FLAGS_SET_X(result, true);
+  MEOS_FLAGS_SET_Z(result, MEOS_FLAGS_GET_Z(pose->flags));
+  return result;
+}
+#endif /* NPOINT */ 
+
 /**
  * @brief Get the MEOS flags from a spatial value
  */
@@ -392,7 +386,7 @@ spatial_flags(Datum d, meosType basetype)
 #endif
 #if POSE
     case T_POSE:
-      return (int16) DatumGetPoseP(d)->flags;
+      return pose_flags(DatumGetPoseP(d));
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -702,12 +696,13 @@ ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 
 
 /**
- * @brief Ensure the validity of a temporal geo and a geometry/geography
+ * @brief Ensure the validity of a temporal spatial value and a 
+ * geometry/geography
  * @note The geometry can be empty since some functions such atGeometry or
  * minusGeometry return different result on empty geometries.
  */
 bool
-ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+ensure_valid_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_tgeo_type_all(temp->temptype) ||
@@ -751,10 +746,10 @@ ensure_valid_tgeo_stbox(const Temporal *temp, const STBox *box)
  * @brief Ensure the validity of two temporal points
  */
 bool
-ensure_valid_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
+ensure_valid_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   if (ensure_not_null((void *) temp1) && ensure_not_null((void *) temp2) &&
-      ensure_tgeo_type_all(temp1->temptype) &&
+      ensure_tspatial_type(temp1->temptype) &&
       ensure_same_temporal_type(temp1, temp2) &&
       ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
     return true;
@@ -871,7 +866,7 @@ tgeom_tgeog(const Temporal *temp, bool oper)
 
 #if MEOS
 /**
- * @ingroup meos_temporal_conversion
+ * @ingroup meos_geo_conversion
  * @brief Return a temporal geography from a temporal geometry
  * @param[in] temp Temporal geo
  * @csqlfn #Tgeometry_to_tgeography()
@@ -886,7 +881,7 @@ tgeometry_tgeography(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_conversion
+ * @ingroup meos_geo_conversion
  * @brief Return a temporal geometry from to a temporal geography
  * @param[in] temp Temporal point
  * @csqlfn #Tgeography_to_tgeometry()
@@ -994,7 +989,7 @@ tgeoinst_tpointinst(const TInstant *inst, bool oper)
     temptype = (inst->temptype == T_TGEOMETRY) ? T_TGEOMPOINT : T_TGEOGPOINT;
   else
     temptype = (inst->temptype == T_TGEOMPOINT) ? T_TGEOMETRY : T_TGEOGRAPHY;
-  return tinstant_make_free(PointerGetDatum(gs), temptype, inst->t);
+  return tinstant_make(PointerGetDatum(gs), temptype, inst->t);
 }
 
 /**
@@ -1059,7 +1054,7 @@ tgeo_tpoint(const Temporal *temp, bool oper)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
-      (((oper == TGEO_TO_TPOINT && (! ensure_tgeo_type_all(temp->temptype) &&
+      (((oper == TGEO_TO_TPOINT && (! ensure_tgeo_type_all(temp->temptype) ||
          ! ensure_tgeo_point_type(temp))) ||
         (oper == TPOINT_TO_TGEO && ! ensure_tpoint_type(temp->temptype)))))
     return NULL;
@@ -1078,7 +1073,7 @@ tgeo_tpoint(const Temporal *temp, bool oper)
 
 #if MEOS
 /**
- * @ingroup meos_temporal_conversion
+ * @ingroup meos_geo_conversion
  * @brief Return a temporal geometry point from a temporal geometry
  * @param[in] temp Temporal geometry
  * @csqlfn #Tgeo_to_tpoint()
@@ -1093,7 +1088,7 @@ tgeometry_tgeompoint(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_conversion
+ * @ingroup meos_geo_conversion
  * @brief Return a temporal geography point from a temporal geography
  * @param[in] temp Temporal geography
  * @csqlfn #Tgeo_to_tpoint()
@@ -1109,7 +1104,7 @@ tgeography_tgeogpoint(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_conversion
+ * @ingroup meos_geo_conversion
  * @brief Return a temporal geometry from a temporal geometry point
  * @param[in] temp Temporal geometry point
  * @csqlfn #Tpoint_to_tgeo()
@@ -1124,7 +1119,7 @@ tgeompoint_tgeometry(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_conversion
+ * @ingroup meos_geo_conversion
  * @brief Return a temporal geography from a temporal geography point
  * @param[in] temp Temporal geography point
  * @csqlfn #Tpoint_to_tgeo()
@@ -1165,7 +1160,7 @@ tgeoinst_affine_iter(const TInstant *inst, const AFFINE *a, TInstant **result)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_transf
+ * @ingroup meos_internal_geo_transf
  * @brief Return the affine transformation of a temporal geo instant
  * @param[in] inst Temporal geo
  * @param[in] a Affine transformation
@@ -1180,7 +1175,7 @@ tgeoinst_affine(TInstant *inst, const AFFINE *a)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_transf
+ * @ingroup meos_internal_geo_transf
  * @brief Return the affine transform a temporal geo sequence
  * @param[in] seq Temporal geo
  * @param[in] a Affine transformation
@@ -1198,7 +1193,7 @@ tgeoseq_affine(const TSequence *seq, const AFFINE *a)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_transf
+ * @ingroup meos_internal_geo_transf
  * @brief Return the affine transformation of a temporal geo sequence set
  * @param[in] ss Temporal geo
  * @param[in] a Affine transformation
@@ -1214,7 +1209,7 @@ tgeoseqset_affine(const TSequenceSet *ss, const AFFINE *a)
 }
 
 /**
- * @ingroup meos_temporal_spatial_transf
+ * @ingroup meos_geo_transf
  * @brief Return the 3D affine transform of a temporal geo to do things like
  * translate, rotate, scale in one step
  * @param[in] temp Temporal geo
@@ -1264,7 +1259,7 @@ tgeoinst_scale_iter(const TInstant *inst, const POINT4D *factors,
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_transf
+ * @ingroup meos_internal_geo_transf
  * @brief Return a temporal geo instant scaled by given factors
  * @param[in] inst Temporal geo
  * @param[in] factors Scale factors
@@ -1278,7 +1273,7 @@ tgeoinst_scale(const TInstant *inst, const POINT4D *factors)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_transf
+ * @ingroup meos_internal_geo_transf
  * @brief Return a temporal geo sequence scaled by given factors
  * @param[in] seq Temporal geo
  * @param[in] factors Scale factors
@@ -1295,7 +1290,7 @@ tgeoseq_scale(const TSequence *seq, const POINT4D *factors)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_transf
+ * @ingroup meos_internal_geo_transf
  * @brief Return a temporal geo sequence scaled by given factors
  * @param[in] ss Temporal geo
  * @param[in] factors Scale factors
@@ -1310,7 +1305,7 @@ tgeoseqset_scale(const TSequenceSet *ss, const POINT4D *factors)
 }
 
 /**
- * @ingroup meos_temporal_spatial_transf
+ * @ingroup meos_geo_transf
  * @brief Scale a temporal geo by given factors
  * @param[in] temp Temporal geo
  * @param[in] scale Geometry for the scale factors
@@ -1405,7 +1400,7 @@ tgeo_scale(const Temporal *temp, const GSERIALIZED *scale,
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the convex hull of a temporal geo
  * @param[in] temp Temporal geo
  * @return On error return @p NULL
@@ -1430,7 +1425,7 @@ tgeo_convex_hull(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the traversed area of a temporal geo or the trajectory for
  * a temporal point with discrete or step interpolation
  * @param[in] temp Temporal geo
@@ -1452,7 +1447,7 @@ tgeo_traversed_area(const Temporal *temp)
 
   /* Get the array of pointers to the component values */
   int count;
-  Datum *values = temporal_vals(temp, &count);
+  Datum *values = temporal_values_p(temp, &count);
   meosType basetype = temptype_basetype(temp->temptype);
   datumarr_sort(values, count, basetype);
   int newcount = datumarr_remove_duplicates(values, count, basetype);

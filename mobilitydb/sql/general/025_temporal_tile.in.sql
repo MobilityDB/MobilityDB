@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -27,9 +27,10 @@
  *
  *****************************************************************************/
 
-/*
- * Bin and tile functions for temporal types.
- * The time bin function are inspired from TimescaleDB.
+/**
+ * @file
+ * @brief Bin and tile functions for temporal types
+ * @note The time bin function are inspired from TimescaleDB
  * https://docs.timescale.com/latest/api#time_bucket
  */
 

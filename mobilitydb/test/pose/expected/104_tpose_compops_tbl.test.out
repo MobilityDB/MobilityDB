@@ -1,0 +1,36 @@
+SELECT COUNT(*) FROM tbl_pose2d t1, tbl_tpose2d t2 WHERE t1.pose #= t2.temp IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpose2d t1, tbl_pose2d t2 WHERE t1.temp #= t2.pose IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpose2d t1, tbl_tpose2d t2 WHERE t1.temp #= t2.temp IS NOT NULL;
+ count 
+-------
+   104
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pose2d t1, tbl_tpose2d t2 WHERE t1.pose #<> t2.temp IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpose2d t1, tbl_pose2d t2 WHERE t1.temp #<> t2.pose IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpose2d t1, tbl_tpose2d t2 WHERE t1.temp #<> t2.temp IS NOT NULL;
+ count 
+-------
+   104
+(1 row)
+

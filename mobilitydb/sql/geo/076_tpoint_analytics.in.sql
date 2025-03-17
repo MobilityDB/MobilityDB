@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -27,9 +27,9 @@
  *
  *****************************************************************************/
 
-/*
- * tpoint_analytics.sql
- * Analytic functions for temporal points.
+/**
+ * @file
+ * @brief Analytic functions for temporal points
  */
 
 /*****************************************************************************/
@@ -165,10 +165,6 @@ LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
-CREATE FUNCTION minDistSimplify(tfloat, float)
-RETURNS tfloat
-AS 'MODULE_PATHNAME', 'Temporal_simplify_min_dist'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minDistSimplify(tgeompoint, float)
 RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_dist'
@@ -178,10 +174,6 @@ RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_dist'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minTimeDeltaSimplify(tfloat, interval)
-RETURNS tfloat
-AS 'MODULE_PATHNAME', 'Temporal_simplify_min_tdelta'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minTimeDeltaSimplify(tgeompoint, interval)
 RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_tdelta'
@@ -191,19 +183,11 @@ RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_min_tdelta'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION maxDistSimplify(tfloat, float, boolean DEFAULT TRUE)
-RETURNS tfloat
-AS 'MODULE_PATHNAME', 'Temporal_simplify_max_dist'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION maxDistSimplify(tgeompoint, float, boolean DEFAULT TRUE)
 RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_max_dist'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION douglasPeuckerSimplify(tfloat, float, boolean DEFAULT TRUE)
-RETURNS tfloat
-AS 'MODULE_PATHNAME', 'Temporal_simplify_dp'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION douglasPeuckerSimplify(tgeompoint, float, boolean DEFAULT TRUE)
 RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'Temporal_simplify_dp'

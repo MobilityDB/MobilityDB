@@ -8,10 +8,10 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<chapter id="temporal_types_aggregation">
+<chapter xml:id="ttype_aggregation">
 	<title>Temporal Types: Aggregation and Indexing</title>
 
-	<sect1 id="temporal_types_aggregations">
+	<sect1 xml:id="ttype_aggregations">
 		<title>Aggregation</title>
 
 		<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <emphasis>union</emphasis> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating temporal types compute the value of the function at every instant in the <emphasis>intersection</emphasis> of the temporal extents of the arguments.</para>
@@ -26,23 +26,23 @@
 			<listitem><para>Finally, for temporal point types, the function <varname>tCentroid</varname> generalizes the function <varname>ST_Centroid</varname> provided by PostGIS. For example, given set of objects that move together (that is, a convoy or a flock) the temporal centroid will produce a temporal point that represents at each instant the geometric center (or the center of mass) of all the moving objects.</para></listitem>
 		</itemizedlist>
 
-		<para>In the examples that follow, we suppose the tables <varname>Department</varname> and <varname>Trip</varname> contain the two tuples introduced in <xref linkend="temporal_types_examples" />.</para>
+		<para>In the examples that follow, we suppose the tables <varname>Department</varname> and <varname>Trip</varname> contain the two tuples introduced in <xref linkend="ttype_examples"/>.</para>
 		<itemizedlist>
-			<listitem id="tCount">
-				<indexterm><primary><varname>tCount</varname></primary></indexterm>
+			<listitem xml:id="tCount">
+				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
 				<para>Temporal count</para>
 				<para><varname>tCount(ttype) → {tintSeq,tintSeqSet}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tCount(NoEmps) FROM Department;
 -- {[1@2001-01-01, 2@2001-02-01, 1@2001-08-01, 1@2001-10-01)}
 </programlisting>
 			</listitem>
 
-			<listitem id="extent">
-				<indexterm><primary><varname>extent</varname></primary></indexterm>
+			<listitem xml:id="extent">
+				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
 				<para>Bounding box extent</para>
 				<para><varname>extent(temp) → {tstzspan,tbox,stbox}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT extent(noEmps) FROM Department;
 -- TBOX XT((4,12),[2001-01-01,2001-10-01])
 SELECT extent(Trip) FROM Trips;
@@ -50,62 +50,38 @@ SELECT extent(Trip) FROM Trips;
 </programlisting>
 			</listitem>
 
-			<listitem id="tAnd">
-				<indexterm><primary><varname>tAnd</varname></primary></indexterm>
-				<para>Temporal and</para>
+			<listitem xml:id="tAnd">
+				<indexterm significance="normal"><primary><varname>tAnd</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tOr</varname></primary></indexterm>
+				<para>Temporal and, temporal or</para>
+				<para><varname>tOr(tbool) → tbool</varname></para>
 				<para><varname>tAnd(tbool) → tbool</varname></para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tAnd(NoEmps #&gt; 6) FROM Department;
 -- {[t@2001-01-01, f@2001-04-01, f@2001-10-01)}
-</programlisting>
-			</listitem>
-
-			<listitem id="tOr">
-				<indexterm><primary><varname>tOr</varname></primary></indexterm>
-				<para>Temporal or</para>
-				<para><varname>tOr(tbool) → tbool</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tOr(NoEmps #&gt; 6) FROM Department;
 -- {[t@2001-01-01, f@2001-08-01, f@2001-10-01)}
 </programlisting>
 			</listitem>
 
-			<listitem id="tMin">
-				<indexterm><primary><varname>tMin</varname></primary></indexterm>
-				<para>Temporal minimum</para>
+			<listitem xml:id="tMin">
+				<indexterm significance="normal"><primary><varname>tMin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tMax</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tSum</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tAvg</varname></primary></indexterm>
+				<para>Temporal minimum, maximum, sum, and average</para>
 				<para><varname>tMin(ttype) → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
+				<para><varname>tMax(ttype) → ttype</varname></para>
+				<para><varname>tSum(tnumber) → {tnumberSeq,tnumberSeqSet}</varname></para>
+				<para><varname>tAvg(tnumber) → {tfloatSeq,tfloatSeqSet}</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tMin(NoEmps) FROM Department;
 -- {[10@2001-01-01, 4@2001-02-01, 6@2001-06-01, 6@2001-10-01)}
-</programlisting>
-			</listitem>
-
-			<listitem id="tMax">
-				<indexterm><primary><varname>tMax</varname></primary></indexterm>
-				<para>Temporal maximum</para>
-				<para><varname>tMax(ttype) → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tMax(NoEmps) FROM Department;
 -- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-01, 6@2001-10-01)}
-</programlisting>
-			</listitem>
-
-			<listitem id="tSum">
-				<indexterm><primary><varname>tSum</varname></primary></indexterm>
-				<para>Temporal sum</para>
-				<para><varname>tSum(tnumber) → {tnumberSeq,tnumberSeqSet}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tSum(NoEmps) FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 16@2001-04-01, 18@2001-06-01, 6@2001-08-01,
    6@2001-10-01)} */
-</programlisting>
-			</listitem>
-
-			<listitem id="tAvg">
-				<indexterm><primary><varname>tAvg</varname></primary></indexterm>
-				<para>Temporal average</para>
-				<para><varname>tAvg(tnumber) → {tfloatSeq,tfloatSeqSet}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tAvg(NoEmps) FROM Department;
 /* {[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
    [8@2001-04-01, 8@2001-06-01), [9@2001-06-01, 9@2001-08-01),
@@ -113,67 +89,46 @@ SELECT tAvg(NoEmps) FROM Department;
 </programlisting>
 			</listitem>
 
-			<listitem id="wMin">
-				<indexterm><primary><varname>wMin</varname></primary></indexterm>
-				<para>Window minimum</para>
-				<para><varname>wMin(tnumber,interval) → {tnumberSeq,tnumberSeqSet}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT wMin(NoEmps, interval '2 days') FROM Department;
--- {[10@2001-01-01, 4@2001-04-01, 6@2001-06-03, 6@2001-10-03)}
-</programlisting>
-			</listitem>
-
-			<listitem id="wMax">
-				<indexterm><primary><varname>wMax</varname></primary></indexterm>
-				<para>Window maximum</para>
-				<para><varname>wMax(tnumber,interval) → {tnumberDiscSeq,tnumberSeqSet}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT wMax(NoEmps, interval '2 days') FROM Department;
--- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-03, 6@2001-10-03)}
-</programlisting>
-			</listitem>
-
-			<listitem id="wCount">
-				<indexterm><primary><varname>wCount</varname></primary></indexterm>
+			<listitem xml:id="wCount">
+				<indexterm significance="normal"><primary><varname>wCount</varname></primary></indexterm>
 				<para>Window count</para>
 				<para><varname>wCount(tnumber,interval) → {tintSeq,tintSeqSet}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT wCount(NoEmps, interval '2 days') FROM Department;
 /* {[1@2001-01-01, 2@2001-02-01, 3@2001-04-01, 2@2001-04-03, 3@2001-06-01, 2@2001-06-03,
    1@2001-08-03, 1@2001-10-03)} */
 </programlisting>
 			</listitem>
 
-			<listitem id="wSum">
-				<indexterm><primary><varname>wSum</varname></primary></indexterm>
-				<para>Window sum</para>
+			<listitem xml:id="wMin">
+				<indexterm significance="normal"><primary><varname>wMin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>wMax</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>wSum</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>wAvg</varname></primary></indexterm>
+				<para>Window minimum, maximum, sum, and average</para>
+				<para><varname>wMin(tnumber,interval) → {tnumberSeq,tnumberSeqSet}</varname></para>
+				<para><varname>wMax(tnumber,interval) → {tnumberDiscSeq,tnumberSeqSet}</varname></para>
 				<para><varname>wSum(tint,interval) → {tintSeq,tintSeqSet}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
+				<para><varname>wAvg(tint,interval) → {tfloatSeq,tfloatSeqSet}</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT wMin(NoEmps, interval '2 days') FROM Department;
+-- {[10@2001-01-01, 4@2001-04-01, 6@2001-06-03, 6@2001-10-03)}
+SELECT wMax(NoEmps, interval '2 days') FROM Department;
+-- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-03, 6@2001-10-03)}
 SELECT wSum(NoEmps, interval '2 days') FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 26@2001-04-01, 16@2001-04-03, 22@2001-06-01,
    18@2001-06-03, 6@2001-08-03, 6@2001-10-03)} */
+SELECT round(wAvg(NoEmps, interval '2 days'), 3) FROM Department;
+/*  Interp=Step;{[10@2001-01-01, 7@2001-02-01, 8.667@2001-04-01, 8@2001-04-03, 
+   7.333@2001-06-01, 9@2001-06-03, 6@2001-08-03, 6@2001-10-03)} */
 </programlisting>
 			</listitem>
 
-			<listitem id="wAvg">
-				<indexterm><primary><varname>wAvg</varname></primary></indexterm>
-				<para>Window average</para>
-				<para><varname>wAvg(tint,interval) → {tfloatSeq,tfloatSeqSet}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT wAvg(NoEmps, interval '2 days') FROM Department;
-/* {[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
-   [8.66666666666667@2001-04-01, 8.66666666666667@2001-04-03),
-   [8@2001-04-03, 8@2001-06-01),
-   [7.33333333333333@2001-06-01, 7.33333333333333@2001-06-03),
-   [9@2001-06-03, 9@2001-08-03), [6@2001-08-03, 6@2001-10-03)} */
-</programlisting>
-			</listitem>
-
-			<listitem id="tCentroid">
-				<indexterm><primary><varname>tCentroid</varname></primary></indexterm>
+			<listitem xml:id="tCentroid">
+				<indexterm significance="normal"><primary><varname>tCentroid</varname></primary></indexterm>
 				<para>Temporal centroid</para>
 				<para><varname>tCentroid(tgeompoint) → tgeompoint</varname></para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tCentroid(Trip) FROM Trips;
 /* {[POINT(0 0)@2001-01-01 08:00:00+00, POINT(1 0)@2001-01-01 08:05:00+00),
    [POINT(0.5 0)@2001-01-01 08:05:00+00, POINT(1.5 0.5)@2001-01-01 08:10:00+00,
@@ -185,16 +140,16 @@ SELECT tCentroid(Trip) FROM Trips;
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="temporal_types_indexing">
+	<sect1 xml:id="ttype_indexing">
 		<title>Indexing</title>
 		<para>GiST and SP-GiST indexes can be created for table columns of temporal types. The GiST index implements an R-tree and the SP-GiST index implements an n-dimensional quad-tree. Examples of index creation are as follows:
-			<programlisting language="sql" xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);
 CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 </programlisting>
 		</para>
 
-		<para>The GiST and SP-GiST indexes store the bounding box for the temporal types. As explained in <xref linkend="temporal_types" />, these are
+		<para>The GiST and SP-GiST indexes store the bounding box for the temporal types. As explained in <xref linkend="ttype_p1"/>, these are
 			<itemizedlist>
 				<listitem>
 					<para>the <varname>tstzspan</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types,</para>
@@ -210,7 +165,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 			</itemizedlist>
 		</para>
 
-		<para>A GiST or SP-GiST index can accelerate queries involving the following operators (see <xref linkend="temporal_types_bbox" /> for more information):
+		<para>A GiST or SP-GiST index can accelerate queries involving the following operators (see <xref linkend="ttype_bbox"/> for more information):
 			<itemizedlist>
 				<listitem>
 					<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, which only consider the value dimension in temporal alphanumeric types,</para>
@@ -231,7 +186,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 		</para>
 
 		<para>For example, given the index defined above on the <varname>Department</varname> table and a query that involves a condition with the <varname>&amp;&amp;</varname> (overlaps) operator, if the right argument is a temporal float then both the value and the time dimensions are considered for filtering the tuples of the relation, while if the right argument is a float value, a float span, or a time type, then either the value or the time dimension will be used for filtering the tuples of the relation. Furthermore, a bounding box can be constructed from a value/span and/or a timestamp/period, which can be used for filtering the tuples of the relation. Examples of queries using the index on the <varname>Department</varname> table defined above are given next.
-			<programlisting language="sql" xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT * FROM Department WHERE NoEmps &amp;&amp; intspan '[1, 5)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; tstzspan '[2001-04-01, 2001-05-01)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
@@ -242,7 +197,7 @@ SELECT * FROM Department WHERE NoEmps &amp;&amp;
 		</para>
 
 		<para>Similarly, examples of queries using the index on the <varname>Trips</varname> table defined above are given next.
-			<programlisting language="sql" xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT * FROM Trips WHERE Trip &amp;&amp; geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))';
 SELECT * FROM Trips WHERE Trip &amp;&amp; timestamptz '2001-01-01';
 SELECT * FROM Trips WHERE Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-05)';
@@ -256,7 +211,7 @@ SELECT * FROM Trips WHERE Trip &amp;&amp;
 		<para>Finally, B-tree indexes can be created for table columns of all temporal types. For this index type, the only useful operation is equality. There is a B-tree sort ordering defined for values of temporal types, with corresponding <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname> and operators, but the ordering is rather arbitrary and not usually useful in the real world. B-tree support for temporal types is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
 
 		<para>In order to speed up several of the functions for temporal types, we can add in the <varname>WHERE</varname> clause of queries a bounding box comparison that make uses of the available indexes. For example, this would be typically the case for the functions that project the temporal types to the value/spatial and/or time dimensions. This will filter out the tuples with an index as shown in the following query.
-			<programlisting language="sql" xml:space="preserve">
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)')
 FROM Trips T
 -- Bouding box index filtering
@@ -264,8 +219,8 @@ WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 </programlisting>
 		</para>
 
-		<para>In the case of temporal points, all spatial relationships with the ever semantics (see <xref linkend="tpoint_spatial_rel" />) automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
-			<programlisting language="sql" xml:space="preserve">
+		<para>In the case of temporal points, all spatial relationships with the ever semantics (see <xref linkend="tgeo_spatial_rel"/>) automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R
 -- Bouding box index filtering
@@ -274,14 +229,14 @@ WHERE intersects(T.Trip, R.Geom);
 		</para>
 	</sect1>
 
-	<sect1 id="temporal_types_statistics">
+	<sect1 xml:id="ttype_statistics">
 		<title>Statistics and Selectivity</title>
 		<sect2>
 			<title>Statistics Collection</title>
-			<para>The PostgreSQL planner relies on statistical information about the contents of tables in order to generate the most efficient execution plan for queries. These statistics include a list of some of the most common values in each column and a histogram showing the approximate data distribution in each column. For large tables, a random sample of the table contents is taken, rather than examining every row. This enables large tables to be analyzed in a small amount of time. The statistical information is gathered by the <varname>ANALYZE</varname> command and stored in the <varname>pg_statistic</varname> catalog table. Since different kinds of statistics may be appropriate for different kinds of data, the table only stores very general statistics (such as number of null values) in dedicated columns. Everything else is stored in five &ldquo;slots&rdquo;, which are couples of array columns that store the statistics for a column of an arbitrary type.</para>
+			<para>The PostgreSQL planner relies on statistical information about the contents of tables in order to generate the most efficient execution plan for queries. These statistics include a list of some of the most common values in each column and a histogram showing the approximate data distribution in each column. For large tables, a random sample of the table contents is taken, rather than examining every row. This enables large tables to be analyzed in a small amount of time. The statistical information is gathered by the <varname>ANALYZE</varname> command and stored in the <varname>pg_statistic</varname> catalog table. Since different kinds of statistics may be appropriate for different kinds of data, the table only stores very general statistics (such as number of null values) in dedicated columns. Everything else is stored in five “slots”, which are couples of array columns that store the statistics for a column of an arbitrary type.</para>
 
 			<para>The statistics collected for time types and temporal types are based on those collected by PostgreSQL for scalar types and span types. For scalar types, such as <varname>float</varname>, the following statistics are collected:
-				<orderedlist numeration="arabic">
+				<orderedlist numeration="arabic" inheritnum="ignore" continuation="restarts">
 					<listitem>
 						<para>fraction of null values,</para>
 					</listitem>
@@ -304,7 +259,7 @@ WHERE intersects(T.Trip, R.Geom);
 			</para>
 
 			<para>For span types, like <varname>tstzspan</varname>, three additional histograms are collected:
-				<orderedlist continuation="continues" numeration="arabic">
+				<orderedlist continuation="continues" numeration="arabic" inheritnum="ignore">
 					<listitem>
 						<para>length histogram of non-empty spans,</para>
 					</listitem>
@@ -314,8 +269,8 @@ WHERE intersects(T.Trip, R.Geom);
 				</orderedlist>
 			</para>
 
-			<para>For geometries, in addition to (1)&#x2013;(3), the following statistics are collected:
-				<orderedlist continuation="continues" numeration="arabic">
+			<para>For geometries, in addition to (1)–(3), the following statistics are collected:
+				<orderedlist continuation="continues" numeration="arabic" inheritnum="ignore">
 					<listitem>
 						<para>number of dimensions of the values, N-dimensional bounding box, number of rows in the table, number of rows in the sample, number of non-null values,</para>
 					</listitem>
@@ -327,14 +282,14 @@ WHERE intersects(T.Trip, R.Geom);
 
 			<para>The statistics collected for columns of the time and span types <varname>tstzset</varname>, <varname>tstzspan</varname>, <varname>tstzspanset</varname>, <varname>intspan</varname>, and <varname>floatspan</varname> replicate those collected by PostgreSQL for the <varname>tstzrange</varname>. This is clear for the span types in MobilityDB, which are more efficient versions of the range types in PostgreSQL. For the <varname>tstzset</varname> and the <varname>tstzspanset</varname> types, a value is converted into its bounding period, then the statistics for the <varname>tstzspan</varname> type are collected.</para>
 
-			<para>The statistics collected for columns of temporal types depend on their subtype and their base type. In addition to statistics (1)&#x2013;(3) that are collected for all temporal types, statistics are collected for the time and the value dimensions independently. More precisely, the following statistics are collected for the time dimension:
+			<para>The statistics collected for columns of temporal types depend on their subtype and their base type. In addition to statistics (1)–(3) that are collected for all temporal types, statistics are collected for the time and the value dimensions independently. More precisely, the following statistics are collected for the time dimension:
 				<itemizedlist>
 					<listitem>
-						<para>For columns of instant subtype, the statistics (4)&#x2013;(6) are collected for the timestamps.</para>
+						<para>For columns of instant subtype, the statistics (4)–(6) are collected for the timestamps.</para>
 					</listitem>
 
 					<listitem>
-						<para>For columns of other subtype, the statistics (7)&#x2013;(8) are collected for the (bounding box) periods.</para>
+						<para>For columns of other subtype, the statistics (7)–(8) are collected for the (bounding box) periods.</para>
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -345,11 +300,11 @@ WHERE intersects(T.Trip, R.Geom);
 						<para>For columns of temporal types with step interpolation (that is, <varname>tbool</varname>, <varname>ttext</varname>, or <varname>tint</varname>):
 							<itemizedlist>
 								<listitem>
-									<para>For the instant subtype, the statistics (4)&#x2013;(6) are collected for the values.</para>
+									<para>For the instant subtype, the statistics (4)–(6) are collected for the values.</para>
 								</listitem>
 
 								<listitem>
-									<para>For all other subtypes, the statistics (7)&#x2013;(8) are collected for the values.</para>
+									<para>For all other subtypes, the statistics (7)–(8) are collected for the values.</para>
 								</listitem>
 							</itemizedlist>
 						</para>
@@ -359,17 +314,17 @@ WHERE intersects(T.Trip, R.Geom);
 						<para>For columns of the temporal float type (that is, <varname>tfloat</varname>):
 							<itemizedlist>
 								<listitem>
-									<para>For the instant subtype, the statistics (4)&#x2013;(6) are collected for the values.</para>
+									<para>For the instant subtype, the statistics (4)–(6) are collected for the values.</para>
 								</listitem>
 								<listitem>
-									<para>For all other subtype, the statistics (7)&#x2013;(8) are collected for the (bounding) value spans.</para>
+									<para>For all other subtype, the statistics (7)–(8) are collected for the (bounding) value spans.</para>
 								</listitem>
 							</itemizedlist>
 						</para>
 					</listitem>
 
 					<listitem>
-						<para>For columns of temporal point types (that is, <varname>tgeompoint</varname> and <varname>tgeogpoint</varname>) the statistics (9)&#x2013;(10) are collected for the points.</para>
+						<para>For columns of temporal point types (that is, <varname>tgeompoint</varname> and <varname>tgeogpoint</varname>) the statistics (9)–(10) are collected for the points.</para>
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -386,3 +341,4 @@ WHERE intersects(T.Trip, R.Geom);
 		</sect2>
 	</sect1>
 </chapter>
+

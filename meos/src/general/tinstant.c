@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -216,7 +216,7 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
     tspatial_srid = spatial_srid(value, basetype);
     /* Ensure that the SRID is geodetic for geography */
     if (tgeodetic_type(temptype) && tspatial_srid != SRID_UNKNOWN && 
-          ! ensure_srid_is_latlong(tspatial_srid))
+        ! ensure_srid_is_latlong(tspatial_srid))
       return NULL;
     /* Ensure that a geometry/geography is not empty */
     if (tgeo_type_all(temptype) && 
@@ -311,7 +311,7 @@ tinstant_copy(const TInstant *inst)
  * @csqlfn #Temporal_valueset()
  */
 Datum *
-tinstant_vals(const TInstant *inst, int *count)
+tinstant_values_p(const TInstant *inst, int *count)
 {
   assert(inst); assert(count);
   Datum *result = palloc(sizeof(Datum));

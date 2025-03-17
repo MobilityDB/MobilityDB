@@ -8,10 +8,10 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<chapter id="temporal_types_aggregation">
+<chapter xml:id="ttype_aggregation">
 	<title>Tipos temporales: Agregación e indexación</title>
 
-	<sect1 id="temporal_types_aggregations">
+	<sect1 xml:id="ttype_aggregations">
 		<title>Agregación</title>
 
 		<para>Las funciones agregadas temporales generalizan las funciones agregadas tradicionales. Su semántica es que calculan el valor de la función en cada instante de la <emphasis>unión</emphasis> de las extensiones temporales de los valores a agregar. En contraste, recuerde que todas las otras funciones que manipulan tipos temporales calculan el valor de la función en cada instante de la <emphasis>intersección</emphasis> de las extensiones temporales de los argumentos.</para>
@@ -26,10 +26,10 @@
 			<listitem><para>Finalmente, para puntos temporales, la función <varname>tCentroid</varname> generaliza la función <varname>ST_Centroid</varname> proporcionada por PostGIS. Por ejemplo, dado un conjunto de objetos que se mueven juntos (es decir, un convoy o una bandada), el centroide temporal producirá un punto temporal que representa en cada instante el centro geométrico (o el centro de masa) de todos los objetos en movimiento.</para></listitem>
 		</itemizedlist>
 
-		<para>En los ejemplos que siguen, suponemos que las tablas <varname>Department</varname> y <varname>Trip</varname> contienen las dos tuplas introducidas en la <xref linkend="temporal_types_examples" />.</para>
+		<para>En los ejemplos que siguen, suponemos que las tablas <varname>Department</varname> y <varname>Trip</varname> contienen las dos tuplas introducidas en la <xref linkend="ttype_examples" />.</para>
 		<itemizedlist>
-			<listitem id="tCount">
-				<indexterm><primary><varname>tCount</varname></primary></indexterm>
+			<listitem xml:id="tCount">
+				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
 				<para>Conteo temporal</para>
 				<para><varname>tCount(ttype) → {tintSeq,tintSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -38,8 +38,8 @@ SELECT tCount(NoEmps) FROM Department;
 </programlisting>
 			</listitem>
 
-			<listitem id="extent">
-				<indexterm><primary><varname>extent</varname></primary></indexterm>
+			<listitem xml:id="extent">
+				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
 				<para>Extensión del cuadro delimitador</para>
 				<para><varname>extent(temp) → {tstzspan,tbox,stbox}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -50,62 +50,38 @@ SELECT extent(Trip) FROM Trips;
 </programlisting>
 			</listitem>
 
-			<listitem id="tAnd">
-				<indexterm><primary><varname>tAnd</varname></primary></indexterm>
-				<para>Y temporal</para>
+			<listitem xml:id="tAnd">
+				<indexterm significance="normal"><primary><varname>tAnd</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tOr</varname></primary></indexterm>
+				<para>Y, o temporal</para>
 				<para><varname>tAnd(tbool) → tbool</varname></para>
+				<para><varname>tOr(tbool) → tbool</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tAnd(NoEmps #&gt; 6) FROM Department;
 -- {[t@2001-01-01, f@2001-04-01, f@2001-10-01)}
-</programlisting>
-			</listitem>
-
-			<listitem id="tOr">
-				<indexterm><primary><varname>tOr</varname></primary></indexterm>
-				<para>O temporal</para>
-				<para><varname>tOr(tbool) → tbool</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tOr(NoEmps #&gt; 6) FROM Department;
 -- {[t@2001-01-01, f@2001-08-01, f@2001-10-01)}
 </programlisting>
 			</listitem>
 
-			<listitem id="tMin">
-				<indexterm><primary><varname>tMin</varname></primary></indexterm>
-				<para>Mínimo temporal</para>
+			<listitem xml:id="tMin">
+				<indexterm significance="normal"><primary><varname>tMin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tMax</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tSum</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tAvg</varname></primary></indexterm>
+				<para>Mínimo, máximo, suma y promedio temporal</para>
 				<para><varname>tMin(ttype) → ttype</varname></para>
+				<para><varname>tMax(ttype) → ttype</varname></para>
+				<para><varname>tSum(tnumber) → {tnumberSeq,tnumberSeqSet}</varname></para>
+				<para><varname>tAvg(tnumber) → {tfloatSeq,tfloatSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tMin(NoEmps) FROM Department;
 -- {[10@2001-01-01, 4@2001-02-01, 6@2001-06-01, 6@2001-10-01)}
-</programlisting>
-			</listitem>
-
-			<listitem id="tMax">
-				<indexterm><primary><varname>tMax</varname></primary></indexterm>
-				<para>Máximo temporal</para>
-				<para><varname>tMax(ttype) → ttype</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tMax(NoEmps) FROM Department;
 -- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-01, 6@2001-10-01)}
-</programlisting>
-			</listitem>
-
-			<listitem id="tSum">
-				<indexterm><primary><varname>tSum</varname></primary></indexterm>
-				<para>Suma temporal</para>
-				<para><varname>tSum(tnumber) → {tnumberSeq,tnumberSeqSet}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tSum(NoEmps) FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 16@2001-04-01, 18@2001-06-01, 6@2001-08-01,
    6@2001-10-01)} */
-</programlisting>
-			</listitem>
-
-			<listitem id="tAvg">
-				<indexterm><primary><varname>tAvg</varname></primary></indexterm>
-				<para>Promedio temporal</para>
-				<para><varname>tAvg(tnumber) → {tfloatSeq,tfloatSeqSet}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT tAvg(NoEmps) FROM Department;
 /* {[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
    [8@2001-04-01, 8@2001-06-01), [9@2001-06-01, 9@2001-08-01),
@@ -113,28 +89,8 @@ SELECT tAvg(NoEmps) FROM Department;
 </programlisting>
 			</listitem>
 
-			<listitem id="wMin">
-				<indexterm><primary><varname>wMin</varname></primary></indexterm>
-				<para>Mínimo de ventana</para>
-				<para><varname>wMin(tnumber,interval) → {tnumberSeq,tnumberSeqSet}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT wMin(NoEmps, interval '2 days') FROM Department;
--- {[10@2001-01-01, 4@2001-04-01, 6@2001-06-03, 6@2001-10-03)}
-</programlisting>
-			</listitem>
-
-			<listitem id="wMax">
-				<indexterm><primary><varname>wMax</varname></primary></indexterm>
-				<para>Máximo de ventana</para>
-				<para><varname>wMax(tnumber,interval) → {tnumberSeq,tnumberSeqSet}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT wMax(NoEmps, interval '2 days') FROM Department;
--- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-03, 6@2001-10-03)}
-</programlisting>
-			</listitem>
-
-			<listitem id="wCount">
-				<indexterm><primary><varname>wCount</varname></primary></indexterm>
+			<listitem xml:id="wCount">
+				<indexterm significance="normal"><primary><varname>wCount</varname></primary></indexterm>
 				<para>Conteo de ventana</para>
 				<para><varname>wCount(tnumber,interval) → {tintSeq,tintSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -144,33 +100,32 @@ SELECT wCount(NoEmps, interval '2 days') FROM Department;
 </programlisting>
 			</listitem>
 
-			<listitem id="wSum">
-				<indexterm><primary><varname>wSum</varname></primary></indexterm>
-				<para>Suma de ventana</para>
+			<listitem xml:id="wMin">
+				<indexterm significance="normal"><primary><varname>wMin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>wMax</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>wSum</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>wAvg</varname></primary></indexterm>
+				<para>Mínimo, máximo, suma y promedio de ventana</para>
+				<para><varname>wMin(tnumber,interval) → {tnumberSeq,tnumberSeqSet}</varname></para>
+				<para><varname>wMax(tnumber,interval) → {tnumberSeq,tnumberSeqSet}</varname></para>
 				<para><varname>wSum(tint,interval) → {tintSeq,tintSeqSet}</varname></para>
+				<para><varname>wAvg(tint,interval) → {tfloatDiscSeq,tfloatSeqSet}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
+SELECT wMin(NoEmps, interval '2 days') FROM Department;
+-- {[10@2001-01-01, 4@2001-04-01, 6@2001-06-03, 6@2001-10-03)}
+SELECT wMax(NoEmps, interval '2 days') FROM Department;
+-- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-03, 6@2001-10-03)}
 SELECT wSum(NoEmps, interval '2 days') FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 26@2001-04-01, 16@2001-04-03, 22@2001-06-01,
    18@2001-06-03, 6@2001-08-03, 6@2001-10-03)} */
+SELECT round(wAvg(NoEmps, interval '2 days'), 3) FROM Department;
+/*  Interp=Step;{[10@2001-01-01, 7@2001-02-01, 8.667@2001-04-01, 8@2001-04-03, 
+   7.333@2001-06-01, 9@2001-06-03, 6@2001-08-03, 6@2001-10-03)} */
 </programlisting>
 			</listitem>
 
-			<listitem id="wAvg">
-				<indexterm><primary><varname>wAvg</varname></primary></indexterm>
-				<para>Promedio de ventana</para>
-				<para><varname>wAvg(tint,interval) → {tfloatDiscSeq,tfloatSeqSet}</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT wAvg(NoEmps, interval '2 days') FROM Department;
-/* {[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
-   [8.66666666666667@2001-04-01, 8.66666666666667@2001-04-03),
-   [8@2001-04-03, 8@2001-06-01),
-   [7.33333333333333@2001-06-01, 7.33333333333333@2001-06-03),
-   [9@2001-06-03, 9@2001-08-03), [6@2001-08-03, 6@2001-10-03)} */
-</programlisting>
-			</listitem>
-
-			<listitem id="tCentroid">
-				<indexterm><primary><varname>tCentroid</varname></primary></indexterm>
+			<listitem xml:id="tCentroid">
+				<indexterm significance="normal"><primary><varname>tCentroid</varname></primary></indexterm>
 				<para>Centroide temporal</para>
 				<para><varname>tCentroid(tgeompoint) → tgeompoint</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -185,7 +140,7 @@ SELECT tCentroid(Trip) FROM Trips;
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="temporal_types_indexing">
+	<sect1 xml:id="ttype_indexing">
 		<title>Indexación</title>
 		<para>Se pueden crear índices GiST y SP-GiST para columnas de tabla de tipos temporales. El índice GiST implementa un árbol R, mientras que el índice SP-GiST implementa un árbol cuádruple n-dimensional. Ejemplos de creación de índices son los siguientes:
 			<programlisting language="sql" xml:space="preserve">
@@ -194,7 +149,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 </programlisting>
 		</para>
 
-		<para>Los índices GiST y SP-GiST almacenan el cuadro delimitador para los tipos temporales. Como se explica en el <xref linkend="temporal_types" />, estos son
+		<para>Los índices GiST y SP-GiST almacenan el cuadro delimitador para los tipos temporales. Como se explica en el <xref linkend="ttype_p1" />, estos son
 			<itemizedlist>
 				<listitem>
 					<para>el tipo <varname>tstzspan</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>,</para>
@@ -210,7 +165,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 			</itemizedlist>
 		</para>
 
-		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los siguientes operadores (consulte la <xref linkend="temporal_types_bbox" /> para obtener más información):
+		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los siguientes operadores (consulte la <xref linkend="ttype_bbox" /> para obtener más información):
 			<itemizedlist>
 				<listitem>
 					<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, que sólo consideran la dimensión de valores en tipos alfanuméricos temporales,</para>
@@ -264,7 +219,7 @@ WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 </programlisting>
 		</para>
 
-		<para>En el caso de los puntos temporales, todas las relaciones espaciales con la semántica posible (ver la <xref linkend="tpoint_spatial_rel" />) incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
+		<para>En el caso de los puntos temporales, todas las relaciones espaciales con la semántica posible (ver la <xref linkend="tgeo_spatial_rel" />) incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
 			<programlisting language="sql" xml:space="preserve">
 SELECT tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R
@@ -274,11 +229,11 @@ WHERE intersects(T.Trip, R.Geom);
 		</para>
 	</sect1>
 
-	<sect1 id="temporal_types_statistics">
+	<sect1 xml:id="ttype_statistics">
 		<title>Estadísticas y selectividad</title>
 		<sect2>
 			<title>Colecta de estadísticas</title>
-			<para>El planificador de PostgreSQL se basa en información estadística sobre el contenido de las tablas para generar el plan de ejecución más eficiente para las consultas. Estas estadísticas incluyen una lista de algunos de los valores más comunes en cada columna y un histograma que muestra la distribución aproximada de datos en cada columna. Para tablas grandes, se toma una muestra aleatoria del contenido de la tabla, en lugar de examinar cada fila. Esto permite analizar tablas grandes en poco tiempo. La información estadística es recopilada por el comando <varname>ANALYZE</varname> y es almacenada en la tabla de catálogo <varname>pg_statistic</varname>. Dado que diferentes tipos de estadísticas pueden ser apropiados para diferentes tipos de datos, la tabla sólo almacena estadísticas muy generales (como el número de valores nulos) en columnas dedicadas. Todo lo demás se almacena en cinco &ldquo;slots&rdquo;, que son pares de columnas de matriz que almacenan las estadísticas de una columna de un tipo arbitrario.</para>
+			<para>El planificador de PostgreSQL se basa en información estadística sobre el contenido de las tablas para generar el plan de ejecución más eficiente para las consultas. Estas estadísticas incluyen una lista de algunos de los valores más comunes en cada columna y un histograma que muestra la distribución aproximada de datos en cada columna. Para tablas grandes, se toma una muestra aleatoria del contenido de la tabla, en lugar de examinar cada fila. Esto permite analizar tablas grandes en poco tiempo. La información estadística es recopilada por el comando <varname>ANALYZE</varname> y es almacenada en la tabla de catálogo <varname>pg_statistic</varname>. Dado que diferentes tipos de estadísticas pueden ser apropiados para diferentes tipos de datos, la tabla sólo almacena estadísticas muy generales (como el número de valores nulos) en columnas dedicadas. Todo lo demás se almacena en cinco “slots”, que son pares de columnas de matriz que almacenan las estadísticas de una columna de un tipo arbitrario.</para>
 
 			<para>Las estadísticas recopiladas para tipos de tiempo y tipos temporales se basan en las recopiladas por PostgreSQL para tipos escalares y tipos de rango. Para tipos escalares, como <varname>float</varname>, se recopilan las siguientes estadísticas:
 				<orderedlist numeration="arabic">

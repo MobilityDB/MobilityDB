@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -381,7 +381,7 @@ tbool_values(const Temporal *temp, int *count)
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
 
-  Datum *datumarr = temporal_vals(temp, count);
+  Datum *datumarr = temporal_values_p(temp, count);
   bool *result = palloc(sizeof(bool) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetBool(datumarr[i]);
@@ -404,7 +404,7 @@ tint_values(const Temporal *temp, int *count)
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
 
-  Datum *datumarr = temporal_vals(temp, count);
+  Datum *datumarr = temporal_values_p(temp, count);
   int *result = palloc(sizeof(int) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetInt32(datumarr[i]);
@@ -427,7 +427,7 @@ tfloat_values(const Temporal *temp, int *count)
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
 
-  Datum *datumarr = temporal_vals(temp, count);
+  Datum *datumarr = temporal_values_p(temp, count);
   double *result = palloc(sizeof(double) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = DatumGetFloat8(datumarr[i]);
@@ -450,7 +450,7 @@ ttext_values(const Temporal *temp, int *count)
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
 
-  Datum *datumarr = temporal_vals(temp, count);
+  Datum *datumarr = temporal_values_p(temp, count);
   text **result = palloc(sizeof(text *) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = text_copy(DatumGetTextP(datumarr[i]));

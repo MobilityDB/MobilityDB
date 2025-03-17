@@ -1,0 +1,252 @@
+SELECT asText(pose 'Pose(Point(1 1),0.5)');
+        astext        
+----------------------
+ Pose(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(pose ' pose   (  Point  ( 1  1  ) ,	0.5   )   ');
+        astext        
+----------------------
+ Pose(POINT(1 1),0.5)
+(1 row)
+
+/* Errors */
+SELECT pose 'point(1,0.5)';
+ERROR:  Could not parse cbuffer value: Missing prefix 'Pose'
+LINE 2: SELECT pose 'point(1,0.5)';
+                    ^
+SELECT pose 'pose 1,0.5)';
+ERROR:  Could not parse pose value: Missing opening parenthesis
+LINE 1: SELECT pose 'pose 1,0.5)';
+                    ^
+SELECT pose 'Pose(Point(1 1),0.5';
+ERROR:  Could not parse pose value: Missing closing parenthesis
+LINE 1: SELECT pose 'Pose(Point(1 1),0.5';
+                    ^
+SELECT pose 'Pose(Point(1 1) 0.5)';
+ERROR:  Missing delimeter character ',': Point(1 1) 0.5)
+LINE 1: SELECT pose 'Pose(Point(1 1) 0.5)';
+                    ^
+SELECT pose 'Pose(Point(1 1)000,0.5)';
+ERROR:  parse error - invalid geometry
+LINE 1: SELECT pose 'Pose(Point(1 1)000,0.5)';
+                    ^
+HINT:  "Point(1 1)000" <-- parse error at position 14 within geometry
+SELECT pose 'Pose(Point(1 1),-1.5)';
+                          pose                           
+---------------------------------------------------------
+ POSE (0101000000000000000000F03F000000000000F03F, -1.5)
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)xxx';
+ERROR:  Could not parse pose value: Extraneous characters at the end
+LINE 1: SELECT pose 'Pose(Point(1 1),0.5)xxx';
+                    ^
+SELECT asText(pose('Point(1 1)', 0.5));
+        astext        
+----------------------
+ Pose(POINT(1 1),0.5)
+(1 row)
+
+SELECT asText(pose(ST_Point(1,1), 0.5));
+        astext        
+----------------------
+ Pose(POINT(1 1),0.5)
+(1 row)
+
+/* Errors */
+SELECT pose('Linestring(1 1,2 2)',1.5);
+                          pose                          
+--------------------------------------------------------
+ POSE (0101000000000000000000F03F000000000000F03F, 1.5)
+(1 row)
+
+SELECT pose('Point Z(1 1 1)',1.5);
+ERROR:  The geometry cannot have Z dimension
+SELECT pose('Point M(1 1 1)',1.5);
+ERROR:  The geometry cannot have M dimension
+SELECT pose(geography 'Point(1 1)',1.5);
+ERROR:  function pose(geography, numeric) does not exist
+LINE 1: SELECT pose(geography 'Point(1 1)',1.5);
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT pose('Point(1 1)',-1.5);
+                          pose                           
+---------------------------------------------------------
+ POSE (0101000000000000000000F03F000000000000F03F, -1.5)
+(1 row)
+
+SELECT ST_AsText(point(pose 'Pose(Point(1 1),0.5)'));
+ st_astext  
+------------
+ POINT(1 1)
+(1 row)
+
+SELECT rotation(pose 'Pose(Point(1 1),0.5)');
+ rotation 
+----------
+      0.5
+(1 row)
+
+SELECT srid(pose 'Pose(SRID=5676;Point(1 1),0.5)');
+ srid 
+------
+ 5676
+(1 row)
+
+SELECT asText(round(pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)', 6));
+                 astext                  
+-----------------------------------------
+ Pose(POINT(1.123457 1.123457),0.123457)
+(1 row)
+
+SELECT ST_AsText(round(pose 'Pose(Point(1 1),0.2)'::geometry, 6));
+ st_astext  
+------------
+ POINT(1 1)
+(1 row)
+
+SELECT pose 'Pose(Point(1.000001 1),0.5)' ~= pose 'Pose(Point(1 1),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pose 'Pose(Point(1 1.000001),0.5)' ~= pose 'Pose(Point(1 1),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5000001)' ~= pose 'Pose(Point(1 1),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pose 'Pose(Point(1.00001 1),0.5)' ~= pose 'Pose(Point(1 1),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT pose 'Pose(Point(1 1.00001),0.5)' ~= pose 'Pose(Point(1 1),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.500001)' ~= pose 'Pose(Point(1 1),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' = pose 'Pose(Point(1 1),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' = pose 'Pose(Point(1 1),0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' = pose 'Pose(Point(2 2),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' != pose 'Pose(Point(1 1),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' != pose 'Pose(Point(1 1),0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' != pose 'Pose(Point(2 2),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' < pose 'Pose(Point(1 1),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' < pose 'Pose(Point(1 1),0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' < pose 'Pose(Point(2 2),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' <= pose 'Pose(Point(1 1),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' <= pose 'Pose(Point(1 1),0.7)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' <= pose 'Pose(Point(2 2),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' > pose 'Pose(Point(1 1),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' > pose 'Pose(Point(1 1),0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' > pose 'Pose(Point(2 2),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(1 1),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(1 1),0.7)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(2 2),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+

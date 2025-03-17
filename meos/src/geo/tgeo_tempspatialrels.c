@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -85,7 +85,7 @@
 #include "general/tinstant.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
-#include "geo/pgis_types.h"
+#include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tpoint_restrfuncs.h"
 #include "geo/tgeo_spatialrels.h"
@@ -434,7 +434,7 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   bool restr, bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
   /* Bounding box test */
@@ -487,9 +487,8 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   return result;
 }
 
-#if MEOS
 /**
- * @ingroup meos_temporal_spatial_rel_temp
+ * @ingroup meos_geo_rel_temp
  * @brief Return a temporal Boolean that states whether a temporal geo and a
  * geometry are disjoint
  * @param[in] temp Temporal geo
@@ -498,7 +497,7 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
  * @param[in] atvalue Value to restrict
  * @csqlfn #Tdisjoint_tgeo_geo()
  */
-Temporal *
+inline Temporal *
 tdisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
@@ -506,7 +505,7 @@ tdisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup meos_temporal_spatial_rel_temp
+ * @ingroup meos_geo_rel_temp
  * @brief Return a temporal Boolean that states whether a temporal geo and a
  * geometry intersect
  * @param[in] temp Temporal geo
@@ -515,13 +514,12 @@ tdisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] atvalue Value to restrict
  * @csqlfn #Tintersects_tgeo_geo()
  */
-Temporal *
+inline Temporal *
 tintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
   return tinterrel_tgeo_geo(temp, gs, TINTERSECTS, restr, atvalue);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -538,7 +536,7 @@ tinterrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool tinter, bool restr, bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tgeo_tgeo(temp1, temp2))
+  if (! ensure_valid_tspatial_tspatial(temp1, temp2))
     return NULL;
 
   Temporal *result = tinter ?
@@ -555,9 +553,8 @@ tinterrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   return result;
 }
 
-#if MEOS
 /**
- * @ingroup meos_temporal_spatial_rel_temp
+ * @ingroup meos_geo_rel_temp
  * @brief Return a temporal Boolean that states whether two temporal geos are 
  * disjoint
  * @param[in] temp1,temp2 Temporal geos
@@ -565,7 +562,7 @@ tinterrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  * @param[in] atvalue Value to restrict
  * @csqlfn #Tdisjoint_tgeo_tgeo()
  */
-Temporal *
+inline Temporal *
 tdisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool restr, bool atvalue)
 {
@@ -573,7 +570,7 @@ tdisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
 }
 
 /**
- * @ingroup meos_temporal_spatial_rel_temp
+ * @ingroup meos_geo_rel_temp
  * @brief Return a temporal Boolean that states whether two temporal geos 
  * intersect
  * @param[in] temp1,temp2 Temporal geos
@@ -581,20 +578,19 @@ tdisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  * @param[in] atvalue Value to restrict
  * @csqlfn #Tintersects_tgeo_tgeo()
  */
-Temporal *
+inline Temporal *
 tintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool restr, bool atvalue)
 {
   return tinterrel_tgeo_tgeo(temp1, temp2, TINTERSECTS, restr, atvalue);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Temporal contains
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_spatial_rel_temp
+ * @ingroup meos_geo_rel_temp
  * @brief Return a temporal Boolean that states whether a geometry contains a 
  * temporal geometry
  * @param[in] gs Geometry
@@ -608,7 +604,7 @@ tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_has_not_Z_geo(gs) || 
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return NULL;
@@ -644,7 +640,7 @@ tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_spatial_rel_temp
+ * @ingroup meos_geo_rel_temp
  * @brief Return a temporal Boolean that states whether a temporal geo and a
  * geometry touch each other 
  * @param[in] temp Temporal geo
@@ -658,7 +654,7 @@ ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags) || ! ensure_has_not_Z_geo(gs))
     return NULL;
 
@@ -866,7 +862,7 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
   /* They are parallel, moving in the same direction at the same speed */
   if (a == 0)
   {
-    if (!func(sv1, sv2, Float8GetDatum(dist)))
+    if (! func(sv1, sv2, Float8GetDatum(dist)))
       return 0;
     *t1 = lower;
     *t2 = upper;
@@ -1247,7 +1243,7 @@ tdwithin_tpointseqset_point(const TSequenceSet *ss, Datum point, Datum dist,
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_spatial_rel_temp
+ * @ingroup meos_geo_rel_temp
  * @brief Return a temporal Boolean that states whether a temporal geo and
  * a geometry are within a distance
  * @param[in] temp Temporal geo
@@ -1262,7 +1258,7 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool restr, bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       (tpoint_type(temp->temptype) && ! ensure_point_type(gs)) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
@@ -1400,7 +1396,7 @@ tdwithin_tgeo_tgeo_sync(const Temporal *sync1, const Temporal *sync2,
 }
 
 /**
- * @ingroup meos_temporal_spatial_rel_temp
+ * @ingroup meos_geo_rel_temp
  * @brief Return a temporal Boolean that states whether two temporal geos
  * are within a distance
  * @param[in] temp1,temp2 Temporal geos
@@ -1414,7 +1410,7 @@ tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   bool restr, bool atvalue)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
+  if (! ensure_valid_tspatial_tspatial(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -425,18 +425,18 @@ TimestampTz
 timestamp_parse(const char **str)
 {
   p_whitespace(str);
-  int delim = 0;
-  while ((*str)[delim] != ',' && (*str)[delim] != ']' && (*str)[delim] != ')' &&
-    (*str)[delim] != '}' && (*str)[delim] != '\0')
-    delim++;
+  int pos = 0;
+  while ((*str)[pos] != ',' && (*str)[pos] != ']' && (*str)[pos] != ')' &&
+    (*str)[pos] != '}' && (*str)[pos] != '\0')
+    pos++;
 
-  char *str1 = palloc(sizeof(char) * (delim + 1));
-  strncpy(str1, *str, delim);
-  str1[delim] = '\0';
+  char *str1 = palloc(sizeof(char) * (pos + 1));
+  strncpy(str1, *str, pos);
+  str1[pos] = '\0';
   /* The last argument is for an unused typmod */
   TimestampTz result = pg_timestamptz_in(str1, -1);
   pfree(str1);
-  *str += delim;
+  *str += pos;
   return result;
 }
 
@@ -451,31 +451,31 @@ bool
 elem_parse(const char **str, meosType basetype, Datum *result)
 {
   p_whitespace(str);
-  int delim = 0, dquote = 0;
+  int pos = 0, dquote = 0;
   /* ttext and geometry/geography values must be enclosed between double quotes */
   if (**str == '"')
   {
     /* Consume the double quote */
     *str += 1;
-    while ( ( (*str)[delim] != '"' || (*str)[delim - 1] == '\\' )  &&
-      (*str)[delim] != '\0' )
-      delim++;
+    while ( ( (*str)[pos] != '"' || (*str)[pos - 1] == '\\' )  &&
+      (*str)[pos] != '\0' )
+      pos++;
     dquote = 1;
   }
   else
   {
-    while ((*str)[delim] != ',' && (*str)[delim] != '}' && 
-        (*str)[delim] != '\0')
-      delim++;
+    while ((*str)[pos] != ',' && (*str)[pos] != '}' && 
+        (*str)[pos] != '\0')
+      pos++;
   }
-  char *str1 = palloc(sizeof(char) * (delim + 1));
-  strncpy(str1, *str, delim);
-  str1[delim] = '\0';
+  char *str1 = palloc(sizeof(char) * (pos + 1));
+  strncpy(str1, *str, pos);
+  str1[pos] = '\0';
   bool success = basetype_in(str1, basetype, false, result);
   pfree(str1);
   if (! success)
     return false;
-  *str += delim + dquote;
+  *str += pos + dquote;
   return true;
 }
 
@@ -548,18 +548,18 @@ bool
 bound_parse(const char **str, meosType basetype, Datum *result)
 {
   p_whitespace(str);
-  int delim = 0;
-  while ((*str)[delim] != ',' && (*str)[delim] != ']' &&
-    (*str)[delim] != '}' && (*str)[delim] != ')' && (*str)[delim] != '\0')
-    delim++;
-  char *str1 = palloc(sizeof(char) * (delim + 1));
-  strncpy(str1, *str, delim);
-  str1[delim] = '\0';
+  int pos = 0;
+  while ((*str)[pos] != ',' && (*str)[pos] != ']' &&
+    (*str)[pos] != '}' && (*str)[pos] != ')' && (*str)[pos] != '\0')
+    pos++;
+  char *str1 = palloc(sizeof(char) * (pos + 1));
+  strncpy(str1, *str, pos);
+  str1[pos] = '\0';
   bool success = basetype_in(str1, basetype, false, result);
   pfree(str1);
   if (! success)
     return false;
-  *str += delim;
+  *str += pos;
   return true;
 }
 

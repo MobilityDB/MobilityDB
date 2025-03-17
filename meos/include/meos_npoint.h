@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -68,7 +68,7 @@ typedef struct Nsegment Nsegment;
 extern void meos_initialize_npoint(const char *file_name);
 
 /******************************************************************************
- * Functions for network point types
+ * Functions for network points
  ******************************************************************************/
 
 extern Npoint *geom_npoint(const GSERIALIZED *gs);
@@ -89,6 +89,7 @@ extern bool npoint_ne(const Npoint *np1, const Npoint *np2);
 extern char *npoint_out(const Npoint *np, int maxdd);
 extern double npoint_position(const Npoint *np);
 extern int64 npoint_route(const Npoint *np);
+extern bool npoint_same(const Npoint *np1, const Npoint *np2);
 extern int32_t npoint_srid(const Npoint *np);
 extern Nsegment *npoint_nsegment(const Npoint *np);
 extern int nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2);
@@ -110,6 +111,28 @@ extern bool route_exists(int64 rid);
 extern GSERIALIZED *route_geom(int64 rid);
 extern double route_length(int64 rid);
 
+/******************************************************************************
+ * Functions for network point sets
+ ******************************************************************************/
+
+extern bool contained_npoint_set(const Npoint *np, const Set *s);
+extern bool contains_set_npoint(const Set *s, Npoint *np);
+extern Set *intersection_npoint_set(const Npoint *np, const Set *s);
+extern Set *intersection_set_npoint(const Set *s, const Npoint *np);
+extern Set *minus_npoint_set(const Npoint *np, const Set *s);
+extern Set *minus_set_npoint(const Set *s, const Npoint *np);
+extern Set *npoint_to_set(const Npoint *np);
+extern Set *npoint_union_transfn(Set *state, const Npoint *np);
+extern Npoint *npointset_end_value(const Set *s);
+extern Set *npointset_in(const char *str);
+extern Set *npointset_make(const Npoint **values, int count);
+extern char *npointset_out(const Set *s, int maxdd);
+extern Npoint *npointset_start_value(const Set *s);
+extern bool npointset_value_n(const Set *s, int n, Npoint **result);
+extern Npoint **npointset_values(const Set *s);
+extern Set *union_npoint_set(const Npoint *np, const Set *s);
+extern Set *union_set_npoint(const Set *s, const Npoint *np);
+
 /*===========================================================================*
  * Functions for box types
  *===========================================================================*/
@@ -127,13 +150,15 @@ extern STBox *npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t);
 
 extern STBox *npoint_stbox(const Npoint *np);
 extern STBox *nsegment_stbox(const Nsegment *np);
+extern Temporal *tgeompoint_tnpoint(const Temporal *temp);
+extern Temporal *tnpoint_tgeompoint(const Temporal *temp);
 
 /*===========================================================================*
- * Functions for temporal types
+ * Functions for temporal network points
  *===========================================================================*/
 
 /*****************************************************************************
- * Restriction functions for temporal types
+ * Restriction functions for temporal network points
  *****************************************************************************/
 
 extern Temporal *tnpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
@@ -144,7 +169,7 @@ extern Temporal *tnpoint_minus_npoint(const Temporal *temp, const Npoint *np, co
 extern Temporal *tnpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
 
 /*****************************************************************************
- * Distance functions for temporal types
+ * Distance functions for temporal network points
  *****************************************************************************/
 
 extern Temporal *distance_tnpoint_npoint(const Temporal *temp, const Npoint *np);
@@ -166,7 +191,6 @@ extern GSERIALIZED *shortestline_tnpoint_tnpoint(const Temporal *temp1, const Te
 
 /* Spatial accessor functions for temporal points */
 
-extern Temporal *tnpoint_azimuth(const Temporal *temp);
 extern Temporal *tnpoint_cumulative_length(const Temporal *temp);
 extern double tnpoint_length(const Temporal *temp);
 extern Nsegment **tnpoint_positions(const Temporal *temp, int *count);
@@ -225,7 +249,7 @@ extern Temporal *ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *g
 extern Temporal *ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool restr, bool atvalue);
 
 /*****************************************************************************
- * Aggregate functions for temporal types
+ * Aggregate functions for temporal network points
  *****************************************************************************/
 
 extern SkipList *tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp);

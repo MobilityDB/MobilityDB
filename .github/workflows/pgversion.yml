@@ -115,7 +115,7 @@ jobs:
         run: |
           cd build
           # Excluding MEOS-specific and other miscellaneous files
-          lcov --capture --directory . --exclude *_meos.c --exclude */geo_constructors.c --exclude */tpoint_datagen.c --include */MobilityDB/meos/src/* --include */MobilityDB/mobilitydb/src/* --output-file=lcov.info
+          lcov --capture --directory . --include */mobilitydb/* --include */meos/* --exclude */mobilitydb/postgis/* --exclude */geo_constructors.c --exclude */tpoint_datagen.c --output-file=lcov.info
 
       - name: Coveralls
         if: matrix.coverage == '1'

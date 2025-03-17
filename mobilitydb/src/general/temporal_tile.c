@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -403,7 +403,7 @@ PG_FUNCTION_INFO_V1(Tbox_value_tiles);
  * @brief Return the tile list of a temporal box
  * @sqlfn valueTimeTiles()
  */
-Datum
+inline Datum
 Tbox_value_tiles(PG_FUNCTION_ARGS)
 {
   return Tbox_value_time_tiles_ext(fcinfo, true, false);
@@ -416,7 +416,7 @@ PG_FUNCTION_INFO_V1(Tbox_time_tiles);
  * @brief Return the tile list of a temporal box
  * @sqlfn valueTimeTiles()
  */
-Datum
+inline Datum
 Tbox_time_tiles(PG_FUNCTION_ARGS)
 {
   return Tbox_value_time_tiles_ext(fcinfo, false, true);
@@ -429,7 +429,7 @@ PG_FUNCTION_INFO_V1(Tbox_value_time_tiles);
  * @brief Return the tile list of a temporal box
  * @sqlfn valueTimeTiles()
  */
-Datum
+inline Datum
 Tbox_value_time_tiles(PG_FUNCTION_ARGS)
 {
   return Tbox_value_time_tiles_ext(fcinfo, true, true);
@@ -478,7 +478,7 @@ PG_FUNCTION_INFO_V1(Tbox_get_value_tile);
  * @brief Return a tile in a multidimensional grid for temporal numbers
  * @sqlfn tile()
  */
-Datum
+inline Datum
 Tbox_get_value_tile(PG_FUNCTION_ARGS)
 {
   return Tbox_get_value_time_tile_ext(fcinfo, true, false);
@@ -491,7 +491,7 @@ PG_FUNCTION_INFO_V1(Tbox_get_time_tile);
  * @brief Return a tile in a multidimensional grid for temporal numbers
  * @sqlfn tile()
  */
-Datum
+inline Datum
 Tbox_get_time_tile(PG_FUNCTION_ARGS)
 {
   return Tbox_get_value_time_tile_ext(fcinfo, false, true);
@@ -504,7 +504,7 @@ PG_FUNCTION_INFO_V1(Tbox_get_value_time_tile);
  * @brief Return a tile in a multidimensional grid for temporal numbers
  * @sqlfn tile()
  */
-Datum
+inline Datum
 Tbox_get_value_time_tile(PG_FUNCTION_ARGS)
 {
   return Tbox_get_value_time_tile_ext(fcinfo, true, true);
@@ -558,7 +558,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_boxes);
  * value bins
  * @sqlfn valueBoxes()
  */
-Datum
+inline Datum
 Tnumber_value_boxes(PG_FUNCTION_ARGS)
 {
   return Tnumber_value_time_boxes_ext(fcinfo, true, false);
@@ -572,7 +572,7 @@ PG_FUNCTION_INFO_V1(Tnumber_time_boxes);
  * time bins
  * @sqlfn timeBoxes()
  */
-Datum
+inline Datum
 Tnumber_time_boxes(PG_FUNCTION_ARGS)
 {
   return Tnumber_value_time_boxes_ext(fcinfo, false, true);
@@ -586,7 +586,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_time_boxes);
  * a value and time grid
  * @sqlfn valueTimeBoxes()
  */
-Datum
+inline Datum
 Tnumber_value_time_boxes(PG_FUNCTION_ARGS)
 {
   return Tnumber_value_time_boxes_ext(fcinfo, true, true);
@@ -798,7 +798,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_split);
  * bins
  * @sqlfn valueSplit()
  */
-Datum
+inline Datum
 Tnumber_value_split(PG_FUNCTION_ARGS)
 {
   return Tnumber_value_time_split_ext(fcinfo, true, false);
@@ -812,7 +812,7 @@ PG_FUNCTION_INFO_V1(Tnumber_time_split);
  * bins
  * @sqlfn valueSplit()
  */
-Datum
+inline Datum
 Tnumber_time_split(PG_FUNCTION_ARGS)
 {
   return Tnumber_value_time_split_ext(fcinfo, false, true);
@@ -826,7 +826,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_time_split);
  * and time bins
  * @sqlfn valueTimeSplit()
  */
-Datum
+inline Datum
 Tnumber_value_time_split(PG_FUNCTION_ARGS)
 {
   return Tnumber_value_time_split_ext(fcinfo, true, true);

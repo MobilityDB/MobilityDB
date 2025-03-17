@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -59,7 +59,7 @@
  * @brief Return the spatial, temporal, or spatiotemporal grid of a
  * spatiotemporal box (external function)
  */
-Datum
+static Datum
 Stbox_space_time_tiles_ext(FunctionCallInfo fcinfo, bool spacetiles,
   bool timetiles)
 {
@@ -189,11 +189,11 @@ Stbox_space_time_tiles_ext(FunctionCallInfo fcinfo, bool spacetiles,
 PGDLLEXPORT Datum Stbox_space_tiles(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_space_tiles);
 /**
- * @brief @ingroup mobilitydb_temporal_analytics_tile
+ * @brief @ingroup mobilitydb_geo_tile
  * @brief Return the spatial grid of a spatiotemporal box
  * @sqlfn spaceTiles()
  */
-Datum
+inline Datum
 Stbox_space_tiles(PG_FUNCTION_ARGS)
 {
   return Stbox_space_time_tiles_ext(fcinfo, true, false);
@@ -202,11 +202,11 @@ Stbox_space_tiles(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_time_tiles(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_time_tiles);
 /**
- * @brief @ingroup mobilitydb_temporal_analytics_tile
+ * @brief @ingroup mobilitydb_geo_tile
  * @brief Return the temporal grid of a spatiotemporal box
  * @sqlfn timeTiles()
  */
-Datum
+inline Datum
 Stbox_time_tiles(PG_FUNCTION_ARGS)
 {
   return Stbox_space_time_tiles_ext(fcinfo, false, true);
@@ -215,11 +215,11 @@ Stbox_time_tiles(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_space_time_tiles(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_space_time_tiles);
 /**
- * @brief @ingroup mobilitydb_temporal_analytics_tile
+ * @brief @ingroup mobilitydb_geo_tile
  * @brief Return the spatiotemporal grid of a spatiotemporal box
  * @sqlfn spaceTimeTiles()
  */
-Datum
+inline Datum
 Stbox_space_time_tiles(PG_FUNCTION_ARGS)
 {
   return Stbox_space_time_tiles_ext(fcinfo, true, true);
@@ -231,7 +231,7 @@ Stbox_space_time_tiles(PG_FUNCTION_ARGS)
  * @brief Return a tile in the spatiotemporal grid of a spatiotemporal box 
  * (external function)
  */
-Datum
+static Datum
 Stbox_get_space_time_tile_ext(FunctionCallInfo fcinfo, bool spacetile,
   bool timetile)
 {
@@ -281,11 +281,11 @@ Stbox_get_space_time_tile_ext(FunctionCallInfo fcinfo, bool spacetile,
 PGDLLEXPORT Datum Stbox_get_space_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_get_space_tile);
 /**
- * @ingroup mobilitydb_temporal_analytics_tile
+ * @ingroup mobilitydb_geo_tile
  * @brief Return a tile in the spatial grid of a spatiotemporal box
  * @sqlfn getSpaceTile()
  */
-Datum
+inline Datum
 Stbox_get_space_tile(PG_FUNCTION_ARGS)
 {
   return Stbox_get_space_time_tile_ext(fcinfo, true, false);
@@ -294,11 +294,11 @@ Stbox_get_space_tile(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_get_time_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_get_time_tile);
 /**
- * @brief @ingroup mobilitydb_temporal_analytics_tile
+ * @brief @ingroup mobilitydb_geo_tile
  * @brief Return a tile in the temporal grid of a spatiotemporal box
  * @sqlfn getTimeTile()
  */
-Datum
+inline Datum
 Stbox_get_time_tile(PG_FUNCTION_ARGS)
 {
   return Stbox_get_space_time_tile_ext(fcinfo, false, true);
@@ -307,11 +307,11 @@ Stbox_get_time_tile(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_get_space_time_tile(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_get_space_time_tile);
 /**
- * @ingroup mobilitydb_temporal_analytics_tile
+ * @ingroup mobilitydb_geo_tile
  * @brief Return a tile in the spatiotemporal grid of a spatiotemporal box
  * @sqlfn getSpaceTimeTile()
  */
-Datum
+inline Datum
 Stbox_get_space_time_tile(PG_FUNCTION_ARGS)
 {
   return Stbox_get_space_time_tile_ext(fcinfo, true, true);
@@ -360,12 +360,12 @@ Tgeo_space_time_boxes_ext(FunctionCallInfo fcinfo, bool spacetiles,
 PGDLLEXPORT Datum Tgeo_space_boxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeo_space_boxes);
 /**
- * @ingroup mobilitydb_temporal_analytics_tile
+ * @ingroup mobilitydb_geo_tile
  * @brief Return the spatiotemporal boxes of a temporal geo split with respect
  * to a spatial grid
  * @sqlfn spaceBoxes()
  */
-Datum
+inline Datum
 Tgeo_space_boxes(PG_FUNCTION_ARGS)
 {
   return Tgeo_space_time_boxes_ext(fcinfo, true, false);
@@ -374,12 +374,12 @@ Tgeo_space_boxes(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tgeo_time_boxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeo_time_boxes);
 /**
- * @ingroup mobilitydb_temporal_analytics_tile
+ * @ingroup mobilitydb_geo_tile
  * @brief Return the spatiotemporal boxes of a temporal geo split with respect
  * to time bins
  * @sqlfn timeBoxes()
  */
-Datum
+inline Datum
 Tgeo_time_boxes(PG_FUNCTION_ARGS)
 {
   return Tgeo_space_time_boxes_ext(fcinfo, false, true);
@@ -388,12 +388,12 @@ Tgeo_time_boxes(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tgeo_space_time_boxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeo_space_time_boxes);
 /**
- * @ingroup mobilitydb_temporal_analytics_tile
+ * @ingroup mobilitydb_geo_tile
  * @brief Return the spatiotemporal boxes of a temporal geo split with
  * respect to a spatiotemporal grid
  * @sqlfn spaceTimeBoxes()
  */
-Datum
+inline Datum
 Tgeo_space_time_boxes(PG_FUNCTION_ARGS)
 {
   return Tgeo_space_time_boxes_ext(fcinfo, true, true);
@@ -407,7 +407,7 @@ Tgeo_space_time_boxes(PG_FUNCTION_ARGS)
  * @brief Return a temporal geo split with respect to a spatial or a 
  * spatiotemporal grid
  */
-Datum
+static Datum
 Tgeo_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
 {
   FuncCallContext *funcctx;
@@ -511,11 +511,11 @@ Tgeo_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
 PGDLLEXPORT Datum Tgeo_space_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeo_space_split);
 /**
- * @ingroup mobilitydb_temporal_analytics_tile
+ * @ingroup mobilitydb_geo_tile
  * @brief Return a temporal geo split with respect to a spatial grid
  * @sqlfn spaceSplit()
  */
-Datum
+inline Datum
 Tgeo_space_split(PG_FUNCTION_ARGS)
 {
   return Tgeo_space_time_split_ext(fcinfo, false);
@@ -524,11 +524,11 @@ Tgeo_space_split(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tgeo_space_time_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeo_space_time_split);
 /**
- * @ingroup mobilitydb_temporal_analytics_tile
+ * @ingroup mobilitydb_geo_tile
  * @brief Return a temporal geo split with respect to a spatiotemporal grid
  * @sqlfn spaceTimeSplit()
  */
-Datum
+inline Datum
 Tgeo_space_time_split(PG_FUNCTION_ARGS)
 {
   return Tgeo_space_time_split_ext(fcinfo, true);

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -54,8 +54,7 @@
  * @param[in] func Specific function for the operator
  */
 static Datum
-Boolop_base_set(FunctionCallInfo fcinfo,
-  bool (*func)(Datum, const Set *))
+Boolop_base_set(FunctionCallInfo fcinfo, bool (*func)(Datum, const Set *))
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Set *s = PG_GETARG_SET_P(1);
@@ -71,8 +70,7 @@ Boolop_base_set(FunctionCallInfo fcinfo,
  * @param[in] func Specific function for the operator
  */
 static Datum
-Boolop_set_base(FunctionCallInfo fcinfo,
-  bool (*func)(const Set *, Datum))
+Boolop_set_base(FunctionCallInfo fcinfo, bool (*func)(const Set *, Datum))
 {
   Set *s = PG_GETARG_SET_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
@@ -88,8 +86,7 @@ Boolop_set_base(FunctionCallInfo fcinfo,
  * @param[in] func Specific function for the operator
  */
 static Datum
-Boolop_set_set(FunctionCallInfo fcinfo,
-  bool (*func)(const Set *, const Set *))
+Boolop_set_set(FunctionCallInfo fcinfo, bool (*func)(const Set *, const Set *))
 {
   Set *s1 = PG_GETARG_SET_P(0);
   Set *s2 = PG_GETARG_SET_P(1);
@@ -110,7 +107,7 @@ PG_FUNCTION_INFO_V1(Contains_set_value);
  * @sqlfn set_contains()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_set_value(PG_FUNCTION_ARGS)
 {
   return Boolop_set_base(fcinfo, &contains_set_value);
@@ -124,7 +121,7 @@ PG_FUNCTION_INFO_V1(Contains_set_set);
  * @sqlfn set_contains()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &contains_set_set);
@@ -141,7 +138,7 @@ PG_FUNCTION_INFO_V1(Contained_value_set);
  * @sqlfn set_contained()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_value_set(PG_FUNCTION_ARGS)
 {
   return Boolop_base_set(fcinfo, &contained_value_set);
@@ -155,7 +152,7 @@ PG_FUNCTION_INFO_V1(Contained_set_set);
  * @sqlfn set_contained()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &contained_set_set);
@@ -172,7 +169,7 @@ PG_FUNCTION_INFO_V1(Overlaps_set_set);
  * @sqlfn set_overlaps()
  * @sqlop @p &&
  */
-Datum
+inline Datum
 Overlaps_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &overlaps_set_set);
@@ -189,7 +186,7 @@ PG_FUNCTION_INFO_V1(Left_value_set);
  * @sqlfn set_left()
  * @sqlop @p <<
  */
-Datum
+inline Datum
 Left_value_set(PG_FUNCTION_ARGS)
 {
   return Boolop_base_set(fcinfo, &left_value_set);
@@ -203,7 +200,7 @@ PG_FUNCTION_INFO_V1(Left_set_value);
  * @sqlfn set_left()
  * @sqlop @p <<
  */
-Datum
+inline Datum
 Left_set_value(PG_FUNCTION_ARGS)
 {
   return Boolop_set_base(fcinfo, &left_set_value);
@@ -217,7 +214,7 @@ PG_FUNCTION_INFO_V1(Left_set_set);
  * @sqlfn set_left()
  * @sqlop @p <<
  */
-Datum
+inline Datum
 Left_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &left_set_set);
@@ -234,7 +231,7 @@ PG_FUNCTION_INFO_V1(Right_value_set);
  * @sqlfn set_right()
  * @sqlop @p >>
  */
-Datum
+inline Datum
 Right_value_set(PG_FUNCTION_ARGS)
 {
   return Boolop_base_set(fcinfo, &right_value_set);
@@ -248,7 +245,7 @@ PG_FUNCTION_INFO_V1(Right_set_value);
  * @sqlfn set_right()
  * @sqlop @p >>
  */
-Datum
+inline Datum
 Right_set_value(PG_FUNCTION_ARGS)
 {
   return Boolop_set_base(fcinfo, &right_set_value);
@@ -262,7 +259,7 @@ PG_FUNCTION_INFO_V1(Right_set_set);
  * @sqlfn set_right()
  * @sqlop @p >>
  */
-Datum
+inline Datum
 Right_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &right_set_set);
@@ -279,7 +276,7 @@ PG_FUNCTION_INFO_V1(Overleft_value_set);
  * @sqlfn set_overleft()
  * @sqlop @p &<
  */
-Datum
+inline Datum
 Overleft_value_set(PG_FUNCTION_ARGS)
 {
   return Boolop_base_set(fcinfo, &overleft_value_set);
@@ -293,7 +290,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_value);
  * @sqlfn set_overleft()
  * @sqlop @p &<
  */
-Datum
+inline Datum
 Overleft_set_value(PG_FUNCTION_ARGS)
 {
   return Boolop_set_base(fcinfo, &overleft_set_value);
@@ -308,7 +305,7 @@ PG_FUNCTION_INFO_V1(Overleft_set_set);
  * @sqlfn set_overleft()
  * @sqlop @p &<
  */
-Datum
+inline Datum
 Overleft_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &overleft_set_set);
@@ -325,7 +322,7 @@ PG_FUNCTION_INFO_V1(Overright_value_set);
  * @sqlfn set_overright()
  * @sqlop @p
  */
-Datum
+inline Datum
 Overright_value_set(PG_FUNCTION_ARGS)
 {
   return Boolop_base_set(fcinfo, &overright_value_set);
@@ -339,7 +336,7 @@ PG_FUNCTION_INFO_V1(Overright_set_value);
  * @sqlfn set_overright()
  * @sqlop @p &>
  */
-Datum
+inline Datum
 Overright_set_value(PG_FUNCTION_ARGS)
 {
   return Boolop_set_base(fcinfo, &overright_set_value);
@@ -354,7 +351,7 @@ PG_FUNCTION_INFO_V1(Overright_set_set);
  * @sqlfn set_overright()
  * @sqlop @p &>
  */
-Datum
+inline Datum
 Overright_set_set(PG_FUNCTION_ARGS)
 {
   return Boolop_set_set(fcinfo, &overright_set_set);
@@ -433,7 +430,7 @@ PG_FUNCTION_INFO_V1(Union_value_set);
  * @sqlfn set_union()
  * @sqlop @p +
  */
-Datum
+inline Datum
 Union_value_set(PG_FUNCTION_ARGS)
 {
   return Setop_base_set(fcinfo, &union_value_set);
@@ -447,7 +444,7 @@ PG_FUNCTION_INFO_V1(Union_set_value);
  * @sqlfn set_union()
  * @sqlop @p +
  */
-Datum
+inline Datum
 Union_set_value(PG_FUNCTION_ARGS)
 {
   return Setop_set_base(fcinfo, &union_set_value);
@@ -461,7 +458,7 @@ PG_FUNCTION_INFO_V1(Union_set_set);
  * @sqlfn set_union()
  * @sqlop @p +
  */
-Datum
+inline Datum
 Union_set_set(PG_FUNCTION_ARGS)
 {
   return Setop_set_set(fcinfo, &union_set_set);
@@ -479,7 +476,7 @@ PG_FUNCTION_INFO_V1(Intersection_value_set);
  * @sqlfn set_intersection()
  * @sqlop @p *
  */
-Datum
+inline Datum
 Intersection_value_set(PG_FUNCTION_ARGS)
 {
   return Setop_base_set(fcinfo, &intersection_value_set);
@@ -493,7 +490,7 @@ PG_FUNCTION_INFO_V1(Intersection_set_value);
  * @sqlfn set_intersection()
  * @sqlop @p *
  */
-Datum
+inline Datum
 Intersection_set_value(PG_FUNCTION_ARGS)
 {
   return Setop_set_base(fcinfo, &intersection_set_value);
@@ -507,7 +504,7 @@ PG_FUNCTION_INFO_V1(Intersection_set_set);
  * @sqlfn set_intersection()
  * @sqlop @p *
  */
-Datum
+inline Datum
 Intersection_set_set(PG_FUNCTION_ARGS)
 {
   return Setop_set_set(fcinfo, &intersection_set_set);
@@ -526,7 +523,7 @@ PG_FUNCTION_INFO_V1(Minus_value_set);
  * @sqlfn set_minus()
  * @sqlop @p -
  */
-Datum
+inline Datum
 Minus_value_set(PG_FUNCTION_ARGS)
 {
   return Setop_base_set(fcinfo, &minus_value_set);
@@ -542,7 +539,7 @@ PG_FUNCTION_INFO_V1(Minus_set_value);
  * @sqlfn set_minus()
  * @sqlop @p -
  */
-Datum
+inline Datum
 Minus_set_value(PG_FUNCTION_ARGS)
 {
   return Setop_set_base(fcinfo, &minus_set_value);
@@ -556,7 +553,7 @@ PG_FUNCTION_INFO_V1(Minus_set_set);
  * @sqlfn set_minus()
  * @sqlop @p -
  */
-Datum
+inline Datum
 Minus_set_set(PG_FUNCTION_ARGS)
 {
   return Setop_set_set(fcinfo, &minus_set_set);
@@ -574,7 +571,7 @@ PG_FUNCTION_INFO_V1(Distance_value_set);
  * @sqlfn set_distance()
  * @sqlop @p <->
  */
-Datum
+inline Datum
 Distance_value_set(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);

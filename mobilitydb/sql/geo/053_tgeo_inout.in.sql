@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -27,8 +27,10 @@
  *
  *****************************************************************************/
 
-/*
- * Input/output of temporal geos in WKT, EWKT, and MF-JSON format
+/**
+ * @file
+ * @brief Input/output of temporal geometries/geographies in WKT, EWKT, and
+ * MF-JSON format
  */
 
 /*****************************************************************************
@@ -37,20 +39,20 @@
 
 CREATE FUNCTION tgeometryFromText(text)
   RETURNS tgeometry
-  AS 'MODULE_PATHNAME', 'Tgeo_from_ewkt'
+  AS 'MODULE_PATHNAME', 'Tspatial_from_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeographyFromText(text)
   RETURNS tgeography
-  AS 'MODULE_PATHNAME', 'Tgeo_from_ewkt'
+  AS 'MODULE_PATHNAME', 'Tspatial_from_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeometryFromEWKT(text)
   RETURNS tgeometry
-  AS 'MODULE_PATHNAME', 'Tgeo_from_ewkt'
+  AS 'MODULE_PATHNAME', 'Tspatial_from_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeographyFromEWKT(text)
   RETURNS tgeography
-  AS 'MODULE_PATHNAME', 'Tgeo_from_ewkt'
+  AS 'MODULE_PATHNAME', 'Tspatial_from_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeometryFromMFJSON(text)

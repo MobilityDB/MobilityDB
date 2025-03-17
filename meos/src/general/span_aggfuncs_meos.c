@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -41,6 +41,86 @@
 #include <meos_internal.h>
 #include "general/span.h"
 #include "general/temporal.h"
+
+/*****************************************************************************
+ * Extent aggregate functions for span set types
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for span extent aggregate of integers
+ * @param[in,out] state Current aggregate state
+ * @param[in] i Value to aggregate
+ */
+Span *
+int_extent_transfn(Span *state, int i)
+{
+  /* Ensure validity of the arguments */
+  if (state && ! ensure_span_isof_type(state, T_INTSPAN))
+    return NULL;
+  return spanbase_extent_transfn(state, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for span extent aggregate of big integers
+ * @param[in,out] state Current aggregate state
+ * @param[in] i Value to aggregate
+ */
+Span *
+bigint_extent_transfn(Span *state, int64 i)
+{
+  /* Ensure validity of the arguments */
+  if (state && ! ensure_span_isof_type(state, T_BIGINTSPAN))
+    return NULL;
+  return spanbase_extent_transfn(state, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for span extent aggregate of floats
+ * @param[in,out] state Current aggregate state
+ * @param[in] d Value to aggregate
+ */
+Span *
+float_extent_transfn(Span *state, double d)
+{
+  /* Ensure validity of the arguments */
+  if (state && ! ensure_span_isof_type(state, T_FLOATSPAN))
+    return NULL;
+  return spanbase_extent_transfn(state, Float8GetDatum(d), T_FLOAT8);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for span extent aggregate of dates
+ * @param[in,out] state Current aggregate state
+ * @param[in] d Value to aggregate
+ */
+Span *
+date_extent_transfn(Span *state, DateADT d)
+{
+  /* Ensure validity of the arguments */
+  if (state && ! ensure_span_isof_type(state, T_DATESPAN))
+    return NULL;
+  return spanbase_extent_transfn(state, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for span extent aggregate of timestamptz
+ * @param[in,out] state Current aggregate state
+ * @param[in] t Value to aggregate
+ */
+Span *
+timestamptz_extent_transfn(Span *state, TimestampTz t)
+{
+  /* Ensure validity of the arguments */
+  if (state && ! ensure_span_isof_type(state, T_TSTZSPAN))
+    return NULL;
+  return spanbase_extent_transfn(state, TimestampTzGetDatum(t),
+    T_TIMESTAMPTZ);
+}
 
 /*****************************************************************************
  * Aggregate functions for span set types

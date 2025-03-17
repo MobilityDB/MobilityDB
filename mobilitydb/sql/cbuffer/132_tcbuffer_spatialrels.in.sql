@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -28,12 +28,11 @@
  *****************************************************************************/
 
 /**
- * @file 
+ * @file
  * @brief Spatial relationships for temporal circular buffers
+ * @details These relationships are generalized to the temporal dimension with
+ * the "ever" and "always" semantics, and return a Boolean.
  *
- * These relationships are generalized to the temporal dimension with the
- * "at any instant" semantics, that is, the traditional operator is applied to
- * the union of all values taken by the temporal cbuffer and returns a Boolean.
  * The following relationships are supported:
  *    eContains, aContains, eDisjoint, aDisjoint, eIntersects, aIntersects,
  *    eTouches, aTouches, eDwithin, and aDwithin

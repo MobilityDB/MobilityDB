@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -44,6 +44,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/set.h"
+#include "general/lifting.h"
 #include "general/temporal.h"
 #include "general/tinstant.h"
 #include "general/tsequence.h"
@@ -56,7 +57,8 @@
   #include "npoint/tnpoint_boxops.h"
 #endif 
 #if POSE
-  #include "pose/pose_boxops.h"
+  #include "pose/pose.h"
+  #include "pose/tpose_boxops.h"
 #endif 
 
 /*****************************************************************************
@@ -104,31 +106,26 @@ spatialbase_as_text(Datum value, meosType type, int maxdd)
 char *
 spatialbase_as_ewkt(Datum value, meosType type, int maxdd)
 {
-  assert(spatial_basetype(type)); assert(maxdd >= 0);
+  /* Ensure validity of the arguments */
+  if (! ensure_not_negative(maxdd))
+    return NULL;
 
-  switch (type)
-  {
-    case T_GEOMETRY:
-    case T_GEOGRAPHY:
-      return geo_as_ewkt(DatumGetGserializedP(value), maxdd);
-#if CBUFFER
-    case T_CBUFFER:
-      return cbuffer_as_ewkt(DatumGetCbufferP(value), maxdd);
-#endif
-#if NPOINT
-    case T_NPOINT:
-      return npoint_as_ewkt(DatumGetNpointP(value), maxdd);
-#endif
-#if POSE
-    case T_POSE:
-      return pose_as_ewkt(DatumGetPoseP(value), maxdd);
-#endif
-    default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown output function in WKT format for type: %s",
-        meostype_name(type));
-      return NULL;
-  }
+  /* Get the text representation of the value */
+  char *base_str = spatialbase_as_text(value, type, maxdd);
+  /* Get the SRID */
+  char srid_str[18];
+  srid_str[0] = '\0';
+  int32 srid = spatial_srid(value, type);
+  if (srid <= 0)
+    return base_str;
+
+  /* SRID_MAXIMUM is defined by PostGIS as 999999 */
+  snprintf(srid_str, sizeof(srid_str), "SRID=%d;", srid);
+  char *result = palloc(strlen(srid_str) + strlen(base_str) + 1);
+  strcpy(result, srid_str);
+  strcat(result, base_str);
+  pfree(base_str);
+  return result;
 }
 
 /*****************************************************************************/
@@ -146,10 +143,10 @@ spatialset_out_fn(const Set *s, int maxdd, outfunc wkt_out, bool extended)
 {
   /* Ensure validity of the arguments */
 #if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
     return NULL;
 #else
-  assert(s); assert(geoset_type(s->settype));
+  assert(s); assert(spatialset_type(s->settype));
 #endif /* MEOS */
   if (! ensure_not_negative(maxdd))
     return NULL;
@@ -177,19 +174,18 @@ spatialset_out_fn(const Set *s, int maxdd, outfunc wkt_out, bool extended)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_setspan_inout
+ * @ingroup meos_geo_set_inout
  * @brief Return the Well-Known Text (WKT) representation of a spatial set
  * @csqlfn #Spatialset_as_text()
  */
 char *
 spatialset_as_text(const Set *s, int maxdd)
 {
-
   return spatialset_out_fn(s, maxdd, &spatialbase_as_text, false);
 }
 
 /**
- * @ingroup meos_setspan_inout
+ * @ingroup meos_geo_set_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation of a geo set
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits
@@ -253,7 +249,7 @@ tspatialseqset_as_text(const TSequenceSet *ss, int maxdd)
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_geo_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal
  * spatial value
  * @param[in] temp Temporal spatial value
@@ -289,7 +285,7 @@ tspatial_as_text(const Temporal *temp, int maxdd)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_geo_temporal_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation of a
  * temporal spatial value
  * @param[in] temp Temporal spatial value
@@ -335,12 +331,10 @@ tspatial_as_ewkt(const Temporal *temp, int maxdd)
  * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
  * of an array of spatial values
  * @param[in] spatialarr Array of spatial values
+ * @param[in] elemtype Type of the elements in the input array
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Maximum number of decimal digits to output
  * @param[in] extended True if the output is in EWKT
- * @param[in] temporal True if the array has temporal values, false when the 
- * array has base values
- * @csqlfn #Spatialarr_as_text(), #Spatialarr_as_ewkt()
  */
 char **
 spatialarr_wkt_out(const Datum *spatialarr, meosType elemtype, int count,
@@ -366,14 +360,15 @@ spatialarr_wkt_out(const Datum *spatialarr, meosType elemtype, int count,
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup meos_internal_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of an array of
  * spatial values
  * @param[in] spatialarr Array of spatial values
+ * @param[in] elemtype Type of the elements in the input array
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Maximum number of decimal digits to output
- * @csqlfn #Spatialarr_as_text(), #Spatialarr_as_text()
  */
 char **
 spatialarr_as_text(const Datum *spatialarr, meosType elemtype, int count, 
@@ -387,9 +382,9 @@ spatialarr_as_text(const Datum *spatialarr, meosType elemtype, int count,
  * @brief Return the Extended Well-Known Text (EWKT) representation of an array
  * of spatial values
  * @param[in] spatialarr Array of spatial values
+ * @param[in] elemtype Type of the elements in the input array
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Maximum number of decimal digits to output
- * @csqlfn #Spatialarr_as_ewkt(), #Spatialarr_as_ewkt()
  */
 char **
 spatialarr_as_ewkt(const Datum *spatialarr, meosType elemtype, int count, 
@@ -397,71 +392,52 @@ spatialarr_as_ewkt(const Datum *spatialarr, meosType elemtype, int count,
 {
   return spatialarr_wkt_out(spatialarr, elemtype, count, maxdd, true);
 }
+#endif /* MEOS */
+
+/*****************************************************************************
+ * Box functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_box_conversion
+ * @brief Return in the last argument the bounding box of a spatial set
+ * @param[in] s Set
+ * @param[out] box Spatiotemporal box
+ */
+void
+spatialset_set_stbox(const Set *s, STBox *box)
+{
+  assert(s); assert(box); assert(spatialset_type(s->settype));
+  memset(box, 0, sizeof(STBox));
+  memcpy(box, SET_BBOX_PTR(s), sizeof(STBox));
+  return;
+}
+
+/**
+ * @ingroup meos_geo_set_box
+ * @brief Return a temporal spatial set converted to a spatiotemporal box
+ * @param[in] s Set
+ * @csqlfn #Spatialset_to_stbox()
+ */
+STBox *
+spatialset_stbox(const Set *s)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
+    return NULL;
+#else
+  assert(s); assert(spatialset_type(s->settype));
+#endif /* MEOS */
+  STBox *result = palloc(sizeof(STBox));
+  spatialset_set_stbox(s, result);
+  return result;
+}
 
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of an array of
- * temporal spatial values
- * @param[in] temparr Array of temporal geos
- * @param[in] count Number of elements in the input array
- * @param[in] maxdd Maximum number of decimal digits to output
- * @param[in] extended True if the output is in EWKT
- * @csqlfn #Tspatialarr_as_text(), #Tspatialarr_as_ewkt()
- */
-char **
-tspatialarr_wkt_out(const Temporal **temparr, int count, int maxdd,
-  bool extended)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temparr) || ! ensure_positive(count) ||
-      ! ensure_not_negative(maxdd))
-    return NULL;
-
-  char **result = palloc(sizeof(char *) * count);
-  for (int i = 0; i < count; i++)
-    result[i] = extended ? tspatial_as_text(temparr[i], maxdd) : 
-      tspatial_as_ewkt(temparr[i], maxdd);
-  return result;
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the Well-Known Text (WKT) representation of an array of
- * temporal spatial values
- * @param[in] temparr Array of temporal spatial values
- * @param[in] count Number of elements in the input array
- * @param[in] maxdd Maximum number of decimal digits to output
- * @csqlfn #Tgeoarr_as_text(), #Tcbufferarr_as_ewkt()
- */
-char **
-tspatialarr_as_text(const Temporal **temparr, int count, int maxdd)
-{
-  return tspatialarr_wkt_out(temparr, count, maxdd, false);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return the Extended Well-Known Text (EWKT) representation of an array
- * of temporal spatial values
- * @param[in] temparr Array of temporal spatial values
- * @param[in] count Number of elements in the input array
- * @param[in] maxdd Maximum number of decimal digits to output
- * @csqlfn #Tgeoarr_as_ewkt(), #Tcbufferarr_as_ewkt()
- */
-char **
-tspatialarr_as_ewkt(const Temporal **temparr, int count, int maxdd)
-{
-  return tspatialarr_wkt_out(temparr, count, maxdd, true);
-}
-
-/*****************************************************************************
- * Conversion functions
- *****************************************************************************/
-
-/**
- * @ingroup meos_internal_temporal_spatial_transf
+ * @ingroup meos_internal_geo_box
  * @brief Return in the last argument the spatiotemporal box of a temporal
  * spatial value
  * @param[in] temp Temporal spatial value
@@ -485,9 +461,13 @@ tspatial_set_stbox(const Temporal *temp, STBox *box)
       else if (temp->temptype == T_TNPOINT)
         tnpointinst_set_stbox((TInstant *) temp, box);
 #endif
+#if POSE
+      else if (temp->temptype == T_TPOSE)
+        tposeinst_set_stbox((TInstant *) temp, box);
+#endif
       else
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-          "Unknown temporal point type: %s", meostype_name(temp->temptype));
+          "Unknown temporal spatial type: %s", meostype_name(temp->temptype));
       break;
     case TSEQUENCE:
       tspatialseq_set_stbox((TSequence *) temp, box);
@@ -499,7 +479,7 @@ tspatial_set_stbox(const Temporal *temp, STBox *box)
 }
 
 /**
- * @ingroup meos_temporal_spatial_transf
+ * @ingroup meos_geo_conversion
  * @brief Return a temporal spatial value converted to a spatiotemporal box
  * @param[in] temp Temporal spatial value
  * @csqlfn #Tspatial_to_stbox()
@@ -526,7 +506,7 @@ tspatial_stbox(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_spatial_transf
+ * @ingroup meos_geo_base_box
  * @brief Return the bounding box of a geometry/geography expanded on the
  * spatial dimension
  * @param[in] gs Geometry/geography
@@ -552,7 +532,7 @@ geo_expand_space(const GSERIALIZED *gs, double d)
 }
 
 /**
- * @ingroup meos_temporal_spatial_transf
+ * @ingroup meos_geo_box
  * @brief Return the bounding box of a temporal spatial value expanded on the
  * spatial dimension
  * @param[in] temp Temporal spatial value

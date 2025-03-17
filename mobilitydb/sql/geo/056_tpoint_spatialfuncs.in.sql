@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -27,9 +27,9 @@
  *
  *****************************************************************************/
 
-/*
- * tpoint_spatialfuncs.sql
- * Spatial functions for temporal points.
+/**
+ * @file
+ * @brief Spatial functions for temporal points
  */
 
 /*****************************************************************************/
@@ -160,20 +160,20 @@ CREATE FUNCTION getZ(tgeogpoint)
 
 CREATE FUNCTION round(tgeompoint, integer DEFAULT 0)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tgeo_round'
+  AS 'MODULE_PATHNAME', 'Temporal_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION round(tgeogpoint, integer DEFAULT 0)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tgeo_round'
+  AS 'MODULE_PATHNAME', 'Temporal_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION round(tgeompoint[], integer DEFAULT 0)
   RETURNS tgeompoint[]
-  AS 'MODULE_PATHNAME', 'Tgeoarr_round'
+  AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION round(tgeogpoint[], integer DEFAULT 0)
   RETURNS tgeogpoint[]
-  AS 'MODULE_PATHNAME', 'Tgeoarr_round'
+  AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION trajectory(tgeompoint)

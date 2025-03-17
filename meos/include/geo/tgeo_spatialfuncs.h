@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -82,8 +82,6 @@ extern Datum datum_geom_distance3d(Datum geom1, Datum geom2);
 extern Datum datum_geog_distance(Datum geog1, Datum geog2);
 extern Datum datum_pt_distance2d(Datum geom1, Datum geom2);
 extern Datum datum_pt_distance3d(Datum geom1, Datum geom2);
-extern Datum datum_geom_intersection2d(Datum geom1, Datum geom2);
-extern Datum datum_geom_difference2d(Datum geom1, Datum geom2);
 
 extern int16 spatial_flags(Datum d, meosType basetype);
 
@@ -117,13 +115,14 @@ extern bool circle_type(const GSERIALIZED *gs);
 extern bool ensure_circle_type(const GSERIALIZED *gs);
 extern bool ensure_not_empty(const GSERIALIZED *gs);
 extern bool ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs);
-extern bool ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern bool ensure_valid_tspatial_geo(const Temporal *temp,
+  const GSERIALIZED *gs);
 extern bool ensure_valid_spatial_stbox_stbox(const STBox *box1,
   const STBox *box2);
 extern bool ensure_valid_tgeo_stbox(const Temporal *temp, const STBox *box);
-extern bool ensure_valid_tgeo_tgeo(const Temporal *temp1,
+extern bool ensure_valid_tspatial_tspatial(const Temporal *temp1,
   const Temporal *temp2);
-
+  
 /* Functions for extracting coordinates */
 
 extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);

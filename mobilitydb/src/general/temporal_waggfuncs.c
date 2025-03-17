@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -122,7 +122,7 @@ PG_FUNCTION_INFO_V1(Tint_wmin_transfn);
  * temporal integers
  * @sqlfn wMin()
  */
-Datum
+inline Datum
 Tint_wmin_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_min_int32, GET_MIN, CROSSINGS);
@@ -136,7 +136,7 @@ PG_FUNCTION_INFO_V1(Tfloat_wmin_transfn);
  * temporal floats
  * @sqlfn wMin()
  */
-Datum
+inline Datum
 Tfloat_wmin_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_min_float8, GET_MIN, CROSSINGS);
@@ -150,7 +150,7 @@ PG_FUNCTION_INFO_V1(Tint_wmax_transfn);
  * temporal integers
  * @sqlfn wMax()
  */
-Datum
+inline Datum
 Tint_wmax_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_max_int32, GET_MAX, CROSSINGS);
@@ -164,7 +164,7 @@ PG_FUNCTION_INFO_V1(Tfloat_wmax_transfn);
  * temporal floats
  * @sqlfn wMax()
  */
-Datum
+inline Datum
 Tfloat_wmax_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_max_float8, GET_MAX, CROSSINGS);
@@ -178,7 +178,7 @@ PG_FUNCTION_INFO_V1(Tint_wsum_transfn);
  * integers
  * @sqlfn wSum()
  */
-Datum
+inline Datum
 Tint_wsum_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_sum_int32, GET_MIN, CROSSINGS_NO);
@@ -192,7 +192,7 @@ PG_FUNCTION_INFO_V1(Tfloat_wsum_transfn);
  * floats
  * @sqlfn wSum()
  */
-Datum
+inline Datum
 Tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transfn(fcinfo, &datum_sum_float8, GET_MIN, CROSSINGS);
@@ -206,7 +206,7 @@ PG_FUNCTION_INFO_V1(Temporal_wcount_transfn);
  * values
  * @sqlfn wCount()
  */
-Datum
+inline Datum
 Temporal_wcount_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transform_transfn(fcinfo, &datum_sum_int32,
@@ -221,7 +221,7 @@ PG_FUNCTION_INFO_V1(Tnumber_wavg_transfn);
  * temporal numbers
  * @sqlfn wAvg()
  */
-Datum
+inline Datum
 Tnumber_wavg_transfn(PG_FUNCTION_ARGS)
 {
   return Temporal_wagg_transform_transfn(fcinfo, &datum_sum_double2,

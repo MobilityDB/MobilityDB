@@ -1,12 +1,12 @@
 ﻿-------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2024, PostGIS contributors
+-- Copyright (c) 2001-2025, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -54,6 +54,22 @@ SELECT nsegment 'nsegment(1000,0.5,0.7)';
 SELECT nsegment 'nsegment(1,1.5,0.7)';
 SELECT nsegment 'nsegment(1,0.5,0.7)xxx';
 SELECT nsegment 'NSegment(1, 1, 1.5)';
+
+-------------------------------------------------------------------------------
+-- Input/output in (E)WKT, (E)WKB, and HexWKB representation
+-------------------------------------------------------------------------------
+
+SELECT asText(npoint 'SRID=5676;Npoint(1,0.5)');
+SELECT asEWKT(npoint 'SRID=5676;Npoint(1,0.5)');
+SELECT asBinary(npoint 'SRID=5676;Npoint(1,0.5)');
+SELECT asEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
+SELECT asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
+
+SELECT npointFromText(asText(npoint 'SRID=5676;Npoint(1,0.5)'));
+SELECT npointFromEWKT(asEWKT(npoint 'SRID=5676;Npoint(1,0.5)'));
+SELECT npointFromBinary(asBinary(npoint 'SRID=5676;Npoint(1,0.5)'));
+SELECT npointFromEWKB(asEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
+SELECT npointFromHexEWKB(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
 
 -------------------------------------------------------------------------------
 -- Constructors

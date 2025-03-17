@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -66,25 +66,18 @@ struct Pose
 
 /* Input/output functions */
 
-extern char *pose_wkt_out_int(Datum value, bool extended, int maxdd);
-extern char *pose_wkt_out(Datum value, meosType type, int maxdd);
-extern char *pose_ewkt_out(Datum value, meosType type, int maxdd);
+extern char *pose_wkt_out(Datum value, bool extended, int maxdd);
 
-extern Pose *pose_in(const char *str);
-extern char *pose_out(const Pose *pose, int maxdd);
+extern Pose *pose_parse(const char **str, bool end);
 
-extern Pose *pose_make_2d(double x, double y, double theta);
-extern Pose *pose_make_3d(double x, double y, double z, double W, double X, double Y, double Z);
-
-extern GSERIALIZED *pose_point(const Pose *pose);
 extern Datum datum_pose_point(Datum pose);
+extern Datum datum_pose_rotation(Datum pose);
 
 /* Transformation functions */
 
 extern Datum datum_pose_round(Datum pose, Datum size);
-extern Pose *pose_round(const Pose *pose, int maxdd);
-extern Set *poseset_round(const Set *s, int maxdd);
-extern Temporal *tpose_round(const Temporal *temp, Datum size);
+extern Pose **posearr_round(const Pose **posearr, int count, int maxdd);
+extern Temporal *tpose_round(const Temporal *temp, int maxdd);
 
 /* Distance */
 
@@ -94,6 +87,15 @@ extern Datum pose_distance(Datum pose1, Datum pose2);
 
 extern Pose *pose_interpolate(const Pose *pose1, const Pose *pose2, double ratio);
 extern bool pose_collinear(const Pose *pose1, const Pose *pose2, const Pose *pose3, double ratio);
+
+/* Interpolation */
+
+extern bool pose_set_stbox(const Pose *pose, STBox *box);
+extern void posearr_set_stbox(const Datum *values, int count, STBox *box);
+extern bool pose_timestamptz_set_stbox(const Pose *pose, TimestampTz t,
+  STBox *box);
+extern bool pose_tstzspan_set_stbox(const Pose *pose, const Span *p,
+  STBox *box);
 
 /* Comparison functions */
 

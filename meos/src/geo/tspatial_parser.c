@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -631,7 +631,7 @@ tpoint_parse(const char **str, meosType temptype)
 
 #if MEOS
 /**
- * @ingroup meos_temporal_inout
+ * @ingroup meos_geo_inout
  * @brief Return a temporal geometry point from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
@@ -646,7 +646,7 @@ tgeompoint_in(const char *str)
 }
 
 /**
- * @ingroup meos_temporal_inout
+ * @ingroup meos_geo_inout
  * @brief Return a temporal geography point from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
@@ -661,7 +661,7 @@ tgeogpoint_in(const char *str)
 }
 
 /**
- * @ingroup meos_temporal_inout
+ * @ingroup meos_geo_inout
  * @brief Return a temporal geometry from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
@@ -675,7 +675,7 @@ tgeometry_in(const char *str)
   return tspatial_parse(&str, T_TGEOMETRY);
 }
 /**
- * @ingroup meos_temporal_inout
+ * @ingroup meos_geo_inout
  * @brief Return a temporal geography from its Well-Known Text (WKT)
  * representation
  * @param[in] str String

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -30,13 +30,6 @@
 /**
  * @file
  * @brief Bounding box operators for temporal network points
- *
- * These operators test the bounding boxes of temporal network points, which
- * are @p STBox boxes. The following operators are defined:
- *    @p overlaps, @p contains, @p contained, @p same
- * The operators consider as many dimensions as they are shared in both
- * arguments: only the space dimension, only the time dimension, or both
- * the space and the time dimensions.
  */
 
 #include "npoint/tnpoint_boxops.h"
@@ -44,63 +37,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "geo/pgis_types.h"
+#include "geo/postgis_funcs.h"
 #include "npoint/tnpoint.h"
 
 /*****************************************************************************
  * Transform a temporal network point to a STBox
  *****************************************************************************/
-
-/**
- * @ingroup meos_internal_box_constructor
- * @brief Return in the last argument the spatiotemporal box of a network point
- * @param[in] np Network point
- * @param[out] box Spatiotemporal box
- */
-bool
-npoint_set_stbox(const Npoint *np, STBox *box)
-{
-  GSERIALIZED *geom = npoint_geom(np);
-  bool result = geo_set_stbox(geom, box);
-  pfree(geom);
-  return result;
-}
-
-/**
- * @ingroup meos_box_conversion
- * @brief Return a network point converted to a spatiotemporal box
- * @param[in] np Network point
- * @csqlfn #Npoint_to_stbox()
- */
-STBox *
-npoint_stbox(const Npoint *np)
-{
-  STBox box;
-  if (! npoint_set_stbox(np, &box))
-    return NULL;
-  return stbox_copy(&box);
-}
-
-/**
- * @ingroup meos_internal_box_constructor
- * @brief Return in the last argument a spatiotemporal box constructed from
- * an array of network points
- * @param[in] values Network points
- * @param[in] count Number of elements in the array
- * @param[out] box Spatiotemporal box
- */
-void
-npointarr_set_stbox(const Datum *values, int count, STBox *box)
-{
-  npoint_set_stbox(DatumGetNpointP(values[0]), box);
-  for (int i = 1; i < count; i++)
-  {
-    STBox box1;
-    npoint_set_stbox(DatumGetNpointP(values[i]), &box1);
-    stbox_expand(&box1, box);
-  }
-  return;
-}
 
 /**
  * @brief Return in the last argument the spatiotemporal box of a temporal
@@ -230,107 +172,5 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
   return;
 }
 
-/**
- * @ingroup meos_internal_temporal_accessor
- * @brief Return the bounding box of the network segment value
- * @param[in] ns Network segment
- * @param[out] box Spatiotemporal box
- */
-bool
-nsegment_set_stbox(const Nsegment *ns, STBox *box)
-{
-  GSERIALIZED *geom = nsegment_geom(ns);
-  bool result = geo_set_stbox(geom, box);
-  pfree(geom);
-  return result;
-}
-
-/**
- * @ingroup meos_box_conversion
- * @brief Return a network segment converted to a spatiotemporal box
- * @param[in] ns Network segment
- * @csqlfn #Nsegment_to_stbox()
- */
-STBox *
-nsegment_stbox(const Nsegment *ns)
-{
-  STBox box;
-  if (! nsegment_set_stbox(ns, &box))
-    return NULL;
-  return stbox_copy(&box);
-}
-
-/**
- * @ingroup meos_internal_box_constructor
- * @brief Return in the last argument a spatiotemporal box constructed from a
- * network point and a timestamptz
- * @param[in] np Network point
- * @param[in] t Timestamp
- * @param[out] box Spatiotemporal box
- */
-bool
-npoint_timestamptz_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
-{
-  npoint_set_stbox(np, box);
-  span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
-    T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
-  MEOS_FLAGS_SET_T(box->flags, true);
-  return true;
-}
-
-/**
- * @ingroup meos_box_constructor
- * @brief Return a spatiotemporal box constructed from a network point and a
- * timestamptz
- * @param[in] np Network point
- * @param[in] t Timestamp
- * @csqlfn #Npoint_timestamptz_to_stbox()
- */
-STBox *
-npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t)
-{
-  if (! ensure_not_null((void *) np))
-    return NULL;
-  STBox box;
-  if (! npoint_timestamptz_set_stbox(np, t, &box))
-    return NULL;
-  return stbox_copy(&box);
-}
-
-/**
- * @ingroup meos_internal_box_constructor
- * @brief Return in the last argument a spatiotemporal box constructed from a
- * network point and a timestamptz span
- * @param[in] np Network point
- * @param[in] s Timestamptz span
- * @param[out] box Spatiotemporal box
- */
-bool
-npoint_tstzspan_set_stbox(const Npoint *np, const Span *s, STBox *box)
-{
-  npoint_set_stbox(np, box);
-  memcpy(&box->period, s, sizeof(Span));
-  MEOS_FLAGS_SET_T(box->flags, true);
-  return true;
-}
-
-/**
- * @ingroup meos_box_constructor
- * @brief Return a spatiotemporal box constructed from a network point and a
- * timestamptz
- * @param[in] np Network point
- * @param[in] s Timestamptz span
- * @csqlfn #Npoint_tstzspan_to_stbox()
- */
-STBox *
-npoint_tstzspan_to_stbox(const Npoint *np, const Span *s)
-{
-  if (! ensure_not_null((void *) np) || ! ensure_not_null((void *) s))
-    return NULL;
-  STBox box;
-  if (! npoint_tstzspan_set_stbox(np, s, &box))
-    return NULL;
-  return stbox_copy(&box);
-}
 
 /*****************************************************************************/

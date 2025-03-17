@@ -8,14 +8,14 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<appendix id ="reference">
+<appendix xml:id="reference">
 	<title>MobilityDB Reference</title>
 
 	<sect1>
 		<title>MobilityDB Types</title>
-		<para>MobilityDB defines four <emphasis>template types</emphasis> that act as type constructors over <emphasis>base types</emphasis>. These template types are <varname>set</varname>, <varname>span</varname>, <varname>spanset</varname>, and <varname>temporal</varname>. <xref linkend="templatetypes" /> shows the types defined over these template types. Furthermore, MobilityDB defines two bounding box types, namely, <varname>tbox</varname> and <varname>stbox</varname>.</para>
+		<para>MobilityDB defines four <emphasis>template types</emphasis> that act as type constructors over <emphasis>base types</emphasis>. These template types are <varname>set</varname>, <varname>span</varname>, <varname>spanset</varname>, and <varname>temporal</varname>. <xref linkend="templatetypes"/> shows the types defined over these template types. Furthermore, MobilityDB defines two bounding box types, namely, <varname>tbox</varname> and <varname>stbox</varname>.</para>
 
-		<table frame="all" colsep="1" rowsep="1" id="templatetypes">
+		<table frame="all" colsep="1" rowsep="1" xml:id="templatetypes">
 			<?dblatex table-width="autowidth.column: 1 2 3 4 5"?>
 			<title>MobilityDB current instantiations of template types</title>
 			<tgroup cols="5" align="left" colsep="1" rowsep="1">
@@ -39,16 +39,16 @@
 			<tbody>
 				<row>
 					<entry><emphasis role="bold"><varname>bool</varname></emphasis></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
 					<entry><varname>tbool</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>text</varname></emphasis></entry>
 					<entry><varname>textset</varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
 					<entry><varname>ttext</varname></entry>
 				</row>
 				<row>
@@ -63,7 +63,7 @@
 						<entry><varname>bigintset</varname></entry>
 						<entry><varname>bigintspan</varname></entry>
 						<entry><varname>bigintspanset</varname></entry>
-						<entry><varname></varname></entry>
+						<entry><varname/></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>float</varname></emphasis></entry>
@@ -77,41 +77,48 @@
 					<entry><varname>dateset</varname></entry>
 					<entry><varname>datespan</varname></entry>
 					<entry><varname>datespanset</varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>timestamptz</varname></emphasis></entry>
 					<entry><varname>tstzset</varname></entry>
 					<entry><varname>tstzspan</varname></entry>
 					<entry><varname>tstzspanset</varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>geometry</varname></emphasis></entry>
 					<entry><varname>geomset</varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
 					<entry><varname>tgeompoint</varname>, <varname>tgeometry</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>geography</varname></emphasis></entry>
 					<entry><varname>geogset</varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
 					<entry><varname>tgeogpoint</varname>, <varname>tgeography</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>pose</varname></emphasis></entry>
+					<entry><varname>poseset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tpose</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>npoint</varname></emphasis></entry>
 					<entry><varname>npointset</varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
 					<entry><varname>tnpoint</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>cbuffer</varname></emphasis></entry>
 					<entry><varname>cbufferset</varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
 					<entry><varname>tcbuffer</varname></entry>
 				</row>
 			</tbody>
@@ -120,7 +127,7 @@
 	</sect1>
 
 	<sect1>
-		<title>Operations for Set and Span Types</title>
+		<title>Set and Span Types</title>
 
 		<sect2>
 			<title>Input and Output</title>
@@ -193,7 +200,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="lower"><varname>lower</varname>, <varname>upper</varname></link>: Return the lower or upper bound</para>
+					<para><link linkend="setspan_lower"><varname>lower</varname>, <varname>upper</varname></link>: Return the lower or upper bound</para>
 				</listitem>
 
 				<listitem>
@@ -201,7 +208,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="width"><varname>width</varname></link>: Return the width of the span as a float</para>
+					<para><link linkend="setspan_width"><varname>width</varname></link>: Return the width of the span as a float</para>
 				</listitem>
 
 				<listitem>
@@ -213,7 +220,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_numValues"><varname>numValues</varname></link>: Return the number of values</para>
+					<para><link linkend="setspan_numValues"><varname>numValues</varname>, <varname>getValues</varname></link>: Return the (number of) values</para>
 				</listitem>
 
 				<listitem>
@@ -221,31 +228,27 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_timestamps"><varname>getValues</varname></link>: Return the values</para>
+					<para><link linkend="setspan_numSpans"><varname>numSpans</varname>, <varname>spans</varname></link>: Return (the number of) composing spans</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="numSpans"><varname>numSpans</varname></link>: Return the number of composing spans</para>
+					<para><link linkend="setspan_startSpan"><varname>startSpan</varname>, <varname>endSpan</varname>, <varname>spanN</varname></link>: Return the start, end, or n-th span</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startSpan"><varname>startSpan</varname>, <varname>endSpan</varname>, <varname>spanN</varname></link>: Return the start, end, or n-th span</para>
+					<para><link linkend="setspan_numDates"><varname>numDates</varname>, <varname>dates</varname></link>: Return the (number of) different dates</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spans"><varname>spans</varname></link>: Return the spans</para>
+					<para><link linkend="setspan_startDate"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname></link>: Return the start, end, or n-th date</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_numTimestamps"><varname>numDates</varname>, <varname>numTimestamps</varname></link>: Return the number of different dates or timestamps</para>
+					<para><link linkend="setspan_numTimestamps"><varname>numTimestamps</varname>, <varname>timestamps</varname></link>: Return the (number of) different timestamps</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setspan_startTimestamp"><varname>startDate</varname>, <varname>endDate</varname>, <varname>dateN</varname>, <varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Return the start, end, or n-th date or timestamp</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_timestamps"><varname>dates</varname>, <varname>timestamps</varname></link>: Return the different dates or timestamps</para>
+					<para><link linkend="setspan_startTimestamp"><varname>startTimestamp</varname>, <varname>endTimestamp</varname>, <varname>timestampN</varname></link>: Return the start, end, or n-th timestamp</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -255,15 +258,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_shift"><varname>shift</varname></link>: Shift by a value or interval</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_scale"><varname>scale</varname></link>: Scale by a value or interval</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_shiftScale"><varname>shiftScale</varname></link>: Shift and scale by the values or intervals</para>
+					<para><link linkend="setspan_shift"><varname>shift</varname>, <varname>scale</varname>, <varname>shiftScale</varname></link>: Shift and/or scale by a value or an interval</para>
 				</listitem>
 
 				<listitem>
@@ -283,7 +278,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="textset_concat"><varname>concat</varname></link>: Text concatenation</para>
+					<para><link linkend="textset_concat"><varname>||</varname></link>: Text concatenation</para>
 				</listitem>
 
 				<listitem>
@@ -297,15 +292,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="geoset_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
+					<para><link linkend="spatialset_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="geoset_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
-					</listitem>
-
-				<listitem>
-					<para><link linkend="geoset_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
+					<para><link linkend="spatialset_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -315,15 +306,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="setspan_union"><varname>+</varname></link>: Union of sets or spans</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_difference"><varname>-</varname></link>: Difference of sets or spans</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="setspan_intersection"><varname>*</varname></link>: Intersection of sets or spans</para>
+					<para><link linkend="setspan_union"><varname>+</varname>, <varname>-</varname>, <varname>*</varname></link>: Union, difference, and intersection of sets or spans</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -427,7 +410,7 @@
 	</sect1>
 
 	<sect1>
-		<title>Operations for Box Types</title>
+		<title>Box Types</title>
 
 		<sect2>
 			<title>Input and Output</title>
@@ -441,7 +424,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_FromBinary"><varname>tboxFromBinary</varname>, <varname>stboxFromBinary</varname>, <varname>tboxFromHexWKB</varname>, <varname>stboxFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="boxFromBinary"><varname>boxFromBinary</varname>, <varname>boxFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -519,35 +502,27 @@
 			<title>Transformations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="box_shift"><varname>shiftValue</varname>, <varname>shiftTime</varname></link>: Shift the span or the period of the bounding box by a value or interval</para>
+					<para><link linkend="box_shiftValue"><varname>shiftValue</varname>, <varname>scaleValue</varname>, <varname>shiftScaleValue</varname></link>: Shift and/or scale the span of a bounding box by a value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_scaleValue"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Scale the span or the period of the bounding box to a value or interval</para>
+					<para><link linkend="box_shiftTime"><varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname></link>: Shift and/or scale the period of a bounding box by an interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_shiftScale"><varname>shiftScaleValue</varname>, <varname>shiftScaleTime</varname></link>: Shift and scale the span or the period of the bounding box with the values or intervals</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="getSpace"><varname>getSpace</varname></link>: Return the spatial dimension of the bounding box, removing the temporal dimension if any</para>
+					<para><link linkend="box_getSpace"><varname>getSpace</varname></link>: Return the spatial dimension of a bounding box, removing the temporal dimension if any</para>
 					</listitem>
 
 				<listitem>
-					<para><link linkend="expandValue"><varname>expandValue</varname></link>: Expand the numeric dimension of the bounding box by a float value</para>
+					<para><link linkend="box_expandValue"><varname>expandValue</varname>, <varname>expandSpace</varname></link>: Expand the numeric or the spatial dimension of a bounding box by a value</para>
 					</listitem>
 
 				<listitem>
-					<para><link linkend="expandSpace"><varname>expandSpace</varname></link>: Expand the spatial dimension of the bounding box by a float value</para>
-					</listitem>
-
-				<listitem>
-					<para><link linkend="expandTime"><varname>expandTime</varname></link>: Expand the temporal dimension of the bounding box by a time interval</para>
+					<para><link linkend="box_expandTime"><varname>expandTime</varname></link>: Expand the temporal dimension of a bounding box by a time interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_round"><varname>round</varname></link>: Round the value or the coordinates of the bounding box to a number of decimal places</para>
+					<para><link linkend="box_round"><varname>round</varname></link>: Round the values or the coordinates of a bounding box to a number of decimal places</para>
 				</listitem>
 
 			</itemizedlist>
@@ -558,12 +533,8 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="stbox_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
+					<para><link linkend="stbox_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier</para>
 				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
-					</listitem>
 
 				<listitem>
 					<para><link linkend="stbox_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
@@ -575,7 +546,7 @@
 			<title>Splitting Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="quadSplit"><varname>quadSplit</varname></link>: Split the bounding box in quadrants or octants</para>
+					<para><link linkend="quadSplit"><varname>quadSplit</varname></link>: Split a bounding box in quadrants or octants</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -584,11 +555,7 @@
 			<title>Set Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="box_union"><varname>+</varname></link>: Union of bounding boxes</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_intersection"><varname>*</varname></link>: Intersection of bounding boxes</para>
+					<para><link linkend="box_union"><varname>+</varname>, <varname>*</varname></link>: Union and intersection of bounding boxes</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -664,29 +631,29 @@
 	</sect1>
 
 	<sect1>
-		<title>Operations for Temporal Types: Generic Operations</title>
+		<title>Temporal Types</title>
 
 		<sect2>
 			<title>Input and Output</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="temporal_asText"><varname>asText</varname></link>: Return the Well-Known Text (WKT) representation</para>
+					<para><link linkend="ttype_asText"><varname>asText</varname></link>: Return the Well-Known Text (WKT) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="ttype_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
+					<para><link linkend="ttype_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_FromBinary"><varname>ttypeFromBinary</varname>, <varname>ttypeFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
+					<para><link linkend="ttypeFromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Input from a Moving Features JSON (MF-JSON) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_FromMFJSON"><varname>ttypeFromMFJSON</varname></link>: Input from a Moving Features JSON (MF-JSON) representation</para>
+					<para><link linkend="ttypeFromBinary"><varname>ttypeFromBinary</varname>, <varname>ttypeFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -710,26 +677,9 @@
 
 		<sect2>
 			<title>Conversions</title>
-
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_bbox"><varname>ttype::tstzspan</varname>, <varname>tnumber::{numspan,tbox}</varname>, <varname>tpoint::stbox</varname></link>: Convert a temporal value to a bounding box</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbool_tint"><varname>tbool::int</varname></link>: Convert between a temporal boolean and a temporal integer</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname></link>: Convert between a temporal integer and a temporal float</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeometry_tgeography"><varname>tgeometry::tgeography</varname>, <varname>tgeography::tgeometry</varname>, <varname>tgeompoint::tgeogpoint</varname>, <varname>tgeogpoint::tgeompoint</varname></link>: Convert between a temporal geometry and a temporal geography</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname>, <varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Convert between a temporal point and a PostGIS trajectory</para>
+					<para><link linkend="ttype_tstzspan"><varname>ttype::tstzspan</varname></link>: Convert a temporal value to a timestamptz span</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -742,43 +692,27 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tempSubtype"><varname>tempSubtype</varname></link>: Return the temporal subtype</para>
+					<para><link linkend="ttype_tempSubtype"><varname>tempSubtype</varname></link>: Return the temporal subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="interp"><varname>interp</varname></link>: Return the interpolation</para>
+					<para><link linkend="ttype_interp"><varname>interp</varname></link>: Return the interpolation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="getValue"><varname>getValue</varname>, <varname>getTimestamp</varname></link>: Return the value or the timestamp of an instant</para>
+					<para><link linkend="ttype_getValue"><varname>getValue</varname>, <varname>getTimestamp</varname></link>: Return the value or the timestamp of an instant</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="getValues"><varname>getValues</varname>, <varname>getTime</varname></link>: Return the values or the time on which the temporal value is defined</para>
+					<para><link linkend="ttype_getValues"><varname>getValues</varname>, <varname>getTime</varname></link>: Return the values or the time on which the temporal value is defined</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="valueSpan"><varname>valueSpan</varname>, <varname>timeSpan</varname></link>: Return the value or time span</para>
+					<para><link linkend="ttype_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Return the start, end, or n-th value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="valueSet"><varname>valueSet</varname></link>: Return the values of the temporal number as a set</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Return the start, end, or n-th value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="minValue"><varname>minValue</varname>, <varname>maxValue</varname></link>: Return the minimum or maximum value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="minInstant"><varname>minInstant</varname>, <varname>maxInstant</varname></link>: Return the instant with the minimum or maximum value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Return the value at a timestamp</para>
+					<para><link linkend="ttype_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Return the value at a timestamp</para>
 				</listitem>
 
 				<listitem>
@@ -786,23 +720,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="lowerInc"><varname>lowerInc</varname>, <varname>upperInc</varname></link>: Is the start/end instant inclusive?</para>
+					<para><link linkend="ttype_lowerInc"><varname>lowerInc</varname>, <varname>upperInc</varname></link>: Is the start/end instant inclusive?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="numInstants"><varname>numInstants</varname></link>: Return the number of different instants</para>
+					<para><link linkend="ttype_numInstants"><varname>numInstants</varname>, <varname>instants</varname></link>: Return the (number of) different instants</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="startInstant"><varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname></link>: Return the start, end, or n-th instant</para>
+					<para><link linkend="ttype_startInstant"><varname>startInstant</varname>, <varname>endInstant</varname>, <varname>instantN</varname></link>: Return the start, end, or n-th instant</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="instants"><varname>instants</varname></link>: Return the different instants</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_numTimestamps"><varname>numTimestamps</varname></link>: Return the number of different timestamps</para>
+					<para><link linkend="ttype_numTimestamps"><varname>numTimestamps</varname>, <varname>timestamps</varname></link>: Return the (number of different) timestamps</para>
 				</listitem>
 
 				<listitem>
@@ -810,11 +740,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_timestamps"><varname>timestamps</varname></link>: Return the different timestamps</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="numSequences"><varname>numSequences</varname></link>: Return the number of sequences</para>
+					<para><link linkend="numSequences"><varname>numSequences</varname>, <varname>sequences</varname></link>: Return the (number of) sequences</para>
 				</listitem>
 
 				<listitem>
@@ -822,60 +748,34 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="sequences"><varname>sequences</varname></link>: Return the sequences</para>
-				</listitem>
-
-				<listitem>
 					<para><link linkend="segments"><varname>segments</varname></link>: Return the segments</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="integral"><varname>integral</varname></link>: Return the area under the curve</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="twAvg"><varname>twAvg</varname></link>: Return the time-weighted average</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
 
 		<sect2>
 			<title>Transformations</title>
-
 			<itemizedlist>
 				<listitem>
 				<para><link linkend="ttype_subtype"><varname>ttypeInst, ttypeSeq, ttypeSeqSet</varname></link>: Transform a temporal value to another subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="setInterp"><varname>setInterp</varname></link>: Transform a temporal value to another interpolation</para>
+					<para><link linkend="ttype_setInterp"><varname>setInterp</varname></link>: Transform a temporal value to another interpolation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="shift"><varname>shiftValue</varname>, <varname>shiftTime</varname></link>: Shift the value or time span of the temporal value by a value or interval</para>
+					<para><link linkend="ttype_shiftTime"><varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname></link>: Shift and/or scale the time span of a temporal value by one or two interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="scaleValue"><varname>scaleValue</varname>, <varname>scaleTime</varname></link>: Scale the value or time span of the temporal value to a value or interval</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="shiftScale"><varname>shiftScaleValue</varname>, <varname>shiftScaleTime</varname></link>: Shift and scale the value or time span the temporal value with the values or intervals</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stops"><varname>stops</varname></link>: Extract from a temporal sequence (set) with linear interpolation the subsequences where the objects stays within an area with a given maximum size for at least the specified duration.</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="unnest"><varname>unnest</varname></link>: Transform a nonlinear temporal value into a set of rows, each one containing a base value and a period set during which the temporal value has the base value</para>
+					<para><link linkend="ttype_unnest"><varname>unnest</varname></link>: Transform a nonlinear temporal value into a set of rows, each one containing a base value and a period set during which the temporal value has the base value</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
 
 		<sect2>
 			<title>Modifications</title>
-
 			<itemizedlist>
 				<listitem>
 				<para><link linkend="insert"><varname>insert</varname></link>: Insert a temporal value into another one</para>
@@ -906,35 +806,13 @@
 
 		<sect2>
 			<title>Restrictions</title>
-
 			<itemizedlist>
-
 			<listitem>
-					<para><link linkend="atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a set of values</para>
+					<para><link linkend="type_atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a set of values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="atMin"><varname>atMin</varname>, <varname>minusMin</varname></link>: Restrict to (the complement of) the minimum value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="atMax"><varname>atMax</varname>, <varname>minusMax</varname></link>: Restrict to (the complement of) the maximum value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) a geometry, a Z span, and/or a period</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="atTime"><varname>atTime</varname>, <varname>minusTime</varname></link>: Restrict to (the complement of) a time value</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="atTbox"><varname>atTbox</varname>, <varname>minusTbox</varname></link>: Restrict to (the complement of) a <varname>tbox</varname></para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict to (the complement of) an <varname>stbox</varname></para>
+					<para><link linkend="type_atTime"><varname>atTime</varname>, <varname>minusTime</varname></link>: Restrict to (the complement of) a time value</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -972,26 +850,89 @@
 	</sect1>
 
 	<sect1>
-		<title>Temporal Types: Alphanumeric Operations</title>
+		<title>Temporal Alphanumeric Types</title>
+
+		<sect2>
+			<title>Conversions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tnumber_bbox"><varname>tnumber::{span,tbox}</varname></link>: Convert a temporal number to a span or to a temporal box</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tbool_tint"><varname>tbool::int</varname></link>: Convert between a temporal boolean and a temporal integer</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname>, <varname>tfloat::tint</varname></link>: Convert between a temporal integer and a temporal float</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Accessors</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="valueSpan"><varname>valueSpan</varname></link>: Return the value span</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="valueSet"><varname>valueSet</varname></link>: Return the set of values of a temporal number</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Return the start, end, or n-th value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minValue"><varname>minValue</varname>, <varname>maxValue</varname></link>: Return the minimum or maximum value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minInstant"><varname>minInstant</varname>, <varname>maxInstant</varname></link>: Return the instant with the minimum or maximum value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="integral"><varname>integral</varname></link>: Return the area under the curve</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="twAvg"><varname>twAvg</varname></link>: Return the time-weighted average</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Transformations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="shiftValue"><varname>shiftValue</varname>, <varname>scaleValue</varname>, <varname>shiftScaleValue</varname></link>: Shift and/or scale the value span of a temporal number by one or two values</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stops"><varname>stops</varname></link>: Extract from a temporal float with linear interpolation the subsequences where the values stay within an span of a given width for at least a given duration</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Restrictions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="atMin"><varname>atMin</varname>, <varname>atMax</varname>, <varname>minusMin</varname>, <varname>minusMax</varname></link>: Restrict to (the complement of) the minimum or maximum value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atTbox"><varname>atTbox</varname>, <varname>minusTbox</varname></link>: Restrict to (the complement of) a <varname>tbox</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 
 		<sect2>
 			<title>Mathematical Operations</title>
-
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tnumber_add"><varname>+</varname></link>: Temporal addition</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tnumber_sub"><varname>-</varname></link>: Temporal subtraction</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tnumber_mult"><varname>*</varname></link>: Temporal multiplication</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tnumber_div"><varname>/</varname></link>: Temporal division</para>
+					<para><link linkend="tnumber_add"><varname>+</varname>, <varname>-</varname>, <varname>*</varname>, <varname>/</varname></link>: Temporal addition, subtraction, multiplication, and division</para>
 				</listitem>
 
 				<listitem>
@@ -1032,11 +973,7 @@
 			<title>Boolean Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tbool_and"><varname>&amp;</varname></link>: Temporal and</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbool_or"><varname>|</varname></link>: Temporal or</para>
+					<para><link linkend="tbool_and"><varname>&amp;</varname>, <varname>|</varname></link>: Temporal and, temporal or</para>
 				</listitem>
 
 				<listitem>
@@ -1051,7 +988,6 @@
 
 		<sect2>
 			<title>Text Operations</title>
-
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="ttext_concat"><varname>||</varname></link>: Text concatenation</para>
@@ -1062,22 +998,20 @@
 				</listitem>
 			</itemizedlist>
 		</sect2>
-
 	</sect1>
 
 	<sect1>
-		<title>Temporal Types: Spatial Operations</title>
+		<title>Temporal Geometry Types</title>
 
 		<sect2>
 			<title>Input and Output</title>
-
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON representation</para>
+					<para><link linkend="asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
 				</listitem>
 
 				<listitem>
@@ -1085,30 +1019,38 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname>, <varname>tgeogpointFromText</varname>, <varname>tgeometryFromText</varname>, <varname>tgeographyFromText</varname>, <varname>tgeompointFromEWKT</varname>, <varname>tgeogpointFromEWKT</varname>, <varname>tgeometryFromEWKT</varname>, <varname>tgeographyFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
+					<para><link linkend="tgeompointFromText"><varname>tspatialFromText</varname>, <varname>tspatialFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname>, <varname>tgeogpointFromMFJSON</varname>, <varname>tgeometryFromMFJSON</varname>, <varname>tgeographyFromMFJSON</varname></link>: Input from the Moving Features JSON representation</para>
+					<para><link linkend="tgeompointFromMFJSON"><varname>tspatialFromMFJSON</varname></link>: Input from the Moving Features JSON (MF-JSON) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname>, <varname>tgeogpointFromBinary</varname>, <varname>tgeometryFromBinary</varname>, <varname>tgeographyFromBinary</varname>, <varname>tgeompointFromEWKB</varname>, <varname>tgeogpointFromEWKB</varname>, <varname>tgeometryFromEWKB</varname>, <varname>tgeographyFromEWKB</varname>, <varname>tgeompointFromHexEWKB</varname>, <varname>tgeogpointFromHexEWKB</varname>, <varname>tgeometryFromHexEWKB</varname>, <varname>tgeographyFromHexEWKB</varname></link>: Input  from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (EWKB) representation</para>
+					<para><link linkend="tgeompointFromBinary"><varname>tspatialFromBinary</varname>, <varname>tspatialFromEWKB</varname>, <varname>tspatialFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (EWKB) representation</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Conversions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tgeometry_tgeography"><varname>tgeometry::tgeography</varname>, <varname>tgeography::tgeometry</varname>, <varname>tgeompoint::tgeogpoint</varname>, <varname>tgeogpoint::tgeompoint</varname></link>: Convert between a temporal geometry and a temporal geography</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname>, <varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Convert between a temporal point and a PostGIS trajectory</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
 
 		<sect2>
 			<title>Spatial Reference System</title>
-
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tgeo_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
+					<para><link linkend="tgeo_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier</para>
 				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeo_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
-					</listitem>
 
 				<listitem>
 					<para><link linkend="tgeo_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
@@ -1127,7 +1069,6 @@
 
 		<sect2>
 			<title>Accessors</title>
-
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="trajectory"><varname>trajectory</varname>, <varname>traversedArea</varname></link>: Return the trajectory or the traversed area</para>
@@ -1183,34 +1124,52 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="makeSimple"><varname>makeSimple</varname></link>:  Return an array of fragments of the temporal point which are simple</para>
+					<para><link linkend="tpoint_makeSimple"><varname>makeSimple</varname></link>:  Return an array of fragments of the temporal point which are simple</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="geoMeasure"><varname>geoMeasure</varname></link>: Construct a geometry/geography with M measure from a temporal point and a temporal float</para>
+					<para><link linkend="tpoint_geoMeasure"><varname>geoMeasure</varname></link>: Construct a geometry/geography with M measure from a temporal point and a temporal float</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="affine"><varname>affine</varname></link>: Return the 3D affine transform of a temporal point to do things like translate, rotate, scale in one step</para>
+					<para><link linkend="tgeo_affine"><varname>affine</varname></link>: Return the 3D affine transform of a temporal point to do things like translate, rotate, scale in one step</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="rotate"><varname>rotate</varname></link>: Return a temporal point rotated counter-clockwise about the origin point</para>
+					<para><link linkend="tgeo_rotate"><varname>rotate</varname></link>: Return a temporal point rotated counter-clockwise about the origin point</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="scale"><varname>scale</varname></link>: Return a temporal point scaled by given factors</para>
+					<para><link linkend="tgeo_scale"><varname>scale</varname></link>: Return a temporal point scaled by given factors</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asMVTGeom"><varname>asMVTGeom</varname></link>: Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile</para>
+					<para><link linkend="tpoint_asMVTGeom"><varname>asMVTGeom</varname></link>: Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeo_stops"><varname>stops</varname></link>: Extract from a temporal geometry point with linear interpolation the subsequences where the point stays within an area with a specified maximum size for at least the given duration</para>
+				</listitem>
+
 			</itemizedlist>
 		</sect2>
 
 		<sect2>
-			<title>Distance Operations</title>
+			<title>Restrictions</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tgeo_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) a geometry, a span in Z and/or a period</para>
+				</listitem>
 
+				<listitem>
+					<para><link linkend="tgeo_atStbox"><varname>atStbox</varname>, <varname>minuStbox</varname></link>: Restrict to (the complement of) an <varname>stbox</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+
+		<sect2>
+			<title>Distance Operations</title>
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="smallest_distance"><varname>|=|</varname></link>: Return the smallest distance ever</para>
@@ -1232,7 +1191,6 @@
 
 		<sect2>
 			<title>Spatial Relationships</title>
-
 			<sect3>
 				<title>Ever or Always Spatial Relationships</title>
 
@@ -1295,11 +1253,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname></link>: Return a temporal float or a temporal point simplified ensuring that consecutive values are at least a certain distance or time interval apart</para>
+					<para><link linkend="ttype_minDistSimplify"><varname>minDistSimplify</varname>, <varname>minTimeDeltaSimplify</varname></link>: Return a temporal float or a temporal point simplified ensuring that consecutive values are at least a certain distance or time interval apart</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="douglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>douglasPeuckerSimplify</varname></link>: Return a temporal float or a temporal point simplified using the Douglas-Peucker algorithm</para>
+					<para><link linkend="ttype_douglasPeuckerSimplify"><varname>maxDistSimplify</varname>, <varname>douglasPeuckerSimplify</varname></link>: Return a temporal float or a temporal point simplified using the Douglas-Peucker algorithm</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1309,11 +1267,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tsample"><varname>tsample</varname></link>: Sample a temporal value with respect to an interval</para>
+					<para><link linkend="ttype_tsample"><varname>tsample</varname></link>: Sample a temporal value with respect to an interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tprecision"><varname>tprecision</varname></link>: Reduce the temporal precision of a temporal value with respect to an interval computing the time-weighted average/centroid in each time bin</para>
+					<para><link linkend="ttype_tprecision"><varname>tprecision</varname></link>: Reduce the temporal precision of a temporal value with respect to an interval computing the time-weighted average/centroid in each time bin</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1323,23 +1281,23 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="hausdorffDistance"><varname>hausdorffDistance</varname></link>: Return the discrete Hausdorff distance between two temporal values</para>
+					<para><link linkend="ttype_hausdorffDistance"><varname>hausdorffDistance</varname></link>: Return the discrete Hausdorff distance between two temporal values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="frechetDistance"><varname>frechetDistance</varname></link>: Return the discrete Fréchet distance between two temporal values</para>
+					<para><link linkend="ttype_frechetDistance"><varname>frechetDistance</varname></link>: Return the discrete Fréchet distance between two temporal values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="frechetDistancePath"><varname>frechetDistancePath</varname></link>: Return the correspondence pairs between two temporal values with respect to the discrete Fréchet distance</para>
+					<para><link linkend="ttype_frechetDistancePath"><varname>frechetDistancePath</varname></link>: Return the correspondence pairs between two temporal values with respect to the discrete Fréchet distance</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="dynTimeWarpDistance"><varname>dynTimeWarpDistance</varname></link>: Return the Dynamic Time Warp distance between two temporal values</para>
+					<para><link linkend="ttype_dynTimeWarpDistance"><varname>dynTimeWarpDistance</varname></link>: Return the Dynamic Time Warp distance between two temporal values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="dynTimeWarpPath"><varname>dynTimeWarpPath</varname></link>: Return the correspondence pairs between two temporal values with respect to the Dynamic Time Warp distance</para>
+					<para><link linkend="ttype_dynTimeWarpPath"><varname>dynTimeWarpPath</varname></link>: Return the correspondence pairs between two temporal values with respect to the Dynamic Time Warp distance</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1348,27 +1306,27 @@
 			<title>Splitting Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="temporal_splitNSpans"><varname>splitNSpans</varname></link>: Return an array of N time spans obtained by merging the instants or segments of a temporal value</para>
+					<para><link linkend="ttype_splitNSpans"><varname>splitNSpans</varname></link>: Return an array of N time spans obtained by merging the instants or segments of a temporal value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporal_splitEachNSpans"><varname>splitEachNSpans</varname></link>: Return an array of time spans obtained by merging N consecutive instants or segments of a temporal value</para>
+					<para><link linkend="ttype_splitEachNSpans"><varname>splitEachNSpans</varname></link>: Return an array of time spans obtained by merging N consecutive instants or segments of a temporal value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="splitNTboxes"><varname>splitNTboxes</varname></link>: Return an array of N temporal boxes obtained by merging the instants or segments of a temporal number</para>
+					<para><link linkend="ttype_splitNTboxes"><varname>splitNTboxes</varname></link>: Return an array of N temporal boxes obtained by merging the instants or segments of a temporal number</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="splitEachNTboxes"><varname>splitEachNTboxes</varname></link>: Return an array of temporal boxes obtained by merging N consecutive instants or segments of a temporal number</para>
+					<para><link linkend="ttype_splitEachNTboxes"><varname>splitEachNTboxes</varname></link>: Return an array of temporal boxes obtained by merging N consecutive instants or segments of a temporal number</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="splitNStboxes"><varname>splitNStboxes</varname></link>: Return either an array of N spatial boxes obtained by merging the segments of a (multi)line or an array of N spatiotemporal boxes obtained by merging the instants or segments of a temporal point</para>
+					<para><link linkend="ttype_splitNStboxes"><varname>splitNStboxes</varname></link>: Return either an array of N spatial boxes obtained by merging the segments of a (multi)line or an array of N spatiotemporal boxes obtained by merging the instants or segments of a temporal point</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="splitEachNStboxes"><varname>splitEachNStboxes</varname></link>: Return either an array of spatial boxes obtained by merging N consecutive segments of a (multi)line or an array of spatiotemporal boxes obtained by merging N consecutive instants or segments of a temporal point</para>
+					<para><link linkend="ttype_splitEachNStboxes"><varname>splitEachNStboxes</varname></link>: Return either an array of spatial boxes obtained by merging N consecutive segments of a (multi)line or an array of spatiotemporal boxes obtained by merging N consecutive instants or segments of a temporal point</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1439,23 +1397,11 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Split a temporal number with respect to value bins</para>
+						<para><link linkend="valueSplit"><varname>valueSplit</varname>, <varname>timeSplit</varname>, <varname>valueTimeSplit</varname></link>: Split a temporal number with respect to value and/or time bins</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Split a temporal value with respect to time bins</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Split a temporal number with respect to a value and time grid</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="spaceSplit"><varname>spaceSplit</varname></link>: Split a temporal point with respect to a spatial grid</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="spaceTimeSplit"><varname>spaceTimeSplit</varname></link>: Split a temporal point with respect to a spatiotemporal grid</para>
+						<para><link linkend="spaceSplit"><varname>spaceSplit</varname>, <varname>spaceTimeSplit</varname></link>: Split a temporal point with respect to a spatial or spatiotemporal grid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1474,35 +1420,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tAnd"><varname>tAnd</varname></link>: Temporal and</para>
+					<para><link linkend="tAnd"><varname>tAnd</varname>, <varname>tOr</varname></link>: Temporal and, temporal or</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tOr"><varname>tOr</varname></link>: Temporal or</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tMin"><varname>tMin</varname></link>: Temporal minimum</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tMax"><varname>tMax</varname></link>: Temporal maximum</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tSum"><varname>tSum</varname></link>: Temporal sum</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tAvg"><varname>tAvg</varname></link>: Temporal average</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="wMin"><varname>wMin</varname></link>: Window minimum</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="wMax"><varname>wMax</varname></link>: Window maximum</para>
+					<para><link linkend="tMin"><varname>tMin</varname>, <varname>tMax</varname>, <varname>tSum</varname>, <varname>tAvg</varname></link>: Temporal minimum, maximum, sum, and average</para>
 				</listitem>
 
 				<listitem>
@@ -1510,11 +1432,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="wSum"><varname>wSum</varname></link>: Window sum</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="wAvg"><varname>wAvg</varname></link>: Window average</para>
+					<para><link linkend="wMin"><varname>wMin</varname></link>: Window minimum, maximum, sum, and average</para>
 				</listitem>
 
 				<listitem>
@@ -1522,6 +1440,314 @@
 				</listitem>
 
 			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Temporal Poses</title>
+
+		<sect2>
+			<title>Static Poses</title>
+
+			<sect3>
+				<title>Input and Output</title>
+				<itemizedlist>
+
+					<listitem>
+						<para><link linkend="pose_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="poseFromText"><varname>poseFromText</varname>, <varname>poseFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="poseFromBinary"><varname>poseFromBinary</varname>, <varname>poseFromEWKB </varname>, <varname>poseFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Constructors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose"><varname>pose</varname></link>: Constructors for poses</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Conversions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_stbox"><varname>pose::stbox</varname></link>: Convert a pose and, optionally, a timestamp or a period, into a spatiotemporal box</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_geometry"><varname>pose::geometry</varname></link>: Convert a pose into a geometry point</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Accessors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_point"><varname>point</varname></link>: Return the point</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_rotation"><varname>rotation</varname></link>: Return the rotation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_orientation"><varname>orientation</varname></link>: Return the orientation</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Transformations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_round"><varname>round</varname></link>: Round the point and the orientation of the pose to the number of decimal places</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Spatial Reference System</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_srid"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_same"><varname>same</varname></link>: Spatial similarity</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Comparisons</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_eq"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+						</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Temporal Poses</title>
+			<sect3>
+				<title>Input and Output</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_asMFJSON"><varname>asMFJSON</varname></link>: Return the Moving Features JSON (MF-JSON) representation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexEWKB</varname></link>: Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tposeFromText"><varname>tposeFromText</varname>, <varname>tposeFromEWKT</varname></link>: Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tposeFromMFJSON"><varname>tposeFromMFJSON</varname></link>: Input from the Moving Features JSON (MF-JSON) representation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tposeFromBinary"><varname>tposeFromBinary</varname>, <varname>tposeFromEWKB </varname>, <varname>tposeFromHexEWKB</varname></link>: Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Constructors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_const"><varname>tpose</varname></link>: Constructor for temporal poses from a base value and a time value</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tposeSeq"><varname>tposeSeq</varname></link>: Constructors for temporal poses of sequence subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tposeSeqSet"><varname>tposeSeqSet</varname>, <varname>tposeSeqSetGaps</varname></link>: Constructor for temporal poses of sequence set subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeompoint_tfloat_tpose"><varname>tpose</varname></link>: Construct a 2D temporal pose from a temporal geometry point and a temporal float</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Conversions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_tgeompoint"><varname>tpose::tgeompoint</varname></link>: Convert a temporal pose into a temporal geometry point</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Accessors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_getValues"><varname>getValues</varname></link>: Return the values</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_points"><varname>points</varname></link>: Return the points</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_rotation"><varname>rotation</varname></link>: Return the rotation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Return the value at a timestamp</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Transformations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_subtype"><varname>tposeInst</varname>, <varname>tposeSeq </varname>, <varname>tposeSeqSet</varname></link>: Transform to another subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_setInterp"><varname>setInterp</varname></link>: Transform to another interpolation</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_round"><varname>round</varname></link>: Round the points and the orientations of the temporal pose to the number of decimal places</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Modifications</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Append a temporal instant or a temporal sequence</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_merge"><varname>merge</varname></link>: Merge the temporal poses</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Restrictions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a set of values</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) a geometry</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Spatial Reference System</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transform to a spatial reference identifier</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Bounding Box Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Topological operators</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_pos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Position operators</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Distance Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_nearestApproachDistance"><varname>|=|</varname></link>: Return the smallest distance ever</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Return the instant of the first temporal pose at which the two arguments are at the nearest distance</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_shortestLine"><varname>shortestLine</varname></link>: Return the line connecting the nearest approach point</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_distance"><varname>&lt;-&gt;</varname></link>: Return the temporal distance</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Comparisons</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_comp"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Traditional comparisons</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_ever_always"><varname>?=, &amp;=</varname></link>: Ever and always comparisons</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_tcomp"><varname>#=, #&lt;&gt;</varname></link>: Temporal comparisons</para>
+					</listitem>
+
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Aggregations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpose_tCount"><varname>tCount</varname></link>: Temporal count</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_wCount"><varname>wCount</varname></link>: Window count</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 	</sect1>
 
@@ -1535,11 +1761,7 @@
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="npoint"><varname>npoint</varname></link>: Constructor for network points</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="nsegment"><varname>nsegment</varname></link>: Constructor for network segments</para>
+						<para><link linkend="npoint"><varname>npoint</varname>, <varname>nsegment</varname></link>: Constructors for network points and network segments</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1695,6 +1917,20 @@
 			</sect3>
 
 			<sect3>
+				<title>Bounding Box Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Topological operators</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_pos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Position operators</para>
+					</listitem>
+
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
 				<title>Distance Operations</title>
 				<itemizedlist>
 					<listitem>
@@ -1723,42 +1959,7 @@
 				<title>Spatial Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_stbox"><varname>stbox</varname></link>: Construct the bounding box from a network point and, optionally, a timestamp or a period</para>
-					</listitem>
-
-					<listitem>
 						<para><link linkend="tnpoint_twCentroid"><varname>twCentroid</varname></link>: Return the time-weighted centroid</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_azimuth"><varname>azimuth</varname></link>: Return the temporal azimuth</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Bounding Box Operations</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tnpoint_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Topological operators</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_pos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Position operators</para>
-					</listitem>
-
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Spatial Relationships</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tnpoint_espatialrels"><varname>eContains, eDisjoint, eIntersects, eTouches, eDwithin</varname></link>: Possible spatial relationships</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tnpoint_tspatialrels"><varname>tContains, tDisjoint, tIntersects, tTouches, tDwithin</varname></link>: Temporal spatial relationships</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1783,7 +1984,6 @@
 
 			<sect3>
 				<title>Aggregations</title>
-
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tnpoint_tCount"><varname>tCount</varname></link>: Temporal count</para>
@@ -1822,6 +2022,11 @@
 					<listitem>
 						<para><link linkend="cbuffer_geometry"><varname>cbuffer::geometry</varname>, <varname>geometry::cbuffer</varname></link>: Convert betwwen a circular buffer and a geometry point</para>
 					</listitem>
+
+					<listitem>
+						<para><link linkend="cbuffer_stbox"><varname>stbox</varname></link>: Convert a circular buffer and, optionally, a timestamp or a period, into a spatiotemporal box</para>
+					</listitem>
+
 				</itemizedlist>
 			</sect3>
 
@@ -1851,11 +2056,7 @@
 				<title>Spatial Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="cbuffer_SRID"><varname>SRID</varname></link>: Return the spatial reference identifier</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="cbuffer_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
+						<para><link linkend="cbuffer_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier</para>
 					</listitem>
 
 					<listitem>
@@ -2007,11 +2208,7 @@
 				<title>Spatial Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tcbuffer_SRID"><varname>SRID</varname></link>: Get the spatial reference identifier</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tcbuffer_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
+						<para><link linkend="tcbuffer_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Return or set the spatial reference identifier</para>
 					</listitem>
 
 					<listitem>
@@ -2020,10 +2217,6 @@
 
 					<listitem>
 						<para><link linkend="tcbuffer_traversedArea"><varname>traversedArea</varname></link>: Return the area traversed by the temporal circular buffer</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tcbuffer_stbox"><varname>stbox</varname></link>: Construct a spatiotemporal box from a circular buffer and, optionally, a timestamp or a period</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2090,3 +2283,4 @@
 		</sect2>
 	</sect1>
 </appendix>
+

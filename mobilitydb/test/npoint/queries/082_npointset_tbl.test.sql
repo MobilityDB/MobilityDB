@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2024, PostGIS contributors
+-- Copyright (c) 2001-2025, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -43,6 +43,11 @@ DROP TABLE tbl_npointset_tmp;
 
 -- Input/output from/to WKB and HexWKB
 
+SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromText(asText(n)) <> n;
+SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromEWKT(asText(n)) <> n;
+
+SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromBinary(asBinary(n)) <> n;
+SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromEWKB(asEWKB(n)) <> n;
 SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexWKB(asHexWKB(n)) <> n;
 
 -------------------------------------------------------------------------------

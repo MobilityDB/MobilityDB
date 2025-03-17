@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -27,8 +27,9 @@
  *
  *****************************************************************************/
 
-/*
- * Basic functions for temporal geos.
+/**
+ * @file
+ * @brief Basic functions for temporal geometry/geographies
  */
 
 CREATE TYPE tgeometry;
@@ -63,7 +64,7 @@ CREATE FUNCTION tgeography_typmod_in(cstring[])
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Tgeography_typmod_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeo_typmod_out(integer)
+CREATE FUNCTION tspatial_typmod_out(integer)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Tspatial_typmod_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -80,7 +81,7 @@ CREATE TYPE tgeometry (
   send = temporal_send,
   receive = tgeometry_recv,
   typmod_in = tgeometry_typmod_in,
-  typmod_out = tgeo_typmod_out,
+  typmod_out = tspatial_typmod_out,
   storage = extended,
   alignment = double,
   analyze = tspatial_analyze
@@ -110,7 +111,7 @@ CREATE TYPE tgeography (
   send = temporal_send,
   receive = tgeography_recv,
   typmod_in = tgeography_typmod_in,
-  typmod_out = tgeo_typmod_out,
+  typmod_out = tspatial_typmod_out,
   storage = extended,
   alignment = double,
   analyze = tspatial_analyze
@@ -119,11 +120,11 @@ CREATE TYPE tgeography (
 -- Special cast for enforcing the typmod restrictions
 CREATE FUNCTION tgeometry(tgeometry, integer)
   RETURNS tgeometry
-  AS 'MODULE_PATHNAME', 'Tgeo_enforce_typmod'
+  AS 'MODULE_PATHNAME', 'Tspatial_enforce_typmod'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeography(tgeography, integer)
   RETURNS tgeography
-  AS 'MODULE_PATHNAME', 'Tgeo_enforce_typmod'
+  AS 'MODULE_PATHNAME', 'Tspatial_enforce_typmod'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeometry AS tgeometry) WITH FUNCTION tgeometry(tgeometry, integer) AS IMPLICIT;

@@ -191,9 +191,9 @@ extern Datum datum_radians(Datum d);
 extern uint32 datum_hash(Datum d, meosType basetype);
 extern uint64 datum_hash_extended(Datum d, meosType basetype, uint64 seed);
 
-extern Datum datum_round_float(Datum value, Datum size);
-extern Datum datum_round_geo(Datum value, Datum size);
-extern Datum round_point(GSERIALIZED *gs, int maxdd);
+extern Datum datum_float_round(Datum value, Datum size);
+extern Datum datum_geo_round(Datum value, Datum size);
+extern GSERIALIZED *point_round(const GSERIALIZED *gs, int maxdd);
 extern void floatspan_round_set(const Span *s, int maxdd, Span *result);
 
 /*****************************************************************************
@@ -642,7 +642,7 @@ extern const TSequence **temporal_seqs(const Temporal *temp, int *count);
 extern void temporal_set_bbox(const Temporal *temp, void *box);
 extern const TInstant *temporal_start_inst(const Temporal *temp);
 extern Datum temporal_start_value(const Temporal *temp);
-extern Datum *temporal_vals(const Temporal *temp, int *count);
+extern Datum *temporal_values_p(const Temporal *temp, int *count);
 extern bool temporal_value_n(const Temporal *temp, int n, Datum *result);
 extern Datum *temporal_values(const Temporal *temp, int *count);
 extern uint32 tinstant_hash(const TInstant *inst);
@@ -653,7 +653,7 @@ extern TimestampTz *tinstant_timestamps(const TInstant *inst, int *count);
 extern Datum tinstant_val(const TInstant *inst);
 extern Datum tinstant_value(const TInstant *inst);
 extern bool tinstant_value_at_timestamptz(const TInstant *inst, TimestampTz t, Datum *result);
-extern Datum *tinstant_vals(const TInstant *inst, int *count);
+extern Datum *tinstant_values_p(const TInstant *inst, int *count);
 extern void tnumber_set_span(const Temporal *temp, Span *span);
 extern SpanSet *tnumberinst_valuespans(const TInstant *inst);
 extern SpanSet *tnumberseq_valuespans(const TSequence *seq);
@@ -672,7 +672,7 @@ extern TimestampTz tsequence_start_timestamptz(const TSequence *seq);
 extern SpanSet *tsequence_time(const TSequence *seq);
 extern TimestampTz *tsequence_timestamps(const TSequence *seq, int *count);
 extern bool tsequence_value_at_timestamptz(const TSequence *seq, TimestampTz t, bool strict, Datum *result);
-extern Datum *tsequence_vals(const TSequence *seq, int *count);
+extern Datum *tsequence_values_p(const TSequence *seq, int *count);
 extern Interval *tsequenceset_duration(const TSequenceSet *ss, bool boundspan);
 extern TimestampTz tsequenceset_end_timestamptz(const TSequenceSet *ss);
 extern uint32 tsequenceset_hash(const TSequenceSet *ss);
@@ -692,7 +692,7 @@ extern bool tsequenceset_timestamptz_n(const TSequenceSet *ss, int n, TimestampT
 extern TimestampTz *tsequenceset_timestamps(const TSequenceSet *ss, int *count);
 extern bool tsequenceset_value_at_timestamptz(const TSequenceSet *ss, TimestampTz t, bool strict, Datum *result);
 extern bool tsequenceset_value_n(const TSequenceSet *ss, int n, Datum *result);
-extern Datum *tsequenceset_vals(const TSequenceSet *ss, int *count);
+extern Datum *tsequenceset_values_p(const TSequenceSet *ss, int *count);
 
 /*****************************************************************************/
 

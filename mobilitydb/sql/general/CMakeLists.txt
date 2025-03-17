@@ -26,6 +26,7 @@ SET(LOCAL_FILES
   042_temporal_waggfuncs
   043_temporal_gist
   044_temporal_spgist
+  046_temporal_analytics
   999_oid_cache
   )
 

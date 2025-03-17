@@ -15,6 +15,30 @@ SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset_tmp t2 WHERE t1.k = t2.k AN
 
 DROP TABLE tbl_npointset_tmp;
 DROP TABLE
+SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromText(asText(n)) <> n;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromEWKT(asText(n)) <> n;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromBinary(asBinary(n)) <> n;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromEWKB(asEWKB(n)) <> n;
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexWKB(asHexWKB(n)) <> n;
  count 
 -------

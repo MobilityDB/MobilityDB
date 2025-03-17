@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -53,7 +53,7 @@
 PGDLLEXPORT Datum Tspatial_extent_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_extent_transfn);
 /**
- * @ingroup mobilitydb_temporal_agg
+ * @ingroup mobilitydb_geo_agg
  * @brief Transition function for temporal extent aggregation of temporal 
  * spatial values
  * @sqlfn extent()
@@ -76,7 +76,7 @@ Tspatial_extent_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_transfn);
 /**
- * @ingroup mobilitydb_temporal_agg
+ * @ingroup mobilitydb_geo_agg
  * @brief Transition function for temporal centroid aggregation of temporal
  * points
  * @sqlfn tCentroid()
@@ -98,7 +98,7 @@ Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_combinefn);
 /**
- * @ingroup mobilitydb_temporal_agg
+ * @ingroup mobilitydb_geo_agg
  * @brief Combine function for temporal centroid aggregation of temporal points
  * @sqlfn tCentroid()
  */
@@ -129,7 +129,7 @@ Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tcentroid_finalfn);
 /**
- * @ingroup mobilitydb_temporal_agg
+ * @ingroup mobilitydb_geo_agg
  * @brief Final function for temporal centroid aggregation of temporal points
  * @sqlfn tCentroid()
  */

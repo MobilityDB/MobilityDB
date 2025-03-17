@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -35,15 +35,21 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <utils/array.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_pose.h>
+#include "general/meos_catalog.h"
 #include "general/pg_types.h"
 #include "general/set.h"
+#include "geo/tspatial.h"
 #include "geo/tspatial_parser.h"
+#include "pose/pose.h"
 #include "pose/tpose_parser.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
+#include "pg_geo/tspatial.h"
 
 /*****************************************************************************
  * Input/output
@@ -52,7 +58,7 @@
 PGDLLEXPORT Datum Tpose_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_in);
 /**
- * @ingroup mobilitydb_temporal_inout
+ * @ingroup mobilitydb_pose_inout
  * @brief Generic input function for temporal pose objects
  *
  * @note Examples of input for the various temporal types:
@@ -82,6 +88,44 @@ Tpose_in(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Tpose_typmod_in(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_typmod_in);
+/**
+ * @brief Input typmod information for temporal geometries
+ */
+Datum
+Tpose_typmod_in(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
+  uint32 typmod = tspatial_typmod_in(array, true, false);
+  PG_RETURN_INT32(typmod);
+}
+
+/*****************************************************************************
+ * Constructor functions
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpoint_tfloat_to_tpose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpoint_tfloat_to_tpose);
+/**
+ * @ingroup mobilitydb_pose_conversion
+ * @brief Return a temporal pose constructed from a temporal point and a
+ * temporal float
+ * @sqlfn tpose()
+ */
+Datum
+Tpoint_tfloat_to_tpose(PG_FUNCTION_ARGS)
+{
+  Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
+  Temporal *tradius = PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = tpoint_tfloat_to_tpose(tpoint, tradius);
+  PG_FREE_IF_COPY(tpoint, 0);
+  PG_FREE_IF_COPY(tradius, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/
@@ -89,7 +133,7 @@ Tpose_in(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpose_to_tgeompoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_to_tgeompoint);
 /**
- * @ingroup mobilitydb_temporal_conversion
+ * @ingroup mobilitydb_pose_conversion
  * @brief Return a temporal pose converted to a temporal geometry point
  * @sqlfn tgeompoint()
  * @sqlop @p ::
@@ -104,24 +148,40 @@ Tpose_to_tgeompoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Transformation functions
+ * Accessor functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tpose_round(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_round);
+PGDLLEXPORT Datum Tpose_points(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_points);
 /**
- * @ingroup mobilitydb_temporal_transf
- * @brief Return a temporal pose with the precision of the values set to a
- * number of decimal places
- * @sqlfn round()
+ * @ingroup mobilitydb_pose_accessor
+ * @brief Return the array of points of a temporal pose
+ * @sqlfn points()
  */
 Datum
-Tpose_round(PG_FUNCTION_ARGS)
+Tpose_points(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum size = PG_GETARG_DATUM(1);
-  Temporal *result = tpose_round(temp, size);
+  Set *result = tpose_points(temp);
   PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Tpose_rotation(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_rotation);
+/**
+ * @ingroup mobilitydb_pose_base_accessor
+ * @brief Return the rotation of a 2D temporal pose
+ * @sqlfn rotation()
+ */
+Datum
+Tpose_rotation(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpose_rotation(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 

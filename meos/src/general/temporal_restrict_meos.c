@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -114,40 +114,6 @@ ttext_at_value(const Temporal *temp, text *txt)
   return temporal_restrict_value(temp, PointerGetDatum(txt), REST_AT);
 }
 
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal point restricted to a point
- * @param[in] temp Temporal value
- * @param[in] gs Value
- * @csqlfn #Temporal_at_value()
- */
-Temporal *
-tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tpoint_type(temp->temptype))
-    return NULL;
-  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
-}
-
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal geo restricted to a geometry/geography
- * @param[in] temp Temporal value
- * @param[in] gs Value
- * @csqlfn #Temporal_at_value()
- */
-Temporal *
-tgeo_at_value(const Temporal *temp, GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
-    return NULL;
-  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
-}
-
 /*****************************************************************************/
 
 /**
@@ -216,40 +182,6 @@ ttext_minus_value(const Temporal *temp, text *txt)
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return temporal_restrict_value(temp, PointerGetDatum(txt), REST_MINUS);
-}
-
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal point restricted to the complement of a point
- * @param[in] temp Temporal value
- * @param[in] gs Value
- * @csqlfn #Temporal_minus_value()
- */
-Temporal *
-tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tpoint_type(temp->temptype))
-    return NULL;
-  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
-}
-
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal geo restricted to the complement of a geo
- * @param[in] temp Temporal value
- * @param[in] gs Value
- * @csqlfn #Temporal_minus_value()
- */
-Temporal *
-tgeo_minus_value(const Temporal *temp, GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
-    return NULL;
-  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -388,31 +320,6 @@ ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   Datum res;
   bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
   *value = DatumGetTextP(res);
-  return result;
-}
-
-/**
- * @ingroup meos_temporal_accessor
- * @brief Return the value of a temporal geo at a timestamptz
- * @param[in] temp Temporal value
- * @param[in] t Timestamp
- * @param[in] strict True if the timestamp must belong to the temporal value,
- * false when it may be at an exclusive bound
- * @param[out] value Resulting value
- * @csqlfn #Temporal_value_at_timestamptz()
- */
-bool
-tgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
-  GSERIALIZED **value)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
-      ! ensure_tgeo_type_all(temp->temptype))
-    return false;
-
-  Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
-  *value = DatumGetGserializedP(res);
   return result;
 }
 

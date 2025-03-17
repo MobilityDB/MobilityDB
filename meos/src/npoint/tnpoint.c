@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -45,7 +45,101 @@
 #include "general/temporal.h"
 #include "general/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/tspatial_parser.h"
 #include "npoint/tnpoint.h"
+
+/*****************************************************************************
+ * Input/output functions
+ *****************************************************************************/
+
+
+#if MEOS
+/**
+ * @ingroup meos_internal_npoint_inout
+ * @brief Return a temporal circular buffer instant from its Well-Known Text 
+ * (WKT) representation
+ * @param[in] str String
+ */
+TInstant *
+tnpointinst_in(const char *str)
+{
+  assert(str);
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tspatial_parse(&str, T_TNPOINT);
+  assert(temp->subtype == TINSTANT);
+  return (TInstant *) temp;
+}
+
+/**
+ * @ingroup meos_internal_npoint_inout
+ * @brief Return a temporal circular buffer sequence from its Well-Known Text 
+ * (WKT) representation
+ * @param[in] str String
+ * @param[in] interp Interpolation
+ */
+TSequence *
+tnpointseq_in(const char *str, interpType interp __attribute__((unused)))
+{
+  assert(str);
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tspatial_parse(&str, T_TNPOINT);
+  if (! temp)
+    return NULL;
+  assert (temp->subtype == TSEQUENCE);
+  return (TSequence *) temp;
+}
+
+/**
+ * @ingroup meos_internal_npoint_inout
+ * @brief Return a temporal circular buffer sequence set from its Well-Known
+ * Text (WKT) representation
+ * @param[in] str String
+ */
+TSequenceSet *
+tnpointseqset_in(const char *str)
+{
+  assert(str);
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tspatial_parse(&str, T_TNPOINT);
+  assert(temp->subtype == TSEQUENCESET);
+  return (TSequenceSet *) temp;
+}
+#endif /* MEOS */
+
+/*****************************************************************************/
+#if MEOS
+/**
+ * @ingroup meos_npoint_inout
+ * @brief Return a temporal network point from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ */
+Temporal *
+tnpoint_in(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return tspatial_parse(&str, T_TNPOINT);
+}
+
+/**
+ * @ingroup meos_npoint_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal
+ * network point
+ * @param[in] temp Temporal network point
+ * @param[in] maxdd Maximum number of decimal digits
+ */
+char *
+tnpoint_out(const Temporal *temp, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || 
+      ! ensure_temporal_isof_type(temp, T_TNPOINT))
+    return NULL;
+  return temporal_out(temp, maxdd);
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Conversion functions
@@ -121,7 +215,7 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_temporal_conversion
+ * @ingroup meos_npoint_conversion
  * @brief Return a temporal network point transformed to a temporal geometry
  * point
  * @param[in] temp Temporal point
@@ -130,6 +224,7 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
 Temporal *
 tnpoint_tgeompoint(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TNPOINT))
@@ -211,7 +306,7 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_temporal_conversion
+ * @ingroup meos_npoint_conversion
  * @brief Return a temporal geometry point transformed to a temporal network
  * point
  * @param[in] temp Temporal point
@@ -246,40 +341,6 @@ tgeompoint_tnpoint(const Temporal *temp)
 }
 
 /*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-/**
- * @ingroup meos_temporal_transf
- * @brief Return a temporal network point with the precision of the fractions
- * set to a number of decimal places
- */
-Temporal *
-tnpoint_round(const Temporal *temp, Datum size)
-{
-  /* Ensure validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TNPOINT))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TNPOINT);
-#endif /* MEOS */
-
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_npoint_round;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = size;
-  lfinfo.argtype[0]= temp->temptype;
-  lfinfo.restype = temp->temptype;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  return tfunc_temporal(temp, &lfinfo);
-}
-
-/*****************************************************************************
  * Accessor functions
  *****************************************************************************/
 
@@ -304,7 +365,7 @@ tnpointseq_step_positions(const TSequence *seq, int *count)
 {
   int count1;
   /* The following function removes duplicate values */
-  Datum *values = tsequence_vals(seq, &count1);
+  Datum *values = tsequence_values_p(seq, &count1);
   Nsegment **result = palloc(sizeof(Nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {
@@ -375,7 +436,7 @@ tnpointseqset_step_positions(const TSequenceSet *ss, int *count)
 {
   /* The following function removes duplicate values */
   int newcount;
-  Datum *values = tsequenceset_vals(ss, &newcount);
+  Datum *values = tsequenceset_values_p(ss, &newcount);
   Nsegment **result = palloc(sizeof(Nsegment *) * newcount);
   for (int i = 0; i < newcount; i++)
   {
@@ -399,7 +460,7 @@ tnpointseqset_positions(const TSequenceSet *ss, int *count)
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_npoint_accessor
  * @brief Return the network segments covered by the temporal network point
  * @csqlfn #Tnpoint_positions()
  */
@@ -432,7 +493,7 @@ tnpointinst_route(const TInstant *inst)
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_npoint_accessor
  * @brief Return the single route of a temporal network point
  * @return On error return @p INT_MAX
  * @csqlfn #Tnpoint_route()
@@ -511,7 +572,7 @@ tnpointseqset_routes(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_npoint_accessor
  * @brief Return the array of routes of a temporal network point
  * @csqlfn #Tnpoint_routes()
  */

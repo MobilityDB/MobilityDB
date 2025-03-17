@@ -7,7 +7,6 @@ add_library(general OBJECT
   pg_types.c
   skiplist.c
   set.c
-  set_aggfuncs.c
   set_ops.c
   span.c
   span_aggfuncs.c
@@ -36,7 +35,6 @@ add_library(general OBJECT
   type_in.c
   type_out.c
   type_parser.c
-  type_round.c
   type_util.c
 )
 

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -119,7 +119,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_base_temporal);
  * @sqlfn ever_eq()
  * @sqlop @p ?=
  */
-Datum
+inline Datum
 Ever_eq_base_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_base_temporal(fcinfo, &ever_eq_base_temporal);
@@ -133,7 +133,7 @@ PG_FUNCTION_INFO_V1(Always_eq_base_temporal);
  * @sqlfn always_eq()
  * @sqlop @p %=
  */
-Datum
+inline Datum
 Always_eq_base_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_base_temporal(fcinfo, &always_eq_base_temporal);
@@ -147,7 +147,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_base_temporal);
  * @sqlfn ever_ne()
  * @sqlop @p ?<>
  */
-Datum
+inline Datum
 Ever_ne_base_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_base_temporal(fcinfo, &ever_ne_base_temporal);
@@ -161,7 +161,7 @@ PG_FUNCTION_INFO_V1(Always_ne_base_temporal);
  * @sqlfn always_ne()
  * @sqlop @p %<>
  */
-Datum
+inline Datum
 Always_ne_base_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_base_temporal(fcinfo, &always_ne_base_temporal);
@@ -177,7 +177,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_temporal_base);
  * @sqlfn ever_eq()
  * @sqlop @p ?=
  */
-Datum
+inline Datum
 Ever_eq_temporal_base(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_base(fcinfo, &ever_eq_temporal_base);
@@ -191,7 +191,7 @@ PG_FUNCTION_INFO_V1(Always_eq_temporal_base);
  * @sqlfn always_eq()
  * @sqlop @p %=
  */
-Datum
+inline Datum
 Always_eq_temporal_base(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_base(fcinfo, &always_eq_temporal_base);
@@ -205,7 +205,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_temporal_base);
  * @sqlfn ever_ne()
  * @sqlop @p ?<>
  */
-Datum
+inline Datum
 Ever_ne_temporal_base(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_base(fcinfo, &ever_ne_temporal_base);
@@ -219,7 +219,7 @@ PG_FUNCTION_INFO_V1(Always_ne_temporal_base);
  * @sqlfn always_ne()
  * @sqlop @p %<>
  */
-Datum
+inline Datum
 Always_ne_temporal_base(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_base(fcinfo, &always_ne_temporal_base);
@@ -235,7 +235,7 @@ PG_FUNCTION_INFO_V1(Ever_lt_base_temporal);
  * @sqlfn ever_lt()
  * @sqlop @p ?<
  */
-Datum
+inline Datum
 Ever_lt_base_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_base_temporal(fcinfo, &ever_lt_base_temporal);
@@ -249,7 +249,7 @@ PG_FUNCTION_INFO_V1(Always_lt_base_temporal);
  * @sqlfn always_lt()
  * @sqlop @p %<
  */
-Datum
+inline Datum
 Always_lt_base_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_base_temporal(fcinfo, &always_lt_base_temporal);
@@ -264,7 +264,7 @@ PG_FUNCTION_INFO_V1(Ever_le_base_temporal);
  * @sqlfn ever_le()
  * @sqlop @p ?<=
  */
-Datum
+inline Datum
 Ever_le_base_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_base_temporal(fcinfo, &ever_le_base_temporal);
@@ -279,7 +279,7 @@ PG_FUNCTION_INFO_V1(Always_le_base_temporal);
  * @sqlfn always_le()
  * @sqlop @p %<=
  */
-Datum
+inline Datum
 Always_le_base_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_base_temporal(fcinfo, &always_le_base_temporal);
@@ -293,7 +293,7 @@ PG_FUNCTION_INFO_V1(Ever_gt_base_temporal);
  * @sqlfn ever_gt()
  * @sqlop @p ?>
  */
-Datum
+inline Datum
 Ever_gt_base_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_base_temporal(fcinfo, &ever_gt_base_temporal);
@@ -307,7 +307,7 @@ PG_FUNCTION_INFO_V1(Always_gt_base_temporal);
  * @sqlfn always_gt()
  * @sqlop @p %>
  */
-Datum
+inline Datum
 Always_gt_base_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_base_temporal(fcinfo, &always_gt_base_temporal);
@@ -322,7 +322,7 @@ PG_FUNCTION_INFO_V1(Ever_ge_base_temporal);
  * @sqlfn ever_ge()
  * @sqlop @p ?>=
  */
-Datum
+inline Datum
 Ever_ge_base_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_base_temporal(fcinfo, &ever_ge_base_temporal);
@@ -337,7 +337,7 @@ PG_FUNCTION_INFO_V1(Always_ge_base_temporal);
  * @sqlfn always_ge()
  * @sqlop @p %>=
  */
-Datum
+inline Datum
 Always_ge_base_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_base_temporal(fcinfo, &always_ge_base_temporal);
@@ -353,7 +353,7 @@ PG_FUNCTION_INFO_V1(Ever_lt_temporal_base);
  * @sqlfn ever_lt()
  * @sqlop @p ?<
  */
-Datum
+inline Datum
 Ever_lt_temporal_base(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_base(fcinfo, &ever_lt_temporal_base);
@@ -367,7 +367,7 @@ PG_FUNCTION_INFO_V1(Always_lt_temporal_base);
  * @sqlfn always_lt()
  * @sqlop @p %<
  */
-Datum
+inline Datum
 Always_lt_temporal_base(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_base(fcinfo, &always_lt_temporal_base);
@@ -382,7 +382,7 @@ PG_FUNCTION_INFO_V1(Ever_le_temporal_base);
  * @sqlfn ever_le()
  * @sqlop @p ?<=
  */
-Datum
+inline Datum
 Ever_le_temporal_base(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_base(fcinfo, &ever_le_temporal_base);
@@ -397,7 +397,7 @@ PG_FUNCTION_INFO_V1(Always_le_temporal_base);
  * @sqlfn always_le()
  * @sqlop @p %<=
  */
-Datum
+inline Datum
 Always_le_temporal_base(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_base(fcinfo, &always_le_temporal_base);
@@ -411,7 +411,7 @@ PG_FUNCTION_INFO_V1(Ever_gt_temporal_base);
  * @sqlfn ever_gt()
  * @sqlop @p ?>
  */
-Datum
+inline Datum
 Ever_gt_temporal_base(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_base(fcinfo, &ever_gt_temporal_base);
@@ -425,7 +425,7 @@ PG_FUNCTION_INFO_V1(Always_gt_temporal_base);
  * @sqlfn always_gt()
  * @sqlop @p %>
  */
-Datum
+inline Datum
 Always_gt_temporal_base(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_base(fcinfo, &always_gt_temporal_base);
@@ -440,7 +440,7 @@ PG_FUNCTION_INFO_V1(Ever_ge_temporal_base);
  * @sqlfn ever_ge()
  * @sqlop @p ?>=
  */
-Datum
+inline Datum
 Ever_ge_temporal_base(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_base(fcinfo, &ever_ge_temporal_base);
@@ -455,7 +455,7 @@ PG_FUNCTION_INFO_V1(Always_ge_temporal_base);
  * @sqlfn always_ge()
  * @sqlop @p %>=
  */
-Datum
+inline Datum
 Always_ge_temporal_base(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_base(fcinfo, &always_ge_temporal_base);
@@ -471,7 +471,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_temporal_temporal);
  * @sqlfn ever_eq()
  * @sqlop @p ?=
  */
-Datum
+inline Datum
 Ever_eq_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &ever_eq_temporal_temporal);
@@ -485,7 +485,7 @@ PG_FUNCTION_INFO_V1(Always_eq_temporal_temporal);
  * @sqlfn always_eq()
  * @sqlop @p %=
  */
-Datum
+inline Datum
 Always_eq_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_eq_temporal_temporal);
@@ -499,7 +499,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_temporal_temporal);
  * @sqlfn ever_ne()
  * @sqlop @p ?<>
  */
-Datum
+inline Datum
 Ever_ne_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &ever_ne_temporal_temporal);
@@ -513,7 +513,7 @@ PG_FUNCTION_INFO_V1(Always_ne_temporal_temporal);
  * @sqlfn always_ne()
  * @sqlop @p %<>
  */
-Datum
+inline Datum
 Always_ne_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_ne_temporal_temporal);
@@ -528,7 +528,7 @@ PG_FUNCTION_INFO_V1(Ever_lt_temporal_temporal);
  * @sqlfn ever_lt()
  * @sqlop @p ?<
  */
-Datum
+inline Datum
 Ever_lt_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &ever_lt_temporal_temporal);
@@ -543,7 +543,7 @@ PG_FUNCTION_INFO_V1(Always_lt_temporal_temporal);
  * @sqlfn always_lt()
  * @sqlop @p %<
  */
-Datum
+inline Datum
 Always_lt_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_lt_temporal_temporal);
@@ -558,7 +558,7 @@ PG_FUNCTION_INFO_V1(Ever_le_temporal_temporal);
  * @sqlfn ever_le()
  * @sqlop @p ?<=
  */
-Datum
+inline Datum
 Ever_le_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &ever_le_temporal_temporal);
@@ -573,7 +573,7 @@ PG_FUNCTION_INFO_V1(Always_le_temporal_temporal);
  * @sqlfn always_le()
  * @sqlop @p %<=
  */
-Datum
+inline Datum
 Always_le_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_le_temporal_temporal);
@@ -588,7 +588,7 @@ PG_FUNCTION_INFO_V1(Ever_gt_temporal_temporal);
  * @sqlfn ever_gt()
  * @sqlop @p ?>
  */
-Datum
+inline Datum
 Ever_gt_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &ever_gt_temporal_temporal);
@@ -603,7 +603,7 @@ PG_FUNCTION_INFO_V1(Always_gt_temporal_temporal);
  * @sqlfn always_gt()
  * @sqlop @p %>
  */
-Datum
+inline Datum
 Always_gt_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_gt_temporal_temporal);
@@ -618,7 +618,7 @@ PG_FUNCTION_INFO_V1(Ever_ge_temporal_temporal);
  * @sqlfn ever_ge()
  * @sqlop @p ?>=
  */
-Datum
+inline Datum
 Ever_ge_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &ever_ge_temporal_temporal);
@@ -633,7 +633,7 @@ PG_FUNCTION_INFO_V1(Always_ge_temporal_temporal);
  * @sqlfn always_ge()
  * @sqlop @p %>=
  */
-Datum
+inline Datum
 Always_ge_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return EAcomp_temporal_temporal(fcinfo, &always_ge_temporal_temporal);
@@ -705,7 +705,7 @@ PG_FUNCTION_INFO_V1(Teq_base_temporal);
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
-Datum
+inline Datum
 Teq_base_temporal(PG_FUNCTION_ARGS)
 {
   return Tcomp_base_temporal(fcinfo, &datum2_eq);
@@ -720,7 +720,7 @@ PG_FUNCTION_INFO_V1(Tne_base_temporal);
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
-Datum
+inline Datum
 Tne_base_temporal(PG_FUNCTION_ARGS)
 {
   return Tcomp_base_temporal(fcinfo, &datum2_ne);
@@ -735,7 +735,7 @@ PG_FUNCTION_INFO_V1(Tlt_base_temporal);
  * @sqlfn temporal_tlt()
  * @sqlop @p #<
  */
-Datum
+inline Datum
 Tlt_base_temporal(PG_FUNCTION_ARGS)
 {
   return Tcomp_base_temporal(fcinfo, &datum2_lt);
@@ -750,7 +750,7 @@ PG_FUNCTION_INFO_V1(Tle_base_temporal);
  * @sqlfn temporal_tle()
  * @sqlop @p #<=
  */
-Datum
+inline Datum
 Tle_base_temporal(PG_FUNCTION_ARGS)
 {
   return Tcomp_base_temporal(fcinfo, &datum2_le);
@@ -765,7 +765,7 @@ PG_FUNCTION_INFO_V1(Tgt_base_temporal);
  * @sqlfn temporal_tgt()
  * @sqlop @p #>
  */
-Datum
+inline Datum
 Tgt_base_temporal(PG_FUNCTION_ARGS)
 {
   return Tcomp_base_temporal(fcinfo, &datum2_gt);
@@ -780,7 +780,7 @@ PG_FUNCTION_INFO_V1(Tge_base_temporal);
  * @sqlfn temporal_tge()
  * @sqlop @p #>=
  */
-Datum
+inline Datum
 Tge_base_temporal(PG_FUNCTION_ARGS)
 {
   return Tcomp_base_temporal(fcinfo, &datum2_ge);
@@ -797,7 +797,7 @@ PG_FUNCTION_INFO_V1(Teq_temporal_base);
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
-Datum
+inline Datum
 Teq_temporal_base(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_base(fcinfo, &datum2_eq);
@@ -812,7 +812,7 @@ PG_FUNCTION_INFO_V1(Tne_temporal_base);
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
-Datum
+inline Datum
 Tne_temporal_base(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_base(fcinfo, &datum2_ne);
@@ -827,7 +827,7 @@ PG_FUNCTION_INFO_V1(Tlt_temporal_base);
  * @sqlfn temporal_tlt()
  * @sqlop @p #<
  */
-Datum
+inline Datum
 Tlt_temporal_base(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_base(fcinfo, &datum2_lt);
@@ -842,7 +842,7 @@ PG_FUNCTION_INFO_V1(Tle_temporal_base);
  * @sqlfn temporal_tle()
  * @sqlop @p #<=
  */
-Datum
+inline Datum
 Tle_temporal_base(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_base(fcinfo, &datum2_le);
@@ -857,7 +857,7 @@ PG_FUNCTION_INFO_V1(Tgt_temporal_base);
  * @sqlfn temporal_tgt()
  * @sqlop @p #>
  */
-Datum
+inline Datum
 Tgt_temporal_base(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_base(fcinfo, &datum2_gt);
@@ -872,7 +872,7 @@ PG_FUNCTION_INFO_V1(Tge_temporal_base);
  * @sqlfn temporal_tge()
  * @sqlop @p #>=
  */
-Datum
+inline Datum
 Tge_temporal_base(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_base(fcinfo, &datum2_ge);
@@ -889,7 +889,7 @@ PG_FUNCTION_INFO_V1(Teq_temporal_temporal);
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
-Datum
+inline Datum
 Teq_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_temporal(fcinfo, &datum2_eq);
@@ -904,7 +904,7 @@ PG_FUNCTION_INFO_V1(Tne_temporal_temporal);
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
-Datum
+inline Datum
 Tne_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_temporal(fcinfo, &datum2_ne);
@@ -919,7 +919,7 @@ PG_FUNCTION_INFO_V1(Tlt_temporal_temporal);
  * @sqlfn temporal_tlt()
  * @sqlop @p #<
  */
-Datum
+inline Datum
 Tlt_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_temporal(fcinfo, &datum2_lt);
@@ -934,7 +934,7 @@ PG_FUNCTION_INFO_V1(Tle_temporal_temporal);
  * @sqlfn temporal_tle()
  * @sqlop @p #<=
  */
-Datum
+inline Datum
 Tle_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_temporal(fcinfo, &datum2_le);
@@ -949,7 +949,7 @@ PG_FUNCTION_INFO_V1(Tgt_temporal_temporal);
  * @sqlfn temporal_tgt()
  * @sqlop @p #>
  */
-Datum
+inline Datum
 Tgt_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_temporal(fcinfo, &datum2_gt);
@@ -963,7 +963,7 @@ PG_FUNCTION_INFO_V1(Tge_temporal_temporal);
  * @sqlfn temporal_tge()
  * @sqlop @p #>=
  */
-Datum
+inline Datum
 Tge_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Tcomp_temporal_temporal(fcinfo, &datum2_ge);

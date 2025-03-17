@@ -1,13 +1,17 @@
-add_library(npoint OBJECT
+set(NPOINT_SRCS
   npoint.c
-  npointset.c
   tnpoint.c
   tnpoint_aggfuncs.c
   tnpoint_boxops.c
   tnpoint_distance.c
-  tnpoint_parser.c
   tnpoint_routeops.c
   tnpoint_spatialfuncs.c
-  tnpoint_spatialrels.c
-  tnpoint_tempspatialrels.c
 )
+
+if(MEOS)
+  list(APPEND NPOINT_SRCS
+  npointset_meos.c
+)
+endif()
+
+add_library(npoint OBJECT ${NPOINT_SRCS})

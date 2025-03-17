@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -102,7 +102,7 @@ eacomp_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if a circular buffer is ever equal to a temporal circular
  * buffer
  * @param[in] cbuf Circular buffer
@@ -116,7 +116,7 @@ ever_eq_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if a temporal circular buffer is ever equal to a circular
  * buffer
  * @param[in] temp Temporal value
@@ -130,7 +130,7 @@ ever_eq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if a circular buffer is ever different from a temporal
  * circular buffer
  * @param[in] cbuf Circular buffer
@@ -144,7 +144,7 @@ ever_ne_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if a temporal circular buffer is ever different from a
  * circular buffer
  * @param[in] temp Temporal value
@@ -158,7 +158,7 @@ ever_ne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if a circular buffer is always equal to a temporal
  * circular buffer
  * @param[in] cbuf Circular buffer
@@ -172,7 +172,7 @@ always_eq_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if a temporal circular buffer is always equal to a
  * circular buffer
  * @param[in] temp Temporal value
@@ -186,7 +186,7 @@ always_eq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if a circular buffer is always different from a temporal
  * circular buffer
  * @param[in] cbuf Circular buffer
@@ -200,7 +200,7 @@ always_ne_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if a temporal circular buffer is always different from a
  * circular buffer
  * @param[in] temp Temporal value
@@ -216,7 +216,7 @@ always_ne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if two temporal circular buffers are ever equal
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Ever_eq_tcbuffer_tcbuffer()
@@ -228,7 +228,7 @@ ever_eq_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if two temporal circular buffers are ever different
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Ever_ne_tcbuffer_tcbuffer()
@@ -240,7 +240,7 @@ ever_ne_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if two temporal circular buffers are always equal
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Always_eq_tcbuffer_tcbuffer()
@@ -252,7 +252,7 @@ always_eq_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if two temporal circular buffers are always different
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Always_ne_tcbuffer_tcbuffer()
@@ -316,7 +316,7 @@ tcomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_temp
+ * @ingroup meos_cbuffer_comp_temp
  * @brief Return the temporal equality of a circular buffer and a temporal
  * circular buffer
  * @param[in] cbuf Circular buffer
@@ -330,7 +330,7 @@ teq_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_temp
+ * @ingroup meos_cbuffer_comp_temp
  * @brief Return the temporal inequality of a circular buffer and a temporal
  * circular buffer
  * @param[in] cbuf Circular buffer
@@ -346,7 +346,7 @@ tne_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_temp
+ * @ingroup meos_cbuffer_comp_temp
  * @brief Return the temporal equality of a temporal circular buffer and a
  * circular buffer
  * @param[in] temp Temporal value
@@ -360,7 +360,7 @@ teq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 }
 
 /**
- * @ingroup meos_temporal_comp_temp
+ * @ingroup meos_cbuffer_comp_temp
  * @brief Return the temporal inequality of a temporal circular buffer and a
  * circular buffer
  * @param[in] temp Temporal value

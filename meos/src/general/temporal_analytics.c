@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -72,8 +72,13 @@ timestamptz_tprecision(TimestampTz t, const Interval *duration,
   TimestampTz torigin)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) duration) ||
-      ! ensure_valid_duration(duration))
+#if MEOS
+  if (! ensure_not_null((void *) duration))
+    return DT_NOEND;
+#else
+  assert(duration);
+#endif /* MEOS */
+  if (! ensure_valid_duration(duration))
     return DT_NOEND;
   return timestamptz_get_bin(t, duration, torigin);
 }
@@ -89,9 +94,14 @@ Set *
 tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
-      ! ensure_set_isof_type(s, T_TSTZSET) ||
-      ! ensure_valid_duration(duration))
+      ! ensure_set_isof_type(s, T_TSTZSET))
+    return NULL;
+#else
+  assert(s); assert(duration); assert(s->settype == T_TSTZSET);
+#endif /* MEOS */
+  if (! ensure_valid_duration(duration))
     return NULL;
 
   Datum *values = palloc(sizeof(Datum) * s->count);
@@ -113,9 +123,14 @@ tstzspan_tprecision(const Span *s, const Interval *duration,
   TimestampTz torigin)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
-      ! ensure_span_isof_type(s, T_TSTZSPAN) ||
-      ! ensure_valid_duration(duration))
+      ! ensure_span_isof_type(s, T_TSTZSPAN) )
+    return NULL;
+#else
+  assert(s); assert(duration); assert(s->spantype == T_TSTZSPAN);
+#endif /* MEOS */
+  if (! ensure_valid_duration(duration))
     return NULL;
 
   int64 tunits = interval_units(duration);
@@ -141,9 +156,14 @@ tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) duration) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET) ||
-      ! ensure_valid_duration(duration))
+      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET) )
+    return NULL;
+#else
+  assert(ss); assert(duration); assert(ss->spansettype == T_TSTZSPANSET);
+#endif /* MEOS */
+  if (! ensure_valid_duration(duration))
     return NULL;
 
   int64 tunits = interval_units(duration);

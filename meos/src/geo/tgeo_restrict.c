@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -50,9 +50,107 @@
 #include "general/temporal_restrict.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
-#include "geo/pgis_types.h"
+#include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_spatialrels.h"
+
+/*****************************************************************************/
+
+#if MEOS
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal point restricted to a point
+ * @param[in] temp Temporal value
+ * @param[in] gs Value
+ * @csqlfn #Temporal_at_value()
+ */
+Temporal *
+tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tpoint_type(temp->temptype))
+    return NULL;
+  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
+}
+
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal geo restricted to a geometry/geography
+ * @param[in] temp Temporal value
+ * @param[in] gs Value
+ * @csqlfn #Temporal_at_value()
+ */
+Temporal *
+tgeo_at_value(const Temporal *temp, GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
+  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
+}
+
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal point restricted to the complement of a point
+ * @param[in] temp Temporal value
+ * @param[in] gs Value
+ * @csqlfn #Temporal_minus_value()
+ */
+Temporal *
+tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tpoint_type(temp->temptype))
+    return NULL;
+  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
+}
+
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal geo restricted to the complement of a geo
+ * @param[in] temp Temporal value
+ * @param[in] gs Value
+ * @csqlfn #Temporal_minus_value()
+ */
+Temporal *
+tgeo_minus_value(const Temporal *temp, GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_tgeo_type(temp->temptype))
+    return NULL;
+  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the value of a temporal geo at a timestamptz
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] strict True if the timestamp must belong to the temporal value,
+ * false when it may be at an exclusive bound
+ * @param[out] value Resulting value
+ * @csqlfn #Temporal_value_at_timestamptz()
+ */
+bool
+tgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
+  GSERIALIZED **value)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
+      ! ensure_tgeo_type_all(temp->temptype))
+    return false;
+
+  Datum res;
+  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
+  *value = DatumGetGserializedP(res);
+  return result;
+}
+#endif /* MEOS */
+
 
 /*****************************************************************************
  * Force a temporal point to be 2D
@@ -1091,7 +1189,7 @@ tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 
 #if MEOS
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal geo restricted to a spatiotemporal box
  * @param[in] temp Temporal geo
  * @param[in] box Spatiotemporal box
@@ -1108,7 +1206,7 @@ tgeo_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 }
 
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal geo restricted to the complement of a
  * spatiotemporal box
  * @param[in] temp Temporal geo
@@ -2045,26 +2143,30 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   return result;
 }
 
+/*****************************************************************************/
+
 #if MEOS
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal point restricted to a geometry
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
  * @csqlfn #Tgeo_at_geom()
+ * @note This function has a last parameter for the Z dimension which is not
+ * available for temporal geometries
  */
 Temporal *
 tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs))
+  if (! ensure_valid_tspatial_geo(temp, gs))
     return NULL;
   return tgeo_restrict_geom(temp, gs, zspan, REST_AT);
 }
 
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal geo restricted to a geometry
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
@@ -2074,31 +2176,33 @@ Temporal *
 tgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs))
+  if (! ensure_valid_tspatial_geo(temp, gs))
     return NULL;
   return tgeo_restrict_geom(temp, gs, NULL, REST_AT);
 }
 
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal point restricted to the complement of a geometry
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
  * @csqlfn #Tgeo_minus_geom()
+ * @note This function has a last parameter for the Z dimension which is not
+ * available for temporal geometries
  */
 Temporal *
-tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs, 
+tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs))
+  if (! ensure_valid_tspatial_geo(temp, gs))
     return NULL;
   return tgeo_restrict_geom(temp, gs, zspan, REST_MINUS);
 }
 
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal geo restricted to the complement of a geometry
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
@@ -2108,7 +2212,7 @@ Temporal *
 tgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs))
+  if (! ensure_valid_tspatial_geo(temp, gs))
     return NULL;
   return tgeo_restrict_geom(temp, gs, NULL, REST_MINUS);
 }

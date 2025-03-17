@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -62,7 +62,7 @@ eacomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return -1;
   return eacomp_temporal_base(temp, PointerGetDatum(gs), func, ever);
@@ -90,7 +90,7 @@ eacomp_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_geo_comp_ever
  * @brief Return true if a geo is ever equal to a temporal geo
  * @param[in] gs Geo
  * @param[in] temp Temporal geo
@@ -103,7 +103,7 @@ ever_eq_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_geo_comp_ever
  * @brief Return true if a temporal geo is ever equal to a geo
  * @param[in] temp Temporal geo
  * @param[in] gs Geo
@@ -116,7 +116,7 @@ ever_eq_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_geo_comp_ever
  * @brief Return true if a geo is ever different from a temporal geo
  * @param[in] gs Geo
  * @param[in] temp Temporal geo
@@ -129,7 +129,7 @@ ever_ne_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_geo_comp_ever
  * @brief Return true if a temporal geo is ever different from a geo
  * @param[in] temp Temporal geo
  * @param[in] gs Geo
@@ -142,7 +142,7 @@ ever_ne_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_geo_comp_ever
  * @brief Return true if a geo is always equal to a temporal geo
  * @param[in] gs Geo
  * @param[in] temp Temporal geo
@@ -155,7 +155,7 @@ always_eq_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_geo_comp_ever
  * @brief Return true if a temporal geo is always equal to a geo
  * @param[in] temp Temporal geo
  * @param[in] gs Geo
@@ -168,7 +168,7 @@ always_eq_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_geo_comp_ever
  * @brief Return true if a geo is always different from a temporal geo
  * @param[in] gs Geo
  * @param[in] temp Temporal geo
@@ -181,7 +181,7 @@ always_ne_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_geo_comp_ever
  * @brief Return true if a temporal geo is always different from a geo
  * @param[in] temp Temporal geo
  * @param[in] gs Geo
@@ -196,7 +196,7 @@ always_ne_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_geo_comp_ever
  * @brief Return true if two temporal geos are ever equal
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Ever_eq_tgeo_tgeo()
@@ -208,7 +208,7 @@ ever_eq_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_geo_comp_ever
  * @brief Return true if two temporal geos are ever different
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Ever_ne_tgeo_tgeo()
@@ -220,7 +220,7 @@ ever_ne_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_geo_comp_ever
  * @brief Return true if two temporal geos are always equal
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Always_eq_tgeo_tgeo()
@@ -232,7 +232,7 @@ always_eq_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_geo_comp_ever
  * @brief Return true if two temporal geos are always different
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Always_ne_tgeo_tgeo()
@@ -259,7 +259,7 @@ tcomp_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return NULL;
   return tcomp_base_temporal(PointerGetDatum(gs), temp, func);
@@ -277,7 +277,7 @@ tcomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(gs), func);
@@ -286,7 +286,7 @@ tcomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_temp
+ * @ingroup meos_geo_comp_temp
  * @brief Return the temporal equality of a geo and a temporal geo
  * @param[in] gs Geo
  * @param[in] temp Temporal geo
@@ -299,7 +299,7 @@ teq_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_temp
+ * @ingroup meos_geo_comp_temp
  * @brief Return the temporal inequality of a geo and a temporal geo
  * @param[in] gs Geo
  * @param[in] temp Temporal geo
@@ -314,7 +314,7 @@ tne_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_temp
+ * @ingroup meos_geo_comp_temp
  * @brief Return the temporal equality of a temporal geo and a geo
  * @param[in] temp Temporal geo
  * @param[in] gs Geo
@@ -327,7 +327,7 @@ teq_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_comp_temp
+ * @ingroup meos_geo_comp_temp
  * @brief Return the temporal inequality of a temporal geo and a geo
  * @param[in] temp Temporal geo
  * @param[in] gs Geo
