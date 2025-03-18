@@ -47,6 +47,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 /* MobilityDB */
 #include "pg_geo/tspatial_boxops.h"
 

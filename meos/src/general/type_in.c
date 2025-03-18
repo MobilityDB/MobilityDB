@@ -41,6 +41,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#if POSE
+  #include <meos_pose.h>
+#endif
 #include "general/pg_types.h"
 #include "general/set.h"
 #include "general/span.h"
@@ -53,7 +56,8 @@
   #include "npoint/tnpoint_parser.h"
 #endif
 #if CBUFFER
-  #include "cbuffer/tcbuffer.h"
+  #include <meos_cbuffer.h>
+  #include "cbuffer/cbuffer.h"
   #include "cbuffer/tcbuffer_parser.h"
 #endif
 #if NPOINT
@@ -583,110 +587,6 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   return result;
 }
 
-#if MEOS
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal boolean instant from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @csqlfn #Temporal_from_mfjson()
- */
-TInstant *
-tboolinst_from_mfjson(json_object *mfjson)
-{
-  return tinstant_from_mfjson(mfjson, false, 0, T_TBOOL);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal integer instant from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @csqlfn #Temporal_from_mfjson()
- */
-TInstant *
-tintinst_from_mfjson(json_object *mfjson)
-{
-  return tinstant_from_mfjson(mfjson, false, 0, T_TINT);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal float instant from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @csqlfn #Temporal_from_mfjson()
- */
-TInstant *
-tfloatinst_from_mfjson(json_object *mfjson)
-{
-  return tinstant_from_mfjson(mfjson, false, 0, T_TFLOAT);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal text instant from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @csqlfn #Temporal_from_mfjson()
- */
-TInstant *
-ttextinst_from_mfjson(json_object *mfjson)
-{
-  return tinstant_from_mfjson(mfjson, false, 0, T_TTEXT);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geometry point instant from its MF-JSON
- * representation
- * @param[in] mfjson MFJSON object
- * @param[in] srid SRID
- * @csqlfn #Temporal_from_mfjson()
- */
-TInstant *
-tgeompointinst_from_mfjson(json_object *mfjson, int srid)
-{
-  return tinstant_from_mfjson(mfjson, true, srid, T_TGEOMPOINT);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geography point instant from its MF-JSON
- * representation
- * @param[in] mfjson MFJSON object
- * @param[in] srid SRID
- * @csqlfn #Temporal_from_mfjson()
- */
-TInstant *
-tgeogpointinst_from_mfjson(json_object *mfjson, int srid)
-{
-  return tinstant_from_mfjson(mfjson, true, srid, T_TGEOGPOINT);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geometry instant from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @param[in] srid SRID
- * @csqlfn #Temporal_from_mfjson()
- */
-TInstant *
-tgeometryinst_from_mfjson(json_object *mfjson, int srid)
-{
-  return tinstant_from_mfjson(mfjson, true, srid, T_TGEOMETRY);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geography instant from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @param[in] srid SRID
- * @csqlfn #Temporal_from_mfjson()
- */
-TInstant *
-tgeographyinst_from_mfjson(json_object *mfjson, int srid)
-{
-  return tinstant_from_mfjson(mfjson, true, srid, T_TGEOGRAPHY);
-}
-#endif /* MEOS */
-
 /**
  * @brief Return an array of temporal instants from their MF-JSON
  * representation
@@ -776,115 +676,6 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
     NORMALIZE);
 }
 
-#if MEOS
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal boolean sequence from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequence *
-tboolseq_from_mfjson(json_object *mfjson)
-{
-  return tsequence_from_mfjson(mfjson, false, 0, T_TBOOL, STEP);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal integer sequence from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequence *
-tintseq_from_mfjson(json_object *mfjson)
-{
-  return tsequence_from_mfjson(mfjson, false, 0, T_TINT, STEP);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal float sequence from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @param[in] interp Interpolation
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequence *
-tfloatseq_from_mfjson(json_object *mfjson, interpType interp)
-{
-  return tsequence_from_mfjson(mfjson, false, 0, T_TFLOAT, interp);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal text sequence from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequence *
-ttextseq_from_mfjson(json_object *mfjson)
-{
-  return tsequence_from_mfjson(mfjson, false, 0, T_TTEXT, STEP);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geometry point sequence from its MF-JSON
- * representation
- * @param[in] mfjson MFJSON object
- * @param[in] srid SRID
- * @param[in] interp Interpolation
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequence *
-tgeompointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
-{
-  return tsequence_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, interp);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geography point sequence from its MF-JSON
- * representation
- * @param[in] mfjson MFJSON object
- * @param[in] srid SRID
- * @param[in] interp Interpolation
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequence *
-tgeogpointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
-{
-  return tsequence_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, interp);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geometry sequence from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @param[in] srid SRID
- * @param[in] interp Interpolation
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequence *
-tgeometryseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
-{
-  return tsequence_from_mfjson(mfjson, true, srid, T_TGEOMETRY, interp);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geography sequence from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @param[in] srid SRID
- * @param[in] interp Interpolation
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequence *
-tgeographyseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
-{
-  return tsequence_from_mfjson(mfjson, true, srid, T_TGEOGRAPHY, interp);
-}
-#endif /* MEOS */
-
 /**
  * @ingroup meos_internal_temporal_inout
  * @brief Return a temporal sequence set from its MF-JSON representation
@@ -929,119 +720,6 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
-#if MEOS
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal boolean sequence set from its MF-JSON
- * representation
- * @param[in] mfjson MFJSON object
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequenceSet *
-tboolseqset_from_mfjson(json_object *mfjson)
-{
-  return tsequenceset_from_mfjson(mfjson, false, 0, T_TBOOL, STEP);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal integer sequence set from its MF-JSON
- * representation
- * @param[in] mfjson MFJSON object
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequenceSet *
-tintseqset_from_mfjson(json_object *mfjson)
-{
-  return tsequenceset_from_mfjson(mfjson, false, 0, T_TINT, STEP);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal float sequence set from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @param[in] interp Interpolation
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequenceSet *
-tfloatseqset_from_mfjson(json_object *mfjson, interpType interp)
-{
-  return tsequenceset_from_mfjson(mfjson, false, 0, T_TFLOAT, interp);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal text sequence set from its MF-JSON representation
- * @param[in] mfjson MFJSON object
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequenceSet *
-ttextseqset_from_mfjson(json_object *mfjson)
-{
-  return tsequenceset_from_mfjson(mfjson, false, 0, T_TTEXT, STEP);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geometry point sequence set from its MF-JSON
- * representation
- * @param[in] mfjson MFJSON object
- * @param[in] srid SRID
- * @param[in] interp Interpolation
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequenceSet *
-tgeompointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
-{
-  return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, interp);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geography point sequence set from its MF-JSON
- * representation
- * @param[in] mfjson MFJSON object
- * @param[in] srid SRID
- * @param[in] interp Interpolation
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequenceSet *
-tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
-{
-  return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, interp);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geometry sequence set from its MF-JSON
- * representation
- * @param[in] mfjson MFJSON object
- * @param[in] srid SRID
- * @param[in] interp Interpolation
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequenceSet *
-tgeometryseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
-{
-  return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOMETRY, interp);
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geography sequence set from its MF-JSON
- * representation
- * @param[in] mfjson MFJSON object
- * @param[in] srid SRID
- * @param[in] interp Interpolation
- * @csqlfn #Temporal_from_mfjson()
- */
-TSequenceSet *
-tgeographyseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
-{
-  return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOGRAPHY, interp);
-}
-#endif /* MEOS */
-
 /*****************************************************************************/
 
 /**
@@ -1067,7 +745,7 @@ ensure_temptype_mfjson(const char *typestr)
 }
 
 /**
- * @ingroup meos_temporal_inout
+ * @ingroup meos_internal_temporal_inout
  * @brief Return a temporal object from its MF-JSON representation
  * @param[in] mfjson MFJSON string
  * @param[in] temptype expected temporal type
@@ -1227,111 +905,6 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
   json_object_put(poObj);
   return result;
 }
-
-#if MEOS
-/**
- * @ingroup meos_temporal_inout
- * @brief Return a temporal boolean from its MF-JSON representation
- * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
- * @see #temporal_from_mfjson()
- */
-Temporal *
-tbool_from_mfjson(const char *mfjson)
-{
-  return temporal_from_mfjson(mfjson, T_TBOOL);
-}
-
-/**
- * @ingroup meos_temporal_inout
- * @brief Return a temporal integer from its MF-JSON representation
- * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
- * @see #temporal_from_mfjson()
- */
-Temporal *
-tint_from_mfjson(const char *mfjson)
-{
-  return temporal_from_mfjson(mfjson, T_TINT);
-}
-
-/**
- * @ingroup meos_temporal_inout
- * @brief Return a temporal float from its MF-JSON representation
- * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
- * @see #temporal_from_mfjson()
- */
-Temporal *
-tfloat_from_mfjson(const char *mfjson)
-{
-  return temporal_from_mfjson(mfjson, T_TFLOAT);
-}
-
-/**
- * @ingroup meos_temporal_inout
- * @brief Return a temporal text from its MF-JSON representation
- * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
- * @see #temporal_from_mfjson()
- */
-Temporal *
-ttext_from_mfjson(const char *mfjson)
-{
-  return temporal_from_mfjson(mfjson, T_TTEXT);
-}
-
-/**
- * @ingroup meos_temporal_inout
- * @brief Return a temporal geometry point from its MF-JSON representation
- * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
- * @see #temporal_from_mfjson()
- */
-Temporal *
-tgeompoint_from_mfjson(const char *mfjson)
-{
-  return temporal_from_mfjson(mfjson, T_TGEOMPOINT);
-}
-
-/**
- * @ingroup meos_temporal_inout
- * @brief Return a temporal geography point from its MF-JSON representation
- * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
- * @see #temporal_from_mfjson()
- */
-Temporal *
-tgeogpoint_from_mfjson(const char *mfjson)
-{
-  return temporal_from_mfjson(mfjson, T_TGEOGPOINT);
-}
-/**
- * @ingroup meos_temporal_inout
- * @brief Return a temporal geometry from its MF-JSON representation
- * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
- * @see #temporal_from_mfjson()
- */
-Temporal *
-tgeometry_from_mfjson(const char *mfjson)
-{
-  return temporal_from_mfjson(mfjson, T_TGEOMETRY);
-}
-
-/**
- * @ingroup meos_temporal_inout
- * @brief Return a temporal geography from its MF-JSON representation
- * @param[in] mfjson MFJSON string
- * @return On error return @p NULL
- * @see #temporal_from_mfjson()
- */
-Temporal *
-tgeography_from_mfjson(const char *mfjson)
-{
-  return temporal_from_mfjson(mfjson, T_TGEOGRAPHY);
-}
-#endif /* MEOS */
 
 /*****************************************************************************
  * Input in Well-Known Binary (WKB) representation
@@ -1665,6 +1238,65 @@ npoint_from_wkb_state(meos_wkb_parse_state *s)
 }
 #endif /* NPOINT */
 
+#if POSE
+
+/**
+ * @brief Return the state flags initialized with a byte flag read from the
+ * buffer
+ */
+static void
+pose_flags_from_wkb_state(meos_wkb_parse_state *s, uint8_t wkb_flags)
+{
+  assert(wkb_flags & MEOS_WKB_XFLAG);
+  s->hasx = true;
+  s->hasz = false;
+  s->hast = false;
+  s->geodetic = false;
+  s->has_srid = false;
+  if (wkb_flags & MEOS_WKB_ZFLAG)
+    s->hasz = true;
+  if (wkb_flags & MEOS_WKB_SRIDFLAG)
+    s->has_srid = true;
+  return;
+}
+
+/**
+ * @brief Read a pose and advance the parse state forward
+ */
+Pose *
+pose_from_wkb_state(meos_wkb_parse_state *s)
+{
+  /* Does the data we want to read exist? */
+  // wkb_parse_state_check(s, MEOS_WKB_INT8_SIZE + MEOS_WKB_DOUBLE_SIZE);
+  /* Read the flags */
+  uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
+  pose_flags_from_wkb_state(s, wkb_flags);
+  /* Read the SRID, if necessary */
+  int32_t srid = s->has_srid ? int32_from_wkb_state(s) : SRID_UNKNOWN;
+  Pose *result;
+  if (s->hasz)
+  {
+    double x = double_from_wkb_state(s);
+    double y = double_from_wkb_state(s);
+    double z = double_from_wkb_state(s);
+    double W = double_from_wkb_state(s);
+    double X = double_from_wkb_state(s);
+    double Y = double_from_wkb_state(s);
+    double Z = double_from_wkb_state(s);
+    result = pose_make_3d(x, y, z, W, X, Y, Z);
+  }
+  else
+  {
+    double x = double_from_wkb_state(s);
+    double y = double_from_wkb_state(s);
+    double theta = double_from_wkb_state(s);
+    result = pose_make_2d(x, y, theta);
+  }
+  pose_set_srid(result, srid);
+  return result;
+}
+#endif /* POSE */
+
 /*****************************************************************************/
 
 /**
@@ -1702,6 +1334,10 @@ base_from_wkb_state(meos_wkb_parse_state *s)
     case T_NPOINT:
       return PointerGetDatum(npoint_from_wkb_state(s));
 #endif /* NPOINT */
+#if POSE
+    case T_POSE:
+      return PointerGetDatum(pose_from_wkb_state(s));
+#endif /* POSE */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_INPUT,
         "Unknown base type in WKB string: %s", meostype_name(s->basetype));
@@ -1849,7 +1485,7 @@ set_from_wkb_state(meos_wkb_parse_state *s)
   /* For template classes it is necessary to store the specific type */
   s->type = (uint8_t) wkb_settype;
   s->basetype = settype_basetype(s->type);
-  /* Read the set flags */
+  /* Read the flags */
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
   set_flags_from_wkb_state(s, wkb_flags);
   /* Read the SRID, if necessary */
@@ -2143,8 +1779,8 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
 /**
  * @brief Return a value from its Well-Known Binary (WKB) representation
  */
-static Datum
-datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
+Datum
+type_from_wkb(const uint8_t *wkb, size_t size, meosType type)
 {
   /* Initialize the state appropriately */
   meos_wkb_parse_state s;
@@ -2192,6 +1828,10 @@ datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
   if (type == T_NPOINT)
     return PointerGetDatum(npoint_from_wkb_state(&s));
 #endif /* NPOINT */
+#if POSE
+  if (type == T_POSE)
+    return PointerGetDatum(pose_from_wkb_state(&s));
+#endif /* POSE */
   if (temporal_type(type))
     return PointerGetDatum(temporal_from_wkb_state(&s));
   /* Error! */
@@ -2204,10 +1844,10 @@ datum_from_wkb(const uint8_t *wkb, size_t size, meosType type)
  * @brief Return a value from its HexEWKB representation
  */
 Datum
-datum_from_hexwkb(const char *hexwkb, size_t size, meosType type)
+type_from_hexwkb(const char *hexwkb, size_t size, meosType type)
 {
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, size);
-  Datum result = datum_from_wkb(wkb, size / 2, type);
+  Datum result = type_from_wkb(wkb, size / 2, type);
   pfree(wkb);
   return result;
 }
@@ -2230,7 +1870,7 @@ set_from_wkb(const uint8_t *wkb, size_t size)
   if (! ensure_not_null((void *) wkb))
     return NULL;
   /* We pass ANY set type, the actual type is read from the byte string */
-  return DatumGetSetP(datum_from_wkb(wkb, size, T_INTSET));
+  return DatumGetSetP(type_from_wkb(wkb, size, T_INTSET));
 }
 
 /**
@@ -2248,7 +1888,7 @@ set_from_hexwkb(const char *hexwkb)
     return NULL;
   size_t size = strlen(hexwkb);
   /* We pass ANY set type, the actual type is read from the byte string */
-  return DatumGetSetP(datum_from_hexwkb(hexwkb, size, T_INTSET));
+  return DatumGetSetP(type_from_hexwkb(hexwkb, size, T_INTSET));
 }
 
 /**
@@ -2265,7 +1905,7 @@ span_from_wkb(const uint8_t *wkb, size_t size)
   if (! ensure_not_null((void *) wkb))
     return NULL;
   /* We pass ANY span type, the actual type is read from the byte string */
-  return DatumGetSpanP(datum_from_wkb(wkb, size, T_INTSPAN));
+  return DatumGetSpanP(type_from_wkb(wkb, size, T_INTSPAN));
 }
 
 /**
@@ -2283,7 +1923,7 @@ span_from_hexwkb(const char *hexwkb)
     return NULL;
   size_t size = strlen(hexwkb);
   /* We pass ANY span type, the actual type is read from the byte string */
-  return DatumGetSpanP(datum_from_hexwkb(hexwkb, size, T_INTSPAN));
+  return DatumGetSpanP(type_from_hexwkb(hexwkb, size, T_INTSPAN));
 }
 
 /**
@@ -2300,7 +1940,7 @@ spanset_from_wkb(const uint8_t *wkb, size_t size)
   if (! ensure_not_null((void *) wkb))
     return NULL;
   /* We pass ANY span set type, the actual type is read from the byte string */
-  return DatumGetSpanSetP(datum_from_wkb(wkb, size, T_INTSPANSET));
+  return DatumGetSpanSetP(type_from_wkb(wkb, size, T_INTSPANSET));
 }
 
 /**
@@ -2318,7 +1958,7 @@ spanset_from_hexwkb(const char *hexwkb)
     return NULL;
   size_t size = strlen(hexwkb);
   /* We pass ANY span set type, the actual type is read from the byte string */
-  return DatumGetSpanSetP(datum_from_hexwkb(hexwkb, size, T_INTSPANSET));
+  return DatumGetSpanSetP(type_from_hexwkb(hexwkb, size, T_INTSPANSET));
 }
 
 /*****************************************************************************
@@ -2338,7 +1978,7 @@ tbox_from_wkb(const uint8_t *wkb, size_t size)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) wkb))
     return NULL;
-  return DatumGetTboxP(datum_from_wkb(wkb, size, T_TBOX));
+  return DatumGetTboxP(type_from_wkb(wkb, size, T_TBOX));
 }
 
 /**
@@ -2355,82 +1995,8 @@ tbox_from_hexwkb(const char *hexwkb)
   if (! ensure_not_null((void *) hexwkb))
     return NULL;
   size_t size = strlen(hexwkb);
-  return DatumGetTboxP(datum_from_hexwkb(hexwkb, size, T_TBOX));
+  return DatumGetTboxP(type_from_hexwkb(hexwkb, size, T_TBOX));
 }
-
-/**
- * @ingroup meos_box_inout
- * @brief Return a spatiotemporal box from its Well-Known Binary (WKB)
- * representation
- * @param[in] wkb WKB string
- * @param[in] size Size of the string
- * @csqlfn #Stbox_recv(), #Stbox_from_wkb()
- */
-STBox *
-stbox_from_wkb(const uint8_t *wkb, size_t size)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) wkb))
-    return NULL;
-  return DatumGetSTboxP(datum_from_wkb(wkb, size, T_STBOX));
-}
-
-/**
- * @ingroup meos_box_inout
- * @brief Return a spatiotemporal box from its hex-encoded ASCII Well-Known
- * Binary (WKB) representation
- * @param[in] hexwkb HexWKB string
- * @csqlfn #Stbox_from_hexwkb()
- */
-STBox *
-stbox_from_hexwkb(const char *hexwkb)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) hexwkb))
-    return NULL;
-  size_t size = strlen(hexwkb);
-  return DatumGetSTboxP(datum_from_hexwkb(hexwkb, size, T_STBOX));
-}
-
-/*****************************************************************************
- * WKB and HexWKB input functions for circular buffers
- *****************************************************************************/
-
-#if CBUFFER
-/**
- * @ingroup meos_temporal_inout
- * @brief Return a circular buffer from its Well-Known Binary (WKB) 
- * representation
- * @param[in] wkb WKB string
- * @param[in] size Size of the string
- * @csqlfn #Cbuffer_recv(), #Cbuffer_from_wkb()
- */
-Cbuffer *
-cbuffer_from_wkb(const uint8_t *wkb, size_t size)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) wkb))
-    return NULL;
-  return DatumGetCbufferP(datum_from_wkb(wkb, size, T_CBUFFER));
-}
-
-/**
- * @ingroup meos_temporal_inout
- * @brief Return a circular buffer from its hex-encoded ASCII Well-Known Binary
- * (WKB) representation
- * @param[in] hexwkb HexWKB string
- * @csqlfn #Cbuffer_from_hexwkb()
- */
-Cbuffer *
-cbuffer_from_hexwkb(const char *hexwkb)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) hexwkb))
-    return NULL;
-  size_t size = strlen(hexwkb);
-  return DatumGetCbufferP(datum_from_hexwkb(hexwkb, size, T_CBUFFER));
-}
-#endif /* CBUFFER */
 
 /*****************************************************************************
  * WKB and HexWKB input functions for temporal types
@@ -2452,7 +2018,7 @@ temporal_from_wkb(const uint8_t *wkb, size_t size)
   if (! ensure_not_null((void *) wkb))
     return NULL;
   /* We pass ANY temporal type, the actual type is read from the byte string */
-  return DatumGetTemporalP(datum_from_wkb(wkb, size, T_TINT));
+  return DatumGetTemporalP(type_from_wkb(wkb, size, T_TINT));
 }
 
 /**
@@ -2471,7 +2037,7 @@ temporal_from_hexwkb(const char *hexwkb)
     return NULL;
   size_t size = strlen(hexwkb);
   /* We pass ANY temporal type, the actual type is read from the byte string */
-  return DatumGetTemporalP(datum_from_hexwkb(hexwkb, size, T_TINT));
+  return DatumGetTemporalP(type_from_hexwkb(hexwkb, size, T_TINT));
 }
 
 /*****************************************************************************/

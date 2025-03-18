@@ -37,7 +37,6 @@
 /* C */
 #include <assert.h>
 #include <float.h>
-#include <geos_c.h>
 #include <limits.h>
 /* PostgreSQL */
 #include <utils/float.h>
@@ -57,8 +56,6 @@
 #include "general/tsequenceset.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "geo/tgeo.h"
-#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Input/output functions
@@ -251,44 +248,6 @@ ttext_from_base_temp(const text *txt, const Temporal *temp)
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt))
     return NULL;
   return temporal_from_base_temp(PointerGetDatum(txt), T_TTEXT, temp);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal point from a point and the time frame of another
- * temporal value
- * @param[in] gs Value
- * @param[in] temp Temporal value
- */
-Temporal *
-tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_not_empty(gs) || ! ensure_point_type(gs))
-    return NULL;
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_TGEOGPOINT :
-    T_TGEOMPOINT;
-  return temporal_from_base_temp(PointerGetDatum(gs), geotype, temp);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal geo from a geometry/geography and the time frame of
- * another temporal value
- * @param[in] gs Value
- * @param[in] temp Temporal value
- */
-Temporal *
-tgeo_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_not_empty(gs))
-    return NULL;
-  meosType tgeotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_TGEOGRAPHY :
-    T_TGEOMETRY;
-  return temporal_from_base_temp(PointerGetDatum(gs), tgeotype, temp);
 }
 
 /*****************************************************************************
@@ -499,29 +458,6 @@ ttext_values(const Temporal *temp, int *count)
   return result;
 }
 
-/**
- * @ingroup meos_temporal_accessor
- * @brief Return the array of copies of base values of a temporal geo
- * @param[in] temp Temporal value
- * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
- */
-GSERIALIZED **
-tgeo_values(const Temporal *temp, int *count)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_tgeo_type_all(temp->temptype))
-    return NULL;
-
-  Datum *datumarr = temporal_vals(temp, count);
-  GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * *count);
-  for (int i = 0; i < *count; i++)
-    result[i] = geo_copy(DatumGetGserializedP(datumarr[i]));
-  pfree(datumarr);
-  return result;
-}
-
 /*****************************************************************************/
 
 /**
@@ -591,23 +527,6 @@ ttext_start_value(const Temporal *temp)
   return DatumGetTextP(temporal_start_value(temp));
 }
 
-/**
- * @ingroup meos_temporal_accessor
- * @brief Return a copy of the start value of a temporal geo
- * @param[in] temp Temporal value
- * @return On error return @p NULL
- * @csqlfn #Temporal_start_value()
- */
-GSERIALIZED *
-tgeo_start_value(const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_tgeo_type_all(temp->temptype))
-    return NULL;
-  return DatumGetGserializedP(temporal_start_value(temp));
-}
-
 /*****************************************************************************/
 
 /**
@@ -675,23 +594,6 @@ ttext_end_value(const Temporal *temp)
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return DatumGetTextP(temporal_end_value(temp));
-}
-
-/**
- * @ingroup meos_temporal_accessor
- * @brief Return a copy of the end value of a temporal geo
- * @param[in] temp Temporal value
- * @return On error return @p NULL
- * @csqlfn #Temporal_end_value()
- */
-GSERIALIZED *
-tgeo_end_value(const Temporal *temp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || 
-      ! ensure_tgeo_type_all(temp->temptype))
-    return NULL;
-  return DatumGetGserializedP(temporal_end_value(temp));
 }
 
 /*****************************************************************************/
@@ -887,28 +789,6 @@ ttext_value_n(const Temporal *temp, int n, text **result)
   if (! temporal_value_n(temp, n, &dresult))
     return false;
   *result = DatumGetTextP(dresult);
-  return true;
-}
-
-/**
- * @ingroup meos_temporal_accessor
- * @brief Return a copy of the n-th value of a temporal geo
- * @param[in] temp Temporal value
- * @param[in] n Number
- * @param[out] result Value
- * @csqlfn #Temporal_value_n()
- */
-bool
-tgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_tgeo_type_all(temp->temptype))
-    return false;
-  Datum dresult;
-  if (! temporal_value_n(temp, n, &dresult))
-    return false;
-  *result = DatumGetGserializedP(dresult);
   return true;
 }
 

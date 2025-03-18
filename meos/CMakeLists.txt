@@ -213,6 +213,23 @@ install(
 install(
   FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
+if(CBUFFER)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_cbuffer.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+if(NPOINT)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_npoint.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+if(POSE)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_pose.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+
 install(
   FILES "${CMAKE_SOURCE_DIR}/meos/include/general/meos_catalog.h"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")

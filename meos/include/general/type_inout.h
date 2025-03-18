@@ -28,29 +28,52 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for parsing temporal points.
+ * @brief Basic routines for spans (a.k.a. ranges) composed of two `Datum`
+ * values and two Boolean values stating whether the bounds are inclusive.
  */
 
-#ifndef __TPOINT_PARSER_H__
-#define __TPOINT_PARSER_H__
+#ifndef __TYPE_INOUT_H__
+#define __TYPE_INOUT_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include <meos.h>
 #include "general/meos_catalog.h"
 
+/*
+ * Export functions
+ */
+
+/*****************************************************************************
+ * Definitions taken from the file liblwgeom_internal.h
+ *****************************************************************************/
+
+/* Any (absolute) values outside this range will be printed in scientific
+ * notation */
+#define OUT_MIN_DOUBLE 1E-8
+#define OUT_MAX_DOUBLE 1E15
+#define OUT_DEFAULT_DECIMAL_DIGITS 15
+
+/* 17 digits are sufficient for round-tripping
+ * Then we might add up to 8 (from OUT_MIN_DOUBLE) max leading zeroes (or
+ * 2 digits for "e+") */
+#define OUT_MAX_DIGITS 17 + 8
+
+/* Limit for the max amount of characters that a double can use, including dot
+ * and sign */
+#define OUT_MAX_BYTES_DOUBLE (1 /* Sign */ + 2 /* 0.x */ + OUT_MAX_DIGITS)
+#define OUT_DOUBLE_BUFFER_SIZE OUT_MAX_BYTES_DOUBLE + 1 /* +1 including NULL */
+
 /*****************************************************************************/
 
-extern bool srid_parse(const char **str, int *srid);
-extern bool geo_parse(const char **str, meosType basetype, char sep, int *srid,
-  GSERIALIZED **result);
-extern STBox *stbox_parse(const char **str);
-extern TSequence *tpointseq_parse(const char **str, meosType temptype,
-  interpType interp, bool end, bool make, int *tpoint_srid);
-extern Temporal *tpoint_parse(const char **str, meosType temptype);
-extern Temporal *tgeo_parse(const char **str, meosType temptype);
+extern uint8_t *datum_as_wkb(Datum value, meosType type, uint8_t variant,
+  size_t *size_out);
+extern char *datum_as_hexwkb(Datum value, meosType type, uint8_t variant,
+  size_t *size);
+
+extern Datum type_from_wkb(const uint8_t *wkb, size_t size, meosType type);
+extern Datum type_from_hexwkb(const char *hexwkb, size_t size, meosType type);
 
 /*****************************************************************************/
 
-#endif
+#endif /* __TYPE_INOUT_H__ */

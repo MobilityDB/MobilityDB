@@ -64,18 +64,32 @@
 #if MEOS
 /**
  * @ingroup meos_setspan_inout
- * @brief Return the string representation of a geo set
- * @param[in] s Set
- * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Set_out()
+ * @brief Return a set from its Well-Known Text (WKT) representation
+ * @param[in] str String
+ * @csqlfn #Set_in()
  */
-char *
-geoset_out(const Set *s, int maxdd)
+Set *
+geomset_in(const char *str)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
+  if (! ensure_not_null((void *) str))
     return NULL;
-  return set_out(s, maxdd);
+  return set_parse(&str, T_GEOMSET);
+}
+
+/**
+ * @ingroup meos_setspan_inout
+ * @brief Return a set from its Well-Known Text (WKT) representation
+ * @param[in] str String
+ * @csqlfn #Set_in()
+ */
+Set *
+geogset_in(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return set_parse(&str, T_GEOGSET);
 }
 #endif /* MEOS */
 
@@ -94,7 +108,13 @@ Set *
 geoset_make(const GSERIALIZED **values, int count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) values) || ! ensure_positive(count))
+#if MEOS
+  if (! ensure_not_null((void *) values))
+    return NULL;
+#else
+  assert(values);
+#endif /* MEOS */
+  if (! ensure_positive(count))
     return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);
@@ -103,6 +123,55 @@ geoset_make(const GSERIALIZED **values, int count)
   meosType geotype = FLAGS_GET_GEODETIC(values[0]->gflags) ?
     T_GEOMETRY : T_GEOGRAPHY;
   return set_make_free(datums, count, geotype, ORDER);
+}
+
+/*****************************************************************************
+ * Conversion functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Return a geometry/geography converted to a geo set
+ * @param[in] gs Value
+ * @csqlfn #Value_to_set()
+ */
+Set *
+geo_to_set(const GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) gs))
+    return NULL;
+#else
+  assert(gs);
+#endif /* MEOS */
+  if (! ensure_not_empty(gs))
+    return NULL;
+  Datum v = PointerGetDatum(gs);
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  return set_make_exp(&v, 1, 1, geotype, ORDER_NO);
+}
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a geo set with the precision of the coordinates set to a
+ * number of decimal places
+ * @param[in] s Set
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Geoset_round()
+ */
+Set *
+geoset_round(const Set *s, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) ||
+      ! ensure_geoset_type(s->settype))
+    return NULL;
+  return set_round(s, maxdd, &datum_round_geo);
 }
 
 /*****************************************************************************
@@ -120,9 +189,13 @@ GSERIALIZED *
 geoset_start_value(const Set *s)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
-  return DatumGetGserializedP(datum_copy(SET_VAL_N(s, 0), s->basetype));
+#else
+  assert(s); assert(geoset_type(s->settype));
+#endif /* MEOS */
+ return DatumGetGserializedP(datum_copy(SET_VAL_N(s, 0), s->basetype));
 }
 
 /**
@@ -136,8 +209,12 @@ GSERIALIZED *
 geoset_end_value(const Set *s)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
+#else
+  assert(s); assert(geoset_type(s->settype));
+#endif /* MEOS */
   return DatumGetGserializedP(datum_copy(SET_VAL_N(s, s->count - 1),
     s->basetype));
 }
@@ -155,8 +232,14 @@ bool
 geoset_value_n(const Set *s, int n, GSERIALIZED **result)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_geoset_type(s->settype) || n < 1 || n > s->count)
+      ! ensure_geoset_type(s->settype))
+    return false;
+#else
+  assert(s); assert(result); assert(geoset_type(s->settype));
+#endif /* MEOS */
+  if (n < 1 || n > s->count)
     return false;
   *result = DatumGetGserializedP(datum_copy(SET_VAL_N(s, n - 1), s->basetype));
   return true;
@@ -173,13 +256,189 @@ GSERIALIZED **
 geoset_values(const Set *s)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
+#else
+  assert(s); assert(geoset_type(s->settype));
+#endif /* MEOS */
 
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetGserializedP(datum_copy(SET_VAL_N(s, i), s->basetype));
   return result;
+}
+
+/*****************************************************************************
+ * Operators
+ *****************************************************************************/
+
+#if MEOS
+/**
+ * @brief Return true if a set and a geometry/geography are valid for set
+ * operations
+ * @param[in] s Set
+ * @param[in] gs Value
+ */
+bool
+ensure_valid_set_geo(const Set *s, const GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
+      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs))
+    return false;
+  if (! ensure_geoset_type(s->settype))
+    return false;
+  return true;
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a set contains a geometry/geography
+ * @param[in] s Set
+ * @param[in] gs Value
+ * @csqlfn #Contains_set_value()
+ */
+bool
+contains_set_geo(const Set *s, GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_set_geo(s, gs))
+    return false;
+  return contains_set_value(s, PointerGetDatum(gs));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a geometry/geography is contained in a set
+ * @param[in] gs Value
+ * @param[in] s Set
+ * @csqlfn #Contained_value_set()
+ */
+bool
+contained_geo_set(const GSERIALIZED *gs, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_set_geo(s, gs))
+    return false;
+  return contained_value_set(PointerGetDatum(gs), s);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a set and a geometry/geography
+ * @param[in] s Set
+ * @param[in] gs Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_set_geo(const Set *s, const GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_set_geo(s, gs))
+    return NULL;
+  return union_set_value(s, PointerGetDatum(gs));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a geometry/geography and a set
+ * @param[in] s Set
+ * @param[in] gs Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_geo_set(const GSERIALIZED *gs, const Set *s)
+{
+  return union_set_geo(s, gs);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a set and a geometry/geography
+ * @param[in] s Set
+ * @param[in] gs Value
+ * @csqlfn #Intersection_set_value()
+ */
+Set *
+intersection_set_geo(const Set *s, const GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_set_geo(s, gs))
+    return NULL;
+  return intersection_set_value(s, PointerGetDatum(gs));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a geometry/geography and a set
+ * @param[in] s Set
+ * @param[in] gs Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+intersection_geo_set(const GSERIALIZED *gs, const Set *s)
+{
+  return intersection_set_geo(s, gs);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of a geometry/geography and a set
+ * @param[in] gs Value
+ * @param[in] s Set
+ * @csqlfn #Minus_value_set()
+ */
+Set *
+minus_geo_set(const GSERIALIZED *gs, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_set_geo(s, gs))
+    return NULL;
+  return minus_value_set(PointerGetDatum(gs), s);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of a set and a geometry/geography
+ * @param[in] s Set
+ * @param[in] gs Value
+ * @csqlfn #Minus_set_value()
+ */
+Set *
+minus_set_geo(const Set *s, const GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_set_geo(s, gs))
+    return NULL;
+  return minus_set_value(s, PointerGetDatum(gs));
+}
+#endif /* MEOS */
+
+/*****************************************************************************
+ * Aggregate functions for set types
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of geometries/geographies
+ * @param[in,out] state Current aggregate state
+ * @param[in] gs Value
+ */
+Set *
+geo_union_transfn(Set *state, const GSERIALIZED *gs)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) gs))
+    return NULL;
+#else
+  assert(gs);
+#endif /* MEOS */
+  if (state && ! ensure_geoset_type(state->settype))
+    return NULL;
+  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
+  return value_union_transfn(state, PointerGetDatum(gs), geotype);
 }
 
 /*****************************************************************************/

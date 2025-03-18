@@ -51,7 +51,7 @@
 #include "general/span.h"
 #include "general/temporal.h"
 #include "general/type_parser.h"
-#include "general/type_out.h"
+#include "general/type_inout.h"
 #include "general/type_util.h"
 
 /*****************************************************************************

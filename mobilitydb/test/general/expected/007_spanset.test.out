@@ -36,11 +36,11 @@ SELECT tstzspanset '{[2000-01-01, 2000-01-02), [2000-01-02, 2000-01-03), [2000-0
 
 /* Errors */
 SELECT tstzspanset '2000-01-01, 2000-01-02';
-ERROR:  Could not parse span set value: Missing opening brace
+ERROR:  Could not parse tstzspanset value: Missing opening brace
 LINE 2: SELECT tstzspanset '2000-01-01, 2000-01-02';
                            ^
 SELECT tstzspanset '{[2000-01-01, 2000-01-02]';
-ERROR:  Could not parse span set value: Missing closing brace
+ERROR:  Could not parse tstzspanset value: Missing closing brace
 LINE 1: SELECT tstzspanset '{[2000-01-01, 2000-01-02]';
                            ^
 SELECT asText(floatspanset '{[1.12345678, 2.123456789]}', 6);

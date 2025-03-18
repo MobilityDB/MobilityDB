@@ -45,6 +45,12 @@
 /* MEOS */
 #include <meos.h>
 #include "general/meos_catalog.h"
+#if CBUFFER
+  #include <meos_cbuffer.h>
+#endif
+#if POSE
+  #include "pose/pose.h"
+#endif
 
 /*****************************************************************************/
 
@@ -80,6 +86,13 @@ extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
 
 extern Datum *datumarr_extract(ArrayType *array, int *count);
 extern TimestampTz *timestamparr_extract(ArrayType *array, int *count);
+#if CBUFFER
+extern Cbuffer **cbufferarr_extract(ArrayType *array, int *count);
+extern ArrayType *cbufferarr_to_array(const Cbuffer **cbufarr, int count);
+#endif
+#if POSE
+extern Pose **posearr_extract(ArrayType *array, int *count);
+#endif
 extern Span *spanarr_extract(ArrayType *array, int *count);
 extern STBox *stboxarr_extract(ArrayType *array, int *count);
 extern Temporal **temparr_extract(ArrayType *array, int *count);

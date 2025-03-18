@@ -28,11 +28,11 @@
  *****************************************************************************/
 
 /*
- * Bounding box operators for temporal geos.
+ * Bounding box operators for temporal geos
  */
 
 /*****************************************************************************
- * Casting
+ * Conversions
  *****************************************************************************/
 
 CREATE FUNCTION stbox(tgeometry)

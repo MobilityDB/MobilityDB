@@ -50,11 +50,13 @@
 #include "general/span.h"
 #include "general/spanset.h"
 #include "general/tnumber_mathfuncs.h"
+#include "general/type_inout.h"
 #include "general/type_util.h"
 #include "geo/pgis_types.h"
-#include "geo/tgeo_parser.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/tspatial_parser.h"
 #if CBUFFER
+  #include "cbuffer/cbuffer.h"
   #include "cbuffer/tcbuffer_boxops.h"
 #endif
 #if NPOINT
@@ -220,6 +222,85 @@ stbox_out(const STBox *box, int maxdd)
     pfree(period);
   return str;
 }
+
+/*****************************************************************************
+ * WKB and HexWKB input/output functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_box_inout
+ * @brief Return a spatiotemporal box from its Well-Known Binary (WKB)
+ * representation
+ * @param[in] wkb WKB string
+ * @param[in] size Size of the string
+ * @csqlfn #Stbox_recv(), #Stbox_from_wkb()
+ */
+STBox *
+stbox_from_wkb(const uint8_t *wkb, size_t size)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) wkb))
+    return NULL;
+  return DatumGetSTboxP(type_from_wkb(wkb, size, T_STBOX));
+}
+
+/**
+ * @ingroup meos_box_inout
+ * @brief Return a spatiotemporal box from its hex-encoded ASCII Well-Known
+ * Binary (WKB) representation
+ * @param[in] hexwkb HexWKB string
+ * @csqlfn #Stbox_from_hexwkb()
+ */
+STBox *
+stbox_from_hexwkb(const char *hexwkb)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) hexwkb))
+    return NULL;
+  size_t size = strlen(hexwkb);
+  return DatumGetSTboxP(type_from_hexwkb(hexwkb, size, T_STBOX));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_box_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a spatiotemporal
+ * box
+ * @param[in] box Spatiotemporal box
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Stbox_recv(), #Stbox_as_wkb()
+ */
+uint8_t *
+stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
+    return NULL;
+  return datum_as_wkb(PointerGetDatum(box), T_STBOX, variant, size_out);
+}
+
+#if MEOS
+/**
+ * @ingroup meos_box_inout
+ * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * representation of a spatiotemporal box
+ * @param[in] box Spatiotemporal box
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Stbox_as_hexwkb()
+ */
+char *
+stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
+    return NULL;
+  return (char *) datum_as_wkb(PointerGetDatum(box), T_STBOX,
+    variant | (uint8_t) WKB_HEX, size_out);
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Constructor functions
@@ -1346,6 +1427,84 @@ stbox_perimeter(const STBox *box, bool spheroid)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_box_transf
+ * @brief Return in the last argument a spatiotemporal box with the precision
+ * set to a number of decimal places
+ * @param[in] box Spatiotemporal box
+ * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] result Result box
+ */
+void
+stbox_round_set(const STBox *box, int maxdd, STBox *result)
+{
+  assert(box); assert(result); assert(MEOS_FLAGS_GET_X(box->flags));
+  assert(maxdd >=0);
+
+  result->xmin = float_round(box->xmin, maxdd);
+  result->xmax = float_round(box->xmax, maxdd);
+  result->ymin = float_round(box->ymin, maxdd);
+  result->ymax = float_round(box->ymax, maxdd);
+  if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
+  {
+    result->zmin = float_round(box->zmin, maxdd);
+    result->zmax = float_round(box->zmax, maxdd);
+  }
+  return;
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return a spatiotemporal box with the precision of the coordinates set
+ * to a number of decimal places
+ * @param[in] box Spatiotemporal box
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Stbox_round()
+ */
+STBox *
+stbox_round(const STBox *box, int maxdd)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) box))
+    return NULL;
+#else
+  assert(box);
+#endif /* MEOS */
+  if (! ensure_has_X(T_STBOX, box->flags) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  STBox *result = stbox_copy(box);
+  stbox_round_set(box, maxdd, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return an array of spatiotemporal boxes with the precision of the
+ * coordinates set to a number of decimal places
+ * @param[in] boxarr Array of spatiotemporal boxes
+ * @param[in] count Number of elements in the array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Stboxarr_round()
+ */
+STBox *
+stboxarr_round(const STBox *boxarr, int count, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) boxarr) ||
+      ! ensure_positive(count) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  STBox *result = palloc(sizeof(STBox) * count);
+  memcpy(result, boxarr, sizeof(STBox) * count);
+  for (int i = 0; i < count; i++)
+    stbox_round_set(&boxarr[i], maxdd, &result[i]);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
  * @ingroup meos_box_transf
  * @brief Return a spatiotemporal box with the time span expanded and/or scaled
  * by two intervals
@@ -1397,8 +1556,8 @@ stbox_get_space(const STBox *box)
 
 /**
  * @ingroup meos_box_transf
- * @brief Return a spatiotemporal box with the space bounds expanded by a
- * double
+ * @brief Return a spatiotemporal box with the space bounds expanded/decreased
+ * by a double
  * @param[in] box Spatiotemporal box
  * @param[in] d Value for expanding
  * @csqlfn #Stbox_expand_space()
@@ -1407,15 +1566,34 @@ STBox *
 stbox_expand_space(const STBox *box, double d)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X(T_STBOX, box->flags))
+#if MEOS
+  if (! ensure_not_null((void *) box))
     return NULL;
+#else
+  assert(box);
+#endif /* MEOS */
+  if (! ensure_has_X(T_STBOX, box->flags))
+    return NULL;
+  /* When the value is negative, ensure that its absolute value is less than
+   * the size of all spatial dimensions */ 
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags) ||
+    MEOS_FLAGS_GET_GEODETIC(box->flags);
+  if (d < 0 && (
+       fabs(d) >= (box->xmax - box->xmin) || 
+       fabs(d) >= (box->ymax - box->ymin) || 
+       (hasz && (fabs(d) >= (box->zmax - box->zmin)))))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The value to decrease must be smaller than the size of the stbox: %d", d);
+    return NULL;
+  }
 
   STBox *result = stbox_copy(box);
   result->xmin -= d;
   result->ymin -= d;
   result->xmax += d;
   result->ymax += d;
-  if (MEOS_FLAGS_GET_Z(box->flags) || MEOS_FLAGS_GET_GEODETIC(box->flags))
+  if (hasz)
   {
     result->zmin -= d;
     result->zmax += d;
@@ -1425,8 +1603,8 @@ stbox_expand_space(const STBox *box, double d)
 
 /**
  * @ingroup meos_box_transf
- * @brief Return a spatiotemporal box with the time span expanded by an
- * interval
+ * @brief Return a spatiotemporal box with the time span expanded/decreased by
+ * an interval
  * @param[in] box Spatiotemporal box
  * @param[in] interv Interval for expanding
  * @csqlfn #Stbox_expand_time()
@@ -1438,6 +1616,23 @@ stbox_expand_time(const STBox *box, const Interval *interv)
   if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) interv) ||
       ! ensure_has_T(T_STBOX, box->flags))
     return NULL;
+  /* When the interval is negative, ensure that its absolute value is less than
+   * the duration of the spatiotemporal box */ 
+  Interval intervalzero;
+  memset(&intervalzero, 0, sizeof(Interval));
+  bool negative = pg_interval_cmp(interv, &intervalzero) <= 0;
+  Interval *duration = tstzspan_duration(&box->period);
+  bool smaller = pg_interval_cmp(interv, duration) < 0;
+  pfree(duration);
+  if (negative && ! smaller)
+  {
+    char *str = pg_interval_out(interv);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The interval to decrease must be smaller than the time span of the stbox: %s",
+      str);
+    pfree(str);
+    return NULL;
+  }
 
   STBox *result = stbox_copy(box);
   TimestampTz tmin = minus_timestamptz_interval(DatumGetTimestampTz(

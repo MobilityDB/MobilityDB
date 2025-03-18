@@ -1,22 +1,22 @@
 /* Errors */
 SELECT intspan '[1,2] xxx';
-ERROR:  Could not parse span value: Extraneous characters at the end
+ERROR:  Could not parse intspan value: Extraneous characters at the end
 LINE 2: SELECT intspan '[1,2] xxx';
                        ^
 SELECT floatspan '[1,2] xxx';
-ERROR:  Could not parse span value: Extraneous characters at the end
+ERROR:  Could not parse floatspan value: Extraneous characters at the end
 LINE 1: SELECT floatspan '[1,2] xxx';
                          ^
 SELECT tstzspan '[2000-01-01,2000-01-02] xxx';
-ERROR:  Could not parse span value: Extraneous characters at the end
+ERROR:  Could not parse tstzspan value: Extraneous characters at the end
 LINE 1: SELECT tstzspan '[2000-01-01,2000-01-02] xxx';
                         ^
 SELECT tstzspan '2000-01-01, 2000-01-02';
-ERROR:  Could not parse span: Missing opening bracket/parenthesis
+ERROR:  Could not parse tstzspan value: Missing opening bracket/parenthesis
 LINE 1: SELECT tstzspan '2000-01-01, 2000-01-02';
                         ^
 SELECT tstzspan '[2000-01-01, 2000-01-02';
-ERROR:  Could not parse span: Missing closing bracket/parenthesis
+ERROR:  Could not parse tstzspan value: Missing closing bracket/parenthesis
 LINE 1: SELECT tstzspan '[2000-01-01, 2000-01-02';
                         ^
 SELECT asText(floatspan '[1.12345678, 2.123456789]', 6);

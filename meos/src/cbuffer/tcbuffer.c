@@ -32,8 +32,6 @@
  * @brief Basic functions for temporal circular buffers
  */
 
-#include "cbuffer/tcbuffer.h"
-
 /* C */
 #include <assert.h>
 #include <limits.h>
@@ -42,22 +40,83 @@
 #include <meos_cbuffer.h>
 #include <meos_internal.h>
 #include "general/lifting.h"
+#include "general/set.h"
+#include "general/span.h"
+#include "general/spanset.h"
 #include "general/temporal.h"
 #include "general/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/tspatial_parser.h"
+#include "cbuffer/cbuffer.h"
+
+/*****************************************************************************
+ * Input/output
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal circular buffer instant from its Well-Known Text
+ * (WKT) representation
+ * @param[in] str String
+ */
+TInstant *
+tcbufferinst_in(const char *str)
+{
+  assert(str);
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tspatial_parse(&str, T_TCBUFFER);
+  assert(temp->subtype == TINSTANT);
+  return (TInstant *) temp;
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal circular buffer sequence from its Well-Known Text 
+ * (WKT) representation
+ * @param[in] str String
+ * @param[in] interp Interpolation
+ */
+TSequence *
+tcbufferseq_in(const char *str, interpType interp __attribute__((unused)))
+{
+  assert(str);
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tspatial_parse(&str, T_TCBUFFER);
+  if (! temp)
+    return NULL;
+  assert (temp->subtype == TSEQUENCE);
+  return (TSequence *) temp;
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal circular buffer sequence set from its Well-Known
+ * Text (WKT) representation
+ * @param[in] str String
+ */
+TSequenceSet *
+tcbufferseqset_in(const char *str)
+{
+  assert(str);
+  /* Call the superclass function to read the SRID at the beginning (if any) */
+  Temporal *temp = tspatial_parse(&str, T_TCBUFFER);
+  assert(temp->subtype == TSEQUENCESET);
+  return (TSequenceSet *) temp;
+}
 
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
 
 /**
+ * @ingroup meos_temporal_constructor
  * @brief Return a temporal circular buffer from a temporal point and a 
  * temporal float
  * @note This function is called after synchronization done in function 
- * #tcbuffer_constructor
+ * #tcbuffer_make
  */
 TInstant *
-tcbufferinst_constructor(const TInstant *inst1, const TInstant *inst2)
+tcbufferinst_make(const TInstant *inst1, const TInstant *inst2)
 {
   assert(inst1); assert(inst1->temptype == T_TGEOMPOINT);
   assert(inst2); assert(inst2->temptype == T_TFLOAT);
@@ -71,17 +130,17 @@ tcbufferinst_constructor(const TInstant *inst1, const TInstant *inst2)
  * @brief Return a temporal circular buffer from a temporal point and a 
  * temporal float
  * @note This function is called after synchronization done in function 
- * #tcbuffer_constructor
+ * #tcbuffer_make
  */
 TSequence *
-tcbufferseq_constructor(const TSequence *seq1, const TSequence *seq2)
+tcbufferseq_make(const TSequence *seq1, const TSequence *seq2)
 {
   assert(seq1); assert(seq1->temptype == T_TGEOMPOINT);
   assert(seq2); assert(seq2->temptype == T_TFLOAT);
   assert(seq1->count == seq2->count);
   TInstant **instants = palloc(sizeof(TInstant *) * seq1->count);
   for (int i = 0; i < seq1->count; i++)
-    instants[i] = tcbufferinst_constructor(TSEQUENCE_INST_N(seq1, i),
+    instants[i] = tcbufferinst_make(TSEQUENCE_INST_N(seq1, i),
       TSEQUENCE_INST_N(seq2, i));
   return tsequence_make_free(instants, seq1->count, seq1->period.lower_inc, 
     seq1->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE_NO);
@@ -91,17 +150,17 @@ tcbufferseq_constructor(const TSequence *seq1, const TSequence *seq2)
  * @brief Return a temporal circular buffer from a temporal point and a 
  * temporal float
  * @note This function is called after synchronization done in function 
- * #tcbuffer_constructor
+ * #tcbuffer_make
  */
 TSequenceSet *
-tcbufferseqset_constructor(const TSequenceSet *ss1, const TSequenceSet *ss2)
+tcbufferseqset_make(const TSequenceSet *ss1, const TSequenceSet *ss2)
 {
   assert(ss1); assert(ss1->temptype == T_TGEOMPOINT);
   assert(ss2); assert(ss2->temptype == T_TFLOAT);
   assert(ss1->count == ss2->count);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss1->count);
   for (int i = 0; i < ss1->count; i++)
-    sequences[i] = tcbufferseq_constructor(TSEQUENCESET_SEQ_N(ss1, i),
+    sequences[i] = tcbufferseq_make(TSEQUENCESET_SEQ_N(ss1, i),
       TSEQUENCESET_SEQ_N(ss2, i));
   return tsequenceset_make_free(sequences, ss1->count, NORMALIZE_NO);
 }
@@ -113,33 +172,38 @@ tcbufferseqset_constructor(const TSequenceSet *ss1, const TSequenceSet *ss2)
  * @csqlfn #Tcbuffer_constructor()
  */
 Temporal *
-tcbuffer_constructor(const Temporal *tpoint, const Temporal *tfloat)
+tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) tpoint) || 
+#if MEOS
+  if (! ensure_not_null((void *) tpoint) ||
+      ! ensure_not_null((void *) tfloat) ||
       ! ensure_temporal_isof_type(tpoint, T_TGEOMPOINT) ||
-      ! ensure_not_null((void *) tfloat) || 
       ! ensure_temporal_isof_type(tfloat, T_TFLOAT))
     return NULL;
+#else
+  assert(tpoint); assert(tfloat); assert(tpoint->temptype == T_TGEOMPOINT);
+  assert(tfloat->temptype == T_TFLOAT);
+#endif /* MEOS */
 
   Temporal *sync1, *sync2;
-  /* Return false if the temporal values do not intersect in time
-   * The operation is synchronization without adding crossings */
+  /* Return NULL if the temporal values do not intersect in time
+   * The operation performed is synchronization without adding crossings */
   if (! intersection_temporal_temporal(tpoint, tfloat, SYNCHRONIZE_NOCROSS,
       &sync1, &sync2))
-    return false;
+    return NULL;
 
   assert(temptype_subtype(sync1->subtype));
   switch (sync1->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tcbufferinst_constructor((TInstant *) sync1, 
+      return (Temporal *) tcbufferinst_make((TInstant *) sync1, 
         (TInstant *) sync2);
     case TSEQUENCE:
-      return (Temporal *) tcbufferseq_constructor((TSequence *) sync1,
+      return (Temporal *) tcbufferseq_make((TSequence *) sync1,
         (TSequence *) sync2);
     default: /* TSEQUENCESET */
-      return (Temporal *) tcbufferseqset_constructor((TSequenceSet *) sync1, 
+      return (Temporal *) tcbufferseqset_make((TSequenceSet *) sync1, 
         (TSequenceSet *) sync2);
   }
 }
@@ -163,6 +227,61 @@ tcbuffer_from_base_temp(const Cbuffer *cbuf, const Temporal *temp)
   return temporal_from_base_temp(PointerGetDatum(cbuf), T_TCBUFFER, temp);
 }
 #endif /* MEOS */
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal circular buffer discrete sequence from a circular
+ * buffer and a timestamptz set
+ * @param[in] cbuf Value
+ * @param[in] s Set
+ */
+TSequence *
+tcbufferseq_from_base_tstzset(const Cbuffer *cbuf, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) s) || 
+      ! ensure_set_isof_type(s, T_TSTZSET))
+    return NULL;
+  return tsequence_from_base_tstzset(PointerGetDatum(cbuf), T_TCBUFFER, s);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal circular buffer sequence from a circular buffer and
+ * a timestamptz span
+ * @param[in] cbuf Value
+ * @param[in] s Span
+ * @param[in] interp Interpolation
+ */
+TSequence *
+tcbufferseq_from_base_tstzspan(const Cbuffer *cbuf, const Span *s,
+  interpType interp)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) s) ||
+      ! ensure_span_isof_type(s, T_TSTZSPAN))
+    return NULL;
+  return tsequence_from_base_tstzspan(PointerGetDatum(cbuf), T_TCBUFFER, s,
+    interp);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal circular buffer sequence set from a circular buffer
+ * and a timestamptz span set
+ * @param[in] cbuf Value
+ * @param[in] ss Span set
+ */
+TSequenceSet *
+tcbufferseqset_from_base_tstzspanset(const Cbuffer *cbuf, const SpanSet *ss)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) ss) ||
+      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
+    return NULL;
+  return tsequenceset_from_base_tstzspanset(PointerGetDatum(cbuf), T_TCBUFFER, 
+    ss, STEP);
+}
 
 /*****************************************************************************
  * Conversion functions
@@ -220,6 +339,7 @@ tcbufferseqset_tgeompointseqset(const TSequenceSet *ss)
 Temporal *
 tcbuffer_tgeompoint(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -384,6 +504,7 @@ tgeompointseqset_tcbufferseqset(const TSequenceSet *ss)
 Temporal *
 tgeompoint_tcbuffer(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TGEOMPOINT))
@@ -405,6 +526,40 @@ tgeompoint_tcbuffer(const Temporal *temp)
 }
 
 /*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal circular buffer with the precision of values
+ * set to a number of decimal places
+ */
+Temporal *
+tcbuffer_round(const Temporal *temp, int maxdd)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
+    return NULL;
+#else
+  assert(temp); assert(temp->temptype == T_TCBUFFER);
+#endif /* MEOS */
+
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_cbuffer_round;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Int32GetDatum(maxdd);
+  lfinfo.argtype[0]= temp->temptype;
+  lfinfo.restype = temp->temptype;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************
  * Accessor functions
  *****************************************************************************/
 
@@ -419,9 +574,13 @@ Cbuffer *
 tcbuffer_start_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || 
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
     return NULL;
+#else
+  assert(temp); assert(temp->temptype == T_TCBUFFER);
+#endif /* MEOS */
   return DatumGetCbufferP(temporal_start_value(temp));
 }
 
@@ -436,9 +595,13 @@ Cbuffer *
 tcbuffer_end_value(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || 
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
     return NULL;
+#else
+  assert(temp); assert(temp->temptype == T_TCBUFFER);
+#endif /* MEOS */
   return DatumGetCbufferP(temporal_end_value(temp));
 }
 
@@ -454,9 +617,13 @@ bool
 tcbuffer_value_n(const Temporal *temp, int n, Cbuffer **result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
+#if MEOS
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
     return false;
+#else
+  assert(temp); assert(result); assert(temp->temptype == T_TCBUFFER);
+#endif /* MEOS */
   Datum dresult;
   if (! temporal_value_n(temp, n, &dresult))
     return false;
@@ -475,9 +642,13 @@ Cbuffer **
 tcbuffer_values(const Temporal *temp, int *count)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
     return NULL;
+#else
+  assert(temp); assert(count); assert(temp->temptype == T_TCBUFFER);
+#endif /* MEOS */
 
   Datum *datumarr = temporal_vals(temp, count);
   Cbuffer **result = palloc(sizeof(Cbuffer *) * *count);
@@ -543,6 +714,15 @@ tcbufferseqset_points(const TSequenceSet *ss)
 Set *
 tcbuffer_points(const Temporal *temp)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
+    return NULL;
+#else
+  assert(temp); assert(temp->temptype == T_TCBUFFER);
+#endif /* MEOS */
+
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
@@ -553,46 +733,6 @@ tcbuffer_points(const Temporal *temp)
     default: /* TSEQUENCESET */
       return tcbufferseqset_points((TSequenceSet *) temp);
   }
-}
-
-/*****************************************************************************
- * Restriction functions
- *****************************************************************************/
-
-#if MEOS
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal circular buffer restricted to a circular buffer
- * @param[in] temp Temporal value
- * @param[in] cbuf Value
- * @csqlfn #Temporal_at_value()
- */
-Temporal *
-tcbuffer_at_value(const Temporal *temp, Cbuffer *cbuf)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
-      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
-    return NULL;
-  return temporal_restrict_value(temp, PointerGetDatum(cbuf), REST_AT);
-}
-
-/**
- * @ingroup meos_temporal_restrict
- * @brief Return a temporal circular buffer restricted to the complement of a 
- * circular buffer
- * @param[in] temp Temporal value
- * @param[in] cbuf Value
- * @csqlfn #Temporal_minus_value()
- */
-Temporal *
-tcbuffer_minus_value(const Temporal *temp, Cbuffer *cbuf)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
-      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
-    return NULL;
-  return temporal_restrict_value(temp, PointerGetDatum(cbuf), REST_MINUS);
 }
 
 /**
@@ -610,16 +750,65 @@ tcbuffer_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   Cbuffer **value)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
     return false;
+#else
+  assert(temp); assert(value); assert(temp->temptype == T_TCBUFFER);
+#endif /* MEOS */
 
   Datum res;
   bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
   *value = DatumGetCbufferP(res);
   return result;
 }
+
+/*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal circular buffer restricted to a circular buffer
+ * @param[in] temp Temporal value
+ * @param[in] cbuf Value
+ * @csqlfn #Temporal_at_value()
+ */
+Temporal *
+tcbuffer_at_value(const Temporal *temp, Cbuffer *cbuf)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
+      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
+    return NULL;
+#else
+  assert(temp); assert(cbuf); assert(temp->temptype == T_TCBUFFER);
 #endif /* MEOS */
+  return temporal_restrict_value(temp, PointerGetDatum(cbuf), REST_AT);
+}
+
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal circular buffer restricted to the complement of a 
+ * circular buffer
+ * @param[in] temp Temporal value
+ * @param[in] cbuf Value
+ * @csqlfn #Temporal_minus_value()
+ */
+Temporal *
+tcbuffer_minus_value(const Temporal *temp, Cbuffer *cbuf)
+{
+#if MEOS
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
+      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
+    return NULL;
+#else
+  assert(temp); assert(cbuf); assert(temp->temptype == T_TCBUFFER);
+#endif /* MEOS */
+  return temporal_restrict_value(temp, PointerGetDatum(cbuf), REST_MINUS);
+}
 
 /*****************************************************************************/
 

@@ -799,7 +799,7 @@ Span_gist_distance(PG_FUNCTION_ARGS)
   if (! span_gist_get_span(fcinfo, &query, typid))
     PG_RETURN_DATUM((Datum) -1);
 
-  distance = dist_span_span(key, &query);
+  distance = distance_span_span(key, &query);
 
   PG_RETURN_DATUM(distance);
 }

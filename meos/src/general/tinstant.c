@@ -51,8 +51,8 @@
 #include "general/tsequence.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "geo/tgeo_parser.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/tspatial_parser.h"
 
 /*****************************************************************************
  * General functions
@@ -208,15 +208,20 @@ TInstant *
 tinstant_make(Datum value, meosType temptype, TimestampTz t)
 {
   /* Ensure validity of arguments */
-  if (tgeo_type_all(temptype))
+  int32_t tspatial_srid;
+  // TODO Should we bypass the tests on tnpoint ?
+  if (tspatial_type(temptype) && temptype != T_TNPOINT)
   {
     meosType basetype = temptype_basetype(temptype);
-    int32_t tgeo_srid = spatial_srid(value, basetype);
-    if (! ensure_not_empty(DatumGetGserializedP(value)) ||
-        /* Ensure that the SRID is geodetic for geography */
-        (tgeodetic_type(temptype) && tgeo_srid != SRID_UNKNOWN && 
-          ! ensure_srid_is_latlong(tgeo_srid)))
-    return NULL;
+    tspatial_srid = spatial_srid(value, basetype);
+    /* Ensure that the SRID is geodetic for geography */
+    if (tgeodetic_type(temptype) && tspatial_srid != SRID_UNKNOWN && 
+          ! ensure_srid_is_latlong(tspatial_srid))
+      return NULL;
+    /* Ensure that a geometry/geography is not empty */
+    if (tgeo_type_all(temptype) && 
+        ! ensure_not_empty(DatumGetGserializedP(value)))
+      return NULL;
   }
 
   size_t value_offset = sizeof(TInstant) - sizeof(Datum);
@@ -254,12 +259,12 @@ tinstant_make(Datum value, meosType temptype, TimestampTz t)
   MEOS_FLAGS_SET_CONTINUOUS(result->flags, temptype_continuous(temptype));
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_T(result->flags, true);
-  if (tgeo_type_all(temptype))
+  // TODO Should we bypass the tests on tnpoint ?
+  if (tspatial_type(temptype) && temptype != T_TNPOINT)
   {
-    GSERIALIZED *gs = DatumGetGserializedP(value);
-    MEOS_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(gs->gflags));
-    MEOS_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
-    PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
+    int16 flags = spatial_flags(value, basetype);
+    MEOS_FLAGS_SET_Z(result->flags, MEOS_FLAGS_GET_Z(flags));
+    MEOS_FLAGS_SET_GEODETIC(result->flags, MEOS_FLAGS_GET_GEODETIC(flags));
   }
   return result;
 }
@@ -277,43 +282,6 @@ tinstant_make_free(Datum value, meosType temptype, TimestampTz t)
   TInstant *result = tinstant_make(value, temptype, t);
   DATUM_FREE(value, temptype_basetype(temptype));
   return result;
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal point instant from a point and a timestamptz
- * @param[in] gs Value
- * @param[in] t Timestamp
- * @csqlfn #Tinstant_constructor()
- */
-TInstant *
-tpointinst_make(const GSERIALIZED *gs, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
-      ! ensure_point_type(gs) || ! ensure_has_not_M_geo(gs))
-    return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
-    T_TGEOGPOINT : T_TGEOMPOINT;
-  return tinstant_make(PointerGetDatum(gs), temptype, t);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal instant geo from a geometry and a timestamptz
- * @param[in] gs Value
- * @param[in] t Timestamp
- * @csqlfn #Tinstant_constructor()
- */
-TInstant *
-tgeoinst_make(const GSERIALIZED *gs, TimestampTz t)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs))
-    return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
-    T_TGEOGRAPHY : T_TGEOMETRY;
-  return tinstant_make(PointerGetDatum(gs), temptype, t);
 }
 
 /**

@@ -185,8 +185,12 @@ bool
 bool_in(const char *str)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) str))
     return false;
+#else
+  assert(str);
+#endif /* MEOS */
 
   /*
    * Skip leading and trailing whitespace
@@ -635,7 +639,6 @@ pg_datan2(float8 arg1, float8 arg2)
  * Functions adapted from date.c
  *****************************************************************************/
 
-#if ! MEOS
 /**
  * @ingroup meos_pg_types
  * @brief Return a date from its string representation
@@ -643,6 +646,7 @@ pg_datan2(float8 arg1, float8 arg2)
  * @return On error return @p DATEVAL_NOEND
  * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
  */
+#if ! MEOS
 DateADT
 pg_date_in(const char *str)
 {
@@ -650,18 +654,12 @@ pg_date_in(const char *str)
   return DatumGetTimestampTz(call_function1(date_in, arg));
 }
 #else
-/**
- * @ingroup meos_pg_types
- * @brief Return a date from its string representation
- * @param[in] str String
- * @return On error return @p DATEVAL_NOEND
- * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
- */
 DateADT
 date_in(const char *str)
 {
   return pg_date_in(str);
 }
+
 DateADT
 pg_date_in(const char *str)
 {
@@ -746,13 +744,13 @@ pg_date_in(const char *str)
 }
 #endif /* MEOS */
 
-#if ! MEOS
 /**
  * @ingroup meos_pg_types
  * @brief Return the string representation of a date
  * @param[in] d Date
  * @note PostgreSQL function: @p date_out(PG_FUNCTION_ARGS)
  */
+#if ! MEOS
 char *
 pg_date_out(DateADT d)
 {
@@ -760,17 +758,12 @@ pg_date_out(DateADT d)
   return DatumGetCString(call_function1(date_out, d1));
 }
 #else
-/**
- * @ingroup meos_pg_types
- * @brief Return the string representation of a date
- * @param[in] d Date
- * @note PostgreSQL function: @p date_in(PG_FUNCTION_ARGS)
- */
 char *
 date_out(DateADT d)
 {
   return pg_date_out(d);
 }
+
 char *
 pg_date_out(DateADT d)
 {
@@ -1821,7 +1814,6 @@ interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours,
 
   return result;
 }
-
 
 #if ! MEOS
 /**

@@ -96,56 +96,56 @@ CREATE FUNCTION tgeogpointFromHexEWKB(text)
 
 CREATE FUNCTION asText(tgeompoint, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Tgeo_as_text'
+  AS 'MODULE_PATHNAME', 'Tspatial_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asText(tgeompoint[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
-  AS 'MODULE_PATHNAME', 'Tgeoarr_as_text'
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asText(tgeogpoint, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Tgeo_as_text'
+  AS 'MODULE_PATHNAME', 'Tspatial_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asText(tgeogpoint[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
-  AS 'MODULE_PATHNAME', 'Tgeoarr_as_text'
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asText(geometry[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
-  AS 'MODULE_PATHNAME', 'Geoarr_as_text'
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asText(geography[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
-  AS 'MODULE_PATHNAME', 'Geoarr_as_text'
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asEWKT(tgeompoint, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Tgeo_as_ewkt'
+  AS 'MODULE_PATHNAME', 'Tspatial_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asEWKT(tgeompoint[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
-  AS 'MODULE_PATHNAME', 'Tgeoarr_as_ewkt'
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asEWKT(tgeogpoint, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Tgeo_as_ewkt'
+  AS 'MODULE_PATHNAME', 'Tspatial_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asEWKT(tgeogpoint[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
-  AS 'MODULE_PATHNAME', 'Tgeoarr_as_ewkt'
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asEWKT(geometry[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
-  AS 'MODULE_PATHNAME', 'Geoarr_as_ewkt'
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asEWKT(geography[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
-  AS 'MODULE_PATHNAME', 'Geoarr_as_ewkt'
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asMFJSON(tgeompoint, options int4 DEFAULT 0,

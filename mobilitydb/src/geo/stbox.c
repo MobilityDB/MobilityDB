@@ -45,7 +45,7 @@
 #include <meos_internal.h>
 #include "general/set.h"
 #include "general/span.h"
-#include "general/type_out.h"
+#include "general/type_inout.h"
 #include "general/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 /* MobilityDB */
@@ -118,17 +118,16 @@ Datum
 Stbox_send(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  /* A spatiotemporal box always outputs the SRID */
-  uint8_t variant = WKB_EXTENDED;
   size_t wkb_size = VARSIZE_ANY_EXHDR(box);
-  uint8_t *wkb = stbox_as_wkb(box, variant, &wkb_size);
+  /* A spatiotemporal box always outputs the SRID */
+  uint8_t *wkb = stbox_as_wkb(box, WKB_EXTENDED, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
   PG_RETURN_BYTEA_P(result);
 }
 
 /*****************************************************************************
- * Output in WKT format
+ * Input/output in WKT and WKB format
  *****************************************************************************/
 
 PGDLLEXPORT Datum Stbox_as_text(PG_FUNCTION_ARGS);
@@ -150,6 +149,78 @@ Stbox_as_text(PG_FUNCTION_ARGS)
   text *result = cstring2text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Stbox_as_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_as_wkb);
+/**
+ * @ingroup mobilitydb_box_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a spatiotemporal
+ * box
+ * @sqlfn asBinary()
+ */
+Datum
+Stbox_as_wkb(PG_FUNCTION_ARGS)
+{
+  Datum box = PG_GETARG_DATUM(0);
+  /* A spatiotemporal box always outputs the SRID */
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, box, T_STBOX, true));
+}
+
+PGDLLEXPORT Datum Stbox_as_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_as_hexwkb);
+/**
+ * @ingroup mobilitydb_box_inout
+ * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * representation of a spatiotemporal box
+ * @sqlfn asHexWKB()
+ */
+Datum
+Stbox_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  Datum box = PG_GETARG_DATUM(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, box, T_STBOX));
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Stbox_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_from_wkb);
+/**
+ * @ingroup mobilitydb_box_inout
+ * @brief Return a spatiotemporal box from its Well-Known Binary (WKB)
+ * representation
+ * @sqlfn stboxFromBinary()
+ */
+Datum
+Stbox_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  STBox *result = stbox_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_STBOX_P(result);
+}
+
+PGDLLEXPORT Datum Stbox_from_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_from_hexwkb);
+/**
+ * @ingroup mobilitydb_box_inout
+ * @brief Return a spatiotemporal box from its hex-encoded ASCII Well-Known
+ * Binary (HexWKB) representation
+ * @sqlfn stboxFromHexWKB()
+ */
+Datum
+Stbox_from_hexwkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text2cstring(hexwkb_text);
+  STBox *result = stbox_from_hexwkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************
@@ -930,7 +1001,8 @@ PGDLLEXPORT Datum Stbox_expand_space(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_expand_space);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Return a spatiotemporal box with the space bounds expanded by a double
+ * @brief Return a spatiotemporal box with the space bounds expanded/shrinked
+ * by a double
  * @sqlfn expandSpace()
  */
 Datum
@@ -938,14 +1010,18 @@ Stbox_expand_space(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   double d = PG_GETARG_FLOAT8(1);
-  PG_RETURN_STBOX_P(stbox_expand_space(box, d));
+  STBox *result = stbox_expand_space(box, d);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_STBOX_P(result);
 }
 
 PGDLLEXPORT Datum Stbox_expand_time(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_expand_time);
 /**
  * @ingroup mobilitydb_box_transf
- * @brief Return a spatiotemporal box with the time span expanded by an interval
+ * @brief Return a spatiotemporal box with the time span expanded/shrinked by
+ * an interval
  * @sqlfn Stbox_expand_time()
  */
 Datum
@@ -953,7 +1029,10 @@ Stbox_expand_time(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
-  PG_RETURN_STBOX_P(stbox_expand_time(box, interval));
+  STBox *result = stbox_expand_time(box, interval);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_STBOX_P(result);
 }
 
 PGDLLEXPORT Datum Stbox_round(PG_FUNCTION_ARGS);

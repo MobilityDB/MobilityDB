@@ -28,49 +28,79 @@
  *****************************************************************************/
 
 /**
- * @brief Basic routines for spans (a.k.a. ranges) composed of two `Datum`
- * values and two Boolean values stating whether the bounds are inclusive.
+ * @brief Selectivity functions for temporal points.
  */
 
-#ifndef __TYPE_OUT_H__
-#define __TYPE_OUT_H__
+#ifndef __TSPATIAL_SELFUNCS_H__
+#define __TSPATIAL_SELFUNCS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <catalog/pg_statistic.h>
+#include <utils/selfuncs.h>
 /* MEOS */
 #include "general/meos_catalog.h"
+/* MobilityDB */
+#include "pg_geo/tspatial_analyze.h"
 
-/*
- * Export functions
- */
+/**
+* The maximum number of dimensions our code can handle.
+* We'll use this to statically allocate a bunch of
+* arrays below.
+*/
+#define X_DIM  0
+#define Y_DIM  1
+#define Z_DIM  2
+#define T_DIM  3
+#define ND_DIMS 4
 
 /*****************************************************************************
- * Definitions taken from the file liblwgeom_internal.h
+ * Definitions copied from PostGIS file gserialized_estimate.c
  *****************************************************************************/
 
-/* Any (absolute) values outside this range will be printed in scientific
- * notation */
-#define OUT_MIN_DOUBLE 1E-8
-#define OUT_MAX_DOUBLE 1E15
-#define OUT_DEFAULT_DECIMAL_DIGITS 15
+/*
+* The SD factor restricts the side of the statistics histogram
+* based on the standard deviation of the extent of the data.
+* SDFACTOR is the number of standard deviations from the mean
+* the histogram will extend.
+*/
+#define SDFACTOR 3.25
 
-/* 17 digits are sufficient for round-tripping
- * Then we might add up to 8 (from OUT_MIN_DOUBLE) max leading zeroes (or
- * 2 digits for "e+") */
-#define OUT_MAX_DIGITS 17 + 8
+/**
+* Minimum width of a dimension that we'll bother trying to
+* compute statistics on. Bearing in mind we have no control
+* over units, but noting that for geographics, 10E-5 is in the
+* range of meters, we go lower than that.
+*/
+#define MIN_DIMENSION_WIDTH 0.000000001
 
-/* Limit for the max amount of characters that a double can use, including dot
- * and sign */
-#define OUT_MAX_BYTES_DOUBLE (1 /* Sign */ + 2 /* 0.x */ + OUT_MAX_DIGITS)
-#define OUT_DOUBLE_BUFFER_SIZE OUT_MAX_BYTES_DOUBLE + 1 /* +1 including NULL */
+#define STATISTIC_KIND_ND 102
+#define STATISTIC_KIND_2D 103
+#define STATISTIC_SLOT_ND 0
+#define STATISTIC_SLOT_2D 1
+
+/**
+* Default geometry selectivity factor
+*/
+#define DEFAULT_ND_SEL 0.0001
+#define DEFAULT_ND_JOINSEL 0.001
+
+/**
+* More modest fallafter selectivity factor
+*/
+#define FALLBACK_ND_SEL 0.2
+#define FALLBACK_ND_JOINSEL 0.3
 
 /*****************************************************************************/
 
-extern uint8_t *datum_as_wkb(Datum value, meosType type, uint8_t variant,
-  size_t *size_out);
-extern char *datum_as_hexwkb(Datum value, meosType type, uint8_t variant,
-  size_t *size);
+extern ND_STATS *pg_nd_stats_from_tuple(HeapTuple stats_tuple, int mode);
+extern ND_STATS *pg_get_nd_stats(const Oid tableid, AttrNumber att_num,
+  int mode, bool only_parent);
+
+extern float8 geo_sel(VariableStatData *vardata, const STBox *box,
+  meosOper oper);
+extern float8 geo_joinsel(const ND_STATS *s1, const ND_STATS *s2);
 
 /*****************************************************************************/
 
-#endif /* __TYPE_OUT_H__ */
+#endif

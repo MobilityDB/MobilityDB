@@ -42,8 +42,7 @@
 
 /*****************************************************************************/
 
-extern char *geo_wkt_out(Datum value, meosType type, int maxdd);
-extern char *geo_ewkt_out(Datum value, meosType type, int maxdd);
+extern char *geo_wkt_out(Datum value, int maxdd, bool extended);
 extern uint8_t *coords_to_wkb_buf(const TInstant *inst, uint8_t *buf,
   uint8_t variant);
 

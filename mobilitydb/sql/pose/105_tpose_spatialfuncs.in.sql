@@ -27,71 +27,53 @@
  *
  *****************************************************************************/
 
-/**
- * tpose_static.sql
- * Static pose type
+/*
+ * tpose_spatialfuncs.sql
+ * Spatial functions for temporal poses.
  */
 
-CREATE TYPE pose;
-
-/******************************************************************************
- * Input/Output
- ******************************************************************************/
-
-CREATE FUNCTION pose_in(cstring)
-  RETURNS pose
-  AS 'MODULE_PATHNAME', 'Pose_in'
-  LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION pose_out(pose)
-  RETURNS cstring
-  AS 'MODULE_PATHNAME', 'Pose_out'
-  LANGUAGE C IMMUTABLE STRICT;
-
-/*CREATE FUNCTION pose_recv(internal)
-  RETURNS pose
-  AS 'MODULE_PATHNAME', 'Pose_recv'
-  LANGUAGE C IMMUTABLE STRICT;*/
-
-/*CREATE FUNCTION pose_send(pose)
-  RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Pose_send'
-  LANGUAGE C IMMUTABLE STRICT;*/
-
-CREATE TYPE pose (
-  internallength = variable,
-  input = pose_in,
-  output = pose_out,
---receive = pose_recv,
---send = pose_send,
-  storage = plain,
-  alignment = double
-);
-
-/******************************************************************************
- * Constructors
- ******************************************************************************/
-
-CREATE FUNCTION pose(double precision, double precision, double precision)
-  RETURNS pose
-  AS 'MODULE_PATHNAME', 'Pose_constructor'
+CREATE FUNCTION SRID(pose)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Pose_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION pose(double precision, double precision, double precision,
-  double precision, double precision, double precision, double precision)
+CREATE FUNCTION setSRID(pose, integer)
   RETURNS pose
-  AS 'MODULE_PATHNAME', 'Pose_constructor'
+  AS 'MODULE_PATHNAME', 'Pose_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION SRID(tpose)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Tspatial_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION setSRID(tpose, integer)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tspatial_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Cast functions
+ * AtGeometry and MinusGeometry
  *****************************************************************************/
 
-CREATE FUNCTION geometry(pose)
-  RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Pose_to_geom'
+CREATE FUNCTION atGeometry(tpose, geometry)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_at_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (pose AS geometry) WITH FUNCTION geometry(pose);
+CREATE FUNCTION minusGeometry(tpose, geometry)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_minus_geom'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/******************************************************************************/
+CREATE FUNCTION atStbox(tpose, stbox, bool DEFAULT TRUE)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_at_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusStbox(tpose, stbox, bool DEFAULT TRUE)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_minus_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/

@@ -35,11 +35,10 @@
 #define __TPOSE_H__
 
 #include "general/temporal.h"
-#include "pose/pose.h"
+#include <meos_pose.h>
 
 /*****************************************************************************/
 
-extern Temporal *tpose_to_tgeompoint(const Temporal *temp);
 
 /*****************************************************************************/
 

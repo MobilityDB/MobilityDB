@@ -50,14 +50,13 @@
 #include <meos_internal.h>
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Input/output functions in string format
  *****************************************************************************/
 
 /**
- * @ingroup meos_setspan_inout
+ * POSE_inout
  * @brief Return a set from its Well-Known Text (WKT) representation
  * @param[in] str String
  * @csqlfn #Set_in()
@@ -144,36 +143,6 @@ tstzset_in(const char *str)
   if (! ensure_not_null((void *) str))
     return NULL;
   return set_parse(&str, T_TSTZSET);
-}
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return a set from its Well-Known Text (WKT) representation
- * @param[in] str String
- * @csqlfn #Set_in()
- */
-Set *
-geomset_in(const char *str)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
-  return set_parse(&str, T_GEOMSET);
-}
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return a set from its Well-Known Text (WKT) representation
- * @param[in] str String
- * @csqlfn #Set_in()
- */
-Set *
-geogset_in(const char *str)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
-  return set_parse(&str, T_GEOGSET);
 }
 
 /*****************************************************************************/
@@ -477,23 +446,6 @@ timestamptz_to_set(TimestampTz t)
 {
   Datum v = TimestampTzGetDatum(t);
   return set_make_exp(&v, 1, 1, T_TIMESTAMPTZ, ORDER_NO);
-}
-
-/**
- * @ingroup meos_setspan_conversion
- * @brief Return a geometry/geography converted to a geo set
- * @param[in] gs Value
- * @csqlfn #Value_to_set()
- */
-Set *
-geo_to_set(const GSERIALIZED *gs)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs))
-    return NULL;
-  Datum v = PointerGetDatum(gs);
-  meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
-  return set_make_exp(&v, 1, 1, geotype, ORDER_NO);
 }
 
 /*****************************************************************************
@@ -993,8 +945,7 @@ intset_shift_scale(const Set *s, int shift, int width, bool hasshift,
   bool haswidth)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_INTSET))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_INTSET))
     return NULL;
   return numset_shift_scale(s, Int32GetDatum(shift), Int32GetDatum(width),
     hasshift, haswidth);
@@ -1015,8 +966,7 @@ bigintset_shift_scale(const Set *s, int64 shift, int64 width, bool hasshift,
   bool haswidth)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_BIGINTSET))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_BIGINTSET))
     return NULL;
   return numset_shift_scale(s, Int64GetDatum(shift), Int64GetDatum(width),
     hasshift, haswidth);
@@ -1037,8 +987,7 @@ floatset_shift_scale(const Set *s, double shift, double width, bool hasshift,
   bool haswidth)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_FLOATSET))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
     return NULL;
   return numset_shift_scale(s, Float8GetDatum(shift), Float8GetDatum(width),
     hasshift, haswidth);
@@ -1058,8 +1007,7 @@ dateset_shift_scale(const Set *s, int shift, int width, bool hasshift,
   bool haswidth)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_set_isof_type(s, T_DATESET))
+  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_DATESET))
     return NULL;
   return numset_shift_scale(s, Int32GetDatum(shift), Int32GetDatum(width),
     hasshift, haswidth);

@@ -41,14 +41,15 @@
 
 #include "pose/tpose_boxops.h"
 
-
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/set.h"
 #include "general/span.h"
+#include "geo/stbox.h"
 #include "pose/tpose.h"
 #include "pose/tpose_boxops.h"
 
@@ -107,6 +108,60 @@ Pose_period_to_stbox(PG_FUNCTION_ARGS)
   STBox *result = palloc0(sizeof(STBox));
   pose_period_set_stbox(pose, p, result);
   PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Poseset_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Poseset_to_stbox);
+/**
+ * @ingroup mobilitydb_setspan_conversion
+ * @brief Return a pose set converted to a spatiotemporal box
+ * @sqlfn stbox()
+ * @sqlop @p ::
+ */
+Datum
+Poseset_to_stbox(PG_FUNCTION_ARGS)
+{
+  Set *set = PG_GETARG_SET_P(0);
+  STBox *result = spatialset_stbox(set);
+  PG_FREE_IF_COPY(set, 0);
+  PG_RETURN_STBOX_P(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Pose_timestamptz_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_timestamptz_to_stbox);
+/**
+ * @ingroup mobilitydb_temporal_constructor
+ * @brief Return a pose and a timestamptz to a spatiotemporal box
+ * @sqlfn stbox()
+ * @sqlop @p
+ */
+Datum
+Pose_timestamptz_to_stbox(PG_FUNCTION_ARGS)
+{
+  Pose *pose = PG_GETARG_POSE_P(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  PG_RETURN_STBOX_P(pose_timestamptz_to_stbox(pose, t));
+}
+
+PGDLLEXPORT Datum Pose_tstzspan_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_tstzspan_to_stbox);
+/**
+ * @ingroup mobilitydb_temporal_constructor
+ * @brief Return a pose and a timestamptz span to a spatiotemporal
+ * box
+ * @sqlfn stbox()
+ * @sqlop @p
+ */
+Datum
+Pose_tstzspan_to_stbox(PG_FUNCTION_ARGS)
+{
+  Pose *pose = PG_GETARG_POSE_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_STBOX_P(pose_tstzspan_to_stbox(pose, s));
 }
 
 /*****************************************************************************/

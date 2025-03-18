@@ -42,7 +42,7 @@
 
 extern bool ensure_end_input(const char **str, const char *type);
 extern void p_whitespace(const char **str);
-extern bool p_sepchar(const char **str, char sep);
+extern bool p_delimchar(const char **str, char delim);
 extern bool p_obrace(const char **str);
 extern bool ensure_obrace(const char **str, const char *type);
 extern bool p_cbrace(const char **str);
@@ -54,19 +54,21 @@ extern bool ensure_oparen(const char **str, const char *type);
 extern bool p_cparen(const char **str);
 extern bool ensure_cparen(const char **str, const char *type);
 extern bool p_comma(const char **str);
-extern bool basetype_parse(const char **str, meosType basetypid, char sep, Datum *result);
+extern bool basetype_parse(const char **str, meosType basetypid, char delim,
+  Datum *result);
 extern bool double_parse(const char **str, double *result);
 extern bool elem_parse(const char **str, meosType basetype, Datum *result);
 extern Set *set_parse(const char **str, meosType basetype);
-extern bool span_parse(const char **str, meosType spantype, bool end, Span *span);
+extern bool span_parse(const char **str, meosType spantype, bool end,
+  Span *span);
 extern SpanSet *spanset_parse(const char **str, meosType spantype);
 extern TBox *tbox_parse(const char **str);
 extern TimestampTz timestamp_parse(const char **str);
 extern bool tinstant_parse(const char **str, meosType temptype, bool end,
   TInstant **result);
 extern TSequence *tdiscseq_parse(const char **str, meosType temptype);
-extern bool tcontseq_parse(const char **str, meosType temptype, interpType interp,
-  bool end, TSequence **result);
+extern bool tcontseq_parse(const char **str, meosType temptype, 
+  interpType interp, bool end, TSequence **result);
 extern TSequenceSet *tsequenceset_parse(const char **str, meosType temptype,
   interpType interp);
 extern Temporal *temporal_parse(const char **str, meosType temptype);

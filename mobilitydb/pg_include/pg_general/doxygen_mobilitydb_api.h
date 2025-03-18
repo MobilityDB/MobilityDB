@@ -44,6 +44,10 @@
  */
 
 /**
+ * @defgroup mobilitydb_base Functions for MobilityDB base types
+ * @ingroup mobilitydb_api
+ * @brief Functions for MobilityDB base types
+ *
  * @defgroup mobilitydb_setspan Functions for set and span types
  * @ingroup mobilitydb_api
  * @brief Functions for set and span types
@@ -59,6 +63,36 @@
  * @defgroup mobilitydb_misc Miscellaneous functions
  * @ingroup mobilitydb_api
  * @brief Miscellaneous functions.
+ */
+
+/**
+ * @defgroup mobilitydb_base_inout Input and output functions
+ * @ingroup mobilitydb_base
+ * @brief Input and output functions for base types
+ *
+ * @defgroup mobilitydb_base_constructor Constructor functions
+ * @ingroup mobilitydb_base
+ * @brief Constructor functions for base types
+ *
+ * @defgroup mobilitydb_base_conversion Conversion functions
+ * @ingroup mobilitydb_base
+ * @brief Conversion functions for base types
+ *
+ * @defgroup mobilitydb_base_accessor Accessor functions
+ * @ingroup mobilitydb_base
+ * @brief Accessor functions for base types
+ *
+ * @defgroup mobilitydb_base_transf Transformation functions
+ * @ingroup mobilitydb_base
+ * @brief Transformation functions for base types
+ *
+ * @defgroup mobilitydb_base_spatial Spatial functions
+ * @ingroup mobilitydb_base
+ * @brief Spatial functions for base types
+ *
+ * @defgroup mobilitydb_base_comp Comparison functions
+ * @ingroup mobilitydb_base
+ * @brief Comparison functions for base types
  */
 
 /**

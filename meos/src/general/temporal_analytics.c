@@ -430,8 +430,13 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
   TimestampTz torigin)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) duration) ||
-      ! ensure_valid_duration(duration))
+#if MEOS
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) duration))
+    return NULL;
+#else
+  assert(temp); assert(duration);
+#endif /* MEOS */
+  if (! ensure_valid_duration(duration))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -672,9 +677,13 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, interpType interp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_not_null((void *) duration) ||
-      ! ensure_valid_duration(duration))
+#if MEOS
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) duration))
+    return NULL;
+#else
+  assert(temp); assert(duration);
+#endif /* MEOS */
+  if (! ensure_valid_duration(duration))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1188,9 +1197,13 @@ double
 temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return -1.0;
+#else
+  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
+#endif /* MEOS */
 
   double result;
   int count1, count2;
@@ -1281,9 +1294,15 @@ Temporal *
 temporal_simplify_min_dist(const Temporal *temp, double dist)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_tpoint_type(temp->temptype) ||
-      ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
+      ! ensure_tnumber_tpoint_type(temp->temptype))
+    return NULL;
+#else
+  assert(temp); 
+  assert(tnumber_type(temp->temptype) || tpoint_type(temp->temptype));
+#endif /* MEOS */
+  if (! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1377,9 +1396,15 @@ Temporal *
 temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) mint) ||
-      ! ensure_tnumber_tpoint_type(temp->temptype) ||
-      ! ensure_valid_duration(mint))
+      ! ensure_tnumber_tpoint_type(temp->temptype))
+    return NULL;
+#else
+  assert(temp); assert(mint);
+  assert(tnumber_type(temp->temptype) || tpoint_type(temp->temptype));
+#endif /* MEOS */
+  if (! ensure_valid_duration(mint))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1712,9 +1737,15 @@ Temporal *
 temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_tpoint_type(temp->temptype) ||
-      ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
+      ! ensure_tnumber_tpoint_type(temp->temptype))
+    return NULL;
+#else
+  assert(temp); 
+  assert(tnumber_type(temp->temptype) || tpoint_type(temp->temptype));
+#endif /* MEOS */
+  if (! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1864,9 +1895,16 @@ Temporal *
 temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_tnumber_tpoint_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
+    return NULL;
+#else
+  assert(temp); 
+  assert(tnumber_type(temp->temptype) || tpoint_type(temp->temptype));
+#endif /* MEOS */
+  if (! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));

@@ -112,6 +112,7 @@
 #include "general/tbox.h"
 #include "general/tbox_index.h"
 #include "general/type_util.h"
+#include "cbuffer/cbuffer.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/temporal.h"

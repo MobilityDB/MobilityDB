@@ -108,15 +108,16 @@ typedef enum
   T_NSEGMENT       = 50,  /**< network segment type */
   T_TNPOINT        = 51,  /**< temporal network point type */
   T_POSE           = 54,  /**< pose type */
-  T_TPOSE          = 55,  /**< temporal pose type */
-  T_CBUFFER        = 56,  /**< buffer type */
-  T_CBUFFERSET     = 57,  /**< buffer set type */
-  T_TCBUFFER       = 58,  /**< temporal buffer type */
-  T_TGEOMETRY      = 59,  /**< temporal geometry type */
-  T_TGEOGRAPHY     = 60,  /**< temporal geography type */
+  T_POSESET        = 55,  /**< pose set type */
+  T_TPOSE          = 56,  /**< temporal pose type */
+  T_CBUFFER        = 57,  /**< buffer type */
+  T_CBUFFERSET     = 58,  /**< buffer set type */
+  T_TCBUFFER       = 59,  /**< temporal buffer type */
+  T_TGEOMETRY      = 60,  /**< temporal geometry type */
+  T_TGEOGRAPHY     = 61,  /**< temporal geography type */
 } meosType;
 
-#define NO_MEOS_TYPES 61
+#define NO_MEOS_TYPES 62
 
 /**
  * Enumeration that defines the classes of Boolean operators used in

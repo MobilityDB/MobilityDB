@@ -82,7 +82,7 @@ SELECT asText(round((cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry)::cbuffer, 6));
 
 -- NULL
 
-/* Errors */
+-- /* Errors */
 
 -------------------------------------------------------------------------------
 -- Comparisons

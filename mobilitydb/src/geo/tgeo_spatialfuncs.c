@@ -44,7 +44,6 @@
 #include <meos_internal.h>
 #include "general/set.h"
 #include "general/span.h"
-#include "general/type_round.h"
 #include "general/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/stbox.h"
@@ -106,7 +105,7 @@ Datum
 Tgeometry_to_tgeography(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tgeom_tgeog(temp, GEOM_TO_GEOG);
+  Temporal *result = tgeom_tgeog(temp, TGEOMP_TO_TGEOGP);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -123,7 +122,7 @@ Datum
 Tgeography_to_tgeometry(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tgeom_tgeog(temp, GEOG_TO_GEOM);
+  Temporal *result = tgeom_tgeog(temp, TGEOGP_TO_TGEOMP);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }

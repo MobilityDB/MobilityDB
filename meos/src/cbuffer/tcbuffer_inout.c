@@ -28,35 +28,63 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for temporal buffers.
+ * @file
+ * @brief Output of temporal circular buffers in WKT, EWKT, and MF-JSON format
  */
 
-#ifndef __TCBUFFER_H__
-#define __TCBUFFER_H__
+#include "cbuffer/tcbuffer_out.h"
 
-/* PostgreSQL */
-#include <postgres.h>
+/* PostGIS */
+#include <liblwgeom_internal.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include <meos_cbuffer.h>
+#include "general/pg_types.h"
+#include "general/tinstant.h"
+#include "general/tsequence.h"
+#include "general/tsequenceset.h"
+#include "geo/tspatial_parser.h"
+#include "cbuffer/cbuffer.h"
+#include "cbuffer/tcbuffer_parser.h"
 
 /*****************************************************************************
- * fmgr macros
+ * Input in WKT and EWKT format
  *****************************************************************************/
 
-/* Cbuffer */
-#define DatumGetCbufferP(X)         ((Cbuffer *) DatumGetPointer(X))
-#define CbufferPGetDatum(X)         PointerGetDatum(X)
-#define PG_GETARG_CBUFFER_P(X)      DatumGetCbufferP(PG_GETARG_DATUM(X))
-#define PG_RETURN_CBUFFER_P(X)      PG_RETURN_POINTER(X)
+#if MEOS
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal circular buffer from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ */
+Temporal *
+tcbuffer_in(const char *str)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) str))
+    return NULL;
+  return tspatial_parse(&str, T_TCBUFFER);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal
+ * circular buffer
+ * @param[in] temp Temporal circular buffer
+ * @param[in] maxdd Maximum number of decimal digits
+ */
+char *
+tcbuffer_out(const Temporal *temp, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || 
+      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
+    return NULL;
+  return temporal_out(temp, maxdd);
+}
+#endif /* MEOS */
+
 
 /*****************************************************************************/
-
-/* Collinear functions */
-
-extern bool cbuffer_collinear(Cbuffer *cbuf1, Cbuffer *cbuf2, Cbuffer *cbuf3,
-  double ratio);
-
-/*****************************************************************************/
-
-#endif /* __TCBUFFER_H__ */

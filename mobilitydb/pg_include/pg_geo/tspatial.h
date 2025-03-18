@@ -28,42 +28,28 @@
  *****************************************************************************/
 
 /**
- * @brief Basic functions for rounding the float components of types
+ * @brief Spatial functions for temporal points.
  */
 
-#ifndef __TYPE_ROUND_H__
-#define __TYPE_ROUND_H__
+#ifndef __PG_TSPATIAL_H__
+#define __PG_TSPATIAL_H__
 
 /* PostgreSQL */
 #include <postgres.h>
-/* MEOS */
-#include <meos.h>
-#if NPOINT
-  #include "npoint/tnpoint.h"
-#endif
-#if CBUFFER
-  #include "cbuffer/tcbuffer.h"
-#endif
+#include <utils/array.h>
+#include <fmgr.h>
+
 
 /*****************************************************************************/
 
-extern double float_round(double d, int maxdd);
-extern Datum datum_round_float(Datum value, Datum size);
-extern Datum datum_round_geo(Datum value, Datum size);
-#if CBUFFER
-extern Datum datum_cbuffer_round(Datum buffer, Datum size);
-extern Cbuffer *cbuffer_round(const Cbuffer *buffer, int maxdd);
-extern Set *cbufferset_round(const Set *s, int maxdd);
-extern Temporal *tcbuffer_round(const Temporal *temp, int maxdd);
-#endif /* CBUFFER */
-#if NPOINT
-extern Datum datum_npoint_round(Datum npoint, Datum size);
-extern Npoint *npoint_round(const Npoint *np, int maxdd);
-extern Nsegment *nsegment_round(const Nsegment *ns, int maxdd);
-extern Set *npointset_round(const Set *s, int maxdd);
-extern Temporal *tnpoint_round(const Temporal *temp, Datum size);
-#endif /* NPOINT */
+/* Fetch from and store in the cache the fcinfo of the external function */
+extern FunctionCallInfo fetch_fcinfo(void);
+extern void store_fcinfo(FunctionCallInfo fcinfo);
+
+extern Temporal *tspatial_valid_typmod(Temporal *temp, int32_t typmod);
+extern uint32 tspatial_typmod_in(ArrayType *arr, int is_point, int is_geodetic);
+extern Datum Spatialarr_as_text_ext(FunctionCallInfo fcinfo, bool extended);
 
 /*****************************************************************************/
 
-#endif
+#endif /* __PG_TSPATIAL_H__ */

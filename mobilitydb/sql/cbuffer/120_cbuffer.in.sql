@@ -78,7 +78,7 @@ CREATE FUNCTION asText(cbuffer, maxdecimaldigits int4 DEFAULT 15)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asText(cbuffer[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
-  AS 'MODULE_PATHNAME', 'Cbufferarr_as_text'
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asEWKT(cbuffer, maxdecimaldigits int4 DEFAULT 15)
@@ -87,7 +87,7 @@ CREATE FUNCTION asEWKT(cbuffer, maxdecimaldigits int4 DEFAULT 15)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asEWKT(cbuffer[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
-  AS 'MODULE_PATHNAME', 'Cbufferarr_as_ewkt'
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

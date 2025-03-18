@@ -38,13 +38,12 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_pose.h>
 #include "general/meos_catalog.h"
-#include "pose/pose.h"
 
 /*****************************************************************************/
 
 extern Pose *pose_parse(const char **str, bool end);
-extern Temporal *tpose_parse(const char **str, meosType temptype);
 
 /*****************************************************************************/
 

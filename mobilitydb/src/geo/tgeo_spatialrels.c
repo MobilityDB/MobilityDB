@@ -56,7 +56,7 @@
 #include "geo/tgeo_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_geo/postgis.h"
-#include "pg_geo/tpoint_spatialfuncs.h"
+#include "pg_geo/tspatial.h"
 
 /*****************************************************************************
  * Ever contains

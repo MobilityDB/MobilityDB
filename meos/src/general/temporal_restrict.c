@@ -58,8 +58,8 @@
 #include "general/tsequenceset.h"
 #include "general/type_util.h"
 #include "general/type_parser.h"
-#include "geo/tgeo_parser.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/tspatial_parser.h"
 
 /*****************************************************************************
  * Bounding box tests for the restriction functions
@@ -557,9 +557,14 @@ Temporal *
 tnumber_at_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_valid_tnumber_tbox(temp, box))
+      ! ensure_tnumber_type(temp->temptype))
+    return NULL;
+#else
+  assert(temp); assert(box); assert(tnumber_type(temp->temptype));
+#endif /* MEOS */
+  if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
 
   /* Bounding box test */
@@ -606,10 +611,15 @@ tnumber_at_tbox(const Temporal *temp, const TBox *box)
 Temporal *
 tnumber_minus_tbox(const Temporal *temp, const TBox *box)
 {
-  /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_valid_tnumber_tbox(temp, box))
+      ! ensure_tnumber_type(temp->temptype))
+    return NULL;
+#else
+  assert(temp); assert(box); assert(tnumber_type(temp->temptype));
+#endif /* MEOS */
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
 
   /* Bounding box test */

@@ -837,6 +837,15 @@ CREATE FUNCTION round(floatspanset, integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Floatspanset_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION degrees(floatspanset, bool)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Floatspanset_degrees'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION radians(floatspanset)
+  RETURNS floatspanset
+  AS 'MODULE_PATHNAME', 'Floatspanset_radians'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION spans(intspanset)

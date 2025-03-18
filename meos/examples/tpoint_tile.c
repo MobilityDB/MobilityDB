@@ -77,7 +77,7 @@ int main(void)
       &count);
 
   /* Print the input value to split */
-  char *tpoint_str = tgeo_as_ewkt(tpoint, 3);
+  char *tpoint_str = tspatial_as_ewkt(tpoint, 3);
   printf("------------------\n");
   printf("| Value to split |\n");
   printf("------------------\n\n");
@@ -93,7 +93,7 @@ int main(void)
     char *space_str = spacesplit ?
       geo_as_ewkt(space_bins[i], 3) : "";
     char *time_str = timesplit ? timestamptz_out(time_bins[i]) : "";
-    char *temp_str = tgeo_as_ewkt(result[i], 3);
+    char *temp_str = tspatial_as_ewkt(result[i], 3);
     sprintf(output_buffer, "%s%s%s%s%s\n", space_str, spacesplit ? ", " : "",
       time_str, timesplit ? ", " : "", temp_str);
     printf("%s", output_buffer);

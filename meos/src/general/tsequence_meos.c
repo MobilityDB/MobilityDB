@@ -48,6 +48,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#if POSE
+  #include <meos_pose.h>
+#endif
 #include "general/doublen.h"
 #include "general/pg_types.h"
 #include "general/set.h"
@@ -57,19 +60,6 @@
 #include "general/temporal_boxops.h"
 #include "general/type_util.h"
 #include "general/type_parser.h"
-#include "geo/tgeo_parser.h"
-#include "geo/tgeo_spatialfuncs.h"
-#if CBUFFER
-  #include "cbuffer/tcbuffer.h"
-  #include "cbuffer/tcbuffer_parser.h"
-#endif
-#if NPOINT
-  #include "npoint/tnpoint_spatialfuncs.h"
-#endif
-#if POSE
-  #include "pose/pose.h"
-  #include "pose/tpose_spatialfuncs.h"
-#endif
 
 /*****************************************************************************
  * Input/output functions
@@ -126,103 +116,6 @@ ttextseq_in(const char *str, interpType interp)
 {
   return tsequence_in(str, T_TTEXT, interp);
 }
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geometry point sequence from its Well-Known Text
- * (WKT) representation
- * @param[in] str String
- * @param[in] interp Interpolation
- */
-TSequence *
-tgeompointseq_in(const char *str, interpType interp __attribute__((unused)))
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
-  if (! temp)
-    return NULL;
-  assert(temp->subtype == TSEQUENCE);
-  return (TSequence *) temp;
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geography point sequence from its Well-Known Text
- * (WKT) representation
- * @param[in] str String
- * @param[in] interp Interpolation
- */
-TSequence *
-tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
-  if (! temp)
-    return NULL;
-  assert(temp->subtype == TSEQUENCE);
-  return (TSequence *) temp;
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geometry sequence from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- * @param[in] interp Interpolation
- */
-TSequence *
-tgeometryseq_in(const char *str, interpType interp __attribute__((unused)))
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tgeo_parse(&str, T_TGEOMETRY);
-  if (! temp)
-    return NULL;
-  assert(temp->subtype == TSEQUENCE);
-  return (TSequence *) temp;
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geography sequence from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- * @param[in] interp Interpolation
- */
-TSequence *
-tgeographyseq_in(const char *str, interpType interp __attribute__((unused)))
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tgeo_parse(&str, T_TGEOGRAPHY);
-  if (! temp)
-    return NULL;
-  assert (temp->subtype == TSEQUENCE);
-  return (TSequence *) temp;
-}
-
-#if CBUFFER
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal circular buffer sequence from its Well-Known Text 
- * (WKT) representation
- * @param[in] str String
- * @param[in] interp Interpolation
- */
-TSequence *
-tcbufferseq_in(const char *str, interpType interp __attribute__((unused)))
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tcbuffer_parse(&str);
-  if (! temp)
-    return NULL;
-  assert (temp->subtype == TSEQUENCE);
-  return (TSequence *) temp;
-}
-#endif /* CBUFFER */
 
 /*****************************************************************************/
 
@@ -290,64 +183,6 @@ ttextseq_from_base_tstzset(const text *txt, const Set *s)
     return NULL;
   return tsequence_from_base_tstzset(PointerGetDatum(txt), T_TTEXT, s);
 }
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal geometry point discrete sequence from a point
- * and a timestamptz set
- * @param[in] gs Value
- * @param[in] s Set
- */
-TSequence *
-tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
-      ! ensure_not_empty(gs) || ! ensure_point_type(gs) || 
-      ! ensure_set_isof_type(s, T_TSTZSET))
-    return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
-    T_TGEOGPOINT : T_TGEOMPOINT;
-  return tsequence_from_base_tstzset(PointerGetDatum(gs), temptype, s);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal geo discrete sequence from a geometry/geography
- * and a timestamptz set
- * @param[in] gs Value
- * @param[in] s Set
- */
-TSequence *
-tgeoseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
-      ! ensure_not_empty(gs) || ! ensure_set_isof_type(s, T_TSTZSET))
-    return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
-    T_TGEOGRAPHY : T_TGEOMETRY;
-  return tsequence_from_base_tstzset(PointerGetDatum(gs), temptype, s);
-}
-
-#if CBUFFER
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal circular buffer discrete sequence from a circular
- * buffer and a timestamptz set
- * @param[in] gs Value
- * @param[in] s Set
- */
-TSequence *
-tcbufferseq_from_base_tstzset(const Cbuffer *cbuf, const Set *s)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) s) || 
-      ! ensure_set_isof_type(s, T_TSTZSET))
-    return NULL;
-  return tsequence_from_base_tstzset(PointerGetDatum(cbuf), T_TCBUFFER, s);
-}
-#endif /* CBUFFER */
 
 /*****************************************************************************/
 
@@ -418,70 +253,5 @@ ttextseq_from_base_tstzspan(const text *txt, const Span *s)
     return NULL;
   return tsequence_from_base_tstzspan(PointerGetDatum(txt), T_TTEXT, s, STEP);
 }
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal point sequence from a point and a timestamptz span
- * @param[in] gs Value
- * @param[in] s Span
- * @param[in] interp Interpolation
- */
-TSequence *
-tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
-  interpType interp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
-      gserialized_is_empty(gs) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
-    T_TGEOGPOINT : T_TGEOMPOINT;
-  return tsequence_from_base_tstzspan(PointerGetDatum(gs), temptype, s,
-    interp);
-}
-
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal geo sequence from a geometry/geography and a
- * timestamptz span
- * @param[in] gs Value
- * @param[in] s Span
- * @param[in] interp Interpolation
- */
-TSequence *
-tgeoseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
-  interpType interp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
-      gserialized_is_empty(gs) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return NULL;
-  meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
-    T_TGEOGRAPHY : T_TGEOMETRY;
-  return tsequence_from_base_tstzspan(PointerGetDatum(gs), temptype, s,
-    interp);
-}
-
-#if CBUFFER
-/**
- * @ingroup meos_temporal_constructor
- * @brief Return a temporal circular buffer sequence from a circular buffer and
- * a timestamptz span
- * @param[in] gs Value
- * @param[in] s Span
- * @param[in] interp Interpolation
- */
-TSequence *
-tcbufferseq_from_base_tstzspan(const Cbuffer *cbuf, const Span *s,
-  interpType interp)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) s) ||
-      ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return NULL;
-  return tsequence_from_base_tstzspan(PointerGetDatum(cbuf), T_TCBUFFER, s,
-    interp);
-}
-#endif /* CBUFFER */
 
 /*****************************************************************************/

@@ -56,13 +56,18 @@ CREATE FUNCTION temporal_send(tgeompoint)
   AS 'MODULE_PATHNAME', 'Temporal_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tgeompoint_typmod_in(cstring[])
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Tgeompoint_typmod_in'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE TYPE tgeompoint (
   internallength = variable,
   input = tgeompoint_in,
   output = temporal_out,
   send = temporal_send,
   receive = tgeompoint_recv,
-  typmod_in = tgeometry_typmod_in,
+  typmod_in = tgeompoint_typmod_in,
   typmod_out = tgeo_typmod_out,
   storage = extended,
   alignment = double,
@@ -86,13 +91,18 @@ CREATE FUNCTION temporal_send(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Temporal_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tgeogpoint_typmod_in(cstring[])
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Tgeogpoint_typmod_in'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE TYPE tgeogpoint (
   internallength = variable,
   input = tgeogpoint_in,
   output = temporal_out,
   send = temporal_send,
   receive = tgeogpoint_recv,
-  typmod_in = tgeography_typmod_in,
+  typmod_in = tgeogpoint_typmod_in,
   typmod_out = tgeo_typmod_out,
   storage = extended,
   alignment = double,
@@ -109,7 +119,6 @@ CREATE FUNCTION tgeogpoint(tgeogpoint, integer)
   AS 'MODULE_PATHNAME', 'Tgeo_enforce_typmod'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Casting CANNOT be implicit to avoid ambiguity
 CREATE CAST (tgeompoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeompoint, integer) AS IMPLICIT;
 CREATE CAST (tgeogpoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeogpoint, integer) AS IMPLICIT;
 
@@ -188,7 +197,7 @@ CREATE FUNCTION tgeogpointSeqSetGaps(tgeogpoint[], maxt interval DEFAULT NULL,
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
- * Casting
+ * Conversions
  ******************************************************************************/
 
 CREATE FUNCTION timeSpan(tgeompoint)

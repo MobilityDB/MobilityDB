@@ -246,6 +246,40 @@ tgeompoint_tnpoint(const Temporal *temp)
 }
 
 /*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal network point with the precision of the fractions
+ * set to a number of decimal places
+ */
+Temporal *
+tnpoint_round(const Temporal *temp, Datum size)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TNPOINT))
+    return NULL;
+#else
+  assert(temp); assert(temp->temptype == T_TNPOINT);
+#endif /* MEOS */
+
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_npoint_round;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = size;
+  lfinfo.argtype[0]= temp->temptype;
+  lfinfo.restype = temp->temptype;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************
  * Accessor functions
  *****************************************************************************/
 

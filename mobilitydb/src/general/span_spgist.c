@@ -354,7 +354,7 @@ distance_span_nodespan(Span *query, SpanNode *nodebox)
     nodebox->right.upper_inc, nodebox->left.basetype, nodebox->left.spantype, &s);
 
   /* Compute the distance between the query span and the nodebox span */
-  return dist_span_span(query, &s);
+  return distance_span_span(query, &s);
 }
 
 /**
@@ -983,7 +983,7 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     {
       /* Convert the order by argument to a span and perform the test */
       span_spgist_get_span(&in->orderbys[i], &span);
-      distances[i] = dist_span_span(&span, key);
+      distances[i] = distance_span_span(&span, key);
     }
   }
 

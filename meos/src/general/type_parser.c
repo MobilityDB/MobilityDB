@@ -44,7 +44,7 @@
 #include "general/pg_types.h"
 #include "general/temporal.h"
 #include "general/type_util.h"
-#include "geo/tgeo_parser.h"
+#include "geo/tspatial_parser.h"
 
 /*****************************************************************************/
 
@@ -79,10 +79,10 @@ p_whitespace(const char **str)
  * @brief Input an opening brace from the buffer
  */
 bool
-p_sepchar(const char **str, char sep)
+p_delimchar(const char **str, char delim)
 {
   p_whitespace(str);
-  if (**str == sep)
+  if (**str == delim)
   {
     *str += 1;
     return true;
@@ -204,7 +204,7 @@ ensure_oparen(const char **str, const char *type)
   if (!p_oparen(str))
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-        "Could not parse %s: Missing opening parenthesis", type);
+        "Could not parse %s value: Missing opening parenthesis", type);
     return false;
   }
   return true;
@@ -234,7 +234,7 @@ ensure_cparen(const char **str, const char *type)
   if (!p_cparen(str))
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse %s: Missing closing parenthesis", type);
+      "Could not parse %s value: Missing closing parenthesis", type);
     return false;
   }
   return true;
@@ -281,10 +281,10 @@ double_parse(const char **str, double *result)
  * @return On error return false
  */
 bool
-basetype_parse(const char **str, meosType basetype, char sep, Datum *result)
+basetype_parse(const char **str, meosType basetype, char delim, Datum *result)
 {
   p_whitespace(str);
-  int delim = 0;
+  int pos = 0;
   /* Save the original string for error handling */
   char *origstr = (char *) *str;
 
@@ -293,30 +293,30 @@ basetype_parse(const char **str, meosType basetype, char sep, Datum *result)
   {
     /* Consume the double quote */
     *str += 1;
-    while ( ( (*str)[delim] != '"' || (*str)[delim - 1] == '\\' )  &&
-      (*str)[delim] != '\0' )
-      delim++;
+    while ( ( (*str)[pos] != '"' || (*str)[pos - 1] == '\\' )  &&
+      (*str)[pos] != '\0' )
+      pos++;
   }
   else
   {
-    while ((*str)[delim] != sep && (*str)[delim] != '\0')
-      delim++;
+    while ((*str)[pos] != delim && (*str)[pos] != '\0')
+      pos++;
   }
-  if ((*str)[delim] == '\0')
+  if ((*str)[pos] == '\0')
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Missing separator character '%c': %s", sep, origstr);
+      "Missing delimeter character '%c': %s", delim, origstr);
     return false;
   }
-  char *str1 = palloc(sizeof(char) * (delim + 1));
-  strncpy(str1, *str, delim);
-  str1[delim] = '\0';
+  char *str1 = palloc(sizeof(char) * (pos + 1));
+  strncpy(str1, *str, pos);
+  str1[pos] = '\0';
   bool success = basetype_in(str1, basetype, false, result);
   pfree(str1);
   if (! success)
     return false;
-  /* The separator is NOT consumed */
-  *str += delim;
+  /* The delimeter is NOT consumed */
+  *str += pos;
   return true;
 }
 
@@ -332,7 +332,7 @@ tbox_parse(const char **str)
   bool hasx = false, hast = false;
   Span span;
   Span period;
-  const char *type_str = "temporal box";
+  const char *type_str = meostype_name(T_TBOX);
 
   p_whitespace(str);
   /* By default the span type is float span */
@@ -355,7 +355,8 @@ tbox_parse(const char **str)
   }
   else
   {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, "Could not parse temporal box");
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT, 
+      "Could not parse %s value: Missing prefix 'TBox'", type_str);
     return NULL;
   }
   /* Determine whether the box has X and/or T dimensions */
@@ -380,7 +381,7 @@ tbox_parse(const char **str)
   else
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse temporal box: Missing dimension information");
+      "Could not parse %s value: Missing dimension information", type_str);
     return NULL;
   }
   /* Parse opening parenthesis */
@@ -486,7 +487,7 @@ Set *
 set_parse(const char **str, meosType settype)
 {
   const char *bak = *str;
-  const char *type_str = "set";
+  const char *type_str = meostype_name(settype);
   p_whitespace(str);
 
   /* Determine whether there is an SRID. If there is one we decode it and
@@ -569,6 +570,7 @@ bound_parse(const char **str, meosType basetype, Datum *result)
 bool
 span_parse(const char **str, meosType spantype, bool end, Span *span)
 {
+  const char *type_str = meostype_name(spantype);
   bool lower_inc = false, upper_inc = false;
   if (p_obracket(str))
     lower_inc = true;
@@ -577,7 +579,7 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
   else
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse span: Missing opening bracket/parenthesis");
+      "Could not parse %s value: Missing opening bracket/parenthesis", type_str);
     return false;
   }
   meosType basetype = spantype_basetype(spantype);
@@ -595,11 +597,11 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
   else
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse span: Missing closing bracket/parenthesis");
+      "Could not parse %s value: Missing closing bracket/parenthesis", type_str);
     return false;
   }
   /* Ensure there is no more input */
-  if (end && ! ensure_end_input(str, "span"))
+  if (end && ! ensure_end_input(str, meostype_name(spantype)))
     return false;
 
   if (span)
@@ -614,7 +616,7 @@ span_parse(const char **str, meosType spantype, bool end, Span *span)
 SpanSet *
 spanset_parse(const char **str, meosType spansettype)
 {
-  const char *type_str = "span set";
+  const char *type_str = meostype_name(spansettype);
   if (! ensure_obrace(str, type_str))
     return NULL;
   meosType spantype = spansettype_spantype(spansettype);
@@ -667,11 +669,11 @@ tinstant_parse(const char **str, meosType temptype, bool end,
   Datum elem;
   if (! basetype_parse(str, basetype, '@', &elem))
     return false;
-  p_sepchar(str, '@');
+  p_delimchar(str, '@');
   TimestampTz t = timestamp_parse(str);
   if (t == DT_NOEND ||
     /* Ensure there is no more input */
-    (end && ! ensure_end_input(str, "temporal")))
+    (end && ! ensure_end_input(str, meostype_name(temptype))))
   {
     DATUM_FREE(elem, basetype);
     return false;
@@ -691,7 +693,7 @@ tinstant_parse(const char **str, meosType temptype, bool end,
 TSequence *
 tdiscseq_parse(const char **str, meosType temptype)
 {
-  const char *type_str = "temporal";
+  const char *type_str = meostype_name(temptype);
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
    * to call this function in the dispatch function #temporal_parse */
@@ -765,11 +767,12 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp,
   else
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse temporal value: Missing closing bracket/parenthesis");
+      "Could not parse %s value: Missing closing bracket/parenthesis",
+      meostype_name(temptype));
       return false;
   }
   /* Ensure there is no more input */
-  if (end && ! ensure_end_input(str, "temporal"))
+  if (end && ! ensure_end_input(str, meostype_name(temptype)))
     return NULL;
 
   /* Second parsing */
@@ -799,7 +802,7 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp,
 TSequenceSet *
 tsequenceset_parse(const char **str, meosType temptype, interpType interp)
 {
-  const char *type_str = "temporal";
+  const char *type_str = meostype_name(temptype);
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
    * to call this function in the dispatch function temporal_parse */

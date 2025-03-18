@@ -57,7 +57,7 @@
 #include "pg_general/meos_catalog.h"
 #include "pg_general/span_selfuncs.h"
 #include "pg_general/temporal_selfuncs.h"
-#include "pg_geo/tpoint_selfuncs.h"
+#include "pg_geo/tspatial_selfuncs.h"
 
 /*****************************************************************************
  * Internal functions computing selectivity

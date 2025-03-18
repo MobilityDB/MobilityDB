@@ -39,6 +39,28 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_npoint.h>
+#include "general/meos_catalog.h"
+
+/*****************************************************************************
+ * Type definitions
+ *****************************************************************************/
+
+/* Structure to represent network-based points */
+
+struct Npoint
+{
+  int64 rid;        /**< route identifier */
+  double pos;       /**< position */
+};
+
+/* Structure to represent network-based segments */
+
+struct Nsegment
+{
+  int64 rid;       /**< route identifier */
+  double pos1;     /**< position1 */
+  double pos2;     /**< position2 */
+};
 
 /*****************************************************************************
  * fmgr macros
@@ -57,7 +79,7 @@
 #define PG_RETURN_NSEGMENT_P(X)    PG_RETURN_POINTER(X)
 
 /*****************************************************************************
- * Cbuffer functions
+ * Npoint functions
  *****************************************************************************/
 
 /* General functions */
@@ -69,19 +91,36 @@ extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *nelems);
 
 /* Input/output functions */
 
+extern char *npoint_wkt_out(Datum value, int maxdd);
+
 extern Npoint *npoint_in(const char *str);
 extern char *npoint_out(const Npoint *np, int maxdd);
 
 extern Nsegment *nsegment_in(const char *str);
 extern char *nsegment_out(const Nsegment *ns, int maxdd);
 
+extern char *npoint_as_text(const Npoint *np, int maxdd);
+extern char *npoint_as_ewkt(const Npoint *np, int maxdd);
+extern uint8_t *npoint_as_wkb(const Npoint *np, uint8_t variant, size_t *size_out);
+extern char *npoint_as_hexwkb(const Npoint *np, uint8_t variant, size_t *size_out);
+extern Npoint *npoint_from_wkb(const uint8_t *wkb, size_t size);
+extern Npoint *npoint_from_hexwkb(const char *hexwkb);
+
 /* Constructor functions */
 
 extern void npoint_set(int64 rid, double pos, Npoint *np);
 extern void nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns);
 
+/* Transformation functions */
+
+extern Datum datum_npoint_round(Datum npoint, Datum size);
+extern Npoint *npoint_round(const Npoint *np, int maxdd);
+extern Nsegment *nsegment_round(const Nsegment *ns, int maxdd);
+extern Set *npointset_round(const Set *s, int maxdd);
+extern Temporal *tnpoint_round(const Temporal *temp, Datum size);
+
 /*****************************************************************************
- * Tcbuffer functions
+ * Temporal network point functions
  *****************************************************************************/
 
 /* Input/output functions */
@@ -113,6 +152,9 @@ extern Set *tnpointseq_cont_routes(const TSequence *seq);
 extern Set *tnpointseqset_routes(const TSequenceSet *ss);
 
 extern Nsegment *tnpointseq_linear_positions(const TSequence *seq);
+
+extern Temporal *tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, bool atfunc);
+extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc, bool atfunc);
 
 /*****************************************************************************/
 

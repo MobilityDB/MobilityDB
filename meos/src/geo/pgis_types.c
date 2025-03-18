@@ -1048,7 +1048,6 @@ geom_disjoint2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 #endif /* MEOS */
 
-
 /**
  * @ingroup meos_pgis_types
  * @brief Return true if two geometries satisfy a spatial relationship given
@@ -2311,7 +2310,6 @@ geo_out(const GSERIALIZED *gs)
   return result;
 }
 
-#if MEOS || DEBUG_BUILD
 /**
  * @ingroup meos_pgis_types
  * @brief Return a geometry/geography from its WKT representation (and
@@ -2357,6 +2355,34 @@ geo_from_text(const char *wkt, int32_t srid)
 
 /**
  * @ingroup meos_pgis_types
+ * @brief Return the (Extended) Well-Known Text (EWKT or WKT) representation of
+ * a geometry/geography
+ * @param[in] gs Geometry/geography
+ * @param[in] precision Maximum number of decimal digits
+ * @note This is a a stricter version of #geom_in, where we refuse to
+ * accept (HEX)WKB or EWKT.
+ * @note PostGIS function: @p LWGEOM_asText(PG_FUNCTION_ARGS)
+ */
+static char *
+geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) gs))
+    return NULL;
+#else
+  assert(gs);
+#endif /* MEOS */
+
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  char *result = lwgeom_to_wkt(geom, extended ? WKT_EXTENDED : WKT_ISO, 
+    precision, NULL);
+  lwgeom_free(geom);
+  return result;
+}
+
+/**
+ * @ingroup meos_pgis_types
  * @brief Return the Well-Known Text (WKT) representation of a
  * geometry/geography
  * @param[in] gs Geometry/geography
@@ -2368,14 +2394,7 @@ geo_from_text(const char *wkt, int32_t srid)
 char *
 geo_as_text(const GSERIALIZED *gs, int precision)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs))
-    return NULL;
-
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  char *result = lwgeom_to_wkt(geom, WKT_ISO, precision, NULL);
-  lwgeom_free(geom);
-  return result;
+  return geo_as_wkt(gs, precision, false);
 }
 
 /**
@@ -2391,14 +2410,7 @@ geo_as_text(const GSERIALIZED *gs, int precision)
 char *
 geo_as_ewkt(const GSERIALIZED *gs, int precision)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs))
-    return NULL;
-
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  char *result = lwgeom_to_wkt(geom, WKT_EXTENDED, precision, NULL);
-  lwgeom_free(geom);
-  return result;
+  return geo_as_wkt(gs, precision, true);
 }
 
 /**
@@ -2537,7 +2549,6 @@ geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
   *size = data_size;
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_pgis_types

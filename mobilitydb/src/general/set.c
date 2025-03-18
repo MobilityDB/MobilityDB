@@ -46,7 +46,7 @@
 #include <meos_internal.h>
 #include "general/span.h"
 #include "general/temporal.h"
-#include "general/type_out.h"
+#include "general/type_inout.h"
 #include "general/type_util.h"
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
@@ -116,12 +116,114 @@ Datum
 Set_send(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  uint8_t variant = WKB_EXTENDED;
   size_t wkb_size = VARSIZE_ANY_EXHDR(s);
-  uint8_t *wkb = set_as_wkb(s, variant, &wkb_size);
+  /* A set always outputs the SRID */
+  uint8_t *wkb = set_as_wkb(s, WKB_EXTENDED, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
   PG_RETURN_BYTEA_P(result);
+}
+
+/*****************************************************************************
+ * Input/output in WKT, WKB, and HexWKB representation
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Set_as_text(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_as_text);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a set
+ * @sqlfn asText()
+ */
+Datum
+Set_as_text(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = set_out(s, dbl_dig_for_wkt);
+  text *result = cstring2text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Set_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_from_wkb);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return a set from its Well-Known Binary (WKB) representation
+ * @sqlfn intsetFromBinary(), floatsetFromWKB(), ...
+ */
+Datum
+Set_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  Set *result = set_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Set_from_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_from_hexwkb);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return a set from its hex-encoded ASCII Well-Known Binary (HexWKB)
+ * representation
+ * @sqlfn intsetFromHexWKB(), floatsetFromHexWKB(), ...
+ */
+Datum
+Set_from_hexwkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text2cstring(hexwkb_text);
+  Set *result = set_from_hexwkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_SET_P(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Set_as_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_as_wkb);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a set
+ * @sqlfn asBinary()
+ */
+Datum
+Set_as_wkb(PG_FUNCTION_ARGS)
+{
+  /* Ensure that the value is detoasted if necessary */
+  Set *s = PG_GETARG_SET_P(0);
+  meosType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  bytea *result = Datum_as_wkb(fcinfo, PointerGetDatum(s), settype, true);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PGDLLEXPORT Datum Set_as_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Set_as_hexwkb);
+/**
+ * @ingroup mobilitydb_setspan_inout
+ * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * representation of a set
+ * @sqlfn asHexWKB()
+ */
+Datum
+Set_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  /* Ensure that the value is detoasted if necessary */
+  Set *s = PG_GETARG_SET_P(0);
+  meosType settype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(s), settype);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
 }
 
 /*****************************************************************************
@@ -540,7 +642,7 @@ PGDLLEXPORT Datum Textset_lower(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textset_lower);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a text set with with the values transformed to lowercase
+ * @brief Return a text set with the values transformed to lowercase
  * @sqlfn lower()
  */
 Datum
@@ -556,7 +658,7 @@ PGDLLEXPORT Datum Textset_upper(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textset_upper);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a text set with with the values transformed to uppercase
+ * @brief Return a text set with the values transformed to uppercase
  * @sqlfn upper()
  */
 Datum
@@ -572,7 +674,7 @@ PGDLLEXPORT Datum Textset_initcap(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textset_initcap);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a text set with with the values transformed to initcap
+ * @brief Return a text set with the values transformed to initcap
  * @sqlfn initcap()
  */
 Datum
@@ -588,8 +690,8 @@ PGDLLEXPORT Datum Textcat_text_textset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textcat_text_textset);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a text set with with the values transformed to initcap
- * @sqlfn initcap()
+ * @brief Return a text value concatenated with a text set
+ * @sqlfn textset_cat()
  */
 Datum
 Textcat_text_textset(PG_FUNCTION_ARGS)
@@ -606,8 +708,8 @@ PGDLLEXPORT Datum Textcat_textset_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Textcat_textset_text);
 /**
  * @ingroup mobilitydb_setspan_transf
- * @brief Return a text set with with the values transformed to initcap
- * @sqlfn initcap()
+ * @brief Return a text set concatenated with a text value
+ * @sqlfn textset_cat()
  */
 Datum
 Textcat_textset_text(PG_FUNCTION_ARGS)

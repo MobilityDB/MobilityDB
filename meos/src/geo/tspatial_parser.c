@@ -29,10 +29,10 @@
 
 /**
  * @file
- * @brief Functions for parsing temporal points
+ * @brief Functions for parsing temporal spatial values
  */
 
-#include "geo/tgeo_parser.h"
+#include "geo/tspatial_parser.h"
 
 /* MEOS */
 #include <meos.h>
@@ -70,7 +70,7 @@ srid_parse(const char **str, int *srid)
       srid_read = srid_read * 10 + (*str)[delim] - '0';
       delim++;
     }
-    /* Set str after the separator */
+    /* Set str after the delimiter */
     *str += delim + 1;
     result = true;
   }
@@ -88,7 +88,7 @@ stbox_parse(const char **str)
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
   Span period;
   bool hasx = false, hasz = false, hast = false, geodetic = false;
-  const char *type_str = "spatiotemporal box";
+  const char *type_str = meostype_name(T_STBOX);
 
   /* Determine whether there is an SRID */
   int32_t srid;
@@ -111,7 +111,7 @@ stbox_parse(const char **str)
   else
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse spatiotemporal box");
+      "Could not parse %s value: Missing prefix (GEOD)STBOX", type_str);
     return NULL;
   }
 
@@ -144,7 +144,7 @@ stbox_parse(const char **str)
   else
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse spatiotemporal box: Missing dimension information");
+      "Could not parse %s value: Missing dimension information", type_str);
     return NULL;
   }
 
@@ -260,19 +260,19 @@ stbox_parse(const char **str)
  * @brief Parse a geometry/gegraphy from the buffer
  * @param[in] str Input string
  * @param[in] basetype Base type
- * @param[in] sep Separation character
+ * @param[in] delim Separation character
  * @param[in,out] srid SRID of the result. If it is SRID_UNKNOWN, it may take
  * the value from the geometry if it is not SRID_UNKNOWN.
  * @param[out] result New geometry, may be NULL
  */
 bool 
-geo_parse(const char **str, meosType basetype, char sep, int *srid,
+geo_parse(const char **str, meosType basetype, char delim, int *srid,
   GSERIALIZED **result)
 {
   p_whitespace(str);
   /* The next instruction will throw an exception if it fails */
   Datum geo;
-  if (! basetype_parse(str, basetype, sep, &geo))
+  if (! basetype_parse(str, basetype, delim, &geo))
     return false;
   GSERIALIZED *gs = DatumGetGserializedP(geo);
   if (! ensure_not_empty(gs) || ! ensure_has_not_M_geo(gs))
@@ -308,64 +308,111 @@ geo_parse(const char **str, meosType basetype, char sep, int *srid,
 /*****************************************************************************/
 
 /**
- * @brief Parse a temporal geo instant from the buffer
+ * @brief Parse a spatial base value from the input buffer
+ * @param[in] str Input string
+ * @param[in] temptype Temporal type
+ * @param[in] delim Delimiter character
+ * @param[in,out] temp_srid SRID of the result. If it is SRID_UNKNOWN, it may 
+ * take the value from the base value if it is not SRID_UNKNOWN.
+ * @param[out] result New spatial base value, may be NULL
+ */
+static bool 
+spatial_parse_elem(const char **str, meosType temptype, char delim, 
+  int *temp_srid, Datum *result)
+{
+  p_whitespace(str);
+  /* The next instruction will throw an exception if it fails */
+  Datum d;
+  meosType basetype = temptype_basetype(temptype);
+  if (! basetype_parse(str, basetype, delim, &d))
+    return false;
+
+  /* If one of the SRIDs of the temporal spatial value and of the base spatial
+   * value is SRID_UNKNOWN and the other not, copy the SRID */
+  int base_srid = spatial_srid(d, basetype);
+  if (*temp_srid == SRID_UNKNOWN && base_srid != SRID_UNKNOWN)
+    *temp_srid = base_srid;
+  else if (*temp_srid != SRID_UNKNOWN &&
+    ( base_srid == SRID_UNKNOWN || base_srid == SRID_DEFAULT ))
+      spatial_set_srid(d, basetype, *temp_srid);
+  /* If the SRID of the temporal spatial value and of the spatial value
+   * do not match */
+  else if (*temp_srid != SRID_UNKNOWN && base_srid != SRID_UNKNOWN &&
+    *temp_srid != base_srid)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "The SRID of the %s (%d) does not match the SRID of the %s (%d)",
+      meostype_name(basetype), base_srid, meostype_name(temptype), *temp_srid);
+    pfree(DatumGetPointer(d));
+    return false;
+  }
+  if (result)
+    *result = d;
+  else 
+    pfree(DatumGetPointer(d));
+  return true;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Parse a temporal spatial instant from the input buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] end Set to true when reading a single instant to ensure there is
- * no moreinput after the sequence
- * @param[in,out] tgeo_srid SRID of the temporal geo
+ * no more input after the sequence
+ * @param[in,out] temp_srid SRID of the temporal spatial value
  * @param[out] result New instant, may be NULL
  */
 bool 
-tgeoinst_parse(const char **str, meosType temptype, bool end, int *tgeo_srid,
-  TInstant **result)
+tspatialinst_parse(const char **str, meosType temptype, bool end,
+  int *temp_srid, TInstant **result)
 {
-  meosType basetype = temptype_basetype(temptype);
-  GSERIALIZED *gs;
-  if (! geo_parse(str, basetype, '@', tgeo_srid, &gs))
+  Datum base;
+  if (! spatial_parse_elem(str, temptype, '@', temp_srid, &base))
     return false;
 
-  p_sepchar(str, '@');
+  p_delimchar(str, '@');
 
   TimestampTz t = timestamp_parse(str);
   if (t == DT_NOEND ||
     /* Ensure there is no more input */
-    (end && ! ensure_end_input(str, "temporal geo")))
+    (end && ! ensure_end_input(str, meostype_name(temptype))))
   {
-    pfree(gs);
+    pfree(DatumGetPointer(base));
     return false;
   }
 
   if (result)
-    *result = tinstant_make(PointerGetDatum(gs), temptype, t);
-  pfree(gs);
+    *result = tinstant_make(base, temptype, t);
+  pfree(DatumGetPointer(base));
   return true;
 }
 
 /**
- * @brief Parse a temporal geo discrete sequence from the buffer
+ * @brief Parse a temporal discrete sequence spatial value from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
- * @param[in,out] tgeo_srid SRID of the temporal geo
+ * @param[in,out] temp_srid SRID of the temporal spatial value
  */
 TSequence *
-tgeoseq_disc_parse(const char **str, meosType temptype, int *tgeo_srid)
+tspatialseq_disc_parse(const char **str, meosType temptype, int *temp_srid)
 {
-  const char *type_str = "temporal geo";
+  const char *type_str = meostype_name(temptype);
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
-   * to call this function in the dispatch function #tgeo_parse */
+   * to call this function in the dispatch function #tspatial_parse */
   p_obrace(str);
 
   /* First parsing */
   const char *bak = *str;
-  if (! tgeoinst_parse(str, temptype, false, tgeo_srid, NULL))
+  if (! tspatialinst_parse(str, temptype, false, temp_srid, NULL))
     return NULL;
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    if (! tgeoinst_parse(str, temptype, false, tgeo_srid, NULL))
+    if (! tspatialinst_parse(str, temptype, false, temp_srid, NULL))
       return NULL;
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
@@ -377,7 +424,7 @@ tgeoseq_disc_parse(const char **str, meosType temptype, int *tgeo_srid)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    tgeoinst_parse(str, temptype, false, tgeo_srid, &instants[i]);
+    tspatialinst_parse(str, temptype, false, temp_srid, &instants[i]);
   }
   p_cbrace(str);
   return tsequence_make_free(instants, count, true, true, DISCRETE,
@@ -385,23 +432,24 @@ tgeoseq_disc_parse(const char **str, meosType temptype, int *tgeo_srid)
 }
 
 /**
- * @brief Parse a temporal geo sequence from the buffer
+ * @brief Parse a temporal sequence spatial value from the input buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
- * @param[in,out] tgeo_srid SRID of the temporal geo
+ * @param[in,out] temp_srid SRID of the temporal spatial value
  * @param[out] result New sequence, may be NULL
  */
 bool
-tgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
-  bool end, int *tgeo_srid, TSequence **result)
+tspatialseq_cont_parse(const char **str, meosType temptype, interpType interp, 
+  bool end, int *temp_srid, TSequence **result)
 {
+  const char *type_str = meostype_name(temptype);
   p_whitespace(str);
   bool lower_inc = false, upper_inc = false;
   /* We are sure to find an opening bracket or parenthesis because that was the
-   * condition to call this function in the dispatch function tgeo_parse */
+   * condition to call this function in the dispatch function tspatial_parse */
   if (p_obracket(str))
     lower_inc = true;
   else if (p_oparen(str))
@@ -409,13 +457,13 @@ tgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
 
   /* First parsing */
   const char *bak = *str;
-  if (! tgeoinst_parse(str, temptype, false, tgeo_srid, NULL))
+  if (! tspatialinst_parse(str, temptype, false, temp_srid, NULL))
     return false;
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    if (! tgeoinst_parse(str, temptype, false, tgeo_srid, NULL))
+    if (! tspatialinst_parse(str, temptype, false, temp_srid, NULL))
       return false;
   }
   if (p_cbracket(str))
@@ -425,11 +473,12 @@ tgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
   else
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse temporal geo value: Missing closing bracket/parenthesis");
+      "Could not parse %s value: Missing closing bracket/parenthesis", 
+      type_str);
     return false;
   }
   /* Ensure there is no more input */
-  if (end && ! ensure_end_input(str, "temporal geo"))
+  if (end && ! ensure_end_input(str, type_str))
     return false;
 
   /* Second parsing */
@@ -438,7 +487,7 @@ tgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    tgeoinst_parse(str, temptype, false, tgeo_srid, &instants[i]);
+    tspatialinst_parse(str, temptype, false, temp_srid, &instants[i]);
   }
   p_cbracket(str);
   p_cparen(str);
@@ -450,31 +499,31 @@ tgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
 }
 
 /**
- * @brief Parse a temporal geo sequence set from the buffer
+ * @brief Parse a temporal sequence set spatial value from the input buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
- * @param[in,out] tgeo_srid SRID of the temporal geo
+ * @param[in,out] temp_srid SRID of the temporal spatial value
  */
 TSequenceSet *
-tgeoseqset_parse(const char **str, meosType temptype, interpType interp,
-  int *tgeo_srid)
+tspatialseqset_parse(const char **str, meosType temptype, interpType interp,
+  int *temp_srid)
 {
-  const char *type_str = "temporal geo";
+  const char *type_str = meostype_name(temptype);
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
-   * to call this function in the dispatch function tgeo_parse */
+   * to call this function in the dispatch function tspatial_parse */
   p_obrace(str);
 
   /* First parsing */
   const char *bak = *str;
-  if (! tgeoseq_cont_parse(str, temptype, interp, false, tgeo_srid, NULL))
+  if (! tspatialseq_cont_parse(str, temptype, interp, false, temp_srid, NULL))
     return NULL;
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    if (! tgeoseq_cont_parse(str, temptype, interp, false, tgeo_srid, NULL))
+    if (! tspatialseq_cont_parse(str, temptype, interp, false, temp_srid, NULL))
       return NULL;
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
@@ -486,7 +535,7 @@ tgeoseqset_parse(const char **str, meosType temptype, interpType interp,
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    tgeoseq_cont_parse(str, temptype, interp, false, tgeo_srid,
+    tspatialseq_cont_parse(str, temptype, interp, false, temp_srid, 
       &sequences[i]);
   }
   p_cbrace(str);
@@ -494,24 +543,20 @@ tgeoseqset_parse(const char **str, meosType temptype, interpType interp,
 }
 
 /**
- * @brief Parse a temporal geo value from the buffer
+ * @brief Parse a temporal spatial value from the input buffer
  * @param[in] str Input string
- * @param[in] temptype Temporal type
- */
+  * @param[in] temptype Temporal type
+*/
 Temporal *
-tgeo_parse(const char **str, meosType temptype)
+tspatial_parse(const char **str, meosType temptype)
 {
   const char *bak = *str;
   p_whitespace(str);
 
-  /* Determine whether there is an SRID */
-  int tgeo_srid;
-  srid_parse(str, &tgeo_srid);
-
-  /* Ensure that the SRID is geodetic for geography */
-  if (temptype == T_TGEOGRAPHY && tgeo_srid != SRID_UNKNOWN && 
-      ! ensure_srid_is_latlong(tgeo_srid))
-    return NULL;
+  /* Determine whether there is an SRID. If there is one we decode it and
+   * advance the bak pointer after the SRID to do not parse in the */
+  int temp_srid = SRID_UNKNOWN;
+  srid_parse(str, &temp_srid);
 
   interpType interp = temptype_continuous(temptype) ? LINEAR : STEP;
   /* Starts with "Interp=Step" */
@@ -526,20 +571,20 @@ tgeo_parse(const char **str, meosType temptype)
   p_whitespace(str);
 
   Temporal *result = NULL; /* keep compiler quiet */
-  /* Determine the type of the temporal geo */
+  /* Determine the subtype of the temporal spatial value */
   if (**str != '{' && **str != '[' && **str != '(')
   {
     /* Pass the SRID specification */
     *str = bak;
     TInstant *inst;
-    if (! tgeoinst_parse(str, temptype, true, &tgeo_srid, &inst))
+    if (! tspatialinst_parse(str, temptype, true, &temp_srid, &inst))
       return NULL;
     result = (Temporal *) inst;
   }
   else if (**str == '[' || **str == '(')
   {
     TSequence *seq;
-    if (! tgeoseq_cont_parse(str, temptype, interp, true, &tgeo_srid, &seq))
+    if (! tspatialseq_cont_parse(str, temptype, interp, true, &temp_srid, &seq))
       return NULL;
     result = (Temporal *) seq;
   }
@@ -551,17 +596,19 @@ tgeo_parse(const char **str, meosType temptype)
     if (**str == '[' || **str == '(')
     {
       *str = bak;
-      result = (Temporal *) tgeoseqset_parse(str, temptype, interp,
-        &tgeo_srid);
+      result = (Temporal *) tspatialseqset_parse(str, temptype, interp,
+        &temp_srid);
     }
     else
     {
       *str = bak;
-      result = (Temporal *) tgeoseq_disc_parse(str, temptype, &tgeo_srid);
+      result = (Temporal *) tspatialseq_disc_parse(str, temptype, &temp_srid);
     }
   }
   return result;
 }
+
+/*****************************************************************************/
 
 /**
  * @brief Parse a temporal point value from the buffer
@@ -571,18 +618,16 @@ tgeo_parse(const char **str, meosType temptype)
 Temporal *
 tpoint_parse(const char **str, meosType temptype)
 {
-  Temporal *result = tgeo_parse(str, temptype);
+  Temporal *result = tspatial_parse(str, temptype);
   const TInstant *inst = temporal_start_inst(result);
   const GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
-  if (! ensure_point_type(gs))
+  if (! ensure_point_type(gs) || ! ensure_has_not_M_geo(gs))
   {
     pfree(result);
     return NULL;
   }
   return result;
 }
-
-/*****************************************************************************/
 
 #if MEOS
 /**
@@ -627,7 +672,7 @@ tgeometry_in(const char *str)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
-  return tgeo_parse(&str, T_TGEOMETRY);
+  return tspatial_parse(&str, T_TGEOMETRY);
 }
 /**
  * @ingroup meos_temporal_inout
@@ -641,7 +686,7 @@ tgeography_in(const char *str)
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
-  return tgeo_parse(&str, T_TGEOGRAPHY);
+  return tspatial_parse(&str, T_TGEOGRAPHY);
 }
 #endif /* MEOS */
 

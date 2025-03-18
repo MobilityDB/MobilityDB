@@ -52,10 +52,14 @@
 #include "general/temporal.h"
 #if CBUFFER
   #include <meos_cbuffer.h>
-  #include "cbuffer/tcbuffer.h"
+  #include "cbuffer/cbuffer.h"
 #endif
 #if NPOINT
   #include "npoint/tnpoint.h"
+#endif
+#if POSE
+  #include <meos_pose.h>
+  #include "pose/pose.h"
 #endif
 
 #define MEOS_WKT_BOOL_SIZE sizeof("false")
@@ -101,8 +105,7 @@ text_out(const text *txt)
 char *
 basetype_out(Datum value, meosType type, int maxdd)
 {
-  assert(meos_basetype(type));
-  assert(maxdd >= 0);
+  assert(meos_basetype(type)); assert(maxdd >= 0);
 
   switch (type)
   {
@@ -130,6 +133,7 @@ basetype_out(Datum value, meosType type, int maxdd)
 #endif
     case T_GEOMETRY:
     case T_GEOGRAPHY:
+      /* Hex-encoded ASCII Well-Known Binary (HexWKB) representation */
       return geo_out(DatumGetGserializedP(value));
 #if CBUFFER
     case T_CBUFFER:
@@ -772,6 +776,28 @@ cbuffer_to_wkb_size(const Cbuffer *cbuf, uint8_t variant, bool component)
 }
 #endif /* CBUFFER */
 
+#if POSE
+/**
+ * @brief Return the size in bytes of a pose in the Well-Known Binary (WKB)
+ * representation
+ */
+static size_t
+pose_to_wkb_size(const Pose *pose, uint8_t variant, bool component)
+{
+  /* Pose flags (1 byte) */
+  size_t size = 1;
+  if (! component)
+    /* Endian flag */
+    size += MEOS_WKB_BYTE_SIZE;
+  /* 2D: 3 double values, 3D: 7 double values */
+  size +=  MEOS_FLAGS_GET_Z(pose->flags) ?
+    MEOS_WKB_DOUBLE_SIZE * 7 : MEOS_WKB_DOUBLE_SIZE * 3;
+  if (spatial_wkb_needs_srid(pose_srid(pose), variant))
+    size += MEOS_WKB_INT4_SIZE;
+  return size;
+}
+#endif /* POSE */
+
 /**
  * @brief Return the size of the WKB representation of a base value
  * @return On error return SIZE_MAX
@@ -806,6 +832,10 @@ base_to_wkb_size(Datum value, meosType basetype, uint8_t variant)
     case T_NPOINT:
       return MEOS_WKB_INT8_SIZE + MEOS_WKB_DOUBLE_SIZE;
 #endif /* NPOINT */
+#if POSE
+    case T_POSE:
+      return pose_to_wkb_size(DatumGetPoseP(value), variant, true);
+#endif /* POSE */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal base type in WKB output: %s",
@@ -1045,6 +1075,10 @@ datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
     return cbuffer_to_wkb_size((Cbuffer *) DatumGetPointer(value), variant,
       false);
 #endif /* CBUFFER */
+#if POSE
+  if (type == T_POSE)
+    return pose_to_wkb_size(DatumGetPoseP(value), variant, false);
+#endif /* POSE */
   if (temporal_type(type))
     return temporal_to_wkb_size((Temporal *) DatumGetPointer(value), variant);
   /* Error! */
@@ -1339,7 +1373,7 @@ cbuffer_to_wkb_buf(const Cbuffer *cbuf, uint8_t *buf, uint8_t variant,
     buf = endian_to_wkb_buf(buf, variant);
   Datum d = PointerGetDatum(&cbuf->point);
   int32_t srid = gserialized_get_srid(DatumGetGserializedP(d));
-  if (spatial_wkb_needs_srid(cbuffer_srid(cbuf), variant))
+  if (spatial_wkb_needs_srid(srid, variant))
     buf = int32_to_wkb_buf(srid, buf, variant);
   const POINT2D *point = DATUM_POINT2D_P(d);
   buf = double_to_wkb_buf(point->x, buf, variant);
@@ -1367,6 +1401,61 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant,
   return buf;
 }
 #endif /* NPOINT */
+
+#if POSE
+
+/**
+ * @brief Write into the buffer the flag of a pose in the Well-Known Binary
+ * (WKB) representation
+ * @details The output is a byte as follows
+ * @code
+ * xSGZxxTX
+ * S = SRID, G = Geodetic, Z = has Z, T = has T, X = has X, x = unused bit
+ * @endcode
+ */
+static uint8_t *
+pose_flags_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant)
+{
+  uint8_t wkb_flags = 0;
+  wkb_flags |= MEOS_WKB_XFLAG;
+  if (MEOS_FLAGS_GET_Z(pose->flags))
+    wkb_flags |= MEOS_WKB_ZFLAG;
+  if (spatial_wkb_needs_srid(pose_srid(pose), variant))
+    wkb_flags |= MEOS_WKB_SRIDFLAG;
+  /* Write the flags */
+  return uint8_to_wkb_buf(wkb_flags, buf, variant);
+}
+
+/**
+ * @brief Write into the buffer a component pose in the Well-Known Binary (WKB)
+ * representation
+ * @details SRID (int32, if any), 2D: 3 doubles, 3D: 7 doubles
+ */
+static uint8_t *
+pose_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant,
+  bool component)
+{
+  if (! component)
+    /* Write the endian flag (byte) */
+    buf = endian_to_wkb_buf(buf, variant);
+  /* Write the flags (byte) */
+  buf = pose_flags_to_wkb_buf(pose, buf, variant);
+  int32_t srid = pose_srid(pose);
+  if (spatial_wkb_needs_srid(srid, variant))
+    buf = int32_to_wkb_buf(srid, buf, variant);
+  buf = double_to_wkb_buf(pose->data[0], buf, variant);
+  buf = double_to_wkb_buf(pose->data[1], buf, variant);
+  buf = double_to_wkb_buf(pose->data[2], buf, variant);
+  if (MEOS_FLAGS_GET_Z(pose->flags))
+  {
+    buf = double_to_wkb_buf(pose->data[3], buf, variant);
+    buf = double_to_wkb_buf(pose->data[4], buf, variant);
+    buf = double_to_wkb_buf(pose->data[5], buf, variant);
+    buf = double_to_wkb_buf(pose->data[6], buf, variant);
+  }
+  return buf;
+}
+#endif /* POSE */
 
 /**
  * @brief Write into the buffer a temporal instant in the Well-Known Binary
@@ -1412,12 +1501,17 @@ base_to_wkb_buf(Datum value, meosType basetype, uint8_t *buf,
     case T_CBUFFER:
       buf = cbuffer_to_wkb_buf(DatumGetCbufferP(value), buf, variant, true);
       break;
-#endif /* NPOINT */
+#endif /* CBUFFER */
 #if NPOINT
     case T_NPOINT:
       buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant, true);
       break;
 #endif /* NPOINT */
+#if POSE
+    case T_POSE:
+      buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, true);
+      break;
+#endif /* POSE */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
         "Unknown basetype in WKB output: %s", meostype_name(basetype));
@@ -1689,7 +1783,7 @@ tbox_to_wkb_buf(const TBox *box, uint8_t *buf, uint8_t variant)
  * @details The output is a byte as follows
  * @code
  * xSGZxxTX
- * S = SID, G = Geodetic, Z = has Z, T = has T, X = has X, x = unused bit
+ * S = SRID, G = Geodetic, Z = has Z, T = has T, X = has X, x = unused bit
  * @endcode
  */
 static uint8_t *
@@ -2233,92 +2327,6 @@ tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
     variant | (uint8_t) WKB_HEX, size_out);
 }
 #endif /* MEOS */
-
-/*****************************************************************************/
-
-/**
- * @ingroup meos_box_inout
- * @brief Return the Well-Known Binary (WKB) representation of a spatiotemporal
- * box
- * @param[in] box Spatiotemporal box
- * @param[in] variant Output variant
- * @param[out] size_out Size of the output
- * @csqlfn #Stbox_recv(), #Stbox_as_wkb()
- */
-uint8_t *
-stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
-    return NULL;
-  return datum_as_wkb(PointerGetDatum(box), T_STBOX, variant,
-    size_out);
-}
-
-#if MEOS
-/**
- * @ingroup meos_box_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
- * representation of a spatiotemporal box
- * @param[in] box Spatiotemporal box
- * @param[in] variant Output variant
- * @param[out] size_out Size of the output
- * @csqlfn #Stbox_as_hexwkb()
- */
-char *
-stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
-    return NULL;
-  return (char *) datum_as_wkb(PointerGetDatum(box), T_STBOX,
-    variant | (uint8_t) WKB_HEX, size_out);
-}
-#endif /* MEOS */
-
-/*****************************************************************************
- * WKB and HexWKB output functions for circular buffers
- *****************************************************************************/
-
-#if CBUFFER
-/**
- * @ingroup meos_cbuffer_inout
- * @brief Return the Well-Known Binary (WKB) representation of a circular
- * buffer
- * @param[in] cbuf Circular buffer
- * @param[in] variant Output variant
- * @param[out] size_out Size of the output
- * @csqlfn #Cbuffer_recv(), #Cbuffer_as_wkb()
- */
-uint8_t *
-cbuffer_as_wkb(const Cbuffer *cbuf, uint8_t variant, size_t *size_out)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) size_out))
-    return NULL;
-  return datum_as_wkb(PointerGetDatum(cbuf), T_CBUFFER, variant,
-    size_out);
-}
-
-/**
- * @ingroup meos_cbuffer_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
- * representation of a circular buffer
- * @param[in] cbuf Circular buffer
- * @param[in] variant Output variant
- * @param[out] size_out Size of the output
- * @csqlfn #Cbuffer_as_hexwkb()
- */
-char *
-cbuffer_as_hexwkb(const Cbuffer *cbuf, uint8_t variant, size_t *size_out)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) size_out))
-    return NULL;
-  return (char *) datum_as_wkb(PointerGetDatum(cbuf), T_CBUFFER,
-    variant | (uint8_t) WKB_HEX, size_out);
-}
-#endif /* CBUFFER */
 
 /*****************************************************************************
  * WKB and HexWKB output functions for temporal types

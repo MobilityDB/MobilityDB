@@ -119,7 +119,36 @@ CREATE FUNCTION nsegment(npoint)
 CREATE CAST (npoint AS nsegment) WITH FUNCTION nsegment(npoint);
 
 /*****************************************************************************
- * Accessing values
+ * Conversion between network and space
+ *****************************************************************************/
+
+CREATE FUNCTION geometry(npoint)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Npoint_to_geom'
+  LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION npoint(geometry)
+  RETURNS npoint
+  AS 'MODULE_PATHNAME', 'Geom_to_npoint'
+  LANGUAGE C IMMUTABLE STRICT;
+
+CREATE CAST (npoint AS geometry) WITH FUNCTION geometry(npoint);
+CREATE CAST (geometry AS npoint) WITH FUNCTION npoint(geometry);
+
+CREATE FUNCTION geometry(nsegment)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Nsegment_to_geom'
+  LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION nsegment(geometry)
+  RETURNS nsegment
+  AS 'MODULE_PATHNAME', 'Geom_to_nsegment'
+  LANGUAGE C IMMUTABLE STRICT;
+
+CREATE CAST (nsegment AS geometry) WITH FUNCTION geometry(nsegment);
+CREATE CAST (geometry AS nsegment) WITH FUNCTION nsegment(geometry);
+
+/*****************************************************************************
+ * Accessors
  *****************************************************************************/
 
 CREATE FUNCTION route(npoint)
@@ -172,37 +201,8 @@ CREATE FUNCTION round(nsegment, integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Nsegment_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************
- * Conversions between network and space
- *****************************************************************************/
-
-CREATE FUNCTION geometry(npoint)
-  RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Npoint_to_geom'
-  LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION npoint(geometry)
-  RETURNS npoint
-  AS 'MODULE_PATHNAME', 'Geom_to_npoint'
-  LANGUAGE C IMMUTABLE STRICT;
-
-CREATE CAST (npoint AS geometry) WITH FUNCTION geometry(npoint);
-CREATE CAST (geometry AS npoint) WITH FUNCTION npoint(geometry);
-
-CREATE FUNCTION geometry(nsegment)
-  RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Nsegment_to_geom'
-  LANGUAGE C IMMUTABLE STRICT;
-CREATE FUNCTION nsegment(geometry)
-  RETURNS nsegment
-  AS 'MODULE_PATHNAME', 'Geom_to_nsegment'
-  LANGUAGE C IMMUTABLE STRICT;
-
-CREATE CAST (nsegment AS geometry) WITH FUNCTION geometry(nsegment);
-CREATE CAST (geometry AS nsegment) WITH FUNCTION nsegment(geometry);
-
 /******************************************************************************
- * Operators
+ * Comparisons
  ******************************************************************************/
 
 CREATE FUNCTION npoint_eq(npoint, npoint)

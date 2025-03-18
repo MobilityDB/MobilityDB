@@ -36,14 +36,73 @@
 
 /* PostgreSQL */
 #include <stdio.h>
-#include <utils/palloc.h>
+// #include <utils/palloc.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "geo/tgeo_spatialfuncs.h"
+#include <meos_pose.h>
 #include "pose/pose.h"
-#include "pose/tpose.h"
+#include "geo/tgeo_spatialfuncs.h"
+
+/*****************************************************************************
+ * Utility functions
+ *****************************************************************************/
+
+/**
+ * @brief Ensure the validity of a temporal pose and a pose
+ */
+bool
+ensure_valid_tpose_pose(const Temporal *temp, const Pose *pose)
+{
+  if (ensure_not_null((void *) temp) && ensure_not_null((void *) pose) &&
+      ensure_temporal_isof_type(temp, T_TPOSE) &&
+      ensure_same_srid(tspatial_srid(temp), pose_srid(pose)))
+    return true;
+  return false;
+}
+
+/**
+ * @brief Ensure the validity of two temporal circular buffers
+ */
+bool
+ensure_valid_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
+{
+  if (ensure_not_null((void *) temp1) && ensure_not_null((void *) temp2) &&
+      ensure_temporal_isof_type(temp1, T_TPOSE) &&
+      ensure_temporal_isof_type(temp2, T_TPOSE) &&
+      ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
+    return true;
+  return false;
+}
+
+/**
+ * @brief Ensure the validity of a spatiotemporal box and a geometry
+ */
+bool
+ensure_valid_stbox_pose(const STBox *box, const Pose *pose)
+{
+  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) pose) ||
+      ! ensure_has_X(T_STBOX, box->flags) || 
+      ! ensure_same_srid(box->srid, pose_srid(pose)))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of a temporal pose and a geometry
+ * @note The geometry can be empty since some functions such atGeometry or
+ * minusGeometry return different result on empty geometries.
+ */
+bool
+ensure_valid_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_temporal_isof_type(temp, T_TPOSE) ||
+      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
+    return false;
+  return true;
+}
 
 /*****************************************************************************
  * Interpolation functions defining functionality required by tsequence.c
@@ -55,18 +114,19 @@
  * a base value at the timestamp
  * @param[in] inst1,inst2 Temporal instants defining the segment
  * @param[in] value Base value
- * @param[out] t Timestamp
+ * @param[out] t Timestamp, may be @p NULL
  */
 bool
 tposesegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
+  assert(inst1); assert(inst2);
   /* We are sure that the trajectory is a line */
   Datum start = tinstant_value(inst1);
   Datum end = tinstant_value(inst2);
-  Datum geom_start = datum_pose_geom(start);
-  Datum geom_end = datum_pose_geom(end);
-  Datum geom = datum_pose_geom(value);
+  Datum geom_start = datum_pose_point(start);
+  Datum geom_end = datum_pose_point(end);
+  Datum geom = datum_pose_point(value);
   double dist;
   /* Compute the value taking into account position only */
   double fraction = (double) pointsegm_locate_point(geom_start, geom_end, geom,
@@ -96,36 +156,153 @@ tposesegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   return true;
 }
 
+/*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_restrict
+ * @brief Return a temporal pose restricted to (the complement of) a geometry
+ */
+Temporal *
+tpose_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
+  const Span *zspan, bool atfunc)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
+      ! ensure_has_not_Z_geo(gs))
+    return NULL;
+
+  /* Empty geometry */
+  if (gserialized_is_empty(gs))
+    return atfunc ? NULL : temporal_copy(temp);
+
+  Temporal *tgeom = tpose_tgeompoint(temp);
+  Temporal *tgeomres = tgeo_restrict_geom(tgeom, gs, zspan, atfunc);
+  Temporal *result = NULL;
+  if (tgeomres)
+  {
+    /* We do not call the function tgeompoint_tpose to avoid
+     * roundoff errors */
+    SpanSet *ss = temporal_time(tgeomres);
+    result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+    pfree(tgeomres);
+    pfree(ss);
+  }
+  pfree(tgeom);
+  return result;
+}
+
+#if MEOS
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal pose restricted to a geometry
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] zspan Span of values to restrict the Z dimension
+ * @csqlfn #Tpose_at_geom()
+ */
+Temporal *
+tpose_at_geom(const Temporal *temp, const GSERIALIZED *gs,
+  const Span *zspan)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_not_null((void *) zspan) ||
+      ! ensure_temporal_isof_type(temp, T_TPOSE))
+    return NULL;
+  return tpose_restrict_geom(temp, gs, zspan, REST_AT);
+}
+
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal point restricted to (the complement of) a geometry
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] zspan Span of values to restrict the Z dimension
+ * @csqlfn #Tpose_minus_geom()
+ */
+Temporal *
+tpose_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
+  const Span *zspan)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
+      ! ensure_not_null((void *) zspan) ||
+      ! ensure_temporal_isof_type(temp, T_TPOSE))
+    return NULL;
+  return tpose_restrict_geom(temp, gs, zspan, REST_MINUS);
+}
+#endif /* MEOS */
+
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_ever
- * @brief Return true if a temporal pose is ever equal to a pose.
- * @sqlop @p ?=
+ * @ingroup meos_internal_temporal_restrict
+ * @brief Return a temporal pose restricted to (the complement of) a
+ * spatiotemporal box
+ * @param[in] temp Temporal pose
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
+ * @param[in] atfunc True if the restriction is at, false for minus
  */
-bool
-tpose_ever_eq(const Temporal *temp, const Pose *pose)
+Temporal *
+tpose_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
+  bool atfunc)
+{
+  assert(temp); assert(box);
+  Temporal *tgeom = tpose_tgeompoint(temp);
+  Temporal *tgeomres = tgeo_restrict_stbox(tgeom, box, border_inc, atfunc);
+  Temporal *result = NULL;
+  if (tgeomres)
+  {
+    /* We do not call the function tgeompoint_tpose to avoid
+     * roundoff errors */
+    SpanSet *ss = temporal_time(tgeomres);
+    result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+    pfree(tgeomres);
+    pfree(ss);
+  }
+  pfree(tgeom);
+  return result;
+}
+
+#if MEOS
+/**
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal pose restricted to a geometry
+ * @param[in] temp Temporal pose
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
+ * @sqlfn #Tpose_at_stbox()
+ */
+Temporal *
+tpose_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_same_srid(tspatial_srid(temp), pose_srid(pose)) ||
-      ! ensure_same_spatial_dimensionality(temp->flags, pose->flags))
-    return false;
-  return ever_eq_temporal_base(temp, PosePGetDatum(pose));
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
+      ! ensure_temporal_isof_type(temp, T_TPOSE))
+    return NULL;
+  return tpose_restrict_stbox(temp, box, border_inc, REST_AT);
 }
 
 /**
- * @ingroup libmeos_temporal_ever
- * @brief Return true if a temporal pose is always equal to a pose.
- * @sqlop @p %=
+ * @ingroup meos_temporal_restrict
+ * @brief Return a temporal point restricted to (the complement of) a geometry
+ * @param[in] temp Temporal pose
+ * @param[in] box Spatiotemporal box
+ * @param[in] border_inc True when the box contains the upper border
+ * @sqlfn #Tpose_minus_stbox()
  */
-bool
-tpose_always_eq(const Temporal *temp, const Pose *pose)
+Temporal *
+tpose_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_same_srid(tspatial_srid(temp), pose_srid(pose)) ||
-      ! ensure_same_spatial_dimensionality(temp->flags, pose->flags))
-    return false;
-  return always_eq_temporal_base(temp, PosePGetDatum(pose));
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
+      ! ensure_temporal_isof_type(temp, T_TPOSE))
+    return NULL;
+  return tpose_restrict_stbox(temp, box, border_inc, REST_MINUS);
 }
+#endif /* MEOS */
 
 /*****************************************************************************/

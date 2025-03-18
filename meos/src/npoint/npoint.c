@@ -30,9 +30,6 @@
 /**
  * @file
  * @brief Network-based static point and segment types
- *
- * Several functions are commented out since they are not currently used.
- * They are kept if needed in the future.
  */
 
 #include "npoint/tnpoint.h"
@@ -55,7 +52,7 @@
 #include <meos_internal.h>
 #include "general/pg_types.h"
 #include "general/tsequence.h"
-#include "general/type_out.h"
+#include "general/type_inout.h"
 #include "general/type_util.h"
 #include "geo/pgis_types.h"
 #include "geo/tgeo.h"
@@ -112,7 +109,7 @@ typedef struct
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_base_accessor
  * @brief Return the SRID of the routes in the ways table
  * @return On error return SRID_INVALID
  */
@@ -225,7 +222,7 @@ get_srid_ways()
 #define SQL_ROUTE_MAXLEN 64
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_base_accessor
  * @brief Return true if the edge table contains a route with the route
  * identifier
  * @param[in] rid Route identifier
@@ -312,7 +309,7 @@ route_exists(int64 rid)
 #endif /* MEOS */
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_base_accessor
  * @brief Access the edge table to return the route length from the
  * corresponding route identifier
  * @param[in] rid Route identifier
@@ -413,7 +410,7 @@ route_length(int64 rid)
 #endif /* MEOS */
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_base_accessor
  * @brief Access the edge table to get the route geometry from corresponding
  * route identifier
  * @param[in] rid Route identifier
@@ -514,13 +511,11 @@ route_geom(int64 rid)
       "Cannot get the geometry for route %ld", rid);
     return NULL;
   }
-
   if (! ensure_not_empty(result))
   {
     pfree(result);
     return NULL;
   }
-
   return result;
 }
 #endif /* MEOS */
@@ -528,7 +523,7 @@ route_geom(int64 rid)
 #define SQL_MAXLEN 1024
 
 /**
- * @ingroup meos_temporal_conversion
+ * @ingroup meos_base_conversion
  * @brief Transform a geometry into a network point
  * @param[in] gs Geometry
  * @csqlfn #Geom_to_npoint()
@@ -611,7 +606,7 @@ geom_npoint(const GSERIALIZED *gs)
         min_dist = dist;
 
     }    
-  } while (!feof(file));
+  } while (! feof(file));
 
   /* Close the input file */
   fclose(file);
@@ -637,7 +632,8 @@ geom_npoint(const GSERIALIZED *gs)
   if (srid_ways == SRID_INVALID || ! ensure_same_srid(srid_geom, srid_ways))
     return NULL;
 
-  char *geomstr = geo_ewkt_out(PointerGetDatum(gs), 0, OUT_DEFAULT_DECIMAL_DIGITS);
+  char *geomstr = geo_wkt_out(PointerGetDatum(gs), OUT_DEFAULT_DECIMAL_DIGITS,
+    true);
   char sql[SQL_MAXLEN];
   snprintf(sql, sizeof(sql),
     "SELECT npoint(gid, ST_LineLocatePoint(the_geom, '%s')) "
@@ -672,63 +668,37 @@ geom_npoint(const GSERIALIZED *gs)
 #endif /* MEOS */
 
 /*****************************************************************************
- * Transformation functions
+ * Parameter tests
  *****************************************************************************/
 
 /**
- * @brief Return an array of network points converted into a geometry
- * @param[in] points Array of network points
- * @param[in] nelems Number of elements in the input array
- * @pre The argument @p nelems is greater than 1, all points have the same SRID
+ * @brief Ensure that a route exists in the ways table
  */
-GSERIALIZED *
-npointarr_geom(Npoint **points, int nelems)
+bool
+ensure_route_exists(int64 rid)
 {
-  assert(nelems > 1);
-  LWGEOM **geoms = palloc(sizeof(LWGEOM *) * nelems);
-  int32_t srid = npoint_srid(points[0]);
-  for (int i = 0; i < nelems; i++)
+  if (! route_exists(rid))
   {
-    GSERIALIZED *gsline = route_geom(points[i]->rid);
-    assert(gserialized_get_srid(gsline) == srid);
-    LWGEOM *line = lwgeom_from_gserialized(gsline);
-    geoms[i] = lwgeom_line_interpolate_point(line, points[i]->pos, srid, 0);
-    pfree(gsline); pfree(line);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "There is no route with gid value %ld in table ways", rid);
+    return false;
   }
-  int newcount;
-  LWGEOM **newgeoms = lwpointarr_remove_duplicates(geoms, nelems, &newcount);
-  LWGEOM *geom = lwpointarr_make_trajectory(newgeoms, newcount, STEP);
-  GSERIALIZED *result = geo_serialize(geom);
-  pfree(newgeoms); pfree(geom);
-  pfree_array((void **) geoms, nelems);
-  return result;
+  return true;
 }
 
 /**
- * @brief Return an array of network segments converted into a geometry
- * @param[in] segments Array of network segments
- * @param[in] nelems Number of elements in the input array
- * @pre The argument @p nelems is greater than 1
+ * @brief Ensure valid position
  */
-GSERIALIZED *
-nsegmentarr_geom(Nsegment **segments, int nelems)
+bool
+ensure_valid_position(double pos)
 {
-  assert(nelems > 1);
-  GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * nelems);
-  for (int i = 0; i < nelems; i++)
+  if (pos < 0 || pos > 1)
   {
-    GSERIALIZED *line = route_geom(segments[i]->rid);
-    if (segments[i]->pos1 == 0 && segments[i]->pos2 == 1)
-      geoms[i] = geo_copy(line);
-    else if (segments[i]->pos1 == segments[i]->pos2)
-      geoms[i] = line_interpolate_point(line, segments[i]->pos1, 0);
-    else
-      geoms[i] = line_substring(line, segments[i]->pos1, segments[i]->pos2);
-    pfree(line);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The relative position must be a real number between 0 and 1");
+    return false;
   }
-  GSERIALIZED *result = geom_array_union(geoms, nelems);
-  pfree_array((void **) geoms, nelems);
-  return result;
+  return true;
 }
 
 /*****************************************************************************
@@ -791,7 +761,7 @@ nsegmentarr_normalize(Nsegment **segments, int *nelems)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_inout
+ * @ingroup meos_base_inout
  * @brief Return a network point from its string representation
  * @param[in] str String
  * @csqlfn #Npoint_in()
@@ -799,11 +769,17 @@ nsegmentarr_normalize(Nsegment **segments, int *nelems)
 Npoint *
 npoint_in(const char *str)
 {
+#if MEOS
+  if (! ensure_not_null((void *) str))
+    return NULL;
+#else
+  assert(str);
+#endif /* MEOS */
   return npoint_parse(&str, true);
 }
 
 /**
- * @ingroup meos_temporal_inout
+ * @ingroup meos_base_inout
  * @brief Return the string representation of a network point
  * @param[in] np Network point
  * @param[in] maxdd Maximum number of decimal digits
@@ -812,8 +788,14 @@ npoint_in(const char *str)
 char *
 npoint_out(const Npoint *np, int maxdd)
 {
+#if MEOS
+  if (! ensure_not_null((void *) np))
+    return NULL;
+#else
+  assert(np);
+#endif /* MEOS */
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) np) || ! ensure_not_negative(maxdd))
+  if (! ensure_not_negative(maxdd))
     return NULL;
 
   char *result = palloc(NPOINT_MAXLEN);
@@ -827,7 +809,7 @@ npoint_out(const Npoint *np, int maxdd)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_inout
+ * @ingroup meos_base_inout
  * @brief Return a network point from its string representation
  * @param[in] str String
  * @csqlfn #Nsegment_in()
@@ -835,11 +817,17 @@ npoint_out(const Npoint *np, int maxdd)
 Nsegment *
 nsegment_in(const char *str)
 {
+#if MEOS
+  if (! ensure_not_null((void *) str))
+    return NULL;
+#else
+  assert(str);
+#endif /* MEOS */
   return nsegment_parse(&str);
 }
 
 /**
- * @ingroup meos_temporal_inout
+ * @ingroup meos_base_inout
  * @brief Return the string representation of a network segment
  * @param[in] ns Network segment
  * @param[in] maxdd Maximum number of decimal digits
@@ -849,7 +837,13 @@ char *
 nsegment_out(const Nsegment *ns, int maxdd)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) ns) || ! ensure_not_negative(maxdd))
+#if MEOS
+  if (! ensure_not_null((void *) ns))
+    return NULL;
+#else
+  assert(ns);
+#endif /* MEOS */
+  if (! ensure_not_negative(maxdd))
     return NULL;
 
   char *result = palloc(NSEGMENT_MAXLEN);
@@ -862,11 +856,158 @@ nsegment_out(const Nsegment *ns, int maxdd)
 }
 
 /*****************************************************************************
+ * WKT and EWKT output functions for network points
+ *****************************************************************************/
+
+/**
+ * @brief Output a network point in the Well-Known Text (WKT) representation
+ * (internal function)
+ */
+char *
+npoint_wkt_out(Datum value, int maxdd)
+{
+  Npoint *np = DatumGetNpointP(value);
+  char *rid = int8_out(np->rid);
+  char *pos = float8_out(np->pos, maxdd);
+  size_t len = strlen(rid) + strlen(pos) + 10; // Npoint(,) + end NULL
+  char *result = palloc(len);
+  snprintf(result, len, "NPoint(%s,%s)", rid, pos);
+  pfree(rid); pfree(pos);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_base_inout
+ * @brief Return the Well-Known Text (WKT) representation of a network point
+ * @param[in] np Network point
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Npoint_as_text()
+ */
+char *
+npoint_as_text(const Npoint *np, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) np) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  return npoint_wkt_out(PointerGetDatum(np), maxdd);
+}
+
+/**
+ * @ingroup meos_base_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a
+ * network point
+ * @param[in] np Network point
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Npoint_as_ewkt()
+ */
+char *
+npoint_as_ewkt(const Npoint *np, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) np) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  int32_t srid = npoint_srid(np);
+  char str1[18];
+  if (srid > 0)
+    /* SRID_MAXIMUM is defined by PostGIS as 999999 */
+    snprintf(str1, sizeof(str1), "SRID=%d;", srid);
+  else
+    str1[0] = '\0';
+  char *str2 = npoint_wkt_out(PointerGetDatum(np), maxdd);
+  char *result = palloc(strlen(str1) + strlen(str2) + 1);
+  strcpy(result, str1);
+  strcat(result, str2);
+  pfree(str2);
+  return result;
+}
+
+/*****************************************************************************
+ * WKB and HexWKB output functions for network points
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a network point from its Well-Known Binary (WKB) 
+ * representation
+ * @param[in] wkb WKB string
+ * @param[in] size Size of the string
+ * @csqlfn #Npoint_recv(), #Npoint_from_wkb()
+ */
+Npoint *
+npoint_from_wkb(const uint8_t *wkb, size_t size)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) wkb))
+    return NULL;
+  return DatumGetNpointP(type_from_wkb(wkb, size, T_NPOINT));
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a network point from its hex-encoded ASCII Well-Known Binary
+ * (WKB) representation
+ * @param[in] hexwkb HexWKB string
+ * @csqlfn #Npoint_from_hexwkb()
+ */
+Npoint *
+npoint_from_hexwkb(const char *hexwkb)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) hexwkb))
+    return NULL;
+  size_t size = strlen(hexwkb);
+  return DatumGetNpointP(type_from_hexwkb(hexwkb, size, T_NPOINT));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_base_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a circular
+ * buffer
+ * @param[in] np Network point
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Npoint_recv(), #Npoint_as_wkb()
+ */
+uint8_t *
+npoint_as_wkb(const Npoint *np, uint8_t variant, size_t *size_out)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) np) || ! ensure_not_null((void *) size_out))
+    return NULL;
+  return datum_as_wkb(PointerGetDatum(np), T_NPOINT, variant, size_out);
+}
+
+/**
+ * @ingroup meos_base_inout
+ * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * representation of a network point
+ * @param[in] np Network point
+ * @param[in] variant Output variant
+ * @param[out] size_out Size of the output
+ * @csqlfn #Npoint_as_hexwkb()
+ */
+char *
+npoint_as_hexwkb(const Npoint *np, uint8_t variant, size_t *size_out)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) np) || ! ensure_not_null((void *) size_out))
+    return NULL;
+  return (char *) datum_as_wkb(PointerGetDatum(np), T_NPOINT,
+    variant | (uint8_t) WKB_HEX, size_out);
+}
+
+/*****************************************************************************
  * Constructor functions
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_constructor
+ * @ingroup meos_base_constructor
  * @brief Return a network point from a route identifier and a position
  * @param[in] rid Route identifier
  * @param[in] pos Position
@@ -875,6 +1016,10 @@ nsegment_out(const Nsegment *ns, int maxdd)
 Npoint *
 npoint_make(int64 rid, double pos)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_route_exists(rid) || ! ensure_valid_position(pos))
+    return NULL;
+
   /* Note: zero-fill is done in the npoint_set function */
   Npoint *result = palloc(sizeof(Npoint));
   npoint_set(rid, pos, result);
@@ -888,18 +1033,7 @@ npoint_make(int64 rid, double pos)
 void
 npoint_set(int64 rid, double pos, Npoint *np)
 {
-  if (! route_exists(rid))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "There is no route with gid value %ld in table ways", rid);
-    return;
-  }
-  if (pos < 0 || pos > 1)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The relative position must be a real number between 0 and 1");
-    return;
-  }
+  assert(route_exists(rid)); assert(pos >=0 && pos <= 1);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(np, 0, sizeof(Npoint));
   /* Fill in the network point */
@@ -909,7 +1043,7 @@ npoint_set(int64 rid, double pos, Npoint *np)
 }
 
 /**
- * @ingroup meos_temporal_constructor
+ * @ingroup meos_base_constructor
  * @brief Return a network segment from a route identifier and two positions
  * @param[in] rid Route identifier
  * @param[in] pos1, pos2 Positions
@@ -918,6 +1052,11 @@ npoint_set(int64 rid, double pos, Npoint *np)
 Nsegment *
 nsegment_make(int64 rid, double pos1, double pos2)
 {
+  /* Ensure validity of the arguments */
+  if (! ensure_route_exists(rid) || ! ensure_valid_position(pos1) ||
+      ! ensure_valid_position(pos2))
+    return NULL;
+
   /* Note: zero-fill is done in the nsegment_set function */
   Nsegment *result = palloc(sizeof(Nsegment));
   nsegment_set(rid, pos1, pos2, result);
@@ -931,18 +1070,9 @@ nsegment_make(int64 rid, double pos1, double pos2)
 void
 nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
 {
-  if (! route_exists(rid))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "There is no route with gid value %ld in table ways", rid);
-    return;
-  }
-  if (pos1 < 0 || pos1 > 1 || pos2 < 0 || pos2 > 1)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The relative position of a network segment must be a real number between 0 and 1");
-    return;
-  }
+  assert(route_exists(rid)); 
+  assert(pos1 >= 0 && pos1 <= 1 && pos2 >= 0 && pos2 <= 1);
+
   ns->rid = rid;
   ns->pos1 = Min(pos1, pos2);
   ns->pos2 = Max(pos1, pos2);
@@ -954,7 +1084,7 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_conversion
+ * @ingroup meos_base_conversion
  * @brief Return a network point converted to a network segment
  * @param[in] np Network point
  * @csqlfn #Npoint_to_nsegment()
@@ -962,79 +1092,22 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
 Nsegment *
 npoint_nsegment(const Npoint *np)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) np))
+    return NULL;
+#else
+  assert(np);
+#endif /* MEOS */
   return nsegment_make(np->rid, np->pos, np->pos);
 }
 
 /*****************************************************************************
- * Accessor functions
+ * Conversion functions between network and Euclidean space
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_accessor
- * @brief Return the route of a network point
- * @param[in] np Network point
- * @csqlfn #Npoint_route()
- */
-int64
-npoint_route(const Npoint *np)
-{
-  return np->rid;
-}
-
-/**
- * @ingroup meos_temporal_accessor
- * @brief Return the position of a network point
- * @param[in] np Network point
- * @csqlfn #Npoint_position()
- */
-double
-npoint_position(const Npoint *np)
-{
-  return np->pos;
-}
-
-/**
- * @ingroup meos_temporal_accessor
- * @brief Return the route of a network segment
- * @param[in] ns Network segment
- * @csqlfn #Nsegment_route()
- */
-int64
-nsegment_route(const Nsegment *ns)
-{
-  return ns->rid;
-}
-
-/**
- * @ingroup meos_temporal_accessor
- * @brief Return the start position of a network segment
- * @param[in] ns Network segment
- * @csqlfn #Nsegment_start_position()
- */
-double
-nsegment_start_position(const Nsegment *ns)
-{
-  return ns->pos1;
-}
-
-/**
- * @ingroup meos_temporal_accessor
- * @brief Return the end position of a network segment
- * @param[in] ns Network segment
- * @csqlfn #Nsegment_end_position()
- */
-double
-nsegment_end_position(const Nsegment *ns)
-{
-  return ns->pos2;
-}
-
-/*****************************************************************************
- * Conversions between network and Euclidean space
- *****************************************************************************/
-
-/**
- * @ingroup meos_temporal_conversion
+ * @ingroup meos_base_conversion
  * @brief Transform a network point into a geometry
  * @param[in] np Network point
  * @csqlfn #Npoint_to_geom()
@@ -1042,6 +1115,13 @@ nsegment_end_position(const Nsegment *ns)
 GSERIALIZED *
 npoint_geom(const Npoint *np)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) np))
+    return NULL;
+#else
+  assert(np);
+#endif /* MEOS */
   GSERIALIZED *line = route_geom(np->rid);
   GSERIALIZED *result = line_interpolate_point(line, np->pos, 0);
   pfree(line);
@@ -1049,7 +1129,7 @@ npoint_geom(const Npoint *np)
 }
 
 /**
- * @ingroup meos_temporal_conversion
+ * @ingroup meos_base_conversion
  * @brief Transform a network segment into a geometry
  * @param[in] ns Network segment
  * @csqlfn #Nsegment_to_geom()
@@ -1057,6 +1137,13 @@ npoint_geom(const Npoint *np)
 GSERIALIZED *
 nsegment_geom(const Nsegment *ns)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) ns))
+    return NULL;
+#else
+  assert(ns);
+#endif /* MEOS */
   GSERIALIZED *line = route_geom(ns->rid);
   GSERIALIZED *result;
   if (fabs(ns->pos1 - ns->pos2) < MEOS_EPSILON)
@@ -1068,7 +1155,7 @@ nsegment_geom(const Nsegment *ns)
 }
 
 /**
- * @ingroup meos_temporal_conversion
+ * @ingroup meos_base_conversion
  * @brief Transform a geometry into a network segment
  * @return On error return @p NULL
  * @param[in] gs Geometry
@@ -1078,7 +1165,13 @@ Nsegment *
 geom_nsegment(const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs))
+#if MEOS
+  if (! ensure_not_null((void *) gs))
+    return NULL;
+#else
+  assert(gs);
+#endif /* MEOS */
+  if (! ensure_not_empty(gs))
     return NULL;
   int geomtype = gserialized_get_type(gs);
   if (geomtype != POINTTYPE && geomtype != LINETYPE)
@@ -1125,7 +1218,7 @@ geom_nsegment(const GSERIALIZED *gs)
   {
     if (points[i]->rid != rid)
     {
-      pfree_array((void **) points, npoints);
+      pfree_array((void **) points, i);
       return NULL;
     }
     minPos = Min(minPos, points[i]->pos);
@@ -1136,12 +1229,216 @@ geom_nsegment(const GSERIALIZED *gs)
   return result;
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_base_conversion
+ * @brief Return an array of network points converted into a geometry
+ * @param[in] points Array of network points
+ * @param[in] nelems Number of elements in the input array
+ * @pre The argument @p nelems is greater than 1, all points have the same SRID
+ */
+GSERIALIZED *
+npointarr_geom(Npoint **points, int nelems)
+{
+  assert(nelems > 1);
+  LWGEOM **geoms = palloc(sizeof(LWGEOM *) * nelems);
+  int32_t srid = npoint_srid(points[0]);
+  for (int i = 0; i < nelems; i++)
+  {
+    GSERIALIZED *gsline = route_geom(points[i]->rid);
+    assert(gserialized_get_srid(gsline) == srid);
+    LWGEOM *line = lwgeom_from_gserialized(gsline);
+    geoms[i] = lwgeom_line_interpolate_point(line, points[i]->pos, srid, 0);
+    pfree(gsline); pfree(line);
+  }
+  int newcount;
+  LWGEOM **newgeoms = lwpointarr_remove_duplicates(geoms, nelems, &newcount);
+  LWGEOM *geom = lwpointarr_make_trajectory(newgeoms, newcount, STEP);
+  GSERIALIZED *result = geo_serialize(geom);
+  pfree(newgeoms); pfree(geom);
+  pfree_array((void **) geoms, nelems);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_base_conversion
+ * @brief Return an array of network segments converted into a geometry
+ * @param[in] segments Array of network segments
+ * @param[in] nelems Number of elements in the input array
+ * @pre The argument @p nelems is greater than 1
+ */
+GSERIALIZED *
+nsegmentarr_geom(Nsegment **segments, int nelems)
+{
+  assert(nelems > 1);
+  GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * nelems);
+  for (int i = 0; i < nelems; i++)
+  {
+    GSERIALIZED *line = route_geom(segments[i]->rid);
+    if (segments[i]->pos1 == 0 && segments[i]->pos2 == 1)
+      geoms[i] = geo_copy(line);
+    else if (segments[i]->pos1 == segments[i]->pos2)
+      geoms[i] = line_interpolate_point(line, segments[i]->pos1, 0);
+    else
+      geoms[i] = line_substring(line, segments[i]->pos1, segments[i]->pos2);
+    pfree(line);
+  }
+  GSERIALIZED *result = geom_array_union(geoms, nelems);
+  pfree_array((void **) geoms, nelems);
+  return result;
+}
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_base_transf
+ * @brief Return a network point with the precision of the position set to a
+ * number of decimal places
+ */
+Npoint *
+npoint_round(const Npoint *np, int maxdd)
+{
+  /* Set precision of position */
+  double pos = float_round(np->pos, maxdd);
+  return npoint_make(np->rid, pos);
+}
+
+/**
+ * @brief Return a network point with the precision of the position set to a
+ * number of decimal places
+ * @note Funcion used by the lifting infrastructure
+ */
+Datum
+datum_npoint_round(Datum npoint, Datum size)
+{
+  /* Set precision of position */
+  return PointerGetDatum(npoint_round(DatumGetNpointP(npoint),
+    DatumGetInt32(size)));
+}
+
+/**
+ * @ingroup meos_base_transf
+ * @brief Return a network segment with the precision of the positions set to a
+ * number of decimal places
+ */
+Nsegment *
+nsegment_round(const Nsegment *ns, int maxdd)
+{
+  /* Set precision of positions */
+  double pos1 = float_round(ns->pos1, maxdd);
+  double pos2 = float_round(ns->pos2, maxdd);
+  return nsegment_make(ns->rid, pos1, pos2);
+}
+
+/*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_base_accessor
+ * @brief Return the route of a network point
+ * @param[in] np Network point
+ * @csqlfn #Npoint_route()
+ */
+int64
+npoint_route(const Npoint *np)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) np))
+    return false;
+#else
+  assert(np);
+#endif /* MEOS */
+  return np->rid;
+}
+
+/**
+ * @ingroup meos_base_accessor
+ * @brief Return the position of a network point
+ * @param[in] np Network point
+ * @return On error return -1.0
+ * @csqlfn #Npoint_position()
+ */
+double
+npoint_position(const Npoint *np)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) np))
+    return -1.0;
+#else
+  assert(np);
+#endif /* MEOS */
+  return np->pos;
+}
+
+/**
+ * @ingroup meos_base_accessor
+ * @brief Return the route of a network segment
+ * @param[in] ns Network segment
+ * @csqlfn #Nsegment_route()
+ */
+int64
+nsegment_route(const Nsegment *ns)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) ns))
+    return false;
+#else
+  assert(ns);
+#endif /* MEOS */
+  return ns->rid;
+}
+
+/**
+ * @ingroup meos_base_accessor
+ * @brief Return the start position of a network segment
+ * @param[in] ns Network segment
+ * @csqlfn #Nsegment_start_position()
+ */
+double
+nsegment_start_position(const Nsegment *ns)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) ns))
+    return -1.0;
+#else
+  assert(ns);
+#endif /* MEOS */
+  return ns->pos1;
+}
+
+/**
+ * @ingroup meos_base_accessor
+ * @brief Return the end position of a network segment
+ * @param[in] ns Network segment
+ * @csqlfn #Nsegment_end_position()
+ */
+double
+nsegment_end_position(const Nsegment *ns)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) ns))
+    return -1.0;
+#else
+  assert(ns);
+#endif /* MEOS */
+  return ns->pos2;
+}
+
 /*****************************************************************************
  * SRID functions
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_base_spatial
  * @brief Return the SRID of a network point
  * @param[in] np Network point
  * @csqlfn #Npoint_srid()
@@ -1156,7 +1453,7 @@ npoint_srid(const Npoint *np __attribute__((unused)))
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_base_spatial
  * @brief Return the SRID of a network segment
  * @param[in] ns Network segment
  * @csqlfn #Nsegment_srid()
@@ -1175,7 +1472,7 @@ nsegment_srid(const Nsegment *ns __attribute__((unused)))
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return true if the first network point is equal to the second one
  * @param[in] np1,np2 Network points
  * @csqlfn #Npoint_eq()
@@ -1183,11 +1480,19 @@ nsegment_srid(const Nsegment *ns __attribute__((unused)))
 bool
 npoint_eq(const Npoint *np1, const Npoint *np2)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) np1) || ! ensure_not_null((void *) np2))
+    return false;
+#else
+  assert(np1); assert(np2);
+#endif /* MEOS */
+
   return np1->rid == np2->rid && fabs(np1->pos - np2->pos) < MEOS_EPSILON;
 }
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return true if the first network point is not equal to the second one
  * @param[in] np1,np2 Network points
  * @csqlfn #Npoint_ne()
@@ -1195,11 +1500,11 @@ npoint_eq(const Npoint *np1, const Npoint *np2)
 bool
 npoint_ne(const Npoint *np1, const Npoint *np2)
 {
-  return (!npoint_eq(np1, np2));
+  return (! npoint_eq(np1, np2));
 }
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first network point
  * is less than, equal to, or greater than the second one
  * @param[in] np1,np2 Network points
@@ -1208,6 +1513,14 @@ npoint_ne(const Npoint *np1, const Npoint *np2)
 int
 npoint_cmp(const Npoint *np1, const Npoint *np2)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) np1) || ! ensure_not_null((void *) np2))
+    return false;
+#else
+  assert(np1); assert(np2);
+#endif /* MEOS */
+
   if (np1->rid < np2->rid)
     return -1;
   else if (np1->rid > np2->rid)
@@ -1221,7 +1534,7 @@ npoint_cmp(const Npoint *np1, const Npoint *np2)
 }
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return true if the first network point is less than the second one
  * @param[in] np1,np2 Network points
  * @csqlfn #Npoint_lt()
@@ -1234,7 +1547,7 @@ npoint_lt(const Npoint *np1, const Npoint *np2)
 }
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return true if the first network point is less than or equal to the
  * second one
  * @param[in] np1,np2 Network points
@@ -1248,7 +1561,7 @@ npoint_le(const Npoint *np1, const Npoint *np2)
 }
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return true if the first network point is greater than the second one
  * @param[in] np1,np2 Network points
  * @csqlfn #Npoint_gt()
@@ -1261,7 +1574,7 @@ npoint_gt(const Npoint *np1, const Npoint *np2)
 }
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return true if the first network point is greater than or equal to
  * the second one
  * @param[in] np1,np2 Network points
@@ -1277,7 +1590,7 @@ npoint_ge(const Npoint *np1, const Npoint *np2)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return true if the first network segment is equal to the second one
  * @param[in] ns1,ns2 Network segments
  * @csqlfn #Nsegment_eq()
@@ -1285,12 +1598,20 @@ npoint_ge(const Npoint *np1, const Npoint *np2)
 bool
 nsegment_eq(const Nsegment *ns1, const Nsegment *ns2)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) ns1) || ! ensure_not_null((void *) ns2))
+    return false;
+#else
+  assert(ns1); assert(ns2);
+#endif /* MEOS */
+
   return ns1->rid == ns2->rid && fabs(ns1->pos1 - ns2->pos1) < MEOS_EPSILON &&
     fabs(ns1->pos2 - ns2->pos2) < MEOS_EPSILON;
 }
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return true if the first network segment is not equal to the second
  * one
  * @param[in] ns1,ns2 Network segments
@@ -1303,7 +1624,7 @@ nsegment_ne(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first network segment
  * is less than, equal to, or greater than the second one
  * @param[in] ns1,ns2 Network segments
@@ -1312,6 +1633,14 @@ nsegment_ne(const Nsegment *ns1, const Nsegment *ns2)
 int
 nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) ns1) || ! ensure_not_null((void *) ns2))
+    return false;
+#else
+  assert(ns1); assert(ns2);
+#endif /* MEOS */
+
   if (ns1->rid < ns2->rid)
     return -1;
   else if (ns1->rid > ns2->rid)
@@ -1330,7 +1659,7 @@ nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return true if the first network segment is less than the second one
  * @param[in] ns1,ns2 Network segments
  * @csqlfn #Nsegment_lt()
@@ -1343,7 +1672,7 @@ nsegment_lt(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return true if the first network segment is less than or equal to the
  * second one
  * @param[in] ns1,ns2 Network segments
@@ -1357,7 +1686,7 @@ nsegment_le(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return true if the first network segment is greater than the second
  * one
  * @param[in] ns1,ns2 Network segments
@@ -1371,7 +1700,7 @@ nsegment_gt(const Nsegment *ns1, const Nsegment *ns2)
 }
 
 /**
- * @ingroup meos_temporal_comp_trad
+ * @ingroup meos_base_comp
  * @brief Return true if the first network segment is greater than or equal to
  * the second one
  * @param[in] ns1,ns2 Network segments
@@ -1391,13 +1720,21 @@ nsegment_ge(const Nsegment *ns1, const Nsegment *ns2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_base_accessor
  * @brief Return the 32-bit hash value of a network point
  * @param[in] np Network point
  */
 uint32
 npoint_hash(const Npoint *np)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) np))
+    return false;
+#else
+  assert(np);
+#endif /* MEOS */
+
   /* Compute hashes of value and position */
   uint32 rid_hash = pg_hashint8(np->rid);
   uint32 pos_hash = pg_hashfloat8(np->pos);
@@ -1410,14 +1747,22 @@ npoint_hash(const Npoint *np)
 }
 
 /**
- * @ingroup meos_temporal_accessor
- * @brief Return the 32-bit hash value of a network point
+ * @ingroup meos_base_accessor
+ * @brief Return the 64-bit hash value of a network point using a seed
  * @param[in] np Network point
  * @param[in] seed Seed
  */
 uint64
 npoint_hash_extended(const Npoint *np, uint64 seed)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) np))
+    return false;
+#else
+  assert(np);
+#endif /* MEOS */
+
   /* Compute hashes of value and position */
   uint64 rid_hash = pg_hashint8extended(np->rid, seed);
   uint64 pos_hash = pg_hashfloat8extended(np->pos, seed);

@@ -30,11 +30,11 @@ SELECT tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
 
 /* Errors */
 SELECT tstzset '2000-01-01, 2000-01-02';
-ERROR:  Could not parse set value: Missing opening brace
+ERROR:  Could not parse tstzset value: Missing opening brace
 LINE 2: SELECT tstzset '2000-01-01, 2000-01-02';
                        ^
 SELECT tstzset '{2000-01-01, 2000-01-02';
-ERROR:  Could not parse set value: Missing closing brace
+ERROR:  Could not parse tstzset value: Missing closing brace
 LINE 1: SELECT tstzset '{2000-01-01, 2000-01-02';
                        ^
 SELECT asText(floatset '{1.12345678, 2.123456789}', 6);

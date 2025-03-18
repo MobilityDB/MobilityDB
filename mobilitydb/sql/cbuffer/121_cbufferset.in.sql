@@ -100,7 +100,7 @@ CREATE FUNCTION asEWKT(cbufferset, maxdecimaldigits int4 DEFAULT 15)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Constructor
+ * Constructors
  ******************************************************************************/
 
 CREATE FUNCTION set(cbuffer[])
@@ -109,7 +109,7 @@ CREATE FUNCTION set(cbuffer[])
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Casting
+ * Conversion functions
  ******************************************************************************/
 
 CREATE FUNCTION set(cbuffer)

@@ -52,7 +52,7 @@
 #include "geo/tgeo_spatialrels.h"
 /* MobilityDB */
 #include "pg_geo/postgis.h"
-#include "pg_geo/tpoint_spatialfuncs.h"
+#include "pg_geo/tspatial.h"
 
 /*****************************************************************************
  * Generic ever/always relationship

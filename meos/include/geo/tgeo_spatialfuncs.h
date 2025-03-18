@@ -44,8 +44,8 @@
 #include "general/temporal.h"
 
 /** Symbolic constants for transforming tgeompoint <-> tgeogpoint */
-#define GEOM_TO_GEOG        true
-#define GEOG_TO_GEOM        false
+#define TGEOMP_TO_TGEOGP        true
+#define TGEOGP_TO_TGEOMP        false
 
 /** Symbolic constants for transforming tgeo <-> tpoint */
 #define TGEO_TO_TPOINT      true
@@ -71,7 +71,7 @@ extern Datum datum2_point_same(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_nsame(Datum geopoint1, Datum geopoint2);
 
 extern GSERIALIZED *geo_serialize(const LWGEOM *geom);
-extern Datum datum_transform(Datum value, Datum srid);
+extern LWPROJ *lwproj_get(int32 srid_from, int32 srid_to);
 
 /* Generic functions */
 

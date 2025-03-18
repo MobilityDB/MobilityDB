@@ -37,6 +37,7 @@ SELECT asText(tgeometry 'Point(1 1)@2012-01-01 08:00:00');
 SELECT asText(tgeometry '  Point(2 2)@2012-01-01 08:00:00  ');
 SELECT asText(tgeography 'Point(1 1)@2012-01-01 08:00:00');
 SELECT asText(tgeography '  Point(2 2) @ 2012-01-01 08:00:00  ');
+SELECT tgeography 'Point M(1 1 1)@2000-01-01 00:00:00+01';
 /* Errors */
 SELECT tgeometry 'TRUE@2012-01-01 08:00:00';
 SELECT tgeography 'ABC@2012-01-01 08:00:00';
@@ -44,7 +45,6 @@ SELECT tgeometry 'Point empty@2012-01-01 08:00:00';
 SELECT tgeography 'Point empty@2012-01-01 08:00:00';
 SELECT tgeometry 'Point(1 1)@2000-01-01 00:00:00+01 ,';
 SELECT tgeography 'Point(1 1)@2000-01-01 00:00:00+01 ,';
-SELECT tgeography 'Point M(1 1 1)@2000-01-01 00:00:00+01';
 
 -------------------------------------------------------------------------------
 
