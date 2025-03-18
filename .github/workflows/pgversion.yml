@@ -35,25 +35,30 @@ jobs:
         matrix:
           psql: [13,14,15,16]
           postgis: [3]
-          os: [ubuntu-latest]
+          os: ["ubuntu-24.04"]
           coverage: [0]
           include:
             - psql: 16
               postgis: 3
-              os: ubuntu-latest
+              os: "ubuntu-24.04"
               coverage: 1
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: get postgres version
+      - name: Remove existing PostgreSQL installations [prefer apt.postgresql.org ]
         run: |
-          sudo service postgresql start
-          pgver=$(psql --version | grep -Po '(?<=psql \(PostgreSQL\) )[^;]+(?=\.\d+ \()')
-          echo "PGVER=${pgver}" >> $GITHUB_ENV
-          PGP=5433
-          if [ "${{ matrix.psql }}" == "${pgver}" ]; then PGP=5432; fi
-          echo "PGPORT=${PGP}" >> $GITHUB_ENV
+          sudo service postgresql stop || true
+          sudo apt-get --purge remove postgresql* -y || true
+          sudo rm -rf /var/lib/postgresql/ || true
+          sudo rm -rf /etc/postgresql/ || true
+          sudo rm -rf /var/log/postgresql/ || true
+          echo "Removed existing PostgreSQL installation"
+
+      - name: Set postgresql port as a default
+        run: |
+          PGP=5432
+          echo "PGPORT=${PGP}" >> $GITHUB_ENV        
 
       - name: Add PostgreSQL APT repository
         run: |
@@ -118,6 +123,3 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: "./build/lcov.info"
-
-
-
