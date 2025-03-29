@@ -141,13 +141,12 @@ contains_span_value(const Span *s, Datum value)
 bool
 contains_span_timestamptz(const Span *s, TimestampTz t)
 {
-#if MEOS
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_span_isof_basetype(s, T_TIMESTAMPTZ))
+#if MEOS
+  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
     return false;
 #else
-  assert(s); assert(s->basetype == T_TIMESTAMPTZ);
+  assert(s); assert(s->spantype == T_TSTZSPAN);
 #endif /* MEOS */
 
   return contains_span_value(s, TimestampTzGetDatum(t));
@@ -162,8 +161,8 @@ contains_span_timestamptz(const Span *s, TimestampTz t)
 bool
 contains_span_span(const Span *s1, const Span *s2)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
     return false;
@@ -220,8 +219,8 @@ contained_span_span(const Span *s1, const Span *s2)
 bool
 overlaps_span_span(const Span *s1, const Span *s2)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
     return false;
@@ -286,8 +285,8 @@ adjacent_span_value(const Span *s, Datum value)
 bool
 adjacent_span_span(const Span *s1, const Span *s2)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
     return false;
@@ -354,8 +353,8 @@ left_span_value(const Span *s, Datum value)
 bool
 left_span_span(const Span *s1, const Span *s2)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
     return false;
@@ -467,8 +466,8 @@ overleft_span_value(const Span *s, Datum value)
 bool
 overleft_span_span(const Span *s1, const Span *s2)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
     return false;
@@ -521,8 +520,8 @@ overright_span_value(const Span *s, Datum value)
 bool
 overright_span_span(const Span *s1, const Span *s2)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
     return false;
@@ -611,9 +610,13 @@ SpanSet *
 union_span_span(const Span *s1, const Span *s2)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
     return NULL;
+#else
+  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
+#endif /* MEOS */
 
   /* If the spans overlap */
   if (ovadj_span_span(s1, s2))
@@ -707,9 +710,13 @@ Span *
 intersection_span_span(const Span *s1, const Span *s2)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
     return NULL;
+#else
+  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
+#endif /* MEOS */
   Span result;
   if (! inter_span_span(s1, s2, &result))
     return NULL;
@@ -878,9 +885,13 @@ SpanSet *
 minus_span_span(const Span *s1, const Span *s2)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
     return NULL;
+#else
+  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
+#endif /* MEOS */
 
   Span spans[2];
   int count = mi_span_span(s1, s2, spans);
@@ -993,9 +1004,11 @@ distance_span_value(const Span *s, Datum value)
  * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two spans as a double
  * @param[in] s1,s2 Spans
+ * @return On error return -1
+ * @csqlfn #Distance_span_span()
  */
 Datum
-dist_span_span(const Span *s1, const Span *s2)
+distance_span_span(const Span *s1, const Span *s2)
 {
   assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
   /* If the spans intersect return 0 */
@@ -1016,20 +1029,6 @@ dist_span_span(const Span *s1, const Span *s2)
    * between the upper bound of the second and the lower bound of the first
    *     [---- s2 ----]   [---- s1 ----] */
   return distance_value_value(upper2, s1->lower, s1->basetype);
-}
-
-/**
- * @ingroup meos_internal_setspan_dist
- * @brief Return the distance between two spans as a double
- * @param[in] s1,s2 Spans
- * @return On error return -1
- * @csqlfn #Distance_span_span()
- */
-Datum
-distance_span_span(const Span *s1, const Span *s2)
-{
-  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
-  return dist_span_span(s1, s2);
 }
 
 /******************************************************************************/

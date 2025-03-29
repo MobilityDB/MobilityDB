@@ -1,5 +1,6 @@
 add_library(npoint OBJECT
   npoint.c
+  npointset.c
   tnpoint.c
   tnpoint_aggfuncs.c
   tnpoint_boxops.c

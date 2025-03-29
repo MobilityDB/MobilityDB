@@ -1923,50 +1923,50 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2000-01-01, Cbuffer(Point(1 1),0.5)@2
 
 /* Errors */
 SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' << tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' &< tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' >> tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' &> tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' <<| tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' &<| tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' |>> tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' |&> tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <<# tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01';
-ERROR:  The box must have time dimension
+ERROR:  The stbox must have T dimension
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' &<# tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01';
-ERROR:  The box must have time dimension
+ERROR:  The stbox must have T dimension
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' #>> tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01';
-ERROR:  The box must have time dimension
+ERROR:  The stbox must have T dimension
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' #&> tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01';
-ERROR:  The box must have time dimension
+ERROR:  The stbox must have T dimension
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01' << stbox 'STBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01' &< stbox 'STBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01' >>  stbox 'STBOX T([2000-01-01,2000-01-02])' ;
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01' &>  stbox 'STBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01' <<| stbox 'STBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01' &<| stbox 'STBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01'|>>  stbox 'STBOX T([2000-01-01,2000-01-02])' ;
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01' |&>  stbox 'STBOX T([2000-01-01,2000-01-02])';
-ERROR:  The box must have space dimension
+ERROR:  The stbox must have X dimension
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01' <<# stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
-ERROR:  The box must have time dimension
+ERROR:  The stbox must have T dimension
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01' &<# stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
-ERROR:  The box must have time dimension
+ERROR:  The stbox must have T dimension
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01' #>> stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
-ERROR:  The box must have time dimension
+ERROR:  The stbox must have T dimension
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01' #&> stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
-ERROR:  The box must have time dimension
+ERROR:  The stbox must have T dimension

@@ -48,7 +48,7 @@
   #include "npoint/tnpoint.h"
 #endif
 #if CBUFFER
-  #include "cbuffer/tcbuffer.h"
+  #include <meos_cbuffer.h>
 #endif
 
 /*****************************************************************************
@@ -116,7 +116,8 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_NSEGMENT] = "nsegment",
   [T_TNPOINT] = "tnpoint",
   [T_POSE] = "pose",
-  [T_TPOSE] = "tpose",
+  [T_POSESET] = "poseset",
+  [T_TPOSE] = "tposeset",
   [T_CBUFFER] = "cbuffer",
   [T_CBUFFERSET] = "cbufferset",
   [T_TCBUFFER] = "tcbuffer",

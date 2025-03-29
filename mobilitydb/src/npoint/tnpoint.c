@@ -44,7 +44,6 @@
 #include "general/set.h"
 #include "general/temporal.h"
 #include "general/type_parser.h"
-#include "general/type_round.h"
 #include "general/type_util.h"
 #include "npoint/tnpoint.h"
 /* MobilityDB */

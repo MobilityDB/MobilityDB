@@ -69,9 +69,9 @@
  * @defgroup meos MEOS library
  * @brief Mobility Engine Open Source (MEOS) library
  *
- * @defgroup meos_api API
+ * @defgroup meos_api External API
  * @ingroup meos
- * @brief API of the Mobility Engine Open Source (MEOS) library
+ * @brief External API of the Mobility Engine Open Source (MEOS) library
  *
  * @defgroup meos_internal Internal API
  * @ingroup meos
@@ -82,11 +82,15 @@
  * @defgroup meos_pg_types Functions for PostgreSQL types
  * @ingroup meos_api
  * @brief Functions for PostgreSQL types
-
+ *
  * @defgroup meos_pgis_types Functions for PostGIS types
  * @ingroup meos_api
  * @brief Functions for PostGIS types
-
+ *
+ * @defgroup meos_base Functions for MobilityDB base types
+ * @ingroup meos_api
+ * @brief Functions for MobilityDB base types
+ *
  * @defgroup meos_setspan Functions for set and span types
  * @ingroup meos_api
  * @brief Functions for set and span types
@@ -95,10 +99,6 @@
  * @ingroup meos_api
  * @brief Functions for box types
  *
- * @defgroup meos_npoint_types Functions for network points and segments
- * @ingroup meos_api
- * @brief Functions for network points and segments
- *
  * @defgroup meos_temporal Functions for temporal types
  * @ingroup meos_api
  * @brief Functions for temporal types
@@ -106,6 +106,36 @@
  * @defgroup meos_misc Miscellaneous functions
  * @ingroup meos_api
  * @brief Miscellaneous functions
+ */
+
+/**
+ * @defgroup meos_base_inout Input and output functions
+ * @ingroup meos_base
+ * @brief Input and output functions for base types
+ *
+ * @defgroup meos_base_constructor Constructor functions
+ * @ingroup meos_base
+ * @brief Constructor functions for base types
+ *
+ * @defgroup meos_base_conversion Conversion functions
+ * @ingroup meos_base
+ * @brief Conversion functions for base types
+ *
+ * @defgroup meos_base_accessor Accessor functions
+ * @ingroup meos_base
+ * @brief Accessor functions for base types
+ *
+ * @defgroup meos_base_transf Transformation functions
+ * @ingroup meos_base
+ * @brief Transformation functions for base types
+ *
+ * @defgroup meos_base_modif Spatial functions
+ * @ingroup meos_base
+ * @brief Spatial functions for base types
+ *
+ * @defgroup meos_base_comp Comparison functions
+ * @ingroup meos_base
+ * @brief Comparison functions for base types
  */
 
 /**

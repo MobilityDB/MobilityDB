@@ -52,9 +52,13 @@ Temporal *
 tand_bool_tbool(bool b, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
+#else
+  assert(temp); assert(temp->temptype == T_TBOOL);
+#endif /* MEOS */
   return boolop_tbool_bool(temp, b, &datum_and, INVERT);
 }
 
@@ -69,9 +73,13 @@ Temporal *
 tand_tbool_bool(const Temporal *temp, bool b)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
+#else
+  assert(temp); assert(temp->temptype == T_TBOOL);
+#endif /* MEOS */
   return boolop_tbool_bool(temp, b, &datum_and, INVERT_NO);
 }
 
@@ -85,10 +93,15 @@ Temporal *
 tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_temporal_isof_type(temp1, T_TBOOL) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+      ! ensure_temporal_isof_type(temp2, T_TBOOL))
     return NULL;
+#else
+  assert(temp1); assert(temp1->temptype == T_TBOOL); 
+  assert(temp2); assert(temp2->temptype == T_TBOOL);
+#endif /* MEOS */
   return boolop_tbool_tbool(temp1, temp2, &datum_and);
 }
 
@@ -107,9 +120,13 @@ Temporal *
 tor_bool_tbool(bool b, const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
+#else
+  assert(temp); assert(temp->temptype == T_TBOOL);
+#endif /* MEOS */
   return boolop_tbool_bool(temp, b, &datum_or, INVERT);
 }
 
@@ -124,9 +141,13 @@ Temporal *
 tor_tbool_bool(const Temporal *temp, bool b)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
+#else
+  assert(temp); assert(temp->temptype == T_TBOOL);
+#endif /* MEOS */
   return boolop_tbool_bool(temp, b, &datum_or, INVERT_NO);
 }
 
@@ -140,10 +161,15 @@ Temporal *
 tor_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_temporal_isof_type(temp1, T_TBOOL) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+      ! ensure_temporal_isof_type(temp2, T_TBOOL))
     return NULL;
+#else
+  assert(temp1); assert(temp1->temptype == T_TBOOL); 
+  assert(temp2); assert(temp2->temptype == T_TBOOL);
+#endif /* MEOS */
   return boolop_tbool_tbool(temp1, temp2, &datum_or);
 }
 

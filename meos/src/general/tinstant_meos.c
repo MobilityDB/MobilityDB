@@ -51,11 +51,6 @@
 #include "general/tsequence.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "geo/tgeo_parser.h"
-#include "geo/tgeo_spatialfuncs.h"
-#if CBUFFER
-  #include "cbuffer/tcbuffer_parser.h"
-#endif
 
 /*****************************************************************************
  * Intput/output functions
@@ -108,88 +103,6 @@ ttextinst_in(const char *str)
 {
   return tinstant_in(str, T_TTEXT);
 }
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geometry point instant from its Well-Known Text
- * (WKT) representation
- * @param[in] str String
- */
-TInstant *
-tgeompointinst_in(const char *str)
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
-  assert(temp->subtype == TINSTANT);
-  return (TInstant *) temp;
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal instant geography point from its Well-Known Text
- * (WKT) representation
- * @param[in] str String
- */
-TInstant *
-tgeogpointinst_in(const char *str)
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
-  assert(temp->subtype == TINSTANT);
-  return (TInstant *) temp;
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geometry instant from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- */
-TInstant *
-tgeometryinst_in(const char *str)
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tgeo_parse(&str, T_TGEOMETRY);
-  assert(temp->subtype == TINSTANT);
-  return (TInstant *) temp;
-}
-
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal geography instant from its Well-Known Text (WKT)
- * representation
- * @param[in] str String
- */
-TInstant *
-tgeographyinst_in(const char *str)
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tgeo_parse(&str, T_TGEOGRAPHY);
-  assert(temp->subtype == TINSTANT);
-  return (TInstant *) temp;
-}
-
-#if CBUFFER
-/**
- * @ingroup meos_internal_temporal_inout
- * @brief Return a temporal circular buffer instant from its Well-Known Text
- * (WKT) representation
- * @param[in] str String
- */
-TInstant *
-tcbufferinst_in(const char *str)
-{
-  assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
-  Temporal *temp = tcbuffer_parse(&str);
-  assert(temp->subtype == TINSTANT);
-  return (TInstant *) temp;
-}
-#endif /* CBUFFER */
 
 /*****************************************************************************
  * Constructor functions

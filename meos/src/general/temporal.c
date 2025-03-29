@@ -732,7 +732,13 @@ mobilitydb_full_version(void)
 Temporal *
 temporal_in(const char *str, meosType temptype)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) str))
+    return NULL;
+#else
   assert(str);
+#endif /* MEOS */
   return temporal_parse(&str, temptype);
 }
 
@@ -745,7 +751,13 @@ temporal_in(const char *str, meosType temptype)
 char *
 temporal_out(const Temporal *temp, int maxdd)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+#else
   assert(temp);
+#endif /* MEOS */
   if (! ensure_not_negative(maxdd))
     return NULL;
 
@@ -793,8 +805,8 @@ temparr_out(const Temporal **temparr, int count, int maxdd)
 Temporal *
 temporal_copy(const Temporal *temp)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
 #else
@@ -935,8 +947,8 @@ datum_float_to_int(Datum d)
 Temporal *
 tbool_tint(const Temporal *temp)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
@@ -964,8 +976,8 @@ tbool_tint(const Temporal *temp)
 Temporal *
 tint_tfloat(const Temporal *temp)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -993,8 +1005,8 @@ tint_tfloat(const Temporal *temp)
 Temporal *
 tfloat_tint(const Temporal *temp)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -1054,8 +1066,8 @@ temporal_set_tstzspan(const Temporal *temp, Span *s)
 Span *
 temporal_tstzspan(const Temporal *temp)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
 #else
@@ -1103,8 +1115,8 @@ tnumber_set_span(const Temporal *temp, Span *s)
 Span *
 tnumber_span(const Temporal *temp)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_tnumber_type(temp->temptype))
     return NULL;
@@ -1118,7 +1130,7 @@ tnumber_span(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_box_conversion
+ * @ingroup meos_temporal_conversion
  * @brief Return a temporal number converted to a temporal box
  * @param[in] temp Temporal value
  * @csqlfn #Tnumber_to_tbox()
@@ -1126,8 +1138,8 @@ tnumber_span(const Temporal *temp)
 TBox *
 tnumber_tbox(const Temporal *temp)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_tnumber_type(temp->temptype))
     return NULL;
@@ -1143,6 +1155,97 @@ tnumber_tbox(const Temporal *temp)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+/**
+ * @ingroup meos_base_transf
+ * @brief Return a float number rounded to a given number of decimal places
+ */
+double
+float_round(double d, int maxdd)
+{
+  assert(maxdd >= 0);
+  double inf = get_float8_infinity();
+  double result = d;
+  if (d != -1 * inf && d != inf)
+  {
+    if (maxdd == 0)
+      result = round(d);
+    else
+    {
+      double power10 = pow(10.0, maxdd);
+      result = round(d * power10) / power10;
+    }
+  }
+  return result;
+}
+
+/**
+ * @brief Return a float number rounded to a given number of decimal places
+ */
+Datum
+datum_round_float(Datum value, Datum size)
+{
+  return Float8GetDatum(float_round(DatumGetFloat8(value),
+    DatumGetInt32(size)));
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal float rounded a given number of decimal places
+ * @param[in] temp Temporal value
+ * @csqlfn #Tfloat_round()
+ */
+Temporal *
+tfloat_round(const Temporal *temp, int maxdd)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+#else
+  assert(temp); assert(temp->temptype == T_TFLOAT);
+#endif /* MEOS */
+
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_round_float;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Int32GetDatum(maxdd);
+  lfinfo.argtype[0] = T_TFLOAT;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return an array of temporal floats with the precision of the
+ * coordinates set to a number of decimal places
+ * @param[in] temparr Array of temporal values
+ * @param[in] count Number of values in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Tfloatarr_round()
+ */
+Temporal **
+tfloatarr_round(const Temporal **temparr, int count, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) temparr) ||
+      /* Ensure that the FIRST element is a temporal float */
+      ! ensure_temporal_isof_type(temparr[0], T_TFLOAT) ||
+      ! ensure_positive(count) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  Temporal **result = palloc(sizeof(Temporal *) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = tfloat_round(temparr[i], maxdd);
+  return result;
+}
+
+/*****************************************************************************/
 
 /**
  * @brief Return a number rounded down to the nearest integer
@@ -1172,9 +1275,13 @@ Temporal *
 tfloat_floor(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -1198,9 +1305,13 @@ Temporal *
 tfloat_ceil(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -1267,9 +1378,13 @@ Temporal *
 tfloat_degrees(const Temporal *temp, bool normalize)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -1294,9 +1409,13 @@ Temporal *
 tfloat_radians(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -1366,8 +1485,12 @@ TInstant *
 temporal_to_tinstant(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -1392,8 +1515,13 @@ TSequence *
 temporal_tsequence(const Temporal *temp, interpType interp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_valid_interp(temp->temptype, interp))
+#if MEOS
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+  if (! ensure_valid_interp(temp->temptype, interp))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1433,6 +1561,14 @@ temporal_tsequence(const Temporal *temp, interpType interp)
 TSequence *
 temporal_to_tsequence(const Temporal *temp, const char *interp_str)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+
   interpType interp;
   /* If the interpolation is not NULL */
   if (interp_str)
@@ -1458,8 +1594,13 @@ TSequenceSet *
 temporal_tsequenceset(const Temporal *temp, interpType interp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_valid_interp(temp->temptype, interp))
+#if MEOS
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+  if (! ensure_valid_interp(temp->temptype, interp))
     return NULL;
   /* Discrete interpolation is only valid for TSequence */
   if (interp == DISCRETE)
@@ -1493,6 +1634,14 @@ temporal_tsequenceset(const Temporal *temp, interpType interp)
 TSequenceSet *
 temporal_to_tsequenceset(const Temporal *temp, const char *interp_str)
 {
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+
   interpType interp;
   /* If the interpolation is not NULL */
   if (interp_str)
@@ -1518,8 +1667,13 @@ Temporal *
 temporal_set_interp(const Temporal *temp, interpType interp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_valid_interp(temp->temptype, interp))
+#if MEOS
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+  if (! ensure_valid_interp(temp->temptype, interp))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1593,8 +1747,13 @@ temporal_shift_scale_time(const Temporal *temp, const Interval *shift,
   const Interval *duration)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_one_not_null((void *) shift, (void *) duration) ||
+#if MEOS
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+  if (! ensure_one_not_null((void *) shift, (void *) duration) ||
       (duration && ! ensure_valid_duration(duration)))
     return NULL;
 
@@ -1673,8 +1832,12 @@ const char *
 temporal_subtype(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
   assert(temptype_subtype(temp->subtype));
   return tempsubtype_name(temp->subtype);
 }
@@ -1690,8 +1853,12 @@ const char *
 temporal_interp(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
   assert(temptype_subtype(temp->subtype));
   return interptype_name(MEOS_FLAGS_GET_INTERP(temp->flags));
 }
@@ -1781,8 +1948,13 @@ SpanSet *
 tnumber_valuespans(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_type(temp->temptype))
+#if MEOS
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+  if (! ensure_tnumber_type(temp->temptype))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1807,8 +1979,12 @@ SpanSet *
 temporal_time(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -1938,7 +2114,13 @@ bool
 temporal_value_n(const Temporal *temp, int n, Datum *result)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result))
+    return false;
+#else
+  assert(temp); assert(result);
+#endif /* MEOS */
+  if (! ensure_positive(n))
     return false;
 
   assert(temptype_subtype(temp->subtype));
@@ -1982,8 +2164,12 @@ const TInstant *
 temporal_min_inst(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2025,8 +2211,12 @@ TInstant *
 temporal_max_instant(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2052,8 +2242,12 @@ Interval *
 temporal_duration(const Temporal *temp, bool boundspan)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2083,7 +2277,13 @@ int
 temporal_num_sequences(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_continuous(temp))
+#if MEOS
+  if (! ensure_not_null((void *) temp))
+    return -1;
+#else
+  assert(temp);
+#endif /* MEOS */
+  if (! ensure_continuous(temp))
     return -1;
   return (temp->subtype == TSEQUENCE) ? 1 : ((TSequenceSet *) temp)->count;
 }
@@ -2099,7 +2299,14 @@ TSequence *
 temporal_start_sequence(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_continuous(temp))
+#if MEOS
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+  /* Ensure validity of the arguments */
+  if (! ensure_continuous(temp))
     return NULL;
 
   if (temp->subtype == TSEQUENCE)
@@ -2122,7 +2329,13 @@ TSequence *
 temporal_end_sequence(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_continuous(temp))
+#if MEOS
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+  if (! ensure_continuous(temp))
     return NULL;
 
   if (temp->subtype == TSEQUENCE)
@@ -2146,7 +2359,13 @@ TSequence *
 temporal_sequence_n(const Temporal *temp, int n)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_continuous(temp))
+#if MEOS
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+  if (! ensure_continuous(temp))
     return NULL;
 
   if (temp->subtype == TSEQUENCE)
@@ -2176,8 +2395,13 @@ const TSequence **
 temporal_seqs(const Temporal *temp, int *count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_continuous(temp))
+#if MEOS
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
+    return NULL;
+#else
+  assert(temp); assert(count);
+#endif /* MEOS */
+  if (! ensure_continuous(temp))
     return NULL;
 
   if (temp->subtype == TSEQUENCE)
@@ -2225,8 +2449,12 @@ TSequence **
 temporal_segments(const Temporal *temp, int *count)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
     return NULL;
+#else
+  assert(temp); assert(count);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2252,8 +2480,12 @@ bool
 temporal_lower_inc(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return false;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2277,8 +2509,12 @@ bool
 temporal_upper_inc(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return false;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2303,8 +2539,12 @@ int
 temporal_num_instants(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return -1;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2319,7 +2559,7 @@ temporal_num_instants(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_internal_accessor
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return a pointer to the start instant of a temporal value
  * @param[in] temp Temporal value
  * @return On error return @p NULL
@@ -2351,8 +2591,13 @@ TInstant *
 temporal_start_instant(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+
   const TInstant *result = temporal_start_inst(temp);
   /* A temporal value always has a start instant */
   assert(result);
@@ -2360,7 +2605,7 @@ temporal_start_instant(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_internal_accessor
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return a pointer to the end instant of a temporal value
  * @param[in] temp Temporal value
  * @return On error return @p NULL
@@ -2369,10 +2614,7 @@ temporal_start_instant(const Temporal *temp)
 const TInstant *
 temporal_end_inst(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp))
-    return NULL;
-
+  assert(temp);
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
@@ -2402,16 +2644,21 @@ TInstant *
 temporal_end_instant(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+
   const TInstant *result = temporal_end_inst(temp);
-  /* A temporal value always has a start instant */
+  /* A temporal value always has an end instant */
   assert(result);
   return tinstant_copy(result);
 }
 
 /**
- * @ingroup meos_temporal_internal_accessor
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return a pointer to the n-th instant of a temporal value
  * @param[in] temp Temporal value
  * @param[in] n Number (1-based)
@@ -2421,8 +2668,12 @@ const TInstant *
 temporal_inst_n(const Temporal *temp, int n)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2451,8 +2702,13 @@ TInstant *
 temporal_instant_n(const Temporal *temp, int n)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+
   const TInstant *result = temporal_inst_n(temp, n);
   return result ? tinstant_copy(result) : NULL;
 }
@@ -2469,8 +2725,12 @@ const TInstant **
 temporal_insts(const Temporal *temp, int *count)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
     return NULL;
+#else
+  assert(temp); assert(count);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2522,8 +2782,12 @@ int
 temporal_num_timestamps(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return -1;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2548,8 +2812,12 @@ TimestampTz
 temporal_start_timestamptz(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return DT_NOEND;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2574,8 +2842,12 @@ TimestampTz
 temporal_end_timestamptz(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return DT_NOEND;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2603,8 +2875,12 @@ bool
 temporal_timestamptz_n(const Temporal *temp, int n, TimestampTz *result)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result))
+#if MEOS
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) temp))
     return false;
+#else
+  assert(temp); assert(result);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2644,8 +2920,12 @@ TimestampTz *
 temporal_timestamps(const Temporal *temp, int *count)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
     return NULL;
+#else
+  assert(temp); assert(count);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2812,8 +3092,14 @@ temporal_stops(const Temporal *temp, double maxdist,
   const Interval *minduration)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) ||
-      ! ensure_not_negative_datum(Float8GetDatum(maxdist), T_FLOAT8))
+      ! ensure_not_null((void *) minduration))
+    return NULL;
+#else
+  assert(temp); assert(minduration);
+#endif /* MEOS */
+  if (! ensure_not_negative_datum(Float8GetDatum(maxdist), T_FLOAT8))
     return NULL;
 
   /* We cannot call #ensure_valid_duration since the duration may be zero */
@@ -2855,8 +3141,13 @@ double
 tnumber_integral(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tnumber_type(temp->temptype))
+#if MEOS
+  if (! ensure_not_null((void *) temp) || 
+      ! ensure_tnumber_type(temp->temptype))
     return -1.0;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
    switch (temp->subtype)
@@ -2882,8 +3173,13 @@ double
 tnumber_twavg(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tnumber_type(temp->temptype))
+#if MEOS
+  if (! ensure_not_null((void *) temp) || 
+      ! ensure_tnumber_type(temp->temptype))
     return DBL_MAX;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2912,14 +3208,19 @@ bool
 temporal_eq(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return false;
+#else
+  assert(temp1); assert(temp2);
+#endif /* MEOS */
+
   if (tspatial_type(temp1->temptype))
   {
     if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
         ! ensure_same_spatial_dimensionality(temp1->flags, temp2->flags))
-    return NULL;
+    return false;
   }
 
   assert(temptype_subtype(temp1->subtype));
@@ -3024,9 +3325,20 @@ int
 temporal_cmp(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return INT_MAX;
+#else
+  assert(temp1); assert(temp2);
+#endif /* MEOS */
+
+  if (tspatial_type(temp1->temptype))
+  {
+    if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
+        ! ensure_same_spatial_dimensionality(temp1->flags, temp2->flags))
+    return INT_MAX;
+  }
 
   /* Compare bounding box */
   bboxunion box1, box2;
@@ -3151,8 +3463,12 @@ uint32
 temporal_hash(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp))
     return INT_MAX;
+#else
+  assert(temp);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)

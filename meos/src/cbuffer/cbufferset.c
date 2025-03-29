@@ -29,10 +29,8 @@
 
 /**
  * @file
- * @brief Static buffer type
+ * @brief Sets of circular buffer type
  */
-
-#include "cbuffer/tcbuffer.h"
 
 /* C */
 #include <assert.h>
@@ -52,15 +50,15 @@
 #include "general/pg_types.h"
 #include "general/set.h"
 #include "general/tsequence.h"
-#include "general/type_out.h"
+#include "general/type_inout.h"
+#include "general/type_parser.h"
 #include "general/type_util.h"
 #include "geo/pgis_types.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_out.h"
 #include "geo/tgeo_spatialfuncs.h"
-#include "general/type_parser.h"
-#include "geo/tgeo_parser.h"
-#include "cbuffer/tcbuffer.h"
+#include "geo/tspatial_parser.h"
+#include "cbuffer/cbuffer.h"
 #include "cbuffer/tcbuffer_parser.h"
 
 /*****************************************************************************
@@ -77,8 +75,12 @@ Set *
 cbufferset_in(const char *str)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) str))
     return NULL;
+#else
+  assert(str);
+#endif /* MEOS */
   return set_parse(&str, T_CBUFFERSET);
 }
 
@@ -93,54 +95,13 @@ char *
 cbufferset_out(const Set *s, int maxdd)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
     return NULL;
+#else
+  assert(s); assert(s->settype == T_CBUFFERSET);
+#endif /* MEOS */
   return set_out(s, maxdd);
-}
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a circular
- * buffer set
- * @csqlfn #Cbufferset_as_text()
- */
-char *
-cbufferset_as_text(const Set *s, int maxdd)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
-    return NULL;
-  return set_out_fn(s, maxdd, &cbuffer_wkt_out);
-}
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return the Extended Well-Known Text (EWKT) representation of a 
- * circular buffer set
- * @param[in] s Set
- * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Cbufferset_as_ewkt()
- */
-char *
-cbufferset_as_ewkt(const Set *s, int maxdd)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
-    return NULL;
-
-  int32_t srid = spatialset_srid(s);
-  char str1[18];
-  if (srid > 0)
-    /* SRID_MAXIMUM is defined by PostGIS as 999999 */
-    snprintf(str1, sizeof(str1), "SRID=%d;", srid);
-  else
-    str1[0] = '\0';
-  char *str2 = set_out_fn(s, maxdd, &cbuffer_wkt_out);
-  char *result = palloc(strlen(str1) + strlen(str2) + 1);
-  strcpy(result, str1);
-  strcat(result, str2);
-  pfree(str2);
-  return result;
 }
 
 /*****************************************************************************
@@ -158,13 +119,39 @@ Set *
 cbufferset_make(const Cbuffer **values, int count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) values) || ! ensure_positive(count))
+#if MEOS
+  if (! ensure_not_null((void *) values))
+    return NULL;
+#else 
+  assert(values);
+#endif /* MEOS */ 
+  if (! ensure_positive(count))
     return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; ++i)
     datums[i] = PointerGetDatum(values[i]);
   return set_make_free(datums, count, T_CBUFFER, ORDER);
+}
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a circular buffer set with the precision of the geometries and
+ * of the radius set to a number of decimal places
+ * @csqlfn #Cbufferset_round()
+ */
+Set *
+cbufferset_round(const Set *s, int maxdd)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) ||
+      ! ensure_set_isof_type(s, T_CBUFFERSET))
+    return NULL;
+  return set_round(s, maxdd, &datum_cbuffer_round);
 }
 
 /*****************************************************************************
@@ -182,8 +169,13 @@ Cbuffer *
 cbufferset_start_value(const Set *s)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
     return NULL;
+#else
+  assert(s); assert(s->settype == T_CBUFFERSET);
+#endif /* MEOS */
+
   return DatumGetCbufferP(datum_copy(SET_VAL_N(s, 0), s->basetype));
 }
 
@@ -198,8 +190,13 @@ Cbuffer *
 cbufferset_end_value(const Set *s)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
     return NULL;
+#else
+  assert(s); assert(s->settype == T_CBUFFERSET);
+#endif /* MEOS */
+
   return DatumGetCbufferP(datum_copy(SET_VAL_N(s, s->count - 1),
     s->basetype));
 }
@@ -218,8 +215,15 @@ bool
 cbufferset_value_n(const Set *s, int n, Cbuffer **result)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_set_isof_type(s, T_CBUFFERSET) || n < 1 || n > s->count)
+      ! ensure_set_isof_type(s, T_CBUFFERSET))
+    return false;
+#else
+  assert(s); assert(result); assert(s->settype == T_CBUFFERSET);
+#endif /* MEOS */
+
+  if (n < 1 || n > s->count)
     return false;
   *result = DatumGetCbufferP(datum_copy(SET_VAL_N(s, n - 1), s->basetype));
   return true;
@@ -236,8 +240,12 @@ Cbuffer **
 cbufferset_values(const Set *s)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
     return NULL;
+#else
+  assert(s); assert(s->settype == T_CBUFFERSET);
+#endif /* MEOS */
 
   Cbuffer **result = palloc(sizeof(Cbuffer *) * s->count);
   for (int i = 0; i < s->count; i++)
@@ -246,7 +254,7 @@ cbufferset_values(const Set *s)
 }
 
 /*****************************************************************************
- * Conversions functions
+ * Conversion functions
  *****************************************************************************/
 
 /**
@@ -268,6 +276,175 @@ cbuffer_to_set(const Cbuffer *cbuf)
 
   Datum v = PointerGetDatum(cbuf);
   return set_make_exp(&v, 1, 1, T_CBUFFER, ORDER_NO);
+}
+
+/*****************************************************************************
+ * Operators
+ *****************************************************************************/
+
+#if MEOS
+/**
+ * @brief Return true if a set and a circular buffer are valid for set
+ * operations
+ * @param[in] s Set
+ * @param[in] cbuf Value
+ */
+bool
+ensure_valid_set_cbuffer(const Set *s, const Cbuffer *cbuf)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) cbuf) ||
+      ! ensure_set_isof_type(s, T_CBUFFERSET))
+    return false;
+  return true;
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a set contains a circular buffer
+ * @param[in] s Set
+ * @param[in] cbuf Value
+ * @csqlfn #Contains_set_value()
+ */
+bool
+contains_set_cbuffer(const Set *s, Cbuffer *cbuf)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_set_cbuffer(s, cbuf))
+    return false;
+  return contains_set_value(s, PointerGetDatum(cbuf));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a circular buffer is contained in a set
+ * @param[in] cbuf Value
+ * @param[in] s Set
+ * @csqlfn #Contained_value_set()
+ */
+bool
+contained_cbuffer_set(const Cbuffer *cbuf, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_set_cbuffer(s, cbuf))
+    return false;
+  return contained_value_set(PointerGetDatum(cbuf), s);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a set and a circular buffer
+ * @param[in] s Set
+ * @param[in] cbuf Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_set_cbuffer(const Set *s, const Cbuffer *cbuf)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_set_cbuffer(s, cbuf))
+    return NULL;
+  return union_set_value(s, PointerGetDatum(cbuf));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a circular buffer and a set
+ * @param[in] s Set
+ * @param[in] cbuf Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+union_cbuffer_set(const Cbuffer *cbuf, const Set *s)
+{
+  return union_set_cbuffer(s, cbuf);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a set and a circular buffer
+ * @param[in] s Set
+ * @param[in] cbuf Value
+ * @csqlfn #Intersection_set_value()
+ */
+Set *
+intersection_set_cbuffer(const Set *s, const Cbuffer *cbuf)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_set_cbuffer(s, cbuf))
+    return NULL;
+  return intersection_set_value(s, PointerGetDatum(cbuf));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a circular buffer and a set
+ * @param[in] s Set
+ * @param[in] cbuf Value
+ * @csqlfn #Union_set_value()
+ */
+Set *
+intersection_cbuffer_set(const Cbuffer *cbuf, const Set *s)
+{
+  return intersection_set_cbuffer(s, cbuf);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of a circular buffer and a set
+ * @param[in] cbuf Value
+ * @param[in] s Set
+ * @csqlfn #Minus_value_set()
+ */
+Set *
+minus_cbuffer_set(const Cbuffer *cbuf, const Set *s)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_set_cbuffer(s, cbuf))
+    return NULL;
+  return minus_value_set(PointerGetDatum(cbuf), s);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of a set and a circular buffer
+ * @param[in] s Set
+ * @param[in] cbuf Value
+ * @csqlfn #Minus_set_value()
+ */
+Set *
+minus_set_cbuffer(const Set *s, const Cbuffer *cbuf)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_valid_set_cbuffer(s, cbuf))
+    return NULL;
+  return minus_set_value(s, PointerGetDatum(cbuf));
+}
+#endif /* MEOS */
+
+/*****************************************************************************
+ * Aggregate functions for set types
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of circular buffers
+ * @param[in,out] state Current aggregate state
+ * @param[in] cbuf Value
+ */
+Set *
+cbuffer_union_transfn(Set *state, const Cbuffer *cbuf)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) cbuf))
+    return NULL;
+#else
+  assert(cbuf);
+#endif /* MEOS */
+  if (state && ! ensure_set_isof_type(state, T_CBUFFERSET))
+    return NULL;
+  return value_union_transfn(state, PointerGetDatum(cbuf), T_CBUFFER);
 }
 
 /*****************************************************************************/

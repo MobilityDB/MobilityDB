@@ -93,45 +93,6 @@ distance_tnumber_number(const Temporal *temp, Datum value)
   return tfunc_temporal_base(temp, value, &lfinfo);
 }
 
-#if MEOS
-/**
- * @ingroup meos_temporal_dist
- * @brief Return the temporal distance between a temporal integer and an
- * integer
- * @param[in] temp Temporal value
- * @param[in] i Value
- * @return On error return @p NULL
- * @csqlfn #Distance_tnumber_number()
- */
-Temporal *
-distance_tint_int(const Temporal *temp, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return NULL;
-  return distance_tnumber_number(temp, Int32GetDatum(i));
-}
-
-/**
- * @ingroup meos_temporal_dist
- * @brief Return the temporal distance between a temporal float and a float
- * @param[in] temp Temporal value
- * @param[in] d Value
- * @return On error return @p NULL
- * @csqlfn #Distance_tnumber_number()
- */
-Temporal *
-distance_tfloat_float(const Temporal *temp, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
-  return distance_tnumber_number(temp, Int32GetDatum(d));
-}
-#endif /* MEOS */
-
 /**
  * @brief Return true if two segments of the temporal numbers intersect at a
  * timestamptz
@@ -163,10 +124,15 @@ Temporal *
 distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2) ||
       ! ensure_tnumber_type(temp1->temptype))
     return NULL;
+#else
+  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype); 
+  assert(tnumber_type(temp1->temptype));
+#endif /* MEOS */
 
   /* Fill the lifted structure */
   meosType basetype = temptype_basetype(temp1->temptype);
@@ -207,46 +173,6 @@ nad_tnumber_number(const Temporal *temp, Datum value)
   return nad_tbox_tbox(&box1, &box2);
 }
 
-#if MEOS
-/**
- * @ingroup meos_temporal_dist
- * @brief Return the nearest approach distance between a temporal number
- * and a number
- * @param[in] temp Temporal value
- * @param[in] i Value
- * @return On error return -1
- * @csqlfn #NAD_tnumber_number()
- */
-int
-nad_tint_int(const Temporal *temp, int i)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return -1;
-  return DatumGetInt32(nad_tnumber_number(temp, Int32GetDatum(i)));
-}
-
-/**
- * @ingroup meos_temporal_dist
- * @brief Return the nearest approach distance between a temporal number
- * and a number
- * @param[in] temp Temporal value
- * @param[in] d Value
- * @return On error return -1
- * @csqlfn #NAD_tnumber_number()
- */
-double
-nad_tfloat_float(const Temporal *temp, double d)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return -1.0;
-  return DatumGetFloat8(nad_tnumber_number(temp, Float8GetDatum(d)));
-}
-#endif /* MEOS */
-
 /**
  * @ingroup meos_internal_temporal_dist
  * @brief Return the nearest approach distance between the temporal boxes
@@ -271,7 +197,7 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
     return (box1->span.basetype == T_INT4) ?
       Int32GetDatum(-1) : Float8GetDatum(-1.0);
 
-  return dist_span_span(&box1->span, &box2->span);
+  return distance_span_span(&box1->span, &box2->span);
 }
 
 /**
@@ -323,82 +249,6 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
   return result;
 }
 
-#if MEOS
-/**
- * @ingroup meos_temporal_dist
- * @brief Return the nearest approach distance between a temporal integer
- * and a temporal box
- * @param[in] temp Temporal value
- * @param[in] box Temporal box
- * @return On error or if the time frames of the boxes do not overlap return -1
- * @csqlfn #NAD_tnumber_tbox()
- */
-int
-nad_tint_tbox(const Temporal *temp, const TBox *box)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_valid_tnumber_span(temp, &box->span))
-    return -1;
-  return DatumGetInt32(nad_tnumber_tbox(temp, box));
-}
-
-/**
- * @ingroup meos_temporal_dist
- * @brief Return the nearest approach distance between a temporal float
- * and a temporal box
- * @param[in] temp Temporal value
- * @param[in] box Temporal box
- * @return On error or if the time frames of the boxes do not overlap return -1
- * @csqlfn #NAD_tnumber_tbox()
- */
-double
-nad_tfloat_tbox(const Temporal *temp, const TBox *box)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_valid_tnumber_span(temp, &box->span))
-    return -1;
-  return DatumGetFloat8(nad_tnumber_tbox(temp, box));
-}
-
-/**
- * @ingroup meos_temporal_dist
- * @brief Return the nearest approach distance between the int temporal boxes
- * @param[in] box1,box2 Temporal boxes
- * @return On error return -1
- * @csqlfn #NAD_tbox_tbox()
- */
-int
-nad_tboxint_tboxint(const TBox *box1, const TBox *box2)
-{
-  if (! ensure_span_isof_basetype(&box1->span, T_INT4) ||
-      ! ensure_span_isof_basetype(&box2->span, T_INT4))
-    return -1;
-
-  return DatumGetInt32(nad_tbox_tbox(box1, box2));
-}
-
-/**
- * @ingroup meos_temporal_dist
- * @brief Return the nearest approach distance between the float temporal boxes
- * @param[in] box1,box2 Temporal boxes
- * @return On error return -1
- * @csqlfn #NAD_tbox_tbox()
- */
-double
-nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2)
-{
-  if (! ensure_span_isof_basetype(&box1->span, T_FLOAT8) ||
-      ! ensure_span_isof_basetype(&box2->span, T_FLOAT8))
-    return -1;
-
-  return DatumGetFloat8(nad_tbox_tbox(box1, box2));
-}
-#endif /* MEOS */
-
 /**
  * @brief Return the nearest approach distance between two temporal numbers
  */
@@ -413,45 +263,5 @@ nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   tnumber_set_tbox(temp2, &box2);
   return nad_tbox_tbox(&box1, &box2);
 }
-
-#if MEOS
-/**
- * @ingroup meos_temporal_dist
- * @brief Return the nearest approach distance between two temporal integers
- * @param[in] temp1,temp2 Temporal values
- * @return On error return -1
- * @csqlfn #NAD_tnumber_tnumber()
- */
-int
-nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_tnumber_type(temp1->temptype))
-    return -1;
-  Datum result = nad_tnumber_tnumber(temp1, temp2);
-  return Int32GetDatum(result);
-}
-
-/**
- * @ingroup meos_temporal_dist
- * @brief Return the nearest approach distance between two temporal floats
- * @param[in] temp1,temp2 Temporal values
- * @return On error return -1
- * @csqlfn #NAD_tnumber_tnumber()
- */
-double
-nad_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_tnumber_type(temp1->temptype))
-    return -1.0;
-  Datum result = nad_tnumber_tnumber(temp1, temp2);
-  return Float8GetDatum(result);
-}
-#endif /* MEOS */
 
 /*****************************************************************************/

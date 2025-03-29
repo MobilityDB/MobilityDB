@@ -48,16 +48,17 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#if NPOINT
+  #include <meos_pose.h>
+#endif
 #include "general/pg_types.h"
 #include "general/span.h"
 #if CBUFFER
-  #include "cbuffer/tcbuffer.h"
+  #include <meos_cbuffer.h>
+  #include "cbuffer/cbuffer.h"
 #endif
 #if NPOINT
   #include "npoint/tnpoint.h"
-#endif
-#if POSE
-  #include "pose/pose.h"
 #endif
 
 /*****************************************************************************

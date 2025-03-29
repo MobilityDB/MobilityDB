@@ -695,6 +695,15 @@ CREATE FUNCTION round(floatspan, integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Floatspan_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION degrees(floatspan, bool)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Floatspan_degrees'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION radians(floatspan)
+  RETURNS floatspan
+  AS 'MODULE_PATHNAME', 'Floatspan_radians'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Selectivity functions
  *****************************************************************************/

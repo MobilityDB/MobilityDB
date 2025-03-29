@@ -47,6 +47,7 @@
 #include <meos_internal.h>
 #include "general/temporal.h" /* For varfunc */
 #include "geo/tgeo_spatialfuncs.h"
+#include "cbuffer/cbuffer.h"
 #include "cbuffer/tcbuffer_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_geo/postgis.h"

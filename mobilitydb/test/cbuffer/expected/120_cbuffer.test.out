@@ -12,19 +12,19 @@ SELECT asText(cbuffer ' cbuffer   (  Point  ( 1  1  ) ,	0.5   )   ');
 
 /* Errors */
 SELECT cbuffer 'point(1,0.5)';
-ERROR:  Could not parse circular buffer: Missing prefix 'Cbuffer'
+ERROR:  Could not parse cbuffer value: Missing prefix 'Cbuffer'
 LINE 2: SELECT cbuffer 'point(1,0.5)';
                        ^
 SELECT cbuffer 'cbuffer 1,0.5)';
-ERROR:  Could not parse circular buffer: Missing opening parenthesis
+ERROR:  Could not parse cbuffer value: Missing opening parenthesis
 LINE 1: SELECT cbuffer 'cbuffer 1,0.5)';
                        ^
 SELECT cbuffer 'Cbuffer(Point(1 1),0.5';
-ERROR:  Missing separator character ')': 0.5
+ERROR:  Missing delimeter character ')': 0.5
 LINE 1: SELECT cbuffer 'Cbuffer(Point(1 1),0.5';
                        ^
 SELECT cbuffer 'Cbuffer(Point(1 1) 0.5)';
-ERROR:  Missing separator character ',': Point(1 1) 0.5)
+ERROR:  Missing delimeter character ',': Point(1 1) 0.5)
 LINE 1: SELECT cbuffer 'Cbuffer(Point(1 1) 0.5)';
                        ^
 SELECT cbuffer 'Cbuffer(Point(1 1)000,0.5)';
@@ -37,7 +37,7 @@ ERROR:  The radius must be a real number greater than or equal to 0
 LINE 1: SELECT cbuffer 'Cbuffer(Point(1 1),-1.5)';
                        ^
 SELECT cbuffer 'Cbuffer(Point(1 1),0.5)xxx';
-ERROR:  Could not parse circular buffer value: Extraneous characters at the end
+ERROR:  Could not parse cbuffer value: Extraneous characters at the end
 LINE 1: SELECT cbuffer 'Cbuffer(Point(1 1),0.5)xxx';
                        ^
 SELECT asText(cbuffer('Point(1 1)', 0.5));
@@ -63,7 +63,7 @@ ERROR:  Only point geometries accepted
 SELECT cbuffer('Point Z(1 1 1)',1.5);
 ERROR:  The geometry cannot have Z dimension
 SELECT cbuffer('Point M(1 1 1)',1.5);
-ERROR:  Only geometries without M dimension accepted
+ERROR:  The geometry cannot have M dimension
 SELECT cbuffer(geography 'Point(1 1)',1.5);
 ERROR:  function cbuffer(geography, numeric) does not exist
 LINE 1: SELECT cbuffer(geography 'Point(1 1)',1.5);
@@ -107,11 +107,6 @@ SELECT asText(round((cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry)::cbuffer, 6));
  Cbuffer(POINT(1 1),0.2)
 (1 row)
 
-/* Errors */
--------------------------------------------------------------------------------
--- Comparisons
--------------------------------------------------------------------------------
--- true
 SELECT cbuffer 'Cbuffer(Point(1.000001 1),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
  ?column? 
 ----------

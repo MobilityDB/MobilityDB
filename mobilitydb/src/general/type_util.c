@@ -49,6 +49,12 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/temporal.h"
+#if CBUFFER
+  #include "cbuffer/cbuffer.h"
+#endif
+#if POSE
+  #include "pose/pose.h"
+#endif
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/doublen.h"
@@ -202,6 +208,34 @@ datumarr_extract(ArrayType *array, int *count)
   return result;
 }
 
+#if CBUFFER
+/**
+ * @brief Extract a C array from a PostgreSQL array containing circular buffers
+ */
+Cbuffer **
+cbufferarr_extract(ArrayType *array, int *count)
+{
+  Cbuffer **result;
+  deconstruct_array(array, array->elemtype, -1, false, 'd', (Datum **) &result,
+    NULL, count);
+  return result;
+}
+#endif /* CBUFFER */
+
+#if POSE
+/**
+ * @brief Extract a C array from a PostgreSQL array containing circular buffers
+ */
+Pose **
+posearr_extract(ArrayType *array, int *count)
+{
+  Pose **result;
+  deconstruct_array(array, array->elemtype, -1, false, 'd', (Datum **) &result,
+    NULL, count);
+  return result;
+}
+#endif /* POSE */
+
 /**
  * @brief Extract a C array from a PostgreSQL array containing spans
  */
@@ -305,6 +339,27 @@ strarr_to_textarray(char **strarr, int count)
     pfree(strarr[i]);
   return result;
 }
+
+#if CBUFFER
+/**
+ * @brief Return a C array of spans converted into a PostgreSQL array
+ */
+ArrayType *
+cbufferarr_to_array(Cbuffer **cbufarr, int count, bool free_all)
+{
+  assert(count > 0);
+  Oid cbuftypid = type_oid(T_CBUFFER);
+  ArrayType *result = construct_array((Datum *) cbufarr, count, cbuftypid, -1,
+    false, 'd');
+  if (free_all)
+  {
+    for (int i = 0; i < count; i++)
+      pfree(cbufarr[i]);
+  }
+  pfree(cbufarr);
+  return result;
+}
+#endif /* CBUFFER */
 
 /**
  * @brief Return a C array of spans converted into a PostgreSQL array

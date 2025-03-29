@@ -66,47 +66,47 @@ SELECT stbox 'SRID=4326;GEODSTBOX ZT(((4,5,6),(1,2,3)),[2001-01-01, 2001-01-02])
 
 /* Errors */
 SELECT stbox 'AAA(1, 2, 3)';
-ERROR:  Could not parse spatiotemporal box
+ERROR:  Could not parse stbox value: Missing prefix (GEOD)STBOX
 LINE 2: SELECT stbox 'AAA(1, 2, 3)';
                      ^
 SELECT stbox 'STBOX(1, 2, 3)';
-ERROR:  Could not parse spatiotemporal box: Missing dimension information
+ERROR:  Could not parse stbox value: Missing dimension information
 LINE 1: SELECT stbox 'STBOX(1, 2, 3)';
                      ^
 SELECT stbox 'STBOX((AA, 2, 3))';
-ERROR:  Could not parse spatiotemporal box: Missing dimension information
+ERROR:  Could not parse stbox value: Missing dimension information
 LINE 1: SELECT stbox 'STBOX((AA, 2, 3))';
                      ^
 SELECT stbox 'STBOX((1, AA, 3))';
-ERROR:  Could not parse spatiotemporal box: Missing dimension information
+ERROR:  Could not parse stbox value: Missing dimension information
 LINE 1: SELECT stbox 'STBOX((1, AA, 3))';
                      ^
 SELECT stbox 'STBOX((,),(,))';
-ERROR:  Could not parse spatiotemporal box: Missing dimension information
+ERROR:  Could not parse stbox value: Missing dimension information
 LINE 1: SELECT stbox 'STBOX((,),(,))';
                      ^
 SELECT stbox 'STBOX X 1,2),(3,4))';
-ERROR:  Could not parse spatiotemporal box: Missing opening parenthesis
+ERROR:  Could not parse stbox value: Missing opening parenthesis
 LINE 1: SELECT stbox 'STBOX X 1,2),(3,4))';
                      ^
 SELECT stbox 'STBOX X(1.0,2.0),(3.0,4.0))';
-ERROR:  Could not parse spatiotemporal box: Missing opening parenthesis
+ERROR:  Could not parse stbox value: Missing opening parenthesis
 LINE 1: SELECT stbox 'STBOX X(1.0,2.0),(3.0,4.0))';
                      ^
 SELECT stbox 'STBOX X((1.0,2.0,(3.0,4.0))';
-ERROR:  Could not parse spatiotemporal box: Missing closing parenthesis
+ERROR:  Could not parse stbox value: Missing closing parenthesis
 LINE 1: SELECT stbox 'STBOX X((1.0,2.0,(3.0,4.0))';
                      ^
 SELECT stbox 'STBOX X((1.0,2.0),3.0,4.0))';
-ERROR:  Could not parse spatiotemporal box: Missing opening parenthesis
+ERROR:  Could not parse stbox value: Missing opening parenthesis
 LINE 1: SELECT stbox 'STBOX X((1.0,2.0),3.0,4.0))';
                      ^
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0';
-ERROR:  Could not parse spatiotemporal box: Missing closing parenthesis
+ERROR:  Could not parse stbox value: Missing closing parenthesis
 LINE 1: SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0';
                      ^
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0)';
-ERROR:  Could not parse spatiotemporal box: Missing closing parenthesis
+ERROR:  Could not parse stbox value: Missing closing parenthesis
 LINE 1: SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0)';
                      ^
 SELECT stbox 'STBOX Z((1, 2, AA))';
@@ -118,7 +118,7 @@ ERROR:  invalid input syntax for type timestamp with time zone: "1"
 LINE 1: SELECT stbox 'STBOX T((1, 2, AA))';
                      ^
 SELECT stbox 'STBOX((1, 2, 3))';
-ERROR:  Could not parse spatiotemporal box: Missing dimension information
+ERROR:  Could not parse stbox value: Missing dimension information
 LINE 1: SELECT stbox 'STBOX((1, 2, 3))';
                      ^
 SELECT stbox 'STBOX T((1, 2, 2001-01-03))';
@@ -142,7 +142,7 @@ ERROR:  invalid input syntax for type timestamp with time zone: "1"
 LINE 1: SELECT stbox 'STBOX T((1, 2, 2001-01-03),(1,2)';
                      ^
 SELECT stbox 'STBOX T([2000-01-01, 2000-01-02]';
-ERROR:  Could not parse spatiotemporal box: Missing closing parenthesis
+ERROR:  Could not parse stbox value: Missing closing parenthesis
 LINE 1: SELECT stbox 'STBOX T([2000-01-01, 2000-01-02]';
                      ^
 SELECT stbox 'STBOX T((1, 2, 2001-01-03),(1,2,2001-01-03)';
@@ -158,7 +158,7 @@ ERROR:  Span lower bound must be less than or equal to span upper bound
 LINE 1: SELECT stbox 'SRID=4326;GEODSTBOX ZT(((5,6,7),(1,2,3)),[2001...
                      ^
 SELECT stbox 'STBOX ZT(((5,6,7),(1,2,3)),[2001-01-04,2001-01-08])xxxx';
-ERROR:  Could not parse spatiotemporal box value: Extraneous characters at the end
+ERROR:  Could not parse stbox value: Extraneous characters at the end
 LINE 1: SELECT stbox 'STBOX ZT(((5,6,7),(1,2,3)),[2001-01-04,2001-01...
                      ^
 COPY tbl_stbox3d TO '/tmp/tbl_stbox3d' (FORMAT BINARY);

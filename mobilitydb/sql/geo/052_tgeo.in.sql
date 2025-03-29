@@ -65,7 +65,7 @@ CREATE FUNCTION tgeography_typmod_in(cstring[])
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeo_typmod_out(integer)
   RETURNS cstring
-  AS 'MODULE_PATHNAME', 'Tgeo_typmod_out'
+  AS 'MODULE_PATHNAME', 'Tspatial_typmod_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tspatial_analyze(internal)
@@ -126,7 +126,6 @@ CREATE FUNCTION tgeography(tgeography, integer)
   AS 'MODULE_PATHNAME', 'Tgeo_enforce_typmod'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Casting CANNOT be implicit to avoid ambiguity
 CREATE CAST (tgeometry AS tgeometry) WITH FUNCTION tgeometry(tgeometry, integer) AS IMPLICIT;
 CREATE CAST (tgeography AS tgeography) WITH FUNCTION tgeography(tgeography, integer) AS IMPLICIT;
 
@@ -205,7 +204,7 @@ CREATE FUNCTION tgeographySeqSetGaps(tgeography[], maxt interval DEFAULT NULL,
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
- * Casting
+ * Conversions
  ******************************************************************************/
 
 CREATE FUNCTION timeSpan(tgeometry)

@@ -723,8 +723,12 @@ Span *
 temporal_spans(const Temporal *temp, int *count)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
     return NULL;
+#else
+  assert(temp); assert(count);
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -955,8 +959,13 @@ Span *
 temporal_split_n_spans(const Temporal *temp, int span_count, int *count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_positive(span_count))
+#if MEOS
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
+    return NULL;
+#else
+  assert(temp); assert(count);
+#endif /* MEOS */
+  if (! ensure_positive(span_count))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1125,8 +1134,13 @@ temporal_split_each_n_spans(const Temporal *temp, int elems_per_span,
   int *count)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_positive(elems_per_span))
+#if MEOS
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
+    return NULL;
+#else
+  assert(temp); assert(count);
+#endif /* MEOS */
+  if (! ensure_positive(elems_per_span))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1281,9 +1295,13 @@ TBox *
 tnumber_tboxes(const Temporal *temp, int *count)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_tnumber_type(temp->temptype))
     return NULL;
+#else
+  assert(temp); assert(count); assert(tnumber_type(temp->temptype));
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -1526,8 +1544,14 @@ TBox *
 tnumber_split_n_tboxes(const Temporal *temp, int box_count, int *count)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_tnumber_type(temp->temptype) || ! ensure_positive(box_count))
+      ! ensure_tnumber_type(temp->temptype))
+    return NULL;
+#else
+  assert(temp); assert(count); assert(tnumber_type(temp->temptype));
+#endif /* MEOS */
+  if (! ensure_positive(box_count))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1698,9 +1722,14 @@ TBox *
 tnumber_split_each_n_tboxes(const Temporal *temp, int elems_per_box, int *count)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_tnumber_type(temp->temptype) || 
-      ! ensure_positive(elems_per_box))
+      ! ensure_tnumber_type(temp->temptype))
+    return NULL;
+#else
+  assert(temp); assert(count); assert(tnumber_type(temp->temptype));
+#endif /* MEOS */
+  if (! ensure_positive(elems_per_box))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1731,6 +1760,7 @@ bool
 boxop_temporal_tstzspan(const Temporal *temp, const Span *s,
   bool (*func)(const Span *, const Span *), bool invert)
 {
+  assert(temp); assert(s); assert(func); 
   Span s1;
   temporal_set_tstzspan(temp, &s1);
   return invert ? func(s, &s1) : func(&s1, s);
@@ -1744,6 +1774,7 @@ bool
 boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const Span *, const Span *))
 {
+  assert(temp1); assert(temp2); assert(func); 
   Span s1, s2;
   temporal_set_tstzspan(temp1, &s1);
   temporal_set_tstzspan(temp2, &s2);
@@ -1761,6 +1792,7 @@ bool
 boxop_tnumber_numspan(const Temporal *temp, const Span *s,
   bool (*func)(const Span *, const Span *), bool invert)
 {
+  assert(temp); assert(s); assert(func); 
   Span s1;
   tnumber_set_span(temp, &s1);
   return invert ? func(s, &s1) : func(&s1, s);
@@ -1774,6 +1806,7 @@ bool
 boxop_tnumber_tbox(const Temporal *temp, const TBox *box,
   bool (*func)(const TBox *, const TBox *), bool invert)
 {
+  assert(temp); assert(box); assert(func); 
   TBox box1;
   tnumber_set_tbox(temp, &box1);
   return invert ? func(box, &box1) : func(&box1, box);
@@ -1786,6 +1819,7 @@ bool
 boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const TBox *, const TBox *))
 {
+  assert(temp1); assert(temp2); assert(func); 
   TBox box1, box2;
   tnumber_set_tbox(temp1, &box1);
   tnumber_set_tbox(temp2, &box2);

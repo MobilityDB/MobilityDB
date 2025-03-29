@@ -245,15 +245,15 @@ SELECT asText(scaleTime(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer
 -- Ever/always comparison functions
 -------------------------------------------------------------------------------
 
-SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' ?= 'Cbuffer(Point(1 1), 0.5)';
-SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' ?= 'Cbuffer(Point(1 1), 0.5)';
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' ?= 'Cbuffer(Point(1 1), 0.5)';
-SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' ?= 'Cbuffer(Point(1 1), 0.5)';
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' ?= cbuffer 'Cbuffer(Point(1 1), 0.5)';
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' ?= cbuffer 'Cbuffer(Point(1 1), 0.5)';
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' ?= cbuffer 'Cbuffer(Point(1 1), 0.5)';
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' ?= cbuffer 'Cbuffer(Point(1 1), 0.5)';
 
-SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' %= 'Cbuffer(Point(1 1), 0.5)';
-SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' %= 'Cbuffer(Point(1 1), 0.5)';
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' %= 'Cbuffer(Point(1 1), 0.5)';
-SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' %= 'Cbuffer(Point(1 1), 0.5)';
+SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01' %= cbuffer 'Cbuffer(Point(1 1), 0.5)';
+SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}' %= cbuffer 'Cbuffer(Point(1 1), 0.5)';
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]' %= cbuffer 'Cbuffer(Point(1 1), 0.5)';
+SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' %= cbuffer 'Cbuffer(Point(1 1), 0.5)';
 
 SELECT asText(shiftTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', '1 year'::interval));
 SELECT asText(shiftTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', '1 year'::interval));

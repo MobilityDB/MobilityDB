@@ -38,7 +38,7 @@
 #include <postgres.h>
 /* MEOS */
 #include "general/temporal.h"
-#include "cbuffer/tcbuffer.h"
+#include <meos_cbuffer.h>
 
 /*****************************************************************************/
 

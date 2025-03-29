@@ -47,12 +47,12 @@
 Npoint *
 npoint_parse(const char **str, bool end)
 {
-  const char *type_str = "network point";
+  const char *type_str = meostype_name(T_NPOINT);
   p_whitespace(str);
   if (pg_strncasecmp(*str, "NPOINT", 6) != 0)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse network point");
+      "Could not parse %s value: Missing prefix 'NPoint'", type_str);
     return NULL;
   }
 
@@ -99,13 +99,13 @@ npoint_parse(const char **str, bool end)
 Nsegment *
 nsegment_parse(const char **str)
 {
-  const char *type_str = "network segment";
+  const char *type_str = meostype_name(T_NSEGMENT);
   p_whitespace(str);
 
   if (pg_strncasecmp(*str, "NSEGMENT", 8) != 0)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse network segment");
+      "Could not parse %s value: Missing prefix 'NSegment'", type_str);
     return NULL;
   }
 

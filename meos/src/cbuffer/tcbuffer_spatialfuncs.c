@@ -39,12 +39,12 @@
 #include <utils/float.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_cbuffer.h>
 #include <meos_internal.h>
+#include <meos_cbuffer.h>
 #include "general/tsequence.h"
 #include "geo/pgis_types.h"
 #include "geo/tgeo_spatialfuncs.h"
-#include "cbuffer/tcbuffer.h"
+#include "cbuffer/cbuffer.h"
 
 /*****************************************************************************
  * Utility functions
@@ -80,7 +80,7 @@ circle_type(const GSERIALIZED *gs)
 bool
 ensure_circle_type(const GSERIALIZED *gs)
 {
-  if (circle_type(gs))
+  if (! circle_type(gs))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Only circle polygons accepted");

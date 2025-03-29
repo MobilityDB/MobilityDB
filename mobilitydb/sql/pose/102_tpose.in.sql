@@ -28,8 +28,7 @@
  *****************************************************************************/
 
 /**
- * tpose.sql
- * Basic functions for temporal poses.
+ * @brief Basic functions for temporal poses
  */
 
 CREATE TYPE tpose;
@@ -48,25 +47,52 @@ CREATE FUNCTION tpose_out(tpose)
   AS 'MODULE_PATHNAME', 'Temporal_out'
   LANGUAGE C IMMUTABLE STRICT;
 
-/*CREATE FUNCTION tpose_recv(internal, oid, integer)
+CREATE FUNCTION tpose_recv(internal, oid, integer)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_recv'
-  LANGUAGE C IMMUTABLE STRICT;*/
+  LANGUAGE C IMMUTABLE STRICT;
 
-/*CREATE FUNCTION tpose_send(tpose)
+CREATE FUNCTION tpose_send(tpose)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_send'
-  LANGUAGE C IMMUTABLE STRICT;*/
+  LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE tpose (
   internallength = variable,
   input = tpose_in,
   output = tpose_out,
---receive = tpose_recv,
---send = tpose_send,
+  receive = tpose_recv,
+  send = tpose_send,
   storage = extended,
   alignment = double
 );
+
+-- Input/output in WKT, WKB and HexWKB format
+
+CREATE FUNCTION tposeFromText(text)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tposeFromEWKT(text)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tposeFromBinary(bytea)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tposeFromEWKB(bytea)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tposeFromHexEWKB(text)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Constructors
@@ -106,25 +132,21 @@ CREATE FUNCTION tposeSeqSet(tpose[])
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Casting
+ * Conversions
  ******************************************************************************/
 
 CREATE FUNCTION timeSpan(tpose)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- Casting CANNOT be implicit to avoid ambiguity
-CREATE CAST (tpose AS tstzspan) WITH FUNCTION timeSpan(tpose);
-
 CREATE FUNCTION tgeompoint(tpose)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpose_to_tgeompoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Casting CANNOT be implicit to avoid ambiguity
+CREATE CAST (tpose AS tstzspan) WITH FUNCTION timeSpan(tpose);
 CREATE CAST (tpose AS tgeompoint) WITH FUNCTION tgeompoint(tpose);
-
 
 /******************************************************************************
  * Transformations
@@ -170,7 +192,7 @@ AS 'MODULE_PATHNAME', 'Temporal_merge_array'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Accessor Functions
+ * Accessors
  ******************************************************************************/
 
 CREATE FUNCTION tempSubtype(tpose)

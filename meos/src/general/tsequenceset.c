@@ -52,8 +52,8 @@
 #include "general/temporal_boxops.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "geo/tgeo_parser.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/tspatial_parser.h"
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
   #include "npoint/tnpoint_distance.h"
@@ -405,7 +405,13 @@ TSequenceSet *
 tsequenceset_make(const TSequence **sequences, int count, bool normalize)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) sequences) || ! ensure_positive(count))
+#if MEOS
+  if (! ensure_not_null((void *) sequences))
+    return NULL;
+#else
+  assert(sequences);
+#endif /* MEOS */
+  if (! ensure_positive(count))
     return NULL;
   return tsequenceset_make_exp(sequences, count, count, normalize);
 }
@@ -532,7 +538,13 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
   const Interval *maxt, double maxdist)
 {
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) instants) || ! ensure_positive(count))
+#if MEOS
+  if (! ensure_not_null((void *) instants))
+    return NULL;
+#else
+  assert(instants);
+#endif /* MEOS */
+  if (! ensure_positive(count))
     return NULL;
 
   TSequence *seq;
@@ -1989,15 +2001,13 @@ tsequenceset_in(const char *str, meosType temptype, interpType interp)
  * @brief Return the Well-Known Text (WKT) representation of a temporal
  * sequence set
  * @param[in] ss Temporal sequence set
- * @param[in] maxdd Maximum number of decimal digits to output for floating point
- * values
+ * @param[in] maxdd Maximum number of decimal digits
  * @param[in] value_out Function called to output the base value
  */
 char *
 tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
 {
-  assert(ss);
-  assert(maxdd >= 0);
+  assert(ss); assert(maxdd >= 0);
 
   char **strings = palloc(sizeof(char *) * ss->count);
   size_t outlen = 0;
