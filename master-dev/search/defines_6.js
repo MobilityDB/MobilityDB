@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['fallback_5fnd_5fjoinsel_0',['FALLBACK_ND_JOINSEL',['../tpoint__selfuncs_8h_a7ca42953e958f9cd5149faa3d5b2ca65.html#a7ca42953e958f9cd5149faa3d5b2ca65',1,'tpoint_selfuncs.h']]],
-  ['fallback_5fnd_5fsel_1',['FALLBACK_ND_SEL',['../tpoint__selfuncs_8h_a6821d8026b996a3507191457a35a8143.html#a6821d8026b996a3507191457a35a8143',1,'tpoint_selfuncs.h']]],
+  ['fallback_5fnd_5fjoinsel_0',['FALLBACK_ND_JOINSEL',['../tspatial__selfuncs_8h_a7ca42953e958f9cd5149faa3d5b2ca65.html#a7ca42953e958f9cd5149faa3d5b2ca65',1,'tspatial_selfuncs.h']]],
+  ['fallback_5fnd_5fsel_1',['FALLBACK_ND_SEL',['../tspatial__selfuncs_8h_a6821d8026b996a3507191457a35a8143.html#a6821d8026b996a3507191457a35a8143',1,'tspatial_selfuncs.h']]],
   ['false_2',['false',['../c_8h_a65e9886d74aaee76545e83dd09011727.html#a65e9886d74aaee76545e83dd09011727',1,'c.h']]],
   ['fieldno_5fnullable_5fdatum_5fdatum_3',['FIELDNO_NULLABLE_DATUM_DATUM',['../postgres_8h_a4b14c1436c7246a6e45517afcd04633a.html#a4b14c1436c7246a6e45517afcd04633a',1,'postgres.h']]],
   ['fieldno_5fnullable_5fdatum_5fisnull_4',['FIELDNO_NULLABLE_DATUM_ISNULL',['../postgres_8h_a2dc7c96a203a090a0e917003a0a7d7b8.html#a2dc7c96a203a090a0e917003a0a7d7b8',1,'postgres.h']]],

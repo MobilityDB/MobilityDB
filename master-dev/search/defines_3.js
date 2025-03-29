@@ -2,7 +2,7 @@ var searchData=
 [
   ['c_5fcollation_5foid_0',['C_COLLATION_OID',['../meos_2include_2general_2temporal_8h_a7d2d04807bbec363a97df2d253ae5181.html#a7d2d04807bbec363a97df2d253ae5181',1,'temporal.h']]],
   ['cachelinealign_1',['CACHELINEALIGN',['../c_8h_a1c3d85866560d3c46011fd23b457fc1a.html#a1c3d85866560d3c46011fd23b457fc1a',1,'c.h']]],
-  ['cbufferpgetdatum_2',['CbufferPGetDatum',['../tcbuffer_8h_ac73f7ab2cd9aee8d80be3acbfef331b8.html#ac73f7ab2cd9aee8d80be3acbfef331b8',1,'tcbuffer.h']]],
+  ['cbufferpgetdatum_2',['CbufferPGetDatum',['../cbuffer_8h_ac73f7ab2cd9aee8d80be3acbfef331b8.html#ac73f7ab2cd9aee8d80be3acbfef331b8',1,'cbuffer.h']]],
   ['century_3',['CENTURY',['../datetime_8h_a82156999d58c7a1ae01480ee67a3f417.html#a82156999d58c7a1ae01480ee67a3f417',1,'datetime.h']]],
   ['chargetdatum_4',['CharGetDatum',['../postgres_8h_ae3e7e3683055f09feeb96d42045ae5fa.html#ae3e7e3683055f09feeb96d42045ae5fa',1,'postgres.h']]],
   ['check_5ferror_5',['CHECK_ERROR',['../formatting_8c_a05daea9c015e80dbd944d9ac5db29874.html#a05daea9c015e80dbd944d9ac5db29874',1,'formatting.c']]],

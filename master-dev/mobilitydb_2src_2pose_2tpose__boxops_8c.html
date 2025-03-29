@@ -87,7 +87,9 @@ $(function() {
 <code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="set_8h_source.html">general/set.h</a>&quot;</code><br />
 <code>#include &quot;general/span.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="stbox_8h_source.html">geo/stbox.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tpose_8h_source.html">pose/tpose.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -98,9 +100,18 @@ Functions</h2></td></tr>
 <tr class="memitem:ga191fc689776bd1453b04fd0b6fd8f786"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__temporal__conversion_ga191fc689776bd1453b04fd0b6fd8f786.html#ga191fc689776bd1453b04fd0b6fd8f786">Pose_timestamp_to_stbox</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga191fc689776bd1453b04fd0b6fd8f786"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform a network point and a timestamp to a spatiotemporal box @sqlfn stbox()  <a href="group__mobilitydb__temporal__conversion_ga191fc689776bd1453b04fd0b6fd8f786.html#ga191fc689776bd1453b04fd0b6fd8f786">More...</a><br /></td></tr>
 <tr class="separator:ga191fc689776bd1453b04fd0b6fd8f786"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabaefa70bb2aad2bf8e4c1945399345ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__temporal__constructor_gabaefa70bb2aad2bf8e4c1945399345ef.html#gabaefa70bb2aad2bf8e4c1945399345ef">Pose_timestamptz_to_stbox</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:gabaefa70bb2aad2bf8e4c1945399345ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a pose and a timestamptz to a spatiotemporal box @sqlfn stbox()  <a href="group__mobilitydb__temporal__constructor_gabaefa70bb2aad2bf8e4c1945399345ef.html#gabaefa70bb2aad2bf8e4c1945399345ef">More...</a><br /></td></tr>
+<tr class="separator:gabaefa70bb2aad2bf8e4c1945399345ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga15a7f8970f849b3f9e7b71148cc019fe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__temporal__conversion_ga15a7f8970f849b3f9e7b71148cc019fe.html#ga15a7f8970f849b3f9e7b71148cc019fe">Pose_to_stbox</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga15a7f8970f849b3f9e7b71148cc019fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the bounding box of the network point value @sqlfn stbox()  <a href="group__mobilitydb__temporal__conversion_ga15a7f8970f849b3f9e7b71148cc019fe.html#ga15a7f8970f849b3f9e7b71148cc019fe">More...</a><br /></td></tr>
 <tr class="separator:ga15a7f8970f849b3f9e7b71148cc019fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9f9283e74dd23f4bfbed8c3780c840e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__temporal__constructor_ga9f9283e74dd23f4bfbed8c3780c840e7.html#ga9f9283e74dd23f4bfbed8c3780c840e7">Pose_tstzspan_to_stbox</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ga9f9283e74dd23f4bfbed8c3780c840e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a pose and a timestamptz span to a spatiotemporal box @sqlfn stbox()  <a href="group__mobilitydb__temporal__constructor_ga9f9283e74dd23f4bfbed8c3780c840e7.html#ga9f9283e74dd23f4bfbed8c3780c840e7">More...</a><br /></td></tr>
+<tr class="separator:ga9f9283e74dd23f4bfbed8c3780c840e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga73e931ac6198ab5e4745fd0b76dfbfbf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__setspan__conversion_ga73e931ac6198ab5e4745fd0b76dfbfbf.html#ga73e931ac6198ab5e4745fd0b76dfbfbf">Poseset_to_stbox</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ga73e931ac6198ab5e4745fd0b76dfbfbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a pose set converted to a spatiotemporal box @sqlfn stbox()  <a href="group__mobilitydb__setspan__conversion_ga73e931ac6198ab5e4745fd0b76dfbfbf.html#ga73e931ac6198ab5e4745fd0b76dfbfbf">More...</a><br /></td></tr>
+<tr class="separator:ga73e931ac6198ab5e4745fd0b76dfbfbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Bounding box operators for temporal poses. </p>

@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;general/temporal.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="pose_8h_source.html">pose/pose.h</a>&quot;</code><br />
+<code>#include &lt;<a class="el" href="meos__pose_8h_source.html">meos_pose.h</a>&gt;</code><br />
 </div>
 <p><a href="tpose__boxops_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -95,6 +95,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a1f45e87b5c7dd742d81b3c22651ee620"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpose__boxops_8h_a1f45e87b5c7dd742d81b3c22651ee620.html#a1f45e87b5c7dd742d81b3c22651ee620">pose_timestamp_set_stbox</a> (const <a class="el" href="structPose.html">Pose</a> *pose, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
 <tr class="memdesc:a1f45e87b5c7dd742d81b3c22651ee620"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform a pose and a timestamp to a spatiotemporal box.  <a href="tpose__boxops_8h_a1f45e87b5c7dd742d81b3c22651ee620.html#a1f45e87b5c7dd742d81b3c22651ee620">More...</a><br /></td></tr>
 <tr class="separator:a1f45e87b5c7dd742d81b3c22651ee620"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga926f30dcccf7743332996862ab9f8f25"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__box__constructor_ga926f30dcccf7743332996862ab9f8f25.html#ga926f30dcccf7743332996862ab9f8f25">posearr_set_stbox</a> (const <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> *values, int count, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
+<tr class="memdesc:ga926f30dcccf7743332996862ab9f8f25"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument a spatiotemporal box contructed from an array of poses.  <a href="group__meos__internal__box__constructor_ga926f30dcccf7743332996862ab9f8f25.html#ga926f30dcccf7743332996862ab9f8f25">More...</a><br /></td></tr>
+<tr class="separator:ga926f30dcccf7743332996862ab9f8f25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a98515f23cfd459b2d549f2c693f1b3fb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpose__boxops_8h_a98515f23cfd459b2d549f2c693f1b3fb.html#a98515f23cfd459b2d549f2c693f1b3fb">tposeinst_set_stbox</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
 <tr class="memdesc:a98515f23cfd459b2d549f2c693f1b3fb"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the spatiotemporal box from the temporal pose value.  <a href="tpose__boxops_8h_a98515f23cfd459b2d549f2c693f1b3fb.html#a98515f23cfd459b2d549f2c693f1b3fb">More...</a><br /></td></tr>
 <tr class="separator:a98515f23cfd459b2d549f2c693f1b3fb"><td class="memSeparator" colspan="2">&#160;</td></tr>

@@ -1,7 +1,7 @@
 var searchData=
 [
   ['z_0',['z',['../structPOINT3DZ_a98d84131ed37b1a05701e978219880ad.html#a98d84131ed37b1a05701e978219880ad',1,'POINT3DZ::z()'],['../structPOINT3D_a23abf60ef6846b6566fe39c6973d7ed7.html#a23abf60ef6846b6566fe39c6973d7ed7',1,'POINT3D::z()'],['../structPOINT4D_ac22ba90d8e70e83bd90211632751c851.html#ac22ba90d8e70e83bd90211632751c851',1,'POINT4D::z()'],['../structSTboxGridState_adeeca2335d36668d094261ce5f8fd6f0.html#adeeca2335d36668d094261ce5f8fd6f0',1,'STboxGridState::z()']]],
-  ['z_5fdim_1',['Z_DIM',['../tpoint__selfuncs_8h_a4e67a69f461f2cc5cd1bade418dcd115.html#a4e67a69f461f2cc5cd1bade418dcd115',1,'tpoint_selfuncs.h']]],
+  ['z_5fdim_1',['Z_DIM',['../tspatial__selfuncs_8h_a4e67a69f461f2cc5cd1bade418dcd115.html#a4e67a69f461f2cc5cd1bade418dcd115',1,'tspatial_selfuncs.h']]],
   ['zero_5ftm_2',['ZERO_tm',['../formatting_8c_af2f36597904738da8784a9b715064005.html#af2f36597904738da8784a9b715064005',1,'formatting.c']]],
   ['zero_5ftmfc_3',['ZERO_tmfc',['../formatting_8c_a6588d44ecafef8e18206c40aa962c859.html#a6588d44ecafef8e18206c40aa962c859',1,'formatting.c']]],
   ['zero_5ftmtc_4',['ZERO_tmtc',['../formatting_8c_ac77b822171013a9d1950ebab8d6063d2.html#ac77b822171013a9d1950ebab8d6063d2',1,'formatting.c']]],

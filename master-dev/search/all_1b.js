@@ -1,7 +1,7 @@
 var searchData=
 [
   ['y_0',['y',['../structPOINT2D_a3024a594911d31188eadd0605e51cd7b.html#a3024a594911d31188eadd0605e51cd7b',1,'POINT2D::y()'],['../structPOINT3DZ_abe0bcd45369ed7848d4e0de5a1087521.html#abe0bcd45369ed7848d4e0de5a1087521',1,'POINT3DZ::y()'],['../structPOINT3D_a5f42f8ce25e09a8473081454c951ab0d.html#a5f42f8ce25e09a8473081454c951ab0d',1,'POINT3D::y()'],['../structPOINT3DM_a4df76c66f496016a17e79813e075e760.html#a4df76c66f496016a17e79813e075e760',1,'POINT3DM::y()'],['../structPOINT4D_aed76810e1ff00fc8af52c5c37d42d7a9.html#aed76810e1ff00fc8af52c5c37d42d7a9',1,'POINT4D::y()'],['../structSTboxGridState_a389911044968fc113160fb24b23bf485.html#a389911044968fc113160fb24b23bf485',1,'STboxGridState::y()']]],
-  ['y_5fdim_1',['Y_DIM',['../tpoint__selfuncs_8h_a2cfec1e8b5f2afbb0211381d14376f22.html#a2cfec1e8b5f2afbb0211381d14376f22',1,'tpoint_selfuncs.h']]],
+  ['y_5fdim_1',['Y_DIM',['../tspatial__selfuncs_8h_a2cfec1e8b5f2afbb0211381d14376f22.html#a2cfec1e8b5f2afbb0211381d14376f22',1,'tspatial_selfuncs.h']]],
   ['year_2',['year',['../structTmFromChar_ae574c1011c4d3b202c1d68860daee127.html#ae574c1011c4d3b202c1d68860daee127',1,'TmFromChar']]],
   ['year_3',['YEAR',['../datetime_8h_a5871356500f559add06ea81d60331b1b.html#a5871356500f559add06ea81d60331b1b',1,'datetime.h']]],
   ['year_5flengths_4',['year_lengths',['../localtime_8c_ae10ec8d75a1d5b504dbe44f8daa79c6c.html#ae10ec8d75a1d5b504dbe44f8daa79c6c',1,'localtime.c']]],

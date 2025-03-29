@@ -131,9 +131,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2general_2type__out_8c_af1765c4dd78f8f12568fe56b96070523.html#af1765c4dd78f8f12568fe56b96070523">spanset_to_wkb_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2general_2type__out_8c_a2a3637ab2047493f7034f39858da0a04.html#a2a3637ab2047493f7034f39858da0a04">spatial_wkb_needs_srid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2general_2type__out_8c_acca281e2838609ad9c6bdff76918cc68.html#acca281e2838609ad9c6bdff76918cc68">srs_as_mfjson_sb</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__box__inout_ga6c4dd207ee69cecc59aabd7e53a54a9b.html#ga6c4dd207ee69cecc59aabd7e53a54a9b">stbox_as_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2general_2type__out_8c_a6658423f76849971b3631a77a1f78c2e.html#a6658423f76849971b3631a77a1f78c2e">stbox_as_mfjson_sb</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__box__inout_ga403b8fea9473da4fa903bee72263d791.html#ga403b8fea9473da4fa903bee72263d791">stbox_as_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2general_2type__out_8c_a0478e968b6a66be5cecd45aa488b3d37.html#a0478e968b6a66be5cecd45aa488b3d37">stbox_flags_to_wkb_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2general_2type__out_8c_acc6ecb6b3a12b218f168eb7e16a738a5.html#acc6ecb6b3a12b218f168eb7e16a738a5">stbox_to_wkb_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2general_2type__out_8c_a418b5ebeb33bfb694e803d939b6318a4.html#a418b5ebeb33bfb694e803d939b6318a4">stbox_to_wkb_size</a></td></tr>
@@ -215,8 +213,8 @@ $(function() {
 
 <p>Write into the buffer the flag containing the temporal type and other characteristics in the Well-Known Binary (WKB) representation. </p>
 <p >The output is a byte as follows </p><div class="fragment"><div class="line">xSGZxxxO</div>
-<div class="line">S = SRID, G = Geodetic, Z = has Z, O = ordered <a class="code hl_function" href="meos_2src_2geo_2CMakeLists_8txt_acff1997fd95be93a597ccad1766e72b2.html#acff1997fd95be93a597ccad1766e72b2">set</a>, x = unused bit</div>
-<div class="ttc" id="ameos_2src_2geo_2CMakeLists_8txt_acff1997fd95be93a597ccad1766e72b2_html_acff1997fd95be93a597ccad1766e72b2"><div class="ttname"><a href="meos_2src_2geo_2CMakeLists_8txt_acff1997fd95be93a597ccad1766e72b2.html#acff1997fd95be93a597ccad1766e72b2">set</a></div><div class="ttdeci">set(GEO_SRCS geoset.c pgis_types.c stbox.c stbox_index.c tgeo_aggfuncs.c tgeo_boxops.c tgeo_compops.c tgeo_distance.c tgeo_out.c tgeo_parser.c tgeo_restrict.c tgeo_spatialfuncs.c tgeo_spatialrels.c tgeo_tempspatialrels.c tgeo_tile.c tpoint_datagen.c tpoint_spatialfuncs.c tspatial.c tspatial_srid.c) if(1) list(APPEND GEO_SRCS tspatial_posops_meos.c tspatial_rtree.c tspatial_topops_meos.c) endif() add_library(geo OBJECT $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+<div class="line">S = SRID, G = Geodetic, Z = has Z, O = ordered <a class="code hl_function" href="meos_2src_2geo_2CMakeLists_8txt_a6a2c15929813591ee40b59b51fb56be3.html#a6a2c15929813591ee40b59b51fb56be3">set</a>, x = unused bit</div>
+<div class="ttc" id="ameos_2src_2geo_2CMakeLists_8txt_a6a2c15929813591ee40b59b51fb56be3_html_a6a2c15929813591ee40b59b51fb56be3"><div class="ttname"><a href="meos_2src_2geo_2CMakeLists_8txt_a6a2c15929813591ee40b59b51fb56be3.html#a6a2c15929813591ee40b59b51fb56be3">set</a></div><div class="ttdeci">set(GEO_SRCS geoset.c pgis_types.c stbox.c stbox_index.c tgeo.c tgeo_aggfuncs.c tgeo_boxops.c tgeo_compops.c tgeo_distance.c tgeo_inout.c tgeo_restrict.c tgeo_spatialfuncs.c tgeo_spatialrels.c tgeo_tempspatialrels.c tgeo_tile.c tpoint_datagen.c tpoint_spatialfuncs.c tspatial.c tspatial_parser.c tspatial_srid.c) if(1) list(APPEND GEO_SRCS tspatial_posops_meos.c tspatial_rtree.c tspatial_topops_meos.c) endif() add_library(geo OBJECT $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
 </div><!-- fragment --> 
 </div>
 </div>
