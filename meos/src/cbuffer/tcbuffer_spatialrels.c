@@ -73,7 +73,7 @@ static int
 spatialrel_tcbuffer_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum param, varfunc func, int numparam, bool invert)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -113,7 +113,7 @@ static int
 spatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
   Datum param, varfunc func, int numparam, bool invert)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1;
@@ -158,7 +158,7 @@ int
 ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
   bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -222,7 +222,7 @@ int
 ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -272,7 +272,7 @@ adisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 edisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1;
@@ -442,7 +442,7 @@ aintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 int
 etouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -481,7 +481,7 @@ etouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 atouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -514,7 +514,7 @@ atouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 etouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1;
@@ -553,7 +553,7 @@ etouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 int
 atouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1;
@@ -591,7 +591,7 @@ atouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 int
 edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -612,7 +612,7 @@ edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 int
 adwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -641,7 +641,7 @@ int
 edwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
   double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_valid_tcbuffer_cbuffer(temp, cbuf) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -663,7 +663,7 @@ int
 adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
   double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_valid_tcbuffer_cbuffer(temp, cbuf) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -693,8 +693,8 @@ ea_dwithin_tcbufferinst_tcbufferinst(const TInstant *inst1,
 {
   assert(inst1); assert(inst2);
   /* Result is the same for both EVER and ALWAYS */
-  return DatumGetBool(datum_geom_dwithin2d(tinstant_val(inst1),
-    tinstant_val(inst2), Float8GetDatum(dist)));
+  return DatumGetBool(datum_geom_dwithin2d(tinstant_value_p(inst1),
+    tinstant_value_p(inst2), Float8GetDatum(dist)));
 }
 
 /**
@@ -770,8 +770,8 @@ ea_dwithin_tcbufferseq_tcbufferseq_cont(const TSequence *seq1,
 
   start1 = TSEQUENCE_INST_N(seq1, 0);
   start2 = TSEQUENCE_INST_N(seq2, 0);
-  Datum sv1 = tinstant_val(start1);
-  Datum sv2 = tinstant_val(start2);
+  Datum sv1 = tinstant_value_p(start1);
+  Datum sv2 = tinstant_value_p(start2);
 
   bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
   bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
@@ -782,8 +782,8 @@ ea_dwithin_tcbufferseq_tcbufferseq_cont(const TSequence *seq1,
   {
     const TInstant *end1 = TSEQUENCE_INST_N(seq1, i);
     const TInstant *end2 = TSEQUENCE_INST_N(seq2, i);
-    Datum ev1 = tinstant_val(end1);
-    Datum ev2 = tinstant_val(end2);
+    Datum ev1 = tinstant_value_p(end1);
+    Datum ev2 = tinstant_value_p(end2);
     TimestampTz upper = end1->t;
     bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
 
@@ -891,7 +891,7 @@ int
 ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double dist, bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_valid_tcbuffer_tcbuffer(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -922,7 +922,7 @@ int
 edwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return -1;
@@ -942,7 +942,7 @@ int
 adwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return -1;

@@ -53,7 +53,7 @@
 void
 tnpointinst_set_stbox(const TInstant *inst, STBox *box)
 {
-  npoint_set_stbox(DatumGetNpointP(tinstant_val(inst)), box);
+  npoint_set_stbox(DatumGetNpointP(tinstant_value_p(inst)), box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
@@ -91,14 +91,14 @@ void
 tnpointinstarr_linear_set_stbox(const TInstant **instants, int count,
   STBox *box)
 {
-  Npoint *np = DatumGetNpointP(tinstant_val(instants[0]));
+  Npoint *np = DatumGetNpointP(tinstant_value_p(instants[0]));
   int64 rid = np->rid;
   double posmin, posmax;
   posmin = posmax = np->pos;
   TimestampTz tmin = instants[0]->t, tmax = instants[count - 1]->t;
   for (int i = 1; i < count; i++)
   {
-    np = DatumGetNpointP(tinstant_val(instants[i]));
+    np = DatumGetNpointP(tinstant_value_p(instants[i]));
     posmin = Min(posmin, np->pos);
     posmax = Max(posmax, np->pos);
   }
@@ -151,8 +151,8 @@ tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst)
   else
   {
     const TInstant *last = TSEQUENCE_INST_N(seq, seq->count - 1);
-    Npoint *np1 = DatumGetNpointP(tinstant_val(last));
-    Npoint *np2 = DatumGetNpointP(tinstant_val(inst));
+    Npoint *np1 = DatumGetNpointP(tinstant_value_p(last));
+    Npoint *np2 = DatumGetNpointP(tinstant_value_p(inst));
     int64 rid = np1->rid;
     double posmin = Min(np1->pos, np2->pos);
     double posmax = Min(np1->pos, np2->pos);

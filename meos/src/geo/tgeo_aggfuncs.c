@@ -100,14 +100,14 @@ tpointinst_transform_tcentroid(const TInstant *inst)
 {
   if (MEOS_FLAGS_GET_Z(inst->flags))
   {
-    const POINT3DZ *point = DATUM_POINT3DZ_P(tinstant_val(inst));
+    const POINT3DZ *point = DATUM_POINT3DZ_P(tinstant_value_p(inst));
     double4 dvalue;
     double4_set(point->x, point->y, point->z, 1, &dvalue);
     return tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE4, inst->t);
   }
   else
   {
-    const POINT2D *point = DATUM_POINT2D_P(tinstant_val(inst));
+    const POINT2D *point = DATUM_POINT2D_P(tinstant_value_p(inst));
     double3 dvalue;
     double3_set(point->x, point->y, 1, &dvalue);
     return tinstant_make(PointerGetDatum(&dvalue), T_TDOUBLE3, inst->t);
@@ -213,7 +213,7 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
   if (! temp)
     return state;
   bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_tpoint_type(temp->temptype) ||
       ! ensure_geoaggstate(state, tspatial_srid(temp), hasz))
     return NULL;
@@ -296,7 +296,7 @@ doublen_to_point(const TInstant *inst, int32_t srid)
   LWPOINT *point;
   if (inst->temptype == T_TDOUBLE3)
   {
-    double3 *value3 = (double3 *) DatumGetPointer(tinstant_val(inst));
+    double3 *value3 = (double3 *) DatumGetPointer(tinstant_value_p(inst));
     assert(value3->c != 0);
     double valuea = value3->a / value3->c;
     double valueb = value3->b / value3->c;
@@ -304,7 +304,7 @@ doublen_to_point(const TInstant *inst, int32_t srid)
   }
   else /* inst->temptype == T_TDOUBLE4 */
   {
-    double4 *value4 = (double4 *) DatumGetPointer(tinstant_val(inst));
+    double4 *value4 = (double4 *) DatumGetPointer(tinstant_value_p(inst));
     assert(value4->d != 0);
     double valuea = value4->a / value4->d;
     double valueb = value4->b / value4->d;

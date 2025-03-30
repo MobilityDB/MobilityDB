@@ -115,11 +115,10 @@ Temporal *
 tpoint_get_coord(const Temporal *temp, int coord)
 {
   assert(coord >= 0 && coord <= 2);
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (coord == 2 && ! ensure_has_Z(temp->temptype, temp->flags))
      return NULL;
 
-  /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   if (coord == 0)
@@ -511,8 +510,8 @@ tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   assert(! gserialized_is_empty(DatumGetGserializedP(value)));
 
   /* We are sure that the trajectory is a line */
-  Datum start = tinstant_val(inst1);
-  Datum end = tinstant_val(inst2);
+  Datum start = tinstant_value_p(inst1);
+  Datum end = tinstant_value_p(inst2);
   double dist;
   double fraction = (double) pointsegm_locate_point(start, end, value, &dist);
   if (fabs(dist) >= MEOS_EPSILON)
@@ -544,10 +543,10 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   bool hasz = MEOS_FLAGS_GET_Z(start1->flags);
   if (hasz)
   {
-    const POINT3DZ *p1 = DATUM_POINT3DZ_P(tinstant_val(start1));
-    const POINT3DZ *p2 = DATUM_POINT3DZ_P(tinstant_val(end1));
-    const POINT3DZ *p3 = DATUM_POINT3DZ_P(tinstant_val(start2));
-    const POINT3DZ *p4 = DATUM_POINT3DZ_P(tinstant_val(end2));
+    const POINT3DZ *p1 = DATUM_POINT3DZ_P(tinstant_value_p(start1));
+    const POINT3DZ *p2 = DATUM_POINT3DZ_P(tinstant_value_p(end1));
+    const POINT3DZ *p3 = DATUM_POINT3DZ_P(tinstant_value_p(start2));
+    const POINT3DZ *p4 = DATUM_POINT3DZ_P(tinstant_value_p(end2));
     x1 = p1->x; y1 = p1->y; z1 = p1->z;
     x2 = p2->x; y2 = p2->y; z2 = p2->z;
     x3 = p3->x; y3 = p3->y; z3 = p3->z;
@@ -559,10 +558,10 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   }
   else
   {
-    const POINT2D *p1 = DATUM_POINT2D_P(tinstant_val(start1));
-    const POINT2D *p2 = DATUM_POINT2D_P(tinstant_val(end1));
-    const POINT2D *p3 = DATUM_POINT2D_P(tinstant_val(start2));
-    const POINT2D *p4 = DATUM_POINT2D_P(tinstant_val(end2));
+    const POINT2D *p1 = DATUM_POINT2D_P(tinstant_value_p(start1));
+    const POINT2D *p2 = DATUM_POINT2D_P(tinstant_value_p(end1));
+    const POINT2D *p3 = DATUM_POINT2D_P(tinstant_value_p(start2));
+    const POINT2D *p4 = DATUM_POINT2D_P(tinstant_value_p(end2));
     x1 = p1->x; y1 = p1->y;
     x2 = p2->x; y2 = p2->y;
     x3 = p3->x; y3 = p3->y;
@@ -983,19 +982,19 @@ tpointseq_linear_trajectory(const TSequence *seq, bool unary_union)
 
   /* Instantaneous or stationary sequence*/
   if (seq->count == 1 || (seq->count == 2 &&
-        datum_point_eq(tinstant_val(TSEQUENCE_INST_N(seq, 0)),
-          tinstant_val(TSEQUENCE_INST_N(seq, 1)))))
+        datum_point_eq(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)),
+          tinstant_value_p(TSEQUENCE_INST_N(seq, 1)))))
     /* Function #tinstant_value return a copy of the value */
     return DatumGetGserializedP(tinstant_value(TSEQUENCE_INST_N(seq, 0)));
 
   /* General case */
   GSERIALIZED **points = palloc(sizeof(GSERIALIZED *) * seq->count);
-  points[0] = DatumGetGserializedP(tinstant_val(TSEQUENCE_INST_N(seq, 0)));
+  points[0] = DatumGetGserializedP(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)));
   int npoints = 1;
   for (int i = 1; i < seq->count; i++)
   {
     GSERIALIZED *gs =
-      DatumGetGserializedP(tinstant_val(TSEQUENCE_INST_N(seq, i)));
+      DatumGetGserializedP(tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
     /* If linear interpolation, remove two equal consecutive points */
     if (npoints == 0 || unary_union || 
         ! geopoint_same(gs, points[npoints - 1]))
@@ -1065,7 +1064,7 @@ tpointseqset_linear_trajectory(const TSequenceSet *ss, bool unary_union)
 GSERIALIZED *
 tpoint_trajectory(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
     return NULL;
 
@@ -1159,13 +1158,13 @@ tpointinst_to_geomeas_iter(const TInstant *inst, const TInstant *meas)
 {
   Datum m;
   if (meas)
-    m = tinstant_val(meas);
+    m = tinstant_value_p(meas);
   else
   {
     double epoch = ((double) inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
     m = Float8GetDatum(epoch);
   }
-  return point_meas_to_lwpoint(tinstant_val(inst), m);
+  return point_meas_to_lwpoint(tinstant_value_p(inst), m);
 }
 
 /**
@@ -1522,7 +1521,7 @@ bool
 tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *meas,
   bool segmentize, GSERIALIZED **result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) tpoint) ||
       ! ensure_not_null((void *) result) ||
       ! ensure_tpoint_type(tpoint->temptype) ||
@@ -1809,7 +1808,7 @@ geomeas_tpointseqset(const LWGEOM *geom, bool hasz, bool geodetic)
 Temporal *
 geomeas_tpoint(const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
       ! ensure_has_M_geo(gs))
     return NULL;
@@ -1854,13 +1853,13 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
 
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   instants[0] = TSEQUENCE_INST_N(seq, 0);
-  const POINT2D *last = DATUM_POINT2D_P(tinstant_val(instants[0]));
+  const POINT2D *last = DATUM_POINT2D_P(tinstant_value_p(instants[0]));
   int npoints = 1;
   for (int i = 1; i < seq->count; i++)
   {
     bool last_point = (i == seq->count - 1);
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    const POINT2D *pt = DATUM_POINT2D_P(tinstant_val(inst));
+    const POINT2D *pt = DATUM_POINT2D_P(tinstant_value_p(inst));
 
     /* Don't drop points if we are running short of points */
     if (seq->count - i > min_points - npoints)
@@ -1999,7 +1998,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
 
   int32_t srid = tspatialinst_srid(inst);
   POINT4D p;
-  point_grid(tinstant_val(inst), hasz, grid, &p);
+  point_grid(tinstant_value_p(inst), hasz, grid, &p);
   /* Write rounded values into the next instant */
   LWPOINT *lwpoint = hasz ?
     lwpoint_make3dz(srid, p.x, p.y, p.z) : lwpoint_make2d(srid, p.x, p.y);
@@ -2023,7 +2022,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
   {
     POINT4D p, prev_p = { 0 }; /* make compiler quiet */
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    point_grid(tinstant_val(inst), hasz, grid, &p);
+    point_grid(tinstant_value_p(inst), hasz, grid, &p);
     /* Skip duplicates */
     if (i > 1 && prev_p.x == p.x && prev_p.y == p.y &&
       (hasz ? prev_p.z == p.z : 1))
@@ -2199,7 +2198,7 @@ tpointseq_decouple_iter(const TSequence *seq, int64 *times)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+    const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
     points[i] = lwgeom_from_gserialized(gs);
     times[i] = (inst->t / 1000000) + DELTA_UNIX_POSTGRES_EPOCH;
   }
@@ -2325,7 +2324,7 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr,
   int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) bounds) ||
       ! ensure_not_null((void *) gsarr) ||
       ! ensure_not_null((void *) timesarr) ||
@@ -2388,11 +2387,11 @@ static double
 tpointseq_length_2d(const TSequence *seq)
 {
   double result = 0.0;
-  Datum start = tinstant_val(TSEQUENCE_INST_N(seq, 0));
+  Datum start = tinstant_value_p(TSEQUENCE_INST_N(seq, 0));
   const POINT2D *p1 = DATUM_POINT2D_P(start);
   for (int i = 1; i < seq->count; i++)
   {
-    Datum end = tinstant_val(TSEQUENCE_INST_N(seq, i));
+    Datum end = tinstant_value_p(TSEQUENCE_INST_N(seq, i));
     const POINT2D *p2 = DATUM_POINT2D_P(end);
     result += sqrt( ((p1->x - p2->x) * (p1->x - p2->x)) +
       ((p1->y - p2->y) * (p1->y - p2->y)) );
@@ -2409,11 +2408,11 @@ static double
 tpointseq_length_3d(const TSequence *seq)
 {
   double result = 0.0;
-  Datum start = tinstant_val(TSEQUENCE_INST_N(seq, 0));
+  Datum start = tinstant_value_p(TSEQUENCE_INST_N(seq, 0));
   const POINT3DZ *p1 = DATUM_POINT3DZ_P(start);
   for (int i = 1; i < seq->count; i++)
   {
-    Datum end = tinstant_val(TSEQUENCE_INST_N(seq, i));
+    Datum end = tinstant_value_p(TSEQUENCE_INST_N(seq, i));
     const POINT3DZ *p2 = DATUM_POINT3DZ_P(end);
     result += sqrt( ((p1->x - p2->x)*(p1->x - p2->x)) +
       ((p1->y - p2->y)*(p1->y - p2->y)) +
@@ -2481,7 +2480,7 @@ tpointseqset_length(const TSequenceSet *ss)
 double
 tpoint_length(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
     return -1.0;
 
@@ -2522,13 +2521,13 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   datum_func2 func = pt_distance_fn(seq->flags);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Datum value1 = tinstant_val(inst1);
+  Datum value1 = tinstant_value_p(inst1);
   double length = prevlength;
   instants[0] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst1->t);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Datum value2 = tinstant_val(inst2);
+    Datum value2 = tinstant_value_p(inst2);
     if (! datum_point_eq(value1, value2))
       length += DatumGetFloat8(func(value1, value2));
     instants[i] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst2->t);
@@ -2559,7 +2558,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
     /* sequences[i] may have less sequences than composing sequence due to
      * normalization */
     const TInstant *end = TSEQUENCE_INST_N(sequences[i], sequences[i]->count - 1);
-    length = DatumGetFloat8(tinstant_val(end));
+    length = DatumGetFloat8(tinstant_value_p(end));
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
@@ -2574,7 +2573,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ss)
 Temporal *
 tpoint_cumulative_length(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
     return NULL;
 
@@ -2612,12 +2611,12 @@ tpointseq_speed(const TSequence *seq)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   datum_func2 func = pt_distance_fn(seq->flags);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Datum value1 = tinstant_val(inst1);
+  Datum value1 = tinstant_value_p(inst1);
   double speed = 0.0; /* make compiler quiet */
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
-    Datum value2 = tinstant_val(inst2);
+    Datum value2 = tinstant_value_p(inst2);
     speed = datum_point_eq(value1, value2) ? 0.0 :
       DatumGetFloat8(func(value1, value2)) /
         ((double)(inst2->t - inst1->t) / 1000000.0);
@@ -2667,7 +2666,7 @@ tpointseqset_speed(const TSequenceSet *ss)
 Temporal *
 tpoint_speed(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype) ||
       ! ensure_linear_interp(temp->flags))
     return NULL;
@@ -2705,7 +2704,7 @@ tpointseq_twcentroid_iter(const TSequence *seq, bool hasz, interpType interp,
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     POINT4D p;
-    datum_point4d(tinstant_val(inst), &p);
+    datum_point4d(tinstant_value_p(inst), &p);
     instantsx[i] = tinstant_make(Float8GetDatum(p.x), T_TFLOAT, inst->t);
     instantsy[i] = tinstant_make(Float8GetDatum(p.y), T_TFLOAT, inst->t);
     if (hasz)
@@ -2793,7 +2792,7 @@ tpointseqset_twcentroid(const TSequenceSet *ss)
 GSERIALIZED *
 tpoint_twcentroid(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
     return NULL;
 
@@ -2864,8 +2863,8 @@ tpointseq_direction(const TSequence *seq, double *result)
     &datum_geog_azimuth : &datum_geom_azimuth;
 
   /* We are sure that there are at least 2 instants */
-  Datum value1 = tinstant_val(TSEQUENCE_INST_N(seq, 0));
-  Datum value2 = tinstant_val(TSEQUENCE_INST_N(seq, seq->count - 1));
+  Datum value1 = tinstant_value_p(TSEQUENCE_INST_N(seq, 0));
+  Datum value2 = tinstant_value_p(TSEQUENCE_INST_N(seq, seq->count - 1));
   if (datum_point_eq(value1, value2))
     return false;
 
@@ -2897,8 +2896,8 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
   /* We are sure that there are at least 2 instants */
   const TSequence *seq1 = TSEQUENCESET_SEQ_N(ss, 0);
   const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss, ss->count - 1);
-  Datum value1 = tinstant_val(TSEQUENCE_INST_N(seq1, 0));
-  Datum value2 = tinstant_val(TSEQUENCE_INST_N(seq2, seq2->count - 1));
+  Datum value1 = tinstant_value_p(TSEQUENCE_INST_N(seq1, 0));
+  Datum value2 = tinstant_value_p(TSEQUENCE_INST_N(seq2, seq2->count - 1));
   if (datum_point_eq(value1, value2))
     return false;
 
@@ -2916,7 +2915,7 @@ tpointseqset_direction(const TSequenceSet *ss, double *result)
 bool
 tpoint_direction(const Temporal *temp, double *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result) ||
       ! ensure_tpoint_type(temp->temptype))
     return false;
@@ -2958,7 +2957,7 @@ tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
   /* We are sure that there are at least 2 instants */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Datum value1 = tinstant_val(inst1);
+  Datum value1 = tinstant_value_p(inst1);
   int ninsts = 0, nseqs = 0;
   Datum azimuth = 0; /* Make the compiler quiet */
   bool lower_inc = seq->period.lower_inc;
@@ -2966,7 +2965,7 @@ tpointseq_azimuth_iter(const TSequence *seq, TSequence **result)
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Datum value2 = tinstant_val(inst2);
+    Datum value2 = tinstant_value_p(inst2);
     upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     if (! datum_point_eq(value1, value2))
     {
@@ -3052,7 +3051,7 @@ tpointseqset_azimuth(const TSequenceSet *ss)
 Temporal *
 tpoint_azimuth(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
     return NULL;
 
@@ -3074,7 +3073,7 @@ tpoint_azimuth(const Temporal *temp)
 Temporal *
 tpoint_angular_difference(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
     return NULL;
 
@@ -3191,8 +3190,8 @@ tpoint_geo_min_bearing_at_timestamptz(const TInstant *start,
   const TInstant *end, Datum point, meosType basetypid __attribute__((unused)),
   Datum *value, TimestampTz *t)
 {
-  Datum dstart = tinstant_val(start);
-  Datum dend = tinstant_val(end);
+  Datum dstart = tinstant_value_p(start);
+  Datum dend = tinstant_value_p(end);
   const POINT2D *p1 = DATUM_POINT2D_P(dstart);
   const POINT2D *p2 = DATUM_POINT2D_P(dend);
   const POINT2D *p = DATUM_POINT2D_P(point);
@@ -3258,10 +3257,10 @@ tpointsegm_min_bearing_at_timestamptz(const TInstant *start1,
   const TInstant *end2, Datum *value, TimestampTz *t)
 {
   assert(! MEOS_FLAGS_GET_GEODETIC(start1->flags));
-  const POINT2D *sp1 = DATUM_POINT2D_P(tinstant_val(start1));
-  const POINT2D *ep1 = DATUM_POINT2D_P(tinstant_val(end1));
-  const POINT2D *sp2 = DATUM_POINT2D_P(tinstant_val(start2));
-  const POINT2D *ep2 = DATUM_POINT2D_P(tinstant_val(end2));
+  const POINT2D *sp1 = DATUM_POINT2D_P(tinstant_value_p(start1));
+  const POINT2D *ep1 = DATUM_POINT2D_P(tinstant_value_p(end1));
+  const POINT2D *sp2 = DATUM_POINT2D_P(tinstant_value_p(start2));
+  const POINT2D *ep2 = DATUM_POINT2D_P(tinstant_value_p(end2));
   /* It there is a North passage we call the function
     tgeompoint_min_dist_at_timestamp */
   bool ds = (sp1->x - sp2->x) > 0;
@@ -3320,7 +3319,7 @@ bool
 bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   double *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs1) || ! ensure_not_null((void *) gs2) ||
       ! ensure_point_type(gs1) || ! ensure_point_type(gs2) ||
       ! ensure_same_srid(gserialized_get_srid(gs1), gserialized_get_srid(gs2)) ||
@@ -3347,7 +3346,7 @@ bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 Temporal *
 bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_point_type(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
@@ -3378,7 +3377,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 Temporal *
 bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_tspatial(temp1, temp2) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags) )
     return NULL;
@@ -3514,11 +3513,11 @@ multipoint_make(const TSequence *seq, int start, int end)
   {
     if (tpoint_type(seq->temptype))
       gs = DatumGetGserializedP(
-        tinstant_val(TSEQUENCE_INST_N(seq, start + i)));
+        tinstant_value_p(TSEQUENCE_INST_N(seq, start + i)));
 #if NPOINT
     else if (seq->temptype == T_TNPOINT)
       gs = npoint_geom(DatumGetNpointP(
-        tinstant_val(TSEQUENCE_INST_N(seq, start + i))));
+        tinstant_value_p(TSEQUENCE_INST_N(seq, start + i))));
 #endif
     else
     {
@@ -3543,10 +3542,10 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
 {
   GSERIALIZED *gs = NULL; /* make compiler quiet */
   if (tpoint_type(inst->temptype))
-    gs = DatumGetGserializedP(tinstant_val(inst));
+    gs = DatumGetGserializedP(tinstant_value_p(inst));
 #if NPOINT
   else if (inst->temptype == T_TNPOINT)
-    gs = npoint_geom(DatumGetNpointP(tinstant_val(inst)));
+    gs = npoint_geom(DatumGetNpointP(tinstant_value_p(inst)));
 #endif
   else
   {
@@ -3558,6 +3557,8 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
   GEOSGeometry *geom1 = GEOSGeom_createPointFromXY(pt->x, pt->y);
   GEOSGeometry *result = GEOSUnion(geom, geom1);
   GEOSGeom_destroy(geom1); GEOSGeom_destroy(geom);
+  if (inst->temptype == T_TNPOINT)
+    pfree(gs);
   return result;
 }
 
@@ -3846,8 +3847,8 @@ tpointseq_discstep_find_splits(const TSequence *seq, int *count)
     /* Find intersections in the piece defined by start and end in a
      * breadth-first search */
     int j = start, k = start + 1;
-    Datum value1 = tinstant_val(TSEQUENCE_INST_N(seq, j));
-    Datum value2 = tinstant_val(TSEQUENCE_INST_N(seq, k));
+    Datum value1 = tinstant_value_p(TSEQUENCE_INST_N(seq, j));
+    Datum value2 = tinstant_value_p(TSEQUENCE_INST_N(seq, k));
     while (true)
     {
       if (datum_point_eq(value1, value2))
@@ -3861,7 +3862,7 @@ tpointseq_discstep_find_splits(const TSequence *seq, int *count)
       if (j < k - 1)
       {
         j++;
-        value1 = tinstant_val(TSEQUENCE_INST_N(seq, j));
+        value1 = tinstant_value_p(TSEQUENCE_INST_N(seq, j));
       }
       else
       {
@@ -3869,8 +3870,8 @@ tpointseq_discstep_find_splits(const TSequence *seq, int *count)
         if (k > end)
           break;
         j = start;
-        value1 = tinstant_val(TSEQUENCE_INST_N(seq, j));
-        value2 = tinstant_val(TSEQUENCE_INST_N(seq, k));
+        value1 = tinstant_value_p(TSEQUENCE_INST_N(seq, j));
+        value2 = tinstant_value_p(TSEQUENCE_INST_N(seq, k));
       }
     }
     if (k > end)
@@ -3912,11 +3913,11 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
   const POINT2D **points = palloc0(sizeof(POINT2D *) * seq->count);
   /* bitarr is an array of bool for collecting the splits */
   bool *bitarr = palloc0(sizeof(bool) * seq->count);
-  points[0] = DATUM_POINT2D_P(tinstant_val(TSEQUENCE_INST_N(seq, 0)));
+  points[0] = DATUM_POINT2D_P(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)));
   int numsplits = 0;
   for (int i = 1; i < seq->count; i++)
   {
-    points[i] = DATUM_POINT2D_P(tinstant_val(TSEQUENCE_INST_N(seq, i)));
+    points[i] = DATUM_POINT2D_P(tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
     /* If stationary segment we need to split the sequence */
     if (points[i - 1]->x == points[i]->x && points[i - 1]->y == points[i]->y)
     {
@@ -4045,7 +4046,7 @@ tpointseq_discstep_is_simple(const TSequence *seq)
   assert(seq->count > 1);
   Datum *points = palloc(sizeof(Datum) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    points[i] = tinstant_val(TSEQUENCE_INST_N(seq, i));
+    points[i] = tinstant_value_p(TSEQUENCE_INST_N(seq, i));
   datumarr_sort(points, seq->count, temptype_basetype(seq->temptype));
   bool found = false;
   for (int i = 1; i < seq->count; i++)
@@ -4112,7 +4113,7 @@ tpointseqset_is_simple(const TSequenceSet *ss)
 bool
 tpoint_is_simple(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
     return false;
 
@@ -4199,10 +4200,10 @@ tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
      * exclusive upper bound must be equal */
     bool tofree = false;
     if (! linear && ! upper_inc1 &&
-      ! datum_point_eq(tinstant_val(instants[end - start - 1]),
-      tinstant_val(instants[end - start])))
+      ! datum_point_eq(tinstant_value_p(instants[end - start - 1]),
+      tinstant_value_p(instants[end - start])))
     {
-      Datum value = tinstant_val(instants[end - start - 1]);
+      Datum value = tinstant_value_p(instants[end - start - 1]);
       TimestampTz t = (instants[end - start])->t;
       instants[end - start] = tinstant_make(value, seq->temptype, t);
       tofree = true;
@@ -4317,7 +4318,7 @@ tpointseqset_make_simple(const TSequenceSet *ss, int *count)
 Temporal **
 tpoint_make_simple(const Temporal *temp, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_tpoint_type(temp->temptype))
     return NULL;

@@ -80,8 +80,8 @@ SELECT COUNT(*) FROM tbl_floatspanset WHERE f &< floatspan '[15, 25]';
 SELECT COUNT(*) FROM tbl_floatspanset WHERE f >> floatspan '[85, 95]';
 SELECT COUNT(*) FROM tbl_floatspanset WHERE f &> floatspan '[85, 95]';
 
-SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
-SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
+SELECT round((f <-> 101.0), 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
+SELECT round((f <-> floatspan '[101,105]'), 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
 
 DROP INDEX IF EXISTS tbl_intspanset_rtree_idx;
 DROP INDEX IF EXISTS tbl_floatspanset_rtree_idx;
@@ -125,8 +125,8 @@ SELECT COUNT(*) FROM tbl_floatspanset WHERE f &< floatspan '[15, 25]';
 SELECT COUNT(*) FROM tbl_floatspanset WHERE f >> floatspan '[85, 95]';
 SELECT COUNT(*) FROM tbl_floatspanset WHERE f &> floatspan '[85, 95]';
 
-SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
-SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
+SELECT round((f <-> 101.0), 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
+SELECT round((f <-> floatspan '[101,105]'), 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
 
 DROP INDEX IF EXISTS tbl_intspanset_quadtree_idx;
 DROP INDEX IF EXISTS tbl_floatspanset_quadtree_idx;

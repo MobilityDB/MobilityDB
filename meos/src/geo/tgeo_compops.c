@@ -60,7 +60,7 @@ static int
 eacomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
@@ -78,7 +78,7 @@ static int
 eacomp_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2) ||
       ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
@@ -257,7 +257,7 @@ static Temporal *
 tcomp_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
   Datum (*func)(Datum, Datum, meosType))
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
@@ -275,7 +275,7 @@ static Temporal *
 tcomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, meosType))
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))

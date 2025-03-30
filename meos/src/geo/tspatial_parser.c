@@ -40,6 +40,9 @@
 #include "general/type_parser.h"
 #include "general/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
+#if RGEO
+  #include "rgeo/trgeo_parser.h"
+#endif /* RGEO */
 
 /*****************************************************************************/
 
@@ -90,7 +93,7 @@ stbox_parse(const char **str)
   bool hasx = false, hasz = false, hast = false, geodetic = false;
   const char *type_str = meostype_name(T_STBOX);
 
-  /* Determine whether there is an SRID */
+  /* Get the SRID if it is given */
   int32_t srid;
   bool hassrid = srid_parse(str, &srid);
 
@@ -316,7 +319,7 @@ geo_parse(const char **str, meosType basetype, char delim, int *srid,
  * take the value from the base value if it is not SRID_UNKNOWN.
  * @param[out] result New spatial base value, may be NULL
  */
-static bool 
+bool 
 spatial_parse_elem(const char **str, meosType temptype, char delim, 
   int *temp_srid, Datum *result)
 {
@@ -553,8 +556,7 @@ tspatial_parse(const char **str, meosType temptype)
   const char *bak = *str;
   p_whitespace(str);
 
-  /* Determine whether there is an SRID. If there is one we decode it and
-   * advance the bak pointer after the SRID to do not parse in the */
+  /* Get the SRID if it is given */
   int temp_srid = SRID_UNKNOWN;
   srid_parse(str, &temp_srid);
 
@@ -571,10 +573,10 @@ tspatial_parse(const char **str, meosType temptype)
   p_whitespace(str);
 
   Temporal *result = NULL; /* keep compiler quiet */
-  /* Determine the subtype of the temporal spatial value */
+  /* Determine the subtype of the temporal spatial value and call the
+   * function corresponding to the subtype passing the SRID */
   if (**str != '{' && **str != '[' && **str != '(')
   {
-    /* Pass the SRID specification */
     *str = bak;
     TInstant *inst;
     if (! tspatialinst_parse(str, temptype, true, &temp_srid, &inst))
@@ -620,7 +622,7 @@ tpoint_parse(const char **str, meosType temptype)
 {
   Temporal *result = tspatial_parse(str, temptype);
   const TInstant *inst = temporal_start_inst(result);
-  const GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+  const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
   if (! ensure_point_type(gs) || ! ensure_has_not_M_geo(gs))
   {
     pfree(result);
@@ -639,7 +641,7 @@ tpoint_parse(const char **str, meosType temptype)
 Temporal *
 tgeompoint_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return tpoint_parse(&str, T_TGEOMPOINT);
@@ -654,7 +656,7 @@ tgeompoint_in(const char *str)
 Temporal *
 tgeogpoint_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return tpoint_parse(&str, T_TGEOGPOINT);
@@ -669,7 +671,7 @@ tgeogpoint_in(const char *str)
 Temporal *
 tgeometry_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return tspatial_parse(&str, T_TGEOMETRY);
@@ -683,7 +685,7 @@ tgeometry_in(const char *str)
 Temporal *
 tgeography_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return tspatial_parse(&str, T_TGEOGRAPHY);

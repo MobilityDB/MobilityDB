@@ -51,6 +51,9 @@
 #if POSE
   #include <meos_pose.h>
 #endif
+#if RGEO
+  // #include <meos_rgeo.h>
+#endif
 #include "general/doublen.h"
 #include "general/pg_types.h"
 #include "general/set.h"
@@ -129,7 +132,7 @@ ttextseq_in(const char *str, interpType interp)
 TSequence *
 tboolseq_from_base_tstzset(bool b, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
   return tsequence_from_base_tstzset(BoolGetDatum(b), T_TBOOL, s);
@@ -145,7 +148,7 @@ tboolseq_from_base_tstzset(bool b, const Set *s)
 TSequence *
 tintseq_from_base_tstzset(int i, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
   return tsequence_from_base_tstzset(Int32GetDatum(i), T_TINT, s);
@@ -161,7 +164,7 @@ tintseq_from_base_tstzset(int i, const Set *s)
 TSequence *
 tfloatseq_from_base_tstzset(double d, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
   return tsequence_from_base_tstzset(Float8GetDatum(d), T_TFLOAT, s);
@@ -177,7 +180,7 @@ tfloatseq_from_base_tstzset(double d, const Set *s)
 TSequence *
 ttextseq_from_base_tstzset(const text *txt, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) txt) || ! ensure_not_null((void *) s) || 
       ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
@@ -196,7 +199,7 @@ ttextseq_from_base_tstzset(const text *txt, const Set *s)
 TSequence *
 tboolseq_from_base_tstzspan(bool b, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) ||
       ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
@@ -213,7 +216,7 @@ tboolseq_from_base_tstzspan(bool b, const Span *s)
 TSequence *
 tintseq_from_base_tstzspan(int i, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if ( ! ensure_not_null((void *) s) ||
       ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
@@ -231,7 +234,7 @@ tintseq_from_base_tstzspan(int i, const Span *s)
 TSequence *
 tfloatseq_from_base_tstzspan(double d, const Span *s, interpType interp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if ( ! ensure_not_null((void *) s) ||
       ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
@@ -247,7 +250,7 @@ tfloatseq_from_base_tstzspan(double d, const Span *s, interpType interp)
 TSequence *
 ttextseq_from_base_tstzspan(const text *txt, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if ( ! ensure_not_null((void *) txt) || ! ensure_not_null((void *) s) ||
       ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;

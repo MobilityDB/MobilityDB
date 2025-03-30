@@ -64,6 +64,9 @@
 #if POSE
   #include "pose/pose.h"
 #endif
+#if RGEO
+  #include "rgeo/trgeo_all.h"
+#endif
 
 #define MEOS_WKT_BOOL_SIZE sizeof("false")
 #define MEOS_WKT_INT4_SIZE sizeof("+2147483647")
@@ -146,7 +149,7 @@ basetype_out(Datum value, meosType type, int maxdd)
     case T_NPOINT:
       return npoint_out(DatumGetNpointP(value), maxdd);
 #endif
-#if POSE
+#if POSE || RGEO
     case T_POSE:
       return pose_out(DatumGetPoseP(value), maxdd);
 #endif
@@ -215,7 +218,7 @@ coordinates_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision
   stringbuffer_append_char(sb, '[');
   if (MEOS_FLAGS_GET_Z(inst->flags))
   {
-    const POINT3DZ *pt = DATUM_POINT3DZ_P(tinstant_val(inst));
+    const POINT3DZ *pt = DATUM_POINT3DZ_P(tinstant_value_p(inst));
     stringbuffer_append_double(sb, pt->x, precision);
     stringbuffer_append_char(sb, ',');
     stringbuffer_append_double(sb, pt->y, precision);
@@ -224,7 +227,7 @@ coordinates_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision
   }
   else
   {
-    const POINT2D *pt = DATUM_POINT2D_P(tinstant_val(inst));
+    const POINT2D *pt = DATUM_POINT2D_P(tinstant_value_p(inst));
     stringbuffer_append_double(sb, pt->x, precision);
     stringbuffer_append_char(sb, ',');
     stringbuffer_append_double(sb, pt->y, precision);
@@ -233,18 +236,17 @@ coordinates_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision
   return;
 }
 
-#if POSE
+#if POSE || RGEO
 /**
  * @brief Write into the buffer a pose in the MF-JSON representation
  */
 static void
-pose_as_json_sb(stringbuffer_t *sb, const TInstant *inst, int precision)
+pose_as_json_sb(stringbuffer_t *sb, const Pose *pose, int precision)
 {
   assert(precision <= OUT_MAX_DOUBLE_PRECISION);
-  Pose *pose = DatumGetPoseP(tinstant_val(inst));
   GSERIALIZED *gs = pose_point(pose);
   stringbuffer_append_len(sb, "{\"position\":{", 13);
-  if (MEOS_FLAGS_GET_Z(inst->flags))
+  if (MEOS_FLAGS_GET_Z(pose->flags))
   {
     const POINT3DZ *pt = GSERIALIZED_POINT3DZ_P(gs);
     stringbuffer_append_len(sb, "\"lat\":", 6);
@@ -286,7 +288,7 @@ static bool
 temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, meosType temptype,
   int precision)
 {
-  assert(talphanum_type(temptype));
+  assert(alphanum_basetype(temptype));
   switch (temptype)
   {
     case T_TBOOL:
@@ -301,6 +303,14 @@ temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, meosType temptype,
     case T_TTEXT:
       text_as_mfjson_sb(sb, DatumGetTextP(value));
       break;
+    case T_TGEOGRAPHY:
+    case T_TGEOMETRY:
+    {
+      char *str = geo_as_geojson(DatumGetGserializedP(value), 0, precision,
+        NULL);
+      stringbuffer_aprintf(sb, "%s,", str);
+      break;
+    }
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal type in MFJSON output: %s",
@@ -370,13 +380,8 @@ tbox_as_mfjson_sb(stringbuffer_t *sb, const TBox *box, int precision)
     stringbuffer_aprintf(sb, "%d", DatumGetInt32(box->span.upper) - 1);
   else
     stringbuffer_append_double(sb, DatumGetFloat8(box->span.upper), precision);
-  stringbuffer_append_len(sb, "],\"period\":{\"begin\":", 20);
-  datetimes_as_mfjson_sb(sb, DatumGetTimestampTz(box->period.lower));
-  stringbuffer_append_len(sb, ",\"end\":", 7);
-  datetimes_as_mfjson_sb(sb, DatumGetTimestampTz(box->period.upper));
-  stringbuffer_aprintf(sb, ",\"lower_inc\":%s,\"upper_inc\":%s},",
-    box->period.lower_inc ? "true" : "false",
-    box->period.upper_inc ? "true" : "false");
+  stringbuffer_append_len(sb, "],", 2);
+  tstzspan_as_mfjson_sb(sb, &box->period);
   return;
 }
 
@@ -407,13 +412,8 @@ stbox_as_mfjson_sb(stringbuffer_t *sb, const STBox *box, int precision)
     stringbuffer_append_char(sb, ',');
     stringbuffer_append_double(sb, box->zmax, precision);
   }
-  stringbuffer_append_len(sb, "]],\"period\":{\"begin\":", 21);
-  datetimes_as_mfjson_sb(sb, DatumGetTimestampTz(box->period.lower));
-  stringbuffer_append_len(sb, ",\"end\":", 7);
-  datetimes_as_mfjson_sb(sb, DatumGetTimestampTz(box->period.upper));
-  stringbuffer_aprintf(sb, ",\"lower_inc\":%s,\"upper_inc\":%s},",
-    box->period.lower_inc ? "true" : "false",
-    box->period.upper_inc ? "true" : "false");
+  stringbuffer_append_len(sb, "]],", 3);
+  tstzspan_as_mfjson_sb(sb, &box->period);
   return;
 }
 
@@ -441,6 +441,7 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, meosType temptype, const bboxunion *box,
     case T_TGEOMETRY:
     case T_TGEOGRAPHY:
     case T_TPOSE:
+    case T_TRGEOMETRY:
       stbox_as_mfjson_sb(sb, (STBox *) box, precision);
       break;
     default: /* Error! */
@@ -481,9 +482,16 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, meosType temptype)
     case T_TGEOGRAPHY:
       stringbuffer_append_len(sb, "{\"type\":\"MovingGeometry\",", 25);
       break;
+#if POSE
     case T_TPOSE:
       stringbuffer_append_len(sb, "{\"type\":\"MovingPose\",", 21);
       break;
+#endif
+#if RGEO
+    case T_TRGEOMETRY:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingRigidGeometry\",", 30);
+      break;
+#endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal type in MFJSON output: %s",
@@ -523,7 +531,7 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
   }
   else if (tgeo_type(inst->temptype))
   {
-    const GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+    const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
     /* Do not repeat the crs for the composing geometries */
     char *str = geo_as_geojson(gs, 0, precision, NULL);
     stringbuffer_aprintf(sb, "\"values\":[%s", str);
@@ -534,13 +542,25 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
   {
     /* Do not repeat the crs for the composing geometries */
     stringbuffer_append_len(sb, "\"values\":[", 10);
-    pose_as_json_sb(sb, inst, precision);
+    pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
   }
 #endif /* POSE */
+#if RGEO
+  else if (inst->temptype == T_TRGEOMETRY)
+  {
+    /* Do not repeat the crs for the composing geometries */
+    stringbuffer_append_len(sb, "\"geometry\":", 11);
+    GSERIALIZED *gs = DatumGetGserializedP(trgeoinst_geom_p(inst));
+    char *str = geo_as_geojson(gs, 0, precision, NULL);
+    stringbuffer_aprintf(sb, "%s,", str);
+    stringbuffer_append_len(sb, "\"values\":[", 10);
+    pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
+  }
+#endif /* RGEO */
   else
   {
     stringbuffer_append_len(sb, "\"values\":[", 10);
-    success = temporal_base_as_mfjson_sb(sb, tinstant_val(inst),
+    success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst),
       inst->temptype, precision);
     /* Propagate errors up */
     if (! success)
@@ -574,9 +594,18 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
       return false;
   }
   if (tpoint_type(seq->temptype))
-    stringbuffer_aprintf(sb, "\"%s\":[", "coordinates");
+    stringbuffer_append_len(sb, "\"coordinates\":[", 15);
+#if RGEO
+  else if (seq->temptype == T_TRGEOMETRY)
+  {
+    stringbuffer_append_len(sb, "\"geometry\":", 11);
+    const GSERIALIZED *gs = DatumGetGserializedP(trgeoseq_geom_p(seq));
+    char *str = geo_as_geojson(gs, 0, precision, NULL);
+    stringbuffer_aprintf(sb, "%s,\"values\":[", str);
+  }
+#endif /* RGEO */
   else
-    stringbuffer_aprintf(sb, "\"%s\":[", "values");
+    stringbuffer_append_len(sb, "\"values\":[", 10);
   const TInstant *inst;
   for (int i = 0; i < seq->count; i++)
   {
@@ -587,15 +616,29 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
       coordinates_as_mfjson_sb(sb, inst, precision);
     else if (tgeo_type(inst->temptype))
     {
-      const GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+      const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
       /* Do not repeat the crs for the composing geometries */
       char *str = geo_as_geojson(gs, 0, precision, NULL);
       stringbuffer_aprintf(sb, "%s", str);
       // pfree(str);
     }
+#if POSE
+    else if (inst->temptype == T_TPOSE)
+    {
+      /* Do not repeat the crs for the composing geometries */
+      pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
+    }
+#endif /* POSE */
+#if RGEO
+    else if (inst->temptype == T_TRGEOMETRY)
+    {
+      /* Do not repeat the crs of the reference geometry for the instants */
+      pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
+    }
+#endif /* RGEO */
     else
     {
-      success = temporal_base_as_mfjson_sb(sb, tinstant_val(inst), 
+      success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst), 
         inst->temptype, precision);
       /* Propagate errors up */
       if (! success)
@@ -639,6 +682,17 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
     if (! success)
       return false;
   }
+
+#if RGEO
+  if (ss->temptype == T_TRGEOMETRY)
+  {
+    stringbuffer_append_len(sb, "\"geometry\":", 11);
+    const GSERIALIZED *gs = DatumGetGserializedP(trgeoseqset_geom_p(ss));
+    char *str = geo_as_geojson(gs, 0, precision, NULL);
+    stringbuffer_aprintf(sb, "%s,", str);
+  }
+#endif /* RGEO */
+
   stringbuffer_append_len(sb, "\"sequences\":[", 13);
   const TInstant *inst;
   for (int i = 0; i < ss->count; i++)
@@ -659,15 +713,29 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
         coordinates_as_mfjson_sb(sb, inst, precision);
       else if (tgeo_type(inst->temptype))
       {
-        const GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+        const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
         /* Do not repeat the crs for the composing geometries */
         char *str = geo_as_geojson(gs, 0, precision, NULL);
         stringbuffer_aprintf(sb, "%s", str);      
         // pfree(str);
       }
+#if POSE
+      else if (inst->temptype == T_TPOSE)
+      {
+        /* Do not repeat the crs for the composing geometries */
+        pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
+      }
+#endif /* POSE */
+#if RGEO
+      else if (inst->temptype == T_TRGEOMETRY)
+      {
+        /* Do not repeat the crs of the reference geometry for the instants */
+        pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
+      }
+#endif /* RGEO */
       else
       {
-        success = temporal_base_as_mfjson_sb(sb, tinstant_val(inst),
+        success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst),
           inst->temptype, precision);
         /* Propagate errors up */
         if (! success)
@@ -708,7 +776,7 @@ char *
 temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
   int precision, const char *srs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
 
@@ -843,7 +911,7 @@ npoint_to_wkb_size(const Npoint *np, uint8_t variant, bool component)
 }
 #endif /* NPOINT */
 
-#if POSE
+#if POSE || RGEO
 /**
  * @brief Return the size in bytes of a pose in the Well-Known Binary (WKB)
  * representation
@@ -899,10 +967,10 @@ base_to_wkb_size(Datum value, meosType basetype, uint8_t variant)
     case T_NPOINT:
       return npoint_to_wkb_size(DatumGetNpointP(value), variant, true);
 #endif /* NPOINT */
-#if POSE
+#if POSE || RGEO
     case T_POSE:
       return pose_to_wkb_size(DatumGetPoseP(value), variant, true);
-#endif /* POSE */
+#endif /* POSE || RGEO */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal base type in WKB output: %s",
@@ -1027,7 +1095,7 @@ tinstarr_to_wkb_size(const TInstant **instants, int count, uint8_t variant)
   meosType basetype = temptype_basetype(instants[0]->temptype);
   for (int i = 0; i < count; i++)
   {
-    Datum value = tinstant_val(instants[i]);
+    Datum value = tinstant_value_p(instants[i]);
     result += base_to_wkb_size(value, basetype, variant);
   }
   /* size of the TInstant array */
@@ -1068,7 +1136,7 @@ tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
     result += MEOS_WKB_INT4_SIZE;
   /* Include the number of instants and the period bounds flag */
   result += MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE;
-  const TInstant **instants = tsequence_insts(seq);
+  const TInstant **instants = tsequence_instants_p(seq);
   /* Include the TInstant array */
   result += tinstarr_to_wkb_size(instants, seq->count, variant);
   pfree(instants);
@@ -1106,16 +1174,26 @@ tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
 static size_t
 temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
 {
+  size_t result = 0;
+#if RGEO
+  if (temp->temptype == T_TRGEOMETRY)
+    result += geo_to_wkb_size(DatumGetGserializedP(trgeo_geom_p(temp)),
+      variant);
+#endif /* RGEO */
+
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      return tinstant_to_wkb_size((TInstant *) temp, variant);
+      result += tinstant_to_wkb_size((TInstant *) temp, variant);
+      break;
     case TSEQUENCE:
-      return tsequence_to_wkb_size((TSequence *) temp, variant);
+      result += tsequence_to_wkb_size((TSequence *) temp, variant);
+      break;
     default: /* TSEQUENCESET */
-      return tsequenceset_to_wkb_size((TSequenceSet *) temp, variant);
+      result += tsequenceset_to_wkb_size((TSequenceSet *) temp, variant);
   }
+  return result;
 }
 
 /*****************************************************************************/
@@ -1145,10 +1223,10 @@ datum_to_wkb_size(Datum value, meosType type, uint8_t variant)
   if (type == T_NPOINT)
     return npoint_to_wkb_size(DatumGetNpointP(value), variant, false);
 #endif /* NPOINT */
-#if POSE
+#if POSE || RGEO
   if (type == T_POSE)
     return pose_to_wkb_size(DatumGetPoseP(value), variant, false);
-#endif /* POSE */
+#endif /* POSE || RGEO */
   if (temporal_type(type))
     return temporal_to_wkb_size((Temporal *) DatumGetPointer(value), variant);
   /* Error! */
@@ -1389,33 +1467,6 @@ text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * @brief Write into the buffer the coordinates of the temporal point instant
- * in the Well-Known Binary (WKB) representation
- * @details The ouput is as follows
- * - 2 or 3 doubles for the coordinates depending on whether there is Z
- *   dimension
- * - 1 timestamptz
- */
-uint8_t *
-coords_to_wkb_buf(Datum value, int16 flags, uint8_t *buf, uint8_t variant)
-{
-  if (MEOS_FLAGS_GET_Z(flags))
-  {
-    const POINT3DZ *point = DATUM_POINT3DZ_P(value);
-    buf = double_to_wkb_buf(point->x, buf, variant);
-    buf = double_to_wkb_buf(point->y, buf, variant);
-    buf = double_to_wkb_buf(point->z, buf, variant);
-  }
-  else
-  {
-    const POINT2D *point = DATUM_POINT2D_P(value);
-    buf = double_to_wkb_buf(point->x, buf, variant);
-    buf = double_to_wkb_buf(point->y, buf, variant);
-  }
-  return buf;
-}
-
-/**
  * @brief Write into the buffer a geo value in the Well-Known Binary (WKB)
  * representation
  */
@@ -1500,7 +1551,7 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant,
 }
 #endif /* NPOINT */
 
-#if POSE
+#if POSE || RGEO
 /**
  * @brief Write into the buffer the flag of a pose in the Well-Known Binary
  * (WKB) representation
@@ -1591,8 +1642,6 @@ base_to_wkb_buf(Datum value, meosType basetype, uint8_t *buf,
       break;
     case T_GEOMETRY:
     case T_GEOGRAPHY:
-      /* This was the case BEFORE tgeometry/tgeography types were introduced */
-      // buf = coords_to_wkb_buf(value, flags, buf, variant);
       buf = geo_to_wkb_buf(DatumGetGserializedP(value), buf, variant);
       break;
 #if CBUFFER
@@ -1605,11 +1654,11 @@ base_to_wkb_buf(Datum value, meosType basetype, uint8_t *buf,
       buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant, true);
       break;
 #endif /* NPOINT */
-#if POSE
+#if POSE || RGEO
     case T_POSE:
       buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, true);
       break;
-#endif /* POSE */
+#endif /* POSE || RGEO */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
         "Unknown basetype in WKB output: %s", meostype_name(basetype));
@@ -1990,7 +2039,7 @@ tinstant_base_time_to_wkb_buf(const TInstant *inst, uint8_t *buf,
 {
   meosType basetype = temptype_basetype(inst->temptype);
   assert(temporal_basetype(basetype));
-  buf = base_to_wkb_buf(tinstant_val(inst), basetype, buf, variant);
+  buf = base_to_wkb_buf(tinstant_value_p(inst), basetype, buf, variant);
   buf = timestamptz_to_wkb_buf(inst->t, buf, variant);
   return buf;
 }
@@ -2018,6 +2067,11 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   if (tspatial_type(inst->temptype) &&
       spatial_wkb_needs_srid(tspatial_srid((Temporal *) inst), variant))
     buf = int32_to_wkb_buf(tspatialinst_srid(inst), buf, variant);
+#if RGEO
+  if (inst->temptype == T_TRGEOMETRY)
+    buf = geo_to_wkb_buf(DatumGetGserializedP(trgeoinst_geom_p(inst)), buf,
+      variant);
+#endif /* RGEO */
   return tinstant_base_time_to_wkb_buf(inst, buf, variant);
 }
 
@@ -2045,6 +2099,11 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   if (tspatial_type(seq->temptype) &&
       spatial_wkb_needs_srid(tspatial_srid((Temporal *) seq), variant))
     buf = int32_to_wkb_buf(tspatial_srid((Temporal *) seq), buf, variant);
+#if RGEO
+  if (seq->temptype == T_TRGEOMETRY)
+    buf = geo_to_wkb_buf(DatumGetGserializedP(trgeoseq_geom_p(seq)), buf,
+      variant);
+#endif /* RGEO */
   /* Write the count */
   buf = int32_to_wkb_buf(seq->count, buf, variant);
   /* Write the period bounds */
@@ -2083,6 +2142,11 @@ tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
   if (tspatial_type(ss->temptype) &&
       spatial_wkb_needs_srid(tspatial_srid((Temporal *) ss), variant))
     buf = int32_to_wkb_buf(tspatial_srid((Temporal *) ss), buf, variant);
+#if RGEO
+  if (ss->temptype == T_TRGEOMETRY)
+    buf = geo_to_wkb_buf(DatumGetGserializedP(trgeoseqset_geom_p(ss)), buf,
+      variant);
+#endif /* RGEO */
   /* Write the count */
   buf = int32_to_wkb_buf(ss->count, buf, variant);
   /* Write the sequences */
@@ -2150,10 +2214,10 @@ datum_to_wkb_buf(Datum value, meosType type, uint8_t *buf, uint8_t variant)
     buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant,
       false);
 #endif /* NPOINT */
-#if POSE
+#if POSE || RGEO
   else if (type == T_POSE)
     buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, false);
-#endif /* POSE */
+#endif /* POSE || RGEO */
   else if (temporal_type(type))
     buf = temporal_to_wkb_buf((Temporal *) DatumGetPointer(value), buf,
       variant);
@@ -2277,7 +2341,7 @@ datum_as_hexwkb(Datum value, meosType type, uint8_t variant, size_t *size)
 uint8_t *
 set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
     return NULL;
   return datum_as_wkb(PointerGetDatum(s), s->settype, variant, size_out);
@@ -2296,7 +2360,7 @@ set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 char *
 set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
     return NULL;
   return (char *) datum_as_wkb(PointerGetDatum(s), s->settype,
@@ -2317,7 +2381,7 @@ set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 uint8_t *
 span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
     return NULL;
   return datum_as_wkb(PointerGetDatum(s), s->spantype, variant, size_out);
@@ -2336,7 +2400,7 @@ span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 char *
 span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
     return NULL;
   return (char *) datum_as_wkb(PointerGetDatum(s), s->spantype,
@@ -2356,7 +2420,7 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 uint8_t *
 spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) size_out))
     return NULL;
   return datum_as_wkb(PointerGetDatum(ss), ss->spansettype, variant, size_out);
@@ -2375,7 +2439,7 @@ spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 char *
 spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) size_out))
     return NULL;
   return (char *) datum_as_wkb(PointerGetDatum(ss), ss->spansettype,
@@ -2398,7 +2462,7 @@ spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 uint8_t *
 tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
     return NULL;
   return datum_as_wkb(PointerGetDatum(box), T_TBOX, variant,
@@ -2418,7 +2482,7 @@ tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 char *
 tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
     return NULL;
   return (char *) datum_as_wkb(PointerGetDatum(box), T_TBOX,
@@ -2441,11 +2505,11 @@ tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 uint8_t *
 temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) size_out))
     return NULL;
-  return datum_as_wkb(PointerGetDatum(temp), temp->temptype,
-    variant, size_out);
+  return datum_as_wkb(PointerGetDatum(temp), temp->temptype, variant,
+    size_out);
 }
 
 #if MEOS
@@ -2461,7 +2525,7 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 char *
 temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) size_out))
     return NULL;
   return (char *) datum_as_wkb(PointerGetDatum(temp), temp->temptype,

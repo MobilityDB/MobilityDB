@@ -53,11 +53,10 @@
 Temporal *
 textfunc_ttext(const Temporal *temp, datum_func1 func)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   assert(temp); assert(func);
   assert(temp->temptype == T_TTEXT);
 
-  /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -76,7 +75,7 @@ Temporal *
 textfunc_ttext_text(const Temporal *temp, Datum value, datum_func2 func,
   bool invert)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   assert(temp);
   assert(temp->temptype == T_TTEXT);
 
@@ -102,7 +101,7 @@ Temporal *
 textfunc_ttext_ttext(const Temporal *temp1, const Temporal *temp2,
   datum_func2 func)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   assert(temp1); assert(temp2);
   assert(temp1->temptype == temp2->temptype);
   assert(temp1->temptype == T_TTEXT);

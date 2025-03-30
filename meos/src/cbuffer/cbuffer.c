@@ -166,7 +166,7 @@ cbuffer_parse(const char **str, bool end)
 Cbuffer *
 cbuffer_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) str))
     return NULL;
@@ -186,7 +186,7 @@ cbuffer_in(const char *str)
 char *
 cbuffer_out(const Cbuffer *cbuf, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf))
     return NULL;
@@ -243,7 +243,7 @@ cbuffer_wkt_out(Datum value, int maxdd, bool extended)
 char *
 cbuffer_as_text(const Cbuffer *cbuf, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf))
     return NULL;
@@ -284,7 +284,7 @@ cbuffer_as_ewkt(const Cbuffer *cbuf, int maxdd)
 Cbuffer *
 cbuffer_from_wkb(const uint8_t *wkb, size_t size)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) wkb))
     return NULL;
   return DatumGetCbufferP(type_from_wkb(wkb, size, T_CBUFFER));
@@ -300,7 +300,7 @@ cbuffer_from_wkb(const uint8_t *wkb, size_t size)
 Cbuffer *
 cbuffer_from_hexwkb(const char *hexwkb)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) hexwkb))
     return NULL;
   size_t size = strlen(hexwkb);
@@ -321,7 +321,7 @@ cbuffer_from_hexwkb(const char *hexwkb)
 uint8_t *
 cbuffer_as_wkb(const Cbuffer *cbuf, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) size_out))
     return NULL;
@@ -343,7 +343,7 @@ cbuffer_as_wkb(const Cbuffer *cbuf, uint8_t variant, size_t *size_out)
 char *
 cbuffer_as_hexwkb(const Cbuffer *cbuf, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) size_out))
     return NULL;
@@ -368,7 +368,7 @@ cbuffer_as_hexwkb(const Cbuffer *cbuf, uint8_t variant, size_t *size_out)
 Cbuffer *
 cbuffer_make(const GSERIALIZED *point, double radius)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) point))
     return NULL;
@@ -404,7 +404,7 @@ cbuffer_make(const GSERIALIZED *point, double radius)
 Cbuffer *
 cbuffer_copy(const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf))
     return NULL;
@@ -430,7 +430,7 @@ cbuffer_copy(const Cbuffer *cbuf)
 GSERIALIZED *
 cbuffer_geom(const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf))
     return NULL;
@@ -453,7 +453,7 @@ cbuffer_geom(const Cbuffer *cbuf)
 Cbuffer *
 geom_cbuffer(const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) gs))
     return NULL;
@@ -563,27 +563,6 @@ cbufferarr_set_stbox(const Datum *values, int count, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_box_conversion
- * @brief Return in the last argument a spatiotemporal box contructed from
- * an array of circular buffers
- * @param[in] values Circular buffers
- * @param[in] count Number of elements in the array
- * @param[out] box Spatiotemporal box
- */
-void
-cbufferset_stbox(const Datum *values, int count, STBox *box)
-{
-  cbuffer_set_stbox(DatumGetCbufferP(values[0]), box);
-  for (int i = 1; i < count; i++)
-  {
-    STBox box1;
-    cbuffer_set_stbox(DatumGetCbufferP(values[i]), &box1);
-    stbox_expand(&box1, box);
-  }
-  return;
-}
-
-/**
  * @ingroup meos_cbuffer_base_conversion
  * @brief Return a circular buffer converted to a spatiotemporal box
  * @param[in] cbuf Circular buffer
@@ -592,7 +571,7 @@ cbufferset_stbox(const Datum *values, int count, STBox *box)
 STBox *
 cbuffer_stbox(const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf))
     return NULL;
@@ -618,7 +597,7 @@ cbuffer_stbox(const Cbuffer *cbuf)
 const GSERIALIZED *
 cbuffer_point_p(const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf))
     return NULL;
@@ -637,7 +616,7 @@ cbuffer_point_p(const Cbuffer *cbuf)
 GSERIALIZED *
 cbuffer_point(const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf))
     return NULL;
@@ -657,7 +636,7 @@ cbuffer_point(const Cbuffer *cbuf)
 double
 cbuffer_radius(const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf))
     return DBL_MAX;
@@ -710,7 +689,7 @@ datum_cbuffer_round(Datum cbuffer, Datum size)
 Cbuffer **
 cbufferarr_round(const Cbuffer **cbufarr, int count, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbufarr))
     return NULL;
@@ -739,7 +718,7 @@ cbufferarr_round(const Cbuffer **cbufarr, int count, int maxdd)
 int32_t
 cbuffer_srid(const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf))
     return SRID_INVALID;
@@ -761,7 +740,7 @@ cbuffer_srid(const Cbuffer *cbuf)
 void
 cbuffer_set_srid(Cbuffer *cbuf, int32_t srid)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf))
   {
@@ -811,7 +790,7 @@ Cbuffer *
 cbuffer_transform(const Cbuffer *cbuf, int32_t srid_to)
 {
   int32_t srid_from;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) cbuf) || ! ensure_srid_known(srid_to) ||
       ! ensure_srid_known(srid_from = cbuffer_srid(cbuf)))
     return NULL;
@@ -846,7 +825,7 @@ Cbuffer *
 cbuffer_transform_pipeline(const Cbuffer *cbuf, const char *pipeline,
   int32_t srid_to, bool is_forward)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) pipeline))
     return NULL;
 
@@ -893,7 +872,7 @@ cbuffer_distance(Datum pose1, Datum pose2)
 bool
 cbuffer_eq(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf1) || ! ensure_not_null((void *) cbuf2))
     return false;
@@ -927,7 +906,7 @@ cbuffer_ne(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 bool
 cbuffer_same(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf1) || ! ensure_not_null((void *) cbuf2))
     return false;
@@ -964,7 +943,7 @@ cbuffer_nsame(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 int
 cbuffer_cmp(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf1) || ! ensure_not_null((void *) cbuf2))
     return false;
@@ -1049,7 +1028,7 @@ cbuffer_ge(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 uint32
 cbuffer_hash(const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf))
     return false;

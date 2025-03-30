@@ -70,7 +70,7 @@
 Temporal *
 tbool_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return temporal_parse(&str, T_TBOOL);
@@ -85,7 +85,7 @@ tbool_in(const char *str)
 Temporal *
 tint_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return temporal_parse(&str, T_TINT);
@@ -99,7 +99,7 @@ tint_in(const char *str)
 Temporal *
 tfloat_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return temporal_parse(&str, T_TFLOAT);
@@ -113,7 +113,7 @@ tfloat_in(const char *str)
 Temporal *
 ttext_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return temporal_parse(&str, T_TTEXT);
@@ -129,7 +129,7 @@ ttext_in(const char *str)
 char *
 tbool_out(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
@@ -144,7 +144,7 @@ tbool_out(const Temporal *temp)
 char *
 tint_out(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -160,7 +160,7 @@ tint_out(const Temporal *temp)
 char *
 tfloat_out(const Temporal *temp, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -175,7 +175,7 @@ tfloat_out(const Temporal *temp, int maxdd)
 char *
 ttext_out(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
@@ -196,7 +196,7 @@ ttext_out(const Temporal *temp)
 Temporal *
 tbool_from_base_temp(bool b, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
   return temporal_from_base_temp(BoolGetDatum(b), T_TBOOL, temp);
@@ -212,7 +212,7 @@ tbool_from_base_temp(bool b, const Temporal *temp)
 Temporal *
 tint_from_base_temp(int i, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
   return temporal_from_base_temp(Int32GetDatum(i), T_TINT, temp);
@@ -228,7 +228,7 @@ tint_from_base_temp(int i, const Temporal *temp)
 Temporal *
 tfloat_from_base_temp(double d, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
   return temporal_from_base_temp(Float8GetDatum(d), T_TFLOAT, temp);
@@ -244,7 +244,7 @@ tfloat_from_base_temp(double d, const Temporal *temp)
 Temporal *
 ttext_from_base_temp(const text *txt, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt))
     return NULL;
   return temporal_from_base_temp(PointerGetDatum(txt), T_TTEXT, temp);
@@ -264,7 +264,7 @@ ttext_from_base_temp(const text *txt, const Temporal *temp)
 Temporal *
 tint_shift_value(const Temporal *temp, int shift)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -281,7 +281,7 @@ tint_shift_value(const Temporal *temp, int shift)
 Temporal *
 tfloat_shift_value(const Temporal *temp, double shift)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -298,7 +298,7 @@ tfloat_shift_value(const Temporal *temp, double shift)
 Temporal *
 tint_scale_value(const Temporal *temp, int width)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -315,7 +315,7 @@ tint_scale_value(const Temporal *temp, int width)
 Temporal *
 tfloat_scale_value(const Temporal *temp, double width)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -334,7 +334,7 @@ tfloat_scale_value(const Temporal *temp, double width)
 Temporal *
 tint_shift_scale_value(const Temporal *temp, int shift, int width)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -354,7 +354,7 @@ tint_shift_scale_value(const Temporal *temp, int shift, int width)
 Temporal *
 tfloat_shift_scale_value(const Temporal *temp, double shift, double width)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -376,7 +376,7 @@ tfloat_shift_scale_value(const Temporal *temp, double shift, double width)
 bool *
 tbool_values(const Temporal *temp, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
@@ -399,7 +399,7 @@ tbool_values(const Temporal *temp, int *count)
 int *
 tint_values(const Temporal *temp, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -422,7 +422,7 @@ tint_values(const Temporal *temp, int *count)
 double *
 tfloat_values(const Temporal *temp, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -445,7 +445,7 @@ tfloat_values(const Temporal *temp, int *count)
 text **
 ttext_values(const Temporal *temp, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
@@ -469,7 +469,7 @@ ttext_values(const Temporal *temp, int *count)
 bool
 tbool_start_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return false;
@@ -486,7 +486,7 @@ tbool_start_value(const Temporal *temp)
 int
 tint_start_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return INT_MAX;
@@ -503,7 +503,7 @@ tint_start_value(const Temporal *temp)
 double
 tfloat_start_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return DBL_MAX;
@@ -520,7 +520,7 @@ tfloat_start_value(const Temporal *temp)
 text *
 ttext_start_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
@@ -538,7 +538,7 @@ ttext_start_value(const Temporal *temp)
 bool
 tbool_end_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return false;
@@ -555,7 +555,7 @@ tbool_end_value(const Temporal *temp)
 int
 tint_end_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return INT_MAX;
@@ -572,7 +572,7 @@ tint_end_value(const Temporal *temp)
 double
 tfloat_end_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return DBL_MAX;
@@ -589,7 +589,7 @@ tfloat_end_value(const Temporal *temp)
 text *
 ttext_end_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
@@ -608,7 +608,7 @@ ttext_end_value(const Temporal *temp)
 int
 tint_min_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return INT_MAX;
@@ -625,7 +625,7 @@ tint_min_value(const Temporal *temp)
 double
 tfloat_min_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return DBL_MAX;
@@ -642,7 +642,7 @@ tfloat_min_value(const Temporal *temp)
 text *
 ttext_min_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
@@ -661,7 +661,7 @@ ttext_min_value(const Temporal *temp)
 int
 tint_max_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return INT_MAX;
@@ -678,7 +678,7 @@ tint_max_value(const Temporal *temp)
 double
 tfloat_max_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return DBL_MAX;
@@ -695,7 +695,7 @@ tfloat_max_value(const Temporal *temp)
 text *
 ttext_max_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
@@ -715,7 +715,7 @@ ttext_max_value(const Temporal *temp)
 bool
 tbool_value_n(const Temporal *temp, int n, bool *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return false;
@@ -737,7 +737,7 @@ tbool_value_n(const Temporal *temp, int n, bool *result)
 bool
 tint_value_n(const Temporal *temp, int n, int *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return false;
@@ -759,7 +759,7 @@ tint_value_n(const Temporal *temp, int n, int *result)
 bool
 tfloat_value_n(const Temporal *temp, int n, double *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return false;
@@ -781,7 +781,7 @@ tfloat_value_n(const Temporal *temp, int n, double *result)
 bool
 ttext_value_n(const Temporal *temp, int n, text **result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return false;

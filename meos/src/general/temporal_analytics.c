@@ -71,7 +71,7 @@ TimestampTz
 timestamptz_tprecision(TimestampTz t, const Interval *duration,
   TimestampTz torigin)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) duration))
     return DT_NOEND;
@@ -93,7 +93,7 @@ timestamptz_tprecision(TimestampTz t, const Interval *duration,
 Set *
 tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
       ! ensure_set_isof_type(s, T_TSTZSET))
@@ -122,7 +122,7 @@ Span *
 tstzspan_tprecision(const Span *s, const Interval *duration,
   TimestampTz torigin)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
       ! ensure_span_isof_type(s, T_TSTZSPAN) )
@@ -155,7 +155,7 @@ SpanSet *
 tstzspanset_tprecision(const SpanSet *ss, const Interval *duration,
   TimestampTz torigin)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) duration) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET) )
@@ -209,7 +209,7 @@ tinstant_tprecision(const TInstant *inst, const Interval *duration,
 {
   assert(inst); assert(duration); assert(valid_duration(duration));
   TimestampTz lower = timestamptz_get_bin(inst->t, duration, torigin);
-  return tinstant_make(tinstant_val(inst), inst->temptype, lower);
+  return tinstant_make(tinstant_value_p(inst), inst->temptype, lower);
 }
 
 /**
@@ -449,7 +449,7 @@ Temporal *
 temporal_tprecision(const Temporal *temp, const Interval *duration,
   TimestampTz torigin)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) duration))
     return NULL;
@@ -696,7 +696,7 @@ Temporal *
 temporal_tsample(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, interpType interp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) duration))
     return NULL;
@@ -853,8 +853,8 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
   assert(temp1->temptype == temp2->temptype);
   double result;
   int count1, count2;
-  const TInstant **instants1 = temporal_insts(temp1, &count1);
-  const TInstant **instants2 = temporal_insts(temp2, &count2);
+  const TInstant **instants1 = temporal_instants_p(temp1, &count1);
+  const TInstant **instants2 = temporal_instants_p(temp2, &count2);
   result = count1 > count2 ?
     tinstarr_similarity(instants1, count1, instants2, count2, simfunc) :
     tinstarr_similarity(instants2, count2, instants1, count1, simfunc);
@@ -874,7 +874,7 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
 double
 temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return DBL_MAX;
@@ -891,7 +891,7 @@ temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2)
 double
 temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
     return DBL_MAX;
@@ -1103,8 +1103,8 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
   assert(temp1); assert(temp2); assert(count);
   assert(temp1->temptype == temp2->temptype);
   int count1, count2;
-  const TInstant **instants1 = temporal_insts(temp1, &count1);
-  const TInstant **instants2 = temporal_insts(temp2, &count2);
+  const TInstant **instants1 = temporal_instants_p(temp1, &count1);
+  const TInstant **instants2 = temporal_instants_p(temp2, &count2);
   Match *result = count1 > count2 ?
     tinstarr_similarity_matrix(instants1, count1, instants2, count2,
       simfunc, count) :
@@ -1126,7 +1126,7 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
 Match *
 temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_not_null((void *) count) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -1145,7 +1145,7 @@ Match *
 temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
   int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_not_null((void *) count) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -1216,7 +1216,7 @@ tinstarr_hausdorff_distance(const TInstant **instants1, int count1,
 double
 temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -1227,8 +1227,8 @@ temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
 
   double result;
   int count1, count2;
-  const TInstant **instants1 = temporal_insts(temp1, &count1);
-  const TInstant **instants2 = temporal_insts(temp2, &count2);
+  const TInstant **instants1 = temporal_instants_p(temp1, &count1);
+  const TInstant **instants2 = temporal_instants_p(temp2, &count2);
   result = tinstarr_hausdorff_distance(instants1, count1, instants2, count2);
   /* Free memory */
   pfree(instants1); pfree(instants2);
@@ -1313,7 +1313,7 @@ tsequenceset_simplify_min_dist(const TSequenceSet *ss, double dist)
 Temporal *
 temporal_simplify_min_dist(const Temporal *temp, double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_tnumber_tpoint_type(temp->temptype))
@@ -1415,7 +1415,7 @@ tsequenceset_simplify_min_tdelta(const TSequenceSet *ss, const Interval *mint)
 Temporal *
 temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) mint) ||
       ! ensure_tnumber_tpoint_type(temp->temptype))
@@ -1465,14 +1465,14 @@ tfloatseq_findsplit(const TSequence *seq, int i1, int i2, int *split,
 
   const TInstant *start = TSEQUENCE_INST_N(seq, i1);
   const TInstant *end = TSEQUENCE_INST_N(seq, i2);
-  double startval = DatumGetFloat8(tinstant_val(start));
-  double endval = DatumGetFloat8(tinstant_val(end));
+  double startval = DatumGetFloat8(tinstant_value_p(start));
+  double endval = DatumGetFloat8(tinstant_value_p(end));
   double duration2 = (double) (end->t - start->t);
   /* Loop for every instant between i1 and i2 */
   for (int idx = i1 + 1; idx < i2; idx++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, idx);
-    double value = DatumGetFloat8(tinstant_val(inst));
+    double value = DatumGetFloat8(tinstant_value_p(inst));
     /*
      * The following is equivalent to
      * #tsegment_value_at_timestamptz(start, end, LINEAR, inst->t);
@@ -1613,13 +1613,13 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   const TInstant *end = TSEQUENCE_INST_N(seq, i2);
   if (hasz)
   {
-    p3a = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_val(start));
-    p3b = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_val(end));
+    p3a = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value_p(start));
+    p3b = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value_p(end));
   }
   else
   {
-    p2a = (POINT2D *) DATUM_POINT2D_P(tinstant_val(start));
-    p2b = (POINT2D *) DATUM_POINT2D_P(tinstant_val(end));
+    p2a = (POINT2D *) DATUM_POINT2D_P(tinstant_value_p(start));
+    p2b = (POINT2D *) DATUM_POINT2D_P(tinstant_value_p(end));
   }
 
   /* Loop for every instant between i1 and i2 */
@@ -1629,7 +1629,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
     const TInstant *inst = TSEQUENCE_INST_N(seq, idx);
     if (hasz)
     {
-      p3k = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_val(inst));
+      p3k = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value_p(inst));
       if (syncdist)
       {
         value = tsegment_value_at_timestamptz(start, end, interp, inst->t);
@@ -1642,7 +1642,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
     }
     else
     {
-      p2k = (POINT2D *) DATUM_POINT2D_P(tinstant_val(inst));
+      p2k = (POINT2D *) DATUM_POINT2D_P(tinstant_value_p(inst));
       if (syncdist)
       {
         value = tsegment_value_at_timestamptz(start, end, interp, inst->t);
@@ -1756,7 +1756,7 @@ tsequenceset_simplify_max_dist(const TSequenceSet *ss, double dist,
 Temporal *
 temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_tnumber_tpoint_type(temp->temptype))
@@ -1914,7 +1914,7 @@ tsequenceset_simplify_dp(const TSequenceSet *ss, double dist, bool syncdist,
 Temporal *
 temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_tnumber_tpoint_type(temp->temptype) ||

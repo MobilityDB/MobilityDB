@@ -508,7 +508,7 @@ tgeography_from_mfjson(const char *mfjson)
 char *
 tgeo_out(const Temporal *temp, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || 
       ! ensure_tgeo_type_all(temp->temptype))
     return NULL;
@@ -529,7 +529,7 @@ tgeo_out(const Temporal *temp, int maxdd)
 TSequence *
 tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
       ! ensure_not_empty(gs) || ! ensure_point_type(gs) || 
       ! ensure_set_isof_type(s, T_TSTZSET))
@@ -549,7 +549,7 @@ tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
 TSequence *
 tgeoseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
       ! ensure_not_empty(gs) || ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
@@ -571,7 +571,7 @@ TSequence *
 tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
   interpType interp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
       gserialized_is_empty(gs) || ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
@@ -593,7 +593,7 @@ TSequence *
 tgeoseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
   interpType interp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
       gserialized_is_empty(gs) || ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
@@ -617,7 +617,7 @@ TSequenceSet *
 tpointseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
   interpType interp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) ss) ||
       ! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
@@ -640,7 +640,7 @@ TSequenceSet *
 tgeoseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
   interpType interp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) ss) ||
       ! ensure_not_empty(gs) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
@@ -666,7 +666,7 @@ Temporal *
 tgeo_from_base_temp_int(const GSERIALIZED *gs, const Temporal *temp, 
   bool ispoint)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_tgeo_type_all(temp->temptype))
     return NULL;
@@ -720,7 +720,7 @@ tgeo_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 GSERIALIZED *
 tgeo_start_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_tgeo_type_all(temp->temptype))
     return NULL;
@@ -737,7 +737,7 @@ tgeo_start_value(const Temporal *temp)
 GSERIALIZED *
 tgeo_end_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_tgeo_type_all(temp->temptype))
     return NULL;
@@ -755,7 +755,7 @@ tgeo_end_value(const Temporal *temp)
 bool
 tgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result) ||
       ! ensure_tgeo_type_all(temp->temptype))
     return false;
@@ -777,7 +777,7 @@ tgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result)
 GSERIALIZED **
 tgeo_values(const Temporal *temp, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_tgeo_type_all(temp->temptype))
     return NULL;

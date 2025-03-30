@@ -111,7 +111,8 @@ extern PJ_CONTEXT *proj_get_context(void);
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element where the less significant
- * bits are GTZXIICB, where
+ * bits are MGTZXIICB, where
+ *   M: (GEOM) the reference geometry is stored
  *   G: coordinates are geodetic
  *   T: has T coordinate,
  *   Z: has Z coordinate
@@ -140,6 +141,7 @@ extern PJ_CONTEXT *proj_get_context(void);
 #define MEOS_FLAG_Z          0x0020  // 32
 #define MEOS_FLAG_T          0x0040  // 64
 #define MEOS_FLAG_GEODETIC   0x0080  // 128
+#define MEOS_FLAG_GEOM       0x0100  // 256
 
 #define MEOS_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MEOS_FLAG_BYVAL)))
 #define MEOS_FLAGS_GET_ORDERED(flags)    ((bool) (((flags) & MEOS_FLAG_ORDERED)>>1))
@@ -148,6 +150,7 @@ extern PJ_CONTEXT *proj_get_context(void);
 #define MEOS_FLAGS_GET_Z(flags)          ((bool) (((flags) & MEOS_FLAG_Z)>>5))
 #define MEOS_FLAGS_GET_T(flags)          ((bool) (((flags) & MEOS_FLAG_T)>>6))
 #define MEOS_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MEOS_FLAG_GEODETIC)>>7))
+#define MEOS_FLAGS_GET_GEOM(flags)       ((bool) (((flags) & MEOS_FLAG_GEOM)>>8))
 
 #define MEOS_FLAGS_BYREF(flags)          ((bool) (((flags) & ! MEOS_FLAG_BYVAL)))
 
@@ -165,6 +168,8 @@ extern PJ_CONTEXT *proj_get_context(void);
   ((flags) = (value) ? ((flags) | MEOS_FLAG_T) : ((flags) & ~MEOS_FLAG_T))
 #define MEOS_FLAGS_SET_GEODETIC(flags, value) \
   ((flags) = (value) ? ((flags) | MEOS_FLAG_GEODETIC) : ((flags) & ~MEOS_FLAG_GEODETIC))
+#define MEOS_FLAGS_SET_GEOM(flags, value) \
+  ((flags) = (value) ? ((flags) | MEOS_FLAG_GEOM) : ((flags) & ~MEOS_FLAG_GEOM))
 
 #define MEOS_FLAGS_GET_INTERP(flags) (((flags) & MEOS_FLAGS_INTERP) >> 2)
 #define MEOS_FLAGS_SET_INTERP(flags, value) ((flags) = (((flags) & ~MEOS_FLAGS_INTERP) | ((value & 0x0003) << 2)))
@@ -634,11 +639,11 @@ extern void tsequenceset_set_tstzspan(const TSequenceSet *ss, Span *s);
 extern const TInstant *temporal_end_inst(const Temporal *temp);
 extern Datum temporal_end_value(const Temporal *temp);
 extern const TInstant *temporal_inst_n(const Temporal *temp, int n);
-extern const TInstant **temporal_insts(const Temporal *temp, int *count);
+extern const TInstant **temporal_instants_p(const Temporal *temp, int *count);
 extern Datum temporal_max_value(const Temporal *temp);
 extern size_t temporal_mem_size(const Temporal *temp);
 extern Datum temporal_min_value(const Temporal *temp);
-extern const TSequence **temporal_seqs(const Temporal *temp, int *count);
+extern const TSequence **temporal_sequences_p(const Temporal *temp, int *count);
 extern void temporal_set_bbox(const Temporal *temp, void *box);
 extern const TInstant *temporal_start_inst(const Temporal *temp);
 extern Datum temporal_start_value(const Temporal *temp);
@@ -650,7 +655,7 @@ extern const TInstant **tinstant_insts(const TInstant *inst, int *count);
 extern void tinstant_set_bbox(const TInstant *inst, void *box);
 extern SpanSet *tinstant_time(const TInstant *inst);
 extern TimestampTz *tinstant_timestamps(const TInstant *inst, int *count);
-extern Datum tinstant_val(const TInstant *inst);
+extern Datum tinstant_value_p(const TInstant *inst);
 extern Datum tinstant_value(const TInstant *inst);
 extern bool tinstant_value_at_timestamptz(const TInstant *inst, TimestampTz t, Datum *result);
 extern Datum *tinstant_values_p(const TInstant *inst, int *count);
@@ -661,7 +666,7 @@ extern SpanSet *tnumberseqset_valuespans(const TSequenceSet *ss);
 extern Interval *tsequence_duration(const TSequence *seq);
 extern TimestampTz tsequence_end_timestamptz(const TSequence *seq);
 extern uint32 tsequence_hash(const TSequence *seq);
-extern const TInstant **tsequence_insts(const TSequence *seq);
+extern const TInstant **tsequence_instants_p(const TSequence *seq);
 extern const TInstant *tsequence_max_inst(const TSequence *seq);
 extern Datum tsequence_max_val(const TSequence *seq);
 extern const TInstant *tsequence_min_inst(const TSequence *seq);
@@ -685,7 +690,7 @@ extern Datum tsequenceset_min_val(const TSequenceSet *ss);
 extern int tsequenceset_num_instants(const TSequenceSet *ss);
 extern int tsequenceset_num_timestamps(const TSequenceSet *ss);
 extern TSequence **tsequenceset_segments(const TSequenceSet *ss, int *count);
-extern const TSequence **tsequenceset_seqs(const TSequenceSet *ss);
+extern const TSequence **tsequenceset_sequences_p(const TSequenceSet *ss);
 extern TimestampTz tsequenceset_start_timestamptz(const TSequenceSet *ss);
 extern SpanSet *tsequenceset_time(const TSequenceSet *ss);
 extern bool tsequenceset_timestamptz_n(const TSequenceSet *ss, int n, TimestampTz *result);

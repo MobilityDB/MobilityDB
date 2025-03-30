@@ -49,10 +49,10 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE startValue(transform(setSRID(temp, 5
 
 SELECT ST_AsText(transform_gk(geometry 'Linestring empty'));
 
-SELECT round(MAX(ST_X(startValue(transform_gk(temp))))::numeric, 6) FROM tbl_tgeompoint;
+SELECT round(MAX(ST_X(startValue(transform_gk(temp)))), 6) FROM tbl_tgeompoint;
 
-SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) FROM tbl_geom_point;
-SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) FROM tbl_geom_linestring WHERE NOT ST_IsEmpty(g);
+SELECT round(MAX(ST_X(transform_gk(g))), 6) FROM tbl_geom_point;
+SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g)))), 6) FROM tbl_geom_linestring WHERE NOT ST_IsEmpty(g);
 
 -------------------------------------------------------------------------------
 
@@ -75,38 +75,38 @@ SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
 SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeompoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
 SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeogpoint_inst WHERE inst IS NOT NULL AND k % 20 = 1;
 
-SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint;
-SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint;
-SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeompoint;
-SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeompoint;
+SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeogpoint;
+SELECT round(MAX(twavg(getY(temp))), 6) FROM tbl_tgeompoint;
+SELECT round(MAX(twavg(getY(temp))), 6) FROM tbl_tgeogpoint;
 
-SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
-SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
-SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
-SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
-SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
-SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(twavg(getY(temp))), 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(twavg(getY(temp))), 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(twavg(getZ(temp))), 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(twavg(getZ(temp))), 6) FROM tbl_tgeogpoint3D;
 
 SELECT MAX(ST_NPoints(trajectory(temp))) FROM tbl_tgeompoint;
 SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint;
 SELECT MAX(ST_NPoints(trajectory(temp))) FROM tbl_tgeompoint3D;
 SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint3D;
 
-SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tgeompoint;
-SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(length(temp)), 6) FROM tbl_tgeompoint;
+SELECT round(MAX(length(temp)), 6) FROM tbl_tgeompoint3D;
 -- Tests independent of PROJ version
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE length(temp) = ST_Length(trajectory(temp));
 SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE length(temp) = ST_Length(trajectory(temp));
 
-SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeompoint;
-SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpoint;
-SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
-SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeompoint;
+SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeogpoint;
+SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeogpoint3D;
 
 SELECT MAX(ST_Area(convexHull(temp))) FROM tbl_tgeompoint;
 
-SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint WHERE interp(temp) = 'Linear';
-SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint3D WHERE interp(temp) = 'Linear';
+SELECT round(MAX(maxValue(speed(temp))), 6) FROM tbl_tgeompoint WHERE interp(temp) = 'Linear';
+SELECT round(MAX(maxValue(speed(temp))), 6) FROM tbl_tgeompoint3D WHERE interp(temp) = 'Linear';
 -- Tests intended to avoid floating point precision errors
 SELECT COUNT(*) FROM tbl_tgeogpoint
 WHERE interp(temp) = 'Linear' AND startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp))
@@ -118,10 +118,10 @@ AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instant
 SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint;
 SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint3D;
 
-SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint;
-SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint;
-SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
-SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+SELECT round(AVG(degrees(direction(temp))), 6) FROM tbl_tgeompoint;
+SELECT round(AVG(degrees(direction(temp))), 6) FROM tbl_tgeogpoint;
+SELECT round(AVG(degrees(direction(temp))), 6) FROM tbl_tgeompoint3D;
+SELECT round(AVG(degrees(direction(temp))), 6) FROM tbl_tgeogpoint3D;
 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE azimuth(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE azimuth(temp) IS NOT NULL;

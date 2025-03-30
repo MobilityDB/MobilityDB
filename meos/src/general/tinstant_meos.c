@@ -157,7 +157,7 @@ tfloatinst_make(double d, TimestampTz t)
 TInstant *
 ttextinst_make(const text *txt, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) txt))
     return NULL;
   return tinstant_make(PointerGetDatum(txt), T_TTEXT, t);

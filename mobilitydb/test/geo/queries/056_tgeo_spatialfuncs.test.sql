@@ -116,7 +116,7 @@ SELECT round(transform(transform(stbox 'SRID=4326;GEODSTBOX ZT(((1,1,1),(2,2,2))
 SELECT DISTINCT SRID(b) FROM tbl_stbox;
 SELECT MIN(xmin(setSRID(b,4326))) FROM tbl_stbox;
 
-SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,5676), 4326), 5676)))::numeric, 1) FROM tbl_stbox;
+SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,5676), 4326), 5676))), 1) FROM tbl_stbox;
 SELECT MIN(xmin(round(transform(transform(setSRID(b,5676), 4326), 5676), 1))) FROM tbl_stbox;
 
 -- Noop
@@ -346,6 +346,11 @@ SELECT ST_AsText(traversedArea(tgeography '{[Point(1.5 1.5 1.5)@2000-01-01, Poin
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(tgeometry '{[Point(1 1)@2001-01-01], [Point(1 1)@2001-02-01], [Point(1 1)@2001-03-01]}'))) AS t(dp);
 -- SELECT ST_AsText(traversedArea(tgeography '{[Point(1 1)@2001-01-01], [Point(1 1)@2001-02-01], [Point(1 1)@2001-03-01]}'));
 SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(tgeography '{[Point(1 1)@2001-01-01], [Point(1 1)@2001-02-01], [Point(1 1)@2001-03-01]}')::geometry)) AS t(dp);
+
+---------------------------------------------------------
+
+SELECT asText(centroid(tgeometry '[Point(1 1)@2000-01-01, Linestring(1 1,3 3)@2000-01-02, Polygon((1 1,4 4,7 1,1 1))@2000-01-03]'));
+SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2000-01-01, Polygon((1 1,4 4,7 1,1 1))@2000-01-02]'),6);
 
 ---------------------------------------------------------
 -- Only 2D is allowed for atGeometry/minusGeometry on tgeometry

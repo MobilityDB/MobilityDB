@@ -138,7 +138,7 @@ tgeoinst_merge_array_iter(const TInstant **instants, int count, int *newcount)
     int ngeos = j - i;
     GSERIALIZED **gsarr = palloc(sizeof(GSERIALIZED *) * ngeos);
     for (int k = 0; k < ngeos; k++)
-      gsarr[k] = DatumGetGserializedP(tinstant_val(instants[k + i]));
+      gsarr[k] = DatumGetGserializedP(tinstant_value_p(instants[k + i]));
     GSERIALIZED *gs = geoarr_merge(gsarr, ngeos);
     pfree(gsarr);
     newinstants[count1++] = tinstant_make(PointerGetDatum(gs), 
@@ -174,7 +174,7 @@ tinstant_merge_array_iter(const TInstant **instants, int count, int *newcount)
     count1 = count;
   }
   
-  /* Ensure validity of the arguments and compute the bounding box */
+  /* Ensure the validity of the arguments and compute the bounding box */
   if (! ensure_valid_tinstarr((const TInstant **) instants1, count1, MERGE, 
       DISCRETE))
     return NULL;
@@ -202,7 +202,7 @@ tinstant_merge_array(const TInstant **instants, int count)
   int count1;
   TInstant **instants1 = tinstant_merge_array_iter(instants, count, &count1);
 
-  /* Ensure validity of the arguments and TODO compute the bounding box */
+  /* Ensure the validity of the arguments and TODO compute the bounding box */
   if (! ensure_valid_tinstarr((const TInstant **) instants1, count1, MERGE,
       DISCRETE))
     return NULL;
@@ -306,8 +306,8 @@ tgeoseq_merge_array_iter(const TSequence **sequences, int count,
       seq2->period.lower_inc)
     {
       GSERIALIZED *gsarr[2];
-      gsarr[0] = DatumGetGserializedP(tinstant_val(inst1));
-      gsarr[1] = DatumGetGserializedP(tinstant_val(inst2));
+      gsarr[0] = DatumGetGserializedP(tinstant_value_p(inst1));
+      gsarr[1] = DatumGetGserializedP(tinstant_value_p(inst2));
       GSERIALIZED *gs = geoarr_merge(gsarr, 2);
       newinst = tinstant_make(PointerGetDatum(gs), inst1->temptype, inst1->t);
       pfree(gs);
@@ -388,7 +388,7 @@ tcontseq_merge_array_iter(const TSequence **sequences, int count,
     else if (inst1->t == inst2->t && seq1->period.upper_inc &&
       seq2->period.lower_inc)
     {
-      if (! datum_eq(tinstant_val(inst1), tinstant_val(inst2), basetype))
+      if (! datum_eq(tinstant_value_p(inst1), tinstant_value_p(inst2), basetype))
       {
         str1 = pg_timestamptz_out(inst1->t);
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -578,7 +578,7 @@ temporal_merge(const Temporal *temp1, const Temporal *temp2)
   if (! temp2)
     return temporal_copy(temp1);
 
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_same_temporal_type(temp1, temp2) ||
       ! ensure_same_continuous_interp(temp1->flags, temp2->flags) ||
       ! ensure_spatial_validity(temp1, temp2))
@@ -655,7 +655,7 @@ temporalarr_convert_subtype(const Temporal **temparr, int count, uint8 subtype,
 Temporal *
 temporal_merge_array(const Temporal **temparr, int count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temparr))
     return NULL;
@@ -767,7 +767,7 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
   else /* overlap on the boundary */
   {
     meosType basetype = temptype_basetype(seq1->temptype);
-    if (! datum_eq(tinstant_val(instants[0]), tinstant_val(instants[1]),
+    if (! datum_eq(tinstant_value_p(instants[0]), tinstant_value_p(instants[1]),
       basetype))
     {
       char *str = pg_timestamptz_out(instants[0]->t);
@@ -1237,7 +1237,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
         inst1 = TSEQUENCE_INST_N(sequences[nseqs - 1],
           sequences[nseqs - 1]->count - 1);
         inst2 = TSEQUENCE_INST_N(seq2, 0);
-        if (! datum_eq(tinstant_val(inst1), tinstant_val(inst2), basetype))
+        if (! datum_eq(tinstant_value_p(inst1), tinstant_value_p(inst2), basetype))
         {
           str = pg_timestamptz_out(inst1->t);
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -1251,7 +1251,7 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
       {
         inst1 = TSEQUENCE_INST_N(seq2, seq2->count - 1);
         inst2 = TSEQUENCE_INST_N(seq1, 0);
-        if (! datum_eq(tinstant_val(inst1), tinstant_val(inst2), basetype))
+        if (! datum_eq(tinstant_value_p(inst1), tinstant_value_p(inst2), basetype))
         {
           str = pg_timestamptz_out(inst1->t);
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -1506,7 +1506,7 @@ tsequenceset_delete_tstzspanset(const TSequenceSet *ss, const SpanSet *ps)
 Temporal *
 temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -1558,7 +1558,7 @@ temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 Temporal *
 temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -1591,7 +1591,7 @@ temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
 Temporal *
 temporal_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp))
     return NULL;
@@ -1629,7 +1629,7 @@ temporal_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
 Temporal *
 temporal_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
     return NULL;
@@ -1666,7 +1666,7 @@ temporal_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
 Temporal *
 temporal_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
     return NULL;
@@ -1704,7 +1704,7 @@ Temporal *
 temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
   bool connect)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss))
     return NULL;
@@ -1777,8 +1777,8 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
     return NULL;
   }
 
-  Datum value1 = tinstant_val(last);
-  Datum value = tinstant_val(inst);
+  Datum value1 = tinstant_value_p(last);
+  Datum value = tinstant_value_p(inst);
   if (last->t == inst->t)
   {
     bool eqv1v = datum_eq(value1, value, basetype);
@@ -1849,7 +1849,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
   if (interp != DISCRETE && seq->count > 1)
   {
     TInstant *penult = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 2);
-    Datum value2 = tinstant_val(penult);
+    Datum value2 = tinstant_value_p(penult);
     if (tsequence_norm_test(value2, value1, value, basetype, interp,
       penult->t, last->t, inst->t))
     {
@@ -1961,8 +1961,8 @@ tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
     seq2->period.lower_inc)
   {
     meosType basetype = temptype_basetype(seq1->temptype);
-    Datum value1 = tinstant_val(inst1);
-    Datum value2 = tinstant_val(inst2);
+    Datum value1 = tinstant_value_p(inst1);
+    Datum value2 = tinstant_value_p(inst2);
     if (! datum_eq(value1, value2, basetype))
     {
       str1 = pg_timestamptz_out(inst1->t);
@@ -2148,8 +2148,8 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
     seq->period.lower_inc)
   {
     meosType basetype = temptype_basetype(ss->temptype);
-    Datum value1 = tinstant_val(inst1);
-    Datum value2 = tinstant_val(inst2);
+    Datum value1 = tinstant_value_p(inst1);
+    Datum value2 = tinstant_value_p(inst2);
     if (! datum_eq(value1, value2, basetype))
     {
       str1 = pg_timestamptz_out(inst1->t);
@@ -2271,7 +2271,7 @@ Temporal *
 temporal_append_tinstant(Temporal *temp, const TInstant *inst, 
   interpType interp, double maxdist, const Interval *maxt, bool expand)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) inst) ||
       ! ensure_same_temporal_type(temp, (Temporal *) inst))
@@ -2325,7 +2325,7 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 #else
   assert(temp); assert(seq); assert(temp->temptype == seq->temptype);
 #endif /* MEOS */
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if ((temp->subtype != TINSTANT && ! ensure_same_interp(temp, (Temporal *) seq)) ||
       ! ensure_spatial_validity(temp, (Temporal *) seq) ||
       ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE))

@@ -117,7 +117,7 @@ tnpointseqset_in(const char *str)
 Temporal *
 tnpoint_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return tspatial_parse(&str, T_TNPOINT);
@@ -133,7 +133,7 @@ tnpoint_in(const char *str)
 char *
 tnpoint_out(const Temporal *temp, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || 
       ! ensure_temporal_isof_type(temp, T_TNPOINT))
     return NULL;
@@ -152,7 +152,7 @@ TInstant *
 tnpointinst_tgeompointinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TNPOINT);
-  GSERIALIZED *geom = npoint_geom(DatumGetNpointP(tinstant_val(inst)));
+  GSERIALIZED *geom = npoint_geom(DatumGetNpointP(tinstant_value_p(inst)));
   return tinstant_make_free(PointerGetDatum(geom), T_TGEOMPOINT, inst->t);
 }
 
@@ -179,7 +179,7 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
   assert(seq); assert(seq->temptype == T_TNPOINT);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-  const Npoint *np = DatumGetNpointP(tinstant_val(inst));
+  const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   /* We are sure line is not empty */
   GSERIALIZED *line = route_geom(np->rid);
   int32_t srid = gserialized_get_srid(line);
@@ -187,7 +187,7 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
   for (int i = 0; i < seq->count; i++)
   {
     inst = TSEQUENCE_INST_N(seq, i);
-    np = DatumGetNpointP(tinstant_val(inst));
+    np = DatumGetNpointP(tinstant_value_p(inst));
     POINTARRAY *opa = lwline_interpolate_points(lwline, np->pos, 0);
     assert(opa->npoints <= 1);
     LWGEOM *lwpoint = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
@@ -224,7 +224,7 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ss)
 Temporal *
 tnpoint_tgeompoint(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TNPOINT))
@@ -256,7 +256,7 @@ TInstant *
 tgeompointinst_tnpointinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TGEOMPOINT);
-  Npoint *np = geom_npoint(DatumGetGserializedP(tinstant_val(inst)));
+  Npoint *np = geom_npoint(DatumGetGserializedP(tinstant_value_p(inst)));
   if (np == NULL)
     return NULL;
   return tinstant_make_free(PointerGetDatum(np), T_TNPOINT, inst->t);
@@ -351,7 +351,7 @@ Nsegment **
 tnpointinst_positions(const TInstant *inst)
 {
   Nsegment **result = palloc(sizeof(Nsegment *));
-  Npoint *np = DatumGetNpointP(tinstant_val(inst));
+  Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   result[0] = nsegment_make(np->rid, np->pos, np->pos);
   return result;
 }
@@ -383,13 +383,13 @@ tnpointseq_step_positions(const TSequence *seq, int *count)
 Nsegment *
 tnpointseq_linear_positions(const TSequence *seq)
 {
-  Npoint *np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, 0)));
+  Npoint *np = DatumGetNpointP(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)));
   int64 rid = np->rid;
   double minPos, maxPos;
   minPos = maxPos = np->pos;
   for (int i = 1; i < seq->count; i++)
   {
-    np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, i)));
+    np = DatumGetNpointP(tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
     minPos = Min(minPos, np->pos);
     maxPos = Max(maxPos, np->pos);
   }
@@ -488,7 +488,7 @@ tnpoint_positions(const Temporal *temp, int *count)
 int64
 tnpointinst_route(const TInstant *inst)
 {
-  Npoint *np = DatumGetNpointP(tinstant_val(inst));
+  Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   return np->rid;
 }
 
@@ -509,7 +509,7 @@ tnpoint_route(const Temporal *temp)
   }
   const TInstant *inst = (temp->subtype == TINSTANT) ?
     (const TInstant *) temp : TSEQUENCE_INST_N((const TSequence *) temp, 0);
-  Npoint *np = DatumGetNpointP(tinstant_val(inst));
+  Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   return np->rid;
 }
 
@@ -519,7 +519,7 @@ tnpoint_route(const Temporal *temp)
 Set *
 tnpointinst_routes(const TInstant *inst)
 {
-  Npoint *np = DatumGetNpointP(tinstant_val(inst));
+  Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   Datum value = Int64GetDatum(np->rid);
   return set_make_exp(&value, 1, 1, T_INT8, ORDER_NO);
 }
@@ -533,7 +533,7 @@ tnpointseq_disc_routes(const TSequence *seq)
   Datum *values = palloc(sizeof(Datum) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const Npoint *np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, i)));
+    const Npoint *np = DatumGetNpointP(tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
     values[i] = Int64GetDatum(np->rid);
   }
   datumarr_sort(values, seq->count, T_INT8);
@@ -548,7 +548,7 @@ Set *
 tnpointseq_cont_routes(const TSequence *seq)
 {
   assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
-  const Npoint *np = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, 0)));
+  const Npoint *np = DatumGetNpointP(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)));
   Datum value = Int64GetDatum(np->rid);
   return set_make_exp(&value, 1, 1, T_INT8, ORDER_NO);
 }
@@ -563,7 +563,7 @@ tnpointseqset_routes(const TSequenceSet *ss)
   for (int i = 0; i < ss->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N(ss, i), 0);
-    Npoint *np = DatumGetNpointP(tinstant_val(inst));
+    Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
     values[i] = np->rid;
   }
   datumarr_sort(values, ss->count, T_INT8);

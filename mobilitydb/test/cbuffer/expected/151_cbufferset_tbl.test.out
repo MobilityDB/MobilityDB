@@ -57,19 +57,19 @@ SELECT MIN(numValues(s)) FROM tbl_cbufferset;
    1
 (1 row)
 
-SELECT round(MIN(radius(startValue(s)))::numeric, 6) FROM tbl_cbufferset;
+SELECT round(MIN(radius(startValue(s))), 6) FROM tbl_cbufferset;
   round   
 ----------
  0.024820
 (1 row)
 
-SELECT round(MIN(radius(endValue(s)))::numeric, 6) FROM tbl_cbufferset;
+SELECT round(MIN(radius(endValue(s))), 6) FROM tbl_cbufferset;
   round   
 ----------
  0.014081
 (1 row)
 
-SELECT round(MIN(radius(valueN(s, 1)))::numeric, 6) FROM tbl_cbufferset;
+SELECT round(MIN(radius(valueN(s, 1))), 6) FROM tbl_cbufferset;
   round   
 ----------
  0.024820

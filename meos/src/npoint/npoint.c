@@ -534,7 +534,7 @@ route_geom(int64 rid)
 Npoint *
 geom_npoint(const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
       ! ensure_point_type(gs))
     return NULL;
@@ -625,7 +625,7 @@ geom_npoint(const GSERIALIZED *gs)
 Npoint *
 geom_npoint(const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
       ! ensure_point_type(gs))
     return NULL;
@@ -853,7 +853,7 @@ npoint_out(const Npoint *np, int maxdd)
 #else
   assert(np);
 #endif /* MEOS */
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_negative(maxdd))
     return NULL;
 
@@ -960,7 +960,7 @@ nsegment_in(const char *str)
 char *
 nsegment_out(const Nsegment *ns, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ns))
     return NULL;
@@ -1012,7 +1012,7 @@ npoint_wkt_out(Datum value, int maxdd)
 char *
 npoint_as_text(const Npoint *np, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) np) || ! ensure_not_negative(maxdd))
     return NULL;
 
@@ -1030,7 +1030,7 @@ npoint_as_text(const Npoint *np, int maxdd)
 char *
 npoint_as_ewkt(const Npoint *np, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) np) || ! ensure_not_negative(maxdd))
     return NULL;
 
@@ -1064,7 +1064,7 @@ npoint_as_ewkt(const Npoint *np, int maxdd)
 Npoint *
 npoint_from_wkb(const uint8_t *wkb, size_t size)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) wkb))
     return NULL;
   return DatumGetNpointP(type_from_wkb(wkb, size, T_NPOINT));
@@ -1080,7 +1080,7 @@ npoint_from_wkb(const uint8_t *wkb, size_t size)
 Npoint *
 npoint_from_hexwkb(const char *hexwkb)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) hexwkb))
     return NULL;
   size_t size = strlen(hexwkb);
@@ -1102,7 +1102,7 @@ npoint_from_hexwkb(const char *hexwkb)
 uint8_t *
 npoint_as_wkb(const Npoint *np, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) np) || ! ensure_not_null((void *) size_out))
     return NULL;
   return datum_as_wkb(PointerGetDatum(np), T_NPOINT, variant, size_out);
@@ -1120,7 +1120,7 @@ npoint_as_wkb(const Npoint *np, uint8_t variant, size_t *size_out)
 char *
 npoint_as_hexwkb(const Npoint *np, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) np) || ! ensure_not_null((void *) size_out))
     return NULL;
   return (char *) datum_as_wkb(PointerGetDatum(np), T_NPOINT,
@@ -1142,7 +1142,7 @@ npoint_as_hexwkb(const Npoint *np, uint8_t variant, size_t *size_out)
 Npoint *
 npoint_make(int64 rid, double pos)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_route_exists(rid) || ! ensure_valid_position(pos))
     return NULL;
 
@@ -1178,7 +1178,7 @@ npoint_set(int64 rid, double pos, Npoint *np)
 Nsegment *
 nsegment_make(int64 rid, double pos1, double pos2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_route_exists(rid) || ! ensure_valid_position(pos1) ||
       ! ensure_valid_position(pos2))
     return NULL;
@@ -1218,7 +1218,7 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
 Nsegment *
 npoint_nsegment(const Npoint *np)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) np))
     return NULL;
@@ -1401,7 +1401,7 @@ npoint_tstzspan_to_stbox(const Npoint *np, const Span *s)
 GSERIALIZED *
 npoint_geom(const Npoint *np)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) np))
     return NULL;
@@ -1423,7 +1423,7 @@ npoint_geom(const Npoint *np)
 GSERIALIZED *
 nsegment_geom(const Nsegment *ns)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ns))
     return NULL;
@@ -1450,7 +1450,7 @@ nsegment_geom(const Nsegment *ns)
 Nsegment *
 geom_nsegment(const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) gs))
     return NULL;
@@ -1632,7 +1632,7 @@ nsegment_round(const Nsegment *ns, int maxdd)
 int64
 npoint_route(const Npoint *np)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) np))
     return false;
@@ -1652,7 +1652,7 @@ npoint_route(const Npoint *np)
 double
 npoint_position(const Npoint *np)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) np))
     return -1.0;
@@ -1671,7 +1671,7 @@ npoint_position(const Npoint *np)
 int64
 nsegment_route(const Nsegment *ns)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ns))
     return false;
@@ -1690,7 +1690,7 @@ nsegment_route(const Nsegment *ns)
 double
 nsegment_start_position(const Nsegment *ns)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ns))
     return -1.0;
@@ -1709,7 +1709,7 @@ nsegment_start_position(const Nsegment *ns)
 double
 nsegment_end_position(const Nsegment *ns)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ns))
     return -1.0;
@@ -1766,7 +1766,7 @@ nsegment_srid(const Nsegment *ns __attribute__((unused)))
 bool
 npoint_eq(const Npoint *np1, const Npoint *np2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) np1) || ! ensure_not_null((void *) np2))
     return false;
@@ -1799,7 +1799,7 @@ npoint_ne(const Npoint *np1, const Npoint *np2)
 int
 npoint_cmp(const Npoint *np1, const Npoint *np2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) np1) || ! ensure_not_null((void *) np2))
     return false;
@@ -1880,7 +1880,7 @@ npoint_ge(const Npoint *np1, const Npoint *np2)
 bool
 nsegment_eq(const Nsegment *ns1, const Nsegment *ns2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ns1) || ! ensure_not_null((void *) ns2))
     return false;
@@ -1915,7 +1915,7 @@ nsegment_ne(const Nsegment *ns1, const Nsegment *ns2)
 int
 nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ns1) || ! ensure_not_null((void *) ns2))
     return false;
@@ -2005,7 +2005,7 @@ nsegment_ge(const Nsegment *ns1, const Nsegment *ns2)
 uint32
 npoint_hash(const Npoint *np)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) np))
     return false;
@@ -2033,7 +2033,7 @@ npoint_hash(const Npoint *np)
 uint64
 npoint_hash_extended(const Npoint *np, uint64 seed)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) np))
     return false;

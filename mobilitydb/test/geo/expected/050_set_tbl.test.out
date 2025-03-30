@@ -139,19 +139,19 @@ SELECT MIN(numValues(g)) FROM tbl_geomset;
    5
 (1 row)
 
-SELECT MIN(round(ST_X(startValue(g))::numeric, 6)) FROM tbl_geomset;
+SELECT MIN(round(ST_X(startValue(g)), 6)) FROM tbl_geomset;
     min     
 ------------
  -96.535171
 (1 row)
 
-SELECT MIN(round(ST_X(endValue(g))::numeric, 6)) FROM tbl_geomset;
+SELECT MIN(round(ST_X(endValue(g)), 6)) FROM tbl_geomset;
     min     
 ------------
  -94.408967
 (1 row)
 
-SELECT MIN(round(ST_X(valueN(g, 1))::numeric, 6)) FROM tbl_geomset;
+SELECT MIN(round(ST_X(valueN(g, 1)), 6)) FROM tbl_geomset;
     min     
 ------------
  -96.535171
@@ -175,19 +175,19 @@ SELECT MIN(numValues(g)) FROM tbl_geogset;
    5
 (1 row)
 
-SELECT MIN(round(ST_X(startValue(g)::geometry)::numeric, 6)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(startValue(g)::geometry), 6)) FROM tbl_geogset;
    min    
 ----------
  0.432515
 (1 row)
 
-SELECT MIN(round(ST_X(endValue(g)::geometry)::numeric, 6)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(endValue(g)::geometry), 6)) FROM tbl_geogset;
    min    
 ----------
  0.806752
 (1 row)
 
-SELECT MIN(round(ST_X(valueN(g, 1)::geometry)::numeric, 6)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(valueN(g, 1)::geometry), 6)) FROM tbl_geogset;
    min    
 ----------
  0.432515

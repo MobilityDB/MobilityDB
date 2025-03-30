@@ -62,6 +62,9 @@
 #if POSE
   #include "pose/tpose.h"
 #endif
+#if RGEO
+  #include "rgeo/trgeo.h"
+#endif
 
 /*****************************************************************************
  * Comparison functions on datums
@@ -107,7 +110,7 @@ datum_cmp(Datum l, Datum r, meosType type)
     case T_NPOINT:
       return npoint_cmp(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
-#if POSE
+#if POSE || RGEO
     case T_POSE:
       return pose_cmp(DatumGetPoseP(l), DatumGetPoseP(r));
 #endif
@@ -195,7 +198,7 @@ datum_eq(Datum l, Datum r, meosType type)
     case T_NPOINT:
       return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
 #endif
-#if POSE
+#if POSE || RGEO
     case T_POSE:
       return pose_eq(DatumGetPoseP(l), DatumGetPoseP(r));
 #endif
@@ -413,7 +416,7 @@ datum_hash(Datum d, meosType type)
     case T_NPOINT:
       return npoint_hash(DatumGetNpointP(d));
 #endif
-#if POSE
+#if POSE || RGEO
     case T_POSE:
       return pose_hash(DatumGetPoseP(d));
 #endif
@@ -459,7 +462,7 @@ datum_hash_extended(Datum d, meosType type, uint64 seed)
     case T_NPOINT:
       return npoint_hash_extended(DatumGetNpointP(d), seed);
 #endif
-#if POSE
+#if POSE || RGEO
     case T_POSE:
       return pose_hash_extended(DatumGetPoseP(d), seed);
 #endif

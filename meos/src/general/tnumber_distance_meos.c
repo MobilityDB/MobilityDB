@@ -63,7 +63,7 @@
 Temporal *
 distance_tint_int(const Temporal *temp, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -81,7 +81,7 @@ distance_tint_int(const Temporal *temp, int i)
 Temporal *
 distance_tfloat_float(const Temporal *temp, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -104,7 +104,7 @@ distance_tfloat_float(const Temporal *temp, double d)
 int
 nad_tint_int(const Temporal *temp, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return -1;
@@ -123,7 +123,7 @@ nad_tint_int(const Temporal *temp, int i)
 double
 nad_tfloat_float(const Temporal *temp, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return -1.0;
@@ -142,7 +142,7 @@ nad_tfloat_float(const Temporal *temp, double d)
 int
 nad_tint_tbox(const Temporal *temp, const TBox *box)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
       ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_span(temp, &box->span))
@@ -162,7 +162,7 @@ nad_tint_tbox(const Temporal *temp, const TBox *box)
 double
 nad_tfloat_tbox(const Temporal *temp, const TBox *box)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
       ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_span(temp, &box->span))
@@ -214,7 +214,7 @@ nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2)
 int
 nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2) ||
       ! ensure_tnumber_type(temp1->temptype))
@@ -233,7 +233,7 @@ nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
 double
 nad_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2) ||
       ! ensure_tnumber_type(temp1->temptype))

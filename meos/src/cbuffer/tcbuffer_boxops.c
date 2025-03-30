@@ -61,7 +61,7 @@
 void
 tcbufferinst_set_stbox(const TInstant *inst, STBox *box)
 {
-  cbuffer_set_stbox(DatumGetCbufferP(tinstant_val(inst)), box);
+  cbuffer_set_stbox(DatumGetCbufferP(tinstant_value_p(inst)), box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
@@ -136,7 +136,7 @@ cbuffer_timestamptz_set_stbox(const Cbuffer *cbuf, TimestampTz t, STBox *box)
 STBox *
 cbuffer_timestamptz_to_stbox(const Cbuffer *cbuf, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf))
     return NULL;
@@ -178,7 +178,7 @@ cbuffer_tstzspan_set_stbox(const Cbuffer *cbuf, const Span *s, STBox *box)
 STBox *
 cbuffer_tstzspan_to_stbox(const Cbuffer *cbuf, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) s))
     return NULL;

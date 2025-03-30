@@ -133,6 +133,9 @@ elseif(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
   if(POSE)
     target_compile_options(pose PRIVATE "/W4")
   endif()
+  if(RGEO)
+    target_compile_options(rgeo PRIVATE "/W4")
+  endif()
 endif()
 
 #--------------------------------
@@ -170,6 +173,10 @@ endif()
 if(POSE)
   message(STATUS "Including geoposes")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pose>")
+endif()
+if(RGEO)
+  message(STATUS "Including rigid geometries")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:rgeo>")
 endif()
 
 # PostgreSQL
@@ -227,6 +234,11 @@ endif()
 if(POSE)
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_pose.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+if(RGEO)
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_rgeo.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 endif()
 

@@ -56,7 +56,7 @@
 Temporal *
 tbool_at_value(const Temporal *temp, bool b)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
@@ -73,7 +73,7 @@ tbool_at_value(const Temporal *temp, bool b)
 Temporal *
 tint_at_value(const Temporal *temp, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -90,7 +90,7 @@ tint_at_value(const Temporal *temp, int i)
 Temporal *
 tfloat_at_value(const Temporal *temp, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -107,7 +107,7 @@ tfloat_at_value(const Temporal *temp, double d)
 Temporal *
 ttext_at_value(const Temporal *temp, text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
@@ -126,7 +126,7 @@ ttext_at_value(const Temporal *temp, text *txt)
 Temporal *
 tbool_minus_value(const Temporal *temp, bool b)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
@@ -143,7 +143,7 @@ tbool_minus_value(const Temporal *temp, bool b)
 Temporal *
 tint_minus_value(const Temporal *temp, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -160,7 +160,7 @@ tint_minus_value(const Temporal *temp, int i)
 Temporal *
 tfloat_minus_value(const Temporal *temp, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -177,7 +177,7 @@ tfloat_minus_value(const Temporal *temp, double d)
 Temporal *
 ttext_minus_value(const Temporal *temp, text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
@@ -196,7 +196,7 @@ ttext_minus_value(const Temporal *temp, text *txt)
 Temporal *
 temporal_at_values(const Temporal *temp, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
       ! ensure_temporal_isof_basetype(temp, s->basetype))
     return NULL;
@@ -214,7 +214,7 @@ temporal_at_values(const Temporal *temp, const Set *s)
 Temporal *
 temporal_minus_values(const Temporal *temp, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
       ! ensure_temporal_isof_basetype(temp, s->basetype))
     return NULL;
@@ -237,7 +237,7 @@ bool
 tbool_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   bool *value)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
     return false;
@@ -262,7 +262,7 @@ bool
 tint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   int *value)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return false;
@@ -287,7 +287,7 @@ bool
 tfloat_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   double *value)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return false;
@@ -312,7 +312,7 @@ bool
 ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   text **value)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
@@ -334,7 +334,7 @@ ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 Temporal *
 temporal_at_min(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
   return temporal_restrict_minmax(temp, GET_MIN, REST_AT);
@@ -350,7 +350,7 @@ temporal_at_min(const Temporal *temp)
 Temporal *
 temporal_minus_min(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
   return temporal_restrict_minmax(temp, GET_MIN, REST_MINUS);
@@ -365,7 +365,7 @@ temporal_minus_min(const Temporal *temp)
 Temporal *
 temporal_at_max(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
   return temporal_restrict_minmax(temp, GET_MAX, REST_AT);
@@ -381,7 +381,7 @@ temporal_at_max(const Temporal *temp)
 Temporal *
 temporal_minus_max(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
   return temporal_restrict_minmax(temp, GET_MAX, REST_MINUS);
@@ -399,7 +399,7 @@ temporal_minus_max(const Temporal *temp)
 Temporal *
 tnumber_at_span(const Temporal *temp, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
       ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_span(temp, s))
@@ -418,7 +418,7 @@ tnumber_at_span(const Temporal *temp, const Span *s)
 Temporal *
 tnumber_minus_span(const Temporal *temp, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
       ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_span(temp, s))
@@ -437,7 +437,7 @@ tnumber_minus_span(const Temporal *temp, const Span *s)
 Temporal *
 tnumber_at_spanset(const Temporal *temp, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
       ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_spanset(temp, ss))
@@ -457,7 +457,7 @@ tnumber_at_spanset(const Temporal *temp, const SpanSet *ss)
 Temporal *
 tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
       ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_valid_tnumber_spanset(temp, ss))
@@ -477,7 +477,7 @@ tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss)
 Temporal *
 temporal_at_timestamptz(const Temporal *temp, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
   return temporal_restrict_timestamptz(temp, t, REST_AT);
@@ -493,7 +493,7 @@ temporal_at_timestamptz(const Temporal *temp, TimestampTz t)
 Temporal *
 temporal_minus_timestamptz(const Temporal *temp, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp))
     return NULL;
   return temporal_restrict_timestamptz(temp, t, REST_MINUS);
@@ -509,7 +509,7 @@ temporal_minus_timestamptz(const Temporal *temp, TimestampTz t)
 Temporal *
 temporal_at_tstzset(const Temporal *temp, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
       ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
@@ -527,7 +527,7 @@ temporal_at_tstzset(const Temporal *temp, const Set *s)
 Temporal *
 temporal_minus_tstzset(const Temporal *temp, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
       ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
@@ -544,7 +544,7 @@ temporal_minus_tstzset(const Temporal *temp, const Set *s)
 Temporal *
 temporal_at_tstzspan(const Temporal *temp, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
       ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
@@ -562,7 +562,7 @@ temporal_at_tstzspan(const Temporal *temp, const Span *s)
 Temporal *
 temporal_minus_tstzspan(const Temporal *temp, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
       ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
@@ -579,7 +579,7 @@ temporal_minus_tstzspan(const Temporal *temp, const Span *s)
 Temporal *
 temporal_at_tstzspanset(const Temporal *temp, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
@@ -597,7 +597,7 @@ temporal_at_tstzspanset(const Temporal *temp, const SpanSet *ss)
 Temporal *
 temporal_minus_tstzspanset(const Temporal *temp, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;

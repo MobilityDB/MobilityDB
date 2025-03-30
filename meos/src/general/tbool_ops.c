@@ -85,7 +85,7 @@ datum_not(Datum d)
 Temporal *
 tnot_tbool(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
@@ -161,7 +161,7 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
 SpanSet *
 tbool_when_true(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))

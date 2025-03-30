@@ -43,6 +43,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "general/pg_types.h"
 #include "general/set.h"
 #include "general/lifting.h"
 #include "general/temporal.h"
@@ -59,6 +60,12 @@
 #if POSE
   #include "pose/pose.h"
   #include "pose/tpose_boxops.h"
+#endif 
+#if RGEO
+  #include "pose/pose.h"
+  #include "rgeo/trgeo.h"
+  #include "rgeo/trgeo_inst.h"
+  #include "rgeo/trgeo_boxops.h"
 #endif 
 
 /*****************************************************************************
@@ -106,7 +113,7 @@ spatialbase_as_text(Datum value, meosType type, int maxdd)
 char *
 spatialbase_as_ewkt(Datum value, meosType type, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_negative(maxdd))
     return NULL;
 
@@ -136,12 +143,12 @@ spatialbase_as_ewkt(Datum value, meosType type, int maxdd)
  * @param[in] maxdd Maximum number of decimal digits
  * @param[in] wkt_out Well-Known Text (WKT) function to print the set elements
  * without leading SRID string
- * @param[in] extended True when the leading SRID string for the set is output
+ * @param[in] extended True when the leading SRID string is output
  */
 char *
 spatialset_out_fn(const Set *s, int maxdd, outfunc wkt_out, bool extended)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
     return NULL;
@@ -178,7 +185,7 @@ spatialset_out_fn(const Set *s, int maxdd, outfunc wkt_out, bool extended)
  * @brief Return the Well-Known Text (WKT) representation of a spatial set
  * @csqlfn #Spatialset_as_text()
  */
-char *
+inline char *
 spatialset_as_text(const Set *s, int maxdd)
 {
   return spatialset_out_fn(s, maxdd, &spatialbase_as_text, false);
@@ -194,7 +201,7 @@ spatialset_as_text(const Set *s, int maxdd)
 char *
 spatialset_as_ewkt(const Set *s, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
     return NULL;
@@ -259,7 +266,7 @@ tspatialseqset_as_text(const TSequenceSet *ss, int maxdd)
 char *
 tspatial_as_text(const Temporal *temp, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || 
       ! ensure_tspatial_type(temp->temptype))
@@ -295,7 +302,7 @@ tspatial_as_text(const Temporal *temp, int maxdd)
 char *
 tspatial_as_ewkt(const Temporal *temp, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || 
       ! ensure_tspatial_type(temp->temptype))
@@ -340,7 +347,7 @@ char **
 spatialarr_wkt_out(const Datum *spatialarr, meosType elemtype, int count,
   int maxdd, bool extended)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) spatialarr) || ! ensure_positive(count) ||
       ! ensure_not_negative(maxdd))
     return NULL;
@@ -422,7 +429,7 @@ spatialset_set_stbox(const Set *s, STBox *box)
 STBox *
 spatialset_stbox(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
     return NULL;
@@ -465,6 +472,11 @@ tspatial_set_stbox(const Temporal *temp, STBox *box)
       else if (temp->temptype == T_TPOSE)
         tposeinst_set_stbox((TInstant *) temp, box);
 #endif
+#if RGEO
+      else if (temp->temptype == T_TRGEOMETRY)
+        trgeoinst_set_stbox(trgeoinst_geom_p((TInstant *) temp),
+          (TInstant *) temp, box);
+#endif
       else
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
           "Unknown temporal spatial type: %s", meostype_name(temp->temptype));
@@ -488,7 +500,7 @@ STBox *
 tspatial_stbox(const Temporal *temp)
 {
 #if MEOS
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_tspatial_type(temp->temptype))
     return NULL;
@@ -516,7 +528,7 @@ tspatial_stbox(const Temporal *temp)
 STBox *
 geo_expand_space(const GSERIALIZED *gs, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) gs))
     return NULL;
@@ -543,16 +555,14 @@ geo_expand_space(const GSERIALIZED *gs, double d)
 STBox *
 tspatial_expand_space(const Temporal *temp, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
-  if (! ensure_not_null((void *) temp))
+  if (! ensure_not_null((void *) temp) || 
+      ! ensure_tspatial_type(temp->temptype))
     return NULL;
 #else
   assert(temp);
 #endif /* MEOS */
-  /* This function is also called for tnpoint */
-  if (! ensure_tspatial_type(temp->temptype))
-    return NULL;
 
   STBox box;
   tspatial_set_stbox(temp, &box);

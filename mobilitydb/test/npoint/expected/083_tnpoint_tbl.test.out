@@ -403,7 +403,7 @@ SELECT COUNT(*) FROM tbl_tnpoint,
 WHERE atValues(temp, s) IS NOT NULL;
  count 
 -------
-    30
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tnpoint,

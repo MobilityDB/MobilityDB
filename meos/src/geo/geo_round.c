@@ -100,15 +100,6 @@ point_round(const GSERIALIZED *gs, int maxdd)
 }
 
 /**
- * @brief Return a point with the coordinates set to a number of decimal places
- */
-Datum
-datum_round_point(const GSERIALIZED *gs, int maxdd)
-{
-  return PointerGetDatum(point_round(gs, maxdd));
-}
-
-/**
  * @brief Set the precision of the coordinates of a line to a number of
  * decimal places
  */

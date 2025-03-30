@@ -113,11 +113,11 @@ SELECT MAX(memSize(f)) FROM tbl_floatspanset;
 SELECT MAX(memSize(t)) FROM tbl_tstzspanset;
 
 SELECT MAX(lower(i)) FROM tbl_intspanset;
-SELECT round(MAX(lower(f))::numeric, 6) FROM tbl_floatspanset;
+SELECT round(MAX(lower(f)), 6) FROM tbl_floatspanset;
 SELECT MAX(lower(t)) FROM tbl_tstzspanset;
 
 SELECT MAX(upper(i)) FROM tbl_intspanset;
-SELECT round(MAX(upper(f))::numeric, 6) FROM tbl_floatspanset;
+SELECT round(MAX(upper(f)), 6) FROM tbl_floatspanset;
 SELECT MAX(upper(t)) FROM tbl_tstzspanset;
 
 SELECT DISTINCT lowerInc(i) FROM tbl_intspanset;
@@ -162,17 +162,17 @@ SELECT MAX(startValue(timestamps(t))) FROM tbl_tstzspanset;
 
 SELECT MAX(lower(shift(i, 5))) FROM tbl_intspanset;
 SELECT MAX(lower(shift(b, 5))) FROM tbl_bigintspanset;
-SELECT round(MAX(lower(shift(f, 5)))::numeric, 6) FROM tbl_floatspanset;
+SELECT round(MAX(lower(shift(f, 5))), 6) FROM tbl_floatspanset;
 SELECT MAX(lower(shift(t, '5 min'))) FROM tbl_tstzspanset;
 
 SELECT MAX(lower(scale(i, 5))) FROM tbl_intspanset;
 SELECT MAX(lower(scale(b, 5))) FROM tbl_bigintspanset;
-SELECT round(MAX(lower(scale(f, 5)))::numeric, 6) FROM tbl_floatspanset;
+SELECT round(MAX(lower(scale(f, 5))), 6) FROM tbl_floatspanset;
 SELECT MAX(lower(scale(t, '5 min'))) FROM tbl_tstzspanset;
 
 SELECT MAX(lower(shiftScale(i, 5, 5))) FROM tbl_intspanset;
 SELECT MAX(lower(shiftScale(b, 5, 5))) FROM tbl_bigintspanset;
-SELECT round(MAX(lower(shiftScale(f, 5, 5)))::numeric, 6) FROM tbl_floatspanset;
+SELECT round(MAX(lower(shiftScale(f, 5, 5))), 6) FROM tbl_floatspanset;
 SELECT MAX(lower(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzspanset;
 
 SELECT MAX(startTimestamp(shiftScale(t, '5 min', '5 min'))) FROM tbl_tstzspanset;

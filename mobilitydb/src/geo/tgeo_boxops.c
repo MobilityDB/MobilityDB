@@ -73,8 +73,6 @@ Tgeo_stboxes(PG_FUNCTION_ARGS)
   int count;
   STBox *boxes = tgeo_stboxes(temp, &count);
   PG_FREE_IF_COPY(temp, 0);
-  if (! boxes)
-    PG_RETURN_NULL();
   ArrayType *result = stboxarr_to_array(boxes, count);
   pfree(boxes);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -93,16 +91,10 @@ Geo_stboxes(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   int count;
-  GBOX *gboxes = geo_gboxes(gs, &count);
-  int32_t srid = gserialized_get_srid(gs);
+  STBox *boxes = geo_stboxes(gs, &count);
   PG_FREE_IF_COPY(gs, 0);
-  if (! gboxes)
-    PG_RETURN_NULL();
-  STBox *boxes = palloc(sizeof(STBox) * count);
-  for (int i = 0; i < count; i++)
-    gbox_set_stbox(&gboxes[i], srid, &boxes[i]);
   ArrayType *result = stboxarr_to_array(boxes, count);
-  pfree(gboxes); pfree(boxes);
+  pfree(boxes);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -126,8 +118,6 @@ Tgeo_split_n_stboxes(PG_FUNCTION_ARGS)
   int count;
   STBox *boxes = tgeo_split_n_stboxes(temp, box_count, &count);
   PG_FREE_IF_COPY(temp, 0);
-  if (! boxes)
-    PG_RETURN_NULL();
   ArrayType *result = stboxarr_to_array(boxes, count);
   pfree(boxes);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -147,16 +137,12 @@ Geo_split_n_stboxes(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   int box_count = PG_GETARG_INT32(1);
   int count;
-  GBOX *gboxes = geo_split_n_gboxes(gs, box_count, &count);
-  int32_t srid = gserialized_get_srid(gs);
+  STBox *boxes = geo_split_n_stboxes(gs, box_count, &count);
   PG_FREE_IF_COPY(gs, 0);
-  if (! gboxes)
+  if (! boxes)
     PG_RETURN_NULL();
-  STBox *boxes = palloc(sizeof(STBox) * count);
-  for (int i = 0; i < count; i++)
-    gbox_set_stbox(&gboxes[i], srid, &boxes[i]);
   ArrayType *result = stboxarr_to_array(boxes, count);
-  pfree(gboxes); pfree(boxes);
+  pfree(boxes);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -201,16 +187,12 @@ Geo_split_each_n_stboxes(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   int elems_per_box = PG_GETARG_INT32(1);
   int count;
-  GBOX *gboxes = geo_split_each_n_gboxes(gs, elems_per_box, &count);
-  int32_t srid = gserialized_get_srid(gs);
+  STBox *boxes = geo_split_each_n_stboxes(gs, elems_per_box, &count);
   PG_FREE_IF_COPY(gs, 0);
-  if (! gboxes)
+  if (! boxes)
     PG_RETURN_NULL();
-  STBox *boxes = palloc(sizeof(STBox) * count);
-  for (int i = 0; i < count; i++)
-    gbox_set_stbox(&gboxes[i], srid, &boxes[i]);
   ArrayType *result = stboxarr_to_array(boxes, count);
-  pfree(gboxes); pfree(boxes);
+  pfree(boxes);
   PG_RETURN_ARRAYTYPE_P(result);
 }
 

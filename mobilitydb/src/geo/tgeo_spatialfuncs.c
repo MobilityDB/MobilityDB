@@ -91,6 +91,22 @@ Tgeo_traversed_area(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tgeo_centroid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_centroid);
+/**
+ * @ingroup mobilitydb_geo_accessor
+ * @brief Return the centroid of a temporal geo as a temporal point
+ * @sqlfn centroid()
+ */
+Datum
+Tgeo_centroid(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeo_centroid(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/

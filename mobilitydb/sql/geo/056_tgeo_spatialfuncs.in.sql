@@ -131,10 +131,18 @@ CREATE FUNCTION traversedArea(tgeometry)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Tgeo_traversed_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION traversedArea(tgeography)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Tgeo_traversed_area'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION centroid(tgeometry)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tgeo_centroid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION centroid(tgeography)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tgeo_centroid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

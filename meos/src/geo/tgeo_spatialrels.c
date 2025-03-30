@@ -227,7 +227,7 @@ static int
 spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum param, varfunc func, int numparam, bool invert)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -265,7 +265,7 @@ int
 ea_spatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
   datum_func2 func, bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_valid_tspatial_tspatial(temp1, temp2) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
@@ -309,7 +309,7 @@ ea_spatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
 int
 econtains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_has_not_Z_geo(gs) || 
       ! ensure_has_not_Z(temp->temptype, temp->flags))
@@ -335,7 +335,7 @@ econtains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 int
 acontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_has_not_Z_geo(gs) || 
       ! ensure_has_not_Z(temp->temptype, temp->flags))
@@ -365,7 +365,7 @@ acontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 int
 edisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_geodetic(temp->flags))
     return -1;
   datum_func2 func = &datum_geom_covers;
@@ -422,7 +422,7 @@ ea_disjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 int
 edisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
     return -1;
   return ea_disjoint_tgeo_tgeo(temp1, temp2, EVER);
@@ -438,7 +438,7 @@ edisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 int
 adisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
     return -1;
   return ea_disjoint_tgeo_tgeo(temp1, temp2, ALWAYS);
@@ -544,7 +544,7 @@ aintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 int
 etouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_not_geodetic(temp->flags) || gserialized_is_empty(gs) ||
       ! ensure_valid_tspatial_geo(temp, gs))
@@ -585,7 +585,7 @@ etouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 atouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -622,7 +622,7 @@ atouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
   datum_func3 func = get_dwithin_fn_geo(temp->flags, gs->gflags);
@@ -644,7 +644,7 @@ edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 int
 adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_geodetic(temp->flags) || 
       ! ensure_has_not_Z(temp->temptype, temp->flags) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -673,7 +673,7 @@ ea_dwithin_tgeoinst_tgeoinst(const TInstant *inst1, const TInstant *inst2,
 {
   assert(inst1); assert(inst2);
   /* Result is the same for both EVER and ALWAYS */
-  return DatumGetBool(func(tinstant_val(inst1), tinstant_val(inst2), 
+  return DatumGetBool(func(tinstant_value_p(inst1), tinstant_value_p(inst2), 
     Float8GetDatum(dist)));
 }
 
@@ -723,8 +723,8 @@ ea_dwithin_tpointseq_tpointseq_cont(const TSequence *seq1,
 
   const TInstant *start1 = TSEQUENCE_INST_N(seq1, 0);
   const TInstant *start2 = TSEQUENCE_INST_N(seq2, 0);
-  Datum sv1 = tinstant_val(start1);
-  Datum sv2 = tinstant_val(start2);
+  Datum sv1 = tinstant_value_p(start1);
+  Datum sv2 = tinstant_value_p(start2);
 
   bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
   bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
@@ -735,8 +735,8 @@ ea_dwithin_tpointseq_tpointseq_cont(const TSequence *seq1,
   {
     const TInstant *end1 = TSEQUENCE_INST_N(seq1, i);
     const TInstant *end2 = TSEQUENCE_INST_N(seq2, i);
-    Datum ev1 = tinstant_val(end1);
-    Datum ev2 = tinstant_val(end2);
+    Datum ev1 = tinstant_value_p(end1);
+    Datum ev2 = tinstant_value_p(end2);
     TimestampTz upper = end1->t;
 
     /* Both segments are constant */
@@ -845,7 +845,7 @@ int
 ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   double dist, bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_tspatial(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
@@ -875,7 +875,7 @@ int
 edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
     return -1;
   return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, EVER);
@@ -893,7 +893,7 @@ int
 adwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
     return -1;
   return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, ALWAYS);

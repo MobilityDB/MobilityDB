@@ -84,9 +84,20 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
   }
   if (tspatial_type(temp->temptype))
   {
+#if RGEO
+    /* Temporal rigid geometries have poses as base values but are restricted
+     * to geometries */
+    meosType basetype = (temp->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
+      temptype_basetype(temp->temptype);
+#else
     meosType basetype = temptype_basetype(temp->temptype);
+#endif /* RGEO */
     assert(tspatial_srid(temp) == spatial_srid(value, basetype));
-    if (tgeo_type_all(temp->temptype))
+    if (tgeo_type_all(temp->temptype)
+#if RGEO
+      || temp->temptype == T_TRGEOMETRY
+#endif /* RGEO */
+    )
     {
       /* Test that the geometry is not empty */
       GSERIALIZED *gs = DatumGetGserializedP(value);
@@ -140,13 +151,20 @@ Temporal *
 temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 {
   assert(temp);
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (tspatial_type(temp->temptype))
   {
+#if RGEO
+    /* Temporal rigid geometries have poses as base values but are restricted
+     * to geometries */
+    meosType basetype = (temp->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
+      temptype_basetype(temp->temptype);
+#else
     meosType basetype = temptype_basetype(temp->temptype);
-    if (! ensure_same_srid(tspatial_srid(temp), 
+#endif /* RGEO */
+    if (! ensure_same_srid(tspatial_srid(temp),
             spatial_srid(value, basetype)) ||
-        ! ensure_same_spatial_dimensionality(temp->flags, 
+        ! ensure_same_spatial_dimensionality(temp->flags,
             spatial_flags(value, basetype)))
       return NULL;
   }
@@ -201,7 +219,7 @@ temporal_bbox_restrict_set(const Temporal *temp, const Set *s)
     set_set_span(s, &span2);
     return overlaps_span_span(&span1, &span2);
   }
-  if (tpoint_type(temp->temptype) && temp->subtype != TINSTANT)
+  if (tspatial_type(temp->temptype) && temp->subtype != TINSTANT)
   {
     STBox box;
     tspatial_set_stbox(temp, &box);
@@ -223,11 +241,15 @@ Temporal *
 temporal_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
 {
   assert(temp); assert(s);
-  if (tpoint_type(temp->temptype))
+  if (tspatial_type(temp->temptype))
   {
     assert(tspatial_srid(temp) == spatialset_srid(s));
     assert(same_spatial_dimensionality(temp->flags, s->flags));
   }
+
+  /* Singleton set */
+  if (s->count == 1)
+    temporal_restrict_value(temp, SET_VAL_N(s, 0), atfunc);
 
   /* Bounding box test */
   interpType interp = MEOS_FLAGS_GET_INTERP(temp->flags);
@@ -423,8 +445,8 @@ temporal_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 
 /**
  * @ingroup meos_internal_temporal_restrict
- * @brief Return in the last argument the base value of a temporal value at a 
- * timestamptz
+ * @brief Return in the last argument a copy of the value of a temporal value
+ * at a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @param[in] strict True if the timestamp must belong to the temporal value,
@@ -556,7 +578,7 @@ temporal_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
 Temporal *
 tnumber_at_tbox(const Temporal *temp, const TBox *box)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
       ! ensure_tnumber_type(temp->temptype))
@@ -611,7 +633,7 @@ tnumber_at_tbox(const Temporal *temp, const TBox *box)
 Temporal *
 tnumber_minus_tbox(const Temporal *temp, const TBox *box)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
       ! ensure_tnumber_type(temp->temptype))
@@ -655,7 +677,7 @@ TInstant *
 tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
 {
   assert(inst);
-  if (datum_eq(value, tinstant_val(inst),
+  if (datum_eq(value, tinstant_value_p(inst),
       temptype_basetype(inst->temptype)))
     return atfunc ? tinstant_copy(inst) : NULL;
   return atfunc ? NULL : tinstant_copy(inst);
@@ -671,10 +693,17 @@ tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
 bool
 tinstant_restrict_values_test(const TInstant *inst, const Set *s, bool atfunc)
 {
-  meosType basetype = temptype_basetype(inst->temptype);
+#if RGEO
+  /* Temporal rigid geometries have poses as base values but are restricted
+   * to geometries */
+  meosType basetype = (inst->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
+    temptype_basetype(inst->temptype);
+#else
+    meosType basetype = temptype_basetype(inst->temptype);
+#endif /* RGEO */
   for (int i = 0; i < s->count; i++)
   {
-    if (datum_eq(tinstant_val(inst), SET_VAL_N(s, i), basetype))
+    if (datum_eq(tinstant_value_p(inst), SET_VAL_N(s, i), basetype))
       return atfunc ? true : false;
   }
   return atfunc ? false : true;
@@ -711,7 +740,7 @@ bool
 tnumberinst_restrict_span_test(const TInstant *inst, const Span *s,
   bool atfunc)
 {
-  bool contains = contains_span_value(s, tinstant_val(inst));
+  bool contains = contains_span_value(s, tinstant_value_p(inst));
   return atfunc ? contains : ! contains;
 }
 
@@ -746,7 +775,7 @@ tnumberinst_restrict_spanset_test(const TInstant *inst, const SpanSet *ss,
   assert(inst); assert(ss);
   for (int i = 0; i < ss->count; i++)
   {
-    if (contains_span_value(SPANSET_SP_N(ss, i), tinstant_val(inst)))
+    if (contains_span_value(SPANSET_SP_N(ss, i), tinstant_value_p(inst)))
       return atfunc ? true : false;
   }
   return atfunc ? false : true;
@@ -891,12 +920,19 @@ TSequence *
 tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 {
   assert(seq); assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
-  meosType basetype = temptype_basetype(seq->temptype);
+#if RGEO
+  /* Temporal rigid geometries have poses as base values but are restricted
+   * to geometries */
+  meosType basetype = (seq->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
+    temptype_basetype(seq->temptype);
+#else
+    meosType basetype = temptype_basetype(seq->temptype);
+#endif /* RGEO */
 
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    Datum value1 = tinstant_val(TSEQUENCE_INST_N(seq, 0));
+    Datum value1 = tinstant_value_p(TSEQUENCE_INST_N(seq, 0));
     bool equal = datum_eq(value, value1, basetype);
     if ((atfunc && ! equal) || (! atfunc && equal))
       return NULL;
@@ -909,7 +945,7 @@ tdiscseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    bool equal = datum_eq(value, tinstant_val(inst), basetype);
+    bool equal = datum_eq(value, tinstant_value_p(inst), basetype);
     if ((atfunc && equal) || (! atfunc && ! equal))
       instants[count++] = inst;
   }
@@ -977,9 +1013,13 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
 {
   assert(inst1->temptype == inst2->temptype);
   assert(interp != DISCRETE);
-  Datum value1 = tinstant_val(inst1);
-  Datum value2 = tinstant_val(inst2);
+  Datum value1 = tinstant_value_p(inst1);
+  Datum value2 = tinstant_value_p(inst2);
   meosType basetype = temptype_basetype(inst1->temptype);
+  // /* Temporal rigid geometries have poses as base values but are restricted
+   // * to geometries */
+  // meosType basetype1 = (inst1->temptype == T_TRGEOMETRY) ? T_GEOMETRY :
+    // basetype;
   TInstant *instants[2];
   /* Is the segment constant? */
   bool isconst = datum_eq(value1, value2, basetype);
@@ -994,7 +1034,8 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   Datum projvalue = 0; /* make compiler quiet */
   TimestampTz t = 0; /* make compiler quiet */
   bool interior = (interp == LINEAR) && ! isconst &&
-    tlinearsegm_intersection_value(inst1, inst2, value, basetype, &projvalue, &t);
+    tlinearsegm_intersection_value(inst1, inst2, value, basetype, &projvalue,
+      &t);
 
   /* Overall segment does not belong to the answer */
   if ((isconst && ! lower) ||
@@ -1057,8 +1098,8 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
 
       instants[0] = (TInstant *) inst1;
       instants[1] = (TInstant *) inst2;
-      result[0] = tsequence_make((const TInstant **) instants, 2,
-        ! lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
+      result[0] = tsequence_make((const TInstant **) instants, 2, ! lower_inc,
+        upper_inc, LINEAR, NORMALIZE_NO);
       return 1;
     }
     else if (t == inst2->t)
@@ -1077,12 +1118,12 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
     {
       instants[0] = (TInstant *) inst1;
       instants[1] = tinstant_make_free(projvalue, inst1->temptype, t);
-      result[0] = tsequence_make((const TInstant **) instants, 2,
-        lower_inc, false, LINEAR, NORMALIZE_NO);
+      result[0] = tsequence_make((const TInstant **) instants, 2, lower_inc,
+        false, LINEAR, NORMALIZE_NO);
       instants[0] = instants[1];
       instants[1] = (TInstant *) inst2;
-      result[1] = tsequence_make((const TInstant **) instants, 2,
-        false, upper_inc, LINEAR, NORMALIZE_NO);
+      result[1] = tsequence_make((const TInstant **) instants, 2, false,
+        upper_inc, LINEAR, NORMALIZE_NO);
       pfree(instants[0]);
       return 2;
     }
@@ -1114,7 +1155,7 @@ tcontseq_restrict_value_iter(const TSequence *seq, Datum value, bool atfunc,
   {
     /* We do not call the function tinstant_restrict_value since this
      * would create a new unnecessary instant that needs to be freed */
-    bool equal = datum_eq(tinstant_val(TSEQUENCE_INST_N(seq, 0)), value,
+    bool equal = datum_eq(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)), value,
       temptype_basetype(seq->temptype));
     if ((atfunc && ! equal) || (! atfunc && equal))
       return 0;
@@ -1365,8 +1406,8 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   interpType interp, bool lower_inc, bool upper_inc, const Span *s,
   bool atfunc, TSequence **result)
 {
-  Datum value1 = tinstant_val(inst1);
-  Datum value2 = tinstant_val(inst2);
+  Datum value1 = tinstant_value_p(inst1);
+  Datum value2 = tinstant_value_p(inst2);
   meosType basetype = temptype_basetype(inst1->temptype);
   meosType spantype = basetype_spantype(basetype);
   TInstant *instants[2];
@@ -2146,7 +2187,7 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
       }
       else
       {
-        instants[n] = tinstant_make(tinstant_val(instants[n - 1]),
+        instants[n] = tinstant_make(tinstant_value_p(instants[n - 1]),
           inst1->temptype, t);
         result[nseqs++] = tsequence_make((const TInstant **) instants, n + 1,
           seq->period.lower_inc, false, interp, NORMALIZE_NO);
@@ -2159,7 +2200,7 @@ tcontseq_minus_timestamp_iter(const TSequence *seq, TimestampTz t,
       instants[n] = (TInstant *) inst1;
       instants[n + 1] = (interp == LINEAR) ?
         tsegment_at_timestamptz(inst1, inst2, interp, t) :
-        tinstant_make(tinstant_val(inst1), inst1->temptype, t);
+        tinstant_make(tinstant_value_p(inst1), inst1->temptype, t);
       result[nseqs++] = tsequence_make((const TInstant **) instants, n + 2,
         seq->period.lower_inc, false, interp, NORMALIZE_NO);
       pfree(instants[n + 1]);
@@ -2333,7 +2374,7 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
         else /* interp == STEP */
         {
           /* Take the value of the previous instant */
-          value = tinstant_val(instants[ninsts - 1]);
+          value = tinstant_value_p(instants[ninsts - 1]);
           instants[ninsts] = tinstant_make(value, inst->temptype, inst->t);
           tofree[nfree++] = instants[ninsts++];
         }
@@ -2361,7 +2402,7 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
             LINEAR, t);
         else
           /* Take the value of the previous instant */
-          value = tinstant_val(instants[ninsts - 1]);
+          value = tinstant_value_p(instants[ninsts - 1]);
         instants[ninsts] = tinstant_make(value, inst->temptype, t);
         tofree[nfree] = instants[ninsts++];
         result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
@@ -2466,7 +2507,7 @@ tcontseq_at_tstzspan(const TSequence *seq, const Span *s)
       inter.upper);
   else
   {
-    Datum value = tinstant_val(instants[ninsts - 1]);
+    Datum value = tinstant_value_p(instants[ninsts - 1]);
     instants[ninsts++] = tinstant_make(value, seq->temptype, inter.upper);
   }
   /* Since by definition the sequence is normalized it is not necessary to

@@ -96,8 +96,8 @@ bool
 tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
-  const Npoint *np1 = DatumGetNpointP(tinstant_val(inst1));
-  const Npoint *np2 = DatumGetNpointP(tinstant_val(inst2));
+  const Npoint *np1 = DatumGetNpointP(tinstant_value_p(inst1));
+  const Npoint *np2 = DatumGetNpointP(tinstant_value_p(inst2));
   const Npoint *np = DatumGetNpointP(value);
   double min = Min(np1->pos, np2->pos);
   double max = Max(np1->pos, np2->pos);
@@ -138,7 +138,7 @@ tnpointseq_discstep_npoints(const TSequence *seq, int *count)
 {
   Npoint **result = palloc(sizeof(Npoint *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    result[i] = DatumGetNpointP(tinstant_val(TSEQUENCE_INST_N(seq, i)));
+    result[i] = DatumGetNpointP(tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
   *count = seq->count;
   return result;
 }
@@ -160,7 +160,7 @@ tnpointseqset_step_npoints(const TSequenceSet *ss, int *count)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     for (int j = 0; j < seq->count; j++)
       result[npoints++] = DatumGetNpointP(
-        tinstant_val(TSEQUENCE_INST_N(seq, j)));
+        tinstant_value_p(TSEQUENCE_INST_N(seq, j)));
   }
   *count = npoints;
   return result;
@@ -178,7 +178,7 @@ tnpointseqset_step_npoints(const TSequenceSet *ss, int *count)
 GSERIALIZED *
 tnpointinst_trajectory(const TInstant *inst)
 {
-  const Npoint *np = DatumGetNpointP(tinstant_val(inst));
+  const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   return npoint_geom(np);
 }
 
@@ -300,13 +300,13 @@ tnpointseq_length(const TSequence *seq)
     return 0;
 
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-  const Npoint *np1 = DatumGetNpointP(tinstant_val(inst));
+  const Npoint *np1 = DatumGetNpointP(tinstant_value_p(inst));
   double length = route_length(np1->rid);
   double fraction = 0;
   for (int i = 1; i < seq->count; i++)
   {
     inst = TSEQUENCE_INST_N(seq, i);
-    const Npoint *np2 = DatumGetNpointP(tinstant_val(inst));
+    const Npoint *np2 = DatumGetNpointP(tinstant_value_p(inst));
     fraction += fabs(np2->pos - np1->pos);
     np1 = np2;
   }
@@ -365,14 +365,14 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
   /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Npoint *np1 = DatumGetNpointP(tinstant_val(inst1));
+  Npoint *np1 = DatumGetNpointP(tinstant_value_p(inst1));
   double rlength = route_length(np1->rid);
   double length = prevlength;
   instants[0] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst1->t);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    Npoint *np2 = DatumGetNpointP(tinstant_val(inst2));
+    Npoint *np2 = DatumGetNpointP(tinstant_value_p(inst2));
     length += fabs(np2->pos - np1->pos) * rlength;
     instants[i] = tinstant_make(Float8GetDatum(length), T_TFLOAT, inst2->t);
     np1 = np2;
@@ -394,7 +394,7 @@ tnpointseqset_cumulative_length(const TSequenceSet *ss)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     sequences[i] = tnpointseq_cumulative_length(seq, length);
     const TInstant *end = TSEQUENCE_INST_N(sequences[i], seq->count - 1);
-    length += DatumGetFloat8(tinstant_val(end));
+    length += DatumGetFloat8(tinstant_value_p(end));
   }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
@@ -438,14 +438,14 @@ tnpointseq_speed(const TSequence *seq)
   /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  Npoint *np1 = DatumGetNpointP(tinstant_val(inst1));
+  Npoint *np1 = DatumGetNpointP(tinstant_value_p(inst1));
   double rlength = route_length(np1->rid);
   const TInstant *inst2 = NULL; /* make the compiler quiet */
   double speed = 0; /* make the compiler quiet */
   for (int i = 0; i < seq->count - 1; i++)
   {
     inst2 = TSEQUENCE_INST_N(seq, i + 1);
-    Npoint *np2 = DatumGetNpointP(tinstant_val(inst2));
+    Npoint *np2 = DatumGetNpointP(tinstant_value_p(inst2));
     double length = fabs(np2->pos - np1->pos) * rlength;
     speed = length / (((double)(inst2->t) - (double)(inst1->t)) / 1000000);
     instants[i] = tinstant_make(Float8GetDatum(speed), T_TFLOAT, inst1->t);
@@ -488,7 +488,7 @@ tnpointseqset_speed(const TSequenceSet *ss)
 Temporal *
 tnpoint_speed(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_tspatial_type(temp->temptype) ||
       ! ensure_linear_interp(temp->flags))
@@ -538,7 +538,7 @@ Temporal *
 tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_has_not_Z_geo(gs))
@@ -577,7 +577,7 @@ Temporal *
 tnpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs))
     return NULL;
   return tnpoint_restrict_geom(temp, gs, zspan, REST_AT);
@@ -595,7 +595,7 @@ Temporal *
 tnpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs))
     return NULL;
   return tnpoint_restrict_geom(temp, gs, zspan, REST_MINUS);

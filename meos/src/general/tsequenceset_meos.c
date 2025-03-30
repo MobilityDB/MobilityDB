@@ -67,7 +67,7 @@
 TSequenceSet *
 tboolseqset_from_base_tstzspanset(bool b, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
@@ -85,7 +85,7 @@ tboolseqset_from_base_tstzspanset(bool b, const SpanSet *ss)
 TSequenceSet *
 tintseqset_from_base_tstzspanset(int i, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
@@ -105,7 +105,7 @@ TSequenceSet *
 tfloatseqset_from_base_tstzspanset(double d, const SpanSet *ss,
   interpType interp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
@@ -123,7 +123,7 @@ tfloatseqset_from_base_tstzspanset(double d, const SpanSet *ss,
 TSequenceSet *
 ttextseqset_from_base_tstzspanset(const text *txt, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) txt) || ! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;

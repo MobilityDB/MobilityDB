@@ -77,7 +77,7 @@
 Set *
 poseset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) str))
     return NULL;
@@ -97,7 +97,7 @@ poseset_in(const char *str)
 char *
 poseset_out(const Set *s, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_POSESET))
     return NULL;
@@ -121,7 +121,7 @@ poseset_out(const Set *s, int maxdd)
 Set *
 poseset_make(const Pose **values, int count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) values))
     return NULL;
@@ -151,7 +151,7 @@ Set *
 pose_to_set(const Pose *pose)
 {
 #if MEOS
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) pose))
     return NULL;
 #else
@@ -176,7 +176,7 @@ pose_to_set(const Pose *pose)
 Pose *
 poseset_start_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_POSESET))
     return NULL;
@@ -197,7 +197,7 @@ poseset_start_value(const Set *s)
 Pose *
 poseset_end_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_POSESET))
     return NULL;
@@ -221,7 +221,7 @@ poseset_end_value(const Set *s)
 bool
 poseset_value_n(const Set *s, int n, Pose **result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
       ! ensure_set_isof_type(s, T_POSESET))
@@ -246,7 +246,7 @@ poseset_value_n(const Set *s, int n, Pose **result)
 Pose **
 poseset_values(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_POSESET))
     return NULL;
@@ -274,7 +274,7 @@ poseset_values(const Set *s)
 bool
 ensure_valid_set_pose(const Set *s, const Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) pose) ||
       ! ensure_set_isof_type(s, T_POSESET))
     return false;
@@ -291,7 +291,7 @@ ensure_valid_set_pose(const Set *s, const Pose *pose)
 bool
 contains_set_pose(const Set *s, Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_pose(s, pose))
     return false;
   return contains_set_value(s, PointerGetDatum(pose));
@@ -307,7 +307,7 @@ contains_set_pose(const Set *s, Pose *pose)
 bool
 contained_pose_set(const Pose *pose, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_pose(s, pose))
     return false;
   return contained_value_set(PointerGetDatum(pose), s);
@@ -323,7 +323,7 @@ contained_pose_set(const Pose *pose, const Set *s)
 Set *
 union_set_pose(const Set *s, const Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_pose(s, pose))
     return NULL;
   return union_set_value(s, PointerGetDatum(pose));
@@ -352,7 +352,7 @@ union_pose_set(const Pose *pose, const Set *s)
 Set *
 intersection_set_pose(const Set *s, const Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_pose(s, pose))
     return NULL;
   return intersection_set_value(s, PointerGetDatum(pose));
@@ -381,7 +381,7 @@ intersection_pose_set(const Pose *pose, const Set *s)
 Set *
 minus_pose_set(const Pose *pose, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_pose(s, pose))
     return NULL;
   return minus_value_set(PointerGetDatum(pose), s);
@@ -397,7 +397,7 @@ minus_pose_set(const Pose *pose, const Set *s)
 Set *
 minus_set_pose(const Set *s, const Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_pose(s, pose))
     return NULL;
   return minus_set_value(s, PointerGetDatum(pose));
@@ -418,7 +418,7 @@ minus_set_pose(const Set *s, const Pose *pose)
 Set *
 pose_union_transfn(Set *state, const Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) pose))
     return NULL;
   if (state && ! ensure_set_isof_type(state, T_POSESET))

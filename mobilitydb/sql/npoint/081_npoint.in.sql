@@ -98,7 +98,7 @@ CREATE TYPE nsegment (
 );
 
 /*****************************************************************************
- * Input/output from (E)WKT, (E)WKB and HexEWKB format
+ * Input/output from (E)WKT, (E)WKB and HexEWKB representation
  *****************************************************************************/
 
 CREATE FUNCTION npointFromText(text)

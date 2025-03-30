@@ -792,6 +792,24 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return the centroid of a geometry
+ * @note PostGIS function: @p centroid(PG_FUNCTION_ARGS). 
+ */
+GSERIALIZED *
+geom_centroid(const GSERIALIZED *geom)
+{
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+  LWGEOM *lwresult = lwgeom_centroid(lwgeom);
+  lwgeom_free(lwgeom);
+  if (! lwresult)
+    return NULL;
+  GSERIALIZED *result = geo_serialize(lwresult);
+  lwgeom_free(lwresult);
+  return result;
+}
+
+/**
  * @brief Return true if a geometry is a point
  */
 static char
@@ -1772,6 +1790,319 @@ geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline, int32_t srid_to,
 }
 
 /*****************************************************************************
+ * Functions adapted from geography_centroid.c
+ *****************************************************************************/
+
+POINT3D *
+lonlat_to_cart(const double_t raw_lon, const double_t raw_lat)
+{
+  POINT3D *point = lwalloc(sizeof(POINT3D));
+  // prepare coordinate for trigonometric functions from [-90, 90] -> [0, pi]
+  double_t lat = (raw_lat + 90) / 180 * M_PI;
+  // prepare coordinate for trigonometric functions from [-180, 180] -> [-pi, pi]
+  double_t lon = raw_lon / 180 * M_PI;
+  /* calculate value only once */
+  double_t sin_lat = sinl(lat);
+  /* convert to 3D cartesian coordinates */
+  point->x = sin_lat * cosl(lon);
+  point->y = sin_lat * sinl(lon);
+  point->z = cosl(lat);
+  return point;
+}
+
+LWPOINT *
+cart_to_lwpoint(const double_t x_sum, const double_t y_sum,
+  const double_t z_sum, const double_t weight_sum, const int32_t srid)
+{
+  double_t x = x_sum / weight_sum;
+  double_t y = y_sum / weight_sum;
+  double_t z = z_sum / weight_sum;
+  /* x-y-z vector length */
+  double_t r = sqrtl(powl(x, 2) + powl(y, 2) + powl(z, 2));
+  double_t lon = atan2l(y, x) * 180 / M_PI;
+  double_t lat = acosl(z / r) * 180 / M_PI - 90;
+  return lwpoint_make2d(srid, lon, lat);
+}
+
+/**
+ * @brief Convert lat-lon-points to x-y-z-coordinates, calculate a weighted
+ * average point and return lat-lon-coordinated
+ */
+LWPOINT *
+geography_centroid_from_wpoints(const int32_t srid, const POINT3DM *points,
+  const uint32_t size)
+{
+  double_t x_sum = 0;
+  double_t y_sum = 0;
+  double_t z_sum = 0;
+  double_t weight_sum = 0;
+  double_t weight = 1;
+  POINT3D* point;
+  for (uint32_t i = 0; i < size; i++ )
+  {
+    point = lonlat_to_cart(points[i].x, points[i].y);
+    weight = points[i].m;
+    x_sum += point->x * weight;
+    y_sum += point->y * weight;
+    z_sum += point->z * weight;
+    weight_sum += weight;
+    lwfree(point);
+  }
+  return cart_to_lwpoint(x_sum, y_sum, z_sum, weight_sum, srid);
+}
+
+/**
+ * @brief Split lines into segments and calculate with middle of segment as
+ * weighted point
+ */
+LWPOINT *
+geography_centroid_from_mline(const LWMLINE* mline, SPHEROID *s)
+{
+  double_t tolerance = 0.0;
+  uint32_t size = 0;
+  uint32_t i, k, j = 0;
+  POINT3DM* points;
+  LWPOINT* result;
+
+  /* get total number of points */
+  for (i = 0; i < mline->ngeoms; i++)
+    size += (mline->geoms[i]->points->npoints - 1) * 2;
+  points = palloc(size*sizeof(POINT3DM));
+  for (i = 0; i < mline->ngeoms; i++)
+  {
+    LWLINE* line = mline->geoms[i];
+    /* add both points of line segment as weighted point */
+    for (k = 0; k < line->points->npoints - 1; k++)
+    {
+      const POINT2D* p1 = getPoint2d_cp(line->points, k);
+      const POINT2D* p2 = getPoint2d_cp(line->points, k+1);
+      double_t weight;
+
+      /* use line-segment length as weight */
+      LWPOINT* lwp1 = lwpoint_make2d(mline->srid, p1->x, p1->y);
+      LWPOINT* lwp2 = lwpoint_make2d(mline->srid, p2->x, p2->y);
+      LWGEOM* lwgeom1 = lwpoint_as_lwgeom(lwp1);
+      LWGEOM* lwgeom2 = lwpoint_as_lwgeom(lwp2);
+      lwgeom_set_geodetic(lwgeom1, LW_TRUE);
+      lwgeom_set_geodetic(lwgeom2, LW_TRUE);
+
+      /* use point distance as weight */
+      weight = lwgeom_distance_spheroid(lwgeom1, lwgeom2, s, tolerance);
+      points[j].x = p1->x;
+      points[j].y = p1->y;
+      points[j].m = weight;
+      j++;
+      points[j].x = p2->x;
+      points[j].y = p2->y;
+      points[j].m = weight;
+      j++;
+      lwgeom_free(lwgeom1);
+      lwgeom_free(lwgeom2);
+    }
+  }
+
+  result = geography_centroid_from_wpoints(mline->srid, points, size);
+  pfree(points);
+  return result;
+}
+
+/**
+ * Split polygons into triangles and use centroid of the triangle with the
+ * triangle area as weight to calculate the centroid of a (multi)polygon.
+ */
+LWPOINT *
+geography_centroid_from_mpoly(const LWMPOLY* mpoly, bool use_spheroid,
+  SPHEROID *s)
+{
+  uint32_t size = 0;
+  uint32_t i, ir, ip, j = 0;
+  POINT3DM* points;
+  POINT4D* reference_point = NULL;
+  LWPOINT* result = NULL;
+
+  for (ip = 0; ip < mpoly->ngeoms; ip++)
+    for (ir = 0; ir < mpoly->geoms[ip]->nrings; ir++)
+      size += mpoly->geoms[ip]->rings[ir]->npoints - 1;
+
+  points = palloc(size*sizeof(POINT3DM));
+
+  /* use first point as reference to create triangles */
+  reference_point = (POINT4D*) getPoint2d_cp(mpoly->geoms[0]->rings[0], 0);
+
+  for (ip = 0; ip < mpoly->ngeoms; ip++)
+  {
+    LWPOLY* poly = mpoly->geoms[ip];
+    for (ir = 0; ir < poly->nrings; ir++)
+    {
+      POINTARRAY* ring = poly->rings[ir];
+
+      /* split into triangles (two points + reference point) */
+      for (i = 0; i < ring->npoints - 1; i++)
+      {
+        const POINT4D* p1 = (const POINT4D*) getPoint2d_cp(ring, i);
+        const POINT4D* p2 = (const POINT4D*) getPoint2d_cp(ring, i+1);
+        LWPOLY* poly_tri;
+        LWGEOM* geom_tri;
+        double_t weight;
+        POINT3DM triangle[3];
+        LWPOINT* tri_centroid;
+
+        POINTARRAY* pa = ptarray_construct_empty(0, 0, 4);
+        ptarray_insert_point(pa, p1, 0);
+        ptarray_insert_point(pa, p2, 1);
+        ptarray_insert_point(pa, reference_point, 2);
+        ptarray_insert_point(pa, p1, 3);
+
+        poly_tri = lwpoly_construct_empty(mpoly->srid, 0, 0);
+        lwpoly_add_ring(poly_tri, pa);
+
+        geom_tri = lwpoly_as_lwgeom(poly_tri);
+        lwgeom_set_geodetic(geom_tri, LW_TRUE);
+
+        /* Calculate the weight of the triangle. If counter clockwise,
+         * the weight is negative (e.g. for holes in polygons) */
+
+        if (use_spheroid)
+          weight = lwgeom_area_spheroid(geom_tri, s);
+        else
+          weight = lwgeom_area_sphere(geom_tri, s);
+
+
+        triangle[0].x = p1->x;
+        triangle[0].y = p1->y;
+        triangle[0].m = 1;
+
+        triangle[1].x = p2->x;
+        triangle[1].y = p2->y;
+        triangle[1].m = 1;
+
+        triangle[2].x = reference_point->x;
+        triangle[2].y = reference_point->y;
+        triangle[2].m = 1;
+
+        /* get center of triangle */
+        tri_centroid = geography_centroid_from_wpoints(mpoly->srid, triangle, 3);
+
+        points[j].x = lwpoint_get_x(tri_centroid);
+        points[j].y = lwpoint_get_y(tri_centroid);
+        points[j].m = weight;
+        j++;
+
+        lwpoint_free(tri_centroid);
+        lwgeom_free(geom_tri);
+       }
+    }
+  }
+  result = geography_centroid_from_wpoints(mpoly->srid, points, size);
+  pfree(points);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return the centroid of a geometry
+ * @note PostGIS function: @p geography_centroid(PG_FUNCTION_ARGS). 
+ */
+GSERIALIZED *
+geog_centroid(const GSERIALIZED *g, bool use_spheroid)
+{
+  LWGEOM *lwgeom_out = NULL;
+  LWPOINT *lwpoint_out = NULL;
+  GSERIALIZED *g_out = NULL;
+  SPHEROID s;
+
+  /* Get our geometry object loaded into memory. */
+  LWGEOM *lwgeom = lwgeom_from_gserialized(g);
+  int32_t srid = lwgeom_get_srid(lwgeom);
+
+  /* on empty input, return empty output */
+  if (gserialized_is_empty(g))
+  {
+    LWCOLLECTION *empty = lwcollection_construct_empty(COLLECTIONTYPE, srid,
+      0, 0);
+    lwgeom_out = lwcollection_as_lwgeom(empty);
+    g_out = geo_serialize(lwgeom_out);
+    return g_out;
+  }
+
+  /* Initialize spheroid */
+  spheroid_init_from_srid(srid, &s);
+
+  /* Set to sphere if requested */
+  if (! use_spheroid)
+    s.a = s.b = s.radius;
+
+  switch (lwgeom_get_type(lwgeom))
+  {
+    case POINTTYPE:
+    {
+      /* centroid of a point is itself */
+      return geo_copy(g);
+    }
+    case MULTIPOINTTYPE:
+    {
+      LWMPOINT* mpoints = lwgeom_as_lwmpoint(lwgeom);
+
+      /* average between all points */
+      uint32_t size = mpoints->ngeoms;
+      POINT3DM* points = palloc(size*sizeof(POINT3DM));
+      for (uint32_t i = 0; i < size; i++)
+      {
+        points[i].x = lwpoint_get_x(mpoints->geoms[i]);
+        points[i].y = lwpoint_get_y(mpoints->geoms[i]);
+        points[i].m = 1;
+      }
+      lwpoint_out = geography_centroid_from_wpoints(srid, points, size);
+      pfree(points);
+      break;
+    }
+    case LINETYPE:
+    {
+      LWLINE* line = lwgeom_as_lwline(lwgeom);
+
+      /* reuse mline function */
+      LWMLINE* mline = lwmline_construct_empty(srid, 0, 0);
+      lwmline_add_lwline(mline, line);
+
+      lwpoint_out = geography_centroid_from_mline(mline, &s);
+      lwmline_free(mline);
+      break;
+    }
+    case MULTILINETYPE:
+    {
+      LWMLINE* mline = lwgeom_as_lwmline(lwgeom);
+      lwpoint_out = geography_centroid_from_mline(mline, &s);
+      break;
+    }
+    case POLYGONTYPE:
+    {
+      LWPOLY* poly = lwgeom_as_lwpoly(lwgeom);
+      /* reuse mpoly function */
+      LWMPOLY* mpoly = lwmpoly_construct_empty(srid, 0, 0);
+      lwmpoly_add_lwpoly(mpoly, poly);
+      lwpoint_out = geography_centroid_from_mpoly(mpoly, use_spheroid, &s);
+      lwmpoly_free(mpoly);
+      break;
+    }
+    case MULTIPOLYGONTYPE:
+    {
+      LWMPOLY* mpoly = lwgeom_as_lwmpoly(lwgeom);
+      lwpoint_out = geography_centroid_from_mpoly(mpoly, use_spheroid, &s);
+      break;
+    }
+    default:
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "ST_Centroid(geography) unhandled geography type");
+      return NULL;
+    }
+  }
+  lwgeom_out = lwpoint_as_lwgeom(lwpoint_out);
+  g_out = geo_serialize(lwgeom_out);
+  return g_out;
+}
+
+/*****************************************************************************
  * Functions adapted from geography_measurement.c
  *****************************************************************************/
 
@@ -2192,7 +2523,7 @@ postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
 GSERIALIZED *
 geom_in(const char *str, int32 typmod)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
 
@@ -2307,7 +2638,7 @@ geom_in(const char *str, int32 typmod)
 char *
 geo_out(const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs))
     return NULL;
 
@@ -2327,7 +2658,7 @@ geo_out(const GSERIALIZED *gs)
 GSERIALIZED *
 geo_from_text(const char *wkt, int32_t srid)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) wkt))
     return NULL;
 
@@ -2372,7 +2703,7 @@ geo_from_text(const char *wkt, int32_t srid)
 char *
 geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) gs))
     return NULL;
@@ -2393,8 +2724,6 @@ geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended)
  * geometry/geography
  * @param[in] gs Geometry/geography
  * @param[in] precision Maximum number of decimal digits
- * @note This is a a stricter version of #geom_in, where we refuse to
- * accept (HEX)WKB or EWKT.
  * @note PostGIS function: @p LWGEOM_asText(PG_FUNCTION_ARGS)
  */
 char *
@@ -2460,7 +2789,7 @@ geog_from_hexewkb(const char *wkt)
 char *
 geo_as_hexewkb(const GSERIALIZED *gs, const char *endian)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs))
     return NULL;
 
@@ -2494,7 +2823,7 @@ geo_as_hexewkb(const GSERIALIZED *gs, const char *endian)
 GSERIALIZED *
 geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32 srid)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) wkb))
     return NULL;
 
@@ -2529,7 +2858,7 @@ geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32 srid)
 uint8_t *
 geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs))
     return NULL;
 
@@ -2565,7 +2894,7 @@ geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size)
 GSERIALIZED *
 geo_from_geojson(const char *geojson)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) geojson))
     return NULL;
 
@@ -2606,7 +2935,7 @@ char *
 geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
   const char *srs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs))
     return NULL;
 
@@ -2661,7 +2990,7 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
 bool
 geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs1) || ! ensure_not_null((void *) gs2))
     return false;
 
@@ -2744,7 +3073,7 @@ geog_from_lwgeom(LWGEOM *lwgeom, int32 typmod)
 GSERIALIZED *
 geog_in(const char *str, int32 typmod)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
 
@@ -2811,7 +3140,7 @@ geog_in(const char *str, int32 typmod)
 GSERIALIZED *
 geog_from_binary(const char *wkb_bytea)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) wkb_bytea))
     return NULL;
 
@@ -2842,7 +3171,7 @@ geog_from_binary(const char *wkb_bytea)
  * @note PostGIS function: @p geography_from_geometry(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-geog_from_geom(GSERIALIZED *gs)
+geog_from_geom(const GSERIALIZED *gs)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   geography_valid_type(lwgeom_get_type(lwgeom));
@@ -2865,7 +3194,7 @@ geog_from_geom(GSERIALIZED *gs)
 
     lwgeom_set_geodetic(lwgeom, true);
     /* We are trusting geography_serialize will add a box if needed */
-    result = geog_serialize(lwgeom);
+    result = geo_serialize(lwgeom);
   }
   lwgeom_free(lwgeom);
   return result;
@@ -2878,14 +3207,15 @@ geog_from_geom(GSERIALIZED *gs)
  * @note PostGIS function: @p geometry_from_geography(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-geom_from_geog(GSERIALIZED *gs)
+geom_from_geog(const GSERIALIZED *gs)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   /* Recalculate the boxes after re-setting the geodetic bit */
   lwgeom_set_geodetic(lwgeom, false);
   lwgeom_refresh_bbox(lwgeom);
   /* We want "geometry" to think all our "geography" has an SRID, and the
-     implied SRID is the default, so we fill that in if our SRID is actually unknown. */
+     implied SRID is the default, so we fill that in if our SRID is actually
+     unknown. */
   if (lwgeom->srid <= 0)
     lwgeom->srid = SRID_DEFAULT;
 
@@ -3227,10 +3557,8 @@ line_point_n(const GSERIALIZED *gs, int n)
   }
 
   lwgeom_free(geom);
-
-  if (!  point )
+  if (! point)
     return NULL;
-
   return geo_serialize(lwpoint_as_lwgeom(point));
 }
 
@@ -3246,12 +3574,9 @@ line_numpoints(const GSERIALIZED *gs)
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   int count = -1;
   int type = geom->type;
-
   if (type == LINETYPE || type == CIRCSTRINGTYPE || type == COMPOUNDTYPE)
     count = lwgeom_count_vertices(geom);
-
   lwgeom_free(geom);
-
   /* OGC says this functions is only valid on LINESTRING */
   if (count < 0)
   {
@@ -3259,7 +3584,6 @@ line_numpoints(const GSERIALIZED *gs)
       "Error in computing number of points of a linestring");
     return -1;
   }
-
   return count;
 }
 

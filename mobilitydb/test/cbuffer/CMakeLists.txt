@@ -9,7 +9,7 @@ add_test(
 set_tests_properties(load_cbuffer_tables PROPERTIES
   DEPENDS test_setup
   FIXTURES_SETUP DBCBUFFER
-  FIXTURES_REQUIRED "DB;DBGEO")
+  FIXTURES_REQUIRED "DB;DBGEO;DBPOINT")
 
 file(GLOB testfiles "queries/*.sql")
 list(SORT testfiles)
@@ -32,7 +32,7 @@ foreach(file ${testfiles})
         -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
       )
     set_tests_properties(${TESTNAME} PROPERTIES
-      FIXTURES_REQUIRED "DB;DBGEO;DBCBUFFER"
+      FIXTURES_REQUIRED "DB;DBGEO;DBPOINT;DBCBUFFER"
       RESOURCE_LOCK DBLOCK)
   endif()
 endforeach()

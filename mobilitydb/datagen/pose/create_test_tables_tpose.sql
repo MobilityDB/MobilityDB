@@ -48,7 +48,7 @@ BEGIN
 DROP TABLE IF EXISTS tbl_pose2d;
 CREATE TABLE tbl_pose2d AS
 SELECT k, random_pose2d(-100, 100, -100, 100, radians(-pi()), radians(pi()),
-  5676) AS pose
+  3812) AS pose
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_poseset2d;
@@ -57,7 +57,7 @@ CREATE TABLE tbl_poseset2d AS
 SELECT k, NULL AS s
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_pose2d_set(-100, 100, -100, 100, radians(-pi()),
-  radians(pi()), 1, 10, 5676)
+  radians(pi()), 1, 10, 3812)
 FROM generate_series(perc+1, size) AS k;
 
 -------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_pose3d;
 CREATE TABLE tbl_pose3d AS
 SELECT k, random_pose3d(-100, 100, -100, 100, -100, 100, 0, 1, 0, 1, 0, 1, 
-  0, 1, 5676) AS pose
+  0, 1, 3812) AS pose
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_poseset3d;
@@ -74,7 +74,7 @@ CREATE TABLE tbl_poseset3d AS
 SELECT k, NULL AS s
 FROM generate_series(1, perc) AS k UNION
 SELECT k, random_pose3d_set(-100, 100, -100, 100, -100, 100, 0, 1, 0, 1, 0, 1, 
-  0, 1, 1, 10, 5676)
+  0, 1, 1, 10, 3812)
 FROM generate_series(perc+1, size) AS k;
 
 ------------------------------------------------------------------------------
@@ -84,25 +84,25 @@ FROM generate_series(perc+1, size) AS k;
 DROP TABLE IF EXISTS tbl_tpose2d_inst;
 CREATE TABLE tbl_tpose2d_inst AS
 SELECT k, random_tpose2d_inst(-100, 100, -100, 100, radians(-pi()),
-  radians(pi()), '2001-01-01', '2001-12-31', 5676) AS inst
+  radians(pi()), '2001-01-01', '2001-12-31', 3812) AS inst
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpose2d_discseq;
 CREATE TABLE tbl_tpose2d_discseq AS
 SELECT k, random_tpose2d_discseq(-100, 100, -100, 100, radians(-pi()),
-  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 10, 5676) AS seq
+  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS seq
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpose2d_seq;
 CREATE TABLE tbl_tpose2d_seq AS
 SELECT k, random_tpose2d_contseq(-100, 100, -100, 100, radians(-pi()),
-  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 10, 5676) AS seq
+  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS seq
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpose2d_seqset;
 CREATE TABLE tbl_tpose2d_seqset AS
 SELECT k, random_tpose2d_seqset(-100, 100, -100, 100, radians(-pi()),
-  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 5676) AS ss
+  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812) AS ss
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tpose2d;
@@ -117,25 +117,25 @@ CREATE TABLE tbl_tpose2d(k, temp) AS
 DROP TABLE IF EXISTS tbl_tpose3d_inst;
 CREATE TABLE tbl_tpose3d_inst AS
 SELECT k, random_tpose3d_inst(-100, 100, -100, 100, -100, 100, 0, 1, 0, 1, 
-  0, 1, 0, 1, '2001-01-01', '2001-12-31', 5676) AS inst
+  0, 1, 0, 1, '2001-01-01', '2001-12-31', 3812) AS inst
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpose3d_discseq;
 CREATE TABLE tbl_tpose3d_discseq AS
 SELECT k, random_tpose3d_discseq(-100, 100, -100, 100, -100, 100, 0, 1, 0, 1, 
-  0, 1, 0, 1, '2001-01-01', '2001-12-31', 10, 1, 10, 5676) AS seq
+  0, 1, 0, 1, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS seq
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpose3d_seq;
 CREATE TABLE tbl_tpose3d_seq AS
 SELECT k, random_tpose3d_contseq(-100, 100, -100, 100, -100, 100, 0, 1, 0, 1, 
-  0, 1, 0, 1, '2001-01-01', '2001-12-31', 10, 1, 10, 5676) AS seq
+  0, 1, 0, 1, '2001-01-01', '2001-12-31', 10, 1, 10, 3812) AS seq
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tpose3d_seqset;
 CREATE TABLE tbl_tpose3d_seqset AS
 SELECT k, random_tpose3d_seqset(-100, 100, -100, 100, -100, 100, 0, 1, 0, 1, 
-  0, 1, 0, 1, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 5676) AS ss
+  0, 1, 0, 1, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10, 3812) AS ss
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tpose3d;

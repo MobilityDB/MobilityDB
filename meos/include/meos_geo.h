@@ -85,10 +85,11 @@ extern GSERIALIZED *geo_transform(GSERIALIZED *geom, int32_t srid_to);
 extern GSERIALIZED *geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline, int32_t srid_to, bool is_forward);
 
 extern double geog_area(const GSERIALIZED *g, bool use_spheroid);
+extern GSERIALIZED *geog_centroid(const GSERIALIZED *g, bool use_spheroid);
 extern double geog_distance(const GSERIALIZED *g1, const GSERIALIZED *g2);
 extern bool geog_dwithin(const GSERIALIZED *g1, const GSERIALIZED *g2, double tolerance, bool use_spheroid);
 extern GSERIALIZED *geog_from_binary(const char *wkb_bytea);
-extern GSERIALIZED *geog_from_geom(GSERIALIZED *geom);
+extern GSERIALIZED *geog_from_geom(const GSERIALIZED *geom);
 extern GSERIALIZED *geog_from_hexewkb(const char *wkt);
 extern GSERIALIZED *geog_in(const char *str, int32 typmod);
 extern bool geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool use_spheroid);
@@ -99,6 +100,7 @@ extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int count);
 extern bool geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result);
 extern GSERIALIZED *geom_boundary(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_buffer(const GSERIALIZED *gs, double size, char *params);
+extern GSERIALIZED *geom_centroid(const GSERIALIZED *gs);
 extern bool geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_convex_hull(const GSERIALIZED *gs);
 extern bool geom_covers(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
@@ -108,7 +110,7 @@ extern double geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern double geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance);
 extern bool geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance);
-extern GSERIALIZED *geom_from_geog(GSERIALIZED *geog);
+extern GSERIALIZED *geom_from_geog(const GSERIALIZED *geog);
 extern GSERIALIZED *geom_from_hexewkb(const char *wkt);
 extern GSERIALIZED *geom_from_text(const char *wkt, int32_t srid);
 extern GSERIALIZED *geom_in(const char *str, int32 typmod);
@@ -128,6 +130,9 @@ extern int line_numpoints(const GSERIALIZED *gs);
 extern double line_locate_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *line_point_n(const GSERIALIZED *geom, int n);
 extern GSERIALIZED *line_substring(const GSERIALIZED *gs, double from, double to);
+
+extern STBox *geo_stboxes(const GSERIALIZED *gs, int *count);
+extern STBox *geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *count);
 
 /*****************************************************************************
  * Functions for geo and spatial sets
@@ -310,6 +315,7 @@ extern bool tgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool 
 extern bool tgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result);
 extern GSERIALIZED **tgeo_values(const Temporal *temp, int *count);
 extern GSERIALIZED *tgeo_traversed_area(const Temporal *temp);
+extern Temporal *tgeo_centroid(const Temporal *temp);
 
 /* Transformations */
 
@@ -355,8 +361,9 @@ extern Temporal *tne_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 
 /* Bounding box functions */
 
-extern GBOX *geo_split_each_n_gboxes(const GSERIALIZED *gs, int elem_count, int *count);
-extern GBOX *geo_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count);
+extern STBox *geo_split_each_n_stboxes(const GSERIALIZED *gs, int elem_count, int *count);
+extern STBox *geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *count);
+extern STBox *geo_split_each_n_stboxes(const GSERIALIZED *gs, int box_count, int *count);
 extern STBox *tgeo_stboxes(const Temporal *temp, int *count);
 extern STBox *tgeo_space_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, int *count);
 extern STBox *tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, int *count);

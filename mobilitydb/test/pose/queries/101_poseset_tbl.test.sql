@@ -68,9 +68,9 @@ SELECT MIN(rotation(startValue(round(s, 3)))) FROM tbl_poseset2d;
 SELECT MAX(memSize(s)) FROM tbl_poseset2d;
 
 SELECT MIN(numValues(s)) FROM tbl_poseset2d;
-SELECT round(MIN(rotation(startValue(s)))::numeric, 6) FROM tbl_poseset2d;
-SELECT round(MIN(rotation(endValue(s)))::numeric, 6) FROM tbl_poseset2d;
-SELECT round(MIN(rotation(valueN(s, 1)))::numeric, 6) FROM tbl_poseset2d;
+SELECT round(MIN(rotation(startValue(s))), 6) FROM tbl_poseset2d;
+SELECT round(MIN(rotation(endValue(s))), 6) FROM tbl_poseset2d;
+SELECT round(MIN(rotation(valueN(s, 1))), 6) FROM tbl_poseset2d;
 SELECT MIN(array_length(getValues(s), 1)) FROM tbl_poseset2d;
 
 -------------------------------------------------------------------------------

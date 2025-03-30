@@ -71,7 +71,7 @@ datum_cbuffer_distance(Datum cbuf1, Datum cbuf2)
 double
 distance_cbuffer_geo(const Cbuffer *cbuf, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) gs))
     return -1.0;
@@ -96,7 +96,7 @@ distance_cbuffer_geo(const Cbuffer *cbuf, const GSERIALIZED *gs)
 double
 distance_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) box))
     return -1.0;
@@ -122,7 +122,7 @@ distance_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box)
 double
 distance_cbuffer_cbuffer(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) cbuf1) || ! ensure_not_null((void *) cbuf2))
     return -1.0;
@@ -153,7 +153,7 @@ distance_cbuffer_cbuffer(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 Temporal *
 distance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -182,7 +182,7 @@ distance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -209,7 +209,7 @@ distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 Temporal *
 distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_temporal_isof_type(temp1, T_TCBUFFER) ||
@@ -244,7 +244,7 @@ distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 double
 nad_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) box) || 
       ! ensure_valid_stbox_cbuffer(box, cbuf))
       // ! ensure_same_spatial_dimensionality_stbox_geo(box, cbuf))
@@ -270,7 +270,7 @@ nad_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box)
 TInstant *
 nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -304,7 +304,7 @@ nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 TInstant *
 nai_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -336,7 +336,7 @@ nai_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 TInstant *
 nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_temporal_isof_type(temp1, T_TCBUFFER) ||
@@ -376,7 +376,7 @@ nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 double
 nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -405,7 +405,7 @@ nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 double
 nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER) || 
       ! ensure_has_X(T_STBOX, box->flags))
@@ -429,7 +429,7 @@ nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
 double
 nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -456,7 +456,7 @@ nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 double
 nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_temporal_isof_type(temp1, T_TCBUFFER) ||
@@ -490,7 +490,7 @@ nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 GSERIALIZED *
 shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       gserialized_is_empty(gs))
     return NULL;
@@ -512,7 +512,7 @@ shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 GSERIALIZED *
 shortestline_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -540,7 +540,7 @@ shortestline_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 GSERIALIZED *
 shortestline_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_temporal_isof_type(temp1, T_TCBUFFER) ||

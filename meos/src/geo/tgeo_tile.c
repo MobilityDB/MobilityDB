@@ -649,7 +649,7 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin,
   TimestampTz torigin, bool border_inc, int *count)
 {
-  /* Ensure validity of the arguments
+  /* Ensure the validity of the arguments
    * Since we pass by default Point(0 0 0) as origin independently of the input
    * STBox, we test the same spatial dimensionality only for STBox Z */
   if (! ensure_not_null((void *) bounds) || 
@@ -903,7 +903,7 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin, 
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *count) 
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) || 
       ! tgeo_type_all(temp->temptype) ||
       (xsize > 0 && ! ensure_not_null((void *) sorigin)) || 
@@ -1057,7 +1057,7 @@ tpointinst_get_coords_fpos(const TInstant *inst, bool hasz, bool hast,
 {
   /* Read the point and compute the minimum values of the tile */
   POINT4D p;
-  datum_point4d(tinstant_val(inst), &p);
+  datum_point4d(tinstant_value_p(inst), &p);
   double x = float_get_bin(p.x, state->xsize, state->box.xmin);
   double y = float_get_bin(p.y, state->ysize, state->box.ymin);
   double z = 0;

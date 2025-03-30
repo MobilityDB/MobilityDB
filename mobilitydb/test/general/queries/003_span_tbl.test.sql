@@ -116,11 +116,11 @@ SELECT COUNT(*) FROM tbl_tstzspan WHERE t <> (t::tstzrange)::tstzspan;
 -------------------------------------------------------------------------------
 
 SELECT MAX(lower(i)) FROM tbl_intspan;
-SELECT round(MAX(lower(f))::numeric, 6) FROM tbl_floatspan;
+SELECT round(MAX(lower(f)), 6) FROM tbl_floatspan;
 SELECT MAX(lower(t)) FROM tbl_tstzspan;
 
 SELECT MAX(upper(i)) FROM tbl_intspan;
-SELECT round(MAX(upper(f))::numeric, 6) FROM tbl_floatspan;
+SELECT round(MAX(upper(f)), 6) FROM tbl_floatspan;
 SELECT MAX(upper(t)) FROM tbl_tstzspan;
 
 SELECT DISTINCT lowerInc(i) FROM tbl_intspan;
@@ -132,7 +132,7 @@ SELECT DISTINCT upperInc(f) FROM tbl_floatspan;
 SELECT DISTINCT upperInc(t) FROM tbl_tstzspan;
 
 SELECT SUM(width(i)) FROM tbl_intspan;
-SELECT round(SUM(width(f))::numeric, 6) FROM tbl_floatspan;
+SELECT round(SUM(width(f)), 6) FROM tbl_floatspan;
 
 SELECT MAX(duration(d)) FROM tbl_datespan;
 SELECT MAX(duration(t)) FROM tbl_tstzspan;
@@ -151,23 +151,26 @@ SELECT MAX(lower(shift(t, '5 min'))) FROM tbl_tstzspan;
 
 SELECT MAX(lower(shift(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2;
 SELECT MAX(lower(shift(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2;
-SELECT round(MAX(lower(shift(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2;
+SELECT round(MAX(lower(shift(t1.f, t2.f))), 6) FROM tbl_floatspan t1, tbl_float t2;
 SELECT MAX(lower(shift(t1.d, t2.i))) FROM tbl_datespan t1, tbl_int t2;
 SELECT MAX(lower(shift(t, i))) FROM tbl_tstzspan, tbl_interval;
 
 SELECT MAX(lower(scale(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2 WHERE t2.i > 0;
 SELECT MAX(lower(scale(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE t2.b > 0;
-SELECT round(MAX(lower(scale(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2 WHERE t2.f > 0;
+SELECT round(MAX(lower(scale(t1.f, t2.f))), 6) FROM tbl_floatspan t1, tbl_float t2 WHERE t2.f > 0;
 SELECT MAX(lower(scale(t1.d, t2.i))) FROM tbl_datespan t1, tbl_int t2;
 SELECT MAX(lower(scale(t, i))) FROM tbl_tstzspan, tbl_interval;
 
 SELECT MAX(lower(shiftScale(t1.i, t2.i, t3.i))) FROM tbl_intspan t1, tbl_int t2, tbl_int t3 WHERE t3.i > 0;
 SELECT MAX(lower(shiftScale(t1.b, t2.b, t3.b))) FROM tbl_bigintspan t1, tbl_bigint t2, tbl_bigint t3 WHERE t3.b > 0;
-SELECT round(MAX(lower(shiftScale(t1.f, t2.f, t3.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2, tbl_float t3 WHERE t3.f > 0;
+SELECT round(MAX(lower(shiftScale(t1.f, t2.f, t3.f))), 6) FROM tbl_floatspan t1, tbl_float t2, tbl_float t3 WHERE t3.f > 0;
 SELECT MAX(lower(shiftScale(t1.d, t2.i, t3.i))) FROM tbl_datespan t1, tbl_int t2, tbl_int t3 WHERE t3.i > 0;
 SELECT MAX(lower(shiftScale(t, t1.i, t2.i))) FROM tbl_tstzspan, tbl_interval t1, tbl_interval t2;
 
-SELECT MIN(lower(round(f, 5))) FROM tbl_floatspan;
+SELECT MAX(lower(round(f, 5))) FROM tbl_floatspan;
+SELECT MAX(lower(degrees(f))) FROM tbl_floatspan;
+SELECT MAX(lower(degrees(f, true))) FROM tbl_floatspan;
+SELECT MAX(lower(radians(f))) FROM tbl_floatspan;
 
 -------------------------------------------------------------------------------
 -- Comparison Functions

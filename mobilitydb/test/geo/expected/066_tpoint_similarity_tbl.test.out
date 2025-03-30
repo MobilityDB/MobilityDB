@@ -1,10 +1,10 @@
-SELECT round(MAX(frechetDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.k < t2.k;
+SELECT round(MAX(frechetDistance(t1.temp, t2.temp)), 6) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.k < t2.k;
    round    
 ------------
  130.688591
 (1 row)
 
-SELECT round(MAX(frechetDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.k < t2.k;
+SELECT round(MAX(frechetDistance(t1.temp, t2.temp)), 6) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.k < t2.k;
      round      
 ----------------
  4466068.093619
@@ -26,13 +26,13 @@ SELECT COUNT(*) FROM temp;
  72574
 (1 row)
 
-SELECT round(MAX(dynTimeWarpDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.k < t2.k;
+SELECT round(MAX(dynTimeWarpDistance(t1.temp, t2.temp)), 6) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.k < t2.k;
     round    
 -------------
  4349.830512
 (1 row)
 
-SELECT round(MAX(dynTimeWarpDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.k < t2.k;
+SELECT round(MAX(dynTimeWarpDistance(t1.temp, t2.temp)), 6) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.k < t2.k;
       round       
 ------------------
  128171436.982722
@@ -54,13 +54,13 @@ SELECT COUNT(*) FROM temp;
  71866
 (1 row)
 
-SELECT round(MAX(hausdorffDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.k < t2.k;
+SELECT round(MAX(hausdorffDistance(t1.temp, t2.temp)), 6) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.k < t2.k;
    round    
 ------------
  130.688591
 (1 row)
 
-SELECT round(MAX(hausdorffDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.k < t2.k;
+SELECT round(MAX(hausdorffDistance(t1.temp, t2.temp)), 6) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.k < t2.k;
      round      
 ----------------
  4466068.093619

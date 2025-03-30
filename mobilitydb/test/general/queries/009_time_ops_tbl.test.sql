@@ -53,22 +53,22 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_temp t2 WHERE t1.t && t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_temp t2 WHERE t1.t @> t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_temp t2 WHERE t1.t <@ t2.t;
 
-SELECT round(_mobdb_span_sel('tbl_intspan'::regclass, 'i', '&&(intspan,intspan)'::regoperator, intspan '[50, 55]')::numeric, 6);
-SELECT round(_mobdb_span_sel('tbl_intspan'::regclass, 'i', '@>(intspan,intspan)'::regoperator, intspan '[50, 55]')::numeric, 6);
-SELECT round(_mobdb_span_sel('tbl_floatspan'::regclass, 'f', '&&(floatspan,floatspan)'::regoperator, floatspan '[50, 55]')::numeric, 6);
-SELECT round(_mobdb_span_sel('tbl_floatspan'::regclass, 'f', '@>(floatspan,floatspan)'::regoperator, floatspan '[50, 55]')::numeric, 6);
-SELECT round(_mobdb_span_sel('tbl_tstzspan'::regclass, 't', '&&(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]')::numeric, 6);
-SELECT round(_mobdb_span_sel('tbl_tstzspan'::regclass, 't', '@>(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01 00:00:00, 2001-06-01:00:00:03]')::numeric, 6);
+SELECT round(_mobdb_span_sel('tbl_intspan'::regclass, 'i', '&&(intspan,intspan)'::regoperator, intspan '[50, 55]'), 6);
+SELECT round(_mobdb_span_sel('tbl_intspan'::regclass, 'i', '@>(intspan,intspan)'::regoperator, intspan '[50, 55]'), 6);
+SELECT round(_mobdb_span_sel('tbl_floatspan'::regclass, 'f', '&&(floatspan,floatspan)'::regoperator, floatspan '[50, 55]'), 6);
+SELECT round(_mobdb_span_sel('tbl_floatspan'::regclass, 'f', '@>(floatspan,floatspan)'::regoperator, floatspan '[50, 55]'), 6);
+SELECT round(_mobdb_span_sel('tbl_tstzspan'::regclass, 't', '&&(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]'), 6);
+SELECT round(_mobdb_span_sel('tbl_tstzspan'::regclass, 't', '@>(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01 00:00:00, 2001-06-01:00:00:03]'), 6);
 
-SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::regclass, 'i', '&&(intspan,intspan)'::regoperator)::numeric, 6);
-SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::regclass, 'i', '@>(intspan,intspan)'::regoperator)::numeric, 6);
-SELECT round(_mobdb_span_joinsel('tbl_floatspan'::regclass, 'f', 'tbl_floatspan'::regclass, 'f', '&&(floatspan,floatspan)'::regoperator)::numeric, 6);
-SELECT round(_mobdb_span_joinsel('tbl_floatspan'::regclass, 'f', 'tbl_floatspan'::regclass, 'f', '@>(floatspan,floatspan)'::regoperator)::numeric, 6);
-SELECT round(_mobdb_span_joinsel('tbl_tstzspan'::regclass, 't', 'tbl_tstzspan'::regclass, 't', '&&(tstzspan,tstzspan)'::regoperator)::numeric, 6);
-SELECT round(_mobdb_span_joinsel('tbl_tstzspan'::regclass, 't', 'tbl_tstzspan'::regclass, 't', '@>(tstzspan,tstzspan)'::regoperator)::numeric, 6);
+SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::regclass, 'i', '&&(intspan,intspan)'::regoperator), 6);
+SELECT round(_mobdb_span_joinsel('tbl_intspan'::regclass, 'i', 'tbl_intspan'::regclass, 'i', '@>(intspan,intspan)'::regoperator), 6);
+SELECT round(_mobdb_span_joinsel('tbl_floatspan'::regclass, 'f', 'tbl_floatspan'::regclass, 'f', '&&(floatspan,floatspan)'::regoperator), 6);
+SELECT round(_mobdb_span_joinsel('tbl_floatspan'::regclass, 'f', 'tbl_floatspan'::regclass, 'f', '@>(floatspan,floatspan)'::regoperator), 6);
+SELECT round(_mobdb_span_joinsel('tbl_tstzspan'::regclass, 't', 'tbl_tstzspan'::regclass, 't', '&&(tstzspan,tstzspan)'::regoperator), 6);
+SELECT round(_mobdb_span_joinsel('tbl_tstzspan'::regclass, 't', 'tbl_tstzspan'::regclass, 't', '@>(tstzspan,tstzspan)'::regoperator), 6);
 
 /* Errors */
-SELECT round(_mobdb_span_sel(1184, 't', '&&(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]')::numeric, 6);
+SELECT round(_mobdb_span_sel(1184, 't', '&&(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]'), 6);
 SELECT _mobdb_span_sel('tbl_tstzspan'::regclass, 'X', '&&(tstzspan,tstzspan)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]');
 SELECT _mobdb_span_sel('tbl_tstzspan'::regclass, 't', '<(text,text)'::regoperator, tstzspan '[2001-06-01, 2001-07-01]');
 

@@ -68,9 +68,9 @@ SELECT MIN(radius(startValue(round(s, 3)))) FROM tbl_cbufferset;
 SELECT MAX(memSize(s)) FROM tbl_cbufferset;
 
 SELECT MIN(numValues(s)) FROM tbl_cbufferset;
-SELECT round(MIN(radius(startValue(s)))::numeric, 6) FROM tbl_cbufferset;
-SELECT round(MIN(radius(endValue(s)))::numeric, 6) FROM tbl_cbufferset;
-SELECT round(MIN(radius(valueN(s, 1)))::numeric, 6) FROM tbl_cbufferset;
+SELECT round(MIN(radius(startValue(s))), 6) FROM tbl_cbufferset;
+SELECT round(MIN(radius(endValue(s))), 6) FROM tbl_cbufferset;
+SELECT round(MIN(radius(valueN(s, 1))), 6) FROM tbl_cbufferset;
 SELECT MIN(array_length(getValues(s), 1)) FROM tbl_cbufferset;
 
 -------------------------------------------------------------------------------

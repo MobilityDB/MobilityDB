@@ -65,7 +65,7 @@ CREATE TYPE stbox (
   alignment = double
 );
 
--- Input/output in WKB and HexWKB format
+-- Input/output in WKB and HexWKB representation
 
 CREATE FUNCTION stboxFromBinary(bytea)
   RETURNS stbox

@@ -90,16 +90,16 @@ DROP TABLE test;
 
 SELECT MAX(memSize(g)) FROM tbl_geomset;
 SELECT MIN(numValues(g)) FROM tbl_geomset;
-SELECT MIN(round(ST_X(startValue(g))::numeric, 6)) FROM tbl_geomset;
-SELECT MIN(round(ST_X(endValue(g))::numeric, 6)) FROM tbl_geomset;
-SELECT MIN(round(ST_X(valueN(g, 1))::numeric, 6)) FROM tbl_geomset;
+SELECT MIN(round(ST_X(startValue(g)), 6)) FROM tbl_geomset;
+SELECT MIN(round(ST_X(endValue(g)), 6)) FROM tbl_geomset;
+SELECT MIN(round(ST_X(valueN(g, 1)), 6)) FROM tbl_geomset;
 SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geomset;
 
 SELECT MAX(memSize(g)) FROM tbl_geogset;
 SELECT MIN(numValues(g)) FROM tbl_geogset;
-SELECT MIN(round(ST_X(startValue(g)::geometry)::numeric, 6)) FROM tbl_geogset;
-SELECT MIN(round(ST_X(endValue(g)::geometry)::numeric, 6)) FROM tbl_geogset;
-SELECT MIN(round(ST_X(valueN(g, 1)::geometry)::numeric, 6)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(startValue(g)::geometry), 6)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(endValue(g)::geometry), 6)) FROM tbl_geogset;
+SELECT MIN(round(ST_X(valueN(g, 1)::geometry), 6)) FROM tbl_geogset;
 SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
 
 -------------------------------------------------------------------------------

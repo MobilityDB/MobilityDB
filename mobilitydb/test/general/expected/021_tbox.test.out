@@ -311,7 +311,19 @@ SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::intspan;
 ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::floatspan;
 ERROR:  The tbox must have X dimension
-SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan))::numeric, 6) FROM tbl_tboxfloat;
+SELECT MIN(Xmin(temp::tbox)) FROM tbl_tint;
+ min 
+-----
+   1
+(1 row)
+
+SELECT round(MIN(Xmin(temp::tbox)),6) FROM tbl_tfloat;
+  round   
+----------
+ 1.029263
+(1 row)
+
+SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan)), 6) FROM tbl_tboxfloat;
   round   
 ----------
  9.798705

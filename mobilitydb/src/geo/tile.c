@@ -61,7 +61,7 @@ tpoint_at_tile(const Temporal *temp, const STBox *box)
         ps_xyz = ps_xy;
       if (ps_xyz)
       {
-        result = temporal_restrict_periodset(temp, ps_xyz, REST_AT);
+        result = temporal_restrict_tstzspanset(temp, ps_xyz, REST_AT);
         if (hasz)
           pfree(ps_xyz);
       }

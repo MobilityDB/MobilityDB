@@ -45,7 +45,7 @@ SELECT asText(tpose '  {  [  Pose(Point(1 1), 0.2)@2000-01-01 ,  Pose  (  Point(
 
 -- Normalization
 SELECT asText(tpose '[Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]');
-SELECT asText(tpose'{[Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05, Pose(Point(2 2), 0.6)@2000-01-06]}');
+SELECT asText(tpose '{[Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05, Pose(Point(2 2), 0.6)@2000-01-06]}');
 
 -------------------------------------------------------------------------------
 -- Input/output in WKT, WKB and HexWKB representation

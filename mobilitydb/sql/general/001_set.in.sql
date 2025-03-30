@@ -216,7 +216,7 @@ CREATE TYPE tstzset (
 
 /******************************************************************************/
 
--- Input/output in WKT, WKB, and HexWKB format
+-- Input/output in WKT, WKB, and HexWKB representation
 
 CREATE FUNCTION intsetFromBinary(bytea)
   RETURNS intset

@@ -118,7 +118,7 @@ tcbufferseqset_in(const char *str)
 Temporal *
 tcbuffer_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return tspatial_parse(&str, T_TCBUFFER);
@@ -134,7 +134,7 @@ tcbuffer_in(const char *str)
 char *
 tcbuffer_out(const Temporal *temp, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || 
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
     return NULL;
@@ -159,8 +159,8 @@ tcbufferinst_make(const TInstant *inst1, const TInstant *inst2)
   assert(inst1); assert(inst1->temptype == T_TGEOMPOINT);
   assert(inst2); assert(inst2->temptype == T_TFLOAT);
   assert(inst1->t == inst2->t);
-  Cbuffer *cbuf = cbuffer_make(DatumGetGserializedP(tinstant_val(inst1)), 
-    DatumGetFloat8(tinstant_val(inst2)));
+  Cbuffer *cbuf = cbuffer_make(DatumGetGserializedP(tinstant_value_p(inst1)), 
+    DatumGetFloat8(tinstant_value_p(inst2)));
   return tinstant_make_free(PointerGetDatum(cbuf), T_TCBUFFER, inst1->t);
 }
 
@@ -212,7 +212,7 @@ tcbufferseqset_make(const TSequenceSet *ss1, const TSequenceSet *ss2)
 Temporal *
 tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) tpoint) ||
       ! ensure_not_null((void *) tfloat) ||
@@ -259,7 +259,7 @@ tcbufferinst_tgeompointinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TCBUFFER);
   const GSERIALIZED *point = cbuffer_point_p(
-    DatumGetCbufferP(tinstant_val(inst)));
+    DatumGetCbufferP(tinstant_value_p(inst)));
   return tinstant_make(PointerGetDatum(point), T_TGEOMPOINT, inst->t);
 }
 
@@ -302,7 +302,7 @@ tcbufferseqset_tgeompointseqset(const TSequenceSet *ss)
 Temporal *
 tcbuffer_tgeompoint(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -333,7 +333,7 @@ TInstant *
 tcbufferinst_tfloatinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TCBUFFER);
-  double radius = cbuffer_radius(DatumGetCbufferP(tinstant_val(inst)));
+  double radius = cbuffer_radius(DatumGetCbufferP(tinstant_value_p(inst)));
   return tinstant_make(Float8GetDatum(radius), T_TFLOAT, inst->t);
 }
 
@@ -406,7 +406,7 @@ TInstant *
 tgeompointinst_tcbufferinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TGEOMPOINT);
-  Cbuffer *cbuf = cbuffer_make(DatumGetGserializedP(tinstant_val(inst)), 0.0);
+  Cbuffer *cbuf = cbuffer_make(DatumGetGserializedP(tinstant_value_p(inst)), 0.0);
   if (cbuf == NULL)
     return NULL;
   return tinstant_make_free(PointerGetDatum(cbuf), T_TCBUFFER, inst->t);
@@ -467,7 +467,7 @@ tgeompointseqset_tcbufferseqset(const TSequenceSet *ss)
 Temporal *
 tgeompoint_tcbuffer(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TGEOMPOINT))
@@ -502,7 +502,7 @@ tgeompoint_tcbuffer(const Temporal *temp)
 Cbuffer *
 tcbuffer_start_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || 
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -523,7 +523,7 @@ tcbuffer_start_value(const Temporal *temp)
 Cbuffer *
 tcbuffer_end_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || 
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -545,7 +545,7 @@ tcbuffer_end_value(const Temporal *temp)
 bool
 tcbuffer_value_n(const Temporal *temp, int n, Cbuffer **result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -570,7 +570,7 @@ tcbuffer_value_n(const Temporal *temp, int n, Cbuffer **result)
 Cbuffer **
 tcbuffer_values(const Temporal *temp, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -595,7 +595,7 @@ tcbuffer_values(const Temporal *temp, int *count)
 Set *
 tcbufferinst_members(const TInstant *inst, bool point)
 {
-  Cbuffer *cbuf = DatumGetCbufferP(tinstant_val(inst));
+  Cbuffer *cbuf = DatumGetCbufferP(tinstant_value_p(inst));
   Datum value = point ? 
     PointerGetDatum(&cbuf->point) : Float8GetDatum(cbuf->radius);
   return set_make_exp(&value, 1, 1, point ? T_GEOMETRY : T_TFLOAT, ORDER_NO);
@@ -611,7 +611,7 @@ tcbufferseq_members(const TSequence *seq, bool point)
   for (int i = 0; i < seq->count; i++)
   {
     const Cbuffer *cbuf = DatumGetCbufferP(
-      tinstant_val(TSEQUENCE_INST_N(seq, i)));
+      tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
     values[i] = point ? 
       PointerGetDatum(&cbuf->point) : Float8GetDatum(cbuf->radius);
   }
@@ -632,7 +632,7 @@ tcbufferseqset_members(const TSequenceSet *ss, bool point)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     for (int j = 0; j < seq->count; j++)
     {
-      Cbuffer *cbuf = DatumGetCbufferP(tinstant_val(TSEQUENCE_INST_N(seq, j)));
+      Cbuffer *cbuf = DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq, j)));
       values[i] = point ? 
         PointerGetDatum(&cbuf->point) : Float8GetDatum(cbuf->radius);
     }
@@ -651,7 +651,7 @@ tcbufferseqset_members(const TSequenceSet *ss, bool point)
 Set *
 tcbuffer_members(const Temporal *temp, bool point)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -710,7 +710,7 @@ bool
 tcbuffer_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   Cbuffer **value)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
@@ -739,7 +739,7 @@ tcbuffer_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 Temporal *
 tcbuffer_at_value(const Temporal *temp, Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))

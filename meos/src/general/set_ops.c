@@ -102,7 +102,7 @@ contains_bound_set_value(const Set *s, Datum value)
 static Set *
 setop_set_set(const Set *s1, const Set *s2, SetOper op)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
@@ -188,7 +188,7 @@ setop_set_set(const Set *s1, const Set *s2, SetOper op)
 bool
 ensure_valid_set_set(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
     return false;
@@ -208,7 +208,7 @@ ensure_valid_set_set(const Set *s1, const Set *s2)
 bool
 contains_set_value(const Set *s, Datum value)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s))
     return false;
@@ -231,7 +231,7 @@ contains_set_value(const Set *s, Datum value)
 bool
 contains_set_set(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
@@ -301,7 +301,7 @@ contained_set_set(const Set *s1, const Set *s2)
 bool
 overlaps_set_set(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
@@ -367,7 +367,7 @@ left_set_value(const Set *s, Datum value)
 bool
 left_set_set(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
@@ -459,7 +459,7 @@ overleft_set_value(const Set *s, Datum value)
 bool
 overleft_set_set(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
@@ -511,7 +511,7 @@ overright_set_value(const Set *s, Datum value)
 bool
 overright_set_set(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
@@ -581,7 +581,7 @@ union_value_set(Datum value, const Set *s)
 Set *
 union_set_set(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
@@ -632,7 +632,7 @@ intersection_value_set(Datum value, const Set *s)
 Set *
 intersection_set_set(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2))
     return false;
@@ -698,7 +698,7 @@ minus_set_value(const Set *s, Datum value)
 Set *
 minus_set_set(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2))
     return false;

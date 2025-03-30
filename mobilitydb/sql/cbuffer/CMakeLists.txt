@@ -1,16 +1,16 @@
 SET(LOCAL_FILES
-  120_cbuffer
-  121_cbufferset
-  122_tcbuffer
-  # 123_tcbuffer_inout
-  124_tcbuffer_compops
-  125_tcbuffer_spatialfuncs
-  128_tcbuffer_topops
-  129_tcbuffer_posops
-  # 130_tcbuffer_distance
-  131_tcbuffer_aggfuncs
-  132_tcbuffer_spatialrels
-  134_tcbuffer_indexes
+  150_cbuffer
+  151_cbufferset
+  152_tcbuffer
+  # 153_tcbuffer_inout
+  154_tcbuffer_compops
+  155_tcbuffer_spatialfuncs
+  158_tcbuffer_topops
+  159_tcbuffer_posops
+  # 160_tcbuffer_distance
+  161_tcbuffer_aggfuncs
+  162_tcbuffer_spatialrels
+  164_tcbuffer_indexes
   )
 
 foreach (f ${LOCAL_FILES})

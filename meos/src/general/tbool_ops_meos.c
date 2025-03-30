@@ -51,7 +51,7 @@
 Temporal *
 tand_bool_tbool(bool b, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
@@ -72,7 +72,7 @@ tand_bool_tbool(bool b, const Temporal *temp)
 Temporal *
 tand_tbool_bool(const Temporal *temp, bool b)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
@@ -92,7 +92,7 @@ tand_tbool_bool(const Temporal *temp, bool b)
 Temporal *
 tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_temporal_isof_type(temp1, T_TBOOL) ||
@@ -119,7 +119,7 @@ tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tor_bool_tbool(bool b, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
@@ -140,7 +140,7 @@ tor_bool_tbool(bool b, const Temporal *temp)
 Temporal *
 tor_tbool_bool(const Temporal *temp, bool b)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TBOOL))
@@ -160,7 +160,7 @@ tor_tbool_bool(const Temporal *temp, bool b)
 Temporal *
 tor_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_temporal_isof_type(temp1, T_TBOOL) ||

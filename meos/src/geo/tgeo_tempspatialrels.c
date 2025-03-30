@@ -145,7 +145,7 @@ tinterrel_tgeoinst_geom(const TInstant *inst, const GSERIALIZED *gs,
   bool tinter, datum_func2 func)
 {
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  bool result = DatumGetBool(func(tinstant_val(inst),
+  bool result = DatumGetBool(func(tinstant_value_p(inst),
     GserializedPGetDatum(gs)));
   /* Invert the result for disjoint */
   if (! tinter)
@@ -171,7 +171,7 @@ tinterrel_tgeoseq_discstep_geom(const TSequence *seq, const GSERIALIZED *gs,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    bool result = DatumGetBool(func(tinstant_val(inst),
+    bool result = DatumGetBool(func(tinstant_value_p(inst),
       GserializedPGetDatum(gs)));
     /* Invert the result for disjoint */
     if (! tinter)
@@ -237,7 +237,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, const GSERIALIZED *gs,
   /* If the trajectory is a point the result is true due to the
    * non-empty intersection test above */
   if (seq->count == 2 &&
-    datum_point_eq(tinstant_val(start), tinstant_val(end)))
+    datum_point_eq(tinstant_value_p(start), tinstant_value_p(end)))
   {
     result = palloc(sizeof(TSequence *));
     result[0] = tsequence_from_base_tstzspan(datum_yes, T_TBOOL, &seq->period,
@@ -433,7 +433,7 @@ Temporal *
 tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   bool restr, bool atvalue)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
@@ -535,7 +535,7 @@ Temporal *
 tinterrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool tinter, bool restr, bool atvalue)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_tspatial(temp1, temp2))
     return NULL;
 
@@ -603,7 +603,7 @@ Temporal *
 tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_has_not_Z_geo(gs) || 
       ! ensure_has_not_Z(temp->temptype, temp->flags))
@@ -653,7 +653,7 @@ Temporal *
 ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags) || ! ensure_has_not_Z_geo(gs))
     return NULL;
@@ -992,8 +992,8 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
   const TInstant *start2 = TSEQUENCE_INST_N(seq2, 0);
   if (seq1->count == 1)
   {
-    TInstant *inst = tinstant_make(func(tinstant_val(start1),
-      tinstant_val(start2), dist), T_TBOOL, start1->t);
+    TInstant *inst = tinstant_make(func(tinstant_value_p(start1),
+      tinstant_value_p(start2), dist), T_TBOOL, start1->t);
     result[0] = tinstant_to_tsequence_free(inst, STEP);
     return 1;
   }
@@ -1002,8 +1002,8 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
   bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
   bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
   bool hasz = MEOS_FLAGS_GET_Z(seq1->flags);
-  Datum sv1 = tinstant_val(start1);
-  Datum sv2 = tinstant_val(start2);
+  Datum sv1 = tinstant_value_p(start1);
+  Datum sv2 = tinstant_value_p(start2);
   TimestampTz lower = start1->t;
   bool lower_inc = seq1->period.lower_inc;
   const Datum datum_true = BoolGetDatum(true);
@@ -1019,8 +1019,8 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
     /* Each iteration of the for loop adds between one and three sequences */
     const TInstant *end1 = TSEQUENCE_INST_N(seq1, i);
     const TInstant *end2 = TSEQUENCE_INST_N(seq2, i);
-    Datum ev1 = tinstant_val(end1);
-    Datum ev2 = tinstant_val(end2);
+    Datum ev1 = tinstant_value_p(end1);
+    Datum ev2 = tinstant_value_p(end2);
     TimestampTz upper = end1->t;
     bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
 
@@ -1126,7 +1126,7 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
   datum_func3 func, TSequence **result)
 {
   const TInstant *start = TSEQUENCE_INST_N(seq, 0);
-  Datum startvalue = tinstant_val(start);
+  Datum startvalue = tinstant_value_p(start);
   if (seq->count == 1)
   {
     TInstant *inst = tinstant_make(func(startvalue, point, dist), T_TBOOL,
@@ -1152,7 +1152,7 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
   {
     /* Each iteration of the for loop adds between one and three sequences */
     const TInstant *end = TSEQUENCE_INST_N(seq, i);
-    Datum endvalue = tinstant_val(end);
+    Datum endvalue = tinstant_value_p(end);
     TimestampTz upper = end->t;
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
 
@@ -1257,7 +1257,7 @@ Temporal *
 tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool restr, bool atvalue)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       (tpoint_type(temp->temptype) && ! ensure_point_type(gs)) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -1273,7 +1273,7 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   {
     case TINSTANT:
     {
-      Datum value = tinstant_val((TInstant *) temp);
+      Datum value = tinstant_value_p((TInstant *) temp);
       result = (Temporal *) tinstant_make(func(value, GserializedPGetDatum(gs),
         Float8GetDatum(dist)), T_TBOOL, ((TInstant *) temp)->t);
       break;
@@ -1331,8 +1331,8 @@ tdwithin_tgeo_tgeo_sync(const Temporal *sync1, const Temporal *sync2,
   {
     case TINSTANT:
     {
-      Datum value1 = tinstant_val((TInstant *) sync1);
-      Datum value2 = tinstant_val((TInstant *) sync2);
+      Datum value1 = tinstant_value_p((TInstant *) sync1);
+      Datum value2 = tinstant_value_p((TInstant *) sync2);
       result = (Temporal *) tinstant_make(func(value1, value2,
         Float8GetDatum(dist)), T_TBOOL, ((TInstant *) sync1)->t);
       break;
@@ -1409,7 +1409,7 @@ Temporal *
 tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   bool restr, bool atvalue)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_tspatial(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;

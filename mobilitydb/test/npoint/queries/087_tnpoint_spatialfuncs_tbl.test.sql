@@ -34,11 +34,11 @@ SELECT MAX(st_npoints(trajectory(temp))) FROM tbl_tnpoint;
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE atGeometry(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE minusGeometry(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
 
-SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tnpoint;
+SELECT round(MAX(length(temp)), 6) FROM tbl_tnpoint;
 
-SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tnpoint;
+SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tnpoint;
 
-SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tnpoint WHERE interp(temp) = 'Linear';
+SELECT round(MAX(maxValue(speed(temp))), 6) FROM tbl_tnpoint WHERE interp(temp) = 'Linear';
 
 -------------------------------------------------------------------------------
 

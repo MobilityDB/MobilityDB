@@ -763,7 +763,7 @@ SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 da
 
 		<sect2 xml:id="boxes_functions">
 			<title>Bounding Box Operations</title>
-			<para>These functions fragment the bounding box of a temporal value with respect to a multidimensional grid. They provide an alternative to the functions in <xref linkend="temporal_types_splitting"/> to split the bounding boxes by specifying the maximum size of the boxes in the various dimensions.</para>
+			<para>These functions fragment the bounding box of a temporal value with respect to a multidimensional grid. They provide an alternative to the functions in <xref linkend="ttype_splitting"/> to split the bounding boxes by specifying the maximum size of the boxes in the various dimensions.</para>
 			<itemizedlist>
 				<listitem xml:id="timeSpans">
 					<indexterm significance="normal"><primary><varname>timeSpans</varname></primary></indexterm>

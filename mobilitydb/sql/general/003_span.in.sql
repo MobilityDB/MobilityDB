@@ -185,7 +185,7 @@ CREATE TYPE tstzspan (
 
 /******************************************************************************/
 
--- Input/output in WKT, WKB and HexWKB format
+-- Input/output in WKT, WKB and HexWKB representation
 
 CREATE FUNCTION intspanFromBinary(bytea)
   RETURNS intspan
@@ -691,12 +691,17 @@ CREATE FUNCTION ceil(floatspan)
   AS 'MODULE_PATHNAME', 'Floatspan_ceil'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION round(float, integer DEFAULT 0)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Float_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION round(floatspan, integer DEFAULT 0)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Floatspan_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION degrees(floatspan, bool)
+CREATE FUNCTION degrees(floatspan, bool DEFAULT FALSE)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Floatspan_degrees'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

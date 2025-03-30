@@ -10510,82 +10510,82 @@ SELECT integral(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-0
  648000000000
 (1 row)
 
-SELECT round(twAvg(tint '1@2000-01-01')::numeric, 6);
-  round   
-----------
- 1.000000
+SELECT round(twAvg(tint '1@2000-01-01'), 6);
+ round 
+-------
+     1
 (1 row)
 
-SELECT round(twAvg(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}')::numeric, 6);
-  round   
-----------
- 1.333333
-(1 row)
-
-SELECT round(twAvg(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]')::numeric, 6);
-  round   
-----------
- 1.500000
-(1 row)
-
-SELECT round(twAvg(tfloat 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]')::numeric, 6);
-  round   
-----------
- 1.500000
-(1 row)
-
-SELECT round(twAvg(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}')::numeric, 6);
-  round   
-----------
- 2.000000
-(1 row)
-
-SELECT round(twAvg(tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}')::numeric, 6);
-  round   
-----------
- 2.000000
-(1 row)
-
-SELECT round(twAvg(tint '{[1@2000-01-01], [2@2000-01-02], [1@2000-01-03]}')::numeric, 6);
+SELECT round(twAvg(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}'), 6);
   round   
 ----------
  1.333333
 (1 row)
 
-SELECT round(twAvg(tfloat '1.5@2000-01-01')::numeric, 6);
-  round   
-----------
- 1.500000
+SELECT round(twAvg(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]'), 6);
+ round 
+-------
+   1.5
 (1 row)
 
-SELECT round(twAvg(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}')::numeric, 6);
+SELECT round(twAvg(tfloat 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]'), 6);
+ round 
+-------
+   1.5
+(1 row)
+
+SELECT round(twAvg(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}'), 6);
+ round 
+-------
+     2
+(1 row)
+
+SELECT round(twAvg(tfloat 'Interp=Step;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}'), 6);
+ round 
+-------
+     2
+(1 row)
+
+SELECT round(twAvg(tint '{[1@2000-01-01], [2@2000-01-02], [1@2000-01-03]}'), 6);
+  round   
+----------
+ 1.333333
+(1 row)
+
+SELECT round(twAvg(tfloat '1.5@2000-01-01'), 6);
+ round 
+-------
+   1.5
+(1 row)
+
+SELECT round(twAvg(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}'), 6);
   round   
 ----------
  1.833333
 (1 row)
 
-SELECT round(twAvg(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]')::numeric, 6);
-  round   
-----------
- 2.000000
+SELECT round(twAvg(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]'), 6);
+ round 
+-------
+     2
 (1 row)
 
-SELECT round(twAvg(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]')::numeric, 6);
-  round   
-----------
- 2.000000
+SELECT round(twAvg(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]'), 6);
+ round 
+-------
+     2
 (1 row)
 
-SELECT round(twAvg(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}')::numeric, 6);
-  round   
-----------
- 2.500000
+SELECT round(twAvg(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}'), 6);
+ round 
+-------
+   2.5
 (1 row)
 
-SELECT round(twAvg(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}')::numeric, 6);
-  round   
-----------
- 2.500000
+SELECT round(twAvg(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}'), 6);
+ round 
+-------
+   2.5
 (1 row)
 
 SELECT temporal_cmp(tbool 't@2000-01-01', tbool 't@2000-01-01');

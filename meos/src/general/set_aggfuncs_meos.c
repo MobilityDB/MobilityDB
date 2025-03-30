@@ -57,6 +57,10 @@
   #include "pose/pose.h"
   #include "pose/tpose_boxops.h"
 #endif
+#if RGEO
+  #include "rgeo/trgeo.h"
+  #include "rgeo/trgeo_boxops.h"
+#endif
 
 /*****************************************************************************
  * Aggregate functions for sets
@@ -87,7 +91,7 @@ set_expand_bbox(Datum value, meosType basetype, void *box)
     cbuffer_set_stbox(DatumGetCbufferP(value), &box1);
     stbox_expand(&box1, (STBox *) box);
   }
-#endif
+#endif /* CBUFFER */
 #if NPOINT
   else if (basetype == T_NPOINT)
   {
@@ -95,15 +99,15 @@ set_expand_bbox(Datum value, meosType basetype, void *box)
     npoint_set_stbox(DatumGetNpointP(value), &box1);
     stbox_expand(&box1, (STBox *) box);
   }
-#endif
-#if POSE
+#endif /* NPOINT */
+#if POSE || RGEO
   else if (basetype == T_POSE)
   {
     STBox box1;
     pose_set_stbox(DatumGetPoseP(value), &box1);
     stbox_expand(&box1, (STBox *) box);
   }
-#endif
+#endif /* POSE */
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -235,7 +239,7 @@ set_union_transfn(Set *state, Set *s)
     state = set_make_exp(&value, 1, 64, s->basetype, ORDER);
   }
 
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_same_set_type(state, s))
     return NULL;
 
@@ -281,7 +285,7 @@ set_union_finalfn(Set *state)
 Set *
 int_union_transfn(Set *state, int32 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (state && ! ensure_set_isof_type(state, T_INTSET))
     return NULL;
   return value_union_transfn(state, Int32GetDatum(i), T_INT4);
@@ -296,7 +300,7 @@ int_union_transfn(Set *state, int32 i)
 Set *
 bigint_union_transfn(Set *state, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (state && ! ensure_set_isof_type(state, T_BIGINTSET))
     return NULL;
   return value_union_transfn(state, Int64GetDatum(i), T_INT8);
@@ -311,7 +315,7 @@ bigint_union_transfn(Set *state, int64 i)
 Set *
 float_union_transfn(Set *state, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (state && ! ensure_set_isof_type(state, T_FLOATSET))
     return NULL;
   return value_union_transfn(state, Float8GetDatum(d), T_FLOAT8);
@@ -326,7 +330,7 @@ float_union_transfn(Set *state, double d)
 Set *
 date_union_transfn(Set *state, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (state && ! ensure_set_isof_type(state, T_DATESET))
     return NULL;
   return value_union_transfn(state, DateADTGetDatum(d), T_DATE);
@@ -341,7 +345,7 @@ date_union_transfn(Set *state, DateADT d)
 Set *
 timestamptz_union_transfn(Set *state, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (state && ! ensure_set_isof_type(state, T_TSTZSET))
     return NULL;
   return value_union_transfn(state, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
@@ -356,7 +360,7 @@ timestamptz_union_transfn(Set *state, TimestampTz t)
 Set *
 text_union_transfn(Set *state, const text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) txt))
     return NULL;
   if (state && ! ensure_set_isof_type(state, T_TEXTSET))

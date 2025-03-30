@@ -98,6 +98,13 @@ option(POSE
   OFF
   )
 
+# Option for including rigid geometries
+option(RGEO
+  "Set ON|OFF (default=OFF) to include rigid geometries
+  "
+  OFF
+  )
+
 if(CBUFFER)
   message(STATUS "Including circular buffers")
   add_definitions(-DCBUFFER=1)
@@ -120,6 +127,14 @@ if(POSE)
 else()
   message(STATUS "Excluding geoposes")
   add_definitions(-DPOSE=0)
+endif()
+
+if(RGEO)
+  message(STATUS "Including rigid geometries")
+  add_definitions(-DRGEO=1)
+else()
+  message(STATUS "Excluding rigid geometries")
+  add_definitions(-DRGEO=0)
 endif()
 
 # Get the MobilityDB major/minor/micro versions from the text file

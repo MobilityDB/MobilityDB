@@ -70,7 +70,7 @@
 Set *
 geomset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return set_parse(&str, T_GEOMSET);
@@ -85,7 +85,7 @@ geomset_in(const char *str)
 Set *
 geogset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return set_parse(&str, T_GEOGSET);
@@ -105,7 +105,7 @@ geogset_in(const char *str)
 Set *
 geoset_make(const GSERIALIZED **values, int count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) values) || ! ensure_positive(count))
     return NULL;
 
@@ -130,7 +130,7 @@ geoset_make(const GSERIALIZED **values, int count)
 Set *
 geo_to_set(const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs))
     return NULL;
 
@@ -153,7 +153,7 @@ geo_to_set(const GSERIALIZED *gs)
 GSERIALIZED *
 geoset_start_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
  return DatumGetGserializedP(datum_copy(SET_VAL_N(s, 0), s->basetype));
@@ -169,7 +169,7 @@ geoset_start_value(const Set *s)
 GSERIALIZED *
 geoset_end_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
   return DatumGetGserializedP(datum_copy(SET_VAL_N(s, s->count - 1),
@@ -188,7 +188,7 @@ geoset_end_value(const Set *s)
 bool
 geoset_value_n(const Set *s, int n, GSERIALIZED **result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
       ! ensure_geoset_type(s->settype))
     return false;
@@ -208,7 +208,7 @@ geoset_value_n(const Set *s, int n, GSERIALIZED **result)
 GSERIALIZED **
 geoset_values(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
     return NULL;
 
@@ -231,7 +231,7 @@ geoset_values(const Set *s)
 bool
 ensure_valid_set_geo(const Set *s, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
       ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs))
     return false;
@@ -250,7 +250,7 @@ ensure_valid_set_geo(const Set *s, const GSERIALIZED *gs)
 bool
 contains_set_geo(const Set *s, GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_geo(s, gs))
     return false;
   return contains_set_value(s, PointerGetDatum(gs));
@@ -266,7 +266,7 @@ contains_set_geo(const Set *s, GSERIALIZED *gs)
 bool
 contained_geo_set(const GSERIALIZED *gs, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_geo(s, gs))
     return false;
   return contained_value_set(PointerGetDatum(gs), s);
@@ -282,7 +282,7 @@ contained_geo_set(const GSERIALIZED *gs, const Set *s)
 Set *
 union_set_geo(const Set *s, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_geo(s, gs))
     return NULL;
   return union_set_value(s, PointerGetDatum(gs));
@@ -311,7 +311,7 @@ union_geo_set(const GSERIALIZED *gs, const Set *s)
 Set *
 intersection_set_geo(const Set *s, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_geo(s, gs))
     return NULL;
   return intersection_set_value(s, PointerGetDatum(gs));
@@ -340,7 +340,7 @@ intersection_geo_set(const GSERIALIZED *gs, const Set *s)
 Set *
 minus_geo_set(const GSERIALIZED *gs, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_geo(s, gs))
     return NULL;
   return minus_value_set(PointerGetDatum(gs), s);
@@ -356,7 +356,7 @@ minus_geo_set(const GSERIALIZED *gs, const Set *s)
 Set *
 minus_set_geo(const Set *s, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_geo(s, gs))
     return NULL;
   return minus_set_value(s, PointerGetDatum(gs));
@@ -376,7 +376,7 @@ minus_set_geo(const Set *s, const GSERIALIZED *gs)
 Set *
 geo_union_transfn(Set *state, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs))
     return NULL;
 

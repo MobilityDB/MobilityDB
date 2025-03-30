@@ -55,6 +55,9 @@
 #if POSE
   #include "pose/pose.h"
 #endif
+#if RGEO
+  #include "rgeo/trgeo.h"
+#endif
 /* MobilityDB */
 #include "pg_general/meos_catalog.h"
 #include "pg_general/doublen.h"
@@ -226,7 +229,7 @@ cbufferarr_extract(ArrayType *array, int *count)
 
 #if POSE
 /**
- * @brief Extract a C array from a PostgreSQL array containing circular buffers
+ * @brief Extract a C array from a PostgreSQL array containing poses
  */
 Pose **
 posearr_extract(ArrayType *array, int *count)
@@ -237,6 +240,20 @@ posearr_extract(ArrayType *array, int *count)
   return result;
 }
 #endif /* POSE */
+
+#if RGEO
+/**
+ * @brief Extract a C array from a PostgreSQL array containing rigid geometries
+ */
+Pose **
+rgeomarr_extract(ArrayType *array, int *count)
+{
+  Pose **result;
+  deconstruct_array(array, array->elemtype, -1, false, 'd', (Datum **) &result,
+    NULL, count);
+  return result;
+}
+#endif /* RGEO */
 
 /**
  * @brief Extract a C array from a PostgreSQL array containing spans
@@ -344,7 +361,7 @@ strarr_to_textarray(char **strarr, int count)
 
 #if CBUFFER
 /**
- * @brief Return a C array of spans converted into a PostgreSQL array
+ * @brief Return a C array of circular buffers converted into a PostgreSQL array
  */
 ArrayType *
 cbufferarr_to_array(Cbuffer **cbufarr, int count, bool free_all)
@@ -363,14 +380,14 @@ cbufferarr_to_array(Cbuffer **cbufarr, int count, bool free_all)
 
 #if POSE
 /**
- * @brief Return a C array of spans converted into a PostgreSQL array
+ * @brief Return a C array of poses converted into a PostgreSQL array
  */
 ArrayType *
 posearr_to_array(Pose **posearr, int count, bool free_all)
 {
   assert(count > 0);
-  Oid cbuftypid = type_oid(T_CBUFFER);
-  ArrayType *result = construct_array((Datum *) posearr, count, cbuftypid, -1,
+  Oid posetypid = type_oid(T_POSE);
+  ArrayType *result = construct_array((Datum *) posearr, count, posetypid, -1,
     false, 'd');
   if (free_all)
     for (int i = 0; i < count; i++)

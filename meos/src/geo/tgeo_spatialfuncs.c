@@ -64,6 +64,9 @@
 #if POSE
   #include "pose/pose.h"
 #endif
+#if RGEO
+  #include "rgeo/trgeo.h"
+#endif
 
 /*****************************************************************************
  * Utility functions
@@ -199,6 +202,7 @@ datum2_point_eq(Datum point1, Datum point2)
   return BoolGetDatum(datum_point_eq(point1, point2));
 }
 
+#if CBUFFER
 /**
  * @brief Return true if the points are equal
  */
@@ -224,6 +228,26 @@ Datum
 datum2_point_nsame(Datum point1, Datum point2)
 {
   return BoolGetDatum(! datum_point_same(point1, point2));
+}
+#endif /* CBUFFER */
+
+/**
+ * @brief Return the centroid of a geometry
+ */
+Datum
+datum2_geom_centroid(Datum geo)
+{
+  return GserializedPGetDatum(geom_centroid(DatumGetGserializedP(geo)));
+}
+
+/**
+ * @brief Return the centroid of a geography
+ */
+Datum
+datum2_geog_centroid(Datum geo)
+{
+  return GserializedPGetDatum(geog_centroid(DatumGetGserializedP(geo),
+    BoolGetDatum(false)));
 }
 
 /*****************************************************************************
@@ -350,7 +374,7 @@ npoint_flags(void)
 }
 #endif /* NPOINT */ 
 
-#if POSE
+#if POSE || RGEO 
 /**
  * @brief Get the MEOS flags from a pose
  */
@@ -362,7 +386,7 @@ pose_flags(Pose *pose)
   MEOS_FLAGS_SET_Z(result, MEOS_FLAGS_GET_Z(pose->flags));
   return result;
 }
-#endif /* NPOINT */ 
+#endif /* POSE || RGEO */ 
 
 /**
  * @brief Get the MEOS flags from a spatial value
@@ -384,7 +408,7 @@ spatial_flags(Datum d, meosType basetype)
     case T_NPOINT:
       return npoint_flags();
 #endif
-#if POSE
+#if POSE || RGEO
     case T_POSE:
       return pose_flags(DatumGetPoseP(d));
 #endif
@@ -667,6 +691,31 @@ ensure_point_type(const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Ensure that the geometry/geography is a (multi)line
+ */
+bool
+mline_type(const GSERIALIZED *gs)
+{
+  uint32_t geotype = gserialized_get_type(gs);
+  if (geotype == LINETYPE || geotype == MULTILINETYPE)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Ensure that the geometry/geography is a (multi)line
+ */
+bool
+ensure_mline_type(const GSERIALIZED *gs)
+{
+  if (mline_type(gs))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only (multi)line geometries accepted");
+  return false;
+}
+
+/**
  * @brief Ensure that the geometry/geography is not empty
  */
 bool
@@ -775,7 +824,7 @@ TInstant *
 tgeominst_tgeoginst(const TInstant *inst, bool oper)
 {
   assert(inst); assert(tgeo_type_all(inst->temptype));
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+  const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
   GSERIALIZED *res;
   if (oper == TGEOMP_TO_TGEOGP)
     res = geog_from_geom(gs);
@@ -845,7 +894,7 @@ tgeomseqset_tgeogseqset(const TSequenceSet *ss, bool oper)
 Temporal *
 tgeom_tgeog(const Temporal *temp, bool oper)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type_all(temp->temptype))
     return NULL;
 
@@ -889,7 +938,7 @@ tgeometry_tgeography(const Temporal *temp)
 Temporal *
 tgeography_tgeometry(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TGEOGPOINT))
     return NULL;
@@ -907,7 +956,7 @@ bool
 ensure_tgeoinst_point_type(const TInstant *inst)
 {
   assert(inst);
-  if (! ensure_point_type(DatumGetGserializedP(tinstant_val(inst))))
+  if (! ensure_point_type(DatumGetGserializedP(tinstant_value_p(inst))))
     return false;
   return true;
 }
@@ -980,7 +1029,7 @@ tgeoinst_tpointinst(const TInstant *inst, bool oper)
   else /* oper == TPOINT_TO_TGEO */
     assert(tpoint_type(inst->temptype));
 
-  const GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+  const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
   if (oper == TGEO_TO_TPOINT && ! ensure_point_type(gs))
     return NULL;
 
@@ -1052,7 +1101,7 @@ tgeoseqset_tpointseqset(const TSequenceSet *ss, bool oper)
 Temporal *
 tgeo_tpoint(const Temporal *temp, bool oper)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       (((oper == TGEO_TO_TPOINT && (! ensure_tgeo_type_all(temp->temptype) ||
          ! ensure_tgeo_point_type(temp))) ||
@@ -1096,7 +1145,7 @@ tgeometry_tgeompoint(const Temporal *temp)
 Temporal *
 tgeography_tgeogpoint(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TGEOGRAPHY))
     return NULL;
@@ -1127,7 +1176,7 @@ tgeompoint_tgeometry(const Temporal *temp)
 Temporal *
 tgeogpoint_tgeography(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TGEOGPOINT))
     return NULL;
@@ -1151,7 +1200,7 @@ tgeoinst_affine_iter(const TInstant *inst, const AFFINE *a, TInstant **result)
 {
   assert(inst); assert(a); assert(tgeo_type_all(inst->temptype));
   LWGEOM *geo = lwgeom_from_gserialized(
-    DatumGetGserializedP(tinstant_val(inst)));
+    DatumGetGserializedP(tinstant_value_p(inst)));
   lwgeom_affine(geo, a);
   GSERIALIZED *gs1 = geo_serialize(geo);
   *result = tinstant_make_free(PointerGetDatum(gs1), inst->temptype, inst->t);
@@ -1219,7 +1268,7 @@ tgeoseqset_affine(const TSequenceSet *ss, const AFFINE *a)
 Temporal *
 tgeo_affine(const Temporal *temp, const AFFINE *a)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) a) ||
       ! ensure_tgeo_type_all(temp->temptype))
     return NULL;
@@ -1249,7 +1298,7 @@ static void
 tgeoinst_scale_iter(const TInstant *inst, const POINT4D *factors,
   TInstant **result)
 {
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+  const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwgeom_scale(geom, factors);
   GSERIALIZED *gs1 = geo_serialize(geom);
@@ -1316,7 +1365,7 @@ Temporal *
 tgeo_scale(const Temporal *temp, const GSERIALIZED *scale, 
   const GSERIALIZED *sorigin)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) scale) ||
       gserialized_is_empty(scale) || ! ensure_point_type(scale) || 
       (sorigin && 
@@ -1409,7 +1458,7 @@ tgeo_scale(const Temporal *temp, const GSERIALIZED *scale,
 GSERIALIZED *
 tgeo_convex_hull(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type_all(temp->temptype))
     return NULL;
 
@@ -1434,7 +1483,7 @@ tgeo_convex_hull(const Temporal *temp)
 GSERIALIZED *
 tgeo_traversed_area(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || 
       ! ensure_tgeo_type_all(temp->temptype) ||
@@ -1459,5 +1508,34 @@ tgeo_traversed_area(const Temporal *temp)
   pfree(coll); pfree(values); pfree(gsarr);
   return result;
 }
+
+/**
+ * @ingroup meos_geo_accessor
+ * @brief Return the centroid of a temporal geo as a temporal point
+ * @param[in] temp Temporal geo
+ * @csqlfn #Tgeo_centroid()
+ */
+Temporal *
+tgeo_centroid(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) temp) || ! ensure_tgeo_type(temp->temptype))
+    return NULL;
+#else
+  assert(temp); assert(tgeo_type(temp->temptype));
+#endif /* MEOS */
+
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(temp->flags);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) 
+    (geodetic ? &datum2_geog_centroid : &datum2_geom_centroid);
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.restype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
 
 /*****************************************************************************/

@@ -184,7 +184,7 @@ parse_bool_with_len(const char *value, size_t len, bool *result)
 bool
 bool_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) str))
     return false;
@@ -663,7 +663,7 @@ date_in(const char *str)
 DateADT
 pg_date_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return DATEVAL_NOEND;
 
@@ -1117,7 +1117,7 @@ MEOSAdjustTimeForTypmod(TimeADT *time, int32 typmod)
 TimeADT
 time_in(const char *str, int32 prec)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return DT_NOEND;
 
@@ -1275,7 +1275,7 @@ MEOSAdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 TimestampTz
 timestamp_in_common(const char *str, int32 typmod, bool withtz)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return DT_NOEND;
 
@@ -1699,7 +1699,7 @@ interval_in(const char *str, int32 prec)
 Interval *
 pg_interval_in(const char *str, int32 prec)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
 
@@ -1847,7 +1847,7 @@ interval_out(const Interval *interv)
 char *
 pg_interval_out(const Interval *interv)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) interv))
     return NULL;
 
@@ -1877,7 +1877,7 @@ pg_interval_out(const Interval *interv)
 Interval *
 mult_interval_double(const Interval *interv, double factor)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) interv))
     return NULL;
 
@@ -1968,7 +1968,7 @@ mult_interval_double(const Interval *interv, double factor)
 Interval *
 add_interval_interval(const Interval *interv1, const Interval *interv2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) interv1) ||
       ! ensure_not_null((void *) interv2))
     return NULL;
@@ -2024,7 +2024,7 @@ add_interval_interval(const Interval *interv1, const Interval *interv2)
 TimestampTz
 add_timestamptz_interval(TimestampTz t, const Interval *interv)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) interv))
     return DT_NOEND;
 
@@ -2122,7 +2122,7 @@ add_timestamptz_interval(TimestampTz t, const Interval *interv)
 TimestampTz
 minus_timestamptz_interval(TimestampTz t, const Interval *interv)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) interv))
     return DT_NOEND;
 
@@ -2176,7 +2176,7 @@ pg_interval_justify_hours(const Interval *interv)
 Interval *
 minus_timestamptz_timestamptz(TimestampTz t1, TimestampTz t2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (TIMESTAMP_NOT_FINITE(t1) || TIMESTAMP_NOT_FINITE(t2))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
@@ -2239,7 +2239,7 @@ interval_cmp(const Interval *interv1, const Interval *interv2)
 int
 pg_interval_cmp(const Interval *interv1, const Interval *interv2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) interv1) ||
       ! ensure_not_null((void *) interv2))
     return INT_MAX;
@@ -2274,7 +2274,7 @@ bstring2bytea(const uint8_t *wkb, size_t size)
 text *
 cstring2text(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
 
@@ -2294,7 +2294,7 @@ cstring2text(const char *str)
 char *
 text2cstring(const text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) txt))
     return NULL;
 

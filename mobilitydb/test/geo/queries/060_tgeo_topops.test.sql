@@ -174,6 +174,7 @@ Point(4 2)@2000-01-04, Point(5 1)@2000-01-05, Point(6 2)@2000-01-06], [Point(7 1
 Point(8 2)@2000-01-08, Point(9 1)@2000-01-09, Point(10 2)@2000-01-10]}', 6);
 /* Errors */
 SELECT splitNStboxes(tgeometry 'Point(1 1)@2000-01-01', -1);
+SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,1 1)', -1);
 
 -------------------------------------------------------------------------------
 

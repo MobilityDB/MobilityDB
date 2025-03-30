@@ -251,7 +251,7 @@ SELECT MAX(lower(i)) FROM tbl_intspan;
   99
 (1 row)
 
-SELECT round(MAX(lower(f))::numeric, 6) FROM tbl_floatspan;
+SELECT round(MAX(lower(f)), 6) FROM tbl_floatspan;
    round   
 -----------
  99.383221
@@ -269,7 +269,7 @@ SELECT MAX(upper(i)) FROM tbl_intspan;
  108
 (1 row)
 
-SELECT round(MAX(upper(f))::numeric, 6) FROM tbl_floatspan;
+SELECT round(MAX(upper(f)), 6) FROM tbl_floatspan;
    round    
 ------------
  106.033025
@@ -331,7 +331,7 @@ SELECT SUM(width(i)) FROM tbl_intspan;
  513
 (1 row)
 
-SELECT round(SUM(width(f))::numeric, 6) FROM tbl_floatspan;
+SELECT round(SUM(width(f)), 6) FROM tbl_floatspan;
    round    
 ------------
  524.526653
@@ -397,7 +397,7 @@ SELECT MAX(lower(shift(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2;
  190
 (1 row)
 
-SELECT round(MAX(lower(shift(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2;
+SELECT round(MAX(lower(shift(t1.f, t2.f))), 6) FROM tbl_floatspan t1, tbl_float t2;
    round    
 ------------
  198.767557
@@ -427,7 +427,7 @@ SELECT MAX(lower(scale(t1.b, t2.b))) FROM tbl_bigintspan t1, tbl_bigint t2 WHERE
   90
 (1 row)
 
-SELECT round(MAX(lower(scale(t1.f, t2.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2 WHERE t2.f > 0;
+SELECT round(MAX(lower(scale(t1.f, t2.f))), 6) FROM tbl_floatspan t1, tbl_float t2 WHERE t2.f > 0;
    round   
 -----------
  99.383221
@@ -457,7 +457,7 @@ SELECT MAX(lower(shiftScale(t1.b, t2.b, t3.b))) FROM tbl_bigintspan t1, tbl_bigi
  190
 (1 row)
 
-SELECT round(MAX(lower(shiftScale(t1.f, t2.f, t3.f)))::numeric, 6) FROM tbl_floatspan t1, tbl_float t2, tbl_float t3 WHERE t3.f > 0;
+SELECT round(MAX(lower(shiftScale(t1.f, t2.f, t3.f))), 6) FROM tbl_floatspan t1, tbl_float t2, tbl_float t3 WHERE t3.f > 0;
    round    
 ------------
  198.767557
@@ -475,10 +475,28 @@ SELECT MAX(lower(shiftScale(t, t1.i, t2.i))) FROM tbl_tstzspan, tbl_interval t1,
  Sat Dec 29 14:32:00 2001 PST
 (1 row)
 
-SELECT MIN(lower(round(f, 5))) FROM tbl_floatspan;
-   min   
----------
- 1.24606
+SELECT MAX(lower(round(f, 5))) FROM tbl_floatspan;
+   max    
+----------
+ 99.38322
+(1 row)
+
+SELECT MAX(lower(degrees(f))) FROM tbl_floatspan;
+        max        
+-------------------
+ 5694.239100158339
+(1 row)
+
+SELECT MAX(lower(degrees(f, true))) FROM tbl_floatspan;
+       max        
+------------------
+ 358.399022410189
+(1 row)
+
+SELECT MAX(lower(radians(f))) FROM tbl_floatspan;
+        max         
+--------------------
+ 1.7345644223388226
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE span_cmp(t1.t, t2.t) = -1;

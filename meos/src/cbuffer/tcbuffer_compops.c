@@ -63,7 +63,7 @@ static int
 eacomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf))
     return -1;
@@ -86,7 +86,7 @@ static int
 eacomp_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
     return -1;
@@ -278,7 +278,7 @@ static Temporal *
 tcomp_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp,
   Datum (*func)(Datum, Datum, meosType))
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf))
     return NULL;
@@ -301,7 +301,7 @@ static Temporal *
 tcomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
   Datum (*func)(Datum, Datum, meosType))
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf))
     return NULL;

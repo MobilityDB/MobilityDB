@@ -196,18 +196,18 @@ SELECT COUNT(*) FROM tbl_floatspanset WHERE f &> floatspan '[85, 95]';
      0
 (1 row)
 
-SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
+SELECT round((f <-> 101.0), 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
   round   
 ----------
- 0.000000
+        0
  0.148397
  0.963903
 (3 rows)
 
-SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
+SELECT round((f <-> floatspan '[101,105]'), 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
   round   
 ----------
- 0.000000
+        0
  0.148397
  0.963903
 (3 rows)
@@ -398,18 +398,18 @@ SELECT COUNT(*) FROM tbl_floatspanset WHERE f &> floatspan '[85, 95]';
      0
 (1 row)
 
-SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
+SELECT round((f <-> 101.0), 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
   round   
 ----------
- 0.000000
+        0
  0.148397
  0.963903
 (3 rows)
 
-SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
+SELECT round((f <-> floatspan '[101,105]'), 6) FROM tbl_floatspanset ORDER BY 1 LIMIT 3;
   round   
 ----------
- 0.000000
+        0
  0.148397
  0.963903
 (3 rows)

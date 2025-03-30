@@ -43,7 +43,8 @@
 /* Validity functions */
 
 extern bool ensure_valid_tpose_pose(const Temporal *temp, const Pose *pose);
-extern bool ensure_valid_tpose_tpose(const Temporal *temp1, const Temporal *temp2);
+extern bool ensure_valid_tpose_tpose(const Temporal *temp1,
+  const Temporal *temp2);
 extern bool ensure_valid_stbox_pose(const STBox *box, const Pose *pose);
 
 /* Interpolation functions */
@@ -57,8 +58,10 @@ extern GSERIALIZED *tpose_trajectory(const Temporal *temp);
 
 /* Restriction functions */
 
-extern Temporal *tpose_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, bool atfunc);
-extern Temporal *tpose_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc, bool atfunc);
+extern Temporal *tpose_restrict_geom(const Temporal *temp,
+  const GSERIALIZED *gs, const Span *zspan, bool atfunc);
+extern Temporal *tpose_restrict_stbox(const Temporal *temp, const STBox *box,
+  bool border_inc, bool atfunc);
 
 /*****************************************************************************/
 

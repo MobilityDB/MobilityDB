@@ -125,7 +125,7 @@ $$ LANGUAGE PLPGSQL STRICT;
 SELECT k, random_pose3d(-100, 100, -100, 100, -100, 100, 0, 1, 0, 1, 0, 1, 0, 1) AS g
 FROM generate_series(1,10) k;
 
-SELECT k, random_pose3d(-100, 100, -100, 100, -100, 100, radians(-pi()), radians(pi()), 5676) AS g
+SELECT k, random_pose3d(-100, 100, -100, 100, -100, 100, 0, 1, 0, 1, 0, 1, 0, 1, 5676) AS g
 FROM generate_series(1,10) k;
 
 -- Errors

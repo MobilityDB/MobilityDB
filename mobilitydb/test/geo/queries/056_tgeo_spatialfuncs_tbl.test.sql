@@ -70,6 +70,9 @@ SELECT MAX(ST_NPoints(traversedArea(temp)::geometry)) FROM tbl_tgeography;
 SELECT MAX(ST_NPoints(traversedArea(temp))) FROM tbl_tgeometry3D;
 SELECT MAX(ST_NPoints(traversedArea(temp)::geometry)) FROM tbl_tgeography3D;
 
+SELECT MIN(numInstants(centroid(temp))) FROM tbl_tgeometry;
+SELECT MIN(numInstants(centroid(temp))) FROM tbl_tgeography;
+
 -------------------------------------------------------------------------------
 
 SELECT MAX(ST_Area(convexHull(temp))) FROM tbl_tgeometry;

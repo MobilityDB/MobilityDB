@@ -45,6 +45,7 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_rgeo.h>
 #include <meos_internal.h>
 #include "general/set.h"
 #include "general/span.h"
@@ -343,7 +344,7 @@ tinstant_write(const TInstant *inst, StringInfo buf)
 {
   meosType basetype = temptype_basetype(inst->temptype);
   bytea *bt = call_send(T_TIMESTAMPTZ, TimestampTzGetDatum(inst->t));
-  bytea *bv = call_send(basetype, tinstant_val(inst));
+  bytea *bv = call_send(basetype, tinstant_value_p(inst));
   pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
   pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ);
   pq_sendbytes(buf, VARDATA(bv), VARSIZE(bv) - VARHDRSZ);
@@ -1119,7 +1120,12 @@ Datum
 Temporal_start_sequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+#if RGEO
+  TSequence *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_start_sequence(temp) : temporal_start_sequence(temp);
+#else
   TSequence *result = temporal_start_sequence(temp);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TSEQUENCE_P(result);
 }
@@ -1135,7 +1141,12 @@ Datum
 Temporal_end_sequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+#if RGEO
+  TSequence *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_end_sequence(temp) : temporal_end_sequence(temp);
+#else
   TSequence *result = temporal_end_sequence(temp);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TSEQUENCE_P(result);
 }
@@ -1152,7 +1163,12 @@ Temporal_sequence_n(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
+#if RGEO
+  TSequence *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_sequence_n(temp, n) : temporal_sequence_n(temp, n);
+#else
   TSequence *result = temporal_sequence_n(temp, n);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -1171,7 +1187,13 @@ Temporal_sequences(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
-  const TSequence **sequences = temporal_seqs(temp, &count);
+#if RGEO
+  TSequence **sequences = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_sequences(temp, &count) : 
+    (TSequence **) temporal_sequences_p(temp, &count);
+#else
+  const TSequence **sequences = temporal_sequences_p(temp, &count);
+#endif /* RGEO */
   ArrayType *result = temparr_to_array((Temporal **) sequences, count, FREE);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -1255,7 +1277,12 @@ Datum
 Temporal_start_instant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+#if RGEO
+  TInstant *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_start_instant(temp) : temporal_start_instant(temp);
+#else
   TInstant *result = temporal_start_instant(temp);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TINSTANT_P(result);
 }
@@ -1271,7 +1298,12 @@ Datum
 Temporal_end_instant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+#if RGEO
+  TInstant *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_end_instant(temp) : temporal_end_instant(temp);
+#else
   TInstant *result = temporal_end_instant(temp);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TINSTANT_P(result);
 }
@@ -1288,7 +1320,12 @@ Temporal_instant_n(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
+#if RGEO
+  TInstant *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_instant_n(temp, n) : temporal_instant_n(temp, n);
+#else
   TInstant *result = temporal_instant_n(temp, n);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -1307,7 +1344,13 @@ Temporal_instants(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
-  const TInstant **instants = temporal_insts(temp, &count);
+#if RGEO
+  TInstant **instants = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_instants(temp, &count) : 
+    (TInstant **) temporal_instants_p(temp, &count);
+#else
+  const TInstant **instants = temporal_instants_p(temp, &count);
+#endif /* RGEO */
   ArrayType *result = temparr_to_array((Temporal **) instants, count, FREE);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -1462,7 +1505,12 @@ Temporal_round(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int size = PG_GETARG_INT32(1);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_round(temp, size) : temporal_round(temp, size);
+#else
   Temporal *result = temporal_round(temp, size);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -1579,7 +1627,12 @@ Temporal_set_interp(PG_FUNCTION_ARGS)
   char *interp_str = text2cstring(interp_txt);
   interpType interp = interptype_from_string(interp_str);
   pfree(interp_str);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_set_interp(temp, interp) : temporal_set_interp(temp, interp);
+#else
   Temporal *result = temporal_set_interp(temp, interp);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -1830,7 +1883,14 @@ Temporal_append_tinstant(PG_FUNCTION_ARGS)
     interp = interptype_from_string(interp_str);
     pfree(interp_str);
   }
-  Temporal *result = temporal_append_tinstant(temp, inst, interp, 0.0, NULL, false);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_append_tinstant(temp, inst, interp, 0.0, NULL, false) :
+    temporal_append_tinstant(temp, inst, interp, 0.0, NULL, false);
+#else
+  Temporal *result = temporal_append_tinstant(temp, inst, interp, 0.0, NULL,
+    false);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(inst, 1);
   PG_RETURN_TEMPORAL_P(result);
@@ -1848,7 +1908,13 @@ Temporal_append_tsequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TSequence *seq = PG_GETARG_TSEQUENCE_P(1);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_append_tsequence(temp, seq, false) :
+    temporal_append_tsequence(temp, seq, false);
+#else
   Temporal *result = temporal_append_tsequence(temp, seq, false);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(seq, 1);
   PG_RETURN_TEMPORAL_P(result);
@@ -1910,7 +1976,13 @@ Temporal_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
   meosType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_restrict_value(temp, value, atfunc) :
+    temporal_restrict_value(temp, value, atfunc);
+#else
   Temporal *result = temporal_restrict_value(temp, value, atfunc);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   DATUM_FREE_IF_COPY(value, basetype, 1);
   if (! result)
@@ -1954,15 +2026,16 @@ static Datum
 Temporal_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Set *set = PG_GETARG_SET_P(1);
-  /* For temporal points the validity of values in the array is done in
-   * bounding box function */
-  Temporal *result = (set->count > 1) ?
-    temporal_restrict_values(temp, set, atfunc) :
-    temporal_restrict_value(temp, SET_VAL_N(set, 0), atfunc);
-
+  Set *s = PG_GETARG_SET_P(1);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_restrict_values(temp, s, atfunc) :
+    temporal_restrict_values(temp, s, atfunc);
+#else
+  Temporal *result = temporal_restrict_values(temp, s, atfunc);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(set, 1);
+  PG_FREE_IF_COPY(s, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
@@ -2211,7 +2284,13 @@ Temporal_restrict_timestamptz(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_restrict_timestamptz(temp, t, atfunc) :
+    temporal_restrict_timestamptz(temp, t, atfunc);
+#else
   Temporal *result = temporal_restrict_timestamptz(temp, t, atfunc);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -2255,7 +2334,13 @@ Temporal_restrict_tstzset(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *s = PG_GETARG_SET_P(1);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_restrict_tstzset(temp, s, atfunc) :
+    temporal_restrict_tstzset(temp, s, atfunc);
+#else
   Temporal *result = temporal_restrict_tstzset(temp, s, atfunc);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(s, 1);
   if (! result)
@@ -2301,7 +2386,13 @@ Temporal_restrict_tstzspan(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_restrict_tstzspan(temp, s, atfunc) :
+    temporal_restrict_tstzspan(temp, s, atfunc);
+#else
   Temporal *result = temporal_restrict_tstzspan(temp, s, atfunc);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -2346,7 +2437,13 @@ Temporal_restrict_tstzspanset(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_restrict_tstzspanset(temp, ss, atfunc) :
+    temporal_restrict_tstzspanset(temp, ss, atfunc);
+#else
   Temporal *result = temporal_restrict_tstzspanset(temp, ss, atfunc);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
@@ -2435,7 +2532,13 @@ Temporal_delete_timestamptz(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool connect = PG_GETARG_BOOL(2);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_delete_timestamptz(temp, t, connect) :
+    temporal_delete_timestamptz(temp, t, connect);
+#else
   Temporal *result = temporal_delete_timestamptz(temp, t, connect);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -2455,7 +2558,13 @@ Temporal_delete_tstzset(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Set *s = PG_GETARG_SET_P(1);
   bool connect = PG_GETARG_BOOL(2);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_delete_tstzset(temp, s, connect) :
+    temporal_delete_tstzset(temp, s, connect);
+#else
   Temporal *result = temporal_delete_tstzset(temp, s, connect);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(s, 1);
   if (! result)
@@ -2476,7 +2585,13 @@ Temporal_delete_tstzspan(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
   bool connect = PG_GETARG_BOOL(2);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_delete_tstzspan(temp, s, connect) :
+    temporal_delete_tstzspan(temp, s, connect);
+#else
   Temporal *result = temporal_delete_tstzspan(temp, s, connect);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -2496,7 +2611,13 @@ Temporal_delete_tstzspanset(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   SpanSet *ss = PG_GETARG_SPANSET_P(1);
   bool connect = PG_GETARG_BOOL(2);
+#if RGEO
+  Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
+    trgeo_delete_tstzspanset(temp, ss, connect) :
+    temporal_delete_tstzspanset(temp, ss, connect);
+#else
   Temporal *result = temporal_delete_tstzspanset(temp, ss, connect);
+#endif /* RGEO */
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ss, 1);
   if (! result)
@@ -2506,7 +2627,8 @@ Temporal_delete_tstzspanset(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Local aggregate functions
- *****************************************************************************/
+ ***************1926
+ *************************************************************/
 
 PGDLLEXPORT Datum Tnumber_integral(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_integral);

@@ -55,7 +55,7 @@
 TInstant *
 tpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) gs))
     return NULL;
@@ -80,7 +80,7 @@ tpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 TInstant *
 tgeoinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) gs))
     return NULL;
