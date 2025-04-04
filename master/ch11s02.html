@@ -1,43 +1,28 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Indexing</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch11.html" title="Chapter 11. Temporal Types: Aggregation and Indexing"><link rel="prev" href="ch11.html" title="Chapter 11. Temporal Types: Aggregation and Indexing"><link rel="next" href="ch11s03.html" title="Statistics and Selectivity"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Indexing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11.html">Prev</a> </td><th width="60%" align="center">Chapter 11. Temporal Types: Aggregation and Indexing</th><td width="20%" align="right"> <a accesskey="n" href="ch11s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_types_indexing"></a>Indexing</h2></div></div></div><p>GiST and SP-GiST indexes can be created for table columns of temporal types. The GiST index implements an R-tree and the SP-GiST index implements an n-dimensional quad-tree. Examples of index creation are as follows:
-			</p><pre class="programlisting">
-CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);
-CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
-</pre><p>
-		</p><p>The GiST and SP-GiST indexes store the bounding box for the temporal types. As explained in <a class="xref" href="ch04.html" title="Chapter 4. Temporal Types">Chapter 4, <i>Temporal Types</i></a>, these are
-			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>the <code class="varname">tstzspan</code> type for the <code class="varname">tbool</code> and <code class="varname">ttext</code> types,</p></li><li class="listitem"><p>the <code class="varname">tbox</code> type for the <code class="varname">tint</code> and <code class="varname">tfloat</code> types,</p></li><li class="listitem"><p>the <code class="varname">stbox</code> type for the <code class="varname">tgeompoint</code> and <code class="varname">tgeogpoint</code> types.</p></li></ul></div><p>
-		</p><p>A GiST or SP-GiST index can accelerate queries involving the following operators (see <a class="xref" href="ch06s04.html" title="Bounding Box Operators">the section called “Bounding Box Operators”</a> for more information):
-			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="varname">&lt;&lt;</code>, <code class="varname">&amp;&lt;</code>, <code class="varname">&amp;&gt;</code>, <code class="varname">&gt;&gt;</code>, which only consider the value dimension in temporal alphanumeric types,</p></li><li class="listitem"><p><code class="varname">&lt;&lt;</code>, <code class="varname">&amp;&lt;</code>, <code class="varname">&amp;&gt;</code>, <code class="varname">&gt;&gt;</code>, <code class="varname">&lt;&lt;|</code>, <code class="varname">&amp;&lt;|</code>, <code class="varname">|&amp;&gt;</code>, <code class="varname">|&gt;&gt;</code>, <code class="varname">&amp;&lt;/</code>, <code class="varname">&lt;&lt;/</code>, <code class="varname">/&gt;&gt;</code>, and <code class="varname">/&amp;&gt;</code>, which only consider the spatial dimension in temporal point types,</p></li><li class="listitem"><p><code class="varname">&amp;&lt;#</code>, <code class="varname">&lt;&lt;#</code>, <code class="varname">#&gt;&gt;</code>, <code class="varname">#&amp;&gt;</code>, which only consider the time dimension for all temporal types,</p></li><li class="listitem"><p><code class="varname">&amp;&amp;</code>, <code class="varname">@&gt;</code>, <code class="varname">&lt;@</code>, <code class="varname">~=</code>, and <code class="varname">|=|</code>, which consider as many dimensions as they are shared by the indexed column and the query argument. These operators work on bounding boxes (that is, <code class="varname">tstzspan</code>, <code class="varname">tbox</code>, or <code class="varname">stbox</code>), not the entire values.</p></li></ul></div><p>
-		</p><p>For example, given the index defined above on the <code class="varname">Department</code> table and a query that involves a condition with the <code class="varname">&amp;&amp;</code> (overlaps) operator, if the right argument is a temporal float then both the value and the time dimensions are considered for filtering the tuples of the relation, while if the right argument is a float value, a float span, or a time type, then either the value or the time dimension will be used for filtering the tuples of the relation. Furthermore, a bounding box can be constructed from a value/span and/or a timestamp/period, which can be used for filtering the tuples of the relation. Examples of queries using the index on the <code class="varname">Department</code> table defined above are given next.
-			</p><pre class="programlisting">
-SELECT * FROM Department WHERE NoEmps &amp;&amp; intspan '[1, 5)';
-SELECT * FROM Department WHERE NoEmps &amp;&amp; tstzspan '[2001-04-01, 2001-05-01)';
-SELECT * FROM Department WHERE NoEmps &amp;&amp;
-  tbox(intspan '[1, 5)', tstzspan '[2001-04-01, 2001-05-01)');
-SELECT * FROM Department WHERE NoEmps &amp;&amp;
-  tfloat '{[1@2001-01-01, 1@2001-02-01), [5@2001-04-01, 5@2001-05-01)}';
-</pre><p>
-		</p><p>Similarly, examples of queries using the index on the <code class="varname">Trips</code> table defined above are given next.
-			</p><pre class="programlisting">
-SELECT * FROM Trips WHERE Trip &amp;&amp; geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))';
-SELECT * FROM Trips WHERE Trip &amp;&amp; timestamptz '2001-01-01';
-SELECT * FROM Trips WHERE Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-05)';
-SELECT * FROM Trips WHERE Trip &amp;&amp;
-  stbox(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', tstzspan '[2001-01-01, 2001-01-05]');
-SELECT * FROM Trips WHERE Trip &amp;&amp;
-  tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-05)}';
-</pre><p>
-		</p><p>Finally, B-tree indexes can be created for table columns of all temporal types. For this index type, the only useful operation is equality. There is a B-tree sort ordering defined for values of temporal types, with corresponding <code class="varname">&lt;</code>, <code class="varname">&lt;=</code>, <code class="varname">&gt;</code>, <code class="varname">&gt;=</code> and operators, but the ordering is rather arbitrary and not usually useful in the real world. B-tree support for temporal types is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</p><p>In order to speed up several of the functions for temporal types, we can add in the <code class="varname">WHERE</code> clause of queries a bounding box comparison that make uses of the available indexes. For example, this would be typically the case for the functions that project the temporal types to the value/spatial and/or time dimensions. This will filter out the tuples with an index as shown in the following query.
-			</p><pre class="programlisting">
-SELECT atTime(T.Trip, tstzspan '[2001-01-01, 2001-01-02)')
-FROM Trips T
--- Bouding box index filtering
-WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
-</pre><p>
-		</p><p>In the case of temporal points, all spatial relationships with the ever semantics (see <a class="xref" href="ch09s03.html" title="Spatial Relationships">the section called “Spatial Relationships”</a>) automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
-			</p><pre class="programlisting">
-SELECT tintersects(T.Trip, R.Geom)
-FROM Trips T, Regions R
--- Bouding box index filtering
-WHERE intersects(T.Trip, R.Geom);
-</pre><p>
-		</p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 11. Temporal Types: Aggregation and Indexing </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Statistics and Selectivity</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Temporal Poses</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch11.html" title="Chapter 11. Temporal Poses"><link rel="prev" href="ch11.html" title="Chapter 11. Temporal Poses"><link rel="next" href="ch11s03.html" title="Validity of Temporal Poses"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Temporal Poses</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch11.html">Prev</a> </td><th width="60%" align="center">Chapter 11. Temporal Poses</th><td width="20%" align="right"> <a accesskey="n" href="ch11s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temp_poses"></a>Temporal Poses</h2></div></div></div><p>The temporal pose type <code class="varname">tpose</code> allows to represent the evolution in time of the position of objects and their orientation. As all temporal types, it comes in three subtypes, namely, instant, sequence, and sequence set. Examples of <code class="varname">tpose</code> values in these subtypes are given next.</p><pre class="programlisting">
+SELECT tpose 'Pose(Point(1 1), 0.5)@2001-01-01';
+SELECT tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02,
+  Pose(Point(1 1), 0.5)@2001-01-03}';
+SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02,
+  Pose(Point(1 1), 0.5)@2001-01-03]';
+SELECT tpose '{[Pose(Point(1 1), 1)@2001-01-01, Pose(Point(2 2), 1)@2001-01-02],
+  [Pose(Point(2 2), 2)@2001-01-04, Pose(Point(2 2), 3)@2001-01-05]}';
+</pre><p>As for temporal point types, the temporal pose type accepts type modifiers (or <code class="varname">typmod</code> in PostgreSQL terminology) to specify the subtype, the dimensionality of the point, and/or the spatial reference identifier (SRID). The possible values for the subtype are <code class="varname">Instant</code>, <code class="varname">Sequence</code>, and <code class="varname">SequenceSet</code> and the possible values for the geometry type are either <code class="varname">Point</code> or <code class="varname">PointZ</code>. The three arguments are optional and if any of them is not specified for a column, values of any subtype, dimensionality, and/or SRID are allowed.</p><pre class="programlisting">
+SELECT asEWKT(tpose(Sequence,5676) 'SRID=5676;[Pose(Point(1 1), 0.2)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-03]');
+-- SRID=5676;[Pose(POINT(1 1),0.2)@2001-01-01, Pose(POINT(1 1),0.5)@2001-01-03]
+SELECT tpose(Sequence) 'Pose(Point(1 1), 0.2)@2001-01-01';
+-- ERROR: Temporal type (Instant) does not match column type (Sequence)
+SELECT tpose(PointZ) 'Pose(Point(1 1), 0.2)@2001-01-01';
+-- Column has Z dimension but the tpose value does not
+SELECT tpose(5676) 'Pose(Point(1 1), 0.2)@2001-01-01';
+-- ERROR:  Temporal pose SRID (0) does not match column SRID (5676)
+</pre><p>Temporal pose values of sequence or sequence set subtype are converted into a normal form so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. Three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into a normal form are as follows.</p><pre class="programlisting">
+SELECT asText(tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
+  Pose(Point(2 2), 0.4)@2001-01-02, Pose(Point(3 3), 0.6)@2001-01-03)');
+-- [Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(3 3),0.6)@2001-01-03)
+SELECT asText(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, 
+  Pose(Point(2 2), 0.3)@2001-01-02, Pose(Point(2 2), 0.5)@2001-01-03), 
+  [Pose(Point(2 2), 0.5)@2001-01-03, Pose(Point(2 2), 0.7)@2001-01-04)}');
+/* {[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(2 2),0.3)@2001-01-02, 
+   Pose(Point(2 2),0.7)@2001-01-04)} */
+</pre></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 11. Temporal Poses </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Validity of Temporal Poses</td></tr></table></div></body></html>

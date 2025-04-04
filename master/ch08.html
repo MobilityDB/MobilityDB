@@ -1,90 +1,27 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Chapter 8. Temporal Types: Spatial Operations (Part 1)</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="prev" href="ch07s03.html" title="Text Operations"><link rel="next" href="ch08s02.html" title="Spatial Reference System"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 8. Temporal Types: Spatial Operations (Part 1)</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07s03.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch08s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="temporal_types_spatial_p1"></a>Chapter 8. Temporal Types: Spatial Operations (Part 1)</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="sect1"><a href="ch08.html#tpoint_inout">Input and Output</a></span></dt><dt><span class="sect1"><a href="ch08s02.html">Spatial Reference System</a></span></dt><dt><span class="sect1"><a href="ch08s03.html">Bounding Box Operations</a></span></dt><dt><span class="sect1"><a href="ch08s04.html">Accessors</a></span></dt></dl></div><p>In the following, we specify with the symbol <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
- that the function supports 3D points and with the symbol <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
- that the function is available for geographies.</p><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpoint_inout"></a>Input and Output</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="asText"></a><a class="indexterm" name="id5438"></a><p>Return the Well-Known Text (WKT) representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Chapter 8. Temporal Geometry Types (Part 2)</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="prev" href="ch07s06.html" title="Restrictions"><link rel="next" href="ch08s02.html" title="Bounding Box Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 8. Temporal Geometry Types (Part 2)</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07s06.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch08s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="tgeo_p2"></a>Chapter 8. Temporal Geometry Types (Part 2)</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="sect1"><a href="ch08.html#tgeo_spatial_srid">Spatial Reference System</a></span></dt><dt><span class="sect1"><a href="ch08s02.html">Bounding Box Operations</a></span></dt><dt><span class="sect1"><a href="ch08s03.html">Distance Operations</a></span></dt><dt><span class="sect1"><a href="ch08s04.html">Spatial Relationships</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch08s04.html#id1345">Ever and Always Spatial Relationships</a></span></dt><dt><span class="sect2"><a href="ch08s04.html#id1346">Temporal Spatial Relationships</a></span></dt></dl></dd></dl></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_spatial_srid"></a>Spatial Reference System</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_SRID"></a><a class="indexterm" name="id5930"></a><a class="indexterm" name="id5933"></a><p>Return or set the spatial reference identifier <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-</p><p><code class="varname">asText({tpoint,tpoint[],geo[]}) → {text,text[]}</code></p><pre class="programlisting">
-SELECT asText(tgeompoint 'SRID=4326;[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02)');
--- [POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02)
-SELECT asText(ARRAY[geometry 'Point(0 0)', 'Point(1 1)']);
--- {"POINT(0 0)","POINT(1 1)"}
-</pre></li><li class="listitem"><a name="asEWKT"></a><a class="indexterm" name="id5460"></a><p>Return the Extended Well-Known Text (EWKT) representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+
+</p><p><code class="varname">SRID(tspatial) → integer</code></p><p><code class="varname">setSRID(tspatial) → tspatial</code></p><pre class="programlisting">
+SELECT SRID(tgeompoint 'Point(0 0)@2001-01-01');
+-- 0
+SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)', 4326));
+-- SRID=4326;[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02)
+</pre></li><li class="listitem"><a name="tgeo_transform"></a><a class="indexterm" name="id5957"></a><a class="indexterm" name="id5960"></a><p>Transform to a spatial reference identifier <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-</p><p><code class="varname">asEWKT({tpoint,tpoint[],geo[]}) → {text,text[]}</code></p><pre class="programlisting">
-SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02)');
--- SRID=4326;[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02)
-SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
--- {"SRID=5676;POINT(0 0)","SRID=5676;POINT(1 1)"}
-</pre></li><li class="listitem"><a name="asMFJSON"></a><a class="indexterm" name="id5482"></a><p>Return the Moving Features JSON representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-</p><p><code class="varname">asMFJSON(tpoint,options=0,flags=0,maxdecdigits=15) → bytea</code></p><p>The <code class="varname">options</code> argument can be used to add BBOX and/or CRS in MFJSON output:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: MFJSON BBOX</p></li><li class="listitem"><p>2: MFJSON Short CRS (e.g., EPSG:4326)</p></li><li class="listitem"><p>4: MFJSON Long CRS (e.g., urn:ogc:def:crs:EPSG::4326)</p></li></ul></div><p>The <code class="varname">flags</code> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Refer to the documentation of the <code class="varname">json-c</code> library for the possible values. Typical values are as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: JSON_C_TO_STRING_SPACED</p></li><li class="listitem"><p>2: JSON_C_TO_STRING_PRETTY</p></li></ul></div><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
-SELECT asMFJSON(tgeompoint 'Point(1 2)@2019-01-01 18:00:00.15+02');
-/* {"type":"MovingPoint","coordinates":[[1,2]],"datetimes":["2019-01-01T17:00:00.15+01"],
-   "interpolation":"None"} */
-SELECT asMFJSON(tgeompoint 'SRID=4326;
-  Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 3, 2);
-/* {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},
-   "stBoundedBy":{"bbox":[50.81,4.38,50.81,4.38],
-   "period":{"begin":"2019-01-01 17:00:00.15+01","end":"2019-01-01 17:00:00.15+01"}},
-   "coordinates":[[50.81,4.38]],"datetimes":["2019-01-01T17:00:00.15+01"],
-   "interpolations":"None"} */
-</pre></li><li class="listitem"><a name="asBinary"></a><a class="indexterm" name="id5527"></a><p>Return the Well-Known Binary (WKB) representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-</p><p><code class="varname">asBinary(tpoint,endian text='') → bytea</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
-SELECT asBinary(tgeompoint 'Point(1 2 3)@2001-01-01');
--- \x012e0011000000000000f03f00000000000000400000000000000840009c57d3c11c0000
-</pre></li><li class="listitem"><a name="asEWKB"></a><a class="indexterm" name="id5550"></a><p>Return the Extended Well-Known Binary (EWKB) representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-</p><p><code class="varname">asEWKB(tpoint,endian text='') → bytea</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
-SELECT asEWKB(tgeogpoint 'SRID=7844;Point(1 2 3)@2001-01-01');
--- \x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000
-</pre></li><li class="listitem"><a name="asHexEWKB"></a><a class="indexterm" name="id5573"></a><p>Return the Hexadecimal Extended Well-Known Binary (EWKB) representation as text <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-</p><p><code class="varname">asHexEWKB(tpoint,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
-SELECT asHexEWKB(tgeompoint 'SRID=3812;Point(1 2 3)@2001-01-01');
--- 012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000
-</pre></li><li class="listitem"><a name="tgeompointFromText"></a><a class="indexterm" name="id5596"></a><a class="indexterm" name="id5599"></a><p>Input a temporal point from its Well-Known Text (WKT) representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-</p><p><code class="varname">tgeompointFromText(text) → tgeompoint</code></p><p><code class="varname">tgeogpointFromText(text) → tgeogpoint</code></p><pre class="programlisting">
-SELECT asEWKT(tgeompointFromText(text '[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]'));
--- [POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
-SELECT asEWKT(tgeogpointFromText(text '[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]'));
--- SRID=4326;[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
-</pre></li><li class="listitem"><a name="tgeompointFromEWKT"></a><a class="indexterm" name="id5623"></a><a class="indexterm" name="id5626"></a><p>Input a temporal point from its Extended Well-Known Text (EWKT) representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-</p><p><code class="varname">tgeompointFromEWKT(text) → tgeompoint</code></p><p><code class="varname">tgeogpointFromEWKT(text) → tgeogpoint</code></p><pre class="programlisting">
-SELECT asEWKT(tgeompointFromEWKT(text 'SRID=3812;[POINT(1 2)@2001-01-01,
-  POINT(3 4)@2001-01-02]'));
--- SRID=3812;[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
-SELECT asEWKT(tgeogpointFromEWKT(text 'SRID=7844;[POINT(1 2)@2001-01-01,
-  POINT(3 4)@2001-01-02]'));
--- SRID=7844;[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
-</pre></li><li class="listitem"><a name="tgeompointFromMFJSON"></a><a class="indexterm" name="id5650"></a><a class="indexterm" name="id5653"></a><p>Input a temporal point from its Moving Features JSON representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-</p><p><code class="varname">tgeompointFromMFJSON(text) → tgeompoint</code></p><p><code class="varname">tgeogpointFromMFJSON(text) → tgeogpoint</code></p><pre class="programlisting">
-SELECT asEWKT(tgeompointFromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
-  "properties":{"name":"EPSG:4326"}},"coordinates":[[50.81,4.38]],
-  "datetimes":["2019-01-01T17:00:00.15+01"],"interpolation":"None"}'));
--- SRID=4326;POINT(50.81 4.38)@2019-01-01 17:00:00.15+01
-SELECT asEWKT(tgeogpointFromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
-  "properties":{"name":"EPSG:4326"}},"coordinates":[[50.81,4.38]],
-  "datetimes":["2019-01-01T17:00:00.15+01"],"interpolation":"None"}'));
--- SRID=4326;POINT(50.81 4.38)@2019-01-01 17:00:00.15+01
-</pre></li><li class="listitem"><a name="tgeompointFromBinary"></a><a class="indexterm" name="id5677"></a><a class="indexterm" name="id5680"></a><p>Input a temporal point from its Well-Known Binary (WKB) representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-</p><p><code class="varname">tgeompointFromBinary(bytea) → tgeompoint</code></p><p><code class="varname">tgeogpointFromBinary(bytea) → tgeogpoint</code></p><pre class="programlisting">
-SELECT asEWKT(tgeompointFromBinary(
-  '\x012e0011000000000000f03f00000000000000400000000000000840009c57d3c11c0000'));
--- POINT Z (1 2 3)@2001-01-01
-</pre></li><li class="listitem"><a name="tgeompointFromEWKB"></a><a class="indexterm" name="id5704"></a><a class="indexterm" name="id5707"></a><p>Input a temporal point from its Extended Well-Known Binary (EWKB) representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-</p><p><code class="varname">tgeompointFromEWKB(bytea) → tgeompoint</code></p><p><code class="varname">tgeogpointFromEWKB(bytea) → tgeogpoint</code></p><pre class="programlisting">
-SELECT asEWKT(tgeogpointFromEWKB(
-  '\x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000'));
--- SRID=7844;POINT Z (1 1 1)@2001-01-01
-</pre></li><li class="listitem"><a name="tgeompointFromHexEWKB"></a><a class="indexterm" name="id5731"></a><a class="indexterm" name="id5734"></a><p>Input a temporal point from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
- <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-</p><p><code class="varname">tgeompointFromHexEWKB(text) → tgeompoint</code></p><p><code class="varname">tgeogpointFromHexEWKB(text) → tgeogpoint</code></p><pre class="programlisting">
-SELECT asEWKT(tgeompointFromHexEWKB(
-  '012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000'));
--- SRID=3812;POINT(1 2 3)@2001-01-01
-</pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch07s03.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch08s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Text Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Spatial Reference System</td></tr></table></div></body></html>
+
+</p><p><code class="varname">transform(tspatial,integer) → tspatial</code></p><p><code class="varname">transformPipeline(tspatial,pipeline text,to_srid integer,is_forward bool=true) → tspatial</code></p><p>The <code class="varname">transform</code> function specifies the transformation with a target SRID. An error is raised when the input temporal point has an unknown SRID (represented by 0).</p><p>The <code class="varname">transformPipeline</code> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</p><p><code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code></p><p>The SRID of the input temporal point is ignored, and the SRID of the output temporal point will be set to zero unless a value is provided via the optional <code class="varname">to_srid</code> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</p><pre class="programlisting">
+SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 3812));
+-- SRID=3812;POINT(648679.018035303 671067.055638114)@2001-01-01
+</pre><pre class="programlisting">
+WITH test(tgeo, pipeline) AS (
+  SELECT tgeogpoint 'SRID=4326;{Point(4.3525 50.846667 100.0)@2001-01-01,
+    Point(-0.1275 51.507222 100.0)@2001-01-02}',
+    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT asEWKT(transformPipeline(transformPipeline(tgeo, pipeline, 4326),
+  pipeline, 4326, false), 6)
+FROM test;
+/* SRID=4326;{POINT Z (4.3525 50.846667 100)@2001-01-01,
+   POINT Z (-0.1275 51.507222 100)@2001-01-02} */
+</pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch07s06.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch08s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Restrictions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Bounding Box Operations</td></tr></table></div></body></html>

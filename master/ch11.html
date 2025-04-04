@@ -1,57 +1,151 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Chapter 11. Temporal Types: Aggregation and Indexing</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="prev" href="ch10s05.html" title="Multidimensional Tiling"><link rel="next" href="ch11s02.html" title="Indexing"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 11. Temporal Types: Aggregation and Indexing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch10s05.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch11s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="temporal_types_aggregation"></a>Chapter 11. Temporal Types: Aggregation and Indexing</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="sect1"><a href="ch11.html#temporal_types_aggregations">Aggregation</a></span></dt><dt><span class="sect1"><a href="ch11s02.html">Indexing</a></span></dt><dt><span class="sect1"><a href="ch11s03.html">Statistics and Selectivity</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch11s03.html#id1347">Statistics Collection</a></span></dt><dt><span class="sect2"><a href="ch11s03.html#id1348">Selectivity Estimation</a></span></dt></dl></dd></dl></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_types_aggregations"></a>Aggregation</h2></div></div></div><p>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <span class="emphasis"><em>union</em></span> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating temporal types compute the value of the function at every instant in the <span class="emphasis"><em>intersection</em></span> of the temporal extents of the arguments.</p><p>The temporal aggregate functions are the following ones:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>For all temporal types, the function <code class="varname">tCount</code> generalize the traditional function <code class="varname">count</code>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of cars in an area).</p></li><li class="listitem"><p>For all temporal types, function <code class="varname">extent</code> returns a bounding box that encloses a set of temporal values. Depending on the base type, the result of this function can be a <code class="varname">tstzspan</code>, a <code class="varname">tbox</code> or an <code class="varname">stbox</code>.</p></li><li class="listitem"><p>For the temporal Boolean type, the functions <code class="varname">tAnd</code> and <code class="varname">tOr</code> generalize the traditional functions <code class="varname">and</code> and <code class="varname">or</code>.</p></li><li class="listitem"><p>For temporal numeric types, there are two types of temporal aggregate functions. The functions <code class="varname">tMin</code>, <code class="varname">tMax</code>, <code class="varname">tSum</code>, and <code class="varname">tAvg</code> generalize the traditional functions <code class="varname">min</code>, <code class="varname">max</code>, <code class="varname">sum</code>, and <code class="varname">avg</code>. Furthermore, the functions <code class="varname">wMin</code>, <code class="varname">wMax</code>, <code class="varname">wCount</code>, <code class="varname">wSum</code>, and <code class="varname">wAvg</code> are window (or cumulative) versions of the traditional functions that, given a time interval w, compute the value of the function at an instant t by considering the values during the interval [t-w, t]. All window aggregate functions are available for temporal integers, while for temporal floats only window minimum and maximum are meaningful.</p></li><li class="listitem"><p>For the temporal text type, the functions <code class="varname">tMin</code> y <code class="varname">tMax</code> generalize the traditional functions <code class="varname">min</code> and <code class="varname">max</code>.</p></li><li class="listitem"><p>Finally, for temporal point types, the function <code class="varname">tCentroid</code> generalizes the function <code class="varname">ST_Centroid</code> provided by PostGIS. For example, given set of objects that move together (that is, a convoy or a flock) the temporal centroid will produce a temporal point that represents at each instant the geometric center (or the center of mass) of all the moving objects.</p></li></ul></div><p>In the examples that follow, we suppose the tables <code class="varname">Department</code> and <code class="varname">Trip</code> contain the two tuples introduced in <a class="xref" href="ch04s02.html" title="Examples of Temporal Types">the section called “Examples of Temporal Types”</a>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tCount"></a><a class="indexterm" name="id7562"></a><p>Temporal count</p><p><code class="varname">tCount(ttype) → {tintSeq,tintSeqSet}</code></p><pre class="programlisting">
-SELECT tCount(NoEmps) FROM Department;
--- {[1@2001-01-01, 2@2001-02-01, 1@2001-08-01, 1@2001-10-01)}
-</pre></li><li class="listitem"><a name="extent"></a><a class="indexterm" name="id7570"></a><p>Bounding box extent</p><p><code class="varname">extent(temp) → {tstzspan,tbox,stbox}</code></p><pre class="programlisting">
-SELECT extent(noEmps) FROM Department;
--- TBOX XT((4,12),[2001-01-01,2001-10-01])
-SELECT extent(Trip) FROM Trips;
--- STBOX XT(((0,0),(3,3)),[2001-01-01 08:00:00+01, 2001-01-01 08:20:00+01))
-</pre></li><li class="listitem"><a name="tAnd"></a><a class="indexterm" name="id7578"></a><p>Temporal and</p><p><code class="varname">tAnd(tbool) → tbool</code></p><pre class="programlisting">
-SELECT tAnd(NoEmps #&gt; 6) FROM Department;
--- {[t@2001-01-01, f@2001-04-01, f@2001-10-01)}
-</pre></li><li class="listitem"><a name="tOr"></a><a class="indexterm" name="id7586"></a><p>Temporal or</p><p><code class="varname">tOr(tbool) → tbool</code></p><pre class="programlisting">
-SELECT tOr(NoEmps #&gt; 6) FROM Department;
--- {[t@2001-01-01, f@2001-08-01, f@2001-10-01)}
-</pre></li><li class="listitem"><a name="tMin"></a><a class="indexterm" name="id7594"></a><p>Temporal minimum</p><p><code class="varname">tMin(ttype) → ttype</code></p><pre class="programlisting">
-SELECT tMin(NoEmps) FROM Department;
--- {[10@2001-01-01, 4@2001-02-01, 6@2001-06-01, 6@2001-10-01)}
-</pre></li><li class="listitem"><a name="tMax"></a><a class="indexterm" name="id7602"></a><p>Temporal maximum</p><p><code class="varname">tMax(ttype) → ttype</code></p><pre class="programlisting">
-SELECT tMax(NoEmps) FROM Department;
--- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-01, 6@2001-10-01)}
-</pre></li><li class="listitem"><a name="tSum"></a><a class="indexterm" name="id7610"></a><p>Temporal sum</p><p><code class="varname">tSum(tnumber) → {tnumberSeq,tnumberSeqSet}</code></p><pre class="programlisting">
-SELECT tSum(NoEmps) FROM Department;
-/* {[10@2001-01-01, 14@2001-02-01, 16@2001-04-01, 18@2001-06-01, 6@2001-08-01,
-   6@2001-10-01)} */
-</pre></li><li class="listitem"><a name="tAvg"></a><a class="indexterm" name="id7618"></a><p>Temporal average</p><p><code class="varname">tAvg(tnumber) → {tfloatSeq,tfloatSeqSet}</code></p><pre class="programlisting">
-SELECT tAvg(NoEmps) FROM Department;
-/* {[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
-   [8@2001-04-01, 8@2001-06-01), [9@2001-06-01, 9@2001-08-01),
-   [6@2001-08-01, 6@2001-10-01) */
-</pre></li><li class="listitem"><a name="wMin"></a><a class="indexterm" name="id7626"></a><p>Window minimum</p><p><code class="varname">wMin(tnumber,interval) → {tnumberSeq,tnumberSeqSet}</code></p><pre class="programlisting">
-SELECT wMin(NoEmps, interval '2 days') FROM Department;
--- {[10@2001-01-01, 4@2001-04-01, 6@2001-06-03, 6@2001-10-03)}
-</pre></li><li class="listitem"><a name="wMax"></a><a class="indexterm" name="id7634"></a><p>Window maximum</p><p><code class="varname">wMax(tnumber,interval) → {tnumberDiscSeq,tnumberSeqSet}</code></p><pre class="programlisting">
-SELECT wMax(NoEmps, interval '2 days') FROM Department;
--- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-03, 6@2001-10-03)}
-</pre></li><li class="listitem"><a name="wCount"></a><a class="indexterm" name="id7642"></a><p>Window count</p><p><code class="varname">wCount(tnumber,interval) → {tintSeq,tintSeqSet}</code></p><pre class="programlisting">
-SELECT wCount(NoEmps, interval '2 days') FROM Department;
-/* {[1@2001-01-01, 2@2001-02-01, 3@2001-04-01, 2@2001-04-03, 3@2001-06-01, 2@2001-06-03,
-   1@2001-08-03, 1@2001-10-03)} */
-</pre></li><li class="listitem"><a name="wSum"></a><a class="indexterm" name="id7650"></a><p>Window sum</p><p><code class="varname">wSum(tint,interval) → {tintSeq,tintSeqSet}</code></p><pre class="programlisting">
-SELECT wSum(NoEmps, interval '2 days') FROM Department;
-/* {[10@2001-01-01, 14@2001-02-01, 26@2001-04-01, 16@2001-04-03, 22@2001-06-01,
-   18@2001-06-03, 6@2001-08-03, 6@2001-10-03)} */
-</pre></li><li class="listitem"><a name="wAvg"></a><a class="indexterm" name="id7658"></a><p>Window average</p><p><code class="varname">wAvg(tint,interval) → {tfloatSeq,tfloatSeqSet}</code></p><pre class="programlisting">
-SELECT wAvg(NoEmps, interval '2 days') FROM Department;
-/* {[10@2001-01-01, 10@2001-02-01), [7@2001-02-01, 7@2001-04-01),
-   [8.66666666666667@2001-04-01, 8.66666666666667@2001-04-03),
-   [8@2001-04-03, 8@2001-06-01),
-   [7.33333333333333@2001-06-01, 7.33333333333333@2001-06-03),
-   [9@2001-06-03, 9@2001-08-03), [6@2001-08-03, 6@2001-10-03)} */
-</pre></li><li class="listitem"><a name="tCentroid"></a><a class="indexterm" name="id7666"></a><p>Temporal centroid</p><p><code class="varname">tCentroid(tgeompoint) → tgeompoint</code></p><pre class="programlisting">
-SELECT tCentroid(Trip) FROM Trips;
-/* {[POINT(0 0)@2001-01-01 08:00:00+00, POINT(1 0)@2001-01-01 08:05:00+00),
-   [POINT(0.5 0)@2001-01-01 08:05:00+00, POINT(1.5 0.5)@2001-01-01 08:10:00+00,
-   POINT(2 1.5)@2001-01-01 08:15:00+00),
-   [POINT(2 2)@2001-01-01 08:15:00+00, POINT(3 3)@2001-01-01 08:20:00+00)} */
-</pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch10s05.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch11s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Multidimensional Tiling </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Indexing</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Chapter 11. Temporal Poses</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="prev" href="ch10s03.html" title="Statistics and Selectivity"><link rel="next" href="ch11s02.html" title="Temporal Poses"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 11. Temporal Poses</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch10s03.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch11s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="temporal_poses"></a>Chapter 11. Temporal Poses</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="sect1"><a href="ch11.html#static_poses">Static Poses</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch11.html#pose_inout">Input and Output</a></span></dt><dt><span class="sect2"><a href="ch11.html#pose_constructors">Constructors</a></span></dt><dt><span class="sect2"><a href="ch11.html#pose_conversions">Conversions</a></span></dt><dt><span class="sect2"><a href="ch11.html#pose_accessors">Accessors</a></span></dt><dt><span class="sect2"><a href="ch11.html#pose_transformations">Transformations</a></span></dt><dt><span class="sect2"><a href="ch11.html#pose_srid">Spatial Reference System</a></span></dt><dt><span class="sect2"><a href="ch11.html#pose_comparison">Comparisons</a></span></dt></dl></dd><dt><span class="sect1"><a href="ch11s02.html">Temporal Poses</a></span></dt><dt><span class="sect1"><a href="ch11s03.html">Validity of Temporal Poses</a></span></dt><dt><span class="sect1"><a href="ch11s04.html">Input and Output</a></span></dt><dt><span class="sect1"><a href="ch11s05.html">Constructors</a></span></dt><dt><span class="sect1"><a href="ch11s06.html">Conversions</a></span></dt><dt><span class="sect1"><a href="ch11s07.html">Accessors</a></span></dt><dt><span class="sect1"><a href="ch11s08.html">Transformations</a></span></dt><dt><span class="sect1"><a href="ch11s09.html">Modifications</a></span></dt><dt><span class="sect1"><a href="ch11s10.html">Restrictions</a></span></dt><dt><span class="sect1"><a href="ch11s11.html">Spatial Reference System</a></span></dt><dt><span class="sect1"><a href="ch11s12.html">Bounding Box Operations</a></span></dt><dt><span class="sect1"><a href="ch11s13.html">Distance Operations</a></span></dt><dt><span class="sect1"><a href="ch11s14.html">Spatial Relationships</a></span></dt><dt><span class="sect1"><a href="ch11s15.html">Comparisons</a></span></dt><dt><span class="sect1"><a href="ch11s16.html">Aggregations</a></span></dt><dt><span class="sect1"><a href="ch11s17.html">Indexing</a></span></dt></dl></div><p>The <code class="varname">pose</code> type is used to represent the <span class="emphasis"><em>location</em></span> and <span class="emphasis"><em>orientation</em></span> of geometric objects within coordinate systems anchored to the earth's surface or within other astronomical coordinate systems. The location is represented by a 2D or 3D point. For 2D poses, the orientation is defined by a rotation angle in (-π, π] expressed in radians. For 3D poses, the orientation is defined by four float values <code class="varname">W</code>, <code class="varname">X</code>, <code class="varname">Y</code>, <code class="varname">Z</code>, representing a unit <a class="ulink" href="https://en.wikipedia.org/wiki/Quaternion" target="_top">quaternion</a>
+		<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+		<mrow>
+			<mi>Q</mi>
+			<mo>=</mo>
+			<mo>〈</mo>
+			<mi>W</mi>
+			<mo>,</mo>
+			<mi>X</mi>
+			<mo>,</mo>
+			<mi>Y</mi>
+			<mo>,</mo>
+			<mi>Z</mi>
+			<mo>〉</mo>
+		</mrow>
+		</math>
+	where
+		<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+		<mrow>
+			<mo>∥</mo>
+			<msup><mi>Q</mi><mi>2</mi></msup>
+			<mo>∥</mo>
+			<mo>=</mo>
+			<msqrt>
+				<msup><mi>W</mi><mi>2</mi></msup>
+				<mo>+</mo>
+				<msup><mi>X</mi><mi>2</mi></msup>
+				<mo>+</mo>
+				<msup><mi>Y</mi><mi>2</mi></msup>
+				<mo>+</mo>
+				<msup><mi>Z</mi><mi>2</mi></msup>
+			</msqrt>
+			<mo>=</mo>
+			<mi>1</mi>
+		</mrow>
+		</math>.
+	</p><p>
+		The <a class="ulink" href="https://www.ogc.org/publications/standard/geopose/" target="_top">GeoPose Standards Working Group</a> (SWG), working under the auspices of the <a class="ulink" href="https://www.ogc.org/" target="_top">Open Geospatial Consortium</a>, has defined a standard for exchanging pose information across different users, devices, and platforms. More information about the standard can be found in the <a class="ulink" href="https://github.com/opengeospatial/GeoPose" target="_top">GitHub repository</a> of the GeoPose SWG.
+	</p><p>The <code class="varname">pose</code> type serves as base type for defining the temporal pose type <code class="varname">tpose</code>. The <code class="varname">tpose</code> type has similar functionality as the temporal point type <code class="varname">tgeompoint</code>. Thus, most functions and operators described before for the <code class="varname">tgeompoint</code> type are also applicable for the <code class="varname">tpose</code> type. In addition, there are specific functions defined for the <code class="varname">tpose</code> type.</p><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="static_poses"></a>Static Poses</h2></div></div></div><p>A 2D <code class="varname">pose</code> is a couple of the form <code class="varname">(point2D,radius)</code> where <code class="varname">point2D</code> is a 2D geometric point and <code class="varname">radius</code> is a <code class="varname">float</code> value representing a rotation angle in (-π, π] expressed in radians. A 3D <code class="varname">pose</code> is a tuple of the form <code class="varname">(point3D,W,Y,X,Z)</code> where <code class="varname">point3D</code> is a 3D geometric point, and <code class="varname">W</code>, and <code class="varname">X</code>, <code class="varname">Y</code>, and <code class="varname">Z</code> are four <code class="varname">floats</code> representing a <span class="emphasis"><em>unit</em></span> quaternion.  Examples of input of pose values are as follows:</p><pre class="programlisting">
+SELECT pose 'Pose(Point(1 1), 0.5)';
+SELECT pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)';
+</pre><p>An SRID can be specified for a pose either at the begining of the pose literal or before the point literal as shown below.</p><pre class="programlisting">
+SELECT pose 'SRID=3812;Pose(Point(1 1), 0.5)';
+SELECT pose 'Pose(SRID=5676;Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)';
+</pre><p>Values of the pose type must satisfy several constraints so that they are well defined. Examples of incorrect pose type values are as follows.</p><pre class="programlisting">
+-- Empty point
+select pose 'Pose(Point empty, 0.5)';
+-- Incorrect point value
+SELECT pose 'Pose(Linestring(1 1,2 2), 1.0)';
+-- Incorrect radius value
+SELECT pose 'Pose(Point(1 1), -10.0)';
+-- Incorrect 3D point
+SELECT pose 'Pose(Point Z(1 1), 1.0)';
+-- Incomplete 3D orientation
+SELECT pose 'Pose(Point Z(1 1 1), 1.0)';
+</pre><p>We give next the functions and operators for the pose type.</p><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_inout"></a>Input and Output</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_asText"></a><a class="indexterm" name="id7587"></a><a class="indexterm" name="id7590"></a><p>Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation</p><p><code class="varname">asText({pose,pose[]}) → {text,text[]}</code></p><p><code class="varname">asEWKT({pose,pose[]}) → {text,text[]}</code></p><pre class="programlisting">
+SELECT asText(pose 'SRID=4326;Pose(Point(0 0),1)');
+-- Pose(POINT(0 0),1)
+SELECT asText(ARRAY[pose 'Pose(Point(0 0),1)', 'Pose(Point(1 1),2)']);
+-- {"Pose(POINT(0 0),1)","Pose(POINT(1 1),2)"}
+SELECT asEWKT(pose 'SRID=4326;Pose(Point(0 0),1)');
+-- SRID=4326;Pose(Point(0 0),1)
+SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)', 'Pose(SRID=5676;Point(1 1),2)']);
+-- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
+</pre></li><li class="listitem"><a name="pose_asBinary"></a><a class="indexterm" name="id7600"></a><a class="indexterm" name="id7603"></a><a class="indexterm" name="id7606"></a><p>Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><p><code class="varname">asBinary(pose,endian text='') → bytea</code></p><p><code class="varname">asEWKB(pose,endian text='') → bytea</code></p><p><code class="varname">asHexEWKB(pose,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
+SELECT asBinary(pose 'Pose(Point(1 2),1)');
+-- \x0101000000000000f03f0000000000000040000000000000f03f
+SELECT asEWKB(pose 'SRID=7844;Pose(Point(1 2),1)');
+-- \x0141a41e0000000000000000f03f0000000000000040000000000000f03f
+SELECT asHexEWKB(pose 'SRID=3812;Pose(Point(1 2),1)');
+-- 0141E40E0000000000000000F03F0000000000000040000000000000F03F
+</pre></li><li class="listitem"><a name="poseFromText"></a><a class="indexterm" name="id7619"></a><a class="indexterm" name="id7622"></a><p>Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</p><p><code class="varname">poseFromText(text) → pose</code></p><p><code class="varname">poseFromEWKT(text) → pose</code></p><pre class="programlisting">
+SELECT asEWKT(poseFromText(text 'Pose(Point(1 2),1)'));
+-- Pose(POINT(1 2),1)
+SELECT asEWKT(poseFromEWKT(text 'SRID=3812;Pose(Point(1 2),1)'));
+-- SRID=3812;Pose(Point(1 2),1)
+</pre></li><li class="listitem"><a name="poseFromBinary"></a><a class="indexterm" name="id7632"></a><a class="indexterm" name="id7635"></a><a class="indexterm" name="id7638"></a><p>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><p><code class="varname">poseFromBinary(bytea) → pose</code></p><p><code class="varname">poseFromEWKB(bytea) → pose</code></p><p><code class="varname">poseFromHexEWKB(text) → pose</code></p><pre class="programlisting">
+SELECT asEWKT(poseFromBinary(
+  '\x0101000000000000f03f0000000000000040000000000000f03f'));
+-- Pose(POINT(1 2),1)
+SELECT asEWKT(poseFromEWKB(
+  '\x0141a41e0000000000000000f03f0000000000000040000000000000f03f'));
+-- SRID=7844;Pose(Point(1 2),1)
+SELECT asEWKT(poseFromHexEWKB(
+  '0141E40E0000000000000000F03F0000000000000040000000000000F03F'));
+-- SRID=3812;Pose(POINT(1 2),1)
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_constructors"></a>Constructors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose"></a><a class="indexterm" name="id7653"></a><p>Constructor for poses</p><p><code class="varname">pose(geompoint2D,float) → pose</code></p><p><code class="varname">pose(geompoint3D,float,float,float,float) → pose</code></p><pre class="programlisting">
+SELECT asText(pose(ST_Point(1,1), radians(45)), 6);
+-- Pose(POINT(1 1),0.785398)
+SELECT asEWKT(pose(ST_Point(1,1,3812), radians(45)), 6);
+-- SRID=3812;Pose(POINT(1 1),0.785398)
+SELECT asText(pose(ST_PointZ(1,1,1), 1, 0, 0, 0));
+-- Pose(POINT Z (1 1 1),1,0,0,0)
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_conversions"></a>Conversions</h3></div></div></div><p>Values of the <code class="varname">pose</code> type can be converted to the <code class="varname">geometry</code> point type using an explicit <code class="varname">CAST</code> or using the <code class="varname">::</code> notation as shown below.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_stbox"></a><a class="indexterm" name="id7671"></a><p>Convert a pose and, optionally, a timestamp or a period, into a spatiotemporal box</p><p><code class="varname">stbox(pose) → stbox</code></p><p><code class="varname">stbox(pose,{timestamptz,tstzspan}) → stbox</code></p><pre class="programlisting">
+SELECT stbox(pose 'SRID=5676;Pose(Point(1 1),0.3)');
+-- SRID=5676;STBOX X((1,1),(1,1))
+SELECT stbox(pose 'Pose(Point(1 1),0.3)', timestamptz '2001-01-01');
+-- STBOX XT(((1,1),(1.3,1.3)),[2001-01-01, 2001-01-01])
+SELECT stbox(pose 'Pose(Point(1 1),0.3)', tstzspan '[2001-01-01,2001-01-02]');
+-- STBOX XT(((1,1),(1.3,1.3)),[2001-01-01, 2001-01-02])
+</pre></li><li class="listitem"><a name="pose_geometry"></a><a class="indexterm" name="id7681"></a><p>Convert a pose into geometry point</p><p><code class="varname">pose::geompoint</code></p><pre class="programlisting">
+SELECT ST_AsText(pose(ST_Point(1, 1), 1)::geometry);
+-- Point(1 1)
+SELECT ST_AsEWKT(pose(ST_PointZ(1, 1, 1, 5676), 1, 0, 0, 0)::geometry);
+-- SRID=5676;POINT(1 1 1)
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_accessors"></a>Accessors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_point"></a><a class="indexterm" name="id7692"></a><p>Return the point</p><p><code class="varname">point(pose) → geompoint</code></p><pre class="programlisting">
+SELECT ST_AsText(point(pose 'Pose(Point(1 1), 0.3)'));
+-- Point(1 1)
+</pre></li><li class="listitem"><a name="pose_rotation"></a><a class="indexterm" name="id7700"></a><p>Return the rotation</p><p><code class="varname">rotation(pose2D) → float</code></p><pre class="programlisting">
+SELECT rotation(pose 'Pose(Point(1 1), 0.3)');
+-- 0.3
+</pre></li><li class="listitem"><a name="pose_orientation"></a><a class="indexterm" name="id7708"></a><p>Return the orientation</p><p><code class="varname">orientation(pose3D) → (X,W,Z,T)</code></p><pre class="programlisting">
+SELECT orientation(pose 'Pose(Point Z(1 1 1), 0, 0, 0, 1)');
+-- (0, 0, 0, 1)
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_transformations"></a>Transformations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_round"></a><a class="indexterm" name="id7719"></a><p>Round the point and the orientation of the pose to the number of decimal places</p><p><code class="varname">round(pose,integer=0) → pose</code></p><pre class="programlisting">
+SELECT asText(round(pose(ST_Point(1.123456789,1.123456789), 0.123456789), 6));
+-- Pose(POINT(1.123457 1.123457),0.123457)
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_srid"></a>Spatial Reference System</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_SRID"></a><a class="indexterm" name="id7730"></a><a class="indexterm" name="id7733"></a><p>Return or set the spatial reference identifier</p><p><code class="varname">srid(pose) → integer</code></p><p><code class="varname">setSRID(pose) → pose</code></p><pre class="programlisting">
+SELECT SRID(pose 'Pose(SRID=5676;Point(1 1), 0.3)');
+-- 5676
+SELECT asEWKT(setSRID(pose 'Pose(Point(0 0),1)', 4326));
+-- SRID=4326;Pose(POINT(0 0),1)
+</pre></li><li class="listitem"><a name="pose_transform"></a><a class="indexterm" name="id7743"></a><a class="indexterm" name="id7746"></a><p>Transform to a spatial reference identifier</p><p><code class="varname">transform(pose,integer) → pose</code></p><p><code class="varname">transformPipeline(pose,pipeline text,to_srid integer,is_forward bool=true) → pose</code></p><p>The <code class="varname">transform</code> function specifies the transformation with a target SRID. An error is raised when the input pose has an unknown SRID (represented by 0).</p><p>The <code class="varname">transformPipeline</code> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</p><p><code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code></p><p>The SRID of the input pose is ignored, and the SRID of the output pose will be set to zero unless a value is provided via the optional <code class="varname">to_srid</code> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</p><pre class="programlisting">
+SELECT asEWKT(transform(pose 'SRID=4326;Pose(Point(4.35 50.85),1)', 3812), 6);
+-- SRID=4326;Pose(POINT(648679.018035 671067.055638),1)
+</pre><pre class="programlisting">
+WITH test(pose, pipeline) AS (
+  SELECT pose 'Pose(SRID=4326;Point(4.3525 50.846667),1)',
+    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT asEWKT(transformPipeline(transformPipeline(pose, pipeline, 4326), pipeline,
+  4326, false), 6)
+FROM test;
+-- SRID=4326;Pose(POINT(4.3525 50.846667),1)
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_comparison"></a>Comparisons</h3></div></div></div><p>The comparison operators (=, &lt;, and so on) are available for poses. Excepted the equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on poses.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_comp"></a><a class="indexterm" name="id7769"></a><a class="indexterm" name="id7772"></a><a class="indexterm" name="id7775"></a><a class="indexterm" name="id7778"></a><a class="indexterm" name="id7781"></a><a class="indexterm" name="id7784"></a><p>Traditional comparisons</p><p><code class="varname">pose {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} pose</code></p><pre class="programlisting">
+SELECT pose 'Pose(Point(3 3), 0.5)' = pose 'Pose(Point(3 3), 0.5)';
+-- true
+SELECT pose 'Pose(Point(3 3), 0.5)' &lt;&gt; pose 'Pose(Point(3 3), 0.6)';
+-- true
+SELECT pose 'Pose(Point(3 3), 0.5)' &lt; pose 'Pose(Point(3 3), 0.6)';
+-- true
+SELECT pose 'Pose(Point(3 3), 0.6)' &gt; pose 'Pose(Point(2 2), 0.6)';
+-- true
+SELECT pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)' &lt;= pose 'Pose(Point Z(2 2 2), 0.5, 0.5, 0.5, 0.5)';
+-- true
+SELECT pose 'Pose(Point(1 1), 0.6)' &gt;= pose 'Pose(Point(1 1), 0.5)';
+-- true
+</pre></li><li class="listitem"><a name="pose_same"></a><a class="indexterm" name="id7792"></a><p>Are the poses approximately equal with respect to an epsilon value?</p><p><code class="varname">pose ~= pose → boolean</code></p><pre class="programlisting">
+SELECT pose 'Pose(SRID=5676;Point(1 1), 0.3)' ~= 
+  pose 'Pose(SRID=5676;Point(1 1.0000001), 0.30000001)';
+-- true
+</pre></li></ul></div></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch10s03.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch11s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Statistics and Selectivity </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Temporal Poses</td></tr></table></div></body></html>

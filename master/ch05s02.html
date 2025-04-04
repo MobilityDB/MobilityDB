@@ -1,174 +1,69 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Input and Output</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch05.html" title="Chapter 5. Temporal Types: Generic Operations (Part 1)"><link rel="prev" href="ch05.html" title="Chapter 5. Temporal Types: Generic Operations (Part 1)"><link rel="next" href="ch05s03.html" title="Constructors"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Input and Output</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch05.html">Prev</a> </td><th width="60%" align="center">Chapter 5. Temporal Types: Generic Operations (Part 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch05s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_types_input_output"></a>Input and Output</h2></div></div></div><p>
-				MobilityDB generalizes Open Geospatial Consortium's Well-Known Text (WKT), Well-Known Binary (WKB), and Moving Features JSON (MF-JSON) input and output format for all temporal types. We start by describing the WKT format.
-			</p><p>
-			An <span class="emphasis"><em>instant value</em></span> is a couple of the form <code class="varname">v@t</code>, where <code class="varname">v</code> is a value of the base type and <code class="varname">t</code> is a <code class="varname">timestamptz</code> value. The temporal extent of an instant value is a single timestamp. Examples of instant values are as follows:
-		</p><pre class="programlisting">
-SELECT tbool 'true@2001-01-01 08:00:00';
-SELECT tint '1@2001-01-01 08:00:00';
-SELECT tfloat '1.5@2001-01-01 08:00:00';
-SELECT ttext 'AAA@2001-01-01 08:00:00';
-SELECT tgeompoint 'Point(0 0)@2017-01-01 08:00:05';
-SELECT tgeogpoint 'Point(0 0)@2017-01-01 08:00:05';
-</pre><p>
-			A <span class="emphasis"><em>sequence value</em></span> is a set of values <code class="varname">v1@t1,...,vn@tn</code> delimited by lower and upper bounds, which can be inclusive (represented by ‘<code class="varname">[</code>’ and ‘<code class="varname">]</code>’) or exclusive (represented by ‘<code class="varname">(</code>’ and ‘<code class="varname">)</code>’). A sequence value composed of a single couple <code class="varname">v@t</code> is called an <span class="emphasis"><em>instantaneous sequence</em></span>. Sequence values have an associated <span class="emphasis"><em>interpolation function</em></span> which may be discrete, linear, or step. By definition, the lower and upper bounds of an instantaneous sequence or of a sequence value with discrete interpolation are inclusive. The temporal extent of a sequence value with discrete interpolation is a timestamp set. Examples of sequence values with discrete interpolation are as follows.
-		</p><pre class="programlisting">
-SELECT tbool '{true@2001-01-01 08:00:00, false@2001-01-03 08:00:00}';
-SELECT tint '{1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00}';
-SELECT tint '{1@2001-01-01 08:00:00}'; -- Instantaneous sequence
-SELECT tfloat '{1.0@2001-01-01 08:00:00, 2.0@2001-01-03 08:00:00}';
-SELECT ttext '{AAA@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00}';
-SELECT tgeompoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
-SELECT tgeogpoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
-</pre><p>The temporal extent of a sequence value with linear or step interpolation is a period defined by the first and last instants as well as the lower and upper bounds. Examples of sequence values with linear interpolation are as follows:
-		</p><pre class="programlisting">
-SELECT tbool '[true@2001-01-01 08:00:00, true@2001-01-03 08:00:00]';
-SELECT tint '[1@2001-01-01 08:00:00, 1@2001-01-03 08:00:00]';
-SELECT tfloat '[2.5@2001-01-01 08:00:00, 3@2001-01-03 08:00:00, 1@2001-01-04 08:00:00]';
-SELECT tfloat '[1.5@2001-01-01 08:00:00]'; -- Instantaneous sequence
-SELECT ttext '[BBB@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00]';
-SELECT tgeompoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 0)@2017-01-01 08:05:00)';
-SELECT tgeogpoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00,
-  Point(0 0)@2017-01-01 08:10:00)';
-</pre><p>Sequence values whose base type is continuous may specify that the interpolation is step with the prefix <code class="varname">Interp=Step</code>. If this is not specified, it is supposed that the interpolation is linear by default. Example of sequence values with step interpolation are given next:
-		</p><pre class="programlisting">
-SELECT tfloat 'Interp=Step;[2.5@2001-01-01 08:00:00, 3@2001-01-01 08:10:00]';
-SELECT tgeompoint 'Interp=Step;[Point(0 0)@2017-01-01 08:00:00,
-  Point(1 1)@2017-01-01 08:05:00, Point(1 1)@2017-01-01 08:10:00)';
-SELECT tgeompoint 'Interp=Step;[Point(0 0)@2017-01-01 08:00:00,
- Point(1 1)@2017-01-01 08:05:00, Point(0 0)@2017-01-01 08:10:00)';
-ERROR:  Invalid end value for temporal sequence with step interpolation
-SELECT tgeogpoint 'Interp=Step;[Point(0 0)@2017-01-01 08:00:00,
-  Point(1 1)@2017-01-01 08:10:00]';
-</pre><p>
-			The last two instants of a sequence value with discrete interpolation and exclusive upper bound must have the same base value, as shown in the second and third examples above.
-		</p><p>
-			A <span class="emphasis"><em>sequence set value</em></span> is a set <code class="varname">{v1,...,vn}</code> where every <code class="varname">vi</code> is a sequence value. The interpolation of sequence set values can only be linear or step, not discrete. All sequences composing a sequence set value must have the same interpolation. The temporal extent of a sequence set value is a set of periods. Examples of sequence set values with linear interpolation are as follows:
-		</p><pre class="programlisting">
-SELECT tbool '{[false@2001-01-01 08:00:00, false@2001-01-03 08:00:00),
-  [true@2001-01-03 08:00:00], (false@2001-01-04 08:00:00, false@2001-01-06 08:00:00]}';
-SELECT tint '{[1@2001-01-01 08:00:00, 1@2001-01-03 08:00:00),
-  [2@2001-01-04 08:00:00, 3@2001-01-05 08:00:00, 3@2001-01-06 08:00:00]}';
-SELECT tfloat '{[1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00, 2@2001-01-04 08:00:00,
-  3@2001-01-06 08:00:00]}';
-SELECT ttext '{[AAA@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00, BBB@2001-01-04 08:00:00),
-  [CCC@2001-01-05 08:00:00, CCC@2001-01-06 08:00:00]}';
-SELECT tgeompoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00),
-  [Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
-SELECT tgeogpoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00),
-  [Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
-</pre><p>
-			Sequence set values whose base type is continuous may specify that the interpolation is step with the prefix <code class="varname">Interp=Step</code>. If this is not specified, it is supposed that the interpolation is linear by default. Example of sequence set values with step interpolation are given next:
-		</p><pre class="programlisting">
-SELECT tfloat 'Interp=Step;{[1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00,
-  2@2001-01-04 08:00:00, 3@2001-01-06 08:00:00]}';
-SELECT tgeompoint 'Interp=Step;{[Point(0 0)@2017-01-01 08:00:00,
-  Point(0 1)@2017-01-01 08:05:00], [Point(0 1)@2017-01-01 08:10:00,
-  Point(0 1)@2017-01-01 08:15:00)}';
-SELECT tgeogpoint 'Interp=Step;{[Point(0 0)@2017-01-01 08:00:00,
-  Point(0 1)@2017-01-01 08:05:00], [Point(0 1)@2017-01-01 08:10:00,
-  Point(0 1)@2017-01-01 08:15:00)}';
-</pre><p>
-			For temporal points, it is possible to specify the spatial reference identifier (SRID) using the Extended Well-Known text (EWKT) representation as follows:
-		</p><pre class="programlisting">
-SELECT tgeompoint 'SRID=5435;[Point(0 0)@2001-01-01,Point(0 1)@2001-01-02]'
-</pre><p>
-			All component geometries of a temporal point will then be of the given SRID. Furthermore, each component geometry can specify its SRID with the EWKT format as in the following example
-		</p><pre class="programlisting">
-SELECT tgeompoint '[SRID=5435;Point(0 0)@2001-01-01,SRID=5435;Point(0 1)@2001-01-02]'
-</pre><p>
-			An error is raised if the component geometries are not all in the same SRID or if the SRID of a component geometry is different from the one of the temporal point, as shown below.
-		</p><pre class="programlisting">
-SELECT tgeompoint '[SRID=5435;Point(0 0)@2001-01-01,SRID=4326;Point(0 1)@2001-01-02]';
--- ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
-SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2001-01-01,
-  SRID=4326;Point(0 1)@2001-01-02]';
--- ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
-</pre><p>
-			If not specified, the default SRID for temporal geometric points is 0 (unknown) and for temporal geographic points is 4326 (WGS 84). Temporal points with step interpolation may also specify the SRID, as shown next.
-		</p><pre class="programlisting">
-SELECT tgeompoint 'SRID=5435,Interp=Step;[Point(0 0)@2001-01-01,
-  Point(0 1)@2001-01-02]';
-SELECT tgeogpoint 'Interp=Step;[SRID=4326;Point(0 0)@2001-01-01,
-  SRID=4326;Point(0 1)@2001-01-02]';
-</pre><p>
-			We give below the input and output functions in Well-Known Text (WKT), Well-Known Binary (WKB), and Moving Features JSON (MF-JSON) format for temporal alphanumeric types. The corresponding functions for temporal points are detailed in <a class="xref" href="ch08.html#tpoint_inout" title="Input and Output">the section called “Input and Output”</a>.  The default output format of all temporal alphanumeric types is the Well-Known Text format. The function <code class="varname">asText</code> given next enables to determine the output of temporal float values.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="temporal_asText"></a><a class="indexterm" name="id4038"></a><p>Return the Well-Known Text (WKT) representation</p><p><code class="varname">asText(tfloat,maxdecdigits=15) → text</code></p><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
-SELECT asText(tfloat '[10.55@2001-01-01, 25.55@2001-01-02]', 0);
--- [11@2001-01-01, 26@2001-01-02]
-</pre></li><li class="listitem"><a name="temporal_asBinary"></a><a class="indexterm" name="id4048"></a><p>Return the Well-Known Binary (WKB) representation</p><p><code class="varname">asBinary(ttype,endian text='') → bytea</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
-SELECT asBinary(tbool 'true@2001-01-01');
--- \x011a000101009c57d3c11c0000
-SELECT asBinary(tint '1@2001-01-01', 'XDR');
--- \x000023010000000100001cc1d3579c00
-SELECT asBinary(tfloat '1.5@2001-01-01');
--- \x01210001000000000000f83f009c57d3c11c0000
-SELECT asBinary(ttext 'AAA@2001-01-01');
--- \x01290001040000000000000041414100009c57d3c11c0000
-</pre></li><li class="listitem"><a name="temporal_asHexWKB"></a><a class="indexterm" name="id4057"></a><p>Return the Hexadecimal Well-Known Binary (WKB) representation as text</p><p><code class="varname">asHexWKB(ttype,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
-SELECT asHexWKB(tbool 'true@2001-01-01');
--- 011A000101009C57D3C11C0000
-SELECT asHexWKB(tint '1@2001-01-01', 'XDR');
--- 000023010000000100001CC1D3579C00
-SELECT asHexWKB(tfloat '1.5@2001-01-01');
--- 01210001000000000000F83F009C57D3C11C0000
-SELECT asHexWKB(ttext 'AAA@2001-01-01');
--- 01290001040000000000000041414100009C57D3C11C0000
-</pre></li><li class="listitem"><a name="temporal_asMFJSON"></a><a class="indexterm" name="id4066"></a><p>Return the Moving Features JSON (MF-JSON) representation</p><p><code class="varname">asMFJSON(ttype,options=0,flags=0,maxdecdigits=15) → bytea</code></p><p>The <code class="varname">options</code> argument can be used to add a bounding box in the MFJSON output:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: MFJSON BBOX</p></li></ul></div><p>The <code class="varname">flags</code> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Refer to the documentation of the <code class="varname">json-c</code> library for the possible values. Typical values are as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: JSON_C_TO_STRING_SPACED</p></li><li class="listitem"><p>2: JSON_C_TO_STRING_PRETTY</p></li></ul></div><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
-SELECT asMFJSON(tbool 't@2001-01-01 18:00:00', 1);
-/* {"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00+01",
-  "end":"2001-01-01T18:00:00+01","lowerInc":true,"upperInc":true},
-  "values":[true],"datetimes":["2001-01-01T18:00:00+01"],"interpolation":"None"} */
-SELECT asMFJSON(tint '{10@2001-01-01 18:00:00, 25@2001-01-01 18:10:00}', 1);
-/* {"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2001-01-01T18:00:00+01",
-   "end":"2001-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2001-01-01T18:00:00+01",
-   "2001-01-01T18:10:00+01"],"lowerInc":true,"upperInc":true,
-   "interpolation":"Discrete"} */
-SELECT asMFJSON(tfloat '[10.5@2001-01-01 18:00:00+02, 25.5@2001-01-01 18:10:00+02]');
-/* {"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2001-01-01T17:00:00+01",
-  "2001-01-01T17:10:00+01"],"lowerInc":true,"upperInc":true,"interpolation":"Linear"} */
-SELECT asMFJSON(ttext '{[walking@2001-01-01 18:00:00+02,
-  driving@2001-01-01 18:10:00+02]}');
-/* {"type":"MovingText","sequences":[{"values":["walking","driving"],
-  "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"],
-  "lowerInc":true,"upperInc":true}],"interpolation":"Step"} */
-</pre></li><li class="listitem"><a name="temporal_FromBinary"></a><a class="indexterm" name="id4093"></a><p>Input a temporal value from its Well-Known Binary (WKB) representation</p><p><code class="varname">ttypeFromBinary(bytea) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
-SELECT tboolFromBinary('\x011a000101009c57d3c11c0000');
--- t@2001-01-01
-SELECT tintFromBinary('\x000023010000000100001cc1d3579c00');
--- 1@2001-01-01
-SELECT tfloatFromBinary('\x01210001000000000000f83f009c57d3c11c0000');
--- 1.5@2001-01-01
-SELECT ttextFromBinary('\x01290001040000000000000041414100009c57d3c11c0000');
--- "AAA"@2001-01-01
-</pre></li><li class="listitem"><a name="temporal_FromHexWKB"></a><a class="indexterm" name="id4104"></a><p>Input a temporal value from its Hexadecimal Extended Well-Known Binary (HexEWKB) representation</p><p><code class="varname">ttypeFromHexWKB(text) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
-SELECT tboolFromHexWKB('011A000101009C57D3C11C0000');
--- t@2001-01-01
-SELECT tintFromHexWKB('000023010000000100001CC1D3579C00');
--- 1@2001-01-01
-SELECT tfloatFromHexWKB('01210001000000000000F83F009C57D3C11C0000');
--- 1.5@2001-01-01
-SELECT ttextFromHexWKB('01290001040000000000000041414100009C57D3C11C0000');
--- "AAA"@2001-01-01
-</pre></li><li class="listitem"><a name="temporal_FromMFJSON"></a><a class="indexterm" name="id4115"></a><p>Input a temporal value from its Moving Features JSON (MF-JSON) representation</p><p><code class="varname">ttypeFromMFJSON(bytea) → ttype</code></p><p>There is one function per temporal type, the name of the function has as prefix the name of the type, which is <code class="varname">tbool</code> or <code class="varname">tint</code> in the examples below.</p><pre class="programlisting">
-SELECT tboolFromMFJSON(text
-  '{"type":"MovingBoolean","period":{"begin":"2001-01-01T18:00:00+01",
-  "end":"2001-01-01T18:00:00+01","lowerInc":true,"upperInc":true},
-  "values":[true],"datetimes":["2001-01-01T18:00:00+01"],"interpolation":"None"}');
--- t@2001-01-01 18:00:00
-SELECT tintFromMFJSON(text
-  '{"type":"MovingInteger","bbox":[10,25],"period":{"begin":"2001-01-01T18:00:00+01",
-   "end":"2001-01-01T18:10:00+01"},"values":[10,25],"datetimes":["2001-01-01T18:00:00+01",
-   "2001-01-01T18:10:00+01"],"lowerInc":true,"upperInc":true,
-   "interpolation":"Discrete"}');
--- {10@2001-01-01 18:00:00, 25@2001-01-01 18:10:00}
-SELECT tfloatFromMFJSON(text
-  '{"type":"MovingFloat","values":[10.5,25.5],"datetimes":["2001-01-01T17:00:00+01",
-   "2001-01-01T17:10:00+01"],"lowerInc":true,"upperInc":true,
-   "interpolation":"Linear"}');
--- [10.5@2001-01-01 18:00:00, 25.5@2001-01-01 18:10:00]'
-SELECT ttextFromMFJSON(text
-  '{"type":"MovingText","sequences":[{"values":["walking","driving"],
-  "datetimes":["2001-01-01T17:00:00+01","2001-01-01T17:10:00+01"],
-  "lowerInc":true,"upperInc":true}],"interpolation":"Step"}');
--- {["walking"@2001-01-01 18:00:00, "driving"@2001-01-01 18:10:00]}');
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch05.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch05.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch05s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 5. Temporal Types: Generic Operations (Part 1) </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Constructors</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Restrictions</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch05.html" title="Chapter 5. Temporal Types (Part 2)"><link rel="prev" href="ch05.html" title="Chapter 5. Temporal Types (Part 2)"><link rel="next" href="ch05s03.html" title="Bounding Box Operators"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Restrictions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch05.html">Prev</a> </td><th width="60%" align="center">Chapter 5. Temporal Types (Part 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch05s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_restrictions"></a>Restrictions</h2></div></div></div><p>There are two complementary sets of restriction functions. The first set functions restricts the temporal value with respect to a value or a time extent. Examples are <code class="varname">atValues</code> or <code class="varname">atTime</code>. The second set functions restricts the temporal value with respect to the <span class="emphasis"><em>complement</em></span> of a value or a time extent. Examples are <code class="varname">minusValues</code> or <code class="varname">minusTime</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="type_atValues"></a><a class="indexterm" name="id4512"></a><a class="indexterm" name="id4515"></a><p>Restrict to (the complement of) a set of values</p><p><code class="varname">atValues(ttype,values) → ttype</code></p><p><code class="varname">minusValues(ttype,values) → ttype</code></p><pre class="programlisting">
+SELECT atValues(tint '[1@2001-01-01, 1@2001-01-15)', 1);
+-- [1@2001-01-01, 1@2001-01-15)
+SELECT atValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatset '{1, 3, 5}');
+-- {[1@2001-01-01], [3@2001-01-03]}
+SELECT atValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[1,3]');
+-- [1@2001-01-01, 3@2001-01-03]
+SELECT atValues(tfloat '[1@2001-01-01, 5@2001-01-05)',
+  floatspanset '{[1,2], [3,4]}');
+-- {[1@2001-01-01, 2@2001-01-02],[3@2001-01-03, 4@2001-01-04]}
+SELECT asText(atValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
+  geometry 'Point(1 1 1)'));
+-- {[POINT Z (1 1 1)@2001-01-02]}
+SELECT asText(atValues(tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)',
+  geomset '{"Point(0 0)", "Point(1 1)"}'));
+-- {[POINT(0 0)@2001-01-01], [POINT(1 1)@2001-01-02]}
+SELECT asText(atValues(tgeometry '[Point(0 0)@2001-01-01, Linestring(0 0,2 2)@2001-01-02, 
+  Linestring(0 0,2 2)@2001-01-03]', geometry 'Linestring(0 0,2 2)'));
+-- {[LINESTRING(0 0,2 2)@2001-01-02, LINESTRING(0 0,2 2)@2001-01-03]}
+</pre><pre class="programlisting">
+SELECT minusValues(tint '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03)', 1);
+-- {[2@2001-01-02, 2@2001-01-03)}
+SELECT minusValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatset '{2, 3}');
+/* {[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03),
+   (3@2001-01-03, 4@2001-01-04)} */
+SELECT minusValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[2,3]');
+-- {[1@2001-01-01, 2@2001-01-02), (3@2001-01-03, 4@2001-01-04)}
+SELECT minusValues(tfloat '[1@2001-01-01, 5@2001-01-05)',
+  floatspanset '{[1,2], [3,4]}');
+-- {(2@2001-01-02, 3@2001-01-03), (4@2001-01-04, 5@2001-01-05)}
+SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
+  geometry 'Point(1 1 1)'));
+/* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
+   (POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03)} */
+SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(3 3 3)@2001-01-04)',
+  geomset '{"Point(1 1 1)', 'Point(2 2 2)"}'));
+/* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
+   (POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03),
+  (POINT Z (2 2 2)@2001-01-03, POINT Z (3 3 3)@2001-01-04)} */
+SELECT asText(minusValues(tgeometry '[Point(0 0)@2001-01-01, Linestring(0 0,2 2)@2001-01-02, 
+  Linestring(0 0,2 2)@2001-01-03]', geometry 'Linestring(0 0,2 2)'));
+--  {[POINT(0 0)@2001-01-01, POINT(0 0)@2001-01-02)}
+</pre></li><li class="listitem"><a name="type_atTime"></a><a class="indexterm" name="id4526"></a><a class="indexterm" name="id4529"></a><p>Restrict to (the complement of) a time value</p><p><code class="varname">atTime(ttype,times) → ttype</code></p><p><code class="varname">minusTime(ttype,times) → ttype</code></p><pre class="programlisting">
+SELECT atTime(tfloat '[1@2001-01-01, 5@2001-01-05)', timestamptz '2001-01-02');
+-- 2@2001-01-02
+SELECT atTime(tint '[1@2001-01-01, 1@2001-01-15)',
+  tstzset '{2001-01-01, 2001-01-03}');
+-- {1@2001-01-01, 1@2001-01-03}
+SELECT atTime(tfloat '{[1@2001-01-01, 3@2001-01-03), [3@2001-01-04, 1@2001-01-06)}',
+  tstzspan '[2001-01-02,2001-01-05)');
+-- {[2@2001-01-02, 3@2001-01-03), [3@2001-01-04, 2@2001-01-05)}
+SELECT atTime(tint '[1@2001-01-01, 1@2001-01-15)',
+  tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-05)}');
+-- {[1@2001-01-01, 1@2001-01-03),[1@2001-01-04, 1@2001-01-05)}
+</pre><pre class="programlisting">
+SELECT minusTime(tfloat '[1@2001-01-01, 5@2001-01-05)', timestamptz '2001-01-02');
+-- {[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 5@2001-01-05)}
+SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
+  tstzset '{2001-01-02, 2001-01-03}');
+/* {[1@2001-01-01, 1@2001-01-02), (1@2001-01-02, 1@2001-01-03),
+   (1@2001-01-03, 1@2001-01-15)} */
+SELECT minusTime(tfloat '{[1@2001-01-01, 3@2001-01-03), [3@2001-01-04, 1@2001-01-06)}',
+  tstzspan '[2001-01-02,2001-01-05)');
+-- {[1@2001-01-01, 2@2001-01-02), [2@2001-01-05, 1@2001-01-06)}
+SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
+  tstzspanset '{[2001-01-02, 2001-01-03), [2001-01-04, 2001-01-05)}');
+/* {[1@2001-01-01, 1@2001-01-02), [1@2001-01-03, 1@2001-01-04),
+   [1@2001-01-05, 1@2001-01-15)} */
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch05.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch05.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch05s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 5. Temporal Types (Part 2) </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Bounding Box Operators</td></tr></table></div></body></html>

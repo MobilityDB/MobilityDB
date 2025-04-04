@@ -1,80 +1,70 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Operaciones matemáticas</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch07.html" title="Capítulo 7. Tipos temporales: Operaciones alfanuméricas"><link rel="prev" href="ch07.html" title="Capítulo 7. Tipos temporales: Operaciones alfanuméricas"><link rel="next" href="ch07s03.html" title="Operaciones de texto"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Operaciones matemáticas</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07.html">Anterior</a> </td><th width="60%" align="center">Capítulo 7. Tipos temporales: Operaciones alfanuméricas</th><td width="20%" align="right"> <a accesskey="n" href="ch07s03.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_types_math"></a>Operaciones matemáticas</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tnumber_add"></a><a class="indexterm" name="id4747"></a><p>Adición temporal</p><p><code class="varname">{number,tnumber} + {number,tnumber} → tnumber</code></p><pre class="programlisting">
-SELECT tint '[2@2001-01-01, 2@2001-01-04)' + 1;
--- [3@2001-01-01, 3@2001-01-04)
-SELECT tfloat '[2@2001-01-01, 2@2001-01-04)' + tfloat '[1@2001-01-01, 4@2001-01-04)';
--- [3@2001-01-01, 6@2001-01-04)
-SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' +
-  tfloat '{[1@2001-01-01, 2@2001-01-02), [1@2001-01-02, 2@2001-01-04)}';
--- {[2@2001-01-01, 4@2001-01-04), [3@2001-01-02, 6@2001-01-04)}
-</pre></li><li class="listitem"><a name="tnumber_sub"></a><a class="indexterm" name="id4755"></a><p>Resta temporal</p><p><code class="varname">{number,tnumber} - {number,tnumber} → tnumber</code></p><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 1@2001-01-04)' - tint '[2@2001-01-03, 2@2001-01-05)';
--- [-1@2001-01-03, -1@2001-01-04)
-SELECT tfloat '[3@2001-01-01, 6@2001-01-04)' - tfloat '[2@2001-01-01, 2@2001-01-04)';
--- [1@2001-01-01, 4@2001-01-04)
-</pre></li><li class="listitem"><a name="tnumber_mult"></a><a class="indexterm" name="id4763"></a><p>Multiplicación temporal</p><p><code class="varname">{number,tnumber} * {number,tnumber} → tnumber</code></p><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 4@2001-01-04]' * 2;
--- [2@2001-01-01, 8@2001-01-04]
-SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' * tfloat '[2@2001-01-01, 2@2001-01-04)';
--- [2@2001-01-01, 8@2001-01-04)
-SELECT tfloat '[1@2001-01-01, 3@2001-01-03)' * '[3@2001-01-01, 1@2001-01-03)';
--- {[3@2001-01-01, 4@2001-01-02, 3@2001-01-03)}
-</pre></li><li class="listitem"><a name="tnumber_div"></a><a class="indexterm" name="id4771"></a><p>División temporal</p><p><code class="varname">{number,tnumber} / {number,tnumber} → tnumber</code></p><p>La función genera un error si el denominador es alguna vez igual a cero durante el intervalo de tiempo común de los argumentos.</p><pre class="programlisting">
-SELECT 2 / tfloat '[1@2001-01-01, 3@2001-01-04)';
--- [2@2001-01-01, 0.666666666666667@2001-01-04)
-SELECT tfloat '[1@2001-01-01, 5@2001-01-05)' / tfloat '[5@2001-01-01, 1@2001-01-05)';
--- {[0.2@2001-01-01, 1@2001-01-03,2001-01-03, 5@2001-01-03,2001-01-05)}
-SELECT 2 / tfloat '[-1@2001-01-01, 1@2001-01-02]';
--- ERROR:  Division by zero
-SELECT tfloat '[-1@2001-01-04, 1@2001-01-05]' / tfloat '[-1@2001-01-01, 1@2001-01-05]';
--- [-2@2001-01-04, 1@2001-01-05]
-</pre></li><li class="listitem"><a name="abs"></a><a class="indexterm" name="id4780"></a><p>Devuelve el valor absoluto del número temporal</p><p><code class="varname">abs(tnumber) → tnumber</code></p><pre class="programlisting">
-SELECT abs(tfloat '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
--- [1@2001-01-01, 0@2001-01-02, 1@2001-01-03, 0@2001-01-04, 1@2001-01-05],
-SELECT abs(tint '[1@2001-01-01, -1@2001-01-03, 1@2001-01-05]');
--- [1@2001-01-01, 1@2001-01-05]
-</pre></li><li class="listitem"><a name="deltaValue"></a><a class="indexterm" name="id4788"></a><p>Devuelve la diferencia de valor entre instantes consectivos del número temporal</p><p><code class="varname">deltaValue(tnumber) → tnumber</code></p><pre class="programlisting">
-SELECT deltaValue(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
--- [1@2001-01-01, -1@2001-01-02, -1@2001-01-03)
-SELECT deltaValue(tfloat '{[1.5@2001-01-01, 2@2001-01-02, 1@2001-01-03],
-  [2@2001-01-04, 2@2001-01-05]}');
-/* Interp=Step;{[0.5@2001-01-01, -1@2001-01-02, -1@2001-01-03),
-  [0@2001-01-04, 0@2001-01-05)} */
-</pre></li><li class="listitem"><a name="floor"></a><a class="indexterm" name="id4796"></a><a class="indexterm" name="id4799"></a><p>Redondear al entero inferior o superior</p><p><code class="varname">floor(tfloat) → tfloat</code></p><p><code class="varname">ceil(tfloat) → tfloat</code></p><pre class="programlisting">
-SELECT floor(tfloat '[0.5@2001-01-01, 1.5@2001-01-02]');
--- [0@2001-01-01, 1@2001-01-02]
-SELECT ceil(tfloat '[0.5@2001-01-01, 0.6@2001-01-02, 0.7@2001-01-03]');
--- [1@2001-01-01, 1@2001-01-03]
-</pre></li><li class="listitem"><a name="round"></a><a class="indexterm" name="id4809"></a><p>Redondear a un número de posiciones decimales</p><p><code class="varname">round(tfloat,integer=0) → tfloat</code></p><pre class="programlisting">
-SELECT round(tfloat '[0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]', 2);
--- [0.79@2001-01-01, 2.36@2001-01-02]
-</pre></li><li class="listitem"><a name="degrees"></a><a class="indexterm" name="id4817"></a><a class="indexterm" name="id4820"></a><p>Convertir a grados o radianes</p><p><code class="varname">degrees({float,tfloat},normalize=false) → tfloat</code></p><p><code class="varname">radians(tfloat) → tfloat</code></p><p>El parámetro adicional en la función <code class="varname">degrees</code> puede ser utilizado para normalizar los valores entre 0 y 360 grados.</p><pre class="programlisting">
-SELECT degrees(pi() * 5);
--- 900
-SELECT degrees(pi() * 5, true);
--- 180
-SELECT round(degrees(tfloat '[0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]'));
--- [45@2001-01-01, 135@2001-01-02]
-SELECT radians(tfloat '[45@2001-01-01, 135@2001-01-02]');
--- [0.785398163397448@2001-01-01, 2.356194490192345@2001-01-02]
-</pre></li><li class="listitem"><a name="derivative"></a><a class="indexterm" name="id4832"></a><p>Devuelve la derivada sobre el tiempo del número flotante temporal en unidades por segundo</p><p><code class="varname">derivative(tfloat) → tfloat</code></p><p>El número flotante temporal debe tener interpolación linear</p><pre class="programlisting">
-SELECT derivative(tfloat '{[0@2001-01-01, 10@2001-01-02, 5@2001-01-03],
-  [1@2001-01-04, 0@2001-01-05]}') * 3600 * 24;
-/* Interp=Step;{[-10@2001-01-01, 5@2001-01-02, 5@2001-01-03],
-  [1@2001-01-04, 1@2001-01-05]} */
-SELECT derivative(tfloat 'Interp=Step;[0@2001-01-01, 10@2001-01-02, 5@2001-01-03]');
--- ERROR:  The temporal value must have linear interpolation
-</pre></li><li class="listitem"><a name="ln"></a><a class="indexterm" name="id4841"></a><a class="indexterm" name="id4844"></a><p>Devuelve el logaritmo natural y el logaritmo base 10 de un número flotante temporal</p><p><code class="varname">ln(tfloat) → tfloat</code></p><p><code class="varname">log10(tfloat) → tfloat</code></p><p>El número flotante temporal no puede ser cero o negativo</p><pre class="programlisting">
-SELECT ln(tfloat '{[1@2001-01-01, 10@2001-01-02, 5@2001-01-03],
-  [1@2001-01-04, 1@2001-01-05]}');
-/* {[0@2001-01-01, 2.302585092994046@2001-01-02, 1.6094379124341@2001-01-03], 
-   [0@2001-01-04, 0@2001-01-05]} */
-SELECT log10(tfloat 'Interp=Step;[-10@2001-01-01, 10@2001-01-02]');
--- ERROR:  Cannot take logarithm of zero or a negative number
-</pre></li><li class="listitem"><a name="exp"></a><a class="indexterm" name="id4855"></a><p>Devuelve el exponencial (e elevado a la potencia dada) de un número flotante temporal</p><p><code class="varname">exp(tfloat) → tfloat</code></p><pre class="programlisting">
-SELECT exp(tfloat '{[1@2001-01-01, 10@2001-01-02],
-  [1@2001-01-04, 1@2001-01-05]}');
-/* {[2.718281828459045@2001-01-01, 22026.465794806718@2001-01-02], 
-   [2.718281828459045@2001-01-04, 2.718281828459045@2001-01-05]} */
-SELECT exp(tfloat '{-10@2001-01-01, 0@2001-01-02, 10@2001-01-03}');
--- {0.000045399929762@2001-01-01, 1@2001-01-02, 22026.465794806718@2001-01-03}
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch07.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch07.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch07s03.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Capítulo 7. Tipos temporales: Operaciones alfanuméricas </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Operaciones de texto</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Entrada y salida</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch07.html" title="Chapter 7. Tipos temporales geométricos (Parte 1)"><link rel="prev" href="ch07.html" title="Chapter 7. Tipos temporales geométricos (Parte 1)"><link rel="next" href="ch07s03.html" title="Conversions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Entrada y salida</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Tipos temporales geométricos (Parte 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch07s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_inout"></a>Entrada y salida</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tspatial_asText"></a><a class="indexterm" name="id5188"></a><a class="indexterm" name="id5191"></a><p>Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT)<span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
+</p><p><code class="varname">asText({tspatial,tspatial[],spatial[]}) → {text,text[]}</code></p><p><code class="varname">asEWKT({tspatial,tspatial[],spatial[]}) → {text,text[]}</code></p><pre class="programlisting">
+SELECT asText(tgeompoint 'SRID=4326;[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02)');
+-- [POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02)
+SELECT asText(ARRAY[geometry 'Point(0 0)', 'Point(1 1)']);
+-- {"POINT(0 0)","POINT(1 1)"}
+SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02)');
+-- SRID=4326;[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02)
+SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
+-- {"SRID=5676;POINT(0 0)","SRID=5676;POINT(1 1)"}
+</pre></li><li class="listitem"><a name="tspatial_asMFJSON"></a><a class="indexterm" name="id5215"></a><p>Devuelve la representación JSON de características móviles (Moving Features JSON o MF-JSON) <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
+</p><p><code class="varname">asMFJSON(tspatial,options=0,flags=0,maxdecdigits=15) → text</code></p><p>El argumento <code class="varname">options</code> puede usarse para agregar BBOX y/o CRS en la salida MFJSON:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: significa que no hay opción (valor por defecto)</p></li><li class="listitem"><p>1: MFJSON BBOX</p></li><li class="listitem"><p>2: MFJSON Short CRS (e.g., EPSG:4326)</p></li><li class="listitem"><p>4: MFJSON Long CRS (e.g., urn:ogc:def:crs:EPSG::4326)</p></li></ul></div><p>El argumento <code class="varname">flags</code> puede usarse para personalizar la salida JSON, por ejemplo, para producir una salida JSON fácil de leer (para lectores humanos). Consulte la documentación de la biblioteca <code class="varname">json-c</code> para conocer los valores posibles. Los valores típicos son los siguientes:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: JSON_C_TO_STRING_SPACED</p></li><li class="listitem"><p>2: JSON_C_TO_STRING_PRETTY</p></li></ul></div><p>El argumento <code class="varname">maxdecdigits</code> puede usarse para establecer el número máximo de decimales en la salida de los valores en punto flotante (por defecto 15).</p><pre class="programlisting">
+SELECT asMFJSON(tgeompoint 'Point(1 2)@2001-01-01 18:00:00.15+02');
+/* {"type":"MovingPoint","coordinates":[[1,2]],"datetimes":["2001-01-01T17:00:00.15+01"],
+   "interpolation":"None"} */
+SELECT asMFJSON(tgeompoint 'SRID=4326;
+  Point(50.813810 4.384260)@2001-01-01 18:00:00.15+02', 3, 2);
+/* {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},
+   "stBoundedBy":{"bbox":[50.81,4.38,50.81,4.38],
+   "period":{"begin":"2001-01-01 17:00:00.15+01","end":"2001-01-01 17:00:00.15+01"}},
+   "coordinates":[[50.81,4.38]],"datetimes":["2001-01-01T17:00:00.15+01"],
+   "interpolation":"None"} */
+</pre></li><li class="listitem"><a name="tspatial_asBinary"></a><a class="indexterm" name="id5260"></a><a class="indexterm" name="id5263"></a><a class="indexterm" name="id5266"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o la representación hexadecimal extendida binaria conocida (Extended Well-Known Binary o EWKB) <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
+</p><p><code class="varname">asBinary(tgeo,endian text='') → bytea</code></p><p><code class="varname">asEWKB(tgeo,endian text='') → bytea</code></p><p><code class="varname">asHexEWKB(tgeo,endian text='') → text</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
+SELECT asBinary(tgeompoint 'Point(1 2 3)@2001-01-01');
+-- \x012e0011000000000000f03f00000000000000400000000000000840009c57d3c11c0000
+SELECT asEWKB(tgeogpoint 'SRID=7844;Point(1 2 3)@2001-01-01');
+-- \x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000
+SELECT asHexEWKB(tgeompoint 'SRID=3812;Point(1 2 3)@2001-01-01');
+-- 012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000
+</pre></li><li class="listitem"><a name="tspatialFromText"></a><a class="indexterm" name="id5293"></a><a class="indexterm" name="id5296"></a><p>Entrar a partir de la representación de texto conocido (Well-Known Text o WKT) o de la representación extendida de texto conocido (Extended Well-Known Text o EWKT) <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
+</p><p><code class="varname">tspatialFromText(text) → tspatial</code></p><p><code class="varname">tspatialFromEWKT(text) → tspatial</code></p><p>En las funciones anteriores, <code class="varname">tspatial</code> reemplaza cualquier tipo espacial, como <code class="varname">tgeompoint</code>, <code class="varname">tgeometry</code> o <code class="varname">tpose</code></p><pre class="programlisting">
+SELECT asEWKT(tgeompointFromText(text '[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]'));
+-- [POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
+SELECT asEWKT(tgeogpointFromText(text '[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]'));
+-- SRID=4326;[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
+SELECT asEWKT(tgeompointFromEWKT(text 'SRID=3812;[POINT(1 2)@2001-01-01,
+  POINT(3 4)@2001-01-02]'));
+-- SRID=3812;[POINT(1 2)@2001-01-01 00:00:00+01, POINT(3 4)@2001-01-02 00:00:00+01]
+SELECT asEWKT(tgeogpointFromEWKT(text 'SRID=7844;[POINT(1 2)@2001-01-01,
+	POINT(3 4)@2001-01-02]'));
+-- SRID=7844;[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
+</pre></li><li class="listitem"><a name="tspatialFromMFJSON"></a><a class="indexterm" name="id5325"></a><p>Entrar a partir de la representación JSON de características móviles (Moving Features JSON o MF-JSON) <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
+</p><p><code class="varname">spatialFromMFJSON(text) → spatial</code></p><p>En la funciones anterior, <code class="varname">tspatial</code> reemplaza cualquier tipo espacial, como <code class="varname">tgeompoint</code>, <code class="varname">tgeometry</code> o <code class="varname">tpose</code></p><pre class="programlisting">
+SELECT asEWKT(tgeompointFromMFJSON(text '{"type":"MovingGeomPoint","crs":{"type":"name",
+  "properties":{"name":"EPSG:4326"}},"coordinates":[[50.81,4.38]],
+  "datetimes":["2001-01-01T17:00:00.15+01"],"interpolation":"None"}'));
+-- SRID=4326;POINT(50.81 4.38)@2001-01-01 17:00:00.15+01
+SELECT asEWKT(tgeogpointFromMFJSON(text '{"type":"MovingGeogPoint","crs":{"type":"name",
+  "properties":{"name":"EPSG:4326"}},"coordinates":[[50.81,4.38]],
+  "datetimes":["2001-01-01T17:00:00.15+01"],"interpolation":"None"}'));
+-- SRID=4326;POINT(50.81 4.38)@2001-01-01 17:00:00.15+01
+</pre></li><li class="listitem"><a name="tspatialFromBinary"></a><a class="indexterm" name="id5352"></a><a class="indexterm" name="id5355"></a><a class="indexterm" name="id5358"></a><p>Entrar a partir de su representación binaria conocida (WKB), de la representación extendida binaria conocida (EWKB), o de la representación hexadecimal extendida binaria conocida (HexEWKB) <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
+</p><p><code class="varname">tspatialBinary(bytea) → tspatial</code></p><p><code class="varname">tspatialFromEWKB(bytea) → tspatial</code></p><p><code class="varname">tspatialFromHexEWKB(text) → tspatial</code></p><p>En las funciones anteriores, <code class="varname">tspatial</code> reemplaza cualquier tipo espacial, como <code class="varname">tgeompoint</code>, <code class="varname">tgeometry</code> o <code class="varname">tpose</code></p><pre class="programlisting">
+SELECT asEWKT(tgeompointFromBinary(
+  '\x012e0011000000000000f03f00000000000000400000000000000840009c57d3c11c0000'));
+-- POINT Z (1 2 3)@2001-01-01
+SELECT asEWKT(tgeogpointFromEWKB(
+  '\x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000'));
+-- SRID=7844;POINT Z (1 1 1)@2001-01-01
+SELECT asEWKT(tgeompointFromHexEWKB(
+  '012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000'));
+-- SRID=3812;POINT(1 2 3)@2001-01-01
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch07.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch07s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 7. Tipos temporales geométricos (Parte 1) </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Conversions</td></tr></table></div></body></html>

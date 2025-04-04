@@ -1,71 +1,102 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Conversión de tipos</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch05.html" title="Capítulo 5. Tipos temporales: Operaciones genéricas (Parte 1)"><link rel="prev" href="ch05s03.html" title="Constructores"><link rel="next" href="ch05s05.html" title="Accesores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Conversión de tipos</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch05s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 5. Tipos temporales: Operaciones genéricas (Parte 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch05s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_types_conversions"></a>Conversión de tipos</h2></div></div></div><p>Un valor temporal se puede convertir en un tipo compatible usando la notación <code class="varname">CAST(ttype1 AS ttype2)</code> o <code class="varname">ttype1::ttype2</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_bbox"></a><a class="indexterm" name="id3661"></a><p>Convertir un valor temporal a un cuadro delimitador</p><p><code class="varname">ttype::tstzspan</code></p><p><code class="varname">tnumber::{span,tbox}</code></p><p><code class="varname">tpoint::stbox</code></p><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tstzspan;
--- [2001-01-01, 2001-01-03]
-SELECT ttext '(A@2001-01-01, B@2001-01-03, C@2001-01-05]'::tstzspan;
--- (2001-01-01, 2001-01-05]
-SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::tstzspan;
--- [2001-01-01, 2001-01-03]
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Comparaciones</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch05.html" title="Chapter 5. Tipos temporales (Parte 2)"><link rel="prev" href="ch05s03.html" title="Operadores de cuadro delimitador"><link rel="next" href="ch05s05.html" title="Funciones de utilidad"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Comparaciones</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch05s03.html">Prev</a> </td><th width="60%" align="center">Chapter 5. Tipos temporales (Parte 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch05s05.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_comparisons"></a>Comparaciones</h2></div></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="id1343"></a>Comparaciones tradicionales</h3></div></div></div><p>Los operadores de comparación tradicionales (<code class="varname">=</code>, <code class="varname">&lt;</code>, etc.) requieren que los operandos izquierdo y derecho sean del mismo tipo base. Excepto la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan sobre tipos temporales. Estos operadores comparan los períodos delimitadores (ver la <a class="xref" href="ch02s10.html" title="Comparaciones">the section called “Comparaciones”</a>), después los cuadros delimitadores (ver la <a class="xref" href="ch03s10.html" title="Comparaciones">the section called “Comparaciones”</a>) y si son iguales, entonces la comparación depende del subtipo. Para los valores de instante, primero comparan las marcas de tiempo y, si son iguales, comparan los valores. Para los valores de secuencia, comparan los primeros N instantes, donde N es el mínimo del número de instantes que componen ambos valores. Finalmente, para los valores de conjuntos de secuencias, comparan los primeros N valores de secuencia, donde N es el mínimo del número de secuencias que componen ambos valores.</p><p>Los operadores de igualdad y no igualdad consideran la representación equivalente para diferentes subtipos como se muestra a continuación.
+				</p><pre class="programlisting">
+SELECT tint '1@2001-01-01' = tint '{1@2001-01-01}';
+-- true
+SELECT tfloat '1.5@2001-01-01' = tfloat '[1.5@2001-01-01]';
+-- true
+SELECT ttext 'AAA@2001-01-01' = ttext '{[AAA@2001-01-01]}';
+-- true
+SELECT tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02}' =
+  tgeompoint '{[Point(1 1)@2001-01-01], [Point(2 2)@2001-01-02]}';
+-- true
+SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02]' =
+  tgeogpoint '{[Point(1 1 1)@2001-01-01], [Point(2 2 2)@2001-01-02]}';
+-- true
+</pre><p>
+			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_eq"></a><a class="indexterm" name="id4590"></a><a class="indexterm" name="id4593"></a><a class="indexterm" name="id4596"></a><a class="indexterm" name="id4599"></a><a class="indexterm" name="id4602"></a><a class="indexterm" name="id4605"></a><p>Comparaciones tradicionales</p><p><code class="varname">ttype {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} ttype → boolean</code></p><pre class="programlisting">
+SELECT tint '[1@2001-01-01, 1@2001-01-04)' = tint '[2@2001-01-03, 2@2001-01-05)';
+-- false
+SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt;&gt; tint '[2@2001-01-03, 2@2001-01-05)';
+-- true
+SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt; tint '[2@2001-01-03, 2@2001-01-05)';
+-- true
+SELECT tint '[1@2001-01-01, 1@2001-01-04)' &gt; tint '[2@2001-01-03, 2@2001-01-05)';
+-- false
+SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt;= tint '[2@2001-01-03, 2@2001-01-05)';
+-- true
+SELECT tint '[1@2001-01-01, 1@2001-01-04)' &gt;= tint '[2@2001-01-03, 2@2001-01-05)';
+-- false
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="ever_always_comparison"></a>Comparaciones alguna vez y siempre</h3></div></div></div><p>Una posible generalización de los operadores de comparación tradicionales (<code class="varname">=</code>, <code class="varname">&lt;&gt;</code>, <code class="varname">&lt;</code>, <code class="varname">&lt;=</code>, etc.) a tipos temporales consiste en determinar si la comparación es alguna vez o siempre verdadera. En este caso, el resultado es un valor booleano. MobilityDB proporciona operadores para probar si la comparación de un valor temporal y un valor del tipo base or dos valores temporales es alguna vez o siempre verdadera. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <code class="varname">?</code> (alguna vez) y <code class="varname">%</code> (siempre). Algunos ejemplos son <code class="varname">?=</code>, <code class="varname">%&lt;&gt;</code> o <code class="varname">?&lt;=</code>. La igualdad y la no igualdad alguna vez o siempre están disponibles para todos los tipos temporales, mientras que las desigualdades alguna vez o siempre sólo están disponibles para los tipos temporales cuyo tipo base tiene un orden total definido, es decir, <code class="varname">tint</code>, <code class="varname">tfloat</code> o <code class="varname">ttext</code>. Las comparaciones alguna vez y siempre son operadores inversos: por ejemplo, <code class="varname">?=</code> es el inverso de <code class="varname">%&lt;&gt;</code> y <code class="varname">?&gt;</code> es el inverso de <code class="varname">%&lt;=</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_eveq"></a><a class="indexterm" name="id4633"></a><a class="indexterm" name="id4636"></a><a class="indexterm" name="id4639"></a><a class="indexterm" name="id4642"></a><a class="indexterm" name="id4645"></a><a class="indexterm" name="id4648"></a><a class="indexterm" name="id4651"></a><a class="indexterm" name="id4654"></a><a class="indexterm" name="id4657"></a><a class="indexterm" name="id4660"></a><a class="indexterm" name="id4663"></a><a class="indexterm" name="id4666"></a><p>Comparaciones alguna vez y siempre</p><p><code class="varname">{base,ttype} {?=, ?&lt;&gt;, ?&lt;, ?&gt;, ?&lt;=, ?&gt;=} {base,ttype} → boolean</code></p><p><code class="varname">{base,ttype} {%=, %&lt;&gt;, %&lt;, %&gt;, %&lt;=, %&gt;=} {base,ttype} → boolean</code></p><p>Los operadores no tienen en cuenta si los límites son inclusivos o no.</p><pre class="programlisting">
+SELECT tint '[1@2001-01-01, 3@2001-01-04]' ?= 2;
+-- false
+SELECT tgeometry '[Point(0 0)@2001-01-01, Linestring(0 0,1 1)@2001-01-04]' ?=
+  geometry 'Linestring(1 1,0 0)';
+-- true
+SELECT tfloat '[1@2001-01-01, 1@2001-01-04)' %= 1;
+-- true
+SELECT tgeometry '[Linestring(0 0,1 1)@2001-01-01, Linestring(1 1,0 0)@2001-01-04)' %=
+  geometry 'Linestring(0 0,1 1)';
+-- true
 </pre><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 2@2001-01-03]'::intspan;
--- [1, 3)
-SELECT tfloat '(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::floatspan;
--- (1, 3]
-SELECT tfloat 'Interp=Step;(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::floatspan;
--- [1, 3]
+SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' ?&lt;&gt; 2;
+-- true
+SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-04)' ?&lt;&gt;
+  geometry 'Point(1 1)';
+-- false
+SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' %&lt;&gt; 2;
+-- false
+SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-04)' %&lt;&gt;
+  geography 'Point(2 2)';
+-- true
 </pre><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tbox;
--- TBOXINT XT((1,2),[2001-01-01,2001-01-03])
-SELECT tfloat '(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::tbox;
--- TBOXFLOAT XT((1,3),[2001-01-01,2001-01-05])
-SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;
--- STBOX XT(((1,1),(3,3)),[2001-01-01, 2001-01-03])
-SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;
--- SRID=4326;GEODSTBOX XT(((1,1),(3,3)),[2001-01-01, 2001-01-03 00:00:00+01])
-SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]'::stbox;
--- SRID=4326;GEODSTBOX ZT(((1,1,1),(3,3,3)),[2001-01-01, 2001-01-03])
-</pre></li><li class="listitem"><a name="tbool_tint"></a><a class="indexterm" name="id3675"></a><p>Convertir entre un booleano temporal y un entero temporal</p><p><code class="varname">tbool::tint</code></p><pre class="programlisting">
-SELECT tbool '[true@2001-01-01, false@2001-01-03]'::tint;
--- [1@2001-01-01, 0@2001-01-03]
-</pre></li><li class="listitem"><a name="tint_tfloat"></a><a class="indexterm" name="id3683"></a><p>Convertir entre un entero temporal y un flotante temporal</p><p><code class="varname">tint::tfloat</code></p><p><code class="varname">tfloat::tint</code></p><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
--- Interp=Step;[1@2001-01-01, 2@2001-01-03]
-SELECT tint '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]'::tfloat;
--- Interp=Step;[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]
-SELECT tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
--- [1@2001-01-01, 2@2001-01-03]
-SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
--- ERROR:  Cannot cast temporal float with linear interpolation to temporal integer
-</pre></li><li class="listitem"><a name="tgeompoint_tgeogpoint"></a><a class="indexterm" name="id3693"></a><p>Convertir entre un punto geométrico temporal y un punto geográfico temporal</p><p><code class="varname">tgeompoint::tgeogpoint</code></p><p><code class="varname">tgeogpoint::tgeompoint</code></p><pre class="programlisting">
-SELECT asText((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tgeogpoint);
--- {[POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02)}
-SELECT asText((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
--- {POINT(0 0)@2001-01-01}
-</pre></li></ul></div><p>
-			Una forma común de almacenar puntos temporales en PostGIS es representarlos como geometrías de tipo <code class="varname">LINESTRING M</code> y utilizar la dimensión M para codificar marcas de tiempo como segundos desde 1970-01-01 00:00:00. Estas geometrías aumentadas con tiempo, llamadas <a class="ulink" href="https://postgis.net/docs/reference.html#Temporal" target="_top">trayectorias</a>, se pueden validar con la función <code class="varname">ST_IsValidTrajectory</code> para verificar quel el valor M está creciendo de cada vértice al siguiente. Las trayectorias se pueden manipular con las funciones <code class="varname">ST_ClosestPointOfApproach</code>, <code class="varname">ST_DistanceCPA</code> y <code class="varname">ST_CPAWithin</code>. Los valores de puntos temporales se pueden convertir a/desde trayectorias de PostGIS.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeompoint_geometry"></a><a class="indexterm" name="id3711"></a><p>Convertir entre un punto temporal y una trayectoria PostGIS</p><p><code class="varname">tpoint::geo</code></p><p><code class="varname">geo::tpoint</code></p><pre class="programlisting">
-SELECT ST_AsText((tgeompoint 'Point(0 0)@2001-01-01')::geometry);
--- POINT M (0 0 978307200)
-SELECT ST_AsText((tgeompoint '{Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
-  Point(1 1)@2001-01-03}')::geometry);
--- MULTIPOINT M (0 0 978307200,1 1 978393600,1 1 978480000)
-SELECT ST_AsText((tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)')::geometry);
--- LINESTRING M (0 0 978307200,1 1 978393600)
-SELECT ST_AsText((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
-  [Point(1 1)@2001-01-03, Point(1 1)@2001-01-04),
-  [Point(1 1)@2001-01-05, Point(0 0)@2001-01-06)}')::geometry);
-/* MULTILINESTRING M ((0 0 978307200,1 1 978393600),(1 1 978480000,1 1 978566400),
-  (1 1 978652800,0 0 978739200)) */
-SELECT ST_AsText((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
-  [Point(1 1)@2001-01-03],
-  [Point(1 1)@2001-01-05, Point(0 0)@2001-01-06)}')::geometry);
-/* GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
-   POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200)) */
+SELECT tint '[1@2001-01-01, 4@2001-01-04]' ?&lt; 2;
+-- true
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' %&lt; 2;
+-- false
 </pre><pre class="programlisting">
-SELECT asText(geometry 'LINESTRING M (0 0 978307200,0 1 978393600,
-  1 1 978480000)'::tgeompoint);
--- [POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02, POINT(1 1)@2001-01-03]
-SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
-  POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))'::tgeompoint);
-/* {[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02], [POINT(1 1)@2001-01-03],
-   [POINT(1 1)@2001-01-05, POINT(0 0)@2001-01-06]} */
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch05s03.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch05.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch05s05.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Constructores </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Accesores</td></tr></table></div></body></html>
+SELECT tint '[1@2001-01-03, 1@2001-01-05]' ?&gt; 0;
+-- true
+SELECT tfloat '[1@2001-01-03, 1@2001-01-05)' %&gt; 1;
+-- false
+</pre><pre class="programlisting">
+SELECT tint '[1@2001-01-01, 1@2001-01-05]' ?&lt;= 2;
+-- true
+SELECT tfloat '[1@2001-01-01, 1@2001-01-05)' %&lt;= 4;
+-- true
+</pre><pre class="programlisting">
+SELECT ttext '{[AAA@2001-01-01, AAA@2001-01-03), [BBB@2001-01-04, BBB@2001-01-05)}'
+   ?&gt; 'AAA'::text;
+-- true
+SELECT ttext '{[AAA@2001-01-01, AAA@2001-01-03), [BBB@2001-01-04, BBB@2001-01-05)}'
+   %&gt; 'AAA'::text;
+-- false
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="id1344"></a>Comparaciones temporales</h3></div></div></div><p>Otra posible generalización de los operadores de comparación tradicionales (<code class="varname">=</code>, <code class="varname">&lt;&gt;</code>, <code class="varname">&lt;</code>, <code class="varname">&lt;=</code>, etc.) a tipos temporales consiste en determinar si la comparación es verdadera o falsa en cada instante. En este caso, el resultado es un booleano temporal. Los operadores de comparación temporal se indican anteponiendo los operadores de comparación tradicionales con <code class="varname">#</code>. Algunos ejemplos son <code class="varname">#=</code> o <code class="varname">#&lt;=</code>. La igualdad y no igualdad temporal están disponibles para todos los tipos temporales, mientras que las desigualdades temporales sólo están disponibles para los tipos temporales cuyo tipo base tiene un orden total definido, es decir, <code class="varname">tint</code>, <code class="varname">tfloat</code> o <code class="varname">ttext</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_teq"></a><a class="indexterm" name="id4695"></a><a class="indexterm" name="id4698"></a><a class="indexterm" name="id4701"></a><a class="indexterm" name="id4704"></a><a class="indexterm" name="id4707"></a><a class="indexterm" name="id4710"></a><p>Comparaciones temporales</p><p><code class="varname">{base,ttype} {#=, #&lt;&gt;, #&lt;, #&gt;, #&lt;=, #&gt;=} {base,ttype} → boolean</code></p><pre class="programlisting">
+SELECT tfloat '[1@2001-01-01, 2@2001-01-04)' #= 3;
+-- {[f@2001-01-01, f@2001-01-04)}
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #= tfloat '[4@2001-01-02, 1@2001-01-05)';
+-- {[f@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04)}
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)' #=
+  geometry 'Point(1 1)';
+-- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
+SELECT tgeometry '[Point(0 0)@2001-01-01, Linestring(1 1,2 2)@2001-01-03]' #=
+  geometry 'Linestring(2 2,1 1)';
+-- {[f@2001-01-01, t@2001-01-03]}
+</pre><pre class="programlisting">
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #&lt;&gt; 2;
+-- {[t@2001-01-01, f@2001-01-02], (t@2001-01-02, 2001-01-04)}
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #&lt;&gt; tfloat '[2@2001-01-02, 2@2001-01-05)';
+-- {[f@2001-01-02], (t@2001-01-02, t@2001-01-04)}
+SELECT tgeometry '[Point(0 0)@2001-01-01, Linestring(1 1,2 2)@2001-01-03]' #&lt;&gt;
+  geometry 'Linestring(2 2,1 1)';
+-- {[t@2001-01-01, f@2001-01-03]}
+</pre><pre class="programlisting">
+SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #&lt; 2;
+-- {[t@2001-01-01, f@2001-01-02, f@2001-01-04)}
+SELECT 1 #&gt; tint '[1@2001-01-03, 1@2001-01-05)';
+-- [f@2001-01-03, f@2001-01-05)
+SELECT tfloat '[1@2001-01-01, 1@2001-01-05)' #&lt;= tfloat '{2@2001-01-03, 3@2001-01-04}';
+-- {t@2001-01-03, t@2001-01-04}
+SELECT 'AAA'::text #&gt; ttext '{[AAA@2001-01-01, AAA@2001-01-03),
+  [BBB@2001-01-04, BBB@2001-01-05)}';
+-- {[f@2001-01-01, f@2001-01-03), [t@2001-01-04, t@2001-01-05)}
+</pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch05s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch05.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch05s05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Operadores de cuadro delimitador </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Funciones de utilidad</td></tr></table></div></body></html>

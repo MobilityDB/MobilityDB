@@ -1,131 +1,28 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Comparisons</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch06.html" title="Chapter 6. Temporal Types: Generic Operations (Part 2)"><link rel="prev" href="ch06s02.html" title="Restrictions"><link rel="next" href="ch06s04.html" title="Bounding Box Operators"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Comparisons</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch06s02.html">Prev</a> </td><th width="60%" align="center">Chapter 6. Temporal Types: Generic Operations (Part 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch06s04.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_types_comparisons"></a>Comparisons</h2></div></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="id1343"></a>Traditional Comparisons</h3></div></div></div><p>The traditional comparison operators (<code class="varname">=</code>, <code class="varname">&lt;</code>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding periods (see <a class="xref" href="ch02s10.html" title="Comparisons">the section called “Comparisons”</a>), then the bounding boxes (see <a class="xref" href="ch03s10.html" title="Comparisons">the section called “Comparisons”</a>) and if those are equal, then the comparison depends on the subtype. For instant values, they compare first the timestamps and if those are equal, compare the values. For sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both values.</p><p>The equality and inequality operators consider the equivalent representation for different subtypes as shown next.
-				</p><pre class="programlisting">
-SELECT tint '1@2001-01-01' = tint '{1@2001-01-01}';
--- true
-SELECT tfloat '1.5@2001-01-01' = tfloat '[1.5@2001-01-01]';
--- true
-SELECT ttext 'AAA@2001-01-01' = ttext '{[AAA@2001-01-01]}';
--- true
-SELECT tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02}' =
-  tgeompoint '{[Point(1 1)@2001-01-01], [Point(2 2)@2001-01-02]}';
--- true
-SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02]' =
-  tgeogpoint '{[Point(1 1 1)@2001-01-01], [Point(2 2 2)@2001-01-02]}';
--- true
-</pre><p>
-			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_eq"></a><a class="indexterm" name="id4944"></a><p>Are the temporal values equal?</p><p><code class="varname">ttype = ttype → boolean</code></p><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 1@2001-01-04)' = tint '[2@2001-01-03, 2@2001-01-05)';
--- false
-</pre></li><li class="listitem"><a name="ttype_ne"></a><a class="indexterm" name="id4952"></a><p>Are the temporal values different?</p><p><code class="varname">ttype &lt;&gt; ttype → boolean</code></p><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt;&gt; tint '[2@2001-01-03, 2@2001-01-05)';
--- true
-</pre></li><li class="listitem"><a name="ttype_lt"></a><a class="indexterm" name="id4960"></a><p>Is the first temporal value less than the second one?</p><p><code class="varname">ttype &lt; ttype → boolean</code></p><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt; tint '[2@2001-01-03, 2@2001-01-05)';
--- true
-</pre></li><li class="listitem"><a name="ttype_gt"></a><a class="indexterm" name="id4968"></a><p>Is the first temporal value greater than the second one?</p><p><code class="varname">ttype &gt; ttype → boolean</code></p><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 1@2001-01-04)' &gt; tint '[2@2001-01-03, 2@2001-01-05)';
--- false
-</pre></li><li class="listitem"><a name="ttype_le"></a><a class="indexterm" name="id4976"></a><p>Is the first temporal value less than or equal to the second one?</p><p><code class="varname">ttype &lt;= ttype → boolean</code></p><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 1@2001-01-04)' &lt;= tint '[2@2001-01-03, 2@2001-01-05)';
--- true
-</pre></li><li class="listitem"><a name="ttype_ge"></a><a class="indexterm" name="id4984"></a><p>Is the first temporal value greater than or equal to the second one?</p><p><code class="varname">ttype &gt;= ttype → boolean</code></p><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 1@2001-01-04)' &gt;= tint '[2@2001-01-03, 2@2001-01-05)';
--- false
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="ever_always_comparison"></a>Ever and Always Comparisons</h3></div></div></div><p>
-				A possible generalization of the traditional comparison operators (<code class="varname">=</code>, <code class="varname">&lt;&gt;</code>, <code class="varname">&lt;</code>, <code class="varname">&lt;=</code>, etc.) to temporal types consists in determining whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type or two temporal values is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <code class="varname">?</code> (ever) and <code class="varname">%</code> (always). Some examples are <code class="varname">?=</code>, <code class="varname">%&lt;&gt;</code>, or <code class="varname">?&lt;=</code>. Ever and always equality and non-equality are available for all temporal types, while ever and always inequalities are only available for temporal types whose base type has a total order defined, that is, <code class="varname">tint</code>, <code class="varname">tfloat</code>, or <code class="varname">ttext</code>. The ever and always comparisons are inverse operators: for example, <code class="varname">?=</code> is the inverse of <code class="varname">%&lt;&gt;</code>, and <code class="varname">?&gt;</code> is the inverse of <code class="varname">%&lt;=</code>.
-			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_eveq"></a><a class="indexterm" name="id5012"></a><a class="indexterm" name="id5015"></a><p>Is the temporal value ever or always equal to the value?</p><p><code class="varname">{base,ttype} ?= {base,ttype} → boolean</code></p><p><code class="varname">{base,ttype} %= {base,ttype} → boolean</code></p><p>The ever function does not take into account whether the bounds are inclusive or not.</p><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 3@2001-01-04]' ?= 2;
--- false
-SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' ?= 2;
--- true
-SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-04]' ?=
-  geometry 'Point(2 2)';
--- true
-SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-04)' ?=
-  geometry 'Point(2 2)';
--- false
-</pre><pre class="programlisting">
-SELECT tfloat '[1@2001-01-01, 1@2001-01-04)' %= 1;
--- true
-SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' %= 2;
--- false
-SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-04)' %=
-  geometry 'Point(1 1)';
--- false
-</pre></li><li class="listitem"><a name="ttype_evne"></a><a class="indexterm" name="id5027"></a><a class="indexterm" name="id5030"></a><p>Is the temporal value ever or always different from the value?</p><p><code class="varname">{base,ttype} ?&lt;&gt; {base,ttype} → boolean</code></p><p><code class="varname">{base,ttype} %&lt;&gt; {base,ttype} → boolean</code></p><pre class="programlisting">
-SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' ?&lt;&gt; 2;
--- true
-SELECT tfloat '[2@2001-01-01, 2@2001-01-04)' ?&lt;&gt; 2;
--- false
-SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-04)' ?&lt;&gt;
-  geometry 'Point(1 1)';
--- false
-</pre><pre class="programlisting">
-SELECT tfloat '[1@2001-01-01, 3@2001-01-04)' %&lt;&gt; 2;
--- false
-SELECT tfloat '[2@2001-01-01, 2@2001-01-04)' %&lt;&gt; 3;
--- true
-SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-04)' %&lt;&gt;
-  geography 'Point(2 2)';
--- true
-</pre></li><li class="listitem"><a name="ttype_evlt"></a><a class="indexterm" name="id5041"></a><a class="indexterm" name="id5044"></a><p>Is the temporal value ever or always less than the value?</p><p><code class="varname">{base,torder} ?&lt; {base,torder} → boolean</code></p><p><code class="varname">{base,torder} %&lt; {base,torder} → boolean</code></p><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 4@2001-01-04]' ?&lt; 2;
--- true
-</pre><pre class="programlisting">
-SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' %&lt; 2;
--- false
-</pre></li><li class="listitem"><a name="ttype_evgt"></a><a class="indexterm" name="id5055"></a><a class="indexterm" name="id5058"></a><p>Is the temporal value ever or always greater than the value?</p><p><code class="varname">{base,torder} ?&gt; {base,torder} → boolean</code></p><p><code class="varname">{base,torder} %&gt; {base,torder} → boolean</code></p><pre class="programlisting">
-SELECT tint '[1@2001-01-03, 1@2001-01-05]' ?&gt; 0;
--- true
-</pre><pre class="programlisting">
-SELECT tfloat '[1@2001-01-03, 1@2001-01-05)' %&gt; 1;
--- false
-</pre></li><li class="listitem"><a name="ttype_evle"></a><a class="indexterm" name="id5069"></a><a class="indexterm" name="id5072"></a><p>Is the temporal value ever or always less than or equal to the value?</p><p><code class="varname">{base,torder} ?&lt;= {base,torder} → boolean</code></p><p><code class="varname">{base,torder} %&lt;= {base,torder} → boolean</code></p><pre class="programlisting">
-SELECT tint '[1@2001-01-01, 1@2001-01-05]' ?&lt;= 2;
--- true
-</pre><pre class="programlisting">
-SELECT tfloat '[1@2001-01-01, 1@2001-01-05)' %&lt;= 4;
--- true
-</pre></li><li class="listitem"><a name="ttype_evge"></a><a class="indexterm" name="id5083"></a><a class="indexterm" name="id5086"></a><p>Is the temporal value ever or always greater than or equal to the value?</p><p><code class="varname">{base,torder} ?&gt;= {base,torder} → boolean</code></p><p><code class="varname">{base,torder} %&gt;= {base,torder} → boolean</code></p><pre class="programlisting">
-SELECT ttext '{[AAA@2001-01-01, AAA@2001-01-03), [BBB@2001-01-04, BBB@2001-01-05)}'
-   ?&gt; 'AAA'::text;
--- true
-</pre><pre class="programlisting">
-SELECT ttext '{[AAA@2001-01-01, AAA@2001-01-03), [BBB@2001-01-04, BBB@2001-01-05)}'
-   %&gt; 'AAA'::text;
--- false
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="id1344"></a>Temporal Comparisons</h3></div></div></div><p>Another possible generalization of the traditional comparison operators (<code class="varname">=</code>, <code class="varname">&lt;&gt;</code>, <code class="varname">&lt;</code>, <code class="varname">&lt;=</code>,  etc.) to temporal types consists in determining whether the comparison is true or false at each instant. In this case, the result is a temporal Boolean. The temporal comparison operators are denoted by prefixing the traditional comparison operators with <code class="varname">#</code>. Some examples are <code class="varname">#=</code> or <code class="varname">#&lt;=</code>. Temporal equality and non-equality are available for all temporal types, while temporal inequalities are only available for temporal types whose base type has a total order defined, that is, <code class="varname">tint</code>, <code class="varname">tfloat</code>, or <code class="varname">ttext</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_teq"></a><a class="indexterm" name="id5110"></a><p>Temporal equal</p><p><code class="varname">{base,ttype} #= {base,ttype} → tbool</code></p><pre class="programlisting">
-SELECT tfloat '[1@2001-01-01, 2@2001-01-04)' #= 3;
--- {[f@2001-01-01, f@2001-01-04)}
-SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #= tfloat '[1@2001-01-01, 1@2001-01-04)';
--- {[t@2001-01-01], (f@2001-01-01, f@2001-01-04)}
-SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #= tfloat '[4@2001-01-02, 1@2001-01-05)';
--- {[f@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04)}
-SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)' #=
-  geometry 'Point(1 1)';
--- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
-SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)' #=
-  tgeompoint '{[Point(0 2)@2001-01-01], (Point(0 0)@2001-01-01,
-  Point(2 2)@2001-01-03)}';
--- {[f@2001-01-01], (t@2001-01-01, t@2001-01-03)}
-</pre></li><li class="listitem"><a name="ttype_tne"></a><a class="indexterm" name="id5118"></a><p>Temporal different</p><p><code class="varname">{base,ttype} #&lt;&gt; {base,ttype} → tbool</code></p><pre class="programlisting">
-SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #&lt;&gt; 2;
--- {[t@2001-01-01, f@2001-01-02], (t@2001-01-02, 2001-01-04)}
-SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #&lt;&gt; tfloat '[2@2001-01-02, 2@2001-01-05)';
--- {[f@2001-01-02], (t@2001-01-02, t@2001-01-04)}
-</pre></li><li class="listitem"><a name="ttype_tlt"></a><a class="indexterm" name="id5126"></a><p>Temporal less than</p><p><code class="varname">{base,torder} #&lt; {base,torder} → tbool</code></p><pre class="programlisting">
-SELECT tfloat '[1@2001-01-01, 4@2001-01-04)' #&lt; 2;
--- {[t@2001-01-01, f@2001-01-02, f@2001-01-04)}
-SELECT tfloat '[2@2001-01-01, 2@2001-01-05)' #&lt; tfloat '[1@2001-01-03, 3@2001-01-05)';
--- {[f@2001-01-03, f@2001-01-04], (t@2001-01-04, t@2001-01-05)}
-</pre></li><li class="listitem"><a name="ttype_tgt"></a><a class="indexterm" name="id5134"></a><p>Temporal greater than</p><p><code class="varname">{base,torder} #&gt; {base,torder} → tbool</code></p><pre class="programlisting">
-SELECT 1 #&gt; tint '[1@2001-01-03, 1@2001-01-05)';
--- [f@2001-01-03, f@2001-01-05)
-</pre></li><li class="listitem"><a name="ttype_tle"></a><a class="indexterm" name="id5142"></a><p>Temporal less than or equal to</p><p><code class="varname">{base,torder} #&lt;= {base,torder} → tbool</code></p><pre class="programlisting">
-SELECT tfloat '[1@2001-01-01, 1@2001-01-05)' #&lt;= tfloat '{2@2001-01-03, 3@2001-01-04}';
--- {t@2001-01-03, t@2001-01-04}
-</pre></li><li class="listitem"><a name="ttype_tge"></a><a class="indexterm" name="id5150"></a><p>Temporal greater than or equal to</p><p><code class="varname">{base,torder} #&gt;= {base,torder} → tbool</code></p><pre class="programlisting">
-SELECT 'AAA'::text #&gt; ttext '{[AAA@2001-01-01, AAA@2001-01-03),
-  [BBB@2001-01-04, BBB@2001-01-05)}';
--- {[f@2001-01-01, f@2001-01-03), [t@2001-01-04, t@2001-01-05)}
-</pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch06s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch06.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch06s04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Restrictions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Bounding Box Operators</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Accessors</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch06.html" title="Chapter 6. Temporal Alphanumeric Types"><link rel="prev" href="ch06s02.html" title="Conversions"><link rel="next" href="ch06s04.html" title="Transformations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Accessors</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch06s02.html">Prev</a> </td><th width="60%" align="center">Chapter 6. Temporal Alphanumeric Types</th><td width="20%" align="right"> <a accesskey="n" href="ch06s04.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="talpha_accessors"></a>Accessors</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="talpha_valueSpan"></a><a class="indexterm" name="id4825"></a><p>Return the value span ignoring the potential gaps</p><p><code class="varname">valueSpan(tnumber) → numspan</code></p><pre class="programlisting">
+SELECT valueSpan(tint '{[1@2001-01-01, 1@2001-01-03), [4@2001-01-03, 6@2001-01-05]}');
+-- [1,7)
+SELECT valueSpan(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
+-- [1,3])
+</pre></li><li class="listitem"><a name="talpha_valueSet"></a><a class="indexterm" name="id4833"></a><p>Return the values of the temporal number or geometry as a set</p><p><code class="varname">valueSet(tnumber, tgeo) → {numset,geoset}</code></p><pre class="programlisting">
+SELECT valueSet(tint '[1@2001-01-01, 2@2001-01-03]');
+-- {1, 2}
+SELECT valueSet(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 4@2001-01-05)}');
+-- {1, 2, 3, 4}
+SELECT asText(valueSet(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
+  [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04)}'));
+-- {"POINT(0 0)", "POINT(1 1)", "POINT(0 1)"}
+SELECT asText(valueSet(tgeography 
+  '{[Point(0 0)@2001-01-01, Linestring(0 0,1 1)@2001-01-02],
+    [Point(1 1)@2001-01-03, Linestring(0 0,1 1)@2001-01-04]}'));
+-- {"POINT(0 0)", "LINESTRING(0 0,1 1)", "POINT(1 1)"}
+</pre></li><li class="listitem"><a name="talpha_minValue"></a><a class="indexterm" name="id4841"></a><a class="indexterm" name="id4844"></a><p>Return the minimum or maximum value</p><p><code class="varname">minValue(torder) → base</code></p><p><code class="varname">maxValue(torder) → base</code></p><p>The functions do not take into account whether the bounds are inclusive or not.</p><pre class="programlisting">
+SELECT minValue(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
+-- 1
+SELECT maxValue(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
+-- 5
+</pre></li><li class="listitem"><a name="talpha_minInstant"></a><a class="indexterm" name="id4855"></a><a class="indexterm" name="id4858"></a><p>Return the instant with the minimum or maximum value</p><p><code class="varname">minInstant(torder) → base</code></p><p><code class="varname">maxInstant(torder) → base</code></p><p>The function does not take into account whether the bounds are inclusive or not. If several instants have the minimum value, the first one is returned.</p><pre class="programlisting">
+SELECT minInstant(tfloat '{1@2001-01-01, 2@2001-01-03, 3@2001-01-05}');
+-- 1@2001-01-01
+SELECT maxInstant(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 5@2001-01-05)}');
+-- 5@2001-01-05
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch06s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch06.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch06s04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Conversions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Transformations</td></tr></table></div></body></html>

@@ -1,49 +1,184 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Capítulo 5. Tipos temporales: Operaciones genéricas (Parte 1)</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="prev" href="ch04s03.html" title="Validez de los tipos temporales"><link rel="next" href="ch05s02.html" title="Entrada y salida"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Capítulo 5. Tipos temporales: Operaciones genéricas (Parte 1)</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s03.html">Anterior</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch05s02.html">Siguiente</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="temporal_types_ops_p1"></a>Capítulo 5. Tipos temporales: Operaciones genéricas (Parte 1)</h1></div></div></div><div class="toc"><p><b>Tabla de contenidos</b></p><dl class="toc"><dt><span class="sect1"><a href="ch05.html#temporal_types_operations">Introducción</a></span></dt><dt><span class="sect1"><a href="ch05s02.html">Entrada y salida</a></span></dt><dt><span class="sect1"><a href="ch05s03.html">Constructores</a></span></dt><dt><span class="sect1"><a href="ch05s04.html">Conversión de tipos</a></span></dt><dt><span class="sect1"><a href="ch05s05.html">Accesores</a></span></dt><dt><span class="sect1"><a href="ch05s06.html">Transformaciones</a></span></dt></dl></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="temporal_types_operations"></a>Introducción</h2></div></div></div><p>A continuación presentamos las funciones y operadores para tipos temporales. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo del resultado puede depender del tipo de los argumentos. Para expresar esto, usamos la siguiente notación:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="varname">time</code> representa cualquier tipo de tiempo, es decir, <code class="varname">timestamptz</code>, <code class="varname">tstzspan</code>, <code class="varname">tstzset</code> o <code class="varname">tstzspanset</code>,</p></li><li class="listitem"><p><code class="varname">ttype</code> representa cualquier tipo temporal,</p></li><li class="listitem"><p><code class="varname">tdisc</code> representa cualquier tipo temporal con tipo de base discreto, es decir, <code class="varname">tbool</code>, <code class="varname">tint</code> o <code class="varname">ttext</code>,</p></li><li class="listitem"><p><code class="varname">tcont</code> representa cualquier tipo temporal con tipo de base continuo, es decir, <code class="varname">tfloat</code>, <code class="varname">tgeompoint</code> o <code class="varname">tgeogpoint</code>,</p></li><li class="listitem"><p><code class="varname">torder</code> representa cualquier tipo temporal cuyo tipo de base tiene definido un orden total, es decir, <code class="varname">tint</code>, <code class="varname">tfloat</code> o <code class="varname">ttext</code>,</p></li><li class="listitem"><p><code class="varname">talpha</code> representa cualquier tipo temporal alfanumérico, por ejemplo, <code class="varname">tint</code> or <code class="varname">ttext</code>,</p></li><li class="listitem"><p><code class="varname">tnumber</code> representa cualquier tipo de número temporal, es decir, <code class="varname">tint</code> o <code class="varname">tfloat</code>,</p></li><li class="listitem"><p><code class="varname">tpoint</code> representa un tipo de punto temporal, es decir, <code class="varname">tgeompoint</code> o <code class="varname">tgeogpoint</code>,</p></li><li class="listitem"><p><code class="varname">ttypeInst</code> representa cualquier tipo temporal con subtipo instante,</p></li><li class="listitem"><p><code class="varname">ttypeDiscSeq</code> representa cualquier tipo temporal con subtipo secuencia e interpolación discreta,</p></li><li class="listitem"><p><code class="varname">ttypeContSeq</code> representa cualquier tipo temporal con subtipo secuencia e interpolación contínua,</p></li><li class="listitem"><p><code class="varname">ttypeSeqSet</code> representa cualquier tipo temporal con subtipo conjunto de secuencias</p></li><li class="listitem"><p><code class="varname">base</code> representa cualquier tipo de base de un tipo temporal, es decir, <code class="varname">boolean</code>, <code class="varname">integer</code>, <code class="varname">float</code>, <code class="varname">text</code>, <code class="varname">geometry</code> o <code class="varname">geography</code>,</p></li><li class="listitem"><p><code class="varname">values</code> representa cualquier conjunto de valores de un tipo base de un tipo temporal, por ejemplo, <code class="varname">integer</code>, <code class="varname">intset</code>, <code class="varname">intspan </code> y <code class="varname">intspanset</code> para el tipo base <code class="varname">integer</code></p></li><li class="listitem"><p><code class="varname">number</code> representa cualquier tipo de base numérico, es decir, <code class="varname">integer</code> o <code class="varname">float</code>,</p></li><li class="listitem"><p><code class="varname">numspan</code> representa cualquier tipo de rango numérico, es decir, <code class="varname">intspan</code> o <code class="varname">floatspan</code>,</p></li><li class="listitem"><p><code class="varname">geo</code> representa los tipos <code class="varname">geometry</code> o <code class="varname">geography</code>,</p></li><li class="listitem"><p><code class="varname">geompoint</code> representa el tipo <code class="varname">geometry</code> restringido a un punto.</p></li><li class="listitem"><p><code class="varname">point</code> representa los tipos  <code class="varname">geometry</code> o <code class="varname">geography</code> restringidos a un punto.</p></li><li class="listitem"><p><code class="varname">lines</code> representa los tipos  <code class="varname">geometry</code> o <code class="varname">geography</code> restringidos a una (multi)línea.</p></li><li class="listitem"><p><code class="varname">type[]</code> representa una matriz de <code class="varname">type</code>.</p></li><li class="listitem"><p><code class="varname">&lt;type&gt;</code> en el nombre de una función representa las funciones obtenidas al remplazar <code class="varname">&lt;type&gt;</code> por un <code class="varname">type</code> específico. Por ejemplo, <code class="varname">tintDiscSeq</code> o <code class="varname">tfloatDiscSeq</code> son representadas por <code class="varname">ttypeDiscSeq</code>.</p></li></ul></div><p>
-			Una forma común de generalizar las operaciones tradicionales a los tipos temporales es aplicar la operación en <span class="emphasis"><em>cada instante</em></span>, lo que da un valor temporal como resultado. En ese caso, la operación sólo se define en la intersección de las extensiones temporales de los operandos; si las extensiones temporales son disjuntas, el resultado es nulo. Por ejemplo, los operadores de comparación temporal, como <code class="varname">#&lt;</code>, determinan si los valores tomados por sus operandos en cada instante satisfacen la condición y devuelven un booleano temporal. A continuación se dan ejemplos de las diversas generalizaciones de los operadores.
-		</p><pre class="programlisting">
--- Comparación temporal
-SELECT tfloat '[2@2001-01-01, 2@2001-01-03)' #&lt; tfloat '[1@2001-01-01, 3@2001-01-03)';
--- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
-SELECT tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt; tfloat '[3@2001-01-03, 1@2001-01-05)';
--- NULL
-
--- Adición temporal
-SELECT tint '[1@2001-01-01, 1@2001-01-03)' + tint '[2@2001-01-02, 2@2001-01-05)';
--- [3@2001-01-02, 3@2001-01-03)
-
--- Intersección temporal
-SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
-geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))');
--- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
-
--- Distancia temporal
-SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:00)' &lt;-&gt;
-tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
--- [0.5@2001-01-02 08:05:00+00, 0.745184033794557@2001-01-03 08:10:00+00)
-</pre><p>
-			Otro requisito común es determinar si los operandos satisfacen <span class="emphasis"><em>alguna vez</em></span> o <span class="emphasis"><em>siempre</em></span> una condición con respecto a una operación. Estos se pueden obtener aplicando los operadores de comparación alguna vez o siempre. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <code class="varname">?</code> (alguna vez) y <code class="varname">%</code> (siempre). A continuación se dan ejemplos de operadores de comparación alguna vez y siempre.
-		</p><pre class="programlisting">
--- ¿Se cruzan los operandos alguna vez?
-SELECT eIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
-  geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') ?= true;
--- true
-
--- ¿Se cruzan los operandos siempre?
-SELECT aIntersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
-  geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
--- true
-
--- ¿Es el operando izquierdo alguna vez menor que el derecho?
-SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' ?&lt;
-  tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
--- true
-
--- ¿Es el operando izquierdo siempre menor que el derecho?
-SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' %&lt;
-  tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
--- true
-</pre><p>
-			Por ejemplo, la función <code class="varname">eIntersects</code> determina si hay un instante en el que los dos argumentos se cruzan espacialmente.
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Chapter 5. Tipos temporales (Parte 2)</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="prev" href="ch04s10.html" title="Transformaciones"><link rel="next" href="ch05s02.html" title="Restricciones"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 5. Tipos temporales (Parte 2)</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s10.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch05s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="ttype_p2"></a>Chapter 5. Tipos temporales (Parte 2)</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="sect1"><a href="ch05.html#ttype_modifications">Modificaciones</a></span></dt><dt><span class="sect1"><a href="ch05s02.html">Restricciones</a></span></dt><dt><span class="sect1"><a href="ch05s03.html">Operadores de cuadro delimitador</a></span></dt><dt><span class="sect1"><a href="ch05s04.html">Comparaciones</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch05s04.html#id1343">Comparaciones tradicionales</a></span></dt><dt><span class="sect2"><a href="ch05s04.html#ever_always_comparison">Comparaciones alguna vez y siempre</a></span></dt><dt><span class="sect2"><a href="ch05s04.html#id1344">Comparaciones temporales</a></span></dt></dl></dd><dt><span class="sect1"><a href="ch05s05.html">Funciones de utilidad</a></span></dt></dl></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_modifications"></a>Modificaciones</h2></div></div></div><p>
+			A continuación, explicamos la semántica de las operaciones de modificación (es decir, <code class="varname">insert</code>, <code class="varname">update</code> y <code class="varname">delete</code>) para tipos temporales. Estas operaciones tienen una semántica similar a las operaciones correspondientes para tablas temporales de tiempo de aplicación (<span class="emphasis"><em>application-time temporal tables</em></span>) introducidas en el estándar <a class="ulink" href="https://en.wikipedia.org/wiki/SQL:2011" target="_top">SQL:2011</a>. La principal diferencia es que SQL usa marcas de tiempo de tuplas (donde las marcas de tiempo se adjuntan a las tuplas), mientras que los valores temporales en MobilityDB usan marcas de tiempo de atributos (donde las marcas de tiempo se adjuntan a los valores de los atributos). Please refer to this <a class="ulink" href="https://www.researchgate.net/publication/387302901_Reconciling_tuple_and_attribute_timestamping_for_temporal_data_warehouses" target="_top">article</a> for a detailed discussion about tuple versus attribute timestamping in temporal databases.
 		</p><p>
-			A continuación describimos las funciones y operadores para tipos temporales. Para mayor concisión, en los ejemplos usamos principalmente secuencias compuestas por dos instantes.
-		</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s03.html">Anterior</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch05s02.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Validez de los tipos temporales </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Entrada y salida</td></tr></table></div></body></html>
+			La operación <code class="varname">insert</code> agrega a un valor temporal los instantes de otro sin modificar los instantes existentes, como se ilustra en <a class="xref" href="ch05.html#insert_fig" title="Figure 5.1. Operación de inserción para valores temporales.">Figure 5.1, “Operación de inserción para valores temporales.”</a>.
+		</p><div class="figure-float"><div class="figure"><a name="insert_fig"></a><p class="title"><b>Figure 5.1. Operación de inserción para valores temporales.</b></p><div class="figure-contents"><div class="mediaobject"><object type="image/svg+xml" data="../images/insert.svg"></object></div></div></div><br class="figure-break"></div><p>
+			Como se muestra en la figura, los valores temporales solo pueden intersectarse en su límite y, en ese caso, deben tener el mismo valor de base en sus marcas de tiempo comunes; de lo contrario, se genera un error. El resultado de la operación es la unión de los instantes para ambos valores temporales, como se muestra en el primer resultado de la figura. Esto es equivalente a una operación <code class="varname">merge</code> que se explica a continuación. Alternativamente, como se muestra en el segundo resultado de la figura, los fragmentos insertados que son disjuntos con el valor original se conectan al último instante anterior y al primer instante posterior al fragmento. Se utiliza un parámetro booleano <code class="varname">connect</code> para elegir entre los dos resultados, y el parámetro es verdadero por defecto. Nótese que esto solo se aplica a valores temporales continuos.
+		</p><p>
+			La operación <code class="varname">update</code> reemplaza los instantes en un primer valor temporal con los de un segundo valor como se ilustra en la <a class="xref" href="ch05.html#update_delete_fig" title="Figure 5.2. Operaciones de actualización y supresión para valores temporales.">Figure 5.2, “Operaciones de actualización y supresión para valores temporales.”</a>.
+		</p><div class="figure-float"><div class="figure"><a name="update_delete_fig"></a><p class="title"><b>Figure 5.2. Operaciones de actualización y supresión para valores temporales.</b></p><div class="figure-contents"><div class="mediaobject"><object type="image/svg+xml" data="../images/update_delete.svg"></object></div></div></div><br class="figure-break"></div><p>
+			Como se muestra en la figura, el valor resultante contiene los instantes del segundo valor, independientemente de los instantes anteriores que tenía en el valor temporal original. Como en el caso de una operación <code class="varname">insert</code>, un parámetro booleano adicional determina si los nuevos fragmentos desconectados están conectados en el valor resultante, como se muestra en los dos posibles resultados de la figura. Cuando los dos valores temporales son disjuntos o solo se intersectan en su límite, esto corresponde a una operación <code class="varname">insert</code> como se explicó anteriormente. En este caso, la operación <code class="varname">update</code> se comporta como una operación <code class="varname">upsert</code> en SQL.
+		</p><p>
+			La operación <code class="varname">deleteTime</code> elimina los instantes de un valor temporal que intersectan un valor de tiempo. Esta operación se puede utilizar en dos situaciones diferentes, ilustradas en la <a class="xref" href="ch05.html#update_delete_fig" title="Figure 5.2. Operaciones de actualización y supresión para valores temporales.">Figure 5.2, “Operaciones de actualización y supresión para valores temporales.”</a>.
+		</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>En el primer caso, que se muestra como el resultado superior de la figura, el significado de la operación es introducir brechas de tiempo después de eliminar los instantes del valor temporal que intersectan el valor de tiempo. Esto es equivalente a las operaciones de restricción (<a class="xref" href="ch05s02.html" title="Restricciones">the section called “Restricciones”</a>), que restringen un valor temporal al complemento del valor de tiempo.</p></li><li class="listitem"><p>El segundo caso, que se muestra como el resultado inferior de la figura, se usa para eliminar valores erróneos (por ejemplo, detectados como valores atípicos) sin introducir una brecha de tiempo, o para eliminar una brecha de tiempo. En este caso, los valores en el fragmento del valor temporal se eliminan y el último instante anterior y el primer instante posterior a une fragmento suprimido se conectan. Este comportamiento se especifica estableciendo un parámetro booleano adicional de la operación. Nótese que esto solo se aplica a valores temporales continuos.</p></li></ol></div><p>
+			La <a class="xref" href="ch05.html#modif_sql_fig" title="Figure 5.3. Operaciones de modificación para tablas temporales en SQL.">Figure 5.3, “Operaciones de modificación para tablas temporales en SQL.”</a> muestra las operaciones de modificación equivalentes para tablas temporales en el estándar SQL. Intuitivamente, estas figuras se obtienen girando 90 grados en el sentido de las agujas del reloj las figuras correspondientes para los valores temporales (<a class="xref" href="ch05.html#insert_fig" title="Figure 5.1. Operación de inserción para valores temporales.">Figure 5.1, “Operación de inserción para valores temporales.”</a> y <a class="xref" href="ch05.html#update_delete_fig" title="Figure 5.2. Operaciones de actualización y supresión para valores temporales.">Figure 5.2, “Operaciones de actualización y supresión para valores temporales.”</a>). Esto se debe al hecho de que en SQL, las tuplas consecutivas ordenadas por tiempo generalmente se conectan a través de las funciones de ventana <code class="varname">LEAD</code> y <code class="varname">LAG</code>.
+		</p><div class="figure-float"><div class="figure"><a name="modif_sql_fig"></a><p class="title"><b>Figure 5.3. Operaciones de modificación para tablas temporales en SQL.</b></p><div class="figure-contents"><div class="mediaobject"><object type="image/svg+xml" data="../images/modif_sql.svg"></object></div></div></div><br class="figure-break"></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><a name="insert"></a>Insertar un valor temporal en otro</p><p><code class="varname">insert(ttype,ttype,connect=true) → ttype</code></p><pre class="programlisting">
+SELECT insert(tint '{1@2001-01-01, 3@2001-01-03, 5@2001-01-05}',
+  tint '{3@2001-01-03, 7@2001-01-07}');
+-- {1@2001-01-01, 3@2001-01-03, 5@2001-01-05, 7@2001-01-07}
+SELECT insert(tint '{1@2001-01-01, 3@2001-01-03, 5@2001-01-05}',
+  tint '{5@2001-01-03, 7@2001-01-07}');
+-- ERROR: The temporal values have different value at their overlapping instant 2001-01-03
+SELECT insert(tfloat '[1@2001-01-01, 2@2001-01-02]',
+  tfloat '[1@2001-01-03, 1@2001-01-05]');
+-- [1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 1@2001-01-05]
+SELECT insert(tfloat '[1@2001-01-01, 2@2001-01-02]',
+  tfloat '[1@2001-01-03, 1@2001-01-05]', false);
+-- {[1@2001-01-01, 2@2001-01-02], [1@2001-01-03, 1@2001-01-05]}
+SELECT asText(insert(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02],
+  [Point(3 3 3)@2001-01-04],[Point(1 1 1)@2001-01-05]}',
+  tgeompoint 'Point(1 1 1)@2001-01-03'));
+/* {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02, POINT Z (1 1 1)@2001-01-03,
+ POINT Z (3 3 3)@2001-01-04], [POINT Z (1 1 1)@2001-01-05]} */
+</pre></li><li class="listitem"><p><a name="update"></a>Actualizar un valor temporal con otro</p><p><code class="varname">update(ttype,ttype,connect=true) → ttype</code></p><pre class="programlisting">
+SELECT update(tint '{1@2001-01-01, 3@2001-01-03, 5@2001-01-05}',
+  tint '{5@2001-01-03, 7@2001-01-07}');
+-- {1@2001-01-01, 5@2001-01-03, 5@2001-01-05, 7@2001-01-07}
+SELECT update(tfloat '[1@2001-01-01, 1@2001-01-05]',
+  tfloat '[1@2001-01-02, 3@2001-01-03, 1@2001-01-04]');
+-- {[1@2001-01-01, 1@2001-01-02, 3@2001-01-03, 1@2001-01-04, 1@2001-01-05]}
+SELECT asText(update(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03,
+  Point(1 1 1)@2001-01-05], [Point(1 1 1)@2001-01-07]}',
+  tgeompoint '[Point(2 2 2)@2001-01-02, Point(2 2 2)@2001-01-04]'));
+/*  {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02, POINT Z (2 2 2)@2001-01-04,
+  POINT Z (1 1 1)@2001-01-05], [POINT Z (1 1 1)@2001-01-07]} */
+SELECT asText(update(
+  tgeometry '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03, Point(1 1)@2001-01-05]',
+  tgeometry '[Linestring(2 2,3 3)@2001-01-02, Linestring(3 3,2 2)@2001-01-04]'));
+/* [POINT(1 1)@2001-01-01, LINESTRING(2 2,3 3)@2001-01-02, 
+    LINESTRING(3 3,2 2)@2001-01-04], (POINT(3 3)@2001-01-04, POINT(1 1)@2001-01-05] */
+</pre></li><li class="listitem"><p><a name="deleteTime"></a>Eliminar de un valor temporal un valor de tiempo</p><p><code class="varname">deleteTime(ttype,time,connect=true) → ttype</code></p><pre class="programlisting">
+SELECT deleteTime(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-02', false);
+-- {[1@2001-01-01, 1@2001-01-02), (1@2001-01-02, 1@2001-01-03]}
+SELECT deleteTime(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-02');
+-- [1@2001-01-01, 1@2001-01-03]
+SELECT deleteTime(tfloat '[1@2001-01-01, 4@2001-01-02, 2@2001-01-04, 5@2001-01-05]',
+  tstzspan '[2001-01-02, 2001-01-04]');
+-- [1@2001-01-01, 5@2001-01-05]
+SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2001-01-01,
+  Point(2 2 2)@2001-01-02], [Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}',
+  tstzspan '[2001-01-02, 2001-01-04]'));
+/* {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02, POINT Z (3 3 3)@2001-01-04,
+  POINT Z (3 3 3)@2001-01-05]} */
+</pre></li><li class="listitem"><a name="appendInstant"></a><a class="indexterm" name="id4426"></a><p>Anexar un instante temporal a un valor temporal</p><p><code class="varname">appendInstant(ttype,ttypeInst,interp=NULL) → ttype</code></p><p><code class="varname">appendInstant(ttypeInst,interp=NULL,maxdist=NULL,maxt=NULL) → ttypeSeq</code></p><p>La primera versión de la función devuelve el resultado de agregar el segundo argumento al primero. Si cualquiera de las entradas es NULL, se devuelve NULL.</p><p>La segunda versión de la función anterior es una función de <span class="emphasis"><em>agregación</em></span> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <code class="varname">SUM()</code> y <code class="varname">AVG()</code> y, como la mayoría de los agregados, también ignora los valores NULL. Dos argumentos opcionales establecen una distancia máxima y un intervalo de tiempo máximo de modo que se introduce una brecha de tiempo cada vez que dos instantes consecutivos tienen una distancia o un intervalo de tiempo mayor que estos valores. Para puntos temporales, la distancia se especifica en unidades del sistema de coordenadas. Si uno de estos argumentos no se dan, no se tiene en cuenta para determinar las brechas.</p><pre class="programlisting">
+SELECT appendInstant(tint '1@2001-01-01', tint '1@2001-01-02');
+-- [1@2001-01-01, 1@2001-01-02]
+SELECT appendInstant(tint '1@2001-01-01', tint '1@2001-01-02', 'discrete');
+-- {1@2001-01-01, 1@2001-01-02}
+SELECT appendInstant(tint '[1@2001-01-01]', tint '1@2001-01-02');
+-- [1@2001-01-01, 1@2001-01-02]
+SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2001-01-01,
+  Point(2 2 2)@2001-01-02], [Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}',
+  tgeompoint 'Point(1 1 1)@2001-01-06'));
+/* {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02],
+   [POINT Z (3 3 3)@2001-01-04, POINT Z (3 3 3)@2001-01-05,
+   POINT Z (1 1 1)@2001-01-06]} */
+SELECT asText(appendInstant(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], 
+  [Linestring(2 2,3 3)@2001-01-04, Point(3 3)@2001-01-05]}',
+  tgeometry 'Linestring(1 1,2 2)@2001-01-06'));
+/* {[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02], [LINESTRING(2 2,3 3)@2001-01-04, 
+     POINT(3 3)@2001-01-05, LINESTRING(1 1,2 2)@2001-01-06]} */
+</pre><pre class="programlisting">
+WITH temp(inst) AS (
+  SELECT tfloat '1@2001-01-01' UNION SELECT tfloat '2@2001-01-02' UNION
+  SELECT tfloat '3@2001-01-03' UNION SELECT tfloat '4@2001-01-04' UNION
+  SELECT tfloat '5@2001-01-05' )
+SELECT appendInstant(inst ORDER BY inst) FROM temp;
+-- [1@2001-01-01, 5@2001-01-05]
+WITH temp(inst) AS (
+  SELECT tfloat '1@2001-01-01' UNION SELECT tfloat '2@2001-01-02' UNION
+  SELECT tfloat '3@2001-01-03' UNION SELECT tfloat '4@2001-01-04' UNION
+  SELECT tfloat '5@2001-01-05' )
+SELECT appendInstant(inst, 'discrete' ORDER BY inst) FROM temp;
+-- {1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 4@2001-01-04, 5@2001-01-05}
+WITH temp(inst) AS (
+  SELECT tgeogpoint 'Point(1 1)@2001-01-01' UNION
+  SELECT tgeogpoint 'Point(2 2)@2001-01-02' UNION
+  SELECT tgeogpoint 'Point(3 3)@2001-01-03' UNION
+  SELECT tgeogpoint 'Point(4 4)@2001-01-04' UNION
+  SELECT tgeogpoint 'Point(5 5)@2001-01-05' )
+SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
+/* [POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02, POINT(3 3)@2001-01-03,
+   POINT(4 4)@2001-01-04, POINT(5 5)@2001-01-05] */
+</pre><p>Observe que en la primera consulta con <code class="varname">tfloat</code>, las observaciones intermedias fueron eliminadas por el proceso de normalización ya que eran redundantes debido a la interpolación lineal. Este no es el caso de la segunda consulta con interpolación discreta o la tercera consulta con <code class="varname">tgeogpoint</code>, donde se utilizan coordenadas geodésicas.</p><pre class="programlisting">
+WITH temp(inst) AS (
+  SELECT tfloat '1@2001-01-01' UNION SELECT tfloat '2@2001-01-02' UNION
+  SELECT tfloat '4@2001-01-04' UNION SELECT tfloat '5@2001-01-05' UNION
+  SELECT tfloat '7@2001-01-07' )
+SELECT appendInstant(inst, NULL, 0.0, '1 day' ORDER BY inst) FROM temp;
+-- {[1@2001-01-01, 2@2001-01-02], [4@2001-01-04, 5@2001-01-05], [7@2001-01-07]}
+WITH temp(inst) AS (
+  SELECT tgeompoint 'Point(1 1)@2001-01-01' UNION
+  SELECT tgeompoint 'Point(2 2)@2001-01-02' UNION
+  SELECT tgeompoint 'Point(4 4)@2001-01-04' UNION
+  SELECT tgeompoint 'Point(5 5)@2001-01-05' UNION
+  SELECT tgeompoint 'Point(7 7)@2001-01-07' )
+SELECT asText(appendInstant(inst, NULL, sqrt(2), '1 day' ORDER BY inst)) FROM temp;
+/* {[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02],
+   [POINT(4 4)@2001-01-04, POINT(5 5)@2001-01-05], [POINT(7 7)@2001-01-07]} */
+</pre></li><li class="listitem"><a name="appendSequence"></a><a class="indexterm" name="id4446"></a><p>Anexar una secuencia temporal a un valor temporal</p><p><code class="varname">appendSequence(ttype,ttypeSeq) → {ttypeSeq, ttypeSeqSet}</code></p><p><code class="varname">appendSequence(ttypeSeq) → {ttypeSeq,ttypeSeqSet}</code></p><p>La primera versión de la función devuelve el resultado de agregar el segundo argumento al primero. Si cualquiera de las entradas es NULL, se devuelve NULL.</p><p>La segunda versión de la función anterior es una función de <span class="emphasis"><em>agregación</em></span> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <code class="varname">SUM()</code> y <code class="varname">AVG()</code> y, como la mayoría de los agregados, también ignora los valores NULL.</p><pre class="programlisting">
+SELECT appendSequence(tint '1@2001-01-01', tint '{2@2001-01-02, 3@2001-01-03}');
+-- {1@2001-01-01, 2@2001-01-02, 3@2001-01-03}
+SELECT appendSequence(tint '[1@2001-01-01, 2@2001-01-02]',
+  tint '[2@2001-01-02, 3@2001-01-03]');
+-- [1@2001-01-01, 2@2001-01-02, 3@2001-01-03]
+SELECT asText(appendSequence(tgeompoint '{[Point(1 1 1)@2001-01-01,
+  Point(2 2 2)@2001-01-02], [Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}',
+  tgeompoint '[Point(3 3 3)@2001-01-05, Point(1 1 1)@2001-01-06]'));
+/* {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02],
+   [POINT Z (3 3 3)@2001-01-04, POINT Z (3 3 3)@2001-01-05,
+   POINT Z (1 1 1)@2001-01-06]} */
+SELECT asText(appendSequence(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], 
+  [Linestring(3 3,2 2)@2001-01-04, Point(3 3)@2001-01-05]}',
+  tgeometry '[Point(3 3)@2001-01-05, Linestring(3 3,1 1)@2001-01-06]'));
+/* {[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02], [LINESTRING(3 3,2 2)@2001-01-04, 
+     POINT(3 3)@2001-01-05, LINESTRING(3 3,1 1)@2001-01-06]} */
+</pre></li><li class="listitem"><a name="merge"></a><a class="indexterm" name="id4461"></a><p>Fusionar los valores temporales</p><p><code class="varname">merge(ttype,ttype) → ttype</code></p><p><code class="varname">merge(ttype[]) → ttype</code></p><p><code class="varname">merge(ttype) → ttype</code></p><p>Los valores temporales solo pueden intersectar en su límite. En ese caso, para todos los tipos temporales excepto <code class="varname">tgeometry</code> y <code class="varname">tgeography</code>, sus valores de base en las marcas de tiempo comunes deben ser los mismos, de lo contrario se genera un error. Para los tipos <code class="varname">tgeometry</code> y <code class="varname">tgeography</code>, si el valor en sus marcas de tiempo comunes es diferente, el valor resultante después de la <code class="varname">merge</code> será la unión espacial de los valores. La razón de un comportamiento diferente para estos tipos es que son los únicos tipos temporales que no son tipos <span class="emphasis"><em>escalares</em></span>, es decir, su valor en una marca de tiempo dada no es un único elemento del dominio del tipo base, sino más bien un subconjunto de su dominio.</p><p>La tercera versión de la función anterior es una función de <span class="emphasis"><em>agregación</em></span> que devuelve el resultado de agregar sucesivamente un conjunto de filas de valores temporales. Esto significa que funciona de la misma manera que las funciones <code class="varname">SUM()</code> y <code class="varname">AVG()</code> y, como la mayoría de los agregados, también ignora los valores NULL.</p><pre class="programlisting">
+SELECT merge(tint '1@2001-01-01', tint '1@2001-01-02');
+-- {1@2001-01-01, 1@2001-01-02}
+SELECT merge(tint '[1@2001-01-01, 2@2001-01-02]', tint '[2@2001-01-02, 1@2001-01-03]');
+-- [1@2001-01-01, 2@2001-01-02, 1@2001-01-03]
+SELECT merge(tint '[1@2001-01-01, 2@2001-01-02]', tint '[3@2001-01-03, 1@2001-01-04]');
+-- {[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 1@2001-01-04]}
+SELECT merge(tint '[1@2001-01-01, 2@2001-01-02]', tint '[1@2001-01-02, 2@2001-01-03]');
+-- ERROR:  The temporal values have different value at their common timestamp 2001-01-02
+SELECT asText(merge(tgeompoint '{[Point(1 1 1)@2001-01-01,
+  Point(2 2 2)@2001-01-02], [Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}',
+  tgeompoint '{[Point(3 3 3)@2001-01-05, Point(1 1 1)@2001-01-06]}'));
+/* {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02],
+   [POINT Z (3 3 3)@2001-01-04, POINT Z (3 3 3)@2001-01-05,
+   POINT Z (1 1 1)@2001-01-06]} */
+SELECT asText(merge(tgeometry 'Linestring(1 1,5 1)@2001-01-01',
+  tgeometry '{Linestring(5 1,10 1)@2001-01-01, Point(3 3)@2001-01-02}'));
+-- {LINESTRING(1 1,5 1,10 1)@2001-01-01, POINT(3 3)@2001-01-02}  
+</pre><pre class="programlisting">
+SELECT merge(ARRAY[tint '1@2001-01-01', '1@2001-01-02']);
+-- {1@2001-01-01, 1@2001-01-02}
+SELECT merge(ARRAY[tint '{1@2001-01-01, 2@2001-01-02}', '{2@2001-01-02, 3@2001-01-03}']);
+-- {1@2001-01-01, 2@2001-01-02, 3@2001-01-03}
+SELECT merge(ARRAY[tint '{1@2001-01-01, 2@2001-01-02}', '{3@2001-01-03, 4@2001-01-04}']);
+-- {1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 4@2001-01-04}
+SELECT merge(ARRAY[tint '[1@2001-01-01, 2@2001-01-02]', '[2@2001-01-02, 1@2001-01-03]']);
+-- [1@2001-01-01, 2@2001-01-02, 1@2001-01-03]
+SELECT merge(ARRAY[tint '[1@2001-01-01, 2@2001-01-02]', '[3@2001-01-03, 4@2001-01-04]']);
+-- {[1@2001-01-01, 2@2001-01-02], [3@2001-01-03, 4@2001-01-04]}
+SELECT asText(merge(ARRAY[tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],
+  [Point(3 3)@2001-01-03, Point(4 4)@2001-01-04]}', '{[Point(4 4)@2001-01-04,
+  Point(3 3)@2001-01-05], [Point(6 6)@2001-01-06, Point(7 7)@2001-01-07]}']));
+/* {[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02], [Point(3 3)@2001-01-03,
+   Point(4 4)@2001-01-04, Point(3 3)@2001-01-05],
+   [Point(6 6)@2001-01-06, Point(7 7)@2001-01-07]} */
+SELECT asText(merge(ARRAY[tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]}',
+  '{[Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]}']));
+-- [Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]
+SELECT asText(merge(ARRAY[tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]}',
+  '{[Linestring(2 2,1 1)@2001-01-02, Point(1 1)@2001-01-03]}']));
+-- {[POINT(1 1)@2001-01-01, LINESTRING(2 2,1 1)@2001-01-02, POINT(1 1)@2001-01-03]}
+</pre><pre class="programlisting">
+WITH temp(inst) AS (
+SELECT tfloat '1@2001-01-01' UNION SELECT tfloat '2@2001-01-02' UNION
+SELECT tfloat '3@2001-01-03' UNION SELECT tfloat '4@2001-01-04' UNION
+SELECT tfloat '5@2001-01-05' )
+SELECT merge(inst) FROM temp;
+-- {1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 4@2001-01-04, 5@2001-01-05}
+</pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s10.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch05s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Transformaciones </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Restricciones</td></tr></table></div></body></html>
