@@ -1,9 +1,20 @@
 var searchData=
 [
   ['functions_20for_20box_20types_0',['Functions for box types',['../group__meos__box.html',1,'(Global Namespace)'],['../group__meos__internal__box.html',1,'(Global Namespace)'],['../group__mobilitydb__box.html',1,'(Global Namespace)']]],
-  ['functions_20for_20mobilitydb_20base_20types_1',['Functions for MobilityDB base types',['../group__meos__base.html',1,'(Global Namespace)'],['../group__mobilitydb__base.html',1,'(Global Namespace)']]],
-  ['functions_20for_20postgis_20types_2',['Functions for PostGIS types',['../group__meos__pgis__types.html',1,'']]],
-  ['functions_20for_20postgresql_20types_3',['Functions for PostgreSQL types',['../group__meos__pg__types.html',1,'']]],
-  ['functions_20for_20set_20and_20span_20types_4',['Functions for set and span types',['../group__meos__internal__setspan.html',1,'(Global Namespace)'],['../group__meos__setspan.html',1,'(Global Namespace)'],['../group__mobilitydb__setspan.html',1,'(Global Namespace)']]],
-  ['functions_20for_20temporal_20types_5',['Functions for temporal types',['../group__meos__internal__temporal.html',1,'(Global Namespace)'],['../group__meos__temporal.html',1,'(Global Namespace)'],['../group__mobilitydb__temporal.html',1,'(Global Namespace)']]]
+  ['functions_20for_20circular_20buffer_20sets_1',['Functions for circular buffer sets',['../group__meos__cbuffer__set.html',1,'(Global Namespace)'],['../group__mobilitydb__cbuffer__set.html',1,'(Global Namespace)']]],
+  ['functions_20for_20geometry_20sets_2',['Functions for geometry sets',['../group__meos__geo__set.html',1,'(Global Namespace)'],['../group__mobilitydb__geo__set.html',1,'(Global Namespace)']]],
+  ['functions_20for_20network_20point_20sets_3',['Functions for network point sets',['../group__meos__npoint__set.html',1,'(Global Namespace)'],['../group__mobilitydb__npoint__set.html',1,'(Global Namespace)']]],
+  ['functions_20for_20pose_20sets_4',['Functions for pose sets',['../group__meos__pose__set.html',1,'(Global Namespace)'],['../group__mobilitydb__pose__set.html',1,'(Global Namespace)']]],
+  ['functions_20for_20postgresql_20types_5',['Functions for PostgreSQL types',['../group__meos__pg__types.html',1,'']]],
+  ['functions_20for_20set_20and_20span_20types_6',['Functions for set and span types',['../group__meos__internal__setspan.html',1,'(Global Namespace)'],['../group__meos__setspan.html',1,'(Global Namespace)'],['../group__mobilitydb__setspan.html',1,'(Global Namespace)']]],
+  ['functions_20for_20spatiotemporal_20boxes_7',['Functions for spatiotemporal boxes',['../group__meos__geo__box.html',1,'(Global Namespace)'],['../group__mobilitydb__geo__box.html',1,'(Global Namespace)']]],
+  ['functions_20for_20static_20circular_20buffers_8',['Functions for static circular buffers',['../group__meos__cbuffer__base.html',1,'(Global Namespace)'],['../group__mobilitydb__cbuffer__base.html',1,'(Global Namespace)']]],
+  ['functions_20for_20static_20geometries_9',['Functions for static geometries',['../group__meos__geo__base.html',1,'']]],
+  ['functions_20for_20static_20network_20points_10',['Functions for static network points',['../group__meos__npoint__base.html',1,'(Global Namespace)'],['../group__mobilitydb__npoint__base.html',1,'(Global Namespace)']]],
+  ['functions_20for_20static_20poses_11',['Functions for static poses',['../group__meos__pose__base.html',1,'(Global Namespace)'],['../group__mobilitydb__pose__base.html',1,'(Global Namespace)']]],
+  ['functions_20for_20temporal_20circular_20buffers_12',['Functions for temporal circular buffers',['../group__meos__cbuffer.html',1,'(Global Namespace)'],['../group__mobilitydb__cbuffer.html',1,'(Global Namespace)']]],
+  ['functions_20for_20temporal_20geometries_13',['Functions for temporal geometries',['../group__meos__geo.html',1,'(Global Namespace)'],['../group__mobilitydb__geo.html',1,'(Global Namespace)']]],
+  ['functions_20for_20temporal_20network_20points_14',['Functions for temporal network points',['../group__meos__npoint.html',1,'(Global Namespace)'],['../group__mobilitydb__npoint.html',1,'(Global Namespace)']]],
+  ['functions_20for_20temporal_20poses_15',['Functions for temporal poses',['../group__meos__pose.html',1,'(Global Namespace)'],['../group__mobilitydb__pose.html',1,'(Global Namespace)']]],
+  ['functions_20for_20temporal_20types_16',['Functions for temporal types',['../group__meos__internal__temporal.html',1,'(Global Namespace)'],['../group__meos__temporal.html',1,'(Global Namespace)'],['../group__mobilitydb__temporal.html',1,'(Global Namespace)']]]
 ];

@@ -83,6 +83,9 @@ Files</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="projection__gk_8c.html">projection_gk.c</a></td></tr>
 <tr class="memdesc:projection__gk_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implementation of the Gauss-Krueger projection used in Secondo. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="spatialset_8c.html">spatialset.c</a></td></tr>
+<tr class="memdesc:spatialset_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for spatial reference systems for spatial values, that is, spatial sets, spatiotemporal boxes, temporal points, and temporal geos. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2geo_2stbox_8c.html">stbox.c</a></td></tr>
 <tr class="memdesc:mobilitydb_2src_2geo_2stbox_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for spatiotemporal bounding boxes. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -101,9 +104,6 @@ Files</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2geo_2tgeo__distance_8c.html">tgeo_distance.c</a></td></tr>
 <tr class="memdesc:mobilitydb_2src_2geo_2tgeo__distance_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Distance functions for temporal geos. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2geo_2tgeo__inout_8c.html">tgeo_inout.c</a></td></tr>
-<tr class="memdesc:mobilitydb_2src_2geo_2tgeo__inout_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Input and output of temporal points in WKT and EWKT. <br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2geo_2tgeo__spatialfuncs_8c.html">tgeo_spatialfuncs.c</a></td></tr>
 <tr class="memdesc:mobilitydb_2src_2geo_2tgeo__spatialfuncs_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spatial functions for temporal geos. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -118,11 +118,11 @@ Files</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tile_8c.html">tile.c</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpoint__analytics_8c.html">tpoint_analytics.c</a></td></tr>
-<tr class="memdesc:tpoint__analytics_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Analytic functions for temporal points and temporal floats. <br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2geo_2tpoint__datagen_8c.html">tpoint_datagen.c</a></td></tr>
 <tr class="memdesc:mobilitydb_2src_2geo_2tpoint__datagen_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data generator for MobilityDB. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2geo_2tspatial_8c.html">tspatial.c</a></td></tr>
+<tr class="memdesc:mobilitydb_2src_2geo_2tspatial_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for spatial reference systems for spatial values, that is, spatial sets, spatiotemporal boxes, temporal points, and temporal geos. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__analyze_8c.html">tspatial_analyze.c</a></td></tr>
 <tr class="memdesc:tspatial__analyze_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for gathering statistics from temporal spatial columns. <br /></td></tr>
@@ -138,9 +138,6 @@ Files</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__spgist_8c.html">tspatial_spgist.c</a></td></tr>
 <tr class="memdesc:tspatial__spgist_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">SP-GiST implementation of 8-dimensional quad-tree over temporal spatial values. <br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">file &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2geo_2tspatial__srid_8c.html">tspatial_srid.c</a></td></tr>
-<tr class="memdesc:mobilitydb_2src_2geo_2tspatial__srid_8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions for spatial reference systems for spatial values, that is, spatial sets, spatiotemporal boxes, temporal points, and temporal geos. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
