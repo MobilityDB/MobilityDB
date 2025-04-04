@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -27,8 +27,9 @@
  *
  *****************************************************************************/
 
-/*
- * Spatial functions for temporal geos.
+/**
+ * @file
+ * @brief Spatial functions for temporal geometries/gepgraphies
  */
 
 /*****************************************************************************/
@@ -110,20 +111,20 @@ CREATE CAST (tgeogpoint AS tgeography) WITH FUNCTION tgeography(tgeogpoint);
 
 CREATE FUNCTION round(tgeometry, integer DEFAULT 0)
   RETURNS tgeometry
-  AS 'MODULE_PATHNAME', 'Tgeo_round'
+  AS 'MODULE_PATHNAME', 'Temporal_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION round(tgeography, integer DEFAULT 0)
   RETURNS tgeography
-  AS 'MODULE_PATHNAME', 'Tgeo_round'
+  AS 'MODULE_PATHNAME', 'Temporal_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION round(tgeometry[], integer DEFAULT 0)
   RETURNS tgeometry[]
-  AS 'MODULE_PATHNAME', 'Tgeoarr_round'
+  AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION round(tgeography[], integer DEFAULT 0)
   RETURNS tgeography[]
-  AS 'MODULE_PATHNAME', 'Tgeoarr_round'
+  AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION traversedArea(tgeometry)

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -611,6 +611,7 @@ tnumber_at_tbox(const Temporal *temp, const TBox *box)
 Temporal *
 tnumber_minus_tbox(const Temporal *temp, const TBox *box)
 {
+  /* Ensure validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
       ! ensure_tnumber_type(temp->temptype))
@@ -618,7 +619,6 @@ tnumber_minus_tbox(const Temporal *temp, const TBox *box)
 #else
   assert(temp); assert(box); assert(tnumber_type(temp->temptype));
 #endif /* MEOS */
-  /* Ensure validity of the arguments */
   if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
 

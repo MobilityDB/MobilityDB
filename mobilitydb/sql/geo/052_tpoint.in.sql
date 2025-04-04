@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -27,9 +27,9 @@
  *
  *****************************************************************************/
 
-/*
- * tpoint.sql
- * Basic functions for temporal points.
+/**
+ * @file
+ * @brief Basic functions for temporal geometry/geography points
  */
 
 CREATE TYPE tgeompoint;
@@ -68,7 +68,7 @@ CREATE TYPE tgeompoint (
   send = temporal_send,
   receive = tgeompoint_recv,
   typmod_in = tgeompoint_typmod_in,
-  typmod_out = tgeo_typmod_out,
+  typmod_out = tspatial_typmod_out,
   storage = extended,
   alignment = double,
   analyze = tspatial_analyze
@@ -103,7 +103,7 @@ CREATE TYPE tgeogpoint (
   send = temporal_send,
   receive = tgeogpoint_recv,
   typmod_in = tgeogpoint_typmod_in,
-  typmod_out = tgeo_typmod_out,
+  typmod_out = tspatial_typmod_out,
   storage = extended,
   alignment = double,
   analyze = tspatial_analyze
@@ -112,11 +112,11 @@ CREATE TYPE tgeogpoint (
 -- Special cast for enforcing the typmod restrictions
 CREATE FUNCTION tgeompoint(tgeompoint, integer)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tgeo_enforce_typmod'
+  AS 'MODULE_PATHNAME', 'Tspatial_enforce_typmod'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpoint(tgeogpoint, integer)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tgeo_enforce_typmod'
+  AS 'MODULE_PATHNAME', 'Tspatial_enforce_typmod'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeompoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeompoint, integer) AS IMPLICIT;

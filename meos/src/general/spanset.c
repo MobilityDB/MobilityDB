@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -1156,6 +1156,34 @@ spanset_spanarr(const SpanSet *ss)
  * Transformation functions
  *****************************************************************************/
 
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float span set with the precision of the spans set to a
+ * number of decimal places
+ * @param[in] ss Span set
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Floatspanset_round()
+ */
+SpanSet *
+floatspanset_round(const SpanSet *ss, int maxdd)
+{
+#if MEOS
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) ss) || ! ensure_not_negative(maxdd) ||
+      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
+    return NULL;
+#else
+  assert(ss); assert(ss->spansettype == T_FLOATSPANSET); assert(maxdd >= 0);
+#endif /* MEOS */
+
+  Span *spans = palloc(sizeof(Span) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    floatspan_round_set(SPANSET_SP_N(ss, i), maxdd, &spans[i]);
+  return spanset_make_free(spans, ss->count, NORMALIZE, ORDER_NO);
+}
+
+/*****************************************************************************/
+
 #if MEOS
 /**
  * @ingroup meos_internal_setspan_transf
@@ -1570,7 +1598,7 @@ spanset_eq(const SpanSet *ss1, const SpanSet *ss2)
  * @param[in] ss1,ss2 Span sets
  * @csqlfn #Spanset_ne()
  */
-bool
+inline bool
 spanset_ne(const SpanSet *ss1, const SpanSet *ss2)
 {
   return ! spanset_eq(ss1, ss2);
@@ -1626,7 +1654,7 @@ spanset_cmp(const SpanSet *ss1, const SpanSet *ss2)
  * @param[in] ss1,ss2 Span sets
  * @csqlfn #Spanset_lt()
  */
-bool
+inline bool
 spanset_lt(const SpanSet *ss1, const SpanSet *ss2)
 {
   return spanset_cmp(ss1, ss2) < 0;
@@ -1639,7 +1667,7 @@ spanset_lt(const SpanSet *ss1, const SpanSet *ss2)
  * @param[in] ss1,ss2 Span sets
  * @csqlfn #Spanset_le()
  */
-bool
+inline bool
 spanset_le(const SpanSet *ss1, const SpanSet *ss2)
 {
   return spanset_cmp(ss1, ss2) <= 0;
@@ -1652,7 +1680,7 @@ spanset_le(const SpanSet *ss1, const SpanSet *ss2)
  * @param[in] ss1,ss2 Span sets
  * @csqlfn #Spanset_ge()
  */
-bool
+inline bool
 spanset_ge(const SpanSet *ss1, const SpanSet *ss2)
 {
   return spanset_cmp(ss1, ss2) >= 0;
@@ -1664,7 +1692,7 @@ spanset_ge(const SpanSet *ss1, const SpanSet *ss2)
  * @param[in] ss1,ss2 Span sets
  * @csqlfn #Spanset_gt()
  */
-bool
+inline bool
 spanset_gt(const SpanSet *ss1, const SpanSet *ss2)
 {
   return spanset_cmp(ss1, ss2) > 0;

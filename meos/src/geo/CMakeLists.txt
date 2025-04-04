@@ -1,6 +1,6 @@
 set(GEO_SRCS
-  geoset.c
-  pgis_types.c
+  geo_round.c
+  postgis_funcs.c
   stbox.c
   stbox_index.c
   tgeo.c
@@ -8,7 +8,6 @@ set(GEO_SRCS
   tgeo_boxops.c
   tgeo_compops.c
   tgeo_distance.c
-  tgeo_inout.c
   tgeo_restrict.c
   tgeo_spatialfuncs.c
   tgeo_spatialrels.c
@@ -23,6 +22,8 @@ set(GEO_SRCS
 
 if(MEOS)
   list(APPEND GEO_SRCS
+  geoset_meos.c
+  tgeo_meos.c
   tspatial_posops_meos.c
   tspatial_rtree.c
   tspatial_topops_meos.c

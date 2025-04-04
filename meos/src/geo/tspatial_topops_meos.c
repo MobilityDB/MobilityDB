@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -54,41 +54,41 @@
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
  * temporal spatial value overlap
  * @param[in] box Spatiotemporal box
  * @param[in] temp Temporal spatial value
  * @csqlfn #Overlaps_stbox_tspatial()
  */
-bool
+inline bool
 overlaps_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &overlaps_stbox_stbox, INVERT);
 }
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of a temporal spatial value and
  * a spatiotemporal box overlap
  * @param[in] temp Temporal spatial value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Overlaps_tspatial_stbox()
  */
-bool
+inline bool
 overlaps_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &overlaps_stbox_stbox, INVERT_NO);
 }
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if the spatiotemporal boxes of two temporal spatial
  * values overlap
  * @param[in] temp1,temp2 Temporal spatial values
  * @csqlfn #Overlaps_tspatial_tspatial()
  */
-bool
+inline bool
 overlaps_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &overlaps_stbox_stbox);
@@ -99,41 +99,41 @@ overlaps_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if a spatiotemporal box contains the one of a temporal
  * point
  * @param[in] box Spatiotemporal box
  * @param[in] temp Temporal spatial value
  * @csqlfn #Contains_stbox_tspatial()
  */
-bool
+inline bool
 contains_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &contains_stbox_stbox, INVERT);
 }
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of a temporal spatial value
  * contains a spatiotemporal box
  * @param[in] temp Temporal spatial value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Contains_tspatial_stbox()
  */
-bool
+inline bool
 contains_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &contains_stbox_stbox, INVERT_NO);
 }
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of the first temporal spatial
  * value contains the one of the second temporal spatial value
  * @param[in] temp1,temp2 Temporal spatial values
  * @csqlfn #Contains_tspatial_tspatial()
  */
-bool
+inline bool
 contains_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &contains_stbox_stbox);
@@ -144,41 +144,41 @@ contains_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if a spatiotemporal box is contained in the
  * spatiotemporal box of a temporal spatial value
  * @param[in] box Spatiotemporal box
  * @param[in] temp Temporal spatial value
  * @csqlfn #Contained_stbox_tspatial()
  */
-bool
+inline bool
 contained_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &contained_stbox_stbox, INVERT);
 }
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of a temporal spatial value is
  * contained in the spatiotemporal box
  * @param[in] temp Temporal spatial value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Contained_tspatial_stbox()
  */
-bool
+inline bool
 contained_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &contained_stbox_stbox, INVERT_NO);
 }
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of the first temporal spatial
  * value is contained in the one of the second temporal spatial value
  * @param[in] temp1,temp2 Temporal spatial values
  * @csqlfn #Contained_tspatial_tspatial()
  */
-bool
+inline bool
 contained_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &contained_stbox_stbox);
@@ -189,41 +189,41 @@ contained_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
  * temporal spatial value are equal in the common dimensions
  * @param[in] box Spatiotemporal box
  * @param[in] temp Temporal spatial value
  * @csqlfn #Same_stbox_tspatial()
  */
-bool
+inline bool
 same_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &same_stbox_stbox, INVERT);
 }
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of a temporal spatial value and
  * a spatiotemporal box are equal in the common dimensions
  * @param[in] temp Temporal spatial value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Same_tspatial_stbox()
  */
-bool
+inline bool
 same_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &same_stbox_stbox, INVERT_NO);
 }
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if the spatiotemporal boxes of two temporal spatial
  * values are equal in the common dimensions
  * @param[in] temp1,temp2 Temporal spatial values
  * @csqlfn #Same_tspatial_tspatial()
  */
-bool
+inline bool
 same_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &same_stbox_stbox);
@@ -234,42 +234,42 @@ same_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
  * temporal spatial value are adjacent
  * @param[in] box Spatiotemporal box
  * @param[in] temp Temporal spatial value
  * @csqlfn #Adjacent_stbox_tspatial()
  */
-bool
+inline bool
 adjacent_stbox_tspatial(const STBox *box, const Temporal *temp)
 {
   return boxop_tspatial_stbox(temp, box, &adjacent_stbox_stbox, INVERT);
 }
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of a temporal spatial value
  * and a spatiotemporal box are adjacent
  * @param[in] temp Temporal spatial value
  * @param[in] box Spatiotemporal box
  * @csqlfn #Adjacent_tspatial_stbox()
  */
-bool
+inline bool
 adjacent_tspatial_stbox(const Temporal *temp, const STBox *box)
 {
   return boxop_tspatial_stbox(temp, box, &adjacent_stbox_stbox, INVERT_NO);
 }
 
 /**
- * @ingroup meos_temporal_bbox_topo
+ * @ingroup meos_geo_bbox_topo
  * @brief Return true if the spatiotemporal boxes of two temporal spatial
  * values are
  * adjacent
  * @param[in] temp1,temp2 Temporal spatial values
  * @csqlfn #Adjacent_tspatial_tspatial()
  */
-bool
+inline bool
 adjacent_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
   return boxop_tspatial_tspatial(temp1, temp2, &adjacent_stbox_stbox);

@@ -7,5 +7,6 @@ endif()
 if(NPOINT)
   add_subdirectory(npoint)
 endif()
-
-
+if(POSE)
+  add_subdirectory(pose)
+endif()

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -117,7 +117,7 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_TNPOINT] = "tnpoint",
   [T_POSE] = "pose",
   [T_POSESET] = "poseset",
-  [T_TPOSE] = "tposeset",
+  [T_TPOSE] = "tpose",
   [T_CBUFFER] = "cbuffer",
   [T_CBUFFERSET] = "cbufferset",
   [T_TCBUFFER] = "tcbuffer",
@@ -224,6 +224,7 @@ static const settype_catalog_struct MEOS_SETTYPE_CATALOG[] =
   {T_GEOGSET,       T_GEOGRAPHY},
   {T_NPOINTSET,     T_NPOINT},
   {T_CBUFFERSET,    T_CBUFFER},
+  {T_POSESET,       T_POSE},
 };
 
 /**
@@ -751,6 +752,9 @@ set_basetype(meosType type)
 #if NPOINT
       || type == T_NPOINT
 #endif
+#if NPOINT
+      || type == T_POSE
+#endif
       )
     return true;
   return false;
@@ -771,6 +775,9 @@ set_type(meosType type)
 #endif
 #if NPOINT
       || type == T_NPOINTSET
+#endif
+#if NPOINT
+      || type == T_POSESET
 #endif
       )
     return true;
@@ -887,6 +894,9 @@ spatialset_type(meosType type)
 #endif
 #if NPOINT
     || type == T_NPOINTSET
+#endif
+#if NPOINT
+    || type == T_POSESET
 #endif
     )
     return true;
@@ -1267,7 +1277,7 @@ ensure_tspatial_type(meosType type)
   if (tspatial_type(type))
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-    "The temporal value must be a temporal spatial value");
+    "The value must be a temporal spatial value");
   return false;
 }
 

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -53,7 +53,7 @@
 PGDLLEXPORT Datum Tnpoint_trajectory(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_trajectory);
 /**
- * @ingroup mobilitydb_temporal_spatial_accessor
+ * @ingroup mobilitydb_npoint_accessor
  * @brief Return the geometry covered by a temporal network point
  * @sqlfn trajectory()
  */
@@ -67,32 +67,13 @@ Tnpoint_trajectory(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Approximate equality for network points
- *****************************************************************************/
-
-PGDLLEXPORT Datum Npoint_same(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Npoint_same);
-/**
- * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Return true if two network points are spatially equal
- * @sqlfn same()
- */
-Datum
-Npoint_same(PG_FUNCTION_ARGS)
-{
-  Npoint *np1 = PG_GETARG_NPOINT_P(0);
-  Npoint *np2 = PG_GETARG_NPOINT_P(1);
-  PG_RETURN_BOOL(npoint_same(np1, np2));
-}
-
-/*****************************************************************************
  * Length functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tnpoint_length(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_length);
 /**
- * @ingroup mobilitydb_temporal_spatial_accessor
+ * @ingroup mobilitydb_npoint_accessor
  * @brief Return the length traversed by a temporal network point
  * @sqlfn length()
  */
@@ -108,7 +89,7 @@ Tnpoint_length(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnpoint_cumulative_length(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_cumulative_length);
 /**
- * @ingroup mobilitydb_temporal_spatial_accessor
+ * @ingroup mobilitydb_npoint_accessor
  * @brief Return the cumulative length traversed by a temporal network point
  * @sqlfn cumulativeLength()
  */
@@ -128,7 +109,7 @@ Tnpoint_cumulative_length(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnpoint_speed(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_speed);
 /**
- * @ingroup mobilitydb_temporal_spatial_accessor
+ * @ingroup mobilitydb_npoint_accessor
  * @brief Return the speed of a temporal network point
  * @sqlfn speed()
  */
@@ -150,7 +131,7 @@ Tnpoint_speed(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnpoint_twcentroid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_twcentroid);
 /**
- * @ingroup mobilitydb_temporal_spatial_accessor
+ * @ingroup mobilitydb_npoint_accessor
  * @brief Return the time-weighed centroid of a temporal network point
  * @sqlfn twCentroid()
  */
@@ -161,28 +142,6 @@ Tnpoint_twcentroid(PG_FUNCTION_ARGS)
   GSERIALIZED *result = tnpoint_twcentroid(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_GSERIALIZED_P(result);
-}
-
-/*****************************************************************************
- * Temporal azimuth
- *****************************************************************************/
-
-PGDLLEXPORT Datum Tnpoint_azimuth(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnpoint_azimuth);
-/**
- * @ingroup mobilitydb_temporal_spatial_accessor
- * @brief Return the temporal azimuth of a temporal network point
- * @sqlfn azimuth()
- */
-Datum
-Tnpoint_azimuth(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tnpoint_azimuth(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
 }
 
 /*****************************************************************************
@@ -209,11 +168,11 @@ Tnpoint_restrict_geom(FunctionCallInfo fcinfo, bool atfunc)
 PGDLLEXPORT Datum Tnpoint_at_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_at_geom);
 /**
- * @ingroup mobilitydb_temporal_restrict
+ * @ingroup mobilitydb_npoint_restrict
  * @brief Return a temporal network point restricted to a geometry
  * @sqlfn atGeometry()
  */
-Datum
+inline Datum
 Tnpoint_at_geom(PG_FUNCTION_ARGS)
 {
   return Tnpoint_restrict_geom(fcinfo, REST_AT);
@@ -222,12 +181,12 @@ Tnpoint_at_geom(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnpoint_minus_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_minus_geom);
 /**
- * @ingroup mobilitydb_temporal_restrict
+ * @ingroup mobilitydb_npoint_restrict
  * @brief Return a temporal network point restricted to the complement of a
  * geometry
  * @sqlfn minusGeometry()
  */
-Datum
+inline Datum
 Tnpoint_minus_geom(PG_FUNCTION_ARGS)
 {
   return Tnpoint_restrict_geom(fcinfo, REST_MINUS);
@@ -235,45 +194,49 @@ Tnpoint_minus_geom(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Tnpoint_at_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnpoint_at_stbox);
 /**
- * @ingroup mobilitydb_temporal_restrict
+ * @ingroup mobilitydb_npoint_restrict
  * @brief Return a temporal network point restricted to a spatiotemporal box
  * @sqlfn atStbox()
  */
-Datum
-Tnpoint_at_stbox(PG_FUNCTION_ARGS)
+static Datum
+Tnpoint_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
   bool border_inc = PG_GETARG_BOOL(2);
-  Temporal *result = tnpoint_restrict_stbox(temp, box, border_inc, REST_AT);
+  Temporal *result = tnpoint_restrict_stbox(temp, box, border_inc, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tnpoint_at_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnpoint_at_stbox);
+/**
+ * @ingroup mobilitydb_npoint_restrict
+ * @brief Return a temporal network point restricted to a spatiotemporal box
+ * @sqlfn atStbox()
+ */
+inline Datum
+Tnpoint_at_stbox(PG_FUNCTION_ARGS)
+{
+  return Tnpoint_restrict_stbox(fcinfo, REST_AT);
+}
+
 PGDLLEXPORT Datum Tnpoint_minus_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_minus_stbox);
 /**
- * @ingroup mobilitydb_temporal_restrict
+ * @ingroup mobilitydb_npoint_restrict
  * @brief Return a temporal network point restricted to the complement of a
  * spatiotemporal box
  * @sqlfn minusStbox()
  */
-Datum
+inline Datum
 Tnpoint_minus_stbox(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBox *box = PG_GETARG_STBOX_P(1);
-  bool border_inc = PG_GETARG_BOOL(2);
-  Temporal *result = tnpoint_restrict_stbox(temp, box, border_inc, REST_MINUS);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Tnpoint_restrict_stbox(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/

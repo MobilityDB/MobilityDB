@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -45,6 +45,8 @@
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
+/* PostGIS */
+#include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -440,7 +442,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
 
   /* Compute the bounding box */
   if (bboxsize != 0)
-    spatialvalarr_set_bbox(newvalues, basetype, newcount, SET_BBOX_PTR(result));
+    spatialarr_set_bbox(newvalues, basetype, newcount, SET_BBOX_PTR(result));
 
   if (order && count > 1)
     pfree(newvalues);
@@ -536,8 +538,8 @@ value_set(Datum value, meosType basetype)
 Set *
 intset_floatset(const Set *s)
 {
-#if MEOS
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_INTSET))
     return NULL;
 #else
@@ -748,46 +750,36 @@ set_values(const Set *s)
  * Transformation functions
  *****************************************************************************/
 
+/*****************************************************************************
+ * Generic functions
+ *****************************************************************************/
+
+
 /**
  * @ingroup meos_setspan_transf
  * @brief Return a set with the precision of the values set to a number of
  * decimal places
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits
- * @param[in] func Function applied for rounding the elements of the set
  */
 Set *
-set_round(const Set *s, int maxdd, datum_func2 func)
+set_round(const Set *s, int maxdd)
 {
-  assert(s); assert(maxdd >= 0);
+#if MEOS
+  if (! ensure_not_null((void *) s))
+    return NULL;
+#else
+  assert(s);
+#endif
+  if (! ensure_not_negative(maxdd))
+    return NULL;
+
   Datum *values = palloc(sizeof(Datum) * s->count);
   Datum size = Int32GetDatum(maxdd);
+  datum_func2 func = round_fn(s->basetype);
   for (int i = 0; i < s->count; i++)
     values[i] = func(SET_VAL_N(s, i), size);
   return set_make_free(values, s->count, s->basetype, ORDER);
-}
-
-/**
- * @ingroup meos_setspan_transf
- * @brief Return a float set with the precision of the values set to a number
- * of decimal places
- * @param[in] s Set
- * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Floatset_round()
- */
-Set *
-floatset_round(const Set *s, int maxdd)
-{
-#if MEOS
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) ||
-      ! ensure_set_isof_type(s, T_FLOATSET))
-    return NULL;
-#else
-  assert(s); assert(maxdd >= 0); assert(s->settype == T_FLOATSET);
-#endif /* MEOS */
-
-  return set_round(s, maxdd, &datum_round_float);
 }
 
 /*****************************************************************************/
@@ -1178,7 +1170,7 @@ set_eq(const Set *s1, const Set *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Set_ne()
  */
-bool
+inline bool
 set_ne(const Set *s1, const Set *s2)
 {
   return ! set_eq(s1, s2);
@@ -1232,7 +1224,7 @@ set_cmp(const Set *s1, const Set *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Set_lt()
  */
-bool
+inline bool
 set_lt(const Set *s1, const Set *s2)
 {
   return set_cmp(s1, s2) < 0;
@@ -1244,7 +1236,7 @@ set_lt(const Set *s1, const Set *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Set_le()
  */
-bool
+inline bool
 set_le(const Set *s1, const Set *s2)
 {
   return set_cmp(s1, s2) <= 0;
@@ -1256,7 +1248,7 @@ set_le(const Set *s1, const Set *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Set_gt()
  */
-bool
+inline bool
 set_gt(const Set *s1, const Set *s2)
 {
   return set_cmp(s1, s2) > 0;
@@ -1268,7 +1260,7 @@ set_gt(const Set *s1, const Set *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Set_ge()
  */
-bool
+inline bool
 set_ge(const Set *s1, const Set *s2)
 {
   return set_cmp(s1, s2) >= 0;

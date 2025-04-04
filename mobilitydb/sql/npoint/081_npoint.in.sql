@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * tnpoint_static.sql
- * Network-based static point and segment types
+ * @file
+ * @brief Network-based static point and segment types
  */
 
 CREATE TYPE npoint;
@@ -96,6 +96,70 @@ CREATE TYPE nsegment (
   send = nsegment_send,
   alignment = double
 );
+
+/*****************************************************************************
+ * Input/output from (E)WKT, (E)WKB and HexEWKB format
+ *****************************************************************************/
+
+CREATE FUNCTION npointFromText(text)
+  RETURNS npoint
+  AS 'MODULE_PATHNAME', 'Npoint_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION npointFromEWKT(text)
+  RETURNS npoint
+  AS 'MODULE_PATHNAME', 'Npoint_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION npointFromBinary(bytea)
+  RETURNS npoint
+  AS 'MODULE_PATHNAME', 'Npoint_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION npointFromEWKB(bytea)
+  RETURNS npoint
+  AS 'MODULE_PATHNAME', 'Npoint_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION npointFromHexEWKB(text)
+  RETURNS npoint
+  AS 'MODULE_PATHNAME', 'Npoint_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE FUNCTION asText(npoint, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Npoint_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(npoint[], maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asEWKT(npoint, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Npoint_as_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKT(npoint[], maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(npoint, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Npoint_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asEWKB(npoint, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Npoint_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexEWKB(npoint, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Npoint_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Constructors

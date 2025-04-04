@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -710,7 +710,7 @@ tsequenceset_spans(const TSequenceSet *ss, int *count)
 }
 
 /**
- * @ingroup meos_temporal_bbox
+ * @ingroup meos_temporal_bbox_split
  * @brief Return an array of spans from the instants or segments of a temporal
  * value, where the choice between instants or segments depends, respectively,
  * on whether the interpolation is discrete or continuous
@@ -942,7 +942,7 @@ tsequenceset_split_n_spans(const TSequenceSet *ss, int span_count, int *count)
 }
 
 /**
- * @ingroup meos_temporal_bbox
+ * @ingroup meos_temporal_bbox_split
  * @brief Return an array of N spans from the instants or segments of a 
  * temporal value, where the choice between instants or segments depends, 
  * respectively, on whether the interpolation is discrete or continuous
@@ -1115,7 +1115,7 @@ tsequenceset_split_each_n_spans(const TSequenceSet *ss, int elems_per_span,
 }
 
 /**
- * @ingroup meos_temporal_bbox
+ * @ingroup meos_temporal_bbox_split
  * @brief Return an array of spans from the instants or segments of a temporal
  * value, where the choice between instants or segments depends, respectively,
  * on whether the interpolation is discrete or continuous
@@ -1282,7 +1282,7 @@ tnumberseqset_tboxes(const TSequenceSet *ss, int *count)
 }
 
 /**
- * @ingroup meos_temporal_bbox
+ * @ingroup meos_temporal_bbox_split
  * @brief Return an array of temporal boxes from the instants or segments of a
  * temporal number, where the choice between instants or segments depends on
  * whether the interpolation is discrete or continuous
@@ -1530,7 +1530,7 @@ tnumberseqset_split_n_tboxes(const TSequenceSet *ss, int box_count, int *count)
 }
 
 /**
- * @ingroup meos_temporal_bbox
+ * @ingroup meos_temporal_bbox_split
  * @brief Return an array of N temporal boxes from the instants or segments of
  * a temporal number, where the choice between instants or segments depends,
  * respectively, on whether the interpolation is discrete or continuous
@@ -1707,7 +1707,7 @@ tnumberseqset_split_each_n_tboxes(const TSequenceSet *ss, int elems_per_box,
 }
 
 /**
- * @ingroup meos_temporal_bbox
+ * @ingroup meos_temporal_bbox_split
  * @brief Return an array of temporal boxes obtained by merging consecutive 
  * instants or segments of a temporal number, where the choice between instants
  * or segments depends, respectively, on whether the interpolation is discrete

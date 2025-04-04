@@ -1,0 +1,503 @@
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter xml:id="tgeo_p2">
+	<title>Temporal Geometry Types (Part 2)</title>
+
+	<sect1 xml:id="tgeo_spatial_srid">
+		<title>Spatial Reference System</title>
+
+		<itemizedlist>
+			<listitem xml:id="tgeo_SRID">
+				<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
+				<para>Return or set the spatial reference identifier &Z_support;
+ &geography_support;
+</para>
+				<para><varname>SRID(tspatial) → integer</varname></para>
+				<para><varname>setSRID(tspatial) → tspatial</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT SRID(tgeompoint 'Point(0 0)@2001-01-01');
+-- 0
+SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)', 4326));
+-- SRID=4326;[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02)
+</programlisting>
+				</listitem>
+
+			<listitem xml:id="tgeo_transform">
+				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
+				<para>Transform to a spatial reference identifier &Z_support;
+ &geography_support;
+</para>
+				<para><varname>transform(tspatial,integer) → tspatial</varname></para>
+				<para><varname>transformPipeline(tspatial,pipeline text,to_srid integer,is_forward bool=true) → tspatial</varname></para>
+				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input temporal point has an unknown SRID (represented by 0).</para>
+				<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
+				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
+				<para>The SRID of the input temporal point is ignored, and the SRID of the output temporal point will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 3812));
+-- SRID=3812;POINT(648679.018035303 671067.055638114)@2001-01-01
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH test(tgeo, pipeline) AS (
+  SELECT tgeogpoint 'SRID=4326;{Point(4.3525 50.846667 100.0)@2001-01-01,
+    Point(-0.1275 51.507222 100.0)@2001-01-02}',
+    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT asEWKT(transformPipeline(transformPipeline(tgeo, pipeline, 4326),
+  pipeline, 4326, false), 6)
+FROM test;
+/* SRID=4326;{POINT Z (4.3525 50.846667 100)@2001-01-01,
+   POINT Z (-0.1275 51.507222 100)@2001-01-02} */
+</programlisting>
+			</listitem>
+	</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tgeo_spatial_bbox">
+		<title>Bounding Box Operations</title>
+
+		<itemizedlist>
+			<listitem xml:id="tpoint_expandSpace">
+				<indexterm significance="normal"><primary><varname>expandSpace</varname></primary></indexterm>
+				<para>Return the spatiotemporal bounding box expanded in the spatial dimension by a float value &Z_support;
+ &geography_support;
+</para>
+				<para><varname>expandSpace({spatial,tspatial},float) → stbox</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT expandSpace(geography 'Linestring(0 0,1 1)', 2);
+-- SRID=4326;GEODSTBOX X((-2,-2),(3,3))
+SELECT expandSpace(tgeompoint 'Point(0 0)@2001-01-01', 2);
+-- STBOX XT((-2,-2),(2,2),[2001-01-01,2001-01-01])
+</programlisting>
+			</listitem>
+	</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tgeo_distance">
+		<title>Distance Operations</title>
+
+		<itemizedlist>
+			<listitem xml:id="smallest_distance">
+				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+				<para>Return the smallest distance ever &Z_support;
+ &geography_support;
+</para>
+				<para><varname>{geo,tgeo} |=| {geo,tgeo} → float</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tgeompoint '[Point(0 0)@2001-01-02, Point(1 1)@2001-01-04, Point(0 0)@2001-01-06)'
+  |=| geometry 'Linestring(2 2,2 1,3 1)';
+-- 1
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03, Point(0 0)@2001-01-05)'
+  |=| tgeompoint '[Point(2 0)@2001-01-02, Point(1 1)@2001-01-04, Point(2 2)@2001-01-06)';
+-- 0.5
+SELECT tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
+  Point(0 0 0)@2001-01-05)' |=| tgeompoint '[Point(2 0 0)@2001-01-02,
+  Point(1 1 1)@2001-01-04, Point(2 2 2)@2001-01-06)';
+-- 0.5
+SELECT tgeometry '(Point(1 1)@2001-01-01, Linestring(3 1,1 1)@2001-01-03]' |=|
+geometry 'Linestring(1 3,2 2,3 3)';
+-- 1
+</programlisting>
+				<para>The operator <varname>|=|</varname> can be used for doing nearest neighbor searches using a GiST or an SP-GiST index (see <xref linkend="ttype_indexing"/>). This operator corresponds to the PostGIS function <varname>ST_DistanceCPA</varname>, altough the latter requires both arguments to be a trajectory.</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_DistanceCPA(
+  tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
+    Point(0 0 0)@2001-01-05)'::geometry,
+  tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
+    Point(2 2 2)@2001-01-06)'::geometry);
+-- 0.5
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="nearestApproachInstant">
+				<indexterm significance="normal"><primary><varname>nearestApproachInstant</varname></primary></indexterm>
+				<para>Return the instant of the first temporal point at which the two arguments are at the nearest distance &Z_support;
+ &geography_support;
+</para>
+				<para><varname>nearestApproachInstant({geo,tgeo},{geo,tgeo}) → tgeo</varname></para>
+				<para>The function will only return the first instant that it finds if there are more than one. The resulting instant may be at an exclusive bound.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2001-01-01,
+  Point(3 1)@2001-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+-- POINT(2 1)@2001-01-02
+SELECT asText(NearestApproachInstant(tgeompoint 'Interp=Step;(Point(1 1)@2001-01-01,
+  Point(3 1)@2001-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+-- POINT(1 1)@2001-01-01
+SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2001-01-01,
+  Point(2 2)@2001-01-03]', tgeompoint '(Point(1 1)@2001-01-01, Point(4 1)@2001-01-03]'));
+-- POINT(1 1)@2001-01-01
+SELECT asText(nearestApproachInstant(tgeometry
+  '[Linestring(0 0 0,1 1 1)@2001-01-01, Point(0 0 0)@2001-01-03]', tgeometry
+  '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04, Point(2 2 2)@2001-01-06]'));
+-- LINESTRING Z (0 0 0,1 1 1)@2001-01-02
+</programlisting>
+				<para>Function <varname>nearestApproachInstant</varname> generalizes the PostGIS function <varname>ST_ClosestPointOfApproach</varname>. First, the latter function requires both arguments to be trajectories. Second, function <varname>nearestApproachInstant</varname> returns both the point and the timestamp of the nearest point of approach while the PostGIS function only provides the timestamp as shown next.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT to_timestamp(ST_ClosestPointOfApproach(
+  tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
+    Point(0 0 0)@2001-01-05)'::geometry,
+  tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
+    Point(2 2 2)@2001-01-06)'::geometry));
+-- 2001-01-03 12:00:00+00
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="shortestLine">
+				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
+				<para>Return the line connecting the nearest approach point &Z_support;
+ &geography_support;
+</para>
+				<para><varname>shortestLine({geo,tgeo},{geo,tgeo}) → geo</varname></para>
+				<para>The function will only return the first line that it finds if there are more than one.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2001-01-01,
+  Point(3 1)@2001-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+-- LINESTRING(2 1,2 2)
+SELECT ST_AsText(shortestLine(tgeompoint 'Interp=Step;(Point(1 1)@2001-01-01,
+  Point(3 1)@2001-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+-- LINESTRING(1 1,2 2)
+SELECT ST_AsText(shortestLine(tgeometry
+  '[Linestring(0 0 0,1 1 1)@2001-01-01, Point(0 0 0)@2001-01-03]', tgeometry
+  '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04, Point(2 2 2)@2001-01-06]'));
+-- LINESTRING Z (0 0 0,2 0 0)
+</programlisting>
+				<para>Function <varname>shortestLine</varname> can be used to obtain the result provided by the PostGIS function <varname>ST_CPAWithin</varname> when both arguments are trajectories as shown next.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_Length(shortestLine(
+  tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
+    Point(0 0 0)@2001-01-05)',
+  tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
+    Point(2 2 2)@2001-01-06)')) &lt;= 0.5;
+-- true
+SELECT ST_CPAWithin(
+  tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
+    Point(0 0 0)@2001-01-05)'::geometry,
+  tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
+    Point(2 2 2)@2001-01-06)'::geometry, 0.5);
+-- true
+</programlisting>
+			</listitem>
+		</itemizedlist>
+
+		<para>The temporal distance operator, denoted <varname>&lt;-&gt;</varname>, computes the distance at each instant of the intersection of the temporal extents of their arguments and results in a temporal float. Computing temporal distance is useful in many mobility applications. For example, a moving cluster (also known as convoy or flock) is defined as a set of objects that move close to each other for a long time interval. This requires to compute temporal distance between two moving objects.</para>
+
+		<para>The temporal distance operator accepts a geometry/geography restricted to a point or a temporal point as arguments. Notice that the temporal types only consider linear interpolation between values, while the distance is a root of a quadratic function. Therefore, the temporal distance operator gives a linear approximation of the actual distance value for temporal sequence points. In this case, the arguments are synchronized in the time dimension, and for each of the composing line segments of the arguments, the spatial distance between the start point, the end point, and the nearest point of approach is computed, as shown in the examples below.</para>
+
+		<itemizedlist>
+			<listitem xml:id="distance">
+				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<para>Return the temporal distance &Z_support;
+ &geography_support;
+</para>
+				<para><varname>{geo,tgeo} &lt;-&gt; {geo,tgeo} → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)' &lt;-&gt;
+  geometry 'Point(0 1)';
+-- [1@2001-01-01, 0.707106781186548@2001-01-02, 1@2001-01-03)
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)' &lt;-&gt;
+  tgeompoint '[Point(0 1)@2001-01-01, Point(1 0)@2001-01-03)';
+-- [1@2001-01-01, 0@2001-01-02, 1@2001-01-03)
+SELECT tgeompoint '[Point(0 1)@2001-01-01, Point(0 0)@2001-01-03)' &lt;-&gt;
+  tgeompoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-03)';
+-- [1@2001-01-01, 0.707106781186548@2001-01-02, 1@2001-01-03)
+SELECT tgeometry '[Point(0 0)@2001-01-01, Linestring(0 0,1 1)@2001-01-02]' &lt;-&gt;
+  tgeometry '[Point(0 1)@2001-01-01, Point(1 0)@2001-01-02)';
+-- Interp=Step;[1@2001-01-01, 1@2001-01-02]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tgeo_spatial_rel">
+		<title>Spatial Relationships</title>
+
+		<para>The topological relationships such as <varname>ST_Intersects</varname> and the distance relationships such as <varname>ST_DWithin</varname> can be generalized for temporal points. The arguments of these generalized functions are either a temporal point and a base type (that is, a <varname>geometry</varname> or a <varname>geography</varname>) or two temporal points. Furthermore, both arguments must be of the same base type, that is, these functions do not allow to mix a temporal geometry point (or a geometry) and a temporal geography point (or a geography).</para>
+
+		<para>There are three versions of the spatial relationships:</para>
+		<itemizedlist>
+			<listitem>
+				<para>The <emphasis>ever</emphasis> relationships determine whether the topological or distance relationship is ever satisfied (see <xref linkend="ever_always_comparison"/>) and returns a <varname>boolean</varname>. Examples are the <varname>eIntersects</varname> and <varname>eDwithin</varname> functions.</para>
+			</listitem>
+
+			<listitem>
+				<para>The <emphasis>always</emphasis> relationships determine whether the topological or distance relationship is always satisfied (see <xref linkend="ever_always_comparison"/>) and returns a <varname>boolean</varname>. Examples are the <varname>aIntersects</varname> and <varname>aDwithin</varname> functions.</para>
+			</listitem>
+
+			<listitem>
+				<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and results in a <varname>tbool</varname>. Examples are the <varname>tIntersects</varname> and <varname>tDwithin</varname> functions.</para>
+			</listitem>
+		</itemizedlist>
+
+		<para>
+				For example, the following query
+		</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eIntersects(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeompoint '[Point(0 2)@2001-01-01, Point(4 2)@2001-01-05)');
+-- t
+</programlisting>
+		<para>
+			tests whether the temporal point ever intersects the geometry. In this case, the query is equivalent to the following one
+		</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_Intersects(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  geometry 'Linestring(0 2,4 2)');
+</programlisting>
+		<para>
+			where the second geometry is obtained by applying the <varname>trajectory</varname> function to the temporal point.
+		</para>
+		<para>
+			In contrast, the query
+		</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tIntersects(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeompoint '[Point(0 2)@2001-01-01, Point(4 2)@2001-01-05)');
+-- {[f@2001-01-01, t@2001-01-02, t@2001-01-04], (f@2001-01-04, f@2001-01-05)}
+</programlisting>
+		<para>
+			computes at each instant whether the temporal point intersects the geometry. Similarly, the following query
+		</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eDwithin(tgeompoint '[Point(3 1)@2001-01-01, Point(5 1)@2001-01-03)',
+  tgeompoint '[Point(3 1)@2001-01-01, Point(1 1)@2001-01-03)', 2);
+-- t
+</programlisting>
+		<para>
+			tests whether the distance between the temporal points was ever less than or equal to 2, while the following query
+		</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tDwithin(tgeompoint '[Point(3 1)@2001-01-01, Point(5 1)@2001-01-03)',
+  tgeompoint '[Point(3 1)@2001-01-01, Point(1 1)@2001-01-03)', 2);
+-- {[t@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
+</programlisting>
+		<para>
+			computes at each instant whether the distance between the temporal points is less than or equal to 2.
+		</para>
+
+		<para>
+		The ever or always relationships are sometimes used in combination with a spatiotemporal index when computing the temporal relationships. For example, the following query
+		</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT T.TripId, R.RegionId, tIntersects(T.Trip, R.Geom)
+FROM Trips T, Regions R
+WHERE eIntersects(T.Trip, R.Geom)
+</programlisting>
+		<para>
+			which verifies whether a trip <varname>T</varname> (which is a temporal point) intersects a region <varname>R</varname> (which is a geometry), will benefit from a spatiotemporal index on the column <varname>T.Trip</varname> since the <varname>eIntersects</varname> function will automatically perform the bounding box comparison <varname>T.Trip &amp;&amp; R.Geom</varname>. This is further explained later in this document.
+		</para>
+
+		<para>Not all spatial relationships available in PostGIS have a meaningful generalization for temporal points. A generalized version of the following relationships are defined for temporal geometric points: <varname>eIntersects</varname>, <varname>eDisjoint</varname>, <varname>eDwithin</varname>, <varname>eContains</varname>, and <varname>eTouches</varname>, while for temporal geographic points only the three first ones are defined. Furthermore, not all combinations of parameters are meaningful for a given generalized function. For example, while <varname>tContains(geometry, tpoint)</varname> is meaningful, <varname>tContains(tpoint, geometry)</varname> is meaningful only when the geometry is a single point, and <varname>tContains(tpoint, tpoint)</varname> is equivalent to <varname>tintersects(tpoint, geometry)</varname>. For this reason, only the first combination of parameters is defined for <varname>eContains</varname>, <varname>aContains</varname>, and <varname>tContains</varname>.</para>
+
+		<para>Finally, it is worth noting that the temporal relationships allow to mix 2D/3D geometries but in that case, the computation is only performed on 2D.</para>
+
+		<sect2>
+			<title>Ever and Always Spatial Relationships</title>
+
+			<para>We present next the ever and always spatial relationships. These relationships automatically include a bounding box comparison that makes use of any spatial indexes that are available on the arguments.</para>
+
+			<itemizedlist>
+				<listitem xml:id="eContains">
+					<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
+					<para>Ever or always contains</para>
+					<para><varname>eContains(geometry,tgeom) → boolean</varname></para>
+					<para><varname>aContains(geometry,tgeom) → boolean</varname></para>
+					<para>This function returns true if the temporal point is ever or always at the interior of the geometry. Recall that a geometry does not contain things in its boundary and thus, polygons and lines do not contain lines and points lying in their boundary.  Please refer to the documentation of the <ulink url="https://postgis.net/docs/ST_Contains.html">ST_Contains</ulink> function in PostGIS.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eContains(geometry 'Linestring(1 1,3 3)',
+  tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
+-- false
+SELECT eContains(geometry 'Linestring(1 1,3 3,1 1)',
+  tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-03]');
+-- true
+SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+ tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
+-- false
+SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
+-- true
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="eDisjoint">
+					<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
+					<para>Is ever or always disjoint &Z_support;
+ &geography_support;
+</para>
+					<para><varname>eDisjoint({geometry,tgeom},{geometry,tgeom}) → boolean</varname></para>
+					<para><varname>aDisjoint({geo,tgeo},{geo,tgeo}) → boolean</varname></para>
+						<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eDisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
+  tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)');
+-- false
+SELECT eDisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
+  tgeometry '[Linestring(1 1 1,2 2 2)@2001-01-01, Point(2 2 2)@2001-01-03]');
+-- true
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="eDwithin">
+					<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
+					<para>Is ever or always at distance within &Z_support;
+ &geography_support;
+</para>
+					<para><varname>eDwithin({geo,tgeo},{geo,tgeo},float) → boolean</varname></para>
+					<para><varname>aDwithin({geometry,tgeom},{geometry,tgeom},float) → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eDwithin(geometry 'Point(1 1 1)',
+  tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 0)@2001-01-02]', 1);
+-- true
+SELECT eDwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
+  tgeompoint '[Point(0 2 2)@2001-01-01,Point(2 2 2)@2001-01-02]', 1);
+-- false
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="eIntersects">
+					<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
+					<para>Ever or always intersects &Z_support;
+ &geography_support;
+</para>
+					<para><varname>eIntersects({geo,tgeo},{geo,tgeo}) → boolean</varname></para>
+					<para><varname>aIntersects({geometry,tgeom},{geometry,tgeom}) → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
+  tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
+-- false
+SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
+  tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
+-- true
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="eTouches">
+					<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
+					<para>Ever or always touches &Z_support;
+</para>
+					<para><varname>eTouches({geometry,tgeom},{geometry,tgeom}) → boolean</varname></para>
+					<para><varname>aTouches({geometry,tgeom},{geometry,tgeom}) → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eTouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
+  tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-03)');
+-- true
+</programlisting>
+				</listitem>
+			</itemizedlist>
+
+		</sect2>
+
+		<sect2>
+			<title>Temporal Spatial Relationships</title>
+
+			<para>We present next the temporal spatial relationships. A common requirement regarding them is to restrict the result of the relationship to the instants when the value of the result is true or false. As an example, the following query computes for each trip the time spent traveling in the Brussels municipality.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT TripId, duration(atValues(tintersects(T.trip, M.geom), True))
+FROM Trips T, Municipality M
+WHERE M.Name = "Brussels" AND atValues(tintersects(T.trip, M.geom), True) IS NOT NULL;
+</programlisting>
+			<para>To simplify query writing, the temporal spatial relationships have an optional last parameter, which if given applies the <varname>atValue</varname> function (see <xref linkend="ttype_restrictions"/>) to the result of the relationship. In this way, the above query can be written as follows.</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT TripId, duration(tintersects(T.trip, M.geom, True))
+FROM Trips T, Municipality M
+WHERE M.Name = "Brussels" AND tintersects(T.trip, M.geom, True) IS NOT NULL;
+</programlisting>
+
+			<itemizedlist>
+				<listitem xml:id="tContains">
+					<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+					<para>Temporal contains</para>
+					<para><varname>tContains(geometry,tgeom,atValue boolean=NULL) → tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tContains(geometry 'Linestring(1 1,3 3)',
+  tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
+-- {[f@2001-01-01, f@2001-01-02]}
+SELECT tContains(geometry 'Linestring(1 1,3 3,1 1)',
+  tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-03]');
+-- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03]}
+SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-02]');
+-- {[f@2001-01-01, f@2001-01-02]}
+SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeompoint '[Point(1 4)@2001-01-01, Point(4 1)@2001-01-04]');
+-- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, f@2001-01-03, f@2001-01-04]}
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tDisjoint">
+					<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
+					<para>Temporal disjoint &Z_support;
+ &geography_support;
+</para>
+					<para><varname>tDisjoint({geo,tgeo},{geo,tgeo},atValue boolean=NULL) → tbool</varname></para>
+					<para>The function only supports 3D or geographies for two temporal points</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tDisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
+  tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)');
+-- {[t@2001-01-01, f@2001-01-02, f@2001-01-03], (t@2001-01-03, t@2001-01-04]}
+SELECT tDisjoint(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
+  tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
+-- {[t@2001-01-01, f@2001-01-03], (t@2001-01-03, t@2001-01-05)}
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tDwithin">
+					<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
+					<para>Temporal distance within &Z_support;
+</para>
+					<para><varname>tDwithin({geo,tgeo},{geo,tgeo},float,atValue boolean=NULL)</varname></para>
+					<para><varname>  → tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tDwithin(geometry 'Point(1 1)',
+  tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)', sqrt(2));
+--  {[t@2001-01-01, t@2001-01-03)}
+SELECT tDwithin(tgeompoint '[Point(1 0)@2001-01-01, Point(1 4)@2001-01-05]',
+  tgeompoint 'Interp=Step;[Point(1 2)@2001-01-01, Point(1 3)@2001-01-05]', 1);
+-- {[f@2001-01-01, t@2001-01-02, t@2001-01-04], (f@2001-01-04, t@2001-01-05]}
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tIntersects">
+					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
+					<para>Temporal intersects &Z_support;
+ &geography_support;
+</para>
+					<para><varname>tIntersects({geo,tgeo},{geo,tgeo},atValue boolean=NULL) → tbool</varname></para>
+					<para>The function only supports 3D or geographies for two temporal points</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tIntersects(geometry 'MultiPoint(1 1,2 2)',
+  tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)');
+/* {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, t@2001-01-03],
+   (f@2001-01-03, f@2001-01-04]} */
+SELECT tIntersects(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
+  tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
+-- {[f@2001-01-01, t@2001-01-03], (f@2001-01-03, f@2001-01-05)}
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tTouches">
+					<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
+					<para>Temporal touches</para>
+					<para><varname>tTouches({geometry,tgeom},{geometry,tgeom},atValue boolean=NULL) → tbool</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tTouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
+  tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-04)');
+-- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+</chapter>
+

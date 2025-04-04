@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -33,6 +33,7 @@
 
 /* C */
 #include <math.h>
+#include <float.h>
 #include <limits.h>
 /* Postgres */
 #include <postgres.h>
@@ -48,12 +49,14 @@
 #include "general/pg_types.h"
 #include "general/type_inout.h"
 #include "general/type_parser.h"
+#include "general/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/tspatial.h"
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"
 
 /** Buffer size for input and output of pose values */
-#define MAXPOSELEN    128
+#define MAXPOSELEN    256
 
 /*****************************************************************************
  * Interpolation function
@@ -69,9 +72,9 @@
 Pose *
 pose_interpolate(const Pose *pose1, const Pose *pose2, double ratio)
 {
-  assert(pose1); assert(pose2);
+  assert(pose1); assert(pose2); assert(pose_srid(pose1) == pose_srid(pose2));
   Pose *result;
-  if (!MEOS_FLAGS_GET_Z(pose1->flags))
+  if (! MEOS_FLAGS_GET_Z(pose1->flags))
   {
     double x = pose1->data[0] * (1 - ratio) + pose2->data[0] * ratio;
     double y = pose1->data[1] * (1 - ratio) + pose2->data[1] * ratio;
@@ -79,18 +82,18 @@ pose_interpolate(const Pose *pose1, const Pose *pose2, double ratio)
     double theta_delta = pose2->data[2] - pose1->data[2];
     /* If fabs(theta_delta) == M_PI: Always turn counter-clockwise */
     if (fabs(theta_delta) < MEOS_EPSILON)
-        theta = pose1->data[2];
+      theta = pose1->data[2];
     else if (theta_delta > 0 && fabs(theta_delta) <= M_PI)
-        theta = pose1->data[2] + theta_delta*ratio;
+      theta = pose1->data[2] + theta_delta * ratio;
     else if (theta_delta > 0 && fabs(theta_delta) > M_PI)
-        theta = pose2->data[2] + (2*M_PI - theta_delta)*(1 - ratio);
+      theta = pose2->data[2] + (2 * M_PI - theta_delta) * (1 - ratio);
     else if (theta_delta < 0 && fabs(theta_delta) < M_PI)
-        theta = pose1->data[2] + theta_delta*ratio;
+      theta = pose1->data[2] + theta_delta * ratio;
     else /* (theta_delta < 0 && fabs(theta_delta) >= M_PI) */
-        theta = pose1->data[2] + (2*M_PI + theta_delta)*ratio;
+      theta = pose1->data[2] + (2 * M_PI + theta_delta) * ratio;
     if (theta > M_PI)
-        theta = theta - 2*M_PI;
-    result = pose_make_2d(x, y, theta);
+      theta = theta - 2 * M_PI;
+    result = pose_make_2d(x, y, theta, pose_srid(pose1));
   }
   else
   {
@@ -101,7 +104,7 @@ pose_interpolate(const Pose *pose1, const Pose *pose2, double ratio)
     double X, X1 = pose1->data[4], X2 = pose2->data[4];
     double Y, Y1 = pose1->data[5], Y2 = pose2->data[5];
     double Z, Z1 = pose1->data[6], Z2 = pose2->data[6];
-    double dot =  W1*W2 + X1*X2 + Y1*Y2 + Z1*Z2;
+    double dot =  W1 * W2 + X1 * X2 + Y1 * Y2 + Z1 * Z2;
     if (dot < 0.0f)
     {
       W2 = -W2;
@@ -113,33 +116,37 @@ pose_interpolate(const Pose *pose1, const Pose *pose2, double ratio)
     const double DOT_THRESHOLD = 0.9995;
     if (dot > DOT_THRESHOLD)
     {
-      W = W1 + (W2 - W1)*ratio;
-      X = X1 + (X2 - X1)*ratio;
-      Y = Y1 + (Y2 - Y1)*ratio;
-      Z = Z1 + (Z2 - Z1)*ratio;
+      W = W1 + (W2 - W1) * ratio;
+      X = X1 + (X2 - X1) * ratio;
+      Y = Y1 + (Y2 - Y1) * ratio;
+      Z = Z1 + (Z2 - Z1) * ratio;
     }
     else
     {
       double theta_0 = acos(dot);
-      double theta = theta_0*ratio;
+      double theta = theta_0 * ratio;
       double sin_theta = sin(theta);
       double sin_theta_0 = sin(theta_0);
       double s1 = cos(theta) - dot * sin_theta / sin_theta_0;
       double s2 = sin_theta / sin_theta_0;
-      W = W1*s1 + W2*s2;
-      X = X1*s1 + X2*s2;
-      Y = Y1*s1 + Y2*s2;
-      Z = Z1*s1 + Z2*s2;
+      W = W1 * s1 + W2 * s2;
+      X = X1 * s1 + X2 * s2;
+      Y = Y1 * s1 + Y2 * s2;
+      Z = Z1 * s1 + Z2 * s2;
     }
-    double norm = W*W + X*X + Y*Y + Z*Z;
+    double norm = W * W + X * X + Y * Y + Z * Z;
     W /= norm;
     X /= norm;
     Y /= norm;
     Z /= norm;
-    result = pose_make_3d(x, y, z, W, X, Y, Z);
+    result = pose_make_3d(x, y, z, W, X, Y, Z, pose_srid(pose1));
   }
   return result;
 }
+
+/*****************************************************************************
+ * Collinear function
+ *****************************************************************************/
 
 /**
  * @brief Return true if the three values are collinear
@@ -159,6 +166,41 @@ pose_collinear(const Pose *p1, const Pose *p2, const Pose *p3, double ratio)
 }
 
 /*****************************************************************************
+ * Parameter tests
+ *****************************************************************************/
+
+/**
+ * @brief Ensure that a 3D orientation has a unit norm
+ */
+bool
+ensure_valid_rotation(double theta)
+{
+  if (theta < -M_PI || theta > M_PI)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "Rotation angle must be in ]-pi, pi]. Received: %f", theta);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Ensure that a 3D orientation has a unit norm
+ */
+bool
+ensure_unit_norm(double W, double X, double Y, double Z)
+{
+  if (fabs(sqrt(W * W + X * X + Y * Y + Z * Z) - 1) > MEOS_EPSILON)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+      "Rotation quaternion must be of unit norm. Received: %f",
+      sqrt(W * W + X * X + Y * Y + Z * Z));
+    return false;
+  }
+  return true;
+}
+
+/*****************************************************************************
  * Input/output functions
  *****************************************************************************/
 
@@ -169,7 +211,6 @@ Pose *
 pose_parse(const char **str, bool end)
 {
   Pose *result;
-  bool hasZ = false;
   const char *type_str = meostype_name(T_POSE);
 
   /* Determine whether the box has an SRID */
@@ -184,61 +225,58 @@ pose_parse(const char **str, bool end)
   else
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse pose value");
+      "Could not parse %s value: Missing prefix 'Pose'",
+      meostype_name(T_CBUFFER));
     return NULL;
-  }
-
-  /* Determine whether the pose is 3D */
-  if (strncasecmp(*str,"Z",1) == 0)
-  {
-    hasZ = true;
-    *str += 1;
-    p_whitespace(str);
   }
 
   /* Parse opening parenthesis */
   if (! ensure_oparen(str, type_str))
     return NULL;
 
-  /* Parse first 3 values: (x, y, theta) in 2D or (x, y, z, ...) in 3D */
-  double x, y, z;
+  /* Parse geo */
   p_whitespace(str);
-  if (! double_parse(str, &x)) return NULL;
-  p_whitespace(str); p_comma(str); p_whitespace(str);
-  if (! double_parse(str, &y)) return NULL;
-  p_whitespace(str); p_comma(str); p_whitespace(str);
-  if (! double_parse(str, &z)) return NULL;
-
-  if (!hasZ)
+  GSERIALIZED *gs;
+  /* The following call consumes also the separator passed as parameter */
+  if (! geo_parse(str, T_GEOMETRY, ',', &srid, &gs))
+    return NULL;
+  if (! ensure_point_type(gs) || ! ensure_not_empty(gs) ||
+      ! ensure_has_not_M_geo(gs))
   {
-    /* use z as theta in 2D */
-    if (z < -M_PI || z > M_PI)
-    {
-      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-        "Could not parse 2D pose: Rotation angle must be in ]-pi, pi]. Recieved: %f", z);
+    pfree(gs);
+    return NULL;
+  }
+
+  bool hasZ = FLAGS_GET_Z(gs->gflags);
+
+  if (! hasZ)
+  {
+    double theta;
+    p_whitespace(str); p_comma(str); p_whitespace(str);
+    if (! double_parse(str, &theta) || ! ensure_valid_rotation(theta))
       return NULL;
-    }
-    result = pose_make_2d(x, y, z);
+    POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
+    result = pose_make_2d(p->x, p->y, theta, srid);
   }
   else
   {
     double W, X, Y, Z;
     p_whitespace(str); p_comma(str); p_whitespace(str);
-    if (! double_parse(str, &W)) return NULL;
-    p_whitespace(str); p_comma(str); p_whitespace(str);
-    if (! double_parse(str, &X)) return NULL;
-    p_whitespace(str); p_comma(str); p_whitespace(str);
-    if (! double_parse(str, &Y)) return NULL;
-    p_whitespace(str); p_comma(str); p_whitespace(str);
-    if (! double_parse(str, &Z)) return NULL;
-    if (fabs(sqrt(W*W + X*X + Y*Y + Z*Z) - 1)  > MEOS_EPSILON)
-    {
-      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-        "Could not parse 3D pose: Rotation quaternion must be of unit norm. Recieved: %f",
-        sqrt(W*W + X*X + Y*Y + Z*Z));
+    if (! double_parse(str, &W)) 
       return NULL;
-    }
-    result = pose_make_3d(x, y, z, W, X, Y, Z);
+    p_whitespace(str); p_comma(str); p_whitespace(str);
+    if (! double_parse(str, &X)) 
+      return NULL;
+    p_whitespace(str); p_comma(str); p_whitespace(str);
+    if (! double_parse(str, &Y)) 
+      return NULL;
+    p_whitespace(str); p_comma(str); p_whitespace(str);
+    if (! double_parse(str, &Z)) 
+      return NULL;
+    if (! ensure_unit_norm(W, X, Y, Z))
+      return NULL;
+    POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
+    result = pose_make_3d(p->x, p->y, p->z, W, X, Y, Z, srid);
   }
 
   /* Parse closing parenthesis */
@@ -247,12 +285,11 @@ pose_parse(const char **str, bool end)
         (end && ! ensure_end_input(str, type_str)))
     return NULL;
 
-  pose_set_srid(result, srid);
   return result;
 }
 
 /**
- * @ingroup meos_base_inout
+ * @ingroup meos_pose_base_inout
  * @brief Return a pose from its string representation.
  * @param[in] str String
  * @csqlfn #Pose_in()
@@ -271,7 +308,7 @@ pose_in(const char *str)
 }
 
 /**
- * @ingroup meos_base_inout
+ * @ingroup meos_pose_base_inout
  * @brief Return the string representation of a pose
  * @param[in] pose Pose
  * @param[in] maxdd Maximum number of decimal digits
@@ -291,12 +328,13 @@ pose_out(const Pose *pose, int maxdd)
     return NULL;
 
   char *result = palloc(MAXPOSELEN);
-  char *x = float8_out(pose->data[0], maxdd);
-  char *y = float8_out(pose->data[1], maxdd);
-  char *z = float8_out(pose->data[2], maxdd); /* theta if 2D*/
+  GSERIALIZED *gs = pose_point(pose);
+  char *point = basetype_out(PointerGetDatum(gs), T_GEOMETRY, maxdd);
   if (!MEOS_FLAGS_GET_Z(pose->flags))
   {
-    snprintf(result, MAXPOSELEN - 1, "POSE (%s, %s, %s)", x, y, z);
+    char *theta = float8_out(pose->data[2], maxdd); /* theta if 2D*/
+    snprintf(result, MAXPOSELEN - 1, "POSE (%s, %s)", point, theta);
+    pfree(theta);
   }
   else
   {
@@ -304,11 +342,11 @@ pose_out(const Pose *pose, int maxdd)
     char *X = float8_out(pose->data[4], maxdd);
     char *Y = float8_out(pose->data[5], maxdd);
     char *Z = float8_out(pose->data[6], maxdd);
-    snprintf(result, MAXPOSELEN - 1, "POSE Z (%s, %s, %s, %s, %s, %s, %s)",
-      x, y, z, W, X, Y, Z);
+    snprintf(result, MAXPOSELEN - 1, "POSE(%s, %s, %s, %s, %s)",
+      point, W, X, Y, Z);
     pfree(W); pfree(X); pfree(Y); pfree(Z);
   }
-  pfree(x); pfree(y); pfree(z);
+  pfree(gs); pfree(point);
   return result;
 }
 
@@ -317,11 +355,10 @@ pose_out(const Pose *pose, int maxdd)
  *****************************************************************************/
 
 /**
- * @brief Output a pose in the Well-Known Text (WKT) representation (internal
- * function)
+ * @brief Output a pose in the Well-Known Text (WKT) representation
  */
 char *
-pose_wkt_out_int(Datum value, bool extended, int maxdd)
+pose_wkt_out(Datum value, bool extended, int maxdd)
 {
   Pose *pose = DatumGetPoseP(value);
   bool hasz = MEOS_FLAGS_GET_Z(pose->flags);
@@ -341,14 +378,14 @@ pose_wkt_out_int(Datum value, bool extended, int maxdd)
     X = float8_out(pose->data[4], maxdd);
     Y = float8_out(pose->data[5], maxdd);
     Z = float8_out(pose->data[6], maxdd);
-    len += strlen(W) + strlen(X) + strlen(Y) + strlen(Z);
+    len += strlen(W) + strlen(X) + strlen(Y) + strlen(Z) + 3; // Three ','
   }
   else
   {
     theta = float8_out(pose->data[2], maxdd);
-    len += strlen(theta);
+    len += strlen(theta) + 1; // One ','
   }
-  len += 8; // Pose(,) + end NULL
+  len += 7; // Pose() + end NULL
   char *result = palloc(len);
   if (hasz)
   {
@@ -364,31 +401,10 @@ pose_wkt_out_int(Datum value, bool extended, int maxdd)
   return result;
 }
 
-/**
- * @brief Output a pose in the Well-Known Text (WKT) representation
- * @note The parameter @p type is not needed for poses
- */
-char *
-pose_wkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
-{
-  return pose_wkt_out_int(value, false, maxdd);
-}
-
-/**
- * @brief Output a pose in the Extended Well-Known Text (EWKT) representation,
- * that is, in WKT representation prefixed with the SRID
- * @note The parameter @p type is not needed for temporal points
- */
-char *
-pose_ewkt_out(Datum value, meosType type __attribute__((unused)), int maxdd)
-{
-  return pose_wkt_out_int(value, true, maxdd);
-}
-
 /*****************************************************************************/
 
 /**
- * @ingroup meos_base_inout
+ * @ingroup meos_pose_base_inout
  * @brief Return the Well-Known Text (WKT) representation of a pose
  * @param[in] pose Pose
  * @param[in] maxdd Maximum number of decimal digits
@@ -404,47 +420,22 @@ pose_as_text(const Pose *pose, int maxdd)
 #else
   assert(pose);
 #endif /* MEOS */
-  /* Ensure validity of the arguments */
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return pose_wkt_out_int(PointerGetDatum(pose), false, maxdd);
+  return pose_wkt_out(PointerGetDatum(pose), false, maxdd);
 }
 
 /**
- * @ingroup meos_base_inout
- * @brief Return the Extended Well-Known Text (EWKT) representation of a
- * pose
+ * @ingroup meos_pose_base_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a pose
  * @param[in] pose Pose
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Tpose_as_ewkt()
+ * @csqlfn #Pose_as_ewkt()
  */
 char *
 pose_as_ewkt(const Pose *pose, int maxdd)
 {
-  /* Ensure validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose))
-    return NULL;
-#else
-  assert(pose);
-#endif /* MEOS */
-  /* Ensure validity of the arguments */
-  if (! ensure_not_negative(maxdd))
-    return NULL;
-
-  int32_t srid = pose_srid(pose);
-  char str1[18];
-  if (srid > 0)
-    /* SRID_MAXIMUM is defined by PostGIS as 999999 */
-    snprintf(str1, sizeof(str1), "SRID=%d;", srid);
-  else
-    str1[0] = '\0';
-  char *str2 = pose_wkt_out(PointerGetDatum(pose), 0, maxdd);
-  char *result = palloc(strlen(str1) + strlen(str2) + 1);
-  strcpy(result, str1);
-  strcat(result, str2);
-  pfree(str2);
-  return result;
+  return spatialbase_as_ewkt(PointerGetDatum(pose), T_POSE, maxdd);
 }
 
 /*****************************************************************************
@@ -452,7 +443,7 @@ pose_as_ewkt(const Pose *pose, int maxdd)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_inout
+ * @ingroup meos_pose_base_inout
  * @brief Return a pose from its Well-Known Binary (WKB) representation
  * @param[in] wkb WKB string
  * @param[in] size Size of the string
@@ -468,7 +459,7 @@ pose_from_wkb(const uint8_t *wkb, size_t size)
 }
 
 /**
- * @ingroup meos_temporal_inout
+ * @ingroup meos_pose_base_inout
  * @brief Return a pose from its hex-encoded ASCII Well-Known Binary (WKB)
  * representation
  * @param[in] hexwkb HexWKB string
@@ -487,7 +478,7 @@ pose_from_hexwkb(const char *hexwkb)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_base_inout
+ * @ingroup meos_pose_base_inout
  * @brief Return the Well-Known Binary (WKB) representation of a pose
  * @param[in] pose Pose
  * @param[in] variant Output variant
@@ -498,13 +489,17 @@ uint8_t *
 pose_as_wkb(const Pose *pose, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) pose) || ! ensure_not_null((void *) size_out))
     return NULL;
+#else
+  assert(pose); assert(size_out);
+#endif /* MEOS */
   return datum_as_wkb(PointerGetDatum(pose), T_POSE, variant, size_out);
 }
 
 /**
- * @ingroup meos_base_inout
+ * @ingroup meos_pose_base_inout
  * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
  * representation of a pose
  * @param[in] pose Pose
@@ -516,8 +511,12 @@ char *
 pose_as_hexwkb(const Pose *pose, uint8_t variant, size_t *size_out)
 {
   /* Ensure validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) pose) || ! ensure_not_null((void *) size_out))
     return NULL;
+#else
+  assert(pose); assert(size_out);
+#endif /* MEOS */
   return (char *) datum_as_wkb(PointerGetDatum(pose), T_POSE,
     variant | (uint8_t) WKB_HEX, size_out);
 }
@@ -527,19 +526,19 @@ pose_as_hexwkb(const Pose *pose, uint8_t variant, size_t *size_out)
  *****************************************************************************/
 
 /**
- * @ingroup meos_base_constructor
+ * @ingroup meos_pose_base_constructor
  * @brief Construct a 2D pose value from the arguments
  * @param[in] x,y Position
  * @param[in] theta Orientation
+ * @param[in] srid SRID
  */
 Pose *
-pose_make_2d(double x, double y, double theta)
+pose_make_2d(double x, double y, double theta, int32_t srid)
 {
-  if (theta < -M_PI || theta > M_PI)
-    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
-      "Rotation angle must be in ]-pi, pi]. Received: %f", theta);
+  if (! ensure_valid_rotation(theta))
+    return NULL;
 
-  /* We want a unique representation for theta */
+  /* Ensure a unique representation for theta */
   if (theta == -M_PI)
     theta = M_PI;
 
@@ -548,6 +547,7 @@ pose_make_2d(double x, double y, double theta)
   SET_VARSIZE(result, memsize);
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, false);
+  pose_set_srid(result, srid);
   result->data[0] = x;
   result->data[1] = y;
   result->data[2] = theta;
@@ -555,21 +555,58 @@ pose_make_2d(double x, double y, double theta)
 }
 
 /**
- * @ingroup meos_base_constructor
+ * @ingroup meos_pose_base_constructor
+ * @brief Construct a 2D pose value from a 2D point and a rotation angle
+ * @param[in] gs 2D Point
+ * @param[in] theta Orientation
+ */
+Pose *
+pose_make_point2d(const GSERIALIZED *gs, double theta)
+{
+  /* Ensure validity of parameters */
+#if MEOS
+  if (! ensure_not_null((void *) gs))
+    return NULL;
+#else
+  assert(gs);
+#endif /* MEOS */
+  if (! ensure_valid_rotation(theta) || ! ensure_not_empty(gs) ||
+      ! ensure_has_not_Z_geo(gs) || ! ensure_has_not_M_geo(gs))
+    return NULL;
+
+  /* Ensure a unique representation for theta */
+  if (theta == -M_PI)
+    theta = M_PI;
+
+  POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
+  const double *coordarr = (const double *) p;
+  size_t memsize = DOUBLE_PAD(sizeof(Pose)) + 3 * sizeof(double);
+  Pose *result = palloc0(memsize);
+  SET_VARSIZE(result, memsize);
+  MEOS_FLAGS_SET_X(result->flags, true);
+  MEOS_FLAGS_SET_Z(result->flags, false);
+  pose_set_srid(result, gserialized_get_srid(gs));
+  result->data[0] = coordarr[0];
+  result->data[1] = coordarr[1];
+  result->data[2] = theta;
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_base_constructor
  * @brief Construct a 3D pose value from the arguments
  * @param[in] x,y,z Position
  * @param[in] W,X,Y,Z Orientation
+ * @param[in] srid SRID
  */
 Pose *
-pose_make_3d(double x, double y, double z,
-  double W, double X, double Y, double Z)
+pose_make_3d(double x, double y, double z, double W, double X, double Y,
+  double Z, int32_t srid)
 {
-  if (fabs(sqrt(W*W + X*X + Y*Y + Z*Z) - 1)  > MEOS_EPSILON)
-    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
-      "Rotation quaternion must be of unit norm. Received: %f",
-      sqrt(W*W + X*X + Y*Y + Z*Z));
+  if (! ensure_unit_norm(W, X, Y, Z))
+      return NULL;
 
-  /* If we want a unique representation for the quaternion */
+  /* Ensure a unique representation for the quaternion */
   if (W < 0.0)
   {
     W = -W;
@@ -583,6 +620,7 @@ pose_make_3d(double x, double y, double z,
   SET_VARSIZE(result, memsize);
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, true);
+  pose_set_srid(result, srid);
   result->data[0] = x;
   result->data[1] = y;
   result->data[2] = z;
@@ -594,7 +632,55 @@ pose_make_3d(double x, double y, double z,
 }
 
 /**
- * @ingroup meos_base_constructor
+ * @ingroup meos_pose_base_constructor
+ * @brief Construct a 3D pose value from the arguments
+ * @param[in] gs 3D Point
+ * @param[in] W,X,Y,Z Orientation
+ */
+Pose *
+pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y,
+  double Z)
+{
+  /* Ensure validity of parameters */
+#if MEOS
+  if (! ensure_not_null((void *) gs))
+    return NULL;
+#else
+  assert(gs);
+#endif /* MEOS */
+  if (! ensure_unit_norm(W, X, Y, Z) || ! ensure_not_empty(gs) ||
+      ! ensure_has_Z_geo(gs) || ! ensure_has_not_M_geo(gs))
+    return NULL;
+
+  /* Ensure a unique representation for the quaternion */
+  if (W < 0.0)
+  {
+    W = -W;
+    X = -X;
+    Y = -Y;
+    Z = -Z;
+  }
+
+  POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
+  const double * coordarr = (const double *) p;
+  size_t memsize = DOUBLE_PAD(sizeof(Pose)) + 7 * sizeof(double);
+  Pose *result = palloc0(memsize);
+  SET_VARSIZE(result, memsize);
+  MEOS_FLAGS_SET_X(result->flags, true);
+  MEOS_FLAGS_SET_Z(result->flags, true);
+  pose_set_srid(result, gserialized_get_srid(gs));
+  result->data[0] = coordarr[0];
+  result->data[1] = coordarr[1];
+  result->data[2] = coordarr[2];
+  result->data[3] = W;
+  result->data[4] = X;
+  result->data[5] = Y;
+  result->data[6] = Z;
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_base_constructor
  * @brief Copy a pose value
  * @param[in] pose Pose
  */
@@ -614,77 +700,11 @@ pose_copy(const Pose *pose)
 }
 
 /*****************************************************************************
- * SRID functions
- *****************************************************************************/
-
-/**
- * @ingroup meos_base_spatial
- * @brief Return the SRID
- * @param[in] pose Pose
- */
-int32
-pose_srid(const Pose *pose)
-{
-  /* Ensure validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose))
-    return SRID_INVALID;
-#else
-  assert(pose);
-#endif /* MEOS */
-
-  int32 srid = 0;
-  srid = srid | (pose->srid[0] << 16);
-  srid = srid | (pose->srid[1] << 8);
-  srid = srid | (pose->srid[2]);
-  /* Only the first 21 bits are set. Slide up and back to pull
-     the negative bits down, if we need them. */
-  srid = (srid<<11)>>11;
-
-  /* 0 is our internal unknown value. We'll map back and forth here for now */
-  if (srid == 0)
-    return SRID_UNKNOWN;
-  else
-    return srid;
-}
-
-/**
- * @ingroup meos_base_spatial
- * @brief Set the SRID
- * @param[in] pose Pose
- * @param[in] srid SRID
- */
-void
-pose_set_srid(Pose *pose, int32 srid)
-{
-  /* Ensure validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose))
-  {
-    ;
-  }
-#else
-  assert(pose);
-#endif /* MEOS */
-
-  srid = clamp_srid(srid);
-
-  /* 0 is our internal unknown value.
-   * We'll map back and forth here for now */
-  if (srid == SRID_UNKNOWN)
-    srid = 0;
-
-  pose->srid[0] = (srid & 0x001F0000) >> 16;
-  pose->srid[1] = (srid & 0x0000FF00) >> 8;
-  pose->srid[2] = (srid & 0x000000FF);
-}
-
-/*****************************************************************************
  * Conversion functions
  *****************************************************************************/
 
 /**
- * @ingroup meos_base_conversion
+ * @ingroup meos_pose_base_conversion
  * @brief Convert a pose into a geometry point
  * @param[in] pose Pose
  */
@@ -717,7 +737,102 @@ pose_point(const Pose *pose)
 Datum
 datum_pose_point(Datum pose)
 {
-  return PosePGetDatum(pose_point(DatumGetPoseP(pose)));
+  return GserializedPGetDatum(pose_point(DatumGetPoseP(pose)));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_base_conversion
+ * @brief Return an array of poses converted into a geometry multipoint
+ * @param[in] posearr Array of poses
+ * @param[in] count Number of elements in the input array
+ * @pre The argument @p count is greater than 1
+ */
+GSERIALIZED *
+posearr_points(Pose **posearr, int count)
+{
+  assert(posearr); assert(count > 1);
+  GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * count);
+  /* SRID of the first element of the array */
+  int32_t srid = pose_srid(posearr[0]);
+  for (int i = 0; i < count; i++)
+  {
+    int32_t srid_elem = pose_srid(posearr[i]);
+    if (! ensure_same_srid(srid, srid_elem))
+    {
+      for (int j = 0; j < i; j++)
+        pfree(geoms[i]);
+      pfree(geoms);
+      return NULL;
+    }
+    geoms[i] = pose_point(posearr[i]);
+  }
+  GSERIALIZED *result = geo_collect_garray(geoms, count);
+  pfree_array((void **) geoms, count);
+  return result;
+}
+
+/*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_pose_base_accessor
+ * @brief Return the rotation of a 2D pose
+ * @param[in] pose Pose
+ * @return On error return @p DBL_MAX
+ */
+double
+pose_rotation(const Pose *pose)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) pose))
+    return DBL_MAX;
+#else
+  assert(pose);
+#endif /* MEOS */
+  if (! ensure_has_not_Z(T_POSE, pose->flags))
+    return DBL_MAX;
+
+  return pose->data[2];
+}
+
+/**
+ * @brief Convert a pose into a geometry point
+ */
+Datum
+datum_pose_rotation(Datum pose)
+{
+  return Float8GetDatum(pose_rotation(DatumGetPoseP(pose)));
+}
+
+/**
+ * @ingroup meos_pose_base_accessor
+ * @brief Return the orientation of a 3D pose
+ * @param[in] pose Pose
+ * @return On error return @p NULL
+ */
+double *
+pose_orientation(const Pose *pose)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) pose))
+    return NULL;
+#else
+  assert(pose);
+#endif /* MEOS */
+  if (! ensure_has_Z(T_POSE, pose->flags))
+    return NULL;
+
+  double *result = palloc(sizeof(double) * 4);
+  result[0] = pose->data[3];
+  result[1] = pose->data[4];
+  result[2] = pose->data[5];
+  result[3] = pose->data[6];
+  return result;
 }
 
 /*****************************************************************************
@@ -725,7 +840,7 @@ datum_pose_point(Datum pose)
  *****************************************************************************/
 
 /**
- * @ingroup meos_base_transf
+ * @ingroup meos_pose_base_transf
  * @brief Return a pose with the precision of the values set to a number of
  * decimal places
  */
@@ -733,7 +848,6 @@ Pose *
 pose_round(const Pose *pose, int maxdd)
 {
   /* Set precision of the values */
-
   Pose *result;
   if (MEOS_FLAGS_GET_Z(pose->flags))
   {
@@ -744,14 +858,14 @@ pose_round(const Pose *pose, int maxdd)
     double X = float_round(pose->data[4], maxdd);
     double Y = float_round(pose->data[5], maxdd);
     double Z = float_round(pose->data[6], maxdd);
-    result = pose_make_3d(x, y, z, W, X, Y, Z);
+    result = pose_make_3d(x, y, z, W, X, Y, Z, pose_srid(pose));
   }
   else
   {
     double x = float_round(pose->data[0], maxdd);
     double y = float_round(pose->data[1], maxdd);
     double theta = float_round(pose->data[2], maxdd);
-    result = pose_make_2d(x, y, theta);
+    result = pose_make_2d(x, y, theta, pose_srid(pose));
   }
   return result;
 }
@@ -766,6 +880,203 @@ datum_pose_round(Datum pose, Datum size)
 {
   /* Set precision of the values */
   return PointerGetDatum(pose_round(DatumGetPoseP(pose), DatumGetInt32(size)));
+}
+
+/**
+ * @ingroup meos_pose_base_transf
+ * @brief Return an array of poses with the precision of the vales set to a
+ * number of decimal places
+ * @param[in] posearr Array of poses
+ * @param[in] count Number of elements in the array
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Cbufferarr_round()
+ */
+Pose **
+posearr_round(const Pose **posearr, int count, int maxdd)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) posearr))
+    return NULL;
+#else
+  assert(posearr);
+#endif /* MEOS */
+  if (! ensure_positive(count) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  Pose **result = palloc(sizeof(Pose *) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = pose_round(posearr[i], maxdd);
+  return result;
+}
+
+/*****************************************************************************
+ * SRID functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_pose_base_srid
+ * @brief Return the SRID
+ * @param[in] pose Pose
+ */
+int32_t
+pose_srid(const Pose *pose)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) pose))
+    return SRID_INVALID;
+#else
+  assert(pose);
+#endif /* MEOS */
+
+  int32 srid = 0;
+  srid = srid | (pose->srid[0] << 16);
+  srid = srid | (pose->srid[1] << 8);
+  srid = srid | (pose->srid[2]);
+  /* Only the first 21 bits are set. Slide up and back to pull
+     the negative bits down, if we need them. */
+  srid = (srid<<11)>>11;
+
+  /* 0 is our internal unknown value. We'll map back and forth here for now */
+  if (srid == 0)
+    return SRID_UNKNOWN;
+  else
+    return srid;
+}
+
+/**
+ * @ingroup meos_pose_base_srid
+ * @brief Set the SRID
+ * @param[in] pose Pose
+ * @param[in] srid SRID
+ */
+void
+pose_set_srid(Pose *pose, int32_t srid)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) pose))
+  {
+    ;
+  }
+#else
+  assert(pose);
+#endif /* MEOS */
+
+  srid = clamp_srid(srid);
+
+  /* 0 is our internal unknown value.
+   * We'll map back and forth here for now */
+  if (srid == SRID_UNKNOWN)
+    srid = 0;
+
+  pose->srid[0] = (srid & 0x001F0000) >> 16;
+  pose->srid[1] = (srid & 0x0000FF00) >> 8;
+  pose->srid[2] = (srid & 0x000000FF);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return a pose transformed to another SRID using a pipeline
+ * @param[in] pose Pose
+ * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN for pipeline
+ * transformation
+ * @param[in] pj Information about the transformation
+ */
+Pose *
+pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
+{
+  assert(pose); assert(pj);
+  /* Copy the pose to transform its point in place */
+  Pose *result = pose_copy(pose);
+  GSERIALIZED *gs = pose_point(pose);
+  if (! point_transf_pj(gs, srid_to, pj))
+  {
+    pfree(result);
+    return NULL;
+  }
+  POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
+  /* Only the coordinates are transformed, not the orientation */
+  const double * coordarr = (const double *) p;
+  if (MEOS_FLAGS_GET_Z(pose->flags))
+  {
+    result->data[0] = coordarr[0];
+    result->data[1] = coordarr[1];
+    result->data[2] = coordarr[2];
+  }
+  else
+  {
+    result->data[0] = coordarr[0];
+    result->data[1] = coordarr[1];
+  }
+
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_base_srid
+ * @brief Return a pose transformed to another SRID
+ * @param[in] pose Pose
+ * @param[in] srid_to Target SRID
+ */
+Pose *
+pose_transform(const Pose *pose, int32_t srid_to)
+{
+  int32_t srid_from;
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) pose) || ! ensure_srid_known(srid_to) ||
+      ! ensure_srid_known(srid_from = pose_srid(pose)))
+    return NULL;
+    
+  /* Input and output SRIDs are equal, noop */
+  if (srid_from == srid_to)
+    return pose_copy(pose);
+
+  /* Get the structure with information about the projection */
+  LWPROJ *pj = lwproj_get(srid_from, srid_to);
+  if (! pj)
+    return NULL;
+
+  /* Transform the pose */
+  Pose *result = pose_transf_pj(pose, srid_to, pj);
+
+  /* Clean up and return */
+  proj_destroy(pj->pj); pfree(pj);
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_base_srid
+ * @brief Return a pose transformed to another SRID using a
+ * pipeline
+ * @param[in] pose Pose
+ * @param[in] pipeline Pipeline string
+ * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
+ * @param[in] is_forward True when the transformation is forward
+ */
+Pose *
+pose_transform_pipeline(const Pose *pose, const char *pipeline,
+  int32_t srid_to, bool is_forward)
+{
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) pose) || ! ensure_not_null((void *) pipeline))
+    return NULL;
+
+  /* There is NO test verifying whether the input and output SRIDs are equal */
+
+  /* Get the structure with information about the projection */
+  LWPROJ *pj = lwproj_get_pipeline(pipeline, is_forward);
+  if (! pj)
+    return NULL;
+
+  /* Transform the pose */
+  Pose *result = pose_transf_pj(pose, srid_to, pj);
+
+  /* Transform the pose */
+  proj_destroy(pj->pj); pfree(pj);
+  return result;
 }
 
 /*****************************************************************************
@@ -788,7 +1099,7 @@ pose_distance(Datum pose1, Datum pose2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_base_comp
+ * @ingroup meos_pose_base_comp
  * @brief Return true if the first pose is equal to the second one
  * @param[in] pose1,pose2 Poses
  */
@@ -822,18 +1133,18 @@ pose_eq(const Pose *pose1, const Pose *pose2)
 }
 
 /**
- * @ingroup meos_base_comp
+ * @ingroup meos_pose_base_comp
  * @brief Return true if the first pose is not equal to the second one
  * @param[in] pose1,pose2 Poses
  */
-bool
+inline bool
 pose_ne(const Pose *pose1, const Pose *pose2)
 {
-  return (! pose_eq(pose1, pose2));
+  return ! pose_eq(pose1, pose2);
 }
 
 /**
- * @ingroup meos_base_comp
+ * @ingroup meos_pose_base_comp
  * @brief Return true if the first pose is equal to the second one
  * @param[in] pose1,pose2 Poses
  */
@@ -867,18 +1178,18 @@ pose_same(const Pose *pose1, const Pose *pose2)
 }
 
 /**
- * @ingroup meos_base_comp
+ * @ingroup meos_pose_base_comp
  * @brief Return true if the first pose is not equal to the second one
  * @param[in] pose1,pose2 Poses
  */
-bool
+inline bool
 pose_nsame(const Pose *pose1, const Pose *pose2)
 {
-  return (! pose_same(pose1, pose2));
+  return ! pose_same(pose1, pose2);
 }
 
 /**
- * @ingroup meos_base_comp
+ * @ingroup meos_pose_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first pose
  * is less than, equal to, or greater than the second one
  * @param[in] pose1,pose2 Poses
@@ -915,52 +1226,48 @@ pose_cmp(const Pose *pose1, const Pose *pose2)
 }
 
 /**
- * @ingroup meos_base_comp
+ * @ingroup meos_pose_base_comp
  * @brief Return true if the first pose is less than the second one
  * @param[in] pose1,pose2 Poses
  */
-bool
+inline bool
 pose_lt(const Pose *pose1, const Pose *pose2)
 {
-  int cmp = pose_cmp(pose1, pose2);
-  return (cmp < 0);
+  return pose_cmp(pose1, pose2) < 0;
 }
 
 /**
- * @ingroup meos_base_comp
+ * @ingroup meos_pose_base_comp
  * @brief Return true if the first pose is less than or equal to the second one
  * @param[in] pose1,pose2 Poses
  */
-bool
+inline bool
 pose_le(const Pose *pose1, const Pose *pose2)
 {
-  int cmp = pose_cmp(pose1, pose2);
-  return (cmp <= 0);
+  return pose_cmp(pose1, pose2) <= 0;
 }
 
 /**
- * @ingroup meos_base_comp
+ * @ingroup meos_pose_base_comp
  * @brief Return true if the first pose is greater than the second one
  * @param[in] pose1,pose2 Poses
  */
-bool
+inline bool
 pose_gt(const Pose *pose1, const Pose *pose2)
 {
-  int cmp = pose_cmp(pose1, pose2);
-  return (cmp > 0);
+  return pose_cmp(pose1, pose2) > 0;
 }
 
 /**
- * @ingroup meos_base_comp
+ * @ingroup meos_pose_base_comp
  * @brief Return true if the first pose is greater than or equal to the second
  * one
  * @param[in] pose1,pose2 Poses
  */
-bool
+inline bool
 pose_ge(const Pose *pose1, const Pose *pose2)
 {
-  int cmp = pose_cmp(pose1, pose2);
-  return (cmp >= 0);
+  return pose_cmp(pose1, pose2) >= 0;
 }
 
 /*****************************************************************************
@@ -977,7 +1284,7 @@ pose_ge(const Pose *pose1, const Pose *pose2)
 void hashlittle2(const void *key, size_t length, uint32_t *pc, uint32_t *pb);
 
 /**
- * @ingroup meos_base_accessor
+ * @ingroup meos_pose_base_accessor
  * @brief Return the 32-bit hash value of a pose
  * @param[in] pose Pose
  */
@@ -997,7 +1304,7 @@ pose_hash(const Pose *pose)
   int32_t pb = 0, pc = 0;
   /* Point to just the type/coordinate part of buffer */
   size_t hsz1 = 8; /* varsize (4) + flags (1) + srid(3) */
-  uint8_t *b1 = (uint8_t *)pose + hsz1;
+  uint8_t *b1 = (uint8_t *) pose + hsz1;
   /* Calculate size of type/coordinate buffer */
   size_t sz1 = VARSIZE(pose);
   size_t bsz1 = sz1 - hsz1;
@@ -1008,17 +1315,17 @@ pose_hash(const Pose *pose)
   /* Copy srid into front of combined buffer */
   memcpy(b2, &srid, sizeof(int));
   /* Copy type/coordinates into rest of combined buffer */
-  memcpy(b2+sizeof(int), b1, bsz1);
+  memcpy(b2 + sizeof(int), b1, bsz1);
   /* Hash combined buffer */
-  hashlittle2(b2, bsz2, (uint32_t *)&pb, (uint32_t *)&pc);
+  hashlittle2(b2, bsz2, (uint32_t *) &pb, (uint32_t *) &pc);
   pfree(b2);
   hval = pb ^ pc;
   return hval;
 }
 
 /**
- * @ingroup meos_base_accessor
- * @brief Return the 64-bit hash value of a point using a seed
+ * @ingroup meos_pose_base_accessor
+ * @brief Return the 64-bit hash value of a pose using a seed
  * @param[in] pose Pose
  * @param[in] seed Seed
  * csqlfn hash_extended

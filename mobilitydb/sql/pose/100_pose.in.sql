@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * tpose_static.sql
- * Static pose type
+ * @file
+ * @brief Functions for the static pose type
  */
 
 CREATE TYPE pose;
@@ -68,19 +68,96 @@ CREATE TYPE pose (
   alignment = double
 );
 
+/*****************************************************************************
+ * Input/output from (E)WKT, (E)WKB, and HexEWKB
+ *****************************************************************************/
+
+CREATE FUNCTION poseFromText(text)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION poseFromEWKT(text)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION poseFromBinary(bytea)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION poseFromEWKB(bytea)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION poseFromHexEWKB(text)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE FUNCTION asText(pose, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Pose_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(pose[], maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asEWKT(pose, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Pose_as_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKT(pose[], maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(pose, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Pose_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asEWKB(pose, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Pose_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexEWKB(pose, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Pose_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Constructors
  ******************************************************************************/
 
-CREATE FUNCTION pose(double precision, double precision, double precision)
+CREATE FUNCTION pose(double precision, double precision, double precision,
+    srid integer DEFAULT 0)
   RETURNS pose
   AS 'MODULE_PATHNAME', 'Pose_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION pose(double precision, double precision, double precision,
-  double precision, double precision, double precision, double precision)
+  double precision, double precision, double precision, double precision,
+    srid integer DEFAULT 0)
   RETURNS pose
   AS 'MODULE_PATHNAME', 'Pose_constructor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION pose(geometry, double precision)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_constructor_point'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION pose(geometry, double precision, double precision, 
+    double precision, double precision)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_constructor_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -89,7 +166,7 @@ CREATE FUNCTION pose(double precision, double precision, double precision,
 
 CREATE FUNCTION geometry(pose)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Pose_to_geom'
+  AS 'MODULE_PATHNAME', 'Pose_to_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (pose AS geometry) WITH FUNCTION geometry(pose);
@@ -98,6 +175,77 @@ CREATE CAST (pose AS geometry) WITH FUNCTION geometry(pose);
  * Accessor functions
  *****************************************************************************/
 
+CREATE FUNCTION point(pose)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Pose_point'
+  LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION rotation(pose)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Pose_rotation'
+  LANGUAGE C IMMUTABLE STRICT;
+
+CREATE TYPE quaternion AS (
+  W float,
+  X float,
+  Y float,
+  Z float
+);
+
+CREATE FUNCTION orientation(pose)
+  RETURNS quaternion
+  AS 'MODULE_PATHNAME', 'Pose_orientation'
+  LANGUAGE C IMMUTABLE STRICT;
+
+/*****************************************************************************
+ * Modification functions
+ *****************************************************************************/
+
+CREATE FUNCTION round(pose, integer DEFAULT 0)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  
+/*****************************************************************************
+ * SRID functions
+ *****************************************************************************/
+
+CREATE FUNCTION SRID(pose)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Pose_srid'
+  LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION setSRID(pose, integer)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transform(pose, integer)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transformPipeline(pose, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_transform_pipeline'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Same
+ *****************************************************************************/
+
+CREATE FUNCTION pose_same(pose, pose)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Pose_same'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ~= (
+  PROCEDURE = pose_same,
+  LEFTARG = pose, RIGHTARG = pose,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
 
 /******************************************************************************
  * Comparisons
@@ -177,5 +325,22 @@ CREATE OPERATOR CLASS pose_btree_ops
   OPERATOR  4 >= ,
   OPERATOR  5 > ,
   FUNCTION  1 pose_cmp(pose, pose);
+
+/******************************************************************************/
+
+CREATE FUNCTION pose_hash(pose)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Pose_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION pose_hash_extended(pose, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Pose_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS pose_hash_ops
+  DEFAULT FOR TYPE pose USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   pose_hash(pose),
+    FUNCTION    2   pose_hash_extended(pose, bigint);
 
 /******************************************************************************/

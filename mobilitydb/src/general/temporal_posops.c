@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -57,7 +57,7 @@ PG_FUNCTION_INFO_V1(Before_tstzspan_temporal);
  * @sqlfn temporal_before()
  * @sqlop @p <<#
  */
-Datum
+inline Datum
 Before_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_tstzspan_temporal(fcinfo, &left_span_span);
@@ -71,7 +71,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tstzspan_temporal);
  * @sqlfn temporal_overbefore()
  * @sqlop @p &<#
  */
-Datum
+inline Datum
 Overbefore_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_tstzspan_temporal(fcinfo, &overleft_span_span);
@@ -85,7 +85,7 @@ PG_FUNCTION_INFO_V1(After_tstzspan_temporal);
  * @sqlfn temporal_after()
  * @sqlop @p #>>
  */
-Datum
+inline Datum
 After_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_tstzspan_temporal(fcinfo, &right_span_span);
@@ -99,7 +99,7 @@ PG_FUNCTION_INFO_V1(Overafter_tstzspan_temporal);
  * @sqlfn temporal_overafter()
  * @sqlop @p #&>
  */
-Datum
+inline Datum
 Overafter_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_tstzspan_temporal(fcinfo, &overright_span_span);
@@ -116,7 +116,7 @@ PG_FUNCTION_INFO_V1(Before_temporal_tstzspan);
  * @sqlfn temporal_before()
  * @sqlop @p <<#
  */
-Datum
+inline Datum
 Before_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_tstzspan(fcinfo, &left_span_span);
@@ -130,7 +130,7 @@ PG_FUNCTION_INFO_V1(Overbefore_temporal_tstzspan);
  * @sqlfn temporal_overbefore()
  * @sqlop @p &<#
  */
-Datum
+inline Datum
 Overbefore_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_tstzspan(fcinfo, &overleft_span_span);
@@ -144,7 +144,7 @@ PG_FUNCTION_INFO_V1(After_temporal_tstzspan);
  * @sqlfn temporal_after()
  * @sqlop @p #>>
  */
-Datum
+inline Datum
 After_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_tstzspan(fcinfo, &right_span_span);
@@ -158,7 +158,7 @@ PG_FUNCTION_INFO_V1(Overafter_temporal_tstzspan);
  * @sqlfn temporal_overafter()
  * @sqlop @p #&>
  */
-Datum
+inline Datum
 Overafter_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_tstzspan(fcinfo, &overright_span_span);
@@ -175,7 +175,7 @@ PG_FUNCTION_INFO_V1(Before_temporal_temporal);
  * @sqlfn temporal_before()
  * @sqlop @p <<#
  */
-Datum
+inline Datum
 Before_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_temporal(fcinfo, &left_span_span);
@@ -189,7 +189,7 @@ PG_FUNCTION_INFO_V1(Overbefore_temporal_temporal);
  * @sqlfn temporal_overbefore()
  * @sqlop @p &<#
  */
-Datum
+inline Datum
 Overbefore_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_temporal(fcinfo, &overleft_span_span);
@@ -203,7 +203,7 @@ PG_FUNCTION_INFO_V1(After_temporal_temporal);
  * @sqlfn temporal_after()
  * @sqlop @p #>>
  */
-Datum
+inline Datum
 After_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_temporal(fcinfo, &right_span_span);
@@ -217,7 +217,7 @@ PG_FUNCTION_INFO_V1(Overafter_temporal_temporal);
  * @sqlfn temporal_overafter()
  * @sqlop @p #&>
  */
-Datum
+inline Datum
 Overafter_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_temporal(fcinfo, &overright_span_span);
@@ -234,7 +234,7 @@ PG_FUNCTION_INFO_V1(Left_numspan_tnumber);
  * @sqlfn temporal_left()
  * @sqlop @p <<
  */
-Datum
+inline Datum
 Left_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_numspan_tnumber(fcinfo, &left_span_span);
@@ -249,7 +249,7 @@ PG_FUNCTION_INFO_V1(Overleft_numspan_tnumber);
  * @sqlfn temporal_overleft()
  * @sqlop @p &<
  */
-Datum
+inline Datum
 Overleft_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_numspan_tnumber(fcinfo, &overleft_span_span);
@@ -263,7 +263,7 @@ PG_FUNCTION_INFO_V1(Right_numspan_tnumber);
  * @sqlfn temporal_right()
  * @sqlop @p >>
  */
-Datum
+inline Datum
 Right_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_numspan_tnumber(fcinfo, &right_span_span);
@@ -277,7 +277,7 @@ PG_FUNCTION_INFO_V1(Overright_numspan_tnumber);
  * @sqlfn temporal_overright()
  * @sqlop @p &>
  */
-Datum
+inline Datum
 Overright_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_numspan_tnumber(fcinfo, &overright_span_span);
@@ -294,7 +294,7 @@ PG_FUNCTION_INFO_V1(Left_tnumber_numspan);
  * @sqlfn temporal_left()
  * @sqlop @p <<
  */
-Datum
+inline Datum
 Left_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_numspan(fcinfo, &left_span_span);
@@ -308,7 +308,7 @@ PG_FUNCTION_INFO_V1(Overleft_tnumber_numspan);
  * @sqlfn temporal_overleft()
  * @sqlop @p &<
  */
-Datum
+inline Datum
 Overleft_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_numspan(fcinfo, &overleft_span_span);
@@ -322,7 +322,7 @@ PG_FUNCTION_INFO_V1(Right_tnumber_numspan);
  * @sqlfn temporal_right()
  * @sqlop @p >>
  */
-Datum
+inline Datum
 Right_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_numspan(fcinfo, &right_span_span);
@@ -337,7 +337,7 @@ PG_FUNCTION_INFO_V1(Overright_tnumber_numspan);
  * @sqlfn temporal_overright()
  * @sqlop @p &>
  */
-Datum
+inline Datum
 Overright_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_numspan(fcinfo, &overright_span_span);
@@ -354,7 +354,7 @@ PG_FUNCTION_INFO_V1(Left_tbox_tnumber);
  * @sqlfn temporal_left()
  * @sqlop @p <<
  */
-Datum
+inline Datum
 Left_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tbox_tnumber(fcinfo, &left_tbox_tbox);
@@ -368,7 +368,7 @@ PG_FUNCTION_INFO_V1(Overleft_tbox_tnumber);
  * @sqlfn temporal_overleft()
  * @sqlop @p &<
  */
-Datum
+inline Datum
 Overleft_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tbox_tnumber(fcinfo, &overleft_tbox_tbox);
@@ -382,7 +382,7 @@ PG_FUNCTION_INFO_V1(Right_tbox_tnumber);
  * @sqlfn temporal_right()
  * @sqlop @p >>
  */
-Datum
+inline Datum
 Right_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tbox_tnumber(fcinfo, &right_tbox_tbox);
@@ -396,7 +396,7 @@ PG_FUNCTION_INFO_V1(Overright_tbox_tnumber);
  * @sqlfn temporal_overright()
  * @sqlop @p &>
  */
-Datum
+inline Datum
 Overright_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tbox_tnumber(fcinfo, &overright_tbox_tbox);
@@ -410,7 +410,7 @@ PG_FUNCTION_INFO_V1(Before_tbox_tnumber);
  * @sqlfn temporal_before()
  * @sqlop @p <<#
  */
-Datum
+inline Datum
 Before_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tbox_tnumber(fcinfo, &before_tbox_tbox);
@@ -424,7 +424,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tbox_tnumber);
  * @sqlfn temporal_overbefore()
  * @sqlop @p &<#
  */
-Datum
+inline Datum
 Overbefore_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tbox_tnumber(fcinfo, &overbefore_tbox_tbox);
@@ -438,7 +438,7 @@ PG_FUNCTION_INFO_V1(After_tbox_tnumber);
  * @sqlfn temporal_after()
  * @sqlop @p #>>
  */
-Datum
+inline Datum
 After_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tbox_tnumber(fcinfo, &after_tbox_tbox);
@@ -452,7 +452,7 @@ PG_FUNCTION_INFO_V1(Overafter_tbox_tnumber);
  * @sqlfn temporal_overafter()
  * @sqlop @p #&>
  */
-Datum
+inline Datum
 Overafter_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tbox_tnumber(fcinfo, &overafter_tbox_tbox);
@@ -469,7 +469,7 @@ PG_FUNCTION_INFO_V1(Left_tnumber_tbox);
  * @sqlfn temporal_left()
  * @sqlop @p <<
  */
-Datum
+inline Datum
 Left_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tbox(fcinfo, &left_tbox_tbox);
@@ -483,7 +483,7 @@ PG_FUNCTION_INFO_V1(Overleft_tnumber_tbox);
  * @sqlfn temporal_overleft()
  * @sqlop @p &<
  */
-Datum
+inline Datum
 Overleft_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tbox(fcinfo, &overleft_tbox_tbox);
@@ -497,7 +497,7 @@ PG_FUNCTION_INFO_V1(Right_tnumber_tbox);
  * @sqlfn temporal_right()
  * @sqlop @p >>
  */
-Datum
+inline Datum
 Right_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tbox(fcinfo, &right_tbox_tbox);
@@ -511,7 +511,7 @@ PG_FUNCTION_INFO_V1(Overright_tnumber_tbox);
  * @sqlfn temporal_overright()
  * @sqlop @p &>
  */
-Datum
+inline Datum
 Overright_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tbox(fcinfo, &overright_tbox_tbox);
@@ -525,7 +525,7 @@ PG_FUNCTION_INFO_V1(Before_tnumber_tbox);
  * @sqlfn temporal_before()
  * @sqlop @p <<#
  */
-Datum
+inline Datum
 Before_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tbox(fcinfo, &before_tbox_tbox);
@@ -539,7 +539,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tnumber_tbox);
  * @sqlfn temporal_overbefore()
  * @sqlop @p &<#
  */
-Datum
+inline Datum
 Overbefore_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tbox(fcinfo, &overbefore_tbox_tbox);
@@ -553,7 +553,7 @@ PG_FUNCTION_INFO_V1(After_tnumber_tbox);
  * @sqlfn temporal_after()
  * @sqlop @p #>>
  */
-Datum
+inline Datum
 After_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tbox(fcinfo, &after_tbox_tbox);
@@ -567,7 +567,7 @@ PG_FUNCTION_INFO_V1(Overafter_tnumber_tbox);
  * @sqlfn temporal_overafter()
  * @sqlop @p #&>
  */
-Datum
+inline Datum
 Overafter_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tbox(fcinfo, &overafter_tbox_tbox);
@@ -585,7 +585,7 @@ PG_FUNCTION_INFO_V1(Left_tnumber_tnumber);
  * @sqlfn temporal_left()
  * @sqlop @p <<
  */
-Datum
+inline Datum
 Left_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tnumber(fcinfo, &left_tbox_tbox);
@@ -600,7 +600,7 @@ PG_FUNCTION_INFO_V1(Overleft_tnumber_tnumber);
  * @sqlfn temporal_overleft()
  * @sqlop @p &<
  */
-Datum
+inline Datum
 Overleft_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tnumber(fcinfo, &overleft_tbox_tbox);
@@ -615,7 +615,7 @@ PG_FUNCTION_INFO_V1(Right_tnumber_tnumber);
  * @sqlfn temporal_right()
  * @sqlop @p >>
  */
-Datum
+inline Datum
 Right_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tnumber(fcinfo, &right_tbox_tbox);
@@ -630,7 +630,7 @@ PG_FUNCTION_INFO_V1(Overright_tnumber_tnumber);
  * @sqlfn temporal_overright()
  * @sqlop @p &>
  */
-Datum
+inline Datum
 Overright_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tnumber(fcinfo, &overright_tbox_tbox);
@@ -644,7 +644,7 @@ PG_FUNCTION_INFO_V1(Before_tnumber_tnumber);
  * @sqlfn temporal_before()
  * @sqlop @p <<#
  */
-Datum
+inline Datum
 Before_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tnumber(fcinfo, &before_tbox_tbox);
@@ -658,7 +658,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tnumber_tnumber);
  * @sqlfn temporal_overbefore()
  * @sqlop @p &<#
  */
-Datum
+inline Datum
 Overbefore_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tnumber(fcinfo, &overbefore_tbox_tbox);
@@ -672,7 +672,7 @@ PG_FUNCTION_INFO_V1(After_tnumber_tnumber);
  * @sqlfn temporal_after()
  * @sqlop @p #>>
  */
-Datum
+inline Datum
 After_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tnumber(fcinfo, &after_tbox_tbox);
@@ -686,7 +686,7 @@ PG_FUNCTION_INFO_V1(Overafter_tnumber_tnumber);
  * @sqlfn temporal_overafter()
  * @sqlop @p #&>
  */
-Datum
+inline Datum
 Overafter_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tnumber(fcinfo, &overafter_tbox_tbox);

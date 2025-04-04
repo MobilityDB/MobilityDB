@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * tcbuffer.sql
- * Basic functions for temporal circular buffers
+ * @file
+ * @brief Basic functions for temporal circular buffers
  */
 
 CREATE TYPE tcbuffer;
@@ -59,10 +59,6 @@ CREATE FUNCTION tcbuffer_typmod_in(cstring[])
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Tgeompoint_typmod_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tcbuffer_typmod_out(integer)
-  RETURNS cstring
-  AS 'MODULE_PATHNAME', 'Tspatial_typmod_out'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE tcbuffer (
   internallength = variable,
@@ -71,7 +67,7 @@ CREATE TYPE tcbuffer (
   receive = tcbuffer_recv,
   send = temporal_send,
   typmod_in = tcbuffer_typmod_in,
-  typmod_out = tcbuffer_typmod_out,
+  typmod_out = tspatial_typmod_out,
   storage = extended,
   alignment = double,
   analyze = tspatial_analyze
@@ -81,20 +77,22 @@ CREATE TYPE tcbuffer (
 CREATE FUNCTION tcbuffer(tcbuffer, integer)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME','Tcbuffer_enforce_typmod'
-  LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tcbuffer AS tcbuffer) WITH FUNCTION tcbuffer(tcbuffer, integer) AS IMPLICIT;
 
--- Input/output in WKT, WKB and HexWKB format
+/*****************************************************************************
+ * Input/output from (E)WKT, (E)WKB, HexEWKB, and MFJSON representation
+ *****************************************************************************/
 
 CREATE FUNCTION tcbufferFromText(text)
   RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Tcbuffer_from_ewkt'
+  AS 'MODULE_PATHNAME', 'Tspatial_from_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tcbufferFromEWKT(text)
   RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Tcbuffer_from_ewkt'
+  AS 'MODULE_PATHNAME', 'Tspatial_from_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tcbufferFromBinary(bytea)
@@ -116,7 +114,7 @@ CREATE FUNCTION tcbufferFromHexEWKB(text)
 
 CREATE FUNCTION asText(tcbuffer, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Tcbuffer_as_text'
+  AS 'MODULE_PATHNAME', 'Tspatial_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asText(tcbuffer[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
@@ -125,7 +123,7 @@ CREATE FUNCTION asText(tcbuffer[], maxdecimaldigits int4 DEFAULT 15)
 
 CREATE FUNCTION asEWKT(tcbuffer, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Tcbuffer_as_ewkt'
+  AS 'MODULE_PATHNAME', 'Tspatial_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asEWKT(tcbuffer[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
@@ -155,14 +153,17 @@ CREATE FUNCTION tcbuffer(cbuffer, timestamptz)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tcbuffer(cbuffer, tstzset)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tcbuffer(cbuffer, tstzspan, text DEFAULT 'linear')
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tcbuffer(cbuffer, tstzspanset, text DEFAULT 'linear')
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_tstzspanset'
@@ -175,10 +176,12 @@ CREATE FUNCTION tcbufferSeq(tcbuffer[], text DEFAULT 'linear',
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Tsequence_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tcbufferSeqSet(tcbuffer[])
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- The function is not strict
 CREATE FUNCTION tcbufferSeqSetGaps(tcbuffer[], maxt interval DEFAULT NULL,
     maxdist float DEFAULT NULL, text DEFAULT 'linear')
@@ -194,9 +197,13 @@ CREATE FUNCTION tcbuffer(tgeompoint, tfloat)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Cast functions
+ * Conversions
  ******************************************************************************/
 
+CREATE FUNCTION timeSpan(tcbuffer)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeompoint(tcbuffer)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tcbuffer_to_tgeompoint'
@@ -210,79 +217,29 @@ CREATE FUNCTION tcbuffer(tgeompoint)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Tgeompoint_to_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSpan(tcbuffer)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE CAST (tcbuffer AS tstzspan) WITH FUNCTION timeSpan(tcbuffer);
 CREATE CAST (tcbuffer AS tgeompoint) WITH FUNCTION tgeompoint(tcbuffer);
 CREATE CAST (tcbuffer AS tfloat) WITH FUNCTION tfloat(tcbuffer);
 CREATE CAST (tgeompoint AS tcbuffer) WITH FUNCTION tcbuffer(tgeompoint);
-CREATE CAST (tcbuffer AS tstzspan) WITH FUNCTION timeSpan(tcbuffer);
-
-/******************************************************************************
- * Transformation functions
- ******************************************************************************/
-
-CREATE FUNCTION tcbufferInst(tcbuffer)
-  RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tcbufferSeq(tcbuffer, text)
-  RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tcbufferSeq(tcbuffer)
-  RETURNS tcbuffer
-  AS 'SELECT @extschema@.tcbufferSeq($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tcbufferSeqSet(tcbuffer, text)
-  RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tcbufferSeqSet(tcbuffer)
-  RETURNS tcbuffer
-  AS 'SELECT @extschema@.tcbufferSeqSet($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION setInterp(tcbuffer, text)
-  RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION round(tcbuffer, integer DEFAULT 0)
-  RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Tcbuffer_round'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/******************************************************************************
- * Append functions
- ******************************************************************************/
-
-CREATE FUNCTION appendInstant(tcbuffer, tcbuffer)
-  RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION appendSequence(tcbuffer, tcbuffer)
-  RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION merge(tcbuffer, tcbuffer)
-  RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Temporal_merge'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION merge(tcbuffer[])
-  RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Temporal_merge_array'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Accessor functions
  ******************************************************************************/
+-- Specific accessors for temporal circular buffers
+
+CREATE FUNCTION points(tcbuffer)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Tcbuffer_points'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION radius(tcbuffer)
+  RETURNS floatset
+  AS 'MODULE_PATHNAME', 'Tcbuffer_radius'
+  LANGUAGE C IMMUTABLE STRICT;
+
+/******************************************************************************/
+-- Accessors for all temporal types
 
 CREATE FUNCTION tempSubtype(tcbuffer)
   RETURNS text
@@ -305,27 +262,22 @@ CREATE FUNCTION getValue(tcbuffer)
   AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- timestamp is a reserved word in SQL
+CREATE FUNCTION getTimestamp(tcbuffer)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- values is a reserved word in SQL
 CREATE FUNCTION getValues(tcbuffer)
   RETURNS cbufferset
   AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION points(tcbuffer)
-  RETURNS geomset
-  AS 'MODULE_PATHNAME', 'Tcbuffer_points'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 -- time is a reserved word in SQL
 CREATE FUNCTION getTime(tcbuffer)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- timestamp is a reserved word in SQL
-CREATE FUNCTION getTimestamp(tcbuffer)
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tcbuffer)
@@ -341,6 +293,11 @@ CREATE FUNCTION endValue(tcbuffer)
 CREATE FUNCTION valueN(tcbuffer, int)
   RETURNS cbuffer
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueAtTimestamp(tcbuffer, timestamptz)
+  RETURNS cbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION duration(tcbuffer, boundspan boolean DEFAULT FALSE)
@@ -438,9 +395,38 @@ CREATE FUNCTION segments(tcbuffer)
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************
+/******************************************************************************
  * Transformation functions
- *****************************************************************************/
+ ******************************************************************************/
+
+CREATE FUNCTION tcbufferInst(tcbuffer)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tcbufferSeq(tcbuffer, text DEFAULT NULL)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tcbufferSeqSet(tcbuffer, text DEFAULT NULL)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION setInterp(tcbuffer, text)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION round(tcbuffer, integer DEFAULT 0)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION round(tcbuffer[], integer DEFAULT 0)
+  RETURNS tcbuffer[]
+  AS 'MODULE_PATHNAME', 'Temporalarr_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shiftTime(tcbuffer, interval)
   RETURNS tcbuffer
@@ -455,20 +441,6 @@ CREATE FUNCTION scaleTime(tcbuffer, interval)
 CREATE FUNCTION shiftScaleTime(tcbuffer, interval, interval)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
- * Unnest Function
- *****************************************************************************/
-
-CREATE TYPE cbuffer_tstzspanset AS (
-  value cbuffer,
-  time tstzspanset
-);
-
-CREATE FUNCTION unnest(tcbuffer)
-  RETURNS SETOF cbuffer_tstzspanset
-  AS 'MODULE_PATHNAME', 'Temporal_unnest'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -505,11 +477,6 @@ CREATE FUNCTION minusTime(tcbuffer, timestamptz)
   AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueAtTimestamp(tcbuffer, timestamptz)
-  RETURNS cbuffer
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION atTime(tcbuffer, tstzset)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_at_tstzset'
@@ -538,6 +505,20 @@ CREATE FUNCTION atTime(tcbuffer, tstzspanset)
 CREATE FUNCTION minusTime(tcbuffer, tstzspanset)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Unnest Function
+ *****************************************************************************/
+
+CREATE TYPE cbuffer_tstzspanset AS (
+  value cbuffer,
+  time tstzspanset
+);
+
+CREATE FUNCTION unnest(tcbuffer)
+  RETURNS SETOF cbuffer_tstzspanset
+  AS 'MODULE_PATHNAME', 'Temporal_unnest'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -579,6 +560,27 @@ CREATE FUNCTION deleteTime(tcbuffer, tstzspan, connect boolean DEFAULT TRUE)
 CREATE FUNCTION deleteTime(tcbuffer, tstzspanset, connect boolean DEFAULT TRUE)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_delete_tstzspanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION appendInstant(tcbuffer, tcbuffer)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION appendSequence(tcbuffer, tcbuffer)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- The function is not strict
+CREATE FUNCTION merge(tcbuffer, tcbuffer)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_merge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION merge(tcbuffer[])
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Temporal_merge_array'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

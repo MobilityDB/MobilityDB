@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -81,8 +81,6 @@ typedef struct
 /* General functions */
 
 extern char *set_out_fn(const Set *s, int maxdd, outfunc value_out);
-
-extern Set *set_round(const Set *s, int maxdd, datum_func2 func);
 
 extern bool ensure_set_isof_type(const Set *s, meosType settype);
 extern bool ensure_same_set_type(const Set *s1, const Set *s2);

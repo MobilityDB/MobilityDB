@@ -8,14 +8,14 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<chapter id ="introduction">
+<chapter xml:id ="introduction">
 	<title>Introducción</title>
 
 	<para>MobilityDB es una extensión de <ulink url="http://postgresql.org"> PostgreSQL</ulink> y <ulink url="http://postgis.net"> PostGIS</ulink> que proporciona <emphasis>tipos temporales</emphasis>. Dichos tipos de datos representan la evolución en el tiempo de los valores de algún tipo de elemento, llamado tipo base del tipo temporal. Por ejemplo, se pueden usar enteros temporales para representar la evolución en el tiempo de la marchar utilizada por un automóvil en movimiento. En este caso, el tipo de datos es <emphasis>entero temporal</emphasis> y el tipo base es <emphasis>entero</emphasis>. Del mismo modo, se puede utilizar un número flotante temporal para representar la evolución en el tiempo de la velocidad de un automóvil. Como otro ejemplo, se puede usar un punto temporal para representar la evolución en el tiempo de la ubicación de un automóvil, como lo reportan los dispositivos GPS. Los tipos temporales son útiles porque representar valores que evolucionan en el tiempo es esencial en muchas aplicaciones, por ejemplo, en aplicaciones de movilidad. Además, los operadores de los tipos base (como los operadores aritméticos y la agregación para números enteros y flotantes, las relaciones espaciales y la distancia para las geometrías) se pueden generalizar intuitivamente cuando los valores evolucionan en el tiempo.</para>
 
 	<para>MobilityDB proporciona los siguientes tipos temporales: <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeometry</varname>, <varname>tgeography</varname>, <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Estos tipos temporales se basan, respectivamente, en los tipos de base <varname>bool</varname>, <varname>integer</varname>, <varname>float</varname> y <varname>text</varname> proporcionados por PostgreSQL, y en los tipos base de <varname>geometry</varname> y <varname>geography</varname> proporcionados por PostGIS, donde <varname>tgeometry</varname> y <varname>tgeography</varname> aceptan geometrías/geografías arbitrarias, mientras que <varname>tgeompoint</varname> y <varname>tgeogpoint</varname> solo aceptan puntos 2D o 3D.<footnote><para>Aunque los puntos temporales 4D se pueden representar, la dimensión M actualmente no se tiene en cuenta.</para></footnote> Además, MobilityDB proporciona los tipos de plantilla <emphasis>set</emphasis>, <emphasis>span</emphasis> y <emphasis>span set</emphasis> para representar, respectivamente, un conjunto de valores, un rango de valores y un conjunto de rangos de valores de tipos de base o tipos de tiempo. Ejemplos de valores de tipos de conjunto son <varname>intset</varname>, <varname>floatset</varname> y <varname>tstzset</varname>, donde el último representa un conjunto de valores <varname>timestamptz</varname>. Ejemplos de valores de tipos de rango son <varname>intspan</varname>, <varname>floatspan</varname> y <varname>tstzspan</varname>. Ejemplos de valores de tipos de conjuntos de rangos son <varname>intspanset</varname>, <varname>floatspanset</varname> y <varname>tstzspanset</varname>.</para>
 
-	<sect1 id="psc">
+	<sect1 xml:id="psc">
 		<title>Comité directivo del proyecto</title>
 		<para>
 			El comité directivo del proyecto MobilityDB (Project Steering Committee o PSC) coordina la dirección general, los ciclos de publicación, la documentación y los esfuerzos de divulgación para el proyecto MobilityDB. Además, el PSC proporciona soporte general al usuario, acepta y aprueba parches de la comunidad general de MobilityDB y vota sobre diversos problemas relacionados con MobilityDB, como el acceso de commit de los desarrolladores, nuevos miembros del PSC o cambios significativos en la interfaz de programación de aplicaciones (Application Programming Interface o API).
@@ -34,7 +34,7 @@
 		</para>
 	</sect1>
 
-	<sect1 id="other_code_contributors">
+	<sect1 xml:id="other_code_contributors">
 		<title>Otros colaboradores del código</title>
 		<itemizedlist>
 			<listitem><para>Arthur Lesuisse</para></listitem>
@@ -43,7 +43,7 @@
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="sponsors">
+	<sect1 xml:id="sponsors">
 		<title>Patrocinadores</title>
 		<para>
 			Estas son organizaciones de financiación de investigación (en orden alfabético) que han contribuido con financiación monetaria al proyecto MobilityDB.
@@ -64,7 +64,7 @@
 		</para>
 	</sect1>
 
-	<sect1 id="license">
+	<sect1 xml:id="license">
 		<title>Licencias</title>
 		<para>Las siguientes licencias se pueden encontrar en MobilityDB:</para>
 		<informaltable frame="all" colsep="1" rowsep="1">
@@ -90,9 +90,9 @@
 		</informaltable>
 	</sect1>
 
-	<sect1 id="installation_sources">
+	<sect1 xml:id="installation_sources">
 		<title>Instalación a partir de las fuentes</title>
-		<sect2 id="short_version">
+		<sect2 xml:id="short_version">
 			<title>Versión corta</title>
 			<para>
 				Para compilar asumiendo que tiene todas las dependencias en su ruta de búsqueda
@@ -158,7 +158,7 @@ psql mobility -c "CREATE EXTENSION MobilityDB cascade"
 </programlisting>
 		</sect2>
 
-		<sect2 id="get_sources">
+		<sect2 xml:id="get_sources">
 			<title>Obtener las fuentes</title>
 			<para>
 				La última versión de MobilityDB se puede encontrar en <ulink url="https://github.com/MobilityDB/MobilityDB/releases/latest"></ulink>
@@ -194,7 +194,7 @@ git checkout v1.3
 				Ir a la <xref linkend="short_version"/> para las instrucciones de compilación (no hay tar ball).
 			</para>
 		</sect2>
-		<sect2 id="enabling_database">
+		<sect2 xml:id="enabling_database">
 			<title>Habilitación de la base de datos</title>
 			<para>
 				MobilityDB es una extensión que depende de PostGIS. Habilitar PostGIS antes de habilitar MobilityDB en la base de datos se puede hacer de la siguiente manera
@@ -210,7 +210,7 @@ CREATE EXTENSION mobilitydb;
 CREATE EXTENSION mobilitydb CASCADE;
 </programlisting>
 		</sect2>
-		<sect2 id="dependencies">
+		<sect2 xml:id="dependencies">
 			<title>Dependencias</title>
 
 			<para>
@@ -264,7 +264,7 @@ sudo apt-get install cmake gcc libgsl-dev
 </programlisting>
 		</sect2>
 
-		<sect2 id="configuring">
+		<sect2 xml:id="configuring">
 			<title>Configuración</title>
 			<para>
 				MobilityDB usa el sistema <varname>cmake</varname> para realizar la configuración. El directorio de compilación deber ser diferente del directorio de origen.
@@ -280,7 +280,7 @@ cmake -L ..
 </programlisting>
 		</sect2>
 
-		<sect2 id="build_install">
+		<sect2 xml:id="build_install">
 			<title>Construir e instalar</title>
 			<para>
 				Nótese que la versión actual de MobilityDB solo se ha probado en sistemas Linux, MacOS y Windows. Puede funcionar en otros sistemas similares a Unix, pero no se ha probado. Buscamos voluntarios que nos ayuden a probar MobilityDB en múltiples plataformas.
@@ -306,7 +306,7 @@ rm -rf build
 			</para>
 		</sect2>
 
-		<sect2 id="testing">
+		<sect2 xml:id="testing">
 			<title>Pruebas</title>
 			<para>
 				MobilityDB utiliza <varname>ctest</varname>, el programa controlador de pruebas de CMake, para realizar pruebas. Este programa ejecutará las pruebas e informará los resultados.
@@ -331,7 +331,7 @@ ctest -R '022_*'
 </programlisting>
 		</sect2>
 
-		<sect2 id="documentation">
+		<sect2 xml:id="documentation">
 			<title>Documentación</title>
 			<para>
 				La documentación del usuario de MobilityDB se puede generar en formato HTML, PDF y EPUB. Además, la documentación está disponible en inglés y en otros idiomas (actualmente, solo en español). La documentación del usuario se puede generar en todos los formatos y en todos los idiomas, o se pueden especificar formatos y/o idiomas específicos. La documentación del desarrollador de MobilityDB solo se puede generar en formato HTML y en inglés.
@@ -421,16 +421,16 @@ make doc
 		</sect2>
 	</sect1>
 
-	<sect1 id="installation_binaries">
+	<sect1 xml:id="installation_binaries">
 		<title>Instalación a partir de binarios</title>
-		<sect2 id="Debian">
+		<sect2 xml:id="Debian">
 			<title>Distribuciones de Linux basadas en Debian</title>
 			<para>
 					Se está desarrollando soporte para sistemas Linux basados en Debian, como Ubuntu y Arch Linux.
 			</para>
 		</sect2>
 
-		<sect2 id="Windows">
+		<sect2 xml:id="Windows">
 			<title>Windows</title>
 			<para>
 					Desde la versión 3.3.3 de PostGIS, MobilityDB se distribuye en el PostGIS Bundle para Windows, que está disponible en application stackbuilder y en el sitio web de OSGeo. Para más information refiérase a la <ulink url="https://postgis.net/documentation/getting_started/install_windows/">documentación PostGIS</ulink>.
@@ -438,11 +438,11 @@ make doc
 		</sect2>
 	</sect1>
 
-	<sect1 id="support">
+	<sect1 xml:id="support">
 		<title>Soporte</title>
 		<para>El soporte de la comunidad de MobilityDB está disponible a través de la página github de MobilityDB, documentación, tutoriales, listas de correo y otros.</para>
 
-		<sect2 id="reporting_problems">
+		<sect2 xml:id="reporting_problems">
 			<title>Reporte de problemas</title>
 			<para>
 					Los errores son registrados y manejados en un <ulink url="https://github.com/MobilityDB/MobilityDB/issues">issue tracker</ulink>. Por favor siga los siguientes pasos:
@@ -461,7 +461,7 @@ SET client_min_messages TO notice;
 			</orderedlist>
 		</sect2>
 
-		<sect2 id="mailing_lists">
+		<sect2 xml:id="mailing_lists">
 			<title>Listas de correo</title>
 			<para>
 				Hay dos listas de correo para MobilityDB alojadas en el servidor de listas de correo OSGeo:
@@ -476,7 +476,7 @@ SET client_min_messages TO notice;
 		</sect2>
 	</sect1>
 
-	<sect1 id="migrating">
+	<sect1 xml:id="migrating">
 		<title>Migración de la versión 1.0 a la versión 1.1</title>
 		<para>
 			MobilityDB 1.1 es una revisión importante con respecto a la versión inicial 1.0. El cambio más significativo en la version 1.1 fue extraer la funcionalidad central para la gestión de datos temporales y espaciotemporales de MobilityDB en la bibilioteca C Mobility Engine Open Source (<ulink url="http://libmeos.org">MEOS</ulink>). De esta forma, la misma funcionalidad que proporciona MobilityDB en un entorno de base de datos está disponible en un programa C para ser utilizada, por ejemplo, en un entorno de streaming. La biblioteca MEOS para la gestión de la movilidad proporciona una funcionalidad similar a la biblioteca C/C++ Geometry Engine Open Source (<ulink url="http://libgeos.org">GEOS</ulink>) para geometría computacional. Además, están disponibles contenedores para la biblioteca MEOS en otros lenguajes de programación, en particular para Python con <ulink url="https://github.com/MobilityDB/PyMEOS">PyMEOS</ulink>. Además, contenedores para C#, Java y Javascript, están en desarrollando.

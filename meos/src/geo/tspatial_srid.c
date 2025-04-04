@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -132,11 +132,11 @@ spatial_set_srid(Datum d, meosType basetype, int32_t srid)
 }
 
 /*****************************************************************************
- * Functions for spatial reference systems
+ * Functions for spatial reference systems for spatial set types
  *****************************************************************************/
 
 /**
- * @ingroup meos_setspan_srid
+ * @ingroup meos_geo_set_srid
  * @brief Return the SRID of a spatial set
  * @param[in] s Spatial set
  * @csqlfn #Spatialset_srid()
@@ -152,7 +152,7 @@ spatialset_srid(const Set *s)
 }
 
 /**
- * @ingroup meos_setspan_srid
+ * @ingroup meos_geo_set_srid
  * @brief Return a spatial set with the coordinates set to an SRID
  * @param[in] s Spatial set
  * @param[in] srid SRID
@@ -182,49 +182,15 @@ spatialset_set_srid(const Set *s, int32_t srid)
   return result;
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Functions for spatial reference systems for temporal spatial types
+ *****************************************************************************/
 
 /**
- * @ingroup meos_box_srid
- * @brief Return the SRID of a spatiotemporal box
- * @param[in] box Spatiotemporal box
- * @csqlfn #Stbox_srid()
- */
-int32_t
-stbox_srid(const STBox *box)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X(T_STBOX, box->flags))
-    return SRID_INVALID;
-  return box->srid;
-}
-
-/**
- * @ingroup meos_box_srid
- * @brief Return a spatiotemporal box with the coordinates set to an SRID
- * @param[in] box Spatiotemporal box
- * @param[in] srid SRID
- * @csqlfn #Stbox_set_srid()
- */
-STBox *
-stbox_set_srid(const STBox *box, int32_t srid)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X(T_STBOX, box->flags))
-    return NULL;
-  STBox *result = stbox_copy(box);
-  result->srid = srid;
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * @ingroup meos_internal_temporal_spatial_srid
+ * @ingroup meos_internal_geo_srid
  * @brief Return the SRID of a temporal spatial instant
  * @return On error return @p SRID_INVALID
  * @param[in] inst Temporal spatial instant
- * @csqlfn #Tspatial_srid()
  */
 int
 tspatialinst_srid(const TInstant *inst)
@@ -235,13 +201,13 @@ tspatialinst_srid(const TInstant *inst)
 }
 
 /**
- * @ingroup meos_temporal_spatial_srid
+ * @ingroup meos_geo_srid
  * @brief Return the SRID of a temporal spatial value
  * @return On error return @p SRID_INVALID
  * @param[in] temp Temporal spatial value
  * @csqlfn #Tspatial_srid()
  */
-int
+int32_t
 tspatial_srid(const Temporal *temp)
 {
   /* Ensure validity of the arguments */
@@ -264,11 +230,10 @@ tspatial_srid(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_spatial_srid
+ * @ingroup meos_internal_geo_srid
  * @brief Set the coordinates of a temporal spatial instant to an SRID
  * @param[in] inst Temporal spatial instant
  * @param[in] srid SRID
- * @csqlfn #Tspatial_set_srid()
  */
 void
 tspatialinst_set_srid(TInstant *inst, int32_t srid)
@@ -280,11 +245,10 @@ tspatialinst_set_srid(TInstant *inst, int32_t srid)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_srid
+ * @ingroup meos_internal_geo_srid
  * @brief Set the coordinates of a temporal spatial sequence to an SRID
  * @param[in] seq Temporal spatial sequence
  * @param[in] srid SRID
- * @csqlfn #Tspatial_set_srid()
  */
 void
 tspatialseq_set_srid(TSequence *seq, int32_t srid)
@@ -300,11 +264,10 @@ tspatialseq_set_srid(TSequence *seq, int32_t srid)
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_srid
+ * @ingroup meos_internal_geo_srid
  * @brief Set the coordinates of a temporal spatial sequence set to an SRID
  * @param[in] ss Temporal spatial sequence set
  * @param[in] srid SRID
- * @csqlfn #Tspatial_set_srid()
  */
 void
 tspatialseqset_set_srid(TSequenceSet *ss, int32_t srid)
@@ -323,7 +286,7 @@ tspatialseqset_set_srid(TSequenceSet *ss, int32_t srid)
 }
 
 /**
- * @ingroup meos_temporal_spatial_srid
+ * @ingroup meos_geo_srid
  * @brief Return a temporal spatial value with the coordinates set to an SRID
  * @param[in] temp Temporal spatial value
  * @param[in] srid SRID
@@ -447,7 +410,7 @@ lwproj_get(int32_t srid_from, int32_t srid_to)
  * @param[in] pipeline Pipeline string
  * @param[in] is_forward True when the transformation is forward
  */
-static LWPROJ *
+LWPROJ *
 lwproj_get_pipeline(const char *pipeline, bool is_forward)
 {
   assert(pipeline);
@@ -472,6 +435,31 @@ lwproj_get_pipeline(const char *pipeline, bool is_forward)
 }
 
 /*****************************************************************************/
+
+#if MEOS
+/**
+ * @brief Return the spheroid in the last argument initialized from an SRID
+ * @param[in] srid SRID
+ * @param[in] s Spheroid
+ * @note Based on the PostGIS function of the same name in directory 
+ * /libpgcommon 
+ */
+int
+spheroid_init_from_srid(int32_t srid, SPHEROID *s)
+{
+  // TODO implement a cache system for PROJ entries or reuse PostGIS one
+  // if ( lwproj_lookup(srid, srid, &pj) == LW_FAILURE)
+  LWPROJ *pj = lwproj_get(srid, srid);
+  if (! pj)
+    return false;
+
+  if (! pj->source_is_latlong)
+    return LW_FAILURE;
+  spheroid_init(s, pj->source_semi_major_metre, pj->source_semi_minor_metre);
+
+  return LW_SUCCESS;
+}
+#endif /* MEOS */
 
 /**
  * @brief Determine whether an SRID is geodetic
@@ -510,7 +498,7 @@ ensure_srid_is_latlong(int32_t srid)
  * @note Derived from PostGIS version 3.4.0 function ptarray_transform(),
  * file `lwgeom_transform.c`
  */
-static bool
+bool
 point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
 {
   assert(gs); assert(pj);
@@ -548,200 +536,6 @@ point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
   gserialized_set_srid(gs, srid_to);
   return true;
 }
-
-/*****************************************************************************/
-
-#if CBUFFER
-/**
- * @brief Return a circular buffer transformed to another SRID using a
- * pipeline
- * @param[in] cbuf Circular buffer
- * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN for pipeline
- * transformation
- * @param[in] pj Information about the transformation
- */
-static Cbuffer *
-cbuffer_transf_pj(const Cbuffer *cbuf, int32_t srid_to, const LWPROJ *pj)
-{
-  assert(cbuf); assert(pj);
-  /* Copy the circular buffer to transform its point in place */
-  Cbuffer *result = cbuffer_copy(cbuf);
-  GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&result->point));
-  if (! point_transf_pj(gs, srid_to, pj))
-  {
-    pfree(result);
-    return NULL;
-  }
-  return result;
-}
-
-/**
- * @ingroup meos_base_spatial
- * @brief Return a circular buffer transformed to another SRID
- * @param[in] cbuf Circular buffer
- * @param[in] srid_to Target SRID
- */
-Cbuffer *
-cbuffer_transform(const Cbuffer *cbuf, int32_t srid_to)
-{
-  int32_t srid_from;
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) cbuf) || ! ensure_srid_known(srid_to) ||
-      ! ensure_srid_known(srid_from = cbuffer_srid(cbuf)))
-    return NULL;
-    
-  /* Input and output SRIDs are equal, noop */
-  if (srid_from == srid_to)
-    return cbuffer_copy(cbuf);
-
-  /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get(srid_from, srid_to);
-  if (! pj)
-    return NULL;
-
-  /* Transform the circular buffer */
-  Cbuffer *result = cbuffer_transf_pj(cbuf, srid_to, pj);
-
-  /* Clean up and return */
-  proj_destroy(pj->pj); pfree(pj);
-  return result;
-}
-
-/**
- * @ingroup meos_base_spatial
- * @brief Return a circular buffer transformed to another SRID using a
- * pipeline
- * @param[in] cbuf Circular buffer
- * @param[in] pipeline Pipeline string
- * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
- * @param[in] is_forward True when the transformation is forward
- */
-Cbuffer *
-cbuffer_transform_pipeline(const Cbuffer *cbuf, const char *pipeline,
-  int32_t srid_to, bool is_forward)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) pipeline))
-    return NULL;
-
-  /* There is NO test verifying whether the input and output SRIDs are equal */
-
-  /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get_pipeline(pipeline, is_forward);
-  if (! pj)
-    return NULL;
-
-  /* Transform the circular buffer */
-  Cbuffer *result = cbuffer_transf_pj(cbuf, srid_to, pj);
-
-  /* Transform the circular buffer */
-  proj_destroy(pj->pj); pfree(pj);
-  return result;
-}
-#endif /* CBUFFER */
-
-/*****************************************************************************/
-
-#if POSE
-/**
- * @brief Return a pose transformed to another SRID using a pipeline
- * @param[in] pose Pose
- * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN for pipeline
- * transformation
- * @param[in] pj Information about the transformation
- */
-static Pose *
-pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
-{
-  assert(pose); assert(pj);
-  /* Copy the pose to transform its point in place */
-  Pose *result = pose_copy(pose);
-  GSERIALIZED *gs = pose_point(pose);
-  if (! point_transf_pj(gs, srid_to, pj))
-  {
-    pfree(result);
-    return NULL;
-  }
-  double *pa_double = (double *) (GS_POINT_PTR(gs));
-  if (MEOS_FLAGS_GET_Z(pose->flags))
-  {
-    result->data[0] = pa_double[0];
-    result->data[1] = pa_double[1];
-    result->data[2] = pa_double[2];
-  }
-  else
-  {
-    result->data[0] = pa_double[0];
-    result->data[1] = pa_double[1];
-  }
-  pose_set_srid(result, srid_to);
-  return result;
-}
-
-/**
- * @ingroup meos_base_spatial
- * @brief Return a pose transformed to another SRID
- * @param[in] pose Pose
- * @param[in] srid_to Target SRID
- */
-Pose *
-pose_transform(const Pose *pose, int32_t srid_to)
-{
-  int32_t srid_from;
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) pose) || ! ensure_srid_known(srid_to) ||
-      ! ensure_srid_known(srid_from = pose_srid(pose)))
-    return NULL;
-    
-  /* Input and output SRIDs are equal, noop */
-  if (srid_from == srid_to)
-    return pose_copy(pose);
-
-  /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get(srid_from, srid_to);
-  if (! pj)
-    return NULL;
-
-  /* Transform the pose */
-  Pose *result = pose_transf_pj(pose, srid_to, pj);
-
-  /* Clean up and return */
-  proj_destroy(pj->pj); pfree(pj);
-  return result;
-}
-
-/**
- * @ingroup meos_base_spatial
- * @brief Return a pose transformed to another SRID using a
- * pipeline
- * @param[in] pose Pose
- * @param[in] pipeline Pipeline string
- * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
- * @param[in] is_forward True when the transformation is forward
- */
-Pose *
-pose_transform_pipeline(const Pose *pose, const char *pipeline,
-  int32_t srid_to, bool is_forward)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) pose) || ! ensure_not_null((void *) pipeline))
-    return NULL;
-
-  /* There is NO test verifying whether the input and output SRIDs are equal */
-
-  /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get_pipeline(pipeline, is_forward);
-  if (! pj)
-    return NULL;
-
-  /* Transform the pose */
-  Pose *result = pose_transf_pj(pose, srid_to, pj);
-
-  /* Transform the pose */
-  proj_destroy(pj->pj); pfree(pj);
-  return result;
-}
-#endif /* POSE */
 
 /*****************************************************************************
  * Generic functions
@@ -814,10 +608,11 @@ spatialset_transf_pj(const Set *s, int32_t srid_to, const LWPROJ *pj)
 }
 
 /**
- * @ingroup meos_setspan_srid
+ * @ingroup meos_geo_set_srid
  * @brief Return a spatial set transformed to another SRID
  * @param[in] s Spatial set
  * @param[in] srid_to Target SRID
+ * @csqlfn #Spatialset_transform()
  */
 Set *
 spatialset_transform(const Set *s, int32_t srid_to)
@@ -847,13 +642,14 @@ spatialset_transform(const Set *s, int32_t srid_to)
 }
 
 /**
- * @ingroup meos_setspan_srid
+ * @ingroup meos_geo_set_srid
  * @brief Return a spatial set transformed to another SRID using a
  * pipeline
  * @param[in] s Spatial set
  * @param[in] pipeline Pipeline string
  * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
  * @param[in] is_forward True when the transformation is forward
+ * @csqlfn #Spatialset_transform_pipeline()
  */
 Set *
 spatialset_transform_pipeline(const Set *s, const char *pipeline,
@@ -876,130 +672,6 @@ spatialset_transform_pipeline(const Set *s, const char *pipeline,
   /* Transform the geo set */
   Set *result = set_copy(s);
   return spatialset_transf_pj(result, srid_to, pj);
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Return a spatiotemporal box transformed to another SRID using a
- * pipeline
- * @param[in] box Spatiotemporal box
- * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN for pipeline
- * transformation
- * @param[in] pj Information about the transformation
- */
-static STBox *
-stbox_transf_pj(const STBox *box, int32_t srid_to, const LWPROJ *pj)
-{
-  assert(box); assert(pj);
-  /* Create the points corresponding to the bounds */
-  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
-  GSERIALIZED *min = geopoint_make(box->xmin, box->ymin, box->zmin,
-    hasz, geodetic, box->srid);
-  GSERIALIZED *max = geopoint_make(box->xmax, box->ymax, box->zmax,
-    hasz, geodetic, box->srid);
-
-  /* Transform the points */
-  if (! point_transf_pj(min, srid_to, pj) ||
-      ! point_transf_pj(max, srid_to, pj))
-  {
-    pfree(min); pfree(max);
-    return NULL;
-  }
-
-  STBox *result = stbox_copy(box);
-  /* Set the bounds of the box from the transformed points */
-  result->srid = srid_to;
-  if (hasz)
-  {
-    const POINT3DZ *ptmin = GSERIALIZED_POINT3DZ_P(min);
-    const POINT3DZ *ptmax = GSERIALIZED_POINT3DZ_P(max);
-    result->xmin = ptmin->x;
-    result->ymin = ptmin->y;
-    result->zmin = ptmin->z;
-    result->xmax = ptmax->x;
-    result->ymax = ptmax->y;
-    result->zmax = ptmax->z;
-  }
-  else
-  {
-    const POINT2D *ptmin = GSERIALIZED_POINT2D_P(min);
-    const POINT2D *ptmax = GSERIALIZED_POINT2D_P(max);
-    result->xmin = ptmin->x;
-    result->ymin = ptmin->y;
-    result->xmax = ptmax->x;
-    result->ymax = ptmax->y;
-  }
-
-  /* Clean up and return */
-  pfree(min); pfree(max);
-  return result;
-}
-
-/**
- * @ingroup meos_box_srid
- * @brief Return a spatiotemporal box transformed to another SRID
- * @param[in] box Spatiotemporal box
- * @param[in] srid_to Target SRID
- */
-STBox *
-stbox_transform(const STBox *box, int32_t srid_to)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_srid_known(box->srid) ||
-      ! ensure_srid_known(srid_to))
-    return NULL;
-
-  /* Input and output SRIDs are equal, noop */
-  if (box->srid == srid_to)
-    return stbox_copy(box);
-
-  /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get(box->srid, srid_to);
-  if (! pj)
-    return NULL;
-
-  /* Transform the temporal point */
-  STBox *result = stbox_copy(box);
-  if (! stbox_transf_pj(stbox_copy(box), srid_to, pj))
-  {
-    pfree(result); return NULL;
-  }
-  return result;
-}
-
-/**
- * @ingroup meos_box_srid
- * @brief Return a spatiotemporal box transformed to another SRID using a
- * pipeline
- * @param[in] box Spatiotemporal box
- * @param[in] pipeline Pipeline string
- * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
- * @param[in] is_forward True when the transformation is forward
- */
-STBox *
-stbox_transform_pipeline(const STBox *box, const char *pipeline,
-  int32_t srid_to, bool is_forward)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) pipeline) ||
-      ! ensure_srid_known(box->srid))
-    return NULL;
-
-  /* There is NO test verifying whether the input and output SRIDs are equal */
-
-  /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get_pipeline(pipeline, is_forward);
-  if (! pj)
-    return NULL;
-
-  /* Transform the spatiotemporal box */
-  STBox *result = stbox_transf_pj(box, srid_to, pj);
-
-  /* Clean up and return */
-  proj_destroy(pj->pj); pfree(pj);
-  return result;
 }
 
 /*****************************************************************************/
@@ -1103,7 +775,7 @@ tspatial_transf_pj(const Temporal *temp, int32_t srid_to, const LWPROJ *pj)
 }
 
 /**
- * @ingroup meos_temporal_spatial_srid
+ * @ingroup meos_geo_srid
  * @brief Return a temporal spatial value transformed to another SRID
  * @param[in] temp Temporal spatial value
  * @param[in] srid_to Target SRID
@@ -1140,7 +812,7 @@ tspatial_transform(const Temporal *temp, int32_t srid_to)
 }
 
 /**
- * @ingroup meos_temporal_spatial_srid
+ * @ingroup meos_geo_srid
  * @brief Return a temporal spatial value transformed to another SRID using a
  * pipeline
  * @param[in] temp Temporal spatial value

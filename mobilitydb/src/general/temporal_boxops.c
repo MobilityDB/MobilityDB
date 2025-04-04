@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -64,7 +64,7 @@
 PGDLLEXPORT Datum Temporal_spans(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_spans);
 /**
- * @ingroup mobilitydb_temporal_bbox
+ * @ingroup mobilitydb_temporal_bbox_split
  * @brief Return an array of spans from a temporal value
  * @sqlfn spans()
  */
@@ -83,7 +83,7 @@ Temporal_spans(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_tboxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_tboxes);
 /**
- * @ingroup mobilitydb_temporal_bbox
+ * @ingroup mobilitydb_temporal_bbox_split
  * @brief Return an array of temporal boxes from a temporal number
  * @sqlfn tboxes()
  */
@@ -104,7 +104,7 @@ Tnumber_tboxes(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_split_n_spans(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_split_n_spans);
 /**
- * @ingroup mobilitydb_temporal_bbox
+ * @ingroup mobilitydb_temporal_bbox_split
  * @brief Return an array of N spans from the instants or segments of a
  * temporal value, where the choice between instants or segments depends,
  * respectively, on whether the interpolation is discrete or continuous
@@ -128,7 +128,7 @@ Temporal_split_n_spans(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_split_n_tboxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_split_n_tboxes);
 /**
- * @ingroup mobilitydb_temporal_bbox
+ * @ingroup mobilitydb_temporal_bbox_split
  * @brief Return an array of N temporal boxes from the instants or segments of
  * a temporal number, where the choice between instants or segments depends,
  * respectively, on whether the interpolation is discrete or continuous
@@ -154,7 +154,7 @@ Tnumber_split_n_tboxes(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Temporal_split_each_n_spans(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_split_each_n_spans);
 /**
- * @ingroup mobilitydb_temporal_bbox
+ * @ingroup mobilitydb_temporal_bbox_split
  * @brief Return an array of spans from the instants or segments of a
  * temporal value, where the choice between instants or segments depends,
  * respectively, on whether the interpolation is discrete or continuous
@@ -178,7 +178,7 @@ Temporal_split_each_n_spans(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_split_each_n_tboxes(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_split_each_n_tboxes);
 /**
- * @ingroup mobilitydb_temporal_bbox
+ * @ingroup mobilitydb_temporal_bbox_split
  * @brief Return an array of temporal boxes from the instants or segments of a
  * temporal number, where the choice between instants or segments depends,
  * respectively, on whether the interpolation is discrete or continuous
@@ -268,7 +268,7 @@ PG_FUNCTION_INFO_V1(Contains_tstzspan_temporal);
  * @sqlfn contains_bbox()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_tstzspan_temporal(fcinfo, &contains_span_span);
@@ -283,7 +283,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_tstzspan);
  * @sqlfn contains_bbox()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_tstzspan(fcinfo, &contains_span_span);
@@ -298,7 +298,7 @@ PG_FUNCTION_INFO_V1(Contains_temporal_temporal);
  * @sqlfn contains_bbox()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_temporal(fcinfo, &contains_span_span);
@@ -315,7 +315,7 @@ PG_FUNCTION_INFO_V1(Contained_tstzspan_temporal);
  * @sqlfn contained_bbox()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_tstzspan_temporal(fcinfo, &contained_span_span);
@@ -330,7 +330,7 @@ PG_FUNCTION_INFO_V1(Contained_temporal_tstzspan);
  * @sqlfn contained_bbox()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_tstzspan(fcinfo, &contained_span_span);
@@ -345,7 +345,7 @@ PG_FUNCTION_INFO_V1(Contained_temporal_temporal);
  * @sqlfn contained_bbox()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_temporal(fcinfo, &contained_span_span);
@@ -362,7 +362,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tstzspan_temporal);
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
-Datum
+inline Datum
 Overlaps_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_tstzspan_temporal(fcinfo, &overlaps_span_span);
@@ -377,7 +377,7 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_tstzspan);
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
-Datum
+inline Datum
 Overlaps_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_tstzspan(fcinfo, &overlaps_span_span);
@@ -391,7 +391,7 @@ PG_FUNCTION_INFO_V1(Overlaps_temporal_temporal);
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
-Datum
+inline Datum
 Overlaps_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_temporal(fcinfo, &overlaps_span_span);
@@ -408,7 +408,7 @@ PG_FUNCTION_INFO_V1(Same_tstzspan_temporal);
  * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
-Datum
+inline Datum
 Same_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_tstzspan_temporal(fcinfo, &span_eq);
@@ -423,7 +423,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_tstzspan);
  * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
-Datum
+inline Datum
 Same_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_tstzspan(fcinfo, &span_eq);
@@ -437,7 +437,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_temporal);
  * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
-Datum
+inline Datum
 Same_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_temporal(fcinfo, &span_eq);
@@ -454,7 +454,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tstzspan_temporal);
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
-Datum
+inline Datum
 Adjacent_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_tstzspan_temporal(fcinfo, &adjacent_span_span);
@@ -469,7 +469,7 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_tstzspan);
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
-Datum
+inline Datum
 Adjacent_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_tstzspan(fcinfo, &adjacent_span_span);
@@ -483,7 +483,7 @@ PG_FUNCTION_INFO_V1(Adjacent_temporal_temporal);
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
-Datum
+inline Datum
 Adjacent_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return Boxop_temporal_temporal(fcinfo, &adjacent_span_span);
@@ -591,7 +591,7 @@ PG_FUNCTION_INFO_V1(Contains_numspan_tnumber);
  * @sqlfn contains_bbox()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_numspan_tnumber(fcinfo, &contains_span_span);
@@ -606,7 +606,7 @@ PG_FUNCTION_INFO_V1(Contains_tnumber_numspan);
  * @sqlfn contains_bbox()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_numspan(fcinfo, &contains_span_span);
@@ -621,7 +621,7 @@ PG_FUNCTION_INFO_V1(Contains_tbox_tnumber);
  * @sqlfn contains_bbox()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tbox_tnumber(fcinfo, &contains_tbox_tbox);
@@ -636,7 +636,7 @@ PG_FUNCTION_INFO_V1(Contains_tnumber_tbox);
  * @sqlfn contains_bbox()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tbox(fcinfo, &contains_tbox_tbox);
@@ -651,7 +651,7 @@ PG_FUNCTION_INFO_V1(Contains_tnumber_tnumber);
  * @sqlfn contains_bbox()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tnumber(fcinfo, &contains_tbox_tbox);
@@ -668,7 +668,7 @@ PG_FUNCTION_INFO_V1(Contained_numspan_tnumber);
  * @sqlfn contained_bbox()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_numspan_tnumber(fcinfo, &contained_span_span);
@@ -683,7 +683,7 @@ PG_FUNCTION_INFO_V1(Contained_tnumber_numspan);
  * @sqlfn contained_bbox()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_numspan(fcinfo, &contained_span_span);
@@ -698,7 +698,7 @@ PG_FUNCTION_INFO_V1(Contained_tbox_tnumber);
  * @sqlfn contained_bbox()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tbox_tnumber(fcinfo, &contained_tbox_tbox);
@@ -713,7 +713,7 @@ PG_FUNCTION_INFO_V1(Contained_tnumber_tbox);
  * @sqlfn contained_bbox()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tbox(fcinfo, &contained_tbox_tbox);
@@ -728,7 +728,7 @@ PG_FUNCTION_INFO_V1(Contained_tnumber_tnumber);
  * @sqlfn contained_bbox()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tnumber(fcinfo, &contained_tbox_tbox);
@@ -745,7 +745,7 @@ PG_FUNCTION_INFO_V1(Overlaps_numspan_tnumber);
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
-Datum
+inline Datum
 Overlaps_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_numspan_tnumber(fcinfo, &overlaps_span_span);
@@ -760,7 +760,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tnumber_numspan);
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
-Datum
+inline Datum
 Overlaps_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_numspan(fcinfo, &overlaps_span_span);
@@ -775,7 +775,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tbox_tnumber);
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
-Datum
+inline Datum
 Overlaps_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tbox_tnumber(fcinfo, &overlaps_tbox_tbox);
@@ -790,7 +790,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tnumber_tbox);
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
-Datum
+inline Datum
 Overlaps_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tbox(fcinfo, &overlaps_tbox_tbox);
@@ -804,7 +804,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tnumber_tnumber);
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
-Datum
+inline Datum
 Overlaps_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tnumber(fcinfo, &overlaps_tbox_tbox);
@@ -821,7 +821,7 @@ PG_FUNCTION_INFO_V1(Same_numspan_tnumber);
  * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
-Datum
+inline Datum
 Same_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_numspan_tnumber(fcinfo, &span_eq);
@@ -836,7 +836,7 @@ PG_FUNCTION_INFO_V1(Same_tnumber_numspan);
  * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
-Datum
+inline Datum
 Same_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_numspan(fcinfo, &span_eq);
@@ -851,7 +851,7 @@ PG_FUNCTION_INFO_V1(Same_tbox_tnumber);
  * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
-Datum
+inline Datum
 Same_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tbox_tnumber(fcinfo, &same_tbox_tbox);
@@ -866,7 +866,7 @@ PG_FUNCTION_INFO_V1(Same_tnumber_tbox);
  * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
-Datum
+inline Datum
 Same_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tbox(fcinfo, &same_tbox_tbox);
@@ -880,7 +880,7 @@ PG_FUNCTION_INFO_V1(Same_tnumber_tnumber);
  * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
-Datum
+inline Datum
 Same_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tnumber(fcinfo, &same_tbox_tbox);
@@ -897,7 +897,7 @@ PG_FUNCTION_INFO_V1(Adjacent_numspan_tnumber);
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
-Datum
+inline Datum
 Adjacent_numspan_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_numspan_tnumber(fcinfo, &adjacent_span_span);
@@ -912,7 +912,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tnumber_numspan);
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
-Datum
+inline Datum
 Adjacent_tnumber_numspan(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_numspan(fcinfo, &adjacent_span_span);
@@ -927,7 +927,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tbox_tnumber);
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
-Datum
+inline Datum
 Adjacent_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tbox_tnumber(fcinfo, &adjacent_tbox_tbox);
@@ -942,7 +942,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tnumber_tbox);
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
-Datum
+inline Datum
 Adjacent_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tbox(fcinfo, &adjacent_tbox_tbox);
@@ -956,7 +956,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tnumber_tnumber);
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
-Datum
+inline Datum
 Adjacent_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return Boxop_tnumber_tnumber(fcinfo, &adjacent_tbox_tbox);

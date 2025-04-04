@@ -8,20 +8,21 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<chapter id="temporal_types_analytics">
+<chapter xml:id="temporal_types_analytics">
 	<title>Temporal Types: Analytics Operations</title>
 
-	<sect1 id="temporal_types_simplification">
+	<sect1 xml:id="ttype_simplification">
 		<title>Simplification</title>
 		<itemizedlist>
-			<listitem id="minDistSimplify">
-				<indexterm><primary><varname>minDistSimplify</varname></primary></indexterm>
-				<indexterm><primary><varname>minTimeDeltaSimplify</varname></primary></indexterm>
-				<para>Return a temporal float or a temporal point simplified ensuring that consecutive values are at least a certain distance or time interval apart &Z_support; &geography_support;</para>
+			<listitem xml:id="ttype_minDistSimplify">
+				<indexterm significance="normal"><primary><varname>minDistSimplify</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minTimeDeltaSimplify</varname></primary></indexterm>
+				<para>Return a temporal float or a temporal point simplified ensuring that consecutive values are at least a certain distance or time interval apart &Z_support; &geography_support;
+</para>
 				<para><varname>minDistSimplify({tfloat,tpoint},mindist float) → {tfloat,tpoint}</varname></para>
 				<para><varname>minTimeDeltaSimplify({tfloat,tpoint},mint interval) → {tfloat,tpoint}</varname></para>
 				<para>In the case of temporal points, the distance is specified in the units of the coordinate system. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal value is returned.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT minDistSimplify(tfloat '[1@2001-01-01,2@2001-01-02,3@2001-01-04,4@2001-01-05]', 1);
 -- [1@2001-01-01, 3@2001-01-04, 4@2001-01-05]
 SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2001-01-01,
@@ -31,7 +32,7 @@ SELECT asText(minDistSimplify(tgeompoint '[Point(1 1 1)@2001-01-01,
   Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-04, Point(4 4 4)@2001-01-05)', sqrt(3)));
 -- [POINT Z (1 1 1)@2001-01-01, POINT Z (3 3 3)@2001-01-04, POINT Z (4 4 4)@2001-01-05]
 </programlisting>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT minTimeDeltaSimplify(tfloat '[1@2001-01-01, 2@2001-01-02, 3@2001-01-04,
   4@2001-01-05]', '1 day');
 -- [1@2001-01-01, 3@2001-01-04, 4@2001-01-05]
@@ -41,17 +42,18 @@ SELECT asText(minTimeDeltaSimplify(tgeogpoint '[Point(1 1 1)@2001-01-01,
 </programlisting>
 			</listitem>
 
-			<listitem id="douglasPeuckerSimplify">
-				<indexterm><primary><varname>maxDistSimplify</varname></primary></indexterm>
-				<indexterm><primary><varname>douglasPeuckerSimplify</varname></primary></indexterm>
-				<para>Return a temporal float or a temporal point simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink> &Z_support;</para>
+			<listitem xml:id="ttype_douglasPeuckerSimplify">
+				<indexterm significance="normal"><primary><varname>maxDistSimplify</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>douglasPeuckerSimplify</varname></primary></indexterm>
+				<para>Return a temporal float or a temporal point simplified using the <ulink url="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Douglas-Peucker algorithm</ulink> &Z_support;
+</para>
 				<para><varname>maxDistSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
 				<para><varname>  {tfloat,tgeompoint}</varname></para>
 				<para><varname>douglasPeuckerSimplify({tfloat,tgeompoint},maxdist float,syncdist=true) →</varname></para>
 				<para><varname>  {tfloat,tgeompoint}</varname></para>
 				<para>The difference between the two functions is that <varname>maxDistSimplify</varname> uses a single-pass version of the algorithm whereas <varname>douglasPeuckerSimplify</varname> uses the standard recursive algorithm.</para>
 				<para>The function removes values or points that are less than or equal to the distance passed as second argument. In the case of temporal points, the distance is specified in the units of the coordinate system. The third argument applies only for temporal points and specifies whether the spatial or the synchronized distance is used. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal value is returned.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Only synchronous distance for temporal floats
 SELECT maxDistSimplify(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 3@2001-01-04,
   1@2001-01-05]', 1, false);
@@ -65,7 +67,7 @@ SELECT asText(maxDistSimplify(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@200
   Point(3 1)@2001-01-03, Point(3 3)@2001-01-05, Point(5 1)@2001-01-06]', 2, false));
 -- [POINT(1 1)@2001-01-01, POINT(5 1)@2001-01-06]
 </programlisting>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Spatial vs synchronized Euclidean distance
 SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
   Point(6 1)@2001-01-06, Point(7 4)@2001-01-07]', 2.3, false));
@@ -74,13 +76,13 @@ SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
   Point(6 1)@2001-01-06, Point(7 4)@2001-01-07]', 2.3, true));
 -- [POINT(1 1)@2001-01-01, POINT(6 1)@2001-01-06, POINT(7 4)@2001-01-07]
 </programlisting>
-				<para>The difference between the spatial and the synchronized distance is illustrated in the last two examples above and in <xref linkend="dist_vs_sed" />. In the first example, which uses the spatial distance, the second instant is removed since the perperdicular distance between <varname>POINT(6 1)</varname> and the line defined by <varname>POINT(1 1)</varname> and <varname>POINT(7 4)</varname> is equal to 2.23. On the contrary, in the second example the second instant is kept since the projection of <varname>Point(6 2)</varname> at timestamp <varname>2001-01-06</varname> over the temporal line segment results in <varname>Point(6 3.5)</varname> and the distance between the original point and its projection is 2.5.</para>
-				<figure id="dist_vs_sed" float="start">
+				<para>The difference between the spatial and the synchronized distance is illustrated in the last two examples above and in <xref linkend="dist_vs_sed"/>. In the first example, which uses the spatial distance, the second instant is removed since the perperdicular distance between <varname>POINT(6 1)</varname> and the line defined by <varname>POINT(1 1)</varname> and <varname>POINT(7 4)</varname> is equal to 2.23. On the contrary, in the second example the second instant is kept since the projection of <varname>Point(6 2)</varname> at timestamp <varname>2001-01-06</varname> over the temporal line segment results in <varname>Point(6 3.5)</varname> and the distance between the original point and its projection is 2.5.</para>
+				<figure xml:id="dist_vs_sed" float="start">
 					<title>Difference between the spatial and the synchronous distance.</title>
 					<mediaobject>
-						<imageobject><imagedata scale='100' fileref='images/dist_vs_sed.pdf' /></imageobject>
-						<imageobject><imagedata scale='100' fileref='images/dist_vs_sed.svg' /></imageobject>
-						<imageobject><imagedata scale='100' fileref='images/dist_vs_sed.png' /></imageobject>
+						<imageobject><imagedata scale="100" fileref="images/dist_vs_sed.pdf"/></imageobject>
+						<imageobject><imagedata scale="100" fileref="images/dist_vs_sed.svg"/></imageobject>
+						<imageobject><imagedata scale="100" fileref="images/dist_vs_sed.png"/></imageobject>
 					</mediaobject>
 				</figure>
 				<para>A typical use for the <varname>douglasPeuckerSimplify</varname> function is to reduce the size of a dataset, in particular for visualization purposes. If the visualization is static, then the spatial distance should be preferred, if the visualization is dynamic or animated, the synchronized distance should be preferred.</para>
@@ -88,16 +90,16 @@ SELECT asText(douglasPeuckerSimplify(tgeompoint '[Point(1 1)@2001-01-01,
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="temporal_types_reduction">
+	<sect1 xml:id="ttype_reduction">
 		<title>Reduction</title>
 		<itemizedlist>
-			<listitem id="tsample">
-				<indexterm><primary><varname>tsample</varname></primary></indexterm>
+			<listitem xml:id="ttype_tsample">
+				<indexterm significance="normal"><primary><varname>tsample</varname></primary></indexterm>
 				<para>Sample a temporal value with respect to an interval</para>
 				<para><varname>tsample({tnumber,tgeompoint},duration interval,torigin timestamptz='2000-01-03',</varname></para>
 				<para><varname>  interp='discrete') →{tnumber,tgeompoint}</varname></para>
 				<para>If the origin is not specified, it is set by default to Monday, January 3, 2000. The given interval must be strictly greater than zero.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tsample(tint '{1@2001-01-01,5@2001-01-05}', '3 days', '2001-01-01');
 -- {1@2001-01-01}
 SELECT tsample(tfloat '[1@2001-01-01,5@2001-01-05]', '1 day', '2001-01-01');
@@ -107,7 +109,7 @@ SELECT tsample(tfloat '[1@2001-01-01,5@2001-01-05]', '3 days', '2001-01-01');
 SELECT tsample(tfloat '[1@2001-01-01,5@2001-01-05]', '3 days', '2001-01-01', 'linear');
 -- [1@2001-01-01, 4@2001-01-04]
 </programlisting>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tsample(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]',
   '2 days', '2001-01-01'));
 -- {POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03, POINT(5 5)@2001-01-05}
@@ -118,24 +120,24 @@ SELECT asText(tsample(tgeompoint '{[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05
   [Point(1 1)@2001-01-06, Point(5 5)@2001-01-08]}', '3 days', '2001-01-01', 'step'));
 -- Interp=Step;[POINT(1 1)@2001-01-01, POINT(4 4)@2001-01-04, POINT(3 3)@2001-01-07]
 </programlisting>
-				<para><xref linkend="fig_tsample" /> illustrates the sampling of temporal floats with various interpolations. As shown in the figure, the sampling operation is best suited for temporal values with continuous interpolation.</para>
-				<figure id="fig_tsample" float="start">
+				<para><xref linkend="fig_tsample"/> illustrates the sampling of temporal floats with various interpolations. As shown in the figure, the sampling operation is best suited for temporal values with continuous interpolation.</para>
+				<figure xml:id="fig_tsample" float="start">
 					<title>Sampling of temporal floats with discrete, step, and linear interpolation.</title>
 					<mediaobject>
-						<imageobject><imagedata format="PDF" scale='75' fileref="images/tsample.pdf"/></imageobject>
-						<imageobject><imagedata format="SVG" scale='75' fileref="images/tsample.svg"/></imageobject>
-						<imageobject><imagedata format="PNG" scale='75' fileref="images/tsample.png"/></imageobject>
+						<imageobject><imagedata format="PDF" scale="75" fileref="images/tsample.pdf"/></imageobject>
+						<imageobject><imagedata format="SVG" scale="75" fileref="images/tsample.svg"/></imageobject>
+						<imageobject><imagedata format="PNG" scale="75" fileref="images/tsample.png"/></imageobject>
 					</mediaobject>
 				</figure>
 			</listitem>
 
-			<listitem id="tprecision">
-				<indexterm><primary><varname>tprecision</varname></primary></indexterm>
+			<listitem xml:id="ttype_tprecision">
+				<indexterm significance="normal"><primary><varname>tprecision</varname></primary></indexterm>
 				<para>Reduce the temporal precision of a temporal value with respect to an interval computing the time-weighted average/centroid in each time bin</para>
 				<para><varname>tprecision({tnumber,tgeompoint},duration interval,torigin timestamptz='2000-01-03')</varname></para>
 				<para><varname> → {tnumber,tpoint}</varname></para>
 				<para>If the origin is not specified, it is set by default to Monday, January 3, 2000. The given interval must be strictly greater than zero.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tprecision(tint '[1@2001-01-01,5@2001-01-05,1@2001-01-09]','1 day',
   '2001-01-01');
 -- Interp=Step;[1@2001-01-01, 5@2001-01-05, 1@2001-01-09]
@@ -149,7 +151,7 @@ SELECT tprecision(tfloat '[1@2001-01-01,5@2001-01-05,1@2001-01-09)','2 days',
   '2001-01-01');
 -- [2@2001-01-01, 4@2001-01-03, 4@2001-01-05, 2@2001-01-07]
 </programlisting>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05,
   Point(1 1)@2001-01-09)', '1 day', '2001-01-01'));
 /* [POINT(1.5 1.5)@2001-01-01, POINT(4.5 4.5)@2001-01-04, POINT(4.5 4.5)@2001-01-05,
@@ -162,28 +164,29 @@ SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-
   Point(1 1)@2001-01-09)', '4 days', '2001-01-01'));
 -- [POINT(3 3)@2001-01-01, POINT(3 3)@2001-01-05]
 </programlisting>
-				<para>Changing the precision of a temporal value is akin to changing its <emphasis>temporal granularity</emphasis>, for example, from timestamps to hours or days, although the precision can be set to an arbitrary interval, such as 2 hours and 15 minutes. <xref linkend="fig_tprecision" /> illustrates a change of temporal precision for temporal floats with various interpolations.</para>
-				<figure id="fig_tprecision" float="start">
+				<para>Changing the precision of a temporal value is akin to changing its <emphasis>temporal granularity</emphasis>, for example, from timestamps to hours or days, although the precision can be set to an arbitrary interval, such as 2 hours and 15 minutes. <xref linkend="fig_tprecision"/> illustrates a change of temporal precision for temporal floats with various interpolations.</para>
+				<figure xml:id="fig_tprecision" float="start">
 					<title>Changing the precision of temporal floats with discrete, step, and linear interpolation.</title>
 					<mediaobject>
-						<imageobject><imagedata format="PDF" scale='75' fileref="images/tprecision.pdf"/></imageobject>
-						<imageobject><imagedata format="SVG" scale='75' fileref="images/tprecision.svg"/></imageobject>
-						<imageobject><imagedata format="PNG" scale='75' fileref="images/tprecision.png"/></imageobject>
+						<imageobject><imagedata format="PDF" scale="75" fileref="images/tprecision.pdf"/></imageobject>
+						<imageobject><imagedata format="SVG" scale="75" fileref="images/tprecision.svg"/></imageobject>
+						<imageobject><imagedata format="PNG" scale="75" fileref="images/tprecision.png"/></imageobject>
 					</mediaobject>
 				</figure>
 			</listitem>
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="temporal_types_similarity">
+	<sect1 xml:id="ttype_similarity">
 		<title>Similarity</title>
 		<itemizedlist>
-			<listitem id="hausdorffDistance">
-				<indexterm><primary><varname>hausdorffDistance</varname></primary></indexterm>
-				<para>Return the discrete <ulink url="https://en.wikipedia.org/wiki/Hausdorff_distance">Hausdorff distance</ulink> between two temporal values &Z_support; &geography_support;</para>
+			<listitem xml:id="ttype_hausdorffDistance">
+				<indexterm significance="normal"><primary><varname>hausdorffDistance</varname></primary></indexterm>
+				<para>Return the discrete <ulink url="https://en.wikipedia.org/wiki/Hausdorff_distance">Hausdorff distance</ulink> between two temporal values &Z_support; &geography_support;
+</para>
 				<para><varname>hausdorffDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
 				<para>This function has a quadratic time complexity in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT hausdorffDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
 -- 0.5
@@ -195,12 +198,13 @@ SELECT round(hausdorffDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@20
 </programlisting>
 			</listitem>
 
-			<listitem id="frechetDistance">
-				<indexterm><primary><varname>frechetDistance</varname></primary></indexterm>
-				<para>Return the discrete <ulink url="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distance">Fréchet distance</ulink> between two temporal values &Z_support; &geography_support;</para>
+			<listitem xml:id="ttype_frechetDistance">
+				<indexterm significance="normal"><primary><varname>frechetDistance</varname></primary></indexterm>
+				<para>Return the discrete <ulink url="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distance">Fréchet distance</ulink> between two temporal values &Z_support; &geography_support;
+</para>
 				<para><varname>frechetDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
 				<para>This function has a linear space complexity since only two rows of the distance matrix are allocated in memory. Nevertheless, its time complexity is quadratic in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT frechetDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
 -- 0.5
@@ -212,12 +216,14 @@ SELECT round(frechetDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001
 </programlisting>
 			</listitem>
 
-			<listitem id="frechetDistancePath">
-				<indexterm><primary><varname>frechetDistancePath</varname></primary></indexterm>
-				<para>Return the correspondence pairs between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
+			<listitem xml:id="ttype_frechetDistancePath">
+				<indexterm significance="normal"><primary><varname>frechetDistancePath</varname></primary></indexterm>
+				<para>Return the correspondence pairs between two temporal values with respect to the discrete Fréchet distance &Z_support;
+ &geography_support; &SRF;
+</para>
 				<para><varname>frechetDistancePath({tnumber, tgeo}, {tnumber, tgeo}) → {(i,j)}</varname></para>
 				<para>The result is a set of pairs <varname>(i,j)</varname>. This function requires to allocate in memory a distance matrix whose size is quadratic in the number of instants of the temporal values. Therefore, the function will fail for temporal values with large number of instants depending on the available memory.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT frechetDistancePath(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
 -- (0,0)
@@ -237,12 +243,13 @@ SELECT frechetDistancePath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-0
 </programlisting>
 			</listitem>
 
-			<listitem id="dynTimeWarpDistance">
-				<indexterm><primary><varname>dynTimeWarpDistance</varname></primary></indexterm>
-				<para>Return the <ulink url="https://en.wikipedia.org/wiki/Dynamic_time_warping">Dynamic Time Warp</ulink> (DTW) distance between two temporal values &Z_support; &geography_support;</para>
+			<listitem xml:id="ttype_dynTimeWarpDistance">
+				<indexterm significance="normal"><primary><varname>dynTimeWarpDistance</varname></primary></indexterm>
+				<para>Return the <ulink url="https://en.wikipedia.org/wiki/Dynamic_time_warping">Dynamic Time Warp</ulink> (DTW) distance between two temporal values &Z_support; &geography_support;
+</para>
 				<para><varname>dynTimeWarpDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
 				<para>This function has a linear space complexity since only two rows of the distance matrix are allocated in memory. Nevertheless, its time complexity is quadratic in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT dynTimeWarpDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
 -- 2
@@ -254,12 +261,15 @@ SELECT round(dynTimeWarpDistance(tgeompoint '[Point(1 1)@2001-01-01,
 </programlisting>
 			</listitem>
 
-			<listitem id="dynTimeWarpPath">
-				<indexterm><primary><varname>dynTimeWarpPath</varname></primary></indexterm>
-				<para>Return the correspondence pairs between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
+			<listitem xml:id="ttype_dynTimeWarpPath">
+				<indexterm significance="normal"><primary><varname>dynTimeWarpPath</varname></primary></indexterm>
+				<para>Return the correspondence pairs between two temporal values with respect to the discrete Fréchet distance &Z_support;
+ &geography_support;
+ &SRF;
+</para>
 				<para><varname>dynTimeWarpPath({tnumber, tgeo}, {tnumber, tgeo}) → {(i,j)}</varname></para>
 				<para>The result is a set of pairs <varname>(i,j)</varname>. This function requires to allocate a distance matrix which is quadratic in the size of the number of instants of the temporal values. Therefore, memory allocation will fail for temporal values with large number of instants.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT dynTimeWarpPath(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
  tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]');
 -- (0,0)
@@ -281,20 +291,26 @@ SELECT dynTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="temporal_types_splitting">
+	<sect1 xml:id="ttype_splitting">
 		<title>Splitting Operations</title>
 
-		<para>When creating indexes for temporal types, what is stored in the index is not the actual value but instead, a bounding box that <emphasis>represents</emphasis> the value. In this case, the index will provide a list of candidate values that <emphasis>may</emphasis> satisfy the query predicate, and a second step is needed to filter out candidate values by computing the query predicate on the actual values.</para>
+		<para>
+			When creating indexes for temporal types, what is stored in the index is not the actual value but instead, a bounding box that <emphasis>represents</emphasis> the value. In this case, the index will provide a list of candidate values that <emphasis>may</emphasis> satisfy the query predicate, and a second step is needed to filter out candidate values by computing the query predicate on the actual values.
+		</para>
 
-		<para>However, when the bounding boxes have a large empty space not covered by the actual values, the index will generate many candidate values that do not satisfy the query predicate, which reduces the efficiency of the index. In these situations, it may be better to represent a value not with a <emphasis>single</emphasis> bounding box, but instead with <emphasis>multiple</emphasis> bounding boxes. This increases considerably the efficiency of the index, provided that the index is able to manage multiple bounding boxes per value. The following functions are used for generating multiple bounding boxes for a single temporal value.</para>
+		<para>
+			However, when the bounding boxes have a large empty space not covered by the actual values, the index will generate many candidate values that do not satisfy the query predicate, which reduces the efficiency of the index. In these situations, it may be better to represent a value not with a <emphasis>single</emphasis> bounding box, but instead with <emphasis>multiple</emphasis> bounding boxes. This increases considerably the efficiency of the index, provided that the index is able to manage multiple bounding boxes per value. The following functions are used for generating multiple bounding boxes for a single temporal value.
+		</para>
 
 		<itemizedlist>
-			<listitem id="temporal_splitNSpans">
-				<indexterm><primary><varname>splitNSpans</varname></primary></indexterm>
-				<para>Return an array of N time spans obtained by merging the instants or segments of a temporal value &Z_support; &geography_support;</para>
+			<listitem xml:id="ttype_splitNSpans">
+				<indexterm significance="normal"><primary><varname>splitNSpans</varname></primary></indexterm>
+				<para>Return an array of N time spans obtained by merging the instants or segments of a temporal value &Z_support;
+ &geography_support;
+</para>
 				<para><varname>splitNSpans(temp, integer) → tstzspan[]</varname></para>
 				<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of output spans. If the number of instants or segments is less than or equal to the given number, the resulting array will have one span per instant or segment of the temporal value. Otherwise, the given number of spans will be obtained by merging consecutive instants or segments.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT splitNSpans(ttext '{A@2000-01-01, B@2000-01-02, A@2000-01-03, B@2000-01-04,
   A@2000-01-05}', 1);
 -- {"[2000-01-01, 2000-01-05]"}
@@ -318,12 +334,14 @@ SELECT splitNSpans(ttext '[A@2000-01-01, B@2000-01-02, A@2000-01-03, B@2000-01-0
 </programlisting>
 			</listitem>
 
-			<listitem id="temporal_splitEachNSpans">
-				<indexterm><primary><varname>splitEachNSpans</varname></primary></indexterm>
-				<para>Return an array of time spans obtained by merging N consecutive instants or segments of a temporal value &Z_support; &geography_support;</para>
+			<listitem xml:id="ttype_splitEachNSpans">
+				<indexterm significance="normal"><primary><varname>splitEachNSpans</varname></primary></indexterm>
+				<para>Return an array of time spans obtained by merging N consecutive instants or segments of a temporal value &Z_support;
+ &geography_support;
+</para>
 				<para><varname>splitEachNSpans(temp, integer) → tstzspan[]</varname></para>
 				<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of input instants or segments that are merged to produce an output span. If the number of input elements is less than or equal to the given number, the resulting array will have a single span per sequence. Otherwise, the given number of consecutive instants or segments will be merged into each output span. Notice that, contrary to the <link linkend="temporal_splitNSpans"><varname>splitNSpans</varname></link> function, the number of spans in the result depends on the number of input instants or segments.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT splitEachNSpans(ttext '{A@2000-01-01, B@2000-01-02, A@2000-01-03, B@2000-01-04,
   A@2000-01-05}', 1);
 /* {"[2000-01-01, 2000-01-01]","[2000-01-02, 2000-01-02]","[2000-01-03, 2000-01-03]",
@@ -343,12 +361,12 @@ SELECT splitEachNSpans(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-
 </programlisting>
 			</listitem>
 
-			<listitem id="splitNTboxes">
-				<indexterm><primary><varname>splitNTboxes</varname></primary></indexterm>
+			<listitem xml:id="ttype_splitNTboxes">
+				<indexterm significance="normal"><primary><varname>splitNTboxes</varname></primary></indexterm>
 				<para>Return an array of N temporal boxes obtained by merging the instants or segments of a temporal number</para>
 				<para><varname>splitNTboxes(tnumber, integer) → tbox[]</varname></para>
 				<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of output boxes. If the number of input instants or segments is less than or equal to the given number, the resulting array will have one box per instant or segment of the temporal number. Otherwise, the specified number of boxes will be obtained by merging consecutive instants or segments.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT splitNTboxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05}', 1);
 -- {"TBOXINT XT([1, 5),[2000-01-01, 2000-01-05])"}
@@ -377,12 +395,12 @@ SELECT splitNTboxes(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-0
 </programlisting>
 			</listitem>
 
-			<listitem id="splitEachNTboxes">
-				<indexterm><primary><varname>splitEachNTboxes</varname></primary></indexterm>
+			<listitem xml:id="ttype_splitEachNTboxes">
+				<indexterm significance="normal"><primary><varname>splitEachNTboxes</varname></primary></indexterm>
 				<para>Return an array of temporal boxes obtained by merging N consecutive instants or segments of a temporal number</para>
 				<para><varname>splitEachNTboxes(tnumber, integer) → tbox[]</varname></para>
 				<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of input instants or segments that are merged to produce an output box. If the number of input instants or segments is less than or equal to the given number, the resulting array will have a single box per sequence. Otherwise, the specified number of consecutive instants or segments will be merged into each output box. Notice that, contrary to the <link linkend="splitNTboxes"><varname>splitNTboxes</varname></link> function, the number of boxes in the result depends on the number of input instants or segments.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT splitEachNTboxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05}', 1);
 /* {"TBOXINT XT([1, 2),[2000-01-01, 2000-01-01])",
@@ -407,13 +425,15 @@ SELECT splitEachNTboxes(tfloat '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 4@
 </programlisting>
 			</listitem>
 
-			<listitem id="splitNStboxes">
-				<indexterm><primary><varname>splitNStboxes</varname></primary></indexterm>
-				<para>Return either an array of N spatial boxes obtained by merging the segments of a (multi)line or an array of N spatiotemporal boxes obtained by merging the instants or segments of a temporal point &Z_support; &geography_support;</para>
+			<listitem xml:id="ttype_splitNStboxes">
+				<indexterm significance="normal"><primary><varname>splitNStboxes</varname></primary></indexterm>
+				<para>Return either an array of N spatial boxes obtained by merging the segments of a (multi)line or an array of N spatiotemporal boxes obtained by merging the instants or segments of a temporal point &Z_support;
+ &geography_support;
+</para>
 				<para><varname>splitNStboxes(lines, integer) → stbox[]</varname></para>
 				<para><varname>splitNStboxes(tpoint, integer) → stbox[]</varname></para>
 				<para>For temporal points, the choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of output boxes. If the number of instants or segments is less than or equal to the given number, the resulting array will have either one box per segment of the (multi)line or one box per instant or segment of the temporal point. Otherwise, the specified number of boxes will be obtained by merging consecutive instants or segments.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
 -- {"STBOX X((1,1),(5,2))"}
 SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
@@ -426,7 +446,7 @@ SELECT splitNStboxes(geography 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6);
 SELECT splitNStboxes(geometry 'MultiLinestring((1 1,2 2),(3 1,4 2),(5 1,6 2))', 2);
 -- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))"}
 </programlisting>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT splitNStboxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
   Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05}', 1);
 -- {"STBOX XT(((1,1),(5,2)),[2000-01-01, 2000-01-05])"}
@@ -456,13 +476,15 @@ SELECT splitNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
 </programlisting>
 			</listitem>
 
-			<listitem id="splitEachNStboxes">
-				<indexterm><primary><varname>splitEachNStboxes</varname></primary></indexterm>
-				<para>Return either an array of spatial boxes obtained by merging N consecutive segments of a (multi)line or an array of spatiotemporal boxes obtained by merging N consecutive instants or segments of a temporal point &Z_support; &geography_support;</para>
+			<listitem xml:id="ttype_splitEachNStboxes">
+				<indexterm significance="normal"><primary><varname>splitEachNStboxes</varname></primary></indexterm>
+				<para>Return either an array of spatial boxes obtained by merging N consecutive segments of a (multi)line or an array of spatiotemporal boxes obtained by merging N consecutive instants or segments of a temporal point &Z_support;
+ &geography_support;
+</para>
 				<para><varname>splitEachNStboxes(lines, integer) → stbox[]</varname></para>
 				<para><varname>splitEachNStboxes(tpoint, integer) → stbox[]</varname></para>
 				<para>For temporal points, the choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of input instants or segments that are merged to produce an output box. If the number of instants or segments is less than or equal to the given number, the resulting array will have a single box per sequence. Otherwise, the specified number of consecutive instants or segments will be merged into each output box. Notice that, contrary to the <link linkend="splitNStboxes"><varname>splitNStboxes</varname></link> function, the number of boxes in the result depends on the number of input instants or segments.</para>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
 -- {"STBOX X((1,1),(5,2))"}
 SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
@@ -475,7 +497,7 @@ SELECT splitEachNStboxes(geography 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 
 SELECT splitEachNStboxes(geometry 'MultiLinestring((1 1,2 2),(3 1,4 2),(5 1,6 2))', 2);
 -- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))"}
 </programlisting>
-				<programlisting language="sql" xml:space="preserve">
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT splitEachNStboxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
   Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05}', 1);
 /* {"STBOX XT(((1,1),(1,1)),[2000-01-01, 2000-01-01])",
@@ -499,7 +521,7 @@ SELECT splitEachNStboxes(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="temporal_types_tiling">
+	<sect1 xml:id="ttype_tiling">
 		<title>Multidimensional Tiling</title>
 		<para>
 			Multidimensional tiling is the mechanism used to partition the domain of temporal values in bins or tiles of varying number of dimensions. In the case of a single dimension, the domain can be partitioned by value or by time using bins of the same size or duration, respectively. For temporal numbers, the domain can be partitioned in two-dimensional tiles of the same size for the value dimension and the same duration for the time dimension. For temporal points, the domain can be partitioned in space in two- or three-dimensional tiles, depending on the number of dimensions of the spatial coordinates. Finally, for temporal points, the domain can be partitioned in space and time using three- or four-dimensional tiles.
@@ -509,33 +531,35 @@ SELECT splitEachNStboxes(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01
 			Multidimensional tiling can be used for various purposes. It can be used for computing multidimensional histograms, where the temporal values are aggregated according to the underlying partition of the domain. On the other hand, multidimensional tiling can also be used for indexing purposes, where the bounding box of a temporal value can be fragmented into multiple boxes in order to improve the efficiency of the index. Finally, multidimensional tiling can be used for fragmenting temporal values according to a multidimensional grid defined over the underlying domain. This enables the distribution of a dataset across a cluster of servers, where each server contains a partition of the dataset. The advantage of this partition mechanism is that it preserves proximitity in value/space and time, unlike the traditional hash-based partition mechanisms.
 		</para>
 
-		<figure id="tiling" float="start">
+		<figure xml:id="tiling" float="start">
 			<title>Multidimensional tiling for temporal floats.</title>
 			<mediaobject>
-				<imageobject><imagedata format="PDF" scale='75' fileref="images/tiling.pdf"/></imageobject>
-				<imageobject><imagedata format="SVG" scale='75' fileref="images/tiling.svg"/></imageobject>
-				<imageobject><imagedata format="PNG" scale='75' fileref="images/tiling.png"/></imageobject>
+				<imageobject><imagedata format="PDF" scale="75" fileref="images/tiling.pdf"/></imageobject>
+				<imageobject><imagedata format="SVG" scale="75" fileref="images/tiling.svg"/></imageobject>
+				<imageobject><imagedata format="PNG" scale="75" fileref="images/tiling.png"/></imageobject>
 			</mediaobject>
 		</figure>
 
 		<para>
-			<xref linkend="tiling" /> illustrates multidimensional tiling for temporal floats. The two-dimensional domain is split into tiles having the same size for the value dimension and the same duration for the time dimension. Suppose that this tiling scheme is used for distribute a dataset across a cluster of six servers, as suggested by the gray pattern in the figure. In this case, the values are fragmented so each server will receive the data of contiguous tiles. This implies in particular that four nodes will receive one fragment of the temporal float depicted in the figure. One advantage of this distribution of data based on multidimensional tiling is that it reduces the data that needs to be exchanged between nodes when processing queries, a process typically referred to as <emphasis>reshuffling</emphasis>.
+			<xref linkend="tiling"/> illustrates multidimensional tiling for temporal floats. The two-dimensional domain is split into tiles having the same size for the value dimension and the same duration for the time dimension. Suppose that this tiling scheme is used for distribute a dataset across a cluster of six servers, as suggested by the gray pattern in the figure. In this case, the values are fragmented so each server will receive the data of contiguous tiles. This implies in particular that four nodes will receive one fragment of the temporal float depicted in the figure. One advantage of this distribution of data based on multidimensional tiling is that it reduces the data that needs to be exchanged between nodes when processing queries, a process typically referred to as <emphasis>reshuffling</emphasis>.
 		</para>
 
-		<para>Many of the functions in this section are <emphasis>set-returning functions</emphasis> (also known as a <emphasis>table functions</emphasis>) since they typically return more than one value. In this case, the functions are marked with the &SRF; symbol.</para>
+		<para>Many of the functions in this section are <emphasis>set-returning functions</emphasis> (also known as a <emphasis>table functions</emphasis>) since they typically return more than one value. In this case, the functions are marked with the &SRF;
+ symbol.</para>
 
-		<sect2 id="bin_functions">
+		<sect2 xml:id="bin_functions">
 			<title>Bin Operations</title>
 
 			<itemizedlist>
-				<listitem id="bins">
-					<indexterm><primary><varname>bins</varname></primary></indexterm>
-					<para>Return a set of bins that cover a value or time span with bins of the same size or duration &SRF;</para>
+				<listitem xml:id="bins">
+					<indexterm significance="normal"><primary><varname>bins</varname></primary></indexterm>
+					<para>Return a set of bins that cover a value or time span with bins of the same size or duration &SRF;
+</para>
 					<para><varname>bins(numspan,size number,origin number=0) → {(index,span)}</varname></para>
 					<para><varname>bins(datespan,duration interval,origin date='2000-01-03') → {(index,span)}</varname></para>
 					<para><varname>bins(tstzspan,duration interval,origin timestamptz='2000-01-03') → {(index,span)}</varname></para>
 					<para>The result is a set of pairs <varname>(index,span)</varname>. If the origin is not specified, it is set by default to 0 for value spans and Monday, January 3, 2000 for time spans. The indices start by 1.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT bins(floatspan '[-10, -1]', 2.5, -7);
 -- (1,"[-12, -9.5)")
 -- (2,"[-9.5, -7)")
@@ -561,15 +585,15 @@ SELECT bins(tstzspan '[2001-01-15, 2001-01-25]', '2 days', '2001-01-02');
 </programlisting>
 				</listitem>
 
-				<listitem id="getBin">
-					<indexterm><primary><varname></varname></primary></indexterm>
+				<listitem xml:id="getBin">
+					<indexterm significance="normal"><primary><varname/></primary></indexterm>
 					<para>Return the bin that contains a number or a timestamp</para>
 					<para><varname>getBin(number,size number,origin number=0) → span</varname></para>
 					<para><varname>getBin(date,duration interval,origin date='2000-01-03') → </varname></para>
 					<para><varname>getBin(timestamptz,duration interval,origin timestamptz='2000-01-03') → </varname></para>
 					<para><varname>  timestamptz</varname></para>
 					<para>If the origin is not specified, it is set by default to 0 for value bins and to Monday, January 3, 2000 for time bins.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getBin(2, 2);
 -- [2, 4)
 SELECT getBin(2, 2.5, 1.5);
@@ -583,22 +607,23 @@ SELECT getBin('2001-01-04', interval '1 week', '2001-01-07');
 			</itemizedlist>
 		</sect2>
 
-		<sect2 id="tile_functions">
+		<sect2 xml:id="tile_functions">
 			<title>Tile Operations</title>
 
 			<itemizedlist>
-				<listitem id="valueTimeTiles">
-					<indexterm><primary><varname>valueTiles</varname></primary></indexterm>
-					<indexterm><primary><varname>timeTiles</varname></primary></indexterm>
-					<indexterm><primary><varname>valueTimeTiles</varname></primary></indexterm>
-					<para>Return the set of tiles that covers a temporal box with tiles of the same size and/or duration &SRF;</para>
+				<listitem xml:id="valueTimeTiles">
+					<indexterm significance="normal"><primary><varname>valueTiles</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>timeTiles</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>valueTimeTiles</varname></primary></indexterm>
+					<para>Return the set of tiles that covers a temporal box with tiles of the same size and/or duration &SRF;
+</para>
 					<para><varname>valueTiles(tbox,vsize float,vorigin float=0) → {(index,tile)}</varname></para>
 					<para><varname>timeTiles(tbox,duration interval,torigin timestamptz='2000-01-03')  →</varname></para>
 					<para><varname> {(index,tile)}</varname></para>
 					<para><varname>valueTimeTiles(tbox,vsize float,duration interval,vorigin float=0,</varname></para>
 					<para><varname>  torigin timestamptz='2000-01-03') → {(index,tile)}</varname></para>
 					<para>The result is a set of pairs <varname>(index,tile)</varname>. If the origin of the value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (gr).index, (gr).tile
 FROM (SELECT valueTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0) AS gr) t;
 -- 1 | TBOXFLOAT X([14, 16))
@@ -626,11 +651,13 @@ SELECT valueTimeTiles(tfloat '[15@2001-01-15,25@2001-01-25]'::tbox, 2.0, '2 days
 </programlisting>
 				</listitem>
 
-				<listitem id="spaceTimeTiles">
-					<indexterm><primary><varname>spaceTiles</varname></primary></indexterm>
-					<indexterm><primary><varname>timeTiles</varname></primary></indexterm>
-					<indexterm><primary><varname>spaceTimeTiles</varname></primary></indexterm>
-					<para>Return the set of tiles that covers a spatiotemporal box with tiles of the same size and/or duration &Z_support; &SRF;</para>
+				<listitem xml:id="spaceTimeTiles">
+					<indexterm significance="normal"><primary><varname>spaceTiles</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>timeTiles</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>spaceTimeTiles</varname></primary></indexterm>
+					<para>Return the set of tiles that covers a spatiotemporal box with tiles of the same size and/or duration &Z_support;
+ &SRF;
+</para>
 					<para><varname>spaceTiles(stbox,xsize float,[ysize float,zsize float,] </varname></para>
 					<para><varname>  sorigin geompoint='Point(0 0 0)',borderInc bool=true) → {(index,tile)}</varname></para>
 					<para><varname>timeTiles(stbox,duration interval,torigin timestamptz='2000-01-03',</varname></para>
@@ -640,7 +667,7 @@ SELECT valueTimeTiles(tfloat '[15@2001-01-15,25@2001-01-25]'::tbox, 2.0, '2 days
 					<para><varname>  borderInc bool=true) → {(index,tile)}</varname></para>
 					<para>The result is a set of pairs <varname>(index,tile)</varname>. If the origin of the space and/or time dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname> and to Monday, January 3, 2000, respectively. The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus, extra tiles containing the border are generated.</para>
 					<para>In the case of a spatiotemporal grid, <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. The SRID of the tile coordinates is determined by the input box and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT spaceTiles(tgeompoint '[Point(3 3)@2001-01-15,
   Point(15 15)@2001-01-25]'::stbox, 2.0);
 -- (1,"STBOX X((2,2),(4,4))")
@@ -681,18 +708,19 @@ SELECT spaceTimeTiles(tgeompoint '[Point(3 3 3)@2001-01-15,
 </programlisting>
 				</listitem>
 
-				<listitem id="getValueTimeTile">
-					<indexterm><primary><varname>getValueTile</varname></primary></indexterm>
-					<indexterm><primary><varname>getTboxTimeTile</varname></primary></indexterm>
-					<indexterm><primary><varname>getValueTimeTile</varname></primary></indexterm>
-					<para>Return the temporal tile that covers a value and/or a timestamp &Z_support;</para>
+				<listitem xml:id="getValueTimeTile">
+					<indexterm significance="normal"><primary><varname>getValueTile</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>getTboxTimeTile</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>getValueTimeTile</varname></primary></indexterm>
+					<para>Return the temporal tile that covers a value and/or a timestamp &Z_support;
+</para>
 					<para><varname>getValueTile(value float,vsize float,vorigin float=0.0,) → tbox</varname></para>
 					<para><varname>getTboxTimeTile(time timestamptz,duration interval,</varname></para>
 					<para><varname>  torigin timestamptz='2000-01-03') → tbox</varname></para>
 					<para><varname>getValueTimeTile(value float,time timestamptz,size float,duration interval,</varname></para>
 					<para><varname>  vorigin float=0.0,torigin timestamptz='2000-01-03') → tbox</varname></para>
 					<para>If the origin of the value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getValueTile(15, 2);
 -- TBOX ([14,16))
 SELECT getTboxTimeTile('2001-01-15', interval '2 days');
@@ -704,11 +732,12 @@ SELECT getValueTimeTile(15, '2001-01-15', 2, interval '2 days', 1, '2001-01-02')
 </programlisting>
 				</listitem>
 
-				<listitem id="getSpaceTimeTile">
-					<indexterm><primary><varname>getSpaceTile</varname></primary></indexterm>
-					<indexterm><primary><varname>getStboxTimeTile</varname></primary></indexterm>
-					<indexterm><primary><varname>getSpaceTimeTile</varname></primary></indexterm>
-					<para>Return the spatiotemporal tile that covers a point and/or a timestamp &Z_support;</para>
+				<listitem xml:id="getSpaceTimeTile">
+					<indexterm significance="normal"><primary><varname>getSpaceTile</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>getStboxTimeTile</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>getSpaceTimeTile</varname></primary></indexterm>
+					<para>Return the spatiotemporal tile that covers a point and/or a timestamp &Z_support;
+</para>
 					<para><varname>getSpaceTile(point geometry,xsize float,[ysize float,zsize float],</varname></para>
 					<para><varname>  sorigin geompoint='Point(0 0 0)') → stbox</varname></para>
 					<para><varname>getStboxTimeTile(time timestamptz,duration interval,</varname></para>
@@ -717,7 +746,7 @@ SELECT getValueTimeTile(15, '2001-01-15', 2, interval '2 days', 1, '2001-01-02')
 					<para><varname>  interval,sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03') → stbox</varname></para>
 					<para>If the origin of the space and/or time dimension is not specified, it is set by default to <varname>Point(0 0 0)</varname> and to Monday, January 3, 2000, respectively.</para>
 					<para>In the case of a spatiotemporal grid, <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. The SRID of the tile coordinates is determined by the input point and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of box, otherwise an error is raised.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT getSpaceTile(geometry 'Point(1 1 1)', 2.0);
 -- STBOX Z((0,0,0),(2,2,2))
 SELECT getStboxTimeTile(timestamptz '2001-01-01', interval '2 days');
@@ -732,16 +761,16 @@ SELECT getSpaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 da
 			</itemizedlist>
 		</sect2>
 
-		<sect2 id="boxes_functions">
+		<sect2 xml:id="boxes_functions">
 			<title>Bounding Box Operations</title>
-			<para>These functions fragment the bounding box of a temporal value with respect to a multidimensional grid. They provide an alternative to the functions in <xref linkend="temporal_types_splitting" /> to split the bounding boxes by specifying the maximum size of the boxes in the various dimensions.</para>
+			<para>These functions fragment the bounding box of a temporal value with respect to a multidimensional grid. They provide an alternative to the functions in <xref linkend="temporal_types_splitting"/> to split the bounding boxes by specifying the maximum size of the boxes in the various dimensions.</para>
 			<itemizedlist>
-				<listitem id="timeSpans">
-					<indexterm><primary><varname>timeSpans</varname></primary></indexterm>
+				<listitem xml:id="timeSpans">
+					<indexterm significance="normal"><primary><varname>timeSpans</varname></primary></indexterm>
 					<para>Return an array of spans obtained from the instants or segments of a temporal value with respect to a time grid</para>
 					<para><varname>timeSpans(temp,duration interval,torigin timestamptz='2000-01-03') → tstzspan[]</varname></para>
 					<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of value or time dimension is not specified, it is set by default to 0 for value spans or to Monday, January 3, 2000 for time spans.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT timeSpans(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03, CCC@2000-01-04,
   AAA@2000-01-05}', '3 days');
 -- {"[2000-01-01, 2000-01-02]","[2000-01-03, 2000-01-05]"}
@@ -751,12 +780,12 @@ SELECT timeSpans(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04
 </programlisting>
 				</listitem>
 
-				<listitem id="valueSpans">
-					<indexterm><primary><varname>valueSpans</varname></primary></indexterm>
+				<listitem xml:id="valueSpans">
+					<indexterm significance="normal"><primary><varname>valueSpans</varname></primary></indexterm>
 					<para>Return an array of spans obtained from the instants or segments of a temporal number with respect to a value grid</para>
 					<para><varname>valueSpans(tnumber,vsize number,vorigin number=0) → numspan[]</varname></para>
 					<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of values or time is not specified, it is set by default to 0.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueSpans(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
   1@2000-01-05}', 3);
 -- {"[1, 3)","[4, 5)"}
@@ -766,17 +795,17 @@ SELECT valueSpans(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-0
 </programlisting>
 				</listitem>
 
-				<listitem id="valueTimeBoxes">
-					<indexterm><primary><varname>valueBoxes</varname></primary></indexterm>
-					<indexterm><primary><varname>timeBoxes</varname></primary></indexterm>
-					<indexterm><primary><varname>valueTimeBoxes</varname></primary></indexterm>
+				<listitem xml:id="valueTimeBoxes">
+					<indexterm significance="normal"><primary><varname>valueBoxes</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>timeBoxes</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>valueTimeBoxes</varname></primary></indexterm>
 					<para>Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and/or time grid</para>
 					<para><varname>valueBoxes(tnumber,size number,vorigin number=0) → tbox[]</varname></para>
 					<para><varname>timeBoxes(tnumber,duration interval,torigin timestamptz='2000-01-03') → tbox[]</varname></para>
 					<para><varname>valueTimeBoxes(tnumber,size number,duration interval,vorigin number=0,</varname></para>
 					<para><varname>  torigin timestamptz='2000-01-03') → tbox[]</varname></para>
 					<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. If the origin of value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueBoxes(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-01-04,
 1@2000-01-05}', 3);
 /* {"TBOXINT XT([1, 3),[2000-01-01, 2000-01-05])",
@@ -798,11 +827,12 @@ SELECT valueTimeBoxes(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-
 </programlisting>
 				</listitem>
 
-				<listitem id="spaceTimeBoxes">
-					<indexterm><primary><varname>spaceBoxes</varname></primary></indexterm>
-					<indexterm><primary><varname>timeBoxes</varname></primary></indexterm>
-					<indexterm><primary><varname>spaceTimeBoxes</varname></primary></indexterm>
-					<para>Return an array of spatiotemporal boxes obtained from the instants or segments of a temporal point with respect to a space and/or time grid &Z_support;</para>
+				<listitem xml:id="spaceTimeBoxes">
+					<indexterm significance="normal"><primary><varname>spaceBoxes</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>timeBoxes</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>spaceTimeBoxes</varname></primary></indexterm>
+					<para>Return an array of spatiotemporal boxes obtained from the instants or segments of a temporal point with respect to a space and/or time grid &Z_support;
+</para>
 					<para><varname>spaceBoxes(tgeompoint,xsize float,[ysize float,zsize float,] </varname></para>
 					<para><varname>  sorigin geompoint='Point(0 0 0)',borderInc bool=true) → stbox[]</varname></para>
 					<para><varname>timeBoxes(tgeompoint,duration interval,torigin timestamptz='2000-01-03',</varname></para>
@@ -811,7 +841,7 @@ SELECT valueTimeBoxes(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-
 					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03',</varname></para>
 					<para><varname>  borderInc bool=true) → stbox[]</varname></para>
 					<para>The choice between instants or segments depends on whether the interpolation is discrete or continuous. The arguments <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. The SRID of the tile coordinates is determined by the temporal point and the sizes are given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its dimensionality and SRID should be equal to the one of temporal point, otherwise an error is raised. If the origin of space and/or time dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname> and to Monday, January 3, 2000, respectively. The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus, extra tiles containing the border are generated.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT spaceBoxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
   Point(1 1)@2000-01-03, Point(4 4)@2000-01-04, Point(1 1)@2000-01-05}', 3);
 /* {"STBOX XT(((1,1),(2,2)),[2000-01-01, 2000-01-05])",
@@ -838,16 +868,22 @@ SELECT spaceTimeBoxes(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01
 			</itemizedlist>
 		</sect2>
 
-		<sect2 id="split_functions">
+		<sect2 xml:id="split_functions">
 			<title>Splitting Operations</title>
-			<para>These functions split a temporal value with respect to a sequence of bins (see <xref linkend="bin_functions" />) or tiles (see <xref linkend="tile_functions" />).</para>
+			<para>These functions split a temporal value with respect to a sequence of bins (see <xref linkend="bin_functions"/>) or tiles (see <xref linkend="tile_functions"/>).</para>
 			<itemizedlist>
-				<listitem id="valueSplit">
-					<indexterm><primary><varname>valueSplit</varname></primary></indexterm>
-					<para>Split a temporal number with respect to value bins &SRF;</para>
+				<listitem xml:id="valueSplit">
+					<indexterm significance="normal"><primary><varname>valueSplit</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>timeSplit</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>valueTimeSplit</varname></primary></indexterm>
+					<para>Split a temporal number with respect to value and/or time bins &SRF;</para>
 					<para><varname>valueSplit(tnumber,size number,origin number=0) → {(number,tnumber)}</varname></para>
-					<para>The result is a set of pairs <varname>(number,tnumber)</varname>. If the origin of values is not specified, it is set by default to 0.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<para><varname>timeSplit(ttype,duration interval,origin timestamptz='2000-01-03') → </varname></para>
+					<para><varname>  {(time,temp)}</varname></para>
+					<para><varname>valueTimeSplit(tnumber,size number,duration interval,vorigin number=0,</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03') → {(number,time,tnumber}</varname></para>
+					<para>The result is a set of pairs or a set of triples. If the origin of the value and/or the time dimension is not specified, they are set by default to 0 and to Monday, January 3, 2000, respectively.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (sp).number, (sp).tnumber
 FROM (SELECT valueSplit(tint '[1@2001-01-01, 2@2001-01-02, 5@2001-01-05, 10@2001-01-10]',
   2) AS sp) t;
@@ -862,15 +898,8 @@ SELECT valueSplit(tfloat '[1@2001-01-01, 10@2001-01-10)', 2.0, 1.0);
 -- (7,"{[7@2001-01-07, 9@2001-01-09)}")
 -- (9,"{[9@2001-01-09, 10@2001-01-10 00:00:00+01)}")
 </programlisting>
-				</listitem>
 
-				<listitem id="timeSplit">
-					<indexterm><primary><varname>timeSplit</varname></primary></indexterm>
-					<para>Split a temporal numbe a temporal value with respect to time bins &Z_support; &SRF;</para>
-					<para><varname>timeSplit(ttype,duration interval,origin timestamptz='2000-01-03') → </varname></para>
-					<para><varname>  {(time,temp)}</varname></para>
-					<para>The result is a set of pairs <varname>(time,temp)</varname>. If the origin of time dimension is not specified, it is set by default to Monday, January 3, 2000.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (ts).time, (ts).temp
 FROM (SELECT timeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', '2 days') AS ts) t;
 -- 2001-01-31 | [1@2001-02-01, 2@2001-02-02)
@@ -886,7 +915,7 @@ FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-02-01, Point(10 10)@2001-02-
 -- ...
 </programlisting>
 					<para>Notice that we can split a temporal value in cyclic (instead of linear) time bins. The following two examples show how to split a temporal value by hour and by day of the week.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (ts).time::time AS hour, merge((ts).temp) AS temp
 FROM (SELECT timeSplit(tfloat '[1@2001-01-01, 10@2001-01-03]', '1 hour') AS ts) t
 GROUP BY hour ORDER BY hour;
@@ -912,15 +941,8 @@ GROUP BY dow, dow_no ORDER BY dow_no;
              [POINT(7.23 7.23)@2001-01-10, POINT(7.92 7.92)@2001-01-11)} */
 /* ... */
 </programlisting>
-				</listitem>
 
-				<listitem id="valueTimeSplit">
-					<indexterm><primary><varname>valueTimeSplit</varname></primary></indexterm>
-					<para>Split a temporal number with respect to a value and time grid &SRF;</para>
-					<para><varname>valueTimeSplit(tnumber,size number,duration interval,vorigin number=0,</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03') → {(number,time,tnumber}</varname></para>
-					<para>The result is a set of triples <varname>(number,time,tnumber)</varname>. If the origin of value and/or time dimension is not specified, it is set by default to 0 and to Monday, January 3, 2000, respectively.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (sp).number, (sp).time, (sp).tnumber
 FROM (SELECT valueTimeSplit(tint '[1@2001-02-01, 2@2001-02-02, 5@2001-02-05,
   10@2001-02-10]', 5, '5 days') AS sp) t;
@@ -936,14 +958,20 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', 5.0, '5 days
 </programlisting>
 				</listitem>
 
-				<listitem id="spaceSplit">
-					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
-					<para>Split a temporal point with respect to a spatial grid &Z_support; &SRF;</para>
+				<listitem xml:id="spaceSplit">
+					<indexterm significance="normal"><primary><varname>spaceSplit</varname></primary></indexterm>
+					<para>Split a temporal point with respect to a spatial grid &Z_support;
+ &SRF;
+</para>
 					<para><varname>spaceSplit(tgeompoint,xsize float,[ysize float,zsize float,]</varname></para>
 					<para><varname>  origin geompoint='Point(0 0 0)',bitmatrix boolean=true,borderInc bool=true) →</varname></para>
 					<para><varname>  {(point,tpoint)}</varname></para>
-					<para>The result is a set of pairs <varname>(point,tpoint)</varname>. If the origin of the space dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname>. The arguments <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process. The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus, extra tiles containing the border are generated.</para>
-					<programlisting language="sql" xml:space="preserve">
+					<para><varname>spaceTimeSplit(tgeompoint,xsize float,[ysize float,zsize float,]</varname></para>
+					<para><varname>  duration interval,sorigin geompoint='Point(0 0 0)',</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03',bitmatrix boolean=true,borderInc boolean=true) →</varname></para>
+					<para><varname>  {(point,time,tpoint)}</varname></para>
+					<para>The result is a set of pairs or a set of triples. If the origin of the space and/or time dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname> and to Monday, January 3, 2000, respectively. The arguments <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process. The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus extra tiles containing the border are generated.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2001-03-01, Point(10 10)@2001-03-10]',
   2.0) AS sp) t;
@@ -959,16 +987,8 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2001-03-01,
 -- POINT Z(5 5 5) | {[POINT Z (5 5 5)@2001-03-05, POINT Z (7 7 7)@2001-03-07)}
 -- ...
 </programlisting>
-				</listitem>
-				<listitem id="spaceTimeSplit">
-					<indexterm><primary><varname>spaceTimeSplit</varname></primary></indexterm>
-					<para>Split a temporal point with respect to a spatiotemporal grid &Z_support; &SRF;</para>
-					<para><varname>spaceTimeSplit(tgeompoint,xsize float,[ysize float,zsize float,]</varname></para>
-					<para><varname>  duration interval,sorigin geompoint='Point(0 0 0)',</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03',bitmatrix boolean=true,borderInc boolean=true) →</varname></para>
-					<para><varname>  {(point,time,tpoint)}</varname></para>
-					<para>The result is a set of triples <varname>(point,time,tpoint)</varname>. If the origin of the space and/or time dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname> and to Monday, January 3, 2000, respectively. The arguments <varname>ysize</varname> and <varname>zsize</varname> are optional, the size for the missing dimensions is assumed to be equal to <varname>xsize</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process. The optional argument <varname>borderInc</varname> states whether the upper border of the extent is included and thus extra tiles containing the border are generated.</para>
-					<programlisting language="sql" xml:space="preserve">
+
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2001-02-01, Point(10 10)@2001-02-10]',
   2.0, interval '2 days') AS sp) t;
@@ -991,3 +1011,4 @@ FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2001-02-01,
 	</sect1>
 
 </chapter>
+

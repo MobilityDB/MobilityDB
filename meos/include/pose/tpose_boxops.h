@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -39,13 +39,10 @@
 
 /*****************************************************************************/
 
+/* Functions computing the bounding box at the creation of a temporal pose */
+
 extern bool pose_set_stbox(const Pose *pose, STBox *box);
 extern void posearr_set_stbox(const Datum *values, int count, STBox *box);
-extern bool pose_timestamp_set_stbox(const Pose *pose, TimestampTz t,
-  STBox *box);
-extern bool pose_period_set_stbox(const Pose *pose, const Span *p,
-  STBox *box);
-/* Functions computing the bounding box at the creation of a temporal pose */
 
 extern void tposeinst_set_stbox(const TInstant *inst, STBox *box);
 extern void tposeinstarr_set_stbox(const TInstant **instants, int count,

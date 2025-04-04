@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -42,7 +42,7 @@
 #include <meos_internal.h>
 #include <meos_cbuffer.h>
 #include "general/tsequence.h"
-#include "geo/pgis_types.h"
+#include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/cbuffer.h"
 
@@ -129,21 +129,6 @@ ensure_valid_stbox_cbuffer(const STBox *box, const Cbuffer *cbuf)
   return true;
 }
 
-/**
- * @brief Ensure the validity of a temporal circular buffer and a geometry
- * @note The geometry can be empty since some functions such atGeometry or
- * minusGeometry return different result on empty geometries.
- */
-bool
-ensure_valid_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
-{
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_temporal_isof_type(temp, T_TCBUFFER) ||
-      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
-    return false;
-  return true;
-}
-
 extern LWCIRCSTRING *lwcircstring_from_lwpointarray(int32_t srid, uint32_t npoints, LWPOINT **points);
 
 /**
@@ -226,7 +211,7 @@ cbuffersegm_interpolate(Datum start, Datum end, long double ratio)
 }
 
 /**
- * @brief Return true if a segment of a temporal network point value intersects
+ * @brief Return true if a segment of a temporal circular buffer intersects
  * a base value at the timestamp
  * @param[in] inst1,inst2 Temporal instants defining the segment
  * @param[in] value Base value
@@ -236,13 +221,11 @@ bool
 tcbuffersegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
-  Datum value1 = tinstant_val(inst1);
-  Datum value2 = tinstant_val(inst2);
   Cbuffer *cbuf = DatumGetCbufferP(value);
-  Cbuffer *cbuf1 = DatumGetCbufferP(value1);
-  Cbuffer *cbuf2 = DatumGetCbufferP(value2);
-  const GSERIALIZED *gs1 = cbuffer_point(cbuf1);
-  const GSERIALIZED *gs2 = cbuffer_point(cbuf2);
+  Cbuffer *cbuf1 = DatumGetCbufferP(tinstant_val(inst1));
+  Cbuffer *cbuf2 = DatumGetCbufferP(tinstant_val(inst2));
+  const GSERIALIZED *gs1 = cbuffer_point_p(cbuf1);
+  const GSERIALIZED *gs2 = cbuffer_point_p(cbuf2);
   TimestampTz t1, t2;
   bool result1, result2;
   if (! datum_point_eq(PointerGetDatum(gs1), PointerGetDatum(gs2)))
@@ -256,7 +239,13 @@ tcbuffersegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
       return false;
   }
   else
+  {
+    /* If constant segment and the point of the value is different */
+    const GSERIALIZED *gs = cbuffer_point_p(cbuf);
+    if (! datum_point_eq(PointerGetDatum(gs1), PointerGetDatum(gs)))
+      return false;
     result1 = false;
+  }
   if (! float8_eq(cbuf1->radius, cbuf2->radius))
   {
     TInstant *radius1 = tcbufferinst_tfloatinst(inst1);
@@ -272,17 +261,20 @@ tcbuffersegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   bool result;
   if (result1 && result2 & (t1 == t2))
   {
-    *t = t1;
+    if (t) 
+      *t = t1;
     result = true;
   }
   else if (! result1 && result2)
   {
-    *t = t2;
+    if (t) 
+      *t = t2;
     result = true;
   }
   else /* result1 && ! result2 */
   {
-    *t = t1;
+    if (t) 
+      *t = t1;
     result = true;
   }
   return result;
@@ -293,7 +285,7 @@ tcbuffersegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_spatial_accessor
+ * @ingroup meos_cbuffer_spatial_accessor
  * @brief Return the traversed area of a temporal circular buffer
  * @param[in] temp Temporal circular buffer
  * @csqlfn #Tcbuffer_traversed_area()

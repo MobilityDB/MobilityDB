@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -691,7 +691,7 @@ tsequenceset_from_base_tstzspanset(Datum value, meosType temptype,
  * @csqlfn #Temporal_valueset()
  */
 Datum *
-tsequenceset_vals(const TSequenceSet *ss, int *count)
+tsequenceset_values_p(const TSequenceSet *ss, int *count)
 {
   assert(ss); assert(count);
   Datum *result = palloc(sizeof(Datum *) * ss->totalcount);
@@ -741,7 +741,7 @@ tnumberseqset_valuespans(const TSequenceSet *ss)
   /* Temporal sequence number with discrete or step interpolation */
   meosType basetype = temptype_basetype(ss->temptype);
   meosType spantype = basetype_spantype(basetype);
-  Datum *values = tsequenceset_vals(ss, &count);
+  Datum *values = tsequenceset_values_p(ss, &count);
   spans = palloc(sizeof(Span) * count);
   for (i = 0; i < count; i++)
     span_set(values[i], values[i], true, true, basetype, spantype, &spans[i]);

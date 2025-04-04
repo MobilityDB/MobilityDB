@@ -8,20 +8,18 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!DOCTYPE book [
 
 <!ENTITY last_release_version "1.3">
 
 <!ENTITY introduction SYSTEM "introduction.xml">
 <!ENTITY set_span_types SYSTEM "set_span_types.xml">
 <!ENTITY box_types SYSTEM "box_types.xml">
-<!ENTITY temporal_types SYSTEM "temporal_types.xml">
-<!ENTITY temporal_types_ops_p1 SYSTEM "temporal_types_ops_p1.xml">
-<!ENTITY temporal_types_ops_p2 SYSTEM "temporal_types_ops_p2.xml">
-<!ENTITY temporal_types_alpha SYSTEM "temporal_types_alpha.xml">
-<!ENTITY temporal_types_spatial_p1 SYSTEM "temporal_types_spatial_p1.xml">
-<!ENTITY temporal_types_spatial_p2 SYSTEM "temporal_types_spatial_p2.xml">
+<!ENTITY temporal_types_p1 SYSTEM "temporal_types_p1.xml">
+<!ENTITY temporal_types_p2 SYSTEM "temporal_types_p2.xml">
+<!ENTITY temporal_alpha SYSTEM "temporal_alpha.xml">
+<!ENTITY temporal_spatial_p1 SYSTEM "temporal_spatial_p1.xml">
+<!ENTITY temporal_spatial_p2 SYSTEM "temporal_spatial_p2.xml">
 <!ENTITY temporal_types_analytics SYSTEM "temporal_types_analytics.xml">
 <!ENTITY temporal_types_aggregation SYSTEM "temporal_types_aggregation.xml">
 <!ENTITY temporal_network_points SYSTEM "temporal_network_points.xml">
@@ -61,7 +59,9 @@
 ">
 
 ]>
-<book lang="es">
+<book xmlns="http://docbook.org/ns/docbook" 
+  xmlns:xl="http://www.w3.org/1999/xlink"
+  xmlns:mml="https://www.w3.org/1998/Math/MathML" version="5.0" xml:lang="en">
 	<bookinfo>
 		<title>MobilityDB &last_release_version; Manual de usuario</title>
 		<author>
@@ -115,12 +115,11 @@
 	&introduction;
 	&set_span_types;
 	&box_types;
-	&temporal_types;
-	&temporal_types_ops_p1;
-	&temporal_types_ops_p2;
-	&temporal_types_alpha;
-	&temporal_types_spatial_p1;
-	&temporal_types_spatial_p2;
+	&temporal_types_p1;
+	&temporal_types_p2;
+	&temporal_alpha;
+	&temporal_spatial_p1;
+	&temporal_spatial_p2;
 	&temporal_types_analytics;
 	&temporal_types_aggregation;
 	&temporal_network_points;

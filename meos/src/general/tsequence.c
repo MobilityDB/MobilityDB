@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -57,6 +57,7 @@
 #include "general/set.h"
 #include "general/span.h"
 #include "general/spanset.h"
+#include "general/temporal.h"
 #include "general/tinstant.h"
 #include "general/temporal_boxops.h"
 #include "general/type_util.h"
@@ -1597,7 +1598,7 @@ tsequence_shift_scale_time(const TSequence *seq, const Interval *shift,
  * @csqlfn #Temporal_valueset()
  */
 Datum *
-tsequence_vals(const TSequence *seq, int *count)
+tsequence_values_p(const TSequence *seq, int *count)
 {
   assert(seq); assert(count);
   Datum *result = palloc(sizeof(Datum *) * seq->count);
@@ -1639,7 +1640,7 @@ tnumberseq_valuespans(const TSequence *seq)
   int count;
   meosType basetype = temptype_basetype(seq->temptype);
   meosType spantype = basetype_spantype(basetype);
-  Datum *values = tsequence_vals(seq, &count);
+  Datum *values = tsequence_values_p(seq, &count);
   Span *spans = palloc(sizeof(Span) * count);
   for (int i = 0; i < count; i++)
     span_set(values[i], values[i], true, true, basetype, spantype, &spans[i]);
@@ -2031,66 +2032,67 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   // TEST !!!! USED FOR ASSESSING FLOATING POINT PRECISION IN MEOS !!!
   // long double ratio = (double)(t - inst1->t) / (double)(inst2->t - inst1->t);
   assert(temptype_continuous(inst1->temptype));
-  if (inst1->temptype == T_TFLOAT)
+  switch (inst1->temptype)
   {
-    double start = DatumGetFloat8(value1);
-    double end = DatumGetFloat8(value2);
-    double dresult = start + (double) ((long double)(end - start) * ratio);
-    return Float8GetDatum(dresult);
-  }
-  if (inst1->temptype == T_TDOUBLE2)
-  {
-    double2 *start = DatumGetDouble2P(value1);
-    double2 *end = DatumGetDouble2P(value2);
-    double2 *dresult = palloc(sizeof(double2));
-    dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
-    dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
-    return Double2PGetDatum(dresult);
-  }
-  if (inst1->temptype == T_TDOUBLE3)
-  {
-    double3 *start = DatumGetDouble3P(value1);
-    double3 *end = DatumGetDouble3P(value2);
-    double3 *dresult = palloc(sizeof(double3));
-    dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
-    dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
-    dresult->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
-    return Double3PGetDatum(dresult);
-  }
-  if (inst1->temptype == T_TDOUBLE4)
-  {
-    double4 *start = DatumGetDouble4P(value1);
-    double4 *end = DatumGetDouble4P(value2);
-    double4 *dresult = palloc(sizeof(double4));
-    dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
-    dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
-    dresult->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
-    dresult->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
-    return Double4PGetDatum(dresult);
-  }
-  if (tpoint_type(inst1->temptype))
-    return pointsegm_interpolate_point(value1, value2, ratio);
+    case T_TFLOAT:
+    {
+      double start = DatumGetFloat8(value1);
+      double end = DatumGetFloat8(value2);
+      double dresult = start + (double) ((long double)(end - start) * ratio);
+      return Float8GetDatum(dresult);
+    }
+    case T_TDOUBLE2:
+    {
+      double2 *start = DatumGetDouble2P(value1);
+      double2 *end = DatumGetDouble2P(value2);
+      double2 *dresult = palloc(sizeof(double2));
+      dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
+      dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
+      return Double2PGetDatum(dresult);
+    }
+    case T_TDOUBLE3:
+    {
+      double3 *start = DatumGetDouble3P(value1);
+      double3 *end = DatumGetDouble3P(value2);
+      double3 *dresult = palloc(sizeof(double3));
+      dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
+      dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
+      dresult->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
+      return Double3PGetDatum(dresult);
+    }
+    case T_TDOUBLE4:
+    {
+      double4 *start = DatumGetDouble4P(value1);
+      double4 *end = DatumGetDouble4P(value2);
+      double4 *dresult = palloc(sizeof(double4));
+      dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
+      dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
+      dresult->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
+      dresult->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
+      return Double4PGetDatum(dresult);
+    }
+    case T_TGEOMPOINT:
+    case T_TGEOGPOINT:
+      return pointsegm_interpolate_point(value1, value2, ratio);
 #if CBUFFER
-  if (inst1->temptype == T_TCBUFFER)
-    return cbuffersegm_interpolate(value1, value2, ratio);
+    case T_TCBUFFER:
+      return cbuffersegm_interpolate(value1, value2, ratio);
 #endif
 #if NPOINT
-  if (inst1->temptype == T_TNPOINT)
-    return npointsegm_interpolate(value1, value2, ratio);
+    case T_TNPOINT:
+      return npointsegm_interpolate(value1, value2, ratio);
 #endif
 #if POSE
-  if (inst1->temptype == T_TPOSE)
-  {
-    Pose *pose1 = DatumGetPoseP(value1);
-    Pose *pose2 = DatumGetPoseP(value2);
-    Pose *result = pose_interpolate(pose1, pose2, ratio);
-    return PointerGetDatum(result);
-  }
+    case T_TPOSE:
+      return PointerGetDatum(pose_interpolate(DatumGetPoseP(value1),
+        DatumGetPoseP(value2), ratio));
 #endif
-  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-    "Unknown interpolation function for type: %s",
-    meostype_name(inst1->temptype));
-  return 0;
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown interpolation function for type: %s",
+        meostype_name(inst1->temptype));
+      return 0;
+  }
 }
 
 /**
@@ -2466,7 +2468,7 @@ tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
  * @param[out] inter Base value taken by the segment at the timestamp.
  * This value is equal to the input base value up to the floating
  * point precision.
- * @param[out] t Timestamp
+ * @param[out] t Timestamp, may be @p NULL
  * @pre The value is not equal to the first or last instant. The reason is that
  * the function is used in the lifting infrastructure for determining the
  * crossings after testing whether the bounds of the segments are equal to the

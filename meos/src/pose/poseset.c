@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -54,7 +54,7 @@
 #include "general/tsequence.h"
 #include "general/type_inout.h"
 #include "general/type_util.h"
-#include "geo/pgis_types.h"
+#include "geo/postgis_funcs.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_out.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -69,7 +69,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup meos_setspan_inout
+ * @ingroup meos_pose_set_inout
  * @brief Return a set from its Well-Known Text (WKT) representation
  * @param[in] str String
  * @csqlfn #Set_in()
@@ -88,7 +88,7 @@ poseset_in(const char *str)
 }
 
 /**
- * @ingroup meos_setspan_inout
+ * @ingroup meos_pose_set_inout
  * @brief Return the string representation of a pose set
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits
@@ -112,7 +112,7 @@ poseset_out(const Set *s, int maxdd)
  *****************************************************************************/
 
 /**
- * @ingroup meos_setspan_constructor
+ * @ingroup meos_pose_set_constructor
  * @brief Return a pose set from an array of values
  * @param[in] values Array of values
  * @param[in] count Number of elements of the array
@@ -138,23 +138,28 @@ poseset_make(const Pose **values, int count)
 }
 
 /*****************************************************************************
- * Transformation functions
+ * Conversion functions
  *****************************************************************************/
 
 /**
- * @ingroup meos_setspan_transf
- * @brief Return a pose set with the precision of the values set to a number of
- * decimal places
- * @csqlfn #Poseset_round()
+ * @ingroup meos_pose_set_conversion
+ * @brief Return a pose converted to a pose set
+ * @param[in] pose Value
+ * @csqlfn #Value_to_set()
  */
 Set *
-poseset_round(const Set *s, int maxdd)
+pose_to_set(const Pose *pose)
 {
+#if MEOS
   /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) ||
-      ! ensure_set_isof_type(s, T_POSESET))
+  if (! ensure_not_null((void *) pose))
     return NULL;
-  return set_round(s, maxdd, &datum_pose_round);
+#else
+  assert(pose);
+#endif /* MEOS */
+
+  Datum v = PointerGetDatum(pose);
+  return set_make_exp(&v, 1, 1, T_POSE, ORDER_NO);
 }
 
 /*****************************************************************************
@@ -162,7 +167,7 @@ poseset_round(const Set *s, int maxdd)
  *****************************************************************************/
 
 /**
- * @ingroup meos_setspan_accessor
+ * @ingroup meos_pose_set_accessor
  * @brief Return a copy of the start value of a pose set
  * @param[in] s Set
  * @return On error return @p NULL
@@ -183,7 +188,7 @@ poseset_start_value(const Set *s)
 }
 
 /**
- * @ingroup meos_setspan_accessor
+ * @ingroup meos_pose_set_accessor
  * @brief Return a copy of the end value of a pose set
  * @param[in] s Set
  * @return On error return @p NULL
@@ -204,7 +209,7 @@ poseset_end_value(const Set *s)
 }
 
 /**
- * @ingroup meos_setspan_accessor
+ * @ingroup meos_pose_set_accessor
  * @brief Return in the last argument a copy of the n-th value of a circular
  * buffer set
  * @param[in] s Set
@@ -232,7 +237,7 @@ poseset_value_n(const Set *s, int n, Pose **result)
 }
 
 /**
- * @ingroup meos_setspan_accessor
+ * @ingroup meos_pose_set_accessor
  * @brief Return the array of copies of the values of a pose set
  * @param[in] s Set
  * @return On error return @p NULL
@@ -253,31 +258,6 @@ poseset_values(const Set *s)
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetPoseP(datum_copy(SET_VAL_N(s, i), s->basetype));
   return result;
-}
-
-/*****************************************************************************
- * Conversion functions
- *****************************************************************************/
-
-/**
- * @ingroup meos_setspan_conversion
- * @brief Return a pose converted to a pose set
- * @param[in] pose Value
- * @csqlfn #Value_to_set()
- */
-Set *
-pose_to_set(const Pose *pose)
-{
-#if MEOS
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) pose))
-    return NULL;
-#else
-  assert(pose);
-#endif /* MEOS */
-
-  Datum v = PointerGetDatum(pose);
-  return set_make_exp(&v, 1, 1, T_POSE, ORDER_NO);
 }
 
 /*****************************************************************************
@@ -302,7 +282,7 @@ ensure_valid_set_pose(const Set *s, const Pose *pose)
 }
 
 /**
- * @ingroup meos_setspan_topo
+ * @ingroup meos_pose_set_setops
  * @brief Return true if a set contains a pose
  * @param[in] s Set
  * @param[in] pose Value
@@ -318,7 +298,7 @@ contains_set_pose(const Set *s, Pose *pose)
 }
 
 /**
- * @ingroup meos_setspan_topo
+ * @ingroup meos_pose_set_setops
  * @brief Return true if a pose is contained in a set
  * @param[in] pose Value
  * @param[in] s Set
@@ -334,7 +314,7 @@ contained_pose_set(const Pose *pose, const Set *s)
 }
 
 /**
- * @ingroup meos_setspan_set
+ * @ingroup meos_pose_set_setops
  * @brief Return the union of a set and a pose
  * @param[in] s Set
  * @param[in] pose Value
@@ -350,7 +330,7 @@ union_set_pose(const Set *s, const Pose *pose)
 }
 
 /**
- * @ingroup meos_setspan_set
+ * @ingroup meos_pose_set_setops
  * @brief Return the union of a pose and a set
  * @param[in] s Set
  * @param[in] pose Value
@@ -363,7 +343,7 @@ union_pose_set(const Pose *pose, const Set *s)
 }
 
 /**
- * @ingroup meos_setspan_set
+ * @ingroup meos_pose_set_setops
  * @brief Return the intersection of a set and a pose
  * @param[in] s Set
  * @param[in] pose Value
@@ -379,7 +359,7 @@ intersection_set_pose(const Set *s, const Pose *pose)
 }
 
 /**
- * @ingroup meos_setspan_set
+ * @ingroup meos_pose_set_setops
  * @brief Return the intersection of a pose and a set
  * @param[in] s Set
  * @param[in] pose Value
@@ -392,7 +372,7 @@ intersection_pose_set(const Pose *pose, const Set *s)
 }
 
 /**
- * @ingroup meos_setspan_set
+ * @ingroup meos_pose_set_setops
  * @brief Return the difference of a pose and a set
  * @param[in] pose Value
  * @param[in] s Set
@@ -408,7 +388,7 @@ minus_pose_set(const Pose *pose, const Set *s)
 }
 
 /**
- * @ingroup meos_setspan_set
+ * @ingroup meos_pose_set_setops
  * @brief Return the difference of a set and a pose
  * @param[in] s Set
  * @param[in] pose Value
@@ -428,8 +408,9 @@ minus_set_pose(const Set *s, const Pose *pose)
  * Aggregate functions for set types
  *****************************************************************************/
 
+#if MEOS
 /**
- * @ingroup meos_setspan_agg
+ * @ingroup meos_pose_set_setops
  * @brief Transition function for set union aggregate of poses
  * @param[in,out] state Current aggregate state
  * @param[in] pose Value
@@ -438,15 +419,12 @@ Set *
 pose_union_transfn(Set *state, const Pose *pose)
 {
   /* Ensure validity of the arguments */
-#if MEOS
   if (! ensure_not_null((void *) pose))
     return NULL;
-#else
-  assert(pose);
-#endif /* MEOS */
   if (state && ! ensure_set_isof_type(state, T_POSESET))
     return NULL;
   return value_union_transfn(state, PointerGetDatum(pose), T_POSE);
 }
+#endif /* MEOS */
 
 /*****************************************************************************/

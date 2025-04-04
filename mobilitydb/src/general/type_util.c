@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -137,6 +137,7 @@ call_function1(PGFunction func, Datum arg1)
   return result;
 }
 
+#if 0 /* unused */
 /**
  * @brief Call PostgreSQL function with 2 arguments
  */
@@ -160,6 +161,7 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
     elog(ERROR, "function %p returned NULL", (void *) func);
   return result;
 }
+#endif /* unused */
 
 /**
  * @brief Call PostgreSQL function with 3 arguments
@@ -352,14 +354,31 @@ cbufferarr_to_array(Cbuffer **cbufarr, int count, bool free_all)
   ArrayType *result = construct_array((Datum *) cbufarr, count, cbuftypid, -1,
     false, 'd');
   if (free_all)
-  {
     for (int i = 0; i < count; i++)
       pfree(cbufarr[i]);
-  }
   pfree(cbufarr);
   return result;
 }
 #endif /* CBUFFER */
+
+#if POSE
+/**
+ * @brief Return a C array of spans converted into a PostgreSQL array
+ */
+ArrayType *
+posearr_to_array(Pose **posearr, int count, bool free_all)
+{
+  assert(count > 0);
+  Oid cbuftypid = type_oid(T_CBUFFER);
+  ArrayType *result = construct_array((Datum *) posearr, count, cbuftypid, -1,
+    false, 'd');
+  if (free_all)
+    for (int i = 0; i < count; i++)
+      pfree(posearr[i]);
+  pfree(posearr);
+  return result;
+}
+#endif /* POSE */
 
 /**
  * @brief Return a C array of spans converted into a PostgreSQL array

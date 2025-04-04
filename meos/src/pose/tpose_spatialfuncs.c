@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -36,7 +36,6 @@
 
 /* PostgreSQL */
 #include <stdio.h>
-// #include <utils/palloc.h>
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
@@ -85,21 +84,6 @@ ensure_valid_stbox_pose(const STBox *box, const Pose *pose)
   if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) pose) ||
       ! ensure_has_X(T_STBOX, box->flags) || 
       ! ensure_same_srid(box->srid, pose_srid(pose)))
-    return false;
-  return true;
-}
-
-/**
- * @brief Ensure the validity of a temporal pose and a geometry
- * @note The geometry can be empty since some functions such atGeometry or
- * minusGeometry return different result on empty geometries.
- */
-bool
-ensure_valid_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
-{
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_temporal_isof_type(temp, T_TPOSE) ||
-      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
     return false;
   return true;
 }
@@ -157,6 +141,33 @@ tposesegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 }
 
 /*****************************************************************************
+ * Trajectory function
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_pose_accessor
+ * @brief Return the trajectory of a temporal pose
+ * @param[in] temp Temporal pose
+ * @csqlfn #Tpose_trajectory()
+ */
+GSERIALIZED *
+tpose_trajectory(const Temporal *temp)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) temp) ||
+      ! ensure_temporal_isof_type(temp, T_TPOSE))
+    return NULL;
+#else
+  assert(temp); assert(temp->temptype == T_TPOSE);
+#endif /* MEOS */
+  Temporal *tpoint = tpose_tgeompoint(temp);
+  GSERIALIZED *result = tpoint_trajectory(tpoint);
+  pfree(tpoint);
+  return result;
+}
+
+/*****************************************************************************
  * Restriction functions
  *****************************************************************************/
 
@@ -195,9 +206,9 @@ tpose_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
 
 #if MEOS
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_pose_restrict
  * @brief Return a temporal pose restricted to a geometry
- * @param[in] temp Temporal point
+ * @param[in] temp Temporal pose
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
  * @csqlfn #Tpose_at_geom()
@@ -215,9 +226,9 @@ tpose_at_geom(const Temporal *temp, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_pose_restrict
  * @brief Return a temporal point restricted to (the complement of) a geometry
- * @param[in] temp Temporal point
+ * @param[in] temp Temporal pose
  * @param[in] gs Geometry
  * @param[in] zspan Span of values to restrict the Z dimension
  * @csqlfn #Tpose_minus_geom()
@@ -269,7 +280,7 @@ tpose_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 
 #if MEOS
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_pose_restrict
  * @brief Return a temporal pose restricted to a geometry
  * @param[in] temp Temporal pose
  * @param[in] box Spatiotemporal box
@@ -287,7 +298,7 @@ tpose_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 }
 
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_pose_restrict
  * @brief Return a temporal point restricted to (the complement of) a geometry
  * @param[in] temp Temporal pose
  * @param[in] box Spatiotemporal box

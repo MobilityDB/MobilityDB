@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -45,41 +45,25 @@
 #include "pg_geo/postgis.h"
 
 /*****************************************************************************
- * Functions for spatial reference systems
+ * Trajectory function
  *****************************************************************************/
 
-PGDLLEXPORT Datum Pose_srid(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Pose_srid);
+PGDLLEXPORT Datum Tpose_trajectory(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_trajectory);
 /**
- * @ingroup mobilitydb_temporal_spatial_srid
- * @brief Return the SRID of a temporal pose
- * @sqlfn SRID()
+ * @ingroup mobilitydb_pose_accessor
+ * @brief Return a temporal pose restricted to a geometry
+ * @sqlfn atGeometry()
  */
-Datum
-Pose_srid(PG_FUNCTION_ARGS)
+inline Datum
+Tpose_trajectory(PG_FUNCTION_ARGS)
 {
-  Pose *pose = PG_GETARG_POSE_P(0);
-  int32_t result = pose_srid(pose);
-  PG_FREE_IF_COPY(pose, 0);
-  PG_RETURN_INT32(result);
-}
-
-PGDLLEXPORT Datum Pose_set_srid(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Pose_set_srid);
-/**
- * @ingroup mobilitydb_temporal_spatial_srid
- * @brief Return the SRID of a temporal pose
- * @sqlfn SRID()
- */
-Datum
-Pose_set_srid(PG_FUNCTION_ARGS)
-{
-  Pose *pose = PG_GETARG_POSE_P(0);
-  int32_t srid = PG_GETARG_INT32(1);
-  Pose *result = pose_copy(pose);
-  pose_set_srid(result, srid);
-  PG_FREE_IF_COPY(pose, 0);
-  PG_RETURN_POSE_P(result);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *result = tpose_trajectory(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 /*****************************************************************************
@@ -106,11 +90,11 @@ Tpose_restrict_geom(FunctionCallInfo fcinfo, bool atfunc)
 PGDLLEXPORT Datum Tpose_at_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_at_geom);
 /**
- * @ingroup mobilitydb_temporal_restrict
+ * @ingroup mobilitydb_pose_restrict
  * @brief Return a temporal pose restricted to a geometry
  * @sqlfn atGeometry()
  */
-Datum
+inline Datum
 Tpose_at_geom(PG_FUNCTION_ARGS)
 {
   return Tpose_restrict_geom(fcinfo, REST_AT);
@@ -119,11 +103,11 @@ Tpose_at_geom(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpose_minus_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_minus_geom);
 /**
- * @ingroup mobilitydb_temporal_restrict
+ * @ingroup mobilitydb_pose_restrict
  * @brief Return a temporal pose restricted to the complement of a geometry
  * @sqlfn minusGeometry()
  */
-Datum
+inline Datum
 Tpose_minus_geom(PG_FUNCTION_ARGS)
 {
   return Tpose_restrict_geom(fcinfo, REST_MINUS);
@@ -131,45 +115,48 @@ Tpose_minus_geom(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Tpose_at_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_at_stbox);
 /**
- * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal pose restricted to a spatiotemporal box
- * @sqlfn atStbox()
  */
-Datum
-Tpose_at_stbox(PG_FUNCTION_ARGS)
+static Datum
+Tpose_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
   bool border_inc = PG_GETARG_BOOL(2);
-  Temporal *result = tpose_restrict_stbox(temp, box, border_inc, REST_AT);
+  Temporal *result = tpose_restrict_stbox(temp, box, border_inc, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 
+
+PGDLLEXPORT Datum Tpose_at_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_at_stbox);
+/**
+ * @ingroup mobilitydb_pose_restrict
+ * @brief Return a temporal pose restricted to a spatiotemporal box
+ * @sqlfn atStbox()
+ */
+inline Datum
+Tpose_at_stbox(PG_FUNCTION_ARGS)
+{
+  return Tpose_restrict_stbox(fcinfo, REST_AT);
+}
+
 PGDLLEXPORT Datum Tpose_minus_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_minus_stbox);
 /**
- * @ingroup mobilitydb_temporal_restrict
+ * @ingroup mobilitydb_pose_restrict
  * @brief Return a temporal pose restricted to the complement of a
  * spatiotemporal box
  * @sqlfn minusStbox()
  */
-Datum
+inline Datum
 Tpose_minus_stbox(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBox *box = PG_GETARG_STBOX_P(1);
-  bool border_inc = PG_GETARG_BOOL(2);
-  Temporal *result = tpose_restrict_stbox(temp, box, border_inc, REST_MINUS);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Tpose_restrict_stbox(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/

@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2024, PostGIS contributors
+-- Copyright (c) 2001-2025, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -60,6 +60,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE eDisjoint(t1.tem
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eDisjoint(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
+-- Modulo used to reduce time needed for the tests
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE aDisjoint(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom WHERE aDisjoint(temp, g);
@@ -69,18 +70,19 @@ SELECT COUNT(*) FROM tbl_geom3D, tbl_tgeompoint3D WHERE aDisjoint(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom3D WHERE aDisjoint(temp, g);
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE aDisjoint(t1.temp, t2.temp);
 -- Geography
-SELECT COUNT(*) FROM tbl_geog, tbl_tgeogpoint WHERE aDisjoint(g, temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog WHERE aDisjoint(temp, g);
+SELECT COUNT(*) FROM tbl_geog t1, tbl_tgeogpoint t2 WHERE t1.k % 3 = 0 AND aDisjoint(g, temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_geog t2 WHERE t2.k % 3 = 0 AND aDisjoint(temp, g);
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE aDisjoint(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geog3D, tbl_tgeogpoint3D WHERE aDisjoint(g, temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geog3D WHERE aDisjoint(temp, g);
+SELECT COUNT(*) FROM tbl_geog3D t1, tbl_tgeogpoint3D t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDisjoint(g, temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_geog3D t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDisjoint(temp, g);
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aDisjoint(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 -- eIntersects, aIntersects
 -- aIntersects is not provided for geography
 -------------------------------------------------------------------------------
+-- Modulo used to reduce time needed for the tests
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE eIntersects(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom WHERE eIntersects(temp, g);
@@ -96,8 +98,8 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE eIntersects(
 -- SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog WHERE eIntersects(temp, g);
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE eIntersects(t1.temp, t2.temp);
 -- 3D
-SELECT COUNT(*) FROM tbl_geog3D, tbl_tgeogpoint3D WHERE eIntersects(g, temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geog3D WHERE eIntersects(temp, g);
+SELECT COUNT(*) FROM tbl_geog3D t1, tbl_tgeogpoint3D t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND eIntersects(g, temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_geog3D t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND eIntersects(temp, g);
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eIntersects(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
@@ -126,8 +128,8 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aIntersects(
 SELECT COUNT(*) FROM tbl_geom3D, tbl_tgeompoint3D WHERE eTouches(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom3D WHERE eTouches(temp, g);
 
--- aTouches for 3D is not provided since it is based in minusGeometry which
--- is performed by GEOS
+-- aTouches for 3D is not provided since it is based in minusGeometry which is
+-- performed by GEOS
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE aTouches(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom WHERE aTouches(temp, g);
 

@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * tnpoint.sql
- * Basic functions for temporal network points.
+ * @file
+ * @brief Basic functions for temporal network points
  */
 
 CREATE TYPE tnpoint;
@@ -72,11 +72,13 @@ CREATE TYPE tnpoint (
 CREATE FUNCTION tnpoint(tnpoint, integer)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME','Temporal_enforce_typmod'
-  LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tnpoint AS tnpoint) WITH FUNCTION tnpoint(tnpoint, integer) AS IMPLICIT;
 
--- Input/output in WKT, WKB and HexWKB format
+/*****************************************************************************
+ * Input/output from (E)WKT, (E)WKB, and HexEWKB
+ *****************************************************************************/
 
 CREATE FUNCTION tnpointFromBinary(bytea)
   RETURNS tnpoint
@@ -86,6 +88,8 @@ CREATE FUNCTION tnpointFromHexWKB(text)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
 
 CREATE FUNCTION asText(tnpoint, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
@@ -202,7 +206,11 @@ CREATE FUNCTION setInterp(tnpoint, text)
 
 CREATE FUNCTION round(tnpoint, integer DEFAULT 0)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tnpoint_round'
+  AS 'MODULE_PATHNAME', 'Temporal_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION round(tnpoint[], integer DEFAULT 0)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

@@ -1,0 +1,1154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter xml:id="temporal_poses">
+	<title>Temporal Poses</title>
+
+	<para>The <varname>pose</varname> type is used to represent the <emphasis>location</emphasis> and <emphasis>orientation</emphasis> of geometric objects within coordinate systems anchored to the earth's surface or within other astronomical coordinate systems. The location is represented by a 2D or 3D point. For 2D poses, the orientation is defined by a rotation angle in (-π, π] expressed in radians. For 3D poses, the orientation is defined by four float values <varname>W</varname>, <varname>X</varname>, <varname>Y</varname>, <varname>Z</varname>, representing a unit <ulink url="https://en.wikipedia.org/wiki/Quaternion">quaternion</ulink>
+		<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+		<mrow>
+			<mi>Q</mi>
+			<mo>=</mo>
+			<mo>〈</mo>
+			<mi>W</mi>
+			<mo>,</mo>
+			<mi>X</mi>
+			<mo>,</mo>
+			<mi>Y</mi>
+			<mo>,</mo>
+			<mi>Z</mi>
+			<mo>〉</mo>
+		</mrow>
+		</math>
+	where
+		<math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+		<mrow>
+			<mo>∥</mo>
+			<msup><mi>Q</mi><mi>2</mi></msup>
+			<mo>∥</mo>
+			<mo>=</mo>
+			<msqrt>
+				<msup><mi>W</mi><mi>2</mi></msup>
+				<mo>+</mo>
+				<msup><mi>X</mi><mi>2</mi></msup>
+				<mo>+</mo>
+				<msup><mi>Y</mi><mi>2</mi></msup>
+				<mo>+</mo>
+				<msup><mi>Z</mi><mi>2</mi></msup>
+			</msqrt>
+			<mo>=</mo>
+			<mi>1</mi>
+		</mrow>
+		</math>.
+	</para>
+
+	<para>
+		The <ulink url="https://www.ogc.org/publications/standard/geopose/">GeoPose Standards Working Group</ulink> (SWG), working under the auspices of the <ulink url="https://www.ogc.org/">Open Geospatial Consortium</ulink>, has defined a standard for exchanging pose information across different users, devices, and platforms. More information about the standard can be found in the <ulink url="https://github.com/opengeospatial/GeoPose">GitHub repository</ulink> of the GeoPose SWG.
+	</para>
+ 
+	<para>The <varname>pose</varname> type serves as base type for defining the temporal pose type <varname>tpose</varname>. The <varname>tpose</varname> type has similar functionality as the temporal point type <varname>tgeompoint</varname>. Thus, most functions and operators described before for the <varname>tgeompoint</varname> type are also applicable for the <varname>tpose</varname> type. In addition, there are specific functions defined for the <varname>tpose</varname> type.</para>
+
+	<sect1 xml:id="static_poses">
+		<title>Static Poses</title>
+
+		<para>A 2D <varname>pose</varname> is a couple of the form <varname>(point2D,radius)</varname> where <varname>point2D</varname> is a 2D geometric point and <varname>radius</varname> is a <varname>float</varname> value representing a rotation angle in (-π, π] expressed in radians. A 3D <varname>pose</varname> is a tuple of the form <varname>(point3D,W,Y,X,Z)</varname> where <varname>point3D</varname> is a 3D geometric point, and <varname>W</varname>, and <varname>X</varname>, <varname>Y</varname>, and <varname>Z</varname> are four <varname>floats</varname> representing a <emphasis>unit</emphasis> quaternion.  Examples of input of pose values are as follows:</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pose 'Pose(Point(1 1), 0.5)';
+SELECT pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)';
+</programlisting>
+		<para>An SRID can be specified for a pose either at the begining of the pose literal or before the point literal as shown below.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pose 'SRID=3812;Pose(Point(1 1), 0.5)';
+SELECT pose 'Pose(SRID=5676;Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)';
+</programlisting>
+
+		<para>Values of the pose type must satisfy several constraints so that they are well defined. Examples of incorrect pose type values are as follows.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Empty point
+select pose 'Pose(Point empty, 0.5)';
+-- Incorrect point value
+SELECT pose 'Pose(Linestring(1 1,2 2), 1.0)';
+-- Incorrect radius value
+SELECT pose 'Pose(Point(1 1), -10.0)';
+-- Incorrect 3D point
+SELECT pose 'Pose(Point Z(1 1), 1.0)';
+-- Incomplete 3D orientation
+SELECT pose 'Pose(Point Z(1 1 1), 1.0)';
+</programlisting>
+		<para>We give next the functions and operators for the pose type.</para>
+
+		<sect2 xml:id="pose_inout">
+			<title>Input and Output</title>
+			<itemizedlist>
+				<listitem xml:id="pose_asText">
+					<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+					<para>Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation</para>
+					<para><varname>asText({pose,pose[]}) → {text,text[]}</varname></para>
+					<para><varname>asEWKT({pose,pose[]}) → {text,text[]}</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(pose 'SRID=4326;Pose(Point(0 0),1)');
+-- Pose(POINT(0 0),1)
+SELECT asText(ARRAY[pose 'Pose(Point(0 0),1)', 'Pose(Point(1 1),2)']);
+-- {"Pose(POINT(0 0),1)","Pose(POINT(1 1),2)"}
+SELECT asEWKT(pose 'SRID=4326;Pose(Point(0 0),1)');
+-- SRID=4326;Pose(Point(0 0),1)
+SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)', 'Pose(SRID=5676;Point(1 1),2)']);
+-- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pose_asBinary">
+					<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
+					<para>Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB), or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+					<para><varname>asBinary(pose,endian text='') → bytea</varname></para>
+					<para><varname>asEWKB(pose,endian text='') → bytea</varname></para>
+					<para><varname>asHexEWKB(pose,endian text='') → text</varname></para>
+					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asBinary(pose 'Pose(Point(1 2),1)');
+-- \x0101000000000000f03f0000000000000040000000000000f03f
+SELECT asEWKB(pose 'SRID=7844;Pose(Point(1 2),1)');
+-- \x0141a41e0000000000000000f03f0000000000000040000000000000f03f
+SELECT asHexEWKB(pose 'SRID=3812;Pose(Point(1 2),1)');
+-- 0141E40E0000000000000000F03F0000000000000040000000000000F03F
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="poseFromText">
+					<indexterm significance="normal"><primary><varname>poseFromText</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>poseFromEWKT</varname></primary></indexterm>
+					<para>Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation</para>
+					<para><varname>poseFromText(text) → pose</varname></para>
+					<para><varname>poseFromEWKT(text) → pose</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(poseFromText(text 'Pose(Point(1 2),1)'));
+-- Pose(POINT(1 2),1)
+SELECT asEWKT(poseFromEWKT(text 'SRID=3812;Pose(Point(1 2),1)'));
+-- SRID=3812;Pose(Point(1 2),1)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="poseFromBinary">
+					<indexterm significance="normal"><primary><varname>poseFromBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>poseFromEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>poseFromHexEWKB</varname></primary></indexterm>
+					<para>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+					<para><varname>poseFromBinary(bytea) → pose</varname></para>
+					<para><varname>poseFromEWKB(bytea) → pose</varname></para>
+					<para><varname>poseFromHexEWKB(text) → pose</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(poseFromBinary(
+  '\x0101000000000000f03f0000000000000040000000000000f03f'));
+-- Pose(POINT(1 2),1)
+SELECT asEWKT(poseFromEWKB(
+  '\x0141a41e0000000000000000f03f0000000000000040000000000000f03f'));
+-- SRID=7844;Pose(Point(1 2),1)
+SELECT asEWKT(poseFromHexEWKB(
+  '0141E40E0000000000000000F03F0000000000000040000000000000F03F'));
+-- SRID=3812;Pose(POINT(1 2),1)
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="pose_constructors">
+			<title>Constructors</title>
+			<itemizedlist>
+				<listitem xml:id="pose">
+					<indexterm significance="normal"><primary><varname>pose</varname></primary></indexterm>
+					<para>Constructor for poses</para>
+					<para><varname>pose(geompoint2D,float) → pose</varname></para>
+					<para><varname>pose(geompoint3D,float,float,float,float) → pose</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(pose(ST_Point(1,1), radians(45)), 6);
+-- Pose(POINT(1 1),0.785398)
+SELECT asEWKT(pose(ST_Point(1,1,3812), radians(45)), 6);
+-- SRID=3812;Pose(POINT(1 1),0.785398)
+SELECT asText(pose(ST_PointZ(1,1,1), 1, 0, 0, 0));
+-- Pose(POINT Z (1 1 1),1,0,0,0)
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="pose_conversions">
+			<title>Conversions</title>
+			<para>Values of the <varname>pose</varname> type can be converted to the <varname>geometry</varname> point type using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation as shown below.</para>
+			<itemizedlist>
+				<listitem xml:id="pose_stbox">
+					<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
+					<para>Convert a pose and, optionally, a timestamp or a period, into a spatiotemporal box</para>
+					<para><varname>stbox(pose) → stbox</varname></para>
+					<para><varname>stbox(pose,{timestamptz,tstzspan}) → stbox</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT stbox(pose 'SRID=5676;Pose(Point(1 1),0.3)');
+-- SRID=5676;STBOX X((1,1),(1,1))
+SELECT stbox(pose 'Pose(Point(1 1),0.3)', timestamptz '2001-01-01');
+-- STBOX XT(((1,1),(1.3,1.3)),[2001-01-01, 2001-01-01])
+SELECT stbox(pose 'Pose(Point(1 1),0.3)', tstzspan '[2001-01-01,2001-01-02]');
+-- STBOX XT(((1,1),(1.3,1.3)),[2001-01-01, 2001-01-02])
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pose_geometry">
+					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+					<para>Convert a pose into geometry point</para>
+					<para><varname>pose::geompoint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(pose(ST_Point(1, 1), 1)::geometry);
+-- Point(1 1)
+SELECT ST_AsEWKT(pose(ST_PointZ(1, 1, 1, 5676), 1, 0, 0, 0)::geometry);
+-- SRID=5676;POINT(1 1 1)
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="pose_accessors">
+			<title>Accessors</title>
+			<itemizedlist>
+				<listitem xml:id="pose_point">
+					<indexterm significance="normal"><primary><varname>point</varname></primary></indexterm>
+					<para>Return the point</para>
+					<para><varname>point(pose) → geompoint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(point(pose 'Pose(Point(1 1), 0.3)'));
+-- Point(1 1)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pose_rotation">
+					<indexterm significance="normal"><primary><varname>rotation</varname></primary></indexterm>
+					<para>Return the rotation</para>
+					<para><varname>rotation(pose2D) → float</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT rotation(pose 'Pose(Point(1 1), 0.3)');
+-- 0.3
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pose_orientation">
+					<indexterm significance="normal"><primary><varname>orientation</varname></primary></indexterm>
+					<para>Return the orientation</para>
+					<para><varname>orientation(pose3D) → (X,W,Z,T)</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT orientation(pose 'Pose(Point Z(1 1 1), 0, 0, 0, 1)');
+-- (0, 0, 0, 1)
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="pose_transformations">
+			<title>Transformations</title>
+			<itemizedlist>
+				<listitem xml:id="pose_round">
+					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
+					<para>Round the point and the orientation of the pose to the number of decimal places</para>
+					<para><varname>round(pose,integer=0) → pose</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(round(pose(ST_Point(1.123456789,1.123456789), 0.123456789), 6));
+-- Pose(POINT(1.123457 1.123457),0.123457)
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="pose_srid">
+			<title>Spatial Reference System</title>
+
+			<itemizedlist>
+				<listitem xml:id="pose_SRID">
+					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
+					<para>Return or set the spatial reference identifier</para>
+					<para><varname>srid(pose) → integer</varname></para>
+					<para><varname>setSRID(pose) → pose</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT SRID(pose 'Pose(SRID=5676;Point(1 1), 0.3)');
+-- 5676
+SELECT asEWKT(setSRID(pose 'Pose(Point(0 0),1)', 4326));
+-- SRID=4326;Pose(POINT(0 0),1)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pose_transform">
+					<indexterm significance="normal"><primary><varname> </varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
+					<para>Transform to a spatial reference identifier</para>
+					<para><varname>transform(pose,integer) → pose</varname></para>
+					<para><varname>transformPipeline(pose,pipeline text,to_srid integer,is_forward bool=true) → pose</varname></para>
+					<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input pose has an unknown SRID (represented by 0).</para>
+					<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
+				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
+				<para>The SRID of the input pose is ignored, and the SRID of the output pose will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(transform(pose 'SRID=4326;Pose(Point(4.35 50.85),1)', 3812), 6);
+-- SRID=4326;Pose(POINT(648679.018035 671067.055638),1)
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH test(pose, pipeline) AS (
+  SELECT pose 'Pose(SRID=4326;Point(4.3525 50.846667),1)',
+    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT asEWKT(transformPipeline(transformPipeline(pose, pipeline, 4326), pipeline,
+  4326, false), 6)
+FROM test;
+-- SRID=4326;Pose(POINT(4.3525 50.846667),1)
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="pose_comparison">
+			<title>Comparisons</title>
+
+			<para>The comparison operators (=, &lt;, and so on) are available for poses. Excepted the equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on poses.</para>
+
+			<itemizedlist>
+				<listitem xml:id="pose_comp">
+					<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+					<para>Traditional comparisons</para>
+					<para><varname>pose {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} pose</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pose 'Pose(Point(3 3), 0.5)' = pose 'Pose(Point(3 3), 0.5)';
+-- true
+SELECT pose 'Pose(Point(3 3), 0.5)' &lt;&gt; pose 'Pose(Point(3 3), 0.6)';
+-- true
+SELECT pose 'Pose(Point(3 3), 0.5)' &lt; pose 'Pose(Point(3 3), 0.6)';
+-- true
+SELECT pose 'Pose(Point(3 3), 0.6)' &gt; pose 'Pose(Point(2 2), 0.6)';
+-- true
+SELECT pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)' &lt;= pose 'Pose(Point Z(2 2 2), 0.5, 0.5, 0.5, 0.5)';
+-- true
+SELECT pose 'Pose(Point(1 1), 0.6)' &gt;= pose 'Pose(Point(1 1), 0.5)';
+-- true
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pose_same">
+					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
+					<para>Are the poses approximately equal with respect to an epsilon value?</para>
+					<para><varname>pose ~= pose → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pose 'Pose(SRID=5676;Point(1 1), 0.3)' ~= 
+  pose 'Pose(SRID=5676;Point(1 1.0000001), 0.30000001)';
+-- true
+</programlisting>
+				</listitem>
+
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1 xml:id="temp_poses">
+		<title>Temporal Poses</title>
+		<para>The temporal pose type <varname>tpose</varname> allows to represent the evolution in time of the position of objects and their orientation. As all temporal types, it comes in three subtypes, namely, instant, sequence, and sequence set. Examples of <varname>tpose</varname> values in these subtypes are given next.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpose 'Pose(Point(1 1), 0.5)@2001-01-01';
+SELECT tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02,
+  Pose(Point(1 1), 0.5)@2001-01-03}';
+SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02,
+  Pose(Point(1 1), 0.5)@2001-01-03]';
+SELECT tpose '{[Pose(Point(1 1), 1)@2001-01-01, Pose(Point(2 2), 1)@2001-01-02],
+  [Pose(Point(2 2), 2)@2001-01-04, Pose(Point(2 2), 3)@2001-01-05]}';
+</programlisting>
+		<para>As for temporal point types, the temporal pose type accepts type modifiers (or <varname>typmod</varname> in PostgreSQL terminology) to specify the subtype, the dimensionality of the point, and/or the spatial reference identifier (SRID). The possible values for the subtype are <varname>Instant</varname>, <varname>Sequence</varname>, and <varname>SequenceSet</varname> and the possible values for the geometry type are either <varname>Point</varname> or <varname>PointZ</varname>. The three arguments are optional and if any of them is not specified for a column, values of any subtype, dimensionality, and/or SRID are allowed.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(tpose(Sequence,5676) 'SRID=5676;[Pose(Point(1 1), 0.2)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-03]');
+-- SRID=5676;[Pose(POINT(1 1),0.2)@2001-01-01, Pose(POINT(1 1),0.5)@2001-01-03]
+SELECT tpose(Sequence) 'Pose(Point(1 1), 0.2)@2001-01-01';
+-- ERROR: Temporal type (Instant) does not match column type (Sequence)
+SELECT tpose(PointZ) 'Pose(Point(1 1), 0.2)@2001-01-01';
+-- Column has Z dimension but the tpose value does not
+SELECT tpose(5676) 'Pose(Point(1 1), 0.2)@2001-01-01';
+-- ERROR:  Temporal pose SRID (0) does not match column SRID (5676)
+</programlisting>
+
+		<para>Temporal pose values of sequence or sequence set subtype are converted into a normal form so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. Three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into a normal form are as follows.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
+  Pose(Point(2 2), 0.4)@2001-01-02, Pose(Point(3 3), 0.6)@2001-01-03)');
+-- [Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(3 3),0.6)@2001-01-03)
+SELECT asText(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, 
+  Pose(Point(2 2), 0.3)@2001-01-02, Pose(Point(2 2), 0.5)@2001-01-03), 
+  [Pose(Point(2 2), 0.5)@2001-01-03, Pose(Point(2 2), 0.7)@2001-01-04)}');
+/* {[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(2 2),0.3)@2001-01-02, 
+   Pose(Point(2 2),0.7)@2001-01-04)} */
+</programlisting>
+	</sect1>
+
+	<sect1 xml:id="temporal_poses_validity">
+		<title>Validity of Temporal Poses</title>
+
+		<para>Temporal pose values must satisfy the constraints specified in <xref linkend="ttype_validity"/> so that they are well defined. An error is raised whenever one of these constraints are not satisfied. Examples of incorrect values are as follows.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Null values are not allowed
+SELECT tpose 'NULL@2001-01-01 08:05:00';
+SELECT tpose 'Point(0 0)@NULL';
+-- Base type is not a pose
+SELECT tpose 'Point(0 0)@2001-01-01 08:05:00';
+</programlisting>
+		<para>We give next the functions and operators for temporal poses. Most functions and operators for temporal types and temporal spatial types described in the previous chapters can be applied for temporal pose types. Therefore, in the signatures of the functions, the type <varname>pose</varname> can be used whenever the types <varname>base</varname> and <varname>spatial</varname> are specified, and the type <varname>tpose</varname> can be used whenever the types <varname>ttype</varname> and <varname>tpatial</varname> are specified. To avoid redundancy, we only present some examples of these functions and operators for temporal poses and we refer to previous chapters for detailed explanations about them.</para>
+	</sect1>
+
+	<sect1 xml:id="tpose_inout">
+		<title>Input and Output</title>
+		<itemizedlist>
+			<listitem xml:id="tpose_asText">
+				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+				<para>Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation</para>
+				<para><varname>asText({tpose,tpose[]}) → {text,text[]}</varname></para>
+				<para><varname>asEWKT({tpose,tpose[]}) → {text,text[]}</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tpose 'SRID=4326;[Pose(Point(0 0),1)@2001-01-01, 
+  Pose(Point(1 1),2)@2001-01-02)');
+-- [Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+SELECT asText(ARRAY[pose 'Pose(Point(0 0),1)', 'Pose(Point(1 1),2)']);
+-- {"Pose(POINT(0 0),1)","Pose(POINT(1 1),2)"}
+SELECT asEWKT(tpose 'SRID=4326;[Pose(Point(0 0),1)@2001-01-01, 
+  Pose(Point(1 1),2)@2001-01-02)');
+-- SRID=4326;[Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)', 
+  'Pose(SRID=5676;Point(1 1),2)']);
+-- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_asMFJSON">
+				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
+				<para>Return the Moving Features JSON (MF-JSON) representation</para>
+				<para><varname>asMFJSON(tpose) → text</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asMFJSON(tpose 'Pose(Point(1 2),0.5)@2001-01-01', 3);
+/* {"type":"MovingPose","bbox":[[1,2],[1,2]],"period":{"begin":"2001-01-01T00:00:00+01",
+  "end":"2001-01-01T00:00:00+01","lower_inc":true,"upper_inc":true},
+  "values":[{"position":{"lat":2,"lon":1},"rotation":0.5}],
+  "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
+SELECT asMFJSON(tpose 'Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3);
+/* {"type":"MovingPose","bbox":[[1,2,3],[1,2,3]],
+  "period":{"begin":"2001-01-01T00:00:00+01","end":"2001-01-01T00:00:00+01",
+  "lower_inc":true,"upper_inc":true},
+  "values":[{"position":{"lat":2,"lon":1,"h":3},"quaternion":{"x":0,"y":0,"z":0,"w":1}}],
+  "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_asBinary">
+				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
+				<para>Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB) representation, or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+				<para><varname>asBinary(tpose,endian text='') → bytea</varname></para>
+				<para><varname>asEWKB(tpose,endian text='') → bytea</varname></para>
+				<para><varname>asHexEWKB(tpose,endian text='') → text</varname></para>
+				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asBinary(tpose 'Pose(Point(1 2),1)@2001-01-01');
+-- \x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
+SELECT asEWKB(tpose 'SRID=7844;Pose(Point(1 2),1)@2001-01-01');
+-- \x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
+SELECT asHexEWKB(tpose 'SRID=3812;Pose(Point(1 2),1)@2001-01-01');
+-- 013A0001000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tposeFromText">
+				<indexterm significance="normal"><primary><varname>tposeFromText</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tposeFromEWKT</varname></primary></indexterm>
+				<para>Input from the Well-Known Text (WKT) representation or from the Extended Well-Known Text (EWKT) representation</para>
+				<para><varname>tposeFromText(text) → tpose</varname></para>
+				<para><varname>tposeFromEWKT(text) → tpose</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(tposeFromText(text '[Pose(Point(1 2),1)@2001-01-01, 
+  Pose(Point(3 4),2)@2001-01-02]'));
+-- [Pose(POINT(1 2),1)@2001-01-01, Pose(POINT(3 4),2)@2001-01-02]
+SELECT asEWKT(tposeFromEWKT(text 'SRID=3812;[Pose(Point(1 2),1)@2001-01-01,
+  Pose(Point(3 4),2)@2001-01-02]'));
+-- SRID=3812;[Pose(Point(1 2),1)@2001-01-01, Pose(Point(3 4),2)@2001-01-02]
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tposeFromMFJSON">
+				<indexterm significance="normal"><primary><varname>tposeFromMFJSON</varname></primary></indexterm>
+				<para>Input from the Moving Features JSON (MF-JSON) representation</para>
+				<para><varname>tposeFromMFJSON(bytea) → tpose</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 
+  'SRID=3812;Pose(Point(1 2),0.5)@2001-01-01', 3)));
+-- SRID=3812;Pose(POINT(1 2),0.5)@2001-01-01
+SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 
+  'SRID=5676;Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3)));
+-- SRID=5676;Pose(POINT Z(1 2 3),1,0,0,0)@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tposeFromBinary">
+				<indexterm significance="normal"><primary><varname>tposeFromBinary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tposeFromEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tposeFromHexEWKB</varname></primary></indexterm>
+				<para>Input from the Well-Known Binary (WKB) representation, from the Extended Well-Known Binary (EWKB) representation, or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation</para>
+				<para><varname>tposeFromBinary(bytea) → tpose</varname></para>
+				<para><varname>tposeFromEWKB(bytea) → tpose</varname></para>
+				<para><varname>tposeFromHexEWKB(text) → tpose</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(tposeFromBinary(
+  '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
+-- Pose(POINT(1 2),1)@2001-01-01
+SELECT asEWKT(tposeFromEWKB(
+  '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
+-- SRID=7844;Pose(Point(1 1),2)@2001-01-01
+SELECT asEWKT(tposeFromHexEWKB(
+  '013A0041E40E0000E40E0000000000000000F03F...40000000000000F03F009C57D3C11C0000'));
+-- SRID=3812;Pose(POINT(1 2),1)@2001-01-01
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_constructors">
+		<title>Constructors</title>
+
+		<itemizedlist>
+			<listitem xml:id="tpose_const">
+				<indexterm significance="normal"><primary><varname>tpose</varname></primary></indexterm>
+				<para>Constructor for temporal poses having a constant value</para>
+				<para><varname>tpose(pose,timestamptz) → tposeInst</varname></para>
+				<para><varname>tpose(pose,tstzset) → tposeDiscSeq</varname></para>
+				<para><varname>tpose(pose,tstzspan,interp='linear') → tposeContSeq</varname></para>
+				<para><varname>tpose(pose,tstzspanset,interp='linear') → tposeSeqSet</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tpose('Pose(Point(1 1), 0.5)', timestamptz '2001-01-01'));
+-- Pose(Point(1 1),0.5)@2001-01-01
+SELECT asText(tpose('Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)',
+  tstzset '{2001-01-01, 2001-01-05}'));
+/* {Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)@2001-01-01,
+  Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)@2001-01-05} */
+SELECT asText(tpose('Pose(Point(1 1), 0.5)', 
+  tstzspan '[2001-01-01, 2001-01-02]'));
+-- [Pose(Point(1 1),0.5)@2001-01-01, Pose(Point(1 1),0.5)@2001-01-02]
+SELECT asText(tpose('Pose(Point(1 1), 0.2)', 
+  tstzspanset '{[2001-01-01, 2001-01-03]}', 'step'));
+-- Interp=Step;{[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(1 1),0.2)@2001-01-03]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tposeSeq">
+				<indexterm significance="normal"><primary><varname>tposeSeq</varname></primary></indexterm>
+				<para>Constructor for temporal poses of sequence subtype</para>
+				<para><varname>tposeSeq(tposeInst[],interp={'step','linear'},leftInc bool=true,</varname></para>
+				<para><varname>  rightInc bool=true) → tposeSeq</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.3)@2001-01-01',
+  'Pose(Point(2 2), 0.5)@2001-01-02', 'Pose(Point(1 1), 0.5)@2001-01-03']));
+/* {Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02, 
+   Pose(Point(1 1),0.5)@2001-01-03} */
+SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.2)@2001-01-01',
+  'Pose(Point(1 1), 0.4)@2001-01-02', 'Pose(Point(1 1), 0.5)@2001-01-03']));
+/* [Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(1 1),0.4)@2001-01-02, 
+   Pose(Point(1 1),0.5)@2001-01-03] */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tposeSeqSet">
+				<indexterm significance="normal"><primary><varname>tposeSeqSet</varname></primary></indexterm>
+				<para>Constructor for temporal poses of sequence set subtype</para>
+				<para><varname>tposeSeqSet(tpose[]) → tposeSeqSet</varname></para>
+				<para><varname>tposeSeqSetGaps(tposeInst[],maxt=NULL,maxdist=NULL,interp='linear') → tposeSeqSet</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tposeSeqSet(ARRAY[tpose 
+  '[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(2 2),0.4)@2001-01-02]', 
+  '[Pose(Point(2 2),0.6)@2001-01-03, Pose(Point(2 2),0.8)@2001-01-04]']));
+/* {[Pose(Point(1 1),0.2)@2001-01-01, Pose(Point(2 2),0.4)@2001-01-02],
+   [Pose(Point(2 2),0.6)@2001-01-03, Pose(Point(2 2),0.6)@2001-01-04]} */
+SELECT asText(tposeSeqSetGaps(ARRAY[tpose 'Pose(Point(1 1),0.1)@2001-01-01',
+  'Pose(Point(1 1),0.3)@2001-01-03', 'Pose(Point(1 1),0.5)@2001-01-05'], '1 day'));
+/* {[Pose(Point(1 1),0.1)@2001-01-01], [Pose(Point(1 1),0.3)@2001-01-03], 
+   [Pose(Point(1 1),0.5)@2001-01-05]} */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tgeompoint_tfloat_tpose">
+				<indexterm significance="normal"><primary><varname>tpose</varname></primary></indexterm>
+				<para>Construct a 2D temporal pose from a temporal geometry point and a temporal float</para>
+				<para><varname>tpose(tgeompoint, tfloat) → tpose</varname></para>
+				<para>The time frame of the result is the intersection of the time frames of the temporal point and the temporal float. If they do not intersect, a null value is returned</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
+  tfloat '[1@2001-01-01, 2@2001-01-02)'));
+-- [Pose(Point(1 1),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
+  tfloat '[2@2001-01-03, 3@2001-01-04)'));
+-- NULL
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="temporal_poses_conversions">
+		<title>Conversions</title>
+		<para>A temporal pose value can be converted to and from a temporal geometry point. This can be done using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation. A null value is returned if any of the composing geometry point values cannot be converted into a <varname>pose</varname> value.</para>
+		<itemizedlist>
+			<listitem xml:id="tpose_tgeompoint">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<para>Convert a temporal pose into a temporal geometry point</para>
+				<para><varname>tpose::tgeompoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText((tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
+  Pose(Point(1 1), 0.3)@2001-01-02)')::tgeompoint);
+-- [POINT(1 1)@2001-01-01, POINT(1 1)@2001-01-02)
+SELECT asEWKT((tpose '[Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01,
+  Pose(Point Z(2 2 2), 1, 0, 0, 0)@2001-01-02)')::tgeompoint);
+-- [POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02)
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_accessors">
+		<title>Accessors</title>
+		<itemizedlist>
+			<listitem xml:id="tpose_getValues">
+				<indexterm significance="normal"><primary><varname>getValues</varname></primary></indexterm>
+				<para>Return the values</para>
+				<para><varname>getValues(tpose) → poseset</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(getValues(tpose '{[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-02)}'));
+-- {"Pose(Point(1 1),0.3)","Pose(Point(1 1),0.5)"}
+SELECT asEWKT(getValues(tpose 'SRID=5676;{[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.3)@2001-01-02)}'));
+-- SRID=5676;{"Pose(Point(1 1),0.3)"}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_points">
+				<indexterm significance="normal"><primary><varname>points</varname></primary></indexterm>
+				<para>Return the points</para>
+				<para><varname>points(tpose) → geomset</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(points(tpose 'SRID=5676;{Pose(Point(3 3), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-02}'));
+-- SRID=5676;{Point(1 1), Point(3 3)}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_rotation">
+				<indexterm significance="normal"><primary><varname>points</varname></primary></indexterm>
+				<para>Return the rotation</para>
+				<para><varname>rotation(tpose2d) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT rotation(tpose 'SRID=5676;{[Pose(Point(1 1), 0.3)@2001-01-01,
+  Pose(Point(1 1), 0.3)@2001-01-02)}');
+-- {[0.3@2001-01-01, 0.3@2001-01-02)}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_valueAtTimestamp">
+				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
+				<para>Return the value at a timestamp</para>
+				<para><varname>valueAtTimestamp(tpose,timestamptz) → pose</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(valueAtTimestamp(tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(3 3), 0.5)@2001-01-03)', '2001-01-02'));
+-- Pose(Point(2 2),0.4)
+SELECT asText(valueAtTimestamp(tpose 
+  '[Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01,
+    Pose(Point Z(3 3 3), 1, 0, 0, 0)@2001-01-03)', timestamptz '2001-01-02'), 6);
+-- Pose(POINT Z (2 2 2),0.866025,0.288675,0.288675,0.288675)
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_transformations">
+		<title>Transformations</title>
+		<itemizedlist>
+			<listitem xml:id="tpose_subtype">
+				<indexterm significance="normal"><primary><varname>tposeInst</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tposeSeq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tposeSeqSet</varname></primary></indexterm>
+				<para>Transform to another subtype</para>
+				<para><varname>tposeInst(tpose) → tposeInst</varname></para>
+				<para><varname>tposeSeq(tpose) → tposeSeq</varname></para>
+				<para><varname>tposeSeqSet(tpose) → tposeSeqSet</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tposeSeq(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', 'discrete'));
+-- {Pose(Point(1 1),0.5)@2001-01-01}
+SELECT asText(tposeSeq(tpose 'Pose(Point(1 1), 0.5)@2001-01-01'));
+-- [Pose(Point(1 1),0.5)@2001-01-01]
+SELECT asText(tposeSeqSet(tpose 'Pose(PointZ(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01'));
+-- {[Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)@2001-01-01]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_setInterp">
+				<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
+				<para>Transform to another interpolation</para>
+				<para><varname>setInterp(tpose, interp) → tpose</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(setInterp(tpose 'Pose(Point(1 1),0.2)@2001-01-01','linear'));
+-- [Pose(Point(1 1),0.2)@2001-01-01]
+SELECT asText(setInterp(tpose '{[Pose(Point Z(1 1 1),1,0,0,0)@2001-01-01],
+  [Pose(Point Z(2 2 2),0,0,0,1)@2001-01-02]}', 'discrete'));
+-- {Pose(POINT Z (1 1 1),1,0,0,0)@2001-01-01, Pose(POINT Z (2 2 2),0,0,0,1)@2001-01-02}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_round">
+				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
+				<para>Round the points and the orientations of the temporal pose to the number of decimal places</para>
+				<para><varname>round(tpose,integer=0) → tpose</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(round(tpose '{[Pose(Point(1 1.123456789),0.123456789)@2001-01-01, 
+  Pose(Point(1 1),0.5)@2001-01-02)}', 3));
+-- {[Pose(POINT(1 1.123),0.123)@2001-01-01, Pose(POINT(1 1),0.5)@2001-01-02)}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_modifications">
+		<title>Modifications</title>
+		<itemizedlist>
+			<listitem xml:id="tpose_appendInstant">
+				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
+				<para>Append a temporal instant or a temporal sequence</para>
+				<para><varname>appendInstant(tpose,tposeInst) → tpose</varname></para>
+				<para><varname>appendSequence(tpose,tposeSeq) → tpose</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(appendInstant(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', 'Pose(Point(2 2), 1)@2001-01-02'));
+-- [Pose(POINT(1 1),0.5)@2001-01-01, Pose(POINT(2 2),1)@2001-01-02]
+SELECT asText(appendSequence(tpose '[Pose(Point(1 1), 0.5)@2001-01-01]', '[Pose(Point(2 2), 1)@2001-01-02]'));
+-- {[Pose(POINT(1 1),0.5)@2001-01-01], [Pose(POINT(2 2),1)@2001-01-02]}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_merge">
+				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<para>Merge the temporal poses</para>
+				<para><varname>merge(tpose,tpose) → tpose</varname></para>
+				<para><varname>merge(tpose[]) → tpose</varname></para>
+				<para><varname>merge(tpose) → tpose</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(merge(tpose
+  '[Pose(Point(1 1 1),1,0,0,0)@2001-01-01, Pose(Point(2 2 2),0,1,0,0)@2001-01-02]',
+  '[Pose(Point(2 2 2),0,1,0,0)@2001-01-02, Pose(Point(3 3 3),0,0,0,1)@2001-01-03]'));
+/* [Pose(POINT Z (1 1 1),1,0,0,0)@2001-01-01, Pose(POINT Z (2 2 2),0,1,0,0)@2001-01-02, 
+    Pose(POINT Z (3 3 3),0,0,0,1)@2001-01-03] */
+SELECT asText(merge(ARRAY[tpose 
+  '{[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(2 2),0.2)@2001-01-02],
+    [Pose(Point(3 3),0.3)@2001-01-03, Pose(Point(4 4),0.4)@2001-01-04]}',
+  '[Pose(Point(4 4),0.4)@2001-01-04, Pose(Point(5 5),0.5)@2001-01-05]']));
+/* {[Pose(POINT(1 1),0.1)@2001-01-01, Pose(POINT(2 2),0.2)@2001-01-02], 
+    [Pose(POINT(3 3),0.3)@2001-01-03, Pose(POINT(5 5),0.5)@2001-01-05]} */
+WITH temp(inst) AS (
+  SELECT tpose 'Pose(Point(1 1),0.1)@2001-01-01' UNION
+  SELECT tpose 'Pose(Point(2 2),0.2)@2001-01-02' UNION
+  SELECT tpose 'Pose(Point(3 3),0.3)@2001-01-03' )
+SELECT asText(merge(inst)) FROM temp;
+/* {Pose(POINT(1 1),0.1)@2001-01-01, Pose(POINT(2 2),0.2)@2001-01-02, 
+    Pose(POINT(3 3),0.3)@2001-01-03} */
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_restrictions">
+		<title>Restrictions</title>
+		<itemizedlist>
+			<listitem xml:id="tpose_atValues">
+				<indexterm significance="normal"><primary><varname>atValues</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
+				<para>TODO Restrict to (the complement of) a set of values</para>
+				<para><varname>atValues(tpose,values) → tpose</varname></para>
+				<para><varname>minusValues(tpose,values) → tpose</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT atValues(tpose '[Pose(Point(2 2), 0.3)@2001-01-01, 
+  Pose(Point(2 2), 0.7)@2001-01-03]', 'Pose(Point(2 2), 0.5)');
+-- {[Pose(Point(2 2),0.5)@2001-01-02]}
+SELECT minusValues(tpose '[Pose(Point(2 2), 0.3)@2001-01-01, 
+  Pose(Point(2 2), 0.7)@2001-01-03]', 'Pose(Point(2 2), 0.5)');
+/* {[Pose(Point(2 2),0.3)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02),
+   (Pose(Point(2 2),0.5)@2001-01-02, Pose(Point(2 2),0.7)@2001-01-03]} */
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_atGeometry">
+				<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
+				<para>TODO Restrict to (the complement of) a geometry</para>
+				<para><varname>atGeometry(tpose,geometry) → tpose</varname></para>
+				<para><varname>minusGeometry(tpose,geometry) → tpose</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT atGeometry(tpose '[Pose(Point(2 2), 0.3)@2001-01-01, 
+  Pose(Point(2 2), 0.7)@2001-01-03]',
+  'Polygon((40 40,40 50,50 50,50 40,40 40))');
+SELECT minusGeometry(tpose '[Pose(Point(2 2), 0.3)@2001-01-01, 
+  Pose(Point(2 2), 0.7)@2001-01-03]',
+  'Polygon((40 40,40 50,50 50,50 40,40 40))');
+/* {(Pose(Point(2 2),0.342593)@2001-01-01 05:06:40.364673+01,
+   Pose(Point(2 2),0.7)@2001-01-03]} */
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_srid">
+		<title>Spatial Reference System</title>
+		<itemizedlist>
+			<listitem xml:id="tpose_SRID">
+				<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
+				<para>Return or set the spatial reference identifier</para>
+				<para><varname>SRID(tpose) → integer</varname></para>
+				<para><varname>setSRID(tpose) → tpose</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT SRID(tpose 'SRID=5676;[Pose(Point(0 0),1)@2001-01-01, 
+  Pose(Point(1 1),2)@2001-01-02)'));
+-- 5676
+SELECT asEWKT(setSRID(tpose '[Pose(Point(0 0),1)@2001-01-01, 
+  Pose(Point(1 1),2)@2001-01-02)', 5676));
+-- SRID=5676;[Pose(POINT(0 0),1)@2001-01-01, Pose(POINT(1 1),2)@2001-01-02)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_transform">
+				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
+				<para>Transform to a spatial reference identifier</para>
+				<para><varname>transform(tpose,integer) → tpose</varname></para>
+				<para><varname>transformPipeline(tpose,pipeline text,to_srid integer,is_forward bool=true) → tpose</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(transform(tpose 'SRID=4326;Pose(Point(4.35 50.85),1)@2001-01-01', 
+  3812));
+-- SRID=3812;Pose(POINT(648679.0180353033 671067.0556381135),1)@2001-01-01
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH test(tpose, pipeline) AS (
+  SELECT tpose 'SRID=4326;{Pose(Point(4.3525 50.846667),1)@2001-01-01,
+    Pose(Point(-0.1275 51.507222),2)@2001-01-02}',
+    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
+SELECT asEWKT(transformPipeline(transformPipeline(tpose, pipeline, 4326),  pipeline,
+  4326, false), 6)
+FROM test;
+/* SRID=4326;{Pose(POINT(4.3525 50.846667),1)@2001-01-01, 
+   Pose(POINT(-0.1275 51.507222),2)@2001-01-02} */
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_bbox_ops">
+		<title>Bounding Box Operations</title>
+		<itemizedlist>
+			<listitem xml:id="tpose_topo">
+				<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
+				<para>Topological operators</para>
+				<para><varname>tpose {&amp;&amp;, &lt;@, @&gt;, ~=, -|-} tpose → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-02]' &amp;&amp; pose 'Pose(Point(1 1), 0.5)'
+-- true
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-02]' @&gt; stbox(pose 'Pose(Point(1 1), 0.5)')
+-- true
+SELECT pose 'Pose(Point(1 1), 0.5)'::geometry &lt;@
+  tpose '[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02]'
+-- true
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-03]' ~= tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.35)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]'
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_pos">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<para>Position operators</para>
+				<para><varname>tpose {&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;} tpose → boolean</varname></para>
+				<para><varname>tpose {&lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;} tpose → boolean</varname></para>
+				<para><varname>tpose {&lt;&lt;/, &amp;&lt;/, /&gt;&gt;, /&amp;&gt;} tpose → boolean</varname></para>
+				<para><varname>tpose {&lt;&lt;#, &amp;&lt;#, #&gt;&gt;, #&amp;&gt;} tpose → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt; pose 'Pose(Point(1 1), 0.2)'
+-- false
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-02]' &lt;&lt;| stbox(pose 'Pose(Point(1 1), 0.5)')
+-- false
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-02]' &amp;&gt; pose 'Pose(Point(1 1), 0.3)'::geometry
+-- true
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-02]' &gt;&gt;#
+  tpose '[Pose(Point(1 1), 0.3)@2001-01-03, Pose(Point(1 1), 0.5)@2001-01-05]'
+-- true
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_distance_ops">
+		<title>Distance Operations</title>
+		<para>
+			We present next the functions that compute distance operations for temporal poses. Notice that for these operations only the point component is considered, not the orientation.
+		</para>
+		<itemizedlist>
+			<listitem xml:id="tpose_nearestApproachDistance">
+				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+				<para>Return the smallest distance ever</para>
+				<para><varname>{geo,pose,tpose} |=| {geo,pose,tpose} → float</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpose '[Pose(Point(2 2), 0.3)@2001-01-01, Pose(Point(2 2), 0.7)@2001-01-02]' |=|
+  geometry 'Linestring(50 50,55 55)';
+-- 67.88225099390856
+SELECT tpose '[Pose(Point(2 2), 0.3)@2001-01-01, Pose(Point(2 2), 0.7)@2001-01-02]' |=|
+  pose 'Pose(Point(1 1), 0.5)';
+-- 1.4142135623730951
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-03]' |=| pose 'Pose(Point(2 2), 0.2)';
+-- 1.4142135623730951
+SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-03]' |=| geometry 'Linestring(2 2,2 1,3 1)';
+-- 1
+</programlisting>
+				<para>The operator <varname>|=|</varname>  can be used for doing nearest neightbor searches using GiST or SP-GiST indexes (see <xref linkend="ttype_indexing"/>).</para>
+			</listitem>
+
+			<listitem xml:id="tpose_nearestApproachInstant">
+				<indexterm significance="normal"><primary><varname>nearestApproachInstant</varname></primary></indexterm>
+				<para>Return the instant of the first temporal pose at which the two arguments are at the nearest distance</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(nearestApproachInstant(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
+  Pose(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));
+-- Pose(POINT(2 2),0.3)@2001-01-01
+SELECT asText(nearestApproachInstant(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
+  Pose(Point(2 2), 0.7)@2001-01-02]', pose 'Pose(Point(1 1), 0.5)'));
+-- Pose(POINT(2 2),0.3)@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_shortestLine">
+				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
+				<para>Return the line connecting the nearest approach point</para>
+				<para><varname>shortestLine({geo,pose,tpose},{geo,pose,tpose}) → geometry</varname></para>
+				<para>The function will only return the first line that it finds if there are more than one.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(shortestLine(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
+  Pose(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));
+-- LINESTRING(2 2,50 50)
+SELECT ST_AsText(shortestLine(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
+  Pose(Point(2 2), 0.7)@2001-01-02]', pose 'Pose(Point(1 1), 0.5)'));
+-- LINESTRING(2 2,1 1)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_distance">
+				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<para>Return the temporal distance</para>
+				<para><varname>tpose &lt;-&gt; tpose → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt; pose 'Pose(Point(2 2), 0.2)', 6);
+-- [1.414214@2001-01-01, 1.414214@2001-01-03]
+SELECT round(tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt; geometry 'Point(50 50)', 6);
+-- [69.296465@2001-01-01, 69.296465@2001-01-03]
+SELECT round(tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
+  Pose(Point(2 2), 0.5)@2001-01-03]' &lt;-&gt;
+  tpose '[Pose(Point(1 2), 0.3)@2001-01-02, Pose(Point(2 1), 0.5)@2001-01-04]', 6);
+-- [0.707107@2001-01-02, 0.5@2001-01-02 12:00:00+01, 0.707107@2001-01-03]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_spatial_rels">
+		<title>Spatial Relationships</title>
+		<para>
+			The spatial relationships described in <xref linkend="tgeo_spatial_rel"/> such as <varname>eIntersects</varname>, <varname>aDwithin</varname>, or <varname>tContains</varname> only consider the location of the geometries, not their orientation. To be able to apply these spatial relationships to the temporal poses, they must be transformed to temporal geometry points. This can be easily performed using the functions <varname>geometry</varname> and <varname>tgeompoint</varname> or using an explicit casting <varname>::</varname> as shown in the examples below.
+		</para>
+
+		<itemizedlist>
+			<listitem xml:id="tpose_espatialrels">
+				<para>Ever and always spatial relationships</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
+-- true
+SELECT eDisjoint(geometry(pose 'Pose(Point(2 2), 0.0)'),
+  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
+-- true
+SELECT eIntersects(
+  tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'::tgeompoint,
+  tpose '[Pose(Point(2 2),0.0)@2001-01-01, Pose(Point(2 2),1)@2001-01-03)'::tgeompoint);
+-- false
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_tspatialrels">
+				<para>Temporal spatial relationships</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
+-- {[t@2001-01-01 00:00:00+01, t@2001-01-03 00:00:00+01)}
+SELECT tDisjoint(geometry(pose 'Pose(Point(2 2), 0.0)'),
+  tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
+-- [t@2001-01-01, t@2001-01-03)
+SELECT tDwithin(
+ tpose '[Pose(Point(1 1),0.3)@2001-01-01,Pose(Point(1 1),0.5)@2001-01-03)'::tgeompoint, 
+ tpose '[Pose(Point(1 1),0.5)@2001-01-01,Pose(Point(3 3),0.3)@2001-01-03)'::tgeompoint,1);
+/* {[t@2001-01-01 00:00:00+01, t@2001-01-01 16:58:14.025894+01],
+  (f@2001-01-01 16:58:14.025894+01, f@2001-01-03 00:00:00+01)} */
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_comparisons">
+		<title>Comparisons</title>
+		<itemizedlist>
+			<listitem xml:id="tpose_comp">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<para>Traditional comparisons</para>
+				<para><varname>tpose {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} tpose → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpose '{[Pose(Point(1 1), 0.1)@2001-01-01, 
+  Pose(Point(1 1), 0.3)@2001-01-02),
+  [Pose(Point(1 1), 0.3)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]}' =
+  tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-03]';
+-- true
+SELECT tpose '{[Pose(Point(1 1), 0.1)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-03]}' &lt;&gt;
+  tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-03]';
+-- false
+SELECT tpose '[Pose(Point(1 1), 0.1)@2001-01-01, 
+  Pose(Point(1 1), 0.5)@2001-01-03]' &lt;
+  tpose '[Pose(Point(1 1), 0.1)@2001-01-01, Pose(Point(1 1), 0.6)@2001-01-03]';
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_ever_always">
+				<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
+				<para>Ever and always comparisons</para>
+				<para><varname>tpose {?=, %=} tpose → boolean</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, 
+  Pose(Point(1 1), 0.4)@2001-01-04)' ?= Pose(Point(1 1), 0.3);
+-- true
+SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, 
+  Pose(Point(1 1), 0.2)@2001-01-04)' &amp;= Pose(Point(1 1), 0.2);
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_tcomp">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<para>Temporal comparisons</para>
+				<para><varname>tpose {#=, #&lt;&gt;} tpose → tbool</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, 
+  Pose(Point(1 1), 0.4)@2001-01-03)' #= pose 'Pose(Point(1 1), 0.3)';
+-- {[f@2001-01-01, t@2001-01-02], (f@2001-01-02, f@2001-01-03)}
+SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-01, 
+  Pose(Point(1 1), 0.8)@2001-01-03)' #&lt;&gt;
+  tpose '[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.7)@2001-01-03)';
+-- {[t@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_aggregations">
+		<title>Aggregations</title>
+		<para>The three aggregate functions for temporal poses are illustrated next.</para>
+
+		<itemizedlist>
+			<listitem xml:id="tpose_tCount">
+				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
+				<para>Temporal count</para>
+				<para><varname>tCount(tpose) → {tintSeq,tintSeqSet}</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH Temp(temp) AS (
+  SELECT tpose '[Pose(Point(1 1), 0.1)@2001-01-01, 
+    Pose(Point(1 1), 0.3)@2001-01-03)' UNION
+  SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-02, 
+    Pose(Point(1 1), 0.4)@2001-01-04)' UNION
+  SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-03, 
+    Pose(Point(1 1), 0.5)@2001-01-05)' )
+SELECT tCount(Temp)
+FROM Temp;
+-- {[1@2001-01-01, 2@2001-01-02, 1@2001-01-04, 1@2001-01-05)}
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_wCount">
+				<indexterm significance="normal"><primary><varname>wCount</varname></primary></indexterm>
+				<para>Window count</para>
+				<para><varname>wCount(tpose) → {tintSeq,tintSeqSet}</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH Temp(temp) AS (
+  SELECT tpose '[Pose(Point(1 1), 0.1)@2001-01-01, 
+    Pose(Point(1 1), 0.3)@2001-01-03)' UNION
+  SELECT tpose '[Pose(Point(1 1), 0.2)@2001-01-02, 
+    Pose(Point(1 1), 0.4)@2001-01-04)' UNION
+  SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-03, 
+    Pose(Point(1 1), 0.5)@2001-01-05)' )
+SELECT wCount(Temp, '1 day')
+FROM Temp;
+/* {[1@2001-01-01, 2@2001-01-02, 3@2001-01-03, 2@2001-01-04, 1@2001-01-05,
+   1@2001-01-06)} */
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 xml:id="tpose_indexing">
+		<title>Indexing</title>
+
+		<para>GiST and SP-GiST indexes can be created for table columns of temporal poses. An example of index creation is follows:</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
+</programlisting>
+		<para>The GiST and SP-GiST indexes store the bounding box for the temporal poses, which is an <varname>stbox</varname>, as all temporal spatial types.</para>
+
+		<para>A GiST or SP-GiST index can accelerate queries involving the following operators:</para>
+		<itemizedlist>
+			<listitem>
+				<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname>, which only consider the spatial dimension in temporal poses,</para>
+			</listitem>
+			<listitem>
+				<para><varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>, <varname>#&gt;&gt;</varname>, which only consider the time dimension in temporal poses,</para>
+			</listitem>
+			<listitem>
+				<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname>, and <varname>|=|</varname> , which consider as many dimensions as they are shared by the indexed column and the query argument.</para>
+			</listitem>
+		</itemizedlist>
+		<para>These operators work on bounding boxes, not the entire values.</para>
+	</sect1>
+</chapter>
+

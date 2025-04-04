@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -51,17 +51,6 @@ extern bool ensure_same_srid_tnpoint_stbox(const Temporal *temp,
 extern bool ensure_same_rid_tnpointinst(const TInstant *inst1,
   const TInstant *inst2);
 
-/* Collineqr functions */
-
-extern bool npoint_collinear(Npoint *np1, Npoint *np2, Npoint *np3,
-  double ratio);
-
-/* Interpolation functions */
-
-extern Datum npointsegm_interpolate(Datum start, Datum end, long double ratio);
-extern bool tnpointsegm_intersection_value(const TInstant *inst1,
-  const TInstant *inst2, Datum value, TimestampTz *t);
-
 /* Functions for spatial reference systems */
 
 extern int tnpointinst_srid(const TInstant *inst);
@@ -76,7 +65,6 @@ extern double tnpoint_length(const Temporal *temp);
 extern Temporal *tnpoint_cumulative_length(const Temporal *temp);
 extern Temporal *tnpoint_speed(const Temporal *temp);
 extern GSERIALIZED *tnpoint_twcentroid(const Temporal *temp);
-extern Temporal *tnpoint_azimuth(const Temporal *temp);
 extern Temporal *tnpoint_restrict_geom(const Temporal *temp,
   const GSERIALIZED *gs, const Span *zspan, bool atfunc);
 extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box,

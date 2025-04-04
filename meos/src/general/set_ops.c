@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -389,7 +389,7 @@ left_set_set(const Set *s1, const Set *s2)
  * @param[in] value Value
  * @param[in] s Set
  */
-bool
+inline bool
 right_value_set(Datum value, const Set *s)
 {
   return left_set_value(s, value);
@@ -401,7 +401,7 @@ right_value_set(Datum value, const Set *s)
  * @param[in] s Set
  * @param[in] value Value
  */
-bool
+inline bool
 right_set_value(const Set *s, Datum value)
 {
   return left_value_set(value, s);
@@ -413,7 +413,7 @@ right_set_value(const Set *s, Datum value)
  * @param[in] s1,s2 Sets
  * @csqlfn #Right_set_set()
  */
-bool
+inline bool
 right_set_set(const Set *s1, const Set *s2)
 {
   return left_set_set(s2, s1);
@@ -566,7 +566,7 @@ union_set_value(const Set *s, Datum value)
  * @param[in] value Value
  * @param[in] s Set
  */
-Set *
+inline Set *
 union_value_set(Datum value, const Set *s)
 {
   return union_set_value(s, value);
@@ -617,7 +617,7 @@ intersection_set_value(const Set *s, Datum value)
  * @param[in] value Value
  * @param[in] s Set
  */
-Set *
+inline Set *
 intersection_value_set(Datum value, const Set *s)
 {
   return intersection_set_value(s, value);

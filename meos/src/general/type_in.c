@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief Input of temporal types in WKT, MF-JSON, WKB, EWKB, and HexWKB format
+ * @brief Input of temporal types in WKT, MF-JSON, WKB, EWKB, and HexWKB
+ * representation
  */
 
 /* C */
@@ -48,23 +49,17 @@
 #include "general/set.h"
 #include "general/span.h"
 #include "general/tbox.h"
-#include "geo/pgis_types.h"
+#include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
-#if NPOINT
-  #include "npoint/tnpoint.h"
-  #include "npoint/tnpoint_parser.h"
-#endif
 #if CBUFFER
-  #include <meos_cbuffer.h>
   #include "cbuffer/cbuffer.h"
-  #include "cbuffer/tcbuffer_parser.h"
 #endif
 #if NPOINT
   #include "npoint/tnpoint.h"
 #endif
 #if POSE
-  #include "pose/tpose_parser.h"
+  #include "pose/pose.h"
 #endif
 
 /*****************************************************************************/
@@ -493,8 +488,162 @@ parse_mfjson_geos(json_object *mfjson, int srid, bool geodetic, int *count)
   }
   *count = ngeos;
   return values;
-
 }
+
+/*****************************************************************************/
+
+#if POSE
+Pose *
+parse_mfjson_pose(json_object *mfjson, int srid)
+{
+  assert(mfjson);
+  /* Determine if the pose is 2D or 3D depending on whether there is an 
+   * member "quaternion" which implies 3D */
+  json_object *quaternion = NULL;
+  quaternion = findMemberByName(mfjson, "quaternion");
+  bool hasZ = (quaternion == NULL) ? false : true;
+
+  /* Get position */
+  json_object *position = NULL;
+  position = findMemberByName(mfjson, "position");
+  if (position == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'position' in MFJSON string");
+    return NULL;
+  }
+  double x, y, z, w_q, x_q, y_q, z_q;
+  json_object *lat = NULL;
+  lat = findMemberByName(position, "lat");
+  if (lat == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'lat' in MFJSON string");
+    return NULL;
+  }
+  y = json_object_get_double(lat);
+  json_object *lon = NULL;
+  lon = findMemberByName(position, "lon");
+  if (lon == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'lon' in MFJSON string");
+    return NULL;
+  }
+  x = json_object_get_double(lon);
+  json_object *h = NULL;
+  if (hasZ)
+  {
+    h = findMemberByName(position, "h");
+    if (h == NULL)
+    {
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+        "Unable to find 'h' in MFJSON string");
+      return NULL;
+    }
+    z = json_object_get_double(h);
+  }
+
+  /* Get rotation/quaternion */
+  if (hasZ)
+  {
+    /* The "quaternion" member has been already found when determining 2D/3D */
+    json_object *x_mfjson = NULL;
+    x_mfjson = findMemberByName(quaternion, "x");
+    if (x_mfjson == NULL)
+    {
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+        "Unable to find 'x' in MFJSON string");
+      return NULL;
+    }
+    x_q = json_object_get_double(x_mfjson);
+    json_object *y_mfjson = NULL;
+    y_mfjson = findMemberByName(quaternion, "y");
+    if (y_mfjson == NULL)
+    {
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+        "Unable to find 'y' in MFJSON string");
+      return NULL;
+    }
+    y_q = json_object_get_double(y_mfjson);
+    json_object *z_mfjson = NULL;
+    z_mfjson = findMemberByName(quaternion, "z");
+    if (z_mfjson == NULL)
+    {
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+        "Unable to find 'z' in MFJSON string");
+      return NULL;
+    }
+    z_q = json_object_get_double(z_mfjson);
+    json_object *w_mfjson = NULL;
+    w_mfjson = findMemberByName(quaternion, "w");
+    if (w_mfjson == NULL)
+    {
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+        "Unable to find 'w' in MFJSON string");
+      return NULL;
+    }
+    w_q = json_object_get_double(w_mfjson);
+  }
+  else
+  {
+    json_object *rotation = NULL;
+    rotation = findMemberByName(mfjson, "rotation");
+    if (rotation == NULL)
+    {
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+        "Unable to find 'rotation' in MFJSON string");
+      return NULL;
+    }
+    z = json_object_get_double(rotation);
+  }
+  Pose *result = hasZ ? pose_make_3d(x, y, z, w_q, x_q, y_q, z_q, srid) :
+    pose_make_2d(x, y, z, srid);
+  return result;
+}
+
+/**
+ * @brief Return an array of poses from its MF-JSON pose values
+ */
+static Datum *
+parse_mfjson_poses(json_object *mfjson, int srid, int *count)
+{
+  json_object *mfjsonTmp = mfjson;
+  json_object *values_json = NULL;
+  values_json = findMemberByName(mfjsonTmp, "values");
+  if (values_json == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'values' in MFJSON string");
+    return NULL;
+  }
+  if (json_object_get_type(values_json) != json_type_array)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid 'values' array in MFJSON string");
+    return NULL;
+  }
+
+  int nposes = (int) json_object_array_length(values_json);
+  if (nposes < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid value of 'values' array in MFJSON string");
+    return NULL;
+  }
+
+  Datum *values = palloc(sizeof(Datum) * nposes);
+  for (int i = 0; i < nposes; ++i)
+  {
+    json_object *pose = json_object_array_get_idx(values_json, i);
+    values[i] = PointerGetDatum(parse_mfjson_pose(pose, srid));
+  }
+  *count = nposes;
+  return values;
+}
+#endif /* POSE */
+
+/*****************************************************************************/
 
 /**
  * @brief Return an array of timestamps from its MF-JSON datetimes values
@@ -551,12 +700,12 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
  * @ingroup meos_internal_temporal_inout
  * @brief Return a temporal instant from its MF-JSON representation
  * @param[in] mfjson MFJSON object
- * @param[in] isgeo True when the input value is a geometry/geography
+ * @param[in] spatial True when the input value is a geometry/geography
  * @param[in] srid SRID
  * @param[in] temptype Temporal type
  */
 TInstant *
-tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
+tinstant_from_mfjson(json_object *mfjson, bool spatial, int srid,
   meosType temptype)
 {
   assert(mfjson); assert(temporal_type(temptype));
@@ -564,14 +713,18 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   /* Get coordinates and datetimes */
   int nvalues = 0, ndates = 0;
   Datum *values;
-  if (! isgeo)
+  if (! spatial)
     values = parse_mfjson_values(mfjson, temptype, &nvalues);
   else
   {
     if (tpoint_type(temptype))
       values = parse_mfjson_points(mfjson, srid, geodetic, &nvalues);
-    else
+    else if (tgeo_type(temptype))
       values = parse_mfjson_geos(mfjson, srid, geodetic, &nvalues);
+#if POSE
+    else if (temptype == T_TPOSE)
+      values = parse_mfjson_poses(mfjson, srid, &nvalues);
+#endif /* POSE */
   }
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &ndates);
   if (nvalues != 1 || ndates != 1)
@@ -579,7 +732,7 @@ tinstant_from_mfjson(json_object *mfjson, bool isgeo, int srid,
     pfree(values); pfree(times);
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid number of elements in '%s' and/or 'datetimes' arrays",
-      ! isgeo ? "values" : "coordinates");
+      ! tpoint_type(temptype) ? "values" : "coordinates");
     return NULL;
   }
   TInstant *result = tinstant_make_free(values[0], temptype, times[0]);
@@ -632,19 +785,19 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  * @ingroup meos_internal_temporal_inout
  * @brief Return a temporal sequence from its MF-JSON representation
  * @param[in] mfjson MFJSON object
- * @param[in] isgeo True when the input value is a geometry/geography
+ * @param[in] spatial True when the input value is a spatial value
  * @param[in] srid SRID
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
  */
 TSequence *
-tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
+tsequence_from_mfjson(json_object *mfjson, bool spatial, int srid,
   meosType temptype, interpType interp)
 {
   assert(mfjson);
   /* Get the array of temporal point instants */
   int count = 0;
-  TInstant **instants = tinstarr_from_mfjson(mfjson, isgeo, srid, temptype,
+  TInstant **instants = tinstarr_from_mfjson(mfjson, spatial, srid, temptype,
     &count);
 
   /* Get lower bound flag, default to true if not specified */
@@ -680,13 +833,13 @@ tsequence_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  * @ingroup meos_internal_temporal_inout
  * @brief Return a temporal sequence set from its MF-JSON representation
  * @param[in] mfjson MFJSON object
- * @param[in] isgeo True when the input value is a geometry/geography
+ * @param[in] spatial True when the input value is a geometry/geography
  * @param[in] srid SRID
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
+tsequenceset_from_mfjson(json_object *mfjson, bool spatial, int srid,
   meosType temptype, interpType interp)
 {
   assert(mfjson);
@@ -715,7 +868,8 @@ tsequenceset_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   {
     json_object* seqvalue = NULL;
     seqvalue = json_object_array_get_idx(seqs, i);
-    sequences[i] = tsequence_from_mfjson(seqvalue, isgeo, srid, temptype, interp);
+    sequences[i] = tsequence_from_mfjson(seqvalue, spatial, srid, temptype,
+      interp);
   }
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
@@ -735,7 +889,8 @@ ensure_temptype_mfjson(const char *typestr)
       strcmp(typestr, "MovingFloat") != 0 &&
       strcmp(typestr, "MovingText") != 0 &&
       strcmp(typestr, "MovingPoint") != 0 &&
-      strcmp(typestr, "MovingGeometry") != 0 )
+      strcmp(typestr, "MovingGeometry") != 0  &&
+      strcmp(typestr, "MovingPose") != 0 )
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'type' value in MFJSON string");
@@ -791,7 +946,7 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
 
   /* Determine the type of temporal type */
   const char *typestr = json_object_get_string(poObjType);
-  meosType jtemptype;
+  meosType jtemptype = T_UNKNOWN;
   if (! ensure_temptype_mfjson(typestr))
     return NULL;
   if (strcmp(typestr, "MovingBoolean") == 0)
@@ -809,13 +964,15 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
     else /* Default to T_TGEOMPOINT */
       jtemptype = T_TGEOMPOINT;
   }
-  else /* typestr == "MovingGeometry" */
+  else if (strcmp(typestr, "MovingGeometry") == 0)
   {
     if (temptype == T_TGEOGRAPHY)
       jtemptype = T_TGEOGRAPHY;
     else /* Default to T_TGEOMETRY */
       jtemptype = T_TGEOMETRY;
   }
+  else if (strcmp(typestr, "MovingPose") == 0)
+    jtemptype = T_TPOSE;
 
   if (temptype != T_UNKNOWN && jtemptype != temptype)
   {
@@ -841,10 +998,10 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
 
   const char *pszName = NULL;
   int srid = 0;
-  bool isgeo = tspatial_type(temptype);
-  if (isgeo)
+  bool spatial = tspatial_type(temptype);
+  if (spatial)
   {
-    /* Parse crs and set SRID of temporal geo */
+    /* Parse crs and set SRID of temporal spatial value */
     json_object *poObjSrs = findMemberByName(poObj, "crs");
     if (poObjSrs)
     {
@@ -878,9 +1035,10 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
   if (pszInterp)
   {
     if (strcmp(pszInterp, "None") == 0)
-      result = (Temporal *) tinstant_from_mfjson(poObj, isgeo, srid, temptype);
+      result = (Temporal *) tinstant_from_mfjson(poObj, spatial, srid,
+        temptype);
     else if (strcmp(pszInterp, "Discrete") == 0)
-      result = (Temporal *) tsequence_from_mfjson(poObj, isgeo, srid,
+      result = (Temporal *) tsequence_from_mfjson(poObj, spatial, srid,
         temptype, DISCRETE);
     else if (strcmp(pszInterp, "Step") == 0 ||
       strcmp(pszInterp, "Linear") == 0)
@@ -888,10 +1046,10 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
       interpType interp = (strcmp(pszInterp, "Linear") == 0) ? LINEAR : STEP;
       json_object *poObjSeqs = findMemberByName(poObj, "sequences");
       if (poObjSeqs)
-        result = (Temporal *) tsequenceset_from_mfjson(poObj, isgeo, srid,
+        result = (Temporal *) tsequenceset_from_mfjson(poObj, spatial, srid,
           temptype, interp);
       else
-        result = (Temporal *) tsequence_from_mfjson(poObj, isgeo, srid,
+        result = (Temporal *) tsequence_from_mfjson(poObj, spatial, srid,
           temptype, interp);
     }
     else
@@ -1222,14 +1380,43 @@ cbuffer_from_wkb_state(meos_wkb_parse_state *s)
 
 #if NPOINT
 /**
+ * @brief Return the state flags initialized with a byte flag read from the
+ * buffer
+ */
+static void
+npoint_flags_from_wkb_state(meos_wkb_parse_state *s, uint8_t wkb_flags)
+{
+  assert(wkb_flags & MEOS_WKB_XFLAG);
+  s->hasx = true;
+  s->hasz = false;
+  s->hast = false;
+  s->geodetic = false;
+  s->has_srid = false;
+  if (wkb_flags & MEOS_WKB_SRIDFLAG)
+    s->has_srid = true;
+  return;
+}
+
+/**
  * @brief Read a network point and advance the parse state forward
  */
 Npoint *
 npoint_from_wkb_state(meos_wkb_parse_state *s)
 {
-  /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MEOS_WKB_INT8_SIZE + MEOS_WKB_DOUBLE_SIZE);
-  /* Get the data */
+  /* Does the data we want to read exist? 
+   * Flags + */
+  wkb_parse_state_check(s, MEOS_WKB_BYTE_SIZE + MEOS_WKB_INT8_SIZE + 
+    MEOS_WKB_DOUBLE_SIZE);
+  /* Read the flags */
+  uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
+  npoint_flags_from_wkb_state(s, wkb_flags);
+  /* Read the SRID, if necessary */
+  int32_t srid = s->has_srid ? int32_from_wkb_state(s) : SRID_UNKNOWN;
+  /* Disable the warning unused variable ‘srid’ */
+  if (srid)
+  {
+    ;
+  }
   int64 rid = int64_from_wkb_state(s);
   double pos = double_from_wkb_state(s);
   Npoint *result = palloc(sizeof(Npoint));
@@ -1239,7 +1426,6 @@ npoint_from_wkb_state(meos_wkb_parse_state *s)
 #endif /* NPOINT */
 
 #if POSE
-
 /**
  * @brief Return the state flags initialized with a byte flag read from the
  * buffer
@@ -1283,16 +1469,15 @@ pose_from_wkb_state(meos_wkb_parse_state *s)
     double X = double_from_wkb_state(s);
     double Y = double_from_wkb_state(s);
     double Z = double_from_wkb_state(s);
-    result = pose_make_3d(x, y, z, W, X, Y, Z);
+    result = pose_make_3d(x, y, z, W, X, Y, Z, srid);
   }
   else
   {
     double x = double_from_wkb_state(s);
     double y = double_from_wkb_state(s);
     double theta = double_from_wkb_state(s);
-    result = pose_make_2d(x, y, theta);
+    result = pose_make_2d(x, y, theta, srid);
   }
-  pose_set_srid(result, srid);
   return result;
 }
 #endif /* POSE */
@@ -1323,8 +1508,6 @@ base_from_wkb_state(meos_wkb_parse_state *s)
       return PointerGetDatum(text_from_wkb_state(s));
     case T_GEOMETRY:
     case T_GEOGRAPHY:
-      /* Notice that only point geometries/geographies are allowed */
-      // return point_from_wkb_state(s);
       return PointerGetDatum(geo_from_wkb_state(s));
 #if CBUFFER
     case T_CBUFFER:

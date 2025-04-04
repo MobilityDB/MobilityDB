@@ -86,6 +86,66 @@ SELECT nsegment 'NSegment(1, 1, 1.5)';
 ERROR:  The relative position must be a real number between 0 and 1
 LINE 1: SELECT nsegment 'NSegment(1, 1, 1.5)';
                         ^
+SELECT asText(npoint 'SRID=5676;Npoint(1,0.5)');
+    astext     
+---------------
+ NPoint(1,0.5)
+(1 row)
+
+SELECT asEWKT(npoint 'SRID=5676;Npoint(1,0.5)');
+         asewkt          
+-------------------------
+ SRID=5676;NPoint(1,0.5)
+(1 row)
+
+SELECT asBinary(npoint 'SRID=5676;Npoint(1,0.5)');
+                asbinary                
+----------------------------------------
+ \x01010100000000000000000000000000e03f
+(1 row)
+
+SELECT asEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
+                     asewkb                     
+------------------------------------------------
+ \x01412c1600000100000000000000000000000000e03f
+(1 row)
+
+SELECT asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
+                  ashexewkb                   
+----------------------------------------------
+ 01412C1600000100000000000000000000000000E03F
+(1 row)
+
+SELECT npointFromText(asText(npoint 'SRID=5676;Npoint(1,0.5)'));
+ npointfromtext 
+----------------
+ NPoint(1,0.5)
+(1 row)
+
+SELECT npointFromEWKT(asEWKT(npoint 'SRID=5676;Npoint(1,0.5)'));
+ npointfromewkt 
+----------------
+ NPoint(1,0.5)
+(1 row)
+
+SELECT npointFromBinary(asBinary(npoint 'SRID=5676;Npoint(1,0.5)'));
+ npointfrombinary 
+------------------
+ NPoint(1,0.5)
+(1 row)
+
+SELECT npointFromEWKB(asEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
+ npointfromewkb 
+----------------
+ NPoint(1,0.5)
+(1 row)
+
+SELECT npointFromHexEWKB(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
+ npointfromhexewkb 
+-------------------
+ NPoint(1,0.5)
+(1 row)
+
 SELECT npoint(1, 0.5);
     npoint     
 ---------------

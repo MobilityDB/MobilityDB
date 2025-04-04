@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
 --
 -- This MobilityDB code is provided under The PostgreSQL License.
--- Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+-- Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- MobilityDB includes portions of PostGIS version 3 source code released
 -- under the GNU General Public License (GPLv2 or later).
--- Copyright (c) 2001-2024, PostGIS contributors
+-- Copyright (c) 2001-2025, PostGIS contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
@@ -90,7 +90,7 @@ SELECT DISTINCT SRID(minusStbox(temp, setSRID(b, 3812))) FROM tbl_tgeometry t1, 
 -- Modulo used to reduce time needed for the tests
 -- The following tests give different values depending on the GEOS version, 
 -- they were tested with GEOS 3.8.0-CAPI-1.13.1 and GEOS 3.13.0-CAPI-1.19.0
--- For this reason COUNT(*) was replaced by COUN(*) > 0
+-- For this reason COUNT(*) was replaced by COUNT(*) > 0
 SELECT COUNT(*) > 0 FROM tbl_tgeometry t1, tbl_geometry t2 WHERE t1.k % 2 = 0 AND temp != merge(atGeometry(temp, g), minusGeometry(temp, g));
 SELECT COUNT(*) > 0 FROM tbl_tgeometry t1, tbl_stbox t2 WHERE temp != merge(atStbox(temp, setSRID(b, 3812)), minusStbox(temp, setSRID(b, 3812)));
 

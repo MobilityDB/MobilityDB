@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -85,9 +85,21 @@ struct Nsegment
 /* General functions */
 
 extern int32_t get_srid_ways(void);
-extern GSERIALIZED *npointarr_geom(Npoint **points, int nelems);
-extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int nelems);
-extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *nelems);
+extern Npoint *npoint_parse(const char **str, bool end);
+extern GSERIALIZED *npointarr_geom(Npoint **points, int count);
+extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int count);
+extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
+
+/* Collinear functions */
+
+extern bool npoint_collinear(const Npoint *np1, const Npoint *np2, 
+  const Npoint *np3, double ratio);
+
+/* Interpolation functions */
+
+extern Datum npointsegm_interpolate(Datum start, Datum end, long double ratio);
+extern bool tnpointsegm_intersection_value(const TInstant *inst1,
+  const TInstant *inst2, Datum value, TimestampTz *t);
 
 /* Input/output functions */
 
@@ -116,8 +128,6 @@ extern void nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns);
 extern Datum datum_npoint_round(Datum npoint, Datum size);
 extern Npoint *npoint_round(const Npoint *np, int maxdd);
 extern Nsegment *nsegment_round(const Nsegment *ns, int maxdd);
-extern Set *npointset_round(const Set *s, int maxdd);
-extern Temporal *tnpoint_round(const Temporal *temp, Datum size);
 
 /*****************************************************************************
  * Temporal network point functions

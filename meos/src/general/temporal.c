@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -59,6 +59,15 @@
 #include "general/type_util.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
+#if CBUFFER
+  #include "cbuffer/cbuffer.h"
+#endif
+#if NPOINT
+  #include "npoint/tnpoint.h"
+#endif
+#if POSE
+  #include "pose/pose.h"
+#endif
 
 /*****************************************************************************
  * Parameter tests
@@ -1157,6 +1166,101 @@ tnumber_tbox(const Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @brief Return the function for rounding a base type
+ */
+datum_func2
+round_fn(meosType basetype)
+{
+  assert(meos_basetype(basetype));
+  switch (basetype)
+  {
+    case T_FLOAT8:
+      return &datum_float_round;
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+      return &datum_geo_round;
+#if CBUFFER
+    case T_CBUFFER:
+      return &datum_cbuffer_round;
+#endif
+#if NPOINT
+    case T_NPOINT:
+      return &datum_npoint_round;
+#endif
+#if POSE
+    case T_POSE:
+      return &datum_pose_round;
+#endif
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+        "Unknown round function for type: %s", meostype_name(basetype));
+    return NULL;
+  }
+}
+
+/**
+ * @ingroup meos_internal_temporal_transf
+ * @brief Return a temporal value rounded to a given number of decimal places
+ * @param[in] temp Temporal value
+ * @param[in] maxdd Maximum number of decimal digits to output
+ */
+Temporal *
+temporal_round(const Temporal *temp, int maxdd)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) temp))
+    return NULL;
+#else
+  assert(temp);
+#endif /* MEOS */
+
+  /* Get the function for rounding the base type */
+  datum_func2 func = round_fn(temptype_basetype(temp->temptype));
+  
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Int32GetDatum(maxdd);
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.restype = temp->temptype;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_internal_temporal_transf
+ * @brief Return an array of temporal floats with the precision of the
+ * coordinates set to a number of decimal places
+ * @param[in] temparr Array of temporal values
+ * @param[in] count Number of values in the input array
+ * @param[in] maxdd Maximum number of decimal digits
+ */
+Temporal **
+temparr_round(const Temporal **temparr, int count, int maxdd)
+{
+  /* Ensure validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) temparr))
+    return NULL;
+#else
+  assert(temparr);
+#endif /* MEOS */
+  if (! ensure_positive(count) || ! ensure_not_negative(maxdd))
+    return NULL;
+
+  Temporal **result = palloc(sizeof(Temporal *) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = temporal_round(temparr[i], maxdd);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
  * @ingroup meos_base_transf
  * @brief Return a float number rounded to a given number of decimal places
  */
@@ -1183,66 +1287,10 @@ float_round(double d, int maxdd)
  * @brief Return a float number rounded to a given number of decimal places
  */
 Datum
-datum_round_float(Datum value, Datum size)
+datum_float_round(Datum value, Datum size)
 {
   return Float8GetDatum(float_round(DatumGetFloat8(value),
     DatumGetInt32(size)));
-}
-
-/**
- * @ingroup meos_temporal_transf
- * @brief Return a temporal float rounded a given number of decimal places
- * @param[in] temp Temporal value
- * @csqlfn #Tfloat_round()
- */
-Temporal *
-tfloat_round(const Temporal *temp, int maxdd)
-{
-  /* Ensure validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TFLOAT);
-#endif /* MEOS */
-
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_round_float;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = Int32GetDatum(maxdd);
-  lfinfo.argtype[0] = T_TFLOAT;
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  return tfunc_temporal(temp, &lfinfo);
-}
-
-/**
- * @ingroup meos_temporal_transf
- * @brief Return an array of temporal floats with the precision of the
- * coordinates set to a number of decimal places
- * @param[in] temparr Array of temporal values
- * @param[in] count Number of values in the input array
- * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Tfloatarr_round()
- */
-Temporal **
-tfloatarr_round(const Temporal **temparr, int count, int maxdd)
-{
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temparr) ||
-      /* Ensure that the FIRST element is a temporal float */
-      ! ensure_temporal_isof_type(temparr[0], T_TFLOAT) ||
-      ! ensure_positive(count) || ! ensure_not_negative(maxdd))
-    return NULL;
-
-  Temporal **result = palloc(sizeof(Temporal *) * count);
-  for (int i = 0; i < count; i++)
-    result[i] = tfloat_round(temparr[i], maxdd);
-  return result;
 }
 
 /*****************************************************************************/
@@ -1892,42 +1940,43 @@ temporal_set_bbox(const Temporal *temp, void *box)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the array of (pointers to the) distinct base values of a
- * temporal value
+ * @brief Return the array of **pointers** to the base values of a temporal
+ * value
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
- * @csqlfn #Temporal_valueset()
+ * @see #temporal_values
  */
 Datum *
-temporal_vals(const Temporal *temp, int *count)
+temporal_values_p(const Temporal *temp, int *count)
 {
   assert(temp); assert(count);
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      return tinstant_vals((TInstant *) temp, count);
+      return tinstant_values_p((TInstant *) temp, count);
     case TSEQUENCE:
-      return tsequence_vals((TSequence *) temp, count);
+      return tsequence_values_p((TSequence *) temp, count);
     default: /* TSEQUENCESET */
-      return tsequenceset_vals((TSequenceSet *) temp, count);
+      return tsequenceset_values_p((TSequenceSet *) temp, count);
   }
 }
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return the array of (copies of the) distinct base values of a
+ * @brief Return the array of **copies** of the **distinct** base values of a
  * temporal value
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
  * @csqlfn #Temporal_valueset()
+ * @see #temporal_values_p
  */
 Datum *
 temporal_values(const Temporal *temp, int *count)
 {
   assert(temp); assert(count);
   int count1;
-  Datum *values = temporal_vals(temp, &count1);
+  Datum *values = temporal_values_p(temp, &count1);
   meosType basetype = temptype_basetype(temp->temptype);
   datumarr_sort(values, count1, basetype);
   int newcount = datumarr_remove_duplicates(values, count1, basetype);
@@ -3305,7 +3354,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Temporal_ne()
  */
-bool
+inline bool
 temporal_ne(const Temporal *temp1, const Temporal *temp2)
 {
   return ! temporal_eq(temp1, temp2);
@@ -3400,11 +3449,10 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Temporal_lt()
  */
-bool
+inline bool
 temporal_lt(const Temporal *temp1, const Temporal *temp2)
 {
-  int cmp = temporal_cmp(temp1, temp2);
-  return cmp < 0;
+  return temporal_cmp(temp1, temp2) < 0;
 }
 
 /**
@@ -3414,11 +3462,10 @@ temporal_lt(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Temporal_le()
  */
-bool
+inline bool
 temporal_le(const Temporal *temp1, const Temporal *temp2)
 {
-  int cmp = temporal_cmp(temp1, temp2);
-  return cmp <= 0;
+  return temporal_cmp(temp1, temp2) <= 0;
 }
 
 /**
@@ -3428,11 +3475,10 @@ temporal_le(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Temporal_gt()
  */
-bool
+inline bool
 temporal_ge(const Temporal *temp1, const Temporal *temp2)
 {
-  int cmp = temporal_cmp(temp1, temp2);
-  return cmp >= 0;
+  return temporal_cmp(temp1, temp2) >= 0;
 }
 
 /**
@@ -3441,11 +3487,10 @@ temporal_ge(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Temporal_ge()
  */
-bool
+inline bool
 temporal_gt(const Temporal *temp1, const Temporal *temp2)
 {
-  int cmp = temporal_cmp(temp1, temp2);
-  return cmp > 0;
+  return temporal_cmp(temp1, temp2) > 0;
 }
 
 /*****************************************************************************

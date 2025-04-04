@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -27,9 +27,9 @@
  *
  *****************************************************************************/
 
-/*
- * set.sql
- * Functions for set of ordered values.
+/**
+ * @file
+ * @brief Functions for set of circular buffers
  */
 
 /******************************************************************************
@@ -68,35 +68,50 @@ CREATE TYPE poseset (
 
 /******************************************************************************/
 
--- Input/output in WKB and HexWKB format
+-- Input/output in WKT, WKB, and HexWKB representation
+
+CREATE FUNCTION posesetFromText(text)
+  RETURNS poseset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION posesetFromEWKT(text)
+  RETURNS poseset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION posesetFromBinary(bytea)
   RETURNS poseset
   AS 'MODULE_PATHNAME', 'Set_from_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
+CREATE FUNCTION posesetFromEWKB(bytea)
+  RETURNS poseset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION posesetFromHexWKB(text)
   RETURNS poseset
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asBinary(poseset, endianenconding text DEFAULT '')
-  RETURNS bytea
-  AS 'MODULE_PATHNAME', 'Set_as_wkb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHexWKB(poseset, endianenconding text DEFAULT '')
-  RETURNS text
-  AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asText(poseset, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION asEWKT(poseset, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(poseset, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Set_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKB(poseset, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Spatialset_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(poseset, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -121,7 +136,7 @@ CREATE CAST (pose AS poseset) WITH FUNCTION set(pose);
 
 CREATE FUNCTION stbox(poseset)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Poseset_to_stbox'
+  AS 'MODULE_PATHNAME', 'Spatialset_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (poseset AS stbox) WITH FUNCTION stbox(poseset);
@@ -132,7 +147,7 @@ CREATE CAST (poseset AS stbox) WITH FUNCTION stbox(poseset);
 
 CREATE FUNCTION round(poseset, integer DEFAULT 0)
   RETURNS poseset
-  AS 'MODULE_PATHNAME', 'Poseset_round'
+  AS 'MODULE_PATHNAME', 'Set_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

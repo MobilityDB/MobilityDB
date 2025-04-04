@@ -10,27 +10,26 @@ configure_file(
 )
 
 # Define list of source files
-set(LOCAL_FILES
+set(DATAGEN_FILES
   general/random_temporal.sql
   geo/random_tpoint.sql
   geo/random_tgeo.sql
   )
 if(CBUFFER)
-  list(APPEND LOCAL_FILES cbuffer/random_tcbuffer.sql)
+  list(APPEND DATAGEN_FILES cbuffer/random_tcbuffer.sql)
 endif()
 if(NPOINT)
-  list(APPEND LOCAL_FILES npoint/random_tnpoint.sql)
+  list(APPEND DATAGEN_FILES npoint/random_tnpoint.sql)
+endif()
+if(POSE)
+  list(APPEND DATAGEN_FILES pose/random_tpose.sql)
 endif()
 
 # Append each source file with license removed
-foreach(f ${LOCAL_FILES})
+foreach(f ${DATAGEN_FILES})
   # Read file as a list (one item per line)
-  file(STRINGS ${f} FILE_LINES)
-  # Remove first 28 lines (length of the license)
-  list(SUBLIST FILE_LINES 29 -1 FILE_LINES)
-  # Join remaining lines
-  list(JOIN FILE_LINES "\n" FILE_CONTENT)
+  file(READ ${f} CURR_CONTENTS)
   # Append to extension file with small header line
   file(APPEND ${CMAKE_BINARY_DIR}/${MOBILITYDB_DATAGEN_EXTENSION_FILE}
-    "\n-- Begin contents of ${f}\n\n${FILE_CONTENT}\n")
+    "\n-- Begin contents of ${f}\n\n${CURR_CONTENTS}\n")
 endforeach()

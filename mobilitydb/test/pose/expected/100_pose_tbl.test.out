@@ -1,0 +1,71 @@
+COPY tbl_pose2d TO '/tmp/tbl_pose2d' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_pose2d_tmp;
+NOTICE:  table "tbl_pose2d_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_pose2d_tmp AS TABLE tbl_pose2d WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_pose2d_tmp FROM '/tmp/tbl_pose2d' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_pose2d t1, tbl_pose2d_tmp t2 WHERE t1.k = t2.k AND t1.pose <> t2.pose;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_pose2d_tmp;
+DROP TABLE
+SELECT ST_AsEWKT(MAX(point(pose)), 6) FROM tbl_pose2d;
+               st_asewkt               
+---------------------------------------
+ SRID=5676;POINT(81.228497 -58.175254)
+(1 row)
+
+SELECT MAX(rotation(pose)) FROM tbl_pose2d;
+       max        
+------------------
+ 0.05378614038812
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pose2d WHERE pose::geometry IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pose2d t1, tbl_pose2d t2 WHERE t1.pose = t2.pose;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pose2d t1, tbl_pose2d t2 WHERE t1.pose != t2.pose;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pose2d t1, tbl_pose2d t2 WHERE t1.pose < t2.pose;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pose2d t1, tbl_pose2d t2 WHERE t1.pose <= t2.pose;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pose2d t1, tbl_pose2d t2 WHERE t1.pose > t2.pose;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pose2d t1, tbl_pose2d t2 WHERE t1.pose >= t2.pose;
+ count 
+-------
+  5050
+(1 row)
+

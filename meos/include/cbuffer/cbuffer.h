@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -73,15 +73,23 @@ struct Cbuffer
 extern bool cbuffer_collinear(Cbuffer *cbuf1, Cbuffer *cbuf2, Cbuffer *cbuf3,
   double ratio);
 
+extern Cbuffer *cbuffer_parse(const char **str, bool end);
+
 /* Input/output functions */
 
 extern char *cbuffer_wkt_out(Datum value, int maxdd, bool extended);
 
+/* Accessor functions */
+
+extern const GSERIALIZED *cbuffer_point_p(const Cbuffer *cbuf);
+
 extern Datum datum_cbuffer_round(Datum buffer, Datum size);
 extern Cbuffer *cbuffer_round(const Cbuffer *cbuf, int maxdd);
 extern Cbuffer **cbufferarr_round(const Cbuffer **cbufarr, int count, int maxdd);
-extern Set *cbufferset_round(const Set *s, int maxdd);
-extern Temporal *tcbuffer_round(const Temporal *temp, int maxdd);
+
+/* Transformation functions */
+
+extern Cbuffer *cbuffer_transf_pj(const Cbuffer *cbuf, int32_t srid_to, const LWPROJ *pj);
   
 /*****************************************************************************/
 

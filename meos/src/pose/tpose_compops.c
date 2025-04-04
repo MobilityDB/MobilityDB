@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -106,7 +106,7 @@ eacomp_tpose_tpose(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_pose_comp_ever
  * @brief Return true if a pose is ever equal to a temporal circular
  * buffer
  * @param[in] pose Pose
@@ -120,7 +120,7 @@ ever_eq_pose_tpose(const Pose *pose, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_pose_comp_ever
  * @brief Return true if a temporal pose is ever equal to a circular
  * buffer
  * @param[in] temp Temporal value
@@ -134,7 +134,7 @@ ever_eq_tpose_pose(const Temporal *temp, const Pose *pose)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_pose_comp_ever
  * @brief Return true if a pose is ever different from a temporal pose
  * @param[in] pose Pose
  * @param[in] temp Temporal value
@@ -147,7 +147,7 @@ ever_ne_pose_tpose(const Pose *pose, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_pose_comp_ever
  * @brief Return true if a temporal pose is ever different from a
  * pose
  * @param[in] temp Temporal value
@@ -161,7 +161,7 @@ ever_ne_tpose_pose(const Temporal *temp, const Pose *pose)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_pose_comp_ever
  * @brief Return true if a pose is always equal to a temporal pose
  * @param[in] pose Pose
  * @param[in] temp Temporal value
@@ -174,7 +174,7 @@ always_eq_pose_tpose(const Pose *pose, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_pose_comp_ever
  * @brief Return true if a temporal pose is always equal to a
  * pose
  * @param[in] temp Temporal value
@@ -188,7 +188,7 @@ always_eq_tpose_pose(const Temporal *temp, const Pose *pose)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_pose_comp_ever
  * @brief Return true if a pose is always different from a temporal pose
  * @param[in] pose Pose
  * @param[in] temp Temporal value
@@ -201,7 +201,7 @@ always_ne_pose_tpose(const Pose *pose, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_pose_comp_ever
  * @brief Return true if a temporal pose is always different from a
  * pose
  * @param[in] temp Temporal value
@@ -217,7 +217,7 @@ always_ne_tpose_pose(const Temporal *temp, const Pose *pose)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_pose_comp_ever
  * @brief Return true if two temporal poses are ever equal
  * @param[in] temp1,temp2 Temporal poses
  * @csqlfn #Ever_eq_tpose_tpose()
@@ -229,7 +229,7 @@ ever_eq_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_pose_comp_ever
  * @brief Return true if two temporal poses are ever different
  * @param[in] temp1,temp2 Temporal poses
  * @csqlfn #Ever_ne_tpose_tpose()
@@ -241,7 +241,7 @@ ever_ne_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_pose_comp_ever
  * @brief Return true if two temporal poses are always equal
  * @param[in] temp1,temp2 Temporal poses
  * @csqlfn #Always_eq_tpose_tpose()
@@ -253,7 +253,7 @@ always_eq_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_temporal_comp_ever
+ * @ingroup meos_pose_comp_ever
  * @brief Return true if two temporal poses are always different
  * @param[in] temp1,temp2 Temporal poses
  * @csqlfn #Always_ne_tpose_tpose()
@@ -320,7 +320,7 @@ tcomp_tpose_pose(const Temporal *temp, const Pose *pose,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_temp
+ * @ingroup meos_pose_comp_temp
  * @brief Return the temporal equality of a pose and a temporal pose
  * @param[in] pose Pose
  * @param[in] temp Temporal value
@@ -333,7 +333,7 @@ teq_pose_tpose(const Pose *pose, const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_comp_temp
+ * @ingroup meos_pose_comp_temp
  * @brief Return the temporal inequality of a pose and a temporal pose
  * @param[in] pose Pose
  * @param[in] temp Temporal value
@@ -348,7 +348,7 @@ tne_pose_tpose(const Pose *pose, const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_comp_temp
+ * @ingroup meos_pose_comp_temp
  * @brief Return the temporal equality of a temporal pose and a
  * pose
  * @param[in] temp Temporal value
@@ -362,7 +362,7 @@ teq_tpose_pose(const Temporal *temp, const Pose *pose)
 }
 
 /**
- * @ingroup meos_temporal_comp_temp
+ * @ingroup meos_pose_comp_temp
  * @brief Return the temporal inequality of a temporal pose and a
  * pose
  * @param[in] temp Temporal value

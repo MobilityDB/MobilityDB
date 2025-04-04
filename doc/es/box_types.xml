@@ -8,7 +8,7 @@
     Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
    ****************************************************************************
 -->
-<chapter id="box_types">
+<chapter xml:id="box_types">
 	<title>Tipos de cuadro delimitador</title>
 	<para>A continuación presentamos las funciones y operadores para tipos cuadro delimitador. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo del resultado puede depender del tipo de los argumentos. Para expresar esto, usamos la siguiente notación:</para>
 
@@ -18,7 +18,7 @@
 		</listitem>
 	</itemizedlist>
 
-	<sect1 id="box_types_input_output">
+	<sect1 xml:id="box_input_output">
 		<title>Entrada y salida</title>
 		<para>
 			MobilityDB generaliza los formatos de entrada y salida Well-Known Text (WKT) y Well-Known Binary (WKB) del Open Geospatial Consortium para todos los tipos temporales. Presentamos a continuación las funciones de entrada y salida para los tipos de cuadro delimitador.
@@ -66,8 +66,8 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 			</para>
 
 			<itemizedlist>
-				<listitem id="box_asText">
-					<indexterm><primary><varname>asText</varname></primary></indexterm>
+				<listitem xml:id="box_asText">
+					<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 					<para>Devuelve la representación textual conocida (Well-Known Text o WKT)</para>
 					<para><varname>asText(box,maxdecdigits=15) → text</varname></para>
 					<para>El argumento <varname>maxdecdigits</varname> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</para>
@@ -79,9 +79,9 @@ SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 </programlisting>
 				</listitem>
 
-				<listitem id="box_asBinary">
-					<indexterm><primary><varname>asBinary</varname></primary></indexterm>
-					<indexterm><primary><varname>asHexWKB</varname></primary></indexterm>
+				<listitem xml:id="box_asBinary">
+					<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
 					<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB) o la representación hexadecimal binaria conocida (HexWKB)</para>
 					<para><varname>asBinary(box,endian text='') → bytea</varname></para>
 					<para><varname>asHexWKB(box,endian text='') → text</varname></para>
@@ -102,16 +102,13 @@ SELECT asHexWKB(stbox 'STBOX X((1,1),(2,2))');
 </programlisting>
 				</listitem>
 
-				<listitem id="box_FromBinary">
-					<indexterm><primary><varname>tboxFromBinary</varname></primary></indexterm>
-					<indexterm><primary><varname>stboxFromBinary</varname></primary></indexterm>
-					<indexterm><primary><varname>tboxFromHexWKB</varname></primary></indexterm>
-					<indexterm><primary><varname>stboxFromHexWKB</varname></primary></indexterm>
+				<listitem xml:id="boxFromBinary">
+					<indexterm significance="normal"><primary><varname>boxFromBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>boxFromHexWKB</varname></primary></indexterm>
 					<para>Entrar a partir de representación binaria conocida (WKB) o de la representación hexadecimal binaria conocida (HexWKB)</para>
-					<para><varname>tboxFromBinary(bytea) → tbox</varname></para>
-					<para><varname>stboxFromBinary(bytea) → stbox</varname></para>
-					<para><varname>tboxFromHexWKB(text) → tbox</varname></para>
-					<para><varname>stboxFromHexWKB(text) → stbox</varname></para>
+					<para><varname>boxFromBinary(bytea) → box</varname></para>
+					<para><varname>boxFromHexWKB(text) → box</varname></para>
+					<para>En las funciones anteriores, <varname>box</varname> reemplaza cualquier tipo de cuadro delimitador, a saber, <varname>tbox</varname> o <varname>stbox</varname>.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tboxFromBinary(
   '\x0103270001009c57d3c11c000000fc2ef1d51c00000d0001000000000000f03f0000000000000040');
@@ -130,7 +127,7 @@ SELECT stboxFromHexWKB(
 			</itemizedlist>
 	</sect1>
 
-	<sect1 id="box_types_constructors">
+	<sect1 xml:id="box_constructors">
 		<title>Constructores</title>
 
 		<para>
@@ -138,8 +135,8 @@ SELECT stboxFromHexWKB(
 		</para>
 
 		<itemizedlist>
-			<listitem id="tbox">
-				<indexterm><primary><varname>tbox</varname></primary></indexterm>
+			<listitem xml:id="tbox">
+				<indexterm significance="normal"><primary><varname>tbox</varname></primary></indexterm>
 				<para>Constructor para <varname>tbox</varname></para>
 				<para><varname>tbox({number,numspan}) → tbox</varname></para>
 				<para><varname>tbox({timestamptz,tstzspan}) → tbox</varname></para>
@@ -161,15 +158,15 @@ SELECT tbox(tstzspan '[2001-01-01,2001-01-02)');
 		</para>
 
 		<itemizedlist>
-			<listitem id="stbox">
-				<indexterm><primary><varname>stboxX</varname></primary></indexterm>
-				<indexterm><primary><varname>stboxZ</varname></primary></indexterm>
-				<indexterm><primary><varname>stboxT</varname></primary></indexterm>
-				<indexterm><primary><varname>stboxXT</varname></primary></indexterm>
-				<indexterm><primary><varname>stboxZT</varname></primary></indexterm>
-				<indexterm><primary><varname>geodstboxZ</varname></primary></indexterm>
-				<indexterm><primary><varname>geodstboxT</varname></primary></indexterm>
-				<indexterm><primary><varname>geodstboxZT</varname></primary></indexterm>
+			<listitem xml:id="stbox">
+				<indexterm significance="normal"><primary><varname>stboxX</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stboxZ</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stboxT</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stboxXT</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stboxZT</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geodstboxZ</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geodstboxT</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geodstboxZT</varname></primary></indexterm>
 				<para>Constructor para <varname>stbox</varname></para>
 				<para><varname>stboxX(float,float,float,float,srid=0) → stbox</varname></para>
 				<para><varname>stboxZ(float,float,float,float,float,float,srid=0) → stbox</varname></para>
@@ -210,12 +207,12 @@ SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', tstzspan '[2001-01-03, 2001-01
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="box_types_conversions">
+	<sect1 xml:id="box_conversions">
 		<title>Conversiones de tipo</title>
 
 		<itemizedlist>
-			<listitem id="tbox_convert_to">
-				<indexterm><primary><varname>::</varname></primary></indexterm>
+			<listitem xml:id="tbox_convert_to">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Convertir un <varname>tbox</varname> a otro tipo</para>
 				<para><varname>tbox::{intspan,floatspan,tstzspan}</varname></para>
 				<para><varname>intspan(tbox) → tbox</varname></para>
@@ -231,8 +228,8 @@ SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02))'::tstzspan;
 </programlisting>
 			</listitem>
 
-			<listitem id="tbox_convert_from">
-				<indexterm><primary><varname>::</varname></primary></indexterm>
+			<listitem xml:id="tbox_convert_from">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Convertir otro tipo a un <varname>tbox</varname></para>
 				<para><varname>{numbers,times,tnumber}::tbox</varname></para>
 				<para><varname>tbox({numbers,times,tnumber}) → tbox</varname></para>
@@ -248,8 +245,8 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 </programlisting>
 			</listitem>
 
-			<listitem id="stbox_convert_to">
-				<indexterm><primary><varname>::</varname></primary></indexterm>
+			<listitem xml:id="stbox_convert_to">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Convertir un <varname>stbox</varname> a otro tipo</para>
 				<para><varname>stbox::{box2d,box2d,geo,tstzspan}</varname></para>
 				<para><varname>box2d(stbox) → box2d</varname></para>
@@ -278,8 +275,8 @@ SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan
 </programlisting>
 			</listitem>
 
-			<listitem id="stbox_convert_from">
-				<indexterm><primary><varname>::</varname></primary></indexterm>
+			<listitem xml:id="stbox_convert_from">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Convertir otro tipo a un <varname>stbox</varname></para>
 				<para><varname>{box2d,box3d,geo,times,tgeo}::stbox</varname></para>
 				<para><varname>stbox({box2d,box3d,geo,times,tgeo}) → stbox</varname></para>
@@ -295,14 +292,14 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="box_types_accessors">
+	<sect1 xml:id="box_accessors">
 		<title>Accesores</title>
 
 		<itemizedlist>
-			<listitem id="hasX">
-				<indexterm><primary><varname>hasX</varname></primary></indexterm>
-				<indexterm><primary><varname>hasZ</varname></primary></indexterm>
-				<indexterm><primary><varname>hasT</varname></primary></indexterm>
+			<listitem xml:id="box_hasX">
+				<indexterm significance="normal"><primary><varname>hasX</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>hasZ</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>hasT</varname></primary></indexterm>
 				<para>¿Tiene dimensión X/Z/T?</para>
 				<para><varname>hasX(box) → boolean</varname></para>
 				<para><varname>hasZ(stbox) → boolean</varname></para>
@@ -321,8 +318,8 @@ SELECT hasT(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 </programlisting>
 			</listitem>
 
-			<listitem id="isGeodetic">
-				<indexterm><primary><varname>isGeodetic</varname></primary></indexterm>
+			<listitem xml:id="box_isGeodetic">
+				<indexterm significance="normal"><primary><varname>isGeodetic</varname></primary></indexterm>
 				<para>¿Es geodética?</para>
 				<para><varname>isGeodetic(stbox) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -333,11 +330,11 @@ SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])
 </programlisting>
 			</listitem>
 
-			<listitem id="xMin">
-				<indexterm><primary><varname>xMin</varname></primary></indexterm>
-				<indexterm><primary><varname>yMin</varname></primary></indexterm>
-				<indexterm><primary><varname>zMin</varname></primary></indexterm>
-				<indexterm><primary><varname>tMin</varname></primary></indexterm>
+			<listitem xml:id="box_xMin">
+				<indexterm significance="normal"><primary><varname>xMin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>yMin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>zMin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tMin</varname></primary></indexterm>
 				<para>Devuelve el valor mínimo de X/Y/Z/T</para>
 				<para><varname>xMin(box) → float</varname></para>
 				<para><varname>yMin(stbox) → float</varname></para>
@@ -355,11 +352,11 @@ SELECT tMin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 </programlisting>
 			</listitem>
 
-			<listitem id="xMax">
-				<indexterm><primary><varname>xMax</varname></primary></indexterm>
-				<indexterm><primary><varname>yMax</varname></primary></indexterm>
-				<indexterm><primary><varname>zMax</varname></primary></indexterm>
-				<indexterm><primary><varname>tMax</varname></primary></indexterm>
+			<listitem xml:id="box_xMax">
+				<indexterm significance="normal"><primary><varname>xMax</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>yMax</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>zMax</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tMax</varname></primary></indexterm>
 				<para>Devuelve el valor máximo de X/Y/Z/T</para>
 				<para><varname>xMax(box) → float</varname></para>
 				<para><varname>yMax(stbox) → float</varname></para>
@@ -377,9 +374,9 @@ SELECT tMax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 </programlisting>
 			</listitem>
 
-			<listitem id="xMinInc">
-				<indexterm><primary><varname>xMinInc</varname></primary></indexterm>
-				<indexterm><primary><varname>tMinInc</varname></primary></indexterm>
+			<listitem xml:id="box_xMinInc">
+				<indexterm significance="normal"><primary><varname>xMinInc</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tMinInc</varname></primary></indexterm>
 				<para>Es el mínimo valor X/T inclusivo?</para>
 				<para><varname>xMinInc(tbox) → bool</varname></para>
 				<para><varname>tMinInc(box) → bool</varname></para>
@@ -391,9 +388,9 @@ SELECT tMinInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 </programlisting>
 			</listitem>
 
-			<listitem id="xMaxInc">
-				<indexterm><primary><varname>xMaxInc</varname></primary></indexterm>
-				<indexterm><primary><varname>tMaxInc</varname></primary></indexterm>
+			<listitem xml:id="box_xMaxInc">
+				<indexterm significance="normal"><primary><varname>xMaxInc</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tMaxInc</varname></primary></indexterm>
 				<para>Es el máximo valor X/T inclusivo?</para>
 				<para><varname>xMaxInc(tbox) → bool</varname></para>
 				<para><varname>tMaxInc(box) → bool</varname></para>
@@ -405,9 +402,9 @@ SELECT tMaxInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 </programlisting>
 			</listitem>
 
-			<listitem id="area">
-				<indexterm><primary><varname>area</varname></primary></indexterm>
-				<indexterm><primary><varname>perimeter</varname></primary></indexterm>
+			<listitem xml:id="box_area">
+				<indexterm significance="normal"><primary><varname>area</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>perimeter</varname></primary></indexterm>
 				<para>Área, volumen, perímetro</para>
 				<para><varname>area(stbox, spheroid bool=true) → float</varname></para>
 				<para><varname>volume(stbox) → float</varname></para>
@@ -429,19 +426,40 @@ SELECT perimeter(stbox 'GEODSTBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03))', fa
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id ="box_types_transformations">
+	<sect1 id ="box_transformations">
 		<title>Transformaciones</title>
 
 		<itemizedlist>
-			<listitem id="box_shift">
-				<indexterm><primary><varname>shiftValue</varname></primary></indexterm>
-				<indexterm><primary><varname>shiftTime</varname></primary></indexterm>
-				<para>Desplazar el rango de valores o el período del cuadro delimitador con un valor o intervalo</para>
+			<listitem xml:id="box_shiftValue">
+				<indexterm significance="normal"><primary><varname>shiftValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>scaleValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>shiftScaleValue</varname></primary></indexterm>
+				<para>Desplazar y/o escalear el rango de valores de un cuadro delimitador con uno o dos valores</para>
 				<para><varname>shiftValue(tbox,{integer,float}) → tbox</varname></para>
-				<para><varname>shiftTime(box,interval) → box</varname></para>
+				<para><varname>scaleValue(tbox,{integer,float}) → tbox</varname></para>
+				<para><varname>shiftScaleValue(tbox,{integer,float},{integer,float}) → tbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT shiftValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 1.0);
 -- TBOXFLOAT XT([2.5, 3.5],[2001-01-01, 2001-01-02])
+SELECT scaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0);
+-- TBOXFLOAT XT([1.5, 3.5],[2001-01-01, 2001-01-02])
+SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0, 3.0);
+-- TBOXFLOAT XT([3.5, 6.5],[2001-01-01, 2001-01-02])
+</programlisting>
+
+				<programlisting language="sql" xml:space="preserve">
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="box_shiftTime">
+				<indexterm significance="normal"><primary><varname>shiftTime</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>scaleTime</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>shiftScaleTime</varname></primary></indexterm>
+				<para>Desplazar y/o escalar el período de un cuadro delimitador con uno o dos intervalos. Si el ancho o el lapso de tiempo del valor de tiempo es cero (es decir, los límites inferior y superior son iguales), el resultado es el cuadro delimitador. El valor o intervalo dado debe ser estrictamente mayor que cero.</para>
+				<para><varname>shiftTime(box,interval) → box</varname></para>
+				<para><varname>scaleTime(box,interval) → box</varname></para>
+				<para><varname>shiftScaleTime(box,interval,interval) → box</varname></para>
+				<programlisting language="sql" xml:space="preserve">
 SELECT shiftTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])',
   interval '1 day');
 -- TBOXFLOAT XT([1.5, 2.5],[2001-01-02, 2001-01-03])
@@ -450,18 +468,6 @@ SELECT shiftTime(stbox 'STBOX T([2001-01-01,2001-01-02])', interval '-1 day');
 SELECT shiftTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
   interval '1 day');
 -- STBOX ZT(((1,1,1),(2,2,2)),[2001-01-02, 2001-01-03])
-</programlisting>
-			</listitem>
-
-			<listitem id="box_scaleValue">
-				<indexterm><primary><varname>scaleValue</varname></primary></indexterm>
-				<indexterm><primary><varname>scaleTime</varname></primary></indexterm>
-				<para>Escalar el rango de valores o el período del cuadro delimitador a un valor o intervalo. Si el ancho o el lapso de tiempo del valor de tiempo es cero (es decir, los límites inferior y superior son iguales), el resultado es el cuadro delimitador. El valor o intervalo dado debe ser estrictamente mayor que cero.</para>
-				<para><varname>scaleValue(tbox,{integer,float}) → tbox</varname></para>
-				<para><varname>scaleTime(box,interval) → box</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT scaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0);
--- TBOXFLOAT XT([1.5, 3.5],[2001-01-01, 2001-01-02])
 SELECT scaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])',
   interval '2 days');
 -- TBOXFLOAT XT([1.5, 2.5],[2001-01-01, 2001-01-03])
@@ -471,19 +477,6 @@ SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
 SELECT scaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])',
   interval '-1 day');
 -- ERROR:  The interval must be positive: -1 days
-</programlisting>
-			</listitem>
-
-			<listitem id="box_shiftScale">
-				<indexterm><primary><varname>shiftScaleValue</varname></primary></indexterm>
-				<indexterm><primary><varname>shiftScaleTime</varname></primary></indexterm>
-				<para>Desplazar y escalar el rango de valores o el período del cuadro delimitador con los valores o intervalos</para>
-				<para><varname>shiftScaleValue(tbox,{integer,float},{integer,float}) → tbox</varname></para>
-				<para><varname>shiftScaleTime(box,interval,interval) → box</varname></para>
-				<para>Estas funciones combinan las funciones <link linkend="box_shift"><varname>shiftValue</varname></link> y <link linkend="box_scaleValue"><varname>scaleValue</varname></link> o <link linkend="box_shift"><varname>shiftTime</varname></link> y <link linkend="box_scaleValue"><varname>scaleTime</varname></link></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT shiftScaleValue(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])', 2.0, 3.0);
--- TBOXFLOAT XT([3.5, 6.5],[2001-01-01, 2001-01-02])
 SELECT shiftScaleTime(tbox 'TBOXFLOAT XT([1.5, 2.5],[2001-01-01,2001-01-02])',
   interval '1 day', interval '3 days');
 -- TBOXFLOAT XT([1.5, 2.5],[2001-01-02, 2001-01-05])
@@ -493,8 +486,8 @@ SELECT shiftScaleTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])
 </programlisting>
 			</listitem>
 
-			<listitem id="getSpace">
-				<indexterm><primary><varname>getSpace</varname></primary></indexterm>
+			<listitem xml:id="box_getSpace">
+				<indexterm significance="normal"><primary><varname>getSpace</varname></primary></indexterm>
 				<para>Devuelve la dimensión espacial del cuadro delimitador, eliminando la dimensión temporal, si existe</para>
 				<para><varname>getSpace(stbox) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -508,22 +501,19 @@ SELECT getSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])');
 				Las funciones dadas a continuación expanden los cuadros delimitadores en la dimensión de valor y de tiempo o establecen la precisión de la dimensión de valor. Estas funciones generan un error si la dimensión correspondiente no está presente.
 			</para>
 			<itemizedlist>
-				<listitem id="expandValue">
-					<indexterm><primary><varname>expandValue</varname></primary></indexterm>
-					<para>Extender la dimensión numérica del cuadro delimitador con un valor flotante</para>
+				<listitem xml:id="box_expandValue">
+					<indexterm significance="normal"><primary><varname>expandValue</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>expandSpace</varname></primary></indexterm>
+					<para>Extender la dimensión numérica o espacial del cuadro delimitador con un valor flotante</para>
 					<para><varname>expandValue(tbox,{integer,float}) → tbox</varname></para>
+					<para><varname>expandSpace(stbox,float) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT expandValue(tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-03])', 1.0);
 -- TBOXFLOAT XT((0,3),[2001-01-01, 2001-01-03])
 SELECT expandValue(tbox 'TBOX T([2001-01-01,2001-01-03))', 1);
 -- The box must have value dimension
 </programlisting>
-				</listitem>
 
-				<listitem id="expandSpace">
-					<indexterm><primary><varname>expandSpace</varname></primary></indexterm>
-					<para>Extender la dimensión espacial del cuadro delimitador con un valor flotante</para>
-					<para><varname>expandSpace(stbox,float) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT expandSpace(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])', 1);
 -- STBOX ZT(((0,0,0),(3,3,3)),[2001-01-01, 2001-01-03])
@@ -532,8 +522,8 @@ SELECT expandSpace(stbox 'STBOX T([2001-01-01,2001-01-03))', 1);
 </programlisting>
 				</listitem>
 
-				<listitem id="expandTime">
-					<indexterm><primary><varname>expandTime</varname></primary></indexterm>
+				<listitem xml:id="box_expandTime">
+					<indexterm significance="normal"><primary><varname>expandTime</varname></primary></indexterm>
 					<para>Extender la dimensión temporal del cuadro delimitador con un intervalo de tiempo</para>
 					<para><varname>expandTime(box,interval) → box</varname></para>
 					<programlisting language="sql" xml:space="preserve">
@@ -545,8 +535,8 @@ SELECT expandTime(stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-03])',
 </programlisting>
 				</listitem>
 
-				<listitem id="box_round">
-					<indexterm><primary><varname>round</varname></primary></indexterm>
+				<listitem xml:id="box_round">
+					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 					<para>Redondear el valor o las coordenadas del cuadro delimitador a un número de decimales</para>
 					<para><varname>round(box,integer=0) → box</varname></para>
 					<programlisting language="sql" xml:space="preserve">
@@ -561,14 +551,16 @@ SELECT round(stbox 'STBOX XT(((1.12345,1.12345),(2.12345,2.12345)),
 			</itemizedlist>
 		</sect1>
 
-	<sect1 id ="box_types_srid">
+	<sect1 id ="box_srid">
 		<title>Sistema de referencia espacial</title>
 
 		<itemizedlist>
-			<listitem id="stbox_SRID">
-				<indexterm><primary><varname>SRID</varname></primary></indexterm>
-				<para>Devuelve el identificador de referencia espacial</para>
+			<listitem xml:id="stbox_SRID">
+				<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
+				<para>Devuelve o especifica el identificador de referencia espacial</para>
 				<para><varname>SRID(stbox) → integer</varname></para>
+				<para><varname>setSRID(stbox) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT SRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2001-01-01,2001-01-02])');
 -- 0
@@ -576,36 +568,28 @@ SELECT SRID(stbox 'SRID=5676;STBOX XT(((1.0,2.0),(4.0,5.0)),[2001-01-01,2001-01-
 -- 5676
 SELECT SRID(stbox 'GEODSTBOX T([2001-01-01,2001-01-02))');
 -- ERROR:  The box must have space dimension
-</programlisting>
-			</listitem>
-
-			<listitem id="stbox_setSRID">
-				<indexterm><primary><varname>setSRID</varname></primary></indexterm>
-				<para>Especificar el identificador de referencia espacial</para>
-				<para><varname>setSRID(stbox) → stbox</varname></para>
-				<programlisting language="sql" xml:space="preserve">
 SELECT setSRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),
   [2001-01-01,2001-01-02])', 5676);
 -- SRID=5676;STBOX ZT(((1,2,3),(4,5,6)),[2001-01-01,2001-01-02])
 </programlisting>
 				</listitem>
 
-			<listitem id="stbox_transform">
-				<indexterm><primary><varname>transform</varname></primary></indexterm>
-				<indexterm><primary><varname>transformPipeline</varname></primary></indexterm>
+			<listitem xml:id="stbox_transform">
+				<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transformar a una referencia espacial diferente</para>
 				<para><varname>transform(stbox,to_srid integer) → stbox</varname></para>
 				<para><varname>transformPipeline(stbox,pipeline text,to_srid integer,is_forward bool=true) →</varname></para>
 				<para><varname> stbox</varname></para>
 				<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el cuadro de entrada tiene un SRID desconocido (representado por 0).</para>
-				<para>La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. El SRID del cuadro de entrada se ignora y el SRID del cuadro de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>to_srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
+				<para>La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato:</para>
+				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
+				<para>El SRID del cuadro de entrada se ignora y el SRID del cuadro de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>to_srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT round(transform(stbox 'SRID=4326;STBOX XT(((2.340088, 49.400250),
   (6.575317, 51.553167)),[2001-01-01,2001-01-02])', 3812), 6);
 /* SRID=3812;STBOX XT(((502773.429981,511805.120402),(803028.908265,751590.742629)),
   [2001-01-01, 2001-01-02]) */
-</programlisting>
-				<programlisting language="sql" xml:space="preserve">
 WITH test(box, pipeline) AS (
   SELECT stbox 'SRID=4326;GEODSTBOX Z((-0.1275,50.846667,100),(4.3525,51.507222,100))',
     text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
@@ -618,12 +602,12 @@ FROM test;
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id ="box_types_splitting">
+	<sect1 id ="box_splitting">
 		<title>Operaciones de división</title>
 
 		<itemizedlist>
-			<listitem id="quadSplit">
-				<indexterm><primary><varname>quadSplit</varname></primary></indexterm>
+			<listitem xml:id="box_quadSplit">
+				<indexterm significance="normal"><primary><varname>quadSplit</varname></primary></indexterm>
 				<para>Dividir el cuadro delimitador en cuadrantes u octantes &SRF;</para>
 				<para><varname>quadSplit(stbox) → {stbox}</varname></para>
 				<para>Como lo indica el símbolo &SRF;, esta función es una <emphasis>función de retorno de conjuntos</emphasis> (también conocida como <emphasis>función de tabla</emphasis>) ya que normalmente devuelve más de un valor.</para>
@@ -641,7 +625,7 @@ SELECT quadSplit(stbox 'STBOX Z((0,0,0),(4,4,4))');
 			</listitem>
 		</itemizedlist>
 		<para>Tenga en cuenta que la función anterior es una <emphasis>función de retorno de conjuntos</emphasis> (también conocida como <emphasis>función de tabla</emphasis>) ya que normalmente devuelve más de un valor. Por lo tanto, la función está marcada con el símbolo &SRF;. Esta función se usa normalmente para cuadrículas de resolución múltiple, donde el espacio se divide en celdas de modo que las celdas tengan un número máximo de elementos. <xref linkend="berlinmod_grid" /> muestra un ejemplo del resultado de usar esta función usando trayectorias sintéticas en Bruselas.</para>
-		<figure id="berlinmod_grid" float="start">
+		<figure xml:id="berlinmod_grid" float="start">
 			<title>Grilla multiresolución sobre datos de Bruselas obtenidos mediante el generador <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD</ulink>. Cada celda contiene como máximo 10.000 (izquierda) y 1.000 (derecha) instantes durante todo el período de simulación (cuatro días en este caso). A la izquierda, podemos ver la alta densidad de tráfico en el anillo alrededor de Bruselas, mientras que a la derecha podemos ver otros ejes principales de la ciudad.</title>
 			<mediaobject>
 				<imageobject><imagedata scale='65' fileref='../images/berlinmod_grid10k.png' /></imageobject>
@@ -652,16 +636,17 @@ SELECT quadSplit(stbox 'STBOX Z((0,0,0),(4,4,4))');
 		</figure>
 	</sect1>
 
-	<sect1 id="box_types_set">
+	<sect1 xml:id="box_set_ops">
 		<title>Operaciones de conjuntos</title>
 
 		<para>Los operadores de conjuntos para los tipos de cuadro delimitador son la unión (<varname>+</varname>) y la intersección (<varname>*</varname>). En el caso de la unión, los operandos deben tener exactamente las mismas dimensiónes, de lo contrario se genera un error. Además, si los operandos no se superponen en todas las dimensiónes se genera un error, ya que esto daría como resultado una caja con valores disjuntos, que no se puede representar. El operador calcula la unión en todas las dimensiónes que están presentes en ambos argumentos. En el caso de intersección, los operandos deben tener al menos una dimensión común, de lo contrario se genera un error. El operador calcula la intersección en todas las dimensiónes que están presentes en ambos argumentos.</para>
 
 		<itemizedlist>
-			<listitem id="box_union">
-				<indexterm><primary><varname>+</varname></primary></indexterm>
-				<para>Unión de los cuadros delimitadores</para>
-				<para><varname>box + box → box</varname></para>
+			<listitem xml:id="box_union">
+				<indexterm significance="normal"><primary><varname>+</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>*</varname></primary></indexterm>
+				<para>Unión e intersección de dos cuadros delimitadores</para>
+				<para><varname>box {+, *} box → box</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXINT XT([1,3),[2001-01-01,2001-01-03])' +
   tbox 'TBOXINT XT([2,4),[2001-01-02,2001-01-04])';
@@ -673,12 +658,6 @@ SELECT tbox 'TBOXFLOAT XT((1,3),[2001-01-01,2001-01-02])' +
   tbox 'TBOXFLOAT XT((3,4),[2001-01-03,2001-01-04])';
 -- ERROR:  Result of box union would not be contiguous
 </programlisting>
-			</listitem>
-
-			<listitem id="box_intersection">
-				<indexterm><primary><varname>*</varname></primary></indexterm>
-				<para>Intersección de los cuadros delimitadores</para>
-				<para><varname>box * box → box</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXINT XT([1,3),[2001-01-01,2001-01-03])' *
   tbox 'TBOX T([2001-01-02,2001-01-04))';
@@ -691,7 +670,7 @@ SELECT stbox 'STBOX ZT(((1,1,1),(3,3,3)),[2001-01-01,2001-01-02])' *
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="box_types_topo_pos">
+	<sect1 xml:id="box_topo_pos">
 		<title>Operaciones de cuadro delimitador</title>
 
 		<sect2>
@@ -699,8 +678,8 @@ SELECT stbox 'STBOX ZT(((1,1,1),(3,3,3)),[2001-01-01,2001-01-02])' *
 			<para>Hay cinco operadores topológicos: superposición (<varname>&amp;&amp;</varname>), contiene (<varname>@&gt;</varname>), es contenido (<varname>&lt;@</varname>), mismo (<varname>~=</varname>) y adyacente (<varname>-|-</varname>). Los operadores verifican la relación topológica entre los cuadros delimitadores teniendo en cuenta la dimensión de valor y/o de tiempo para todas las dimensiónes que estén presentes en ambos argumentos.</para>
 
 			<itemizedlist>
-				<listitem id="box_overlap">
-					<indexterm><primary><varname>&amp;&amp;</varname></primary></indexterm>
+				<listitem xml:id="box_overlap">
+					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
 					<para>¿Se superponen los cuadros delimitadores?</para>
 					<para><varname>box &amp;&amp; box → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
@@ -713,8 +692,8 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' &amp;&amp;
 </programlisting>
 				</listitem>
 
-				<listitem id="box_contains">
-					<indexterm><primary><varname>@&gt;</varname></primary></indexterm>
+				<listitem xml:id="box_contains">
+					<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
 					<para>¿Contiene el primer cuadro delimitador el segundo?</para>
 					<para><varname>box @&gt; box → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
@@ -727,8 +706,8 @@ SELECT stbox 'STBOX Z((1,1,1),(3,3,3))' @&gt;
 </programlisting>
 				</listitem>
 
-				<listitem id="box_containedby">
-					<indexterm><primary><varname>&lt;@</varname></primary></indexterm>
+				<listitem xml:id="box_containedby">
+					<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
 					<para>¿Está el primer cuadro delimitador contenido en el segundo?</para>
 					<para><varname>box &lt;@ box → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
@@ -741,8 +720,8 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02)' &lt;@
 </programlisting>
 				</listitem>
 
-				<listitem id="box_same">
-					<indexterm><primary><varname>~=</varname></primary></indexterm>
+				<listitem xml:id="box_same">
+					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 					<para>¿Son los cuadros delimitadores iguales en sus dimensiónes comunes?</para>
 					<para><varname>box ~= box → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
@@ -755,8 +734,8 @@ SELECT stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03])' ~=
 </programlisting>
 				</listitem>
 
-				<listitem id="box_adjacent">
-					<indexterm><primary><varname>-|-</varname></primary></indexterm>
+				<listitem xml:id="box_adjacent">
+					<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
 					<para>¿Son los cuadros delimitadores adyacentes?</para>
 					<para><varname>box -|- box → boolean</varname></para>
 					<para>Dos cuadros delimitadores son adyacentes si comparten  <emphasis>n</emphasis> dimensiónes y si su intersección tiene como máximo <emphasis>n</emphasis>-1 dimensiónes.</para>
@@ -782,16 +761,14 @@ SELECT stbox 'STBOX XT(((1,1),(3,3)),[2001-01-01,2001-01-03])' -|-
 			<para>Los operadores para la dimensión numérica del tipo <varname>tbox</varname> se dan a continuación.</para>
 
 			<itemizedlist>
-				<listitem id="tbox_left">
-					<indexterm><primary><varname>&lt;&lt;</varname></primary></indexterm>
-					<indexterm><primary><varname>&lt;&lt;|</varname></primary></indexterm>
-					<indexterm><primary><varname>&lt;&lt;/</varname></primary></indexterm>
-					<indexterm><primary><varname>&lt;&lt;#</varname></primary></indexterm>
+				<listitem xml:id="tbox_left">
+					<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&lt;|</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&lt;/</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&lt;#</varname></primary></indexterm>
 					<para>¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente menores que los del segundo?</para>
-					<para><varname>box &lt;&lt; box → boolean</varname></para>
-					<para><varname>stbox &lt;&lt;| stbox → boolean</varname></para>
-					<para><varname>stbox &lt;&lt;/ stbox → boolean</varname></para>
-					<para><varname>box &lt;&lt;# box → boolean</varname></para>
+					<para><varname>tbox {&lt;&lt;, &lt;&lt;#} tbox → boolean</varname></para>
+					<para><varname>stbox {&lt;&lt;, &lt;&lt;|, &lt;&lt;/, &lt;&lt;#} stbox → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])' &lt;&lt;
   tbox 'TBOXFLOAT XT((3,4),[2001-01-03,2001-01-04])';
@@ -811,16 +788,14 @@ SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])' &lt;&lt;#
 </programlisting>
 				</listitem>
 
-				<listitem id="tbox_right">
-					<indexterm><primary><varname>&gt;&gt;</varname></primary></indexterm>
-					<indexterm><primary><varname>|&gt;&gt;</varname></primary></indexterm>
-					<indexterm><primary><varname>/&gt;&gt;</varname></primary></indexterm>
-					<indexterm><primary><varname>#&gt;&gt;</varname></primary></indexterm>
+				<listitem xml:id="tbox_right">
+					<indexterm significance="normal"><primary><varname>&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>|&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>/&gt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
 					<para>¿Son los valores X/Y/Z/T del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
-					<para><varname>box &gt;&gt; box → boolean</varname></para>
-					<para><varname>stbox |&gt;&gt; stbox → boolean</varname></para>
-					<para><varname>stbox /&gt;&gt; stbox → boolean</varname></para>
-					<para><varname>box #&gt;&gt; box → boolean</varname></para>
+					<para><varname>tbox {&gt;&gt;, #&gt;&gt;} tbox → boolean</varname></para>
+					<para><varname>stbox {&gt;&gt;, |&gt;&gt;, /&gt;&gt;, #&gt;&gt;} stbox → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXFLOAT XT((3,4),[2001-01-03,2001-01-04])' &gt;&gt;
   tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])';
@@ -837,16 +812,14 @@ SELECT stbox 'STBOX XT((4,4),[2001-01-03,2001-01-04],((3,3)))'  #&gt;&gt;
 </programlisting>
 				</listitem>
 
-				<listitem id="tbox_overleft">
-					<indexterm><primary><varname>&amp;&lt;</varname></primary></indexterm>
-					<indexterm><primary><varname>&amp;&lt;|</varname></primary></indexterm>
-					<indexterm><primary><varname>&amp;&lt;/</varname></primary></indexterm>
-					<indexterm><primary><varname>&amp;&lt;#</varname></primary></indexterm>
+				<listitem xml:id="tbox_overleft">
+					<indexterm significance="normal"><primary><varname>&amp;&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&lt;|</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&lt;/</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&amp;&lt;#</varname></primary></indexterm>
 					<para>¿No son los valores X/Y/Z/T del primer cuadro delimitador mayores que los del segundo?</para>
-					<para><varname>box &amp;&lt; box → boolean</varname></para>
-					<para><varname>stbox &amp;&lt;| stbox → boolean</varname></para>
-					<para><varname>stbox &amp;&lt;/ stbox → boolean</varname></para>
-					<para><varname>box &amp;&lt;# box → boolean</varname></para>
+					<para><varname>tbox {&amp;&lt;, &amp;&lt;#} {tbox,stbox} → boolean</varname></para>
+					<para><varname>stbox &amp;&lt;, &amp;&lt;|, &amp;&lt;/, &amp;&lt;#} stbox → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXFLOAT XT((1,4),[2001-01-01,2001-01-04])' &amp;&lt;
   tbox 'TBOXFLOAT XT((3,4),[2001-01-03,2001-01-04])';
@@ -863,16 +836,14 @@ SELECT tbox 'TBOXFLOAT XT((1,4),[2001-01-01,2001-01-04])' &amp;&lt;#
 </programlisting>
 				</listitem>
 
-				<listitem id="tbox_overright">
-					<indexterm><primary><varname>&amp;&gt;</varname></primary></indexterm>
-					<indexterm><primary><varname>|&amp;&gt;</varname></primary></indexterm>
-					<indexterm><primary><varname>/&amp;&gt;</varname></primary></indexterm>
-					<indexterm><primary><varname>#&amp;&gt;</varname></primary></indexterm>
+				<listitem xml:id="tbox_overright">
+					<indexterm significance="normal"><primary><varname>&amp;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>|&amp;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>/&amp;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>#&amp;&gt;</varname></primary></indexterm>
 					<para>¿No son los valores X/Y/Z/T del primer cuadro delimitador menores que los del segundo?</para>
-					<para><varname>box &amp;&gt; box → boolean</varname></para>
-					<para><varname>stbox |&amp;&gt; stbox → boolean</varname></para>
-					<para><varname>stbox /&amp;&gt; stbox → boolean</varname></para>
-					<para><varname>box #&amp;&gt; box → boolean</varname></para>
+					<para><varname>tbox {&amp;&gt;, #&amp;&gt;} tbox → boolean</varname></para>
+					<para><varname>stbox {&amp;&gt;, |&amp;&gt;, /&amp;&gt;, #&amp;&gt;} stbox} → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02])' &amp;&gt;
   tbox 'TBOXFLOAT XT((1,4),[2001-01-01,2001-01-04])';
@@ -892,19 +863,19 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' #&amp;&gt;
 		</sect2>
 	</sect1>
 
-	<sect1 id="box_types_comparisons">
+	<sect1 xml:id="box_comparisons">
 		<title>Comparaciones</title>
 
 		<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) se pueden aplicar a tipos de cuadro delimitador. Exceptuando la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten construir índices de árbol B en tipos de cuadro delimitador. Estos operadores comparan primero los valores de tiempo y, si son iguales, comparan los valores.</para>
 
 		<itemizedlist>
-			<listitem id="box_eq">
-				<indexterm><primary><varname>=</varname></primary></indexterm>
-				<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
-				<indexterm><primary><varname>&lt;</varname></primary></indexterm>
-				<indexterm><primary><varname>&gt;</varname></primary></indexterm>
-				<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
-				<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
+			<listitem xml:id="box_eq">
+				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
 				<para>Comparaciones tradicionales</para>
 				<para><varname>box = box → boolean</varname></para>
 				<para><varname>box &lt;&gt; box → boolean</varname></para>
@@ -936,27 +907,25 @@ SELECT tbox 'TBOXFLOAT XT([1,1],[2001-01-01,2001-01-04])' &gt;=
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id ="box_types_aggregations">
+	<sect1 id ="box_aggregations">
 		<title>Aggregaciones</title>
 
 		<itemizedlist>
-			<listitem id="box_extent">
-				<indexterm><primary><varname>extent</varname></primary></indexterm>
+			<listitem xml:id="box_extent">
+				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
 				<para>Extensión del cuadro delimitador</para>
 				<para><varname>extent(box) → box</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 WITH boxes(b) AS (
   SELECT tbox 'TBOXFLOAT XT((1,3),[2001-01-01,2001-01-03])' UNION
   SELECT tbox 'TBOXFLOAT XT((5,7),[2001-01-05,2001-01-07])' UNION
-  SELECT tbox 'TBOXFLOAT XT((6,8),[2001-01-06,2001-01-08])'
-)
+  SELECT tbox 'TBOXFLOAT XT((6,8),[2001-01-06,2001-01-08])' )
 SELECT extent(b) FROM boxes;
 -- TBOXFLOAT XT((1,8),[2001-01-01,2001-01-08])
 WITH boxes(b) AS (
   SELECT stbox 'STBOX Z((1,1,1),(3,3,3))' UNION
   SELECT stbox 'STBOX Z((5,5,5),(7,7,7))' UNION
-  SELECT stbox 'STBOX Z((6,6,6),(8,8,8))'
-)
+  SELECT stbox 'STBOX Z((6,6,6),(8,8,8))' )
 SELECT extent(b) FROM boxes;
 -- STBOX Z((1,1,1),(8,8,8))
 </programlisting>
@@ -964,7 +933,7 @@ SELECT extent(b) FROM boxes;
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id ="box_types_indexing">
+	<sect1 id ="box_indexing">
 		<title>Indexación</title>
 		<para>Se pueden crear índices GiST y SP-GiST para columnas de tablas de los tipos <varname>tbox</varname> y <varname>stbox</varname>. El índice GiST implementa un árbol R, mientras que el índice SP-GiST implementa un árbol cuádruple n-dimensiónal. Un ejemplo de creación de un índice GiST en una columna <varname>Box</varname> de tipo <varname>stbox</varname> en una tabla <varname>Trips</varname> es el siguiente:
 			<programlisting language="sql" xml:space="preserve">

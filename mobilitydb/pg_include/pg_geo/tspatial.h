@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -39,7 +39,6 @@
 #include <utils/array.h>
 #include <fmgr.h>
 
-
 /*****************************************************************************/
 
 /* Fetch from and store in the cache the fcinfo of the external function */
@@ -49,6 +48,20 @@ extern void store_fcinfo(FunctionCallInfo fcinfo);
 extern Temporal *tspatial_valid_typmod(Temporal *temp, int32_t typmod);
 extern uint32 tspatial_typmod_in(ArrayType *arr, int is_point, int is_geodetic);
 extern Datum Spatialarr_as_text_ext(FunctionCallInfo fcinfo, bool extended);
+
+extern Datum EA_spatialrel_geo_tspatial(FunctionCallInfo fcinfo,
+  int (*func)(const GSERIALIZED *, const Temporal *, bool), bool ever);
+extern Datum EA_spatialrel_tspatial_geo(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const GSERIALIZED *, bool), bool ever);
+extern Datum EA_spatialrel_tspatial_tspatial(FunctionCallInfo fcinfo,
+  datum_func2 func1, datum_func2 func2, bool ever);
+
+extern Datum EA_dwithin_tspatial_geo(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const GSERIALIZED *, double dist, bool),
+  bool ever);
+extern Datum EA_dwithin_geo_tspatial(FunctionCallInfo fcinfo,
+  int (*func)(const GSERIALIZED *, const Temporal *, double dist, bool),
+  bool ever);
 
 /*****************************************************************************/
 

@@ -1,0 +1,153 @@
+COPY tbl_poseset2d TO '/tmp/tbl_poseset2d' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_poseset2d_tmp;
+NOTICE:  table "tbl_poseset2d_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_poseset2d_tmp AS TABLE tbl_poseset2d WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_poseset2d_tmp FROM '/tmp/tbl_poseset2d' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_poseset2d_tmp;
+DROP TABLE
+SELECT COUNT(*) FROM tbl_poseset2d WHERE posesetFromHexWKB(asHexWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT numValues(set(array_agg(DISTINCT pose ORDER BY pose))) FROM tbl_pose2d WHERE pose IS NOT NULL;
+ numvalues 
+-----------
+       100
+(1 row)
+
+SELECT round(poseset '{"Pose(Point(1 1),0.5)", "Pose(Point(2 2),0.5)", "Pose(Point(3 3),0.5)"}'::stbox, 6);
+        round         
+----------------------
+ STBOX X((1,1),(3,3))
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pose2d WHERE pose::poseset IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT MIN(rotation(startValue(round(s, 3)))) FROM tbl_poseset2d;
+  min   
+--------
+ -0.054
+(1 row)
+
+SELECT MAX(memSize(s)) FROM tbl_poseset2d;
+ max 
+-----
+ 504
+(1 row)
+
+SELECT MIN(numValues(s)) FROM tbl_poseset2d;
+ min 
+-----
+   1
+(1 row)
+
+SELECT round(MIN(rotation(startValue(s)))::numeric, 6) FROM tbl_poseset2d;
+   round   
+-----------
+ -0.054275
+(1 row)
+
+SELECT round(MIN(rotation(endValue(s)))::numeric, 6) FROM tbl_poseset2d;
+   round   
+-----------
+ -0.054279
+(1 row)
+
+SELECT round(MIN(rotation(valueN(s, 1)))::numeric, 6) FROM tbl_poseset2d;
+   round   
+-----------
+ -0.054275
+(1 row)
+
+SELECT MIN(array_length(getValues(s), 1)) FROM tbl_poseset2d;
+ min 
+-----
+   1
+(1 row)
+
+SELECT numValues(setUnion(pose)) FROM tbl_pose2d;
+ numvalues 
+-----------
+       100
+(1 row)
+
+WITH test1(k, s) AS (
+  SELECT k, unnest(s) FROM tbl_poseset2d ),
+test2 (k, s) AS (
+  SELECT k, setUnion(s) FROM test1 GROUP BY k )
+SELECT COUNT(*) FROM test2 t1, tbl_poseset2d t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE set_cmp(t1.s, t2.s) = -1;
+ count 
+-------
+    24
+(1 row)
+
+SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s = t2.s;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s <> t2.s;
+ count 
+-------
+  9702
+(1 row)
+
+SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s < t2.s;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s <= t2.s;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s > t2.s;
+ count 
+-------
+  4851
+(1 row)
+
+SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s >= t2.s;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT MAX(set_hash(s)) FROM tbl_poseset2d;
+    max     
+------------
+ 2098041639
+(1 row)
+
+SELECT numValues(setUnion(pose)) FROM tbl_pose2d;
+ numvalues 
+-----------
+       100
+(1 row)
+

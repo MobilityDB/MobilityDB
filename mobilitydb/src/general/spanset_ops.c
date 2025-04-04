@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -144,7 +144,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_value);
  * @sqlfn span_contains()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_spanset_value(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_base(fcinfo, &contains_spanset_value);
@@ -158,7 +158,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_span);
  * @sqlfn span_contains()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_spanset_span(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_span(fcinfo, &contains_spanset_span);
@@ -172,7 +172,7 @@ PG_FUNCTION_INFO_V1(Contains_span_spanset);
  * @sqlfn span_contains()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_span_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_span_spanset(fcinfo, &contains_span_spanset);
@@ -186,7 +186,7 @@ PG_FUNCTION_INFO_V1(Contains_spanset_spanset);
  * @sqlfn span_contains()
  * @sqlop @p \@>
  */
-Datum
+inline Datum
 Contains_spanset_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_spanset(fcinfo, &contains_spanset_spanset);
@@ -204,7 +204,7 @@ PG_FUNCTION_INFO_V1(Contained_value_spanset);
  * @sqlfn span_contained()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_value_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_base_spanset(fcinfo, &contained_value_spanset);
@@ -218,7 +218,7 @@ PG_FUNCTION_INFO_V1(Contained_span_spanset);
  * @sqlfn span_contained()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_span_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_span_spanset(fcinfo, &contained_span_spanset);
@@ -232,7 +232,7 @@ PG_FUNCTION_INFO_V1(Contained_spanset_span);
  * @sqlfn span_contained()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_spanset_span(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_span(fcinfo, &contained_spanset_span);
@@ -246,7 +246,7 @@ PG_FUNCTION_INFO_V1(Contained_spanset_spanset);
  * @sqlfn span_contained()
  * @sqlop @p <@
  */
-Datum
+inline Datum
 Contained_spanset_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_spanset(fcinfo, &contained_spanset_spanset);
@@ -264,7 +264,7 @@ PG_FUNCTION_INFO_V1(Overlaps_span_spanset);
  * @sqlfn span_overlaps()
  * @sqlop @p &&
  */
-Datum
+inline Datum
 Overlaps_span_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_span_spanset(fcinfo, &overlaps_span_spanset);
@@ -278,7 +278,7 @@ PG_FUNCTION_INFO_V1(Overlaps_spanset_span);
  * @sqlfn span_overlaps()
  * @sqlop @p &&
  */
-Datum
+inline Datum
 Overlaps_spanset_span(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_span(fcinfo, &overlaps_spanset_span);
@@ -292,7 +292,7 @@ PG_FUNCTION_INFO_V1(Overlaps_spanset_spanset);
  * @sqlfn span_overlaps()
  * @sqlop @p &&
  */
-Datum
+inline Datum
 Overlaps_spanset_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_spanset(fcinfo, &overlaps_spanset_spanset);
@@ -310,7 +310,7 @@ PG_FUNCTION_INFO_V1(Adjacent_value_spanset);
  * @sqlfn span_adjacent()
  * @sqlop @p span_adjacent
  */
-Datum
+inline Datum
 Adjacent_value_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_base_spanset(fcinfo, &adjacent_value_spanset);
@@ -324,7 +324,7 @@ PG_FUNCTION_INFO_V1(Adjacent_spanset_value);
  * @sqlfn span_adjacent()
  * @sqlop @p -|-
  */
-Datum
+inline Datum
 Adjacent_spanset_value(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_base(fcinfo, &adjacent_spanset_value);
@@ -338,7 +338,7 @@ PG_FUNCTION_INFO_V1(Adjacent_span_spanset);
  * @sqlfn span_adjacent()
  * @sqlop @p -|-
  */
-Datum
+inline Datum
 Adjacent_span_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_span_spanset(fcinfo, &adjacent_span_spanset);
@@ -352,7 +352,7 @@ PG_FUNCTION_INFO_V1(Adjacent_spanset_span);
  * @sqlfn span_adjacent()
  * @sqlop @p -|-
  */
-Datum
+inline Datum
 Adjacent_spanset_span(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_span(fcinfo, &adjacent_spanset_span);
@@ -366,7 +366,7 @@ PG_FUNCTION_INFO_V1(Adjacent_spanset_spanset);
  * @sqlfn span_adjacent()
  * @sqlop @p -|-
  */
-Datum
+inline Datum
 Adjacent_spanset_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_spanset(fcinfo, &adjacent_spanset_spanset);
@@ -384,7 +384,7 @@ PG_FUNCTION_INFO_V1(Left_value_spanset);
  * @sqlfn span_left()
  * @sqlop @p <<
  */
-Datum
+inline Datum
 Left_value_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_base_spanset(fcinfo, &left_value_spanset);
@@ -398,7 +398,7 @@ PG_FUNCTION_INFO_V1(Left_span_spanset);
  * @sqlfn span_left()
  * @sqlop @p <<
  */
-Datum
+inline Datum
 Left_span_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_span_spanset(fcinfo, &left_span_spanset);
@@ -412,7 +412,7 @@ PG_FUNCTION_INFO_V1(Left_spanset_value);
  * @sqlfn span_left()
  * @sqlop @p <<
  */
-Datum
+inline Datum
 Left_spanset_value(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_base(fcinfo, &left_spanset_value);
@@ -426,7 +426,7 @@ PG_FUNCTION_INFO_V1(Left_spanset_span);
  * @sqlfn span_left()
  * @sqlop @p <<
  */
-Datum
+inline Datum
 Left_spanset_span(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_span(fcinfo, &left_spanset_span);
@@ -440,7 +440,7 @@ PG_FUNCTION_INFO_V1(Left_spanset_spanset);
  * @sqlfn span_left()
  * @sqlop @p <<
  */
-Datum
+inline Datum
 Left_spanset_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_spanset(fcinfo, &left_spanset_spanset);
@@ -458,7 +458,7 @@ PG_FUNCTION_INFO_V1(Right_value_spanset);
  * @sqlfn span_right()
  * @sqlop @p >>
  */
-Datum
+inline Datum
 Right_value_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_base_spanset(fcinfo, &right_value_spanset);
@@ -472,7 +472,7 @@ PG_FUNCTION_INFO_V1(Right_span_spanset);
  * @sqlfn span_right()
  * @sqlop @p >>
  */
-Datum
+inline Datum
 Right_span_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_span_spanset(fcinfo, &right_span_spanset);
@@ -486,7 +486,7 @@ PG_FUNCTION_INFO_V1(Right_spanset_value);
  * @sqlfn span_right()
  * @sqlop @p >>
  */
-Datum
+inline Datum
 Right_spanset_value(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_base(fcinfo, &right_spanset_value);
@@ -500,7 +500,7 @@ PG_FUNCTION_INFO_V1(Right_spanset_span);
  * @sqlfn span_right()
  * @sqlop @p >>
  */
-Datum
+inline Datum
 Right_spanset_span(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_span(fcinfo, &right_spanset_span);
@@ -514,7 +514,7 @@ PG_FUNCTION_INFO_V1(Right_spanset_spanset);
  * @sqlfn span_right()
  * @sqlop @p >>
  */
-Datum
+inline Datum
 Right_spanset_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_spanset(fcinfo, &right_spanset_spanset);
@@ -532,7 +532,7 @@ PG_FUNCTION_INFO_V1(Overleft_value_spanset);
  * @sqlfn span_overleft()
  * @sqlop @p &<
  */
-Datum
+inline Datum
 Overleft_value_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_base_spanset(fcinfo, &overleft_value_spanset);
@@ -546,7 +546,7 @@ PG_FUNCTION_INFO_V1(Overleft_spanset_value);
  * @sqlfn span_overleft()
  * @sqlop @p &<
  */
-Datum
+inline Datum
 Overleft_spanset_value(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_base(fcinfo, &overleft_spanset_value);
@@ -560,7 +560,7 @@ PG_FUNCTION_INFO_V1(Overleft_span_spanset);
  * @sqlfn span_overleft()
  * @sqlop @p &<
  */
-Datum
+inline Datum
 Overleft_span_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_span_spanset(fcinfo, &overleft_span_spanset);
@@ -574,7 +574,7 @@ PG_FUNCTION_INFO_V1(Overleft_spanset_span);
  * @sqlfn span_overleft()
  * @sqlop @p &<
  */
-Datum
+inline Datum
 Overleft_spanset_span(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_span(fcinfo, &overleft_spanset_span);
@@ -589,7 +589,7 @@ PG_FUNCTION_INFO_V1(Overleft_spanset_spanset);
  * @sqlfn span_overleft()
  * @sqlop @p &<
  */
-Datum
+inline Datum
 Overleft_spanset_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_spanset(fcinfo, &overleft_spanset_spanset);
@@ -607,7 +607,7 @@ PG_FUNCTION_INFO_V1(Overright_value_spanset);
  * @sqlfn span_overright()
  * @sqlop @p &>
  */
-Datum
+inline Datum
 Overright_value_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_base_spanset(fcinfo, &overright_value_spanset);
@@ -621,7 +621,7 @@ PG_FUNCTION_INFO_V1(Overright_spanset_value);
  * @sqlfn span_overright()
  * @sqlop @p &>
  */
-Datum
+inline Datum
 Overright_spanset_value(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_base(fcinfo, &overright_spanset_value);
@@ -635,7 +635,7 @@ PG_FUNCTION_INFO_V1(Overright_span_spanset);
  * @sqlfn span_overright()
  * @sqlop @p &>
  */
-Datum
+inline Datum
 Overright_span_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_span_spanset(fcinfo, &overright_span_spanset);
@@ -649,7 +649,7 @@ PG_FUNCTION_INFO_V1(Overright_spanset_span);
  * @sqlfn span_overright()
  * @sqlop @p &>
  */
-Datum
+inline Datum
 Overright_spanset_span(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_span(fcinfo, &overright_spanset_span);
@@ -664,7 +664,7 @@ PG_FUNCTION_INFO_V1(Overright_spanset_spanset);
  * @sqlfn span_overright()
  * @sqlop @p &>
  */
-Datum
+inline Datum
 Overright_spanset_spanset(PG_FUNCTION_ARGS)
 {
   return Boolop_spanset_spanset(fcinfo, &overright_spanset_spanset);
@@ -779,7 +779,7 @@ PG_FUNCTION_INFO_V1(Union_value_spanset);
  * @sqlfn span_union()
  * @sqlop @p +
  */
-Datum
+inline Datum
 Union_value_spanset(PG_FUNCTION_ARGS)
 {
   return Setop_base_spanset(fcinfo, &union_value_spanset);
@@ -793,7 +793,7 @@ PG_FUNCTION_INFO_V1(Union_span_spanset);
  * @sqlfn span_union()
  * @sqlop @p +
  */
-Datum
+inline Datum
 Union_span_spanset(PG_FUNCTION_ARGS)
 {
   return Setop_span_spanset(fcinfo, &union_span_spanset);
@@ -807,7 +807,7 @@ PG_FUNCTION_INFO_V1(Union_spanset_value);
  * @sqlfn span_union()
  * @sqlop @p +
  */
-Datum
+inline Datum
 Union_spanset_value(PG_FUNCTION_ARGS)
 {
   return Setop_spanset_base(fcinfo, &union_spanset_value);
@@ -821,7 +821,7 @@ PG_FUNCTION_INFO_V1(Union_spanset_span);
  * @sqlfn span_union()
  * @sqlop @p +
  */
-Datum
+inline Datum
 Union_spanset_span(PG_FUNCTION_ARGS)
 {
   return Setop_spanset_span(fcinfo, &union_spanset_span);
@@ -835,7 +835,7 @@ PG_FUNCTION_INFO_V1(Union_spanset_spanset);
  * @sqlfn span_union()
  * @sqlop @p +
  */
-Datum
+inline Datum
 Union_spanset_spanset(PG_FUNCTION_ARGS)
 {
   return Setop_spanset_spanset(fcinfo, &union_spanset_spanset);
@@ -853,7 +853,7 @@ PG_FUNCTION_INFO_V1(Intersection_value_spanset);
  * @sqlfn span_intersection()
  * @sqlop @p *
  */
-Datum
+inline Datum
 Intersection_value_spanset(PG_FUNCTION_ARGS)
 {
   return Setop_base_spanset(fcinfo, &intersection_value_spanset);
@@ -867,7 +867,7 @@ PG_FUNCTION_INFO_V1(Intersection_span_spanset);
  * @sqlfn span_intersection()
  * @sqlop @p *
  */
-Datum
+inline Datum
 Intersection_span_spanset(PG_FUNCTION_ARGS)
 {
   return Setop_span_spanset(fcinfo, &intersection_span_spanset);
@@ -881,7 +881,7 @@ PG_FUNCTION_INFO_V1(Intersection_spanset_value);
  * @sqlfn span_intersection()
  * @sqlop @p *
  */
-Datum
+inline Datum
 Intersection_spanset_value(PG_FUNCTION_ARGS)
 {
   return Setop_spanset_base(fcinfo, &intersection_spanset_value);
@@ -895,7 +895,7 @@ PG_FUNCTION_INFO_V1(Intersection_spanset_span);
  * @sqlfn span_intersection()
  * @sqlop @p *
  */
-Datum
+inline Datum
 Intersection_spanset_span(PG_FUNCTION_ARGS)
 {
   return Setop_spanset_span(fcinfo, &intersection_spanset_span);
@@ -909,7 +909,7 @@ PG_FUNCTION_INFO_V1(Intersection_spanset_spanset);
  * @sqlfn span_intersection()
  * @sqlop @p *
  */
-Datum
+inline Datum
 Intersection_spanset_spanset(PG_FUNCTION_ARGS)
 {
   return Setop_spanset_spanset(fcinfo, &intersection_spanset_spanset);
@@ -928,7 +928,7 @@ PG_FUNCTION_INFO_V1(Minus_value_spanset);
  * @sqlfn span_minus()
  * @sqlop @p -
  */
-Datum
+inline Datum
 Minus_value_spanset(PG_FUNCTION_ARGS)
 {
   return Setop_base_spanset(fcinfo, &minus_value_spanset);
@@ -942,7 +942,7 @@ PG_FUNCTION_INFO_V1(Minus_span_spanset);
  * @sqlfn span_minus()
  * @sqlop @p -
  */
-Datum
+inline Datum
 Minus_span_spanset(PG_FUNCTION_ARGS)
 {
   return Setop_span_spanset(fcinfo, &minus_span_spanset);
@@ -956,7 +956,7 @@ PG_FUNCTION_INFO_V1(Minus_spanset_value);
  * @sqlfn span_minus()
  * @sqlop @p -
  */
-Datum
+inline Datum
 Minus_spanset_value(PG_FUNCTION_ARGS)
 {
   return Setop_spanset_base(fcinfo, &minus_spanset_value);
@@ -970,7 +970,7 @@ PG_FUNCTION_INFO_V1(Minus_spanset_span);
  * @sqlfn span_minus()
  * @sqlop @p -
  */
-Datum
+inline Datum
 Minus_spanset_span(PG_FUNCTION_ARGS)
 {
   return Setop_spanset_span(fcinfo, &minus_spanset_span);
@@ -984,7 +984,7 @@ PG_FUNCTION_INFO_V1(Minus_spanset_spanset);
  * @sqlfn span_minus()
  * @sqlop @p -
  */
-Datum
+inline Datum
 Minus_spanset_spanset(PG_FUNCTION_ARGS)
 {
   return Setop_spanset_spanset(fcinfo, &minus_spanset_spanset);

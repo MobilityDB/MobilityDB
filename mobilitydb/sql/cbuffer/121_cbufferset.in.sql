@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -27,9 +27,9 @@
  *
  *****************************************************************************/
 
-/*
- * set.sql
- * Functions for set of ordered values.
+/**
+ * @file
+ * @brief Functions for set of poses
  */
 
 /******************************************************************************
@@ -91,12 +91,12 @@ CREATE FUNCTION asHexWKB(cbufferset, endianenconding text DEFAULT '')
 
 CREATE FUNCTION asText(cbufferset, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Cbufferset_as_text'
+  AS 'MODULE_PATHNAME', 'Spatialset_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asEWKT(cbufferset, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Cbufferset_as_ewkt'
+  AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -121,7 +121,7 @@ CREATE CAST (cbuffer AS cbufferset) WITH FUNCTION set(cbuffer);
 
 CREATE FUNCTION stbox(cbufferset)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Cbufferset_to_stbox'
+  AS 'MODULE_PATHNAME', 'Spatialset_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (cbufferset AS stbox) WITH FUNCTION stbox(cbufferset);
@@ -132,7 +132,7 @@ CREATE CAST (cbufferset AS stbox) WITH FUNCTION stbox(cbufferset);
 
 CREATE FUNCTION round(cbufferset, integer DEFAULT 0)
   RETURNS cbufferset
-  AS 'MODULE_PATHNAME', 'Cbufferset_round'
+  AS 'MODULE_PATHNAME', 'Set_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

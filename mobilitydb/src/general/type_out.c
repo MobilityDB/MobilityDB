@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -144,7 +144,7 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
    option = PG_GETARG_INT32(1);
 
-  if (tgeo_type_all(temp->temptype))
+  if (tspatial_type(temp->temptype))
   {
     /* Even if the option does not request to output the crs, we output the
      * short crs when the SRID is different from SRID_UNKNOWN. Otherwise,
@@ -220,8 +220,8 @@ get_endian_variant(const text *txt)
 }
 
 /**
- * @brief Output a value in the Well-Known Binary (WKB) or Extended Well-Known
- * Binary (EWKB) representation
+ * @brief Output a value in the (Extended) Well-Known Binary (WKB or EWKB)
+ * representation
  */
 bytea *
 Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, meosType type,

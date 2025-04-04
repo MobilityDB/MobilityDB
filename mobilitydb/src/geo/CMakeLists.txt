@@ -1,22 +1,21 @@
 add_library(pg_geo OBJECT
   projection_gk.c
+  spatialset.c
   stbox.c
   tgeo.c
   tgeo_aggfuncs.c
   tgeo_boxops.c
   tgeo_compops.c
   tgeo_distance.c
-  tgeo_inout.c
   tgeo_spatialfuncs.c
   tgeo_spatialrels.c
   tgeo_tempspatialrels.c
   tgeo_tile.c
-  tpoint_analytics.c
+  tspatial.c
   tpoint_datagen.c
   tspatial_analyze.c
   tspatial_gist.c
   tspatial_posops.c
   tspatial_selfuncs.c
-  tspatial_srid.c
   tspatial_spgist.c
   )

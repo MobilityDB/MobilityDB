@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -67,17 +67,19 @@ extern char *geo_as_ewkt(const GSERIALIZED *gs, int precision);
 extern char *geo_as_geojson(const GSERIALIZED *gs, int option, int precision, const char *srs);
 extern char *geo_as_hexewkb(const GSERIALIZED *gs, const char *endian);
 extern char *geo_as_text(const GSERIALIZED *gs, int precision);
-extern GSERIALIZED *geo_collect_garray(GSERIALIZED **gsarr, int nelems);
+extern GSERIALIZED *geo_collect_garray(GSERIALIZED **gsarr, int count);
 extern GSERIALIZED *geo_copy(const GSERIALIZED *g);
 extern int geo_equals(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32 srid);
 extern GSERIALIZED *geo_from_geojson(const char *geojson);
 extern GSERIALIZED *geo_from_text(const char *wkt, int32_t srid);
 extern bool geo_is_empty(const GSERIALIZED *g);
-extern GSERIALIZED *geo_makeline_garray(GSERIALIZED **gsarr, int nelems);
+extern GSERIALIZED *geo_makeline_garray(GSERIALIZED **gsarr, int count);
 extern char *geo_out(const GSERIALIZED *gs);
 extern GSERIALIZED *geo_reverse(const GSERIALIZED *gs);
+extern GSERIALIZED *geo_round(const GSERIALIZED *gs, int maxdd);
 extern bool geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern GSERIALIZED * geo_set_srid(const GSERIALIZED *gs, int32_t srid);
 extern int32_t geo_srid(const GSERIALIZED *gs);
 extern GSERIALIZED *geo_transform(GSERIALIZED *geom, int32_t srid_to);
 extern GSERIALIZED *geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline, int32_t srid_to, bool is_forward);
@@ -93,7 +95,7 @@ extern bool geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool
 extern double geog_length(const GSERIALIZED *g, bool use_spheroid);
 extern double geog_perimeter(const GSERIALIZED *g, bool use_spheroid);
 
-extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int nelems);
+extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int count);
 extern bool geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result);
 extern GSERIALIZED *geom_boundary(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_buffer(const GSERIALIZED *gs, double size, char *params);
@@ -128,33 +130,25 @@ extern GSERIALIZED *line_point_n(const GSERIALIZED *geom, int n);
 extern GSERIALIZED *line_substring(const GSERIALIZED *gs, double from, double to);
 
 /*****************************************************************************
- * Functions for set and span types
+ * Functions for geo and spatial sets
  *****************************************************************************/
-
-/* Constructors */
-
-extern Set *geo_set(const GSERIALIZED *gs);
-extern GSERIALIZED *geoset_end_value(const Set *s);
-extern Set *geoset_make(const GSERIALIZED **values, int count);
-
-/* Accessors */
-
-extern GSERIALIZED *geoset_start_value(const Set *s);
-extern bool geoset_value_n(const Set *s, int n, GSERIALIZED **result);
-extern GSERIALIZED **geoset_values(const Set *s);
-extern int32_t spatialset_srid(const Set *s);
-
-extern Set *geoset_round(const Set *s, int maxdd);
-extern Set *spatialset_set_srid(const Set *s, int32_t srid);
-extern Set *spatialset_transform(const Set *s, int32_t srid);
-extern Set *spatialset_transform_pipeline(const Set *s, const char *pipelinestr, int32_t srid, bool is_forward);
 
 extern bool contained_geo_set(const GSERIALIZED *gs, const Set *s);
 extern bool contains_set_geo(const Set *s, GSERIALIZED *gs);
+extern Set *geo_set(const GSERIALIZED *gs);
+extern GSERIALIZED *geoset_end_value(const Set *s);
+extern Set *geoset_make(const GSERIALIZED **values, int count);
+extern GSERIALIZED *geoset_start_value(const Set *s);
+extern bool geoset_value_n(const Set *s, int n, GSERIALIZED **result);
+extern GSERIALIZED **geoset_values(const Set *s);
 extern Set *intersection_geo_set(const GSERIALIZED *gs, const Set *s);
 extern Set *intersection_set_geo(const Set *s, const GSERIALIZED *gs);
 extern Set *minus_geo_set(const GSERIALIZED *gs, const Set *s);
 extern Set *minus_set_geo(const Set *s, const GSERIALIZED *gs);
+extern int32_t spatialset_srid(const Set *s);
+extern Set *spatialset_set_srid(const Set *s, int32_t srid);
+extern Set *spatialset_transform(const Set *s, int32_t srid);
+extern Set *spatialset_transform_pipeline(const Set *s, const char *pipelinestr, int32_t srid, bool is_forward);
 extern Set *union_geo_set(const GSERIALIZED *gs, const Set *s);
 extern Set *union_set_geo(const Set *s, const GSERIALIZED *gs);
 
@@ -319,8 +313,8 @@ extern GSERIALIZED *tgeo_traversed_area(const Temporal *temp);
 
 /* Transformations */
 
-extern Temporal *tgeo_round(const Temporal *temp, int maxdd);
-extern Temporal **tgeoarr_round(const Temporal **temp, int count, int maxdd);
+int32_t tspatial_srid(const Temporal *temp);
+extern Temporal *tspatial_set_srid(const Temporal *temp, int32_t srid);
 extern Temporal *tspatial_transform(const Temporal *temp, int32 srid);
 extern Temporal *tspatial_transform_pipeline(const Temporal *temp, const char *pipelinestr, int32 srid, bool is_forward);
 

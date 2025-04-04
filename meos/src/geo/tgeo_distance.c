@@ -1,12 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -44,12 +44,12 @@
 #include "general/lifting.h"
 #include "general/tinstant.h"
 #include "general/tsequence.h"
-#include "geo/pgis_types.h"
+#include "geo/postgis_funcs.h"
 #include "geo/geography_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 
 /* Functions not exported by PostGIS */
-double circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, double threshold, double* min_dist, double* max_dist, GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2);
+extern double circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, double threshold, double* min_dist, double* max_dist, GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2);
 
 /*****************************************************************************
  * Compute the distance between two temporal geo instants
@@ -394,7 +394,7 @@ tpoint_min_dist_at_timestamptz(const TInstant *start1, const TInstant *end1,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_dist
+ * @ingroup meos_geo_dist
  * @brief Return the temporal distance between a temporal geo and a
  * geometry/geography
  * @param[in] temp Temporal geo
@@ -406,7 +406,7 @@ distance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       (tpoint_type(temp->temptype) && ! ensure_point_type(gs)) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return NULL;
@@ -428,7 +428,7 @@ distance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_dist
+ * @ingroup meos_geo_dist
  * @brief Return the temporal distance between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Distance_tgeo_tgeo()
@@ -438,7 +438,7 @@ distance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_valid_tgeo_tgeo(temp1, temp2) ||
+      ! ensure_valid_tspatial_tspatial(temp1, temp2) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return NULL;
 
@@ -669,7 +669,7 @@ nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_dist
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach instant between a temporal geo and
  * a geometry/geography
  * @param[in] temp Temporal geo
@@ -681,7 +681,7 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return NULL;
 
@@ -708,7 +708,7 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_dist
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach instant between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #NAI_tgeo_tgeo()
@@ -718,7 +718,7 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_valid_tgeo_tgeo(temp1, temp2) ||
+      ! ensure_valid_tspatial_tspatial(temp1, temp2) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return NULL;
 
@@ -741,7 +741,7 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_dist
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach distance between a temporal geo
  * and a geometry/geography
  * @param[in] temp Temporal geo
@@ -753,7 +753,7 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return -1.0;
 
@@ -767,7 +767,7 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_dist
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach distance between a spatiotemporal box
  * and a geometry/geography
  * @param[in] box Spatiotemporal box/geography
@@ -790,7 +790,7 @@ nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_dist
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach distance between two spatiotemporal
  * boxes
  * @param[in] box1,box2 Spatiotemporal boxes
@@ -826,7 +826,7 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup meos_temporal_dist
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach distance between a temporal geo
  * and a spatiotemporal box
  * @param[in] temp Temporal geo
@@ -873,7 +873,7 @@ nad_tgeo_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
- * @ingroup meos_temporal_dist
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach distance between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #NAD_tgeo_tgeo()
@@ -883,7 +883,7 @@ nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_valid_tgeo_tgeo(temp1, temp2) ||
+      ! ensure_valid_tspatial_tspatial(temp1, temp2) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return -1.0;
 
@@ -908,7 +908,6 @@ GSERIALIZED *
 geography_shortestline_internal(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   bool use_spheroid)
 {
-  SPHEROID s;
   assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
 
   /* Return NULL on empty arguments. */
@@ -916,11 +915,9 @@ geography_shortestline_internal(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     return NULL;
 
   /* Initialize spheroid */
-  /* We currently cannot use the following statement since PROJ4 API is not
-   * available directly to MobilityDB. */
-  // spheroid_init_from_srid(fcinfo, srid, &s);
-  spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
-
+  SPHEROID s;
+  spheroid_init_from_srid(gserialized_get_srid(gs1), &s);
+  
   /* Set to sphere if requested */
   if ( ! use_spheroid )
     s.a = s.b = s.radius;
@@ -936,7 +933,7 @@ geography_shortestline_internal(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_dist
+ * @ingroup meos_geo_dist
  * @brief Return the line connecting the nearest approach point between a
  * temporal geo and a geometry/geography
  * @param[in] temp Temporal value
@@ -948,7 +945,7 @@ shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return NULL;
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(temp->flags);
@@ -970,7 +967,7 @@ shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_dist
+ * @ingroup meos_geo_dist
  * @brief Return the line connecting the nearest approach point between two
  * temporal geos
  * @param[in] temp1,temp2 Temporal values
@@ -981,7 +978,7 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_valid_tgeo_tgeo(temp1, temp2) ||
+      ! ensure_valid_tspatial_tspatial(temp1, temp2) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return NULL;
 

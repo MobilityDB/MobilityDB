@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation FOR any purpose, without fee, and without a written
@@ -27,12 +27,11 @@
  *
  *****************************************************************************/
 
-/*
- * create_test_tables_tcbuffer.sql
- * Function generating a set of test tables for temporal circular buffer types.
- *
- * These functions use the random generator for these types that are in the
- * file random_tcbuffer.sql. Refer to that file for the meaning of the
+/**
+ * @file
+ * @brief Function generating test tables for temporal circular buffers
+ * @details These functions use the random generator for these types that are 
+ * in the file `random_tpose.sql`. Refer to that file for the meaning of the
  * parameters used in the function calls of this file.
  */
 

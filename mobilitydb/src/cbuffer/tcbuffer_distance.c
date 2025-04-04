@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -47,7 +47,7 @@
 PGDLLEXPORT Datum Distance_cbuffer_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_cbuffer_geo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a circular buffer and a
  * geometry
  * @sqlfn tDistance()
@@ -66,7 +66,7 @@ Distance_cbuffer_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Distance_cbuffer_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_cbuffer_stbox);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a circular buffer and a
  * spatiotemporal box
  * @sqlfn tDistance()
@@ -84,7 +84,7 @@ Distance_cbuffer_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Distance_cbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_cbuffer_cbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between two circular buffers
  * @sqlfn tDistance()
  * @sqlop @p <->
@@ -103,7 +103,7 @@ Distance_cbuffer_cbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Distance_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_geo_tcbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a geometry and a temporal
  * circular buffer
  * @sqlfn tDistance()
@@ -125,7 +125,7 @@ Distance_geo_tcbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Distance_tcbuffer_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_tcbuffer_geo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a temporal circular buffer and
  * a geometry point
  * @sqlfn tDistance()
@@ -147,7 +147,7 @@ Distance_tcbuffer_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Distance_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_cbuffer_tcbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a circular buffer and a
  * temporal circular buffer
  * @sqlfn tDistance()
@@ -166,7 +166,7 @@ Distance_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Distance_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_tcbuffer_cbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a temporal circular buffer and
  * the circular buffer
  * @sqlfn tDistance()
@@ -185,7 +185,7 @@ Distance_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Distance_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_tcbuffer_tcbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a temporal circular buffer and
  * the circular buffer
  * @sqlfn tDistance()
@@ -211,7 +211,7 @@ Distance_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAI_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_geo_tcbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach instant between a geometry and a temporal
  * circular buffer
  * @sqlfn nearestApproachInstant()
@@ -232,7 +232,7 @@ NAI_geo_tcbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAI_tcbuffer_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_tcbuffer_geo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach instant between a temporal circular buffer
  * and a geometry
  * @sqlfn nearestApproachInstant()
@@ -253,7 +253,7 @@ NAI_tcbuffer_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAI_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_cbuffer_tcbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach instant between a circular buffer and a
  * temporal circular buffer
  * @sqlfn nearestApproachInstant()
@@ -271,7 +271,7 @@ NAI_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAI_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_tcbuffer_cbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach instant between a temporal circular buffer
  * and a circular buffer
  * @sqlfn nearestApproachInstant()
@@ -289,7 +289,7 @@ NAI_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAI_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_tcbuffer_tcbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach instant between two temporal circular
  * points
  * @sqlfn nearestApproachInstant()
@@ -314,7 +314,7 @@ NAI_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_cbuffer_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_cbuffer_stbox);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the temporal distance between a circular buffer and a
  * spatiotemporal box
  * @sqlfn tDistance()
@@ -334,7 +334,7 @@ NAD_cbuffer_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_tcbuffer_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tcbuffer_stbox);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach distance between a temporal circular 
  * buffer and a spatiotemporal box
  * @sqlfn nearestApproachDistance()
@@ -355,7 +355,7 @@ NAD_tcbuffer_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_stbox_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_stbox_tcbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach distance between a spatiotemporal box
  * and a temporal circular buffer 
  * @sqlfn nearestApproachDistance()
@@ -378,7 +378,7 @@ NAD_stbox_tcbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_geo_tcbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach distance between a geometry and a
  * temporal circular buffer
  * @sqlfn nearestApproachDistance()
@@ -400,7 +400,7 @@ NAD_geo_tcbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_cbuffer_tcbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach distance between a circular buffer and a
  * temporal circular buffer
  * @sqlfn nearestApproachDistance()
@@ -422,7 +422,7 @@ NAD_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_tcbuffer_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tcbuffer_geo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach distance between a temporal circular
  * buffer and a geometry
  * @sqlfn nearestApproachDistance()
@@ -444,7 +444,7 @@ NAD_tcbuffer_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tcbuffer_cbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach distance between a temporal circular
  * buffer and a circular buffer
  * @sqlfn nearestApproachDistance()
@@ -466,7 +466,7 @@ NAD_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tcbuffer_tcbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach distance between two temporal circular
  * points
  * @sqlfn nearestApproachDistance()
@@ -492,7 +492,7 @@ NAD_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Shortestline_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_geo_tcbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the line connecting the nearest approach point between a
  * geometry and a temporal circular buffer
  * @sqlfn shortestLine()
@@ -513,7 +513,7 @@ Shortestline_geo_tcbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Shortestline_tcbuffer_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tcbuffer_geo);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the line connecting the nearest approach point between a temporal
  * circular buffer and a geometry
  * @sqlfn shortestLine()
@@ -534,7 +534,7 @@ Shortestline_tcbuffer_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Shortestline_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_cbuffer_tcbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the line connecting the nearest approach point between a
  * geometry and a temporal circular buffer
  * @sqlfn shortestLine()
@@ -555,7 +555,7 @@ Shortestline_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Shortestline_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tcbuffer_cbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the line connecting the nearest approach point between a temporal
  * circular buffer and a geometry
  * @sqlfn shortestLine()
@@ -576,7 +576,7 @@ Shortestline_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Shortestline_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tcbuffer_tcbuffer);
 /**
- * @ingroup mobilitydb_temporal_dist
+ * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the line connecting the nearest approach point between two
  * temporal circular buffers
  * @sqlfn shortestLine()

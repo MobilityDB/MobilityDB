@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2024, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2024, PostGIS contributors
+ * Copyright (c) 2001-2025, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -40,8 +40,9 @@
 #include <float.h>
 #include <limits.h>
 /* PostgreSQL */
-#include <utils/timestamp.h>
 #include <common/hashfn.h>
+#include <utils/float.h>
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -805,6 +806,64 @@ tstzspan_duration(const Span *s)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_setspan_transf
+ * @brief Return in the last argument a float span with the precision set to a
+ * number of decimal places
+ * @param[in] s Span
+ * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] result Result span
+ */
+void
+floatspan_round_set(const Span *s, int maxdd, Span *result)
+{
+  assert(s); assert(s->spantype == T_FLOATSPAN); assert(result);
+  /* Set precision of bounds */
+  double lower = float_round(DatumGetFloat8(s->lower), maxdd);
+  double upper = float_round(DatumGetFloat8(s->upper), maxdd);
+  /* Fix the bounds */
+  bool lower_inc, upper_inc;
+  if (float8_eq(lower, upper))
+  {
+    lower_inc = upper_inc = true;
+  }
+  else
+  {
+    lower_inc = s->lower_inc; upper_inc = s->upper_inc;
+  }
+  /* Set resulting span */
+  span_set(Float8GetDatum(lower), Float8GetDatum(upper), lower_inc, upper_inc,
+    s->basetype, s->spantype, result);
+  return;
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a float span with the precision of the bounds set to a
+ * number of decimal places
+ * @param[in] s Span
+ * @param[in] maxdd Maximum number of decimal digits
+ * @return On error return @p NULL
+ */
+Span *
+floatspan_round(const Span *s, int maxdd)
+{
+#if MEOS
+  /* Ensure validity of the arguments */
+  if (! ensure_not_null((void *) s) || ! ensure_not_negative(maxdd) ||
+      ! ensure_span_isof_type(s, T_FLOATSPAN))
+    return NULL;
+#else
+  assert(s); assert(maxdd >=0); assert(s->spantype == T_FLOATSPAN);
+#endif /* MEOS */
+
+  Span *result = palloc(sizeof(Span));
+  floatspan_round_set(s, maxdd, result);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
  * @brief Round down a span to the nearest integer
  */
 void
@@ -1362,7 +1421,7 @@ span_eq(const Span *s1, const Span *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Span_ne()
  */
-bool
+inline bool
 span_ne(const Span *s1, const Span *s2)
 {
   return (! span_eq(s1, s2));
@@ -1409,7 +1468,7 @@ span_cmp(const Span *s1, const Span *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Span_lt()
  */
-bool
+inline bool
 span_lt(const Span *s1, const Span *s2)
 {
   return span_cmp(s1, s2) < 0;
@@ -1421,7 +1480,7 @@ span_lt(const Span *s1, const Span *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Span_le()
  */
-bool
+inline bool
 span_le(const Span *s1, const Span *s2)
 {
   return span_cmp(s1, s2) <= 0;
@@ -1434,7 +1493,7 @@ span_le(const Span *s1, const Span *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Span_gt()
  */
-bool
+inline bool
 span_ge(const Span *s1, const Span *s2)
 {
   return span_cmp(s1, s2) >= 0;
@@ -1446,7 +1505,7 @@ span_ge(const Span *s1, const Span *s2)
  * @param[in] s1,s2 Sets
  * @csqlfn #Span_ge()
  */
-bool
+inline bool
 span_gt(const Span *s1, const Span *s2)
 {
   return span_cmp(s1, s2) > 0;
