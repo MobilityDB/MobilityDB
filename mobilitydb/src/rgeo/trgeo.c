@@ -59,6 +59,7 @@
 #include "pg_general/temporal.h"
 #include "pg_general/type_util.h"
 #include "pg_geo/postgis.h"
+#include "pg_geo/tspatial.h"
 
 /*****************************************************************************
  * Input/output functions
@@ -67,9 +68,9 @@
 PGDLLEXPORT Datum Trgeometry_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_in);
 /**
+ * @ingroup mobilitydb_rgeo_inout
  * @brief Generic input function for temporal rigid geometries
- *
- * @note Examples of input for the various temporal types:
+ * @details Examples of input for the various temporal types:
  * - Instant
  * @code
  * Polygon((0 0, 1 0, 0 1, 0 0)); Pose(0, 0, 0) @ 2012-01-01 08:00:00
@@ -103,6 +104,7 @@ Trgeometry_in(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Trgeometry_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_out);
 /**
+ * @ingroup mobilitydb_rgeo_inout
  * @brief Generic output function for temporal rigid geometries
  */
 Datum
@@ -117,9 +119,10 @@ Trgeometry_out(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Trgeometry_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_recv);
 /**
- * @ingroup mobilitydb_pose_base_inout
- * @brief Return a pose from its Well-Known Binary (WKB) representation
- * @sqlfn pose_recv()
+ * @ingroup mobilitydb_rgeo_inout
+ * @brief Return a temporal rigid geometry from its Well-Known Binary (WKB)
+ * representation
+ * @sqlfn trgeometry_recv()
  */
 Datum
 Trgeometry_recv(PG_FUNCTION_ARGS)
@@ -134,9 +137,9 @@ Trgeometry_recv(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Trgeometry_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_send);
 /**
- * @ingroup mobilitydb_pose_base_inout
- * @brief Return the Well-Known Binary (WKB) representation of a pose
- * @sqlfn pose_send()
+ * @ingroup mobilitydb_rgeo_inout
+ * @brief Return the Well-Known Binary (WKB) representation of a temporal rigid geometry
+ * @sqlfn trgeometry_send()
  */
 Datum
 Trgeometry_send(PG_FUNCTION_ARGS)
@@ -150,22 +153,35 @@ Trgeometry_send(PG_FUNCTION_ARGS)
   PG_RETURN_BYTEA_P(result);
 }
 
+PGDLLEXPORT Datum Trgeometry_typmod_in(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_typmod_in);
+/**
+ * @brief Input typmod information for temporal rigid geometries
+ */
+Datum
+Trgeometry_typmod_in(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
+  uint32 typmod = tspatial_typmod_in(array, true, false);
+  PG_RETURN_INT32(typmod);
+}
+
 /*****************************************************************************
  * Input in EWKT representation
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Trgeo_from_ewkt);
+PGDLLEXPORT Datum Trgeometry_from_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_from_ewkt);
 /**
  * @ingroup mobilitydb_rgeo_inout
- * @brief Input a temporal rigid geometry from its Extended Well-Known Text (EWKT)
- * representation.
+ * @brief Input a temporal rigid geometry from its Extended Well-Known Text
+ * (EWKT) representation
  * @note This just does the same thing as the _in function, except it has to handle
  * a 'text' input. First, unwrap the text into a cstring, then do as tgeometry_in
- * @sqlfn tgeometryFromText(), tgeogpointFromText(), tgeometryFromEWKT(),
- * tgeogpointFromEWKT()
+ * @sqlfn trgeometryFromEWKT()
  */
 PGDLLEXPORT Datum
-Trgeo_from_ewkt(PG_FUNCTION_ARGS)
+Trgeometry_from_ewkt(PG_FUNCTION_ARGS)
 {
   text *wkt_text = PG_GETARG_TEXT_P(0);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
@@ -185,7 +201,6 @@ Trgeo_from_ewkt(PG_FUNCTION_ARGS)
 /**
  * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation of
  * a temporal rigid geometry
- * @sqlfn asText()
  */
 static Datum
 Trgeometry_as_text_ext(FunctionCallInfo fcinfo, bool extended)
@@ -204,8 +219,9 @@ Trgeometry_as_text_ext(FunctionCallInfo fcinfo, bool extended)
 PGDLLEXPORT Datum Trgeometry_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_as_text);
 /**
- * @ingroup mobilitydb_geo_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal point
+ * @ingroup mobilitydb_rgeo_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal rigid
+ * geometry
  * @sqlfn asText()
  */
 Datum
@@ -217,9 +233,9 @@ Trgeometry_as_text(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Trgeometry_as_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_as_ewkt);
 /**
- * @ingroup mobilitydb_geo_inout
+ * @ingroup mobilitydb_rgeo_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation of a
- * temporal point
+ * temporal rigid geometry
  * @note It is the WKT representation prefixed with the SRID
  * @sqlfn asEWKT()
  */
@@ -236,7 +252,10 @@ Trgeometry_as_ewkt(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Trgeometry_inst_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_inst_constructor);
 /**
- * @brief Construct a temporal instant value from the arguments
+ * @ingroup mobilitydb_rgeo_constructor
+ * @brief Construct a temporal rigid geometry instant from a geometry, pose,
+ * and a timestamptz
+ * @sqlfn trgeometryInst()
  */
 Datum
 Trgeometry_inst_constructor(PG_FUNCTION_ARGS)
@@ -246,9 +265,7 @@ Trgeometry_inst_constructor(PG_FUNCTION_ARGS)
   ensure_not_empty(gs);
   ensure_has_not_M_geo(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(2);
-  meosType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  Temporal *result = (Temporal *) trgeoinst_make(PointerGetDatum(gs),
-    PointerGetDatum(pose), temptype, t);
+  TInstant *result = trgeoinst_make(gs, pose, t);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_POINTER(result);
 }
@@ -257,8 +274,9 @@ PGDLLEXPORT Datum Trgeometry_seq_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_seq_constructor);
 /**
  * @ingroup mobilitydb_rgeo_constructor
- * @brief Construct a temporal sequence from an array of temporal instants
- * @sqlfn tbool_seq(), tint_seq(), tfloat_seq(), ttext_seq(), ...
+ * @brief Construct a temporal rigid geometry sequence from an array of
+ * temporal instants
+ * @sqlfn trgeometrySeq()
  */
 Datum
 Trgeometry_seq_constructor(PG_FUNCTION_ARGS)
@@ -292,8 +310,10 @@ Trgeometry_seq_constructor(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Trgeometry_seqset_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_seqset_constructor);
 /**
- * @brief Construct a temporal sequence set value from the array of temporal
- * sequence values
+ * @ingroup mobilitydb_rgeo_constructor
+ * @brief Construct a temporal rigid geometry sequence set from an array of
+ * temporal sequences
+ * @sqlfn trgeometrySeqSet()
  */
 Datum
 Trgeometry_seqset_constructor(PG_FUNCTION_ARGS)
@@ -314,10 +334,10 @@ PGDLLEXPORT Datum Trgeometry_seqset_constructor_gaps(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_seqset_constructor_gaps);
 /**
  * @ingroup mobilitydb_rgeo_constructor
- * @brief Construct a temporal sequence set from an array of temporal instants
- * accounting for potential gaps
+ * @brief Construct a temporal rigid geometry sequence set from an array of
+ * temporal instants accounting for potential gaps
  * @note The SQL function is not strict
- * @sqlfn trgeo_seqset_gaps()
+ * @sqlfn trgeoSeqsetGaps()
  */
 Datum
 Trgeometry_seqset_constructor_gaps(PG_FUNCTION_ARGS)
@@ -360,14 +380,17 @@ Trgeometry_seqset_constructor_gaps(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Trgeometry_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_constructor);
 /**
- * @brief Construct a temporal instant value from the arguments
+ * @ingroup mobilitydb_rgeo_constructor
+ * @brief Construct a temporal rigid geometry from a reference geometry and a
+ * temporal pose
+ * @sqlfn trgeometry()
  */
 Datum
 Trgeometry_constructor(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *tpose = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = (Temporal *) geo_tpose_to_trgeo(gs, tpose);
+  Temporal *result = geo_tpose_to_trgeo(gs, tpose);
   PG_FREE_IF_COPY(gs, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -382,8 +405,8 @@ PGDLLEXPORT Datum Trgeometry_to_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_to_tpose);
 /**
  * @ingroup mobilitydb_rgeo_conversion
- * @brief Return a temporal rigid geometry converted into a temporal pose
- * @sqlfn endInstant()
+ * @brief Return a temporal pose converted from a temporal rigid geometry
+ * @sqlfn tpose()
  */
 Datum
 Trgeometry_to_tpose(PG_FUNCTION_ARGS)
@@ -398,8 +421,8 @@ PGDLLEXPORT Datum Trgeometry_to_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_to_tpoint);
 /**
  * @ingroup mobilitydb_rgeo_conversion
- * @brief Return a temporal rigid geometry converted into a temporal point
- * @sqlfn endInstant()
+ * @brief Return a temporal point converted from a temporal rigid geometry
+ * @sqlfn tgeompoint()
  */
 Datum
 Trgeometry_to_tpoint(PG_FUNCTION_ARGS)
@@ -410,25 +433,25 @@ Trgeometry_to_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************
- * Accessor functions
- *****************************************************************************/
-
 PGDLLEXPORT Datum Trgeometry_to_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_to_geom);
 /**
- * @ingroup mobilitydb_rgeo_accessor
- * @brief Return the geometry of a temporal rigid geometry
- * @sqlfn startValue()
+ * @ingroup mobilitydb_rgeo_conversion
+ * @brief Return the reference geometry of a temporal rigid geometry
+ * @sqlfn geometry()
  */
 Datum
 Trgeometry_to_geom(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = trgeo_geom(temp);
+  GSERIALIZED *result = trgeo_geom(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
+
+/*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
 
 PGDLLEXPORT Datum Trgeometry_start_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_start_value);
@@ -441,9 +464,9 @@ Datum
 Trgeometry_start_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = trgeo_start_value(temp);
+  GSERIALIZED *result = trgeo_start_value(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Trgeometry_end_value(PG_FUNCTION_ARGS);
@@ -457,9 +480,9 @@ Datum
 Trgeometry_end_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = trgeo_end_value(temp);
+  GSERIALIZED *result = trgeo_end_value(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 PGDLLEXPORT Datum Trgeometry_value_n(PG_FUNCTION_ARGS);
@@ -474,12 +497,12 @@ Trgeometry_value_n(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
-  Datum result;
+  GSERIALIZED *result;
   bool found = trgeo_value_n(temp, n, &result);
   PG_FREE_IF_COPY(temp, 0);
   if (! found)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
@@ -513,7 +536,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_to_tinstant);
 /**
  * @ingroup mobilitydb_rgeo_transf
  * @brief Return a temporal value transformed to a temporal instant
- * @sqlfn  trgeometryInst()
+ * @sqlfn trgeometryInst()
  */
 Datum
 Trgeometry_to_tinstant(PG_FUNCTION_ARGS)
@@ -585,25 +608,6 @@ Trgeometry_to_tsequenceset(PG_FUNCTION_ARGS)
  * Restriction Functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Trgeometry_value_at_timestamp(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Trgeometry_value_at_timestamp);
-/**
- * @ingroup mobilitydb_rgeo_accessor
- * @brief Return the base value of a temporal value at the timestamp
- * @sqlfn valueAtTimestamp()
- */
-Datum
-Trgeometry_value_at_timestamp(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Datum result;
-  bool found = trgeo_value_at_timestamptz(temp, t, true, &result);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! found)
-    PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
-}
 
 /*****************************************************************************/
 

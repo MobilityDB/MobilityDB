@@ -1500,7 +1500,7 @@ tfloatseq_findsplit(const TSequence *seq, int i1, int i2, int *split,
 /**
  * @brief Return the 2D distance between the points
  */
-static double
+static inline double
 dist2d_pt_pt(POINT2D *p1, POINT2D *p2)
 {
   return hypot(p2->x - p1->x, p2->y - p1->y);
@@ -1509,7 +1509,7 @@ dist2d_pt_pt(POINT2D *p1, POINT2D *p2)
 /**
  * @brief Return the 3D distance between the points
  */
-static double
+static inline double
 dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2)
 {
   return hypot3d(p2->x - p1->x, p2->y - p1->y, p2->z - p1->z);

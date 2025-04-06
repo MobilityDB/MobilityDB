@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Spatial functions for temporal poses.
+ * @brief Spatial functions for temporal rigid geometries
  */
 
 /* PostgreSQL */
@@ -37,29 +37,29 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include <meos_pose.h>
-#include "pose/tpose.h"
-#include "pose/tpose_spatialfuncs.h"
+#include <meos_rgeo.h>
+#include "rgeo/trgeo.h"
+#include "rgeo/trgeo_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_general/temporal.h"
 #include "pg_geo/postgis.h"
 
 /*****************************************************************************
- * Trajectory function
+ * Traversed area function
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tpose_trajectory(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_trajectory);
+PGDLLEXPORT Datum Trgeometry_traversed_area(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_traversed_area);
 /**
- * @ingroup mobilitydb_pose_accessor
- * @brief Return a temporal pose restricted to a geometry
+ * @ingroup mobilitydb_rgeo_accessor
+ * @brief Return a temporal rigid geometry restricted to a geometry
  * @sqlfn atGeometry()
  */
 inline Datum
-Tpose_trajectory(PG_FUNCTION_ARGS)
+Trgeometry_traversed_area(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *result = tpose_trajectory(temp);
+  GSERIALIZED *result = trgeo_traversed_area(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -71,15 +71,15 @@ Tpose_trajectory(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Return a temporal pose restricted to (the complement of) a
+ * @brief Return a temporal rigid geometry restricted to (the complement of) a
  * geometry
  */
 static Datum
-Tpose_restrict_geom(FunctionCallInfo fcinfo, bool atfunc)
+Trgeometry_restrict_geom(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = tpose_restrict_geom(temp, gs, NULL, atfunc);
+  Temporal *result = trgeo_restrict_geom(temp, gs, NULL, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
@@ -87,76 +87,76 @@ Tpose_restrict_geom(FunctionCallInfo fcinfo, bool atfunc)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Tpose_at_geom(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_at_geom);
+PGDLLEXPORT Datum Trgeometry_at_geom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_at_geom);
 /**
- * @ingroup mobilitydb_pose_restrict
- * @brief Return a temporal pose restricted to a geometry
+ * @ingroup mobilitydb_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to a geometry
  * @sqlfn atGeometry()
  */
 inline Datum
-Tpose_at_geom(PG_FUNCTION_ARGS)
+Trgeometry_at_geom(PG_FUNCTION_ARGS)
 {
-  return Tpose_restrict_geom(fcinfo, REST_AT);
+  return Trgeometry_restrict_geom(fcinfo, REST_AT);
 }
 
-PGDLLEXPORT Datum Tpose_minus_geom(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_minus_geom);
+PGDLLEXPORT Datum Trgeometry_minus_geom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_minus_geom);
 /**
- * @ingroup mobilitydb_pose_restrict
- * @brief Return a temporal pose restricted to the complement of a geometry
+ * @ingroup mobilitydb_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to the complement of a
+ * geometry
  * @sqlfn minusGeometry()
  */
 inline Datum
-Tpose_minus_geom(PG_FUNCTION_ARGS)
+Trgeometry_minus_geom(PG_FUNCTION_ARGS)
 {
-  return Tpose_restrict_geom(fcinfo, REST_MINUS);
+  return Trgeometry_restrict_geom(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Return a temporal pose restricted to a spatiotemporal box
+ * @brief Return a temporal rigid geometry restricted to a spatiotemporal box
  */
 static Datum
-Tpose_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
+Trgeometry_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
   bool border_inc = PG_GETARG_BOOL(2);
-  Temporal *result = tpose_restrict_stbox(temp, box, border_inc, atfunc);
+  Temporal *result = trgeo_restrict_stbox(temp, box, border_inc, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 
-
-PGDLLEXPORT Datum Tpose_at_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_at_stbox);
+PGDLLEXPORT Datum Trgeometry_at_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_at_stbox);
 /**
- * @ingroup mobilitydb_pose_restrict
- * @brief Return a temporal pose restricted to a spatiotemporal box
+ * @ingroup mobilitydb_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to a spatiotemporal box
  * @sqlfn atStbox()
  */
 inline Datum
-Tpose_at_stbox(PG_FUNCTION_ARGS)
+Trgeometry_at_stbox(PG_FUNCTION_ARGS)
 {
-  return Tpose_restrict_stbox(fcinfo, REST_AT);
+  return Trgeometry_restrict_stbox(fcinfo, REST_AT);
 }
 
-PGDLLEXPORT Datum Tpose_minus_stbox(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_minus_stbox);
+PGDLLEXPORT Datum Trgeometry_minus_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_minus_stbox);
 /**
- * @ingroup mobilitydb_pose_restrict
- * @brief Return a temporal pose restricted to the complement of a
+ * @ingroup mobilitydb_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to the complement of a
  * spatiotemporal box
  * @sqlfn minusStbox()
  */
 inline Datum
-Tpose_minus_stbox(PG_FUNCTION_ARGS)
+Trgeometry_minus_stbox(PG_FUNCTION_ARGS)
 {
-  return Tpose_restrict_stbox(fcinfo, REST_MINUS);
+  return Trgeometry_restrict_stbox(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/

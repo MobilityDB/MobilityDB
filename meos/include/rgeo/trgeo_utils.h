@@ -37,16 +37,16 @@
 
 /* Postgres */
 #include <postgres.h>
-#include <catalog/pg_type.h>
+// #include <catalog/pg_type.h>
 /* MEOS */
 #include "general/temporal.h"
 #include "pose/pose.h"
 
 /*****************************************************************************/
 
-extern bool ensure_same_geom(Datum geom_datum1, Datum geom_datum2);
+extern bool ensure_same_geom(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern void lwgeom_apply_pose(const Pose *pose, LWGEOM *geom);
-extern double geom_radius(Datum geom_datum);
+extern double geom_radius(const GSERIALIZED *gs);
 
 /*****************************************************************************/
 

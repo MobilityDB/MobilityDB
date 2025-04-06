@@ -42,21 +42,23 @@ CREATE FUNCTION trgeometry_in(cstring, oid, integer)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Trgeometry_in'
   LANGUAGE C IMMUTABLE STRICT;
-
 CREATE FUNCTION trgeometry_out(trgeometry)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Trgeometry_out'
   LANGUAGE C IMMUTABLE STRICT;
-
 CREATE FUNCTION trgeometry_recv(internal)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Trgeometry_recv'
   LANGUAGE C IMMUTABLE STRICT;
-
 CREATE FUNCTION trgeometry_send(trgeometry)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Trgeometry_send'
   LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION trgeo_typmod_in(cstring[])
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Trgeometry_typmod_in'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE trgeometry (
   internallength = variable,
@@ -64,9 +66,20 @@ CREATE TYPE trgeometry (
   output = trgeometry_out,
   receive = trgeometry_recv,
   send = trgeometry_send,
+  typmod_in = trgeo_typmod_in,
+  typmod_out = tspatial_typmod_out,
   storage = extended,
-  alignment = double
+  alignment = double,
+  analyze = tspatial_analyze
 );
+
+-- Special cast for enforcing the typmod restrictions
+CREATE FUNCTION trgeometry(trgeometry, integer)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME','Tspatial_enforce_typmod'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (trgeometry AS trgeometry) WITH FUNCTION trgeometry(trgeometry, integer) AS IMPLICIT;
 
 /*****************************************************************************
  * Input/output from (E)WKT, (E)WKB, HexEWKB, and MFJSON representation
@@ -74,12 +87,12 @@ CREATE TYPE trgeometry (
 
 CREATE FUNCTION trgeometryFromText(text)
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeo_from_ewkt'
+  AS 'MODULE_PATHNAME', 'Trgeometry_from_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION trgeometryFromEWKT(text)
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeo_from_ewkt'
+  AS 'MODULE_PATHNAME', 'Trgeometry_from_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION trgeometryFromMFJSON(text)
@@ -437,26 +450,6 @@ CREATE FUNCTION shiftScaleTime(trgeometry, interval, interval)
 /*****************************************************************************
  * Restriction Functions
  *****************************************************************************/
-
-CREATE FUNCTION atValues(trgeometry, geometry)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Temporal_at_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION minusValues(trgeometry, geometry)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Temporal_minus_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION atValues(trgeometry, geomset)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Temporal_at_values'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION minusValues(trgeometry, geomset)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Temporal_minus_values'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(trgeometry, timestamptz)
   RETURNS trgeometry

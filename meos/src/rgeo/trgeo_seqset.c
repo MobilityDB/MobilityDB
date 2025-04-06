@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Functions for temporal rigid geometries of sequence set subtype
  */
 
@@ -57,14 +58,14 @@
 /**
  * @brief Returns the reference geometry of the temporal value
  */
-Datum
+const GSERIALIZED *
 trgeoseqset_geom_p(const TSequenceSet *ss)
 {
   assert(ss); assert(ss->temptype == T_TRGEOMETRY);
   assert(ensure_has_geom(ss->flags)); 
-  return PointerGetDatum(
+  return (GSERIALIZED *) (
     /* start of data */
-    ((char *)ss) + DOUBLE_PAD(sizeof(TSequenceSet)) +
+    ((char *) ss) + DOUBLE_PAD(sizeof(TSequenceSet)) +
       /* The period component of the bbox is already declared in the struct */
       (ss->bboxsize - sizeof(Span)) + ss->count * sizeof(size_t) +
       /* offset */
@@ -110,7 +111,7 @@ trgeoseqset_tposeseqset(const TSequenceSet *ss)
  * sets before applying an operation to them.
  */
 TSequenceSet *
-trgeoseqset_make1_exp(const Datum geom, const TSequence **sequences,
+trgeoseqset_make1_exp(const GSERIALIZED *geom, const TSequence **sequences,
   int count, int maxcount, bool normalize)
 {
   assert(maxcount >= count);
@@ -156,7 +157,7 @@ trgeoseqset_make1_exp(const Datum geom, const TSequence **sequences,
   else
     maxcount = newcount;
   /* Size of the reference geometry */
-  size_t geom_size = DOUBLE_PAD(VARSIZE(DatumGetPointer(geom)));
+  size_t geom_size = DOUBLE_PAD(VARSIZE(geom));
   /* Total size of the struct */
   size_t memsize = DOUBLE_PAD(sizeof(TSequenceSet)) + bboxsize_extra +
     (maxcount + 1) * sizeof(size_t) + seqs_size + geom_size;
@@ -198,7 +199,7 @@ trgeoseqset_make1_exp(const Datum geom, const TSequence **sequences,
     pos += DOUBLE_PAD(seq_size);
   }
   /* Store the reference geometry */
-  void *geom_from = DatumGetPointer(geom);
+  void *geom_from = (void *) geom;
   memcpy(((char *) result) + pdata + pos, geom_from, VARSIZE(geom_from));
   (TSEQUENCESET_OFFSETS_PTR(result))[newcount] = pos;
 
@@ -208,7 +209,7 @@ trgeoseqset_make1_exp(const Datum geom, const TSequence **sequences,
 }
 
 /**
- * @ingroup libmeos_rgeo_constructor
+ * @ingroup meos_interanl_internal_rgeo_constructor
  * @brief Construct a temporal sequence set from an array of temporal sequences.
  * @param[in] geom Reference geometry
  * @param[in] sequences Array of sequences
@@ -219,8 +220,8 @@ trgeoseqset_make1_exp(const Datum geom, const TSequence **sequences,
  * temporal sequence sets before applying an operation to them.
  */
 TSequenceSet *
-trgeoseqset_make_exp(const Datum geom, const TSequence **sequences, int count,
-  int maxcount, bool normalize)
+trgeoseqset_make_exp(const GSERIALIZED *geom, const TSequence **sequences,
+  int count, int maxcount, bool normalize)
 {
   if (! ensure_valid_tseqarr(sequences, count))
     return NULL;
@@ -228,8 +229,8 @@ trgeoseqset_make_exp(const Datum geom, const TSequence **sequences, int count,
 }
 
 /**
- * @ingroup libmeos_rgeo_constructor
- * @brief Construct a temporal sequence set from an array of temporal sequences.
+ * @ingroup meos_rgeo_constructor
+ * @brief Construct a temporal sequence set from an array of temporal sequences
  * @param[in] geom Reference geometry
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
@@ -239,14 +240,14 @@ trgeoseqset_make_exp(const Datum geom, const TSequence **sequences, int count,
  * @sqlfn tbool_seqset(), tint_seqset(), tfloat_seqset(), ttext_seqset(), etc.
  */
 inline TSequenceSet *
-trgeoseqset_make(const Datum geom, const TSequence **sequences, int count,
-  bool normalize)
+trgeoseqset_make(const GSERIALIZED *geom, const TSequence **sequences,
+  int count, bool normalize)
 {
   return trgeoseqset_make_exp(geom, sequences, count, count, normalize);
 }
 
 /**
- * @ingroup libmeos_rgeo_constructor
+ * @ingroup meos_rgeo_constructor
  * @brief Construct a temporal sequence set from an array of temporal
  * sequences and free the array and the sequences after the creation
  * @param[in] geom Reference geometry
@@ -257,8 +258,8 @@ trgeoseqset_make(const Datum geom, const TSequence **sequences, int count,
  * @see tsequenceset_make
  */
 TSequenceSet *
-trgeoseqset_make_free(const Datum geom, TSequence **sequences, int count,
-  bool normalize)
+trgeoseqset_make_free(const GSERIALIZED *geom, TSequence **sequences,
+  int count, bool normalize)
 {
   if (count == 0)
   {
@@ -277,7 +278,7 @@ trgeoseqset_make_free(const Datum geom, TSequence **sequences, int count,
  * the sequences according the maximum distance or interval between instants
  */
 static int *
-trgeoseqset_make_valid_gaps(const Datum geom, const TInstant **instants,
+trgeoseqset_make_valid_gaps(const GSERIALIZED *geom, const TInstant **instants,
   int count, bool lower_inc, bool upper_inc, interpType interp, double maxdist,
   Interval *maxt, int *nsplits)
 {
@@ -289,7 +290,7 @@ trgeoseqset_make_valid_gaps(const Datum geom, const TInstant **instants,
 }
 
 /**
- * @ingroup libmeos_rgeo_constructor
+ * @ingroup meos_rgeo_constructor
  * @brief Construct a temporal sequence set from an array of temporal instants
  * introducing a gap when two consecutive instants are separated from each
  * other by at least the given distance or the given time interval.
@@ -303,8 +304,8 @@ trgeoseqset_make_valid_gaps(const Datum geom, const TInstant **instants,
  * tgeompoint_seqset_gaps(), tgeogpoint_seqset_gaps()
  */
 TSequenceSet *
-trgeoseqset_make_gaps(const Datum geom, const TInstant **instants, int count,
-  interpType interp, Interval *maxt, double maxdist)
+trgeoseqset_make_gaps(const GSERIALIZED *geom, const TInstant **instants,
+  int count, interpType interp, Interval *maxt, double maxdist)
 {
   TSequence *seq;
   TSequenceSet *result;
@@ -368,11 +369,10 @@ trgeoseqset_make_gaps(const Datum geom, const TInstant **instants, int count,
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_transf
+ * @ingroup meos_internal_rgeo_transf
  * @brief Return a temporal instant transformed into a temporal sequence set
  * @param[in] inst Temporal instant
  * @param[out] interp Interpolation
- * @csqlfn #Temporal_to_tsequenceset()
  */
 TSequenceSet *
 trgeoinst_to_tsequenceset(const TInstant *inst, interpType interp)
@@ -380,8 +380,7 @@ trgeoinst_to_tsequenceset(const TInstant *inst, interpType interp)
   assert(inst); assert(inst->temptype == T_TRGEOMETRY);
   assert(interp == STEP || interp == LINEAR);
   TSequenceSet *res = tinstant_to_tsequenceset(inst, interp);
-  const GSERIALIZED *gs = DatumGetGserializedP(trgeoinst_geom_p(inst));
-  TSequenceSet *result = geo_tposeseqset_to_trgeo(gs, res);
+  TSequenceSet *result = geo_tposeseqset_to_trgeo(trgeoinst_geom_p(inst), res);
   pfree(res);
   return result;
 }
@@ -403,10 +402,9 @@ trgeodiscseq_to_tsequenceset(const TSequence *seq, interpType interp)
 }
 
 /**
- * @ingroup meos_internal_temporal_transf
+ * @ingroup meos_internal_rgeo_transf
  * @brief Return a temporal sequence transformed into a temporal sequence set
  * @param[in] seq Temporal sequence
- * @csqlfn #Temporal_to_tsequenceset()
  */
 TSequenceSet *
 trgeoseq_to_tsequenceset(const TSequence *seq)
@@ -423,7 +421,7 @@ trgeoseq_to_tsequenceset(const TSequence *seq)
 }
 
 /**
- * @ingroup meos_internal_temporal_transf
+ * @ingroup meos_internal_rgeo_transf
  * @brief Return a temporal sequence transformed into a temporal sequence set
  * @param[in] seq Temporal sequence
  * @csqlfn #Temporal_to_tsequenceset()

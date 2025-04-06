@@ -78,7 +78,7 @@ extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return in the last argument the spatiotemporal box of a temporal geo
  * instant
  * @param[in] inst Temporal instant
@@ -97,7 +97,7 @@ tgeoinst_set_stbox(const TInstant *inst, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return in the last argument the spatiotemporal box of a temporal 
  * spatial instant
  * @param[in] inst Temporal value
@@ -133,7 +133,7 @@ tspatialinst_set_stbox(const TInstant *inst, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return in the last argument the spatiotemporal box of a temporal
  * spatial sequence
  * @param[in] seq Temporal sequence
@@ -150,7 +150,7 @@ tspatialseq_set_stbox(const TSequence *seq, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return in the last argument the spatiotemporal box of a temporal
  * spatial sequence set
  * @param[in] ss Temporal sequence set
@@ -167,7 +167,7 @@ tspatialseqset_set_stbox(const TSequenceSet *ss, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return in the last argument the spatiotemporal box of an array of
  * temporal geo instants
  * @param[in] instants Temporal instant values
@@ -271,7 +271,7 @@ tgeoseq_expand_stbox(TSequence *seq, const TInstant *inst)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Expand the bounding box of a temporal spatial sequence with an
  * additional instant
  * @param[inout] seq Temporal sequence
@@ -307,7 +307,7 @@ tspatialseq_expand_stbox(TSequence *seq, const TInstant *inst)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return in the last argument the spatiotemporal box of an array of
  * temporal geo sequences
  * @param[in] sequences Temporal instant values
@@ -369,7 +369,7 @@ spatialarr_set_bbox(const Datum *values, meosType basetype, int count,
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return a singleton array of spatiotemporal boxes from a temporal
  * geo instant
  * @param[in] inst Temporal instant
@@ -435,7 +435,7 @@ tgeoseq_cont_stboxes_iter(const TSequence *seq, STBox *result)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatiotemporal boxes from the instants or segments
  * of a temporal geo sequence, where the choice between instants or segments
  * depends, respectively, on whether the interpolation is discrete or
@@ -463,7 +463,7 @@ tgeoseq_stboxes(const TSequence *seq, int *count)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal geo sequence set
  * @param[in] ss Temporal sequence set
@@ -621,7 +621,7 @@ tgeoseq_cont_split_n_stboxes_iter(const TSequence *seq, int box_count,
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of N spatiotemporal boxes from the instants or
  * segments of a temporal geo sequence, where the choice between instants or
  * segments depends, respectively, on whether the interpolation is discrete or
@@ -653,7 +653,7 @@ tgeoseq_split_n_stboxes(const TSequence *seq, int box_count, int *count)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of N spatiotemporal boxes from the segments of a
  * temporal geo sequence set
  * @param[in] ss Temporal sequence set
@@ -848,7 +848,7 @@ tgeoseq_cont_split_each_n_stboxes_iter(const TSequence *seq,
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatiotemporal boxes obtained by merging
  * consecutive instants or segments of a temporal geo sequence, where the
  * choice between instants or segments depends, respectively, on whether the
@@ -877,7 +877,7 @@ tgeoseq_split_each_n_stboxes(const TSequence *seq, int elems_per_box,
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatiotemporal boxes obtained by merging
  * consecutive segments of a temporal geo sequence set 
  * @param[in] ss Temporal sequence set
@@ -1049,7 +1049,7 @@ line_gboxes_iter(const LWLINE *lwline, bool geodetic, GBOX *result)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of N spatial boxes obtained by merging consecutive
  * segments of a line
  * @param[in] gs Line
@@ -1079,7 +1079,7 @@ line_gboxes(const GSERIALIZED *gs, int *count)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of N spatial boxes obtained by merging consecutive
  * segments of a multiline
  * @param[in] gs Multiline
@@ -1234,7 +1234,7 @@ line_split_n_gboxes_iter(const LWLINE *lwline, int box_count, bool geodetic,
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of N spatial boxes obtained by merging consecutive
  * segments of a line
  * @param[in] gs Line
@@ -1269,7 +1269,7 @@ line_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of N spatial boxes obtained by merging consecutive
  * segments of a multiline
  * @param[in] gs Multiline
@@ -1472,7 +1472,7 @@ line_split_each_n_gboxes_iter(const LWLINE *lwline, int elems_per_box,
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatial boxes obtained by merging consecutive
  * segments of a line
  * @param[in] gs Line
@@ -1509,7 +1509,7 @@ line_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatial boxes obtained by merging consecutive
  * segments of a multiline
  * @param[in] gs Multiline

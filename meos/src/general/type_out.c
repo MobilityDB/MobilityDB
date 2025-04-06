@@ -550,7 +550,7 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
   {
     /* Do not repeat the crs for the composing geometries */
     stringbuffer_append_len(sb, "\"geometry\":", 11);
-    GSERIALIZED *gs = DatumGetGserializedP(trgeoinst_geom_p(inst));
+    const GSERIALIZED *gs = trgeoinst_geom_p(inst);
     char *str = geo_as_geojson(gs, 0, precision, NULL);
     stringbuffer_aprintf(sb, "%s,", str);
     stringbuffer_append_len(sb, "\"values\":[", 10);
@@ -599,7 +599,7 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
   else if (seq->temptype == T_TRGEOMETRY)
   {
     stringbuffer_append_len(sb, "\"geometry\":", 11);
-    const GSERIALIZED *gs = DatumGetGserializedP(trgeoseq_geom_p(seq));
+    const GSERIALIZED *gs = trgeoseq_geom_p(seq);
     char *str = geo_as_geojson(gs, 0, precision, NULL);
     stringbuffer_aprintf(sb, "%s,\"values\":[", str);
   }
@@ -687,8 +687,7 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
   if (ss->temptype == T_TRGEOMETRY)
   {
     stringbuffer_append_len(sb, "\"geometry\":", 11);
-    const GSERIALIZED *gs = DatumGetGserializedP(trgeoseqset_geom_p(ss));
-    char *str = geo_as_geojson(gs, 0, precision, NULL);
+    char *str = geo_as_geojson(trgeoseqset_geom_p(ss), 0, precision, NULL);
     stringbuffer_aprintf(sb, "%s,", str);
   }
 #endif /* RGEO */
@@ -1177,8 +1176,7 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
   size_t result = 0;
 #if RGEO
   if (temp->temptype == T_TRGEOMETRY)
-    result += geo_to_wkb_size(DatumGetGserializedP(trgeo_geom_p(temp)),
-      variant);
+    result += geo_to_wkb_size(trgeo_geom_p(temp), variant);
 #endif /* RGEO */
 
   assert(temptype_subtype(temp->subtype));
@@ -2069,8 +2067,7 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
     buf = int32_to_wkb_buf(tspatialinst_srid(inst), buf, variant);
 #if RGEO
   if (inst->temptype == T_TRGEOMETRY)
-    buf = geo_to_wkb_buf(DatumGetGserializedP(trgeoinst_geom_p(inst)), buf,
-      variant);
+    buf = geo_to_wkb_buf(trgeoinst_geom_p(inst), buf, variant);
 #endif /* RGEO */
   return tinstant_base_time_to_wkb_buf(inst, buf, variant);
 }
@@ -2101,8 +2098,7 @@ tsequence_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
     buf = int32_to_wkb_buf(tspatial_srid((Temporal *) seq), buf, variant);
 #if RGEO
   if (seq->temptype == T_TRGEOMETRY)
-    buf = geo_to_wkb_buf(DatumGetGserializedP(trgeoseq_geom_p(seq)), buf,
-      variant);
+    buf = geo_to_wkb_buf(trgeoseq_geom_p(seq), buf, variant);
 #endif /* RGEO */
   /* Write the count */
   buf = int32_to_wkb_buf(seq->count, buf, variant);
@@ -2144,8 +2140,7 @@ tsequenceset_to_wkb_buf(const TSequenceSet *ss, uint8_t *buf, uint8_t variant)
     buf = int32_to_wkb_buf(tspatial_srid((Temporal *) ss), buf, variant);
 #if RGEO
   if (ss->temptype == T_TRGEOMETRY)
-    buf = geo_to_wkb_buf(DatumGetGserializedP(trgeoseqset_geom_p(ss)), buf,
-      variant);
+    buf = geo_to_wkb_buf(trgeoseqset_geom_p(ss), buf, variant);
 #endif /* RGEO */
   /* Write the count */
   buf = int32_to_wkb_buf(ss->count, buf, variant);

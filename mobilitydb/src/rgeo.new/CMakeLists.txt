@@ -1,7 +1,0 @@
-add_library(pg_rgeo OBJECT
-  rgeo.c
-  trgeo.c
-  trgeo_compops.c
-  trgeo_distance.c
-  trgeo_spatialfuncs.c
-  )

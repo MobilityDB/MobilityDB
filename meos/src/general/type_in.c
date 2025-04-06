@@ -61,7 +61,6 @@
   #include "pose/pose.h"
 #endif
 #if RGEO
-  // #include <meos_rgeo.h>
   #include "rgeo/trgeo.h"
 #endif
 
@@ -1966,7 +1965,7 @@ tsequence_from_wkb_state(meos_wkb_parse_state *s)
 }
 
 /**
- * @brief Return a temporal sequence set value from its WKB representation
+ * @brief Return a temporal sequence set from its WKB representation
  */
 static TSequenceSet *
 tsequenceset_from_wkb_state(meos_wkb_parse_state *s)

@@ -50,8 +50,8 @@
  *****************************************************************************/
 
 /**
- * @brief Return true if a temporal geo and a geo satisfy the ever/always
- * comparison
+ * @brief Return true if a temporal rigid geometry and a geometry satisfy the
+ * ever/always comparison
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -78,7 +78,7 @@ eacomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 }
 
 /**
- * @brief Return true if two temporal poses satisfy the ever/always
+ * @brief Return true if two temporal rigid geometries satisfy the ever/always
  * comparison
  * @param[in] temp1,temp2 Temporal values
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -97,7 +97,8 @@ eacomp_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
     return -1;
 #else
   assert(temp1); assert(temp2); assert(func); 
-  assert(temp1->temptype == T_TRGEOMETRY); assert(temp2->temptype == T_TRGEOMETRY);
+  assert(temp1->temptype == T_TRGEOMETRY);
+  assert(temp2->temptype == T_TRGEOMETRY);
 #endif /* MEOS */
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
     return -1;
@@ -107,109 +108,111 @@ eacomp_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_geo_comp_ever
- * @brief Return true if a geo is ever equal to a temporal circular
- * buffer
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return true if a geometry is ever equal to a temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] temp Temporal value
  * @csqlfn #Ever_eq_geo_trgeo()
  */
-int
+inline int
 ever_eq_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return eacomp_trgeo_geo(temp, gs, &datum2_eq, EVER);
 }
 
 /**
- * @ingroup meos_geo_comp_ever
- * @brief Return true if a temporal geo is ever equal to a circular
- * buffer
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return true if a temporal rigid geometry is ever equal to a rigid
+ * geometry
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
  * @csqlfn #Ever_eq_trgeo_geo()
  */
-int
+inline int
 ever_eq_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return eacomp_trgeo_geo(temp, gs, &datum2_eq, EVER);
 }
 
 /**
- * @ingroup meos_geo_comp_ever
- * @brief Return true if a geo is ever different from a temporal geo
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return true if a geometry is ever different from a temporal rigid
+ * geometry
  * @param[in] gs Geometry
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ne_geo_trgeo()
  */
-int
+inline int
 ever_ne_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return eacomp_trgeo_geo(temp, gs, &datum2_ne, EVER);
 }
 
 /**
- * @ingroup meos_geo_comp_ever
- * @brief Return true if a temporal geo is ever different from a
- * geo
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return true if a temporal rigid geometry is ever different from a
+ * geometry
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
  * @csqlfn #Ever_ne_trgeo_geo()
  */
-int
+inline int
 ever_ne_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return eacomp_trgeo_geo(temp, gs, &datum2_ne, EVER);
 }
 
 /**
- * @ingroup meos_geo_comp_ever
- * @brief Return true if a geo is always equal to a temporal geo
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return true if a geometry is always equal to a temporal rigid
+ * geometry
  * @param[in] gs Geometry
  * @param[in] temp Temporal value
  * @csqlfn #Always_eq_geo_trgeo()
  */
-int
+inline int
 always_eq_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return eacomp_trgeo_geo(temp, gs, &datum2_eq, ALWAYS);
 }
 
 /**
- * @ingroup meos_geo_comp_ever
- * @brief Return true if a temporal geo is always equal to a
- * geo
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return true if a temporal rigid geometry is always equal to a
+ * geometry
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
  * @csqlfn #Always_eq_trgeo_geo()
  */
-int
+inline int
 always_eq_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return eacomp_trgeo_geo(temp, gs, &datum2_eq, ALWAYS);
 }
 
 /**
- * @ingroup meos_geo_comp_ever
- * @brief Return true if a geo is always different from a temporal geo
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return true if a geometry is always different from a temporal rigid
+ * geometry
  * @param[in] gs Geometry
  * @param[in] temp Temporal value
  * @csqlfn #Always_ne_geo_trgeo()
  */
-int
+inline int
 always_ne_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return eacomp_trgeo_geo(temp, gs, &datum2_ne, ALWAYS);
 }
 
 /**
- * @ingroup meos_geo_comp_ever
- * @brief Return true if a temporal geo is always different from a
- * geo
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return true if a temporal rigid geometry is always different from a
+ * geometry
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
  * @csqlfn #Always_ne_trgeo_geo()
  */
-int
+inline int
 always_ne_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return eacomp_trgeo_geo(temp, gs, &datum2_ne, ALWAYS);
@@ -218,48 +221,48 @@ always_ne_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_geo_comp_ever
- * @brief Return true if two temporal poses are ever equal
- * @param[in] temp1,temp2 Temporal poses
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return true if two temporal rigid geometries are ever equal
+ * @param[in] temp1,temp2 Temporal rigid geometries
  * @csqlfn #Ever_eq_trgeo_trgeo()
  */
-int
+inline int
 ever_eq_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_trgeo_trgeo(temp1, temp2, &datum2_eq, EVER);
 }
 
 /**
- * @ingroup meos_geo_comp_ever
- * @brief Return true if two temporal poses are ever different
- * @param[in] temp1,temp2 Temporal poses
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return true if two temporal rigid geometries are ever different
+ * @param[in] temp1,temp2 Temporal rigid geometries
  * @csqlfn #Ever_ne_trgeo_trgeo()
  */
-int
+inline int
 ever_ne_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_trgeo_trgeo(temp1, temp2, &datum2_ne, EVER);
 }
 
 /**
- * @ingroup meos_geo_comp_ever
- * @brief Return true if two temporal poses are always equal
- * @param[in] temp1,temp2 Temporal poses
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return true if two temporal rigid geometries are always equal
+ * @param[in] temp1,temp2 Temporal rigid geometries
  * @csqlfn #Always_eq_trgeo_trgeo()
  */
-int
+inline int
 always_eq_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_trgeo_trgeo(temp1, temp2, &datum2_eq, ALWAYS);
 }
 
 /**
- * @ingroup meos_geo_comp_ever
- * @brief Return true if two temporal poses are always different
- * @param[in] temp1,temp2 Temporal poses
+ * @ingroup meos_rgeo_comp_ever
+ * @brief Return true if two temporal rigid geometries are always different
+ * @param[in] temp1,temp2 Temporal rigid geometries
  * @csqlfn #Always_ne_trgeo_trgeo()
  */
-int
+inline int
 always_ne_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_trgeo_trgeo(temp1, temp2, &datum2_ne, ALWAYS);
@@ -270,7 +273,8 @@ always_ne_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Return the temporal comparison of a geo and a temporal geo
+ * @brief Return the temporal comparison of a geometry and a temporal rigid
+ * geometry
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
  * @param[in] func Comparison function
@@ -297,8 +301,8 @@ tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
 }
 
 /**
- * @brief Return the temporal comparison of a temporal geo and a
- * geo
+ * @brief Return the temporal comparison of a temporal rigid geometry and a
+ * geometry
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
  * @param[in] func Comparison function
@@ -326,26 +330,28 @@ tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_geo_comp_temp
- * @brief Return the temporal equality of a geo and a temporal geo
+ * @ingroup meos_rgeo_comp_temp
+ * @brief Return the temporal equality of a geometry and a temporal rigid
+ * geometry
  * @param[in] gs Geometry
  * @param[in] temp Temporal value
  * @csqlfn #Teq_geo_trgeo()
  */
-Temporal *
+inline Temporal *
 teq_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return tcomp_geo_trgeo(gs, temp, &datum2_eq);
 }
 
 /**
- * @ingroup meos_geo_comp_temp
- * @brief Return the temporal inequality of a geo and a temporal geo
+ * @ingroup meos_rgeo_comp_temp
+ * @brief Return the temporal inequality of a geometry and a temporal rigid
+ * geometry
  * @param[in] gs Geometry
  * @param[in] temp Temporal value
  * @csqlfn #Tne_geo_trgeo()
  */
-Temporal *
+inline Temporal *
 tne_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return tcomp_geo_trgeo(gs, temp, &datum2_ne);
@@ -354,28 +360,28 @@ tne_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_geo_comp_temp
- * @brief Return the temporal equality of a temporal geo and a
- * geo
+ * @ingroup meos_rgeo_comp_temp
+ * @brief Return the temporal equality of a temporal rigid geometry and a
+ * geometry
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
  * @csqlfn #Teq_trgeo_geo()
  */
-Temporal *
+inline Temporal *
 teq_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tcomp_trgeo_geo(temp, gs, &datum2_eq);
 }
 
 /**
- * @ingroup meos_geo_comp_temp
- * @brief Return the temporal inequality of a temporal geo and a
- * geo
+ * @ingroup meos_rgeo_comp_temp
+ * @brief Return the temporal inequality of a temporal rigid geometry and a
+ * geometry
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
  * @csqlfn #Tne_trgeo_geo()
  */
-Temporal *
+inline Temporal *
 tne_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tcomp_trgeo_geo(temp, gs, &datum2_ne);

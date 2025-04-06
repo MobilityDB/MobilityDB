@@ -268,7 +268,7 @@ number_timestamptz_to_tbox(Datum value, meosType basetype, TimestampTz t)
  * @param[in] t Timestamp
  * @csqlfn #Number_timestamptz_to_tbox()
  */
-TBox *
+inline TBox *
 int_timestamptz_to_tbox(int i, TimestampTz t)
 {
   return number_timestamptz_to_tbox(Int32GetDatum(i), T_INT4, t);
@@ -281,7 +281,7 @@ int_timestamptz_to_tbox(int i, TimestampTz t)
  * @param[in] t Timestamp
  * @csqlfn #Number_timestamptz_to_tbox()
  */
-TBox *
+inline TBox *
 float_timestamptz_to_tbox(double d, TimestampTz t)
 {
   return number_timestamptz_to_tbox(Float8GetDatum(d), T_FLOAT8, t);
@@ -1475,7 +1475,7 @@ contains_tbox_tbox(const TBox *box1, const TBox *box2)
  * @param[in] box1,box2 Temporal boxes
  * @csqlfn #Contained_tbox_tbox()
  */
-bool
+inline bool
 contained_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   return contains_tbox_tbox(box2, box1);

@@ -99,19 +99,23 @@
  *
  * @defgroup meos_geo Functions for temporal geometries
  * @ingroup meos_api
- * @brief Functions for temporal types
+ * @brief Functions for temporal geometries
  *
  * @defgroup meos_cbuffer Functions for temporal circular buffers
  * @ingroup meos_api
- * @brief Functions for temporal types
+ * @brief Functions for temporal temporal circular buffers
  *
  * @defgroup meos_npoint Functions for temporal network points
  * @ingroup meos_api
- * @brief Functions for temporal types
+ * @brief Functions for temporal network points
  *
  * @defgroup meos_pose Functions for temporal poses
  * @ingroup meos_api
- * @brief Functions for temporal types
+ * @brief Functions for temporal poses
+ *
+ * @defgroup meos_rgeo Functions for temporal rigid geometries
+ * @ingroup meos_api
+ * @brief Functions for temporal rigid geometries
  *
  * @defgroup meos_misc Miscellaneous functions
  * @ingroup meos_api

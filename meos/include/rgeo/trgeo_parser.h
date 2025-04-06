@@ -42,7 +42,6 @@
 
 /*****************************************************************************/
 
-extern bool trgeo_parse_geom(const char **str, int32_t temp_srid, Datum *result);
 extern Temporal *trgeo_parse(const char **str, meosType temptype);
 
 /*****************************************************************************/

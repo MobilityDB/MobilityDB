@@ -37,7 +37,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
+// #include <catalog/pg_type.h>
 /* MEOS */
 #include "general/temporal.h"
 
@@ -45,7 +45,7 @@
  * General functions
  *****************************************************************************/
 
-extern Datum trgeoseq_geom_p(const TSequence *seq);
+extern const GSERIALIZED *trgeoseq_geom_p(const TSequence *seq);
 
 extern size_t trgeoseq_pose_varsize(const TSequence *seq);
 extern void trgeoseq_set_pose(TSequence *seq);
@@ -53,19 +53,19 @@ extern TSequence *trgeoseq_tposeseq(const TSequence *seq);
 
 /* Constructor functions */
 
-extern bool trgeoseq_make_valid(const Datum geom, const TInstant **instants,
+extern bool trgeoseq_make_valid(const GSERIALIZED *geom, const TInstant **instants,
   int count, bool lower_inc, bool upper_inc, bool linear);
-extern TSequence *trgeoseq_make1_exp(const Datum geom, const TInstant **instants,
+extern TSequence *trgeoseq_make1_exp(const GSERIALIZED *geom, const TInstant **instants,
   int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
-extern TSequence *trgeoseq_make1(const Datum geom, const TInstant **instants,
+extern TSequence *trgeoseq_make1(const GSERIALIZED *geom, const TInstant **instants,
   int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
-extern TSequence *trgeoseq_make_exp(const Datum geom, const TInstant **instants,
+extern TSequence *trgeoseq_make_exp(const GSERIALIZED *geom, const TInstant **instants,
   int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
-extern TSequence *trgeoseq_make(const Datum geom, const TInstant **instants,
+extern TSequence *trgeoseq_make(const GSERIALIZED *geom, const TInstant **instants,
   int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
-extern TSequence *trgeoseq_make_free_exp(const Datum geom, TInstant **instants,
+extern TSequence *trgeoseq_make_free_exp(const GSERIALIZED *geom, TInstant **instants,
   int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
-extern TSequence *trgeoseq_make_free(const Datum geom, TInstant **instants,
+extern TSequence *trgeoseq_make_free(const GSERIALIZED *geom, TInstant **instants,
   int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 
 /* Transformation functions */

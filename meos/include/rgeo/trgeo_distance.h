@@ -37,7 +37,7 @@
 
 #include <postgres.h>
 #include <liblwgeom.h>
-#include <catalog/pg_type.h>
+// #include <catalog/pg_type.h>
 
 #include "general/temporal.h"
 
@@ -107,12 +107,8 @@ typedef struct {
 /* Distance functions */
 
 extern Temporal *distance_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *distance_trgeo_tpoint(const Temporal *temp1,
-  const Temporal *temp2);
-extern Temporal *distance_trgeo_trgeo(const Temporal *temp1,
-  const Temporal *temp2);
-
-/* Nearest approach distance/instance and shortest line functions */
+extern Temporal *distance_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *distance_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
 
 extern TInstant *nai_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern TInstant *nai_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2);
@@ -123,12 +119,9 @@ extern double nad_trgeo_stbox(const Temporal *temp, const STBox *box);
 extern double nad_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern double nad_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
 
-extern bool shortestline_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  GSERIALIZED **result);
-extern bool shortestline_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2,
-  GSERIALIZED **result);
-extern bool shortestline_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
-  GSERIALIZED **result);
+extern GSERIALIZED *shortestline_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern GSERIALIZED *shortestline_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern GSERIALIZED *shortestline_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
 
 /*****************************************************************************/
 

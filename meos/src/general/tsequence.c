@@ -73,7 +73,6 @@
   #include "pose/tpose_spatialfuncs.h"
 #endif
 #if RGEO
-  // #include <meos_rgeo.h>
   #include "rgeo/trgeo.h"
 #endif
 
@@ -519,8 +518,8 @@ tdiscseq_find_timestamptz(const TSequence *seq, TimestampTz t)
 }
 
 /**
- * @brief Return an array of arrays of temporal sequences converted into an
- * array of temporal sequences
+ * @brief Return an array of temporal sequences converted from an array of
+ * arrays of temporal sequences
  * @details This function is called by all the functions in which the number of
  * output sequences cannot be determined in advance, typically when each
  * segment of the input sequence can produce an arbitrary number of output
@@ -1018,7 +1017,7 @@ tsequence_make_free_exp(TInstant **instants, int count, int maxcount,
  * @param[in] normalize True if the resulting value should be normalized
  * @see #tsequence_make
  */
-TSequence *
+inline TSequence *
 tsequence_make_free(TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, bool normalize)
 {
@@ -1714,7 +1713,7 @@ tsequence_minmax_inst(const TSequence *seq,
  * two temporal points from their temporal distance
  * @csqlfn #Temporal_min_instant()
  */
-const TInstant *
+inline const TInstant *
 tsequence_min_inst(const TSequence *seq)
 {
   return tsequence_minmax_inst(seq, &datum_lt);
@@ -1729,7 +1728,7 @@ tsequence_min_inst(const TSequence *seq)
  * @param[in] seq Temporal sequence
  * @csqlfn #Temporal_max_instant()
  */
-const TInstant *
+inline const TInstant *
 tsequence_max_inst(const TSequence *seq)
 {
   return tsequence_minmax_inst(seq, &datum_gt);
@@ -2408,7 +2407,7 @@ intersection_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
  * @param[out] inter1,inter2 Output values
  * @return Return false if the input values do not overlap on time.
  */
-bool
+inline bool
 intersection_tdiscseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
   TSequence **inter1, TSequence **inter2)
 {
@@ -2699,7 +2698,7 @@ intersection_tsequence_tinstant(const TSequence *seq, const TInstant *inst,
  * @param[out] inter1, inter2 Output values
  * @return Return false if the input values do not overlap on time.
  */
-bool
+inline bool
 intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
   TInstant **inter1, TInstant **inter2)
 {

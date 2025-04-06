@@ -102,7 +102,7 @@ geo_copy(const GSERIALIZED *g)
  * @brief Get the SRID of a geometry/geography
  * @param[in] gs Geometry
  */
-int32_t
+inline int32_t
 geo_srid(const GSERIALIZED *gs)
 {
   return gserialized_get_srid(gs);
@@ -127,7 +127,7 @@ geo_set_srid(const GSERIALIZED *gs, int32_t srid)
  * @brief Get the SRID of a geometry/geography
  * @param[in] gs Geometry
  */
-bool
+inline bool
 geo_is_empty(const GSERIALIZED *gs)
 {
   return gserialized_is_empty(gs);
@@ -1029,7 +1029,7 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS functions: @p ST_Intersects(PG_FUNCTION_ARGS)
  */
-bool
+inline bool
 geom_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   return geom_spatialrel(gs1, gs2, INTERSECTS);
@@ -1041,7 +1041,7 @@ geom_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS functions: @p contains(PG_FUNCTION_ARGS)
  */
-bool
+inline bool
 geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   return geom_spatialrel(gs1, gs2, CONTAINS);
@@ -1054,7 +1054,7 @@ geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_Covers(PG_FUNCTION_ARGS)
  */
-bool
+inline bool
 geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   return geom_spatialrel(gs1, gs2, TOUCHES);
@@ -1066,7 +1066,7 @@ geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_Covers(PG_FUNCTION_ARGS)
  */
-bool
+inline bool
 geom_covers(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   return geom_spatialrel(gs1, gs2, COVERS);
@@ -1078,7 +1078,7 @@ geom_covers(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_Disjoint(PG_FUNCTION_ARGS)
  */
-bool
+inline bool
 geom_disjoint2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   return ! geom_spatialrel(gs1, gs2, INTERSECTS);
@@ -2331,7 +2331,7 @@ geog_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance,
  * @param[in] use_spheroid True when using a spheroid
  * @note PostGIS function: @p geography_intersects(PG_FUNCTION_ARGS)
  */
-bool
+inline bool
 geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   bool use_spheroid)
 {
@@ -2726,7 +2726,7 @@ geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended)
  * @param[in] precision Maximum number of decimal digits
  * @note PostGIS function: @p LWGEOM_asText(PG_FUNCTION_ARGS)
  */
-char *
+inline char *
 geo_as_text(const GSERIALIZED *gs, int precision)
 {
   return geo_as_wkt(gs, precision, false);
@@ -2742,7 +2742,7 @@ geo_as_text(const GSERIALIZED *gs, int precision)
  * accept (HEX)WKB or EWKT.
  * @note PostGIS function: @p LWGEOM_asEWKT(PG_FUNCTION_ARGS)
  */
-char *
+inline char *
 geo_as_ewkt(const GSERIALIZED *gs, int precision)
 {
   return geo_as_wkt(gs, precision, true);
@@ -2757,7 +2757,7 @@ geo_as_ewkt(const GSERIALIZED *gs, int precision)
  * accept (HEX)WKB or EWKT.
  * @note PostGIS function: @p LWGEOM_from_text(PG_FUNCTION_ARGS)
  */
-GSERIALIZED *
+inline GSERIALIZED *
 geom_from_hexewkb(const char *wkt)
 {
   return geom_in(wkt, -1);
@@ -2772,7 +2772,7 @@ geom_from_hexewkb(const char *wkt)
  * accept (HEX)WKB or EWKT.
  * @note PostGIS function: @p LWGEOM_from_text(PG_FUNCTION_ARGS)
  */
-GSERIALIZED *
+inline GSERIALIZED *
 geog_from_hexewkb(const char *wkt)
 {
   return geog_in(wkt, -1);

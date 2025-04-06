@@ -58,7 +58,7 @@
 
 #if MEOS
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal point restricted to a point
  * @param[in] temp Temporal value
  * @param[in] gs Value
@@ -75,7 +75,7 @@ tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal geo restricted to a geometry/geography
  * @param[in] temp Temporal value
  * @param[in] gs Value
@@ -92,7 +92,7 @@ tgeo_at_value(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal point restricted to the complement of a point
  * @param[in] temp Temporal value
  * @param[in] gs Value
@@ -109,7 +109,7 @@ tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal geo restricted to the complement of a geo
  * @param[in] temp Temporal value
  * @param[in] gs Value
@@ -126,7 +126,7 @@ tgeo_minus_value(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the value of a temporal geo at a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
@@ -592,7 +592,7 @@ tgeoinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo instant restricted to (the complement of) a
  * spatiotemporal box
  * @param[in] inst temporal geo instant
@@ -1005,7 +1005,7 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo sequence restricted to (the complement of) a
  * spatiotemporal box
  * @param[in] seq temporal geo sequence
@@ -1057,7 +1057,7 @@ tgeoseq_restrict_stbox(const TSequence *seq, const STBox *box,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo sequence set restricted to (the complement of)
  * a spatiotemporal box
  * @param[in] ss Temporal geo sequence set
@@ -1113,7 +1113,7 @@ tgeoseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo restricted to (the complement of) a
  * spatiotemporal box
  * @param[in] temp Temporal geo
@@ -1486,7 +1486,7 @@ tgeoinst_restrict_geom_iter(const TInstant *inst, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo instant restricted to (the complement of) a
  * geometry
  * and possibly a Z span and a timestamptz span
@@ -1967,7 +1967,7 @@ tpointseq_linear_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo sequence restricted to (the complement of) a
  * geometry and possibly a Z span and a timestamptz span
  * @param[in] seq Temporal geo
@@ -2014,7 +2014,7 @@ tgeoseq_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo sequence set restricted to (the complement
  * of) a geometry and possibly a Z span and a timestamptz span
  * @param[in] ss Temporal geo
@@ -2068,7 +2068,7 @@ tgeoseqset_restrict_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo restricted to (the complement of) a geometry
  * and possibly a Z span
  * @param[in] temp Temporal geo

@@ -41,6 +41,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_geo.h>
+#include <meos_pose.h>
 #include <meos_internal.h>
 #include "geo/stbox.h"
 
@@ -52,10 +53,13 @@
  * Input/output functions
  *****************************************************************************/
 
+extern char *trgeo_out(const Temporal *temp);
+
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
 
+extern TInstant *trgeoinst_make(const GSERIALIZED *geom, const Pose *pose, TimestampTz t);
 extern Temporal *geo_tpose_to_trgeo(const GSERIALIZED *gs, const Temporal *temp);
 
 /*****************************************************************************
@@ -69,6 +73,9 @@ extern Temporal *trgeo_tpoint(const Temporal *temp);
  * Accessor functions
  *****************************************************************************/
 
+extern GSERIALIZED *trgeo_start_value(const Temporal *temp);
+extern GSERIALIZED *trgeo_end_value(const Temporal *temp);
+extern bool trgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result);
 extern TInstant *trgeo_start_instant(const Temporal *temp);
 extern TSequence *trgeo_start_sequence(const Temporal *temp);
 extern TInstant *trgeo_end_instant(const Temporal *temp);
@@ -144,6 +151,12 @@ extern Temporal *trgeo_rotation(const Temporal *temp);
 
 extern Temporal *trgeo_tpoint(const Temporal *temp);
 // extern TInstant *tposeinst_tgeompointinst(const TInstant *inst);
+
+/*****************************************************************************/
+
+/* Distance functions */
+
+
 
 /*****************************************************************************/
 

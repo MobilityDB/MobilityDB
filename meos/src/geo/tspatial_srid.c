@@ -59,7 +59,6 @@
   #include "pose/pose.h"
 #endif
 #if RGEO
-  // #include <meos_rgeo.h>
   #include "rgeo/trgeo.h"
 #endif
 

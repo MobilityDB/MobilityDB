@@ -392,8 +392,8 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
  * @brief Generic aggregate function for temporal sequences
  * @param[in] sequences1 Accumulated state
  * @param[in] count1 Number of elements in the accumulated state
- * @param[in] sequences2 Sequences of a temporal sequence set value
- * @param[in] count2 Number of elements in the temporal sequence set value
+ * @param[in] sequences2 Sequences of a temporal sequence set
+ * @param[in] count2 Number of elements in the temporal sequence set
  * @param[in] func Function, may be NULL for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments
  * @param[out] newcount Number of elements in the result
@@ -712,7 +712,7 @@ tcontseq_transform_tagg(const TSequence *seq,
 }
 
 /**
- * @brief Transform a temporal sequence set value for aggregation
+ * @brief Transform a temporal sequence set for aggregation
  */
 TSequence **
 tsequenceset_transform_tagg(const TSequenceSet *ss,

@@ -473,7 +473,7 @@ SELECT round(degrees(angularDifference(tgeompoint '{[Point(1 1)@2001-01-01,
 			<listitem xml:id="bearing">
 				<indexterm significance="normal"><primary><varname>bearing</varname></primary></indexterm>
 				<para>Return the temporal bearing &Z_support; &geography_support;</para>
-				<para><varname>bearing({tpoint, point}, {tpoint, point}) → tfloat</varname></para>
+				<para><varname>bearing({tpoint,point},{tpoint,point}) → tfloat</varname></para>
 				<para>Notice that this function does not accept two temporal geographic points.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]',
@@ -507,7 +507,7 @@ SELECT asText(round(tgeography 'Linestring(1.12345 1.12345,2.12345 2.12345)@2001
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="makeSimple">
+			<listitem xml:id="tpoint_makeSimple">
 				<indexterm significance="normal"><primary><varname>makeSimple</varname></primary></indexterm>
 				<para>Return an array of fragments of the temporal point which are simple &Z_support;</para>
 				<para><varname>makeSimple(tpoint) → tgeompoint[]</varname></para>
@@ -531,7 +531,7 @@ SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2001-01-01, Point(1 1 1)@200
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="geoMeasure">
+			<listitem xml:id="tgeo_geoMeasure">
 				<indexterm significance="normal"><primary><varname>geoMeasure</varname></primary></indexterm>
 				<para>Construct a geometry/geography with M measure from a temporal point and a temporal float &Z_support; &geography_support;</para>
 				<para><varname>geoMeasure(tpoint,tfloat,segmentize=false) → geo</varname></para>
@@ -576,12 +576,12 @@ ramp_color(
 				</figure>
 			</listitem>
 
-			<listitem xml:id="affine">
+			<listitem xml:id="tgeo_affine">
 				<indexterm significance="normal"><primary><varname>affine</varname></primary></indexterm>
 				<para>Return the 3D affine transform of a temporal geometry to do things like translate, rotate, scale in one step &Z_support;</para>
-				<para><varname>affine(tgeo,float a, float b, float c, float d, float e, float f, float g,</varname></para>
-				<para><varname>  float h, float i, float xoff, float yoff, float zoff) → tgeo</varname></para>
-				<para><varname>affine(tgeo,float a, float b, float d, float e, float xoff, float yoff) → tgeo</varname></para>
+				<para><varname>affine(tgeo,float a,float b,float c,float d,float e,float f,float g,</varname></para>
+				<para><varname>  float h,float i,float xoff,float yoff,float zoff) → tgeo</varname></para>
+				<para><varname>affine(tgeo,float a,float b,float d,float e,float xoff,float yoff) → tgeo</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Rotate a 3D temporal point 180 degrees about the z axis
 SELECT asEWKT(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1,
@@ -600,7 +600,7 @@ FROM (SELECT tgeometry '[Point(1 1)@2001-01-01,
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="rotate">
+			<listitem xml:id="tgeo_rotate">
 				<indexterm significance="normal"><primary><varname>rotate</varname></primary></indexterm>
 				<para>Return the temporal point rotated counter-clockwise about the origin point</para>
 				<para><varname>rotate(tgeo,float radians) → tgeo</varname></para>

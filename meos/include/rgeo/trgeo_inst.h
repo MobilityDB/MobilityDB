@@ -36,15 +36,16 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
+// #include <catalog/pg_type.h>
 /* MEOS */
 #include "general/temporal.h"
+#include "pose/pose.h"
 
 /*****************************************************************************
  * General functions
  *****************************************************************************/
 
-extern Datum trgeoinst_geom_p(const TInstant *inst);
+extern const GSERIALIZED *trgeoinst_geom_p(const TInstant *inst);
 
 extern size_t trgeoinst_pose_varsize(const TInstant *inst);
 extern void trgeoinst_set_pose(TInstant *inst);
@@ -52,9 +53,7 @@ extern TInstant *trgeoinst_tposeinst(const TInstant *inst);
 
 /* Constructor functions */
 
-extern TInstant *trgeoinst_make1(Datum geom, Datum value, meosType temptype,
-  TimestampTz t);
-extern TInstant *trgeoinst_make(Datum geom, Datum value, meosType temptype,
+extern TInstant *trgeoinst_make1(const GSERIALIZED *geom, const Pose *pose,
   TimestampTz t);
 
 /* Transformation functions */

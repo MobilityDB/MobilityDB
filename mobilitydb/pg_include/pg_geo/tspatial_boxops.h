@@ -38,7 +38,7 @@
 #include <postgres.h>
 #include <utils/palloc.h>
 #include <fmgr.h>
-#include <catalog/pg_type.h>
+// #include <catalog/pg_type.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */

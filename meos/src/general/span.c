@@ -554,6 +554,7 @@ set_set_subspan(const Set *s, int fromidx, int toidx, Span *result)
 void
 set_set_span(const Set *s, Span *result)
 {
+  assert(s); assert(result);
   return set_set_subspan(s, 0, s->count - 1, result);
 }
 

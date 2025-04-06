@@ -112,13 +112,11 @@ same_lwgeom(const LWGEOM *geom1, const LWGEOM *geom2)
  * reference geometry
  */
 bool
-ensure_same_geom(Datum geom_datum1, Datum geom_datum2)
+ensure_same_geom(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-  if (geom_datum1 == geom_datum2)
+  if (gs1 == gs2)
     return true;
 
-  GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(geom_datum1);
-  GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(geom_datum2);
   if (gserialized_get_type(gs1) != gserialized_get_type(gs2))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, 
@@ -223,9 +221,8 @@ lwgeom_apply_pose(const Pose *pose, LWGEOM *geom)
  * @brief 
  */
 double
-geom_radius(Datum geom_datum)
+geom_radius(const GSERIALIZED *gs)
 {
-  GSERIALIZED *gs = DatumGetGserializedP(geom_datum);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   LWPOINTITERATOR *it = lwpointiterator_create(geom);
   double r = 0;

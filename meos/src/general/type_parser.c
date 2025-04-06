@@ -793,7 +793,7 @@ tcontseq_parse(const char **str, meosType temptype, interpType interp,
 }
 
 /**
- * @brief Parse a temporal sequence set value from the buffer
+ * @brief Parse a temporal sequence set from the buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation

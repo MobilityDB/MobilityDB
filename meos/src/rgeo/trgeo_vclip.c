@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Distance functions for temporal rigid geometries.
+ * @file
+ * @brief Distance functions for temporal rigid geometries
  */
 
 #include "rgeo/trgeo_vclip.h"
@@ -320,7 +321,8 @@ v_clip_tpoly_point(const LWPOLY *poly, const LWPOINT *point,
   } while (result == MEOS_CONTINUE);
 
   if (loop > MEOS_MAX_ITERS)
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "V-clip: Cycle detected, current feature: %d", *poly_feature);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, 
+      "V-clip: Cycle detected, current feature: %d", *poly_feature);
 
   if (dist && result == MEOS_DISJOINT)
   {
@@ -568,8 +570,10 @@ edge_edge_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
   }
 
   /* Check if the edges intersect */
-  if (compute_angle(v1_start, v2_start, v2_end) * compute_angle(v1_end, v2_start, v2_end) < 0
-    && compute_angle(v2_start, v1_start, v1_end) * compute_angle(v2_end, v1_start, v1_end) < 0)
+  if (compute_angle(v1_start, v2_start, v2_end) * 
+        compute_angle(v1_end, v2_start, v2_end) < 0 && 
+      compute_angle(v2_start, v1_start, v1_end) * 
+        compute_angle(v2_end, v1_start, v1_end) < 0)
     return MEOS_INTERSECT;
 
   /* Compute distances of each vertex to opposing edge */

@@ -812,7 +812,7 @@ ensure_valid_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_conversion
+ * @ingroup meos_internal_geo_conversion
  * @brief Return a temporal geometry/geography transformed from/to a temporal
  * geometry/geography
  * @param[in] inst Temporal geo instant
@@ -839,7 +839,7 @@ tgeominst_tgeoginst(const TInstant *inst, bool oper)
 }
 
 /**
- * @ingroup meos_internal_temporal_conversion
+ * @ingroup meos_internal_geo_conversion
  * @brief Return a temporal geometry/geography transformed from/to a temporal
  * geometry/geography
  * @param[in] seq Temporal geo sequence 
@@ -859,7 +859,7 @@ tgeomseq_tgeogseq(const TSequence *seq, bool oper)
 }
 
 /**
- * @ingroup meos_internal_temporal_conversion
+ * @ingroup meos_internal_geo_conversion
  * @brief Return a temporal geometry/geography transformed from/to a temporal
  * geometry/geography
  * @param[in] ss Temporal point sequence set
@@ -879,7 +879,7 @@ tgeomseqset_tgeogseqset(const TSequenceSet *ss, bool oper)
 }
 
 /**
- * @ingroup meos_internal_temporal_conversion
+ * @ingroup meos_internal_geo_conversion
  * @brief Return a temporal geometry/geography transformed from/to a temporal
  * geometry/geography
  * @param[in] temp Temporal geo
@@ -1013,7 +1013,7 @@ ensure_tgeo_point_type(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_conversion
+ * @ingroup meos_internal_geo_conversion
  * @brief Return a temporal geo transformed from/to a temporal point
  * @param[in] inst Temporal instant
  * @param[in] oper True when transforming from temporal geo to temporal point,
@@ -1042,7 +1042,7 @@ tgeoinst_tpointinst(const TInstant *inst, bool oper)
 }
 
 /**
- * @ingroup meos_internal_temporal_conversion
+ * @ingroup meos_internal_geo_conversion
  * @brief Return a temporal geo transformed from/to a temporal point
  * @param[in] seq Temporal sequence 
  * @param[in] oper True when transforming from temporal geo to temporal point,
@@ -1065,7 +1065,7 @@ tgeoseq_tpointseq(const TSequence *seq, bool oper)
 }
 
 /**
- * @ingroup meos_internal_temporal_conversion
+ * @ingroup meos_internal_geo_conversion
  * @brief Return a temporal geo transformed from/to a temporal point
  * @param[in] ss Temporal sequence set
  * @param[in] oper True when transforming from temporal geo to temporal point,
@@ -1087,7 +1087,7 @@ tgeoseqset_tpointseqset(const TSequenceSet *ss, bool oper)
 }
 
 /**
- * @ingroup meos_internal_temporal_conversion
+ * @ingroup meos_internal_geo_conversion
  * @brief Return a temporal geo transformed from/to a temporal point
  * @param[in] temp Temporal value
  * @param[in] oper True when transforming from temporal geo to temporal point,

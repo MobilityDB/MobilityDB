@@ -55,12 +55,12 @@
 /**
  * @brief Returns the reference geometry of the temporal value
  */
-Datum
+const GSERIALIZED *
 trgeoseq_geom_p(const TSequence *seq)
 {
   assert(seq); assert(seq->temptype == T_TRGEOMETRY);
-  assert(ensure_has_geom(seq->flags));
-  return PointerGetDatum(
+  assert(MEOS_FLAGS_GET_GEOM(seq->flags));
+  return (GSERIALIZED *) (
     /* start of data */
     ((char *) seq) + DOUBLE_PAD(sizeof(TSequence)) +
       ((seq->bboxsize == 0) ? 0 : (seq->bboxsize - sizeof(Span))) +
@@ -77,7 +77,7 @@ trgeoseq_geom_p(const TSequence *seq)
 size_t
 trgeoseq_pose_varsize(const TSequence *seq)
 {
-  Datum geom = trgeoseq_geom_p(seq);
+  const GSERIALIZED *geom = trgeoseq_geom_p(seq);
   return VARSIZE(seq) - DOUBLE_PAD(VARSIZE(geom));
 }
 
@@ -113,7 +113,7 @@ trgeoseq_tposeseq(const TSequence *seq)
  * @brief Ensure the validity of the arguments when creating a temporal value
  */
 bool
-trgeoseq_make_valid(const Datum geom, const TInstant **instants,
+trgeoseq_make_valid(const GSERIALIZED *geom, const TInstant **instants,
   int count, bool lower_inc, bool upper_inc, bool linear)
 {
   if (! tsequence_make_valid(instants, count, lower_inc, upper_inc, linear))
@@ -152,8 +152,8 @@ trgeoseq_make_valid(const Datum geom, const TInstant **instants,
  * @pre The validity of the arguments has been tested before
  */
 TSequence *
-trgeoseq_make1_exp(const Datum geom, const TInstant **instants, int count,
-  int maxcount, bool lower_inc, bool upper_inc, interpType interp,
+trgeoseq_make1_exp(const GSERIALIZED *geom, const TInstant **instants,
+  int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp,
   bool normalize)
 {
   /* Normalize the array of instants */
@@ -183,7 +183,7 @@ trgeoseq_make1_exp(const Datum geom, const TInstant **instants, int count,
   else
     maxcount = newcount;
   /* Size of the reference geometry */
-  size_t geom_size = DOUBLE_PAD(VARSIZE(DatumGetPointer(geom)));
+  size_t geom_size = DOUBLE_PAD(VARSIZE(geom));
   /* Total size of the struct */
   size_t memsize = DOUBLE_PAD(sizeof(TSequence)) + bboxsize_extra +
     (maxcount + 1) * sizeof(size_t) + insts_size + geom_size;
@@ -227,7 +227,7 @@ trgeoseq_make1_exp(const Datum geom, const TInstant **instants, int count,
     pos += DOUBLE_PAD(inst_size);
   }
   /* Store the reference geometry */
-  void *geom_from = DatumGetPointer(geom);
+  void *geom_from = (void *) geom;
   memcpy(((char *) result) + pdata + pos, geom_from, VARSIZE(geom_from));
   (TSEQUENCE_OFFSETS_PTR(result))[newcount] = pos;
 
@@ -241,7 +241,7 @@ trgeoseq_make1_exp(const Datum geom, const TInstant **instants, int count,
  * @pre The validity of the arguments has been tested before
  */
 inline TSequence *
-trgeoseq_make1(const Datum geom, const TInstant **instants, int count,
+trgeoseq_make1(const GSERIALIZED *geom, const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
   return trgeoseq_make1_exp(geom, instants, count, count, lower_inc, upper_inc,
@@ -259,8 +259,8 @@ trgeoseq_make1(const Datum geom, const TInstant **instants, int count,
  * @param[in] normalize True if the resulting value should be normalized
  */
 TSequence *
-trgeoseq_make_exp(const Datum geom, const TInstant **instants, int count,
-  int maxcount, bool lower_inc, bool upper_inc, interpType interp,
+trgeoseq_make_exp(const GSERIALIZED *geom, const TInstant **instants,
+  int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp,
   bool normalize)
 {
   if (! trgeoseq_make_valid(geom, instants, count, lower_inc, upper_inc,
@@ -271,7 +271,7 @@ trgeoseq_make_exp(const Datum geom, const TInstant **instants, int count,
 }
 
 /**
- * @ingroup libmeos_rgeo_constructor
+ * @ingroup meos_rgeo_constructor
  * @brief Construct a temporal sequence from an array of temporal instants.
  * @param[in] geom Reference geometry
  * @param[in] instants Array of instants
@@ -281,7 +281,7 @@ trgeoseq_make_exp(const Datum geom, const TInstant **instants, int count,
  * @param[in] normalize True if the resulting value should be normalized
  */
 inline TSequence *
-trgeoseq_make(const Datum geom, const TInstant **instants, int count,
+trgeoseq_make(const GSERIALIZED *geom, const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
   return trgeoseq_make_exp(geom, instants, count, count, lower_inc, upper_inc,
@@ -302,7 +302,7 @@ trgeoseq_make(const Datum geom, const TInstant **instants, int count,
  * @see tsequence_make
  */
 TSequence *
-trgeoseq_make_free_exp(const Datum geom, TInstant **instants, int count,
+trgeoseq_make_free_exp(const GSERIALIZED *geom, TInstant **instants, int count,
   int maxcount, bool lower_inc, bool upper_inc, interpType interp,
   bool normalize)
 {
@@ -318,7 +318,7 @@ trgeoseq_make_free_exp(const Datum geom, TInstant **instants, int count,
 }
 
 /**
- * @ingroup libmeos_rgeo_constructor
+ * @ingroup meos_rgeo_constructor
  * @brief Construct a temporal sequence from an array of temporal instants
  * and free the array and the instants after the creation
  * @param[in] geom Reference geometry
@@ -331,7 +331,7 @@ trgeoseq_make_free_exp(const Datum geom, TInstant **instants, int count,
  * @see tsequence_make
  */
 inline TSequence *
-trgeoseq_make_free(const Datum geom, TInstant **instants, int count,
+trgeoseq_make_free(const GSERIALIZED *geom, TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
   return trgeoseq_make_free_exp(geom, instants, count, count,
@@ -347,7 +347,6 @@ trgeoseq_make_free(const Datum geom, TInstant **instants, int count,
  * @brief Return a temporal instant transformed into a temporal sequence
  * @param[in] inst Temporal instant
  * @param[in] interp Interpolation
- * @csqlfn #Trgeo_to_tsequence()
  */
 TSequence *
 trgeoinst_to_tsequence(const TInstant *inst, interpType interp)
@@ -361,7 +360,6 @@ trgeoinst_to_tsequence(const TInstant *inst, interpType interp)
  * @ingroup meos_internal_rgeo_transf
  * @brief Return a temporal sequence set transformed into a temporal sequence
  * @param[in] ss Temporal sequence set
- * @csqlfn #Trgeoseqseq_to_tsequence()
  */
 TSequence *
 trgeoseqset_to_tsequence(const TSequenceSet *ss)

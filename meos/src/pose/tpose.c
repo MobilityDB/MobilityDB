@@ -141,7 +141,6 @@ tpose_out(const Temporal *temp, int maxdd)
     return NULL;
   return temporal_out(temp, maxdd);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_pose_inout
@@ -150,11 +149,12 @@ tpose_out(const Temporal *temp, int maxdd)
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-Temporal *
+inline Temporal *
 tpose_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TPOSE);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Costructor functions

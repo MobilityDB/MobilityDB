@@ -1284,7 +1284,7 @@ npointarr_set_stbox(const Datum *values, int count, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
+ * @ingroup meos_internal_npoint_accessor
  * @brief Return the bounding box of the network segment value
  * @param[in] ns Network segment
  * @param[out] box Spatiotemporal box
@@ -1518,8 +1518,8 @@ geom_nsegment(const GSERIALIZED *gs)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_base_conversion
- * @brief Return an array of network points converted into a geometry
+ * @ingroup meos_internal_npoint_conversion
+ * @brief Return a geometry converted from an array of network points
  * @param[in] points Array of network points
  * @param[in] count Number of elements in the input array
  * @pre The argument @p count is greater than 1, all points have the same SRID
@@ -1548,8 +1548,8 @@ npointarr_geom(Npoint **points, int count)
 }
 
 /**
- * @ingroup meos_internal_base_conversion
- * @brief Return an array of network segments converted into a geometry
+ * @ingroup meos_internal_npoint_conversion
+ * @brief Return a geometry converted from an array of network segments
  * @param[in] segments Array of network segments
  * @param[in] count Number of elements in the input array
  * @pre The argument @p count is greater than 1

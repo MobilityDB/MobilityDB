@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief Distance functions for temporal rigid geometries.
+ * @file
+ * @brief Distance functions for temporal rigid geometries
  */
 
 #include "rgeo/trgeo_vclip.h"
@@ -61,8 +62,8 @@
 
 PG_FUNCTION_INFO_V1(VClip_poly_point);
 /**
- * Returns the temporal distance between the geometry/geography point/polygon
- * and the temporal rigid geometry
+ * @brief Return the temporal distance between the geometry/geography 
+ * point/polygon and the temporal rigid geometry
  */
 PGDLLEXPORT Datum
 VClip_poly_point(PG_FUNCTION_ARGS)
@@ -86,8 +87,8 @@ VClip_poly_point(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(VClip_poly_poly);
 /**
- * Returns the temporal distance between the geometry/geography point/polygon
- * and the temporal rigid geometry
+ * @brief Return the temporal distance between the geometry/geography
+ * point/polygon and the temporal rigid geometry
  */
 PGDLLEXPORT Datum
 VClip_poly_poly(PG_FUNCTION_ARGS)
@@ -101,7 +102,8 @@ VClip_poly_poly(PG_FUNCTION_ARGS)
   LWPOLY *poly2 = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs_poly2));
   uint32_t poly1_feature = 0, poly2_feature = 0;
   double distance;
-  v_clip_tpoly_tpoly(poly1, poly2, NULL, NULL, &poly1_feature, &poly2_feature, &distance);
+  v_clip_tpoly_tpoly(poly1, poly2, NULL, NULL, &poly1_feature, &poly2_feature,
+    &distance);
   lwpoly_free(poly1);
   lwpoly_free(poly2);
   PG_FREE_IF_COPY(gs_poly1, 0);
@@ -111,8 +113,8 @@ VClip_poly_poly(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(VClip_tpoly_point);
 /**
- * Returns the temporal distance between the geometry/geography point/polygon
- * and the temporal rigid geometry
+ * @brief Return the temporal distance between the geometry/geography
+ * point/polygon and the temporal rigid geometry
  */
 PGDLLEXPORT Datum
 VClip_tpoly_point(PG_FUNCTION_ARGS)
@@ -131,7 +133,7 @@ VClip_tpoly_point(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(gs_point, 1);
     PG_RETURN_NULL();
   }
-  const GSERIALIZED *gs_poly = DatumGetGserializedP(trgeo_geom_p(temp));
+  const GSERIALIZED *gs_poly = trgeo_geom_p(temp);
   LWPOLY *poly = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs_poly));
   LWPOINT *point = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs_point));
   Pose *pose = DatumGetPoseP(value);
@@ -146,8 +148,8 @@ VClip_tpoly_point(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(VClip_tpoly_poly);
 /**
- * Returns the temporal distance between the geometry/geography point/polygon
- * and the temporal rigid geometry
+ * @brief Return the temporal distance between the geometry/geography
+ * point/polygon and the temporal rigid geometry
  */
 PGDLLEXPORT Datum
 VClip_tpoly_poly(PG_FUNCTION_ARGS)
@@ -166,7 +168,7 @@ VClip_tpoly_poly(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(gs_poly2, 1);
     PG_RETURN_NULL();
   }
-  GSERIALIZED *gs_poly1 = DatumGetGserializedP(trgeo_geom_p(temp));
+  const GSERIALIZED *gs_poly1 = trgeo_geom_p(temp);
   LWPOLY *poly1 = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs_poly1));
   LWPOLY *poly2 = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs_poly2));
   Pose *pose1 = DatumGetPoseP(value);
@@ -183,8 +185,8 @@ VClip_tpoly_poly(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(VClip_tpoly_tpoint);
 /**
- * Returns the temporal distance between the geometry/geography point/polygon
- * and the temporal rigid geometry
+ * @brief Return the temporal distance between the geometry/geography
+ * point/polygon and the temporal rigid geometry
  */
 PGDLLEXPORT Datum
 VClip_tpoly_tpoint(PG_FUNCTION_ARGS)
@@ -202,7 +204,7 @@ VClip_tpoly_tpoint(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(temp2, 1);
     PG_RETURN_NULL();
   }
-  GSERIALIZED *gs_poly = DatumGetGserializedP(trgeo_geom_p(temp1));
+  const GSERIALIZED *gs_poly = trgeo_geom_p(temp1);
   LWPOLY *poly = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs_poly));
   Pose *pose = DatumGetPoseP(value1);
   GSERIALIZED *gs_point = DatumGetGserializedP(value2);
@@ -219,8 +221,8 @@ VClip_tpoly_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(VClip_tpoly_tpoly);
 /**
- * Returns the temporal distance between the geometry/geography point/polygon
- * and the temporal rigid geometry
+ * @brief Return the temporal distance between the geometry/geography
+ * point/polygon and the temporal rigid geometry
  */
 PGDLLEXPORT Datum
 VClip_tpoly_tpoly(PG_FUNCTION_ARGS)
@@ -238,10 +240,10 @@ VClip_tpoly_tpoly(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(temp2, 1);
     PG_RETURN_NULL();
   }
-  GSERIALIZED *gs_poly1 = DatumGetGserializedP(trgeo_geom_p(temp1));
+  const GSERIALIZED *gs_poly1 = trgeo_geom_p(temp1);
   LWPOLY *poly1 = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs_poly1));
   Pose *pose1 = DatumGetPoseP(value1);
-  GSERIALIZED *gs_poly2 = DatumGetGserializedP(trgeo_geom_p(temp2));
+  const GSERIALIZED *gs_poly2 = trgeo_geom_p(temp2);
   LWPOLY *poly2 = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs_poly2));
   Pose *pose2 = DatumGetPoseP(value2);
   uint32_t poly1_feature = 0, poly2_feature = 0;

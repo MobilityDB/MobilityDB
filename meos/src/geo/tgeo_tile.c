@@ -739,7 +739,7 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
  * @param[out] count Number of values in the output array
  * @csqlfn #Stbox_space_tiles()
  */
-STBox *
+inline STBox *
 stbox_space_tiles(const STBox *bounds, double xsize, double ysize, double zsize,
   const GSERIALIZED *sorigin,  bool border_inc, int *count)
 {
@@ -839,7 +839,7 @@ stbox_space_time_tile_common(const GSERIALIZED *point, TimestampTz t,
  * @param[in] torigin Origin for the time dimension
  * @csqlfn Stbox_get_space_time_tile()
  */
-STBox *
+inline STBox *
 stbox_get_space_time_tile(const GSERIALIZED *point, TimestampTz t,
   double xsize, double ysize, double zsize, const Interval *duration,
   const GSERIALIZED *sorigin, TimestampTz torigin)
@@ -856,7 +856,7 @@ stbox_get_space_time_tile(const GSERIALIZED *point, TimestampTz t,
  * @param[in] sorigin Origin for the space dimension
  * @csqlfn Stbox_get_space_tile()
  */
-STBox *
+inline STBox *
 stbox_get_space_tile(const GSERIALIZED *point, double xsize, double ysize,
   double zsize, const GSERIALIZED *sorigin)
 {
@@ -872,7 +872,7 @@ stbox_get_space_tile(const GSERIALIZED *point, double xsize, double ysize,
  * @param[in] torigin Origin for the time dimension
  * @csqlfn Stbox_get_time_tile()
  */
-STBox *
+inline STBox *
 stbox_get_time_tile(TimestampTz t, const Interval *duration, TimestampTz torigin)
 {
   return stbox_space_time_tile_common(NULL, t, 0, 0, 0, duration, NULL,
@@ -983,7 +983,7 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
  * the upper border is assumed as outside of the box.
  * @param[out] count Number of elements in the output array
  */
-STBox *
+inline STBox *
 tgeo_space_boxes(const Temporal *temp, double xsize, double ysize, 
   double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, 
   int *count)
@@ -1144,7 +1144,7 @@ tpointseq_cont_set_tiles(const TSequence *seq, bool hasz, bool hast,
  * @param[in] state Grid definition
  * @param[out] bm Bit matrix
  */
-static int
+static inline int
 tpointseq_set_tiles(const TSequence *seq, bool hasz, bool hast,
   const STboxGridState *state, BitMatrix *bm)
 {
@@ -1306,7 +1306,7 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
  * @param[out] space_bins Array of space bins
  * @param[out] count Number of elements in the output arrays
  */
-Temporal **
+inline Temporal **
 tgeo_space_split(const Temporal *temp, double xsize, double ysize, 
   double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
   GSERIALIZED ***space_bins, int *count)

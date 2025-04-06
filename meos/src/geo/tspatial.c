@@ -215,7 +215,7 @@ spatialset_as_ewkt(const Set *s, int maxdd)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal spatial
  * instant
  * @param[in] inst Temporal instant
@@ -228,7 +228,7 @@ tspatialinst_as_text(const TInstant *inst, int maxdd)
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal
  * spatial sequence
  * @param[in] seq Temporal sequence
@@ -242,7 +242,7 @@ tspatialseq_as_text(const TSequence *seq, int maxdd)
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal
  * spatial sequence set
  * @param[in] ss Temporal sequence set
@@ -334,7 +334,7 @@ tspatial_as_ewkt(const Temporal *temp, int maxdd)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation
  * of an array of spatial values
  * @param[in] spatialarr Array of spatial values
@@ -369,7 +369,7 @@ spatialarr_wkt_out(const Datum *spatialarr, meosType elemtype, int count,
 
 #if MEOS
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return the Well-Known Text (WKT) representation of an array of
  * spatial values
  * @param[in] spatialarr Array of spatial values
@@ -377,7 +377,7 @@ spatialarr_wkt_out(const Datum *spatialarr, meosType elemtype, int count,
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Maximum number of decimal digits to output
  */
-char **
+inline char **
 spatialarr_as_text(const Datum *spatialarr, meosType elemtype, int count, 
   int maxdd)
 {
@@ -385,7 +385,7 @@ spatialarr_as_text(const Datum *spatialarr, meosType elemtype, int count,
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation of an array
  * of spatial values
  * @param[in] spatialarr Array of spatial values
@@ -393,7 +393,7 @@ spatialarr_as_text(const Datum *spatialarr, meosType elemtype, int count,
  * @param[in] count Number of elements in the input array
  * @param[in] maxdd Maximum number of decimal digits to output
  */
-char **
+inline char **
 spatialarr_as_ewkt(const Datum *spatialarr, meosType elemtype, int count, 
   int maxdd)
 {

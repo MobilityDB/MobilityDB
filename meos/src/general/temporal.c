@@ -1702,7 +1702,7 @@ temporal_to_tsequenceset(const Temporal *temp, const char *interp_str)
 
 /**
  * @ingroup meos_temporal_transf
- * @brief Return a temporal value transformed to a given interpolation
+ * @brief Return a temporal value transformed to an interpolation
  * @param[in] temp Temporal value
  * @param[in] interp Interpolation
  * @return On error return @p NULL

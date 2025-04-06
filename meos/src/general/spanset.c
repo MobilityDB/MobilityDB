@@ -151,7 +151,7 @@ spanset_find_value(const SpanSet *ss, Datum v, int *loc)
 }
 
 #if MEOS
-bool
+inline bool
 tstzspanset_find_timestamptz(const SpanSet *ss, TimestampTz t, int *loc)
 {
   return spanset_find_value(ss, TimestampTzGetDatum(t), loc);

@@ -1846,7 +1846,7 @@ contains_stbox_stbox(const STBox *box1, const STBox *box2)
  * @param[in] box1,box2 Spatiotemporal boxes
  * @csqlfn #Contained_stbox_stbox()
  */
-bool
+inline bool
 contained_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   return contains_stbox_stbox(box2, box1);

@@ -263,7 +263,7 @@ cbuffer_as_text(const Cbuffer *cbuf, int maxdd)
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Cbuffer_as_ewkt()
  */
-char *
+inline char *
 cbuffer_as_ewkt(const Cbuffer *cbuf, int maxdd)
 {
   return spatialbase_as_ewkt(PointerGetDatum(cbuf), T_CBUFFER, maxdd);
@@ -487,7 +487,7 @@ geom_cbuffer(const GSERIALIZED *gs)
 
 /**
  * @ingroup meos_internal_base_conversion
- * @brief Return an array of circular buffers converted into a geometry
+ * @brief Return a geometry converted from an array of circular buffers
  * @param[in] cbufarr Array of circular buffers
  * @param[in] count Number of elements in the input array
  * @pre The argument @p count is greater than 1

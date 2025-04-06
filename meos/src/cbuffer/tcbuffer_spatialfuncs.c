@@ -32,8 +32,6 @@
  * @brief Spatial functons for temporal circular buffers
  */
 
-// #include "cbuffer/tcbuffer_spatialfuncs.h"
-
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/float.h>

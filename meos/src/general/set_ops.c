@@ -270,7 +270,7 @@ contains_set_set(const Set *s1, const Set *s2)
  * @param[in] value Value
  * @param[in] s Set
  */
-bool
+inline bool
 contained_value_set(Datum value, const Set *s)
 {
   return contains_set_value(s, value);
@@ -282,7 +282,7 @@ contained_value_set(Datum value, const Set *s)
  * @param[in] s1,s2 Sets
  * @csqlfn #Contained_set_set()
  */
-bool
+inline bool
 contained_set_set(const Set *s1, const Set *s2)
 {
   return contains_set_set(s2, s1);

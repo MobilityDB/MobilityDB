@@ -36,6 +36,7 @@
 
 /* MEOS */
 #include <meos.h>
+#include <meos_rgeo.h>
 #include <meos_internal.h>
 #include "general/type_parser.h"
 #include "general/type_util.h"
@@ -53,14 +54,16 @@
  * no more input after the sequence
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
  * @param[out] result New instant, may be NULL
+ * @param[in] geom Reference geometry
  */
 bool 
 trgeoinst_parse(const char **str, meosType temptype, bool end,
-  int *temp_srid, Datum geom, TInstant **result)
+  int *temp_srid, const GSERIALIZED *geom, TInstant **result)
 {
   Datum base;
   if (! spatial_parse_elem(str, temptype, '@', temp_srid, &base))
     return false;
+  Pose *pose = DatumGetPoseP(base);
 
   p_delimchar(str, '@');
 
@@ -69,13 +72,13 @@ trgeoinst_parse(const char **str, meosType temptype, bool end,
     /* Ensure there is no more input */
     (end && ! ensure_end_input(str, meostype_name(temptype))))
   {
-    pfree(DatumGetPointer(base));
+    pfree(pose);
     return false;
   }
 
   if (result)
-    *result = trgeoinst_make(geom, base, temptype, t);
-  pfree(DatumGetPointer(base));
+    *result = trgeoinst_make(geom, pose, t);
+  pfree(pose);
   return true;
 }
 
@@ -84,10 +87,11 @@ trgeoinst_parse(const char **str, meosType temptype, bool end,
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
+ * @param[in] geom Reference geometry
  */
 TSequence *
 trgeoseq_disc_parse(const char **str, meosType temptype, int *temp_srid,
-  Datum geom)
+  GSERIALIZED *geom)
 {
   const char *type_str = meostype_name(temptype);
   p_whitespace(str);
@@ -131,11 +135,12 @@ trgeoseq_disc_parse(const char **str, meosType temptype, int *temp_srid,
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
+ * @param[in] geom Reference geometry
  * @param[out] result New sequence, may be NULL
  */
 bool
 trgeoseq_cont_parse(const char **str, meosType temptype, interpType interp, 
-  bool end, int *temp_srid, Datum geom, TSequence **result)
+  bool end, int *temp_srid, const GSERIALIZED *geom, TSequence **result)
 {
   const char *type_str = meostype_name(temptype);
   p_whitespace(str);
@@ -196,10 +201,11 @@ trgeoseq_cont_parse(const char **str, meosType temptype, interpType interp,
  * @param[in] temptype Temporal type
  * @param[in] interp Interpolation
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
+ * @param[in] geom Reference geometry
  */
 TSequenceSet *
 trgeoseqset_parse(const char **str, meosType temptype, interpType interp,
-  int *temp_srid, Datum geom)
+  int *temp_srid, const GSERIALIZED *geom)
 {
   const char *type_str = meostype_name(temptype);
   p_whitespace(str);
@@ -241,10 +247,10 @@ trgeoseqset_parse(const char **str, meosType temptype, interpType interp,
 /**
  * @brief Parse the reference geometry of a temporal rigid geometry
  * @param[in] str Input string
- * @param[in] temptype Temporal type
+ * @param[in,out] temp_srid SRID of the temporal rigid geometry
  */
-bool
-trgeo_parse_geom(const char **str, int32_t temp_srid, Datum *result)
+GSERIALIZED *
+trgeo_parse_geom(const char **str, int32_t temp_srid)
 {
   p_whitespace(str);
   int pos = 0;
@@ -254,7 +260,7 @@ trgeo_parse_geom(const char **str, int32_t temp_srid, Datum *result)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse element value");
-    return false;
+    return NULL;
   }
   char *str1 = palloc(sizeof(char) * (pos + 1));
   strncpy(str1, *str, pos);
@@ -263,20 +269,20 @@ trgeo_parse_geom(const char **str, int32_t temp_srid, Datum *result)
   bool success = basetype_in(str1, T_GEOMETRY, false, &geom);
   pfree(str1);
   if (! success)
-    return false;
+    return NULL;
   /* The delimeter is consumed */
   *str += pos + 1;
 
-  GSERIALIZED *gs = DatumGetGserializedP(geom);
-  ensure_not_empty(gs);
-  ensure_has_not_M_geo(gs);
+  GSERIALIZED *result = DatumGetGserializedP(geom);
+  ensure_not_empty(result);
+  ensure_has_not_M_geo(result);
   /* If one of the SRID of the temporal rigid geometry and of the geometry
    * is SRID_UNKNOWN and the other not, copy the SRID */
-  int32_t geo_srid = gserialized_get_srid(gs);
+  int32_t geo_srid = gserialized_get_srid(result);
   if (temp_srid == SRID_UNKNOWN && geo_srid != SRID_UNKNOWN)
     temp_srid = geo_srid;
   else if (temp_srid != SRID_UNKNOWN && geo_srid == SRID_UNKNOWN)
-    gserialized_set_srid(gs, temp_srid);
+    gserialized_set_srid(result, temp_srid);
   /* If the SRID of the temporal rigid geometry and of the geometry do not match */
   else if (temp_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN &&
     temp_srid != geo_srid)
@@ -284,11 +290,10 @@ trgeo_parse_geom(const char **str, int32_t temp_srid, Datum *result)
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Geometry SRID (%d) does not match temporal type SRID (%d)",
       geo_srid, temp_srid);
-    pfree(gs);
-    return false;
+    pfree(result);
+    return NULL;
   }
-  *result = geom;
-  return true;
+  return result;
 }
 
 /**
@@ -315,10 +320,13 @@ trgeo_parse(const char **str, meosType temptype)
   }
 
   /* Parse the reference geometry */
-  Datum geom;
+  GSERIALIZED *geom = NULL;
   if (temptype == T_TRGEOMETRY)
-    if (! trgeo_parse_geom(str, temp_srid, &geom))
+  {
+    geom = trgeo_parse_geom(str, temp_srid);
+    if (! geom)
       return NULL;
+  }
 
   p_whitespace(str);
 

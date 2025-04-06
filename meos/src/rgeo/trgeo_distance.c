@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Distance functions for temporal rigid geometries.
+ * @brief Distance functions for temporal rigid geometries
  */
 
 #include "rgeo/trgeo_distance.h"
@@ -42,8 +42,6 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <stdio.h>
-#include <utils/elog.h>
-#include <utils/palloc.h>
 #include <utils/timestamp.h>
 #include <utils/float.h>
 /* PostGIS */
@@ -52,9 +50,10 @@
 #include <measures.h>
 #include <measures3d.h>
 /* MEOS */
+#include <meos.h>
+#include <meos_rgeo.h>
+#include <meos_internal.h>
 #include "general/temporal.h"
-#include "meos.h"
-#include "meos_internal.h"
 #include "general/temporal.h"
 #include "general/type_util.h"
 #include "general/meos_catalog.h"
@@ -302,9 +301,7 @@ compute_dist2(POINT4D p, POINT4D vs, POINT4D ve)
 TInstant *
 dist2d_trgeoinst_geo(const TInstant *inst, const GSERIALIZED *gs)
 {
-  Datum ref_geom = trgeoinst_geom_p(inst);
-  GSERIALIZED *ref_gs = DatumGetGserializedP(ref_geom);
-  double dist = geom_distance2d(ref_gs, gs);
+  double dist = geom_distance2d(trgeoinst_geom_p(inst), gs);
   return tinstant_make(Float8GetDatum(dist), T_FLOAT8, inst->t);
 }
 
@@ -312,7 +309,8 @@ dist2d_trgeoinst_geo(const TInstant *inst, const GSERIALIZED *gs)
  * @brief
  */
 static void
-pose_interpolate_2d(Pose *pose1, Pose *pose2, double ratio, double *x, double *y, double *theta)
+pose_interpolate_2d(Pose *pose1, Pose *pose2, double ratio, double *x,
+  double *y, double *theta)
 {
   assert(0 <= ratio && ratio <= 1);
   *x = pose1->data[0] * (1 - ratio) + pose2->data[0] * ratio;
@@ -819,9 +817,7 @@ TSequence *
 dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs)
 {
   /* TODO: Add check and code for stepwise seq */
-  TSequence *result;
-  Datum ref_geom = trgeoseq_geom_p(seq);
-  GSERIALIZED *ref_gs = DatumGetGserializedP(ref_geom);
+  const GSERIALIZED *ref_gs = trgeoseq_geom_p(seq);
 
   /* TODO: check that polygon is convex */
   LWPOLY *poly = lwgeom_as_lwpoly(lwgeom_from_gserialized(ref_gs));
@@ -875,8 +871,11 @@ dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs)
     } while (state == MEOS_CONTINUE);
 
     if (loop > MEOS_MAX_ITERS)
+    {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Temporal distance: Cycle detected, current feature: %d", cfp.cf_1);
+      return NULL;
+    }
 
     cfp.pose_1 = pose2;
     cfp.free_pose_1 = MEOS_CFP_FREE_NO;
@@ -911,8 +910,9 @@ dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs)
   for (uint32_t i = 0; i < tda.count; ++i)
     instants[i] = tinstant_make(Float8GetDatum(tda.arr[i].dist), T_TFLOAT,
       tda.arr[i].t);
-  result = tsequence_make_free(instants, tda.count, seq->period.lower_inc,
-    seq->period.upper_inc, MEOS_FLAGS_LINEAR_INTERP(seq->flags), NORMALIZE);
+  TSequence *result = tsequence_make_free(instants, tda.count,
+    seq->period.lower_inc, seq->period.upper_inc,
+    MEOS_FLAGS_LINEAR_INTERP(seq->flags), NORMALIZE);
 
   lwpoly_free(poly);
   lwpoint_free(point);
@@ -1667,9 +1667,7 @@ TSequence *
 dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
 {
   /* TODO: Add check and code for stepwise seq */
-  TSequence *result;
-  Datum ref_geom = trgeoseq_geom_p(seq);
-  GSERIALIZED *ref_gs = DatumGetGserializedP(ref_geom);
+  const GSERIALIZED *ref_gs = trgeoseq_geom_p(seq);
 
   /* TODO: check that both polygons are convex */
   LWPOLY *poly1 = lwgeom_as_lwpoly(lwgeom_from_gserialized(ref_gs));
@@ -1749,14 +1747,20 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
     } while (state == MEOS_CONTINUE);
 
     if (loop > MEOS_MAX_ITERS)
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Temporal distance: Cycle detected, current features: (%d, %d)", cfp.cf_1, cfp.cf_2);
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, 
+        "Temporal distance: Cycle detected, current features: (%d, %d)",
+        cfp.cf_1, cfp.cf_2);
+      return NULL;
+    }
 
     cfp.pose_1 = pose2;
     cfp.free_pose_1 = MEOS_CFP_FREE_NO;
     cfp.t = inst2->t;
     cfp.store = MEOS_CFP_STORE;
     cfp_elem next_cfp = cfp;
-    v_clip_tpoly_tpoly(poly1, poly2, pose2, NULL, &next_cfp.cf_1, &next_cfp.cf_2, NULL);
+    v_clip_tpoly_tpoly(poly1, poly2, pose2, NULL, &next_cfp.cf_1,
+      &next_cfp.cf_2, NULL);
     append_cfp_elem(&cfpa, next_cfp);
     if (next_cfp.cf_1 != cfp.cf_1 || next_cfp.cf_2 != cfp.cf_2)
     {
@@ -1784,13 +1788,12 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
   for (uint32_t i = 0; i < tda.count; ++i)
     instants[i] = tinstant_make(Float8GetDatum(tda.arr[i].dist), T_TFLOAT,
       tda.arr[i].t);
-  result = tsequence_make_free(instants, tda.count, seq->period.lower_inc,
-    seq->period.upper_inc, MEOS_FLAGS_LINEAR_INTERP(seq->flags), NORMALIZE);
+  TSequence *result = tsequence_make_free(instants, tda.count,
+    seq->period.lower_inc, seq->period.upper_inc,
+    MEOS_FLAGS_LINEAR_INTERP(seq->flags), NORMALIZE);
 
-  lwpoly_free(poly1);
-  lwpoly_free(poly2);
-  free_cfp_array(&cfpa);
-  free_tdist_array(&tda);
+  lwpoly_free(poly1); lwpoly_free(poly2);
+  free_cfp_array(&cfpa); free_tdist_array(&tda);
   return result;
 }
 
@@ -1811,8 +1814,8 @@ dist2d_trgeoseq_geo(const TSequence *seq, const GSERIALIZED *gs)
       result = dist2d_trgeoseq_poly(seq, gs);
       break;
     default:
-      ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-        errmsg("Unsupported geometry type: %s", lwtype_name(gs_type))));
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "Unsupported geometry type: %s", lwtype_name(gs_type));
       break;
   }
   return result;
@@ -1826,16 +1829,13 @@ dist2d_trgeoseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-  {
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    sequences[i] = dist2d_trgeoseq_geo(seq, gs);
-  }
+    sequences[i] = dist2d_trgeoseq_geo(TSEQUENCESET_SEQ_N(ss, i), gs);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
 /**
- * @ingroup libmeos_rgeo_dist
- * @brief Return the temporal distance between a temporal rigid  geometry and a
+ * @ingroup meos_rgeo_dist
+ * @brief Return the temporal distance between a temporal rigid geometry and a
  * geometry/geography point
  * @sqlop @p <->
  */
@@ -1847,23 +1847,26 @@ distance_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tspatial_geo(temp, gs);
   if (MEOS_FLAGS_GET_Z(temp->flags))
+  {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Distance computation in 3D is not supported yet");
+      "Distance computation in 3D is not currently supported");
+    return NULL;
+  }
 
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
-    result = (Temporal *)dist2d_trgeoinst_geo((const TInstant *) temp, gs);
+    result = (Temporal *) dist2d_trgeoinst_geo((const TInstant *) temp, gs);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *)dist2d_trgeoseq_geo((const TSequence *) temp, gs);
+    result = (Temporal *) dist2d_trgeoseq_geo((const TSequence *) temp, gs);
   else /* temp->subtype == TSEQUENCESET */
-    result = (Temporal *)dist2d_trgeoseqset_geo(
-      (const TSequenceSet *) temp, gs);
+    result = (Temporal *) dist2d_trgeoseqset_geo((const TSequenceSet *) temp,
+      gs);
   return result;
 }
 
 /**
- * @ingroup libmeos_rgeo_dist
+ * @ingroup meos_rgeo_dist
  * @brief Return the temporal distance between two
  * temporal rigid geometries.
  * @sqlop @p <->
@@ -1879,9 +1882,8 @@ distance_trgeo_tpoint(const Temporal *temp1 __attribute__((unused)),
 }
 
 /**
- * @ingroup libmeos_rgeo_dist
- * @brief Return the temporal distance between two
- * temporal rigid geometries.
+ * @ingroup meos_rgeo_dist
+ * @brief Return the temporal distance between two temporal rigid geometries
  * @sqlop @p <->
  */
 Temporal *
@@ -1899,7 +1901,7 @@ distance_trgeo_trgeo(const Temporal *temp1 __attribute__((unused)),
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_rgeo_dist
+ * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach instant between a temporal rigid geometry
  * and a geometry
  * @sqlfn nearestApproachInstant()
@@ -1925,7 +1927,7 @@ nai_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       /* The closest point may be at an exclusive bound. */
       Datum value;
       temporal_value_at_timestamptz(temp, min->t, false, &value);
-      result = trgeoinst_make(trgeo_geom_p(temp), value, temp->temptype,
+      result = trgeoinst_make(trgeo_geom_p(temp), DatumGetPoseP(value), 
         min->t);
       pfree(dist); pfree(DatumGetPointer(value));
     }
@@ -1934,7 +1936,7 @@ nai_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libmeos_rgeo_dist
+ * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach instant between two temporal rigid
  * geometries
  * @sqlfn nearestApproachInstant()
@@ -1952,15 +1954,15 @@ nai_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
     /* The closest point may be at an exclusive bound. */
     Datum value;
     temporal_value_at_timestamptz(temp1, min->t, false, &value);
-      result = trgeoinst_make(trgeo_geom_p(temp1), value, temp1->temptype,
-        min->t);
+    result = trgeoinst_make(trgeo_geom_p(temp1), DatumGetPoseP(value),
+      min->t);
     pfree(dist); pfree(DatumGetPointer(value));
   }
   return result;
 }
 
 /**
- * @ingroup libmeos_rgeo_dist
+ * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach instant between two temporal rigid
  * geometries
  * @sqlfn nearestApproachInstant()
@@ -1978,7 +1980,7 @@ nai_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
     /* The closest point may be at an exclusive bound. */
     Datum value;
     temporal_value_at_timestamptz(temp1, min->t, false, &value);
-      result = trgeoinst_make(trgeo_geom_p(temp1), value, temp1->temptype,
+      result = trgeoinst_make(trgeo_geom_p(temp1), DatumGetPoseP(value),
         min->t);
     pfree(dist); pfree(DatumGetPointer(value));
   }
@@ -1990,7 +1992,7 @@ nai_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_rgeo_dist
+ * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach distance between a temporal rigid
  * geometry and a geometry
  * @sqlop @p |=|
@@ -2009,7 +2011,7 @@ nad_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup libmeos_rgeo_dist
+ * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach distance between a temporal rigid
  * geometry and a spatiotemporal box
  * @sqlop @p |=|
@@ -2045,7 +2047,7 @@ nad_trgeo_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
- * @ingroup libmeos_rgeo_dist
+ * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach distance between two temporal rigid
  * geometries
  * @sqlop @p |=|
@@ -2065,7 +2067,7 @@ nad_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_rgeo_dist
+ * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach distance between two temporal rigid
  * geometries
  * @sqlop @p |=|
@@ -2089,80 +2091,111 @@ nad_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_rgeo_dist
+ * @ingroup meos_rgeo_dist
  * @brief Return the line connecting the nearest approach point between a
  * temporal rigid geometry and a geometry
  * @sqlfn shortestLine()
  */
-bool
-shortestline_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  GSERIALIZED **result)
+GSERIALIZED *
+shortestline_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (gserialized_is_empty(gs))
-    return false;
-  ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tspatial_geo(temp, gs);
+  /* Ensure the validity of the arguments */
+#if MEOS
+  if (! ensure_is_not_null((void *) temp) || ! ensure_is_not_null((void *) gs))
+    return NULL;
+#else
+  assert(temp); assert(gs);
+#endif /* MEOS */
+  if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
+      ! ensure_same_dimensionality_tspatial_geo(temp, gs) ||
+      gserialized_is_empty(gs))
+    return NULL;
+  
   Temporal *dist = distance_trgeo_geo(temp, gs);
   const TInstant *inst = temporal_min_instant(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value;
   trgeo_value_at_timestamptz(temp, inst->t, false, &value);
   LWGEOM *line = (LWGEOM *) lwline_make(value, PointerGetDatum(gs));
-  *result = geo_serialize(line);
+  GSERIALIZED *result = geo_serialize(line);
   lwgeom_free(line);
-  return true;
+  return result;
 }
 
 /**
- * @ingroup libmeos_rgeo_dist
+ * @ingroup meos_rgeo_dist
  * @brief Return the line connecting the nearest approach point between two
  * temporal rigid geometries
  * @sqlfn shortestLine()
  */
-bool
-shortestline_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2,
-  GSERIALIZED **result)
+GSERIALIZED *
+shortestline_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2));
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
+  /* Ensure the validity of the arguments */
+#if MEOS
+  if (! ensure_is_not_null((void *) temp1) ||
+      ! ensure_is_not_null((void *) temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TRGEOMETRY) ||
+      ! ensure_temporal_isof_type(temp2, T_TPOSE))
+    return NULL;
+#else
+  assert(temp1); assert(temp2); assert(temp1->temptype == T_TRGEOMETRY);
+  assert(temp2->temptype == T_TPOSE);
+#endif /* MEOS */
+  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
+      ! ensure_same_dimensionality(temp1->flags, temp2->flags))
+    return NULL;
+
   Temporal *dist = distance_trgeo_tpoint(temp1, temp2);
   if (dist == NULL)
-    return false;
+    return NULL;
   const TInstant *inst = temporal_min_instant(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value1, value2;
   trgeo_value_at_timestamptz(temp1, inst->t, false, &value1);
   temporal_value_at_timestamptz(temp2, inst->t, false, &value2);
   LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
-  *result = geo_serialize(line);
+  GSERIALIZED *result = geo_serialize(line);
   lwgeom_free(line);
-  return true;
+  return result;
 }
 
 /**
- * @ingroup libmeos_rgeo_dist
+ * @ingroup meos_rgeo_dist
  * @brief Return the line connecting the nearest approach point between two
  * temporal rigid geometries
  * @sqlfn shortestLine()
  */
-bool
-shortestline_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
-  GSERIALIZED **result)
+GSERIALIZED *
+shortestline_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
 {
-  ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2));
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
+  /* Ensure the validity of the arguments */
+#if MEOS
+  if (! ensure_is_not_null((void *) temp1) ||
+      ! ensure_is_not_null((void *) temp2) ||
+      ! ensure_temporal_isof_type(temp1, T_TRGEOMETRY) ||
+      ! ensure_temporal_isof_type(temp2, T_TRGEOMETRY))
+    return NULL;
+#else
+  assert(temp1); assert(temp2); assert(temp1->temptype == T_TRGEOMETRY);
+  assert(temp2->temptype == T_TRGEOMETRY);
+#endif /* MEOS */
+  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
+      ! ensure_same_dimensionality(temp1->flags, temp2->flags))
+    return NULL;
+
   Temporal *dist = distance_trgeo_trgeo(temp1, temp2);
   if (dist == NULL)
-    return false;
+    return NULL;
   const TInstant *inst = temporal_min_instant(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value1, value2;
   trgeo_value_at_timestamptz(temp1, inst->t, false, &value1);
   trgeo_value_at_timestamptz(temp2, inst->t, false, &value2);
   LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
-  *result = geo_serialize(line);
+  GSERIALIZED *result = geo_serialize(line);
   lwgeom_free(line);
-  return true;
+  return result;
 }
 
 /*****************************************************************************/

@@ -530,7 +530,7 @@ tnpoint_twcentroid(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_npoint_restrict
  * @brief Return a temporal network point restricted to (the complement of) a
  * geometry
  */
@@ -605,7 +605,7 @@ tnpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_npoint_restrict
  * @brief Return a temporal network point restricted to (the complement of) a
  * spatiotemporal box
  * @param[in] temp Temporal network point

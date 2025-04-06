@@ -60,7 +60,7 @@ extern double circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_N
  * @param[in] inst1,inst2 Temporal instants
  * @param[in] func Distance function
  */
-double
+inline double
 tgeoinst_distance(const TInstant *inst1, const TInstant *inst2,
   datum_func2 func)
 {

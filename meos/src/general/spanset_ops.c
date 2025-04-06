@@ -137,6 +137,14 @@ contains_spanset_span(const SpanSet *ss, const Span *s)
 bool
 contains_span_spanset(const Span *s, const SpanSet *ss)
 {
+  /* Ensure validity of arguments */
+#if MEOS
+  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
+      ! ensure_same_spanset_span_type(ss, s))
+    return false;
+#else
+  assert(ss); assert(s); assert(ss->spantype == s->spantype);
+#endif /* MEOS */
   return contains_span_span(s, &ss->span);
 }
 
@@ -213,7 +221,7 @@ contains_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @param[in] value Value
  * @param[in] ss Span set
  */
-bool
+inline bool
 contained_value_spanset(Datum value, const SpanSet *ss)
 {
   return contains_spanset_value(ss, value);
@@ -226,7 +234,7 @@ contained_value_spanset(Datum value, const SpanSet *ss)
  * @param[in] ss Span set
  * @csqlfn #Contained_span_spanset()
  */
-bool
+inline bool
 contained_span_spanset(const Span *s, const SpanSet *ss)
 {
   return contains_spanset_span(ss, s);
@@ -239,7 +247,7 @@ contained_span_spanset(const Span *s, const SpanSet *ss)
  * @param[in] s Span
  * @csqlfn #Contained_spanset_span()
  */
-bool
+inline bool
 contained_spanset_span(const SpanSet *ss, const Span *s)
 {
   return contains_span_spanset(s, ss);
@@ -251,7 +259,7 @@ contained_spanset_span(const SpanSet *ss, const Span *s)
  * @param[in] ss1,ss2 Span sets
  * @csqlfn #Contained_spanset_spanset()
  */
-bool
+inline bool
 contained_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   return contains_spanset_spanset(ss2, ss1);
@@ -314,7 +322,7 @@ overlaps_spanset_span(const SpanSet *ss, const Span *s)
  * @param[in] ss Span set
  * @csqlfn #Overlaps_span_spanset()
  */
-bool
+inline bool
 overlaps_span_spanset(const Span *s, const SpanSet *ss)
 {
   return overlaps_spanset_span(ss, s);
@@ -384,14 +392,11 @@ overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @param[in] value Value
  * @csqlfn #Adjacent_spanset_value()
  */
-bool
+inline bool
 adjacent_spanset_value(const SpanSet *ss, Datum value)
 {
-  assert(ss);
-  /*
-   * A span set and a value are adjacent if and only if the first or the last
-   * span is adjacent to the value
-   */
+  /* A span set and a value are adjacent if and only if the first or the last
+   * span is adjacent to the value */
   return adjacent_span_value(SPANSET_SP_N(ss, 0), value) ||
          adjacent_span_value(SPANSET_SP_N(ss, ss->count - 1), value);
 }
@@ -403,7 +408,7 @@ adjacent_spanset_value(const SpanSet *ss, Datum value)
  * @param[in] value Value
  * @csqlfn #Adjacent_spanset_value()
  */
-bool
+inline bool
 adjacent_value_spanset(Datum value, const SpanSet *ss)
 {
   return adjacent_spanset_value(ss, value);
@@ -454,7 +459,7 @@ adjacent_spanset_span(const SpanSet *ss, const Span *s)
  * @param[in] ss Span set
  * @csqlfn #Adjacent_span_spanset()
  */
-bool
+inline bool
 adjacent_span_spanset(const Span *s, const SpanSet *ss)
 {
   return adjacent_spanset_span(ss, s);
@@ -511,10 +516,9 @@ adjacent_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @param[in] value Value
  * @param[in] ss Span set
  */
-bool
+inline bool
 left_value_spanset(Datum value, const SpanSet *ss)
 {
-  assert(ss);
   return left_value_span(value, SPANSET_SP_N(ss, 0));
 }
 
@@ -545,10 +549,9 @@ left_span_spanset(const Span *s, const SpanSet *ss)
  * @param[in] ss Span set
  * @param[in] value Value
  */
-bool
+inline bool
 left_spanset_value(const SpanSet *ss, Datum value)
 {
-  assert(ss);
   return left_span_value(SPANSET_SP_N(ss, ss->count - 1), value);
 }
 
@@ -604,7 +607,7 @@ left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @param[in] value Value
  * @param[in] ss Span set
  */
-bool
+inline bool
 right_value_spanset(Datum value, const SpanSet *ss)
 {
   return left_spanset_value(ss, value);
@@ -617,7 +620,7 @@ right_value_spanset(Datum value, const SpanSet *ss)
  * @param[in] ss Span set
  * @csqlfn #Right_span_spanset()
  */
-bool
+inline bool
 right_span_spanset(const Span *s, const SpanSet *ss)
 {
   return left_spanset_span(ss, s);
@@ -629,7 +632,7 @@ right_span_spanset(const Span *s, const SpanSet *ss)
  * @param[in] ss Span set
  * @param[in] value Value
  */
-bool
+inline bool
 right_spanset_value(const SpanSet *ss, Datum value)
 {
   return left_value_spanset(value, ss);
@@ -642,7 +645,7 @@ right_spanset_value(const SpanSet *ss, Datum value)
  * @param[in] s Span
  * @csqlfn #Right_spanset_span()
  */
-bool
+inline bool
 right_spanset_span(const SpanSet *ss, const Span *s)
 {
   return left_span_spanset(s, ss);
@@ -654,7 +657,7 @@ right_spanset_span(const SpanSet *ss, const Span *s)
  * @param[in] ss1,ss2 Span sets
  * @csqlfn #Right_spanset_spanset()
  */
-bool
+inline bool
 right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   return left_spanset_spanset(ss2, ss1);
@@ -670,7 +673,7 @@ right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
  * @param[in] ss Span set
  * @param[in] value Value
  */
-bool
+inline bool
 overleft_spanset_value(const SpanSet *ss, Datum value)
 {
   assert(ss);
@@ -801,7 +804,12 @@ overright_span_spanset(const Span *s, const SpanSet *ss)
 bool
 overright_spanset_value(const SpanSet *ss, Datum value)
 {
+#if MEOS
+  if (! ensure_not_null((void *) ss))
+    return false;
+#else
   assert(ss);
+#endif /* MEOS */
   return overright_span_value(SPANSET_SP_N(ss, 0), value);
 }
 
@@ -1169,7 +1177,7 @@ intersection_spanset_span(const SpanSet *ss, const Span *s)
  * @param[in] ss Span set
  * @csqlfn #Intersection_span_spanset()
  */
-SpanSet *
+inline SpanSet *
 intersection_span_spanset(const Span *s, const SpanSet *ss)
 {
   return intersection_spanset_span(ss, s);

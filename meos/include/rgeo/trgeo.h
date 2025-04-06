@@ -37,7 +37,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
+// #include <catalog/pg_type.h>
 /* MEOS */
 #include "general/temporal.h"
 
@@ -50,12 +50,11 @@
  *****************************************************************************/
 
 extern bool ensure_has_geom(int16 flags);
-extern Datum trgeo_geom_p(const Temporal *temp);
-extern Datum trgeo_geom(const Temporal *temp);
+extern const GSERIALIZED *trgeo_geom_p(const Temporal *temp);
+extern GSERIALIZED *trgeo_geom(const Temporal *temp);
 
 /* Input/output functions */
 
-extern char *trgeo_out(const Temporal *temp);
 extern char *trgeo_wkt_out(const Temporal *temp, int maxdd, bool extended);
 
 /* Constructor functions */
@@ -72,9 +71,6 @@ extern TSequenceSet *geo_tposeseqset_to_trgeo(const GSERIALIZED *gs,
 
 /* Accessor functions */
 
-extern Datum trgeo_start_value(const Temporal *temp);
-extern Datum trgeo_end_value(const Temporal *temp);
-extern bool trgeo_value_n(const Temporal *temp, int n, Datum *result);
 extern bool trgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t,
   bool strict, Datum *result);
 

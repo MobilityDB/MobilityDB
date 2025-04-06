@@ -3168,7 +3168,7 @@ geog_bearing(Datum point1, Datum point2)
 /**
  * @brief Select the appropriate bearing function
  */
-static datum_func2
+static inline datum_func2
 get_bearing_fn(int16 flags)
 {
   return MEOS_FLAGS_GET_GEODETIC(flags) ? &geog_bearing : &geom_bearing;

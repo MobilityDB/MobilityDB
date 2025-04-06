@@ -755,8 +755,8 @@ datum_pose_point(Datum pose)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_base_conversion
- * @brief Return an array of poses converted into a geometry multipoint
+ * @ingroup meos_internal_pose_conversion
+ * @brief Return a geometry multipoint converted from an array of poses
  * @param[in] posearr Array of poses
  * @param[in] count Number of elements in the input array
  * @pre The argument @p count is greater than 1

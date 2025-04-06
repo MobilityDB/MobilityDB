@@ -66,8 +66,8 @@
 PG_FUNCTION_INFO_V1(Distance_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the temporal distance between a
- * ridig temporal geometry and a geometry/geography point
+ * @brief Return the temporal distance between a temporal rigid geometry and a
+ * geometry
  * @sqlfn temporal_distance()
  * @sqlop @p <->
  */
@@ -89,8 +89,8 @@ Distance_trgeo_geo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Distance_geo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the temporal distance between a
- * geometry/geography point and a temporal rigid geometry
+ * @brief Return the temporal distance between a geometry and a temporal rigid
+ * geometry
  * @sqlfn temporal_distance()
  * @sqlop @p <->
  */
@@ -112,8 +112,7 @@ Distance_geo_trgeo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Distance_trgeo_tpoint);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the temporal distance between two
- * temporal rigid geometries
+ * @brief Return the temporal distance between two temporal rigid geometries
  * @sqlfn temporal_distance()
  * @sqlop @p <->
  */
@@ -135,8 +134,7 @@ Distance_trgeo_tpoint(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Distance_tpoint_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the temporal distance between two
- * temporal rigid geometries
+ * @brief Return the temporal distance between two temporal rigid geometries
  * @sqlfn temporal_distance()
  * @sqlop @p <->
  */
@@ -158,8 +156,7 @@ Distance_tpoint_trgeo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Distance_trgeo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the temporal distance between two
- * temporal rigid geometries
+ * @brief Return the temporal distance between two temporal rigid geometries
  * @sqlfn temporal_distance()
  * @sqlop @p <->
  */
@@ -185,8 +182,8 @@ Distance_trgeo_trgeo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(NAI_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the nearest approach instant between a
- * temporal rigid geometry and a geometry
+ * @brief Return the nearest approach instant between a temporal rigid geometry
+ * and a geometry
  * @sqlfn nearestApproachInstant()
  */
 PGDLLEXPORT Datum
@@ -207,8 +204,8 @@ NAI_trgeo_geo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(NAI_geo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the nearest approach instant between a
- * geometry and a temporal rigid geometry
+ * @brief Return the nearest approach instant between a geometry and a temporal
+ * rigid geometry
  * @sqlfn nearestApproachInstant()
  */
 PGDLLEXPORT Datum
@@ -273,8 +270,8 @@ NAI_tpoint_trgeo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(NAI_trgeo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the nearest approach instant between the
- * temporal rigid geometries
+ * @brief Return the nearest approach instant between two temporal rigid
+ * geometries
  * @sqlfn nearestApproachInstant()
  */
 PGDLLEXPORT Datum
@@ -299,8 +296,8 @@ NAI_trgeo_trgeo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(NAD_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the nearest approach distance between a
- * temporal rigid geometry and a geometry
+ * @brief Return the nearest approach distance between a temporal rigid
+ * geometry and a geometry
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -322,8 +319,8 @@ NAD_trgeo_geo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(NAD_geo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the nearest approach distance between a
- * geometry and a temporal rigid geometry
+ * @brief Return the nearest approach distance between a geometry and a
+ * temporal rigid geometry
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -345,8 +342,8 @@ NAD_geo_trgeo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(NAD_trgeo_stbox);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the nearest approach distance between a
- * temporal rigid geometry and a spatiotemporal box
+ * @brief Return the nearest approach distance between a temporal rigid
+ * geometry and a spatiotemporal box
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -367,8 +364,8 @@ NAD_trgeo_stbox(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(NAD_stbox_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the nearest approach distance between a
- * spatiotemporal box and a temporal rigid geometry
+ * @brief Return the nearest approach distance between a spatiotemporal box and
+ * a temporal rigid geometry
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -389,8 +386,8 @@ NAD_stbox_trgeo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(NAD_trgeo_tpoint);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the nearest approach distance between the
- * temporal rigid geometries
+ * @brief Return the nearest approach distance between two temporal rigid
+ * geometries
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -412,7 +409,7 @@ NAD_trgeo_tpoint(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(NAD_tpoint_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the nearest approach distance between the temporal rigid
+ * @brief Return the nearest approach distance between two temporal rigid
  * geometries
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
@@ -435,7 +432,7 @@ NAD_tpoint_trgeo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(NAD_trgeo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the nearest approach distance between the
+ * @brief Return the nearest approach distance between two
  * temporal rigid geometries
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
@@ -462,7 +459,7 @@ NAD_trgeo_trgeo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Shortestline_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the line connecting the nearest approach point between the
+ * @brief Return the line connecting the nearest approach point between a
  * temporal rigid geometry and a geometry/geography
  * @sqlfn shortestLine()
  */
@@ -471,11 +468,10 @@ Shortestline_trgeo_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  GSERIALIZED *result;
-  bool found = shortestline_trgeo_geo(temp, gs, &result);
+  GSERIALIZED *result = shortestline_trgeo_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
-  if (! found)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -483,8 +479,8 @@ Shortestline_trgeo_geo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Shortestline_geo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the line connecting the nearest approach point between the
- * geometry and the temporal rigid geometry
+ * @brief Return the line connecting the nearest approach point between a
+ * geometry and a temporal rigid geometry
  * @sqlfn shortestLine()
  */
 PGDLLEXPORT Datum
@@ -492,11 +488,10 @@ Shortestline_geo_trgeo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  GSERIALIZED *result;
-  bool found = shortestline_trgeo_geo(temp, gs, &result);
+  GSERIALIZED *result = shortestline_trgeo_geo(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
-  if (! found)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -504,7 +499,7 @@ Shortestline_geo_trgeo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Shortestline_trgeo_tpoint);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the line connecting the nearest approach point between the
+ * @brief Return the line connecting the nearest approach point between two
  * temporal rigid geometries
  * @sqlfn shortestLine()
  */
@@ -515,11 +510,10 @@ Shortestline_trgeo_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  GSERIALIZED *result;
-  bool found = shortestline_trgeo_tpoint(temp1, temp2, &result);
+  GSERIALIZED *result = shortestline_trgeo_tpoint(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (!found)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -527,7 +521,7 @@ Shortestline_trgeo_tpoint(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Shortestline_tpoint_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the line connecting the nearest approach point between the
+ * @brief Return the line connecting the nearest approach point between two
  * temporal rigid geometries
  * @sqlfn shortestLine()
  */
@@ -538,11 +532,10 @@ Shortestline_tpoint_trgeo(PG_FUNCTION_ARGS)
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  GSERIALIZED *result;
-  bool found = shortestline_trgeo_tpoint(temp2, temp1, &result);
+  GSERIALIZED *result = shortestline_trgeo_tpoint(temp2, temp1);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (!found)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -550,7 +543,7 @@ Shortestline_tpoint_trgeo(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(Shortestline_trgeo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the line connecting the nearest approach point between the
+ * @brief Return the line connecting the nearest approach point between two
  * temporal rigid geometries
  * @sqlfn shortestLine()
  */
@@ -561,11 +554,10 @@ Shortestline_trgeo_trgeo(PG_FUNCTION_ARGS)
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  GSERIALIZED *result;
-  bool found = shortestline_trgeo_trgeo(temp1, temp2, &result);
+  GSERIALIZED *result = shortestline_trgeo_trgeo(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (!found)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

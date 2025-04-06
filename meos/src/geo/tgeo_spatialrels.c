@@ -507,7 +507,7 @@ ea_intersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Eintersects_tgeo_tgeo()
  */
-int
+inline int
 eintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_intersects_tgeo_tgeo(temp1, temp2, EVER);
@@ -520,7 +520,7 @@ eintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Aintersects_tgeo_tgeo()
  */
-int
+inline int
 aintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_intersects_tgeo_tgeo(temp1, temp2, ALWAYS);

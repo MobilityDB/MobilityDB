@@ -48,7 +48,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_dist
+ * @ingroup meos_internal_npoint_dist
  * @brief Return the distance between two network points
  */
 Datum

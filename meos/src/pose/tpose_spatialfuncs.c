@@ -192,7 +192,7 @@ tpose_trajectory(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_pose_restrict
  * @brief Return a temporal pose restricted to (the complement of) a geometry
  */
 Temporal *
@@ -269,7 +269,7 @@ tpose_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_pose_restrict
  * @brief Return a temporal pose restricted to (the complement of) a
  * spatiotemporal box
  * @param[in] temp Temporal pose

@@ -48,12 +48,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#if POSE
-  #include <meos_pose.h>
-#endif
-#if RGEO
-  // #include <meos_rgeo.h>
-#endif
 #include "general/doublen.h"
 #include "general/pg_types.h"
 #include "general/set.h"
@@ -75,7 +69,7 @@
  * @param[in] str String
  * @param[in] interp Interpolation
  */
-TSequence *
+inline TSequence *
 tboolseq_in(const char *str, interpType interp)
 {
   return tsequence_in(str, T_TBOOL, interp);
@@ -88,7 +82,7 @@ tboolseq_in(const char *str, interpType interp)
  * @param[in] str String
  * @param[in] interp Interpolation
  */
-TSequence *
+inline TSequence *
 tintseq_in(const char *str, interpType interp)
 {
   return tsequence_in(str, T_TINT, interp);
@@ -101,7 +95,7 @@ tintseq_in(const char *str, interpType interp)
  * @param[in] str String
  * @param[in] interp Interpolation
  */
-TSequence *
+inline TSequence *
 tfloatseq_in(const char *str, interpType interp)
 {
   return tsequence_in(str, T_TFLOAT, interp);
@@ -114,7 +108,7 @@ tfloatseq_in(const char *str, interpType interp)
  * @param[in] str String
  * @param[in] interp Interpolation
  */
-TSequence *
+inline TSequence *
 ttextseq_in(const char *str, interpType interp)
 {
   return tsequence_in(str, T_TTEXT, interp);

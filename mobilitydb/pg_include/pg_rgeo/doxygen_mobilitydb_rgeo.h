@@ -66,6 +66,10 @@
  * @ingroup mobilitydb_rgeo
  * @brief Distance functions for temporal rigid geometries
  *
+ * @defgroup mobilitydb_rgeo_dist Distance functions
+ * @ingroup mobilitydb_rgeo
+ * @brief Distance functions for temporal rigid geometries
+ *
  * @defgroup mobilitydb_rgeo_comp Comparison functions
  * @ingroup mobilitydb_rgeo
  * @brief Comparison functions for temporal rigid geometries
@@ -77,14 +81,6 @@
  *   @defgroup mobilitydb_rgeo_comp_temp Temporal comparison functions
  *   @ingroup mobilitydb_rgeo_comp
  *   @brief Comparison functions for temporal rigid geometries
- *
- * @defgroup mobilitydb_rgeo_srid Spatial reference system functions
- * @ingroup mobilitydb_rgeo
- * @brief Spatial reference system functions for temporal rigid geometries
- *
- * @defgroup mobilitydb_rgeo_dist Distance functions
- * @ingroup mobilitydb_rgeo
- * @brief Distance functions for temporal rigid geometries
  *
  * @defgroup mobilitydb_rgeo_rel Spatial relationship functions
  * @ingroup mobilitydb_rgeo

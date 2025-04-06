@@ -203,7 +203,7 @@ float_get_bin(double value, double size, double origin)
 /**
  * @brief Return the interval in the same representation as Postgres timestamps
  */
-int64
+inline int64
 interval_units(const Interval *interval)
 {
   return interval->time + (interval->day * USECS_PER_DAY);

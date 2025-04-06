@@ -35,7 +35,8 @@
 #include "rgeo/trgeo_inst.h"
 
 /* MEOS */
-#include "meos_internal.h"
+#include <meos_rgeo.h>
+#include <meos_internal.h>
 #include "general/temporal.h"
 #include "general/type_util.h"
 #include "general/tinstant.h"
@@ -50,13 +51,13 @@
 /**
  * @brief Returns the reference geometry of the temporal value
  */
-Datum
+const GSERIALIZED *
 trgeoinst_geom_p(const TInstant *inst)
 {
   if (! ensure_has_geom(inst->flags))
-    return PointerGetDatum(NULL);
+    return NULL;
   size_t value_size = DOUBLE_PAD(VARSIZE(&inst->value));
-  return PointerGetDatum((char *) &inst->value + value_size);
+  return (const GSERIALIZED *) ((char *) &inst->value + value_size);
 }
 
 /*****************************************************************************/
@@ -109,10 +110,8 @@ trgeoinst_tposeinst(const TInstant *inst)
  * @brief Ensure the validity of the arguments when creating a temporal value
  */
 static bool
-trgeoinst_make_valid(Datum geom, Datum value)
+trgeoinst_make_valid(const GSERIALIZED *gs, const Pose *pose)
 {
-  const GSERIALIZED *gs = DatumGetGserializedP(geom);
-  const Pose *pose = DatumGetPoseP(value);
   ensure_not_empty(gs);
   ensure_has_not_M_geo(gs);
   int geomtype = gserialized_get_type(gs);
@@ -147,14 +146,14 @@ trgeoinst_make_valid(Datum geom, Datum value)
  * @pre The validity of the arguments has been tested before
  */
 TInstant *
-trgeoinst_make1(Datum geom, Datum value, meosType temptype, TimestampTz t)
+trgeoinst_make1(const GSERIALIZED *geom, const Pose *pose, TimestampTz t)
 {
   size_t value_offset = sizeof(TInstant) - sizeof(Datum);
   size_t size = value_offset;
   /* Create the temporal instant */
-  void *value_from = DatumGetPointer(value);
+  void *value_from = (void *) pose;
   size_t value_size = DOUBLE_PAD(VARSIZE(value_from));
-  void *geom_from = DatumGetPointer(geom);
+  void *geom_from = (void *) geom;
   size_t geom_size = DOUBLE_PAD(VARSIZE(geom_from));
   size += value_size + geom_size;
   TInstant *result = palloc0(size);
@@ -164,7 +163,7 @@ trgeoinst_make1(Datum geom, Datum value, meosType temptype, TimestampTz t)
   memcpy(geom_to, geom_from, geom_size);
 
   /* Initialize fixed-size values */
-  result->temptype = temptype;
+  result->temptype = T_TRGEOMETRY;
   result->subtype = TINSTANT;
   result->t = t;
   SET_VARSIZE(result, size);
@@ -172,7 +171,6 @@ trgeoinst_make1(Datum geom, Datum value, meosType temptype, TimestampTz t)
   MEOS_FLAGS_SET_CONTINUOUS(result->flags, true);
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_T(result->flags, true);
-  const Pose *pose = DatumGetPoseP(value);
   MEOS_FLAGS_SET_Z(result->flags, MEOS_FLAGS_GET_Z(pose->flags));
   MEOS_FLAGS_SET_GEODETIC(result->flags, false);
   MEOS_FLAGS_SET_GEOM(result->flags, WITH_GEOM);
@@ -180,6 +178,7 @@ trgeoinst_make1(Datum geom, Datum value, meosType temptype, TimestampTz t)
 }
 
 /**
+ * @ingroup meos_rgeo_constructor
  * @brief Construct a temporal geometry instant value from the arguments
  * @details The memory structure of a temporal geometry instant value is as
  * follows
@@ -192,16 +191,15 @@ trgeoinst_make1(Datum geom, Datum value, meosType temptype, TimestampTz t)
  * stores the base value (pose). The `_X` are unused bytes added for double
  * padding
  * @param geom Reference geometry
- * @param value Base value (Pose)
- * @param temptype Base type
+ * @param pose Pose
  * @param t Timestamp
  */
 TInstant *
-trgeoinst_make(Datum geom, Datum value, meosType temptype, TimestampTz t)
+trgeoinst_make(const GSERIALIZED *geom, const Pose *pose, TimestampTz t)
 {
-  if (! trgeoinst_make_valid(geom, value))
+  if (! trgeoinst_make_valid(geom, pose))
     return NULL;
-  return trgeoinst_make1(geom, value, temptype, t);
+  return trgeoinst_make1(geom, pose, t);
 }
 
 /*****************************************************************************
@@ -212,7 +210,6 @@ trgeoinst_make(Datum geom, Datum value, meosType temptype, TimestampTz t)
  * @ingroup meos_internal_rgeo_transf
  * @brief Return a temporal sequence transformed into a temporal instant
  * @param[in] seq Temporal sequence
- * @csqlfn #Trgeoseq_to_tinstant()
  */
 TInstant *
 trgeoseq_to_tinstant(const TSequence *seq)
@@ -225,15 +222,14 @@ trgeoseq_to_tinstant(const TSequence *seq)
     return NULL;
   }
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-  return trgeoinst_make(trgeoseq_geom_p(seq), tinstant_value_p(inst),
-    T_TRGEOMETRY, inst->t);
+  return trgeoinst_make(trgeoseq_geom_p(seq),
+    DatumGetPoseP(tinstant_value_p(inst)), inst->t);
 }
 
 /**
  * @ingroup meos_internal_rgeo_transf
  * @brief Return a temporal sequence set transformed into a temporal instant
  * @param[in] ss Temporal sequence set
- * @csqlfn #Trgeoseqseq_to_tinstant()
  */
 TInstant *
 trgeoseqset_to_tinstant(const TSequenceSet *ss)
@@ -247,8 +243,8 @@ trgeoseqset_to_tinstant(const TSequenceSet *ss)
   }
   const TSequence *seq = TSEQUENCESET_SEQ_N(ss, 0);
   const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
-  return trgeoinst_make(trgeoseqset_geom_p(ss), tinstant_value_p(inst),
-    T_TRGEOMETRY, inst->t);
+  return trgeoinst_make(trgeoseqset_geom_p(ss),
+    DatumGetPoseP(tinstant_value_p(inst)), inst->t);
 }
 
 /*****************************************************************************

@@ -624,8 +624,8 @@ tsequenceset_copy(const TSequenceSet *ss)
 }
 
 /**
- * @brief Return an array of temporal sequence sets converted into an array of
- * temporal sequences
+ * @brief Return an array of temporal sequences converted from an array of
+ * temporal sequence sets
  * @details This function is called by all the functions in which the number of
  * output sequences cannot be determined in advance, typically when each
  * segment of the input sequence can produce an arbitrary number of output

@@ -59,16 +59,15 @@
  * @param[out] box Spatiotemporal box
  */
 void
-trgeoinst_set_stbox(const Datum geom, const TInstant *inst, STBox *box)
+trgeoinst_set_stbox(const GSERIALIZED *geom, const TInstant *inst, STBox *box)
 {
   const Pose *pose = DatumGetPoseP(tinstant_value(inst));
-  GSERIALIZED *gs = DatumGetGserializedP(geom);
 
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBox));
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-  box->srid = gserialized_get_srid(gs);
+  bool hasz = (bool) FLAGS_GET_Z(geom->gflags);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(geom->gflags);
+  box->srid = gserialized_get_srid(geom);
   MEOS_FLAGS_SET_X(box->flags, true);
   MEOS_FLAGS_SET_Z(box->flags, hasz);
   MEOS_FLAGS_SET_T(box->flags, true);
@@ -77,7 +76,7 @@ trgeoinst_set_stbox(const Datum geom, const TInstant *inst, STBox *box)
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
 
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
   LWGEOM *lwgeom_copy = lwgeom_clone_deep(lwgeom);
   lwgeom_apply_pose(pose, lwgeom_copy);
 
@@ -106,7 +105,7 @@ trgeoinst_set_stbox(const Datum geom, const TInstant *inst, STBox *box)
  * @param[out] box Spatiotemporal box
  */
 void
-trgeoinstarr_static_stbox(const Datum geom, const TInstant **instants,
+trgeoinstarr_static_stbox(const GSERIALIZED *geom, const TInstant **instants,
   int count, STBox *box)
 {
   trgeoinst_set_stbox(geom, instants[0], box);
@@ -148,7 +147,7 @@ trgeoinst_make_pose_stbox(const TInstant *inst, STBox *box)
  * @param[out] box Spatiotemporal box
  */
 void
-trgeoinstarr_rotating_stbox(const Datum geom, const TInstant **instants,
+trgeoinstarr_rotating_stbox(const GSERIALIZED *geom, const TInstant **instants,
   int count, STBox *box)
 {
   double r = geom_radius(geom);
@@ -169,7 +168,7 @@ trgeoinstarr_rotating_stbox(const Datum geom, const TInstant **instants,
     box->zmin -= r;
     box->zmax += r;
   }
-  box->srid = gserialized_get_srid(DatumGetGserializedP(geom));
+  box->srid = gserialized_get_srid(geom);
   MEOS_FLAGS_SET_GEODETIC(box->flags, false);
   return;
 }
@@ -186,7 +185,7 @@ trgeoinstarr_rotating_stbox(const Datum geom, const TInstant **instants,
  * @param[out] box Box
  */
 void
-trgeoinstarr_compute_bbox(const Datum geom, const TInstant **instants,
+trgeoinstarr_compute_bbox(const GSERIALIZED *geom, const TInstant **instants,
   int count, interpType interp, void *box)
 {
   /* Only external types have bounding box */

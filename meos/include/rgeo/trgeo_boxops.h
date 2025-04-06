@@ -37,7 +37,7 @@
 
 /* Postgres */
 #include <postgres.h>
-#include <catalog/pg_type.h>
+// #include <catalog/pg_type.h>
 /* MEOS */
 #include "general/temporal.h"
 #include "geo/stbox.h"
@@ -47,13 +47,13 @@
 /* Functions computing the bounding box at the creation of the temporal rigid 
  * geometry */
 
-extern void trgeoinst_set_stbox(const Datum geom, const TInstant *inst,
+extern void trgeoinst_set_stbox(const GSERIALIZED *geom, const TInstant *inst,
   STBox *box);
-extern void trgeoinstarr_static_stbox(const Datum geom, 
+extern void trgeoinstarr_static_stbox(const GSERIALIZED *geom, 
   const TInstant **instants, int count, STBox *box);
-extern void trgeoinstarr_rotating_stbox(const Datum geom,
+extern void trgeoinstarr_rotating_stbox(const GSERIALIZED *geom,
   const TInstant **instants, int count, STBox *box);
-extern void trgeoinstarr_compute_bbox(const Datum geom,
+extern void trgeoinstarr_compute_bbox(const GSERIALIZED *geom,
   const TInstant **instants, int count, interpType interp, void *box);
 
 /*****************************************************************************/
