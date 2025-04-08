@@ -68,9 +68,7 @@ TSequenceSet *
 tboolseqset_from_base_tstzspanset(bool b, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return NULL;
+  VALIDATE_TSTZSPANSET(ss, NULL);
   return tsequenceset_from_base_tstzspanset(BoolGetDatum(b), T_TBOOL, ss,
     STEP);
 }
@@ -86,9 +84,7 @@ TSequenceSet *
 tintseqset_from_base_tstzspanset(int i, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return NULL;
+  VALIDATE_TSTZSPANSET(ss, NULL);
   return tsequenceset_from_base_tstzspanset(Int32GetDatum(i), T_TINT, ss,
     STEP);
 }
@@ -106,9 +102,7 @@ tfloatseqset_from_base_tstzspanset(double d, const SpanSet *ss,
   interpType interp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return NULL;
+  VALIDATE_TSTZSPANSET(ss, NULL);
   return tsequenceset_from_base_tstzspanset(Float8GetDatum(d), T_TFLOAT, ss,
     interp);
 }
@@ -124,9 +118,7 @@ TSequenceSet *
 ttextseqset_from_base_tstzspanset(const text *txt, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) txt) || ! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return NULL;
+  VALIDATE_NOT_NULL(txt, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
   return tsequenceset_from_base_tstzspanset(PointerGetDatum(txt), T_TTEXT, ss,
     STEP);
 }

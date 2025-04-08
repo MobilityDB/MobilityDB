@@ -128,7 +128,7 @@ PGDLLEXPORT Datum Distance_tpose_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_tpose_tpose);
 /**
  * @ingroup mobilitydb_pose_dist
- * @brief Return the temporal distance between a temporal pose and a pose
+ * @brief Return the temporal distance between two temporal poses
  * @sqlfn tDistance()
  * @sqlop @p <->
  */

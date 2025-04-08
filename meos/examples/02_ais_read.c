@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
+#include <meos_geo.h>
 
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024

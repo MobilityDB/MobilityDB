@@ -174,7 +174,7 @@ PGDLLEXPORT Datum Ever_eq_trgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ever_eq_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
- * @brief Return true if a temporal rigid geometry is ever equal to a gs
+ * @brief Return true if a temporal rigid geometry is ever equal to a geometry
  * @sqlfn ever_eq()
  * @sqlop @p ?=
  */
@@ -189,7 +189,7 @@ PG_FUNCTION_INFO_V1(Always_eq_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is always equal to a
- * gs
+ * geometry
  * @sqlfn always_eq()
  * @sqlop @p %=
  */
@@ -204,7 +204,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is ever different from a
- * gs
+ * geometry
  * @sqlfn ever_ne()
  * @sqlop @p ?<>
  */
@@ -219,7 +219,7 @@ PG_FUNCTION_INFO_V1(Always_ne_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_comp_ever
  * @brief Return true if a temporal rigid geometry is always different from a
- * gs
+ * geometry
  * @sqlfn always_ne()
  * @sqlop @p %<>
  */
@@ -369,7 +369,7 @@ PG_FUNCTION_INFO_V1(Tne_geo_trgeo);
 /**
  * @ingroup mobilitydb_rgeo_comp_temp
  * @brief Return true if a temporal rigid geometry is ever different from a
- * gs
+ * geometry
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
@@ -400,7 +400,7 @@ PG_FUNCTION_INFO_V1(Tne_trgeo_geo);
 /**
  * @ingroup mobilitydb_rgeo_comp_temp
  * @brief Return true if a temporal rigid geometry is ever different from a
- * gs
+ * geometry
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */

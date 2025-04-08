@@ -181,7 +181,7 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
   GISTENTRY *ent = entryvec->vector;
   TBox *result = tbox_copy(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
-    tbox_adjust((void *)result, DatumGetPointer(ent[i].key));
+    tbox_adjust((void *) result, DatumGetPointer(ent[i].key));
   PG_RETURN_TBOX_P(result);
 }
 

@@ -51,6 +51,8 @@
 /**
  * @ingroup meos_internal_cbuffer_dist
  * @brief Return the distance between two circular buffers
+ * @note The function assumes that all validity tests have been previously
+ * done
  */
 Datum
 datum_cbuffer_distance(Datum cbuf1, Datum cbuf2)
@@ -72,13 +74,7 @@ double
 distance_cbuffer_geo(const Cbuffer *cbuf, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) gs))
-    return -1.0;
-#else
-  assert(cbuf); assert(gs);
-#endif /* MEOS */
-  if (gserialized_is_empty(gs))
+  if (! ensure_valid_cbuffer_geo(cbuf, gs) || gserialized_is_empty(gs))
     return -1.0;
 
   GSERIALIZED *geo = cbuffer_geom(cbuf);
@@ -97,13 +93,7 @@ double
 distance_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) box))
-    return -1.0;
-#else
-  assert(cbuf); assert(box);
-#endif /* MEOS */
-  if (! ensure_has_X(T_STBOX, box->flags))
+  if (! ensure_valid_cbuffer_stbox(cbuf, box))
     return -1.0;
 
   GSERIALIZED *geo1 = cbuffer_geom(cbuf);
@@ -123,13 +113,7 @@ double
 distance_cbuffer_cbuffer(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) cbuf1) || ! ensure_not_null((void *) cbuf2))
-    return -1.0;
-#else
-  assert(cbuf1); assert(cbuf2);
-#endif /* MEOS */
-  if (! ensure_same_srid(cbuffer_srid(cbuf1), cbuffer_srid(cbuf2)))
+  if (! ensure_valid_cbuffer_cbuffer(cbuf1, cbuf2))
     return -1.0;
 
   GSERIALIZED *geo1 = cbuffer_geom(cbuf1);
@@ -154,15 +138,7 @@ Temporal *
 distance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
-    return NULL;
-#else
-  assert(temp); assert(gs); assert(temp->temptype == T_TCBUFFER);
-#endif /* MEOS */
-  if (gserialized_is_empty(gs) ||
-      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
   Temporal *tpoint = tcbuffer_tgeompoint(temp);
@@ -183,14 +159,7 @@ Temporal *
 distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
-      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
-    return NULL;
-#else
-  assert(temp); assert(cbuf); assert(temp->temptype == T_TCBUFFER);
-#endif /* MEOS */
-  if (! ensure_same_srid(tspatial_srid(temp), cbuffer_srid(cbuf)))
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return NULL;
 
   GSERIALIZED *geom = cbuffer_geom(cbuf);
@@ -210,16 +179,7 @@ Temporal *
 distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_temporal_isof_type(temp1, T_TCBUFFER) ||
-      ! ensure_temporal_isof_type(temp2, T_TCBUFFER))
-    return NULL;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == T_TCBUFFER);
-  assert(temp1->temptype == T_TCBUFFER);
-#endif /* MEOS */
-  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
 
   Temporal *tpoint1 = tcbuffer_tgeompoint(temp1);
@@ -245,9 +205,7 @@ double
 nad_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) cbuf) || ! ensure_not_null((void *) box) || 
-      ! ensure_valid_stbox_cbuffer(box, cbuf))
-      // ! ensure_same_spatial_dimensionality_stbox_geo(box, cbuf))
+  if (! ensure_valid_cbuffer_stbox(cbuf, box))
     return -1.0;
 
   Datum geocbuf = PointerGetDatum(cbuffer_geom(cbuf));
@@ -271,15 +229,7 @@ TInstant *
 nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
-    return NULL;
-#else
-  assert(temp); assert(gs); assert(temp->temptype == T_TCBUFFER);
-#endif /* MEOS */
-  if (gserialized_is_empty(gs) ||
-      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
   Temporal *tpoint = tcbuffer_tgeompoint(temp);
@@ -305,14 +255,7 @@ TInstant *
 nai_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
-      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
-    return NULL;
-#else
-  assert(temp); assert(cbuf); assert(temp->temptype == T_TCBUFFER);
-#endif /* MEOS */
-  if (! ensure_same_srid(tspatial_srid(temp), cbuffer_srid(cbuf)))
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return NULL;
 
   GSERIALIZED *geom = cbuffer_geom(cbuf);
@@ -337,16 +280,7 @@ TInstant *
 nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_temporal_isof_type(temp1, T_TCBUFFER) ||
-      ! ensure_temporal_isof_type(temp2, T_TCBUFFER))
-    return NULL;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == T_TCBUFFER);
-  assert(temp1->temptype == T_TCBUFFER);
-#endif /* MEOS */
-  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
 
   Temporal *dist = distance_tcbuffer_tcbuffer(temp1, temp2);
@@ -377,15 +311,7 @@ double
 nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
-    return -1.0;
-#else
-  assert(temp); assert(gs); assert(temp->temptype == T_TCBUFFER);
-#endif /* MEOS */
-  if (gserialized_is_empty(gs) ||
-      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1.0;
 
   GSERIALIZED *trav = tcbuffer_traversed_area(temp);
@@ -406,9 +332,7 @@ double
 nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_temporal_isof_type(temp, T_TCBUFFER) || 
-      ! ensure_has_X(T_STBOX, box->flags))
+  if (! ensure_valid_tcbuffer_stbox(temp, box))
     return -1.0;
 
   GSERIALIZED *trav = tcbuffer_traversed_area(temp);
@@ -430,14 +354,7 @@ double
 nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
-      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
-    return -1.0;
-#else
-  assert(temp); assert(cbuf); assert(temp->temptype == T_TCBUFFER);
-#endif /* MEOS */
-  if (! ensure_same_srid(tspatial_srid(temp), cbuffer_srid(cbuf)))
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1.0;
 
   GSERIALIZED *geom = cbuffer_geom(cbuf);
@@ -457,16 +374,7 @@ double
 nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_temporal_isof_type(temp1, T_TCBUFFER) ||
-      ! ensure_temporal_isof_type(temp2, T_TCBUFFER))
-    return -1.0;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == T_TCBUFFER);
-  assert(temp1->temptype == T_TCBUFFER);
-#endif /* MEOS */
-  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return -1.0;
 
   Temporal *dist = distance_tcbuffer_tcbuffer(temp1, temp2);
@@ -491,8 +399,7 @@ GSERIALIZED *
 shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
   GSERIALIZED *trav = tcbuffer_traversed_area(temp);
@@ -513,14 +420,7 @@ GSERIALIZED *
 shortestline_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
-      ! ensure_temporal_isof_type(temp, T_TCBUFFER))
-    return NULL;
-#else
-  assert(temp); assert(cbuf); assert(temp->temptype == T_TCBUFFER);
-#endif /* MEOS */
-  if (! ensure_same_srid(tspatial_srid(temp), cbuffer_srid(cbuf)))
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return NULL;
 
   GSERIALIZED *geom = cbuffer_geom(cbuf);
@@ -541,16 +441,7 @@ GSERIALIZED *
 shortestline_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_temporal_isof_type(temp1, T_TCBUFFER) ||
-      ! ensure_temporal_isof_type(temp2, T_TCBUFFER))
-    return NULL;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == T_TCBUFFER);
-  assert(temp1->temptype == T_TCBUFFER);
-#endif /* MEOS */
-  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
 
   Temporal *tpoint1 = tcbuffer_tgeompoint(temp1);

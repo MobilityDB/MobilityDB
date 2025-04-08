@@ -56,12 +56,7 @@ TInstant *
 tpointinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) gs))
-    return NULL;
-#else
-  assert(gs);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
       ! ensure_has_not_M_geo(gs))
     return NULL;
@@ -81,12 +76,7 @@ TInstant *
 tgeoinst_make(const GSERIALIZED *gs, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) gs))
-    return NULL;
-#else
-  assert(gs);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs))
     return NULL;
   meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?

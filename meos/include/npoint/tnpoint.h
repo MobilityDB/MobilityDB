@@ -82,13 +82,15 @@ struct Nsegment
  * Npoint functions
  *****************************************************************************/
 
-/* General functions */
+/* Validity functions */
 
-extern int32_t get_srid_ways(void);
-extern Npoint *npoint_parse(const char **str, bool end);
-extern GSERIALIZED *npointarr_geom(Npoint **points, int count);
-extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int count);
-extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
+extern bool ensure_valid_tnpoint_npoint(const Temporal *temp,
+  const Npoint *np);
+extern bool ensure_valid_tnpoint_geo(const Temporal *temp,
+  const GSERIALIZED *gs);
+extern bool ensure_valid_tnpoint_stbox(const Temporal *temp, const STBox *box);
+extern bool ensure_valid_tnpoint_tnpoint(const Temporal *temp1,
+  const Temporal *temp2);
 
 /* Collinear functions */
 
@@ -97,9 +99,18 @@ extern bool npoint_collinear(const Npoint *np1, const Npoint *np2,
 
 /* Interpolation functions */
 
-extern Datum npointsegm_interpolate(Datum start, Datum end, long double ratio);
-extern bool tnpointsegm_intersection_value(const TInstant *inst1,
-  const TInstant *inst2, Datum value, TimestampTz *t);
+extern Npoint *npointsegm_interpolate(const Npoint *start, const Npoint *end,
+  long double ratio);
+extern long double npointsegm_locate(const Npoint *start, const Npoint *end,
+  const Npoint *value);
+
+/* General functions */
+
+extern int32_t get_srid_ways(void);
+extern Npoint *npoint_parse(const char **str, bool end);
+extern GSERIALIZED *npointarr_geom(Npoint **points, int count);
+extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int count);
+extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
 
 /* Input/output functions */
 

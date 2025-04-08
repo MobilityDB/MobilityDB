@@ -43,7 +43,7 @@
 #include "general/temporal.h"
 #include "general/temporal_compops.h"
 #include "general/type_util.h"
-#include "geo/tgeo_spatialfuncs.h"
+#include "rgeo/trgeo.h"
 
 /*****************************************************************************
  * Ever/always comparisons
@@ -62,18 +62,9 @@ eacomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_not_null((void *) func) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
+  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-#else
-  assert(temp); assert(gs); assert(func);
-  assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-  if (! ensure_not_empty(gs) ||
-      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
-    return -1;
+  assert(func);
   return eacomp_temporal_base(temp, PointerGetDatum(gs), func, ever);
 }
 
@@ -89,19 +80,9 @@ eacomp_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) || 
-      ! ensure_not_null((void *) func) ||
-      ! ensure_temporal_isof_type(temp1, T_TRGEOMETRY) ||
-      ! ensure_temporal_isof_type(temp2, T_TRGEOMETRY))
+  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(func); 
-  assert(temp1->temptype == T_TRGEOMETRY);
-  assert(temp2->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
-    return -1;
+  assert(func);
   return eacomp_temporal_temporal(temp1, temp2, func, ever);
 }
 
@@ -284,19 +265,9 @@ tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
   Datum (*func)(Datum, Datum, meosType))
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_not_null((void *) func) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
+  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
-#else
-  assert(temp); assert(gs); assert(func);
-  assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-  /* Empty geometries accepted, i.e., there is no associated error message */
-  if (gserialized_is_empty(gs) ||
-      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
-    return NULL;
+  assert(func);
   return tcomp_base_temporal(PointerGetDatum(gs), temp, func);
 }
 
@@ -312,18 +283,9 @@ tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, meosType))
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_not_null((void *) func) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
+  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
-#else
-  assert(temp); assert(gs); assert(func);
-  assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-  if (! ensure_not_empty(gs) ||
-      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
-    return NULL;
+  assert(func);
   return tcomp_temporal_base(temp, PointerGetDatum(gs), func);
 }
 

@@ -532,7 +532,7 @@ SkipList *
 tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
 {
   assert(seq);
-  const TInstant **instants = tsequence_instants_p(seq);
+  const TInstant **instants = tsequence_insts_p(seq);
   SkipList *result;
   if (! state)
     result = skiplist_make((void **) instants, seq->count);

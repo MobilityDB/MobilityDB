@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal distance for temporal circular buffers.
+ * @brief Temporal distance for temporal circular buffers
  */
 
 #include "cbuffer/tcbuffer_distance.h"

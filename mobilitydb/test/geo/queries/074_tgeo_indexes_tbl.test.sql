@@ -108,8 +108,8 @@ SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #>> tgeography 'SRID=7844;[
 SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE temp #&> tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]';
 
 -- Test the commutator for the selectivity
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE tgeography '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]' <<# temp;
-SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE tgeography '[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]' &<# temp;
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]' <<# temp;
+SELECT COUNT(*) FROM tbl_tgeography3D_big WHERE tgeography 'SRID=7844;[Point(1 1 1)@2000-01-01, Point(10 10 10)@2000-01-02]' &<# temp;
 
 -------------------------------------------------------------------------------
 

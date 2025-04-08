@@ -86,13 +86,7 @@ Temporal *
 tnot_tbool(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TBOOL))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TBOOL);
-#endif /* MEOS */
+  VALIDATE_TBOOL(temp, NULL); 
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -162,14 +156,7 @@ SpanSet *
 tbool_when_true(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TBOOL))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TBOOL);
-#endif /* MEOS */
-
+  VALIDATE_TBOOL(temp, NULL);
   Temporal *temp1 = temporal_restrict_value(temp, BoolGetDatum(true), REST_AT);
   if (! temp1)
     return NULL;

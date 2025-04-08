@@ -29,33 +29,19 @@
 
 /**
  * @file
- * @brief General functions for sets composed of an ordered list of distinct
- * values
+ * @brief General functions for geometry/geography sets
  */
-
-#include "general/set.h"
 
 /* C */
 #include <assert.h>
-#include <float.h>
-#include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/timestamp.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/span.h"
-#include "general/tnumber_mathfuncs.h"
-#include "general/ttext_funcs.h"
 #include "general/type_parser.h"
 #include "general/type_util.h"
-#include "geo/tgeo_out.h"
 #include "geo/tgeo_spatialfuncs.h"
-#include "geo/tspatial_boxops.h"
 
 /*****************************************************************************
  * Input/output functions in string format
@@ -71,8 +57,7 @@ Set *
 geomset_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
   return set_parse(&str, T_GEOMSET);
 }
 
@@ -86,8 +71,7 @@ Set *
 geogset_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
   return set_parse(&str, T_GEOGSET);
 }
 
@@ -106,7 +90,8 @@ Set *
 geoset_make(const GSERIALIZED **values, int count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) values) || ! ensure_positive(count))
+  VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_positive(count))
     return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);
@@ -123,7 +108,7 @@ geoset_make(const GSERIALIZED **values, int count)
 
 /**
  * @ingroup meos_geo_set_conversion
- * @brief Return a geometry/geography converted to a geo set
+ * @brief Convert a geometry/geography into a geo set
  * @param[in] gs Value
  * @csqlfn #Value_to_set()
  */
@@ -131,7 +116,8 @@ Set *
 geo_to_set(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs))
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_empty(gs))
     return NULL;
 
   Datum v = PointerGetDatum(gs);
@@ -154,8 +140,7 @@ GSERIALIZED *
 geoset_start_value(const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
-    return NULL;
+  VALIDATE_GEOSET(s, NULL);
  return DatumGetGserializedP(datum_copy(SET_VAL_N(s, 0), s->basetype));
 }
 
@@ -170,8 +155,7 @@ GSERIALIZED *
 geoset_end_value(const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
-    return NULL;
+  VALIDATE_GEOSET(s, NULL);
   return DatumGetGserializedP(datum_copy(SET_VAL_N(s, s->count - 1),
     s->basetype));
 }
@@ -189,9 +173,7 @@ bool
 geoset_value_n(const Set *s, int n, GSERIALIZED **result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_geoset_type(s->settype))
-    return false;
+  VALIDATE_GEOSET(s, false); VALIDATE_NOT_NULL(result, false);
   if (n < 1 || n > s->count)
     return false;
   *result = DatumGetGserializedP(datum_copy(SET_VAL_N(s, n - 1), s->basetype));
@@ -209,9 +191,7 @@ GSERIALIZED **
 geoset_values(const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_geoset_type(s->settype))
-    return NULL;
-
+  VALIDATE_GEOSET(s, NULL);
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetGserializedP(datum_copy(SET_VAL_N(s, i), s->basetype));
@@ -232,10 +212,8 @@ bool
 ensure_valid_set_geo(const Set *s, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) gs) ||
-      ! ensure_geoset_type(s->settype) || ! ensure_not_empty(gs))
-    return false;
-  if (! ensure_geoset_type(s->settype))
+  VALIDATE_GEOSET(s, false); VALIDATE_NOT_NULL(gs, false);
+  if (! ensure_not_empty(gs))
     return false;
   return true;
 }
@@ -366,7 +344,6 @@ minus_set_geo(const Set *s, const GSERIALIZED *gs)
  * Aggregate functions for set types
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_geo_set_setops
  * @brief Transition function for set union aggregate of geometries/geographies
@@ -377,14 +354,11 @@ Set *
 geo_union_transfn(Set *state, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) gs))
-    return NULL;
-
+  VALIDATE_NOT_NULL(gs, NULL);
   if (state && ! ensure_geoset_type(state->settype))
     return NULL;
   meosType geotype = FLAGS_GET_GEODETIC(gs->gflags) ? T_GEOGRAPHY : T_GEOMETRY;
   return value_union_transfn(state, PointerGetDatum(gs), geotype);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/

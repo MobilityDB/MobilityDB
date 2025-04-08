@@ -45,19 +45,23 @@
 #include <meos_internal.h>
 #include "general/lifting.h"
 #include "general/meos_catalog.h"
+#include "general/set.h"
+#include "general/span.h"
+#include "general/spanset.h"
 #include "general/temporal.h"
 #include "general/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/tspatial_parser.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo_all.h"
 #include "rgeo/trgeo_utils.h"
 
 /*****************************************************************************
- * Parameter tests
+ * Validity functions
  *****************************************************************************/
 
 /**
- * @brief Ensure that a trgeometry has a reference geometry
+ * @brief Ensure that a temporal rigid geometry has a reference geometry
  */
 bool
 ensure_has_geom(int16 flags)
@@ -67,6 +71,59 @@ ensure_has_geom(int16 flags)
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "Cannot access geometry from temporal rigid geometry");
   return false;
+}
+
+/**
+ * @brief Ensure the validity of a temporal rigid geometry and a geometry
+ */
+bool
+ensure_valid_trgeo_stbox(const Temporal *temp, const STBox *box)
+{
+  VALIDATE_TRGEOMETRY(temp, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_has_X(T_STBOX, box->flags) ||
+      ! ensure_same_srid(tspatial_srid(temp), stbox_srid(box)) ||
+      ! ensure_same_spatial_dimensionality(temp->flags, box->flags))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of a temporal rigid geometry and a geometry
+ */
+bool
+ensure_valid_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  VALIDATE_TRGEOMETRY(temp, false); VALIDATE_NOT_NULL(gs, false);
+  if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
+      ! ensure_same_dimensionality_tspatial_geo(temp, gs))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of two temporal rigid geometries
+ */
+bool
+ensure_valid_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
+{
+  VALIDATE_TRGEOMETRY(temp1, false); VALIDATE_TPOINT(temp2, false);
+  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
+      ! ensure_same_dimensionality(temp1->flags, temp2->flags))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of two temporal rigid geometries
+ */
+bool
+ensure_valid_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
+{
+  VALIDATE_TRGEOMETRY(temp1, false); VALIDATE_TRGEOMETRY(temp2, false);
+  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
+      ! ensure_same_dimensionality(temp1->flags, temp2->flags))
+    return false;
+  return true;
 }
 
 /*****************************************************************************
@@ -80,12 +137,11 @@ ensure_has_geom(int16 flags)
  * representation
  * @param[in] str String
  */
-Temporal *
+inline Temporal *
 trgeo_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
   return tspatial_parse(&str, T_TRGEOMETRY);
 }
 
@@ -99,6 +155,8 @@ trgeo_in(const char *str)
 inline Temporal *
 trgeo_from_mfjson(const char *mfjson)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(mfjson, NULL);
   return temporal_from_mfjson(mfjson, T_TRGEOMETRY);
 }
 #endif /* MEOS */
@@ -113,13 +171,7 @@ char *
 trgeo_out(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+  VALIDATE_TRGEOMETRY(temp, NULL);
 
   char *geom = geo_out(trgeo_geom_p(temp));
   char *pose = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS);
@@ -131,6 +183,7 @@ trgeo_out(const Temporal *temp)
 }
 
 /**
+ * @ingroup meos_internal_rgeo_inout
  * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation of
  * a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
@@ -141,13 +194,7 @@ char *
 trgeo_wkt_out(const Temporal *temp, int maxdd, bool extended)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+  VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
@@ -205,13 +252,7 @@ Temporal *
 trgeo_tpose(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+  VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_has_geom(temp->flags))
     return NULL;
 
@@ -234,13 +275,7 @@ Temporal *
 trgeo_tpoint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+  VALIDATE_TRGEOMETRY(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -262,6 +297,7 @@ trgeo_tpoint(const Temporal *temp)
 const GSERIALIZED *
 trgeo_geom_p(const Temporal *temp)
 {
+  assert(temp);
   const GSERIALIZED *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -278,9 +314,13 @@ trgeo_geom_p(const Temporal *temp)
  * @brief Return a copy of the reference geometry of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
  */
-inline GSERIALIZED *
+GSERIALIZED *
 trgeo_geom(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_has_geom(temp->flags))
+    return NULL;
   return geo_copy(trgeo_geom_p(temp));
 }
 
@@ -299,13 +339,7 @@ TInstant *
 geo_tposeinst_to_trgeo(const GSERIALIZED *gs, const TInstant *inst)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void **) gs) || ! ensure_not_null((void **) inst) ||
-      ! ensure_temporal_isof_type((Temporal *) inst, T_TPOSE))
-    return NULL;
-#else
-  assert(gs); assert(inst); assert(inst->temptype == T_TPOSE);
-#endif /* MEOS */
+  VALIDATE_TPOSE(inst, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs) || ! ensure_has_not_M_geo(gs))
     return NULL;
 
@@ -323,13 +357,7 @@ TSequence *
 geo_tposeseq_to_trgeo(const GSERIALIZED *gs, const TSequence *seq)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void **) gs) || ! ensure_not_null((void **) seq) ||
-      ! ensure_temporal_isof_type((Temporal *) seq, T_TPOSE))
-    return NULL;
-#else
-  assert(gs); assert(seq); assert(seq->temptype == T_TPOSE);
-#endif /* MEOS */
+  VALIDATE_TPOSE(seq, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs) || ! ensure_has_not_M_geo(gs))
     return NULL;
 
@@ -352,13 +380,7 @@ TSequenceSet *
 geo_tposeseqset_to_trgeo(const GSERIALIZED *gs, const TSequenceSet *ss)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void **) gs) || ! ensure_not_null((void **) ss) ||
-      ! ensure_temporal_isof_type((Temporal *) ss, T_TPOSE))
-    return NULL;
-#else
-  assert(gs); assert(ss); assert(ss->temptype == T_TPOSE);
-#endif /* MEOS */
+  VALIDATE_TPOSE(ss, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs) || ! ensure_has_not_M_geo(gs))
     return NULL;
 
@@ -379,13 +401,7 @@ Temporal *
 geo_tpose_to_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void **) gs) || ! ensure_not_null((void **) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TPOSE))
-    return NULL;
-#else
-  assert(gs); assert(temp); assert(temp->temptype == T_TPOSE);
-#endif /* MEOS */
+  VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs) || ! ensure_has_not_M_geo(gs))
     return NULL;
 
@@ -403,6 +419,7 @@ geo_tpose_to_trgeo(const GSERIALIZED *gs, const Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_rgeo_transf
  * @brief Return a geometry obtained by appling a pose to a geometry
  * @param[in] pose Pose
  * @param[inout] gs Geometry
@@ -431,13 +448,7 @@ GSERIALIZED *
 trgeo_start_value(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void **) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+  VALIDATE_TRGEOMETRY(temp, NULL);
 
   Datum pose;
   assert(temptype_subtype(temp->subtype));
@@ -465,13 +476,7 @@ GSERIALIZED *
 trgeo_end_value(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void **) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+  VALIDATE_TRGEOMETRY(temp, NULL);
 
   Datum pose;
   assert(temptype_subtype(temp->subtype));
@@ -508,13 +513,7 @@ bool
 trgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return false;
-#else
-  assert(temp); assert(result); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+  VALIDATE_TRGEOMETRY(temp, false); VALIDATE_NOT_NULL(result, false);
   if (! ensure_positive(n))
     return false;
 
@@ -577,14 +576,7 @@ TInstant *
 trgeo_start_instant(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-
+  VALIDATE_TRGEOMETRY(temp, NULL);
   /* A temporal rigid geometry always has a start instant */
   return geo_tposeinst_to_trgeo(trgeo_geom_p(temp), temporal_start_inst(temp));
 }
@@ -600,14 +592,7 @@ TInstant *
 trgeo_end_instant(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-
+  VALIDATE_TRGEOMETRY(temp, NULL);
   /* A temporal rigid geometry always has an end instant */
   return geo_tposeinst_to_trgeo(trgeo_geom_p(temp), temporal_end_inst(temp));
 }
@@ -624,13 +609,7 @@ TInstant *
 trgeo_instant_n(const Temporal *temp, int n)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+  VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_positive(n))
     return NULL;
 
@@ -652,13 +631,7 @@ TInstant **
 trgeo_instants(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(count); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
 
   const TInstant **instants = temporal_instants_p(temp, count);
   TInstant **result = palloc(sizeof(TInstant *) * *count);
@@ -681,13 +654,7 @@ TSequence *
 trgeo_start_sequence(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+  VALIDATE_TRGEOMETRY(temp, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_continuous(temp))
     return NULL;
@@ -708,13 +675,8 @@ TSequence *
 trgeo_end_sequence(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+
+  VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_continuous(temp))
     return NULL;
 
@@ -736,13 +698,8 @@ TSequence *
 trgeo_sequence_n(const Temporal *temp, int n)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+
+  VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_continuous(temp) || ! ensure_positive(n))
     return NULL;
 
@@ -773,13 +730,8 @@ TSequence **
 trgeo_sequences(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+
+  VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_continuous(temp))
     return NULL;
 
@@ -807,13 +759,8 @@ Temporal *
 trgeo_round(const Temporal *temp, int maxdd)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+
+  VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
@@ -836,13 +783,8 @@ TInstant *
 trgeo_to_tinstant(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+
+  VALIDATE_TRGEOMETRY(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -867,13 +809,8 @@ TSequence *
 trgeo_to_tsequence(const Temporal *temp, const char *interp_str)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+
+  VALIDATE_TRGEOMETRY(temp, NULL);
 
   interpType interp;
   /* If the interpolation is not NULL */
@@ -896,20 +833,15 @@ trgeo_to_tsequence(const Temporal *temp, const char *interp_str)
  * @ingroup meos_rgeo_transf
  * @brief Return a temporal rigid geometry transformed to a temporal sequence set
  * @param[in] temp Temporal rigid geometry
- * @param[in] interp_str Interpolation string
+ * @param[in] interp_str Interpolation string, may be @p NULL
  * @csqlfn #Trgeometry_to_tsequenceset()
  */
 TSequenceSet *
 trgeo_to_tsequenceset(const Temporal *temp, const char *interp_str)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+
+  VALIDATE_TRGEOMETRY(temp, NULL);
 
   interpType interp;
   /* If the interpolation is not NULL */
@@ -933,22 +865,15 @@ trgeo_to_tsequenceset(const Temporal *temp, const char *interp_str)
  * @ingroup meos_rgeo_transf
  * @brief Restrict a temporal rigid geometry transformed to an interpolation
  * @param[in] temp Temporal rigid geometry
- * @param[in] interp Interpolation
+ * @param[in] interp_str Interpolation
  * @csqlfn #Temporal_set_interp()
  */
 Temporal *
-trgeo_set_interp(const Temporal *temp, interpType interp)
+trgeo_set_interp(const Temporal *temp, const char *interp_str)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-
-  Temporal *res = temporal_set_interp(temp, interp);
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(interp_str, NULL);
+  Temporal *res = temporal_set_interp(temp, interp_str);
   if (! res)
     return NULL;
   Temporal *result = geo_tpose_to_trgeo(trgeo_geom_p(temp), res);
@@ -962,26 +887,21 @@ trgeo_set_interp(const Temporal *temp, interpType interp)
 
 /**
  * @ingroup meos_internal_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to (the complement of) a base value
+ * @brief Restrict a temporal rigid geometry to (the complement of) a geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] value Value
  * @param[in] atfunc True if the restriction is at, false for minus
  * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
- * @csqlfn #Temporal_at_value(), #Temporal_minus_value()
+ * @csqlfn #Temporal_restrict_value()
  */
 Temporal *
 trgeo_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+
+  VALIDATE_TRGEOMETRY(temp, NULL);
 
   Temporal *res = temporal_restrict_value(temp, value, atfunc);
   if (! res)
@@ -992,26 +912,47 @@ trgeo_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 }
 
 /**
- * @ingroup meos_internal_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to (the complement of) an array of
- * base values
+ * @ingroup meos_rgeo_restrict
+ * @brief Restrict a temporal rigid geometry to a geometry
  * @param[in] temp Temporal rigid geometry
- * @param[in] s Set
+ * @param[in] value Value
+ * @csqlfn #Temporal_at_value()
+ */
+inline Temporal *
+trgeo_at_value(const Temporal *temp, Datum value)
+{
+  return trgeo_restrict_value(temp, value, REST_AT);
+}
+
+/**
+ * @ingroup meos_rgeo_restrict
+ * @brief Restrict a temporal rigid geometry to the complement of a geometry
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] value Value
+ * @csqlfn #Temporal_minus_value()
+ */
+inline Temporal *
+trgeo_minus_value(const Temporal *temp, Datum value)
+{
+  return trgeo_restrict_value(temp, value, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_rgeo_restrict
+ * @brief Restrict a temporal rigid geometry to (the complement of) a set of
+ * geometries
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] s Set of values
  * @param[in] atfunc True if the restriction is at, false for minus
- * @csqlfn #Temporal_at_values(), #Temporal_minus_values()
+ * @csqlfn #Temporal_restrict_values()
  */
 Temporal *
 trgeo_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(s); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_GEOMSET(s, NULL); 
   Temporal *res = temporal_restrict_values(temp, s, atfunc);
   if (! res)
     return NULL;
@@ -1019,6 +960,35 @@ trgeo_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
   pfree(res);
   return result;
 }
+
+/**
+ * @ingroup meos_rgeo_restrict
+ * @brief Restrict a temporal rigid geometry to a set of geometries
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] s Set of values
+ * @csqlfn #Temporal_at_values()
+ */
+inline Temporal *
+trgeo_at_values(const Temporal *temp, const Set *s)
+{
+  return trgeo_restrict_values(temp, s, REST_AT);
+}
+
+/**
+ * @ingroup meos_rgeo_restrict
+ * @brief Restrict a temporal rigid geometry to the complement of a set of
+ * geometries
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Temporal_minus_values()
+ * @param[in] s Set of values
+ */
+inline Temporal *
+trgeo_minus_values(const Temporal *temp, const Set *s)
+{
+  return trgeo_restrict_values(temp, s, REST_MINUS);
+}
+
+/*****************************************************************************/
 
 /**
  * @ingroup meos_internal_rgeo_restrict
@@ -1033,13 +1003,7 @@ Temporal *
 trgeo_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+  VALIDATE_TRGEOMETRY(temp, NULL);
 
   Temporal *res = temporal_restrict_timestamptz(temp, t, atfunc);
   if (! res)
@@ -1091,14 +1055,7 @@ Temporal *
 trgeo_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(s); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSET(s, NULL);
   Temporal *res = temporal_restrict_tstzset(temp, s, atfunc);
   if (! res)
     return NULL;
@@ -1149,14 +1106,7 @@ Temporal *
 trgeo_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(s); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
   Temporal *res = temporal_restrict_tstzspan(temp, s, atfunc);
   if (! res)
     return NULL;
@@ -1164,7 +1114,6 @@ trgeo_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
   pfree(res);
   return result;
 }
-
 
 /**
  * @ingroup meos_rgeo_restrict
@@ -1209,14 +1158,7 @@ trgeo_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
   bool atfunc)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(ss); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
   Temporal *res = temporal_restrict_tstzspanset(temp, ss, atfunc);
   if (! res)
     return NULL;
@@ -1279,13 +1221,7 @@ trgeo_append_tinstant(Temporal *temp, const TInstant *inst,
   interpType interp, double maxdist, const Interval *maxt, bool expand)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) inst) ||
-      ! ensure_same_temporal_type(temp, (Temporal *) inst))
-    return NULL;
-#else
-  assert(temp); assert(inst); assert(temp->temptype == inst->temptype);
-#endif /* MEOS */
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TRGEOMETRY(inst, NULL);
   if (! ensure_spatial_validity(temp, (const Temporal *) inst) ||
       ! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT))
     return NULL;
@@ -1310,15 +1246,10 @@ trgeo_append_tinstant(Temporal *temp, const TInstant *inst,
 Temporal *
 trgeo_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 {
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) seq) ||
-      ! ensure_same_temporal_type(temp, (Temporal *) seq))
-    return NULL;
-#else
-  assert(temp); assert(seq); assert(temp->temptype == seq->temptype);
-#endif /* MEOS */
   /* Ensure the validity of the arguments */
-  if ((temp->subtype != TINSTANT && ! ensure_same_interp(temp, (Temporal *) seq)) ||
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TRGEOMETRY(seq, NULL);
+  if ((temp->subtype != TINSTANT && 
+      ! ensure_same_interp(temp, (Temporal *) seq)) ||
       ! ensure_spatial_validity(temp, (Temporal *) seq) ||
       ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE))
     return NULL;
@@ -1342,13 +1273,7 @@ Temporal *
 trgeo_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
+  VALIDATE_TRGEOMETRY(temp, NULL);
 
   Temporal *res = temporal_delete_timestamptz(temp, t, connect);
   if (! res)
@@ -1372,14 +1297,7 @@ Temporal *
 trgeo_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(s); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSET(s, NULL);
   Temporal *res = temporal_delete_tstzset(temp, s, connect);
   if (! res)
     return NULL;
@@ -1401,14 +1319,7 @@ Temporal *
 trgeo_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(s); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
   Temporal *res = temporal_delete_tstzspan(temp, s, connect);
   if (! res)
     return NULL;
@@ -1431,14 +1342,7 @@ trgeo_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
   bool connect)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss) ||
-      ! ensure_temporal_isof_type(temp, T_TRGEOMETRY))
-    return NULL;
-#else
-  assert(temp); assert(ss); assert(temp->temptype == T_TRGEOMETRY);
-#endif /* MEOS */
-
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
   Temporal *res = temporal_delete_tstzspanset(temp, ss, connect);
   if (! res)
     return NULL;

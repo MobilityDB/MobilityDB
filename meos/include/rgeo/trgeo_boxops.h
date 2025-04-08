@@ -37,7 +37,6 @@
 
 /* Postgres */
 #include <postgres.h>
-// #include <catalog/pg_type.h>
 /* MEOS */
 #include "general/temporal.h"
 #include "geo/stbox.h"

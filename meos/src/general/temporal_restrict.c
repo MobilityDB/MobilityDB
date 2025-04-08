@@ -150,8 +150,8 @@ tnumber_bbox_restrict_span(const Temporal *temp, const Span *s)
 Temporal *
 temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 {
-  assert(temp);
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL); 
   if (tspatial_type(temp->temptype))
   {
 #if RGEO
@@ -240,12 +240,12 @@ temporal_bbox_restrict_set(const Temporal *temp, const Set *s)
 Temporal *
 temporal_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
 {
-  assert(temp); assert(s);
-  if (tspatial_type(temp->temptype))
-  {
-    assert(tspatial_srid(temp) == spatialset_srid(s));
-    assert(same_spatial_dimensionality(temp->flags, s->flags));
-  }
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_temporal_set(temp, s) ||
+     (tspatial_type(temp->temptype) && 
+      (! ensure_same_srid(tspatial_srid(temp), spatialset_srid(s)) ||
+       ! ensure_same_spatial_dimensionality(temp->flags, s->flags))))
+    return NULL;
 
   /* Singleton set */
   if (s->count == 1)
@@ -579,13 +579,6 @@ Temporal *
 tnumber_at_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tnumber_type(temp->temptype))
-    return NULL;
-#else
-  assert(temp); assert(box); assert(tnumber_type(temp->temptype));
-#endif /* MEOS */
   if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
 
@@ -634,13 +627,6 @@ Temporal *
 tnumber_minus_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tnumber_type(temp->temptype))
-    return NULL;
-#else
-  assert(temp); assert(box); assert(tnumber_type(temp->temptype));
-#endif /* MEOS */
   if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
 

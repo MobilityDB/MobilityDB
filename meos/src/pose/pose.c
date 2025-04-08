@@ -59,6 +59,23 @@
 #define MAXPOSELEN    256
 
 /*****************************************************************************
+ * Validity functions
+ *****************************************************************************/
+
+/**
+ * @brief Ensure the validity of two circular poses
+ */
+bool
+ensure_valid_pose_pose(const Pose *pose1, const Pose *pose2)
+{
+  VALIDATE_NOT_NULL(pose1, false); VALIDATE_NOT_NULL(pose2, false); 
+  if (! ensure_same_srid(pose_srid(pose1), pose_srid(pose2)))
+    return false;
+  return true;
+}
+
+
+/*****************************************************************************
  * Interpolation function
  *****************************************************************************/
 
@@ -72,7 +89,8 @@
 Pose *
 pose_interpolate(const Pose *pose1, const Pose *pose2, double ratio)
 {
-  assert(pose1); assert(pose2); assert(pose_srid(pose1) == pose_srid(pose2));
+  if (! ensure_valid_pose_pose(pose1, pose2))
+    return NULL; 
   Pose *result;
   if (! MEOS_FLAGS_GET_Z(pose1->flags))
   {
@@ -297,6 +315,7 @@ pose_parse(const char **str, bool end)
   return result;
 }
 
+#if MEOS
 /**
  * @ingroup meos_pose_base_inout
  * @brief Return a pose from its string representation.
@@ -307,14 +326,10 @@ Pose *
 pose_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) str))
-    return NULL;
-#else
-  assert(str);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(str, NULL);
   return pose_parse(&str, true);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_pose_base_inout
@@ -327,12 +342,7 @@ char *
 pose_out(const Pose *pose, int maxdd)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose))
-    return NULL;
-#else
-  assert(pose);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(pose, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
@@ -367,9 +377,12 @@ pose_out(const Pose *pose, int maxdd)
  * @brief Output a pose in the Well-Known Text (WKT) representation
  */
 char *
-pose_wkt_out(Datum value, bool extended, int maxdd)
+pose_wkt_out(const Pose *pose, bool extended, int maxdd)
 {
-  Pose *pose = DatumGetPoseP(value);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
 
   /* Write the pose */
   bool hasz = MEOS_FLAGS_GET_Z(pose->flags);
@@ -423,19 +436,10 @@ pose_wkt_out(Datum value, bool extended, int maxdd)
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Pose_as_text()
  */
-char *
+inline char *
 pose_as_text(const Pose *pose, int maxdd)
 {
-  /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose))
-    return NULL;
-#else
-  assert(pose);
-#endif /* MEOS */
-  if (! ensure_not_negative(maxdd))
-    return NULL;
-  return pose_wkt_out(PointerGetDatum(pose), false, maxdd);
+  return pose_wkt_out(pose, false, maxdd);
 }
 
 /**
@@ -445,9 +449,10 @@ pose_as_text(const Pose *pose, int maxdd)
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Pose_as_ewkt()
  */
-inline char *
+char *
 pose_as_ewkt(const Pose *pose, int maxdd)
 {
+  VALIDATE_NOT_NULL(pose, NULL);
   return spatialbase_as_ewkt(PointerGetDatum(pose), T_POSE, maxdd);
 }
 
@@ -466,8 +471,7 @@ Pose *
 pose_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) wkb))
-    return NULL;
+  VALIDATE_NOT_NULL(wkb, NULL);
   return DatumGetPoseP(type_from_wkb(wkb, size, T_POSE));
 }
 
@@ -482,8 +486,7 @@ Pose *
 pose_from_hexwkb(const char *hexwkb)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) hexwkb))
-    return NULL;
+  VALIDATE_NOT_NULL(hexwkb, NULL);
   size_t size = strlen(hexwkb);
   return DatumGetPoseP(type_from_hexwkb(hexwkb, size, T_POSE));
 }
@@ -502,12 +505,7 @@ uint8_t *
 pose_as_wkb(const Pose *pose, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose) || ! ensure_not_null((void *) size_out))
-    return NULL;
-#else
-  assert(pose); assert(size_out);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return datum_as_wkb(PointerGetDatum(pose), T_POSE, variant, size_out);
 }
 
@@ -524,12 +522,7 @@ char *
 pose_as_hexwkb(const Pose *pose, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose) || ! ensure_not_null((void *) size_out))
-    return NULL;
-#else
-  assert(pose); assert(size_out);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return (char *) datum_as_wkb(PointerGetDatum(pose), T_POSE,
     variant | (uint8_t) WKB_HEX, size_out);
 }
@@ -577,12 +570,7 @@ Pose *
 pose_make_point2d(const GSERIALIZED *gs, double theta)
 {
   /* Ensure validity of parameters */
-#if MEOS
-  if (! ensure_not_null((void *) gs))
-    return NULL;
-#else
-  assert(gs);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_valid_rotation(theta) || ! ensure_not_empty(gs) ||
       ! ensure_has_not_Z_geo(gs) || ! ensure_has_not_M_geo(gs))
     return NULL;
@@ -655,12 +643,7 @@ pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y,
   double Z)
 {
   /* Ensure validity of parameters */
-#if MEOS
-  if (! ensure_not_null((void *) gs))
-    return NULL;
-#else
-  assert(gs);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_unit_norm(W, X, Y, Z) || ! ensure_not_empty(gs) ||
       ! ensure_has_Z_geo(gs) || ! ensure_has_not_M_geo(gs))
     return NULL;
@@ -701,12 +684,7 @@ Pose *
 pose_copy(const Pose *pose)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose))
-    return NULL;
-#else
-  assert(pose);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(pose, NULL);
   Pose *result = palloc(VARSIZE(pose));
   memcpy(result, pose, VARSIZE(pose));
   return result;
@@ -725,12 +703,7 @@ GSERIALIZED *
 pose_point(const Pose *pose)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose))
-    return NULL;
-#else
-  assert(pose);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(pose, NULL);
 
   LWPOINT *point;
   if (MEOS_FLAGS_GET_Z(pose->flags))
@@ -764,7 +737,7 @@ datum_pose_point(Datum pose)
 GSERIALIZED *
 posearr_points(Pose **posearr, int count)
 {
-  assert(posearr); assert(count > 1);
+  VALIDATE_NOT_NULL(posearr, NULL); assert(count > 1);
   GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * count);
   /* SRID of the first element of the array */
   int32_t srid = pose_srid(posearr[0]);
@@ -799,12 +772,7 @@ double
 pose_rotation(const Pose *pose)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose))
-    return DBL_MAX;
-#else
-  assert(pose);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(pose, DBL_MAX);
   if (! ensure_has_not_Z(T_POSE, pose->flags))
     return DBL_MAX;
 
@@ -830,12 +798,7 @@ double *
 pose_orientation(const Pose *pose)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose))
-    return NULL;
-#else
-  assert(pose);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(pose, NULL);
   if (! ensure_has_Z(T_POSE, pose->flags))
     return NULL;
 
@@ -859,6 +822,11 @@ pose_orientation(const Pose *pose)
 Pose *
 pose_round(const Pose *pose, int maxdd)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL);
+  if (! ensure_positive(maxdd))
+    return NULL;
+
   /* Set precision of the values */
   Pose *result;
   if (MEOS_FLAGS_GET_Z(pose->flags))
@@ -907,12 +875,7 @@ Pose **
 posearr_round(const Pose **posearr, int count, int maxdd)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) posearr))
-    return NULL;
-#else
-  assert(posearr);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(posearr, NULL);
   if (! ensure_positive(count) || ! ensure_not_negative(maxdd))
     return NULL;
 
@@ -935,12 +898,7 @@ int32_t
 pose_srid(const Pose *pose)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose))
-    return SRID_INVALID;
-#else
-  assert(pose);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(pose, SRID_INVALID);
 
   int32 srid = 0;
   srid = srid | (pose->srid[0] << 16);
@@ -966,18 +924,7 @@ pose_srid(const Pose *pose)
 void
 pose_set_srid(Pose *pose, int32_t srid)
 {
-  /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose))
-  {
-    ;
-  }
-#else
   assert(pose);
-#endif /* MEOS */
-
-  srid = clamp_srid(srid);
-
   /* 0 is our internal unknown value.
    * We'll map back and forth here for now */
   if (srid == SRID_UNKNOWN)
@@ -1000,7 +947,7 @@ pose_set_srid(Pose *pose, int32_t srid)
 Pose *
 pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
 {
-  assert(pose); assert(pj);
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(pj, NULL);
   /* Copy the pose to transform its point in place */
   Pose *result = pose_copy(pose);
   GSERIALIZED *gs = pose_point(pose);
@@ -1038,7 +985,8 @@ pose_transform(const Pose *pose, int32_t srid_to)
 {
   int32_t srid_from;
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) pose) || ! ensure_srid_known(srid_to) ||
+  VALIDATE_NOT_NULL(pose, NULL);
+  if (! ensure_srid_known(srid_to) ||
       ! ensure_srid_known(srid_from = pose_srid(pose)))
     return NULL;
     
@@ -1073,7 +1021,8 @@ pose_transform_pipeline(const Pose *pose, const char *pipeline,
   int32_t srid_to, bool is_forward)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) pose) || ! ensure_not_null((void *) pipeline))
+  VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(pipeline, NULL);
+  if (! ensure_srid_known(srid_to))
     return NULL;
 
   /* There is NO test verifying whether the input and output SRIDs are equal */
@@ -1119,12 +1068,7 @@ bool
 pose_eq(const Pose *pose1, const Pose *pose2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose1) || ! ensure_not_null((void *) pose2))
-    return NULL;
-#else
-  assert(pose1); assert(pose2);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(pose1, NULL); VALIDATE_NOT_NULL(pose2, NULL);
 
   if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags) ||
       pose_srid(pose1) != pose_srid(pose2))
@@ -1164,12 +1108,7 @@ bool
 pose_same(const Pose *pose1, const Pose *pose2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose1) || ! ensure_not_null((void *) pose2))
-    return NULL;
-#else
-  assert(pose1); assert(pose2);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(pose1, NULL); VALIDATE_NOT_NULL(pose2, NULL);
 
   if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags) ||
       pose_srid(pose1) != pose_srid(pose2))
@@ -1210,12 +1149,7 @@ int
 pose_cmp(const Pose *pose1, const Pose *pose2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose1) || ! ensure_not_null((void *) pose2))
-    return INT_MAX;
-#else
   assert(pose1); assert(pose2);
-#endif /* MEOS */
 
   /* Compare first the dimension, then the SRID,
      then the position, then the orientation */
@@ -1304,12 +1238,7 @@ uint32
 pose_hash(const Pose *pose)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) pose))
-    return INT_MAX;
-#else
-  assert(pose);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(pose, INT_MAX);
 
   /* Use same code as gserialized2_hash */
   int32_t hval;

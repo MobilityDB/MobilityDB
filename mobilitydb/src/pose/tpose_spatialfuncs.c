@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Spatial functions for temporal poses.
+ * @brief Spatial functions for temporal poses
  */
 
 /* PostgreSQL */
@@ -52,7 +52,7 @@ PGDLLEXPORT Datum Tpose_trajectory(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_trajectory);
 /**
  * @ingroup mobilitydb_pose_accessor
- * @brief Return a temporal pose restricted to a geometry
+ * @brief Return the trajectory of a temporal pose
  * @sqlfn atGeometry()
  */
 inline Datum
@@ -71,8 +71,7 @@ Tpose_trajectory(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Return a temporal pose restricted to (the complement of) a
- * geometry
+ * @brief Return a temporal pose restricted to (the complement of) a geometry
  */
 static Datum
 Tpose_restrict_geom(FunctionCallInfo fcinfo, bool atfunc)

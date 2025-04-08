@@ -34,6 +34,8 @@
 
 #include "geo/tgeo_spatialfuncs.h"
 
+/* C */
+#include <assert.h>
 /* PostgreSQL */
 #include <utils/float.h>
 #if POSTGRESQL_VERSION_NUMBER >= 160000
@@ -67,6 +69,51 @@
  * select date_part('epoch', timestamp '2000-01-01' - timestamp '1970-01-01')
  * which results in 946684800 */
 #define DELTA_UNIX_POSTGRES_EPOCH 946684800
+
+/*****************************************************************************
+ * Validity functions
+ *****************************************************************************/
+
+/**
+ * @brief Ensure the validity of two temporal points
+ */
+bool
+ensure_valid_geo_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
+  if (! ensure_same_srid(gserialized_get_srid(gs1),
+        gserialized_get_srid(gs2)) ||
+      ! ensure_same_geodetic_geo(gs1, gs2))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of two temporal points
+ */
+bool
+ensure_valid_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  VALIDATE_TPOINT(temp, false); VALIDATE_NOT_NULL(gs, false);
+  if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
+      ! ensure_same_geodetic_tspatial_geo(temp, gs))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of two temporal points
+ */
+bool
+ensure_valid_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
+{
+  VALIDATE_TPOINT(temp1, false); VALIDATE_TPOINT(temp2, false);
+  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
+      ! ensure_same_geodetic(temp1->flags, temp2->flags))
+    return false;
+  return true;
+}
 
 /*****************************************************************************
  * Functions for extracting coordinates
@@ -143,8 +190,7 @@ tpoint_get_coord(const Temporal *temp, int coord)
 Temporal *
 tpoint_get_x(const Temporal *temp)
 {
-  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
-     return NULL;
+  VALIDATE_TPOINT(temp, NULL);
   return tpoint_get_coord(temp, 0);
 }
 
@@ -157,8 +203,7 @@ tpoint_get_x(const Temporal *temp)
 Temporal *
 tpoint_get_y(const Temporal *temp)
 {
-  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
-     return NULL;
+  VALIDATE_TPOINT(temp, NULL);
   return tpoint_get_coord(temp, 1);
 }
 
@@ -171,8 +216,7 @@ tpoint_get_y(const Temporal *temp)
 Temporal *
 tpoint_get_z(const Temporal *temp)
 {
-  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
-     return NULL;
+  VALIDATE_TPOINT(temp, NULL);
   return tpoint_get_coord(temp, 2);
 }
 #endif /* MEOS */
@@ -389,7 +433,7 @@ interpolate_point4d_spheroid(const POINT4D *p1, const POINT4D *p2,
  * total length of the segment where the point must be located
  */
 Datum
-pointsegm_interpolate_point(Datum start, Datum end, long double ratio)
+pointsegm_interpolate(Datum start, Datum end, long double ratio)
 {
   GSERIALIZED *gs = DatumGetGserializedP(start);
   int32_t srid = gserialized_get_srid(gs);
@@ -421,9 +465,12 @@ pointsegm_interpolate_point(Datum start, Datum end, long double ratio)
  * @brief Return a float between 0 and 1 representing the location of the
  * closest point on the geometry segment to the given point, as a fraction of
  * total segment length
- *@param[in] start,end Points defining the segment
- *@param[in] point Reference point
- *@param[out] dist Distance
+ * @param[in] start,end Points defining the segment
+ * @param[in] point Reference point
+ * @param[out] dist Distance
+ * @note This is the previous version of the function that is kept here while
+ * recovering the CI tests. This function should be merged with the function
+ * #pointsegm_locate below
  */
 long double
 pointsegm_locate_point(Datum start, Datum end, Datum point, double *dist)
@@ -436,9 +483,9 @@ pointsegm_locate_point(Datum start, Datum end, Datum point, double *dist)
     datum_point4d(start, &p1);
     datum_point4d(end, &p2);
     datum_point4d(point, &p);
-    double d;
+    double dist1;
     /* Get the closest point and the distance */
-    result = closest_point_on_segment_sphere(&p, &p1, &p2, &closest, &d);
+    result = closest_point_on_segment_sphere(&p, &p1, &p2, &closest, &dist1);
     /* For robustness, force 0/1 when closest point == start/endpoint */
     if (p4d_same(&p1, &closest))
       result = 0.0;
@@ -447,11 +494,11 @@ pointsegm_locate_point(Datum start, Datum end, Datum point, double *dist)
     /* Return the distance between the closest point and the point if requested */
     if (dist)
     {
-      d = WGS84_RADIUS * d;
+      dist1 = WGS84_RADIUS * dist1;
       /* Add to the distance the vertical displacement if we're in 3D */
       if (FLAGS_GET_Z(gs->gflags))
-        d = sqrt( (closest.z - p.z) * (closest.z - p.z) + d*d );
-      *dist = d;
+        dist1 = sqrt((closest.z - p.z) * (closest.z - p.z) + dist1 * dist1);
+      *dist = dist1;
     }
   }
   else
@@ -489,6 +536,86 @@ pointsegm_locate_point(Datum start, Datum end, Datum point, double *dist)
   return result;
 }
 
+/**
+ * @brief Return a float between 0 and 1 representing the location of the
+ * closest point on the geometry segment to the given point, as a fraction of
+ * total segment length
+ * @param[in] start,end Points defining the segment
+ * @param[in] point Reference point
+ * @param[out] dist Distance
+ */
+long double
+pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
+{
+  GSERIALIZED *gs = DatumGetGserializedP(start);
+  long double result;
+  double dist1;
+  if (FLAGS_GET_GEODETIC(gs->gflags))
+  {
+    POINT4D p1, p2, p, closest;
+    datum_point4d(start, &p1);
+    datum_point4d(end, &p2);
+    datum_point4d(point, &p);
+    /* Get the closest point and the distance */
+    result = closest_point_on_segment_sphere(&p, &p1, &p2, &closest, &dist1);
+    if (fabs(dist1) >= MEOS_EPSILON)
+      return -1.0;
+    /* For robustness, force 0/1 when closest point == start/endpoint */
+    if (p4d_same(&p1, &closest))
+      result = 0.0;
+    else if (p4d_same(&p2, &closest))
+      result = 1.0;
+    /* Return the distance between the closest point and the point if requested */
+    if (dist)
+    {
+      dist1 = WGS84_RADIUS * dist1;
+      /* Add to the distance the vertical displacement if we're in 3D */
+      if (FLAGS_GET_Z(gs->gflags))
+        dist1 = sqrt( (closest.z - p.z) * (closest.z - p.z) + dist1 * dist1 );
+      *dist = dist1;
+    }
+  }
+  else
+  {
+    if (FLAGS_GET_Z(gs->gflags))
+    {
+      const POINT3DZ *p1 = DATUM_POINT3DZ_P(start);
+      const POINT3DZ *p2 = DATUM_POINT3DZ_P(end);
+      const POINT3DZ *p = DATUM_POINT3DZ_P(point);
+      POINT3DZ proj;
+      result = closest_point3dz_on_segment_ratio(p, p1, p2, &proj);
+      dist1 = distance3d_pt_pt((POINT3D *) p, (POINT3D *) &proj);
+      if (fabs(dist1) >= MEOS_EPSILON)
+        return -1.0;
+      /* For robustness, force 0/1 when closest point == start/endpoint */
+      if (p3d_same((POINT3D *) p1, (POINT3D *) &proj))
+        result = 0.0;
+      else if (p3d_same((POINT3D *) p2, (POINT3D *) &proj))
+        result = 1.0;
+      if (dist)
+        *dist = distance3d_pt_pt((POINT3D *) p, (POINT3D *) &proj);
+    }
+    else
+    {
+      const POINT2D *p1 = DATUM_POINT2D_P(start);
+      const POINT2D *p2 = DATUM_POINT2D_P(end);
+      const POINT2D *p = DATUM_POINT2D_P(point);
+      POINT2D proj;
+      result = closest_point2d_on_segment_ratio(p, p1, p2, &proj);
+      dist1 = distance2d_pt_pt((POINT2D *) p, &proj);
+      if (fabs(dist1) >= MEOS_EPSILON)
+        return -1.0;
+      if (p2d_same(p1, &proj))
+        result = 0.0;
+      else if (p2d_same(p2, &proj))
+        result = 1.0;
+      if (dist)
+        *dist = dist1;
+    }
+  }
+  return result;
+}
+
 /*****************************************************************************
  * Interpolation functions defining functionality required by tsequence.c
  * that must be implemented by each temporal type
@@ -513,7 +640,7 @@ tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum start = tinstant_value_p(inst1);
   Datum end = tinstant_value_p(inst2);
   double dist;
-  double fraction = (double) pointsegm_locate_point(start, end, value, &dist);
+  double fraction = (double) pointsegm_locate(start, end, value, &dist);
   if (fabs(dist) >= MEOS_EPSILON)
     return false;
   if (t)
@@ -769,7 +896,7 @@ lwpointarr_sort(LWPOINT **points, int count)
 LWGEOM **
 lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
 {
-  assert (count > 0);
+  assert(count > 0);
   LWGEOM **newpoints = palloc(sizeof(LWGEOM *) * count);
   memcpy(newpoints, points, sizeof(LWGEOM *) * count);
   lwpointarr_sort((LWPOINT **) newpoints, count);
@@ -1065,8 +1192,7 @@ GSERIALIZED *
 tpoint_trajectory(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
-    return NULL;
+  VALIDATE_TPOINT(temp, NULL);
 
   /* Call the traversed area function for discrete or step interpolation */
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
@@ -1522,11 +1648,9 @@ tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *meas,
   bool segmentize, GSERIALIZED **result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) tpoint) ||
-      ! ensure_not_null((void *) result) ||
-      ! ensure_tpoint_type(tpoint->temptype) ||
-      (meas && ! ensure_tnumber_type(meas->temptype)))
-    return false;
+  VALIDATE_TPOINT(tpoint, NULL); 
+  if (meas)
+    VALIDATE_TFLOAT(meas, NULL); 
 
   Temporal *sync1, *sync2;
   if (meas)
@@ -1809,8 +1933,8 @@ Temporal *
 geomeas_tpoint(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs) ||
-      ! ensure_has_M_geo(gs))
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_empty(gs) || ! ensure_has_M_geo(gs))
     return NULL;
 
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
@@ -2292,6 +2416,7 @@ static GSERIALIZED *
 tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
 {
   assert(temp); assert(timesarr); assert(count);
+  assert(tpoint_type(temp->temptype));
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
@@ -2325,11 +2450,9 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) bounds) ||
-      ! ensure_not_null((void *) gsarr) ||
-      ! ensure_not_null((void *) timesarr) ||
-      ! ensure_not_null((void *) count) || ! ensure_tpoint_type(temp->temptype))
-    return false;
+  VALIDATE_TPOINT(temp, false); VALIDATE_NOT_NULL(bounds, false);
+  VALIDATE_NOT_NULL(gsarr, false); VALIDATE_NOT_NULL(timesarr, false);
+  VALIDATE_NOT_NULL(count, false);
 
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)
   {
@@ -2481,8 +2604,7 @@ double
 tpoint_length(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
-    return -1.0;
+  VALIDATE_TPOINT(temp, -1.0);
 
   assert(temptype_subtype(temp->subtype));
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
@@ -2574,8 +2696,7 @@ Temporal *
 tpoint_cumulative_length(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
-    return NULL;
+  VALIDATE_TPOINT(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
@@ -2667,8 +2788,8 @@ Temporal *
 tpoint_speed(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype) ||
-      ! ensure_linear_interp(temp->flags))
+  VALIDATE_TPOINT(temp, false);
+  if (! ensure_linear_interp(temp->flags))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -2793,8 +2914,7 @@ GSERIALIZED *
 tpoint_twcentroid(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
-    return NULL;
+  VALIDATE_TPOINT(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2916,9 +3036,7 @@ bool
 tpoint_direction(const Temporal *temp, double *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result) ||
-      ! ensure_tpoint_type(temp->temptype))
-    return false;
+  VALIDATE_TPOINT(temp, false); VALIDATE_NOT_NULL(result, false);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -3052,8 +3170,7 @@ Temporal *
 tpoint_azimuth(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
-    return NULL;
+  VALIDATE_TPOINT(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
@@ -3074,9 +3191,7 @@ Temporal *
 tpoint_angular_difference(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
-    return NULL;
-
+  VALIDATE_TPOINT(temp, NULL);
   Temporal *tazimuth = tpoint_azimuth(temp);
   Temporal *result = NULL;
   if (tazimuth)
@@ -3214,7 +3329,7 @@ tpoint_geo_min_bearing_at_timestamptz(const TInstant *start,
     edge_intersection(&e, &e1, &inter);
     proj = PointerGetDatum(geopoint_make(rad2deg(inter.lon),
       rad2deg(inter.lat), 0, false, true, tspatialinst_srid(start)));
-    fraction = pointsegm_locate_point(dstart, dend, proj, NULL);
+    fraction = pointsegm_locate(dstart, dend, proj, NULL);
   }
   else
   {
@@ -3320,13 +3435,10 @@ bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   double *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) gs1) || ! ensure_not_null((void *) gs2) ||
+  if (! ensure_valid_geo_geo(gs1, gs2) ||
       ! ensure_point_type(gs1) || ! ensure_point_type(gs2) ||
-      ! ensure_same_srid(gserialized_get_srid(gs1), gserialized_get_srid(gs2)) ||
-      ! ensure_same_dimensionality_geo(gs1, gs2))
-    return false;
-
-  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+      ! ensure_has_not_Z_geo(gs1) || ! ensure_has_not_Z_geo(gs2) ||
+      gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return false;
   *result = FLAGS_GET_GEODETIC(gs1->gflags) ?
     DatumGetFloat8(geog_bearing(PointerGetDatum(gs1), PointerGetDatum(gs2))) :
@@ -3347,9 +3459,7 @@ Temporal *
 bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_point_type(gs) ||
-      ! ensure_same_dimensionality_tspatial_geo(temp, gs))
+  if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
   LiftedFunctionInfo lfinfo;
@@ -3378,8 +3488,7 @@ Temporal *
 bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_tspatial(temp1, temp2) ||
-      ! ensure_same_dimensionality(temp1->flags, temp2->flags) )
+  if (! ensure_valid_tpoint_tpoint(temp1, temp2))
     return NULL;
 
   /* Fill the lifted structure */
@@ -4114,8 +4223,7 @@ bool
 tpoint_is_simple(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype))
-    return false;
+  VALIDATE_TPOINT(temp, false);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -4319,9 +4427,7 @@ Temporal **
 tpoint_make_simple(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_tpoint_type(temp->temptype))
-    return NULL;
+  VALIDATE_TPOINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)

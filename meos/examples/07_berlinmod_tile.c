@@ -51,6 +51,7 @@
 #include <string.h>
 #include <time.h>
 #include <meos.h>
+#include <meos_geo.h>
 
 /* Maximum length in characters of a trip in the input data */
 #define MAX_LENGTH_TRIP 170001
@@ -105,7 +106,7 @@ int main(void)
   TBox *speed_extent = tbox_in("TBox XT([0, 35),[2020-06-01, 2020-06-05))");
   Interval *duration = interval_in("1 day", -1);
   TimestampTz torigin = timestamptz_in("2020-06-01", -1);
-  TBox *speed_tiles = tfloatbox_value_time_tiles(speed_extent, 10.0, duration,
+  TBox *speed_tiles = stbox_value_time_tiles(speed_extent, 10.0, duration,
     0.0, torigin, &no_speed_tiles);
   /* Variables for tiling the trips and their speeds */
   trip_record *trip_splits = malloc(sizeof(trip_record) * no_trip_tiles);

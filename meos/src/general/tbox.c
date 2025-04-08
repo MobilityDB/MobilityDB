@@ -95,12 +95,7 @@ TBox *
 tbox_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) str))
-    return NULL;
-#else
-  assert(str);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(str, NULL);
   return tbox_parse(&str);
 }
 
@@ -116,12 +111,7 @@ char *
 tbox_out(const TBox *box, int maxdd)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
@@ -164,24 +154,17 @@ tbox_out(const TBox *box, int maxdd)
 /**
  * @ingroup meos_box_constructor
  * @brief Return a temporal box from a number span and a timestamptz span
- * @param[in] s Value span
- * @param[in] p Time span
- * @return On error return @p NULL
+ * @param[in] s Value span, may be `NULL`
+ * @param[in] p Time span, may be `NULL`
+ * @return On error return `NULL`
  */
 TBox *
 tbox_make(const Span *s, const Span *p)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if ((s && ! ensure_numspan_type(s->spantype)) ||
+  if (! ensure_one_not_null((void *) s, (void *) p) ||
+      (s &&  ! ensure_numspan_type(s->spantype)) || 
       (p && ! ensure_span_isof_type(p, T_TSTZSPAN)))
-    return NULL;
-#else
-  assert(! s || s->spantype == T_INTSPAN || s->spantype == T_FLOATSPAN);
-  assert(! p || p->spantype == T_TSTZSPAN);
-#endif /* MEOS */
-
-  if (! ensure_one_not_null((void *) s, (void *) p))
     return NULL;
   /* Note: zero-fill is done in function tbox_set */
   TBox *result = palloc(sizeof(TBox));
@@ -227,12 +210,7 @@ TBox *
 tbox_copy(const TBox *box)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, NULL);
 
   TBox *result = palloc(sizeof(TBox));
   memcpy(result, box, sizeof(TBox));
@@ -318,8 +296,7 @@ TBox *
 int_tstzspan_to_tbox(int i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return NULL;
+  VALIDATE_TSTZSPAN(s, NULL);
   return number_tstzspan_to_tbox(Int32GetDatum(i), T_INT4, s);
 }
 
@@ -334,8 +311,7 @@ TBox *
 float_tstzspan_to_tbox(double d, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return NULL;
+  VALIDATE_TSTZSPAN(s, NULL);
   return number_tstzspan_to_tbox(Float8GetDatum(d), T_FLOAT8, s);
 }
 #endif /* MEOS */
@@ -351,12 +327,7 @@ TBox *
 numspan_timestamptz_to_tbox(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_numspan_type(s->spantype))
-    return NULL;
-#else
-  assert(s); assert(numspan_type(s->spantype));
-#endif /* MEOS */
+  VALIDATE_NUMSPAN(s, NULL);
 
   Datum dt = TimestampTzGetDatum(t);
   Span p;
@@ -375,15 +346,7 @@ TBox *
 numspan_tstzspan_to_tbox(const Span *s, const Span *p)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) p) ||
-      ! ensure_numspan_type(s->spantype) ||
-      ! ensure_span_isof_type(p, T_TSTZSPAN))
-    return NULL;
-#else
-  assert(s); assert(numspan_type(s->spantype));
-  assert(p); assert(p->spantype == T_TSTZSPAN);
-#endif /* MEOS */
+  VALIDATE_NUMSPAN(s, NULL); VALIDATE_TSTZSPAN(p, NULL);
   return tbox_make(s, p);
 }
 
@@ -412,7 +375,7 @@ number_set_tbox(Datum value, meosType basetype, TBox *box)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Return a numberconverted to a temporal box
+ * @brief Convert a number into a temporal box
  * @param[in] value Value
  * @param[in] basetype Type of the value
  * @csqlfn #Number_to_tbox()
@@ -445,7 +408,7 @@ int_set_tbox(int i, TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Return an integer converted to a temporal box
+ * @brief Convert an integer into a temporal box
  * @param[in] i Value
  * @csqlfn #Number_to_tbox()
  */
@@ -473,7 +436,7 @@ float_set_tbox(double d, TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Return a float converted to a temporal box
+ * @brief Convert a float into a temporal box
  * @param[in] d Value
  * @csqlfn #Number_to_tbox()
  */
@@ -506,7 +469,7 @@ timestamptz_set_tbox(TimestampTz t, TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Return a timestamptz converted to a temporal box
+ * @brief Convert a timestamptz into a temporal box
  * @param[in] t Timestamp
  * @csqlfn #Timestamptz_to_tbox()
  */
@@ -554,7 +517,7 @@ tstzset_set_tbox(const Set *s, TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Return a number or timestamptz set converted to a temporal box
+ * @brief Convert a number or a timestamptz set into a temporal box
  * @param[in] s Set
  * @csqlfn #Set_to_tbox()
  */
@@ -562,13 +525,7 @@ TBox *
 set_tbox(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s))
-    return NULL;
-#else
-  assert(s);
-#endif /* MEOS */
-
+  VALIDATE_NOT_NULL(s, NULL);
   TBox *result = palloc(sizeof(TBox));
   if (numset_type(s->settype))
     numset_set_tbox(s, result);
@@ -616,7 +573,7 @@ tstzspan_set_tbox(const Span *s, TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Return a number span converted to a temporal box
+ * @brief Convert a number span into a temporal box
  * @param[in] s Span
  * @csqlfn #Span_to_tbox()
  */
@@ -624,13 +581,7 @@ TBox *
 span_tbox(const Span *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s))
-    return NULL;
-#else
-  assert(s);
-#endif /* MEOS */
-
+  VALIDATE_NOT_NULL(s, NULL);
   TBox *result = palloc(sizeof(TBox));
   if (numspan_type(s->spantype))
     numspan_set_tbox(s, result);
@@ -679,7 +630,7 @@ tstzspanset_set_tbox(const SpanSet *ss, TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Return a number span set converted to a temporal box
+ * @brief Convert a number span set into a temporal box
  * @param[in] ss Span set
  * @csqlfn #Spanset_to_tbox()
  */
@@ -687,13 +638,7 @@ TBox *
 spanset_tbox(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss))
-    return NULL;
-#else
-  assert(ss);
-#endif /* MEOS */
-
+  VALIDATE_NOT_NULL(ss, NULL);
   TBox *result = palloc(sizeof(TBox));
   if (tnumber_spansettype(ss->spansettype))
     numspanset_set_tbox(ss, result);
@@ -714,7 +659,7 @@ spanset_tbox(const SpanSet *ss)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Return a temporal box converted to an integer span
+ * @brief Convert a temporal box into an integer span
  * @param[in] box Temporal box
  * @csqlfn #Tbox_to_intspan()
  */
@@ -722,14 +667,7 @@ Span *
 tbox_intspan(const TBox *box)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
-
-  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_TBOX, box->flags))
     return NULL;
   if (box->span.basetype == T_INT4)
@@ -742,7 +680,7 @@ tbox_intspan(const TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Return a temporal box converted to a float span
+ * @brief Convert a temporal box into a float span
  * @param[in] box Temporal box
  * @csqlfn #Tbox_to_floatspan()
  */
@@ -750,14 +688,7 @@ Span *
 tbox_floatspan(const TBox *box)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
-
-  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_TBOX, box->flags))
     return NULL;
   if (box->span.basetype == T_FLOAT8)
@@ -770,7 +701,7 @@ tbox_floatspan(const TBox *box)
 
 /**
  * @ingroup meos_box_conversion
- * @brief Return a temporal box converted to a timestamptz span
+ * @brief Convert a temporal box into a timestamptz span
  * @param[in] box Temporal box
  * @csqlfn #Tbox_to_tstzspan()
  */
@@ -778,14 +709,7 @@ Span *
 tbox_tstzspan(const TBox *box)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
-
-  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_T(T_TBOX, box->flags))
     return NULL;
   return span_copy(&box->period);
@@ -805,12 +729,7 @@ bool
 tbox_hasx(const TBox *box)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box))
-    return false;
-#else
-  assert(box);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, false);
   return MEOS_FLAGS_GET_X(box->flags);
 }
 
@@ -824,12 +743,7 @@ bool
 tbox_hast(const TBox *box)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box))
-    return false;
-#else
-  assert(box);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, false);
   return MEOS_FLAGS_GET_T(box->flags);
 }
 
@@ -846,12 +760,7 @@ bool
 tbox_xmin(const TBox *box, double *result)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-#else
-  assert(box); assert(result);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = datum_double(box->span.lower, box->span.basetype);
@@ -871,8 +780,8 @@ bool
 tboxint_xmin(const TBox *box, int *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_X(box->flags) ||
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_X(box->flags) ||
       ! ensure_span_isof_type(&box->span, T_INTSPAN))
     return false;
   *result = DatumGetInt32(box->span.lower);
@@ -891,8 +800,8 @@ bool
 tboxfloat_xmin(const TBox *box, double *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_X(box->flags) ||
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_X(box->flags) ||
       ! ensure_span_isof_type(&box->span, T_FLOATSPAN) )
     return false;
   *result = DatumGetFloat8(box->span.lower);
@@ -913,12 +822,7 @@ bool
 tbox_xmin_inc(const TBox *box, bool *result)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-#else
-  assert(box); assert(result);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = DatumGetBool(box->span.lower_inc);
@@ -938,12 +842,7 @@ bool
 tbox_xmax(const TBox *box, double *result)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-#else
-  assert(box); assert(result);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   if (box->span.basetype == T_INT4)
@@ -967,8 +866,8 @@ bool
 tboxint_xmax(const TBox *box, int *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_X(box->flags) ||
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_X(box->flags) ||
       ! ensure_span_isof_type(&box->span, T_INTSPAN))
     return false;
   *result = DatumGetInt32(box->span.upper) - 1;
@@ -987,8 +886,8 @@ bool
 tboxfloat_xmax(const TBox *box, double *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_X(box->flags) ||
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_X(box->flags) ||
       ! ensure_span_isof_type(&box->span, T_FLOATSPAN))
     return false;
   *result = DatumGetFloat8(box->span.upper);
@@ -1009,12 +908,7 @@ bool
 tbox_xmax_inc(const TBox *box, bool *result)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-#else
-  assert(box); assert(result);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = DatumGetBool(box->span.upper_inc);
@@ -1033,12 +927,7 @@ bool
 tbox_tmin(const TBox *box, TimestampTz *result)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-#else
-  assert(box); assert(result);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
 
@@ -1059,12 +948,7 @@ bool
 tbox_tmin_inc(const TBox *box, bool *result)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-#else
-  assert(box); assert(result);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
 
@@ -1084,12 +968,7 @@ bool
 tbox_tmax(const TBox *box, TimestampTz *result)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-#else
-  assert(box); assert(result);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
 
@@ -1110,12 +989,7 @@ bool
 tbox_tmax_inc(const TBox *box, bool *result)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result))
-    return false;
-#else
-  assert(box); assert(result);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
   if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
 
@@ -1138,15 +1012,8 @@ tbox_tmax_inc(const TBox *box, bool *result)
 TBox *
 tbox_round(const TBox *box, int maxdd)
 {
-#if MEOS
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
-
-  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_TBOX, box->flags) || ! ensure_not_negative(maxdd) ||
       ! ensure_span_isof_type(&box->span, T_FLOATSPAN))
     return NULL;
@@ -1207,8 +1074,8 @@ TBox *
 tbox_shift_scale_int(const TBox *box, int shift, int width, bool hasshift,
   bool haswidth)
 {
-  if (! ensure_not_null((void *) box) ||
-      ! ensure_span_isof_type(&box->span, T_INTSPAN))
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_span_isof_type(&box->span, T_INTSPAN))
     return NULL;
 
   return tbox_shift_scale_value(box, Int32GetDatum(shift),
@@ -1230,8 +1097,8 @@ TBox *
 tbox_shift_scale_float(const TBox *box, double shift, double width,
   bool hasshift, bool haswidth)
 {
-  if (! ensure_not_null((void *) box) ||
-      ! ensure_span_isof_type(&box->span, T_FLOATSPAN))
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_span_isof_type(&box->span, T_FLOATSPAN))
     return NULL;
 
   return tbox_shift_scale_value(box, Float8GetDatum(shift),
@@ -1253,12 +1120,7 @@ tbox_shift_scale_time(const TBox *box, const Interval *shift,
   const Interval *duration)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_has_T(T_TBOX, box->flags) ||
       ! ensure_one_not_null((void *) shift, (void *) duration) ||
@@ -1305,12 +1167,7 @@ TBox *
 tbox_expand_int(const TBox *box, const int i)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_TBOX, box->flags) || 
       ! ensure_span_isof_type(&box->span, T_INTSPAN))
     return NULL;
@@ -1344,12 +1201,7 @@ TBox *
 tbox_expand_float(const TBox *box, const double d)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_TBOX, box->flags) || 
       ! ensure_span_isof_type(&box->span, T_FLOATSPAN))
     return NULL;
@@ -1382,12 +1234,7 @@ TBox *
 tbox_expand_time(const TBox *box, const Interval *interv)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) interv))
-    return NULL;
-#else
-  assert(box); assert(interv);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(interv, NULL);
   if (! ensure_has_T(T_TBOX, box->flags))
     return NULL;
   /* When the interval is negative, ensure that its absolute value is less than
@@ -1452,12 +1299,7 @@ bool
 contains_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   bool hasx, hast;
   if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
     return false;
@@ -1491,12 +1333,7 @@ bool
 overlaps_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   bool hasx, hast;
   if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
     return false;
@@ -1518,12 +1355,7 @@ bool
 same_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   bool hasx, hast;
   if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
     return false;
@@ -1545,12 +1377,7 @@ bool
 adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   bool hasx, hast;
   if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
     return false;
@@ -1579,12 +1406,7 @@ bool
 left_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2); 
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   assert(box1); assert(box2);
   if (! ensure_has_X(T_TBOX, box1->flags) || 
       ! ensure_has_X(T_TBOX, box2->flags))
@@ -1603,12 +1425,7 @@ bool
 overleft_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2); 
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_has_X(T_TBOX, box1->flags) ||
       ! ensure_has_X(T_TBOX, box2->flags))
     return false;
@@ -1626,12 +1443,7 @@ bool
 right_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2); 
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_has_X(T_TBOX, box1->flags) || 
       ! ensure_has_X(T_TBOX, box2->flags))
     return false;
@@ -1650,12 +1462,7 @@ bool
 overright_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2); 
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_has_X(T_TBOX, box1->flags) || 
       ! ensure_has_X(T_TBOX, box2->flags))
     return false;
@@ -1673,12 +1480,7 @@ bool
 before_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2); 
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_has_T(T_TBOX, box1->flags) || 
       ! ensure_has_T(T_TBOX, box2->flags))
     return false;
@@ -1695,12 +1497,7 @@ bool
 overbefore_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2); 
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_has_T(T_TBOX, box1->flags) || 
       ! ensure_has_T(T_TBOX, box2->flags))
     return false;
@@ -1717,12 +1514,7 @@ bool
 after_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2); 
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_has_T(T_TBOX, box1->flags) || 
       ! ensure_has_T(T_TBOX, box2->flags))
     return false;
@@ -1739,12 +1531,7 @@ bool
 overafter_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2); 
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_has_T(T_TBOX, box1->flags) || 
       ! ensure_has_T(T_TBOX, box2->flags))
     return false;
@@ -1766,12 +1553,7 @@ TBox *
 union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2); 
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_same_dimensionality_tbox(box1, box2) ||
       (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
         ! ensure_same_span_type(&box1->span, &box2->span)))
@@ -1836,12 +1618,7 @@ TBox *
 intersection_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2); 
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
         ! ensure_same_span_type(&box1->span, &box2->span))
     return NULL;
@@ -1870,12 +1647,8 @@ bool
 tbox_eq(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-#else
-  assert(box1); assert(box2); 
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
+
   if (MEOS_FLAGS_GET_X(box1->flags) != MEOS_FLAGS_GET_X(box2->flags) ||
       MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags))
     return false;
@@ -1910,12 +1683,7 @@ int
 tbox_cmp(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return INT_MAX;
-#else
-  assert(box1); assert(box2); 
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box1, INT_MAX); VALIDATE_NOT_NULL(box2, INT_MAX);
 
   bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);

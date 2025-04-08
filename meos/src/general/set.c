@@ -90,6 +90,27 @@ ensure_same_set_type(const Set *s1, const Set *s2)
   return false;
 }
 
+/**
+ * @brief Ensure that a temporal number and a temporal box have the same span
+ * type
+ * @param[in] temp Temporal value
+ * @param[in] box Temporal box value
+ */
+bool
+ensure_valid_set_set(const Set *s1, const Set *s2)
+{
+  VALIDATE_NOT_NULL(s1, false); VALIDATE_NOT_NULL(s2, false);
+  if (s1->settype != s2->settype)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Operation on different set types: %s, %s",
+      meostype_name(s1->settype), meostype_name(s2->settype));
+    return false;
+  }
+  return true;
+}
+
+
 /*****************************************************************************
  * General functions
  *****************************************************************************/
@@ -498,13 +519,7 @@ Set *
 set_copy(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s))
-    return NULL;
-#else
-  assert(s);
-#endif /* MEOS */
-
+  VALIDATE_NOT_NULL(s, NULL);
   Set *result = palloc(VARSIZE(s));
   memcpy(result, s, VARSIZE(s));
   return result;
@@ -516,7 +531,7 @@ set_copy(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_conversion
- * @brief Return a value converted to a set
+ * @brief Convert a value into a set
  * @param[in] value Value
  * @param[in] basetype Type of the value
  * @csqlfn #Value_to_set()
@@ -531,7 +546,7 @@ value_set(Datum value, meosType basetype)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Return an integer set converted to a float set
+ * @brief Convert an integer set into a float set
  * @param[in] s Set
  * @csqlfn #Intset_to_floatset()
  */
@@ -539,13 +554,7 @@ Set *
 intset_floatset(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_INTSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_INTSET);
-#endif /* MEOS */
-
+  VALIDATE_INTSET(s, NULL);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = Float8GetDatum((double) DatumGetInt32(SET_VAL_N(s, i)));
@@ -555,7 +564,7 @@ intset_floatset(const Set *s)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Return a float set converted to an integer set
+ * @brief Convert a float set into an integer set
  * @param[in] s Set
  * @csqlfn #Floatset_to_intset()
  */
@@ -563,13 +572,7 @@ Set *
 floatset_intset(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_FLOATSET);
-#endif /* MEOS */
-
+  VALIDATE_FLOATSET(s, NULL);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = Int32GetDatum((int) DatumGetFloat8(SET_VAL_N(s, i)));
@@ -579,7 +582,7 @@ floatset_intset(const Set *s)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Return a date set converted to a timestamptz set
+ * @brief Convert a date set into a timestamptz set
  * @param[in] s Set
  * @csqlfn #Dateset_to_tstzset()
  */
@@ -587,13 +590,7 @@ Set *
 dateset_tstzset(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_DATESET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_DATESET);
-#endif /* MEOS */
-
+  VALIDATE_DATESET(s, NULL);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = TimestampTzGetDatum(date_to_timestamptz(DatumGetDateADT(
@@ -604,7 +601,7 @@ dateset_tstzset(const Set *s)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Return a timestamptz set converted to a date set
+ * @brief Convert a timestamptz set into a date set
  * @param[in] s Set
  * @csqlfn #Tstzset_to_dateset()
  */
@@ -612,13 +609,7 @@ Set *
 tstzset_dateset(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_TSTZSET);
-#endif /* MEOS */
-
+  VALIDATE_TSTZSET(s, NULL);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = DateADTGetDatum(timestamptz_to_date(DatumGetTimestampTz(
@@ -641,7 +632,7 @@ tstzset_dateset(const Set *s)
 int
 set_mem_size(const Set *s)
 {
-  assert(s);
+  VALIDATE_NOT_NULL(s, NULL);
   return (int) VARSIZE(DatumGetPointer(s));
 }
 #endif /* MEOS */
@@ -657,12 +648,7 @@ int
 set_num_values(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s))
-    return -1;
-#else
-  assert(s);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(s, -1);
   return s->count;
 }
 
@@ -749,12 +735,7 @@ set_values(const Set *s)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
-
-/*****************************************************************************
- * Generic functions
- *****************************************************************************/
-
-
+ 
 /**
  * @ingroup meos_setspan_transf
  * @brief Return a set with the precision of the values set to a number of
@@ -765,12 +746,7 @@ set_values(const Set *s)
 Set *
 set_round(const Set *s, int maxdd)
 {
-#if MEOS
-  if (! ensure_not_null((void *) s))
-    return NULL;
-#else
-  assert(s);
-#endif
+  VALIDATE_NOT_NULL(s, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
@@ -815,13 +791,7 @@ Set *
 floatset_floor(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_FLOATSET);
-#endif /* MEOS */
-
+  VALIDATE_FLOATSET(s, NULL);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = datum_floor(SET_VAL_N(s, i));
@@ -837,13 +807,7 @@ Set *
 floatset_ceil(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_FLOATSET);
-#endif /* MEOS */
-
+  VALIDATE_FLOATSET(s, NULL);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = datum_ceil(SET_VAL_N(s, i));
@@ -852,7 +816,7 @@ floatset_ceil(const Set *s)
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a float set with the values converted to degrees
+ * @brief Convert a float set with the values into degrees
  * @param[in] s Set
  * @param[in] normalize True when the result must be normalized
  * @csqlfn #Floatset_degrees()
@@ -861,13 +825,7 @@ Set *
 floatset_degrees(const Set *s, bool normalize)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_FLOATSET);
-#endif /* MEOS */
-
+  VALIDATE_FLOATSET(s, NULL);
   Set *result = set_copy(s);
   for (int i = 0; i < s->count; i++)
     (SET_OFFSETS_PTR(result))[i] = datum_degrees(SET_VAL_N(s, i), normalize);
@@ -876,7 +834,7 @@ floatset_degrees(const Set *s, bool normalize)
 
 /**
  * @ingroup meos_setspan_transf
- * @brief Return a float set with the values converted to radians
+ * @brief Convert a float set with the values into radians
  * @param[in] s Set
  * @csqlfn #Floatset_radians()
  */
@@ -884,13 +842,7 @@ Set *
 floatset_radians(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_FLOATSET);
-#endif /* MEOS */
-
+  VALIDATE_FLOATSET(s, NULL);
   Set *result = set_copy(s);
   for (int i = 0; i < s->count; i++)
     (SET_OFFSETS_PTR(result))[i] = datum_radians(SET_VAL_N(s, i));
@@ -907,13 +859,7 @@ Set *
 textset_lower(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TEXTSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_TEXTSET);
-#endif /* MEOS */
-
+  VALIDATE_TEXTSET(s, NULL);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = datum_lower(SET_VAL_N(s, i));
@@ -930,13 +876,7 @@ Set *
 textset_upper(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TEXTSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_TEXTSET);
-#endif /* MEOS */
-
+  VALIDATE_TEXTSET(s, NULL);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = datum_upper(SET_VAL_N(s, i));
@@ -953,13 +893,7 @@ Set *
 textset_initcap(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TEXTSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_TEXTSET);
-#endif /* MEOS */
-
+  VALIDATE_TEXTSET(s, NULL);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = datum_initcap(SET_VAL_N(s, i));
@@ -1001,8 +935,8 @@ numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
 {
   meosType type = s->basetype;
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_numset_type(s->settype) ||
-      ! ensure_one_true(hasshift, haswidth) ||
+  VALIDATE_NUMSET(s, NULL);
+  if (! ensure_one_true(hasshift, haswidth) ||
       (haswidth && ! ensure_positive_datum(width, type)))
     return NULL;
 
@@ -1054,12 +988,7 @@ tstzset_shift_scale(const Set *s, const Interval *shift,
   const Interval *duration)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_TSTZSET);
-#endif /* MEOS */
+  VALIDATE_TSTZSET(s, NULL);
   if (! ensure_one_not_null((void *) shift, (void *) duration) ||
       (duration && ! ensure_valid_duration(duration)))
     return NULL;
@@ -1146,13 +1075,8 @@ bool
 set_eq(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_set_type(s1, s2))
+  if (! ensure_valid_set_set(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->settype == s2->settype);
-#endif /* MEOS */
 
   if (s1->count != s2->count)
     return false;
@@ -1189,14 +1113,8 @@ int
 set_cmp(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_set_type(s1, s2))
+  if (! ensure_valid_set_set(s1, s2))
     return INT_MAX;
-#else
-  assert(s1); assert(s2); assert(s1->settype == s2->settype);
-#endif /* MEOS */
-
   int count = Min(s1->count, s2->count);
   int result = 0;
   for (int i = 0; i < count; i++)
@@ -1282,13 +1200,7 @@ uint32
 set_hash(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s))
-    return INT_MAX;
-#else
-  assert(s);
-#endif /* MEOS */
-
+  VALIDATE_NOT_NULL(s, INT_MAX);
   uint32 result = 1;
   for (int i = 0; i < s->count; i++)
   {
@@ -1309,13 +1221,7 @@ uint64
 set_hash_extended(const Set *s, uint64 seed)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s))
-    return INT_MAX;
-#else
-  assert(s);
-#endif /* MEOS */
-
+  VALIDATE_NOT_NULL(s, LONG_MAX);
   uint64 result = 1;
   for (int i = 0; i < s->count; i++)
   {

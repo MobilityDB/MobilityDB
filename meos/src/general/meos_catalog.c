@@ -686,6 +686,18 @@ alphanum_basetype(meosType type)
     return true;
   return false;
 }
+
+/**
+ * @brief Return true if the type is an alphanumeric base type
+ * @note This function is only used in the asserts
+ */
+bool
+alphanum_temptype(meosType type)
+{
+  if (type == T_TBOOL || type == T_TINT || type == T_TFLOAT || type == T_TTEXT)
+    return true;
+  return false;
+}
 #endif
 
 /**
@@ -996,7 +1008,6 @@ numspan_type(meosType type)
   return false;
 }
 
-#if MEOS
 /**
  * @brief Ensure that a span is a number span type
  */
@@ -1009,7 +1020,6 @@ ensure_numspan_type(meosType type)
     "The span value must be a number span type");
   return false;
 }
-#endif /* MEOS */
 
 /**
  * @brief Return true if the type is a time span type
@@ -1257,8 +1267,12 @@ tnumber_spansettype(meosType type)
 }
 #endif /* MEOS */
 
+/*****************************************************************************
+ * Geo
+ *****************************************************************************/
+
 /**
- * @brief Return true if the type is a spatiotemporal type
+ * @brief Return true if a type is a spatiotemporal type
  * @details This function is used for features common to all spatiotemporal
  * types, in particular, all of them use the same bounding box @ STBox.
  * Therefore, it is used for the indexes and selectivity functions.
@@ -1286,7 +1300,7 @@ tspatial_type(meosType type)
 }
 
 /**
- * @brief Ensure that a temporal value is a temporal point or network point
+ * @brief Ensure that attype is a spatiotemporal type
  */
 bool
 ensure_tspatial_type(meosType type)
@@ -1299,7 +1313,7 @@ ensure_tspatial_type(meosType type)
 }
 
 /**
- * @brief Return true if the type is a temporal point type
+ * @brief Return true if a type is a temporal point type
  */
 bool
 tpoint_type(meosType type)
@@ -1310,7 +1324,7 @@ tpoint_type(meosType type)
 }
 
 /**
- * @brief Ensure that a temporal value is a temporal point type
+ * @brief Ensure that a type is a temporal point type
  */
 bool
 ensure_tpoint_type(meosType type)
@@ -1323,7 +1337,7 @@ ensure_tpoint_type(meosType type)
 }
 
 /**
- * @brief Return true if the type is a temporal geo type
+ * @brief Return true if a type is a temporal geo type
  */
 bool
 tgeo_type(meosType type)
@@ -1335,7 +1349,7 @@ tgeo_type(meosType type)
 
 #if MEOS
 /**
- * @brief Ensure that a temporal value is a temporal geo type
+ * @brief Ensure that a type is a temporal geo type
  */
 bool
 ensure_tgeo_type(meosType type)
@@ -1349,7 +1363,8 @@ ensure_tgeo_type(meosType type)
 #endif /* MEOS */
 
 /**
- * @brief Return true if the type is a temporal type with geo as base type
+ * @brief Return true if a type is a temporal type with geometry/geography as
+ * base type
  */
 bool
 tgeo_type_all(meosType type)
@@ -1361,7 +1376,8 @@ tgeo_type_all(meosType type)
 }
 
 /**
- * @brief Ensure that a temporal value is a temporal type with geo as base type
+ * @brief Ensure that a type is a temporal type with geometry/geography as
+ * base type
  */
 bool
 ensure_tgeo_type_all(meosType type)
@@ -1374,7 +1390,31 @@ ensure_tgeo_type_all(meosType type)
 }
 
 /**
- * @brief Return true if the type is a temporal geodetic type
+ * @brief Return true if a type is a temporal geometry type
+ */
+bool
+tgeometry_type(meosType type)
+{
+  if (type == T_TGEOMPOINT || type == T_TGEOMETRY)
+    return true;
+  return false;
+}
+
+/**
+ * @brief Ensure that a type is a temporal geometry type
+ */
+bool
+ensure_tgeometry_type(meosType type)
+{
+  if (tgeometry_type(type))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The temporal value must be a temporal geometry type");
+  return false;
+}
+
+/**
+ * @brief Return true if a type is a temporal geodetic type
  */
 bool
 tgeodetic_type(meosType type)
@@ -1384,9 +1424,21 @@ tgeodetic_type(meosType type)
   return false;
 }
 
-#if MEOS
 /**
- * @brief Ensure that a temporal value is a temporal number or a temporal point
+ * @brief Ensure that a type is a temporal geodetic type
+ */
+bool
+ensure_tgeodetic_type(meosType type)
+{
+  if (tgeodetic_type(type))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The temporal value must be a temporal geodetic type");
+  return false;
+}
+
+/**
+ * @brief Ensure that a type is a temporal number or a temporal point
  * type
  */
 bool
@@ -1398,6 +1450,5 @@ ensure_tnumber_tpoint_type(meosType type)
     "The temporal value must be a temporal number or a temporal point");
   return false;
 }
-#endif /* MEOS */
 
 /*****************************************************************************/

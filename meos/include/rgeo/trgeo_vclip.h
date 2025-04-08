@@ -38,7 +38,6 @@
 #include <c.h>
 #include <postgres.h>
 #include <liblwgeom.h>
-// #include <catalog/pg_type.h>
 #include "general/temporal.h"
 #include "pose/pose.h"
 

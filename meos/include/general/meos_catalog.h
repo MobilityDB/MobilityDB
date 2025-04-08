@@ -232,9 +232,9 @@ extern meosType basetype_settype(meosType type);
 /* Catalog functions */
 
 extern bool meos_basetype(meosType type);
-extern bool alpha_basetype(meosType type);
 extern bool tnumber_basetype(meosType type);
 extern bool alphanum_basetype(meosType type);
+extern bool alphanum_temptype(meosType type);
 extern bool geo_basetype(meosType type);
 extern bool spatial_basetype(meosType type);
 
@@ -293,8 +293,10 @@ extern bool tgeo_type(meosType type);
 extern bool ensure_tgeo_type(meosType type);
 extern bool tgeo_type_all(meosType type);
 extern bool ensure_tgeo_type_all(meosType type);
-extern bool tgeo_type_all(meosType type);
+extern bool tgeometry_type(meosType type);
+extern bool ensure_tgeometry_type(meosType type);
 extern bool tgeodetic_type(meosType type);
+extern bool ensure_tgeodetic_type(meosType type);
 extern bool ensure_tnumber_tpoint_type(meosType type);
 
 /*****************************************************************************/

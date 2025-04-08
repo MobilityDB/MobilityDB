@@ -45,6 +45,7 @@
 #include <string.h> /* For memset */
 #include <time.h>
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h> /* For temporal_mem_size */
 
 /* Maximum number of ships */

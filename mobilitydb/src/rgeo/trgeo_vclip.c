@@ -44,9 +44,8 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
-#include "general/temporal.h"
-#include "meos.h"
-#include "meos_internal.h"
+#include <meos.h>
+#include <meos_internal.h>
 #include "general/temporal.h"
 #include "general/type_util.h"
 #include "general/meos_catalog.h"

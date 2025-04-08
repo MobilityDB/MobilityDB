@@ -78,7 +78,7 @@
 
 /*****************************************************************************
  * Collinear functions
- * Are the three temporal instants collinear?
+ * Are the three values collinear?
  * These functions suppose that the segments are not constant.
  *****************************************************************************/
 
@@ -204,6 +204,201 @@ datum_collinear(Datum value1, Datum value2, Datum value3, meosType basetype,
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown collinear function for type: %s", meostype_name(basetype));
   return false;
+}
+
+/*****************************************************************************
+ * Locate functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a float in [0,1] if a float segment intersects a float with
+ * respect to an epsilon value
+ * @param[in] value1,value2 Values defining the segment
+ * @param[in] value Value to locate
+ * @result Return -1.0 if the value is not located in the segment
+ */
+long double
+floatsegm_locate(double value1, double value2, double value)
+{
+  double min = Min(value1, value2);
+  double max = Max(value1, value2);
+  /* if value is to the left or to the right of the span */
+  if (value < min || value > max)
+    return -1.0;
+
+  double span = (max - min);
+  double partial = (value - min);
+  long double fraction = value1 < value2 ? partial / span : 1 - partial / span;
+  if (fraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < fraction)
+    return -1.0;
+  return fraction;
+}
+
+/**
+ * @brief Return a float value in [0,1] if a segment of base values intersects
+ * a base value, return -1.0 otherwise
+ * @param[in] value1,value2 Values defining the segment
+ * @param[in] value Value to locate
+ * @param[in] basetype Type of the values
+ * @note Return -1.0 if the value is equal to the first or the last value.
+ * The reason is that the function is used in the lifting infrastructure for
+ * determining the crossings after testing whether the bounds of the segments
+ * are equal to the given value.
+ */
+long double
+datumsegm_locate(Datum value1, Datum value2, Datum value, meosType basetype)
+{
+  if (basetype == T_FLOAT8)
+    return floatsegm_locate(DatumGetFloat8(value1), DatumGetFloat8(value2),
+      DatumGetFloat8(value));
+  if (geo_basetype(basetype))
+    return pointsegm_locate(value1, value2, value, NULL);
+#if CBUFFER
+  if (basetype == T_CBUFFER)
+    return cbuffersegm_locate(DatumGetCbufferP(value1),
+      DatumGetCbufferP(value2), DatumGetCbufferP(value));
+#endif
+#if NPOINT
+  if (basetype == T_NPOINT)
+    return npointsegm_locate(DatumGetNpointP(value1), DatumGetNpointP(value2),
+      DatumGetNpointP(value));
+#endif
+// #if POSE || RGEO
+  // if (basetype == T_POSE)
+    // return posesegm_locate(DatumGetPoseP(value1), DatumGetPoseP(value2),
+      // DatumGetPoseP(value));
+// #endif
+  meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+    "Unknown locate function for type: %s", meostype_name(basetype));
+  return false;
+}
+
+/*****************************************************************************
+ * Interpolate functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a float interpolated from a float segment with respect to a
+ * fraction of its total length
+ * @param[in] start,end Values defining the segment
+ * @param[in] ratio Value between 0 and 1 representing the fraction of the
+ * total length of the segment where the value must be located
+ */
+double
+floatsegm_interpolate(double start, double end, long double ratio)
+{
+  assert(ratio >= 0.0 || ratio <= 1.0);
+  return start + (double) ((long double) (end - start) * ratio);
+}
+
+/**
+ * @brief Return a double2 interpolated from a double2 segment with respect to
+ * a fraction of its total length
+ * @param[in] start,end Values defining the segment
+ * @param[in] ratio Value between 0 and 1 representing the fraction of the
+ * total length of the segment where the value must be located
+ */
+double2 *
+double2segm_interpolate(const double2 *start, const double2 *end,
+  long double ratio)
+{
+  assert(ratio >= 0.0 || ratio <= 1.0);
+  double2 *result = palloc(sizeof(double2));
+  result->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
+  result->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
+  return result;
+}
+
+/**
+ * @brief Return a double3 interpolated from a double3 segment with respect to
+ * a fraction of its total length
+ * @param[in] start,end Values defining the segment
+ * @param[in] ratio Value between 0 and 1 representing the fraction of the
+ * total length of the segment where the value must be located
+ */
+double3 *
+double3segm_interpolate(const double3 *start, const double3 *end,
+  long double ratio)
+{
+  assert(ratio >= 0.0 || ratio <= 1.0);
+  double3 *result = palloc(sizeof(double3));
+  result->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
+  result->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
+  result->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
+  return result;
+}
+
+/**
+ * @brief Return a double4 interpolated from a double4 segment with respect to
+ * a fraction of its total length
+ * @param[in] start,end Values defining the segment
+ * @param[in] ratio Value between 0 and 1 representing the fraction of the
+ * total length of the segment where the value must be located
+ */
+double4 *
+double4segm_interpolate(const double4 *start, const double4 *end,
+  long double ratio)
+{
+  assert(ratio >= 0.0 || ratio <= 1.0);
+  double4 *result = palloc(sizeof(double4));
+  result->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
+  result->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
+  result->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
+  result->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
+  return result;
+}
+
+/**
+ * @brief Return base value interpolated from a base segment with respect to
+ * a fraction of its total length
+ * @param[in] start,end Temporal instants defining the segment
+ * @param[in] temptype Temporal type of the value
+ * @param[in] ratio Float between 0 and 1 representing the fraction of the
+ * total length of the segment where the interpolated buffer must be located
+ * @note Return false if the value is equal to the first or the last instant.
+ * The reason is that the function is used in the lifting infrastructure for
+ * determining the crossings after testing whether the bounds of the segments
+ * are equal to the given value.
+ */
+Datum
+datumsegm_interpolate(Datum start, Datum end, meosType temptype,
+  long double ratio)
+{
+  if (temptype == T_TFLOAT)
+    return Float8GetDatum(floatsegm_interpolate(DatumGetFloat8(start),
+      DatumGetFloat8(end), ratio));
+  if (temptype == T_TDOUBLE2)
+    return PointerGetDatum(double2segm_interpolate(DatumGetDouble2P(start),
+      DatumGetDouble2P(end), ratio));
+  if (temptype == T_TDOUBLE3)
+    return PointerGetDatum(double3segm_interpolate(DatumGetDouble3P(start),
+      DatumGetDouble3P(end), ratio));
+  if (temptype == T_TDOUBLE4)
+    return PointerGetDatum(double4segm_interpolate(DatumGetDouble4P(start),
+      DatumGetDouble4P(end), ratio));
+  else if (tpoint_type(temptype))
+    return pointsegm_interpolate(start, end, ratio);
+#if CBUFFER
+  else if (temptype == T_TCBUFFER)
+    return PointerGetDatum(cbuffersegm_interpolate(DatumGetCbufferP(start),
+      DatumGetCbufferP(end), ratio));
+#endif
+#if NPOINT
+  else if (temptype == T_TNPOINT)
+    return PointerGetDatum(npointsegm_interpolate(DatumGetNpointP(start),
+      DatumGetNpointP(end), ratio));
+#endif
+// #if POSE || RGEO
+  // else if (temptype == T_TPOSE)
+    // return PointerGetDatum(posesegm_interpolate(start, end, ratio));
+// #endif
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Unknown interpolate function for type: %s",
+      meostype_name(temptype));
+    return PointerGetDatum(NULL);
+  }
 }
 
 /*****************************************************************************
@@ -923,7 +1118,8 @@ bool
 tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp)
 {
-  if (! ensure_valid_tinstarr_common(instants, count, lower_inc, upper_inc, interp) ||
+  if (! ensure_valid_tinstarr_common(instants, count, lower_inc,
+        upper_inc, interp) ||
       ! ensure_valid_tinstarr(instants, count, MERGE_NO, interp))
     return false;
   return true;
@@ -967,12 +1163,7 @@ tsequence_make(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, bool normalize)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) instants))
-    return NULL;
-#else
-  assert(instants);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(instants, NULL);
   if (! ensure_positive(count))
     return NULL;
   return tsequence_make_exp(instants, count, count, lower_inc, upper_inc,
@@ -1929,10 +2120,10 @@ tsequence_segments(const TSequence *seq, int *count)
  * sequence
  * @param[in] seq Temporal sequence
  * @note By definition, all instants of a sequence are distinct. This not the
- * case for temporal sequence sets (see #tsequenceset_insts).
+ * case for temporal sequence sets (see #tsequenceset_insts_p).
  */
 const TInstant **
-tsequence_instants_p(const TSequence *seq)
+tsequence_insts_p(const TSequence *seq)
 {
   assert(seq);
   const TInstant **result = palloc(sizeof(TInstant *) * seq->count);
@@ -2033,72 +2224,7 @@ tsegment_value_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   // TEST !!!! USED FOR ASSESSING FLOATING POINT PRECISION IN MEOS !!!
   // long double ratio = (double)(t - inst1->t) / (double)(inst2->t - inst1->t);
   assert(temptype_continuous(inst1->temptype));
-  switch (inst1->temptype)
-  {
-    case T_TFLOAT:
-    {
-      double start = DatumGetFloat8(value1);
-      double end = DatumGetFloat8(value2);
-      double dresult = start + (double) ((long double)(end - start) * ratio);
-      return Float8GetDatum(dresult);
-    }
-    case T_TDOUBLE2:
-    {
-      double2 *start = DatumGetDouble2P(value1);
-      double2 *end = DatumGetDouble2P(value2);
-      double2 *dresult = palloc(sizeof(double2));
-      dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
-      dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
-      return Double2PGetDatum(dresult);
-    }
-    case T_TDOUBLE3:
-    {
-      double3 *start = DatumGetDouble3P(value1);
-      double3 *end = DatumGetDouble3P(value2);
-      double3 *dresult = palloc(sizeof(double3));
-      dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
-      dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
-      dresult->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
-      return Double3PGetDatum(dresult);
-    }
-    case T_TDOUBLE4:
-    {
-      double4 *start = DatumGetDouble4P(value1);
-      double4 *end = DatumGetDouble4P(value2);
-      double4 *dresult = palloc(sizeof(double4));
-      dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
-      dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
-      dresult->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
-      dresult->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
-      return Double4PGetDatum(dresult);
-    }
-    case T_TGEOMPOINT:
-    case T_TGEOGPOINT:
-      return pointsegm_interpolate_point(value1, value2, ratio);
-#if CBUFFER
-    case T_TCBUFFER:
-      return cbuffersegm_interpolate(value1, value2, ratio);
-#endif
-#if NPOINT
-    case T_TNPOINT:
-      return npointsegm_interpolate(value1, value2, ratio);
-#endif
-#if POSE
-    case T_TPOSE:
-      return PointerGetDatum(pose_interpolate(DatumGetPoseP(value1),
-        DatumGetPoseP(value2), ratio));
-#endif
-#if RGEO
-    case T_TRGEOMETRY:
-      return PointerGetDatum(pose_interpolate(DatumGetPoseP(value1),
-        DatumGetPoseP(value2), ratio));
-#endif
-    default: /* Error! */
-      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown interpolation function for type: %s",
-        meostype_name(inst1->temptype));
-      return 0;
-  }
+  return datumsegm_interpolate(value1, value2, inst1->temptype, ratio);
 }
 
 /**
@@ -2440,21 +2566,12 @@ tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 {
   assert(inst1->temptype == T_TFLOAT);
   assert(inst2->temptype == T_TFLOAT);
-  double dvalue1 = DatumGetFloat8(tinstant_value_p(inst1));
-  double dvalue2 = DatumGetFloat8(tinstant_value_p(inst2));
+  double value1 = DatumGetFloat8(tinstant_value_p(inst1));
+  double value2 = DatumGetFloat8(tinstant_value_p(inst2));
   double dvalue = datum_double(value, basetype);
-  double min = Min(dvalue1, dvalue2);
-  double max = Max(dvalue1, dvalue2);
-  /* if value is to the left or to the right of the span */
-  if (dvalue < min || dvalue > max)
+  double fraction = floatsegm_locate(value1, value2, dvalue);
+  if (fraction < 0.0)
     return false;
-
-  double span = (max - min);
-  double partial = (dvalue - min);
-  double fraction = dvalue1 < dvalue2 ? partial / span : 1 - partial / span;
-  if (fraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < fraction)
-    return false;
-
   if (t)
   {
     double duration = (double) (inst2->t - inst1->t);
@@ -2475,10 +2592,10 @@ tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
  * This value is equal to the input base value up to the floating
  * point precision.
  * @param[out] t Timestamp, may be @p NULL
- * @pre The value is not equal to the first or last instant. The reason is that
- * the function is used in the lifting infrastructure for determining the
- * crossings after testing whether the bounds of the segments are equal to the
- * given value.
+ * @note Return false if the value is equal to the first or the last instant.
+ * The reason is that the function is used in the lifting infrastructure for
+ * determining the crossings after testing whether the bounds of the segments
+ * are equal to the given value.
  */
 bool
 tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
@@ -2493,39 +2610,20 @@ tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
     return false;
 
   assert(temptype_continuous(inst1->temptype));
-  bool result = false; /* make compiler quiet */
-  if (inst1->temptype == T_TFLOAT)
-    result = tfloatsegm_intersection_value(inst1, inst2, value, basetype, t);
-  else if (tpoint_type(inst1->temptype))
-    result = tpointsegm_intersection_value(inst1, inst2, value, t);
-#if CBUFFER
-  else if (inst1->temptype == T_TCBUFFER)
-    result = tcbuffersegm_intersection_value(inst1, inst2, value, t);
-#endif
-#if NPOINT
-  else if (inst1->temptype == T_TNPOINT)
-    result = tnpointsegm_intersection_value(inst1, inst2, value, t);
-#endif
-#if POSE
-  else if (inst1->temptype == T_TPOSE)
-    result = tposesegm_intersection_value(inst1, inst2, value, t);
-#endif
-#if RGEO
-  else if (inst1->temptype == T_TRGEOMETRY)
-    result = tposesegm_intersection_value(inst1, inst2, value, t);
-#endif
-  else
+  double fraction = datumsegm_locate(value1, value2, value, basetype);
+  if (fraction < 0.0)
+    return false;
+  if (t)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Unknown intersection function for type: %s",
-      meostype_name(inst1->temptype));
-    return NULL;
+    double duration = (double) (inst2->t - inst1->t);
+    /* Note that due to roundoff errors it may be the case that the
+     * resulting timestamp t may be equal to inst1->t or to inst2->t */
+    *t = inst1->t + (TimestampTz) (duration * fraction);
   }
-
-  if (result && inter)
+  if (inter)
     /* We are sure it is linear interpolation */
     *inter = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, *t);
-  return result;
+  return true;
 }
 
 /*****************************************************************************/

@@ -135,7 +135,7 @@ Datum
 Npoint_in(PG_FUNCTION_ARGS)
 {
   const char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_NPOINT_P(npoint_in(str));
+  PG_RETURN_NPOINT_P(npoint_parse(&str, true));
 }
 
 PGDLLEXPORT Datum Npoint_out(PG_FUNCTION_ARGS);
@@ -192,9 +192,9 @@ PG_FUNCTION_INFO_V1(Npoint_from_ewkt);
  * @ingroup mobilitydb_geo_inout
  * @brief Return a network point from its Extended Well-Known Text (EWKT)
  * representation
- * @note This just does the same thing as the SQL function pose_in, except it
+ * @note This just does the same thing as the SQL function npoint_in, except it
  * has to handle a 'text' input. First, unwrap the text into a cstring, then
- * do as pose_in
+ * do as npoint_in
  * @sqlfn poseFromEWKT(), poseFromEWKT()
  */
 Datum
@@ -454,7 +454,7 @@ PGDLLEXPORT Datum Npoint_to_nsegment(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_to_nsegment);
 /**
  * @ingroup mobilitydb_npoint_base_conversion
- * @brief Return a network point converted to a network segment
+ * @brief Convert a network point into a network segment
  * @sqlfn nsegment()
  * @sqlop @p ::
  */
@@ -471,7 +471,7 @@ PGDLLEXPORT Datum Npoint_to_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_to_geom);
 /**
  * @ingroup mobilitydb_npoint_base_conversion
- * @brief Return a network point converted to a geometry
+ * @brief Convert a network point into a geometry
  * @sqlfn geometry()
  * @sqlop @p ::
  */
@@ -486,7 +486,7 @@ PGDLLEXPORT Datum Geom_to_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geom_to_npoint);
 /**
  * @ingroup mobilitydb_npoint_base_conversion
- * @brief Return a geometry converted to a network point
+ * @brief Convert a geometry into a network point
  * @sqlfn npoint()
  * @sqlop @p ::
  */
@@ -504,7 +504,7 @@ PGDLLEXPORT Datum Nsegment_to_geom(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_to_geom);
 /**
  * @ingroup mobilitydb_npoint_base_conversion
- * @brief Return a network segment converted to a geometry
+ * @brief Convert a network segment into a geometry
  * @sqlfn geometry()
  * @sqlop @p ::
  */
@@ -519,7 +519,7 @@ PGDLLEXPORT Datum Geom_to_nsegment(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geom_to_nsegment);
 /**
  * @ingroup mobilitydb_npoint_base_conversion
- * @brief Return a geometry converted to a network segment
+ * @brief Convert a geometry into a network segment
  * @sqlfn nsegment()
  * @sqlop @p ::
  */
@@ -685,7 +685,7 @@ PGDLLEXPORT Datum Npoint_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_to_stbox);
 /**
  * @ingroup mobilitydb_npoint_base_conversion
- * @brief Return a network point converted to a spatiotemporal box
+ * @brief Convert a network point into a spatiotemporal box
  * @sqlfn stbox()
  * @sqlop @p ::
  */
@@ -700,7 +700,7 @@ PGDLLEXPORT Datum Nsegment_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Nsegment_to_stbox);
 /**
  * @ingroup mobilitydb_npoint_base_conversion
- * @brief Return a network segment converted to a spatiotemporal box
+ * @brief Convert a network segment into a spatiotemporal box
  * @sqlfn stbox()
  * @sqlop @p ::
  */

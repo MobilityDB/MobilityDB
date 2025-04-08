@@ -57,6 +57,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <meos.h>
+#include <meos_geo.h>
 
 /* Maximum number of instants in an input trip */
 #define MAX_INSTANTS 50000
