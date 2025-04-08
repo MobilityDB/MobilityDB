@@ -17,6 +17,17 @@ MobilityDB is developed by the Computer & Decision Engineering Department of the
 
 The MobilityDB project is managed by a [steering committee](https://github.com/MobilityDB/MobilityDB/wiki/MobilityDB-Project-Steering-Committe).
 
+You can find detailed explanations about MobilityDB and its use in various application scenarios in our texbook
+
+  * Mahmoud Sakr, Alejandro Vaisman, Esteban Zimányi<br>
+    *Mobility Data Science: From Data to Insights*<br>
+    Springer 2025
+
+https://link.springer.com/book/10.1007/978-3-031-82636-8
+
+<img src="https://github.com/MobilityDB/MobilityDataScienceBook/blob/main/978-3-031-82636-8.webp" width="150" alt="Mobility Data Science Book" />
+
+
 More information about MobilityDB, including publications, presentations, etc., can be found in the MobilityDB [website](https://mobilitydb.com).
 
 Documentation

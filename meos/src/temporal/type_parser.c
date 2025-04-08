@@ -531,7 +531,7 @@ set_parse(const char **str, meosType settype)
   if (set_srid != SRID_UNKNOWN)
   {
     for (int i = 0; i < count; i++)
-      gserialized_set_srid(DatumGetGserializedP(values[i]), set_srid);
+      spatial_set_srid(values[i], basetype, set_srid);
   }
   Set *result = set_make(values, count, basetype, ORDER);
   for (int i = 0; i < count; ++i)

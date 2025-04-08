@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that applies multidimensional tiling to a temporal
  * point according to value and/or time bins.
  *
@@ -41,6 +42,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <meos.h>
+#include <meos_geo.h>
 
 /* Maximum length in characters of a line in the output data */
 #define MAX_LINE_LENGTH 1024
@@ -94,7 +96,8 @@ int main(void)
       geo_as_ewkt(space_bins[i], 3) : "";
     char *time_str = timesplit ? timestamptz_out(time_bins[i]) : "";
     char *temp_str = tspatial_as_ewkt(result[i], 3);
-    sprintf(output_buffer, "%s%s%s%s%s\n", space_str, spacesplit ? ", " : "",
+    snprintf(output_buffer, MAX_LINE_LENGTH - 1,
+      "%s%s%s%s%s\n", space_str, spacesplit ? ", " : "",
       time_str, timesplit ? ", " : "", temp_str);
     printf("%s", output_buffer);
     if (spacesplit) free(space_str);

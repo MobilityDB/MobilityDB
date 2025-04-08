@@ -34,11 +34,11 @@
  * the "ever" and "always" semantics, and return a Boolean.
  *
  * The following relationships are supported:
- *    eContains, aContains, eDisjoint, aDisjoint, eIntersects, aIntersects,
- *    eTouches, aTouches, eDwithin, and aDwithin
- * All these relationships, excepted eDisjoint, will automatically
- * include a bounding box comparison that will make use of any spatial,
- * temporal, or spatiotemporal indexes that are available.
+ *    `eContains`, `aContains`, `eDisjoint`, `aDisjoint`, `eIntersects`,
+ *    `aIntersects`, `eTouches`, `aTouches`, `eDwithin`, and `aDwithin`
+ * All these relationships, excepted `eDisjoint`, will automatically perform
+ * a bounding box comparison that will make use of any spatial, temporal, or
+ * spatiotemporal indexes that are available.
  */
 
 /*****************************************************************************
@@ -50,10 +50,56 @@ CREATE FUNCTION eContains(geometry, tcbuffer)
   AS 'MODULE_PATHNAME', 'Econtains_geo_tcbuffer'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eContains(cbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Econtains_cbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION eContains(tcbuffer, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Econtains_tcbuffer_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eContains(tcbuffer, cbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Econtains_tcbuffer_cbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION eContains(tcbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Econtains_tcbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
 
 CREATE FUNCTION aContains(geometry, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Acontains_geo_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aContains(cbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Acontains_cbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION aContains(tcbuffer, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Acontains_tcbuffer_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aContains(tcbuffer, cbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Acontains_tcbuffer_cbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION aContains(tcbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Acontains_tcbuffer_tcbuffer'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -69,6 +115,7 @@ CREATE FUNCTION eDisjoint(cbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_cbuffer_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION eDisjoint(tcbuffer, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tcbuffer_geo'
@@ -77,10 +124,13 @@ CREATE FUNCTION eDisjoint(tcbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tcbuffer_cbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION eDisjoint(tcbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tcbuffer_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
 
 CREATE FUNCTION aDisjoint(geometry, tcbuffer)
   RETURNS boolean
@@ -90,6 +140,7 @@ CREATE FUNCTION aDisjoint(cbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_cbuffer_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION aDisjoint(tcbuffer, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_tcbuffer_geo'
@@ -98,6 +149,7 @@ CREATE FUNCTION aDisjoint(tcbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_tcbuffer_cbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION aDisjoint(tcbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_tcbuffer_tcbuffer'
@@ -107,32 +159,15 @@ CREATE FUNCTION aDisjoint(tcbuffer, tcbuffer)
  * eIntersects, aIntersects
  *****************************************************************************/
 
-CREATE FUNCTION _eintersects(cbuffer, tcbuffer)
+CREATE FUNCTION eintersects(cbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_cbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION eIntersects(cbuffer, tcbuffer)
-  RETURNS boolean
-  AS 'SELECT stbox($1) OPERATOR(@extschema@.&&) $2 AND @extschema@._eintersects($1,$2)'
-  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION aIntersects(cbuffer, tcbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Aintersects_cbuffer_tcbuffer'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION _eintersects(tcbuffer, cbuffer)
+CREATE FUNCTION eintersects(tcbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_tcbuffer_cbuffer'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION eIntersects(tcbuffer, cbuffer)
-  RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) stbox($2) AND @extschema@._eintersects($1,$2)'
-  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION aIntersects(tcbuffer, cbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Aintersects_tcbuffer_cbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION eIntersects(geometry, tcbuffer)
@@ -145,9 +180,23 @@ CREATE FUNCTION eIntersects(tcbuffer, geometry)
   AS 'MODULE_PATHNAME', 'Eintersects_tcbuffer_geo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION eIntersects(tcbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_tcbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE FUNCTION aIntersects(cbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Aintersects_cbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aIntersects(tcbuffer, cbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Aintersects_tcbuffer_cbuffer'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -161,6 +210,7 @@ CREATE FUNCTION aIntersects(tcbuffer, geometry)
   AS 'MODULE_PATHNAME', 'Aintersects_tcbuffer_geo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION aIntersects(tcbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Aintersects_tcbuffer_tcbuffer'
@@ -171,32 +221,15 @@ CREATE FUNCTION aIntersects(tcbuffer, tcbuffer)
  * eTouches, aTouches
  *****************************************************************************/
 
-CREATE FUNCTION _eTouches(cbuffer, tcbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Etouches_cbuffer_tcbuffer'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eTouches(cbuffer, tcbuffer)
   RETURNS boolean
-  AS 'SELECT stbox($1) OPERATOR(@extschema@.&&) $2 AND @extschema@._etouches($1,$2)'
-  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION aTouches(cbuffer, tcbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Atouches_cbuffer_tcbuffer'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION _eTouches(tcbuffer, cbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Etouches_tcbuffer_cbuffer'
+  AS 'MODULE_PATHNAME', 'Etouches_cbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eTouches(tcbuffer, cbuffer)
   RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) stbox($2) AND @extschema@._etouches($1,$2)'
-  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION aTouches(tcbuffer, cbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Atouches_tcbuffer_cbuffer'
+  AS 'MODULE_PATHNAME', 'Etouches_tcbuffer_cbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION eTouches(geometry, tcbuffer)
@@ -210,6 +243,25 @@ CREATE FUNCTION eTouches(tcbuffer, geometry)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION eTouches(tcbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Etouches_tcbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE FUNCTION aTouches(cbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Atouches_cbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aTouches(tcbuffer, cbuffer)
+  RETURNS boolean
+  SUPPORT tspatial_supportfn
+  AS 'MODULE_PATHNAME', 'Atouches_tcbuffer_cbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION aTouches(geometry, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Atouches_geo_tcbuffer'
@@ -221,36 +273,25 @@ CREATE FUNCTION aTouches(tcbuffer, geometry)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION aTouches(tcbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Atouches_tcbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * eDwithin, aDwithin
  *****************************************************************************/
 
-CREATE FUNCTION _eDwithin(cbuffer, tcbuffer, dist float)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edwithin_cbuffer_tcbuffer'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDwithin(cbuffer, tcbuffer, dist float)
   RETURNS boolean
-  AS 'SELECT @extschema@.expandSpace(stbox($1),$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._edwithin($1, $2, $3)'
-  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION aDwithin(cbuffer, tcbuffer, dist float)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adwithin_cbuffer_tcbuffer'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION _eDwithin(tcbuffer, cbuffer, dist float)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edwithin_tcbuffer_cbuffer'
+  AS 'MODULE_PATHNAME', 'Edwithin_cbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDwithin(tcbuffer, cbuffer, dist float)
   RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.expandSpace(stbox($2),$3) AND @extschema@._edwithin($1, $2, $3)'
-  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION aDwithin(tcbuffer, cbuffer, dist float)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adwithin_tcbuffer_cbuffer'
+  AS 'MODULE_PATHNAME', 'Edwithin_tcbuffer_cbuffer'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION eDwithin(geometry, tcbuffer, dist float)
@@ -263,9 +304,23 @@ CREATE FUNCTION eDwithin(tcbuffer, geometry, dist float)
   AS 'MODULE_PATHNAME', 'Edwithin_tcbuffer_geo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION eDwithin(tcbuffer, tcbuffer, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tcbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE FUNCTION aDwithin(cbuffer, tcbuffer, dist float)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adwithin_cbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aDwithin(tcbuffer, cbuffer, dist float)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adwithin_tcbuffer_cbuffer'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -279,6 +334,7 @@ CREATE FUNCTION aDwithin(tcbuffer, geometry, dist float)
   AS 'MODULE_PATHNAME', 'Adwithin_tcbuffer_geo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION aDwithin(tcbuffer, tcbuffer, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adwithin_tcbuffer_tcbuffer'

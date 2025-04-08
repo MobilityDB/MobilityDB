@@ -230,7 +230,7 @@ temporal_bbox_restrict_set(const Temporal *temp, const Set *s)
 
 /**
  * @ingroup meos_internal_temporal_restrict
- * @brief Restrict a temporal value to (the complement of) an array of base
+ * @brief Restrict a temporal value to (the complement of) a set of base
  * values
  * @param[in] temp Temporal value
  * @param[in] s Set
@@ -671,7 +671,7 @@ tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
 
 /**
  * @brief Return true if a temporal instant satisfies the restriction to
- * (the complement of) an array of base values
+ * (the complement of) a set of base values
  * @pre There are no duplicates values in the array
  * @note This function is called for each composing instant in a temporal
  * discrete sequence.
@@ -697,7 +697,7 @@ tinstant_restrict_values_test(const TInstant *inst, const Set *s, bool atfunc)
 
 /**
  * @ingroup meos_internal_temporal_restrict
- * @brief Restrict a temporal instant to an array of base values
+ * @brief Restrict a temporal instant to a set of base values
  * @param[in] inst Temporal instant
  * @param[in] s Set
  * @param[in] atfunc True if the restriction is at, false for minus
@@ -1204,7 +1204,7 @@ tcontseq_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 /*****************************************************************************/
 
 /**
- * @brief Restrict a temporal sequence to an array of base values (iterator
+ * @brief Restrict a temporal sequence to a set of base values (iterator
  * function)
  * @param[in] seq Temporal sequence
  * @param[in] set Set of base values
@@ -1259,7 +1259,7 @@ tsequence_at_values_iter(const TSequence *seq, const Set *set,
 }
 
 /**
- * @brief Restrict a temporal sequence to (the complement of) an array of base
+ * @brief Restrict a temporal sequence to (the complement of) a set of base
  * values
  * @param[in] seq Temporal sequence
  * @param[in] s Set of base values

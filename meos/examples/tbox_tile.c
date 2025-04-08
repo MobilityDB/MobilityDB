@@ -28,12 +28,10 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that generates a given number of tgeompoint instants,
  * assembles the instants into a sequence at the end of the generation process,
  * and outputs the number of instants and the distance travelled.
- *
- * The instants are generated so they are not redundant, that is, all input
- * instants will appear in the final sequence.
  *
  * The program can be build as follows
  * @code
@@ -54,7 +52,8 @@ int main(void)
 {
   char output_buffer[MAX_LINE_LENGTH];
 
-  /* Set this parameter to choose between a temporal integer or float box */
+  /* Set this parameter to choose between a temporal integer and a temporal 
+   * float box */
   bool intspan = false;
   /* Set this parameter to enable/disable value split */
   bool valuesplit = true;
@@ -63,6 +62,13 @@ int main(void)
 
   /* Initialize MEOS */
   meos_initialize();
+
+  if (! valuesplit && ! timesplit)
+  {
+    printf("At least one of 'valuesplit' or 'timesplit' must be true\n");
+    meos_finalize();
+    return 0;
+  }
 
   /* Initialize values for tiling */
   TBox *box = intspan ?
@@ -76,8 +82,11 @@ int main(void)
   Span *spans;
   int count;
   if (valuesplit)
-    boxes = tbox_value_time_tiles(box, 5, timesplit ? interv : NULL, 1,
-      torigin, &count);
+    boxes = intspan ?
+      tintbox_value_time_tiles(box, 5, timesplit ? interv : NULL, 1, torigin,
+        &count) :
+      tfloatbox_value_time_tiles(box, 5, timesplit ? interv : NULL, 1, torigin,
+        &count);
   else
     spans = tstzspan_bins(&box->period, interv, torigin, &count);
 
@@ -96,8 +105,8 @@ int main(void)
   for (int i = 0; i < count; i++)
   {
     char *tile_str = valuesplit ?
-      tbox_out(&boxes[i], 3) : floatspan_out(&spans[i], 3);
-    sprintf(output_buffer, "%d: %s\n", i + 1, tile_str);
+      tbox_out(&boxes[i], 3) : tstzspan_out(&spans[i]);
+    snprintf(output_buffer, MAX_LINE_LENGTH - 1, "%d: %s\n", i + 1, tile_str);
     printf("%s", output_buffer);
     free(tile_str);
   }

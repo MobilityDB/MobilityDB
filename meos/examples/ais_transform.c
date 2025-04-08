@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that transform an AIS trip with MMSI 205718000
  * obtained from the file `aisdk-2023-08-01.csv` provided by the Danish
  * Maritime Authority in https://web.ais.dk/aisdata/, and transform a few

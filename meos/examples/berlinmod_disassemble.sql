@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief SQL script to generate the berlinmod_trips.csv file from the file
  * berlinmod_instants.csv
  */

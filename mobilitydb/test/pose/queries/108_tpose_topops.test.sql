@@ -237,7 +237,7 @@ SELECT tpose '{[Pose(Point(1 1),0.4)@2000-01-01, Pose(Point(1 1),0.5)@2000-01-02
 -- Selectivity tests
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tpose2d WHERE temp && stbox 'SRID=5676;STBOX X((0,0),(50,50))';
-SELECT COUNT(*) FROM tbl_tpose2d WHERE temp && tpose 'SRID=5676;[Pose(Point(1 1),0.1)@2001-06-01, Pose(Point(1 1),0.9)@2001-07-01]';
+SELECT COUNT(*) FROM tbl_tpose2d WHERE temp && stbox 'SRID=3812;STBOX X((0,0),(50,50))';
+SELECT COUNT(*) FROM tbl_tpose2d WHERE temp && tpose 'SRID=3812;[Pose(Point(1 1),0.1)@2001-06-01, Pose(Point(1 1),0.9)@2001-07-01]';
 
 -------------------------------------------------------------------------------

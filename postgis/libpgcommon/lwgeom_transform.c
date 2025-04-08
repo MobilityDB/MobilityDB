@@ -390,7 +390,6 @@ AddToPROJSRSCache(PROJSRSCache *PROJCache, int32_t srid_from, int32_t srid_to)
 
 	oldContext = MemoryContextSwitchTo(PROJCache->PROJSRSCacheContext);
 
-
 	LWPROJ *projection = NULL;
 	/* Try combinations of AUTH_NAME:AUTH_SRID/SRTEXT/PROJ4TEXT until we find */
 	/* one that gives us a usable transform. Note that we prefer */

@@ -46,8 +46,6 @@
 
 /* Parameter tests */
 
-extern bool ensure_same_srid_tnpoint_stbox(const Temporal *temp,
-  const STBox *box);
 extern bool ensure_same_rid_tnpointinst(const TInstant *inst1,
   const TInstant *inst2);
 
@@ -66,7 +64,7 @@ extern Temporal *tnpoint_cumulative_length(const Temporal *temp);
 extern Temporal *tnpoint_speed(const Temporal *temp);
 extern GSERIALIZED *tnpoint_twcentroid(const Temporal *temp);
 extern Temporal *tnpoint_restrict_geom(const Temporal *temp,
-  const GSERIALIZED *gs, const Span *zspan, bool atfunc);
+  const GSERIALIZED *gs, bool atfunc);
 extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box,
   bool border_inc, bool atfunc);
 

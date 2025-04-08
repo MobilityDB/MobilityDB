@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that generates a given number of tfloat instants,
  * appends each generated instant into an output sequence, automatically
  * expanding the sequence if no more free space is available, and at the end
@@ -89,7 +90,7 @@ int main(void)
     else
       /* Append the instant to the sequence so that if there is no more space
        * the sequence is automatically exanded doubling its capacity */
-      seq = temporal_append_tinstant(seq, inst, 0.0, NULL, true);
+      seq = temporal_append_tinstant(seq, inst, LINEAR, 0.0, NULL, true);
     free(inst);
   }
 

@@ -76,25 +76,9 @@ ensure_set_isof_type(const Set *s, meosType settype)
 }
 
 /**
- * @brief Ensure that the sets have the same type to be able to apply
- * operations to them
- */
-bool
-ensure_same_set_type(const Set *s1, const Set *s2)
-{
-  if (s1->settype == s2->settype)
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-    "Operation on mixed set types: %s and %s",
-    meostype_name(s1->settype), meostype_name(s2->settype));
-  return false;
-}
-
-/**
  * @brief Ensure that a temporal number and a temporal box have the same span
  * type
- * @param[in] temp Temporal value
- * @param[in] box Temporal box value
+ * @param[in] s1,s2 Sets
  */
 bool
 ensure_valid_set_set(const Set *s1, const Set *s2)
@@ -107,6 +91,9 @@ ensure_valid_set_set(const Set *s1, const Set *s2)
       meostype_name(s1->settype), meostype_name(s2->settype));
     return false;
   }
+  if (spatialset_type(s1->settype) && 
+      ! ensure_same_srid(spatialset_srid(s1), spatialset_srid(s2)))
+    return false;
   return true;
 }
 
@@ -425,7 +412,7 @@ set_make_exp(const Datum *values, int count, int maxcount, meosType basetype,
   Set *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   MEOS_FLAGS_SET_BYVAL(result->flags, typbyval);
-  MEOS_FLAGS_SET_ORDERED(result->flags, ! order);
+  MEOS_FLAGS_SET_ORDERED(result->flags, true);
   if (spatial_basetype(basetype))
   {
     MEOS_FLAGS_SET_X(result->flags, true);
@@ -632,7 +619,7 @@ tstzset_dateset(const Set *s)
 int
 set_mem_size(const Set *s)
 {
-  VALIDATE_NOT_NULL(s, INT_MAX);
+  VALIDATE_NOT_NULL(s, -1);
   return (int) VARSIZE(DatumGetPointer(s));
 }
 #endif /* MEOS */

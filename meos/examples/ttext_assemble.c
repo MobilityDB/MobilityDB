@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that generates a given number of ttext instants,
  * appends the instant into a sequence at each generation, and outputs the
  * number of instants and the last value of the sequence at the end.

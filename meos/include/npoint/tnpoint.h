@@ -42,27 +42,6 @@
 #include "temporal/meos_catalog.h"
 
 /*****************************************************************************
- * Type definitions
- *****************************************************************************/
-
-/* Structure to represent network-based points */
-
-struct Npoint
-{
-  int64 rid;        /**< route identifier */
-  double pos;       /**< position */
-};
-
-/* Structure to represent network-based segments */
-
-struct Nsegment
-{
-  int64 rid;       /**< route identifier */
-  double pos1;     /**< position1 */
-  double pos2;     /**< position2 */
-};
-
-/*****************************************************************************
  * fmgr macros
  *****************************************************************************/
 
@@ -86,11 +65,26 @@ struct Nsegment
 
 extern bool ensure_valid_tnpoint_npoint(const Temporal *temp,
   const Npoint *np);
+extern bool ensure_valid_tnpoint_npointset(const Temporal *temp, const Set *s);
 extern bool ensure_valid_tnpoint_geo(const Temporal *temp,
   const GSERIALIZED *gs);
 extern bool ensure_valid_tnpoint_stbox(const Temporal *temp, const STBox *box);
 extern bool ensure_valid_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2);
+
+extern bool common_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np);
+extern bool common_rid_tnpoint_npointset(const Temporal *temp, const Set *s);
+extern bool common_rid_tnpoint_npointset(const Temporal *temp, const Set *s);
+extern bool common_rid_tnpoint_tnpoint(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool ensure_same_srid_tnpoint_stbox(const Temporal *temp,
+  const STBox *box);
+
+/* Utility functions */
+
+extern TSequenceSet *tnpointseqset_filter_rid(const TSequenceSet *ss,
+  int64 rid);
 
 /* Collinear functions */
 
@@ -174,7 +168,7 @@ extern Set *tnpointseqset_routes(const TSequenceSet *ss);
 
 extern Nsegment *tnpointseq_linear_positions(const TSequence *seq);
 
-extern Temporal *tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan, bool atfunc);
+extern Temporal *tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc);
 extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc, bool atfunc);
 
 /*****************************************************************************/

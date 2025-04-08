@@ -61,15 +61,15 @@ INSERT INTO test_tpose_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tstzspan', 'tpose', COUNT(*) FROM tbl_tstzspan, tbl_tpose2d WHERE t -|- temp;
 
 INSERT INTO test_tpose_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'stbox', 'tpose', COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) && temp;
+SELECT '&&', 'stbox', 'tpose', COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) && temp;
 INSERT INTO test_tpose_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'stbox', 'tpose', COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) @> temp;
+SELECT '@>', 'stbox', 'tpose', COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) @> temp;
 INSERT INTO test_tpose_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'stbox', 'tpose', COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) <@ temp;
+SELECT '<@', 'stbox', 'tpose', COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) <@ temp;
 INSERT INTO test_tpose_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'stbox', 'tpose', COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) ~= temp;
+SELECT '~=', 'stbox', 'tpose', COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) ~= temp;
 INSERT INTO test_tpose_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'stbox', 'tpose', COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) -|- temp;
+SELECT '-|-', 'stbox', 'tpose', COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) -|- temp;
 
 -------------------------------------------------------------------------------
 --  tpose op <type>
@@ -86,15 +86,15 @@ INSERT INTO test_tpose_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tpose', 'tstzspan', COUNT(*) FROM tbl_tpose2d, tbl_tstzspan WHERE temp -|- t;
 
 INSERT INTO test_tpose_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tpose', 'stbox', COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp && SetSRID(b, 5676);
+SELECT '&&', 'tpose', 'stbox', COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp && SetSRID(b, 3812);
 INSERT INTO test_tpose_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tpose', 'stbox', COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp @> SetSRID(b, 5676);
+SELECT '@>', 'tpose', 'stbox', COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp @> SetSRID(b, 3812);
 INSERT INTO test_tpose_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tpose', 'stbox', COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp <@ SetSRID(b, 5676);
+SELECT '<@', 'tpose', 'stbox', COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp <@ SetSRID(b, 3812);
 INSERT INTO test_tpose_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tpose', 'stbox', COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp ~= SetSRID(b, 5676);
+SELECT '~=', 'tpose', 'stbox', COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp ~= SetSRID(b, 3812);
 INSERT INTO test_tpose_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tpose', 'stbox', COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp -|- SetSRID(b, 5676);
+SELECT '-|-', 'tpose', 'stbox', COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp -|- SetSRID(b, 3812);
 
 INSERT INTO test_tpose_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tpose', 'tpose', COUNT(*) FROM tbl_tpose2d t1, tbl_tpose2d t2 WHERE t1.temp && t2.temp;
@@ -131,19 +131,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tpose2d WHERE t -|- tem
 WHERE op = '-|-' and leftarg = 'tstzspan' and rightarg = 'tpose';
 
 UPDATE test_tpose_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) && temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) && temp )
 WHERE op = '&&' and leftarg = 'stbox' and rightarg = 'tpose';
 UPDATE test_tpose_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) @> temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) @> temp )
 WHERE op = '@>' and leftarg = 'stbox' and rightarg = 'tpose';
 UPDATE test_tpose_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) <@ temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) <@ temp )
 WHERE op = '<@' and leftarg = 'stbox' and rightarg = 'tpose';
 UPDATE test_tpose_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) ~= temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) ~= temp )
 WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tpose';
 UPDATE test_tpose_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) -|- temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) -|- temp )
 WHERE op = '-|-' and leftarg = 'stbox' and rightarg = 'tpose';
 
 -------------------------------------------------------------------------------
@@ -166,19 +166,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_tstzspan WHERE temp -|- 
 WHERE op = '-|-' and leftarg = 'tpose' and rightarg = 'tstzspan';
 
 UPDATE test_tpose_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp && SetSRID(b, 5676) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp && SetSRID(b, 3812) )
 WHERE op = '&&' and leftarg = 'tpose' and rightarg = 'stbox';
 UPDATE test_tpose_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp @> SetSRID(b, 5676) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp @> SetSRID(b, 3812) )
 WHERE op = '@>' and leftarg = 'tpose' and rightarg = 'stbox';
 UPDATE test_tpose_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp <@ SetSRID(b, 5676) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp <@ SetSRID(b, 3812) )
 WHERE op = '<@' and leftarg = 'tpose' and rightarg = 'stbox';
 UPDATE test_tpose_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp ~= SetSRID(b, 5676) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp ~= SetSRID(b, 3812) )
 WHERE op = '~=' and leftarg = 'tpose' and rightarg = 'stbox';
 UPDATE test_tpose_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp -|- SetSRID(b, 5676) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp -|- SetSRID(b, 3812) )
 WHERE op = '-|-' and leftarg = 'tpose' and rightarg = 'stbox';
 
 UPDATE test_tpose_topops
@@ -222,19 +222,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tpose2d WHERE t -|- 
 WHERE op = '-|-' and leftarg = 'tstzspan' and rightarg = 'tpose';
 
 UPDATE test_tpose_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) && temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) && temp )
 WHERE op = '&&' and leftarg = 'stbox' and rightarg = 'tpose';
 UPDATE test_tpose_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) @> temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) @> temp )
 WHERE op = '@>' and leftarg = 'stbox' and rightarg = 'tpose';
 UPDATE test_tpose_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) <@ temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) <@ temp )
 WHERE op = '<@' and leftarg = 'stbox' and rightarg = 'tpose';
 UPDATE test_tpose_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) ~= temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) ~= temp )
 WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tpose';
 UPDATE test_tpose_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) -|- temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) -|- temp )
 WHERE op = '-|-' and leftarg = 'stbox' and rightarg = 'tpose';
 
 -------------------------------------------------------------------------------
@@ -257,19 +257,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_tstzspan WHERE temp -
 WHERE op = '-|-' and leftarg = 'tpose' and rightarg = 'tstzspan';
 
 UPDATE test_tpose_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp && SetSRID(b, 5676) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp && SetSRID(b, 3812) )
 WHERE op = '&&' and leftarg = 'tpose' and rightarg = 'stbox';
 UPDATE test_tpose_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp @> SetSRID(b, 5676) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp @> SetSRID(b, 3812) )
 WHERE op = '@>' and leftarg = 'tpose' and rightarg = 'stbox';
 UPDATE test_tpose_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp <@ SetSRID(b, 5676) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp <@ SetSRID(b, 3812) )
 WHERE op = '<@' and leftarg = 'tpose' and rightarg = 'stbox';
 UPDATE test_tpose_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp ~= SetSRID(b, 5676) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp ~= SetSRID(b, 3812) )
 WHERE op = '~=' and leftarg = 'tpose' and rightarg = 'stbox';
 UPDATE test_tpose_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp -|- SetSRID(b, 5676) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp -|- SetSRID(b, 3812) )
 WHERE op = '-|-' and leftarg = 'tpose' and rightarg = 'stbox';
 
 UPDATE test_tpose_topops
@@ -313,19 +313,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tpose2d WHERE t -|- te
 WHERE op = '-|-' and leftarg = 'tstzspan' and rightarg = 'tpose';
 
 UPDATE test_tpose_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) && temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) && temp )
 WHERE op = '&&' and leftarg = 'stbox' and rightarg = 'tpose';
 UPDATE test_tpose_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) @> temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) @> temp )
 WHERE op = '@>' and leftarg = 'stbox' and rightarg = 'tpose';
 UPDATE test_tpose_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) <@ temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) <@ temp )
 WHERE op = '<@' and leftarg = 'stbox' and rightarg = 'tpose';
 UPDATE test_tpose_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) ~= temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) ~= temp )
 WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tpose';
 UPDATE test_tpose_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 5676) -|- temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tpose2d WHERE SetSRID(b, 3812) -|- temp )
 WHERE op = '-|-' and leftarg = 'stbox' and rightarg = 'tpose';
 
 -------------------------------------------------------------------------------
@@ -348,19 +348,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_tstzspan WHERE temp -|-
 WHERE op = '-|-' and leftarg = 'tpose' and rightarg = 'tstzspan';
 
 UPDATE test_tpose_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp && SetSRID(b, 5676) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp && SetSRID(b, 3812) )
 WHERE op = '&&' and leftarg = 'tpose' and rightarg = 'stbox';
 UPDATE test_tpose_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp @> SetSRID(b, 5676) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp @> SetSRID(b, 3812) )
 WHERE op = '@>' and leftarg = 'tpose' and rightarg = 'stbox';
 UPDATE test_tpose_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp <@ SetSRID(b, 5676) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp <@ SetSRID(b, 3812) )
 WHERE op = '<@' and leftarg = 'tpose' and rightarg = 'stbox';
 UPDATE test_tpose_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp ~= SetSRID(b, 5676) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp ~= SetSRID(b, 3812) )
 WHERE op = '~=' and leftarg = 'tpose' and rightarg = 'stbox';
 UPDATE test_tpose_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp -|- SetSRID(b, 5676) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose2d, tbl_stbox WHERE temp -|- SetSRID(b, 3812) )
 WHERE op = '-|-' and leftarg = 'tpose' and rightarg = 'stbox';
 
 UPDATE test_tpose_topops

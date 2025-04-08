@@ -856,8 +856,7 @@ ensure_valid_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @brief Ensure that two temporal numbers have the same span type
- * @param[in] temp Temporal value
- * @param[in] box Temporal box value
+ * @param[in] temp1,temp2 Temporal values
  */
 bool
 ensure_valid_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)

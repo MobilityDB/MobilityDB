@@ -83,9 +83,197 @@ Acontains_geo_tcbuffer(PG_FUNCTION_ARGS)
   return EA_spatialrel_geo_tspatial(fcinfo, &ea_contains_geo_tcbuffer, ALWAYS);
 }
 
+PGDLLEXPORT Datum Econtains_tcbuffer_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Econtains_tcbuffer_geo);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if a temporal circular buffer ever contains a geometry
+ * @sqlfn eContains()
+ */
+inline Datum
+Econtains_tcbuffer_geo(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_contains_tcbuffer_geo, EVER);
+}
+
+PGDLLEXPORT Datum Acontains_tcbuffer_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acontains_tcbuffer_geo);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if a temporal circular buffer always contains a geometry
+ * @sqlfn aContains()
+ */
+inline Datum
+Acontains_tcbuffer_geo(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_contains_tcbuffer_geo, ALWAYS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return true if a geometry and a temporal spatial value ever/always
+ * satisfy a spatial relationship
+ */
+Datum
+EA_spatialrel_cbuffer_tspatial(FunctionCallInfo fcinfo,
+  int (*func)(const Cbuffer *, const Temporal *, bool), bool ever)
+{
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  int result = func(cb, temp, ever);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_INT32(result);
+}
+
+/**
+ * @brief Return true if a geometry and a temporal spatial value ever/always
+ * satisfy a spatial relationship
+ */
+Datum
+EA_spatialrel_tspatial_cbuffer(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const Cbuffer *, bool), bool ever)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  int result = func(temp, cb, ever);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_INT32(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Econtains_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Econtains_cbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if a geometry ever contains a temporal circular buffer
+ * @sqlfn eContains()
+ */
+inline Datum
+Econtains_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_cbuffer_tspatial(fcinfo, &ea_contains_cbuffer_tcbuffer,
+    EVER);
+}
+
+PGDLLEXPORT Datum Acontains_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acontains_cbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if a geometry always contains a temporal circular buffer
+ * @sqlfn aContains()
+ */
+inline Datum
+Acontains_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_cbuffer_tspatial(fcinfo, &ea_contains_cbuffer_tcbuffer,
+    ALWAYS);
+}
+
+PGDLLEXPORT Datum Econtains_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Econtains_tcbuffer_cbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if a temporal circular buffer ever contains a geometry
+ * @sqlfn eContains()
+ */
+inline Datum
+Econtains_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_tspatial_cbuffer(fcinfo, &ea_contains_tcbuffer_cbuffer,
+    EVER);
+}
+
+PGDLLEXPORT Datum Acontains_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acontains_tcbuffer_cbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if a temporal circular buffer always contains a geometry
+ * @sqlfn aContains()
+ */
+inline Datum
+Acontains_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_tspatial_cbuffer(fcinfo, &ea_contains_tcbuffer_cbuffer,
+    ALWAYS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return true if the first temporal circular buffer ever/always contain
+ * the second one
+ * @sqlfn eContains(), aContains()
+ */
+static Datum
+EA_contains_tcbuffer_tcbuffer(FunctionCallInfo fcinfo, bool ever)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  int result = ever ? econtains_tcbuffer_tcbuffer(temp1, temp2) : 
+    acontains_tcbuffer_tcbuffer(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Econtains_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Econtains_tcbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if the first temporal circular buffer ever contains the
+ * second one
+ * @sqlfn eContains()
+ */
+inline Datum
+Econtains_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_contains_tcbuffer_tcbuffer(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Acontains_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acontains_tcbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if the first temporal circular buffer always contains the
+ * second one
+ * @sqlfn aContains()
+ */
+inline Datum
+Acontains_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_contains_tcbuffer_tcbuffer(fcinfo, ALWAYS);
+}
+
 /*****************************************************************************
  * Ever disjoint
  *****************************************************************************/
+
+/**
+ * @brief Return true if a temporal circular buffer and a geometry are
+ * ever/always disjoint
+ * @sqlfn eDisjoint(), Adisjoint()
+ */
+static Datum
+EA_disjoint_geo_tcbuffer(FunctionCallInfo fcinfo, bool ever)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  int result = ever ? edisjoint_tcbuffer_geo(temp, gs) :
+    adisjoint_tcbuffer_geo(temp, gs);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result ? true : false);
+}
 
 PGDLLEXPORT Datum Edisjoint_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_geo_tcbuffer);
@@ -98,7 +286,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_geo_tcbuffer);
 inline Datum
 Edisjoint_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_disjoint_tcbuffer_geo, EVER);
+  return EA_disjoint_geo_tcbuffer(fcinfo, EVER);
 }
 
 PGDLLEXPORT Datum Adisjoint_geo_tcbuffer(PG_FUNCTION_ARGS);
@@ -112,7 +300,7 @@ PG_FUNCTION_INFO_V1(Adisjoint_geo_tcbuffer);
 inline Datum
 Adisjoint_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_disjoint_tcbuffer_geo, ALWAYS);
+  return EA_disjoint_geo_tcbuffer(fcinfo, ALWAYS);
 }
 
 /**
@@ -172,12 +360,12 @@ Adisjoint_tcbuffer_geo(PG_FUNCTION_ARGS)
 static Datum
 EA_disjoint_cbuffer_tcbuffer(FunctionCallInfo fcinfo, bool ever)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int result = ever ? edisjoint_tcbuffer_cbuffer(temp, cbuf) :
-    adisjoint_tcbuffer_cbuffer(temp, cbuf);
+  int result = ever ? edisjoint_tcbuffer_cbuffer(temp, cb) :
+    adisjoint_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 1);
-  PG_FREE_IF_COPY(cbuf, 0);
+  PG_FREE_IF_COPY(cb, 0);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result ? true : false);
@@ -220,11 +408,11 @@ static Datum
 EA_disjoint_tcbuffer_cbuffer(FunctionCallInfo fcinfo, bool ever)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(1);
-  int result = ever ? edisjoint_tcbuffer_cbuffer(temp, cbuf) :
-    adisjoint_tcbuffer_cbuffer(temp, cbuf);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  int result = ever ? edisjoint_tcbuffer_cbuffer(temp, cb) :
+    adisjoint_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(cbuf, 1);
+  PG_FREE_IF_COPY(cb, 1);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result ? true : false);
@@ -295,7 +483,7 @@ Adisjoint_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 /**
  * @brief Return true if a geometry and a temporal circular buffer ever/always
  * intersect
- * @sqlfn eintersects(), aintersects()
+ * @sqlfn eIntersects(), aIntersects()
  */
 static Datum
 EA_intersects_geo_tcbuffer(FunctionCallInfo fcinfo, bool ever)
@@ -394,11 +582,11 @@ Aintersects_tcbuffer_geo(PG_FUNCTION_ARGS)
 static Datum
 EA_intersects_cbuffer_tcbuffer(FunctionCallInfo fcinfo, bool ever)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int result = ever ? eintersects_tcbuffer_cbuffer(temp, cbuf) : 
-    aintersects_tcbuffer_cbuffer(temp, cbuf);
-  PG_FREE_IF_COPY(cbuf, 0);
+  int result = ever ? eintersects_tcbuffer_cbuffer(temp, cb) : 
+    aintersects_tcbuffer_cbuffer(temp, cb);
+  PG_FREE_IF_COPY(cb, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
@@ -442,11 +630,11 @@ static Datum
 EA_intersects_tcbuffer_cbuffer(FunctionCallInfo fcinfo, bool ever)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(1);
-  int result = ever ? eintersects_tcbuffer_cbuffer(temp, cbuf) : 
-    aintersects_tcbuffer_cbuffer(temp, cbuf);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  int result = ever ? eintersects_tcbuffer_cbuffer(temp, cb) : 
+    aintersects_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(cbuf, 1);
+  PG_FREE_IF_COPY(cb, 1);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
@@ -612,11 +800,11 @@ Atouches_tcbuffer_geo(PG_FUNCTION_ARGS)
 static Datum
 EA_touches_cbuffer_tcbuffer(FunctionCallInfo fcinfo, bool ever)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int result = ever ? etouches_tcbuffer_cbuffer(temp, cbuf) : 
-    atouches_tcbuffer_cbuffer(temp, cbuf);
-  PG_FREE_IF_COPY(cbuf, 0);
+  int result = ever ? etouches_tcbuffer_cbuffer(temp, cb) : 
+    atouches_tcbuffer_cbuffer(temp, cb);
+  PG_FREE_IF_COPY(cb, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
@@ -660,11 +848,11 @@ static Datum
 EA_touches_tcbuffer_cbuffer(FunctionCallInfo fcinfo, bool ever)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(1);
-  int result = ever ? etouches_tcbuffer_cbuffer(temp, cbuf) : 
-    atouches_tcbuffer_cbuffer(temp, cbuf);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  int result = ever ? etouches_tcbuffer_cbuffer(temp, cb) : 
+    atouches_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(cbuf, 1);
+  PG_FREE_IF_COPY(cb, 1);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
@@ -696,6 +884,53 @@ inline Datum
 Atouches_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
   return EA_touches_tcbuffer_cbuffer(fcinfo, ALWAYS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return true if two temporal circular buffers ever/always touch each
+ * other
+ * @sqlfn eTouches(), aTouches()
+ */
+static Datum
+EA_touches_tcbuffer_tcbuffer(FunctionCallInfo fcinfo, bool ever)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  int result = ever ? etouches_tcbuffer_tcbuffer(temp1, temp2) : 
+    atouches_tcbuffer_tcbuffer(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Etouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Etouches_tcbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if two temporal circular buffers ever touch each other
+ * @sqlfn eTouches()
+ */
+inline Datum
+Etouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_touches_tcbuffer_tcbuffer(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Atouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Atouches_tcbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if two temporal circular buffers always touch each other
+ * @sqlfn aTouches()
+ */
+inline Datum
+Atouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_touches_tcbuffer_tcbuffer(fcinfo, ALWAYS);
 }
 
 /*****************************************************************************
@@ -830,13 +1065,13 @@ EA_dwithin_tcbuffer_tcbuffer(FunctionCallInfo fcinfo, bool ever)
 static Datum
 EA_dwithin_cbuffer_tcbuffer(FunctionCallInfo fcinfo, bool ever)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   int result = ever ?
-    edwithin_tcbuffer_cbuffer(temp, cbuf, dist) :
-    adwithin_tcbuffer_cbuffer(temp, cbuf, dist);
-  PG_FREE_IF_COPY(cbuf, 0);
+    edwithin_tcbuffer_cbuffer(temp, cb, dist) :
+    adwithin_tcbuffer_cbuffer(temp, cb, dist);
+  PG_FREE_IF_COPY(cb, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
@@ -879,13 +1114,13 @@ Adwithin_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 static Datum
 EA_dwithin_tcbuffer_cbuffer(FunctionCallInfo fcinfo, bool ever)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(1);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double dist = PG_GETARG_FLOAT8(2);
-  int result = ever ? edwithin_tcbuffer_cbuffer(temp, cbuf, dist) :
-    adwithin_tcbuffer_cbuffer(temp, cbuf, dist);
+  int result = ever ? edwithin_tcbuffer_cbuffer(temp, cb, dist) :
+    adwithin_tcbuffer_cbuffer(temp, cb, dist);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(cbuf, 1);
+  PG_FREE_IF_COPY(cb, 1);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result);

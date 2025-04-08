@@ -21,7 +21,7 @@ SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexWKB(asHexWKB(s)) <> s
      0
 (1 row)
 
-SELECT numValues(set(array_agg(DISTINCT cbuf ORDER BY cbuf))) FROM tbl_cbuffer WHERE cbuf IS NOT NULL;
+SELECT numValues(set(array_agg(DISTINCT cb ORDER BY cb))) FROM tbl_cbuffer WHERE cb IS NOT NULL;
  numvalues 
 -----------
        100
@@ -33,7 +33,7 @@ SELECT round(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)", 
  STBOX X((0.5,0.5),(3.5,3.5))
 (1 row)
 
-SELECT COUNT(*) FROM tbl_cbuffer WHERE cbuf::cbufferset IS NOT NULL;
+SELECT COUNT(*) FROM tbl_cbuffer WHERE cb::cbufferset IS NOT NULL;
  count 
 -------
    100
@@ -58,21 +58,21 @@ SELECT MIN(numValues(s)) FROM tbl_cbufferset;
 (1 row)
 
 SELECT round(MIN(radius(startValue(s))), 6) FROM tbl_cbufferset;
-  round   
-----------
- 0.024820
+  round  
+---------
+ 0.02482
 (1 row)
 
 SELECT round(MIN(radius(endValue(s))), 6) FROM tbl_cbufferset;
   round   
 ----------
- 0.014081
+ 0.017055
 (1 row)
 
 SELECT round(MIN(radius(valueN(s, 1))), 6) FROM tbl_cbufferset;
-  round   
-----------
- 0.024820
+  round  
+---------
+ 0.02482
 (1 row)
 
 SELECT MIN(array_length(getValues(s), 1)) FROM tbl_cbufferset;
@@ -81,7 +81,7 @@ SELECT MIN(array_length(getValues(s), 1)) FROM tbl_cbufferset;
    1
 (1 row)
 
-SELECT numValues(setUnion(cbuf)) FROM tbl_cbuffer;
+SELECT numValues(setUnion(cb)) FROM tbl_cbuffer;
  numvalues 
 -----------
        100
@@ -100,7 +100,7 @@ SELECT COUNT(*) FROM test2 t1, tbl_cbufferset t2 WHERE t1.k = t2.k AND t1.s <> t
 SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE set_cmp(t1.s, t2.s) = -1;
  count 
 -------
-  7111
+  4851
 (1 row)
 
 SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s = t2.s;
@@ -118,34 +118,34 @@ SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s <> t2.s;
 SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s < t2.s;
  count 
 -------
-  7111
+  4851
 (1 row)
 
 SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s <= t2.s;
  count 
 -------
-  7210
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s > t2.s;
  count 
 -------
-  2591
+  4851
 (1 row)
 
 SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s >= t2.s;
  count 
 -------
-  2690
+  4950
 (1 row)
 
 SELECT MAX(set_hash(s)) FROM tbl_cbufferset;
     max     
 ------------
- 2107814394
+ 2094387066
 (1 row)
 
-SELECT numValues(setUnion(cbuf)) FROM tbl_cbuffer;
+SELECT numValues(setUnion(cb)) FROM tbl_cbuffer;
  numvalues 
 -----------
        100

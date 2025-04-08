@@ -29,6 +29,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)
 include(CheckCXXSymbolExists)
 include(CheckCSourceRuns)
+include(CMakeDependentOption)
 
 #-------------------------------------
 # RPATH settings
@@ -98,10 +99,11 @@ option(POSE
   OFF
   )
 
-# Option for including rigid geometries
-option(RGEO
+# Option for including rigid geometries, which depend on geoposes
+CMAKE_DEPENDENT_OPTION(RGEO
   "Set ON|OFF (default=OFF) to include rigid geometries
   "
+  ON "POSE"
   OFF
   )
 

@@ -56,9 +56,9 @@ PG_FUNCTION_INFO_V1(Distance_cbuffer_geo);
 Datum
 Distance_cbuffer_geo(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  double result = distance_cbuffer_geo(cbuf, gs);
+  double result = distance_cbuffer_geo(cb, gs);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_FLOAT8(result);
 }
@@ -75,9 +75,9 @@ PG_FUNCTION_INFO_V1(Distance_cbuffer_stbox);
 Datum
 Distance_cbuffer_stbox(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
-  double result = distance_cbuffer_stbox(cbuf, box);
+  double result = distance_cbuffer_stbox(cb, box);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -92,9 +92,9 @@ PG_FUNCTION_INFO_V1(Distance_cbuffer_cbuffer);
 Datum
 Distance_cbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf1 = PG_GETARG_CBUFFER_P(0);
-  Cbuffer *cbuf2 = PG_GETARG_CBUFFER_P(1);
-  double result = distance_cbuffer_cbuffer(cbuf1, cbuf2);
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  double result = distance_cbuffer_cbuffer(cb1, cb2);
   PG_RETURN_FLOAT8(result);
 }
 
@@ -156,9 +156,9 @@ PG_FUNCTION_INFO_V1(Distance_cbuffer_tcbuffer);
 Datum
 Distance_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tcbuffer_cbuffer(temp, cbuf);
+  Temporal *result = distance_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -176,8 +176,8 @@ Datum
 Distance_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(1);
-  Temporal *result = distance_tcbuffer_cbuffer(temp, cbuf);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  Temporal *result = distance_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -261,9 +261,9 @@ PG_FUNCTION_INFO_V1(NAI_cbuffer_tcbuffer);
 Datum
 NAI_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  TInstant *result = nai_tcbuffer_cbuffer(temp, cbuf);
+  TInstant *result = nai_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_TINSTANT_P(result);
 }
@@ -280,8 +280,8 @@ Datum
 NAI_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(1);
-  TInstant *result = nai_tcbuffer_cbuffer(temp, cbuf);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  TInstant *result = nai_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TINSTANT_P(result);
 }
@@ -323,9 +323,9 @@ PG_FUNCTION_INFO_V1(NAD_cbuffer_stbox);
 Datum
 NAD_cbuffer_stbox(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
-  Temporal *result = nad_cbuffer_stbox(cbuf, box);
+  Temporal *result = nad_cbuffer_stbox(cb, box);
   PG_RETURN_TEMPORAL_P(result);
 }
 
@@ -409,10 +409,10 @@ PG_FUNCTION_INFO_V1(NAD_cbuffer_tcbuffer);
 Datum
 NAD_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  double result = nad_tcbuffer_cbuffer(temp, cbuf);
-  PG_FREE_IF_COPY(cbuf, 0);
+  double result = nad_tcbuffer_cbuffer(temp, cb);
+  PG_FREE_IF_COPY(cb, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
@@ -453,11 +453,11 @@ PG_FUNCTION_INFO_V1(NAD_tcbuffer_cbuffer);
 Datum
 NAD_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(1);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  double result = nad_tcbuffer_cbuffer(temp, cbuf);
+  double result = nad_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(cbuf, 1);
+  PG_FREE_IF_COPY(cb, 1);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
@@ -542,10 +542,10 @@ PG_FUNCTION_INFO_V1(Shortestline_cbuffer_tcbuffer);
 Datum
 Shortestline_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  GSERIALIZED *result = shortestline_tcbuffer_cbuffer(temp, cbuf);
-  PG_FREE_IF_COPY(cbuf, 0);
+  GSERIALIZED *result = shortestline_tcbuffer_cbuffer(temp, cb);
+  PG_FREE_IF_COPY(cb, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -564,10 +564,10 @@ Datum
 Shortestline_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(1);
-  GSERIALIZED *result = shortestline_tcbuffer_cbuffer(temp, cbuf);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  GSERIALIZED *result = shortestline_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(cbuf, 1);
+  PG_FREE_IF_COPY(cb, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);

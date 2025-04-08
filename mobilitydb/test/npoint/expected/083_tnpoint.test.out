@@ -885,49 +885,49 @@ SELECT scaleTime(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02
  {[NPoint(1,0.2)@Sat Jan 01 00:00:00 2000 PST, NPoint(1,0.4)@Sat Jan 01 06:00:00 2000 PST, NPoint(1,0.5)@Sat Jan 01 12:00:00 2000 PST], [NPoint(2,0.6)@Sat Jan 01 18:00:00 2000 PST, NPoint(2,0.6)@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT tnpoint 'Npoint(1, 0.5)@2000-01-01' ?= 'Npoint(1, 0.5)';
+SELECT tnpoint 'Npoint(1, 0.5)@2000-01-01' ?= npoint 'Npoint(1, 0.5)';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}' ?= 'Npoint(1, 0.5)';
+SELECT tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}' ?= npoint 'Npoint(1, 0.5)';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]' ?= 'Npoint(1, 0.5)';
+SELECT tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]' ?= npoint 'Npoint(1, 0.5)';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}' ?= 'Npoint(1, 0.5)';
+SELECT tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}' ?= npoint 'Npoint(1, 0.5)';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tnpoint 'Npoint(1, 0.5)@2000-01-01' %= 'Npoint(1, 0.5)';
+SELECT tnpoint 'Npoint(1, 0.5)@2000-01-01' %= npoint 'Npoint(1, 0.5)';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}' %= 'Npoint(1, 0.5)';
+SELECT tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}' %= npoint 'Npoint(1, 0.5)';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]' %= 'Npoint(1, 0.5)';
+SELECT tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]' %= npoint 'Npoint(1, 0.5)';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}' %= 'Npoint(1, 0.5)';
+SELECT tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}' %= npoint 'Npoint(1, 0.5)';
  ?column? 
 ----------
  f

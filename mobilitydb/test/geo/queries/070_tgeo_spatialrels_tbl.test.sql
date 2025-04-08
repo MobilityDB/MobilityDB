@@ -35,12 +35,14 @@
 -- eContains, aContains
 -------------------------------------------------------------------------------
 
--- In some GEOS versions, GEOSRelatePattern does not accept GEOMETRYCOLLECTION
-SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry
-WHERE geometrytype(traversedArea(temp)) <> 'GEOMETRYCOLLECTION' AND eContains(g, temp);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eContains(g, temp);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE aContains(g, temp);
 
-SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry
-WHERE geometrytype(traversedArea(temp)) <> 'GEOMETRYCOLLECTION' AND aContains(g, temp);
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eContains(temp, g);
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE aContains(temp, g);
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eContains(t1.temp, t1.temp);
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aContains(t1.temp, t1.temp);
 
 -------------------------------------------------------------------------------
 -- eDisjoint, aDisjoint
@@ -120,8 +122,9 @@ SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE aIntersects(
 
 -- The implementation of the boundary function changed in PostGIS 3.2
 -- The result of these queries changed in PostGIS 3.3
--- SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eTouches(g, temp);
--- SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eTouches(temp, g);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eTouches(g, temp);
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eTouches(temp, g);
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eTouches(t1.temp, t2.temp);
 -- 3D
 SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE eTouches(g, temp);
 SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE eTouches(temp, g);

@@ -105,7 +105,7 @@ SELECT setSRID(stbox 'GEODSTBOX ZT(((1,1,1),(2,2,2)),[2000-01-01,2000-01-02])', 
 SELECT setSRID(stbox 'STBOX T([2000-01-01,2000-01-02])', 5676);
 SELECT setSRID(stbox 'GEODSTBOX T([2000-01-01,2000-01-02])', 4326);
 
--- Tests independent of the PROJ version
+-- Robustness tests
 SELECT round(transform(transform(stbox 'SRID=4326;STBOX X((1,1),(2,2))', 5676), 4326), 1);
 SELECT round(transform(transform(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2000-01-01,2000-01-02])', 5676), 4326), 1);
 SELECT round(transform(transform(stbox 'SRID=4326;STBOX Z((1,1,1),(2,2,2))', 5676), 4326), 1);

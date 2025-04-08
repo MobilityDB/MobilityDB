@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that generates a given number of tgeompoint instants,
  * assembles the instants into a sequence at the end of the generation process,
  * and outputs the number of instants and the distance travelled.
@@ -45,13 +46,14 @@
 #include <stdlib.h>
 #include <time.h>
 #include <meos.h>
+#include <meos_geo.h>
 
 /*
  * Define whether geometric or geodetic points are used. Possible values are
  * - false => use geometric points
  * - true => use geodetic points
  */
-#define GEODETIC true
+#define GEODETIC false
 /* Maximum number of instants */
 #define MAX_INSTANTS 1000000
 /* Number of instants in a batch for printing a marker */
@@ -69,8 +71,6 @@ int main(void)
   clock_t time;
   time = clock();
 
-  /* Buffer for creating input string */
-  char inst_buffer[MAX_LENGTH_INST];
   /* Input instants that are accumulated */
   TInstant *instants[MAX_INSTANTS] = {0};
   /* Sequence constructed from the input instants */
@@ -92,16 +92,14 @@ int main(void)
       fflush(stdout);
     }
     t = add_timestamptz_interval(t, oneday);
-    char *time_str = timestamptz_out(t);
     int value = i % 2 + 1;
 #if GEODETIC == true
-    sprintf(inst_buffer, "SRID=4326;Point(%d %d)@%s", value, value, time_str);
-    instants[i] = (TInstant *) tgeogpoint_in(inst_buffer);
+    GSERIALIZED *gs = geogpoint_make2d(4326, value, value);
 #else
-    sprintf(inst_buffer, "Point(%d %d)@%s", value, value, time_str);
-    instants[i] = (TInstant *) tgeompoint_in(inst_buffer);
+    GSERIALIZED *gs = geogpoint_make2d(5676, value, value);
 #endif
-    free(time_str);
+    instants[i] = tpointinst_make(gs, t);
+    free(gs);
   }
 
   printf("\nAssembing the instants ...\n");

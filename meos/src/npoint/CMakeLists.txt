@@ -3,6 +3,7 @@ set(NPOINT_SRCS
   tnpoint.c
   tnpoint_aggfuncs.c
   tnpoint_boxops.c
+  tnpoint_compops.c
   tnpoint_distance.c
   tnpoint_routeops.c
   tnpoint_spatialfuncs.c

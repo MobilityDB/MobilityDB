@@ -48,14 +48,14 @@ SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexWKB(asHexWKB(s)) <> s
 -------------------------------------------------------------------------------
 -- Constructor
 
-SELECT numValues(set(array_agg(DISTINCT cbuf ORDER BY cbuf))) FROM tbl_cbuffer WHERE cbuf IS NOT NULL;
+SELECT numValues(set(array_agg(DISTINCT cb ORDER BY cb))) FROM tbl_cbuffer WHERE cb IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Cast
 
 SELECT round(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)", "Cbuffer(Point(3 3),0.5)"}'::stbox, 6);
 
-SELECT COUNT(*) FROM tbl_cbuffer WHERE cbuf::cbufferset IS NOT NULL;
+SELECT COUNT(*) FROM tbl_cbuffer WHERE cb::cbufferset IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Transformation functions
@@ -76,7 +76,7 @@ SELECT MIN(array_length(getValues(s), 1)) FROM tbl_cbufferset;
 -------------------------------------------------------------------------------
 -- Set_union and unnest functions
 
-SELECT numValues(setUnion(cbuf)) FROM tbl_cbuffer;
+SELECT numValues(setUnion(cb)) FROM tbl_cbuffer;
 
 WITH test1(k, s) AS (
   SELECT k, unnest(s) FROM tbl_cbufferset ),
@@ -100,6 +100,6 @@ SELECT MAX(set_hash(s)) FROM tbl_cbufferset;
 -------------------------------------------------------------------------------
 -- Aggregation functions
 
-SELECT numValues(setUnion(cbuf)) FROM tbl_cbuffer;
+SELECT numValues(setUnion(cb)) FROM tbl_cbuffer;
 
 -------------------------------------------------------------------------------

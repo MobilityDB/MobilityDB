@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that applies multidimensional tiling to a temporal
  * float according to value and/or time bins.
  *

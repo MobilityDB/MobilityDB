@@ -112,14 +112,14 @@ tcbufferseq_expand_stbox(const TSequence *seq, const TInstant *inst)
  * @ingroup meos_internal_box_constructor
  * @brief Return in the last argument a spatiotemporal box constructed from a
  * circular buffer and a timestamptz
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] t Timestamp
  * @param[out] box Spatiotemporal box
  */
 bool
-cbuffer_timestamptz_set_stbox(const Cbuffer *cbuf, TimestampTz t, STBox *box)
+cbuffer_timestamptz_set_stbox(const Cbuffer *cb, TimestampTz t, STBox *box)
 {
-  cbuffer_set_stbox(cbuf, box);
+  cbuffer_set_stbox(cb, box);
   span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
     T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
   MEOS_FLAGS_SET_T(box->flags, true);
@@ -130,17 +130,17 @@ cbuffer_timestamptz_set_stbox(const Cbuffer *cbuf, TimestampTz t, STBox *box)
  * @ingroup meos_cbuffer_box
  * @brief Return a spatiotemporal box constructed from a circular buffer and a
  * timestamptz
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] t Timestamp
  * @csqlfn #Cbuffer_timestamptz_to_stbox()
  */
 STBox *
-cbuffer_timestamptz_to_stbox(const Cbuffer *cbuf, TimestampTz t)
+cbuffer_timestamptz_to_stbox(const Cbuffer *cb, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL);
+  VALIDATE_NOT_NULL(cb, NULL);
   STBox box;
-  if (! cbuffer_timestamptz_set_stbox(cbuf, t, &box))
+  if (! cbuffer_timestamptz_set_stbox(cb, t, &box))
     return NULL;
   return stbox_copy(&box);
 }
@@ -149,14 +149,14 @@ cbuffer_timestamptz_to_stbox(const Cbuffer *cbuf, TimestampTz t)
  * @ingroup meos_internal_box_constructor
  * @brief Return in the last argument a spatiotemporal box constructed from a
  * circular buffer and a timestamptz span
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] s Timestamptz span
  * @param[out] box Spatiotemporal box
  */
 bool
-cbuffer_tstzspan_set_stbox(const Cbuffer *cbuf, const Span *s, STBox *box)
+cbuffer_tstzspan_set_stbox(const Cbuffer *cb, const Span *s, STBox *box)
 {
-  cbuffer_set_stbox(cbuf, box);
+  cbuffer_set_stbox(cb, box);
   memcpy(&box->period, s, sizeof(Span));
   MEOS_FLAGS_SET_T(box->flags, true);
   return true;
@@ -166,17 +166,17 @@ cbuffer_tstzspan_set_stbox(const Cbuffer *cbuf, const Span *s, STBox *box)
  * @ingroup meos_cbuffer_box
  * @brief Return a spatiotemporal box constructed from a circular buffer and a
  * timestamptz
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] s Timestamptz span
  * @csqlfn #Cbuffer_tstzspan_to_stbox()
  */
 STBox *
-cbuffer_tstzspan_to_stbox(const Cbuffer *cbuf, const Span *s)
+cbuffer_tstzspan_to_stbox(const Cbuffer *cb, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  VALIDATE_NOT_NULL(cb, NULL); VALIDATE_TSTZSPAN(s, NULL);
   STBox box;
-  if (! cbuffer_tstzspan_set_stbox(cbuf, s, &box))
+  if (! cbuffer_tstzspan_set_stbox(cb, s, &box))
     return NULL;
   return stbox_copy(&box);
 }

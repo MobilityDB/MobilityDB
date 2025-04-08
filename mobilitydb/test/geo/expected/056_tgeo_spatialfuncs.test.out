@@ -153,11 +153,11 @@ SELECT asEWKT(transform(transform(geoset, 102004), 4326), 6) FROM test;
 WITH test(geoset) AS (
   SELECT geomset 'SRID=909090;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )
 SELECT asEWKT(transform(transform(geoset, 102004), 909090), 6) FROM test;
-ERROR:  Transform: Could not form projection from 'srid=909090'
+ERROR:  Cannot find SRID (909090) in spatial_ref_sys
 WITH test(geoset) AS (
   SELECT geomset 'SRID=4326;{"Point(1.0 2.0 3.0)","Point(4.0 5.0 6.0)"}' )
 SELECT asEWKT(transform(transform(geoset, 909090), 4326), 6) FROM test;
-ERROR:  Transform: Could not form projection to 'srid=909090'
+ERROR:  Cannot find SRID (909090) in spatial_ref_sys
 SELECT SRID(stbox 'STBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])');
  srid 
 ------

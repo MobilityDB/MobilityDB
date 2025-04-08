@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A program that shows the connection of MEOS and GEOS. It computes the
  * the intersection of a MEOS temporal point and a prepared GEOS polygon
  * @note This program is based on the GEOS C API example 2 at the address
@@ -49,6 +50,7 @@
 
 /* Input the MEOS headers */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 
 /*

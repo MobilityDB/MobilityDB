@@ -186,10 +186,10 @@ basetype_in(const char *str, meosType type,
 #if CBUFFER
     case T_CBUFFER:
     {
-      Cbuffer *cbuf = cbuffer_parse(&str, end);
-      if (! cbuf)
+      Cbuffer *cb = cbuffer_parse(&str, end);
+      if (! cb)
         return false;
-      *result = PointerGetDatum(cbuf);
+      *result = PointerGetDatum(cb);
       return true;
     }
 #endif
@@ -1095,6 +1095,9 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
   const char *pszInterp = json_object_get_string(poObjInterp);
   Temporal *result = NULL;
 #if RGEO
+  /* We change the temptype to T_TPose to read a temporal pose and construct
+   * the temporal rigid geometry from the geometry and the temporal pose */
+  meosType temptype_orig = temptype;
   GSERIALIZED *gs = NULL;
 #endif /* RGEO */
   if (pszInterp)
@@ -1110,6 +1113,8 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
           "Invalid 'geometry' value in MFJSON string");
         return NULL;
       }
+      /* We change the temptype to T_POSE */
+      temptype = T_TPOSE;
     }
 #endif /* RGEO */
     if (strcmp(pszInterp, "None") == 0)
@@ -1140,7 +1145,7 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
   }
   json_object_put(poObj);
 #if RGEO
-  if (temptype == T_TRGEOMETRY)
+  if (temptype_orig == T_TRGEOMETRY && temptype == T_TPOSE)
     return geo_tpose_to_trgeo(gs, result);
 #endif /* RGEO */
   return result;
@@ -1158,11 +1163,9 @@ static inline void
 wkb_parse_state_check(meos_wkb_parse_state *s, size_t next)
 {
   if ((s->pos + next) > (s->wkb + s->wkb_size))
-  {
     meos_error(ERROR, MEOS_ERR_WKB_INPUT,
       "WKB structure does not match expected size!");
-    return;
-  }
+  return;
 }
 
 /**
@@ -1444,12 +1447,26 @@ geo_from_wkb_state(meos_wkb_parse_state *s)
  * @brief Read a circular buffer and advance the parse state forward
  */
 Cbuffer *
-cbuffer_from_wkb_state(meos_wkb_parse_state *s)
+cbuffer_from_wkb_state(meos_wkb_parse_state *s, bool component)
 {
-  /* Does the data we want to read exist? */
-  wkb_parse_state_check(s, MEOS_WKB_INT4_SIZE + MEOS_WKB_DOUBLE_SIZE * 3);
-  /* Get the data */
-  int32_t srid = s->has_srid ? int32_from_wkb_state(s) : SRID_UNKNOWN;
+  int32_t srid = SRID_UNKNOWN;
+  if (! component)
+  {
+    /* We have already consumed the endian flag in #type_from_wkb_state.
+     * We need to consume the SRID flag and the optional SRID before
+     * continuing below */
+    uint8_t flags = byte_from_wkb_state(s);
+    if (flags & MEOS_WKB_SRIDFLAG)
+      srid = int32_from_wkb_state(s);
+  }
+  else
+  {
+    /* We have already consumed the endian flag, the SRID flag, and the
+     * optional SRID in #temporal_from_wkb_state. What remains to be read are
+     * the x and y coordinates and the radius */
+    srid = s->srid;
+  }
+
   double x = double_from_wkb_state(s);
   double y = double_from_wkb_state(s);
   double radius = double_from_wkb_state(s);
@@ -1593,7 +1610,7 @@ base_from_wkb_state(meos_wkb_parse_state *s)
       return PointerGetDatum(geo_from_wkb_state(s));
 #if CBUFFER
     case T_CBUFFER:
-      return PointerGetDatum(cbuffer_from_wkb_state(s));
+      return PointerGetDatum(cbuffer_from_wkb_state(s, true));
 #endif /* NPOINT */
 #if NPOINT
     case T_NPOINT:
@@ -2028,8 +2045,15 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
 
 #if RGEO
   GSERIALIZED *gs;
+  meosType temptype_orig = SRID_UNKNOWN;
   if (s->temptype == T_TRGEOMETRY)
+  {
     gs = geo_from_wkb_state(s);
+    /* We change the temptype to T_TPose to read a temporal pose and construct
+    * the temporal rigid geometry from the geometry and the temporal pose */
+    temptype_orig = T_TRGEOMETRY;
+    s->temptype = T_TPOSE;
+  }
 #endif /* RGEO */
 
   /* Read the temporal value */
@@ -2048,7 +2072,7 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
   }
 
 #if RGEO
-  if (s->temptype == T_TRGEOMETRY)
+  if (s->temptype == T_TPOSE && temptype_orig == T_TRGEOMETRY)
   {
     Temporal *result = geo_tpose_to_trgeo(gs, res);
     pfree(gs); pfree(res);
@@ -2088,6 +2112,9 @@ type_from_wkb(const uint8_t *wkb, size_t size, meosType type)
   else if ((! MEOS_IS_BIG_ENDIAN) && (! wkb_little_endian))
     s.swap_bytes = true;
 
+  /* After consuming the endian flag, set the component flag a true so when
+   * reading the base types there is no endian flag */
+
   /* Call the type-specific function */
   s.type = type;
   if (set_type(type))
@@ -2106,7 +2133,7 @@ type_from_wkb(const uint8_t *wkb, size_t size, meosType type)
     return PointerGetDatum(stbox_from_wkb_state(&s));
 #if CBUFFER
   if (type == T_CBUFFER)
-    return PointerGetDatum(cbuffer_from_wkb_state(&s));
+    return PointerGetDatum(cbuffer_from_wkb_state(&s, false));
 #endif /* CBUFFER */
 #if NPOINT
   if (type == T_NPOINT)

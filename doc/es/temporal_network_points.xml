@@ -771,7 +771,7 @@ SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;
 				<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&amp;=</varname></primary></indexterm>
 				<para>Comparaciones alguna vez y siempre</para>
-				<para><varname>tnpoint {?=, %=} tnpoint → boolean</varname></para>
+				<para><varname>{npoint,tnpoint} {?=, %=} {npoint,tnpoint} → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-04)' ?= Npoint(1, 0.3);
 -- true
@@ -783,7 +783,7 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.2)@2001-01-04)' &amp;= N
 			<listitem xml:id="tnpoint_tcomp">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Comparaciones temporales</para>
-				<para><varname>tnpoint {#=, #&lt;&gt;} tnpoint → tbool</varname></para>
+				<para><varname>{npoint,tnpoint} {#=, #&lt;&gt;} {npoint,tnpoint} → tbool</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.4)@2001-01-03)' #=
   npoint 'NPoint(1, 0.3)';

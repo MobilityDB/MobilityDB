@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that reads AIS data from a CSV file and outputs
  * a few of these records converted into temporal values.
  *
@@ -84,7 +85,6 @@ int main(void)
   int no_records = 0;
   int no_nulls = 0;
   char header_buffer[MAX_LENGTH_HEADER];
-  char point_buffer[MAX_LENGTH_POINT];
   char timestamp_buffer[MAX_LENGTH_TIMESTAMP];
 
   /* Read the first line of the file with the headers */
@@ -117,19 +117,18 @@ int main(void)
     /* Print only 1 out of 1000 records */
     if (no_records % 1000 == 0)
     {
-      char *t_out = timestamp_out(rec.T);
       /* See above the assumptions made wrt the input data in the file */
-      sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
-        rec.Latitude, t_out);
-      Temporal *inst1 = tgeogpoint_in(point_buffer);
-      char *inst1_out = tspatial_as_text(inst1, 2);
+      GSERIALIZED *gs = geogpoint_make2d(4326, rec.Longitude, rec.Latitude);
+      TInstant *inst1 = tpointinst_make(gs, rec.T);
+      free(gs);
+      char *inst1_out = tspatial_as_text((Temporal *) inst1, 2);
 
       TInstant *inst2 = tfloatinst_make(rec.SOG, rec.T);
       char *inst2_out = tfloat_out((Temporal *) inst2, 2);
       printf("MMSI: %ld, Location: %s SOG : %s\n",
         rec.MMSI, inst1_out, inst2_out);
 
-      free(inst1); free(t_out); free(inst1_out);
+      free(inst1); free(inst1_out);
       free(inst2); free(inst2_out);
     }
 

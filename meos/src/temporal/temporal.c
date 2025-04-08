@@ -285,7 +285,6 @@ ensure_temporal_isof_basetype(const Temporal *temp, meosType basetype)
     meostype_name(temp->temptype), meostype_name(basetype));
   return false;
 }
-#endif /* MEOS */
 
 /**
  * @brief Ensure that a temporal value is of a temporal type
@@ -299,6 +298,7 @@ ensure_temporal_isof_type(const Temporal *temp, meosType temptype)
     "The temporal value must be of type %s", meostype_name(temptype));
   return false;
 }
+#endif /* MEOS */
 
 /**
  * @brief Ensure that two temporal values have the same temporal type
@@ -405,8 +405,7 @@ ensure_valid_temporal_set(const Temporal *temp, const Set *s)
 /**
  * @brief Ensure that a temporal number and a temporal box have the same span
  * type
- * @param[in] temp Temporal value
- * @param[in] box Temporal box value
+ * @param[in] temp1,temp2 Temporal values
  */
 bool
 ensure_valid_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -424,8 +423,7 @@ ensure_valid_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @brief Ensure that two temporal numbers have the same span type
- * @param[in] temp Temporal value
- * @param[in] box Temporal box value
+ * @param[in] temp1,temp2 Temporal values
  */
 bool
 ensure_valid_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
@@ -1096,6 +1094,7 @@ temporal_set_tstzspan(const Temporal *temp, Span *s)
   return;
 }
 
+#if MEOS
 /**
  * @ingroup meos_temporal_conversion
  * @brief Return the bounding period of a temporal value
@@ -1112,7 +1111,7 @@ temporal_tstzspan(const Temporal *temp)
   temporal_set_tstzspan(temp, result);
   return result;
 }
-
+#endif /* MEOS */
 /**
  * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument the value span of a temporal number

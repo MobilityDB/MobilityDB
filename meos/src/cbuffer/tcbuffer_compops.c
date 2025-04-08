@@ -56,18 +56,18 @@
  * satisfy the ever/always
  * comparison
  * @param[in] temp Temporal value
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @param[in] func Comparison function
  */
 int
-eacomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
+eacomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return -1;
-  return eacomp_temporal_base(temp, PointerGetDatum(cbuf), func, ever);
+  return eacomp_temporal_base(temp, PointerGetDatum(cb), func, ever);
 }
 
 /**
@@ -93,14 +93,14 @@ eacomp_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if a circular buffer is ever equal to a temporal circular
  * buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] temp Temporal value
  * @csqlfn #Ever_eq_cbuffer_tcbuffer()
  */
 inline int
-ever_eq_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
+ever_eq_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
-  return eacomp_tcbuffer_cbuffer(temp, cbuf, &datum2_eq, EVER);
+  return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_eq, EVER);
 }
 
 /**
@@ -108,27 +108,27 @@ ever_eq_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
  * @brief Return true if a temporal circular buffer is ever equal to a circular
  * buffer
  * @param[in] temp Temporal value
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @csqlfn #Ever_eq_tcbuffer_cbuffer()
  */
 inline int
-ever_eq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
+ever_eq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
-  return eacomp_tcbuffer_cbuffer(temp, cbuf, &datum2_eq, EVER);
+  return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_eq, EVER);
 }
 
 /**
  * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if a circular buffer is ever different from a temporal
  * circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ne_cbuffer_tcbuffer()
  */
 inline int
-ever_ne_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
+ever_ne_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
-  return eacomp_tcbuffer_cbuffer(temp, cbuf, &datum2_ne, EVER);
+  return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_ne, EVER);
 }
 
 /**
@@ -136,27 +136,27 @@ ever_ne_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
  * @brief Return true if a temporal circular buffer is ever different from a
  * circular buffer
  * @param[in] temp Temporal value
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @csqlfn #Ever_ne_tcbuffer_cbuffer()
  */
 inline int
-ever_ne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
+ever_ne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
-  return eacomp_tcbuffer_cbuffer(temp, cbuf, &datum2_ne, EVER);
+  return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_ne, EVER);
 }
 
 /**
  * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if a circular buffer is always equal to a temporal
  * circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] temp Temporal value
  * @csqlfn #Always_eq_cbuffer_tcbuffer()
  */
 inline int
-always_eq_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
+always_eq_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
-  return eacomp_tcbuffer_cbuffer(temp, cbuf, &datum2_eq, ALWAYS);
+  return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_eq, ALWAYS);
 }
 
 /**
@@ -164,27 +164,27 @@ always_eq_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
  * @brief Return true if a temporal circular buffer is always equal to a
  * circular buffer
  * @param[in] temp Temporal value
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @csqlfn #Always_eq_tcbuffer_cbuffer()
  */
 inline int
-always_eq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
+always_eq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
-  return eacomp_tcbuffer_cbuffer(temp, cbuf, &datum2_eq, ALWAYS);
+  return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_eq, ALWAYS);
 }
 
 /**
  * @ingroup meos_cbuffer_comp_ever
  * @brief Return true if a circular buffer is always different from a temporal
  * circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] temp Temporal value
  * @csqlfn #Always_ne_cbuffer_tcbuffer()
  */
 inline int
-always_ne_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
+always_ne_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
-  return eacomp_tcbuffer_cbuffer(temp, cbuf, &datum2_ne, ALWAYS);
+  return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_ne, ALWAYS);
 }
 
 /**
@@ -192,13 +192,13 @@ always_ne_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
  * @brief Return true if a temporal circular buffer is always different from a
  * circular buffer
  * @param[in] temp Temporal value
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @csqlfn #Always_ne_tcbuffer_cbuffer()
  */
 inline int
-always_ne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
+always_ne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
-  return eacomp_tcbuffer_cbuffer(temp, cbuf, &datum2_ne, ALWAYS);
+  return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_ne, ALWAYS);
 }
 
 /*****************************************************************************/
@@ -259,34 +259,34 @@ always_ne_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @brief Return the temporal comparison of a circular buffer and a temporal
  * circular buffer
  * @param[in] temp Temporal value
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] func Comparison function
  */
 static Temporal *
-tcomp_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp,
+tcomp_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,
   Datum (*func)(Datum, Datum, meosType))
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
-  return tcomp_base_temporal(PointerGetDatum(cbuf), temp, func);
+  return tcomp_base_temporal(PointerGetDatum(cb), temp, func);
 }
 
 /**
  * @brief Return the temporal comparison of a temporal circular buffer and a
  * circular buffer
  * @param[in] temp Temporal value
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] func Comparison function
  */
 static Temporal *
-tcomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
+tcomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   Datum (*func)(Datum, Datum, meosType))
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
-  return tcomp_temporal_base(temp, PointerGetDatum(cbuf), func);
+  return tcomp_temporal_base(temp, PointerGetDatum(cb), func);
 }
 
 /*****************************************************************************/
@@ -295,28 +295,28 @@ tcomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
  * @ingroup meos_cbuffer_comp_temp
  * @brief Return the temporal equality of a circular buffer and a temporal
  * circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] temp Temporal value
  * @csqlfn #Teq_cbuffer_tcbuffer()
  */
 inline Temporal *
-teq_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
+teq_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
-  return tcomp_cbuffer_tcbuffer(cbuf, temp, &datum2_eq);
+  return tcomp_cbuffer_tcbuffer(cb, temp, &datum2_eq);
 }
 
 /**
  * @ingroup meos_cbuffer_comp_temp
  * @brief Return the temporal inequality of a circular buffer and a temporal
  * circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] temp Temporal value
  * @csqlfn #Tne_cbuffer_tcbuffer()
  */
 inline Temporal *
-tne_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
+tne_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
-  return tcomp_cbuffer_tcbuffer(cbuf, temp, &datum2_ne);
+  return tcomp_cbuffer_tcbuffer(cb, temp, &datum2_ne);
 }
 
 /*****************************************************************************/
@@ -326,13 +326,13 @@ tne_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp)
  * @brief Return the temporal equality of a temporal circular buffer and a
  * circular buffer
  * @param[in] temp Temporal value
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @csqlfn #Teq_tcbuffer_cbuffer()
  */
 inline Temporal *
-teq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
+teq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
-  return tcomp_tcbuffer_cbuffer(temp, cbuf, &datum2_eq);
+  return tcomp_tcbuffer_cbuffer(temp, cb, &datum2_eq);
 }
 
 /**
@@ -340,13 +340,13 @@ teq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
  * @brief Return the temporal inequality of a temporal circular buffer and a
  * circular buffer
  * @param[in] temp Temporal value
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @csqlfn #Tne_tcbuffer_cbuffer()
  */
 inline Temporal *
-tne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
+tne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
-  return tcomp_tcbuffer_cbuffer(temp, cbuf, &datum2_ne);
+  return tcomp_tcbuffer_cbuffer(temp, cb, &datum2_ne);
 }
 
 /*****************************************************************************/

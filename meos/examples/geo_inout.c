@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that uses the MEOS library for input and output
  * geometry values.
  *
@@ -41,6 +42,7 @@
 #include <stdlib.h> /* for free */
 /* Include the MEOS API header */
 #include <meos.h>
+#include <meos_geo.h>
 
 int main()
 {

@@ -868,6 +868,9 @@ temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
  * Iterative implementation of the similarity distance with a full matrix
  *****************************************************************************/
 
+/* Maximum length of the typmod string */
+#define MAX_MATRIX_LEN 65536
+
 #ifdef DEBUG_BUILD
 /**
  * @brief Print a distance matrix in tabular form
@@ -875,32 +878,36 @@ temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
 void
 matrix_print(double *dist, int count1, int count2)
 {
-  int len = 0;
-  char buf[65536];
+  char buf[MAX_MATRIX_LEN];
   int i, j;
-  len += sprintf(buf+len, "\n      ");
+  size_t len = snprintf(buf, MAX_MATRIX_LEN - 1, "\n      ");
   for (j = 0; j < count2; j++)
-    len += sprintf(buf+len, "    %2d    ", j);
-  len += sprintf(buf+len, "\n");
+    len += snprintf(buf + len, MAX_MATRIX_LEN - len - 1, "    %2d    ", j);
+  len += snprintf(buf + len, MAX_MATRIX_LEN - len - 1, "\n");
   for (j = 0; j < count2; j++)
-    len += sprintf(buf+len, "------------");
-  len += sprintf(buf+len, "\n");
+    len += snprintf(buf + len, MAX_MATRIX_LEN - len - 1, "------------");
+  len += snprintf(buf + len, MAX_MATRIX_LEN - len - 1, "\n");
   for (i = 0; i < count1; i++)
   {
-    len += sprintf(buf+len, "%2d | ", i);
+    len += snprintf(buf + len, MAX_MATRIX_LEN - len - 1, "%2d | ", i);
     for (j = 0; j < count2; j++)
-      len += sprintf(buf+len, " %9.3f", dist[i * count2 + j]);
-    len += sprintf(buf+len, "\n");
+      len += snprintf(buf + len, MAX_MATRIX_LEN - len - 1, " %9.3f",
+        dist[i * count2 + j]);
+    len += snprintf(buf + len, MAX_MATRIX_LEN - len - 1, "\n");
   }
   for (j = 0; j < count2; j++)
-    len += sprintf(buf+len, "------------");
-  len += sprintf(buf+len, "\n      ");
+    len += snprintf(buf + len, MAX_MATRIX_LEN - len - 1, "------------");
+  len += snprintf(buf + len, MAX_MATRIX_LEN - len - 1, "\n      ");
   for (j = 0; j < count2; j++)
-    len += sprintf(buf+len, "    %2d    ", j);
-  sprintf(buf+len, "\n"); /* make Codacy quiet by removing last assignment */
+    len += snprintf(buf + len, MAX_MATRIX_LEN - len - 1, "    %2d    ", j);
+  /* make Codacy quiet by removing last assignment */
+  snprintf(buf + len, MAX_MATRIX_LEN - len - 1, "\n"); 
   meos_error(WARNING, 0, "MATRIX:\n%s", buf);
   return;
 }
+
+/* Maximum length of the path string */
+#define MAX_PATH_LEN 65536
 
 /**
  * @brief Print a distant path found from the distance matrix
@@ -908,11 +915,12 @@ matrix_print(double *dist, int count1, int count2)
 void
 path_print(Match *path, int count)
 {
-  int len = 0;
-  char buf[65536];
-  int i, k = 0;
-  for (i = count - 1; i >= 0; i--)
-    len += sprintf(buf+len, "%d: (%2d,%2d)\n", k++, path[i].i, path[i].j);
+  size_t len = 0;
+  char buf[MAX_PATH_LEN];
+  int k = 0;
+  for (int i = count - 1; i >= 0; i--)
+    len += snprintf(buf + len, MAX_PATH_LEN - len - 1,
+      "%d: (%2d,%2d)\n", k++, path[i].i, path[i].j);
   meos_error(WARNING, 0, "PATH:\n%s", buf);
   return;
 }

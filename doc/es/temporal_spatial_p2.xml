@@ -10,6 +10,87 @@
 <chapter xml:id="tgeo_p2">
 	<title>Tipos temporales geométricos (Parte 2)</title>
 
+	<sect1 xml:id="tgeo_restrictions">
+		<title>Restricciones</title>
+		<itemizedlist>
+			<listitem xml:id="tgeo_atGeometry">
+				<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
+				<para>Restringir a (al complemento de) una geometría, un lapso Z y/o un período &Z_support;</para>
+				<para><varname>atGeometry(tgeom,geometry[,zspan]) → tgeom</varname></para>
+				<para><varname>minusGeometry(tgeom,geometry[,zspan]) → tgeom</varname></para>
+				<para>La geometría debe ser 2D y el cálculo con respecto a ella se realiza en 2D. El resultado conserva la dimensión Z del punto temporal, si existe.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
+  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
+-- {"[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-03]"}
+SELECT astext(atGeometry(tgeompoint '[Point(0 0 0)@2001-01-01, Point(4 4 4)@2001-01-05]',
+  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
+-- {[POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03]}
+SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001-01-03,
+  Point(3 1 3)@2001-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))', '[0,2]'));
+-- {[POINT Z (2 1 1)@2001-01-02, POINT Z (3 1 1)@2001-01-03, POINT Z (3 1 2)@2001-01-04]}
+SELECT asText(atGeometry(tgeometry 'Linestring(1 1,10 1)@2001-01-01', 
+  'Polygon((0 0,0 5,5 5,5 0,0 0))'));
+-- LINESTRING(1 1,5 1)@2001-01-01
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(minusGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
+  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
+/* {[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02), (POINT(2 2)@2001-01-03,
+   POINT(3 3)@2001-01-04)} */
+SELECT astext(minusGeometry(tgeompoint '[Point(0 0 0)@2001-01-01,
+  Point(4 4 4)@2001-01-05]', geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
+/* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
+   (POINT Z (2 2 2)@2001-01-03, POINT Z (4 4 4)@2001-01-05]} */
+SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001-01-03,
+  Point(3 1 3)@2001-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))', '[0,2]'));
+/* {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 1 1)@2001-01-02),
+    (POINT Z (3 1 2)@2001-01-04, POINT Z (3 1 3)@2001-01-05]} */
+SELECT asText(minusGeometry(tgeometry 'Linestring(1 1,10 1)@2001-01-01', 
+  'Polygon((0 0,0 5,5 5,5 0,0 0))'));
+-- LINESTRING(5 1,10 1)@2001-01-01
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tgeo_atStbox">
+				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
+				<para>Restringir a (al complemento de) un <varname>stbox</varname> &Z_support;</para>
+				<para><varname>atStbox(tgeom,stbox,borderInc bool=true) → tgeompoint</varname></para>
+				<para><varname>minusStbox(tgeom,stbox,borderInc bool=true) → tgeompoint</varname></para>
+				<para>El tercer argumento opcional se utiliza para mosaicos multidimensionales (ver <xref linkend="ttype_tiling"/>) para excluir el borde superior de los mosaicos cuando un valor temporal se divide en varios mosaicos, de modo que todos los fragmentos de la geometría temporal sean exclusivos.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(atStbox(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
+  stbox 'STBOX XT(((0,0),(2,2)),[2001-01-02, 2001-01-04])'));
+-- {[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-03]}
+SELECT asText(atStbox(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03,
+  Point(3 3 2)@2001-01-04, Point(3 3 7)@2001-01-09]', stbox 'STBOX Z((2,2,2),(3,3,3))'));
+/* {[POINT Z (2 2 2)@2001-01-02, POINT Z (3 3 3)@2001-01-03, POINT Z (3 3 2)@2001-01-04,
+  POINT Z (3 3 3)@2001-01-05]} */
+SELECT asText(atStbox(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,3 3)@2001-01-03,
+  Point(2 2)@2001-01-04, Linestring(3 3,4 4)@2001-01-09]', stbox 'STBOX X((2,2),(3,3))'));
+-- {[LINESTRING(2 2,3 3)@2001-01-03, POINT(2 2)@2001-01-04, POINT(3 3)@2001-01-09]}
+</programlisting>
+
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-04)',
+  stbox 'STBOX XT(((1,1),(2,2)),[2001-01-03,2001-01-04])'));
+-- {(POINT(2 2)@2001-01-02, POINT(3 3)@2001-01-03)}
+SELECT asText(minusStbox(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03,
+  Point(3 3 2)@2001-01-04, Point(3 3 7)@2001-01-09]', stbox 'STBOX Z((2,2,2),(3,3,3))'));
+/* {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02), 
+    (POINT Z (3 3 3)@2001-01-05, POINT Z (3 3 7)@2001-01-09]} */
+SELECT asText(minusStbox(tgeometry '[Point(1 1)@2001-01-01, 
+  Linestring(1 1,3 3)@2001-01-03, Point(2 2)@2001-01-04, 
+  Linestring(1 1,4 4)@2001-01-09]', stbox 'STBOX X((2,2),(3,3))'));
+/* {[POINT(1 1)@2001-01-01, LINESTRING(1 1,2 2)@2001-01-03, 
+   LINESTRING(1 1,2 2)@2001-01-04),[MULTILINESTRING((1 1,2 2),(3 3,4 4))@2001-01-09]} */
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="tgeo_spatial_srid">
 		<title>Sistema de referencia espacial</title>
 		<itemizedlist>
@@ -42,11 +123,11 @@ SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 381
 -- SRID=3812;POINT(648679.018035303 671067.055638114)@2001-01-01 00:00:00+00
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
-WITH test(tpoint, pipeline) AS (
+WITH test(tgeo, pipeline) AS (
   SELECT tgeogpoint 'SRID=4326;{Point(4.3525 50.846667 100.0)@2001-01-01,
     Point(-0.1275 51.507222 100.0)@2001-01-02}',
     text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
-SELECT asEWKT(transformPipeline(transformPipeline(tpoint, pipeline, 4326),
+SELECT asEWKT(transformPipeline(transformPipeline(tgeo, pipeline, 4326),
   pipeline, 4326, false), 6)
 FROM test;
 /* SRID=4326;{POINT Z (4.3525 50.846667 100)@2001-01-01,
@@ -93,9 +174,9 @@ SELECT tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
   Point(0 0 0)@2001-01-05)' |=| tgeompoint '[Point(2 0 0)@2001-01-02,
   Point(1 1 1)@2001-01-04, Point(2 2 2)@2001-01-06)';
 -- 0.5
-SELECT tgeompoint 'Interp=Step;(Point(1 1)@2001-01-01, Point(3 1)@2001-01-03]' |=|
+SELECT tgeometry '(Point(1 1)@2001-01-01, Linestring(3 1,1 1)@2001-01-03]' |=|
   geometry 'Linestring(1 3,2 2,3 3)';
--- 1.4142135623731
+-- 1
 </programlisting>
 				<para>El operador <varname>|=|</varname> se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST o SP-GIST (ver la <xref linkend="ttype_indexing" />). Esta función corresponde a la función <varname>ST_DistanceCPA</varname> proporcionada por PostGIS, aunque este última requiere que ambos argumentos sean una trayectoria.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -123,10 +204,10 @@ SELECT asText(NearestApproachInstant(tgeompoint 'Interp=Step;(Point(1 1)@2001-01
 SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2001-01-01,
   Point(2 2)@2001-01-03]', tgeompoint '(Point(1 1)@2001-01-01, Point(4 1)@2001-01-03]'));
 -- POINT(1 1)@2001-01-01
-SELECT asText(nearestApproachInstant(tgeompoint '[Point(0 0 0)@2001-01-01,
-  Point(1 1 1)@2001-01-03, Point(0 0 0)@2001-01-05)', tgeompoint
-  '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04, Point(2 2 2)@2001-01-06)'));
--- POINT Z (0.75 0.75 0.75)@2001-01-03 12:00:00+00
+SELECT asText(nearestApproachInstant(tgeometry
+  '[Linestring(0 0 0,1 1 1)@2001-01-01, Point(0 0 0)@2001-01-03]', tgeometry
+  '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04, Point(2 2 2)@2001-01-06]'));
+-- LINESTRING Z (0 0 0,1 1 1)@2001-01-02
 </programlisting>
 				<para>La función <varname>nearestApproachInstant</varname> generaliza the la función PostGIS <varname>ST_ClosestPointOfApproach</varname>. Primero, la última función requiere que ambos argumentos sean trayectorias. Segundo, la función <varname>nearestApproachInstant</varname> devuelve tanto el punto como la marca de tiempo del punto de aproximación más cercano, mientras que la función PostGIS sólo proporciona la marca de tiempo como se muestra a continuación.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -151,12 +232,10 @@ SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2001-01-01,
 SELECT ST_AsText(shortestLine(tgeompoint 'Interp=Step;(Point(1 1)@2001-01-01,
   Point(3 1)@2001-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- LINESTRING(1 1,2 2)
-SELECT ST_AsText(shortestLine(
-  tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,
-    Point(0 0 0)@2001-01-05)',
-  tgeompoint '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04,
-    Point(2 2 2)@2001-01-06)'));
--- LINESTRING Z (0.75 0.75 0.75,1.25 0.75 0.75)
+SELECT ST_AsText(shortestLine(tgeometry
+  '[Linestring(0 0 0,1 1 1)@2001-01-01, Point(0 0 0)@2001-01-03]', tgeometry
+  '[Point(2 0 0)@2001-01-02, Point(1 1 1)@2001-01-04, Point(2 2 2)@2001-01-06]'));
+-- LINESTRING Z (0 0 0,2 0 0)
 </programlisting>
 				<para>La función <varname>shortestLine</varname> se puede utilizar para obtener el resultado proporcionado por la función PostGIS <varname>ST_CPAWithin</varname> cuando ambos argumentos son trayectorias como se muestra a continuación.</para>
 				<programlisting language="sql" xml:space="preserve">
@@ -195,9 +274,9 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-03)' &lt;-&gt;
 SELECT tgeompoint '[Point(0 1)@2001-01-01, Point(0 0)@2001-01-03)' &lt;-&gt;
   tgeompoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-03)';
 -- [1@2001-01-01, 0.707106781186548@2001-01-02, 1@2001-01-03)
-SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)' &lt;-&gt;
-  tgeompoint '[Point(0 1)@2001-01-01, Point(1 2)@2001-01-02)';
--- [1@2001-01-01,1@2001-01-02)
+SELECT tgeometry '[Point(0 0)@2001-01-01, Linestring(0 0,1 1)@2001-01-02]' &lt;-&gt;
+  tgeometry '[Point(0 1)@2001-01-01, Point(1 0)@2001-01-02)';
+-- Interp=Step;[1@2001-01-01, 1@2001-01-02]
 </programlisting>
 			</listitem>
 		</itemizedlist>

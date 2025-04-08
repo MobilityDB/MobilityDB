@@ -658,6 +658,7 @@ tseqarr_sort(TSequence **sequences, int count)
 
 /**
  * @brief Remove duplicates from an array of datums
+ * @pre The array has been sorted before
  */
 int
 datumarr_remove_duplicates(Datum *values, int count, meosType type)
@@ -672,6 +673,7 @@ datumarr_remove_duplicates(Datum *values, int count, meosType type)
 
 /**
  * @brief Remove duplicates from an array of timestamptz values
+ * @pre The array has been sorted before
  */
 int
 tstzarr_remove_duplicates(TimestampTz *values, int count)
@@ -686,6 +688,7 @@ tstzarr_remove_duplicates(TimestampTz *values, int count)
 
 /**
  * @brief Remove duplicates from an array of temporal instants
+ * @pre The array has been sorted before
  */
 int
 tinstarr_remove_duplicates(const TInstant **instants, int count)

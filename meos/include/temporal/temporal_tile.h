@@ -76,6 +76,8 @@ typedef struct TboxGridState
 
 /*****************************************************************************/
 
+extern int span_no_bins(const Span *s, Datum size, Datum origin, 
+  Datum *start_bin, Datum *end_bin);
 extern SpanBinState *span_bin_state_make(const void *temp, const Span *s,
   Datum size, Datum origin);
 extern void span_bin_state_set(Datum lower, Datum size, meosType basetype,

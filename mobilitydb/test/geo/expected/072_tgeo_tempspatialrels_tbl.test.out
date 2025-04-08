@@ -20,27 +20,24 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seqset
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry
-  WHERE geometrytype(traversedArea(temp)) <> 'GEOMETRYCOLLECTION' AND
-    tContains(g, temp) ?= true <> eContains(g, temp);
+  WHERE tContains(g, temp) ?= true <> eContains(g, temp);
  count 
 -------
-    17
+   238
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seq
-  WHERE geometrytype(traversedArea(seq)) <> 'GEOMETRYCOLLECTION' AND
-    tContains(g, seq) ?= true <> eContains(g, seq);
+  WHERE tContains(g, seq) ?= true <> eContains(g, seq);
  count 
 -------
-    27
+   256
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seqset
-  WHERE geometrytype(traversedArea(ss)) <> 'GEOMETRYCOLLECTION' AND
-    tContains(g, ss) ?= true <> eContains(g, ss);
+  WHERE tContains(g, ss) ?= true <> eContains(g, ss);
  count 
 -------
-     0
+   305
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry
@@ -75,28 +72,28 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry
   WHERE tDisjoint(g, temp) ?= true <> eDisjoint(g, temp);
  count 
 -------
-    39
+   674
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry
   WHERE tDisjoint(temp, g) ?= true <> eDisjoint(temp, g);
  count 
 -------
-    39
+   674
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seq
   WHERE tDisjoint(g, seq) ?= true <> eDisjoint(g, seq);
  count 
 -------
-    17
+   443
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seqset
   WHERE tDisjoint(g, ss) ?= true <> eDisjoint(g, ss);
  count 
 -------
-     0
+  1723
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2

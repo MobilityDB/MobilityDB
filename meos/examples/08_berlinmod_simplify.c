@@ -51,8 +51,16 @@
 #include <meos.h>
 #include <meos_geo.h>
 
-/* Maximum length in characters of a trip in the input data */
-#define MAX_LENGTH_TRIP 170001
+/**
+ * Maximum length in characters of a trip in the input data. 
+ * This value is set according to the following query executed in the database
+ * created by the MobilityDB-BerlinMOD generator.
+ * @code
+ * SELECT MAX(length(asHexEWKB(trip))) FROM trips;
+ * -- 328178
+ * @endcode
+ */
+#define MAX_LENGTH_TRIP 400001
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a date in the input data */
@@ -60,7 +68,7 @@
 /* Epsilon distance used for the simplification */
 #define DELTA_DISTANCE 2
 /* Maximum number of trips */
-#define MAX_NO_TRIPS 64
+#define MAX_NO_TRIPS 256
 
 typedef struct
 {
@@ -111,7 +119,7 @@ int main(void)
   i = 0;
   do
   {
-    int read = fscanf(file, "%d,%d,%10[^,],%d,%170000[^\n]\n",
+    int read = fscanf(file, "%d,%d,%10[^,],%d,%400000[^\n]\n",
       &trips[i].tripId, &trips[i].vehId, date_buffer, &trips[i].seq,
         trip_buffer);
     /* Transform the string representing the date into a date value */

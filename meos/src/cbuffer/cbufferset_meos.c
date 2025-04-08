@@ -125,15 +125,15 @@ cbufferset_make(const Cbuffer **values, int count)
 /**
  * @ingroup meos_cbuffer_set_conversion
  * @brief Convert a circular buffer into a circular buffer set
- * @param[in] cbuf Value
+ * @param[in] cb Value
  * @csqlfn #Value_to_set()
  */
 Set *
-cbuffer_to_set(const Cbuffer *cbuf)
+cbuffer_to_set(const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
- VALIDATE_NOT_NULL(cbuf, NULL);
-  Datum v = PointerGetDatum(cbuf);
+ VALIDATE_NOT_NULL(cb, NULL);
+  Datum v = PointerGetDatum(cb);
   return set_make_exp(&v, 1, 1, T_CBUFFER, ORDER_NO);
 }
 
@@ -220,122 +220,122 @@ cbufferset_values(const Set *s)
  * @ingroup meos_cbuffer_set_setops
  * @brief Return true if a set contains a circular buffer
  * @param[in] s Set
- * @param[in] cbuf Value
+ * @param[in] cb Value
  * @csqlfn #Contains_set_value()
  */
 bool
-contains_set_cbuffer(const Set *s, Cbuffer *cbuf)
+contains_set_cbuffer(const Set *s, Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_cbufferset_cbuffer(s, cbuf))
+  if (! ensure_valid_cbufferset_cbuffer(s, cb))
     return false;
-  return contains_set_value(s, PointerGetDatum(cbuf));
+  return contains_set_value(s, PointerGetDatum(cb));
 }
 
 /**
  * @ingroup meos_cbuffer_set_setops
  * @brief Return true if a circular buffer is contained in a set
- * @param[in] cbuf Value
+ * @param[in] cb Value
  * @param[in] s Set
  * @csqlfn #Contained_value_set()
  */
 bool
-contained_cbuffer_set(const Cbuffer *cbuf, const Set *s)
+contained_cbuffer_set(const Cbuffer *cb, const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_cbufferset_cbuffer(s, cbuf))
+  if (! ensure_valid_cbufferset_cbuffer(s, cb))
     return false;
-  return contained_value_set(PointerGetDatum(cbuf), s);
+  return contained_value_set(PointerGetDatum(cb), s);
 }
 
 /**
  * @ingroup meos_cbuffer_set_setops
  * @brief Return the union of a set and a circular buffer
  * @param[in] s Set
- * @param[in] cbuf Value
+ * @param[in] cb Value
  * @csqlfn #Union_set_value()
  */
 Set *
-union_set_cbuffer(const Set *s, const Cbuffer *cbuf)
+union_set_cbuffer(const Set *s, const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_cbufferset_cbuffer(s, cbuf))
+  if (! ensure_valid_cbufferset_cbuffer(s, cb))
     return NULL;
-  return union_set_value(s, PointerGetDatum(cbuf));
+  return union_set_value(s, PointerGetDatum(cb));
 }
 
 /**
  * @ingroup meos_cbuffer_set_setops
  * @brief Return the union of a circular buffer and a set
  * @param[in] s Set
- * @param[in] cbuf Value
+ * @param[in] cb Value
  * @csqlfn #Union_set_value()
  */
 Set *
-union_cbuffer_set(const Cbuffer *cbuf, const Set *s)
+union_cbuffer_set(const Cbuffer *cb, const Set *s)
 {
-  return union_set_cbuffer(s, cbuf);
+  return union_set_cbuffer(s, cb);
 }
 
 /**
  * @ingroup meos_cbuffer_set_setops
  * @brief Return the intersection of a set and a circular buffer
  * @param[in] s Set
- * @param[in] cbuf Value
+ * @param[in] cb Value
  * @csqlfn #Intersection_set_value()
  */
 Set *
-intersection_set_cbuffer(const Set *s, const Cbuffer *cbuf)
+intersection_set_cbuffer(const Set *s, const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_cbufferset_cbuffer(s, cbuf))
+  if (! ensure_valid_cbufferset_cbuffer(s, cb))
     return NULL;
-  return intersection_set_value(s, PointerGetDatum(cbuf));
+  return intersection_set_value(s, PointerGetDatum(cb));
 }
 
 /**
  * @ingroup meos_cbuffer_set_setops
  * @brief Return the intersection of a circular buffer and a set
  * @param[in] s Set
- * @param[in] cbuf Value
+ * @param[in] cb Value
  * @csqlfn #Union_set_value()
  */
 Set *
-intersection_cbuffer_set(const Cbuffer *cbuf, const Set *s)
+intersection_cbuffer_set(const Cbuffer *cb, const Set *s)
 {
-  return intersection_set_cbuffer(s, cbuf);
+  return intersection_set_cbuffer(s, cb);
 }
 
 /**
  * @ingroup meos_cbuffer_set_setops
  * @brief Return the difference of a circular buffer and a set
- * @param[in] cbuf Value
+ * @param[in] cb Value
  * @param[in] s Set
  * @csqlfn #Minus_value_set()
  */
 Set *
-minus_cbuffer_set(const Cbuffer *cbuf, const Set *s)
+minus_cbuffer_set(const Cbuffer *cb, const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_cbufferset_cbuffer(s, cbuf))
+  if (! ensure_valid_cbufferset_cbuffer(s, cb))
     return NULL;
-  return minus_value_set(PointerGetDatum(cbuf), s);
+  return minus_value_set(PointerGetDatum(cb), s);
 }
 
 /**
  * @ingroup meos_cbuffer_set_setops
  * @brief Return the difference of a set and a circular buffer
  * @param[in] s Set
- * @param[in] cbuf Value
+ * @param[in] cb Value
  * @csqlfn #Minus_set_value()
  */
 Set *
-minus_set_cbuffer(const Set *s, const Cbuffer *cbuf)
+minus_set_cbuffer(const Set *s, const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_cbufferset_cbuffer(s, cbuf))
+  if (! ensure_valid_cbufferset_cbuffer(s, cb))
     return NULL;
-  return minus_set_value(s, PointerGetDatum(cbuf));
+  return minus_set_value(s, PointerGetDatum(cb));
 }
 
 /*****************************************************************************
@@ -346,16 +346,16 @@ minus_set_cbuffer(const Set *s, const Cbuffer *cbuf)
  * @ingroup meos_cbuffer_set_setops
  * @brief Transition function for set union aggregate of circular buffers
  * @param[in,out] state Current aggregate state
- * @param[in] cbuf Value
+ * @param[in] cb Value
  */
 Set *
-cbuffer_union_transfn(Set *state, const Cbuffer *cbuf)
+cbuffer_union_transfn(Set *state, const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL);
+  VALIDATE_NOT_NULL(cb, NULL);
   if (state && ! ensure_set_isof_type(state, T_CBUFFERSET))
     return NULL;
-  return value_union_transfn(state, PointerGetDatum(cbuf), T_CBUFFER);
+  return value_union_transfn(state, PointerGetDatum(cb), T_CBUFFER);
 }
 
 /*****************************************************************************/

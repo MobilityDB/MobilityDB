@@ -42,6 +42,7 @@
 #include <meos_npoint.h>
 #include <meos_internal.h>
 #include "temporal/lifting.h"
+#include "temporal/set.h"
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -53,10 +54,73 @@
  *****************************************************************************/
 
 /**
+ * @brief Return true if temporal network point and a network point have a
+ * common route identifier
+ */
+bool
+common_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np)
+{
+  assert(temp); assert(np);
+  Set *routes = tnpoint_routes(temp);
+  bool result = contains_set_value(routes, Int64GetDatum(np->rid));
+  pfree(routes);
+  return result;
+}
+
+/**
+ * @brief Return true if temporal network point and a network point have a
+ * common route identifier
+ */
+bool
+common_rid_tnpoint_npointset(const Temporal *temp, const Set *s)
+{
+  assert(temp); assert(s); assert(s->settype == T_NPOINTSET);
+  Set *routes1 = tnpoint_routes(temp);
+  Set *routes2 = npointset_routes(s);
+  bool result = overlaps_set_set(routes1, routes2);
+  pfree(routes1); pfree(routes2);
+  return result;
+}
+
+/**
+ * @brief Return true if two temporal network points have common route
+ * identifiers
+ */
+bool
+common_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
+{
+  assert(temp1); assert(temp2);
+  Set *routes1 = tnpoint_routes(temp1);
+  Set *routes2 = tnpoint_routes(temp2);
+  bool result = overlaps_set_set(routes1, routes2);
+  pfree(routes1); pfree(routes2);
+  return result;
+}
+
+/**
+ * @brief Ensure that two temporal network point instants have the same route
+ * identifier
+ */
+bool
+ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
+{
+  assert(inst1); assert(inst2);
+  if (tnpointinst_route(inst1) != tnpointinst_route(inst2))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "All network points composing a temporal sequence must have same route identifier");
+    return false;
+  }
+  return true;
+}
+
+/*****************************************************************************/
+
+/**
  * @brief Return true if a temporal network point and a network point are
  * valid for operations
- * @param[in] temp Temporal value
- * @param[in] np Value
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
  */
 bool
 ensure_valid_tnpoint_npoint(const Temporal *temp, const Npoint *np)
@@ -69,8 +133,24 @@ ensure_valid_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 }
 
 /**
+ * @brief Return true if a temporal network point and a network point set are
+ * valid for operations
+ * @param[in] temp Temporal network point
+ * @param[in] s Network point set
+ */
+bool
+ensure_valid_tnpoint_npointset(const Temporal *temp, const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, false); VALIDATE_NPOINTSET(s, false);
+  if (! ensure_same_srid(tspatial_srid(temp), spatialset_srid(s)))
+    return false;
+  return true;
+}
+
+/**
  * @brief Ensure the validity of a temporal network point and a geometry
- * @param[in] temp Temporal value
+ * @param[in] temp Temporal network point
  * @param[in] gs Geometry
  */
 bool
@@ -85,6 +165,8 @@ ensure_valid_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @brief Ensure the validity of a temporal network point and a
  * spatiotemporal box
+ * @param[in] temp Temporal network point
+ * @param[in] box Spatiotemporal box
  */
 bool
 ensure_valid_tnpoint_stbox(const Temporal *temp, const STBox *box)
@@ -99,7 +181,7 @@ ensure_valid_tnpoint_stbox(const Temporal *temp, const STBox *box)
 /**
  * @brief Return true if a temporal network point and a network point are
  * valid for operations
- * @param[in] temp1,temp2 Temporal values
+ * @param[in] temp1,temp2 Temporal network points
  */
 bool
 ensure_valid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
@@ -550,7 +632,7 @@ tnpoint_route(const Temporal *temp)
   }
   const TInstant *inst = (temp->subtype == TINSTANT) ?
     (const TInstant *) temp : TSEQUENCE_INST_N((const TSequence *) temp, 0);
-  Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
+  const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
   return np->rid;
 }
 
@@ -635,6 +717,132 @@ tnpoint_routes(const Temporal *temp)
     default: /* TSEQUENCESET */
       return tnpointseqset_routes((TSequenceSet *) temp);
   }
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return the routes of a network point set
+ */
+Set *
+npointset_routes(const Set *s)
+{
+  VALIDATE_NPOINTSET(s, NULL);
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+  {
+    const Npoint *np = DatumGetNpointP(SET_VAL_N(s, i));
+    values[i] = Int64GetDatum(np->rid);
+  }
+  datumarr_sort(values, s->count, T_INT8);
+  int count = datumarr_remove_duplicates(values, s->count, T_INT8);
+  return set_make_free(values, count, T_INT8, ORDER_NO);
+}
+
+/*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_npoint_restrict
+ * @brief Restrict a temporal network point to (the complement of) a network point
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ * @param[in] atfunc True if the restriction is at, false for minus
+ * @note This function does a bounding box test for the temporal types
+ * different from instant. The singleton tests are done in the functions for
+ * the specific temporal types.
+ * @csqlfn #Tnpoint_restrict_npoint()
+ */
+Temporal *
+tnpoint_restrict_npoint(const Temporal *temp, const Npoint *np, bool atfunc)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(np, NULL);
+  if (! ensure_valid_tnpoint_npoint(temp, np))
+    return NULL;
+  /* If the temporal network point does not contain the RID of the network point */
+  if (! common_rid_tnpoint_npoint(temp, np))
+    return atfunc ? NULL : temporal_copy(temp);
+
+  return temporal_restrict_value(temp, PointerGetDatum(np), atfunc);
+}
+
+/**
+ * @ingroup meos_npoint_restrict
+ * @brief Restrict a temporal network point to a network point
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ * @csqlfn #Tnpoint_at_npoint()
+ */
+inline Temporal *
+tnpoint_at_npoint(const Temporal *temp, const Npoint *np)
+{
+  return tnpoint_restrict_npoint(temp, np, REST_AT);
+}
+
+/**
+ * @ingroup meos_npoint_restrict
+ * @brief Restrict a temporal network point to the complement of a network point
+ * @param[in] temp Temporal network point
+ * @param[in] np Network point
+ * @csqlfn #Tnpoint_minus_npoint()
+ */
+inline Temporal *
+tnpoint_minus_npoint(const Temporal *temp, const Npoint *np)
+{
+  return tnpoint_restrict_npoint(temp, np, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_npoint_restrict
+ * @brief Restrict a temporal network point to (the complement of) a set of
+ * network points
+ * @param[in] temp Temporal network point
+ * @param[in] s Set of network points
+ * @param[in] atfunc True if the restriction is at, false for minus
+ * @csqlfn #Tnpoint_restrict_npointset()
+ */
+Temporal *
+tnpoint_restrict_npointset(const Temporal *temp, const Set *s, bool atfunc)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, NULL); VALIDATE_NPOINTSET(s, NULL); 
+  if (! ensure_valid_tnpoint_npointset(temp, s))
+    return NULL;
+  /* If the temporal network point and the set do not have a common RID */
+  if (! common_rid_tnpoint_npointset(temp, s))
+    return atfunc ? NULL : temporal_copy(temp);
+  return temporal_restrict_values(temp, s, atfunc);
+}
+
+/**
+ * @ingroup meos_npoint_restrict
+ * @brief Restrict a temporal network point to a set of network points
+ * @param[in] temp Temporal network point
+ * @param[in] s Set of network points
+ * @csqlfn #Tnpoint_at_npointset()
+ */
+inline Temporal *
+tnpoint_at_npointset(const Temporal *temp, const Set *s)
+{
+  return tnpoint_restrict_npointset(temp, s, REST_AT);
+}
+
+/**
+ * @ingroup meos_npoint_restrict
+ * @brief Restrict a temporal network point to the complement of a set of
+ * network points
+ * @param[in] temp Temporal network point
+ * @param[in] s Set of network points
+ * @csqlfn #Tnpoint_minus_npointset()
+ */
+inline Temporal *
+tnpoint_minus_npointset(const Temporal *temp, const Set *s)
+{
+  return tnpoint_restrict_npointset(temp, s, REST_MINUS);
 }
 
 /*****************************************************************************/

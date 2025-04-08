@@ -50,6 +50,7 @@
 #include "temporal/type_inout.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+#include "geo/meos_transform.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial.h"
 #include "geo/tspatial_parser.h"
@@ -244,7 +245,7 @@ pose_parse(const char **str, bool end)
       return NULL;
   }
 
-  if (strncasecmp(*str,"POSE",4) == 0)
+  if (strncasecmp(*str, "POSE", 4) == 0)
   {
     *str += 4;
     p_whitespace(str);
@@ -970,7 +971,6 @@ pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
     result->data[0] = coordarr[0];
     result->data[1] = coordarr[1];
   }
-
   return result;
 }
 
@@ -995,16 +995,12 @@ pose_transform(const Pose *pose, int32_t srid_to)
     return pose_copy(pose);
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get(srid_from, srid_to);
-  if (! pj)
+  LWPROJ *pj;
+  if (! lwproj_lookup(srid_from, srid_to, &pj))
     return NULL;
 
   /* Transform the pose */
-  Pose *result = pose_transf_pj(pose, srid_to, pj);
-
-  /* Clean up and return */
-  proj_destroy(pj->pj); pfree(pj);
-  return result;
+  return pose_transf_pj(pose, srid_to, pj);
 }
 
 /**
@@ -1028,7 +1024,7 @@ pose_transform_pipeline(const Pose *pose, const char *pipeline,
   /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get_pipeline(pipeline, is_forward);
+  LWPROJ *pj = lwproj_from_str_pipeline(pipeline, is_forward);
   if (! pj)
     return NULL;
 

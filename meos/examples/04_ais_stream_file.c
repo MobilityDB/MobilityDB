@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that reads AIS data from a CSV file, accumulates the
  * observations in main memory and send the temporal values to an output file
  * when they reach a given number of instants in order to free the memory and
@@ -35,7 +36,7 @@
  *
  * This program is similar to `04_ais_stream_db` but illustrates the use of
  * an output file. In this setting, the expandable data structures accumulate
- * the observations that have been received so far and appends to the file.
+ * the observations that have been received so far and append them to the file.
  * Depending on application requirements and the available memory, the
  * accumulated temporal values must be sent regularly to the file.
  *
@@ -85,7 +86,6 @@ main(int argc, char **argv)
   AIS_record rec;
   int no_records = 0;
   int no_nulls = 0;
-  char point_buffer[MAX_LENGTH_POINT];
   char text_buffer[MAX_LENGTH_HEADER];
   /* Allocate space to build the trips */
   trip_record trips[MAX_TRIPS] = {0};
@@ -183,16 +183,6 @@ main(int argc, char **argv)
       }
       trips[j].MMSI = rec.MMSI;
     }
-    /*
-     * Append the latest observation to the corresponding ship.
-     * In the input file it is assumed that
-     * - The coordinates are given in the WGS84 geographic coordinate system
-     * - The timestamps are given in GMT time zone
-     */
-    char *t_out = timestamp_out(rec.T);
-    sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
-      rec.Latitude, t_out);
-    free(t_out);
 
     /* Send to the output file the trip if reached the maximum number of instants */
     if (trips[j].trip && trips[j].trip->count == NO_INSTANTS_BATCH)
@@ -207,9 +197,16 @@ main(int argc, char **argv)
       /* Restart the sequence by only keeping the last instants */
       tsequence_restart(trips[j].trip, NO_INSTANTS_KEEP);
     }
-  
-    /* Append the last observation */
-    TInstant *inst = (TInstant *) tgeogpoint_in(point_buffer);
+
+    /*
+     * Append the latest observation to the corresponding ship.
+     * In the input file it is assumed that
+     * - The coordinates are given in the WGS84 geographic coordinate system
+     * - The timestamps are given in GMT time zone
+     */
+    GSERIALIZED *gs = geogpoint_make2d(4326, rec.Longitude, rec.Latitude);
+    TInstant *inst = tpointinst_make(gs, rec.T);
+    free(gs);
     if (! trips[j].trip)
       trips[j].trip = tsequence_make_exp((const TInstant **) &inst, 1,
         NO_INSTANTS_BATCH, true, true, LINEAR, false);

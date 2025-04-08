@@ -42,11 +42,11 @@
 
 /*****************************************************************************/
 
-extern bool cbuffer_set_stbox(const Cbuffer *cbuf, STBox *box);
+extern bool cbuffer_set_stbox(const Cbuffer *cb, STBox *box);
 extern void cbufferarr_set_stbox(const Datum *values, int count, STBox *box);
-extern bool cbuffer_timestamptz_set_stbox(const Cbuffer *cbuf, TimestampTz t,
+extern bool cbuffer_timestamptz_set_stbox(const Cbuffer *cb, TimestampTz t,
   STBox *box);
-extern bool cbuffer_tstzspan_set_stbox(const Cbuffer *cbuf, const Span *s,
+extern bool cbuffer_tstzspan_set_stbox(const Cbuffer *cb, const Span *s,
   STBox *box);
 
 extern void tcbufferinst_set_stbox(const TInstant *inst, STBox *box);
@@ -60,7 +60,7 @@ extern int boxop_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *geo,
   bool (*func)(const STBox *, const STBox *), bool invert);
 extern int boxop_tcbuffer_stbox(const Temporal *temp, const STBox *box,
   bool (*func)(const STBox *, const STBox *), bool spatial, bool invert);
-extern bool boxop_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
+extern bool boxop_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool (*func)(const STBox *, const STBox *), bool invert);
 extern bool boxop_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const STBox *, const STBox *));

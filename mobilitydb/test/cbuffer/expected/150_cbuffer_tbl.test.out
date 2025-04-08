@@ -7,7 +7,7 @@ CREATE TABLE tbl_cbuffer_tmp AS TABLE tbl_cbuffer WITH NO DATA;
 CREATE TABLE AS
 COPY tbl_cbuffer_tmp FROM '/tmp/tbl_cbuffer' (FORMAT BINARY);
 COPY 100
-SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer_tmp t2 WHERE t1.k = t2.k AND t1.cbuf <> t2.cbuf;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer_tmp t2 WHERE t1.k = t2.k AND t1.cb <> t2.cb;
  count 
 -------
      0
@@ -15,63 +15,63 @@ SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer_tmp t2 WHERE t1.k = t2.k AND t1
 
 DROP TABLE tbl_cbuffer_tmp;
 DROP TABLE
-SELECT ST_AsEWKT(MAX(point(cbuf)), 6) FROM tbl_cbuffer;
+SELECT ST_AsEWKT(MAX(point(cb)), 6) FROM tbl_cbuffer;
                st_asewkt               
 ---------------------------------------
  SRID=5676;POINT(67.317663 -43.262378)
 (1 row)
 
-SELECT MAX(radius(cbuf)) FROM tbl_cbuffer;
+SELECT MAX(radius(cb)) FROM tbl_cbuffer;
         max        
 -------------------
  9.928276062012003
 (1 row)
 
-SELECT COUNT(*) FROM tbl_cbuffer WHERE cbuf::geometry IS NOT NULL;
+SELECT COUNT(*) FROM tbl_cbuffer WHERE cb::geometry IS NOT NULL;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_cbuffer WHERE cbuf ~= (cbuf::geometry)::cbuffer;
+SELECT COUNT(*) FROM tbl_cbuffer WHERE cb ~= (cb::geometry)::cbuffer;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cbuf = t2.cbuf;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cb = t2.cb;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cbuf != t2.cbuf;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cb != t2.cb;
  count 
 -------
   9900
 (1 row)
 
-SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cbuf < t2.cbuf;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cb < t2.cb;
  count 
 -------
-  7374
+  4950
 (1 row)
 
-SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cbuf <= t2.cbuf;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cb <= t2.cb;
  count 
 -------
-  7474
+  5050
 (1 row)
 
-SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cbuf > t2.cbuf;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cb > t2.cb;
  count 
 -------
-  2526
+  4950
 (1 row)
 
-SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cbuf >= t2.cbuf;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer t2 WHERE t1.cb >= t2.cb;
  count 
 -------
-  2626
+  5050
 (1 row)
 

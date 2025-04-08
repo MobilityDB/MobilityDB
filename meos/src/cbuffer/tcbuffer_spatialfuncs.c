@@ -325,6 +325,103 @@ trapezoid_make(const Cbuffer *c1, const Cbuffer *c2)
 /*****************************************************************************/
 
 /**
+ * @brief Comparator function for point arrays
+ * @note Function inspired from #ptarray_same2d
+ */
+int
+ptarray_cmp2d(const POINTARRAY *pa1, const POINTARRAY *pa2)
+{
+  assert(! FLAGS_GET_ZM(pa1->flags)); assert(! FLAGS_GET_ZM(pa2->flags));
+  if (pa1->npoints < pa2->npoints )
+    return -1;
+  if (pa1->npoints > pa2->npoints )
+    return 1;
+  for (uint32_t i = 0; i < pa1->npoints; i++)
+  {
+    const POINT2D *pt1 = (POINT2D *) getPoint_internal(pa1, i);
+    const POINT2D *pt2 = (POINT2D *) getPoint_internal(pa2, i);
+    if (pt1->x < pt2->x)
+      return -1;
+    if (pt1->x > pt2->x)
+      return 1;
+    if (pt1->y < pt2->y)
+      return -1;
+    if (pt1->y > pt2->y)
+      return 1;
+  }
+  return 0;
+}
+
+/**
+ * @brief Comparator function for trapezoids
+ * @note Function inspired from #gserialized_cmp
+ */
+static int
+trapezoid_sort_cmp(const LWGEOM **l, const LWGEOM **r)
+{
+  assert((*l)->srid == (*l)->srid);
+  /* Compare the point arrays of the trapezoids */
+  LWCURVEPOLY *cp1 = lwgeom_as_lwcurvepoly(*l);
+  LWCURVEPOLY *cp2 = lwgeom_as_lwcurvepoly(*r);
+  assert(cp1->nrings == cp1->nrings); assert(cp1->nrings == 1);
+  LWCOMPOUND *comp1 = lwgeom_as_lwcompound(cp1->rings[0]);
+  LWCOMPOUND *comp2 = lwgeom_as_lwcompound(cp2->rings[0]);
+  assert(comp1->ngeoms == comp2->ngeoms);
+  for (int i = 0; i < comp1->ngeoms; i++)
+  {
+    int type1 = comp1->geoms[i]->type;
+    int type2 = comp2->geoms[i]->type;
+    assert(type1 == CIRCSTRINGTYPE || type1 == LINETYPE);
+    assert(type2 == CIRCSTRINGTYPE || type2 == LINETYPE);
+    int cmp;
+    if (type1 == CIRCSTRINGTYPE)
+    {
+      const LWCIRCSTRING *cs1 = lwgeom_as_lwcircstring(comp1->geoms[i]);
+      const LWCIRCSTRING *cs2 = lwgeom_as_lwcircstring(comp2->geoms[i]);
+      cmp = ptarray_cmp2d(cs1->points, cs2->points);
+    }
+    else /* type1 == LINETYPE */
+    {
+      const LWLINE *l1 = lwgeom_as_lwline(comp1->geoms[i]);
+      const LWLINE *l2 = lwgeom_as_lwline(comp2->geoms[i]);
+      cmp = ptarray_cmp2d(l1->points, l2->points);
+    }
+    if (cmp)
+      return cmp;
+  }
+  return 0;
+}
+
+/**
+ * @brief Sort function for trapezoids
+ */
+static void
+trapezoidarr_sort(LWGEOM **geoms, int count)
+{
+  qsort(geoms, (size_t) count, sizeof(LWGEOM *),
+    (qsort_comparator) &trapezoid_sort_cmp);
+  return;
+}
+
+/**
+ * @brief Remove duplicates from an array of trapezoids
+ * @pre The array has been sorted before
+ * @note Since there is no function lwgeom_eq we use function lwgeom_same
+ */
+static int
+trapezoidarr_remove_duplicates(LWGEOM **geoms, int count)
+{
+  assert(count > 0);
+  int newcount = 0;
+  for (int i = 1; i < count; i++)
+    if (! lwgeom_same(geoms[newcount], geoms[i]))
+      geoms[++ newcount] = geoms[i];
+  return newcount + 1;
+}
+
+/*****************************************************************************/
+
+/**
  * @brief Return the traversed area of a temporal circular buffer with step or
  * discrete interpolation
  * @param[in] instants Array of instants of a temporal circular buffer
@@ -363,7 +460,7 @@ cbufferarr_circles(const TInstant **instants, int count, int32_t srid)
 /**
  * @ingroup meos_cbuffer_spatial_accessor
  * @brief Return the traversed area of a temporal circular buffer instant
- * @param[in] int Temporal circular buffer
+ * @param[in] inst Temporal circular buffer
  * @param[in] srid SRID
  * @csqlfn #Tcbuffer_traversed_area()
  */
@@ -401,17 +498,30 @@ tcbufferseq_discstep_trav_area(const TSequence *seq, int32_t srid)
  * linear interpolation (iterator function)
  * @param[in] seq Temporal circular buffer
  * @param[in] srid SRID
+ * @param[out] result Array of output geometries
  * @csqlfn #Tcbuffer_traversed_area()
  */
 int
 tcbufferseq_linear_trav_area_iter(const TSequence *seq, int32_t srid,
   LWGEOM **result)
 {
-  assert(seq); assert(seq->count > 1);
+  assert(seq); assert(result);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR);
 
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   const Cbuffer *cb1 = DatumGetCbufferP(tinstant_value_p(inst1));
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    const GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cb1->point));
+    const POINT2D *p = (POINT2D *) GS_POINT_PTR(gs);
+    int32_t srid = gserialized_get_srid(gs);
+    result[0] = lwcircle_make(p->x, p->y, cb1->radius, srid);
+    return 1;
+  }
+
+  /* General case */
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
@@ -420,7 +530,7 @@ tcbufferseq_linear_trav_area_iter(const TSequence *seq, int32_t srid,
     const POINT2D *p1 = GSERIALIZED_POINT2D_P(gs1);
     const GSERIALIZED *gs2 = cbuffer_point_p(cb2);
     const POINT2D *p2 = GSERIALIZED_POINT2D_P(gs2);
-    
+
     /* Compute the distance between the two centroids */
     double d = sqrt(pow(p2->x - p1->x, 2) + pow(p2->y - p1->y, 2));
     /* If the distance is less than the difference of the two radii, 
@@ -443,14 +553,24 @@ tcbufferseq_linear_trav_area_iter(const TSequence *seq, int32_t srid,
       }
     }
     else
-      result[i - 1] = trapezoid_make(cb1, cb2);
+    {
+      const Cbuffer *cb_min = cb1;
+      const Cbuffer *cb_max = cb2;
+      if (cbuffer_cmp(cb1,cb2) > 0)
+      {
+        cb_min = cb2;
+        cb_max = cb1;
+      }
+      result[i - 1] = trapezoid_make(cb_min, cb_max);
+    }
 
     /* Prepare for next iteration */
     inst2 = inst1;
     cb1 = cb2;
   }
-  
-  return (seq->count > 2) ? seq->count - 1 : 1;
+  int count = (seq->count > 2) ? seq->count - 1 : 1;
+  trapezoidarr_sort(result, count);
+  return trapezoidarr_remove_duplicates(result, count);
 }
 
 /**
@@ -537,14 +657,12 @@ tcbufferseqset_linear_trav_area(const TSequenceSet *ss, int32_t srid)
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ss->totalcount);
   int ngeoms = 0;
   for (int i = 0; i < ss->count; i++)
-  {
     /* Get the traversed area of the sequence */
-    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-    ngeoms += tcbufferseq_linear_trav_area_iter(seq, srid, &geoms[ngeoms]);
-  }
+    ngeoms += tcbufferseq_linear_trav_area_iter(TSEQUENCESET_SEQ_N(ss, i),
+      srid, &geoms[ngeoms]);
   // TODO add the bounding box instead of ask PostGIS to compute it again
-  LWGEOM *res = (LWGEOM *) lwcollection_construct(COLLECTIONTYPE, srid,
-    NULL, (uint32_t) ngeoms, geoms);
+  LWGEOM *res = (LWGEOM *) lwcollection_construct(COLLECTIONTYPE, srid, NULL,
+    (uint32_t) ngeoms, geoms);
   /* We cannot pfree(geoms); */
   return geo_serialize(res);
 }
@@ -575,7 +693,6 @@ tcbufferseqset_trav_area(const TSequenceSet *ss, int32_t srid)
  * @ingroup meos_cbuffer_spatial_accessor
  * @brief Return the traversed area of a temporal circular buffer
  * @param[in] temp Temporal circular buffer
- * @param[in] srid SRID
  * @csqlfn #Tcbuffer_traversed_area()
  */
 GSERIALIZED *

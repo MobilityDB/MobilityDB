@@ -35,12 +35,8 @@
 -- eContains, aContains
 -------------------------------------------------------------------------------
 
--- In some GEOS versions, GEOSRelatePattern does not accept GEOMETRYCOLLECTION
-SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
-WHERE geometrytype(trajectory(temp)) <> 'GEOMETRYCOLLECTION' AND eContains(g, temp);
-
-SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
-WHERE geometrytype(trajectory(temp)) <> 'GEOMETRYCOLLECTION' AND aContains(g, temp);
+SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE eContains(g, temp);
+SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE aContains(g, temp);
 
 -------------------------------------------------------------------------------
 -- eDisjoint, aDisjoint

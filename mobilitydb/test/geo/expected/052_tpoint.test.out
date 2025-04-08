@@ -310,7 +310,7 @@ ERROR:  The SRID of the geometry (3812) does not match the SRID of the tgeompoin
 LINE 1: SELECT tgeompoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:0...
                           ^
 SELECT tgeogpoint 'SRID=5676;Point(1 1)@2001-01-01';
-ERROR:  Only lon/lat coordinate systems are supported in geography.
+ERROR:  Only lon/lat coordinate systems are supported in geography
 LINE 1: SELECT tgeogpoint 'SRID=5676;Point(1 1)@2001-01-01';
                           ^
 SELECT tgeogpoint '[SRID=7844;Point(0 1)@2000-01-01, SRID=4269;Point(0 1)@2000-01-02]';

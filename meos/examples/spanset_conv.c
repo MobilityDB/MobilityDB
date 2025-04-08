@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that creates integer and float spanset values and
  * converts them between float and integer spansets
  *

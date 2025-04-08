@@ -593,10 +593,10 @@ PG_FUNCTION_INFO_V1(Pose_transform);
 Datum
 Pose_transform(PG_FUNCTION_ARGS)
 {
-  Pose *cbuf = PG_GETARG_POSE_P(0);
+  Pose *cb = PG_GETARG_POSE_P(0);
   int32_t srid = PG_GETARG_INT32(1);
-  Pose *result = pose_transform(cbuf, srid);
-  PG_FREE_IF_COPY(cbuf, 0);
+  Pose *result = pose_transform(cb, srid);
+  PG_FREE_IF_COPY(cb, 0);
   PG_RETURN_POSE_P(result);
 }
 
@@ -610,15 +610,15 @@ PG_FUNCTION_INFO_V1(Pose_transform_pipeline);
 Datum
 Pose_transform_pipeline(PG_FUNCTION_ARGS)
 {
-  Pose *cbuf = PG_GETARG_POSE_P(0);
+  Pose *cb = PG_GETARG_POSE_P(0);
   text *pipelinetxt = PG_GETARG_TEXT_P(1);
   int32_t srid = PG_GETARG_INT32(2);
   bool is_forward = PG_GETARG_BOOL(3);
   char *pipelinestr = text2cstring(pipelinetxt);
-  Pose *result = pose_transform_pipeline(cbuf, pipelinestr, srid,
+  Pose *result = pose_transform_pipeline(cb, pipelinestr, srid,
     is_forward);
   pfree(pipelinestr);
-  PG_FREE_IF_COPY(cbuf, 0);
+  PG_FREE_IF_COPY(cb, 0);
   PG_FREE_IF_COPY(pipelinetxt, 1);
   PG_RETURN_POSE_P(result);
 }

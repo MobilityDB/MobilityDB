@@ -46,7 +46,7 @@ BEGIN
 
 DROP TABLE IF EXISTS tbl_cbuffer;
 CREATE TABLE tbl_cbuffer AS
-SELECT k, random_cbuffer(-100, 100, -100, 100, 0, 10, 5676) AS cbuf
+SELECT k, random_cbuffer(-100, 100, -100, 100, 0, 10, 5676) AS cb
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_cbufferset;

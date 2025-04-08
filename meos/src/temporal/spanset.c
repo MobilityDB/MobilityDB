@@ -512,12 +512,13 @@ tstzspanset_datespanset(const SpanSet *ss)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return the size in bytes of a span set
  * @param[in] ss Span set
+ * @return On error return -1
  * @csqlfn #Spanset_mem_size()
  */
 int
 spanset_mem_size(const SpanSet *ss)
 {
-  VALIDATE_NOT_NULL(ss, INT_MAX);
+  VALIDATE_NOT_NULL(ss, -1);
   return (int) VARSIZE(DatumGetPointer(ss));
 }
 

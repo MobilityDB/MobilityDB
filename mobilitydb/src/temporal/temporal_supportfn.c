@@ -139,12 +139,12 @@ static const IndexableFunction TSpatialIndexableFunctions[] = {
   {"eintersects", EINTERSECTS_IDX, 2, 0},
   {"etouches", ETOUCHES_IDX, 2, 0},
   {"edwithin", EDWITHIN_IDX, 3, 3},
-  /* Ever spatial relationships */
-  {"acontains", ECONTAINS_IDX, 2, 0},
-  {"adisjoint", EDISJOINT_IDX, 2, 0},
-  {"aintersects", EINTERSECTS_IDX, 2, 0},
-  {"atouches", ETOUCHES_IDX, 2, 0},
-  {"adwithin", EDWITHIN_IDX, 3, 3},
+  /* Always spatial relationships */
+  {"acontains", ACONTAINS_IDX, 2, 0},
+  {"adisjoint", ADISJOINT_IDX, 2, 0},
+  {"aintersects", AINTERSECTS_IDX, 2, 0},
+  {"atouches", ATOUCHES_IDX, 2, 0},
+  {"adwithin", ADWITHIN_IDX, 3, 3},
   {NULL, 0, 0, 0}
 };
 

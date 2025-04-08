@@ -52,6 +52,7 @@
 #include "temporal/tnumber_mathfuncs.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
+#include "geo/meos_transform.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial.h"
@@ -798,7 +799,6 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
   return true;
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_box_conversion
  * @brief Convert a geometry/geography into a spatiotemporal box
@@ -810,14 +810,13 @@ geo_stbox(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (ensure_not_empty(gs))
+  if (! ensure_not_empty(gs))
     return NULL;
 
   STBox *result = palloc(sizeof(STBox));
   geo_set_stbox(gs, result);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_box_conversion
@@ -1309,7 +1308,7 @@ stbox_area(const STBox *box, bool spheroid)
  * @ingroup meos_geo_box_accessor
  * @brief Return the volume of a 3D spatiotemporal box
  * @param[in] box Spatiotemporal box
- * @result On error return -1.0
+ * @return On error return -1.0
  * @csqlfn #Stbox_volume()
  */
 double
@@ -1330,7 +1329,7 @@ stbox_volume(const STBox *box)
  * @param[in] box Spatiotemporal box
  * @param[in] spheroid When true, the calculation uses the WGS 84 spheroid,
  * otherwise it uses a faster spherical calculation
- * @result On error return -1.0
+ * @return On error return -1.0
  * @csqlfn #Stbox_perimeter()
  */
 double
@@ -1615,46 +1614,45 @@ stbox_transf_pj(const STBox *box, int32_t srid_to, const LWPROJ *pj)
   assert(box); assert(pj);
   /* Create the points corresponding to the bounds */
   bool hasz = MEOS_FLAGS_GET_Z(box->flags);
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
-  GSERIALIZED *min = geopoint_make(box->xmin, box->ymin, box->zmin,
-    hasz, geodetic, box->srid);
-  GSERIALIZED *max = geopoint_make(box->xmax, box->ymax, box->zmax,
-    hasz, geodetic, box->srid);
+  LWPOINT *min = hasz ?
+    lwpoint_make3dz(box->srid, box->xmin, box->ymin, box->zmin) : 
+    lwpoint_make2d(box->srid, box->xmin, box->ymin);
+  LWPOINT *max = hasz ?
+    lwpoint_make3dz(box->srid, box->xmax, box->ymax, box->zmax) : 
+    lwpoint_make2d(box->srid, box->xmax, box->ymax);
 
-  /* Transform the points */
-  if (! point_transf_pj(min, srid_to, pj) ||
-      ! point_transf_pj(max, srid_to, pj))
+  if (! lwgeom_transform((LWGEOM *) min, (LWPROJ *) pj) || 
+      ! lwgeom_transform((LWGEOM *) max, (LWPROJ *) pj))
   {
-    pfree(min); pfree(max);
+    lwpoint_free(min); lwpoint_free(max);
     return NULL;
   }
 
   STBox *result = stbox_copy(box);
   /* Set the bounds of the box from the transformed points */
   result->srid = srid_to;
+  POINT4D p1, p2;
+  getPoint4d_p(min->point, 0, &p1);
+  getPoint4d_p(max->point, 0, &p2);
   if (hasz)
   {
-    const POINT3DZ *ptmin = GSERIALIZED_POINT3DZ_P(min);
-    const POINT3DZ *ptmax = GSERIALIZED_POINT3DZ_P(max);
-    result->xmin = ptmin->x;
-    result->ymin = ptmin->y;
-    result->zmin = ptmin->z;
-    result->xmax = ptmax->x;
-    result->ymax = ptmax->y;
-    result->zmax = ptmax->z;
+    result->xmin = p1.x;
+    result->ymin = p1.y;
+    result->zmin = p1.z;
+    result->xmax = p2.x;
+    result->ymax = p2.y;
+    result->zmax = p2.z;
   }
   else
   {
-    const POINT2D *ptmin = GSERIALIZED_POINT2D_P(min);
-    const POINT2D *ptmax = GSERIALIZED_POINT2D_P(max);
-    result->xmin = ptmin->x;
-    result->ymin = ptmin->y;
-    result->xmax = ptmax->x;
-    result->ymax = ptmax->y;
+    result->xmin = p1.x;
+    result->ymin = p1.y;
+    result->xmax = p2.x;
+    result->ymax = p2.y;
   }
 
   /* Clean up and return */
-  pfree(min); pfree(max);
+  lwpoint_free(min); lwpoint_free(max);
   return result;
 }
 
@@ -1677,17 +1675,12 @@ stbox_transform(const STBox *box, int32_t srid_to)
     return stbox_copy(box);
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get(box->srid, srid_to);
-  if (! pj)
+  LWPROJ *pj;
+  if (! lwproj_lookup(box->srid, srid_to, &pj))
     return NULL;
 
-  /* Transform the temporal point */
-  STBox *result = stbox_copy(box);
-  if (! stbox_transf_pj(stbox_copy(box), srid_to, pj))
-  {
-    pfree(result); return NULL;
-  }
-  return result;
+  /* Transform the spatiotemporal box */
+  return stbox_transf_pj(box, srid_to, pj);
 }
 
 /**
@@ -1711,7 +1704,7 @@ stbox_transform_pipeline(const STBox *box, const char *pipeline,
   /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get_pipeline(pipeline, is_forward);
+  LWPROJ *pj = lwproj_from_str_pipeline(pipeline, is_forward);
   if (! pj)
     return NULL;
 

@@ -875,16 +875,18 @@ geo_to_wkb_size(const GSERIALIZED *gs, uint8_t variant)
  * Binary (WKB) representation
  */
 static size_t
-cbuffer_to_wkb_size(const Cbuffer *cbuf, uint8_t variant, bool component)
+cbuffer_to_wkb_size(const Cbuffer *cb, uint8_t variant, bool component)
 {
   size_t size = 0;
   if (! component)
-    /* Endian flag */
-    size += MEOS_WKB_BYTE_SIZE;
-  /* One 2D coordinates + radius */
-  size +=  MEOS_WKB_DOUBLE_SIZE * 3;
-  if (spatial_wkb_needs_srid(cbuffer_srid(cbuf), variant))
-    size += MEOS_WKB_INT4_SIZE;
+  {
+    /* Endian flag + SRID flag + optional SRID */
+    size += MEOS_WKB_BYTE_SIZE * 2;
+    if (spatial_wkb_needs_srid(cbuffer_srid(cb), variant))
+      size += MEOS_WKB_INT4_SIZE;
+  }
+  /* x and y coordinates + radius */
+  size += MEOS_WKB_DOUBLE_SIZE * 3;
   return size;
 }
 #endif /* CBUFFER */
@@ -1483,22 +1485,27 @@ geo_to_wkb_buf(const GSERIALIZED *gs, uint8_t *buf, uint8_t variant)
  * @details SRID (int32), coordinates of a 2D point and radius (3 doubles)
  */
 static uint8_t *
-cbuffer_to_wkb_buf(const Cbuffer *cbuf, uint8_t *buf, uint8_t variant,
+cbuffer_to_wkb_buf(const Cbuffer *cb, uint8_t *buf, uint8_t variant,
   bool component)
 {
+  Datum d = PointerGetDatum(&cb->point);
   if (! component)
+  {
     /* Write the endian flag (byte) */
     buf = endian_to_wkb_buf(buf, variant);
-  Datum d = PointerGetDatum(&cbuf->point);
-  /* Write the SRID */
-  int32_t srid = gserialized_get_srid(DatumGetGserializedP(d));
-  if (spatial_wkb_needs_srid(srid, variant))
-    buf = int32_to_wkb_buf(srid, buf, variant);
+    /* Write the SRID flag */
+    uint8_t wkb_flags = (uint8_t) MEOS_WKB_SRIDFLAG;
+    buf = bytes_to_wkb_buf(&wkb_flags, MEOS_WKB_BYTE_SIZE, buf, variant);
+    /* Write the SRID */
+    int32_t srid = gserialized_get_srid(DatumGetGserializedP(d));
+    if (spatial_wkb_needs_srid(srid, variant))
+      buf = int32_to_wkb_buf(srid, buf, variant);
+  }
   /* Write the circular buffer */
   const POINT2D *point = DATUM_POINT2D_P(d);
   buf = double_to_wkb_buf(point->x, buf, variant);
   buf = double_to_wkb_buf(point->y, buf, variant);
-  buf = double_to_wkb_buf(cbuf->radius, buf, variant);
+  buf = double_to_wkb_buf(cb->radius, buf, variant);
   return buf;
 }
 #endif /* CBUFFER */
@@ -2020,7 +2027,7 @@ temporal_flags_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
       wkb_flags |= MEOS_WKB_SRIDFLAG;
   }
   /* Write the flags */
-  return uint8_to_wkb_buf(wkb_flags, buf, variant);
+  return bytes_to_wkb_buf(&wkb_flags, MEOS_WKB_BYTE_SIZE, buf, variant);
 }
 
 /**
@@ -2061,9 +2068,12 @@ tinstant_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   /* Write the temporal flags */
   buf = temporal_flags_to_wkb_buf((Temporal *) inst, buf, variant);
   /* Write the optional SRID for extended variant */
-  if (tspatial_type(inst->temptype) &&
-      spatial_wkb_needs_srid(tspatial_srid((Temporal *) inst), variant))
-    buf = int32_to_wkb_buf(tspatialinst_srid(inst), buf, variant);
+  if (tspatial_type(inst->temptype))
+  {
+    int32_t srid = tspatial_srid((Temporal *) inst);
+    if (spatial_wkb_needs_srid(srid, variant))
+      buf = int32_to_wkb_buf(srid, buf, variant);
+  }
 #if RGEO
   if (inst->temptype == T_TRGEOMETRY)
     buf = geo_to_wkb_buf(trgeoinst_geom_p(inst), buf, variant);

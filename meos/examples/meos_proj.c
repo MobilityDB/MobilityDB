@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that shows the connection of MEOS and PROJ
  *
  * The program can be build as follows
@@ -39,6 +40,7 @@
 #include <proj.h>
 #include <stdio.h>
 #include <meos.h>
+#include <meos_geo.h>
 
 int main(void)
 {

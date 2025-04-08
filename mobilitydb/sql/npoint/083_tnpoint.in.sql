@@ -435,80 +435,28 @@ CREATE FUNCTION unnest(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_unnest'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************
- * Ever/Always Comparison Functions
- *****************************************************************************/
-
-CREATE FUNCTION ever_eq(tnpoint, npoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_eq_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ?= (
-  LEFTARG = tnpoint, RIGHTARG = npoint,
-  PROCEDURE = ever_eq,
-  NEGATOR = %<>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
-CREATE FUNCTION always_eq(tnpoint, npoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR %= (
-  LEFTARG = tnpoint, RIGHTARG = npoint,
-  PROCEDURE = always_eq,
-  NEGATOR = ?<>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
-CREATE FUNCTION ever_ne(tnpoint, npoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_ne_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ?<> (
-  LEFTARG = tnpoint, RIGHTARG = npoint,
-  PROCEDURE = ever_ne,
-  NEGATOR = %=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
-CREATE FUNCTION always_ne(tnpoint, npoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR %<> (
-  LEFTARG = tnpoint, RIGHTARG = npoint,
-  PROCEDURE = always_ne,
-  NEGATOR = ?=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
 /******************************************************************************
  * Restriction functions
  ******************************************************************************/
 
 CREATE FUNCTION atValues(tnpoint, npoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_at_value'
+  AS 'MODULE_PATHNAME', 'Tnpoint_at_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusValues(tnpoint, npoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_minus_value'
+  AS 'MODULE_PATHNAME', 'Tnpoint_minus_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atValues(tnpoint, npointset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_at_values'
+  AS 'MODULE_PATHNAME', 'Tnpoint_at_npointset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusValues(tnpoint, npointset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_minus_values'
+  AS 'MODULE_PATHNAME', 'Tnpoint_minus_npointset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(tnpoint, timestamptz)
