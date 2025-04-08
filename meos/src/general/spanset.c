@@ -151,7 +151,7 @@ spanset_find_value(const SpanSet *ss, Datum v, int *loc)
 }
 
 #if MEOS
-bool
+inline bool
 tstzspanset_find_timestamptz(const SpanSet *ss, TimestampTz t, int *loc)
 {
   return spanset_find_value(ss, TimestampTzGetDatum(t), loc);
@@ -201,7 +201,7 @@ char *
 spanset_out(const SpanSet *ss, int maxdd)
 {
   assert(ss);
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_negative(maxdd))
     return NULL;
 
@@ -305,7 +305,7 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
 SpanSet *
 spanset_make(Span *spans, int count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) spans) || ! ensure_positive(count))
     return NULL;
   return spanset_make_exp(spans, count, count, true, true);
@@ -341,7 +341,7 @@ spanset_make_free(Span *spans, int count, bool normalize, bool order)
 SpanSet *
 spanset_copy(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss))
     return NULL;
@@ -383,7 +383,7 @@ value_spanset(Datum value, meosType basetype)
 SpanSet *
 set_spanset(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_spantype(s->settype))
     return NULL;
@@ -410,7 +410,7 @@ set_spanset(const Set *s)
 SpanSet *
 span_spanset(const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s))
     return NULL;
@@ -432,7 +432,7 @@ span_spanset(const Span *s)
 SpanSet *
 intspanset_floatspanset(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
@@ -455,7 +455,7 @@ intspanset_floatspanset(const SpanSet *ss)
 SpanSet *
 floatspanset_intspanset(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
@@ -478,7 +478,7 @@ floatspanset_intspanset(const SpanSet *ss)
 SpanSet *
 datespanset_tstzspanset(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
@@ -501,7 +501,7 @@ datespanset_tstzspanset(const SpanSet *ss)
 SpanSet *
 tstzspanset_datespanset(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
@@ -542,7 +542,7 @@ spanset_mem_size(const SpanSet *ss)
 Span *
 spanset_span(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return NULL;
   return span_copy(&ss->span);
@@ -558,7 +558,7 @@ spanset_span(const SpanSet *ss)
 Datum
 spanset_lower(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return (Datum) 0;
   return ss->elems[0].lower;
@@ -573,7 +573,7 @@ spanset_lower(const SpanSet *ss)
 Datum
 spanset_upper(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return (Datum) 0;
   return ss->elems[ss->count - 1].upper;
@@ -588,7 +588,7 @@ spanset_upper(const SpanSet *ss)
 bool
 spanset_lower_inc(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss))
     return false;
@@ -607,7 +607,7 @@ spanset_lower_inc(const SpanSet *ss)
 bool
 spanset_upper_inc(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss))
     return false;
@@ -653,7 +653,7 @@ numspanset_width(const SpanSet *ss, bool boundspan)
 Interval *
 datespanset_duration(const SpanSet *ss, bool boundspan)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
@@ -686,7 +686,7 @@ datespanset_duration(const SpanSet *ss, bool boundspan)
 Interval *
 tstzspanset_duration(const SpanSet *ss, bool boundspan)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
@@ -721,7 +721,7 @@ tstzspanset_duration(const SpanSet *ss, bool boundspan)
 int
 datespanset_num_dates(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
@@ -743,7 +743,7 @@ datespanset_num_dates(const SpanSet *ss)
 DateADT
 datespanset_start_date(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
@@ -765,7 +765,7 @@ datespanset_start_date(const SpanSet *ss)
 DateADT
 datespanset_end_date(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
@@ -789,7 +789,7 @@ datespanset_end_date(const SpanSet *ss)
 bool
 datespanset_date_n(const SpanSet *ss, int n, DateADT *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
@@ -819,7 +819,7 @@ datespanset_date_n(const SpanSet *ss, int n, DateADT *result)
 Set *
 datespanset_dates(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
@@ -849,7 +849,7 @@ datespanset_dates(const SpanSet *ss)
 int
 tstzspanset_num_timestamps(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
@@ -896,7 +896,7 @@ tstzspanset_num_timestamps(const SpanSet *ss)
 TimestampTz
 tstzspanset_start_timestamptz(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
@@ -918,7 +918,7 @@ tstzspanset_start_timestamptz(const SpanSet *ss)
 TimestampTz
 tstzspanset_end_timestamptz(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
@@ -942,7 +942,7 @@ tstzspanset_end_timestamptz(const SpanSet *ss)
 bool
 tstzspanset_timestamptz_n(const SpanSet *ss, int n, TimestampTz *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) result) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
@@ -1002,7 +1002,7 @@ tstzspanset_timestamptz_n(const SpanSet *ss, int n, TimestampTz *result)
 Set *
 tstzspanset_timestamps(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
@@ -1039,7 +1039,7 @@ tstzspanset_timestamps(const SpanSet *ss)
 int
 spanset_num_spans(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss))
     return -1;
@@ -1059,7 +1059,7 @@ spanset_num_spans(const SpanSet *ss)
 Span *
 spanset_start_span(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss))
     return NULL;
@@ -1079,7 +1079,7 @@ spanset_start_span(const SpanSet *ss)
 Span *
 spanset_end_span(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss))
     return NULL;
@@ -1099,7 +1099,7 @@ spanset_end_span(const SpanSet *ss)
 Span *
 spanset_span_n(const SpanSet *ss, int n)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss))
     return NULL;
@@ -1122,7 +1122,7 @@ spanset_span_n(const SpanSet *ss, int n)
 const Span **
 spanset_sps(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return NULL;
 
@@ -1141,7 +1141,7 @@ spanset_sps(const SpanSet *ss)
 Span **
 spanset_spanarr(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss))
     return NULL;
 
@@ -1168,7 +1168,7 @@ SpanSet *
 floatspanset_round(const SpanSet *ss, int maxdd)
 {
 #if MEOS
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_negative(maxdd) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return NULL;
@@ -1211,7 +1211,7 @@ spanset_compact(const SpanSet *ss)
 SpanSet *
 floatspanset_floor(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
@@ -1236,7 +1236,7 @@ floatspanset_floor(const SpanSet *ss)
 SpanSet *
 floatspanset_ceil(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
@@ -1262,7 +1262,7 @@ floatspanset_ceil(const SpanSet *ss)
 SpanSet *
 floatspanset_degrees(const SpanSet *ss, bool normalize)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) || 
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
@@ -1290,7 +1290,7 @@ floatspanset_degrees(const SpanSet *ss, bool normalize)
 SpanSet *
 floatspanset_radians(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) || 
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
@@ -1326,7 +1326,7 @@ numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
   bool hasshift, bool haswidth)
 {
   assert(ss); assert(numspan_type(ss->spantype));
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_one_true(hasshift, haswidth) ||
       (haswidth && ! ensure_positive_datum(haswidth, ss->basetype)))
     return NULL;
@@ -1367,7 +1367,7 @@ SpanSet *
 tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
   const Interval *duration)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
@@ -1407,7 +1407,7 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
 Span *
 spanset_spans(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss))
     return NULL;
@@ -1475,7 +1475,7 @@ spanarr_sort_size(Span *spans, int count)
 Span *
 spanset_split_n_spans(const SpanSet *ss, int span_count, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count))
     return NULL;
@@ -1531,7 +1531,7 @@ spanset_split_n_spans(const SpanSet *ss, int span_count, int *count)
 Span *
 spanset_split_each_n_spans(const SpanSet *ss, int32 elems_per_span, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count))
     return NULL;
@@ -1573,7 +1573,7 @@ spanset_split_each_n_spans(const SpanSet *ss, int32 elems_per_span, int *count)
 bool
 spanset_eq(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_same_spanset_type(ss1, ss2))
@@ -1616,7 +1616,7 @@ spanset_ne(const SpanSet *ss1, const SpanSet *ss2)
 int
 spanset_cmp(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_same_spanset_type(ss1, ss2))
@@ -1714,7 +1714,7 @@ spanset_gt(const SpanSet *ss1, const SpanSet *ss2)
 uint32
 spanset_hash(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss))
     return INT_MAX;
@@ -1742,7 +1742,7 @@ spanset_hash(const SpanSet *ss)
 uint64
 spanset_hash_extended(const SpanSet *ss, uint64 seed)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) ss))
     return INT_MAX;

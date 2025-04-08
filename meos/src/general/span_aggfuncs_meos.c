@@ -55,7 +55,7 @@
 Span *
 int_extent_transfn(Span *state, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (state && ! ensure_span_isof_type(state, T_INTSPAN))
     return NULL;
   return spanbase_extent_transfn(state, Int32GetDatum(i), T_INT4);
@@ -70,7 +70,7 @@ int_extent_transfn(Span *state, int i)
 Span *
 bigint_extent_transfn(Span *state, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (state && ! ensure_span_isof_type(state, T_BIGINTSPAN))
     return NULL;
   return spanbase_extent_transfn(state, Int64GetDatum(i), T_INT8);
@@ -85,7 +85,7 @@ bigint_extent_transfn(Span *state, int64 i)
 Span *
 float_extent_transfn(Span *state, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (state && ! ensure_span_isof_type(state, T_FLOATSPAN))
     return NULL;
   return spanbase_extent_transfn(state, Float8GetDatum(d), T_FLOAT8);
@@ -100,7 +100,7 @@ float_extent_transfn(Span *state, double d)
 Span *
 date_extent_transfn(Span *state, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (state && ! ensure_span_isof_type(state, T_DATESPAN))
     return NULL;
   return spanbase_extent_transfn(state, DateADTGetDatum(d), T_DATE);
@@ -115,7 +115,7 @@ date_extent_transfn(Span *state, DateADT d)
 Span *
 timestamptz_extent_transfn(Span *state, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (state && ! ensure_span_isof_type(state, T_TSTZSPAN))
     return NULL;
   return spanbase_extent_transfn(state, TimestampTzGetDatum(t),
@@ -235,7 +235,7 @@ span_union_transfn(SpanSet *state, const Span *s)
     /* Arbitrary initialization to 64 elements */
     return spanset_make_exp((Span *) s, 1, 64, NORMALIZE_NO, ORDER);
 
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_same_span_type(&state->elems[0], s))
     return NULL;
   return spanset_append_span(state, s, true);
@@ -269,7 +269,7 @@ spanset_union_transfn(SpanSet *state, const SpanSet *ss)
       NORMALIZE_NO, ORDER);
   }
 
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_same_span_type(&state->elems[0], &ss->elems[0]))
     return NULL;
   return spanset_append_spanset(state, ss, true);

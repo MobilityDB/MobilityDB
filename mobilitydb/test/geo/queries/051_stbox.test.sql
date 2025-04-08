@@ -223,10 +223,10 @@ SELECT tmax(stbox 'STBOX T([2000-01-01, 2000-01-02])');
 SELECT area(stbox 'STBOX T([2000-01-01, 2000-01-02])');
 SELECT perimeter(stbox 'STBOX T([2000-01-01, 2000-01-02])');
 
-SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])')::numeric, 1);
-SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])', false)::numeric, 1);
-SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])')::numeric, 1);
-SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])', false)::numeric, 1);
+SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'), 1);
+SELECT round(area(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])', false), 1);
+SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])'), 1);
+SELECT round(perimeter(stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(4.0,5.0,6.0)),[2000-01-01,2000-01-02])', false), 1);
 /* Errors */
 SELECT area(stbox 'STBOX T([2000-01-01, 2000-01-02])');
 SELECT volume(stbox 'STBOX T([2000-01-01, 2000-01-02])');

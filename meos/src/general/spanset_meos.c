@@ -67,7 +67,7 @@
 SpanSet *
 intspanset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return spanset_parse(&str, T_INTSPANSET);
@@ -83,7 +83,7 @@ intspanset_in(const char *str)
 SpanSet *
 bigintspanset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return spanset_parse(&str, T_BIGINTSPANSET);
@@ -98,7 +98,7 @@ bigintspanset_in(const char *str)
 SpanSet *
 floatspanset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return spanset_parse(&str, T_FLOATSPANSET);
@@ -113,7 +113,7 @@ floatspanset_in(const char *str)
 SpanSet *
 datespanset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return spanset_parse(&str, T_DATESPANSET);
@@ -129,7 +129,7 @@ datespanset_in(const char *str)
 SpanSet *
 tstzspanset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return spanset_parse(&str, T_TSTZSPANSET);
@@ -146,7 +146,7 @@ tstzspanset_in(const char *str)
 char *
 intspanset_out(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return NULL;
@@ -162,7 +162,7 @@ intspanset_out(const SpanSet *ss)
 char *
 bigintspanset_out(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return NULL;
@@ -179,7 +179,7 @@ bigintspanset_out(const SpanSet *ss)
 char *
 floatspanset_out(const SpanSet *ss, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_negative(maxdd) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return NULL;
@@ -195,7 +195,7 @@ floatspanset_out(const SpanSet *ss, int maxdd)
 char *
 datespanset_out(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return NULL;
@@ -211,7 +211,7 @@ datespanset_out(const SpanSet *ss)
 char *
 tstzspanset_out(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
@@ -304,7 +304,7 @@ SpanSet *
 intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
   bool haswidth)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return NULL;
@@ -326,7 +326,7 @@ SpanSet *
 bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 width,
   bool hasshift, bool haswidth)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return NULL;
@@ -348,7 +348,7 @@ SpanSet *
 floatspanset_shift_scale(const SpanSet *ss, double shift, double width,
   bool hasshift, bool haswidth)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return NULL;
@@ -370,7 +370,7 @@ SpanSet *
 datespanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
   bool haswidth)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return NULL;
@@ -392,7 +392,7 @@ datespanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
 int
 intspanset_lower(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return INT_MAX;
@@ -409,7 +409,7 @@ intspanset_lower(const SpanSet *ss)
 int64
 bigintspanset_lower(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return LONG_MAX;
@@ -426,7 +426,7 @@ bigintspanset_lower(const SpanSet *ss)
 double
 floatspanset_lower(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return DBL_MAX;
@@ -443,7 +443,7 @@ floatspanset_lower(const SpanSet *ss)
 TimestampTz
 tstzspanset_lower(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_timespanset_type(ss->spansettype))
     return DT_NOEND;
@@ -462,7 +462,7 @@ tstzspanset_lower(const SpanSet *ss)
 int
 intspanset_upper(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return INT_MAX;
@@ -479,7 +479,7 @@ intspanset_upper(const SpanSet *ss)
 int64
 bigintspanset_upper(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return LONG_MAX;
@@ -496,7 +496,7 @@ bigintspanset_upper(const SpanSet *ss)
 double
 floatspanset_upper(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return DBL_MAX;
@@ -513,7 +513,7 @@ floatspanset_upper(const SpanSet *ss)
 TimestampTz
 tstzspanset_upper(const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_timespanset_type(ss->spansettype))
     return DT_NOEND;
@@ -533,7 +533,7 @@ tstzspanset_upper(const SpanSet *ss)
 int
 intspanset_width(const SpanSet *ss, bool boundspan)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return -1;
@@ -551,7 +551,7 @@ intspanset_width(const SpanSet *ss, bool boundspan)
 int64
 bigintspanset_width(const SpanSet *ss, bool boundspan)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return -1;
@@ -569,7 +569,7 @@ bigintspanset_width(const SpanSet *ss, bool boundspan)
 double
 floatspanset_width(const SpanSet *ss, bool boundspan)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return -1.0;

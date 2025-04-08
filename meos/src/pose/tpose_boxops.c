@@ -100,7 +100,7 @@ posearr_set_stbox(const Datum *values, int count, STBox *box)
 STBox *
 pose_stbox(const Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose))
     return NULL;
@@ -215,7 +215,7 @@ pose_timestamptz_set_stbox(const Pose *pose, TimestampTz t, STBox *box)
 STBox *
 pose_timestamptz_to_stbox(const Pose *pose, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose))
     return NULL;
@@ -258,7 +258,7 @@ pose_tstzspan_set_stbox(const Pose *pose, const Span *s, STBox *box)
 STBox *
 pose_tstzspan_to_stbox(const Pose *pose, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose) || ! ensure_not_null((void *) s) || 
       ! ensure_span_isof_type(s, T_TSTZSPAN))

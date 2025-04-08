@@ -63,7 +63,6 @@
 #endif
 #include <catalog/namespace.h>
 #include <catalog/pg_extension.h>
-#include <catalog/pg_type.h>
 #include <commands/extension.h>
 #include <common/hashfn.h>
 #include <utils/fmgroids.h>

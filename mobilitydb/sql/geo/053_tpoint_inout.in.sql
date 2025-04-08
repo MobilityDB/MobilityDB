@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief Input/output of temporal points in WKT, EWKT, and MF-JSON format
+ * @brief Input/output of temporal points in WKT, EWKT, and MF-JSON
+ * representation
  */
 
 /*****************************************************************************

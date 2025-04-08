@@ -155,7 +155,7 @@ INSERT 0 1
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '&>', 'floatspan', 'floatspan', COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]';
 INSERT 0 1
-SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
+SELECT round((f <-> 101.0), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
  1.391026
@@ -163,7 +163,7 @@ SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 
  1.708919
 (3 rows)
 
-SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
+SELECT round((f <-> floatspan '[101,105]'), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
  1.391026
@@ -271,20 +271,20 @@ INSERT 0 1
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'tstzspan', 'tstzspan', COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)';
 INSERT 0 1
-SELECT round((t <-> timestamptz '2000-06-01')::numeric, 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 0.000000
- 0.000000
- 0.000000
+SELECT round((t <-> timestamptz '2000-06-01'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+ round 
+-------
+     0
+     0
+     0
 (3 rows)
 
-SELECT round((t <-> tstzspan '[2000-06-01,2000-07-01]')::numeric, 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 0.000000
- 0.000000
- 0.000000
+SELECT round((t <-> tstzspan '[2000-06-01,2000-07-01]'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+ round 
+-------
+     0
+     0
+     0
 (3 rows)
 
 CREATE INDEX tbl_intspan_big_rtree_idx ON tbl_intspan_big USING GIST(i);
@@ -423,7 +423,7 @@ UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]' )
 WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 UPDATE 1
-SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
+SELECT round((f <-> 101.0), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
  1.391026
@@ -431,7 +431,7 @@ SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 
  1.708919
 (3 rows)
 
-SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
+SELECT round((f <-> floatspan '[101,105]'), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
  1.391026
@@ -567,20 +567,20 @@ UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)' )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE 1
-SELECT round((t <-> timestamptz '2000-06-01')::numeric, 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 0.000000
- 0.000000
- 0.000000
+SELECT round((t <-> timestamptz '2000-06-01'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+ round 
+-------
+     0
+     0
+     0
 (3 rows)
 
-SELECT round((t <-> tstzspan '[2000-06-01,2000-07-01]')::numeric, 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 0.000000
- 0.000000
- 0.000000
+SELECT round((t <-> tstzspan '[2000-06-01,2000-07-01]'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+ round 
+-------
+     0
+     0
+     0
 (3 rows)
 
 DROP INDEX IF EXISTS tbl_intspan_big_rtree_idx;
@@ -727,7 +727,7 @@ UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]' )
 WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 UPDATE 1
-SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
+SELECT round((f <-> 101.0), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
  1.391026
@@ -735,7 +735,7 @@ SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 
  1.708919
 (3 rows)
 
-SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
+SELECT round((f <-> floatspan '[101,105]'), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
  1.391026
@@ -871,20 +871,20 @@ UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)' )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE 1
-SELECT round((t <-> timestamptz '2000-06-01')::numeric, 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 0.000000
- 0.000000
- 0.000000
+SELECT round((t <-> timestamptz '2000-06-01'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+ round 
+-------
+     0
+     0
+     0
 (3 rows)
 
-SELECT round((t <-> tstzspan '[2000-06-01,2000-07-01]')::numeric, 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 0.000000
- 0.000000
- 0.000000
+SELECT round((t <-> tstzspan '[2000-06-01,2000-07-01]'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+ round 
+-------
+     0
+     0
+     0
 (3 rows)
 
 DROP INDEX IF EXISTS tbl_intspan_big_quadtree_idx;
@@ -1033,7 +1033,7 @@ UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_floatspan_big WHERE f &> floatspan '[85, 95]' )
 WHERE op = '&>' AND leftarg = 'floatspan' AND rightarg = 'floatspan';
 UPDATE 1
-SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
+SELECT round((f <-> 101.0), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
  1.391026
@@ -1041,7 +1041,7 @@ SELECT round((f <-> 101.0)::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 
  1.708919
 (3 rows)
 
-SELECT round((f <-> floatspan '[101,105]')::numeric, 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
+SELECT round((f <-> floatspan '[101,105]'), 6) FROM tbl_floatspan_big ORDER BY 1 LIMIT 3;
   round   
 ----------
  1.391026
@@ -1177,20 +1177,20 @@ UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan_big WHERE t #&> tstzspan '[2001-11-01, 2001-12-01)' )
 WHERE op = '#&>' AND leftarg = 'tstzspan' AND rightarg = 'tstzspan';
 UPDATE 1
-SELECT round((t <-> timestamptz '2000-06-01')::numeric, 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 0.000000
- 0.000000
- 0.000000
+SELECT round((t <-> timestamptz '2000-06-01'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+ round 
+-------
+     0
+     0
+     0
 (3 rows)
 
-SELECT round((t <-> tstzspan '[2000-06-01,2000-07-01]')::numeric, 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
-  round   
-----------
- 0.000000
- 0.000000
- 0.000000
+SELECT round((t <-> tstzspan '[2000-06-01,2000-07-01]'), 6) FROM tbl_tstzspan_big ORDER BY 1 LIMIT 3;
+ round 
+-------
+     0
+     0
+     0
 (3 rows)
 
 DROP INDEX IF EXISTS tbl_intspan_big_kdtree_idx;

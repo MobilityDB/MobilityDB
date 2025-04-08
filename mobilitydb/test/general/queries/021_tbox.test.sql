@@ -125,7 +125,12 @@ SELECT tbox 'TBOXINT T([2000-01-01, 2000-01-02))'::floatspan;
 
 -------------------------------------------------------------------------------
 
-SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan))::numeric, 6) FROM tbl_tboxfloat;
+SELECT MIN(Xmin(temp::tbox)) FROM tbl_tint;
+SELECT round(MIN(Xmin(temp::tbox)),6) FROM tbl_tfloat;
+
+-------------------------------------------------------------------------------
+
+SELECT ROUND(MAX(upper(b::floatspan) - lower(b::floatspan)), 6) FROM tbl_tboxfloat;
 SELECT MAX(duration(b::tstzspan)) FROM tbl_tboxint;
 
 -------------------------------------------------------------------------------

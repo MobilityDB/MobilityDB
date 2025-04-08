@@ -190,7 +190,7 @@ tnumberinst_set_tbox(const TInstant *inst, TBox *box)
   assert(tnumber_type(inst->temptype));
   meosType basetype = temptype_basetype(inst->temptype);
   meosType spantype = basetype_spantype(basetype);
-  Datum value = tinstant_val(inst);
+  Datum value = tinstant_value_p(inst);
   Datum time = TimestampTzGetDatum(inst->t);
   TBox *tbox = (TBox *) box;
   memset(tbox, 0, sizeof(TBox));
@@ -337,12 +337,12 @@ tnumberinstarr_set_tbox(const TInstant **instants, int count, bool lower_inc,
     lower_inc1 = upper_inc1 = true;
   }
   /* Compute the value span */
-  Datum min = tinstant_val(instants[0]);
+  Datum min = tinstant_value_p(instants[0]);
   Datum max = min;
   bool min_inc = lower_inc1, max_inc = lower_inc1;
   for (int i = 1; i < count; i++)
   {
-    Datum value = tinstant_val(instants[i]);
+    Datum value = tinstant_value_p(instants[i]);
     int min_cmp = datum_cmp(value, min, basetype);
     int max_cmp = datum_cmp(value, max, basetype);
     if (min_cmp <= 0)
@@ -722,7 +722,7 @@ tsequenceset_spans(const TSequenceSet *ss, int *count)
 Span *
 temporal_spans(const Temporal *temp, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
     return NULL;
@@ -958,7 +958,7 @@ tsequenceset_split_n_spans(const TSequenceSet *ss, int span_count, int *count)
 Span *
 temporal_split_n_spans(const Temporal *temp, int span_count, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
     return NULL;
@@ -1133,7 +1133,7 @@ Span *
 temporal_split_each_n_spans(const Temporal *temp, int elems_per_span,
   int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count))
     return NULL;
@@ -1294,7 +1294,7 @@ tnumberseqset_tboxes(const TSequenceSet *ss, int *count)
 TBox *
 tnumber_tboxes(const Temporal *temp, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_tnumber_type(temp->temptype))
@@ -1543,7 +1543,7 @@ tnumberseqset_split_n_tboxes(const TSequenceSet *ss, int box_count, int *count)
 TBox *
 tnumber_split_n_tboxes(const Temporal *temp, int box_count, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_tnumber_type(temp->temptype))
@@ -1721,7 +1721,7 @@ tnumberseqset_split_each_n_tboxes(const TSequenceSet *ss, int elems_per_box,
 TBox *
 tnumber_split_each_n_tboxes(const Temporal *temp, int elems_per_box, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_tnumber_type(temp->temptype))

@@ -742,7 +742,7 @@ SELECT MAX(getValue(inst)) FROM tbl_tint_inst;
   97
 (1 row)
 
-SELECT round(MAX(getValue(inst))::numeric, 6) FROM tbl_tfloat_inst;
+SELECT round(MAX(getValue(inst)), 6) FROM tbl_tfloat_inst;
    round   
 -----------
  99.511055
@@ -804,7 +804,7 @@ SELECT MAX(startValue(temp)) FROM tbl_tint;
   99
 (1 row)
 
-SELECT round(MAX(startValue(temp))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(startValue(temp)), 6) FROM tbl_tfloat;
    round   
 -----------
  99.393268
@@ -830,7 +830,7 @@ SELECT MAX(endValue(temp)) FROM tbl_tint;
   96
 (1 row)
 
-SELECT round(MAX(endValue(temp))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(endValue(temp)), 6) FROM tbl_tfloat;
    round   
 -----------
  99.393268
@@ -848,7 +848,7 @@ SELECT MAX(minValue(temp)) FROM tbl_tint;
   96
 (1 row)
 
-SELECT round(MAX(minValue(temp))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(minValue(temp)), 6) FROM tbl_tfloat;
    round   
 -----------
  99.393268
@@ -866,7 +866,7 @@ SELECT MAX(valueN(temp, numInstants(temp))) FROM tbl_tint;
   96
 (1 row)
 
-SELECT round(MAX(valueN(temp, numInstants(temp)))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(valueN(temp, numInstants(temp))), 6) FROM tbl_tfloat;
    round   
 -----------
  99.393268
@@ -884,7 +884,7 @@ SELECT MAX(maxValue(temp)) FROM tbl_tint;
   99
 (1 row)
 
-SELECT round(MAX(maxValue(temp))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(maxValue(temp)), 6) FROM tbl_tfloat;
    round   
 -----------
  99.917602
@@ -2357,25 +2357,25 @@ SELECT SUM(numInstants(update(t1.temp, t2.temp, false))) FROM tbl_ttext t1, tbl_
  90923
 (1 row)
 
-SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tint;
-        round         
-----------------------
- 8155740000000.000000
+SELECT round(sum(integral(temp)), 6) FROM tbl_tint;
+     round     
+---------------
+ 8155740000000
 (1 row)
 
-SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tfloat;
-         round         
------------------------
- 10401464944413.900000
+SELECT round(sum(integral(temp)), 6) FROM tbl_tfloat;
+       round        
+--------------------
+ 10401464944413.857
 (1 row)
 
-SELECT round(sum(twAvg(temp))::numeric, 6) FROM tbl_tint;
+SELECT round(sum(twAvg(temp)), 6) FROM tbl_tint;
     round    
 -------------
  4949.834809
 (1 row)
 
-SELECT round(sum(twAvg(temp))::numeric, 6) FROM tbl_tfloat;
+SELECT round(sum(twAvg(temp)), 6) FROM tbl_tfloat;
     round    
 -------------
  5093.166481

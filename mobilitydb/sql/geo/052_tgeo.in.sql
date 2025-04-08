@@ -217,7 +217,6 @@ CREATE FUNCTION timeSpan(tgeography)
   AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Casting CANNOT be implicit to avoid ambiguity
 CREATE CAST (tgeometry AS tstzspan) WITH FUNCTION timeSpan(tgeometry);
 CREATE CAST (tgeography AS tstzspan) WITH FUNCTION timeSpan(tgeography);
 

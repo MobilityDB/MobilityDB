@@ -94,7 +94,7 @@ span_bins(const Span *s, Datum size, Datum origin, int *count)
 Span *
 intspan_bins(const Span *s, int size, int origin, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
       ! ensure_span_isof_type(s, T_INTSPAN))
     return NULL;
@@ -112,7 +112,7 @@ intspan_bins(const Span *s, int size, int origin, int *count)
 Span *
 floatspan_bins(const Span *s, double size, double origin, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
       ! ensure_span_isof_type(s, T_FLOATSPAN))
     return NULL;
@@ -131,7 +131,7 @@ Span *
 datespan_bins(const Span *s, const Interval *duration, DateADT origin,
   int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
       ! ensure_not_null((void *) count) ||
       ! ensure_span_isof_type(s, T_DATESPAN) ||
@@ -155,7 +155,7 @@ Span *
 tstzspan_bins(const Span *s, const Interval *duration, TimestampTz origin,
   int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
       ! ensure_not_null((void *) count) ||
       ! ensure_span_isof_type(s, T_TSTZSPAN) ||
@@ -185,7 +185,7 @@ Span *
 datespanset_time_spans(const SpanSet *ss, const Interval *duration,
   DateADT torigin, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) duration) ||
       ! ensure_not_null((void *) count) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
@@ -207,7 +207,7 @@ Span *
 tstzspanset_time_spans(const SpanSet *ss, const Interval *duration,
   TimestampTz torigin, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) duration) ||
       ! ensure_not_null((void *) count) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
@@ -226,7 +226,7 @@ tstzspanset_time_spans(const SpanSet *ss, const Interval *duration,
 Span *
 intspanset_value_spans(const SpanSet *ss, int vsize, int vorigin, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return NULL;
@@ -246,7 +246,7 @@ Span *
 bigintspanset_value_spans(const SpanSet *ss, int64 vsize, int64 vorigin,
   int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return NULL;
@@ -266,7 +266,7 @@ Span *
 floatspanset_value_spans(const SpanSet *ss, double vsize, double vorigin,
   int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return NULL;
@@ -287,7 +287,7 @@ floatspanset_value_spans(const SpanSet *ss, double vsize, double vorigin,
 Span *
 tint_value_spans(const Temporal *temp, int vsize, int vorigin, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -307,7 +307,7 @@ Span *
 tfloat_value_spans(const Temporal *temp, double vsize, double vorigin,
   int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;

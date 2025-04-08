@@ -487,7 +487,7 @@ always_ge_base_temporal(Datum value, const Temporal *temp)
 int
 ever_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -507,7 +507,7 @@ ever_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 int
 ever_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -528,7 +528,7 @@ ever_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 int
 ever_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -549,7 +549,7 @@ ever_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 int
 ever_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -570,7 +570,7 @@ ever_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 int
 ever_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -591,7 +591,7 @@ ever_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 int
 ever_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -613,7 +613,7 @@ ever_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 int
 always_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -633,7 +633,7 @@ always_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 int
 always_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -654,7 +654,7 @@ always_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 int
 always_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -675,7 +675,7 @@ always_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 int
 always_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -696,7 +696,7 @@ always_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 int
 always_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -717,7 +717,7 @@ always_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 int
 always_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -835,7 +835,7 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 Temporal *
 teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -863,7 +863,7 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2))

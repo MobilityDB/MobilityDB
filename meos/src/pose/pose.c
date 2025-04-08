@@ -213,9 +213,18 @@ pose_parse(const char **str, bool end)
   Pose *result;
   const char *type_str = meostype_name(T_POSE);
 
-  /* Determine whether the box has an SRID */
+  /* Determine whether the pose has an SRID */
   int32_t srid;
   srid_parse(str, &srid);
+
+  /* Determine whether the pose has a geometry */
+  int32_t srid_geo;
+  GSERIALIZED *geo = NULL;
+  if (strncasecmp(*str,"POSE",4) != 0)
+  {
+    if (! geo_parse(str, T_GEOMETRY, ',', &srid_geo, &geo))
+      return NULL;
+  }
 
   if (strncasecmp(*str,"POSE",4) == 0)
   {
@@ -226,7 +235,7 @@ pose_parse(const char **str, bool end)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "Could not parse %s value: Missing prefix 'Pose'",
-      meostype_name(T_CBUFFER));
+      meostype_name(T_POSE));
     return NULL;
   }
 
@@ -236,18 +245,17 @@ pose_parse(const char **str, bool end)
 
   /* Parse geo */
   p_whitespace(str);
-  GSERIALIZED *gs;
-  /* The following call consumes also the separator passed as parameter */
-  if (! geo_parse(str, T_GEOMETRY, ',', &srid, &gs))
+  GSERIALIZED *point;
+  if (! geo_parse(str, T_GEOMETRY, ',', &srid, &point))
     return NULL;
-  if (! ensure_point_type(gs) || ! ensure_not_empty(gs) ||
-      ! ensure_has_not_M_geo(gs))
+  if (! ensure_point_type(point) || ! ensure_not_empty(point) ||
+      ! ensure_has_not_M_geo(point))
   {
-    pfree(gs);
+    pfree(point);
     return NULL;
   }
 
-  bool hasZ = FLAGS_GET_Z(gs->gflags);
+  bool hasZ = FLAGS_GET_Z(point->gflags);
 
   if (! hasZ)
   {
@@ -255,7 +263,7 @@ pose_parse(const char **str, bool end)
     p_whitespace(str); p_comma(str); p_whitespace(str);
     if (! double_parse(str, &theta) || ! ensure_valid_rotation(theta))
       return NULL;
-    POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
+    POINT4D *p = (POINT4D *) GS_POINT_PTR(point);
     result = pose_make_2d(p->x, p->y, theta, srid);
   }
   else
@@ -275,9 +283,10 @@ pose_parse(const char **str, bool end)
       return NULL;
     if (! ensure_unit_norm(W, X, Y, Z))
       return NULL;
-    POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
+    POINT4D *p = (POINT4D *) GS_POINT_PTR(point);
     result = pose_make_3d(p->x, p->y, p->z, W, X, Y, Z, srid);
   }
+  pfree(point);
 
   /* Parse closing parenthesis */
   p_whitespace(str);
@@ -297,7 +306,7 @@ pose_parse(const char **str, bool end)
 Pose *
 pose_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) str))
     return NULL;
@@ -317,7 +326,7 @@ pose_in(const char *str)
 char *
 pose_out(const Pose *pose, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose))
     return NULL;
@@ -361,6 +370,8 @@ char *
 pose_wkt_out(Datum value, bool extended, int maxdd)
 {
   Pose *pose = DatumGetPoseP(value);
+
+  /* Write the pose */
   bool hasz = MEOS_FLAGS_GET_Z(pose->flags);
   int32_t srid = pose_srid(pose);
   GSERIALIZED *gs = hasz ?
@@ -369,8 +380,10 @@ pose_wkt_out(Datum value, bool extended, int maxdd)
     geopoint_make(pose->data[0], pose->data[1], 0.0, false, false, srid);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   size_t len;
-  char *wkt = lwgeom_to_wkt(geom, extended ? WKT_EXTENDED : WKT_ISO, maxdd, 
-    &len);
+  char *wkt_point = lwgeom_to_wkt(geom, extended ? WKT_EXTENDED : WKT_ISO,
+    maxdd, &len);
+  /* Previous call added 1 (i.e., '\0') to len */
+  len--;
   char *W, *X, *Y, *Z, *theta;
   if (hasz)
   {
@@ -385,19 +398,19 @@ pose_wkt_out(Datum value, bool extended, int maxdd)
     theta = float8_out(pose->data[2], maxdd);
     len += strlen(theta) + 1; // One ','
   }
-  len += 7; // Pose() + end NULL
+  len += 7; // Pose() + '\0' at the end
   char *result = palloc(len);
   if (hasz)
   {
-    snprintf(result, len, "Pose(%s,%s,%s,%s,%s)", wkt, W, X, Y, Z);
+    snprintf(result, len, "Pose(%s,%s,%s,%s,%s)", wkt_point, W, X, Y, Z);
     pfree(W); pfree(X); pfree(Y); pfree(Z); 
   }
   else
   {
-    snprintf(result, len, "Pose(%s,%s)", wkt, theta);
+    snprintf(result, len, "Pose(%s,%s)", wkt_point, theta);
     pfree(theta);
   }
-  lwgeom_free(geom); pfree(wkt);
+  lwgeom_free(geom); pfree(wkt_point);
   return result;
 }
 
@@ -413,7 +426,7 @@ pose_wkt_out(Datum value, bool extended, int maxdd)
 char *
 pose_as_text(const Pose *pose, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose))
     return NULL;
@@ -432,7 +445,7 @@ pose_as_text(const Pose *pose, int maxdd)
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Pose_as_ewkt()
  */
-char *
+inline char *
 pose_as_ewkt(const Pose *pose, int maxdd)
 {
   return spatialbase_as_ewkt(PointerGetDatum(pose), T_POSE, maxdd);
@@ -452,7 +465,7 @@ pose_as_ewkt(const Pose *pose, int maxdd)
 Pose *
 pose_from_wkb(const uint8_t *wkb, size_t size)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) wkb))
     return NULL;
   return DatumGetPoseP(type_from_wkb(wkb, size, T_POSE));
@@ -468,7 +481,7 @@ pose_from_wkb(const uint8_t *wkb, size_t size)
 Pose *
 pose_from_hexwkb(const char *hexwkb)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) hexwkb))
     return NULL;
   size_t size = strlen(hexwkb);
@@ -488,7 +501,7 @@ pose_from_hexwkb(const char *hexwkb)
 uint8_t *
 pose_as_wkb(const Pose *pose, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose) || ! ensure_not_null((void *) size_out))
     return NULL;
@@ -510,7 +523,7 @@ pose_as_wkb(const Pose *pose, uint8_t variant, size_t *size_out)
 char *
 pose_as_hexwkb(const Pose *pose, uint8_t variant, size_t *size_out)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose) || ! ensure_not_null((void *) size_out))
     return NULL;
@@ -687,7 +700,7 @@ pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y,
 Pose *
 pose_copy(const Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose))
     return NULL;
@@ -711,7 +724,7 @@ pose_copy(const Pose *pose)
 GSERIALIZED *
 pose_point(const Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose))
     return NULL;
@@ -721,12 +734,11 @@ pose_point(const Pose *pose)
 
   LWPOINT *point;
   if (MEOS_FLAGS_GET_Z(pose->flags))
-    point = lwpoint_make3dz(pose_srid(pose),
-      pose->data[0], pose->data[1], pose->data[2]);
+    point = lwpoint_make3dz(pose_srid(pose), pose->data[0], pose->data[1],
+      pose->data[2]);
   else
-    point = lwpoint_make2d(pose_srid(pose),
-      pose->data[0], pose->data[1]);
-  GSERIALIZED *gs = geo_serialize((LWGEOM *)point);
+    point = lwpoint_make2d(pose_srid(pose), pose->data[0], pose->data[1]);
+  GSERIALIZED *gs = geo_serialize((LWGEOM *) point);
   lwpoint_free(point);
   return gs;
 }
@@ -743,8 +755,8 @@ datum_pose_point(Datum pose)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_base_conversion
- * @brief Return an array of poses converted into a geometry multipoint
+ * @ingroup meos_internal_pose_conversion
+ * @brief Return a geometry multipoint converted from an array of poses
  * @param[in] posearr Array of poses
  * @param[in] count Number of elements in the input array
  * @pre The argument @p count is greater than 1
@@ -786,7 +798,7 @@ posearr_points(Pose **posearr, int count)
 double
 pose_rotation(const Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose))
     return DBL_MAX;
@@ -817,7 +829,7 @@ datum_pose_rotation(Datum pose)
 double *
 pose_orientation(const Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose))
     return NULL;
@@ -889,12 +901,12 @@ datum_pose_round(Datum pose, Datum size)
  * @param[in] posearr Array of poses
  * @param[in] count Number of elements in the array
  * @param[in] maxdd Maximum number of decimal digits
- * @csqlfn #Cbufferarr_round()
+ * @csqlfn #Posearr_round()
  */
 Pose **
 posearr_round(const Pose **posearr, int count, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) posearr))
     return NULL;
@@ -922,7 +934,7 @@ posearr_round(const Pose **posearr, int count, int maxdd)
 int32_t
 pose_srid(const Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose))
     return SRID_INVALID;
@@ -954,7 +966,7 @@ pose_srid(const Pose *pose)
 void
 pose_set_srid(Pose *pose, int32_t srid)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose))
   {
@@ -1025,7 +1037,7 @@ Pose *
 pose_transform(const Pose *pose, int32_t srid_to)
 {
   int32_t srid_from;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) pose) || ! ensure_srid_known(srid_to) ||
       ! ensure_srid_known(srid_from = pose_srid(pose)))
     return NULL;
@@ -1060,7 +1072,7 @@ Pose *
 pose_transform_pipeline(const Pose *pose, const char *pipeline,
   int32_t srid_to, bool is_forward)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) pose) || ! ensure_not_null((void *) pipeline))
     return NULL;
 
@@ -1106,7 +1118,7 @@ pose_distance(Datum pose1, Datum pose2)
 bool
 pose_eq(const Pose *pose1, const Pose *pose2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose1) || ! ensure_not_null((void *) pose2))
     return NULL;
@@ -1151,7 +1163,7 @@ pose_ne(const Pose *pose1, const Pose *pose2)
 bool
 pose_same(const Pose *pose1, const Pose *pose2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose1) || ! ensure_not_null((void *) pose2))
     return NULL;
@@ -1197,7 +1209,7 @@ pose_nsame(const Pose *pose1, const Pose *pose2)
 int
 pose_cmp(const Pose *pose1, const Pose *pose2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose1) || ! ensure_not_null((void *) pose2))
     return INT_MAX;
@@ -1291,7 +1303,7 @@ void hashlittle2(const void *key, size_t length, uint32_t *pc, uint32_t *pb);
 uint32
 pose_hash(const Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) pose))
     return INT_MAX;

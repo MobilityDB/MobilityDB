@@ -24,6 +24,9 @@ endif()
 if(POSE)
   list(APPEND DATAGEN_FILES pose/random_tpose.sql)
 endif()
+if(RGEO)
+  list(APPEND DATAGEN_FILES rgeo/random_trgeo.sql)
+endif()
 
 # Append each source file with license removed
 foreach(f ${DATAGEN_FILES})

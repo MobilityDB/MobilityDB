@@ -63,13 +63,14 @@ extern void datum_point4d(Datum value, POINT4D *p);
 extern int geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geopoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
-extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
-extern bool datum_point_same(Datum geopoint1, Datum geopoint2);
-extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);
-extern Datum datum2_point_ne(Datum geopoint1, Datum geopoint2);
-extern Datum datum2_point_same(Datum geopoint1, Datum geopoint2);
-extern Datum datum2_point_nsame(Datum geopoint1, Datum geopoint2);
-
+extern bool datum_point_eq(Datum point1, Datum point2);
+extern bool datum_point_same(Datum point1, Datum point2);
+extern Datum datum2_point_eq(Datum point1, Datum point2);
+extern Datum datum2_point_ne(Datum point1, Datum point2);
+extern Datum datum2_point_same(Datum point1, Datum oint2);
+extern Datum datum2_point_nsame(Datum point1, Datum point2);
+extern Datum datum2_geom_centroid(Datum geo);
+extern Datum datum2_geog_centroid(Datum geo);
 extern GSERIALIZED *geo_serialize(const LWGEOM *geom);
 extern LWPROJ *lwproj_get(int32 srid_from, int32 srid_to);
 
@@ -111,6 +112,7 @@ extern bool ensure_has_M_geo(const GSERIALIZED *gs);
 extern bool ensure_has_not_M_geo(const GSERIALIZED *gs);
 extern bool ensure_not_geodetic_geo(const GSERIALIZED *gs);
 extern bool ensure_point_type(const GSERIALIZED *gs);
+extern bool ensure_mline_type(const GSERIALIZED *gs);
 extern bool circle_type(const GSERIALIZED *gs);
 extern bool ensure_circle_type(const GSERIALIZED *gs);
 extern bool ensure_not_empty(const GSERIALIZED *gs);
@@ -122,7 +124,9 @@ extern bool ensure_valid_spatial_stbox_stbox(const STBox *box1,
 extern bool ensure_valid_tgeo_stbox(const Temporal *temp, const STBox *box);
 extern bool ensure_valid_tspatial_tspatial(const Temporal *temp1,
   const Temporal *temp2);
-  
+
+extern bool mline_type(const GSERIALIZED *gs);
+
 /* Functions for extracting coordinates */
 
 extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);

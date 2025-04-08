@@ -56,7 +56,7 @@
 Temporal *
 distance_tpose_point(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs))
     return NULL;
@@ -66,7 +66,7 @@ distance_tpose_point(const Temporal *temp, const GSERIALIZED *gs)
   if (gserialized_is_empty(gs) || ! ensure_point_type(gs))
     return NULL;
 
-  Temporal *tpoint = tpose_tgeompoint(temp);
+  Temporal *tpoint = tpose_tpoint(temp);
   Temporal *result = distance_tgeo_geo((const Temporal *) tpoint, gs);
   pfree(tpoint);
   return result;
@@ -83,7 +83,7 @@ Temporal *
 distance_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   GSERIALIZED *geom = pose_point(pose);
-  Temporal *tpoint = tpose_tgeompoint(temp);
+  Temporal *tpoint = tpose_tpoint(temp);
   Temporal *result = distance_tgeo_geo(tpoint, geom);
   pfree(geom);
   return result;
@@ -98,8 +98,8 @@ distance_tpose_pose(const Temporal *temp, const Pose *pose)
 Temporal *
 distance_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
-  Temporal *tpoint1 = tpose_tgeompoint(temp1);
-  Temporal *tpoint2 = tpose_tgeompoint(temp2);
+  Temporal *tpoint1 = tpose_tpoint(temp1);
+  Temporal *tpoint2 = tpose_tpoint(temp2);
   Temporal *result = distance_tgeo_tgeo(tpoint1, tpoint2);
   pfree(tpoint1); pfree(tpoint2);
   return result;
@@ -120,7 +120,7 @@ distance_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 TInstant *
 nai_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs))
     return NULL;
@@ -130,7 +130,7 @@ nai_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (gserialized_is_empty(gs))
     return NULL;
 
-  Temporal *tpoint = tpose_tgeompoint(temp);
+  Temporal *tpoint = tpose_tpoint(temp);
   TInstant *resultgeom = nai_tgeo_geo(tpoint, gs);
   /* We do not call the function tgeompointinst_tposeinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
@@ -153,7 +153,7 @@ TInstant *
 nai_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   GSERIALIZED *geom = pose_point(pose);
-  Temporal *tpoint = tpose_tgeompoint(temp);
+  Temporal *tpoint = tpose_tpoint(temp);
   TInstant *resultgeom = nai_tgeo_geo(tpoint, geom);
   /* We do not call the function tgeompointinst_tposeinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
@@ -200,7 +200,7 @@ nai_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 double
 nad_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       gserialized_is_empty(gs))
     return -1;
@@ -259,7 +259,7 @@ nad_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 GSERIALIZED *
 shortestline_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       gserialized_is_empty(gs))
     return NULL;
@@ -298,8 +298,8 @@ shortestline_tpose_pose(const Temporal *temp, const Pose *pose)
 GSERIALIZED *
 shortestline_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
-  Temporal *tpoint1 = tpose_tgeompoint(temp1);
-  Temporal *tpoint2 = tpose_tgeompoint(temp2);
+  Temporal *tpoint1 = tpose_tpoint(temp1);
+  Temporal *tpoint2 = tpose_tpoint(temp2);
   GSERIALIZED *result = shortestline_tgeo_tgeo(tpoint1, tpoint2);
   pfree(tpoint1); pfree(tpoint2);
   return result;

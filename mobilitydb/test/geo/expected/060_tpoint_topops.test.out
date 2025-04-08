@@ -208,6 +208,18 @@ SELECT stboxes(tgeompoint '{Point(1 1)@2000-01-01}');
  {"STBOX XT(((1,1),(1,1)),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST])"}
 (1 row)
 
+SELECT stboxes(geometry 'Linestring(1 1,2 2,1 1)');
+                     stboxes                     
+-------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((1,1),(2,2))"}
+(1 row)
+
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,1 1),(3 3,4 4))');
+                                stboxes                                 
+------------------------------------------------------------------------
+ {"STBOX X((1,1),(2,2))","STBOX X((1,1),(2,2))","STBOX X((3,3),(4,4))"}
+(1 row)
+
 SELECT splitNStboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(3 1)@2000-01-03, Point(4 2)@2000-01-04, Point(5 1)@2000-01-05]', 1);
                                       splitnstboxes                                       
 ------------------------------------------------------------------------------------------
@@ -830,7 +842,7 @@ SELECT stboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 
 
 /* Errors */
 SELECT stboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))');
-ERROR:  Argument is not a (multi) line
+ERROR:  Only (multi)line geometries accepted
 SELECT stboxes(geometry 'Linestring empty');
 ERROR:  Only non-empty geometries accepted
 SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
@@ -1135,7 +1147,7 @@ SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 
 
 /* Errors */
 SELECT splitNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
-ERROR:  Argument is not a (multi)line
+ERROR:  Only (multi)line geometries accepted
 SELECT splitNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
 ERROR:  The value must be strictly positive: -1
 SELECT splitNStboxes(geometry 'Linestring empty', 1);
@@ -1442,7 +1454,7 @@ SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 
 
 /* Errors */
 SELECT splitEachNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
-ERROR:  Argument is not a (multi)line
+ERROR:  Only (multi)line geometries accepted
 SELECT splitEachNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
 ERROR:  The value must be strictly positive: -1
 SELECT splitEachNStboxes(geometry 'Linestring empty', 1);

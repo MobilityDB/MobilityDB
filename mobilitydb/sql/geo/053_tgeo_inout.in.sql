@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Input/output of temporal geometries/geographies in WKT, EWKT, and
- * MF-JSON format
+ * MF-JSON representation
  */
 
 /*****************************************************************************

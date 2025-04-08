@@ -238,7 +238,7 @@ SELECT span(temp) FROM tbl_ttext;
 
 SELECT DISTINCT getValue(inst) FROM tbl_tbool_inst ORDER BY 1;
 SELECT MAX(getValue(inst)) FROM tbl_tint_inst;
-SELECT round(MAX(getValue(inst))::numeric, 6) FROM tbl_tfloat_inst;
+SELECT round(MAX(getValue(inst)), 6) FROM tbl_tfloat_inst;
 SELECT MAX(getValue(inst)) FROM tbl_ttext_inst;
 
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tbool;
@@ -251,24 +251,24 @@ SELECT MAX(numValues(valueSet(temp))) FROM tbl_tfloat;
 
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;
 SELECT MAX(startValue(temp)) FROM tbl_tint;
-SELECT round(MAX(startValue(temp))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(startValue(temp)), 6) FROM tbl_tfloat;
 SELECT MAX(startValue(temp)) FROM tbl_ttext;
 
 SELECT DISTINCT endValue(temp) FROM tbl_tbool;
 SELECT MAX(endValue(temp)) FROM tbl_tint;
-SELECT round(MAX(endValue(temp))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(endValue(temp)), 6) FROM tbl_tfloat;
 SELECT MAX(endValue(temp)) FROM tbl_ttext;
 
 SELECT MAX(minValue(temp)) FROM tbl_tint;
-SELECT round(MAX(minValue(temp))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(minValue(temp)), 6) FROM tbl_tfloat;
 SELECT MAX(minValue(temp)) FROM tbl_ttext;
 
 SELECT MAX(valueN(temp, numInstants(temp))) FROM tbl_tint;
-SELECT round(MAX(valueN(temp, numInstants(temp)))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(valueN(temp, numInstants(temp))), 6) FROM tbl_tfloat;
 SELECT MAX(valueN(temp, numInstants(temp))) FROM tbl_ttext;
 
 SELECT MAX(maxValue(temp)) FROM tbl_tint;
-SELECT round(MAX(maxValue(temp))::numeric, 6) FROM tbl_tfloat;
+SELECT round(MAX(maxValue(temp)), 6) FROM tbl_tfloat;
 SELECT MAX(maxValue(temp)) FROM tbl_ttext;
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tbool_inst;
@@ -638,11 +638,11 @@ SELECT SUM(numInstants(update(t1.temp, t2.temp, false))) FROM tbl_ttext t1, tbl_
 --  Value Aggregate Functions
 -------------------------------------------------------------------------------
 
-SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tint;
-SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tfloat;
+SELECT round(sum(integral(temp)), 6) FROM tbl_tint;
+SELECT round(sum(integral(temp)), 6) FROM tbl_tfloat;
 
-SELECT round(sum(twAvg(temp))::numeric, 6) FROM tbl_tint;
-SELECT round(sum(twAvg(temp))::numeric, 6) FROM tbl_tfloat;
+SELECT round(sum(twAvg(temp)), 6) FROM tbl_tint;
+SELECT round(sum(twAvg(temp)), 6) FROM tbl_tfloat;
 
 -------------------------------------------------------------------------------
 -- Comparison functions and B-tree indexing

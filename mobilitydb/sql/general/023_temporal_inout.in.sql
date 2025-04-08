@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief Input/output of temporal types in WKT, MF-JSON, and WKB format
+ * @brief Input/output of temporal types in WKT, MF-JSON, and WKB
+ * representation
  */
 
 /*****************************************************************************

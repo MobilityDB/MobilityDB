@@ -68,7 +68,7 @@
 int
 int_get_bin(int value, int size, int origin)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_positive(size))
     return INT_MAX;
 
@@ -119,7 +119,7 @@ int_get_bin(int value, int size, int origin)
 int64
 bigint_get_bin(int64 value, int64 size, int64 origin)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_positive_datum(size, T_INT8))
     return INT64_MAX;
 
@@ -170,7 +170,7 @@ bigint_get_bin(int64 value, int64 size, int64 origin)
 double
 float_get_bin(double value, double size, double origin)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8))
     return DBL_MAX;
 
@@ -203,7 +203,7 @@ float_get_bin(double value, double size, double origin)
 /**
  * @brief Return the interval in the same representation as Postgres timestamps
  */
-int64
+inline int64
 interval_units(const Interval *interval)
 {
   return interval->time + (interval->day * USECS_PER_DAY);
@@ -232,7 +232,7 @@ date_get_bin_int(DateADT d, int32 ndays, DateADT origin)
 DateADT
 date_get_bin(DateADT d, const Interval *duration, DateADT origin)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) duration) ||
       ! ensure_valid_day_duration(duration))
     return DATEVAL_NOEND;
@@ -308,7 +308,7 @@ TimestampTz
 timestamptz_get_bin(TimestampTz t, const Interval *duration,
   TimestampTz origin)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) duration) ||
       ! ensure_valid_duration(duration))
     return DT_NOEND;
@@ -515,7 +515,7 @@ SpanBinState *
 spanset_time_bin_init(const SpanSet *ss, const Interval *duration,
   Datum torigin, int *nbins)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) nbins) ||
       ! ensure_not_null((void *) duration) ||
       (ss->basetype != T_DATE && ! ensure_valid_duration(duration)) ||
@@ -552,7 +552,7 @@ SpanBinState *
 spanset_value_bin_init(const SpanSet *ss, Datum vsize, Datum vorigin,
   int *nbins)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) nbins) ||
       ! ensure_positive_datum(vsize, ss->basetype))
     return NULL;
@@ -578,7 +578,7 @@ SpanBinState *
 temporal_time_bin_init(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, int *nbins)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) nbins) ||
       ! ensure_not_null((void *) duration) ||
       ! ensure_valid_duration(duration))
@@ -607,7 +607,7 @@ SpanBinState *
 tnumber_value_bin_init(const Temporal *temp, Datum vsize, Datum vorigin,
   int *nbins)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) nbins) ||
       ! ensure_tnumber_type(temp->temptype) ||
       ! ensure_positive_datum(vsize, temptype_basetype(temp->temptype)))
@@ -1031,7 +1031,7 @@ tbox_get_value_time_tile(Datum value, TimestampTz t, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin,
   meosType basetype, meosType spantype)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (duration && ! ensure_valid_duration(duration))
     return NULL;
 
@@ -1076,7 +1076,7 @@ TboxGridState *
 tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin, int *ntiles)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ntiles) ||
       ! ensure_positive_datum(vsize, temptype_basetype(temp->temptype)) ||
       (duration && ! ensure_valid_duration(duration)))

@@ -810,7 +810,7 @@ PG_FUNCTION_INFO_V1(Tnumber_time_split);
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the fragments of a temporal number split according to value
  * bins
- * @sqlfn valueSplit()
+ * @sqlfn timeSplit()
  */
 inline Datum
 Tnumber_time_split(PG_FUNCTION_ARGS)

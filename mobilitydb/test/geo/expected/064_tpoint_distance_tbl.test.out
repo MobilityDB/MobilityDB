@@ -1,81 +1,81 @@
-SELECT round(MAX(maxValue(g <-> temp))::numeric, 6) FROM tbl_geom_point t1, tbl_tgeompoint t2
+SELECT round(MAX(maxValue(g <-> temp)), 6) FROM tbl_geom_point t1, tbl_tgeompoint t2
 WHERE g <-> temp IS NOT NULL;
    round    
 ------------
  136.051848
 (1 row)
 
-SELECT round(MAX(maxValue(temp <-> g))::numeric, 6) FROM tbl_tgeompoint t1, tbl_geom_point t2
+SELECT round(MAX(maxValue(temp <-> g)), 6) FROM tbl_tgeompoint t1, tbl_geom_point t2
 WHERE temp <-> g IS NOT NULL;
    round    
 ------------
  136.051848
 (1 row)
 
-SELECT round(MAX(maxValue(t1.temp <-> t2.temp))::numeric, 6) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
+SELECT round(MAX(maxValue(t1.temp <-> t2.temp)), 6) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE t1.temp <-> t2.temp IS NOT NULL;
-   round   
------------
- 91.324090
+  round   
+----------
+ 91.32409
 (1 row)
 
-SELECT round(MAX(maxValue(g <-> temp))::numeric, 6) FROM tbl_geog_point t1, tbl_tgeogpoint t2
+SELECT round(MAX(maxValue(g <-> temp)), 6) FROM tbl_geog_point t1, tbl_tgeogpoint t2
 WHERE g <-> temp IS NOT NULL;
      round      
 ----------------
  4573918.740135
 (1 row)
 
-SELECT round(MAX(maxValue(temp <-> g))::numeric, 6) FROM tbl_tgeogpoint t1, tbl_geog_point t2
+SELECT round(MAX(maxValue(temp <-> g)), 6) FROM tbl_tgeogpoint t1, tbl_geog_point t2
 WHERE temp <-> g IS NOT NULL;
      round      
 ----------------
  4573918.740135
 (1 row)
 
-SELECT round(MAX(maxValue(t1.temp <-> t2.temp))::numeric, 6) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
+SELECT round(MAX(maxValue(t1.temp <-> t2.temp)), 6) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 WHERE t1.temp <-> t2.temp IS NOT NULL;
      round      
 ----------------
  3622735.997944
 (1 row)
 
-SELECT round(MAX(maxValue(g <-> temp))::numeric, 6) FROM tbl_geom_point3D t1, tbl_tgeompoint3D t2
+SELECT round(MAX(maxValue(g <-> temp)), 6) FROM tbl_geom_point3D t1, tbl_tgeompoint3D t2
 WHERE g <-> temp IS NOT NULL ORDER BY 1 LIMIT 10;
    round    
 ------------
  151.141393
 (1 row)
 
-SELECT round(MAX(maxValue(temp <-> g))::numeric, 6) FROM tbl_tgeompoint3D t1, tbl_geom_point3D t2
+SELECT round(MAX(maxValue(temp <-> g)), 6) FROM tbl_tgeompoint3D t1, tbl_geom_point3D t2
 WHERE temp <-> g IS NOT NULL ORDER BY 1 LIMIT 10;
    round    
 ------------
  151.141393
 (1 row)
 
-SELECT round(MAX(maxValue(t1.temp <-> t2.temp))::numeric, 6) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT round(MAX(maxValue(t1.temp <-> t2.temp)), 6) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
 WHERE t1.temp <-> t2.temp IS NOT NULL ORDER BY 1 LIMIT 10;
    round    
 ------------
  110.775793
 (1 row)
 
-SELECT round(MAX(maxValue(g <-> temp))::numeric, 6) FROM tbl_geog_point3D t1, tbl_tgeogpoint3D t2
+SELECT round(MAX(maxValue(g <-> temp)), 6) FROM tbl_geog_point3D t1, tbl_tgeogpoint3D t2
 WHERE g <-> temp IS NOT NULL ORDER BY 1 LIMIT 10;
      round      
 ----------------
  4490406.573224
 (1 row)
 
-SELECT round(MAX(maxValue(temp <-> g))::numeric, 6) FROM tbl_tgeogpoint3D t1, tbl_geog_point3D t2
+SELECT round(MAX(maxValue(temp <-> g)), 6) FROM tbl_tgeogpoint3D t1, tbl_geog_point3D t2
 WHERE temp <-> g IS NOT NULL ORDER BY 1 LIMIT 10;
      round      
 ----------------
  4490406.573224
 (1 row)
 
-SELECT round(MAX(maxValue(t1.temp <-> t2.temp))::numeric, 6) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+SELECT round(MAX(maxValue(t1.temp <-> t2.temp)), 6) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
 WHERE t1.temp <-> t2.temp IS NOT NULL ORDER BY 1 LIMIT 10;
      round      
 ----------------

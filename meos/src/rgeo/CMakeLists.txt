@@ -1,0 +1,12 @@
+add_library(rgeo OBJECT
+  trgeo.c
+  trgeo_boxops.c
+  trgeo_compops.c
+  trgeo_distance.c
+  trgeo_inst.c
+  trgeo_parser.c
+  trgeo_seq.c
+  trgeo_seqset.c
+  trgeo_utils.c
+  trgeo_vclip.c
+  )

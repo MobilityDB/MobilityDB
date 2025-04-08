@@ -68,7 +68,7 @@ CREATE TYPE cbufferset (
 
 /******************************************************************************/
 
--- Input/output in WKB and HexWKB format
+-- Input/output in WKB and HexWKB representation
 
 CREATE FUNCTION cbuffersetFromBinary(bytea)
   RETURNS cbufferset

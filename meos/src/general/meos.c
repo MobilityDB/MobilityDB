@@ -44,7 +44,6 @@
 #include <proj.h>
 /* MEOS */
 #include <meos.h>
-// #include <meos_internal.h>
 
 /***************************************************************************
  * Functions for the Gnu Scientific Library (GSL)

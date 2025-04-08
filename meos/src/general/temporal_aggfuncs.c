@@ -198,7 +198,7 @@ tinstant_tagg(const TInstant **instants1, int count1, const TInstant **instants2
     {
       if (func)
         result[count++] = tinstant_make(
-          func(tinstant_val(inst1), tinstant_val(inst2)), inst1->temptype,
+          func(tinstant_value_p(inst1), tinstant_value_p(inst2)), inst1->temptype,
           inst1->t);
       else
       {
@@ -334,7 +334,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
     const TInstant *inst2 = TSEQUENCE_INST_N(syncseq2, i);
     if (func)
       instants[i] = tinstant_make(
-        func(tinstant_val(inst1), tinstant_val(inst2)), seq1->temptype,
+        func(tinstant_value_p(inst1), tinstant_value_p(inst2)), seq1->temptype,
         inst1->t);
     else
     {
@@ -392,8 +392,8 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
  * @brief Generic aggregate function for temporal sequences
  * @param[in] sequences1 Accumulated state
  * @param[in] count1 Number of elements in the accumulated state
- * @param[in] sequences2 Sequences of a temporal sequence set value
- * @param[in] count2 Number of elements in the temporal sequence set value
+ * @param[in] sequences2 Sequences of a temporal sequence set
+ * @param[in] count2 Number of elements in the temporal sequence set
  * @param[in] func Function, may be NULL for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments
  * @param[out] newcount Number of elements in the result
@@ -532,7 +532,7 @@ SkipList *
 tdiscseq_tagg_transfn(SkipList *state, const TSequence *seq, datum_func2 func)
 {
   assert(seq);
-  const TInstant **instants = tsequence_insts(seq);
+  const TInstant **instants = tsequence_instants_p(seq);
   SkipList *result;
   if (! state)
     result = skiplist_make((void **) instants, seq->count);
@@ -582,7 +582,7 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
   datum_func2 func, bool crossings)
 {
   assert(ss);
-  const TSequence **sequences = tsequenceset_seqs(ss);
+  const TSequence **sequences = tsequenceset_sequences_p(ss);
   SkipList *result;
   if (! state)
     result = skiplist_make((void **) sequences, ss->count);
@@ -712,7 +712,7 @@ tcontseq_transform_tagg(const TSequence *seq,
 }
 
 /**
- * @brief Transform a temporal sequence set value for aggregation
+ * @brief Transform a temporal sequence set for aggregation
  */
 TSequence **
 tsequenceset_transform_tagg(const TSequenceSet *ss,
@@ -1017,7 +1017,7 @@ tstzset_tcount_transfn(SkipList *state, const Set *s)
   /* Null set: return state */
   if (! s)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
 
@@ -1049,7 +1049,7 @@ tstzspan_tcount_transfn(SkipList *state, const Span *s)
   /* Null span: return state */
   if (! s)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
 
@@ -1081,7 +1081,7 @@ tstzspanset_tcount_transfn(SkipList *state, const SpanSet *ss)
   /* Null span set: return state */
   if (! ss)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
 
@@ -1161,7 +1161,7 @@ tinstant_tavg_finalfn(const TInstant **instants, int count)
   for (int i = 0; i < count; i++)
   {
     const TInstant *inst = instants[i];
-    double2 *value = (double2 *) DatumGetPointer(tinstant_val(inst));
+    double2 *value = (double2 *) DatumGetPointer(tinstant_value_p(inst));
     double tavg = value->a / value->b;
     newinstants[i] = tinstant_make(Float8GetDatum(tavg), T_TFLOAT, inst->t);
   }
@@ -1184,7 +1184,7 @@ tsequence_tavg_finalfn(const TSequence **sequences, int count)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-      double2 *value2 = (double2 *) DatumGetPointer(tinstant_val(inst));
+      double2 *value2 = (double2 *) DatumGetPointer(tinstant_value_p(inst));
       double value = value2->a / value2->b;
       instants[j] = tinstant_make(Float8GetDatum(value), T_TFLOAT, inst->t);
     }
@@ -1277,7 +1277,7 @@ tnumber_extent_transfn(TBox *state, const Temporal *temp)
   if (! temp)
     return state;
 
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_tbox(temp, state))
     return NULL;
 

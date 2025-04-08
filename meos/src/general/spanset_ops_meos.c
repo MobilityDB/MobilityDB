@@ -59,7 +59,7 @@
 bool
 contains_spanset_int(const SpanSet *ss, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return false;
@@ -76,7 +76,7 @@ contains_spanset_int(const SpanSet *ss, int i)
 bool
 contains_spanset_bigint(const SpanSet *ss, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return false;
@@ -93,7 +93,7 @@ contains_spanset_bigint(const SpanSet *ss, int64 i)
 bool
 contains_spanset_float(const SpanSet *ss, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return false;
@@ -110,7 +110,7 @@ contains_spanset_float(const SpanSet *ss, double d)
 bool
 contains_spanset_date(const SpanSet *ss, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return false;
@@ -131,7 +131,7 @@ contains_spanset_date(const SpanSet *ss, DateADT d)
 bool
 contained_int_spanset(int i, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return false;
@@ -148,7 +148,7 @@ contained_int_spanset(int i, const SpanSet *ss)
 bool
 contained_bigint_spanset(int64 i, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return false;
@@ -165,7 +165,7 @@ contained_bigint_spanset(int64 i, const SpanSet *ss)
 bool
 contained_float_spanset(double d, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return false;
@@ -182,7 +182,7 @@ contained_float_spanset(double d, const SpanSet *ss)
 bool
 contained_date_spanset(DateADT d, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return false;
@@ -199,7 +199,7 @@ contained_date_spanset(DateADT d, const SpanSet *ss)
 bool
 contained_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return false;
@@ -220,7 +220,7 @@ contained_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 bool
 adjacent_spanset_int(const SpanSet *ss, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return false;
@@ -237,7 +237,7 @@ adjacent_spanset_int(const SpanSet *ss, int i)
 bool
 adjacent_spanset_bigint(const SpanSet *ss, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return false;
@@ -254,7 +254,7 @@ adjacent_spanset_bigint(const SpanSet *ss, int64 i)
 bool
 adjacent_spanset_float(const SpanSet *ss, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return false;
@@ -271,7 +271,7 @@ adjacent_spanset_float(const SpanSet *ss, double d)
 bool
 adjacent_spanset_date(const SpanSet *ss, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return false;
@@ -288,7 +288,7 @@ adjacent_spanset_date(const SpanSet *ss, DateADT d)
 bool
 adjacent_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return false;
@@ -309,7 +309,7 @@ adjacent_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 bool
 left_int_spanset(int i, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return false;
@@ -326,7 +326,7 @@ left_int_spanset(int i, const SpanSet *ss)
 bool
 left_bigint_spanset(int64 i, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return false;
@@ -343,7 +343,7 @@ left_bigint_spanset(int64 i, const SpanSet *ss)
 bool
 left_float_spanset(double d, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return false;
@@ -360,7 +360,7 @@ left_float_spanset(double d, const SpanSet *ss)
 bool
 before_date_spanset(DateADT d, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return false;
@@ -377,7 +377,7 @@ before_date_spanset(DateADT d, const SpanSet *ss)
 bool
 before_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return false;
@@ -396,7 +396,7 @@ before_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 bool
 left_spanset_int(const SpanSet *ss, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return false;
@@ -413,7 +413,7 @@ left_spanset_int(const SpanSet *ss, int i)
 bool
 left_spanset_bigint(const SpanSet *ss, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return false;
@@ -430,7 +430,7 @@ left_spanset_bigint(const SpanSet *ss, int64 i)
 bool
 left_spanset_float(const SpanSet *ss, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return false;
@@ -447,7 +447,7 @@ left_spanset_float(const SpanSet *ss, double d)
 bool
 before_spanset_date(const SpanSet *ss, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return false;
@@ -464,7 +464,7 @@ before_spanset_date(const SpanSet *ss, DateADT d)
 bool
 before_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return false;
@@ -621,7 +621,7 @@ after_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 bool
 overleft_spanset_int(const SpanSet *ss, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return false;
@@ -639,7 +639,7 @@ overleft_spanset_int(const SpanSet *ss, int i)
 bool
 overleft_spanset_bigint(const SpanSet *ss, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return false;
@@ -656,7 +656,7 @@ overleft_spanset_bigint(const SpanSet *ss, int64 i)
 bool
 overleft_spanset_float(const SpanSet *ss, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return false;
@@ -673,7 +673,7 @@ overleft_spanset_float(const SpanSet *ss, double d)
 bool
 overbefore_spanset_date(const SpanSet *ss, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return false;
@@ -690,7 +690,7 @@ overbefore_spanset_date(const SpanSet *ss, DateADT d)
 bool
 overbefore_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return false;
@@ -709,7 +709,7 @@ overbefore_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 bool
 overleft_int_spanset(int i, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return false;
@@ -727,7 +727,7 @@ overleft_int_spanset(int i, const SpanSet *ss)
 bool
 overleft_bigint_spanset(int64 i, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return false;
@@ -744,7 +744,7 @@ overleft_bigint_spanset(int64 i, const SpanSet *ss)
 bool
 overleft_float_spanset(double d, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return false;
@@ -761,7 +761,7 @@ overleft_float_spanset(double d, const SpanSet *ss)
 bool
 overbefore_date_spanset(DateADT d, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return false;
@@ -778,7 +778,7 @@ overbefore_date_spanset(DateADT d, const SpanSet *ss)
 bool
 overbefore_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return false;
@@ -799,7 +799,7 @@ overbefore_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 bool
 overright_int_spanset(int i, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return false;
@@ -816,7 +816,7 @@ overright_int_spanset(int i, const SpanSet *ss)
 bool
 overright_bigint_spanset(int64 i, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return false;
@@ -833,7 +833,7 @@ overright_bigint_spanset(int64 i, const SpanSet *ss)
 bool
 overright_float_spanset(double d, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return false;
@@ -850,7 +850,7 @@ overright_float_spanset(double d, const SpanSet *ss)
 bool
 overafter_date_spanset(DateADT d, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return false;
@@ -867,7 +867,7 @@ overafter_date_spanset(DateADT d, const SpanSet *ss)
 bool
 overafter_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return false;
@@ -886,7 +886,7 @@ overafter_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 bool
 overright_spanset_int(const SpanSet *ss, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return false;
@@ -903,7 +903,7 @@ overright_spanset_int(const SpanSet *ss, int i)
 bool
 overright_spanset_bigint(const SpanSet *ss, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return false;
@@ -920,7 +920,7 @@ overright_spanset_bigint(const SpanSet *ss, int64 i)
 bool
 overright_spanset_float(const SpanSet *ss, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return false;
@@ -937,7 +937,7 @@ overright_spanset_float(const SpanSet *ss, double d)
 bool
 overafter_spanset_date(const SpanSet *ss, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return false;
@@ -954,7 +954,7 @@ overafter_spanset_date(const SpanSet *ss, DateADT d)
 bool
 overafter_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return false;
@@ -975,7 +975,7 @@ overafter_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 SpanSet *
 union_int_spanset(int i, SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return NULL;
@@ -992,7 +992,7 @@ union_int_spanset(int i, SpanSet *ss)
 SpanSet *
 union_bigint_spanset(int64 i, SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return NULL;
@@ -1009,7 +1009,7 @@ union_bigint_spanset(int64 i, SpanSet *ss)
 SpanSet *
 union_float_spanset(double d, SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return NULL;
@@ -1026,7 +1026,7 @@ union_float_spanset(double d, SpanSet *ss)
 SpanSet *
 union_date_spanset(DateADT d, SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return NULL;
@@ -1043,7 +1043,7 @@ union_date_spanset(DateADT d, SpanSet *ss)
 SpanSet *
 union_timestamptz_spanset(TimestampTz t, SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
@@ -1060,7 +1060,7 @@ union_timestamptz_spanset(TimestampTz t, SpanSet *ss)
 SpanSet *
 union_spanset_int(const SpanSet *ss, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return NULL;
@@ -1077,7 +1077,7 @@ union_spanset_int(const SpanSet *ss, int i)
 SpanSet *
 union_spanset_bigint(const SpanSet *ss, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return NULL;
@@ -1094,7 +1094,7 @@ union_spanset_bigint(const SpanSet *ss, int64 i)
 SpanSet *
 union_spanset_float(const SpanSet *ss, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return NULL;
@@ -1111,7 +1111,7 @@ union_spanset_float(const SpanSet *ss, double d)
 SpanSet *
 union_spanset_date(const SpanSet *ss, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return NULL;
@@ -1128,7 +1128,7 @@ union_spanset_date(const SpanSet *ss, DateADT d)
 SpanSet *
 union_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
@@ -1149,7 +1149,7 @@ union_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 SpanSet *
 intersection_spanset_int(const SpanSet *ss, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return NULL;
@@ -1166,7 +1166,7 @@ intersection_spanset_int(const SpanSet *ss, int i)
 SpanSet *
 intersection_spanset_bigint(const SpanSet *ss, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return NULL;
@@ -1183,7 +1183,7 @@ intersection_spanset_bigint(const SpanSet *ss, int64 i)
 SpanSet *
 intersection_spanset_float(const SpanSet *ss, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return NULL;
@@ -1200,7 +1200,7 @@ intersection_spanset_float(const SpanSet *ss, double d)
 SpanSet *
 intersection_spanset_date(const SpanSet *ss, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return NULL;
@@ -1217,7 +1217,7 @@ intersection_spanset_date(const SpanSet *ss, DateADT d)
 SpanSet *
 intersection_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
@@ -1239,7 +1239,7 @@ intersection_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 SpanSet *
 minus_int_spanset(int i, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return NULL;
@@ -1256,7 +1256,7 @@ minus_int_spanset(int i, const SpanSet *ss)
 SpanSet *
 minus_bigint_spanset(int64 i, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return NULL;
@@ -1273,7 +1273,7 @@ minus_bigint_spanset(int64 i, const SpanSet *ss)
 SpanSet *
 minus_float_spanset(double d, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return NULL;
@@ -1290,7 +1290,7 @@ minus_float_spanset(double d, const SpanSet *ss)
 SpanSet *
 minus_date_spanset(DateADT d, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return NULL;
@@ -1307,7 +1307,7 @@ minus_date_spanset(DateADT d, const SpanSet *ss)
 SpanSet *
 minus_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
@@ -1326,7 +1326,7 @@ minus_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
 SpanSet *
 minus_spanset_int(const SpanSet *ss, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return NULL;
@@ -1343,7 +1343,7 @@ minus_spanset_int(const SpanSet *ss, int i)
 SpanSet *
 minus_spanset_bigint(const SpanSet *ss, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return NULL;
@@ -1360,7 +1360,7 @@ minus_spanset_bigint(const SpanSet *ss, int64 i)
 SpanSet *
 minus_spanset_float(const SpanSet *ss, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return NULL;
@@ -1377,7 +1377,7 @@ minus_spanset_float(const SpanSet *ss, double d)
 SpanSet *
 minus_spanset_date(const SpanSet *ss, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return NULL;
@@ -1394,7 +1394,7 @@ minus_spanset_date(const SpanSet *ss, DateADT d)
 SpanSet *
 minus_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return NULL;
@@ -1416,7 +1416,7 @@ minus_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 int
 distance_spanset_int(const SpanSet *ss, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET))
     return -1;
@@ -1434,7 +1434,7 @@ distance_spanset_int(const SpanSet *ss, int i)
 int64
 distance_spanset_bigint(const SpanSet *ss, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
     return -1;
@@ -1452,7 +1452,7 @@ distance_spanset_bigint(const SpanSet *ss, int64 i)
 double
 distance_spanset_float(const SpanSet *ss, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
     return -1.0;
@@ -1471,7 +1471,7 @@ distance_spanset_float(const SpanSet *ss, double d)
 int
 distance_spanset_date(const SpanSet *ss, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_DATESPANSET))
     return -1;
@@ -1489,7 +1489,7 @@ distance_spanset_date(const SpanSet *ss, DateADT d)
 double
 distance_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
     return -1.0;
@@ -1509,7 +1509,7 @@ distance_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 int
 distance_intspanset_intspan(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_spanset_isof_type(ss, T_INTSPANSET) ||
       ! ensure_span_isof_type(s, T_INTSPAN))
@@ -1528,7 +1528,7 @@ distance_intspanset_intspan(const SpanSet *ss, const Span *s)
 int64
 distance_bigintspanset_bigintspan(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET) ||
       ! ensure_span_isof_type(s, T_INTSPAN))
@@ -1547,7 +1547,7 @@ distance_bigintspanset_bigintspan(const SpanSet *ss, const Span *s)
 double
 distance_floatspanset_floatspan(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_spanset_isof_type(ss, T_FLOATSPANSET) ||
       ! ensure_span_isof_type(s, T_FLOATSPAN))
@@ -1566,7 +1566,7 @@ distance_floatspanset_floatspan(const SpanSet *ss, const Span *s)
 int
 distance_datespanset_datespan(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
      ! ensure_spanset_isof_type(ss, T_DATESPANSET) ||
      ! ensure_span_isof_type(s, T_DATESPAN))
@@ -1586,7 +1586,7 @@ distance_datespanset_datespan(const SpanSet *ss, const Span *s)
 double
 distance_tstzspanset_tstzspan(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET) ||
       ! ensure_span_isof_type(s, T_TSTZSPAN))
@@ -1606,7 +1606,7 @@ distance_tstzspanset_tstzspan(const SpanSet *ss, const Span *s)
 int
 distance_intspanset_intspanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_spanset_isof_type(ss1, T_INTSPANSET) ||
       ! ensure_spanset_isof_type(ss2, T_INTSPANSET))
@@ -1624,7 +1624,7 @@ distance_intspanset_intspanset(const SpanSet *ss1, const SpanSet *ss2)
 int64
 distance_bigintspanset_bigintspanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_spanset_isof_type(ss1, T_BIGINTSPANSET) ||
       ! ensure_spanset_isof_type(ss2, T_BIGINTSPANSET))
@@ -1642,7 +1642,7 @@ distance_bigintspanset_bigintspanset(const SpanSet *ss1, const SpanSet *ss2)
 double
 distance_floatspanset_floatspanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_spanset_isof_type(ss1, T_FLOATSPANSET) ||
       ! ensure_spanset_isof_type(ss2, T_FLOATSPANSET))
@@ -1660,7 +1660,7 @@ distance_floatspanset_floatspanset(const SpanSet *ss1, const SpanSet *ss2)
 int
 distance_datespanset_datespanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
      ! ensure_spanset_isof_type(ss1, T_DATESPANSET) ||
      ! ensure_spanset_isof_type(ss2, T_DATESPANSET))
@@ -1678,7 +1678,7 @@ distance_datespanset_datespanset(const SpanSet *ss1, const SpanSet *ss2)
 double
 distance_tstzspanset_tstzspanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
       ! ensure_spanset_isof_type(ss1, T_TSTZSPANSET) ||
       ! ensure_spanset_isof_type(ss2, T_TSTZSPANSET))

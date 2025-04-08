@@ -455,8 +455,6 @@ Tfloat_exp(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tfloat_exp(temp);
   PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 
@@ -477,8 +475,6 @@ Tfloat_ln(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tfloat_ln(temp);
   PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 
@@ -495,8 +491,6 @@ Tfloat_log10(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tfloat_log10(temp);
   PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 

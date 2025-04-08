@@ -56,6 +56,8 @@ extern bool tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
   bool *removelast, bool *removefirst);
 extern TSequence *tsequence_join(const TSequence *seq1, const TSequence *seq2,
   bool removelast, bool removefirst);
+extern TInstant **tinstarr_normalize(const TInstant **instants,
+  interpType interp, int count, int *newcount);
 
 /* General functions */
 
@@ -112,6 +114,8 @@ extern bool ensure_increasing_timestamps(const TInstant *inst1,
 extern void bbox_expand(const void *box1, void *box2, meosType temptype);
 extern bool ensure_valid_tinstarr(const TInstant **instants, int count,
   bool merge, interpType interp);
+extern bool tsequence_make_valid(const TInstant **instants, int count,
+  bool lower_inc, bool upper_inc, interpType interp);
 
 /* Transformation functions */
 

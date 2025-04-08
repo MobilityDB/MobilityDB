@@ -243,10 +243,10 @@ CREATE INDEX tbl_tgeometry3D_rtree_idx ON tbl_tgeometry3D USING GIST(temp);
 -- EXPLAIN ANALYZE
 WITH test AS (
   SELECT temp |=| tgeometry 'SRID=3812;[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
-SELECT round(distance::numeric, 6) FROM test;
+SELECT round(distance, 6) FROM test;
 WITH test AS (
   SELECT temp |=| tgeometry 'SRID=3812;[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-07-01]' AS distance FROM tbl_tgeometry3D ORDER BY 1 LIMIT 3 )
-SELECT round(distance::numeric, 6) FROM test;
+SELECT round(distance, 6) FROM test;
 
 DROP INDEX tbl_tgeometry_rtree_idx;
 DROP INDEX tbl_tgeometry3D_rtree_idx;
@@ -261,10 +261,10 @@ CREATE INDEX tbl_tgeometry3D_quadtree_idx ON tbl_tgeometry3D USING SPGIST(temp);
 -- EXPLAIN ANALYZE
 WITH test AS (
   SELECT temp |=| tgeometry 'SRID=3812;[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
-SELECT round(distance::numeric, 6) FROM test;
+SELECT round(distance, 6) FROM test;
 WITH test AS (
   SELECT temp |=| tgeometry 'SRID=3812;[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-07-01]' AS distance FROM tbl_tgeometry3D ORDER BY 1 LIMIT 3 )
-SELECT round(distance::numeric, 6) FROM test;
+SELECT round(distance, 6) FROM test;
 
 DROP INDEX tbl_tgeometry_quadtree_idx;
 DROP INDEX tbl_tgeometry3D_quadtree_idx;

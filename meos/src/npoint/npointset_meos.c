@@ -76,7 +76,7 @@
 Set *
 npointset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) str))
     return NULL;
@@ -96,7 +96,7 @@ npointset_in(const char *str)
 char *
 npointset_out(const Set *s, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_NPOINTSET))
     return NULL;
@@ -120,7 +120,7 @@ npointset_out(const Set *s, int maxdd)
 Set *
 npointset_make(const Npoint **values, int count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) values))
     return NULL;
@@ -150,7 +150,7 @@ Set *
 npoint_to_set(const Npoint *np)
 {
 #if MEOS
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) np))
     return NULL;
 #else
@@ -175,7 +175,7 @@ npoint_to_set(const Npoint *np)
 Npoint *
 npointset_start_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_NPOINTSET))
     return NULL;
@@ -196,7 +196,7 @@ npointset_start_value(const Set *s)
 Npoint *
 npointset_end_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_NPOINTSET))
     return NULL;
@@ -220,7 +220,7 @@ npointset_end_value(const Set *s)
 bool
 npointset_value_n(const Set *s, int n, Npoint **result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
       ! ensure_set_isof_type(s, T_NPOINTSET))
@@ -245,7 +245,7 @@ npointset_value_n(const Set *s, int n, Npoint **result)
 Npoint **
 npointset_values(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_NPOINTSET))
     return NULL;
@@ -273,7 +273,7 @@ npointset_values(const Set *s)
 bool
 ensure_valid_set_npoint(const Set *s, const Npoint *np)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) np) ||
       ! ensure_set_isof_type(s, T_NPOINTSET))
     return false;
@@ -290,7 +290,7 @@ ensure_valid_set_npoint(const Set *s, const Npoint *np)
 bool
 contains_set_npoint(const Set *s, Npoint *np)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_npoint(s, np))
     return false;
   return contains_set_value(s, PointerGetDatum(np));
@@ -306,7 +306,7 @@ contains_set_npoint(const Set *s, Npoint *np)
 bool
 contained_npoint_set(const Npoint *np, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_npoint(s, np))
     return false;
   return contained_value_set(PointerGetDatum(np), s);
@@ -322,7 +322,7 @@ contained_npoint_set(const Npoint *np, const Set *s)
 Set *
 union_set_npoint(const Set *s, const Npoint *np)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_npoint(s, np))
     return NULL;
   return union_set_value(s, PointerGetDatum(np));
@@ -351,7 +351,7 @@ union_npoint_set(const Npoint *np, const Set *s)
 Set *
 intersection_set_npoint(const Set *s, const Npoint *np)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_npoint(s, np))
     return NULL;
   return intersection_set_value(s, PointerGetDatum(np));
@@ -380,7 +380,7 @@ intersection_npoint_set(const Npoint *np, const Set *s)
 Set *
 minus_npoint_set(const Npoint *np, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_npoint(s, np))
     return NULL;
   return minus_value_set(PointerGetDatum(np), s);
@@ -396,7 +396,7 @@ minus_npoint_set(const Npoint *np, const Set *s)
 Set *
 minus_set_npoint(const Set *s, const Npoint *np)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_npoint(s, np))
     return NULL;
   return minus_set_value(s, PointerGetDatum(np));
@@ -417,7 +417,7 @@ minus_set_npoint(const Set *s, const Npoint *np)
 Set *
 npoint_union_transfn(Set *state, const Npoint *np)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) np))
     return NULL;
   if (state && ! ensure_set_isof_type(state, T_NPOINTSET))

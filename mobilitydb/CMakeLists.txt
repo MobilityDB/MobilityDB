@@ -134,6 +134,10 @@ elseif(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
     target_compile_options(pose PRIVATE "/W4")
     target_compile_options(pg_pose PRIVATE "/W4")
   endif()
+  if(RGEO)
+    target_compile_options(rgeo PRIVATE "/W4")
+    target_compile_options(pg_rgeo PRIVATE "/W4")
+  endif()
 endif()
 
 #--------------------------------
@@ -155,6 +159,10 @@ if(POSE)
   message(STATUS "Including geoposes")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pose>")
 endif()
+if(RGEO)
+  message(STATUS "Including rigid geometries")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:rgeo>")
+endif()
 
 # Build the library: PostGIS
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
@@ -172,6 +180,9 @@ if(NPOINT)
 endif()
 if(POSE)
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_pose>")
+endif()
+if(RGEO)
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_rgeo>")
 endif()
 
 # Build the library

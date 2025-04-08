@@ -144,7 +144,7 @@ SELECT MIN(xmin(setSRID(b,4326))) FROM tbl_stbox;
  0.512863
 (1 row)
 
-SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,5676), 4326), 5676)))::numeric, 1) FROM tbl_stbox;
+SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,5676), 4326), 5676))), 1) FROM tbl_stbox;
  round 
 -------
    0.5
@@ -1371,148 +1371,148 @@ SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(trajectory(tge
  {"POINT(1 1)","POINT(2 2)"}
 (1 row)
 
-SELECT round(length(tgeompoint 'Point(1 1)@2000-01-01')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeompoint 'Point(1 1)@2000-01-01'), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(length(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(length(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]')::numeric, 6);
-  round   
-----------
- 2.828427
-(1 row)
-
-SELECT round(length(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}')::numeric, 6);
+SELECT round(length(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'), 6);
   round   
 ----------
  2.828427
 (1 row)
 
-SELECT round(length(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]')::numeric, 6);
+SELECT round(length(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'), 6);
   round   
 ----------
- 0.000000
+ 2.828427
 (1 row)
 
-SELECT round(length(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(length(tgeogpoint 'Point(1.5 1.5)@2000-01-01')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeompoint 'Interp=Step;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(length(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeogpoint 'Point(1.5 1.5)@2000-01-01'), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(length(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]')::numeric, 6);
+SELECT round(length(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'), 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(length(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'), 6);
      round     
 ---------------
  313711.325313
 (1 row)
 
-SELECT round(length(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
+SELECT round(length(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 6);
      round     
 ---------------
  313711.325313
 (1 row)
 
-SELECT round(length(tgeogpoint 'Interp=Step;[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeogpoint 'Interp=Step;[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(length(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeogpoint 'Interp=Step;{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(length(tgeompoint 'Point(1 1 1)@2000-01-01')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeompoint 'Point(1 1 1)@2000-01-01'), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(length(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(length(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]')::numeric, 6);
-  round   
-----------
- 3.464102
-(1 row)
-
-SELECT round(length(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}')::numeric, 6);
+SELECT round(length(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'), 6);
   round   
 ----------
  3.464102
 (1 row)
 
-SELECT round(length(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]')::numeric, 6);
+SELECT round(length(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'), 6);
   round   
 ----------
- 0.000000
+ 3.464102
 (1 row)
 
-SELECT round(length(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(length(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeompoint 'Interp=Step;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(length(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01'), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(length(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]')::numeric, 6);
-     round     
----------------
- 313711.325320
+SELECT round(length(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}'), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(length(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
-     round     
----------------
- 313711.325320
+SELECT round(length(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'), 6);
+    round     
+--------------
+ 313711.32532
 (1 row)
 
-SELECT round(length(tgeogpoint 'Interp=Step;[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
+    round     
+--------------
+ 313711.32532
 (1 row)
 
-SELECT round(length(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(length(tgeogpoint 'Interp=Step;[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'), 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(length(tgeogpoint 'Interp=Step;{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
+ round 
+-------
+     0
 (1 row)
 
 SELECT round(cumulativeLength(tgeompoint 'Point(1 1)@2000-01-01'), 6);
@@ -2117,55 +2117,55 @@ SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point empty'));
         
 (1 row)
 
-SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 0)'))::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 0)')), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 0)'))::numeric, 6);
-   round   
------------
- 90.000000
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 0)')), 6);
+ round 
+-------
+    90
 (1 row)
 
-SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 1)'))::numeric, 6);
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 1)')), 6);
    round   
 -----------
  44.995636
 (1 row)
 
-SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 1)'))::numeric, 6);
-  round   
-----------
- 0.000000
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 1)')), 6);
+ round 
+-------
+     0
 (1 row)
 
-SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 1)'))::numeric, 6);
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 1)')), 6);
    round    
 ------------
  315.004364
 (1 row)
 
-SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 0)'))::numeric, 6);
-   round    
-------------
- 270.000000
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 0)')), 6);
+ round 
+-------
+   270
 (1 row)
 
-SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 -1)'))::numeric, 6);
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 -1)')), 6);
    round    
 ------------
  224.995636
 (1 row)
 
-SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 -1)'))::numeric, 6);
-   round    
-------------
- 180.000000
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 -1)')), 6);
+ round 
+-------
+   180
 (1 row)
 
-SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 -1)'))::numeric, 6);
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 -1)')), 6);
    round    
 ------------
  135.004364

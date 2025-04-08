@@ -94,7 +94,7 @@ SELECT COUNT(*) FROM tbl_tfloat WHERE round(temp, 1) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_float WHERE degrees(f, true) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE degrees(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE radians(temp) IS NOT NULL;
-SELECT round(MAX(maxValue(derivative(temp)))::numeric, 6) FROM tbl_tfloat WHERE interp(temp) = 'Linear';
+SELECT round(MAX(maxValue(derivative(temp))), 6) FROM tbl_tfloat WHERE interp(temp) = 'Linear';
 
 SELECT COUNT(*) FROM tbl_tfloat WHERE exp(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat WHERE ln(abs(temp)) IS NOT NULL;

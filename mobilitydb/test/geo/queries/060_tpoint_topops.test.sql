@@ -71,6 +71,9 @@ SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 SELECT stboxes(tgeompoint 'Point(1 1)@2000-01-01');
 SELECT stboxes(tgeompoint '{Point(1 1)@2000-01-01}');
 
+SELECT stboxes(geometry 'Linestring(1 1,2 2,1 1)');
+SELECT stboxes(geometry 'Multilinestring((1 1,2 2,1 1),(3 3,4 4))');
+
 -------------------------------------------------------------------------------
 
 -- Sequence

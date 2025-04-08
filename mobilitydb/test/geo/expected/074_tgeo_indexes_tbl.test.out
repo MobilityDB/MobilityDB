@@ -829,7 +829,7 @@ CREATE INDEX tbl_tgeometry3D_rtree_idx ON tbl_tgeometry3D USING GIST(temp);
 CREATE INDEX
 WITH test AS (
   SELECT temp |=| tgeometry 'SRID=3812;[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
-SELECT round(distance::numeric, 6) FROM test;
+SELECT round(distance, 6) FROM test;
    round   
 -----------
  15.492953
@@ -839,10 +839,10 @@ SELECT round(distance::numeric, 6) FROM test;
 
 WITH test AS (
   SELECT temp |=| tgeometry 'SRID=3812;[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-07-01]' AS distance FROM tbl_tgeometry3D ORDER BY 1 LIMIT 3 )
-SELECT round(distance::numeric, 6) FROM test;
+SELECT round(distance, 6) FROM test;
    round   
 -----------
- 25.972850
+  25.97285
  36.208515
  42.084333
 (3 rows)
@@ -863,7 +863,7 @@ CREATE INDEX tbl_tgeometry3D_quadtree_idx ON tbl_tgeometry3D USING SPGIST(temp);
 CREATE INDEX
 WITH test AS (
   SELECT temp |=| tgeometry 'SRID=3812;[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeometry ORDER BY 1 LIMIT 3 )
-SELECT round(distance::numeric, 6) FROM test;
+SELECT round(distance, 6) FROM test;
    round   
 -----------
  15.492953
@@ -873,10 +873,10 @@ SELECT round(distance::numeric, 6) FROM test;
 
 WITH test AS (
   SELECT temp |=| tgeometry 'SRID=3812;[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-07-01]' AS distance FROM tbl_tgeometry3D ORDER BY 1 LIMIT 3 )
-SELECT round(distance::numeric, 6) FROM test;
+SELECT round(distance, 6) FROM test;
    round   
 -----------
- 25.972850
+  25.97285
  36.208515
  42.084333
 (3 rows)

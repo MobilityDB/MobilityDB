@@ -268,7 +268,6 @@ geometry_transform_gk(const GSERIALIZED *gs)
 Temporal *
 tgeompoint_transform_gk(const Temporal *temp)
 {
-  /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &gk;

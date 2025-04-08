@@ -58,7 +58,7 @@
 
 #if MEOS
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal point restricted to a point
  * @param[in] temp Temporal value
  * @param[in] gs Value
@@ -67,7 +67,7 @@
 Temporal *
 tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_tpoint_type(temp->temptype))
     return NULL;
@@ -75,7 +75,7 @@ tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal geo restricted to a geometry/geography
  * @param[in] temp Temporal value
  * @param[in] gs Value
@@ -84,7 +84,7 @@ tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
 Temporal *
 tgeo_at_value(const Temporal *temp, GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_tgeo_type(temp->temptype))
     return NULL;
@@ -92,7 +92,7 @@ tgeo_at_value(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal point restricted to the complement of a point
  * @param[in] temp Temporal value
  * @param[in] gs Value
@@ -101,7 +101,7 @@ tgeo_at_value(const Temporal *temp, GSERIALIZED *gs)
 Temporal *
 tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_tpoint_type(temp->temptype))
     return NULL;
@@ -109,7 +109,7 @@ tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_restrict
+ * @ingroup meos_geo_restrict
  * @brief Return a temporal geo restricted to the complement of a geo
  * @param[in] temp Temporal value
  * @param[in] gs Value
@@ -118,7 +118,7 @@ tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
 Temporal *
 tgeo_minus_value(const Temporal *temp, GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_tgeo_type(temp->temptype))
     return NULL;
@@ -126,7 +126,7 @@ tgeo_minus_value(const Temporal *temp, GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_geo_accessor
  * @brief Return the value of a temporal geo at a timestamptz
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
@@ -139,7 +139,7 @@ bool
 tgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   GSERIALIZED **value)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
       ! ensure_tgeo_type_all(temp->temptype))
     return false;
@@ -176,12 +176,11 @@ point_force2d(Datum point, Datum srid)
 static Temporal *
 tpoint_force2d(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype) ||
       ! ensure_has_Z(temp->temptype, temp->flags))
     return NULL;
 
-  /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &point_force2d;
@@ -213,8 +212,8 @@ static bool
 tpointsegm_timestamp_at_value1_iter(const TInstant *inst1,
   const TInstant *inst2, Datum value, TimestampTz *t)
 {
-  Datum value1 = tinstant_val(inst1);
-  Datum value2 = tinstant_val(inst2);
+  Datum value1 = tinstant_value_p(inst1);
+  Datum value2 = tinstant_value_p(inst2);
   /* Is the lower bound the answer? */
   bool result = true;
   if (datum_point_eq(value1, value))
@@ -526,7 +525,7 @@ tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
   bool hasz = MEOS_FLAGS_GET_Z(inst->flags) && MEOS_FLAGS_GET_Z(box->flags);
 
   /* Restrict to the XY(Z) dimension */
-  Datum value = tinstant_val(inst);
+  Datum value = tinstant_value_p(inst);
   /* Get the input point */
   double x, y, z = 0.0;
   if (hasz)
@@ -576,7 +575,7 @@ tgeoinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
     return tpointinst_restrict_stbox_iter(inst, box, border_inc, atfunc);
 
   /* Get the geometry of the instant and convert the box to a geometry */
-  const GSERIALIZED *gs1 = DatumGetGserializedP(tinstant_val(inst));
+  const GSERIALIZED *gs1 = DatumGetGserializedP(tinstant_value_p(inst));
   GSERIALIZED *gs2 = stbox_geo(box);
   /* Restrict to the spatial dimension */
   GSERIALIZED *res = atfunc ? 
@@ -593,7 +592,7 @@ tgeoinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo instant restricted to (the complement of) a
  * spatiotemporal box
  * @param[in] inst temporal geo instant
@@ -697,7 +696,7 @@ tgeoseq_step_restrict_stbox(const TSequence *seq, const STBox *box,
       {
         /* Continue the last instant of the sequence until the time of inst2
          * projected to the time dimension (if any) */
-        Datum value = tinstant_val(instants[ninsts - 1]);
+        Datum value = tinstant_value_p(instants[ninsts - 1]);
         bool tofree = false;
         bool upper_inc = false;
         /* Continue the last instant of the sequence until the time of inst2 */
@@ -774,7 +773,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   TInstant **tofree = palloc(sizeof(TInstant *) * seq->count * 2);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  const GSERIALIZED *p1 = DatumGetGserializedP(tinstant_val(inst1));
+  const GSERIALIZED *p1 = DatumGetGserializedP(tinstant_value_p(inst1));
   bool lower_inc = seq->period.lower_inc;
   bool upper_inc;
   int ninsts = 0, nseqs = 0, nfree = 0;
@@ -782,7 +781,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    const GSERIALIZED *p2 = DatumGetGserializedP(tinstant_val(inst2));
+    const GSERIALIZED *p2 = DatumGetGserializedP(tinstant_value_p(inst2));
     GSERIALIZED *p3, *p4;
     bool makeseq = false;
     if (geopoint_eq(p1, p2))
@@ -822,8 +821,8 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           /* Force the computation at 2D */
           inst1_2d = (TInstant *) tpoint_force2d((Temporal *) inst1);
           inst2_2d = (TInstant *) tpoint_force2d((Temporal *) inst2);
-          p1 = DatumGetGserializedP(tinstant_val(inst1_2d));
-          p2 = DatumGetGserializedP(tinstant_val(inst2_2d));
+          p1 = DatumGetGserializedP(tinstant_value_p(inst1_2d));
+          p2 = DatumGetGserializedP(tinstant_value_p(inst2_2d));
         }
         /* Compute timestamp t1 of point p3 */
         if (geopoint_eq(p1, p3))
@@ -946,7 +945,7 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
       lower_inc = true;
     }
     inst1 = inst2;
-    p1 = DatumGetGserializedP(tinstant_val(inst2));
+    p1 = DatumGetGserializedP(tinstant_value_p(inst2));
   }
   /* See above for explanation of condition */
   if (ninsts > 0 && (ninsts > 1 || lower_inc || upper_inc))
@@ -1006,7 +1005,7 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo sequence restricted to (the complement of) a
  * spatiotemporal box
  * @param[in] seq temporal geo sequence
@@ -1058,7 +1057,7 @@ tgeoseq_restrict_stbox(const TSequence *seq, const STBox *box,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo sequence set restricted to (the complement of)
  * a spatiotemporal box
  * @param[in] ss Temporal geo sequence set
@@ -1114,7 +1113,7 @@ tgeoseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo restricted to (the complement of) a
  * spatiotemporal box
  * @param[in] temp Temporal geo
@@ -1133,7 +1132,7 @@ tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   assert(hasx || hast);
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (hasx && (! ensure_same_geodetic(temp->flags, box->flags) ||
       ! ensure_same_srid(tspatial_srid(temp), box->srid)))
     return NULL;
@@ -1199,7 +1198,7 @@ tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 Temporal *
 tgeo_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_stbox(temp, box))
     return NULL;
   return tgeo_restrict_stbox(temp, box, border_inc, REST_AT);
@@ -1217,7 +1216,7 @@ tgeo_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 Temporal *
 tgeo_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_stbox(temp, box))
     return NULL;
   return tgeo_restrict_stbox(temp, box, border_inc, REST_MINUS);
@@ -1264,7 +1263,7 @@ tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
   TSequence **sequences = palloc(sizeof(TSequence *) * (seq->count - 1));
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  GSERIALIZED *p1 = DatumGetGserializedP(tinstant_val(inst1));
+  const GSERIALIZED *p1 = DatumGetGserializedP(tinstant_value_p(inst1));
   bool lower_inc = seq->period.lower_inc;
   bool lower_inc_seq = lower_inc, upper_inc;
   int nseqs = 0, ninsts = 0;
@@ -1272,7 +1271,7 @@ tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    GSERIALIZED *p2 = DatumGetGserializedP(tinstant_val(inst2));
+    const GSERIALIZED *p2 = DatumGetGserializedP(tinstant_value_p(inst2));
     /* Keep the segment if intersects the bounding box */
     bool inter = false;
     if (geopoint_eq(p1, p2))
@@ -1388,7 +1387,7 @@ tpoint_at_stbox_segm(const Temporal *temp, const STBox *box, bool border_inc)
   /* The stbox has ONLY spatial dimension */
   assert(MEOS_FLAGS_GET_X(box->flags));
   assert(! MEOS_FLAGS_GET_T(box->flags));
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_same_geodetic(temp->flags, box->flags) ||
       (MEOS_FLAGS_GET_X(box->flags) &&
         ! ensure_same_srid(tspatial_srid(temp), stbox_srid(box))))
@@ -1431,7 +1430,7 @@ tpointinst_restrict_geom_iter(const TInstant *inst, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
   /* Restrict to the Z dimension */
-  Datum value = tinstant_val(inst);
+  Datum value = tinstant_value_p(inst);
   if (zspan)
   {
     const POINT3DZ *p = DATUM_POINT3DZ_P(value);
@@ -1472,7 +1471,7 @@ tgeoinst_restrict_geom_iter(const TInstant *inst, const GSERIALIZED *gs,
   /* Z span is not allowed for general geometries */
   assert(! zspan);
   /* Get the geometry of the instant */
-  GSERIALIZED *gs1 = DatumGetGserializedP(tinstant_val(inst));
+  const GSERIALIZED *gs1 = DatumGetGserializedP(tinstant_value_p(inst));
   /* Restrict to the spatial dimension */
   GSERIALIZED *res = atfunc ? 
     geom_intersection2d(gs1, gs) : geom_difference2d(gs1, gs);
@@ -1487,7 +1486,7 @@ tgeoinst_restrict_geom_iter(const TInstant *inst, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo instant restricted to (the complement of) a
  * geometry
  * and possibly a Z span and a timestamptz span
@@ -1582,7 +1581,7 @@ tgeoseq_step_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
       if (ninsts > 0)
       {
         /* Continue the last instant of the sequence until the time of inst2 */
-        Datum value = tinstant_val(instants[ninsts - 1]);
+        Datum value = tinstant_value_p(instants[ninsts - 1]);
         bool tofree = false;
         bool upper_inc = false;
         instants[ninsts++] = tinstant_make(value, seq->temptype, inst->t);
@@ -1659,7 +1658,7 @@ tpointseq_interperiods(const TSequence *seq, const GSERIALIZED *gsinter,
   /* If the sequence is stationary the whole sequence intersects with the
    * geometry since gsinter is not empty */
   if (seq->count == 2 &&
-    datum_point_eq(tinstant_val(start), tinstant_val(end)))
+    datum_point_eq(tinstant_value_p(start), tinstant_value_p(end)))
   {
     result = palloc(sizeof(Span));
     result[0] = seq->period;
@@ -1968,7 +1967,7 @@ tpointseq_linear_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo sequence restricted to (the complement of) a
  * geometry and possibly a Z span and a timestamptz span
  * @param[in] seq Temporal geo
@@ -2015,7 +2014,7 @@ tgeoseq_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo sequence set restricted to (the complement
  * of) a geometry and possibly a Z span and a timestamptz span
  * @param[in] ss Temporal geo
@@ -2069,7 +2068,7 @@ tgeoseqset_restrict_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup meos_internal_temporal_restrict
+ * @ingroup meos_internal_geo_restrict
  * @brief Return a temporal geo restricted to (the complement of) a geometry
  * and possibly a Z span
  * @param[in] temp Temporal geo
@@ -2082,7 +2081,7 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
   assert(temp); assert(gs); assert(tgeo_type_all(temp->temptype));
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_has_not_Z_geo(gs) ||
       (zspan && ! ensure_has_Z(temp->temptype, temp->flags)) ||
@@ -2159,7 +2158,7 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
 Temporal *
 tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs))
     return NULL;
   return tgeo_restrict_geom(temp, gs, zspan, REST_AT);
@@ -2175,7 +2174,7 @@ tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan)
 Temporal *
 tgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs))
     return NULL;
   return tgeo_restrict_geom(temp, gs, NULL, REST_AT);
@@ -2195,7 +2194,7 @@ Temporal *
 tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs))
     return NULL;
   return tgeo_restrict_geom(temp, gs, zspan, REST_MINUS);
@@ -2211,7 +2210,7 @@ tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
 Temporal *
 tgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs))
     return NULL;
   return tgeo_restrict_geom(temp, gs, NULL, REST_MINUS);

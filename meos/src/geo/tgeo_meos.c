@@ -55,7 +55,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geometry point instant from its Well-Known Text
  * (WKT) representation
  * @param[in] str String
@@ -71,7 +71,7 @@ tgeompointinst_in(const char *str)
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal instant geography point from its Well-Known Text
  * (WKT) representation
  * @param[in] str String
@@ -87,7 +87,7 @@ tgeogpointinst_in(const char *str)
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geometry instant from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
@@ -103,7 +103,7 @@ tgeometryinst_in(const char *str)
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geography instant from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
@@ -121,7 +121,7 @@ tgeographyinst_in(const char *str)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geometry point sequence from its Well-Known Text
  * (WKT) representation
  * @param[in] str String
@@ -140,7 +140,7 @@ tgeompointseq_in(const char *str, interpType interp __attribute__((unused)))
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geography point sequence from its Well-Known Text
  * (WKT) representation
  * @param[in] str String
@@ -159,7 +159,7 @@ tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geometry sequence from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
@@ -178,7 +178,7 @@ tgeometryseq_in(const char *str, interpType interp __attribute__((unused)))
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geography sequence from its Well-Known Text (WKT)
  * representation
  * @param[in] str String
@@ -199,7 +199,7 @@ tgeographyseq_in(const char *str, interpType interp __attribute__((unused)))
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geometry point sequence set from its Well-Known
  * Text (WKT) representation
  * @param[in] str String
@@ -215,7 +215,7 @@ tgeompointseqset_in(const char *str)
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geography point sequence set from its Well-Known
  * Text (WKT) representation
  * @param[in] str String
@@ -231,7 +231,7 @@ tgeogpointseqset_in(const char *str)
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geometry sequence set from its Well-Known Text
  * (WKT) representation
  * @param[in] str String
@@ -247,7 +247,7 @@ tgeometryseqset_in(const char *str)
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geography sequence set from its Well-Known Text
  * (WKT) representation
  * @param[in] str String
@@ -267,54 +267,54 @@ tgeographyseqset_in(const char *str)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geometry point instant from its MF-JSON
  * representation
  * @param[in] mfjson MFJSON object
  * @param[in] srid SRID
  * @csqlfn #Temporal_from_mfjson()
  */
-TInstant *
+inline TInstant *
 tgeompointinst_from_mfjson(json_object *mfjson, int srid)
 {
   return tinstant_from_mfjson(mfjson, true, srid, T_TGEOMPOINT);
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geography point instant from its MF-JSON
  * representation
  * @param[in] mfjson MFJSON object
  * @param[in] srid SRID
  * @csqlfn #Temporal_from_mfjson()
  */
-TInstant *
+inline TInstant *
 tgeogpointinst_from_mfjson(json_object *mfjson, int srid)
 {
   return tinstant_from_mfjson(mfjson, true, srid, T_TGEOGPOINT);
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geometry instant from its MF-JSON representation
  * @param[in] mfjson MFJSON object
  * @param[in] srid SRID
  * @csqlfn #Temporal_from_mfjson()
  */
-TInstant *
+inline TInstant *
 tgeometryinst_from_mfjson(json_object *mfjson, int srid)
 {
   return tinstant_from_mfjson(mfjson, true, srid, T_TGEOMETRY);
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geography instant from its MF-JSON representation
  * @param[in] mfjson MFJSON object
  * @param[in] srid SRID
  * @csqlfn #Temporal_from_mfjson()
  */
-TInstant *
+inline TInstant *
 tgeographyinst_from_mfjson(json_object *mfjson, int srid)
 {
   return tinstant_from_mfjson(mfjson, true, srid, T_TGEOGRAPHY);
@@ -323,7 +323,7 @@ tgeographyinst_from_mfjson(json_object *mfjson, int srid)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geometry point sequence from its MF-JSON
  * representation
  * @param[in] mfjson MFJSON object
@@ -331,14 +331,14 @@ tgeographyinst_from_mfjson(json_object *mfjson, int srid)
  * @param[in] interp Interpolation
  * @csqlfn #Temporal_from_mfjson()
  */
-TSequence *
+inline TSequence *
 tgeompointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
   return tsequence_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, interp);
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geography point sequence from its MF-JSON
  * representation
  * @param[in] mfjson MFJSON object
@@ -346,35 +346,35 @@ tgeompointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
  * @param[in] interp Interpolation
  * @csqlfn #Temporal_from_mfjson()
  */
-TSequence *
+inline TSequence *
 tgeogpointseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
   return tsequence_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, interp);
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geometry sequence from its MF-JSON representation
  * @param[in] mfjson MFJSON object
  * @param[in] srid SRID
  * @param[in] interp Interpolation
  * @csqlfn #Temporal_from_mfjson()
  */
-TSequence *
+inline TSequence *
 tgeometryseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
   return tsequence_from_mfjson(mfjson, true, srid, T_TGEOMETRY, interp);
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geography sequence from its MF-JSON representation
  * @param[in] mfjson MFJSON object
  * @param[in] srid SRID
  * @param[in] interp Interpolation
  * @csqlfn #Temporal_from_mfjson()
  */
-TSequence *
+inline TSequence *
 tgeographyseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
   return tsequence_from_mfjson(mfjson, true, srid, T_TGEOGRAPHY, interp);
@@ -383,7 +383,7 @@ tgeographyseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geometry point sequence set from its MF-JSON
  * representation
  * @param[in] mfjson MFJSON object
@@ -391,14 +391,14 @@ tgeographyseq_from_mfjson(json_object *mfjson, int srid, interpType interp)
  * @param[in] interp Interpolation
  * @csqlfn #Temporal_from_mfjson()
  */
-TSequenceSet *
+inline TSequenceSet *
 tgeompointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
   return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOMPOINT, interp);
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geography point sequence set from its MF-JSON
  * representation
  * @param[in] mfjson MFJSON object
@@ -406,14 +406,14 @@ tgeompointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
  * @param[in] interp Interpolation
  * @csqlfn #Temporal_from_mfjson()
  */
-TSequenceSet *
+inline TSequenceSet *
 tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
   return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOGPOINT, interp);
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geometry sequence set from its MF-JSON
  * representation
  * @param[in] mfjson MFJSON object
@@ -421,14 +421,14 @@ tgeogpointseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
  * @param[in] interp Interpolation
  * @csqlfn #Temporal_from_mfjson()
  */
-TSequenceSet *
+inline TSequenceSet *
 tgeometryseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
   return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOMETRY, interp);
 }
 
 /**
- * @ingroup meos_internal_temporal_inout
+ * @ingroup meos_internal_geo_inout
  * @brief Return a temporal geography sequence set from its MF-JSON
  * representation
  * @param[in] mfjson MFJSON object
@@ -436,7 +436,7 @@ tgeometryseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
  * @param[in] interp Interpolation
  * @csqlfn #Temporal_from_mfjson()
  */
-TSequenceSet *
+inline TSequenceSet *
 tgeographyseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
 {
   return tsequenceset_from_mfjson(mfjson, true, srid, T_TGEOGRAPHY, interp);
@@ -451,7 +451,7 @@ tgeographyseqset_from_mfjson(json_object *mfjson, int srid, interpType interp)
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-Temporal *
+inline Temporal *
 tgeompoint_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TGEOMPOINT);
@@ -464,7 +464,7 @@ tgeompoint_from_mfjson(const char *mfjson)
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-Temporal *
+inline Temporal *
 tgeogpoint_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TGEOGPOINT);
@@ -476,7 +476,7 @@ tgeogpoint_from_mfjson(const char *mfjson)
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-Temporal *
+inline Temporal *
 tgeometry_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TGEOMETRY);
@@ -489,7 +489,7 @@ tgeometry_from_mfjson(const char *mfjson)
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-Temporal *
+inline Temporal *
 tgeography_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TGEOGRAPHY);
@@ -508,9 +508,9 @@ tgeography_from_mfjson(const char *mfjson)
 char *
 tgeo_out(const Temporal *temp, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || 
-      ! ensure_tgeo_type_all(temp->temptype))
+      ! ensure_tgeo_type_all(temp->temptype) || ! ensure_positive(maxdd))
     return NULL;
   return temporal_out(temp, maxdd);
 }
@@ -529,7 +529,7 @@ tgeo_out(const Temporal *temp, int maxdd)
 TSequence *
 tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
       ! ensure_not_empty(gs) || ! ensure_point_type(gs) || 
       ! ensure_set_isof_type(s, T_TSTZSET))
@@ -549,7 +549,7 @@ tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
 TSequence *
 tgeoseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
       ! ensure_not_empty(gs) || ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
@@ -571,7 +571,7 @@ TSequence *
 tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
   interpType interp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
       gserialized_is_empty(gs) || ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
@@ -593,7 +593,7 @@ TSequence *
 tgeoseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
   interpType interp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
       gserialized_is_empty(gs) || ! ensure_span_isof_type(s, T_TSTZSPAN))
     return NULL;
@@ -617,7 +617,7 @@ TSequenceSet *
 tpointseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
   interpType interp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) ss) ||
       ! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
@@ -640,7 +640,7 @@ TSequenceSet *
 tgeoseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
   interpType interp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) ss) ||
       ! ensure_not_empty(gs) ||
       ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
@@ -655,7 +655,7 @@ tgeoseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_constructor
+ * @ingroup meos_internal_geo_constructor
  * @brief Return a temporal geometry/point from a geometry and the time frame
  * of another temporal value
  * @param[in] gs Value
@@ -666,7 +666,7 @@ Temporal *
 tgeo_from_base_temp_int(const GSERIALIZED *gs, const Temporal *temp, 
   bool ispoint)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_tgeo_type_all(temp->temptype))
     return NULL;
@@ -720,7 +720,7 @@ tgeo_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 GSERIALIZED *
 tgeo_start_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_tgeo_type_all(temp->temptype))
     return NULL;
@@ -737,7 +737,7 @@ tgeo_start_value(const Temporal *temp)
 GSERIALIZED *
 tgeo_end_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_tgeo_type_all(temp->temptype))
     return NULL;
@@ -755,7 +755,7 @@ tgeo_end_value(const Temporal *temp)
 bool
 tgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result) ||
       ! ensure_tgeo_type_all(temp->temptype))
     return false;
@@ -777,7 +777,7 @@ tgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result)
 GSERIALIZED **
 tgeo_values(const Temporal *temp, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_tgeo_type_all(temp->temptype))
     return NULL;

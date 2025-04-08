@@ -721,6 +721,24 @@ Floatspan_ceil(PG_FUNCTION_ARGS)
   PG_RETURN_SPAN_P(floatspan_ceil(s));
 }
 
+PGDLLEXPORT Datum Float_round(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Float_round);
+/**
+ * @ingroup mobilitydb_setspan_transf
+ * @brief Return a float with the precision of the values set to a number
+ * of decimal places
+ * @sqlfn round()
+ * @note This solves the issue in PostgreSQL that we need to convert to a
+ * numeric in order to apply the round function.
+ */
+Datum
+Float_round(PG_FUNCTION_ARGS)
+{
+  double d = PG_GETARG_FLOAT8(0);
+  int maxdd = PG_GETARG_INT32(1);
+  PG_RETURN_FLOAT8(float_round(d, maxdd));
+}
+
 PGDLLEXPORT Datum Floatspan_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspan_round);
 /**

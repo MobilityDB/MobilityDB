@@ -32,8 +32,6 @@
  * @brief Spatial functons for temporal circular buffers
  */
 
-// #include "cbuffer/tcbuffer_spatialfuncs.h"
-
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/float.h>
@@ -222,8 +220,8 @@ tcbuffersegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
   Cbuffer *cbuf = DatumGetCbufferP(value);
-  Cbuffer *cbuf1 = DatumGetCbufferP(tinstant_val(inst1));
-  Cbuffer *cbuf2 = DatumGetCbufferP(tinstant_val(inst2));
+  Cbuffer *cbuf1 = DatumGetCbufferP(tinstant_value_p(inst1));
+  Cbuffer *cbuf2 = DatumGetCbufferP(tinstant_value_p(inst2));
   const GSERIALIZED *gs1 = cbuffer_point_p(cbuf1);
   const GSERIALIZED *gs2 = cbuffer_point_p(cbuf2);
   TimestampTz t1, t2;
@@ -293,7 +291,7 @@ tcbuffersegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 GSERIALIZED *
 tcbuffer_traversed_area(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || 
       ! ensure_temporal_isof_type(temp, T_TCBUFFER))
     return NULL;

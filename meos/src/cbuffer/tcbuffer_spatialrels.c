@@ -39,8 +39,6 @@
  * touches, and dwithin.
  */
 
-// #include "cbuffer/tcbuffer_spatialrels.h"
-
 /* C */
 #include <assert.h>
 /* MEOS */
@@ -52,7 +50,6 @@
 #include "geo/tgeo_spatialrels.h"
 #include "cbuffer/cbuffer.h"
 #include "cbuffer/tcbuffer_spatialfuncs.h"
-// #include "cbuffer/tcbuffer_tempspatialrels.h"
 
 /*****************************************************************************
  * Generic ever/always spatial relationship functions
@@ -69,13 +66,18 @@
  * @param[in] invert True if the arguments should be inverted
  * @return On error return -1
  */
-static int
+int
 spatialrel_tcbuffer_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum param, varfunc func, int numparam, bool invert)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
+  /* Ensure the validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs))
+    return -1;
+#else
+  assert(temp); assert(gs);
+#endif /* MEOS */
+  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
 
   assert(numparam == 2 || numparam == 3);
@@ -113,7 +115,7 @@ static int
 spatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
   Datum param, varfunc func, int numparam, bool invert)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1;
@@ -158,7 +160,7 @@ int
 ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
   bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -181,7 +183,7 @@ ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Acontains_geo_tcbuffer()
  */
-int
+inline int
 econtains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 {
   return ea_contains_geo_tcbuffer(gs, temp, EVER);
@@ -199,7 +201,7 @@ econtains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Acontains_geo_tcbuffer()
  */
-int
+inline int
 acontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 {
   return ea_contains_geo_tcbuffer(gs, temp, ALWAYS);
@@ -222,7 +224,7 @@ int
 ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -240,7 +242,7 @@ ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @csqlfn #Edisjoint_tcbuffer_geo()
  */
-int
+inline int
 edisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return ea_disjoint_tcbuffer_geo(temp, gs, EVER);
@@ -255,7 +257,7 @@ edisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @note aDisjoint(a, b) is equivalent to NOT eIntersects(a, b)
  * @csqlfn #Adisjoint_tcbuffer_geo()
  */
-int
+inline int
 adisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return ea_disjoint_tcbuffer_geo(temp, gs, ALWAYS);
@@ -272,7 +274,7 @@ adisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 edisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1;
@@ -291,11 +293,10 @@ edisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
  * @note aDisjoint(a, b) is equivalent to NOT eIntersects(a, b)
  * @csqlfn #Adisjoint_tcbuffer_geo()
  */
-int
+inline int
 adisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
-  int result = eintersects_tcbuffer_cbuffer(temp, cbuf);
-  return INVERT_RESULT(result);
+  return INVERT_RESULT(eintersects_tcbuffer_cbuffer(temp, cbuf));
 }
 
 #if MEOS
@@ -306,7 +307,7 @@ adisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Edisjoint_tcbuffer_tcbuffer()
  */
-int
+inline int
 edisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_ne, EVER);
@@ -320,7 +321,7 @@ edisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Adisjoint_tcbuffer_tcbuffer()
  */
-int
+inline int
 adisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_ne,
@@ -340,7 +341,7 @@ adisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] gs Geometry
  * @csqlfn #Eintersects_tcbuffer_geo()
  */
-int
+inline int
 eintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return spatialrel_tcbuffer_trav_geo(temp, gs, (Datum) NULL, 
@@ -356,11 +357,10 @@ eintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @note aIntersects(tcbuffer, geo) is equivalent to NOT eDisjoint(tcbuffer, geo)
  * @csqlfn #Aintersects_tcbuffer_geo()
  */
-int
+inline int
 aintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  int result = edisjoint_tcbuffer_geo(temp, gs);
-  return INVERT_RESULT(result);
+  return INVERT_RESULT(edisjoint_tcbuffer_geo(temp, gs));
 }
 
 /**
@@ -371,7 +371,7 @@ aintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] cbuf Circular buffer
  * @csqlfn #Eintersects_tcbuffer_cbuffer()
  */
-int
+inline int
 eintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
   return spatialrel_tcbuffer_cbuffer(temp, cbuf, (Datum) NULL, 
@@ -388,11 +388,10 @@ eintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
  * NOT eDisjoint(tcbuffer, cbuffer)
  * @csqlfn #Aintersects_tcbuffer_cbuffer()
  */
-int
+inline int
 aintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
-  int result = edisjoint_tcbuffer_cbuffer(temp, cbuf);
-  return INVERT_RESULT(result);
+  return INVERT_RESULT(edisjoint_tcbuffer_cbuffer(temp, cbuf));
 }
 
 #if MEOS
@@ -403,7 +402,7 @@ aintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Eintersects_tcbuffer_tcbuffer()
  */
-int
+inline int
 eintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   return MEOS_FLAGS_GET_GEODETIC(temp1->flags) ?
@@ -418,7 +417,7 @@ eintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Aintersects_tcbuffer_tcbuffer()
  */
-int
+inline int
 aintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   return MEOS_FLAGS_GET_GEODETIC(temp1->flags) ?
@@ -442,7 +441,7 @@ aintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 int
 etouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -481,7 +480,7 @@ etouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 atouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -514,7 +513,7 @@ atouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 etouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1;
@@ -553,7 +552,7 @@ etouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 int
 atouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1;
@@ -591,7 +590,7 @@ atouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 int
 edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -612,7 +611,7 @@ edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 int
 adwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -641,7 +640,7 @@ int
 edwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
   double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_valid_tcbuffer_cbuffer(temp, cbuf) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -663,7 +662,7 @@ int
 adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
   double dist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_valid_tcbuffer_cbuffer(temp, cbuf) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -693,8 +692,8 @@ ea_dwithin_tcbufferinst_tcbufferinst(const TInstant *inst1,
 {
   assert(inst1); assert(inst2);
   /* Result is the same for both EVER and ALWAYS */
-  return DatumGetBool(datum_geom_dwithin2d(tinstant_val(inst1),
-    tinstant_val(inst2), Float8GetDatum(dist)));
+  return DatumGetBool(datum_geom_dwithin2d(tinstant_value_p(inst1),
+    tinstant_value_p(inst2), Float8GetDatum(dist)));
 }
 
 /**
@@ -770,8 +769,8 @@ ea_dwithin_tcbufferseq_tcbufferseq_cont(const TSequence *seq1,
 
   start1 = TSEQUENCE_INST_N(seq1, 0);
   start2 = TSEQUENCE_INST_N(seq2, 0);
-  Datum sv1 = tinstant_val(start1);
-  Datum sv2 = tinstant_val(start2);
+  Datum sv1 = tinstant_value_p(start1);
+  Datum sv2 = tinstant_value_p(start2);
 
   bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
   bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
@@ -782,8 +781,8 @@ ea_dwithin_tcbufferseq_tcbufferseq_cont(const TSequence *seq1,
   {
     const TInstant *end1 = TSEQUENCE_INST_N(seq1, i);
     const TInstant *end2 = TSEQUENCE_INST_N(seq2, i);
-    Datum ev1 = tinstant_val(end1);
-    Datum ev2 = tinstant_val(end2);
+    Datum ev1 = tinstant_value_p(end1);
+    Datum ev2 = tinstant_value_p(end2);
     TimestampTz upper = end1->t;
     bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
 
@@ -878,7 +877,7 @@ ea_dwithin_tcbuffer_tcbuffer_sync(const Temporal *sync1, const Temporal *sync2,
 }
 
 /**
- * @ingroup meos_internal_temporal_spatial_rel_ever
+ * @ingroup meos_internal_cbuffer_spatial_rel_ever
  * @brief Return 1 if two temporal circular buffers are ever within a distance,
  * 0 if not, -1 on error or if the temporal circular buffers do not intersect
  * on time
@@ -891,7 +890,7 @@ int
 ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double dist, bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_valid_tcbuffer_tcbuffer(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -918,14 +917,10 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  * @param[in] dist Distance
  * @csqlfn #Edwithin_tcbuffer_tcbuffer()
  */
-int
+inline int
 edwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
-    return -1;
   return ea_dwithin_tcbuffer_tcbuffer(temp1, temp2, dist, EVER);
 }
 
@@ -938,14 +933,10 @@ edwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  * @param[in] dist Distance
  * @csqlfn #Adwithin_tcbuffer_tcbuffer()
  */
-int
+inline int
 adwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
-    return -1;
   return ea_dwithin_tcbuffer_tcbuffer(temp1, temp2, dist, ALWAYS);
 }
 

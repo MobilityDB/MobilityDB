@@ -46,19 +46,19 @@ SELECT ST_AsText(transform_gk(geometry 'Linestring empty'));
  LINESTRING EMPTY
 (1 row)
 
-SELECT round(MAX(ST_X(startValue(transform_gk(temp))))::numeric, 6) FROM tbl_tgeompoint;
+SELECT round(MAX(ST_X(startValue(transform_gk(temp)))), 6) FROM tbl_tgeompoint;
       round      
 -----------------
  12685412.960367
 (1 row)
 
-SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) FROM tbl_geom_point;
+SELECT round(MAX(ST_X(transform_gk(g))), 6) FROM tbl_geom_point;
       round      
 -----------------
- 15523281.670409
+ 15523281.670408
 (1 row)
 
-SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) FROM tbl_geom_linestring WHERE NOT ST_IsEmpty(g);
+SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g)))), 6) FROM tbl_geom_linestring WHERE NOT ST_IsEmpty(g);
       round      
 -----------------
  13567136.086579
@@ -256,61 +256,61 @@ SELECT asText(round(array_agg(inst ORDER BY k), 2)) FROM tbl_tgeogpoint_inst WHE
  {"POINT(27.54 35.3)@Tue Oct 16 08:01:00 2001 PDT","POINT(-6.57 52.61)@Sat May 19 18:20:00 2001 PDT","POINT(22.5 68.97)@Fri Jan 12 03:31:00 2001 PST","POINT(26.45 70.34)@Tue Oct 16 07:29:00 2001 PDT","POINT(8.63 69.56)@Sun Jul 22 21:58:00 2001 PDT"}
 (1 row)
 
-SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint;
+SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeompoint;
    round   
 -----------
  98.055514
 (1 row)
 
-SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeogpoint;
    round   
 -----------
  30.050304
 (1 row)
 
-SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeompoint;
+SELECT round(MAX(twavg(getY(temp))), 6) FROM tbl_tgeompoint;
    round   
 -----------
  99.507493
 (1 row)
 
-SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+SELECT round(MAX(twavg(getY(temp))), 6) FROM tbl_tgeogpoint;
    round   
 -----------
  67.815801
 (1 row)
 
-SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
-   round   
------------
- 88.833620
+SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeompoint3D;
+  round   
+----------
+ 88.83362
 (1 row)
 
-SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(twavg(getX(temp))), 6) FROM tbl_tgeogpoint3D;
    round   
 -----------
  31.711561
 (1 row)
 
-SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(twavg(getY(temp))), 6) FROM tbl_tgeompoint3D;
    round   
 -----------
  97.438117
 (1 row)
 
-SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(twavg(getY(temp))), 6) FROM tbl_tgeogpoint3D;
    round   
 -----------
  71.386957
 (1 row)
 
-SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(twavg(getZ(temp))), 6) FROM tbl_tgeompoint3D;
    round   
 -----------
  97.118984
 (1 row)
 
-SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(twavg(getZ(temp))), 6) FROM tbl_tgeogpoint3D;
    round    
 ------------
  984.325312
@@ -340,13 +340,13 @@ SELECT MAX(ST_NPoints(trajectory(temp)::geometry)) FROM tbl_tgeogpoint3D;
  712
 (1 row)
 
-SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tgeompoint;
-    round    
--------------
- 2517.034440
+SELECT round(MAX(length(temp)), 6) FROM tbl_tgeompoint;
+   round    
+------------
+ 2517.03444
 (1 row)
 
-SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(length(temp)), 6) FROM tbl_tgeompoint3D;
     round    
 -------------
  2974.577302
@@ -364,25 +364,25 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE length(temp) = ST_Length(trajectory(
     71
 (1 row)
 
-SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeompoint;
-    round    
--------------
- 2517.034440
+SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeompoint;
+   round    
+------------
+ 2517.03444
 (1 row)
 
-SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeogpoint;
       round      
 -----------------
  75503509.305624
 (1 row)
 
-SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeompoint3D;
     round    
 -------------
  2974.577302
 (1 row)
 
-SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(maxValue(cumulativeLength(temp))), 6) FROM tbl_tgeogpoint3D;
       round      
 -----------------
  75084456.388854
@@ -394,13 +394,13 @@ SELECT MAX(ST_Area(convexHull(temp))) FROM tbl_tgeompoint;
  9220.856176317631
 (1 row)
 
-SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint WHERE interp(temp) = 'Linear';
+SELECT round(MAX(maxValue(speed(temp))), 6) FROM tbl_tgeompoint WHERE interp(temp) = 'Linear';
   round   
 ----------
  1.606515
 (1 row)
 
-SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint3D WHERE interp(temp) = 'Linear';
+SELECT round(MAX(maxValue(speed(temp))), 6) FROM tbl_tgeompoint3D WHERE interp(temp) = 'Linear';
   round   
 ----------
  1.860218
@@ -434,25 +434,25 @@ SELECT MAX(length(ST_AsText(round(twcentroid(temp), 6)))) FROM tbl_tgeompoint3D;
   39
 (1 row)
 
-SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint;
+SELECT round(AVG(degrees(direction(temp))), 6) FROM tbl_tgeompoint;
    round    
 ------------
  170.328089
 (1 row)
 
-SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+SELECT round(AVG(degrees(direction(temp))), 6) FROM tbl_tgeogpoint;
    round    
 ------------
  169.178471
 (1 row)
 
-SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+SELECT round(AVG(degrees(direction(temp))), 6) FROM tbl_tgeompoint3D;
    round    
 ------------
  180.963911
 (1 row)
 
-SELECT round(AVG(degrees(direction(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+SELECT round(AVG(degrees(direction(temp))), 6) FROM tbl_tgeogpoint3D;
    round    
 ------------
  193.561739

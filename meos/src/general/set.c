@@ -177,7 +177,7 @@ char *
 set_out_fn(const Set *s, int maxdd, outfunc value_out)
 {
   assert(s);
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_negative(maxdd))
     return NULL;
 
@@ -205,7 +205,7 @@ char *
 set_out(const Set *s, int maxdd)
 {
   assert(s);
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_negative(maxdd))
     return NULL;
   return set_out_fn(s, maxdd, &basetype_out);
@@ -497,7 +497,7 @@ set_make_free(Datum *values, int count, meosType basetype, bool order)
 Set *
 set_copy(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s))
     return NULL;
@@ -538,7 +538,7 @@ value_set(Datum value, meosType basetype)
 Set *
 intset_floatset(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_INTSET))
     return NULL;
@@ -562,7 +562,7 @@ intset_floatset(const Set *s)
 Set *
 floatset_intset(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
     return NULL;
@@ -586,7 +586,7 @@ floatset_intset(const Set *s)
 Set *
 dateset_tstzset(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_DATESET))
     return NULL;
@@ -611,7 +611,7 @@ dateset_tstzset(const Set *s)
 Set *
 tstzset_dateset(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
@@ -656,7 +656,7 @@ set_mem_size(const Set *s)
 int
 set_num_values(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s))
     return -1;
@@ -668,7 +668,7 @@ set_num_values(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_accessor
- * @brief Return (a copy of) the start value of a set
+ * @brief Return a copy of the start value of a set
  * @param[in] s Set
  */
 Datum
@@ -681,7 +681,7 @@ set_start_value(const Set *s)
 
 /**
  * @ingroup meos_internal_setspan_accessor
- * @brief Return (a copy of) the end value of a set
+ * @brief Return a copy of the end value of a set
  * @param[in] s Set
  */
 Datum
@@ -814,7 +814,7 @@ set_compact(const Set *s)
 Set *
 floatset_floor(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
     return NULL;
@@ -836,7 +836,7 @@ floatset_floor(const Set *s)
 Set *
 floatset_ceil(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
     return NULL;
@@ -860,7 +860,7 @@ floatset_ceil(const Set *s)
 Set *
 floatset_degrees(const Set *s, bool normalize)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
     return NULL;
@@ -883,7 +883,7 @@ floatset_degrees(const Set *s, bool normalize)
 Set *
 floatset_radians(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
     return NULL;
@@ -906,7 +906,7 @@ floatset_radians(const Set *s)
 Set *
 textset_lower(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TEXTSET))
     return NULL;
@@ -929,7 +929,7 @@ textset_lower(const Set *s)
 Set *
 textset_upper(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TEXTSET))
     return NULL;
@@ -952,7 +952,7 @@ textset_upper(const Set *s)
 Set *
 textset_initcap(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TEXTSET))
     return NULL;
@@ -1000,7 +1000,7 @@ numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
   bool haswidth)
 {
   meosType type = s->basetype;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_numset_type(s->settype) ||
       ! ensure_one_true(hasshift, haswidth) ||
       (haswidth && ! ensure_positive_datum(width, type)))
@@ -1053,7 +1053,7 @@ Set *
 tstzset_shift_scale(const Set *s, const Interval *shift,
   const Interval *duration)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
@@ -1145,7 +1145,7 @@ set_unnest_state_next(SetUnnestState *state)
 bool
 set_eq(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
@@ -1188,7 +1188,7 @@ set_ne(const Set *s1, const Set *s2)
 int
 set_cmp(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_set_type(s1, s2))
@@ -1281,7 +1281,7 @@ set_ge(const Set *s1, const Set *s2)
 uint32
 set_hash(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s))
     return INT_MAX;
@@ -1308,7 +1308,7 @@ set_hash(const Set *s)
 uint64
 set_hash_extended(const Set *s, uint64 seed)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s))
     return INT_MAX;

@@ -371,7 +371,6 @@ CREATE FUNCTION valueSpan(tfloat)
   AS 'MODULE_PATHNAME', 'Tnumber_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Casting CANNOT be implicit to avoid ambiguity
 CREATE CAST (tbool AS tstzspan) WITH FUNCTION timeSpan(tbool);
 CREATE CAST (tint AS tstzspan) WITH FUNCTION timeSpan(tint);
 CREATE CAST (tfloat AS tstzspan) WITH FUNCTION timeSpan(tfloat);

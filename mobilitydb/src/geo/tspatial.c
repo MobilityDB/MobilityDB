@@ -118,7 +118,7 @@ Tspatial_from_ewkt(PG_FUNCTION_ARGS)
 
 /**
  * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation of
- * a temporal geometry
+ * a temporal spatial value
  * @sqlfn asText()
  */
 static Datum
@@ -140,7 +140,8 @@ PGDLLEXPORT Datum Tspatial_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_as_text);
 /**
  * @ingroup mobilitydb_geo_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal point
+ * @brief Return the Well-Known Text (WKT) representation of a temporal spatial
+ * value
  * @sqlfn asText()
  */
 Datum
@@ -154,7 +155,7 @@ PG_FUNCTION_INFO_V1(Tspatial_as_ewkt);
 /**
  * @ingroup mobilitydb_geo_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation of a
- * temporal point
+ * temporal spatial value
  * @note It is the WKT representation prefixed with the SRID
  * @sqlfn asEWKT()
  */
@@ -249,8 +250,6 @@ Tspatial_expand_space(PG_FUNCTION_ARGS)
   double d = PG_GETARG_FLOAT8(1);
   STBox *result = tspatial_expand_space(temp, d);
   PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_STBOX_P(result);
 }
 

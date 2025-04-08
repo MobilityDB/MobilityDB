@@ -61,9 +61,7 @@
 			<listitem xml:id="tspatial_asText">
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
-				<para>Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation &Z_support;
- &geography_support;
-</para>
+				<para>Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation &Z_support; &geography_support;</para>
 				<para><varname>asText({tspatial,tspatial[],spatial[]}) → {text,text[]}</varname></para>
 				<para><varname>asEWKT({tspatial,tspatial[],spatial[]}) → {text,text[]}</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -88,9 +86,7 @@ SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
 
 			<listitem xml:id="tspatial_asMFJSON">
 				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
-				<para>Return the Moving Features JSON representation &Z_support;
- &geography_support;
-</para>
+				<para>Return the Moving Features JSON representation &Z_support; &geography_support;</para>
 				<para><varname>asMFJSON(tspatial,options=0,flags=0,maxdecdigits=15) → bytea</varname></para>
 				<para>The <varname>options</varname> argument can be used to add BBOX and/or CRS in MFJSON output:</para>
 				<itemizedlist>
@@ -129,9 +125,7 @@ SELECT asMFJSON(tgeompoint 'SRID=4326;
 				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
-				<para>Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB) representation, or the Hexadecimal Extended Well-Known Binary (EWKB) representation &Z_support;
- &geography_support;
-</para>
+				<para>Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB) representation, or the Hexadecimal Extended Well-Known Binary (EWKB) representation &Z_support; &geography_support;</para>
 				<para><varname>asBinary(tspatial,endian text='') → bytea</varname></para>
 				<para><varname>asEWKB(tspatial,endian text='') → bytea</varname></para>
 				<para><varname>asHexEWKB(tspatial,endian text='') → text</varname></para>
@@ -170,9 +164,7 @@ SELECT asEWKT(tgeographyFromEWKT(text 'SRID=7844;[Point(1 2)@2001-01-01,
 
 			<listitem xml:id="tspatialFromMFJSON">
 				<indexterm significance="normal"><primary><varname>tspatialFromMFJSON</varname></primary></indexterm>
-				<para>Input from the Moving Features JSON representation &Z_support;
- &geography_support;
-</para>
+				<para>Input from the Moving Features JSON representation &Z_support; &geography_support;</para>
 				<para><varname>tspatialFromMFJSON(text) → tspatial</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(tgeompointFromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
@@ -195,9 +187,7 @@ SELECT asEWKT(tgeographyFromMFJSON(text '{"type":"MovingGeometry",
 				<indexterm significance="normal"><primary><varname>tspatialFromBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tspatialFromEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tspatialFromHexEWKB</varname></primary></indexterm>
-				<para>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation &Z_support;
- &geography_support;
-</para>
+				<para>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation &Z_support; &geography_support;</para>
 				<para><varname>tspatialFromBinary(bytea) → tspatial</varname></para>
 				<para><varname>tspatialFromEWKB(bytea) → tspatial</varname></para>
 				<para><varname>tspatialFromHexEWKB(text) → tspatial</varname></para>
@@ -294,12 +284,10 @@ SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 	<sect1 xml:id="tgeo_accessors">
 		<title>Accessors</title>
 		<itemizedlist>
-			<listitem xml:id="trajectory">
+			<listitem xml:id="tgeo_trajectory">
 				<indexterm significance="normal"><primary><varname>trajectory</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>traversedArea</varname></primary></indexterm>
-				<para>Return the trajectory or the traversed area &Z_support;
- &geography_support;
-</para>
+				<para>Return the trajectory or the traversed area &Z_support; &geography_support;</para>
 				<para><varname>trajectory(tpoint) → geo</varname></para>
 				<para><varname>traversedArea(tgeo) → geo</varname></para>
 				<para>This function is equivalent to <link linkend="getValues"><varname>getValues</varname></link> for temporal alphanumeric values. The functions removes redundant component geometries by applying the PostGIS function <ulink url="https://postgis.net/docs/ST_UnaryUnion.html">ST_UnaryUnion</ulink> to the result.</para>
@@ -314,9 +302,23 @@ SELECT ST_AsText(trajectory(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001
   [Point(1 1)@2001-01-03, Point(1 1)@2001-01-04),
   [Point(2 1)@2001-01-05, Point(2 2)@2001-01-06)}'));
 -- GEOMETRYCOLLECTION(POINT(1 1),MULTILINESTRING((0 0,0 1),(2 1,2 2)))
-SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01, 
+SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01,
   Linestring(1 1,2 2)@2001-01-02, Point(2 2)@2001-01-03]'));
 -- LINESTRING(1 1,2 2)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tgeo_centroid">
+				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>
+				<para>Return the centroid as a temporal point &geography_support;</para>
+				<para><varname>centroid(tgeo) → tpoint</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(centroid(tgeometry '[Point(1 1)@2000-01-01, Linestring(1 1,3 3)@2000-01-02,
+  Polygon((1 1,4 4,7 1,1 1))@2000-01-03]'));
+-- Interp=Step;[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02, POINT(4 2)@2000-01-03]
+SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2000-01-01, 
+  Polygon((1 1,4 4,7 1,1 1))@2000-01-02]'),6);
+-- Interp=Step;[POINT(4 2.001727)@2000-01-01, POINT(4 2.001727)@2000-01-02]
 </programlisting>
 			</listitem>
 
@@ -324,9 +326,7 @@ SELECT ST_AsText(traversedArea(tgeometry '[Point(1 1)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>getX</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>getY</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>getZ</varname></primary></indexterm>
-				<para>Return the X/Y/Z coordinate values as a temporal float &Z_support;
- &geography_support;
-</para>
+				<para>Return the X/Y/Z coordinate values as a temporal float &Z_support; &geography_support;</para>
 				<para><varname>getX(tpoint) → tfloat</varname></para>
 				<para><varname>getY(tpoint) → tfloat</varname></para>
 				<para><varname>getZ(tpoint) → tfloat</varname></para>
@@ -354,8 +354,7 @@ SELECT getZ(tgeogpoint 'Interp=Step;[Point(1 2 3)@2001-01-01, Point(4 5 6)@2001-
 
 			<listitem xml:id="isSimple">
 				<indexterm significance="normal"><primary><varname>isSimple</varname></primary></indexterm>
-				<para>Return true if the temporal point does not spatially self-intersect &Z_support;
-</para>
+				<para>Return true if the temporal point does not spatially self-intersect &Z_support;</para>
 				<para><varname>isSimple(tpoint) → boolean</varname></para>
 				<para>Notice that a temporal sequence set point is simple if every composing sequence is simple.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -373,9 +372,7 @@ SELECT isSimple(tgeompoint '{[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02],
 
 			<listitem xml:id="length">
 				<indexterm significance="normal"><primary><varname>length</varname></primary></indexterm>
-				<para>Return the length traversed by the temporal point &Z_support;
- &geography_support;
-</para>
+				<para>Return the length traversed by the temporal point &Z_support; &geography_support;</para>
 				<para><varname>length(tpoint) → float</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT length(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02]');
@@ -391,9 +388,7 @@ SELECT length(tgeompoint 'Interp=Step;[Point(0 0 0)@2001-01-01,
 
 			<listitem xml:id="cumulativeLength">
 				<indexterm significance="normal"><primary><varname>cumulativeLength</varname></primary></indexterm>
-				<para>Return the cumulative length traversed by the temporal point &Z_support;
- &geography_support;
-</para>
+				<para>Return the cumulative length traversed by the temporal point &Z_support; &geography_support;</para>
 				<para><varname>cumulativeLength(tpoint) → tfloatSeq</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
@@ -408,9 +403,7 @@ SELECT cumulativeLength(tgeompoint 'Interp=Step;[Point(0 0 0)@2001-01-01,
 
 			<listitem xml:id="speed">
 				<indexterm significance="normal"><primary><varname>speed</varname></primary></indexterm>
-				<para>Return the speed of the temporal point in units per second &Z_support;
- &geography_support;
-</para>
+				<para>Return the speed of the temporal point in units per second &Z_support; &geography_support;</para>
 				<para><varname>speed(tpoint) → tfloatSeqSet</varname></para>
 				<para>The temporal point must have linear interpolation</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -426,8 +419,7 @@ SELECT speed(tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-
 
 			<listitem xml:id="twCentroid">
 				<indexterm significance="normal"><primary><varname>twCentroid</varname></primary></indexterm>
-				<para>Return the time-weighted centroid &Z_support;
-</para>
+				<para>Return the time-weighted centroid &Z_support;</para>
 				<para><varname>twCentroid(tgeompoint) → point</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2001-01-01,
@@ -438,9 +430,7 @@ SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2001-01-01,
 
 			<listitem xml:id="direction">
 				<indexterm significance="normal"><primary><varname>direction</varname></primary></indexterm>
-				<para>Return the direction, that is, the azimuth between the start and end locations &Z_support;
- &geography_support;
-</para>
+				<para>Return the direction, that is, the azimuth between the start and end locations &Z_support; &geography_support;</para>
 				<para><varname>direction(tpoint) → float</varname></para>
 				<para>The result is expressed in radians. It is NULL if there is only one location or if the start and end locations are equal.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -455,9 +445,7 @@ SELECT direction(tgeompoint '{[Point(0 0 0)@2001-01-01,
 
 			<listitem xml:id="azimuth">
 				<indexterm significance="normal"><primary><varname>azimuth</varname></primary></indexterm>
-				<para>Return the temporal azimuth &Z_support;
- &geography_support;
-</para>
+				<para>Return the temporal azimuth &Z_support; &geography_support;</para>
 				<para><varname>azimuth(tpoint) → tfloat</varname></para>
 				<para>The result is expressed in radians. The azimut is undefined when two succesive locations are equal and in this case a temporal gap is added.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -469,8 +457,7 @@ SELECT round(degrees(azimuth(tgeompoint '[Point(0 0 0)@2001-01-01,
 
 			<listitem xml:id="angularDifference">
 				<indexterm significance="normal"><primary><varname>angularDifference</varname></primary></indexterm>
-				<para>Return the temporal angular difference &geography_support;
-</para>
+				<para>Return the temporal angular difference &geography_support;</para>
 				<para><varname>angularDifference(tpoint) → tfloat</varname></para>
 				<para>The result is expressed in degrees.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -485,10 +472,8 @@ SELECT round(degrees(angularDifference(tgeompoint '{[Point(1 1)@2001-01-01,
 
 			<listitem xml:id="bearing">
 				<indexterm significance="normal"><primary><varname>bearing</varname></primary></indexterm>
-				<para>Return the temporal bearing &Z_support;
- &geography_support;
-</para>
-				<para><varname>bearing({tpoint, point}, {tpoint, point}) → tfloat</varname></para>
+				<para>Return the temporal bearing &Z_support; &geography_support;</para>
+				<para><varname>bearing({tpoint,point},{tpoint,point}) → tfloat</varname></para>
 				<para>Notice that this function does not accept two temporal geographic points.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]',
@@ -510,9 +495,7 @@ SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2001-01-01, Point(0 1)@2001
 		<itemizedlist>
 			<listitem xml:id="tpoint_round">
 				<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
-				<para>Round the coordinate values to a number of decimal places &Z_support;
- &geography_support;
-</para>
+				<para>Round the coordinate values to a number of decimal places &Z_support; &geography_support;</para>
 				<para><varname>round(tspatial,integer=0) → tspatial</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(round(tgeompoint '{Point(1.12345 1.12345 1.12345)@2001-01-01,
@@ -524,10 +507,9 @@ SELECT asText(round(tgeography 'Linestring(1.12345 1.12345,2.12345 2.12345)@2001
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="makeSimple">
+			<listitem xml:id="tpoint_makeSimple">
 				<indexterm significance="normal"><primary><varname>makeSimple</varname></primary></indexterm>
-				<para>Return an array of fragments of the temporal point which are simple &Z_support;
-</para>
+				<para>Return an array of fragments of the temporal point which are simple &Z_support;</para>
 				<para><varname>makeSimple(tpoint) → tgeompoint[]</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
@@ -549,11 +531,9 @@ SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2001-01-01, Point(1 1 1)@200
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="geoMeasure">
+			<listitem xml:id="tgeo_geoMeasure">
 				<indexterm significance="normal"><primary><varname>geoMeasure</varname></primary></indexterm>
-				<para>Construct a geometry/geography with M measure from a temporal point and a temporal float &Z_support;
- &geography_support;
-</para>
+				<para>Construct a geometry/geography with M measure from a temporal point and a temporal float &Z_support; &geography_support;</para>
 				<para><varname>geoMeasure(tpoint,tfloat,segmentize=false) → geo</varname></para>
 				<para>The last argument <varname>segmentize</varname> states whether the resulting value is a either <varname>Linestring M</varname> or a <varname>MultiLinestring M</varname> where each component is a segment of two points.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -596,13 +576,12 @@ ramp_color(
 				</figure>
 			</listitem>
 
-			<listitem xml:id="affine">
+			<listitem xml:id="tgeo_affine">
 				<indexterm significance="normal"><primary><varname>affine</varname></primary></indexterm>
-				<para>Return the 3D affine transform of a temporal geometry to do things like translate, rotate, scale in one step &Z_support;
-</para>
-				<para><varname>affine(tgeo,float a, float b, float c, float d, float e, float f, float g,</varname></para>
-				<para><varname>  float h, float i, float xoff, float yoff, float zoff) → tgeo</varname></para>
-				<para><varname>affine(tgeo,float a, float b, float d, float e, float xoff, float yoff) → tgeo</varname></para>
+				<para>Return the 3D affine transform of a temporal geometry to do things like translate, rotate, scale in one step &Z_support;</para>
+				<para><varname>affine(tgeo,float a,float b,float c,float d,float e,float f,float g,</varname></para>
+				<para><varname>  float h,float i,float xoff,float yoff,float zoff) → tgeo</varname></para>
+				<para><varname>affine(tgeo,float a,float b,float d,float e,float xoff,float yoff) → tgeo</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Rotate a 3D temporal point 180 degrees about the z axis
 SELECT asEWKT(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1,
@@ -621,7 +600,7 @@ FROM (SELECT tgeometry '[Point(1 1)@2001-01-01,
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="rotate">
+			<listitem xml:id="tgeo_rotate">
 				<indexterm significance="normal"><primary><varname>rotate</varname></primary></indexterm>
 				<para>Return the temporal point rotated counter-clockwise about the origin point</para>
 				<para><varname>rotate(tgeo,float radians) → tgeo</varname></para>
@@ -647,8 +626,7 @@ FROM (SELECT tgeometry '[Point(5 10)@2001-01-01, Point(5 5)@2001-01-02,
 
 			<listitem xml:id="scale">
 				<indexterm significance="normal"><primary><varname>scale</varname></primary></indexterm>
-				<para>Return a temporal point scaled by given factors &Z_support;
-</para>
+				<para>Return a temporal point scaled by given factors &Z_support;</para>
 				<para><varname>scale(tgeo,float Xfactor,float Yfactor,float Zfactor) → tgeo</varname></para>
 				<para><varname>scale(tgeo,float Xfactor,float Yfactor) → tgeo</varname></para>
 				<para><varname>scale(tgeo,geometry factor) → tgeo</varname></para>
@@ -671,8 +649,7 @@ SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,2 2)@2001-
 
 			<listitem xml:id="asMVTGeom">
 				<indexterm significance="normal"><primary><varname>asMVTGeom</varname></primary></indexterm>
-				<para>Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile &Z_support;
-</para>
+				<para>Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile &Z_support;</para>
 				<para><varname>asMVTGeom(tpoint,bounds,extent=4096,buffer=256,clip=true) → (geom,times)</varname></para>
 				<para>The result is a couple composed of a <varname>geometry</varname> value and an array of associated timestamp values encoded as Unix epoch. The parameters are as follows:</para>
 				<itemizedlist>
@@ -696,8 +673,7 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01, Point(100 100)@2001-0
 
 			<listitem xml:id="tgeo_stops">
 				<indexterm significance="normal"><primary><varname>stops</varname></primary></indexterm>
-				<para>Extract from a temporal geometry point with linear interpolation the subsequences where the point stays within an area with a specified maximum size for at least the given duration &Z_support; &geography_support;
-</para>
+				<para>Extract from a temporal geometry point with linear interpolation the subsequences where the point stays within an area with a specified maximum size for at least the given duration &Z_support; &geography_support;</para>
 				<para><varname>stops(tgeompoint,maxDist=0.0,minDuration='0 minutes') → tgeompoint</varname></para>
 				<para>The size of the area is computed as the diagonal of the minimum rotated rectangle of the points in the subsequence. If <varname>maxDist</varname> is not given it is assumed 0.0 and thus, the function extracts the constant segments of the given temporal point. The distance is computed in the units of the coordinate system. Note that even though the function accepts 3D geometries, the computation is always performed in 2D.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -711,88 +687,6 @@ SELECT asText(stops(tgeompoint '[Point(1 1 1)@2001-01-01, Point(1 1 1)@2001-01-0
    POINT Z (2 2 2)@2001-01-04]} */
 </programlisting>
 			</listitem>
-		</itemizedlist>
-	</sect1>
-
-	<sect1 xml:id="tgeo_restrictions">
-		<title>Restrictions</title>
-		<itemizedlist>
-			<listitem xml:id="tgeo_atGeometry">
-				<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
-				<para>Restrict to (the complement of) a geometry, a Z span, and/or a period &Z_support;</para>
-				<para><varname>atGeometry(tgeom,geometry[,zspan]) → tgeom</varname></para>
-				<para><varname>minusGeometry(tgeom,geometry[,zspan]) → tgeom</varname></para>
-				<para>The geometry must be in 2D and the computation with respect to it is done in 2D. The result preserves the Z dimension of the temporal point, if it exists.</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
-  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
--- {"[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-03]"}
-SELECT astext(atGeometry(tgeompoint '[Point(0 0 0)@2001-01-01, Point(4 4 4)@2001-01-05]',
-  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
--- {[POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03]}
-SELECT asText(atGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001-01-03,
-  Point(3 1 3)@2001-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))', '[0,2]'));
--- {[POINT Z (2 1 1)@2001-01-02, POINT Z (3 1 1)@2001-01-03, POINT Z (3 1 2)@2001-01-04]}
-SELECT asText(atGeometry(tgeometry 'Linestring(1 1,10 1)@2001-01-01', 
-  'Polygon((0 0,0 5,5 5,5 0,0 0))'));
--- LINESTRING(1 1,5 1)@2001-01-01
-</programlisting>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(minusGeometry(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
-  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
-/* {[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02), (POINT(2 2)@2001-01-03,
-   POINT(3 3)@2001-01-04)} */
-SELECT astext(minusGeometry(tgeompoint '[Point(0 0 0)@2001-01-01,
-  Point(4 4 4)@2001-01-05]', geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
-/* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
-   (POINT Z (2 2 2)@2001-01-03, POINT Z (4 4 4)@2001-01-05]} */
-SELECT asText(minusGeometry(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 1 1)@2001-01-03,
-  Point(3 1 3)@2001-01-05]', 'Polygon((2 0,2 2,2 4,4 0,2 0))', '[0,2]'));
-/* {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 1 1)@2001-01-02),
-    (POINT Z (3 1 2)@2001-01-04, POINT Z (3 1 3)@2001-01-05]} */
-SELECT asText(minusGeometry(tgeometry 'Linestring(1 1,10 1)@2001-01-01', 
-  'Polygon((0 0,0 5,5 5,5 0,0 0))'));
--- LINESTRING(5 1,10 1)@2001-01-01
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tgeo_atStbox">
-				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
-				<para>Restrict to (the complement of) an <varname>stbox</varname> &Z_support;</para>
-				<para><varname>atStbox(tgeom,stbox,borderInc bool=true) → tgeompoint</varname></para>
-				<para><varname>minusStbox(tgeom,stbox,borderInc bool=true) → tgeompoint</varname></para>
-				<para>The third optional argument is used for multidimensional tiling (see <xref linkend="ttype_tiling"/>) to exclude the upper border of the tiles when a temporal value is split in multiple tiles, so that all fragments of the temporal point are exclusive.</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(atStbox(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
-  stbox 'STBOX XT(((0,0),(2,2)),[2001-01-02, 2001-01-04])'));
--- {[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-03]}
-SELECT asText(atStbox(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03,
-  Point(3 3 2)@2001-01-04, Point(3 3 7)@2001-01-09]', stbox 'STBOX Z((2,2,2),(3,3,3))'));
-/* {[POINT Z (2 2 2)@2001-01-02, POINT Z (3 3 3)@2001-01-03, POINT Z (3 3 2)@2001-01-04,
-  POINT Z (3 3 3)@2001-01-05]} */
-SELECT asText(atStbox(tgeometry '[Point(1 1)@2001-01-01, Linestring(1 1,3 3)@2001-01-03,
-  Point(2 2)@2001-01-04, Linestring(3 3,4 4)@2001-01-09]', stbox 'STBOX X((2,2),(3,3))'));
--- {[LINESTRING(2 2,3 3)@2001-01-03, POINT(2 2)@2001-01-04, POINT(3 3)@2001-01-09]}
-</programlisting>
-
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2001-01-01, Point(4 4)@2001-01-04)',
-  stbox 'STBOX XT(((1,1),(2,2)),[2001-01-03,2001-01-04])'));
--- {(POINT(2 2)@2001-01-02, POINT(3 3)@2001-01-03)}
-SELECT asText(minusStbox(tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03,
-  Point(3 3 2)@2001-01-04, Point(3 3 7)@2001-01-09]', stbox 'STBOX Z((2,2,2),(3,3,3))'));
-/* {[POINT Z (1 1 1)@2001-01-01, POINT Z (2 2 2)@2001-01-02), 
-    (POINT Z (3 3 3)@2001-01-05, POINT Z (3 3 7)@2001-01-09]} */
-SELECT asText(minusStbox(tgeometry '[Point(1 1)@2001-01-01, 
-  Linestring(1 1,3 3)@2001-01-03, Point(2 2)@2001-01-04, 
-  Linestring(1 1,4 4)@2001-01-09]', stbox 'STBOX X((2,2),(3,3))'));
-/* {[POINT(1 1)@2001-01-01, LINESTRING(1 1,2 2)@2001-01-03, 
-   LINESTRING(1 1,2 2)@2001-01-04),[MULTILINESTRING((1 1,2 2),(3 3,4 4))@2001-01-09]} */
-</programlisting>
-			</listitem>
-
 		</itemizedlist>
 	</sect1>
 </chapter>

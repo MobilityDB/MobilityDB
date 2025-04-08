@@ -262,7 +262,7 @@ SELECT MIN(xmin(setSRID(b,4326))) FROM tbl_stbox;
  0.512863
 (1 row)
 
-SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,5676), 4326), 5676)))::numeric, 1) FROM tbl_stbox;
+SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,5676), 4326), 5676))), 1) FROM tbl_stbox;
  round 
 -------
    0.5
@@ -1017,6 +1017,18 @@ SELECT array_agg(ST_AsText((dp).geom)) FROM (SELECT ST_DumpPoints(traversedArea(
    array_agg    
 ----------------
  {"POINT(1 1)"}
+(1 row)
+
+SELECT asText(centroid(tgeometry '[Point(1 1)@2000-01-01, Linestring(1 1,3 3)@2000-01-02, Polygon((1 1,4 4,7 1,1 1))@2000-01-03]'));
+                                                                 astext                                                                  
+-----------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(4 2)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(centroid(tgeography '[MultiPoint(1 1,4 4,7 1)@2000-01-01, Polygon((1 1,4 4,7 1,1 1))@2000-01-02]'),6);
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ Interp=Step;[POINT(4 2.001727)@Sat Jan 01 00:00:00 2000 PST, POINT(4 2.001727)@Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
 SELECT asText(atGeometry(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));

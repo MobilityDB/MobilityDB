@@ -141,7 +141,7 @@ contains_span_value(const Span *s, Datum value)
 bool
 contains_span_timestamptz(const Span *s, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
     return false;
@@ -161,7 +161,7 @@ contains_span_timestamptz(const Span *s, TimestampTz t)
 bool
 contains_span_span(const Span *s1, const Span *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
@@ -219,7 +219,7 @@ contained_span_span(const Span *s1, const Span *s2)
 bool
 overlaps_span_span(const Span *s1, const Span *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
@@ -285,7 +285,7 @@ adjacent_span_value(const Span *s, Datum value)
 bool
 adjacent_span_span(const Span *s1, const Span *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
@@ -333,7 +333,7 @@ bool
 left_span_value(const Span *s, Datum value)
 {
 #if MEOS
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s))
     return false;
 #else
@@ -353,7 +353,7 @@ left_span_value(const Span *s, Datum value)
 bool
 left_span_span(const Span *s1, const Span *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
@@ -466,7 +466,7 @@ overleft_span_value(const Span *s, Datum value)
 bool
 overleft_span_span(const Span *s1, const Span *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
@@ -520,7 +520,7 @@ overright_span_value(const Span *s, Datum value)
 bool
 overright_span_span(const Span *s1, const Span *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
@@ -609,7 +609,7 @@ union_value_span(Datum value, const Span *s)
 SpanSet *
 union_span_span(const Span *s1, const Span *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
@@ -709,7 +709,7 @@ inter_span_span(const Span *s1, const Span *s2, Span *result)
 Span *
 intersection_span_span(const Span *s1, const Span *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))
@@ -884,7 +884,7 @@ mi_span_span(const Span *s1, const Span *s2, Span *result)
 SpanSet *
 minus_span_span(const Span *s1, const Span *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
       ! ensure_same_span_type(s1, s2))

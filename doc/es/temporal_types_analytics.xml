@@ -743,7 +743,7 @@ SELECT getSspaceTimeTile(geometry 'Point(1 1)', '2001-01-01', 2.0, interval '2 d
 
 		<sect2 xml:id="boxes_functions">
 			<title>Operaciones de cuadro delimitador</title>
-			<para>Estas operaciones fragmentan el cuadro delimitador de un valor temporal con respecto a un mosaico multidimensional. Ofrecen una alternativa a las operaciones de la <xref linkend="temporal_types_splitting" /> para dividir los cuadros delimitadores especificando el tamaño máximo de los cuadros en las distintas dimensiones.</para>
+			<para>Estas operaciones fragmentan el cuadro delimitador de un valor temporal con respecto a un mosaico multidimensional. Ofrecen una alternativa a las operaciones de la <xref linkend="ttype_splitting" /> para dividir los cuadros delimitadores especificando el tamaño máximo de los cuadros en las distintas dimensiones.</para>
 			<itemizedlist>
 				<listitem xml:id="timeSpans">
 					<indexterm significance="normal"><primary><varname>timeSpans</varname></primary></indexterm>

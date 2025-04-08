@@ -70,7 +70,7 @@ CREATE TYPE cbuffer (
   alignment = double
 );
 
--- Input/output in WKT, WKB and HexWKB format
+-- Input/output in WKT, WKB and HexWKB representation
 
 CREATE FUNCTION asText(cbuffer, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text

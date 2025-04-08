@@ -243,10 +243,10 @@ CREATE INDEX tbl_tgeompoint3D_rtree_idx ON tbl_tgeompoint3D USING GIST(temp);
 -- EXPLAIN ANALYZE
 WITH test AS (
   SELECT temp |=| tgeompoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
-SELECT round(distance::numeric, 6) FROM test;
+SELECT round(distance, 6) FROM test;
 WITH test AS (
   SELECT temp |=| tgeompoint '[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-07-01]' AS distance FROM tbl_tgeompoint3D ORDER BY 1 LIMIT 3 )
-SELECT round(distance::numeric, 6) FROM test;
+SELECT round(distance, 6) FROM test;
 
 DROP INDEX tbl_tgeompoint_rtree_idx;
 DROP INDEX tbl_tgeompoint3D_rtree_idx;
@@ -261,10 +261,10 @@ CREATE INDEX tbl_tgeompoint3D_quadtree_idx ON tbl_tgeompoint3D USING SPGIST(temp
 -- EXPLAIN ANALYZE
 WITH test AS (
   SELECT temp |=| tgeompoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]' AS distance FROM tbl_tgeompoint ORDER BY 1 LIMIT 3 )
-SELECT round(distance::numeric, 6) FROM test;
+SELECT round(distance, 6) FROM test;
 WITH test AS (
   SELECT temp |=| tgeompoint '[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-07-01]' AS distance FROM tbl_tgeompoint3D ORDER BY 1 LIMIT 3 )
-SELECT round(distance::numeric, 6) FROM test;
+SELECT round(distance, 6) FROM test;
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;
 DROP INDEX tbl_tgeompoint3D_quadtree_idx;

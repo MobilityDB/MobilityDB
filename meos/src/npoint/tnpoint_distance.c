@@ -48,7 +48,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_dist
+ * @ingroup meos_internal_npoint_dist
  * @brief Return the distance between two network points
  */
 Datum
@@ -72,7 +72,7 @@ datum_npoint_distance(Datum np1, Datum np2)
 Temporal *
 distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       gserialized_is_empty(gs) || ! ensure_point_type(gs))
     return NULL;
@@ -132,7 +132,7 @@ distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 TInstant *
 nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) || 
       gserialized_is_empty(gs))
     return NULL;
@@ -207,7 +207,7 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 double
 nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       gserialized_is_empty(gs))
     return -1;
@@ -266,7 +266,7 @@ nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 GSERIALIZED *
 shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
       gserialized_is_empty(gs))
     return NULL;

@@ -57,19 +57,19 @@ SELECT MIN(numValues(s)) FROM tbl_poseset2d;
    1
 (1 row)
 
-SELECT round(MIN(rotation(startValue(s)))::numeric, 6) FROM tbl_poseset2d;
+SELECT round(MIN(rotation(startValue(s))), 6) FROM tbl_poseset2d;
    round   
 -----------
  -0.054275
 (1 row)
 
-SELECT round(MIN(rotation(endValue(s)))::numeric, 6) FROM tbl_poseset2d;
+SELECT round(MIN(rotation(endValue(s))), 6) FROM tbl_poseset2d;
    round   
 -----------
  -0.054279
 (1 row)
 
-SELECT round(MIN(rotation(valueN(s, 1)))::numeric, 6) FROM tbl_poseset2d;
+SELECT round(MIN(rotation(valueN(s, 1))), 6) FROM tbl_poseset2d;
    round   
 -----------
  -0.054275

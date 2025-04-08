@@ -442,7 +442,7 @@ SELECT round(degrees(angularDifference(tgeompoint '{[Point(1 1)@2001-01-01,
 			<listitem xml:id="tgeo_bearing">
 				<indexterm significance="normal"><primary><varname>bearing</varname></primary></indexterm>
 				<para>Devuelve el rumbo temporal &Z_support; &geography_support;</para>
-				<para><varname>bearing({tpoint, point}, {tpoint, point}) → tfloat</varname></para>
+				<para><varname>bearing({tpoint,point},{tpoint,point}) → tfloat</varname></para>
 				<para>Nótese que esta función no acepta dos puntos geográficos temporales.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT degrees(bearing(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]',
@@ -550,9 +550,9 @@ ramp_color(
 			<listitem xml:id="tgeo_affine">
 				<indexterm significance="normal"><primary><varname>affine</varname></primary></indexterm>
 				<para>Devuelve la transformación afín 3D de una geometría temporal para hacer cosas como trasladar, rotar y escalar en un solo paso &Z_support;</para>
-				<para><varname>affine(tgeo,float a, float b, float c, float d, float e, float f, float g,</varname></para>
-				<para><varname>  float h, float i, float xoff, float yoff, float zoff) → tgeo</varname></para>
-				<para><varname>affine(tgeo,float a, float b, float d, float e, float xoff, float yoff) → tgeo</varname></para>
+				<para><varname>affine(tgeo,float a,float b,float c,float d,float e,float f,float g,</varname></para>
+				<para><varname>  float h,float i,float xoff,float yoff,float zoff) → tgeo</varname></para>
+				<para><varname>affine(tgeo,float a,float b,float d,float e,float xoff,float yoff) → tgeo</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 -- Rotate a 3D temporal point 180 degrees about the z axis
 SELECT asEWKT(affine(temp, cos(pi()), -sin(pi()), 0, sin(pi()), cos(pi()), 0, 0, 0, 1,
@@ -574,9 +574,9 @@ FROM (SELECT tgeometry '[Point(1 1)@2001-01-01,
 			<listitem xml:id="tgeo_rotate">
 				<indexterm significance="normal"><primary><varname>rotate</varname></primary></indexterm>
 				<para>Devuelve el punto temporal rotado en sentido antihorario sobre el punto de origen</para>
-				<para><varname>rotate(tgeo, float radians) → tgeo</varname></para>
-				<para><varname>rotate(tgeo, float radians, float x0, float y0) → tgeo</varname></para>
-				<para><varname>rotate(tgeo, float radians, geometry pointOrigin) → tgeo</varname></para>
+				<para><varname>rotate(tgeo,float radians) → tgeo</varname></para>
+				<para><varname>rotate(tgeo,float radians,float x0,float y0) → tgeo</varname></para>
+				<para><varname>rotate(tgeo,float radians,geometry pointOrigin) → tgeo</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 -- Rotate a temporal point 180 degrees
 SELECT asEWKT(rotate(tgeompoint '[Point(5 10)@2001-01-01, Point(5 5)@2001-01-02, 

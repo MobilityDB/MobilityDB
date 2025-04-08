@@ -446,12 +446,12 @@ CREATE FUNCTION shiftScaleTime(tpose, interval, interval)
  *****************************************************************************/
 
 CREATE FUNCTION atValues(tpose, pose)
-  RETURNS tgeometry
+  RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusValues(tpose, pose)
-  RETURNS tgeometry
+  RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -547,14 +547,17 @@ CREATE FUNCTION deleteTime(tpose, timestamptz, connect boolean DEFAULT TRUE)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_delete_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION deleteTime(tpose, tstzset, connect boolean DEFAULT TRUE)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_delete_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION deleteTime(tpose, tstzspan, connect boolean DEFAULT TRUE)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_delete_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION deleteTime(tpose, tstzspanset, connect boolean DEFAULT TRUE)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_delete_tstzspanset'

@@ -51,6 +51,9 @@
 #if POSE
   #include "pose/pose.h"
 #endif
+#if RGEO
+  #include "rgeo/trgeo.h"
+#endif
 
 /*****************************************************************************/
 
@@ -90,7 +93,7 @@ extern TimestampTz *timestamparr_extract(ArrayType *array, int *count);
 extern Cbuffer **cbufferarr_extract(ArrayType *array, int *count);
 extern ArrayType *cbufferarr_to_array(const Cbuffer **cbufarr, int count);
 #endif
-#if POSE
+#if POSE || RGEO
 extern Pose **posearr_extract(ArrayType *array, int *count);
 extern ArrayType *posearr_to_array(const Pose **posearr, int count);
 #endif

@@ -54,7 +54,7 @@
 Temporal *
 add_int_tint(int i, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -72,7 +72,7 @@ add_int_tint(int i, const Temporal *temp)
 Temporal *
 add_float_tfloat(double d, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -90,7 +90,7 @@ add_float_tfloat(double d, const Temporal *temp)
 Temporal *
 add_tint_int(const Temporal *temp, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -108,7 +108,7 @@ add_tint_int(const Temporal *temp, int i)
 Temporal *
 add_tfloat_float(const Temporal *temp, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -125,7 +125,7 @@ add_tfloat_float(const Temporal *temp, double d)
 Temporal *
 add_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_tnumber_type(temp1->temptype) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -147,7 +147,7 @@ add_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 sub_int_tint(int i, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -165,7 +165,7 @@ sub_int_tint(int i, const Temporal *temp)
 Temporal *
 sub_float_tfloat(double d, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -183,7 +183,7 @@ sub_float_tfloat(double d, const Temporal *temp)
 Temporal *
 sub_tint_int(const Temporal *temp, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -201,7 +201,7 @@ sub_tint_int(const Temporal *temp, int i)
 Temporal *
 sub_tfloat_float(const Temporal *temp, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -218,7 +218,7 @@ sub_tfloat_float(const Temporal *temp, double d)
 Temporal *
 sub_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_tnumber_type(temp1->temptype) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -241,7 +241,7 @@ sub_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 mult_int_tint(int i, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -259,7 +259,7 @@ mult_int_tint(int i, const Temporal *temp)
 Temporal *
 mult_float_tfloat(double d, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -278,7 +278,7 @@ mult_float_tfloat(double d, const Temporal *temp)
 Temporal *
 mult_tint_int(const Temporal *temp, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -296,7 +296,7 @@ mult_tint_int(const Temporal *temp, int i)
 Temporal *
 mult_tfloat_float(const Temporal *temp, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -313,7 +313,7 @@ mult_tfloat_float(const Temporal *temp, double d)
 Temporal *
 mult_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_tnumber_type(temp1->temptype) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -336,7 +336,7 @@ mult_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 div_int_tint(int i, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -354,7 +354,7 @@ div_int_tint(int i, const Temporal *temp)
 Temporal *
 div_float_tfloat(double d, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -371,7 +371,7 @@ div_float_tfloat(double d, const Temporal *temp)
 Temporal *
 div_tint_int(const Temporal *temp, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
@@ -389,7 +389,7 @@ div_tint_int(const Temporal *temp, int i)
 Temporal *
 div_tfloat_float(const Temporal *temp, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
@@ -406,7 +406,7 @@ div_tfloat_float(const Temporal *temp, double d)
 Temporal *
 div_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_tnumber_type(temp1->temptype) ||
       ! ensure_same_temporal_type(temp1, temp2))

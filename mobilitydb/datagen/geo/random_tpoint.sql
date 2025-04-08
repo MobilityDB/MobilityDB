@@ -249,8 +249,7 @@ BEGIN
     RAISE EXCEPTION 'lowy must be less than or equal to highy: %, %',
       lowy, highy;
   END IF;
-  RETURN ST_SetSRID(ST_Point(random_float(lowx, highx),
-    random_float(lowy, highy)), srid);
+  RETURN ST_Point(random_float(lowx, highx), random_float(lowy, highy), srid);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -291,7 +290,7 @@ BEGIN
     RAISE EXCEPTION 'lowz must be less than or equal to highz: %, %',
       lowz, highz;
   END IF;
-  RETURN ST_Point(random_float(lowx, highx), random_float(lowy, highy),
+  RETURN ST_PointZ(random_float(lowx, highx), random_float(lowy, highy),
     random_float(lowz, highz), srid);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -426,7 +425,7 @@ BEGIN
     ELSIF (y - deltay >= lowy AND y - deltay <= highy) THEN
       y = y - deltay;
     END IF;
-    p = ST_SetSRID(st_makepoint(x, y), srid);
+    p = ST_Point(x, y, srid);
   END LOOP;
   RETURN result;
 END;
@@ -514,7 +513,7 @@ BEGIN
     ELSIF (z - deltaz >= lowz AND z - deltaz <= highz) THEN
       z = z - deltaz;
     END IF;
-    p = ST_SetSRID(st_makepoint(x, y, z), srid);
+    p = ST_PointZ(x, y, z, srid);
   END LOOP;
   RETURN result;
 END;
@@ -851,7 +850,8 @@ FROM generate_series(1, 15) AS k;
  */
 DROP FUNCTION IF EXISTS random_geom_polygon;
 CREATE FUNCTION random_geom_polygon(lowx float, highx float, lowy float,
-  highy float, maxdelta float, minvertices int, maxvertices int, srid int DEFAULT 0)
+  highy float, maxdelta float, minvertices int, maxvertices int,
+  srid int DEFAULT 0)
   RETURNS geometry AS $$
 DECLARE
   pointarr geometry[];
@@ -863,8 +863,8 @@ BEGIN
   IF minvertices > maxvertices THEN
     raise exception 'minvertices must be greater than or equal to maxvertices';
   END IF;
-  SELECT random_geom_point_array(lowx, highx, lowy, highy, maxdelta, minvertices,
-    maxvertices) INTO pointarr;
+  SELECT random_geom_point_array(lowx, highx, lowy, highy, maxdelta, 
+    minvertices, maxvertices) INTO pointarr;
   noVertices = array_length(pointarr, 1);
   pointarr[noVertices + 1] = pointarr[1];
   RETURN ST_SetSRID(st_makepolygon(st_makeline(pointarr)), srid);

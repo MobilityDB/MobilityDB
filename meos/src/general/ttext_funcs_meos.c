@@ -51,7 +51,7 @@
 Temporal *
 textcat_text_ttext(const text *txt, const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
@@ -69,7 +69,7 @@ textcat_text_ttext(const text *txt, const Temporal *temp)
 Temporal *
 textcat_ttext_text(const Temporal *temp, const text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
@@ -86,7 +86,7 @@ textcat_ttext_text(const Temporal *temp, const text *txt)
 Temporal *
 textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_temporal_isof_type(temp1, T_TTEXT) ||
       ! ensure_same_temporal_type(temp1, temp2))
@@ -105,7 +105,7 @@ textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 ttext_lower(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
@@ -121,7 +121,7 @@ ttext_lower(const Temporal *temp)
 Temporal *
 ttext_upper(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
@@ -137,7 +137,7 @@ ttext_upper(const Temporal *temp)
 Temporal *
 ttext_initcap(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;

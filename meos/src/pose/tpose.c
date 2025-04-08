@@ -120,7 +120,7 @@ tposeseqset_in(const char *str)
 Temporal *
 tpose_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return tspatial_parse(&str, T_TPOSE);
@@ -135,13 +135,12 @@ tpose_in(const char *str)
 char *
 tpose_out(const Temporal *temp, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) temp) || ! ensure_not_negative(maxdd) ||
       ! ensure_temporal_isof_type(temp, T_TPOSE))
     return NULL;
   return temporal_out(temp, maxdd);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_pose_inout
@@ -150,11 +149,12 @@ tpose_out(const Temporal *temp, int maxdd)
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-Temporal *
+inline Temporal *
 tpose_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TPOSE);
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Costructor functions
@@ -172,9 +172,9 @@ tpoint_tfloat_inst_to_tpose(const TInstant *inst1, const TInstant *inst2)
 {
   assert(inst1); assert(inst2); assert(inst1->temptype == T_TGEOMPOINT);
   assert(inst2->temptype == T_TFLOAT);
-  GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst1));
+  const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst1));
   POINT4D *p = (POINT4D *) GS_POINT_PTR(gs);
-  double radius = DatumGetFloat8(tinstant_val(inst2));
+  double radius = DatumGetFloat8(tinstant_value_p(inst2));
   Pose *pose = pose_make_2d(p->x, p->y, radius, gserialized_get_srid(gs));
   TInstant *result = tinstant_make(PointerGetDatum(pose), T_TPOSE, inst1->t);
   pfree(pose);
@@ -270,7 +270,7 @@ tpoint_tfloat_seqset_to_tpose(const TSequenceSet *ss1, const TSequenceSet *ss2)
 Temporal *
 tpoint_tfloat_to_tpose(const Temporal *tpoint, const Temporal *tradius)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) tpoint) || 
       ! ensure_not_null((void *) tradius) ||
       ! ensure_tpoint_type(tpoint->temptype) ||
@@ -316,9 +316,9 @@ tpoint_tfloat_to_tpose(const Temporal *tpoint, const Temporal *tradius)
  * @param[in] temp Temporal pose
  */
 Temporal *
-tpose_tgeompoint(const Temporal *temp)
+tpose_tpoint(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || 
       ! ensure_temporal_isof_type(temp, T_TPOSE))
@@ -327,7 +327,6 @@ tpose_tgeompoint(const Temporal *temp)
   assert(temp); assert(temp->temptype == T_TPOSE);
 #endif /* MEOS */
 
-  /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_pose_point;
@@ -352,7 +351,7 @@ tpose_tgeompoint(const Temporal *temp)
 Temporal *
 tpose_rotation(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || 
       ! ensure_temporal_isof_type(temp, T_TPOSE))
@@ -363,7 +362,6 @@ tpose_rotation(const Temporal *temp)
   if (! ensure_has_not_Z(temp->temptype, temp->flags))
     return NULL;
 
-  /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_pose_rotation;
@@ -388,7 +386,7 @@ tpose_rotation(const Temporal *temp)
 Pose *
 tpose_start_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || 
       ! ensure_temporal_isof_type(temp, T_TPOSE))
@@ -409,7 +407,7 @@ tpose_start_value(const Temporal *temp)
 Pose *
 tpose_end_value(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || 
       ! ensure_temporal_isof_type(temp, T_TPOSE))
@@ -431,7 +429,7 @@ tpose_end_value(const Temporal *temp)
 bool
 tpose_value_n(const Temporal *temp, int n, Pose **result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result) ||
       ! ensure_temporal_isof_type(temp, T_TPOSE))
@@ -456,7 +454,7 @@ tpose_value_n(const Temporal *temp, int n, Pose **result)
 Pose **
 tpose_values(const Temporal *temp, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_temporal_isof_type(temp, T_TPOSE))
@@ -481,7 +479,7 @@ tpose_values(const Temporal *temp, int *count)
 Set *
 tposeinst_points(const TInstant *inst)
 {
-  Pose *pose = DatumGetPoseP(tinstant_val(inst));
+  Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
   Datum value = PointerGetDatum(pose_point(pose));
   return set_make_exp(&value, 1, 1, T_GEOMETRY, ORDER_NO);
 }
@@ -495,7 +493,7 @@ tposeseq_points(const TSequence *seq)
   Datum *values = palloc(sizeof(Datum) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const Pose *pose = DatumGetPoseP(tinstant_val(TSEQUENCE_INST_N(seq, i)));
+    const Pose *pose = DatumGetPoseP(tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
     values[i] = PointerGetDatum(pose_point(pose));
   }
   datumarr_sort(values, seq->count, T_GEOMETRY);
@@ -517,7 +515,7 @@ tposeseqset_points(const TSequenceSet *ss)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-      Pose *pose = DatumGetPoseP(tinstant_val(inst));
+      Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
       values[nvalues++] = PointerGetDatum(pose_point(pose));
     }
   }
@@ -534,7 +532,7 @@ tposeseqset_points(const TSequenceSet *ss)
 Set *
 tpose_points(const Temporal *temp)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) ||
       ! ensure_temporal_isof_type(temp, T_TPOSE))
@@ -569,7 +567,7 @@ bool
 tpose_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   Pose **value)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
       ! ensure_temporal_isof_type(temp, T_TPOSE))
@@ -598,7 +596,7 @@ tpose_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 Temporal *
 tpose_at_value(const Temporal *temp, Pose *pose)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) pose) ||
       ! ensure_temporal_isof_type(temp, T_TPOSE))

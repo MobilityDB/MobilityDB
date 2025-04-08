@@ -123,6 +123,7 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_TCBUFFER] = "tcbuffer",
   [T_TGEOMETRY] = "tgeometry",
   [T_TGEOGRAPHY] = "tgeography",
+  [T_TRGEOMETRY] = "trgeometry",
 };
 
 /**
@@ -222,9 +223,9 @@ static const settype_catalog_struct MEOS_SETTYPE_CATALOG[] =
   {T_TEXTSET,       T_TEXT},
   {T_GEOMSET,       T_GEOMETRY},
   {T_GEOGSET,       T_GEOGRAPHY},
+  {T_POSESET,       T_POSE},
   {T_NPOINTSET,     T_NPOINT},
   {T_CBUFFERSET,    T_CBUFFER},
-  {T_POSESET,       T_POSE},
 };
 
 /**
@@ -271,11 +272,12 @@ static const temptype_catalog_struct MEOS_TEMPTYPE_CATALOG[] =
   {T_TTEXT,      T_TEXT},
   {T_TGEOMPOINT, T_GEOMETRY},
   {T_TGEOGPOINT, T_GEOGRAPHY},
-  {T_TNPOINT,    T_NPOINT},
-  {T_TPOSE,      T_POSE},
-  {T_TCBUFFER,   T_CBUFFER},
   {T_TGEOMETRY,  T_GEOMETRY},
   {T_TGEOGRAPHY, T_GEOGRAPHY},
+  {T_TPOSE,      T_POSE},
+  {T_TRGEOMETRY, T_POSE},
+  {T_TNPOINT,    T_NPOINT},
+  {T_TCBUFFER,   T_CBUFFER},
 };
 
 /*****************************************************************************/
@@ -596,7 +598,7 @@ meos_basetype(meosType type)
 #if NPOINT
     || type == T_NPOINT
 #endif
-#if POSE
+#if POSE || RGEO
     || type == T_POSE
 #endif
     )
@@ -626,7 +628,7 @@ basetype_varlength(meosType type)
 {
   assert(meos_basetype(type));
   if (type == T_TEXT || type == T_GEOMETRY || type == T_GEOGRAPHY
-#if POSE
+#if POSE || RGEO
     || type == T_POSE
 #endif
     )
@@ -662,7 +664,7 @@ basetype_length(meosType type)
   if (type == T_NPOINT)
     return sizeof(Npoint);
 #endif
-#if POSE
+#if POSE || RGEO
   if (type == T_POSE)
     return -1;
 #endif
@@ -710,7 +712,7 @@ spatial_basetype(meosType type)
 #if NPOINT
     || type == T_NPOINT
 #endif
-#if POSE
+#if POSE || RGEO
     || type == T_POSE
 #endif
     )
@@ -752,7 +754,7 @@ set_basetype(meosType type)
 #if NPOINT
       || type == T_NPOINT
 #endif
-#if NPOINT
+#if POSE || RGEO
       || type == T_POSE
 #endif
       )
@@ -776,7 +778,7 @@ set_type(meosType type)
 #if NPOINT
       || type == T_NPOINTSET
 #endif
-#if NPOINT
+#if POSE || RGEO
       || type == T_POSESET
 #endif
       )
@@ -858,6 +860,7 @@ alphanumset_type(meosType type)
   return false;
 }
 
+#if MEOS
 /**
  * @brief Return true if the type is a geo set type
  */
@@ -881,6 +884,7 @@ ensure_geoset_type(meosType type)
     "The set value must be a geo set");
   return false;
 }
+#endif /* MEOS */
 
 /**
  * @brief Return true if the type is a geo set type
@@ -895,7 +899,7 @@ spatialset_type(meosType type)
 #if NPOINT
     || type == T_NPOINTSET
 #endif
-#if NPOINT
+#if POSE || RGEO
     || type == T_POSESET
 #endif
     )
@@ -992,6 +996,7 @@ numspan_type(meosType type)
   return false;
 }
 
+#if MEOS
 /**
  * @brief Ensure that a span is a number span type
  */
@@ -1004,6 +1009,7 @@ ensure_numspan_type(meosType type)
     "The span value must be a number span type");
   return false;
 }
+#endif /* MEOS */
 
 /**
  * @brief Return true if the type is a time span type
@@ -1052,6 +1058,7 @@ timespanset_type(meosType type)
   return false;
 }
 
+#if MEOS
 /**
  * @brief Ensure that a span is a time span type
  */
@@ -1064,6 +1071,7 @@ ensure_timespanset_type(meosType type)
     "The value must be a time span set type");
   return false;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -1088,6 +1096,9 @@ temporal_type(meosType type)
 #if POSE
     || type == T_TPOSE
 #endif
+#if RGEO
+    || type == T_TRGEOMETRY
+#endif
     )
     return true;
   return false;
@@ -1111,7 +1122,7 @@ temporal_basetype(meosType type)
 #if NPOINT
     || type == T_NPOINT
 #endif
-#if POSE
+#if POSE || RGEO
     || type == T_POSE
 #endif
     )
@@ -1136,6 +1147,9 @@ temptype_continuous(meosType type)
 #endif
 #if POSE
     || type == T_TPOSE
+#endif
+#if RGEO
+    || type == T_TRGEOMETRY
 #endif
     )
     return true;
@@ -1263,6 +1277,9 @@ tspatial_type(meosType type)
 #if POSE
       || type == T_TPOSE
 #endif
+#if RGEO
+      || type == T_TRGEOMETRY
+#endif
       )
     return true;
   return false;
@@ -1316,6 +1333,7 @@ tgeo_type(meosType type)
   return false;
 }
 
+#if MEOS
 /**
  * @brief Ensure that a temporal value is a temporal geo type
  */
@@ -1328,6 +1346,7 @@ ensure_tgeo_type(meosType type)
     "The temporal value must be a temporal geo");
   return false;
 }
+#endif /* MEOS */
 
 /**
  * @brief Return true if the type is a temporal type with geo as base type
@@ -1365,6 +1384,7 @@ tgeodetic_type(meosType type)
   return false;
 }
 
+#if MEOS
 /**
  * @brief Ensure that a temporal value is a temporal number or a temporal point
  * type
@@ -1378,5 +1398,6 @@ ensure_tnumber_tpoint_type(meosType type)
     "The temporal value must be a temporal number or a temporal point");
   return false;
 }
+#endif /* MEOS */
 
 /*****************************************************************************/

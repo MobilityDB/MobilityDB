@@ -65,6 +65,10 @@
   #include "pose/pose.h"
   #include "pose/tpose_boxops.h"
 #endif
+#if RGEO
+  #include "rgeo/trgeo.h"
+  #include "rgeo/trgeo_boxops.h"
+#endif
 
 extern void ll2cart(const POINT2D *g, POINT3D *p);
 extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox);
@@ -74,7 +78,7 @@ extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return in the last argument the spatiotemporal box of a temporal geo
  * instant
  * @param[in] inst Temporal instant
@@ -84,7 +88,7 @@ void
 tgeoinst_set_stbox(const TInstant *inst, STBox *box)
 {
   assert(tgeo_type_all(inst->temptype));
-  const GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(inst));
+  const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
   geo_set_stbox(gs, box);
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
     true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &box->period);
@@ -93,7 +97,7 @@ tgeoinst_set_stbox(const TInstant *inst, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return in the last argument the spatiotemporal box of a temporal 
  * spatial instant
  * @param[in] inst Temporal value
@@ -117,6 +121,10 @@ tspatialinst_set_stbox(const TInstant *inst, STBox *box)
   else if (inst->temptype == T_TPOSE)
     tposeinst_set_stbox(inst, (STBox *) box);
 #endif
+#if RGEO
+  else if (inst->temptype == T_TRGEOMETRY)
+    tposeinst_set_stbox(inst, (STBox *) box);
+#endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Unknown temporal type for bounding box function: %s",
@@ -125,7 +133,7 @@ tspatialinst_set_stbox(const TInstant *inst, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return in the last argument the spatiotemporal box of a temporal
  * spatial sequence
  * @param[in] seq Temporal sequence
@@ -142,7 +150,7 @@ tspatialseq_set_stbox(const TSequence *seq, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return in the last argument the spatiotemporal box of a temporal
  * spatial sequence set
  * @param[in] ss Temporal sequence set
@@ -159,7 +167,7 @@ tspatialseqset_set_stbox(const TSequenceSet *ss, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return in the last argument the spatiotemporal box of an array of
  * temporal geo instants
  * @param[in] instants Temporal instant values
@@ -179,7 +187,7 @@ tgeoinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
   for (int i = 1; i < count; i++)
   {
     STBox box1;
-    const GSERIALIZED *gs = DatumGetGserializedP(tinstant_val(instants[i]));
+    const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(instants[i]));
     geo_set_stbox(gs, &box1);
     box->xmin = Min(box->xmin, box1.xmin);
     box->xmax = Max(box->xmax, box1.xmax);
@@ -228,6 +236,10 @@ tspatialinstarr_set_stbox(const TInstant **instants, int count,
   else if (temptype == T_TPOSE)
     tposeinstarr_set_stbox(instants, count, (STBox *) box);
 #endif
+#if RGEO
+  else if (temptype == T_TRGEOMETRY)
+    tposeinstarr_set_stbox(instants, count, (STBox *) box);
+#endif
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -259,7 +271,7 @@ tgeoseq_expand_stbox(TSequence *seq, const TInstant *inst)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Expand the bounding box of a temporal spatial sequence with an
  * additional instant
  * @param[inout] seq Temporal sequence
@@ -283,6 +295,10 @@ tspatialseq_expand_stbox(TSequence *seq, const TInstant *inst)
   else if (seq->temptype == T_TPOSE)
     tposeseq_expand_stbox(seq, inst);
 #endif
+#if RGEO
+  else if (seq->temptype == T_TRGEOMETRY)
+    tposeseq_expand_stbox(seq, inst);
+#endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Unknown temporal type for bounding box function: %s",
@@ -291,7 +307,7 @@ tspatialseq_expand_stbox(TSequence *seq, const TInstant *inst)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return in the last argument the spatiotemporal box of an array of
  * temporal geo sequences
  * @param[in] sequences Temporal instant values
@@ -334,7 +350,7 @@ spatialarr_set_bbox(const Datum *values, meosType basetype, int count,
   else if (basetype == T_NPOINT)
     npointarr_set_stbox(values, count, (STBox *) box);
 #endif
-#if POSE
+#if POSE || RGEO
   else if (basetype == T_POSE)
     posearr_set_stbox(values, count, (STBox *) box);
 #endif
@@ -353,7 +369,7 @@ spatialarr_set_bbox(const Datum *values, meosType basetype, int count,
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return a singleton array of spatiotemporal boxes from a temporal
  * geo instant
  * @param[in] inst Temporal instant
@@ -419,7 +435,7 @@ tgeoseq_cont_stboxes_iter(const TSequence *seq, STBox *result)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatiotemporal boxes from the instants or segments
  * of a temporal geo sequence, where the choice between instants or segments
  * depends, respectively, on whether the interpolation is discrete or
@@ -447,7 +463,7 @@ tgeoseq_stboxes(const TSequence *seq, int *count)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatiotemporal boxes from the segments of a
  * temporal geo sequence set
  * @param[in] ss Temporal sequence set
@@ -482,10 +498,14 @@ tgeoseqset_stboxes(const TSequenceSet *ss, int *count)
 STBox *
 tgeo_stboxes(const Temporal *temp, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_tgeo_type_all(temp->temptype))
     return NULL;
+#else
+  assert(temp); assert(count); assert(tgeo_type_all(temp->temptype));
+#endif /* MEOS */
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -601,7 +621,7 @@ tgeoseq_cont_split_n_stboxes_iter(const TSequence *seq, int box_count,
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of N spatiotemporal boxes from the instants or
  * segments of a temporal geo sequence, where the choice between instants or
  * segments depends, respectively, on whether the interpolation is discrete or
@@ -633,7 +653,7 @@ tgeoseq_split_n_stboxes(const TSequence *seq, int box_count, int *count)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of N spatiotemporal boxes from the segments of a
  * temporal geo sequence set
  * @param[in] ss Temporal sequence set
@@ -723,9 +743,15 @@ tgeoseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count)
 STBox *
 tgeo_split_n_stboxes(const Temporal *temp, int box_count, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_tgeo_type_all(temp->temptype) || ! ensure_positive(box_count))
+      ! ensure_tgeo_type_all(temp->temptype))
+    return NULL;
+#else
+  assert(temp); assert(count); assert(tgeo_type_all(temp->temptype));
+#endif /* MEOS */
+  if (! ensure_positive(box_count))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -822,7 +848,7 @@ tgeoseq_cont_split_each_n_stboxes_iter(const TSequence *seq,
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatiotemporal boxes obtained by merging
  * consecutive instants or segments of a temporal geo sequence, where the
  * choice between instants or segments depends, respectively, on whether the
@@ -851,7 +877,7 @@ tgeoseq_split_each_n_stboxes(const TSequence *seq, int elems_per_box,
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatiotemporal boxes obtained by merging
  * consecutive segments of a temporal geo sequence set 
  * @param[in] ss Temporal sequence set
@@ -894,12 +920,17 @@ tgeoseqset_split_each_n_stboxes(const TSequenceSet *ss, int elems_per_box,
  * @csqlfn #Tgeo_split_each_n_stboxes()
  */
 STBox *
-tgeo_split_each_n_stboxes(const Temporal *temp, int elems_per_box,
-  int *count)
+tgeo_split_each_n_stboxes(const Temporal *temp, int elems_per_box, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
+#if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_tgeo_type_all(temp->temptype) || ! ensure_positive(elems_per_box))
+      ! ensure_tgeo_type_all(temp->temptype))
+    return NULL;
+#else
+  assert(temp); assert(count); assert(tgeo_type_all(temp->temptype));
+#endif /* MEOS */
+  if (! ensure_positive(elems_per_box))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1018,7 +1049,7 @@ line_gboxes_iter(const LWLINE *lwline, bool geodetic, GBOX *result)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of N spatial boxes obtained by merging consecutive
  * segments of a line
  * @param[in] gs Line
@@ -1048,7 +1079,7 @@ line_gboxes(const GSERIALIZED *gs, int *count)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of N spatial boxes obtained by merging consecutive
  * segments of a multiline
  * @param[in] gs Multiline
@@ -1088,7 +1119,7 @@ multiline_gboxes(const GSERIALIZED *gs, int *count)
 }
 
 /**
- * @ingroup meos_geo_base_bbox
+ * @ingroup meos_internal_geo_base_bbox
  * @brief Return an array of N spatial boxes obtained by merging consecutive
  * segments of a (multi)line
  * @param[in] gs (Multi)line
@@ -1098,20 +1129,42 @@ multiline_gboxes(const GSERIALIZED *gs, int *count)
 GBOX *
 geo_gboxes(const GSERIALIZED *gs, int *count)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) count) ||
-      ! ensure_not_empty(gs))
-    return NULL;
-  uint32_t geotype = gserialized_get_type(gs);
-  if (geotype != LINETYPE && geotype != MULTILINETYPE)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Argument is not a (multi) line");
-    return NULL;
-  }
-
-  return (geotype == LINETYPE) ?
+  assert(gs); assert(count); assert(! gserialized_is_empty(gs));
+  assert(mline_type(gs));
+  return (gserialized_get_type(gs) == LINETYPE) ?
     line_gboxes(gs, count) : multiline_gboxes(gs, count);
+}
+
+/**
+ * @ingroup meos_geo_base_bbox
+ * @brief Return an array of spatial boxes from the segments of a 
+ * (mult)linestring
+ * @param[in] gs Geometry
+ * @param[out] count Number of values of the output array
+ * @return On error return @p NULL
+ * @csqlfn #Geo_stboxes()
+ */
+STBox *
+geo_stboxes(const GSERIALIZED *gs, int *count)
+{
+  /* Ensure the validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) count))
+    return NULL;
+#else
+  assert(gs); assert(count);
+#endif /* MEOS */
+  if (! ensure_not_empty(gs) || ! ensure_mline_type(gs))
+    return NULL;
+  
+  GBOX *gboxes = geo_gboxes(gs, count);
+  assert(gboxes);
+  int32_t srid = gserialized_get_srid(gs);
+  STBox *result = palloc(sizeof(STBox) * *count);
+  for (int i = 0; i < *count; i++)
+    gbox_set_stbox(&gboxes[i], srid, &result[i]);
+  pfree(gboxes);
+  return result;
 }
 
 /*****************************************************************************/
@@ -1181,7 +1234,7 @@ line_split_n_gboxes_iter(const LWLINE *lwline, int box_count, bool geodetic,
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of N spatial boxes obtained by merging consecutive
  * segments of a line
  * @param[in] gs Line
@@ -1216,7 +1269,7 @@ line_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of N spatial boxes obtained by merging consecutive
  * segments of a multiline
  * @param[in] gs Multiline
@@ -1316,7 +1369,7 @@ multiline_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
 }
 
 /**
- * @ingroup meos_geo_base_bbox
+ * @ingroup meos_internal_geo_base_bbox
  * @brief Return an array of N spatial boxes obtained by merging consecutive
  * segments of a (multi)line
  * @param[in] gs (Multi)line
@@ -1327,21 +1380,42 @@ multiline_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
 GBOX *
 geo_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) count) ||
-      ! ensure_not_empty(gs) || ! ensure_positive(box_count))
-    return NULL;
-  uint32_t geotype = gserialized_get_type(gs);
-  if (geotype != LINETYPE && geotype != MULTILINETYPE)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Argument is not a (multi)line");
-    return NULL;
-  }
-
-  return (geotype == LINETYPE) ?
+  assert(gs); assert(count); assert(! gserialized_is_empty(gs));
+  assert(box_count > 0); assert(mline_type(gs));
+  return (gserialized_get_type(gs) == LINETYPE) ?
     line_split_n_gboxes(gs, box_count, count) :
     multiline_split_n_gboxes(gs, box_count, count);
+}
+
+/**
+ * @ingroup meos_geo_base_bbox
+ * @brief Return an array of N spatial boxes from the segments of a 
+ * (multi)linestring
+ * @sqlfn splitNStboxes()
+ */
+STBox *
+geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *count)
+{
+  /* Ensure the validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) count))
+    return NULL;
+#else
+  assert(gs); assert(count);
+#endif /* MEOS */
+  if (! ensure_not_empty(gs) || ! ensure_positive(box_count) ||
+      ! ensure_mline_type(gs))
+    return NULL;
+
+  GBOX *gboxes = geo_split_n_gboxes(gs, box_count, count);
+  if (! gboxes)
+    return NULL;
+  int32_t srid = gserialized_get_srid(gs);
+  STBox *result = palloc(sizeof(STBox) * *count);
+  for (int i = 0; i < *count; i++)
+    gbox_set_stbox(&gboxes[i], srid, &result[i]);
+  pfree(gboxes);
+  return result;
 }
 
 /*****************************************************************************/
@@ -1398,7 +1472,7 @@ line_split_each_n_gboxes_iter(const LWLINE *lwline, int elems_per_box,
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatial boxes obtained by merging consecutive
  * segments of a line
  * @param[in] gs Line
@@ -1435,7 +1509,7 @@ line_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
 }
 
 /**
- * @ingroup meos_internal_temporal_bbox
+ * @ingroup meos_internal_geo_bbox
  * @brief Return an array of spatial boxes obtained by merging consecutive
  * segments of a multiline
  * @param[in] gs Multiline
@@ -1478,7 +1552,7 @@ multiline_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box,
 }
 
 /**
- * @ingroup meos_geo_base_bbox
+ * @ingroup meos_internal_geo_base_bbox
  * @brief Return an array of spatial boxes obtained by merging consecutive
  * segments of a (multi)line
  * @param[in] gs (Multi)line
@@ -1491,21 +1565,45 @@ multiline_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box,
 GBOX *
 geo_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) count) ||
-      ! ensure_not_empty(gs) || ! ensure_positive(elems_per_box))
-    return NULL;
+  assert(gs); assert(count); assert(! gserialized_is_empty(gs));
+  assert(elems_per_box > 0);
   uint32_t geotype = gserialized_get_type(gs);
-  if (geotype != LINETYPE && geotype != MULTILINETYPE)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Argument is not a (multi)line");
-    return NULL;
-  }
+  assert(geotype == LINETYPE || geotype == MULTILINETYPE);
 
   return (geotype == LINETYPE) ?
     line_split_each_n_gboxes(gs, elems_per_box, count) :
     multiline_split_each_n_gboxes(gs, elems_per_box, count);
+}
+
+/**
+ * @ingroup meos_geo_base_bbox
+ * @brief Return an array of spatial boxes from the segments of a
+ * (multi)linestring
+ * @csqlfn Geo_split_each_n_stboxes()
+ */
+STBox *
+geo_split_each_n_stboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
+{
+  /* Ensure the validity of the arguments */
+#if MEOS
+  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) count))
+    return NULL;
+#else
+  assert(gs); assert(count);
+#endif /* MEOS */
+  if (! ensure_not_empty(gs) || ! ensure_positive(elems_per_box) || 
+      ! ensure_mline_type(gs))
+    return NULL;
+
+  GBOX *gboxes = geo_split_each_n_gboxes(gs, elems_per_box, count);
+  if (! gboxes)
+    return NULL;
+  int32_t srid = gserialized_get_srid(gs);
+  STBox *result = palloc(sizeof(STBox) * *count);
+  for (int i = 0; i < *count; i++)
+    gbox_set_stbox(&gboxes[i], srid, &result[i]);
+  pfree(gboxes);
+  return result;
 }
 
 /*****************************************************************************

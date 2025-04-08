@@ -142,7 +142,7 @@ Datum
 Tpose_to_tgeompoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tpose_tgeompoint(temp);
+  Temporal *result = tpose_tpoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

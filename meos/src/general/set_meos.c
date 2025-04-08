@@ -64,7 +64,7 @@
 Set *
 intset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return set_parse(&str, T_INTSET);
@@ -79,7 +79,7 @@ intset_in(const char *str)
 Set *
 bigintset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return set_parse(&str, T_BIGINTSET);
@@ -94,7 +94,7 @@ bigintset_in(const char *str)
 Set *
 floatset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return set_parse(&str, T_FLOATSET);
@@ -109,7 +109,7 @@ floatset_in(const char *str)
 Set *
 textset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return set_parse(&str, T_TEXTSET);
@@ -124,7 +124,7 @@ textset_in(const char *str)
 Set *
 dateset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return set_parse(&str, T_DATESET);
@@ -139,7 +139,7 @@ dateset_in(const char *str)
 Set *
 tstzset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) str))
     return NULL;
   return set_parse(&str, T_TSTZSET);
@@ -156,7 +156,7 @@ tstzset_in(const char *str)
 char *
 intset_out(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_INTSET))
     return NULL;
   return set_out(s, 0);
@@ -171,7 +171,7 @@ intset_out(const Set *s)
 char *
 bigintset_out(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_BIGINTSET))
     return NULL;
   return set_out(s, 0);
@@ -187,7 +187,7 @@ bigintset_out(const Set *s)
 char *
 floatset_out(const Set *s, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET) ||
       ! ensure_not_negative(maxdd))
     return NULL;
@@ -203,7 +203,7 @@ floatset_out(const Set *s, int maxdd)
 char *
 textset_out(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TEXTSET))
     return NULL;
   return set_out(s, 0);
@@ -218,7 +218,7 @@ textset_out(const Set *s)
 char *
 dateset_out(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_DATESET))
     return NULL;
   return set_out(s, 0);
@@ -233,7 +233,7 @@ dateset_out(const Set *s)
 char *
 tstzset_out(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
   return set_out(s, 0);
@@ -253,7 +253,7 @@ tstzset_out(const Set *s)
 Set *
 intset_make(const int *values, int count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) values) || ! ensure_positive(count))
     return NULL;
 
@@ -273,7 +273,7 @@ intset_make(const int *values, int count)
 Set *
 bigintset_make(const int64 *values, int count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) values) || ! ensure_positive(count))
     return NULL;
 
@@ -293,7 +293,7 @@ bigintset_make(const int64 *values, int count)
 Set *
 floatset_make(const double *values, int count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) values) || ! ensure_positive(count))
     return NULL;
 
@@ -313,7 +313,7 @@ floatset_make(const double *values, int count)
 Set *
 textset_make(const text **values, int count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) values) || ! ensure_positive(count))
     return NULL;
 
@@ -333,7 +333,7 @@ textset_make(const text **values, int count)
 Set *
 dateset_make(const DateADT *values, int count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) values) || ! ensure_positive(count))
     return NULL;
 
@@ -353,7 +353,7 @@ dateset_make(const DateADT *values, int count)
 Set *
 tstzset_make(const TimestampTz *values, int count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) values) || ! ensure_positive(count))
     return NULL;
 
@@ -415,7 +415,7 @@ float_to_set(double d)
 Set *
 text_to_set(const text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) txt))
     return NULL;
   Datum v = PointerGetDatum(txt);
@@ -462,7 +462,7 @@ timestamptz_to_set(TimestampTz t)
 int
 intset_start_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_INTSET))
     return INT_MAX;
   return DatumGetInt32(SET_VAL_N(s, 0));
@@ -478,7 +478,7 @@ intset_start_value(const Set *s)
 int64
 bigintset_start_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_BIGINTSET))
     return INT_MAX;
   return DatumGetInt64(SET_VAL_N(s, 0));
@@ -494,7 +494,7 @@ bigintset_start_value(const Set *s)
 double
 floatset_start_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
     return DBL_MAX;
   return DatumGetFloat8(SET_VAL_N(s, 0));
@@ -510,7 +510,7 @@ floatset_start_value(const Set *s)
 text *
 textset_start_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TEXTSET))
     return NULL;
   return DatumGetTextP(datum_copy(SET_VAL_N(s, 0), s->basetype));
@@ -526,7 +526,7 @@ textset_start_value(const Set *s)
 DateADT
 dateset_start_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_DATESET))
     return DATEVAL_NOEND;
   return DatumGetDateADT(SET_VAL_N(s, 0));
@@ -542,7 +542,7 @@ dateset_start_value(const Set *s)
 TimestampTz
 tstzset_start_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
     return DT_NOEND;
   return DatumGetTimestampTz(SET_VAL_N(s, 0));
@@ -560,7 +560,7 @@ tstzset_start_value(const Set *s)
 int
 intset_end_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_INTSET))
     return INT_MAX;
   return DatumGetInt32(SET_VAL_N(s, s->count - 1));
@@ -576,7 +576,7 @@ intset_end_value(const Set *s)
 int64
 bigintset_end_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_BIGINTSET))
     return INT_MAX;
   return DatumGetInt64(SET_VAL_N(s, s->count - 1));
@@ -592,7 +592,7 @@ bigintset_end_value(const Set *s)
 double
 floatset_end_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
     return DBL_MAX;
   return DatumGetFloat8(SET_VAL_N(s, s->count - 1));
@@ -608,7 +608,7 @@ floatset_end_value(const Set *s)
 text *
 textset_end_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TEXTSET))
     return NULL;
   return DatumGetTextP(datum_copy(SET_VAL_N(s, s->count - 1), s->basetype));
@@ -624,7 +624,7 @@ textset_end_value(const Set *s)
 DateADT
 dateset_end_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_DATESET))
     return DATEVAL_NOEND;
   return DatumGetDateADT(SET_VAL_N(s, s->count - 1));
@@ -640,7 +640,7 @@ dateset_end_value(const Set *s)
 TimestampTz
 tstzset_end_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
     return DT_NOEND;
   return DatumGetTimestampTz(SET_VAL_N(s, s->count - 1));
@@ -660,7 +660,7 @@ tstzset_end_value(const Set *s)
 bool
 intset_value_n(const Set *s, int n, int *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
       ! ensure_set_isof_type(s, T_INTSET) || n < 1 || n > s->count)
     return false;
@@ -680,7 +680,7 @@ intset_value_n(const Set *s, int n, int *result)
 bool
 bigintset_value_n(const Set *s, int n, int64 *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
       ! ensure_set_isof_type(s, T_BIGINTSET) || n < 1 || n > s->count)
     return false;
@@ -700,7 +700,7 @@ bigintset_value_n(const Set *s, int n, int64 *result)
 bool
 floatset_value_n(const Set *s, int n, double *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
       ! ensure_set_isof_type(s, T_FLOATSET) || n < 1 || n > s->count)
     return false;
@@ -720,7 +720,7 @@ floatset_value_n(const Set *s, int n, double *result)
 bool
 textset_value_n(const Set *s, int n, text **result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
       ! ensure_set_isof_type(s, T_TEXTSET) || n < 1 || n > s->count)
     return false;
@@ -740,7 +740,7 @@ textset_value_n(const Set *s, int n, text **result)
 bool
 dateset_value_n(const Set *s, int n, DateADT *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
       ! ensure_set_isof_type(s, T_DATESET) || n < 1 || n > s->count)
     return false;
@@ -760,7 +760,7 @@ dateset_value_n(const Set *s, int n, DateADT *result)
 bool
 tstzset_value_n(const Set *s, int n, TimestampTz *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
       ! ensure_set_isof_type(s, T_TSTZSET) || n < 1 || n > s->count)
     return false;
@@ -780,7 +780,7 @@ tstzset_value_n(const Set *s, int n, TimestampTz *result)
 int *
 intset_values(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_INTSET))
     return NULL;
 
@@ -800,7 +800,7 @@ intset_values(const Set *s)
 int64 *
 bigintset_values(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_BIGINTSET))
     return NULL;
 
@@ -820,7 +820,7 @@ bigintset_values(const Set *s)
 double *
 floatset_values(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
     return NULL;
 
@@ -840,7 +840,7 @@ floatset_values(const Set *s)
 text **
 textset_values(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TEXTSET))
     return NULL;
 
@@ -860,7 +860,7 @@ textset_values(const Set *s)
 DateADT *
 dateset_values(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_DATESET))
     return NULL;
 
@@ -880,7 +880,7 @@ dateset_values(const Set *s)
 TimestampTz *
 tstzset_values(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
     return NULL;
 
@@ -904,7 +904,7 @@ tstzset_values(const Set *s)
 Set *
 textcat_text_textset(const text *txt, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_type(s, T_TEXTSET))
     return NULL;
@@ -921,7 +921,7 @@ textcat_text_textset(const text *txt, const Set *s)
 Set *
 textcat_textset_text(const Set *s, const text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
       ! ensure_set_isof_type(s, T_TEXTSET))
     return NULL;
@@ -944,7 +944,7 @@ Set *
 intset_shift_scale(const Set *s, int shift, int width, bool hasshift,
   bool haswidth)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_INTSET))
     return NULL;
   return numset_shift_scale(s, Int32GetDatum(shift), Int32GetDatum(width),
@@ -965,7 +965,7 @@ Set *
 bigintset_shift_scale(const Set *s, int64 shift, int64 width, bool hasshift,
   bool haswidth)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_BIGINTSET))
     return NULL;
   return numset_shift_scale(s, Int64GetDatum(shift), Int64GetDatum(width),
@@ -986,7 +986,7 @@ Set *
 floatset_shift_scale(const Set *s, double shift, double width, bool hasshift,
   bool haswidth)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
     return NULL;
   return numset_shift_scale(s, Float8GetDatum(shift), Float8GetDatum(width),
@@ -1006,7 +1006,7 @@ Set *
 dateset_shift_scale(const Set *s, int shift, int width, bool hasshift,
   bool haswidth)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_DATESET))
     return NULL;
   return numset_shift_scale(s, Int32GetDatum(shift), Int32GetDatum(width),

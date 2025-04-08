@@ -73,7 +73,7 @@
 Set *
 cbufferset_in(const char *str)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) str))
     return NULL;
@@ -93,7 +93,7 @@ cbufferset_in(const char *str)
 char *
 cbufferset_out(const Set *s, int maxdd)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
     return NULL;
@@ -117,7 +117,7 @@ cbufferset_out(const Set *s, int maxdd)
 Set *
 cbufferset_make(const Cbuffer **values, int count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) values))
     return NULL;
@@ -147,7 +147,7 @@ Set *
 cbuffer_to_set(const Cbuffer *cbuf)
 {
 #if MEOS
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) cbuf))
     return NULL;
 #else
@@ -172,7 +172,7 @@ cbuffer_to_set(const Cbuffer *cbuf)
 Cbuffer *
 cbufferset_start_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
     return NULL;
@@ -193,7 +193,7 @@ cbufferset_start_value(const Set *s)
 Cbuffer *
 cbufferset_end_value(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
     return NULL;
@@ -218,7 +218,7 @@ cbufferset_end_value(const Set *s)
 bool
 cbufferset_value_n(const Set *s, int n, Cbuffer **result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
       ! ensure_set_isof_type(s, T_CBUFFERSET))
@@ -243,7 +243,7 @@ cbufferset_value_n(const Set *s, int n, Cbuffer **result)
 Cbuffer **
 cbufferset_values(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_CBUFFERSET))
     return NULL;
@@ -271,7 +271,7 @@ cbufferset_values(const Set *s)
 bool
 ensure_valid_set_cbuffer(const Set *s, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) cbuf) ||
       ! ensure_set_isof_type(s, T_CBUFFERSET))
     return false;
@@ -288,7 +288,7 @@ ensure_valid_set_cbuffer(const Set *s, const Cbuffer *cbuf)
 bool
 contains_set_cbuffer(const Set *s, Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_cbuffer(s, cbuf))
     return false;
   return contains_set_value(s, PointerGetDatum(cbuf));
@@ -304,7 +304,7 @@ contains_set_cbuffer(const Set *s, Cbuffer *cbuf)
 bool
 contained_cbuffer_set(const Cbuffer *cbuf, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_cbuffer(s, cbuf))
     return false;
   return contained_value_set(PointerGetDatum(cbuf), s);
@@ -320,7 +320,7 @@ contained_cbuffer_set(const Cbuffer *cbuf, const Set *s)
 Set *
 union_set_cbuffer(const Set *s, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_cbuffer(s, cbuf))
     return NULL;
   return union_set_value(s, PointerGetDatum(cbuf));
@@ -349,7 +349,7 @@ union_cbuffer_set(const Cbuffer *cbuf, const Set *s)
 Set *
 intersection_set_cbuffer(const Set *s, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_cbuffer(s, cbuf))
     return NULL;
   return intersection_set_value(s, PointerGetDatum(cbuf));
@@ -378,7 +378,7 @@ intersection_cbuffer_set(const Cbuffer *cbuf, const Set *s)
 Set *
 minus_cbuffer_set(const Cbuffer *cbuf, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_cbuffer(s, cbuf))
     return NULL;
   return minus_value_set(PointerGetDatum(cbuf), s);
@@ -394,7 +394,7 @@ minus_cbuffer_set(const Cbuffer *cbuf, const Set *s)
 Set *
 minus_set_cbuffer(const Set *s, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_cbuffer(s, cbuf))
     return NULL;
   return minus_set_value(s, PointerGetDatum(cbuf));
@@ -415,7 +415,7 @@ minus_set_cbuffer(const Set *s, const Cbuffer *cbuf)
 Set *
 cbuffer_union_transfn(Set *state, const Cbuffer *cbuf)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) cbuf))
     return NULL;
   if (state && ! ensure_set_isof_type(state, T_CBUFFERSET))

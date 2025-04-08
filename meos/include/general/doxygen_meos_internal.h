@@ -49,6 +49,25 @@
  * @ingroup meos_internal
  * @brief Functions for temporal types
  *
+ * @defgroup meos_internal_geo Functions for temporal geometries
+ * @ingroup meos_internal
+ * @brief Functions for temporal geometries
+ *
+ * @defgroup meos_internal_cbuffer Functions for temporal circular buffers
+ * @ingroup meos_internal
+ * @brief Functions for temporal circular buffers
+ *
+ * @defgroup meos_internal_npoint Functions for temporal network points
+ * @ingroup meos_internal
+ * @brief Functions for temporal network points
+ *
+ * @defgroup meos_internal_pose Functions for temporal poses
+ * @ingroup meos_internal
+ * @brief Functions for temporal poses
+ *
+ * @defgroup meos_internal_rgeo Functions for temporal rigid geometries
+ * @ingroup meos_internal
+ * @brief Functions for temporal rigid geometries
  */
 
 /*****************************************************************************/

@@ -123,7 +123,7 @@ tnumber_min_dist_at_timestamptz(const TInstant *start1, const TInstant *end1,
 Temporal *
 distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
       ! ensure_same_temporal_type(temp1, temp2) ||
@@ -183,7 +183,7 @@ nad_tnumber_number(const Temporal *temp, Datum value)
 Datum
 nad_tbox_tbox(const TBox *box1, const TBox *box2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
       ! ensure_has_X(T_TBOX, box1->flags) || 
       ! ensure_has_X(T_TBOX, box2->flags) ||
@@ -212,12 +212,9 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
 Datum
 nad_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_has_X(T_TBOX, box->flags) ||
-      ! ensure_temporal_isof_basetype(temp, box->span.basetype))
-    return (box->span.basetype == T_INT4) ?
-      Int32GetDatum(-1) : Float8GetDatum(-1.0);
+  assert(temp); assert(box); assert(MEOS_FLAGS_GET_X(box->flags));
+  assert(tnumber_type(temp->temptype));
+  assert(temptype_basetype(temp->temptype) == box->span.basetype);
 
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   Span p, inter;
@@ -258,10 +255,14 @@ nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
   assert(temp1); assert(temp2);
   assert(temp1->temptype == temp2->temptype);
   assert(tnumber_type(temp1->temptype));
-  TBox box1, box2;
-  tnumber_set_tbox(temp1, &box1);
-  tnumber_set_tbox(temp2, &box2);
-  return nad_tbox_tbox(&box1, &box2);
+  Temporal *dist = distance_tnumber_tnumber(temp1, temp2);
+  if (dist == NULL)
+    return (temp1->temptype == T_TINT) ?
+      Int32GetDatum(-1) : Float8GetDatum(-1.0);
+
+  Datum result = temporal_min_value(dist);
+  pfree(dist);
+  return result;
 }
 
 /*****************************************************************************/

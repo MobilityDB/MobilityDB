@@ -61,7 +61,7 @@ tnpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
   if (! temp)
     return state;
   bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_geoaggstate(state, tspatial_srid(temp), hasz))
     return NULL;
   Temporal *temp1 = tnpoint_tgeompoint(temp);

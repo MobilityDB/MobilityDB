@@ -105,7 +105,7 @@ node_new(bool kind)
  * the length.
  * @return The length of the STBox as a double along the specified axis.
  */
-static double
+static inline double
 get_axis_length(const RTree *rtree, const STBox *box, int axis)
 {
   return rtree->get_axis(box, axis, true) - rtree->get_axis(box, axis, false);
@@ -515,7 +515,7 @@ node_insert(RTree *rtree, STBox *node_bounding_box, RTreeNode *node,
  * @param[in] n Number to check
  * @returns True if `n` is a power of two, False otherwise.
  */
-static bool
+static inline bool
 is_power_of_two(const int n)
 {
   return (n & (n - 1)) == 0;
@@ -697,7 +697,7 @@ rtree_insert(RTree *rtree, STBox *box, int64 id)
  * @brief Creates an RTree index for STBoxes.
  * @return RTree initialized for STBoxes.
  */
-RTree *
+inline RTree *
 rtree_create_stbox()
 {
   return rtree_create(T_STBOX);

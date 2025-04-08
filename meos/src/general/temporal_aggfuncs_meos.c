@@ -81,7 +81,7 @@ tbool_tand_transfn(SkipList *state, const Temporal *temp)
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_and, CROSSINGS_NO);
@@ -100,7 +100,7 @@ tbool_tor_transfn(SkipList *state, const Temporal *temp)
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TBOOL))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_or, CROSSINGS_NO);
@@ -119,7 +119,7 @@ tint_tmin_transfn(SkipList *state, const Temporal *temp)
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_min_int32, CROSSINGS_NO);
@@ -138,7 +138,7 @@ tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_min_float8, CROSSINGS);
@@ -157,7 +157,7 @@ tint_tmax_transfn(SkipList *state, const Temporal *temp)
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_max_int32, CROSSINGS_NO);
@@ -176,7 +176,7 @@ tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_max_float8, CROSSINGS);
@@ -195,7 +195,7 @@ tint_tsum_transfn(SkipList *state, const Temporal *temp)
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_sum_int32, CROSSINGS_NO);
@@ -214,7 +214,7 @@ tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_sum_float8, CROSSINGS_NO);
@@ -233,7 +233,7 @@ tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_tnumber_type(temp->temptype))
     return NULL;
   return temporal_tagg_transform_transfn(state, temp, &datum_sum_double2,
@@ -253,7 +253,7 @@ ttext_tmin_transfn(SkipList *state, const Temporal *temp)
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_min_text, CROSSINGS_NO);
@@ -272,7 +272,7 @@ ttext_tmax_transfn(SkipList *state, const Temporal *temp)
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TTEXT))
     return NULL;
   return temporal_tagg_transfn(state, temp, &datum_max_text, CROSSINGS_NO);
@@ -300,7 +300,7 @@ tint_wmin_transfn(SkipList *state, const Temporal *temp,
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_min_int32,
@@ -322,7 +322,7 @@ tfloat_wmin_transfn(SkipList *state, const Temporal *temp,
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_min_float8,
@@ -344,7 +344,7 @@ tint_wmax_transfn(SkipList *state, const Temporal *temp,
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_max_int32,
@@ -366,7 +366,7 @@ tfloat_wmax_transfn(SkipList *state, const Temporal *temp,
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_max_float8,
@@ -388,7 +388,7 @@ tint_wsum_transfn(SkipList *state, const Temporal *temp,
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TINT))
     return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_sum_int32,
@@ -410,7 +410,7 @@ tfloat_wsum_transfn(SkipList *state, const Temporal *temp,
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_sum_float8,
@@ -432,7 +432,7 @@ tnumber_wavg_transfn(SkipList *state, const Temporal *temp,
   /* Null temporal: return state */
   if (! temp)
     return state;
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_tnumber_type(temp->temptype))
     return NULL;
   return

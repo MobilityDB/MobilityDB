@@ -86,7 +86,7 @@ set_extent_transfn(Span *state, const Set *s)
   if (! s)
     return state;
 
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_set_spantype(s->settype) ||
       ! ensure_span_isof_basetype(state, s->basetype))
     return NULL;
@@ -116,7 +116,7 @@ span_extent_transfn(Span *state, const Span *s)
   if (! s)
     return state;
 
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_same_span_type(state, s))
     return NULL;
 
@@ -143,7 +143,7 @@ spanset_extent_transfn(Span *state, const SpanSet *ss)
   if (! ss)
     return state;
 
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_same_spanset_span_type(ss, state))
     return NULL;
 

@@ -60,7 +60,7 @@ tinstant_extend(const TInstant *inst, const Interval *interv,
   TInstant *instants[2];
   TimestampTz upper = add_timestamptz_interval(inst->t, interv);
   instants[0] = (TInstant *) inst;
-  instants[1] = tinstant_make(tinstant_val(inst), inst->temptype, upper);
+  instants[1] = tinstant_make(tinstant_value_p(inst), inst->temptype, upper);
   result[0] = tsequence_make((const TInstant **) instants, 2, true, true,
     MEOS_FLAGS_GET_CONTINUOUS(inst->flags) ? LINEAR : STEP, NORMALIZE_NO);
   pfree(instants[1]);
@@ -105,14 +105,14 @@ tcontseq_extend(const TSequence *seq, const Interval *interv, bool min,
   /* General case */
   TInstant *instants[3];
   TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq, 0);
-  Datum value1 = tinstant_val(inst1);
+  Datum value1 = tinstant_value_p(inst1);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   bool lower_inc = seq->period.lower_inc;
   meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count - 1; i++)
   {
     TInstant *inst2 = (TInstant *) TSEQUENCE_INST_N(seq, i + 1);
-    Datum value2 = tinstant_val(inst2);
+    Datum value2 = tinstant_value_p(inst2);
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 
     /* Step interpolation or constant segment */
@@ -383,9 +383,9 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interv,
   float8 value = 0.0;
   assert(tnumber_type(inst->temptype));
   if (inst->temptype == T_TINT)
-    value = DatumGetInt32(tinstant_val(inst));
+    value = DatumGetInt32(tinstant_value_p(inst));
   else /* inst->temptype == T_TFLOAT */
-    value = DatumGetFloat8(tinstant_val(inst));
+    value = DatumGetFloat8(tinstant_value_p(inst));
   double2 dvalue;
   double2_set(value, 1, &dvalue);
   TimestampTz upper = add_timestamptz_interval(inst->t, interv);
@@ -446,7 +446,7 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interv,
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
-    double value = DatumGetInt32(tinstant_val(inst1));
+    double value = DatumGetInt32(tinstant_value_p(inst1));
     double2 dvalue;
     double2_set(value, 1, &dvalue);
     TimestampTz upper = add_timestamptz_interval(inst2->t, interv);

@@ -212,7 +212,7 @@ datum_distance(Datum value1, Datum value2, meosType type, int16 flags)
  * timestamp, and if they are temporal points, have the same srid and the
  * same dimensionality
  */
-static bool
+bool
 ensure_valid_tseqarr(const TSequence **sequences, int count)
 {
   interpType interp = MEOS_FLAGS_GET_INTERP(sequences[0]->flags);
@@ -314,7 +314,7 @@ tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
   bool normalize)
 {
   assert(sequences); assert(count > 0); assert(count <= maxcount);
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tseqarr(sequences, count))
     return NULL;
 
@@ -404,7 +404,7 @@ tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount,
 TSequenceSet *
 tsequenceset_make(const TSequence **sequences, int count, bool normalize)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) sequences))
     return NULL;
@@ -456,14 +456,14 @@ tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
  * @param[out] nsplits Number of splits
  * @return Array of indices at which the temporal sequence is split
  */
-static int *
+int *
 ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   double maxdist, const Interval *maxt, int *nsplits)
 {
   meosType basetype = temptype_basetype(instants[0]->temptype);
   /* Ensure that zero-fill is done */
   int *result = palloc0(sizeof(int) * count);
-  Datum value1 = tinstant_val(instants[0]);
+  Datum value1 = tinstant_value_p(instants[0]);
   int16 flags = instants[0]->flags;
   int k = 0;
   for (int i = 1; i < count; i++)
@@ -479,7 +479,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
 #endif
     /* Determine if there should be a split */
     bool split = false;
-    Datum value2 = tinstant_val(instants[i]);
+    Datum value2 = tinstant_value_p(instants[i]);
     if (maxdist > 0.0 && ! datum_eq(value1, value2, basetype))
     {
       double dist = datum_distance(value1, value2, basetype, flags);
@@ -537,7 +537,7 @@ TSequenceSet *
 tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
   const Interval *maxt, double maxdist)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) instants))
     return NULL;
@@ -624,8 +624,8 @@ tsequenceset_copy(const TSequenceSet *ss)
 }
 
 /**
- * @brief Return an array of temporal sequence sets converted into an array of
- * temporal sequences
+ * @brief Return an array of temporal sequences converted from an array of
+ * temporal sequence sets
  * @details This function is called by all the functions in which the number of
  * output sequences cannot be determined in advance, typically when each
  * segment of the input sequence can produce an arbitrary number of output
@@ -700,7 +700,7 @@ tsequenceset_values_p(const TSequenceSet *ss, int *count)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     for (int j = 0; j < seq->count; j++)
-      result[nvals++] = tinstant_val(TSEQUENCE_INST_N(seq, j));
+      result[nvals++] = tinstant_value_p(TSEQUENCE_INST_N(seq, j));
   }
   if (nvals > 1)
   {
@@ -763,7 +763,7 @@ tsequenceset_minmax_inst(const TSequenceSet *ss,
   assert(ss);
   const TSequence *seq = TSEQUENCESET_SEQ_N(ss, 0);
   const TInstant *result = TSEQUENCE_INST_N(seq, 0);
-  Datum min = tinstant_val(result);
+  Datum min = tinstant_value_p(result);
   meosType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < ss->count; i++)
   {
@@ -771,7 +771,7 @@ tsequenceset_minmax_inst(const TSequenceSet *ss,
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
-      Datum value = tinstant_val(inst);
+      Datum value = tinstant_value_p(inst);
       if (func(value, min, basetype))
       {
         min = value;
@@ -997,7 +997,7 @@ tsequenceset_set_tstzspan(const TSequenceSet *ss, Span *s)
  * @param[in] ss Temporal sequence set
  */
 const TSequence **
-tsequenceset_seqs(const TSequenceSet *ss)
+tsequenceset_sequences_p(const TSequenceSet *ss)
 {
   assert(ss);
   const TSequence **result = palloc(sizeof(TSequence *) * ss->count);
@@ -1259,8 +1259,8 @@ tsequenceset_timestamps(const TSequenceSet *ss, int *count)
 
 /**
  * @ingroup meos_internal_temporal_accessor
- * @brief Return in the last argument the value of a temporal sequence set at a
- * timestamptz
+ * @brief Return in the last argument a copy of the value of a temporal
+ * sequence set at a timestamptz
  * @param[in] ss Temporal sequence set
  * @param[in] t Timestamp
  * @param[in] strict True if exclusive bounds are taken into account
@@ -1593,8 +1593,8 @@ tsequenceset_to_step(const TSequenceSet *ss)
     seq = TSEQUENCESET_SEQ_N(ss, i);
     if ((seq->count > 2) ||
         (seq->count == 2 && ! datum_eq(
-          tinstant_val(TSEQUENCE_INST_N(seq, 0)),
-          tinstant_val(TSEQUENCE_INST_N(seq, 1)), basetype)))
+          tinstant_value_p(TSEQUENCE_INST_N(seq, 0)),
+          tinstant_value_p(TSEQUENCE_INST_N(seq, 1)), basetype)))
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Cannot transform input value to step interpolation");

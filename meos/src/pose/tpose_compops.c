@@ -62,7 +62,7 @@ static int
 eacomp_tpose_pose(const Temporal *temp, const Pose *pose,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) pose) ||
       ! ensure_not_null((void *) func) ||
@@ -87,7 +87,7 @@ static int
 eacomp_tpose_tpose(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) || 
       ! ensure_not_null((void *) func) ||
@@ -278,7 +278,7 @@ static Temporal *
 tcomp_pose_tpose(const Pose *pose, const Temporal *temp,
   Datum (*func)(Datum, Datum, meosType))
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) pose) || 
       ! ensure_not_null((void *) func) ||
@@ -303,7 +303,7 @@ static Temporal *
 tcomp_tpose_pose(const Temporal *temp, const Pose *pose,
   Datum (*func)(Datum, Datum, meosType))
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) pose) || 
       ! ensure_not_null((void *) func) ||

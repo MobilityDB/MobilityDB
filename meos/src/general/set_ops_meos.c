@@ -54,7 +54,7 @@
 bool
 ensure_valid_set_int(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_INTSET))
     return false;
   return true;
@@ -67,7 +67,7 @@ ensure_valid_set_int(const Set *s)
 bool
 ensure_valid_set_bigint(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_BIGINTSET))
     return false;
   return true;
@@ -80,7 +80,7 @@ ensure_valid_set_bigint(const Set *s)
 bool
 ensure_valid_set_float(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_FLOATSET))
     return false;
   return true;
@@ -94,7 +94,7 @@ ensure_valid_set_float(const Set *s)
 bool
 ensure_valid_set_text(const Set *s, const text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) txt) ||
        ! ensure_set_isof_type(s, T_TEXTSET))
     return false;
@@ -108,7 +108,7 @@ ensure_valid_set_text(const Set *s, const text *txt)
 bool
 ensure_valid_set_date(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_DATESET))
     return false;
   return true;
@@ -120,7 +120,7 @@ ensure_valid_set_date(const Set *s)
 bool
 ensure_valid_set_timestamptz(const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_TSTZSET))
     return false;
   return true;
@@ -140,7 +140,7 @@ ensure_valid_set_timestamptz(const Set *s)
 bool
 contains_set_int(const Set *s, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return false;
   return contains_set_value(s, Int32GetDatum(i));
@@ -156,7 +156,7 @@ contains_set_int(const Set *s, int i)
 bool
 contains_set_bigint(const Set *s, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return false;
   return contains_set_value(s, Int64GetDatum(i));
@@ -172,7 +172,7 @@ contains_set_bigint(const Set *s, int64 i)
 bool
 contains_set_float(const Set *s, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return false;
   return contains_set_value(s, Float8GetDatum(d));
@@ -188,7 +188,7 @@ contains_set_float(const Set *s, double d)
 bool
 contains_set_text(const Set *s, text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return false;
   return contains_set_value(s, PointerGetDatum(txt));
@@ -204,7 +204,7 @@ contains_set_text(const Set *s, text *txt)
 bool
 contains_set_date(const Set *s, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return false;
   return contains_set_value(s, DateADTGetDatum(d));
@@ -220,7 +220,7 @@ contains_set_date(const Set *s, DateADT d)
 bool
 contains_set_timestamptz(const Set *s, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return false;
   return contains_set_value(s, TimestampTzGetDatum(t));
@@ -240,7 +240,7 @@ contains_set_timestamptz(const Set *s, TimestampTz t)
 bool
 contained_int_set(int i, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return false;
   return contained_value_set(Int32GetDatum(i), s);
@@ -256,7 +256,7 @@ contained_int_set(int i, const Set *s)
 bool
 contained_bigint_set(int64 i, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return false;
   return contained_value_set(Int64GetDatum(i), s);
@@ -272,7 +272,7 @@ contained_bigint_set(int64 i, const Set *s)
 bool
 contained_float_set(double d, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return false;
   return contained_value_set(Float8GetDatum(d), s);
@@ -288,7 +288,7 @@ contained_float_set(double d, const Set *s)
 bool
 contained_text_set(const text *txt, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return false;
   return contained_value_set(PointerGetDatum(txt), s);
@@ -304,7 +304,7 @@ contained_text_set(const text *txt, const Set *s)
 bool
 contained_date_set(DateADT d, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return false;
   return contains_set_value(s, DateADTGetDatum(d));
@@ -320,7 +320,7 @@ contained_date_set(DateADT d, const Set *s)
 bool
 contained_timestamptz_set(TimestampTz t, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return false;
   return contains_set_value(s, TimestampTzGetDatum(t));
@@ -340,7 +340,7 @@ contained_timestamptz_set(TimestampTz t, const Set *s)
 bool
 left_int_set(int i, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return false;
   return left_value_set(Int32GetDatum(i), s);
@@ -356,7 +356,7 @@ left_int_set(int i, const Set *s)
 bool
 left_bigint_set(int64 i, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return false;
   return left_value_set(Int64GetDatum(i), s);
@@ -372,7 +372,7 @@ left_bigint_set(int64 i, const Set *s)
 bool
 left_float_set(double d, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return false;
   return left_value_set(Float8GetDatum(d), s);
@@ -388,7 +388,7 @@ left_float_set(double d, const Set *s)
 bool
 left_text_set(const text *txt, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return false;
   return left_value_set(PointerGetDatum(txt), s);
@@ -404,7 +404,7 @@ left_text_set(const text *txt, const Set *s)
 bool
 before_date_set(DateADT d, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return false;
   return left_value_set(DateADTGetDatum(d), s);
@@ -420,7 +420,7 @@ before_date_set(DateADT d, const Set *s)
 bool
 before_timestamptz_set(TimestampTz t, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return false;
   return left_value_set(TimestampTzGetDatum(t), s);
@@ -438,7 +438,7 @@ before_timestamptz_set(TimestampTz t, const Set *s)
 bool
 left_set_int(const Set *s, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return false;
   return left_set_value(s, Int32GetDatum(i));
@@ -454,7 +454,7 @@ left_set_int(const Set *s, int i)
 bool
 left_set_bigint(const Set *s, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return false;
   return left_set_value(s, Int64GetDatum(i));
@@ -470,7 +470,7 @@ left_set_bigint(const Set *s, int64 i)
 bool
 left_set_float(const Set *s, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return false;
   return left_set_value(s, Float8GetDatum(d));
@@ -486,7 +486,7 @@ left_set_float(const Set *s, double d)
 bool
 left_set_text(const Set *s, text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return false;
   return left_set_value(s, PointerGetDatum(txt));
@@ -502,7 +502,7 @@ left_set_text(const Set *s, text *txt)
 bool
 before_set_date(const Set *s, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return false;
   return left_set_value(s, DateADTGetDatum(d));
@@ -518,7 +518,7 @@ before_set_date(const Set *s, DateADT d)
 bool
 before_set_timestamptz(const Set *s, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return false;
   return left_set_value(s, TimestampTzGetDatum(t));
@@ -538,7 +538,7 @@ before_set_timestamptz(const Set *s, TimestampTz t)
 bool
 right_int_set(int i, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return false;
   return left_set_value(s, Int32GetDatum(i));
@@ -554,7 +554,7 @@ right_int_set(int i, const Set *s)
 bool
 right_bigint_set(int64 i, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return false;
   return left_set_value(s, Int64GetDatum(i));
@@ -570,7 +570,7 @@ right_bigint_set(int64 i, const Set *s)
 bool
 right_float_set(double d, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return false;
   return left_set_value(s, Float8GetDatum(d));
@@ -586,7 +586,7 @@ right_float_set(double d, const Set *s)
 bool
 right_text_set(const text *txt, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return false;
   return left_set_value(s, PointerGetDatum(txt));
@@ -602,7 +602,7 @@ right_text_set(const text *txt, const Set *s)
 bool
 after_date_set(DateADT d, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return false;
   return left_set_value(s, DateADTGetDatum(d));
@@ -617,7 +617,7 @@ after_date_set(DateADT d, const Set *s)
 bool
 after_timestamptz_set(TimestampTz t, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return false;
   return left_set_value(s, TimestampTzGetDatum(t));
@@ -635,7 +635,7 @@ after_timestamptz_set(TimestampTz t, const Set *s)
 bool
 right_set_int(const Set *s, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return false;
   return left_value_set(Int32GetDatum(i), s);
@@ -651,7 +651,7 @@ right_set_int(const Set *s, int i)
 bool
 right_set_bigint(const Set *s, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return false;
   return left_value_set(Int64GetDatum(i), s);
@@ -667,7 +667,7 @@ right_set_bigint(const Set *s, int64 i)
 bool
 right_set_float(const Set *s, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return false;
   return left_value_set(Float8GetDatum(d), s);
@@ -683,7 +683,7 @@ right_set_float(const Set *s, double d)
 bool
 right_set_text(const Set *s, text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return false;
   return left_value_set(PointerGetDatum(txt), s);
@@ -699,7 +699,7 @@ right_set_text(const Set *s, text *txt)
 bool
 after_set_date(const Set *s, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return false;
   return left_value_set(DateADTGetDatum(d), s);
@@ -715,7 +715,7 @@ after_set_date(const Set *s, DateADT d)
 bool
 after_set_timestamptz(const Set *s, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return false;
   return left_value_set(TimestampTzGetDatum(t), s);
@@ -735,7 +735,7 @@ after_set_timestamptz(const Set *s, TimestampTz t)
 bool
 overleft_int_set(int i, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return false;
   return overleft_value_set(Int32GetDatum(i), s);
@@ -751,7 +751,7 @@ overleft_int_set(int i, const Set *s)
 bool
 overleft_bigint_set(int64 i, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return false;
   return overleft_value_set(Int64GetDatum(i), s);
@@ -767,7 +767,7 @@ overleft_bigint_set(int64 i, const Set *s)
 bool
 overleft_float_set(double d, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return false;
   return overleft_value_set(Float8GetDatum(d), s);
@@ -783,7 +783,7 @@ overleft_float_set(double d, const Set *s)
 bool
 overleft_text_set(const text *txt, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return false;
   return overleft_value_set(PointerGetDatum(txt), s);
@@ -799,7 +799,7 @@ overleft_text_set(const text *txt, const Set *s)
 bool
 overbefore_date_set(DateADT d, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return false;
   return overleft_value_set(DateADTGetDatum(d), s);
@@ -815,7 +815,7 @@ overbefore_date_set(DateADT d, const Set *s)
 bool
 overbefore_timestamptz_set(TimestampTz t, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return false;
   return overleft_value_set(TimestampTzGetDatum(t), s);
@@ -833,7 +833,7 @@ overbefore_timestamptz_set(TimestampTz t, const Set *s)
 bool
 overleft_set_int(const Set *s, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return false;
   return overleft_set_value(s, Int32GetDatum(i));
@@ -849,7 +849,7 @@ overleft_set_int(const Set *s, int i)
 bool
 overleft_set_bigint(const Set *s, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return false;
   return overleft_set_value(s, Int64GetDatum(i));
@@ -865,7 +865,7 @@ overleft_set_bigint(const Set *s, int64 i)
 bool
 overleft_set_float(const Set *s, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return false;
   return overleft_set_value(s, Float8GetDatum(d));
@@ -881,7 +881,7 @@ overleft_set_float(const Set *s, double d)
 bool
 overleft_set_text(const Set *s, text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return false;
   return overleft_set_value(s, PointerGetDatum(txt));
@@ -897,7 +897,7 @@ overleft_set_text(const Set *s, text *txt)
 bool
 overbefore_set_date(const Set *s, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return false;
   return overleft_set_value(s, DateADTGetDatum(d));
@@ -913,7 +913,7 @@ overbefore_set_date(const Set *s, DateADT d)
 bool
 overbefore_set_timestamptz(const Set *s, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return false;
   return overleft_set_value(s, TimestampTzGetDatum(t));
@@ -933,7 +933,7 @@ overbefore_set_timestamptz(const Set *s, TimestampTz t)
 bool
 overright_int_set(int i, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return false;
   return overright_value_set(Int32GetDatum(i), s);
@@ -949,7 +949,7 @@ overright_int_set(int i, const Set *s)
 bool
 overright_bigint_set(int64 i, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return false;
   return overright_value_set(Int64GetDatum(i), s);
@@ -965,7 +965,7 @@ overright_bigint_set(int64 i, const Set *s)
 bool
 overright_float_set(double d, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return false;
   return overright_value_set(Float8GetDatum(d), s);
@@ -981,7 +981,7 @@ overright_float_set(double d, const Set *s)
 bool
 overright_text_set(const text *txt, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return false;
   return overright_set_value(s, PointerGetDatum(txt));
@@ -997,7 +997,7 @@ overright_text_set(const text *txt, const Set *s)
 bool
 overafter_date_set(DateADT d, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return false;
   return overright_value_set(DateADTGetDatum(d), s);
@@ -1013,7 +1013,7 @@ overafter_date_set(DateADT d, const Set *s)
 bool
 overafter_timestamptz_set(TimestampTz t, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return false;
   return overright_value_set(TimestampTzGetDatum(t), s);
@@ -1031,7 +1031,7 @@ overafter_timestamptz_set(TimestampTz t, const Set *s)
 bool
 overright_set_int(const Set *s, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return false;
   return overright_set_value(s, Int32GetDatum(i));
@@ -1047,7 +1047,7 @@ overright_set_int(const Set *s, int i)
 bool
 overright_set_bigint(const Set *s, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return false;
   return overright_set_value(s, Int64GetDatum(i));
@@ -1063,7 +1063,7 @@ overright_set_bigint(const Set *s, int64 i)
 bool
 overright_set_float(const Set *s, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return false;
   return overright_set_value(s, Float8GetDatum(d));
@@ -1079,7 +1079,7 @@ overright_set_float(const Set *s, double d)
 bool
 overright_set_text(const Set *s, text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return false;
   return overright_set_value(s, PointerGetDatum(txt));
@@ -1095,7 +1095,7 @@ overright_set_text(const Set *s, text *txt)
 bool
 overafter_set_date(const Set *s, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return false;
   return overright_set_value(s, DateADTGetDatum(d));
@@ -1111,7 +1111,7 @@ overafter_set_date(const Set *s, DateADT d)
 bool
 overafter_set_timestamptz(const Set *s, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return false;
   return overright_set_value(s, TimestampTzGetDatum(t));
@@ -1131,7 +1131,7 @@ overafter_set_timestamptz(const Set *s, TimestampTz t)
 Set *
 union_set_int(const Set *s, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return NULL;
   return union_set_value(s, Int32GetDatum(i));
@@ -1147,7 +1147,7 @@ union_set_int(const Set *s, int i)
 Set *
 union_set_bigint(const Set *s, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return NULL;
   return union_set_value(s, Int64GetDatum(i));
@@ -1163,7 +1163,7 @@ union_set_bigint(const Set *s, int64 i)
 Set *
 union_set_float(const Set *s, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return NULL;
   return union_set_value(s, Float8GetDatum(d));
@@ -1179,7 +1179,7 @@ union_set_float(const Set *s, double d)
 Set *
 union_set_text(const Set *s, const text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return NULL;
   return union_set_value(s, PointerGetDatum(txt));
@@ -1195,7 +1195,7 @@ union_set_text(const Set *s, const text *txt)
 Set *
 union_set_date(const Set *s, const DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return NULL;
   return union_set_value(s, DateADTGetDatum(d));
@@ -1211,7 +1211,7 @@ union_set_date(const Set *s, const DateADT d)
 Set *
 union_set_timestamptz(const Set *s, const TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return NULL;
   return union_set_value(s, TimestampTzGetDatum(t));
@@ -1226,7 +1226,7 @@ union_set_timestamptz(const Set *s, const TimestampTz t)
  * @param[in] i Value
  * @csqlfn #Union_set_value()
  */
-Set *
+inline Set *
 union_int_set(int i, const Set *s)
 {
   return union_set_int(s, i);
@@ -1239,7 +1239,7 @@ union_int_set(int i, const Set *s)
  * @param[in] i Value
  * @csqlfn #Union_set_value()
  */
-Set *
+inline Set *
 union_bigint_set(int64 i, const Set *s)
 {
   return union_set_bigint(s, i);
@@ -1252,7 +1252,7 @@ union_bigint_set(int64 i, const Set *s)
  * @param[in] d Value
  * @csqlfn #Union_set_value()
  */
-Set *
+inline Set *
 union_float_set(double d, const Set *s)
 {
   return union_set_float(s, d);
@@ -1265,7 +1265,7 @@ union_float_set(double d, const Set *s)
  * @param[in] txt Value
  * @csqlfn #Union_set_value()
  */
-Set *
+inline Set *
 union_text_set(const text *txt, const Set *s)
 {
   return union_set_text(s, txt);
@@ -1278,7 +1278,7 @@ union_text_set(const text *txt, const Set *s)
  * @param[in] d Value
  * @csqlfn #Union_set_value()
  */
-Set *
+inline Set *
 union_date_set(const DateADT d, const Set *s)
 {
   return union_set_date(s, d);
@@ -1291,7 +1291,7 @@ union_date_set(const DateADT d, const Set *s)
  * @param[in] t Value
  * @csqlfn #Union_set_value()
  */
-Set *
+inline Set *
 union_timestamptz_set(const TimestampTz t, const Set *s)
 {
   return union_set_timestamptz(s, t);
@@ -1311,7 +1311,7 @@ union_timestamptz_set(const TimestampTz t, const Set *s)
 Set *
 intersection_set_int(const Set *s, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return NULL;
   return intersection_set_value(s, Int32GetDatum(i));
@@ -1327,7 +1327,7 @@ intersection_set_int(const Set *s, int i)
 Set *
 intersection_set_bigint(const Set *s, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return NULL;
   return intersection_set_value(s, Int64GetDatum(i));
@@ -1343,7 +1343,7 @@ intersection_set_bigint(const Set *s, int64 i)
 Set *
 intersection_set_float(const Set *s, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return NULL;
   return intersection_set_value(s, Float8GetDatum(d));
@@ -1359,7 +1359,7 @@ intersection_set_float(const Set *s, double d)
 Set *
 intersection_set_text(const Set *s, const text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return NULL;
   return intersection_set_value(s, PointerGetDatum(txt));
@@ -1375,7 +1375,7 @@ intersection_set_text(const Set *s, const text *txt)
 Set *
 intersection_set_date(const Set *s, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return NULL;
   return intersection_set_value(s, DateADTGetDatum(d));
@@ -1390,7 +1390,7 @@ intersection_set_date(const Set *s, DateADT d)
 Set *
 intersection_set_timestamptz(const Set *s, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return NULL;
   return intersection_set_value(s, TimestampTzGetDatum(t));
@@ -1405,7 +1405,7 @@ intersection_set_timestamptz(const Set *s, TimestampTz t)
  * @param[in] i Value
  * @csqlfn #Union_set_value()
  */
-Set *
+inline Set *
 intersection_int_set(int i, const Set *s)
 {
   return intersection_set_int(s, i);
@@ -1418,7 +1418,7 @@ intersection_int_set(int i, const Set *s)
  * @param[in] i Value
  * @csqlfn #Union_set_value()
  */
-Set *
+inline Set *
 intersection_bigint_set(int64 i, const Set *s)
 {
   return intersection_set_bigint(s, i);
@@ -1431,7 +1431,7 @@ intersection_bigint_set(int64 i, const Set *s)
  * @param[in] d Value
  * @csqlfn #Union_set_value()
  */
-Set *
+inline Set *
 intersection_float_set(double d, const Set *s)
 {
   return intersection_set_float(s, d);
@@ -1444,7 +1444,7 @@ intersection_float_set(double d, const Set *s)
  * @param[in] txt Value
  * @csqlfn #Union_set_value()
  */
-Set *
+inline Set *
 intersection_text_set(const text *txt, const Set *s)
 {
   return intersection_set_text(s, txt);
@@ -1457,7 +1457,7 @@ intersection_text_set(const text *txt, const Set *s)
  * @param[in] d Value
  * @csqlfn #Union_set_value()
  */
-Set *
+inline Set *
 intersection_date_set(const DateADT d, const Set *s)
 {
   return intersection_set_date(s, d);
@@ -1470,7 +1470,7 @@ intersection_date_set(const DateADT d, const Set *s)
  * @param[in] t Value
  * @csqlfn #Union_set_value()
  */
-Set *
+inline Set *
 intersection_timestamptz_set(const TimestampTz t, const Set *s)
 {
   return intersection_set_timestamptz(s, t);
@@ -1491,7 +1491,7 @@ intersection_timestamptz_set(const TimestampTz t, const Set *s)
 Set *
 minus_int_set(int i, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return NULL;
   return minus_value_set(Int32GetDatum(i), s);
@@ -1507,7 +1507,7 @@ minus_int_set(int i, const Set *s)
 Set *
 minus_bigint_set(int64 i, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return NULL;
   return minus_value_set(Int64GetDatum(i), s);
@@ -1523,7 +1523,7 @@ minus_bigint_set(int64 i, const Set *s)
 Set *
 minus_float_set(double d, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return NULL;
   return minus_value_set(Float8GetDatum(d), s);
@@ -1539,7 +1539,7 @@ minus_float_set(double d, const Set *s)
 Set *
 minus_text_set(const text *txt, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return NULL;
   return minus_value_set(PointerGetDatum(txt), s);
@@ -1555,7 +1555,7 @@ minus_text_set(const text *txt, const Set *s)
 Set *
 minus_date_set(DateADT d, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return NULL;
   return minus_value_set(DateADTGetDatum(d), s);
@@ -1571,7 +1571,7 @@ minus_date_set(DateADT d, const Set *s)
 Set *
 minus_timestamptz_set(TimestampTz t, const Set *s)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return NULL;
   return minus_value_set(TimestampTzGetDatum(t), s);
@@ -1589,7 +1589,7 @@ minus_timestamptz_set(TimestampTz t, const Set *s)
 Set *
 minus_set_int(const Set *s, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return NULL;
   return minus_set_value(s, Int32GetDatum(i));
@@ -1605,7 +1605,7 @@ minus_set_int(const Set *s, int i)
 Set *
 minus_set_bigint(const Set *s, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return NULL;
   return minus_set_value(s, Int64GetDatum(i));
@@ -1621,7 +1621,7 @@ minus_set_bigint(const Set *s, int64 i)
 Set *
 minus_set_float(const Set *s, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return NULL;
   return minus_set_value(s, Float8GetDatum(d));
@@ -1637,7 +1637,7 @@ minus_set_float(const Set *s, double d)
 Set *
 minus_set_text(const Set *s, const text *txt)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_text(s, txt))
     return NULL;
   return minus_set_value(s, PointerGetDatum(txt));
@@ -1653,7 +1653,7 @@ minus_set_text(const Set *s, const text *txt)
 Set *
 minus_set_date(const Set *s, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return NULL;
   return minus_set_value(s, DateADTGetDatum(d));
@@ -1669,7 +1669,7 @@ minus_set_date(const Set *s, DateADT d)
 Set *
 minus_set_timestamptz(const Set *s, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return NULL;
   return minus_set_value(s, TimestampTzGetDatum(t));
@@ -1690,7 +1690,7 @@ minus_set_timestamptz(const Set *s, TimestampTz t)
 int
 distance_set_int(const Set *s, int i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_int(s))
     return -1;
   return DatumGetInt32(distance_set_value(s, Int32GetDatum(i)));
@@ -1707,7 +1707,7 @@ distance_set_int(const Set *s, int i)
 int64
 distance_set_bigint(const Set *s, int64 i)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_bigint(s))
     return -1;
   return DatumGetInt64(distance_set_value(s, Int64GetDatum(i)));
@@ -1724,7 +1724,7 @@ distance_set_bigint(const Set *s, int64 i)
 double
 distance_set_float(const Set *s, double d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_float(s))
     return -1.0;
   return DatumGetFloat8(distance_set_value(s, Float8GetDatum(d)));
@@ -1741,7 +1741,7 @@ distance_set_float(const Set *s, double d)
 int
 distance_set_date(const Set *s, DateADT d)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_date(s))
     return -1;
   return DatumGetInt32(distance_set_value(s, DateADTGetDatum(d)));
@@ -1759,7 +1759,7 @@ distance_set_date(const Set *s, DateADT d)
 double
 distance_set_timestamptz(const Set *s, TimestampTz t)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_timestamptz(s))
     return -1.0;
   return DatumGetFloat8(distance_set_value(s, TimestampTzGetDatum(t)));
@@ -1777,7 +1777,7 @@ distance_set_timestamptz(const Set *s, TimestampTz t)
 int
 distance_intset_intset(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_INTSET))
     return -1;
   return DatumGetInt32(distance_set_set(s1, s2));
@@ -1793,7 +1793,7 @@ distance_intset_intset(const Set *s1, const Set *s2)
 int64
 distance_bigintset_bigintset(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_INTSET))
     return -1;
   return DatumGetInt64(distance_set_set(s1, s2));
@@ -1809,7 +1809,7 @@ distance_bigintset_bigintset(const Set *s1, const Set *s2)
 double
 distance_floatset_floatset(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_FLOATSET))
     return -1.0;
   return DatumGetFloat8(distance_set_set(s1, s2));
@@ -1825,7 +1825,7 @@ distance_floatset_floatset(const Set *s1, const Set *s2)
 int
 distance_dateset_dateset(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_DATESET))
     return -1;
   return DatumGetInt32(distance_set_set(s1, s2));
@@ -1841,7 +1841,7 @@ distance_dateset_dateset(const Set *s1, const Set *s2)
 double
 distance_tstzset_tstzset(const Set *s1, const Set *s2)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_TSTZSET))
     return -1.0;
   return DatumGetFloat8(distance_set_set(s1, s2));

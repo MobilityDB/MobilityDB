@@ -179,7 +179,7 @@ CREATE TYPE tstzspanset (
 
 /******************************************************************************/
 
--- Input/output in WKB and HexWKB format
+-- Input/output in WKB and HexWKB representation
 
 CREATE FUNCTION intspansetFromBinary(bytea)
   RETURNS intspanset

@@ -747,8 +747,6 @@ Tbox_expand_float(PG_FUNCTION_ARGS)
   TBox *box = PG_GETARG_TBOX_P(0);
   double d = PG_GETARG_FLOAT8(1);
   TBox *result = tbox_expand_float(box, d);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_TBOX_P(result);
 }
 
@@ -766,8 +764,6 @@ Tbox_expand_time(PG_FUNCTION_ARGS)
   TBox *box = PG_GETARG_TBOX_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   TBox *result = tbox_expand_time(box, interval);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_TBOX_P(result);
 }
 

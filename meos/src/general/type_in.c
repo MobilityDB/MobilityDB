@@ -41,10 +41,8 @@
 #include "utils/timestamp.h"
 /* MEOS */
 #include <meos.h>
+#include <meos_rgeo.h>
 #include <meos_internal.h>
-#if POSE
-  #include <meos_pose.h>
-#endif
 #include "general/pg_types.h"
 #include "general/set.h"
 #include "general/span.h"
@@ -59,7 +57,11 @@
   #include "npoint/tnpoint.h"
 #endif
 #if POSE
+  #include <meos_pose.h>
   #include "pose/pose.h"
+#endif
+#if RGEO
+  #include "rgeo/trgeo.h"
 #endif
 
 /*****************************************************************************/
@@ -99,7 +101,7 @@ extern LWGEOM *parse_geojson(json_object *geojson, int *hasz);
  * @brief Return a base value from its string representation
  */
 bool
-#if CBUFFER || NPOINT || POSE
+#if CBUFFER || NPOINT || POSE || RGEO
 basetype_in(const char *str, meosType type, bool end, Datum *result)
 #else
 basetype_in(const char *str, meosType type,
@@ -201,7 +203,7 @@ basetype_in(const char *str, meosType type,
       return true;
     }
 #endif
-#if POSE
+#if POSE || RGEO
     case T_POSE:
     {
       Pose *pose = pose_parse(&str, end);
@@ -490,9 +492,41 @@ parse_mfjson_geos(json_object *mfjson, int srid, bool geodetic, int *count)
   return values;
 }
 
+#if RGEO
+static GSERIALIZED *
+parse_mfjson_ref_geo(json_object *mfjson, int srid, bool geodetic)
+{
+  json_object *mfjsonTmp = mfjson;
+  json_object *geo_json = NULL;
+  geo_json = findMemberByName(mfjsonTmp, "geometry");
+  if (geo_json == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'geometry' in MFJSON string");
+    return NULL;
+  }
+  int hasz = LW_FALSE;
+  LWGEOM *geo = parse_geojson(geo_json, &hasz);
+  if (! geo)
+    return NULL;
+  if (! hasz)
+  {
+    LWGEOM *tmp = lwgeom_force_2d(geo);
+    lwgeom_free(geo);
+    geo = tmp;
+  }
+  lwgeom_add_bbox(geo);
+  lwgeom_set_srid(geo, srid);
+  lwgeom_set_geodetic(geo, geodetic);
+  GSERIALIZED *result = geo_serialize(geo);
+  lwgeom_free(geo);
+  return result;
+}
+#endif /* RGEO */
+
 /*****************************************************************************/
 
-#if POSE
+#if POSE || RGEO
 Pose *
 parse_mfjson_pose(json_object *mfjson, int srid)
 {
@@ -721,10 +755,17 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int srid,
       values = parse_mfjson_points(mfjson, srid, geodetic, &nvalues);
     else if (tgeo_type(temptype))
       values = parse_mfjson_geos(mfjson, srid, geodetic, &nvalues);
-#if POSE
-    else if (temptype == T_TPOSE)
+#if POSE || RGEO
+    else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
 #endif /* POSE */
+    else
+    {
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+        "Unknown spatial type for MF-JSON input function: %s", 
+        meostype_name(temptype));
+      return NULL;
+    }
   }
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &ndates);
   if (nvalues != 1 || ndates != 1)
@@ -759,8 +800,19 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
   {
     if (tpoint_type(temptype))
       values = parse_mfjson_points(mfjson, srid, geodetic, &nvalues);
-    else
+    else if (tgeo_type(temptype))
       values = parse_mfjson_geos(mfjson, srid, geodetic, &nvalues);
+#if POSE || RGEO
+    else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
+      values = parse_mfjson_poses(mfjson, srid, &nvalues);
+#endif /* RGEO */
+   else
+    {
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+        "Unknown spatial type for MF-JSON input function: %s", 
+        meostype_name(temptype));
+      return NULL;
+    }
   }
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &ndates);
   if (nvalues != ndates)
@@ -890,7 +942,8 @@ ensure_temptype_mfjson(const char *typestr)
       strcmp(typestr, "MovingText") != 0 &&
       strcmp(typestr, "MovingPoint") != 0 &&
       strcmp(typestr, "MovingGeometry") != 0  &&
-      strcmp(typestr, "MovingPose") != 0 )
+      strcmp(typestr, "MovingPose") != 0 &&
+      strcmp(typestr, "MovingRigidGeometry") != 0 )
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
       "Invalid 'type' value in MFJSON string");
@@ -912,7 +965,7 @@ ensure_temptype_mfjson(const char *typestr)
 Temporal *
 temporal_from_mfjson(const char *mfjson, meosType temptype)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) mfjson))
     return NULL;
 
@@ -973,6 +1026,8 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
   }
   else if (strcmp(typestr, "MovingPose") == 0)
     jtemptype = T_TPOSE;
+  else if (strcmp(typestr, "MovingRigidGeometry") == 0)
+    jtemptype = T_TRGEOMETRY;
 
   if (temptype != T_UNKNOWN && jtemptype != temptype)
   {
@@ -1032,8 +1087,24 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
   /* Read interpolation value and parse the temporal value */
   const char *pszInterp = json_object_get_string(poObjInterp);
   Temporal *result = NULL;
+#if RGEO
+  GSERIALIZED *gs = NULL;
+#endif /* RGEO */
   if (pszInterp)
   {
+#if RGEO
+    /* Read the reference geometry of a temporal rigid geometry */
+    if (temptype == T_TRGEOMETRY)
+    {
+      gs = parse_mfjson_ref_geo(poObj, srid, false);
+      if (! gs)
+      {
+        meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+          "Invalid 'geometry' value in MFJSON string");
+        return NULL;
+      }
+    }
+#endif /* RGEO */
     if (strcmp(pszInterp, "None") == 0)
       result = (Temporal *) tinstant_from_mfjson(poObj, spatial, srid,
         temptype);
@@ -1061,6 +1132,10 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
     }
   }
   json_object_put(poObj);
+#if RGEO
+  if (temptype == T_TRGEOMETRY)
+    return geo_tpose_to_trgeo(gs, result);
+#endif /* RGEO */
   return result;
 }
 
@@ -1425,7 +1500,7 @@ npoint_from_wkb_state(meos_wkb_parse_state *s)
 }
 #endif /* NPOINT */
 
-#if POSE
+#if POSE || RGEO
 /**
  * @brief Return the state flags initialized with a byte flag read from the
  * buffer
@@ -1517,7 +1592,7 @@ base_from_wkb_state(meos_wkb_parse_state *s)
     case T_NPOINT:
       return PointerGetDatum(npoint_from_wkb_state(s));
 #endif /* NPOINT */
-#if POSE
+#if POSE || RGEO
     case T_POSE:
       return PointerGetDatum(pose_from_wkb_state(s));
 #endif /* POSE */
@@ -1890,7 +1965,7 @@ tsequence_from_wkb_state(meos_wkb_parse_state *s)
 }
 
 /**
- * @brief Return a temporal sequence set value from its WKB representation
+ * @brief Return a temporal sequence set from its WKB representation
  */
 static TSequenceSet *
 tsequenceset_from_wkb_state(meos_wkb_parse_state *s)
@@ -1944,17 +2019,36 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
   else if (wkb_flags & MEOS_WKB_GEODETICFLAG)
     s->srid = SRID_DEFAULT;
 
+#if RGEO
+  GSERIALIZED *gs;
+  if (s->temptype == T_TRGEOMETRY)
+    gs = geo_from_wkb_state(s);
+#endif /* RGEO */
+
   /* Read the temporal value */
+  Temporal *res;
   assert(temptype_subtype(s->subtype));
   switch (s->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_from_wkb_state(s);
+      res = (Temporal *) tinstant_from_wkb_state(s);
+      break;
     case TSEQUENCE:
-      return (Temporal *) tsequence_from_wkb_state(s);
+      res = (Temporal *) tsequence_from_wkb_state(s);
+      break;
     default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_from_wkb_state(s);
+      res = (Temporal *) tsequenceset_from_wkb_state(s);
   }
+
+#if RGEO
+  if (s->temptype == T_TRGEOMETRY)
+  {
+    Temporal *result = geo_tpose_to_trgeo(gs, res);
+    pfree(gs); pfree(res);
+    return result;
+  }
+#endif /* RGEO */
+  return res;
 }
 
 /*****************************************************************************/
@@ -2011,7 +2105,7 @@ type_from_wkb(const uint8_t *wkb, size_t size, meosType type)
   if (type == T_NPOINT)
     return PointerGetDatum(npoint_from_wkb_state(&s));
 #endif /* NPOINT */
-#if POSE
+#if POSE || RGEO
   if (type == T_POSE)
     return PointerGetDatum(pose_from_wkb_state(&s));
 #endif /* POSE */
@@ -2049,7 +2143,7 @@ type_from_hexwkb(const char *hexwkb, size_t size, meosType type)
 Set *
 set_from_wkb(const uint8_t *wkb, size_t size)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) wkb))
     return NULL;
   /* We pass ANY set type, the actual type is read from the byte string */
@@ -2066,7 +2160,7 @@ set_from_wkb(const uint8_t *wkb, size_t size)
 Set *
 set_from_hexwkb(const char *hexwkb)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) hexwkb))
     return NULL;
   size_t size = strlen(hexwkb);
@@ -2084,7 +2178,7 @@ set_from_hexwkb(const char *hexwkb)
 Span *
 span_from_wkb(const uint8_t *wkb, size_t size)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) wkb))
     return NULL;
   /* We pass ANY span type, the actual type is read from the byte string */
@@ -2101,7 +2195,7 @@ span_from_wkb(const uint8_t *wkb, size_t size)
 Span *
 span_from_hexwkb(const char *hexwkb)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) hexwkb))
     return NULL;
   size_t size = strlen(hexwkb);
@@ -2119,7 +2213,7 @@ span_from_hexwkb(const char *hexwkb)
 SpanSet *
 spanset_from_wkb(const uint8_t *wkb, size_t size)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) wkb))
     return NULL;
   /* We pass ANY span set type, the actual type is read from the byte string */
@@ -2136,7 +2230,7 @@ spanset_from_wkb(const uint8_t *wkb, size_t size)
 SpanSet *
 spanset_from_hexwkb(const char *hexwkb)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) hexwkb))
     return NULL;
   size_t size = strlen(hexwkb);
@@ -2158,7 +2252,7 @@ spanset_from_hexwkb(const char *hexwkb)
 TBox *
 tbox_from_wkb(const uint8_t *wkb, size_t size)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) wkb))
     return NULL;
   return DatumGetTboxP(type_from_wkb(wkb, size, T_TBOX));
@@ -2174,7 +2268,7 @@ tbox_from_wkb(const uint8_t *wkb, size_t size)
 TBox *
 tbox_from_hexwkb(const char *hexwkb)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) hexwkb))
     return NULL;
   size_t size = strlen(hexwkb);
@@ -2197,7 +2291,7 @@ tbox_from_hexwkb(const char *hexwkb)
 Temporal *
 temporal_from_wkb(const uint8_t *wkb, size_t size)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) wkb))
     return NULL;
   /* We pass ANY temporal type, the actual type is read from the byte string */
@@ -2215,7 +2309,7 @@ temporal_from_wkb(const uint8_t *wkb, size_t size)
 Temporal *
 temporal_from_hexwkb(const char *hexwkb)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) hexwkb))
     return NULL;
   size_t size = strlen(hexwkb);
