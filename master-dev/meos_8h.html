@@ -168,15 +168,17 @@ Enumerations</h2></td></tr>
 , <a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a76f3f958fcd31b926551cb9d7412bbea">MEOS_ERR_INVALID_ARG_TYPE</a> = 11
 , <a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a37fa16ebe13016fee5255e13beb548e8">MEOS_ERR_INVALID_ARG_VALUE</a> = 12
 , <br />
-&#160;&#160;<a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056ad75f51fa59b1f69a52eb42d7ad9cea2c">MEOS_ERR_MFJSON_INPUT</a> = 20
+&#160;&#160;<a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a852283e960b68e326e7cb53f8ccb5985">MEOS_ERR_FEATURE_NOT_SUPPORTED</a> = 13
+, <a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056ad75f51fa59b1f69a52eb42d7ad9cea2c">MEOS_ERR_MFJSON_INPUT</a> = 20
 , <a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a458dabc2bdfd0780fb12a3970f129ef3">MEOS_ERR_MFJSON_OUTPUT</a> = 21
 , <a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a50ce71279f0403159ce77fac398c4615">MEOS_ERR_TEXT_INPUT</a> = 22
-, <a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a7ff88946e52e16625c44adabafab4dd1">MEOS_ERR_TEXT_OUTPUT</a> = 23
 , <br />
-&#160;&#160;<a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a5c7a996b2f6cb175d796678867f9a8e8">MEOS_ERR_WKB_INPUT</a> = 24
+&#160;&#160;<a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a7ff88946e52e16625c44adabafab4dd1">MEOS_ERR_TEXT_OUTPUT</a> = 23
+, <a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a5c7a996b2f6cb175d796678867f9a8e8">MEOS_ERR_WKB_INPUT</a> = 24
 , <a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a0af16b657b8b9cf94e953db37427b9d4">MEOS_ERR_WKB_OUTPUT</a> = 25
 , <a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056ad83708f09a009fc497329ee87696aa9e">MEOS_ERR_GEOJSON_INPUT</a> = 26
-, <a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a4045fe1b40730a03c4805879c458de0d">MEOS_ERR_GEOJSON_OUTPUT</a> = 27
+, <br />
+&#160;&#160;<a class="el" href="meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a4045fe1b40730a03c4805879c458de0d">MEOS_ERR_GEOJSON_OUTPUT</a> = 27
 <br />
  }</td></tr>
 <tr class="separator:ab19a8e0fe3ea0ea5c7259400cb389056"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -2922,7 +2924,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga53f0bbcf5e46157a84c4b0c8eeb09098"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an array of copies of the sequences of a temporal sequence (set)  <a href="group__meos__temporal__accessor_ga53f0bbcf5e46157a84c4b0c8eeb09098.html#ga53f0bbcf5e46157a84c4b0c8eeb09098">More...</a><br /></td></tr>
 <tr class="separator:ga53f0bbcf5e46157a84c4b0c8eeb09098"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga99958ea873bc3aec854ef3eea512de9f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__transf_ga99958ea873bc3aec854ef3eea512de9f.html#ga99958ea873bc3aec854ef3eea512de9f">temporal_set_interp</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, <a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a> interp)</td></tr>
-<tr class="memdesc:ga99958ea873bc3aec854ef3eea512de9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal value transformed to a given interpolation.  <a href="group__meos__temporal__transf_ga99958ea873bc3aec854ef3eea512de9f.html#ga99958ea873bc3aec854ef3eea512de9f">More...</a><br /></td></tr>
+<tr class="memdesc:ga99958ea873bc3aec854ef3eea512de9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal value transformed to an interpolation.  <a href="group__meos__temporal__transf_ga99958ea873bc3aec854ef3eea512de9f.html#ga99958ea873bc3aec854ef3eea512de9f">More...</a><br /></td></tr>
 <tr class="separator:ga99958ea873bc3aec854ef3eea512de9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga127410f25a3b58ea2c7022375dfdd7aa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__temporal__transf_ga127410f25a3b58ea2c7022375dfdd7aa.html#ga127410f25a3b58ea2c7022375dfdd7aa">temporal_shift_scale_time</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, const <a class="el" href="structInterval.html">Interval</a> *shift, const <a class="el" href="structInterval.html">Interval</a> *duration)</td></tr>
 <tr class="memdesc:ga127410f25a3b58ea2c7022375dfdd7aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal value shifted and/or scaled by two intervals.  <a href="group__meos__temporal__transf_ga127410f25a3b58ea2c7022375dfdd7aa.html#ga127410f25a3b58ea2c7022375dfdd7aa">More...</a><br /></td></tr>
