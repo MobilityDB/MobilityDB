@@ -318,9 +318,7 @@ parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
 }
 
 /**
- * @brief Return an array of points from its MF-JSON coordinates
- * @details In this case the coordinate array is an array of arrays of
- * cordinates such as `"values":[1.5,2.5]`.
+ * @brief Return an array of values from its MF-JSON representation
  */
 static Datum *
 parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
@@ -438,6 +436,10 @@ parse_mfjson_points(json_object *mfjson, int srid, bool geodetic, int *count)
   return values;
 }
 
+/**
+ * @brief Return an array of geometries/geographies from their MF-JSON
+ * representation
+ */
 static Datum *
 parse_mfjson_geos(json_object *mfjson, int srid, bool geodetic, int *count)
 {
@@ -493,6 +495,10 @@ parse_mfjson_geos(json_object *mfjson, int srid, bool geodetic, int *count)
 }
 
 #if RGEO
+/**
+ * @brief Return a reference geometry of a temporal rigid geometry from its
+ * MF-JSON representation
+ */
 static GSERIALIZED *
 parse_mfjson_ref_geo(json_object *mfjson, int srid, bool geodetic)
 {
@@ -527,7 +533,9 @@ parse_mfjson_ref_geo(json_object *mfjson, int srid, bool geodetic)
 /*****************************************************************************/
 
 #if POSE || RGEO
-Pose *
+/**
+ * @brief Return a pose from its GeoJSON representation
+ */Pose *
 parse_mfjson_pose(json_object *mfjson, int srid)
 {
   assert(mfjson);
@@ -637,7 +645,7 @@ parse_mfjson_pose(json_object *mfjson, int srid)
 }
 
 /**
- * @brief Return an array of poses from its MF-JSON pose values
+ * @brief Return an array of poses from its GeoJSON pose values
  */
 static Datum *
 parse_mfjson_poses(json_object *mfjson, int srid, int *count)
@@ -680,7 +688,7 @@ parse_mfjson_poses(json_object *mfjson, int srid, int *count)
 /*****************************************************************************/
 
 /**
- * @brief Return an array of timestamps from its MF-JSON datetimes values
+ * @brief Return an array of timestamps from their MF-JSON datetimes values
  */
 static TimestampTz *
 parse_mfjson_datetimes(json_object *mfjson, int *count)
@@ -946,7 +954,7 @@ ensure_temptype_mfjson(const char *typestr)
       strcmp(typestr, "MovingRigidGeometry") != 0 )
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Invalid 'type' value in MFJSON string");
+      "Invalid 'type' value in MFJSON string: %s", typestr);
     return false;
   }
   return true;
@@ -966,8 +974,7 @@ Temporal *
 temporal_from_mfjson(const char *mfjson, meosType temptype)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) mfjson))
-    return NULL;
+  VALIDATE_NOT_NULL(mfjson, NULL);
 
   /* Begin to parse json */
   json_tokener *jstok = json_tokener_new();
@@ -2144,8 +2151,7 @@ Set *
 set_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) wkb))
-    return NULL;
+  VALIDATE_NOT_NULL(wkb, NULL);
   /* We pass ANY set type, the actual type is read from the byte string */
   return DatumGetSetP(type_from_wkb(wkb, size, T_INTSET));
 }
@@ -2161,8 +2167,7 @@ Set *
 set_from_hexwkb(const char *hexwkb)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) hexwkb))
-    return NULL;
+  VALIDATE_NOT_NULL(hexwkb, NULL);
   size_t size = strlen(hexwkb);
   /* We pass ANY set type, the actual type is read from the byte string */
   return DatumGetSetP(type_from_hexwkb(hexwkb, size, T_INTSET));
@@ -2179,8 +2184,7 @@ Span *
 span_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) wkb))
-    return NULL;
+  VALIDATE_NOT_NULL(wkb, NULL);
   /* We pass ANY span type, the actual type is read from the byte string */
   return DatumGetSpanP(type_from_wkb(wkb, size, T_INTSPAN));
 }
@@ -2196,8 +2200,7 @@ Span *
 span_from_hexwkb(const char *hexwkb)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) hexwkb))
-    return NULL;
+  VALIDATE_NOT_NULL(hexwkb, NULL);
   size_t size = strlen(hexwkb);
   /* We pass ANY span type, the actual type is read from the byte string */
   return DatumGetSpanP(type_from_hexwkb(hexwkb, size, T_INTSPAN));
@@ -2213,9 +2216,7 @@ span_from_hexwkb(const char *hexwkb)
 SpanSet *
 spanset_from_wkb(const uint8_t *wkb, size_t size)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) wkb))
-    return NULL;
+  VALIDATE_NOT_NULL(wkb, NULL);
   /* We pass ANY span set type, the actual type is read from the byte string */
   return DatumGetSpanSetP(type_from_wkb(wkb, size, T_INTSPANSET));
 }
@@ -2231,8 +2232,7 @@ SpanSet *
 spanset_from_hexwkb(const char *hexwkb)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) hexwkb))
-    return NULL;
+  VALIDATE_NOT_NULL(hexwkb, NULL);
   size_t size = strlen(hexwkb);
   /* We pass ANY span set type, the actual type is read from the byte string */
   return DatumGetSpanSetP(type_from_hexwkb(hexwkb, size, T_INTSPANSET));
@@ -2253,8 +2253,7 @@ TBox *
 tbox_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) wkb))
-    return NULL;
+  VALIDATE_NOT_NULL(wkb, NULL);
   return DatumGetTboxP(type_from_wkb(wkb, size, T_TBOX));
 }
 
@@ -2269,8 +2268,7 @@ TBox *
 tbox_from_hexwkb(const char *hexwkb)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) hexwkb))
-    return NULL;
+  VALIDATE_NOT_NULL(hexwkb, NULL);
   size_t size = strlen(hexwkb);
   return DatumGetTboxP(type_from_hexwkb(hexwkb, size, T_TBOX));
 }
@@ -2292,8 +2290,7 @@ Temporal *
 temporal_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) wkb))
-    return NULL;
+  VALIDATE_NOT_NULL(wkb, NULL);
   /* We pass ANY temporal type, the actual type is read from the byte string */
   return DatumGetTemporalP(type_from_wkb(wkb, size, T_TINT));
 }
@@ -2310,8 +2307,7 @@ Temporal *
 temporal_from_hexwkb(const char *hexwkb)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) hexwkb))
-    return NULL;
+  VALIDATE_NOT_NULL(hexwkb, NULL);
   size_t size = strlen(hexwkb);
   /* We pass ANY temporal type, the actual type is read from the byte string */
   return DatumGetTemporalP(type_from_hexwkb(hexwkb, size, T_TINT));

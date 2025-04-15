@@ -95,9 +95,7 @@ Span *
 intspan_bins(const Span *s, int size, int origin, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
-      ! ensure_span_isof_type(s, T_INTSPAN))
-    return NULL;
+  VALIDATE_INTSPAN(s, NULL); VALIDATE_NOT_NULL(count, NULL);
   return span_bins(s, Int32GetDatum(size), Int32GetDatum(origin), count);
 }
 
@@ -113,9 +111,7 @@ Span *
 floatspan_bins(const Span *s, double size, double origin, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) count) ||
-      ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return NULL;
+  VALIDATE_FLOATSPAN(s, NULL); VALIDATE_NOT_NULL(count, NULL);
   return span_bins(s, Float8GetDatum(size), Float8GetDatum(origin), count);
 }
 
@@ -132,11 +128,9 @@ datespan_bins(const Span *s, const Interval *duration, DateADT origin,
   int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
-      ! ensure_not_null((void *) count) ||
-      ! ensure_span_isof_type(s, T_DATESPAN) ||
-      ! ensure_valid_day_duration(duration) ||
-      ! ensure_span_isof_type(s, T_DATESPAN))
+  VALIDATE_DATESPAN(s, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_valid_day_duration(duration))
     return NULL;
 
   int32 days = (int32) (interval_units(duration) / USECS_PER_DAY);
@@ -156,10 +150,9 @@ tstzspan_bins(const Span *s, const Interval *duration, TimestampTz origin,
   int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) duration) ||
-      ! ensure_not_null((void *) count) ||
-      ! ensure_span_isof_type(s, T_TSTZSPAN) ||
-      ! ensure_valid_duration(duration))
+  VALIDATE_TSTZSPAN(s, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_valid_duration(duration))
     return NULL;
 
   int64 tunits = interval_units(duration);
@@ -186,10 +179,8 @@ datespanset_time_spans(const SpanSet *ss, const Interval *duration,
   DateADT torigin, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) duration) ||
-      ! ensure_not_null((void *) count) ||
-      ! ensure_spanset_isof_type(ss, T_DATESPANSET))
-    return NULL;
+  VALIDATE_DATESPANSET(ss, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   return spanset_time_spans(ss, duration, DateADTGetDatum(torigin), count);
 }
 
@@ -208,10 +199,8 @@ tstzspanset_time_spans(const SpanSet *ss, const Interval *duration,
   TimestampTz torigin, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) duration) ||
-      ! ensure_not_null((void *) count) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return NULL;
+  VALIDATE_TSTZSPANSET(ss, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   return spanset_time_spans(ss, duration, TimestampTzGetDatum(torigin), count);
 }
 
@@ -227,9 +216,7 @@ Span *
 intspanset_value_spans(const SpanSet *ss, int vsize, int vorigin, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count) ||
-      ! ensure_spanset_isof_type(ss, T_INTSPANSET))
-    return NULL;
+  VALIDATE_INTSPANSET(ss, NULL); VALIDATE_NOT_NULL(count, NULL);
   return spanset_value_spans(ss, Int32GetDatum(vsize), Int32GetDatum(vorigin),
     count);
 }
@@ -247,9 +234,7 @@ bigintspanset_value_spans(const SpanSet *ss, int64 vsize, int64 vorigin,
   int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count) ||
-      ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
-    return NULL;
+  VALIDATE_BIGINTSPANSET(ss, NULL); VALIDATE_NOT_NULL(count, NULL);
   return spanset_value_spans(ss, Int64GetDatum(vsize), Int64GetDatum(vorigin),
     count);
 }
@@ -267,9 +252,7 @@ floatspanset_value_spans(const SpanSet *ss, double vsize, double vorigin,
   int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) count) ||
-      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
-    return NULL;
+  VALIDATE_FLOATSPANSET(ss, NULL); VALIDATE_NOT_NULL(count, NULL);
   return spanset_value_spans(ss, Float8GetDatum(vsize),
     Float8GetDatum(vorigin), count);
 }
@@ -288,9 +271,7 @@ Span *
 tint_value_spans(const Temporal *temp, int vsize, int vorigin, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return NULL;
+  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_spans(temp, Int32GetDatum(vsize),
     Int32GetDatum(vorigin), count);
 }
@@ -308,9 +289,7 @@ tfloat_value_spans(const Temporal *temp, double vsize, double vorigin,
   int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
+  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tnumber_value_spans(temp, Float8GetDatum(vsize),
     Float8GetDatum(vorigin), count);
 }

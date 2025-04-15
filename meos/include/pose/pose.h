@@ -64,9 +64,13 @@ struct Pose
  * pose.c
  *****************************************************************************/
 
+/* Validity functions */
+
+extern bool ensure_valid_pose_pose(const Pose *pose1, const Pose *pose2);
+
 /* Input/output functions */
 
-extern char *pose_wkt_out(Datum value, bool extended, int maxdd);
+extern char *pose_wkt_out(const Pose *pose, bool extended, int maxdd);
 
 extern Pose *pose_parse(const char **str, bool end);
 

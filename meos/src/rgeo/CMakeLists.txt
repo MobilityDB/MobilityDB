@@ -7,6 +7,7 @@ add_library(rgeo OBJECT
   trgeo_parser.c
   trgeo_seq.c
   trgeo_seqset.c
+  # trgeo_spatialrels.c
   trgeo_utils.c
   trgeo_vclip.c
   )

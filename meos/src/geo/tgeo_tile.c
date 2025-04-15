@@ -356,12 +356,12 @@ fastvoxel_bm(int *coords1, double *eps1, int *coords2, double *eps2,
 /**
  * @brief Create the initial state that persists across multiple calls of the
  * function
- * @param[in] temp Temporal point to split, may be @p NULL
+ * @param[in] temp Temporal point to split, may be `NULL`
  * @param[in] box Bounds for generating the multidimensional grid
  * @param[in] xsize,ysize,zsize Tile sizes for the spatial dimensions in the
  * units of the SRID, may be 0 for a time only grid
  * @param[in] duration Tile size for the temporal dimension as an interval, may
- * be @p NULL for a space only grid
+ * be `NULL` for a space only grid
  * @param[in] sorigin Spatial origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[in] border_inc True when the box contains the upper border, otherwise
@@ -636,7 +636,7 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
  * @brief Return the spatiotemporal grid of a spatiotemporal box
  * @param[in] bounds Bounds
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
- * @param[in] duration Size of the time dimension as an interval
+ * @param[in] duration Size of the time dimension as an interval, may be `NULL`
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
  * @param[in] border_inc True when the box contains the upper border, otherwise
@@ -652,10 +652,10 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
   /* Ensure the validity of the arguments
    * Since we pass by default Point(0 0 0) as origin independently of the input
    * STBox, we test the same spatial dimensionality only for STBox Z */
-  if (! ensure_not_null((void *) bounds) || 
-      ! ensure_has_X(T_STBOX, bounds->flags) ||
+  VALIDATE_NOT_NULL(bounds, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(sorigin, NULL);
+  if (! ensure_has_X(T_STBOX, bounds->flags) ||
       ! ensure_not_geodetic(bounds->flags) ||
-      ! ensure_not_null((void *) count) ||
       ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
       ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8) ||
       ! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin) ||
@@ -750,36 +750,36 @@ stbox_space_tiles(const STBox *bounds, double xsize, double ysize, double zsize,
 
 /**
  * @brief Return a tile in the multidimensional grid of a spatiotemporal box
- * @param[in] point Point, may be @p NULL
+ * @param[in] point Point, may be `NULL`
  * @param[in] t Timestamp
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
  * @param[in] duration Size of the time dimension as an interval
- * @param[in] sorigin Origin for the space dimension, may be @p NULL
- * @param[in] torigin Origin for the time dimension, may be @p NULL
+ * @param[in] sorigin Origin for the space dimension, may be `NULL`
+ * @param[in] torigin Origin for the time dimension, may be `NULL`
  * @param[out] hasx True when spliting by space
  * @param[out] hast True when spliting by time
  */
 STBox *
-stbox_space_time_tile_common(const GSERIALIZED *point, TimestampTz t,
+stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
   double xsize, double ysize, double zsize, const Interval *duration,
   const GSERIALIZED *sorigin, TimestampTz torigin, bool hasx, bool hast)
 {
-  /* Ensure parameter validity */
-  if (hasx)
+  /* Ensure the validity of the arguments */
+  if(hasx) 
   {
-    if (! ensure_not_empty(point) || ! ensure_point_type(point) ||
+    VALIDATE_NOT_NULL(point, NULL); VALIDATE_NOT_NULL(sorigin, NULL);
+  }
+  if(hast) 
+    VALIDATE_NOT_NULL(duration, NULL);
+  if (hasx && (
+        ! ensure_point_type(point) ||
         ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
         ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8) ||
         ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8) ||
-        ! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin))
+        ! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin)))
     return NULL;
-  }
-  if (hast)
-  {
-    if (! ensure_not_null((void *) duration) ||
-        ! ensure_valid_duration(duration))
+  if (hast && ! ensure_valid_duration(duration))
     return NULL;
-  }
 
   /* Initialize to 0 missing dimensions */
   double xmin = 0, ymin = 0, zmin = 0;
@@ -844,7 +844,7 @@ stbox_get_space_time_tile(const GSERIALIZED *point, TimestampTz t,
   double xsize, double ysize, double zsize, const Interval *duration,
   const GSERIALIZED *sorigin, TimestampTz torigin)
 {
-  return stbox_space_time_tile_common(point, t, xsize, ysize, zsize, duration,
+  return stbox_space_time_tile(point, t, xsize, ysize, zsize, duration,
     sorigin, torigin, true, true);
 }
 
@@ -860,8 +860,8 @@ inline STBox *
 stbox_get_space_tile(const GSERIALIZED *point, double xsize, double ysize,
   double zsize, const GSERIALIZED *sorigin)
 {
-  return stbox_space_time_tile_common(point, 0, xsize, ysize, zsize, NULL,
-    sorigin, 0, true, false);
+  return stbox_space_time_tile(point, 0, xsize, ysize, zsize, NULL, sorigin,
+    0, true, false);
 }
 
 /**
@@ -873,10 +873,11 @@ stbox_get_space_tile(const GSERIALIZED *point, double xsize, double ysize,
  * @csqlfn Stbox_get_time_tile()
  */
 inline STBox *
-stbox_get_time_tile(TimestampTz t, const Interval *duration, TimestampTz torigin)
+stbox_get_time_tile(TimestampTz t, const Interval *duration,
+  TimestampTz torigin)
 {
-  return stbox_space_time_tile_common(NULL, t, 0, 0, 0, duration, NULL,
-    torigin, false, true);
+  return stbox_space_time_tile(NULL, t, 0, 0, 0, duration, NULL, torigin,
+    false, true);
 }
 #endif /* MEOS */
 
@@ -889,8 +890,8 @@ stbox_get_time_tile(TimestampTz t, const Interval *duration, TimestampTz torigin
  * respect to a space and possibly a time grid
  * @param[in] temp Temporal point
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
- * @param[in] duration Size of the time dimension as an interval
- * @param[in] sorigin Origin for the space dimension
+ * @param[in] duration Size of the time dimension as an interval, may be `NULL`
+ * @param[in] sorigin Origin for the space dimension, may be `NULL`
  * @param[in] torigin Origin for the time dimension
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border, otherwise
@@ -904,9 +905,8 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *count) 
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) || 
-      ! tgeo_type_all(temp->temptype) ||
-      (xsize > 0 && ! ensure_not_null((void *) sorigin)) || 
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  if ((xsize > 0 && ! ensure_not_null((void *) sorigin)) || 
       (xsize > 0 && ! ensure_positive_datum(xsize, T_FLOAT8)) ||
       (xsize > 0 && ! ensure_positive_datum(ysize, T_FLOAT8)) ||
       (xsize > 0 && MEOS_FLAGS_GET_Z(temp->flags) && 
@@ -1216,15 +1216,15 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *ntiles)
 {
   /* Ensure parameter validity */
-  if (! tgeo_type_all(temp->temptype) ||
-      (xsize && ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8)) ||
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(ntiles, NULL);
+  if ((xsize && ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8)) ||
       (xsize && ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8)) ||
       (xsize && ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8)) ||
       (xsize && (! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin))) ||
       (xsize && ! ensure_same_geodetic(temp->flags, sorigin->gflags)) ||
       /* Generic 3D geometries cannot be tiled */
       (tgeo_type(temp->temptype) && 
-      ! ensure_has_not_Z(temp->temptype, temp->flags)))
+        ! ensure_has_not_Z(temp->temptype, temp->flags)))
     return NULL;
 
   /* Set bounding box */
@@ -1321,7 +1321,7 @@ tgeo_space_split(const Temporal *temp, double xsize, double ysize,
  * possibly a time grid
  * @param[in] temp Temporal geo
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
- * @param[in] duration Size of the time dimension as an interval
+ * @param[in] duration Size of the time dimension as an interval, may be `NULL`
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
@@ -1340,6 +1340,19 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
   TimestampTz torigin, bool bitmatrix, bool border_inc, 
   GSERIALIZED ***space_bins, TimestampTz **time_bins, int *count)
 {
+  /* Ensure the validity of the arguments */
+  if (! tgeo_type_all(temp->temptype) ||
+      ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
+      ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8) ||
+      (MEOS_FLAGS_GET_Z(temp->flags) &&
+        ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8)) ||
+      ! ensure_not_empty(sorigin) || ! ensure_point_type(sorigin) ||
+      ! ensure_same_geodetic(temp->flags, sorigin->gflags) ||
+      /* Generic 3D geometries cannot be tiled */
+      (tgeo_type(temp->temptype) && 
+        ! ensure_has_not_Z(temp->temptype, temp->flags)))
+    return NULL;
+
   /* Initialize state */
   int ntiles;
   STboxGridState *state = tgeo_space_time_tile_init(temp, xsize, ysize,

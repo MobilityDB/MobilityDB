@@ -142,13 +142,7 @@ bool
 contains_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return false;
-#else
-  assert(s); assert(s->spantype == T_TSTZSPAN);
-#endif /* MEOS */
-
+  VALIDATE_TSTZSPAN(s, false); 
   return contains_span_value(s, TimestampTzGetDatum(t));
 }
 
@@ -162,13 +156,8 @@ bool
 contains_span_span(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_span_type(s1, s2))
+  if (! ensure_valid_span_span(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
-#endif /* MEOS */
 
   int cmp1 = datum_cmp(s1->lower, s2->lower, s1->basetype);
   int cmp2 = datum_cmp(s1->upper, s2->upper, s1->basetype);
@@ -220,13 +209,8 @@ bool
 overlaps_span_span(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_span_type(s1, s2))
+  if (! ensure_valid_span_span(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
-#endif /* MEOS */
 
   int cmp1 = datum_cmp(s1->lower, s2->upper, s1->basetype);
   int cmp2 = datum_cmp(s2->lower, s1->upper, s1->basetype);
@@ -286,13 +270,8 @@ bool
 adjacent_span_span(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_span_type(s1, s2))
+  if (! ensure_valid_span_span(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
-#endif /* MEOS */
 
   /*
    * Two spans A..B and C..D are adjacent if and only if
@@ -332,14 +311,7 @@ left_value_span(Datum value, const Span *s)
 bool
 left_span_value(const Span *s, Datum value)
 {
-#if MEOS
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s))
-    return false;
-#else
   assert(s);
-#endif /* MEOS */
-
   int cmp = datum_cmp(s->upper, value, s->basetype);
   return (cmp < 0 || (cmp == 0 && ! s->upper_inc));
 }
@@ -354,13 +326,8 @@ bool
 left_span_span(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_span_type(s1, s2))
+  if (! ensure_valid_span_span(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
-#endif /* MEOS */
 
   int cmp = datum_cmp(s1->upper, s2->lower, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || ! s2->lower_inc)));
@@ -467,13 +434,8 @@ bool
 overleft_span_span(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_span_type(s1, s2))
+  if (! ensure_valid_span_span(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
-#endif /* MEOS */
 
   int cmp = datum_cmp(s1->upper, s2->upper, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->upper_inc || s2->upper_inc)));
@@ -521,13 +483,8 @@ bool
 overright_span_span(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_span_type(s1, s2))
+  if (! ensure_valid_span_span(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
-#endif /* MEOS */
 
   int cmp = datum_cmp(s2->lower, s1->lower, s1->basetype);
   return (cmp < 0 || (cmp == 0 && (! s1->lower_inc || s2->lower_inc)));
@@ -610,13 +567,8 @@ SpanSet *
 union_span_span(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_span_type(s1, s2))
+  if (! ensure_valid_span_span(s1, s2))
     return NULL;
-#else
-  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
-#endif /* MEOS */
 
   /* If the spans overlap */
   if (ovadj_span_span(s1, s2))
@@ -710,13 +662,8 @@ Span *
 intersection_span_span(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_span_type(s1, s2))
+  if (! ensure_valid_span_span(s1, s2))
     return NULL;
-#else
-  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
-#endif /* MEOS */
   Span result;
   if (! inter_span_span(s1, s2, &result))
     return NULL;
@@ -885,13 +832,8 @@ SpanSet *
 minus_span_span(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_span_type(s1, s2))
+  if (! ensure_valid_span_span(s1, s2))
     return NULL;
-#else
-  assert(s1); assert(s2); assert(s1->spantype == s2->spantype);
-#endif /* MEOS */
 
   Span spans[2];
   int count = mi_span_span(s1, s2, spans);

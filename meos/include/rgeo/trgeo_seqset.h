@@ -37,7 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-// #include <catalog/pg_type.h>
 /* MEOS */
 #include "general/temporal.h"
 
@@ -61,7 +60,6 @@ extern TSequenceSet *trgeoseqset_make_free(const GSERIALIZED *geom,
 extern TSequenceSet *trgeoseqset_make_gaps(const GSERIALIZED *geom,
   const TInstant **instants, int count, interpType interp,
   Interval *maxt, double maxdist);
-
 
 /* Transformation functions */
 

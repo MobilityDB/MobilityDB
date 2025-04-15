@@ -67,6 +67,7 @@
 #include <time.h>
 #include <libpq-fe.h>
 #include <meos.h>
+#include <meos_geo.h>
 
 /* Number of instants in a batch for printing a marker */
 #define NO_INSTANTS_BATCH 1000

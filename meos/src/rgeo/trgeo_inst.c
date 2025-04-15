@@ -187,9 +187,8 @@ trgeoinst_make1(const GSERIALIZED *geom, const Pose *pose, TimestampTz t)
  * ( TInstant )_X | ( Geom )_X |
  * -----------------------------
  * @endcode
- * where the attribute `value` of type `Datum` in the TInstant struct
- * stores the base value (pose). The `_X` are unused bytes added for double
- * padding
+ * where the attribute `value` of type `Datum` in the TInstant struct stores
+ * the base value (pose). The `_X` are unused bytes added for double padding
  * @param geom Reference geometry
  * @param pose Pose
  * @param t Timestamp
@@ -197,6 +196,7 @@ trgeoinst_make1(const GSERIALIZED *geom, const Pose *pose, TimestampTz t)
 TInstant *
 trgeoinst_make(const GSERIALIZED *geom, const Pose *pose, TimestampTz t)
 {
+  VALIDATE_NOT_NULL(geom, NULL); VALIDATE_NOT_NULL(pose, NULL);
   if (! trgeoinst_make_valid(geom, pose))
     return NULL;
   return trgeoinst_make1(geom, pose, t);

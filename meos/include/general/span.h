@@ -81,6 +81,8 @@ typedef struct
 extern bool ensure_span_isof_type(const Span *s, meosType spantype);
 extern bool ensure_span_isof_basetype(const Span *s, meosType basetype);
 extern bool ensure_same_span_type(const Span *s1, const Span *s2);
+extern bool ensure_valid_span_span(const Span *s1, const Span *s2);
+
 extern void span_deserialize(const Span *s, SpanBound *lower,
   SpanBound *upper);
 extern Span *span_serialize(SpanBound *lower, SpanBound *upper);

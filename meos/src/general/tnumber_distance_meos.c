@@ -64,9 +64,7 @@ Temporal *
 distance_tint_int(const Temporal *temp, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return NULL;
+  VALIDATE_TINT(temp, NULL);
   return distance_tnumber_number(temp, Int32GetDatum(i));
 }
 
@@ -82,9 +80,7 @@ Temporal *
 distance_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
+  VALIDATE_TINT(temp, NULL);
   return distance_tnumber_number(temp, Int32GetDatum(d));
 }
 
@@ -105,9 +101,7 @@ int
 nad_tint_int(const Temporal *temp, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return -1;
+  VALIDATE_TINT(temp, -1.0);
   return DatumGetInt32(nad_tnumber_number(temp, Int32GetDatum(i)));
 }
 
@@ -124,9 +118,7 @@ double
 nad_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return -1.0;
+  VALIDATE_TFLOAT(temp, -1.0);
   return DatumGetFloat8(nad_tnumber_number(temp, Float8GetDatum(d)));
 }
 
@@ -143,9 +135,7 @@ int
 nad_tint_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_valid_tnumber_span(temp, &box->span))
+  if (! ensure_valid_tnumber_numspan(temp, &box->span))
     return -1;
   return DatumGetInt32(nad_tnumber_tbox(temp, box));
 }
@@ -163,9 +153,7 @@ double
 nad_tfloat_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box) ||
-      ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_valid_tnumber_span(temp, &box->span))
+  if (! ensure_valid_tnumber_numspan(temp, &box->span))
     return -1;
   return DatumGetFloat8(nad_tnumber_tbox(temp, box));
 }
@@ -215,10 +203,7 @@ int
 nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_tnumber_type(temp1->temptype))
-    return -1;
+  VALIDATE_TINT(temp1, -1); VALIDATE_TINT(temp2, -1);
   Datum result = nad_tnumber_tnumber(temp1, temp2);
   return Int32GetDatum(result);
 }
@@ -234,10 +219,7 @@ double
 nad_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_tnumber_type(temp1->temptype))
-    return -1.0;
+  VALIDATE_TFLOAT(temp1, -1.0); VALIDATE_TFLOAT(temp2, -1.0);
   Datum result = nad_tnumber_tnumber(temp1, temp2);
   return Float8GetDatum(result);
 }

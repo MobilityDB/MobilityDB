@@ -44,7 +44,8 @@
 #include "general/temporal_compops.h"
 #include "general/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
-#include "cbuffer/tcbuffer_spatialfuncs.h"
+#include "cbuffer/cbuffer.h"
+// #include "cbuffer/tcbuffer_spatialfuncs.h"
 
 /*****************************************************************************
  * Ever/always comparisons
@@ -64,12 +65,6 @@ eacomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf))
-    return -1;
-#else
-  assert(temp); assert(cbuf);
-#endif /* MEOS */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1;
   return eacomp_temporal_base(temp, PointerGetDatum(cbuf), func, ever);
@@ -87,14 +82,7 @@ eacomp_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
-    return -1;
-#else
-  assert(temp1); assert(temp2);
-#endif /* MEOS */
-  if (! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return -1;
   return eacomp_temporal_temporal(temp1, temp2, func, ever);
 }
@@ -279,12 +267,6 @@ tcomp_cbuffer_tcbuffer(const Cbuffer *cbuf, const Temporal *temp,
   Datum (*func)(Datum, Datum, meosType))
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf))
-    return NULL;
-#else
-  assert(temp); assert(cbuf);
-#endif /* MEOS */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return NULL;
   return tcomp_base_temporal(PointerGetDatum(cbuf), temp, func);
@@ -302,12 +284,6 @@ tcomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
   Datum (*func)(Datum, Datum, meosType))
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf))
-    return NULL;
-#else
-  assert(temp); assert(cbuf);
-#endif /* MEOS */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(cbuf), func);

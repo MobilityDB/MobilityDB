@@ -115,7 +115,7 @@ PGDLLEXPORT Datum Tgeometry_to_tgeography(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeometry_to_tgeography);
 /**
  * @ingroup mobilitydb_geo_conversion
- * @brief Return a temporal geometry converted to a temporal geography
+ * @brief Convert a temporal geometry into a temporal geography
  * @sqlfn tgeography()
  * @sqlop @p ::
  */
@@ -132,7 +132,7 @@ PGDLLEXPORT Datum Tgeography_to_tgeometry(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeography_to_tgeometry);
 /**
  * @ingroup mobilitydb_geo_conversion
- * @brief Return a temporal geography converted to a temporal geometry
+ * @brief Convert a temporal geography into a temporal geometry
  * @sqlfn tgeometry()
  * @sqlop @p ::
  */
@@ -151,7 +151,7 @@ PGDLLEXPORT Datum Tgeo_to_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeo_to_tpoint);
 /**
  * @ingroup mobilitydb_geo_conversion
- * @brief Return a temporal geo converted to a temporal point
+ * @brief Convert a temporal geo into a temporal point
  * @sqlfn tgeompoint(), tgeogpoint()
  * @sqlop @p ::
  */
@@ -168,7 +168,7 @@ PGDLLEXPORT Datum Tpoint_to_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_to_tgeo);
 /**
  * @ingroup mobilitydb_geo_conversion
- * @brief Return a temporal point converted to a temporal geo
+ * @brief Convert a temporal point into a temporal geo
  * @sqlfn tgeometry(), tgeography()
  * @sqlop @p ::
  */
@@ -209,7 +209,7 @@ PGDLLEXPORT Datum Tpoint_to_geomeas(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_to_geomeas);
 /**
  * @ingroup mobilitydb_geo_conversion
- * @brief Return a temporal point converted to a geometry/geography with M
+ * @brief Convert a temporal point into a geometry/geography with M
  * measure
  * @sqlfn geometry(), geography()
  * @sqlop @p ::
@@ -229,8 +229,7 @@ PGDLLEXPORT Datum Geomeas_to_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geomeas_to_tpoint);
 /**
  * @ingroup mobilitydb_geo_conversion
- * @brief Return a geometry/geography with M measure converted to a temporal
- * point
+ * @brief Convert a geometry/geography with M measure into a temporal point
  * @sqlfn tgeompoint(), tgeogpoint()
  * @sqlop @p ::
  */
@@ -247,8 +246,8 @@ PGDLLEXPORT Datum Tpoint_tfloat_to_geomeas(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tfloat_to_geomeas);
 /**
  * @ingroup mobilitydb_geo_conversion
- * @brief Return a geometry/geography with M measure converted from a temporal
- * point and a temporal float
+ * @brief Convert a geometry/geography with M measure into a temporal point
+ * and a temporal float
  * @sqlfn geoMeasure()
  */
 Datum

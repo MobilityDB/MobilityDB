@@ -73,8 +73,8 @@ Temporal *
 distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      gserialized_is_empty(gs) || ! ensure_point_type(gs))
+  if (! ensure_valid_tnpoint_geo(temp, gs) || gserialized_is_empty(gs) || 
+      ! ensure_point_type(gs))
     return NULL;
 
   Temporal *tpoint = tnpoint_tgeompoint(temp);
@@ -94,6 +94,10 @@ distance_tnpoint_point(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnpoint_npoint(temp, np))
+    return NULL;
+
   GSERIALIZED *geom = npoint_geom(np);
   Temporal *tpoint = tnpoint_tgeompoint(temp);
   Temporal *result = distance_tgeo_geo(tpoint, geom);
@@ -110,6 +114,10 @@ distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 Temporal *
 distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
+    return NULL;
+
   Temporal *tpoint1 = tnpoint_tgeompoint(temp1);
   Temporal *tpoint2 = tnpoint_tgeompoint(temp2);
   Temporal *result = distance_tgeo_tgeo(tpoint1, tpoint2);
@@ -133,8 +141,7 @@ TInstant *
 nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) || 
-      gserialized_is_empty(gs))
+  if (! ensure_valid_tnpoint_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
   Temporal *tpoint = tnpoint_tgeompoint(temp);
@@ -159,6 +166,10 @@ nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 TInstant *
 nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnpoint_npoint(temp, np))
+    return NULL;
+
   GSERIALIZED *geom = npoint_geom(np);
   Temporal *tpoint = tnpoint_tgeompoint(temp);
   TInstant *resultgeom = nai_tgeo_geo(tpoint, geom);
@@ -180,6 +191,10 @@ nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 TInstant *
 nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
+    return NULL;
+
   Temporal *dist = distance_tnpoint_tnpoint(temp1, temp2);
   if (dist == NULL)
     return NULL;
@@ -208,9 +223,8 @@ double
 nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      gserialized_is_empty(gs))
-    return -1;
+  if (! ensure_valid_tnpoint_geo(temp, gs) || gserialized_is_empty(gs))
+    return -1.0;
 
   GSERIALIZED *traj = tnpoint_trajectory(temp);
   double result = geom_distance2d(traj, gs);
@@ -229,6 +243,10 @@ nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 double
 nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnpoint_npoint(temp, np))
+    return -1.0;
+
   GSERIALIZED *geom = npoint_geom(np);
   GSERIALIZED *traj = tnpoint_trajectory(temp);
   double result = geom_distance2d(traj, geom);
@@ -245,9 +263,13 @@ nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 double
 nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
+    return -1.0;
+
   Temporal *dist = distance_tnpoint_tnpoint(temp1, temp2);
   if (dist == NULL)
-    return -1;
+    return -1.0;
   return DatumGetFloat8(temporal_min_value(dist));
 }
 
@@ -267,8 +289,7 @@ GSERIALIZED *
 shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      gserialized_is_empty(gs))
+  if (! ensure_valid_tnpoint_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
   GSERIALIZED *traj = tnpoint_trajectory(temp);
@@ -288,6 +309,10 @@ shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 GSERIALIZED *
 shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnpoint_npoint(temp, np))
+    return NULL;
+
   GSERIALIZED *geom = npoint_geom(np);
   GSERIALIZED *traj = tnpoint_trajectory(temp);
   GSERIALIZED *result = geom_shortestline2d(traj, geom);
@@ -305,6 +330,10 @@ shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 GSERIALIZED *
 shortestline_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
+    return NULL;
+
   Temporal *tpoint1 = tnpoint_tgeompoint(temp1);
   Temporal *tpoint2 = tnpoint_tgeompoint(temp2);
   GSERIALIZED *result = shortestline_tgeo_tgeo(tpoint1, tpoint2);

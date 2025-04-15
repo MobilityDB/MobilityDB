@@ -9616,7 +9616,7 @@ SELECT atTbox(tfloat '[1@2000-01-01, 2@2000-01-02)', tbox 'TBOXFLOAT XT([2,2],[2
 
 /* Errors */
 SELECT atTbox(tfloat '[1@2001-01-01, 5@2001-01-05]', tbox 'TBOXINT X([1,2])');
-ERROR:  Operation on mixed temporal number type and box span type: tfloat, intspan
+ERROR:  Operation on mixed temporal number and box span types: tfloat, intspan
 SELECT minusTBox(tint '1@2000-01-01', tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])');
  minustbox 
 -----------

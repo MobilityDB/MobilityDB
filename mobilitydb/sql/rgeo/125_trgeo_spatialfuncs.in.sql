@@ -61,24 +61,24 @@ CREATE FUNCTION transformPipeline(trgeometry, text, srid integer DEFAULT 0,
  * AtGeometry and MinusGeometry
  *****************************************************************************/
 
-CREATE FUNCTION atGeometry(trgeometry, geometry)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeo_at_geom'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION atGeometry(trgeometry, geometry)
+  -- RETURNS trgeometry
+  -- AS 'MODULE_PATHNAME', 'Trgeo_at_geom'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusGeometry(trgeometry, geometry)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeo_minus_geom'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION minusGeometry(trgeometry, geometry)
+  -- RETURNS trgeometry
+  -- AS 'MODULE_PATHNAME', 'Trgeo_minus_geom'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atStbox(trgeometry, stbox, bool DEFAULT TRUE)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeo_at_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION atStbox(trgeometry, stbox, bool DEFAULT TRUE)
+  -- RETURNS trgeometry
+  -- AS 'MODULE_PATHNAME', 'Trgeo_at_stbox'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusStbox(trgeometry, stbox, bool DEFAULT TRUE)
-  RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeo_minus_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION minusStbox(trgeometry, stbox, bool DEFAULT TRUE)
+  -- RETURNS trgeometry
+  -- AS 'MODULE_PATHNAME', 'Trgeo_minus_stbox'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

@@ -67,6 +67,50 @@ typedef struct Nsegment Nsegment;
 
 extern void meos_initialize_npoint(const char *file_name);
 
+/*****************************************************************************
+ * Validity macros and functions
+ *****************************************************************************/
+
+/**
+ * @brief Macro for ensuring that the set passed as argument is a network
+ * point set
+ */
+#if MEOS
+  #define VALIDATE_NPOINTSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+            ensure_set_isof_type((set), T_NPOINTSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_NPOINTSET(set, ret) \
+    do { \
+      assert(set); \
+      assert(set_isof_type((set), T_NPOINTSET)); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that the temporal value passed as argument is a
+ * temporal network point
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TNPOINT(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+            ensure_temporal_isof_type((Temporal *) (temp), T_TNPOINT) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TNPOINT(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(((Temporal *) (temp))->temptype == T_TNPOINT); \
+    } while (0)
+#endif /* MEOS */
+
 /******************************************************************************
  * Functions for network points
  ******************************************************************************/

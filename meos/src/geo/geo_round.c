@@ -536,6 +536,11 @@ round_geometrycollection(const GSERIALIZED *gs, int maxdd)
 GSERIALIZED *
 geo_round(const GSERIALIZED *gs, int maxdd)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
+
   if (gserialized_is_empty(gs))
     return geo_copy(gs);
 

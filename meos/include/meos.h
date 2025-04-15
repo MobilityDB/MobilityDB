@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief API of the Mobility Engine Open Source (MEOS) library.
+ * @file
+ * @brief External API of the Mobility Engine Open Source (MEOS) library
  */
 
 #ifndef __MEOS_H__
@@ -332,6 +333,472 @@ extern int meos_errno(void);
 extern int meos_errno_set(int err);
 extern int meos_errno_restore(int err);
 extern int meos_errno_reset(void);
+
+/*****************************************************************************
+ * Validity macros
+ *****************************************************************************/
+
+/**
+ * @brief Macro for ensuring that a pointer is not null
+ */
+#ifdef MEOS
+  #define VALIDATE_NOT_NULL(ptr, ret) \
+    do { if (! ensure_not_null((void *) (ptr))) return (ret); } while (0)
+#else
+  #define VALIDATE_NOT_NULL(ptr, ret) \
+    do { assert(ptr); } while (0)
+#endif /* MEOS */
+
+/*****************************************************************************/
+
+/**
+ * @brief Macro for ensuring that a set is an integer set
+ */
+#if MEOS
+  #define VALIDATE_INTSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_set_isof_type((set), T_INTSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_INTSET(set, ret) \
+    do { \
+      assert(set); \
+      assert((set)->settype == T_INTSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that a set is a big integer set
+ */
+#if MEOS
+  #define VALIDATE_BIGINTSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_set_isof_type((set), T_BIGINTSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_BIGINTSET(set, ret) \
+    do { \
+      assert(set); \
+      assert((set)->settype == T_BIGINTSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that a set is a float set
+ */
+#if MEOS
+  #define VALIDATE_FLOATSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_set_isof_type((set), T_FLOATSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_FLOATSET(set, ret) \
+    do { \
+      assert(set); \
+      assert((set)->settype == T_FLOATSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that a set is a text set
+ */
+#if MEOS
+  #define VALIDATE_TEXTSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_set_isof_type((set), T_TEXTSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TEXTSET(set, ret) \
+    do { \
+      assert(set); \
+      assert((set)->settype == T_TEXTSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that a set is a date set
+ */
+#if MEOS
+  #define VALIDATE_DATESET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_set_isof_type((set), T_DATESET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_DATESET(set, ret) \
+    do { \
+      assert(set); \
+      assert((set)->settype == T_DATESET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that a set is a timestamptz set
+ */
+#if MEOS
+  #define VALIDATE_TSTZSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_set_isof_type((set), T_TSTZSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TSTZSET(set, ret) \
+    do { \
+      assert(set); \
+      assert((set)->settype == T_TSTZSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that the span is a number span
+ */
+#ifdef MEOS
+  #define VALIDATE_NUMSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_numset_type((set)->settype) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_NUMSET(set, ret) \
+    do { \
+      assert(set); \
+      assert(numset_type((set)->settype)); \
+    } while (0)
+#endif /* MEOS */
+
+/*****************************************************************************/
+
+/**
+ * @brief Macro for ensuring that a span is an integer span
+ */
+#if MEOS
+  #define VALIDATE_INTSPAN(span, ret) \
+    do { \
+          if (! ensure_not_null((void *) (span)) || \
+              ! ensure_span_isof_type((span), T_INTSPAN) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_INTSPAN(span, ret) \
+    do { \
+      assert(span); \
+      assert((span)->spantype == T_INTSPAN); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that a span is a big integer span
+ */
+#if MEOS
+  #define VALIDATE_BIGINTSPAN(span, ret) \
+    do { \
+          if (! ensure_not_null((void *) (span)) || \
+              ! ensure_span_isof_type((span), T_BIGINTSPAN) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_BIGINTSPAN(span, ret) \
+    do { \
+      assert(span); \
+      assert((span)->spantype == T_BIGINTSPAN); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that a span is a float span
+ */
+#if MEOS
+  #define VALIDATE_FLOATSPAN(span, ret) \
+    do { \
+          if (! ensure_not_null((void *) (span)) || \
+              ! ensure_span_isof_type((span), T_FLOATSPAN) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_FLOATSPAN(span, ret) \
+    do { \
+      assert(span); \
+      assert((span)->spantype == T_FLOATSPAN); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that a span is a date span
+ */
+#if MEOS
+  #define VALIDATE_DATESPAN(span, ret) \
+    do { \
+          if (! ensure_not_null((void *) (span)) || \
+              ! ensure_span_isof_type((span), T_DATESPAN) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_DATESPAN(span, ret) \
+    do { \
+      assert(span); \
+      assert((span)->spantype == T_DATESPAN); \
+    } while (0)
+#endif /* MEOS */
+
+
+/**
+ * @brief Macro for ensuring that the span is a timestamptz span
+ */
+#ifdef MEOS
+  #define VALIDATE_TSTZSPAN(span, ret) \
+    do { \
+          if (! ensure_not_null((void *) (span)) || \
+              ! ensure_span_isof_type((span), T_TSTZSPAN) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TSTZSPAN(span, ret) \
+    do { \
+      assert(span); \
+      assert((span)->spantype == T_TSTZSPAN); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that the span is a number span
+ */
+#ifdef MEOS
+  #define VALIDATE_NUMSPAN(span, ret) \
+    do { \
+          if (! ensure_not_null((void *) (span)) || \
+              ! ensure_numspan_type((span)->spantype) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_NUMSPAN(span, ret) \
+    do { \
+      assert(span); \
+      assert(numspan_type((span)->spantype)); \
+    } while (0)
+#endif /* MEOS */
+
+/*****************************************************************************/
+
+/**
+ * @brief Macro for ensuring that a span set is an integer span set
+ */
+#if MEOS
+  #define VALIDATE_INTSPANSET(ss, ret) \
+    do { \
+          if (! ensure_not_null((void *) (ss)) || \
+              ! ensure_spanset_isof_type((ss), T_INTSPANSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_INTSPANSET(ss, ret) \
+    do { \
+      assert(ss); \
+      assert((ss)->spansettype == T_INTSPANSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that a span set is a big integer span set
+ */
+#if MEOS
+  #define VALIDATE_BIGINTSPANSET(ss, ret) \
+    do { \
+          if (! ensure_not_null((void *) (ss)) || \
+              ! ensure_spanset_isof_type((ss), T_BIGINTSPANSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_BIGINTSPANSET(ss, ret) \
+    do { \
+      assert(ss); \
+      assert((ss)->spansettype == T_BIGINTSPANSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that a span set is a float span set
+ */
+#if MEOS
+  #define VALIDATE_FLOATSPANSET(ss, ret) \
+    do { \
+          if (! ensure_not_null((void *) (ss)) || \
+              ! ensure_spanset_isof_type((ss), T_FLOATSPANSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_FLOATSPANSET(ss, ret) \
+    do { \
+      assert(ss); \
+      assert((ss)->spansettype == T_FLOATSPANSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that a span set is a date span set
+ */
+#if MEOS
+  #define VALIDATE_DATESPANSET(ss, ret) \
+    do { \
+          if (! ensure_not_null((void *) (ss)) || \
+              ! ensure_spanset_isof_type((ss), T_DATESPANSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_DATESPANSET(ss, ret) \
+    do { \
+      assert(ss); \
+      assert((ss)->spansettype == T_DATESPANSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that the span set is a timestamptz span set
+ */
+#ifdef MEOS
+  #define VALIDATE_TSTZSPANSET(ss, ret) \
+    do { \
+          if (! ensure_not_null((void *) (ss)) || \
+              ! ensure_spanset_isof_type(ss, T_TSTZSPANSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TSTZSPANSET(ss, ret) \
+    do { \
+      assert(ss); \
+      assert((ss)->spansettype == T_TSTZSPANSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that the span set is a number span set
+ */
+#ifdef MEOS
+  #define VALIDATE_NUMSPANSET(ss, ret) \
+    do { \
+          if (! ensure_not_null((void *) (ss)) || \
+              ! ensure_numspanset_type((ss)->spansettype) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_NUMSPANSET(ss, ret) \
+    do { \
+      assert(ss); \
+      assert(numspanset_type((ss)->spansettype)); \
+    } while (0)
+#endif /* MEOS */
+
+/*****************************************************************************/
+
+/**
+ * @brief Macro for ensuring that the temporal value is a temporal Boolean
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TBOOL(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+              ! ensure_temporal_isof_type((Temporal *) (temp), T_TBOOL) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TBOOL(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(((Temporal *) (temp))->temptype == T_TBOOL); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that the temporal value is a temporal integer
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TINT(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+              ! ensure_temporal_isof_type((Temporal *) (temp), T_TINT) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TINT(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(((Temporal *) (temp))->temptype == T_TINT); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that the temporal value is a temporal float
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TFLOAT(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+              ! ensure_temporal_isof_type((Temporal *) (temp), T_TFLOAT) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TFLOAT(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(((Temporal *) (temp))->temptype == T_TFLOAT); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that the temporal value is a temporal text
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TTEXT(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+              ! ensure_temporal_isof_type((Temporal *) (temp), T_TTEXT) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TTEXT(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(((Temporal *) (temp))->temptype == T_TTEXT); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that the temporal value is a temporal number
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TNUMBER(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+              ! ensure_tnumber_type(((Temporal *) (temp))->temptype) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TNUMBER(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(tnumber_type(((Temporal *) (temp))->temptype)); \
+    } while (0)
+#endif /* MEOS */
 
 /*****************************************************************************
  * Initialization of the MEOS library
@@ -1300,7 +1767,7 @@ extern bool srid_is_latlong(int32_t srid);
 extern Temporal **temparr_round(const Temporal **temp, int count, int maxdd);
 extern Temporal *temporal_round(const Temporal *temp, int maxdd);
 extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *duration);
-extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);
+extern Temporal *temporal_set_interp(const Temporal *temp, const char *interp_str);
 extern Temporal *temporal_shift_scale_time(const Temporal *temp, const Interval *shift, const Interval *duration);
 extern Temporal *temporal_shift_time(const Temporal *temp, const Interval *shift);
 extern TInstant *temporal_to_tinstant(const Temporal *temp);

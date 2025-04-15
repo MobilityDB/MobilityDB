@@ -1905,15 +1905,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The stbox must have Z dimension
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
 ERROR:  The stbox must have Z dimension
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))';
-ERROR:  The stbox must have Z dimension
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
 ERROR:  The stbox must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The stbox must have Z dimension
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The stbox must have Z dimension
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
@@ -2062,15 +2062,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The stbox must have Z dimension
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
 ERROR:  The stbox must have Z dimension
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))';
-ERROR:  The stbox must have Z dimension
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
 ERROR:  The stbox must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The stbox must have Z dimension
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The stbox must have Z dimension
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
@@ -2219,15 +2219,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The stbox must have Z dimension
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
 ERROR:  The stbox must have Z dimension
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))';
-ERROR:  The stbox must have Z dimension
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
 ERROR:  The stbox must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The stbox must have Z dimension
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The stbox must have Z dimension
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
@@ -2376,15 +2376,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The stbox must have Z dimension
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
 ERROR:  The stbox must have Z dimension
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))';
-ERROR:  The stbox must have Z dimension
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
 ERROR:  The stbox must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The stbox must have Z dimension
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The stbox must have Z dimension
 SELECT tstzspan '[2000-01-01,2000-01-02]' <<# tgeompoint 'Point(1 1)@2000-01-01';

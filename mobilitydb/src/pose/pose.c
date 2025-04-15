@@ -66,14 +66,16 @@ PG_FUNCTION_INFO_V1(Pose_in);
  * @ingroup mobilitydb_pose_base_inout
  * @brief Input function for pose values
  * @details Example of input:
- *    (1, 0.5)
+ *    Pose(Point(1 1), 0.5)
+ *    Pose(Point(1 1 1), 0.5, 0.5, 0.5, 0.5)
+ *    SRID=5676;Pose(Point(1 1 1), 0.5, 0.5, 0.5, 0.5)
  * @sqlfn pose_in()
  */
 Datum
 Pose_in(PG_FUNCTION_ARGS)
 {
   const char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_POINTER(pose_in(str));
+  PG_RETURN_POINTER(pose_parse(&str, true));
 }
 
 PGDLLEXPORT Datum Pose_out(PG_FUNCTION_ARGS);
@@ -133,7 +135,7 @@ Pose_send(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Pose_from_ewkt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_from_ewkt);
 /**
- * @ingroup mobilitydb_geo_inout
+ * @ingroup mobilitydb_pose_base_inout
  * @brief Return a pose from its Extended Well-Known Text (EWKT) representation
  * @note This just does the same thing as the SQL function pose_in, except it
  * has to handle a 'text' input. First, unwrap the text into a cstring, then
@@ -174,8 +176,8 @@ PGDLLEXPORT Datum Pose_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_from_hexwkb);
 /**
  * @ingroup mobilitydb_pose_base_inout
- * @brief Return a pose from its hex-encoded ASCII Well-Known Binary
- * (HexWKB) representation
+ * @brief Return a pose from its hex-encoded ASCII Well-Known Binary (HexWKB)
+ * representation
  * @sqlfn poseFromHexWKB()
  */
 Datum
@@ -194,7 +196,7 @@ Pose_from_hexwkb(PG_FUNCTION_ARGS)
 /**
  * @brief Return the (Extended) Well-Known Text (WKT or EWKT) representation of
  * a pose
- * @sqlfn asText()
+ * @sqlfn asText(), asEWKT()
  */
 static Datum
 Pose_as_text_ext(FunctionCallInfo fcinfo, bool extended)
@@ -292,7 +294,7 @@ PGDLLEXPORT Datum Pose_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_constructor);
 /**
  * @ingroup mobilitydb_pose_base_constructor
- * @brief Construct a pose value from the arguments
+ * @brief Construct a pose from a 2D/3D point and an orientation
  * @sqlfn pose()
  */
 Datum
@@ -327,8 +329,7 @@ PGDLLEXPORT Datum Pose_constructor_point(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_constructor_point);
 /**
  * @ingroup mobilitydb_pose_base_constructor
- * @brief Construct a pose value from a point and other arguments for the
- * orientation
+ * @brief Construct a pose from a 2D/3D point and an orientation
  * @sqlfn pose()
  */
 Datum
@@ -361,7 +362,7 @@ PGDLLEXPORT Datum Pose_to_point(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_to_point);
 /**
  * @ingroup mobilitydb_pose_base_conversion
- * @brief Transforms a pose into a geometry point
+ * @brief Convert a pose into a geometry point
  * @sqlfn geometry()
  */
 Datum
@@ -373,14 +374,14 @@ Pose_to_point(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Transform a temporal pose to a STBox
+ * Bounding box functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Pose_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_to_stbox);
 /**
  * @ingroup mobilitydb_pose_base_box
- * @brief Return the bounding box of a pose
+ * @brief Construct a spatiotemporal box from a pose
  * @sqlfn stbox()
  * @sqlop @p ::
  */
@@ -393,13 +394,11 @@ Pose_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Pose_timestamptz_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_timestamptz_to_stbox);
 /**
  * @ingroup mobilitydb_pose_base_box
- * @brief Return a pose and a timestamptz to a spatiotemporal box
+ * @brief Construct a spatiotemporal box from a pose and a timestamptz
  * @sqlfn stbox()
  * @sqlop @p
  */
@@ -415,8 +414,7 @@ PGDLLEXPORT Datum Pose_tstzspan_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_tstzspan_to_stbox);
 /**
  * @ingroup mobilitydb_pose_base_box
- * @brief Return a pose and a timestamptz span to a spatiotemporal
- * box
+ * @brief Construct a spatiotemporal box from a pose and a timestamptz span
  * @sqlfn stbox()
  * @sqlop @p
  */
@@ -524,8 +522,8 @@ PGDLLEXPORT Datum Posearr_round(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Posearr_round);
 /**
  * @ingroup mobilitydb_pose_base_transf
- * @brief Return an array of poses with the precision of the
- * values set to a number of decimal places
+ * @brief Return an array of poses with the precision of the values set to a
+ * number of decimal places
  * @sqlfn round()
  */
 Datum
@@ -585,8 +583,6 @@ Pose_set_srid(PG_FUNCTION_ARGS)
   PG_RETURN_POSE_P(result);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Pose_transform(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_transform);
 /**
@@ -608,7 +604,7 @@ PGDLLEXPORT Datum Pose_transform_pipeline(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_transform_pipeline);
 /**
  * @ingroup mobilitydb_pose_base_srid
- * @brief Return a pose transformed to an SRID using a transformation pipeline
+ * @brief Return a pose transformed to an SRID using a pipeline
  * @sqlfn transformPipeline()
  */
 Datum

@@ -1,6 +1,5 @@
-add_library(cbuffer OBJECT
+set(CBUFFER_SRCS
   cbuffer.c
-  cbufferset.c
   tcbuffer.c
   # tcbuffer_aggfuncs.c
   tcbuffer_boxops.c
@@ -10,3 +9,11 @@ add_library(cbuffer OBJECT
   tcbuffer_spatialrels.c
   # tcbuffer_tempspatialrels.c
 )
+
+if(MEOS)
+  list(APPEND CBUFFER_SRCS
+  cbufferset_meos.c
+)
+endif()
+
+add_library(cbuffer OBJECT ${CBUFFER_SRCS})

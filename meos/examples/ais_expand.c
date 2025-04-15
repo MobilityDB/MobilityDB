@@ -49,6 +49,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <meos.h>
+#include <meos_geo.h>
 /* The expandable functions are in the internal MEOS API */
 #include <meos_internal.h>
 
@@ -178,14 +179,14 @@ int main(void)
         (const TInstant **) &inst1, 1, 2, true, true, LINEAR, false);
     else
       trips[ship].trip = temporal_append_tinstant(trips[ship].trip, inst1, 
-        0.0, NULL, true);
+        LINEAR, 0.0, NULL, true);
     TInstant *inst2 = (TInstant *) tfloatinst_make(rec.SOG, rec.T);
     if (! trips[ship].SOG)
       trips[ship].SOG = (Temporal *) tsequence_make_exp(
         (const TInstant **) &inst2, 1, 2, true, true, LINEAR, false);
     else
       trips[ship].SOG = temporal_append_tinstant(trips[ship].SOG, inst2,
-        0.0, NULL, true);
+        LINEAR, 0.0, NULL, true);
     free(inst1);
     free(inst2);
   } while (!feof(file));

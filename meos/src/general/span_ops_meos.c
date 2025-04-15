@@ -42,6 +42,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal.h>
 #include "general/span.h"
 #include "general/temporal.h"
 #include "general/type_util.h"
@@ -61,8 +62,7 @@ bool
 contains_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return false;
+  VALIDATE_INTSPAN(s, false);
   return contains_span_value(s, Int32GetDatum(i));
 }
 
@@ -77,8 +77,7 @@ bool
 contains_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return false;
+  VALIDATE_BIGINTSPAN(s, false);
   return contains_span_value(s, Int64GetDatum(i));
 }
 
@@ -93,8 +92,7 @@ bool
 contains_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return false;
+  VALIDATE_FLOATSPAN(s, false);
   return contains_span_value(s, Float8GetDatum(d));
 }
 
@@ -109,8 +107,7 @@ bool
 contains_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return false;
+  VALIDATE_DATESPAN(s, false);
   return contains_span_value(s, DateADTGetDatum(d));
 }
 
@@ -129,8 +126,7 @@ bool
 contained_int_span(int i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return false;
+  VALIDATE_INTSPAN(s, false);
   return contains_span_value(s, Int32GetDatum(i));
 }
 
@@ -145,8 +141,7 @@ bool
 contained_bigint_span(int64 i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return false;
+  VALIDATE_BIGINTSPAN(s, false);
   return contains_span_value(s, Int64GetDatum(i));
 }
 
@@ -161,8 +156,7 @@ bool
 contained_float_span(double d, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return false;
+  VALIDATE_FLOATSPAN(s, false);
   return contains_span_value(s, Float8GetDatum(d));
 }
 
@@ -177,8 +171,7 @@ bool
 contained_date_span(DateADT d, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return false;
+  VALIDATE_DATESPAN(s, false);
   return contains_span_value(s, DateADTGetDatum(d));
 }
 
@@ -193,8 +186,7 @@ bool
 contained_timestamptz_span(TimestampTz t, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return false;
+  VALIDATE_TSTZSPAN(s, false);
   return contains_span_value(s, TimestampTzGetDatum(t));
 }
 
@@ -213,8 +205,7 @@ bool
 adjacent_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return false;
+  VALIDATE_INTSPAN(s, false);
   return adjacent_span_value(s, Int32GetDatum(i));
 }
 
@@ -229,8 +220,7 @@ bool
 adjacent_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return false;
+  VALIDATE_BIGINTSPAN(s, false);
   return adjacent_span_value(s, Int64GetDatum(i));
 }
 
@@ -245,8 +235,7 @@ bool
 adjacent_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return false;
+  VALIDATE_FLOATSPAN(s, false);
   return adjacent_span_value(s, Float8GetDatum(d));
 }
 
@@ -261,8 +250,7 @@ bool
 adjacent_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return false;
+  VALIDATE_DATESPAN(s, false);
   return adjacent_span_value(s, DateADTGetDatum(d));
 }
 
@@ -277,8 +265,7 @@ bool
 adjacent_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return false;
+  VALIDATE_TSTZSPAN(s, false);
   return adjacent_span_value(s, TimestampTzGetDatum(t));
 }
 
@@ -297,8 +284,7 @@ bool
 left_int_span(int i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return false;
+  VALIDATE_INTSPAN(s, false);
   return left_value_span(Int32GetDatum(i), s);
 }
 
@@ -313,8 +299,7 @@ bool
 left_bigint_span(int64 i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return false;
+  VALIDATE_BIGINTSPAN(s, false);
   return left_value_span(Int64GetDatum(i), s);
 }
 
@@ -329,8 +314,7 @@ bool
 left_float_span(double d, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return false;
+  VALIDATE_FLOATSPAN(s, false);
   return left_value_span(Float8GetDatum(d), s);
 }
 
@@ -345,8 +329,7 @@ bool
 before_date_span(DateADT d, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return false;
+  VALIDATE_DATESPAN(s, false);
   return left_value_span(DateADTGetDatum(d), s);
 }
 
@@ -361,8 +344,7 @@ bool
 before_timestamptz_span(TimestampTz t, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return false;
+  VALIDATE_TSTZSPAN(s, false);
   return left_value_span(TimestampTzGetDatum(t), s);
 }
 
@@ -379,8 +361,7 @@ bool
 left_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return false;
+  VALIDATE_INTSPAN(s, false);
   return left_span_value(s, Int32GetDatum(i));
 }
 
@@ -395,8 +376,7 @@ bool
 left_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return false;
+  VALIDATE_BIGINTSPAN(s, false);
   return left_span_value(s, Int64GetDatum(i));
 }
 
@@ -411,8 +391,7 @@ bool
 left_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return false;
+  VALIDATE_FLOATSPAN(s, false);
   return left_span_value(s, Float8GetDatum(d));
 }
 
@@ -427,8 +406,7 @@ bool
 before_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return false;
+  VALIDATE_DATESPAN(s, false);
   return left_span_value(s, DateADTGetDatum(d));
 }
 /**
@@ -442,8 +420,7 @@ bool
 before_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return false;
+  VALIDATE_TSTZSPAN(s, false);
   return left_span_value(s, TimestampTzGetDatum(t));
 }
 
@@ -462,8 +439,7 @@ bool
 right_int_span(int i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return false;
+  VALIDATE_INTSPAN(s, false);
   return left_span_value(s, DatumGetInt32(i));
 }
 
@@ -478,8 +454,7 @@ bool
 right_bigint_span(int64 i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return false;
+  VALIDATE_BIGINTSPAN(s, false);
   return left_span_value(s, DatumGetInt64(i));
 }
 
@@ -494,8 +469,7 @@ bool
 right_float_span(double d, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return false;
+  VALIDATE_FLOATSPAN(s, false);
   return left_span_value(s, DatumGetFloat8(d));
 }
 
@@ -510,8 +484,7 @@ bool
 after_date_span(DateADT d, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return false;
+  VALIDATE_DATESPAN(s, false);
   return left_span_value(s, DatumGetDateADT(d));
 }
 
@@ -526,8 +499,7 @@ bool
 after_timestamptz_span(TimestampTz t, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return false;
+  VALIDATE_TSTZSPAN(s, false);
   return left_span_value(s, DatumGetTimestampTz(t));
 }
 
@@ -544,8 +516,7 @@ bool
 right_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return false;
+  VALIDATE_INTSPAN(s, false);
   return left_value_span(DatumGetInt32(i), s);
 }
 
@@ -560,8 +531,7 @@ bool
 right_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return false;
+  VALIDATE_BIGINTSPAN(s, false);
   return left_value_span(DatumGetInt64(i), s);
 }
 
@@ -576,8 +546,7 @@ bool
 right_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return false;
+  VALIDATE_FLOATSPAN(s, false);
   return left_value_span(DatumGetFloat8(d), s);
 }
 
@@ -592,8 +561,7 @@ bool
 after_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return false;
+  VALIDATE_DATESPAN(s, false);
   return left_value_span(DatumGetDateADT(d), s);
 }
 
@@ -608,8 +576,7 @@ bool
 after_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return false;
+  VALIDATE_TSTZSPAN(s, false);
   return left_value_span(DatumGetTimestampTz(t), s);
 }
 
@@ -628,8 +595,7 @@ bool
 overleft_int_span(int i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return false;
+  VALIDATE_INTSPAN(s, false);
   return overleft_value_span(Int32GetDatum(i), s);
 }
 
@@ -644,8 +610,7 @@ bool
 overleft_bigint_span(int64 i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return false;
+  VALIDATE_BIGINTSPAN(s, false);
   return overleft_value_span(Int64GetDatum(i), s);
 }
 
@@ -660,8 +625,7 @@ bool
 overleft_float_span(double d, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return false;
+  VALIDATE_FLOATSPAN(s, false);
   return overleft_value_span(Float8GetDatum(d), s);
 }
 
@@ -676,8 +640,7 @@ bool
 overbefore_date_span(DateADT d, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return false;
+  VALIDATE_DATESPAN(s, false);
   return overleft_value_span(DateADTGetDatum(d), s);
 }
 
@@ -692,8 +655,7 @@ bool
 overbefore_timestamptz_span(TimestampTz t, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return false;
+  VALIDATE_TSTZSPAN(s, false);
   return overleft_value_span(TimestampTzGetDatum(t), s);
 }
 
@@ -710,8 +672,7 @@ bool
 overleft_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return false;
+  VALIDATE_INTSPAN(s, false);
   return overleft_span_value(s, Int32GetDatum(i));
 }
 
@@ -726,8 +687,7 @@ bool
 overleft_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return false;
+  VALIDATE_BIGINTSPAN(s, false);
   return overleft_span_value(s, Int64GetDatum(i));
 }
 
@@ -742,8 +702,7 @@ bool
 overleft_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return false;
+  VALIDATE_FLOATSPAN(s, false);
   return overleft_span_value(s, Float8GetDatum(d));
 }
 
@@ -758,8 +717,7 @@ bool
 overbefore_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return false;
+  VALIDATE_DATESPAN(s, false);
   return overleft_span_value(s, DateADTGetDatum(d));
 }
 
@@ -774,8 +732,7 @@ bool
 overbefore_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return false;
+  VALIDATE_TSTZSPAN(s, false);
   return overleft_span_value(s, TimestampTzGetDatum(t));
 }
 
@@ -794,8 +751,7 @@ bool
 overright_int_span(int i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return false;
+  VALIDATE_INTSPAN(s, false);
   return overright_value_span(Int32GetDatum(i), s);
 }
 
@@ -810,8 +766,7 @@ bool
 overright_bigint_span(int64 i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return false;
+  VALIDATE_BIGINTSPAN(s, false);
   return overright_value_span(Int64GetDatum(i), s);
 }
 
@@ -826,8 +781,7 @@ bool
 overright_float_span(double d, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return false;
+  VALIDATE_FLOATSPAN(s, false);
   return overright_value_span(Float8GetDatum(d), s);
 }
 
@@ -842,8 +796,7 @@ bool
 overafter_date_span(DateADT d, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return false;
+  VALIDATE_DATESPAN(s, false);
   return overright_value_span(DateADTGetDatum(d), s);
 }
 
@@ -858,8 +811,7 @@ bool
 overafter_timestamptz_span(TimestampTz t, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return false;
+  VALIDATE_TSTZSPAN(s, false);
   return overright_value_span(TimestampTzGetDatum(t), s);
 }
 
@@ -876,8 +828,7 @@ bool
 overright_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return false;
+  VALIDATE_INTSPAN(s, false);
   return overright_span_value(s, Int32GetDatum(i));
 }
 
@@ -892,8 +843,7 @@ bool
 overright_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) ||! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return false;
+  VALIDATE_BIGINTSPAN(s, false);
   return overright_span_value(s, Int64GetDatum(i));
 }
 
@@ -908,8 +858,7 @@ bool
 overright_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return false;
+  VALIDATE_FLOATSPAN(s, false);
   return overright_span_value(s, Float8GetDatum(d));
 }
 
@@ -924,8 +873,7 @@ bool
 overafter_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return false;
+  VALIDATE_DATESPAN(s, false);
   return overright_span_value(s, DateADTGetDatum(d));
 }
 
@@ -940,8 +888,7 @@ bool
 overafter_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return false;
+  VALIDATE_TSTZSPAN(s, false);
   return overright_span_value(s, TimestampTzGetDatum(t));
 }
 
@@ -960,8 +907,7 @@ SpanSet *
 union_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return NULL;
+  VALIDATE_INTSPAN(s, false);
   return union_span_value(s, Int32GetDatum(i));
 }
 
@@ -989,8 +935,7 @@ SpanSet *
 union_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return NULL;
+  VALIDATE_BIGINTSPAN(s, false);
   return union_span_value(s, Int64GetDatum(i));
 }
 
@@ -1018,8 +963,7 @@ SpanSet *
 union_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return NULL;
+  VALIDATE_FLOATSPAN(s, false);
   return union_span_value(s, Float8GetDatum(d));
 }
 
@@ -1047,8 +991,7 @@ SpanSet *
 union_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return NULL;
+  VALIDATE_DATESPAN(s, false);
   return union_span_value(s, DateADTGetDatum(d));
 }
 
@@ -1076,8 +1019,7 @@ SpanSet *
 union_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return NULL;
+  VALIDATE_TSTZSPAN(s, false);
   return union_span_value(s, TimestampTzGetDatum(t));
 }
 
@@ -1109,8 +1051,7 @@ Span *
 intersection_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return NULL;
+  VALIDATE_INTSPAN(s, false);
   return intersection_span_value(s, Int32GetDatum(i));
 }
 
@@ -1125,8 +1066,7 @@ Span *
 intersection_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return NULL;
+  VALIDATE_BIGINTSPAN(s, false);
   return intersection_span_value(s, Int64GetDatum(i));
 }
 
@@ -1141,8 +1081,7 @@ Span *
 intersection_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return NULL;
+  VALIDATE_FLOATSPAN(s, false);
   return intersection_span_value(s, Float8GetDatum(d));
 }
 
@@ -1157,8 +1096,7 @@ Span *
 intersection_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return NULL;
+  VALIDATE_DATESPAN(s, false);
   return intersection_span_value(s, DateADTGetDatum(d));
 }
 /**
@@ -1172,8 +1110,7 @@ Span *
 intersection_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return NULL;
+  VALIDATE_TSTZSPAN(s, false);
   return intersection_span_value(s, TimestampTzGetDatum(t));
 }
 
@@ -1192,8 +1129,7 @@ SpanSet *
 minus_int_span(int i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return NULL;
+  VALIDATE_INTSPAN(s, false);
   return minus_value_span(Int32GetDatum(i), s);
 }
 
@@ -1208,8 +1144,7 @@ SpanSet *
 minus_bigint_span(int64 i, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return NULL;
+  VALIDATE_BIGINTSPAN(s, false);
   return minus_value_span(Int64GetDatum(i), s);
 }
 
@@ -1224,9 +1159,7 @@ SpanSet *
 minus_float_span(double d, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return NULL;
+  VALIDATE_FLOATSPAN(s, NULL);
   return minus_value_span(Float8GetDatum(d), s);
 }
 
@@ -1241,9 +1174,7 @@ SpanSet *
 minus_date_span(DateADT d, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) ||
-      ! ensure_span_isof_type(s, T_DATESPAN))
-    return NULL;
+  VALIDATE_DATESPAN(s, NULL);
   return minus_value_span(DateADTGetDatum(d), s);
 }
 
@@ -1258,8 +1189,7 @@ SpanSet *
 minus_timestamptz_span(TimestampTz t, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return NULL;
+  VALIDATE_TSTZSPAN(s, false);
   return minus_value_span(TimestampTzGetDatum(t), s);
 }
 
@@ -1276,8 +1206,7 @@ SpanSet *
 minus_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return NULL;
+  VALIDATE_INTSPAN(s, false);
   return minus_span_value(s, Int32GetDatum(i));
 }
 
@@ -1292,8 +1221,7 @@ SpanSet *
 minus_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return NULL;
+  VALIDATE_BIGINTSPAN(s, false);
   return minus_span_value(s, Int64GetDatum(i));
 }
 
@@ -1308,8 +1236,7 @@ SpanSet *
 minus_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return NULL;
+  VALIDATE_FLOATSPAN(s, false);
   return minus_span_value(s, Float8GetDatum(d));
 }
 
@@ -1324,8 +1251,7 @@ SpanSet *
 minus_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return NULL;
+  VALIDATE_DATESPAN(s, false);
   return minus_span_value(s, DateADTGetDatum(d));
 }
 /**
@@ -1339,8 +1265,7 @@ SpanSet *
 minus_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return NULL;
+  VALIDATE_TSTZSPAN(s, false);
   return minus_span_value(s, TimestampTzGetDatum(t));
 }
 
@@ -1360,8 +1285,7 @@ int
 distance_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_INTSPAN))
-    return -1;
+  VALIDATE_INTSPAN(s, -1);
   return distance_span_value(s, Int32GetDatum(i));
 }
 
@@ -1377,8 +1301,7 @@ int64
 distance_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_BIGINTSPAN))
-    return -1;
+  VALIDATE_BIGINTSPAN(s, -1);
   return distance_span_value(s, Int64GetDatum(i));
 }
 
@@ -1394,8 +1317,7 @@ double
 distance_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_FLOATSPAN))
-    return -1.0;
+  VALIDATE_FLOATSPAN(s, -1.0);
   return distance_span_value(s, Float8GetDatum(d));
 }
 
@@ -1411,8 +1333,7 @@ int
 distance_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_DATESPAN))
-    return -1;
+  VALIDATE_DATESPAN(s, -1);
   return distance_span_value(s, DateADTGetDatum(d));
 }
 
@@ -1429,8 +1350,7 @@ double
 distance_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return -1.0;
+  VALIDATE_TSTZSPAN(s, -1.0);
   return distance_span_value(s, TimestampTzGetDatum(t));
 }
 
@@ -1447,10 +1367,7 @@ int
 distance_intspan_intspan(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_span_isof_type(s1, T_INTSPAN) ||
-      ! ensure_span_isof_type(s2, T_INTSPAN))
-    return -1;
+  VALIDATE_INTSPAN(s1, -1); VALIDATE_INTSPAN(s2, -1);
   return DatumGetInt32(distance_span_span(s1, s2));
 }
 
@@ -1465,10 +1382,7 @@ int64
 distance_bigintspan_bigintspan(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_span_isof_type(s1, T_BIGINTSPAN) ||
-      ! ensure_span_isof_type(s2, T_BIGINTSPAN))
-    return -1;
+  VALIDATE_BIGINTSPAN(s1, -1); VALIDATE_BIGINTSPAN(s2, -1);
   return DatumGetInt64(distance_span_span(s1, s2));
 }
 
@@ -1483,10 +1397,7 @@ double
 distance_floatspan_floatspan(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_span_isof_type(s1, T_FLOATSPAN) ||
-      ! ensure_span_isof_type(s2, T_FLOATSPAN))
-    return -1.0;
+  VALIDATE_DATESPAN(s1, -1.0); VALIDATE_DATESPAN(s2, -1.0);
   return DatumGetFloat8(distance_span_span(s1, s2));
 }
 
@@ -1501,10 +1412,7 @@ int
 distance_datespan_datespan(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-     ! ensure_span_isof_type(s1, T_DATESPAN) ||
-     ! ensure_span_isof_type(s2, T_DATESPAN))
-    return -1;
+  VALIDATE_DATESPAN(s1, -1); VALIDATE_DATESPAN(s2, -1);
   return DatumGetInt32(distance_span_span(s1, s2));
 }
 
@@ -1519,10 +1427,7 @@ double
 distance_tstzspan_tstzspan(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_span_isof_type(s1, T_TSTZSPAN) ||
-      ! ensure_span_isof_type(s2, T_TSTZSPAN))
-    return -1.0;
+  VALIDATE_TSTZSPAN(s1, -1.0); VALIDATE_TSTZSPAN(s2, -1.0);
   return DatumGetFloat8(distance_span_span(s1, s2));
 }
 

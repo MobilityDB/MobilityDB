@@ -52,7 +52,7 @@
  *****************************************************************************/
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the ever/always comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -71,7 +71,7 @@ EAcomp_cbuffer_tcbuffer(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the ever/always comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -90,7 +90,7 @@ EAcomp_tcbuffer_cbuffer(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the ever/always comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -295,7 +295,7 @@ Always_ne_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the temporal comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -314,7 +314,7 @@ Tcomp_cbuffer_tcbuffer(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the temporal comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -333,7 +333,7 @@ Tcomp_tcbuffer_cbuffer(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the temporal comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -357,8 +357,8 @@ PGDLLEXPORT Datum Teq_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_comp_temp
- * @brief Return true if a temporal circular buffer is ever equal to a circular
- * buffer
+ * @brief Return a temporal Boolean that states whether a circular buffer is
+ * equal to a temporal circular buffer
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
@@ -372,8 +372,8 @@ PGDLLEXPORT Datum Tne_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_comp_temp
- * @brief Return true if a temporal circular buffer is ever different from a
- * circular buffer
+ * @brief Return a temporal Boolean that states whether a circular buffer is
+ * different from a temporal circular buffer
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
@@ -389,8 +389,8 @@ PGDLLEXPORT Datum Teq_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_comp_temp
- * @brief Return true if a temporal circular buffer is ever equal to a circular
- * buffer
+ * @brief Return a temporal Boolean that states whether a temporal circular
+ * buffer is equal to a circular buffer
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
@@ -404,8 +404,8 @@ PGDLLEXPORT Datum Tne_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_comp_temp
- * @brief Return true if a temporal circular buffer is ever different from a
- * circular buffer
+ * @brief Return a temporal Boolean that states whether a temporal circular
+ * buffer is different from a circular buffer
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
@@ -421,7 +421,8 @@ PGDLLEXPORT Datum Teq_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_comp_temp
- * @brief Return true if two temporal circular buffers are ever equal
+ * @brief Return a temporal Boolean that states whether two temporal circular
+ * buffers are equal
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
@@ -435,7 +436,8 @@ PGDLLEXPORT Datum Tne_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_comp_temp
- * @brief Return true if two temporal circular buffers are ever different
+ * @brief Return a temporal Boolean that states whether two temporal circular
+ * buffers are different
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */

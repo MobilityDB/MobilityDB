@@ -451,6 +451,26 @@ CREATE FUNCTION shiftScaleTime(trgeometry, interval, interval)
  * Restriction Functions
  *****************************************************************************/
 
+-- CREATE FUNCTION atValues(trgeometry, geometry)
+  -- RETURNS trgeometry
+  -- AS 'MODULE_PATHNAME', 'Temporal_at_value'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- CREATE FUNCTION minusValues(trgeometry, geometry)
+  -- RETURNS trgeometry
+  -- AS 'MODULE_PATHNAME', 'Temporal_minus_value'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- CREATE FUNCTION atValues(trgeometry, geomset)
+  -- RETURNS trgeometry
+  -- AS 'MODULE_PATHNAME', 'Temporal_at_values'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- CREATE FUNCTION minusValues(trgeometry, geomset)
+  -- RETURNS trgeometry
+  -- AS 'MODULE_PATHNAME', 'Temporal_minus_values'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION atTime(trgeometry, timestamptz)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_at_timestamptz'

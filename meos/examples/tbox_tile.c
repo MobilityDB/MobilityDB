@@ -76,11 +76,8 @@ int main(void)
   Span *spans;
   int count;
   if (valuesplit)
-    boxes = intspan ?
-      tintbox_value_time_tiles(box, 5, timesplit ? interv : NULL, 1, torigin,
-        &count) :
-      tfloatbox_value_time_tiles(box, 5, timesplit ? interv : NULL, 1, torigin,
-        &count);
+    boxes = tbox_value_time_tiles(box, 5, timesplit ? interv : NULL, 1,
+      torigin, &count);
   else
     spans = tstzspan_bins(&box->period, interv, torigin, &count);
 

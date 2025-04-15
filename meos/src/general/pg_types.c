@@ -185,12 +185,7 @@ bool
 bool_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) str))
-    return false;
-#else
-  assert(str);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(str, false);
 
   /*
    * Skip leading and trailing whitespace
@@ -664,8 +659,7 @@ DateADT
 pg_date_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return DATEVAL_NOEND;
+  VALIDATE_NOT_NULL(str, DATEVAL_NOEND);
 
   DateADT date;
   fsec_t fsec;
@@ -872,7 +866,7 @@ date2timestamptz_opt_overflow(DateADT dateVal, int *overflow)
 
 /**
  * @ingroup meos_pg_types
- * @brief Return a date converted to a timestamptz
+ * @brief Convert a date into a timestamptz
  * @param[in] d Date
  * @note PostgreSQL function: @p date_timestamptz(PG_FUNCTION_ARGS)
  */
@@ -1118,8 +1112,7 @@ TimeADT
 time_in(const char *str, int32 prec)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return DT_NOEND;
+  VALIDATE_NOT_NULL(str, DT_NOEND);
 
   TimeADT result;
   fsec_t fsec;
@@ -1179,7 +1172,7 @@ time_out(TimeADT t)
 #if ! MEOS
 /**
  * @ingroup meos_pg_types
- * @brief Return a string converted to a timestamp with timezone.
+ * @brief Return timestamp with timezone from a string
  * @param[in] str String
  * @param[in] prec Precision, that is, the number of fractional digits retained
  * in the seconds field. When precision is -1, there is no explicit bound on
@@ -1263,8 +1256,8 @@ MEOSAdjustTimestampForTypmod(Timestamp *time, int32 typmod)
 }
 
 /**
- * @brief Return a string converted to a either timestamp or a timestamp with
- * timezone
+ * @brief Return either timestamp or a timestamp with timezone from its string
+ * representation
  * @param[in] str String
  * @param[in] typmod Precision
  * @param[in] withtz True when using timezone
@@ -1276,8 +1269,7 @@ TimestampTz
 timestamp_in_common(const char *str, int32 typmod, bool withtz)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return DT_NOEND;
+  VALIDATE_NOT_NULL(str, DT_NOEND);
 
   TimestampTz result;
   fsec_t    fsec;
@@ -1398,7 +1390,7 @@ pg_timestamptz_in(const char *str, int32 prec)
 #if ! MEOS
 /**
  * @ingroup meos_pg_types
- * @brief Return a timestamp with timezone converted to a string
+ * @brief Return the string representation a timestamp with timezone
  * @param[in] t Timestamp
  * @return On error return @p NULL
  * @note PostgreSQL function: @p timestamptz_out(PG_FUNCTION_ARGS)
@@ -1411,7 +1403,7 @@ pg_timestamptz_out(TimestampTz t)
 }
 #else
 /**
- * @brief Return either a timestamp or a timestamptz converted to a string
+ * @brief Return the string representation a timestamp with timezone
  */
 char *
 timestamp_out_common(TimestampTz t, bool withtz)
@@ -1475,7 +1467,7 @@ pg_timestamptz_out(TimestampTz t)
 
 /**
  * @ingroup meos_pg_types
- * @brief Return a timestamp with time zone converted to a date
+ * @brief Convert a timestamp with time zone into a date
  * @param[in] t Timestamp
  * @note PostgreSQL function @p timestamptz_date(PG_FUNCTION_ARGS)
  */
@@ -1700,8 +1692,7 @@ Interval *
 pg_interval_in(const char *str, int32 prec)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
 
   Interval *result;
   fsec_t fsec;
@@ -1848,8 +1839,7 @@ char *
 pg_interval_out(const Interval *interv)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) interv))
-    return NULL;
+  VALIDATE_NOT_NULL(interv, NULL);
 
   struct pg_tm tt, *tm = &tt;
   fsec_t fsec;
@@ -1878,8 +1868,7 @@ Interval *
 mult_interval_double(const Interval *interv, double factor)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) interv))
-    return NULL;
+  VALIDATE_NOT_NULL(interv, NULL);
 
   double month_remainder_days, sec_remainder, result_double;
   int32 orig_month = interv->month,
@@ -1969,12 +1958,9 @@ Interval *
 add_interval_interval(const Interval *interv1, const Interval *interv2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) interv1) ||
-      ! ensure_not_null((void *) interv2))
-    return NULL;
+  VALIDATE_NOT_NULL(interv1, NULL); VALIDATE_NOT_NULL(interv2, NULL);
 
   Interval *result = palloc(sizeof(Interval));
-
   result->month = interv1->month + interv2->month;
   /* overflow check copied from int4pl */
   if (SAMESIGN(interv1->month, interv2->month) &&
@@ -2025,11 +2011,9 @@ TimestampTz
 add_timestamptz_interval(TimestampTz t, const Interval *interv)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) interv))
-    return DT_NOEND;
+  VALIDATE_NOT_NULL(interv, DT_NOEND);
 
   Timestamp result;
-
   if (TIMESTAMP_NOT_FINITE(t))
     result = t;
   else
@@ -2123,8 +2107,7 @@ TimestampTz
 minus_timestamptz_interval(TimestampTz t, const Interval *interv)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) interv))
-    return DT_NOEND;
+  VALIDATE_NOT_NULL(interv, DT_NOEND);
 
   Interval tinterv;
   tinterv.month = -interv->month;
@@ -2240,10 +2223,7 @@ int
 pg_interval_cmp(const Interval *interv1, const Interval *interv2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) interv1) ||
-      ! ensure_not_null((void *) interv2))
-    return INT_MAX;
-
+  VALIDATE_NOT_NULL(interv1, INT_MAX); VALIDATE_NOT_NULL(interv2, INT_MAX);
   INT128 span1 = interval_cmp_value(interv1);
   INT128 span2 = interval_cmp_value(interv2);
   return int128_compare(span1, span2);
@@ -2254,7 +2234,7 @@ pg_interval_cmp(const Interval *interv1, const Interval *interv2)
  *****************************************************************************/
 
 /**
- * @brief Return a C binary string converted to a bytea
+ * @brief Convert a C binary string into a bytea
  */
 bytea *
 bstring2bytea(const uint8_t *wkb, size_t size)
@@ -2267,7 +2247,7 @@ bstring2bytea(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup meos_pg_types
- * @brief Return a C string converted to a text
+ * @brief Convert a C string into a text
  * @param[in] str String
  * @note Function taken from PostGIS file `lwgeom_in_geojson.c`
  */
@@ -2275,8 +2255,7 @@ text *
 cstring2text(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
 
   size_t len = strlen(str);
   text *result = palloc(len + VARHDRSZ);
@@ -2287,7 +2266,7 @@ cstring2text(const char *str)
 
 /**
  * @ingroup meos_pg_types
- * @brief Return a text converted to a C string
+ * @brief Convert a text into a C string
  * @param[in] txt Text
  * @note Function taken from PostGIS file @p lwgeom_in_geojson.c
  */
@@ -2295,8 +2274,7 @@ char *
 text2cstring(const text *txt)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) txt))
-    return NULL;
+  VALIDATE_NOT_NULL(txt, NULL);
 
   size_t size = VARSIZE_ANY_EXHDR(txt);
   char *str = palloc(size + 1);
@@ -2433,6 +2411,7 @@ text *
 text_lower(const text *txt)
 {
 #if MEOS
+  VALIDATE_NOT_NULL(txt, NULL);
   char *out_string = asc_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
 #else /* ! MEOS */
   char *out_string = str_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
@@ -2464,6 +2443,7 @@ text *
 text_upper(const text *txt)
 {
 #if MEOS
+  VALIDATE_NOT_NULL(txt, NULL);
   char *out_string = asc_toupper(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
 #else /* ! MEOS */
   char *out_string = str_toupper(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),
@@ -2495,6 +2475,7 @@ text *
 text_initcap(const text *txt)
 {
 #if MEOS
+  VALIDATE_NOT_NULL(txt, NULL);
   char *out_string = asc_initcap(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt));
 #else /* ! MEOS */
   char *out_string = str_initcap(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt),

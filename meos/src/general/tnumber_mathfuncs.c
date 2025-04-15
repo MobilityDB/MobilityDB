@@ -387,13 +387,7 @@ Temporal *
 tnumber_abs(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_type(temp->temptype))
-    return NULL;
-#else
-  assert(temp); assert(tnumber_type(temp->temptype));
-#endif /* MEOS */
+  VALIDATE_TNUMBER(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -499,13 +493,7 @@ Temporal *
 tnumber_delta_value(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_tnumber_type(temp->temptype))
-    return NULL;
-#else
-  assert(temp); assert(tnumber_type(temp->temptype));
-#endif /* MEOS */
+  VALIDATE_TNUMBER(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -621,13 +609,7 @@ Temporal *
 tnumber_angular_difference(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || 
-      ! ensure_tnumber_type(temp->temptype))
-    return NULL;
-#else
-  assert(temp); assert(tnumber_type(temp->temptype));
-#endif /* MEOS */
+  VALIDATE_TNUMBER(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -722,13 +704,8 @@ Temporal *
 tfloat_derivative(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TFLOAT);
-#endif /* MEOS */
+  VALIDATE_TFLOAT(temp, NULL);
+
   if (! ensure_linear_interp(temp->flags))
     return NULL;
 
@@ -817,13 +794,7 @@ Temporal *
 tfloat_exp(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TFLOAT);
-#endif /* MEOS */
+  VALIDATE_TFLOAT(temp, NULL);
   
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -892,13 +863,7 @@ Temporal *
 tfloat_ln(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TFLOAT);
-#endif /* MEOS */
+  VALIDATE_TFLOAT(temp, NULL);
   /* Cannot compute logarithm of 0 or negative value */
   if (ever_le_temporal_base(temp, Float8GetDatum(0.0)))
   {
@@ -972,13 +937,7 @@ Temporal *
 tfloat_log10(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
-#else
-  assert(temp); assert(temp->temptype == T_TFLOAT);
-#endif /* MEOS */
+  VALIDATE_TFLOAT(temp, NULL);
   /* Cannot compute logarithm of 0 or negative value */
   if (ever_le_temporal_base(temp, Float8GetDatum(0.0)))
   {

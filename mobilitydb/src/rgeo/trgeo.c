@@ -253,7 +253,7 @@ PGDLLEXPORT Datum Trgeometry_inst_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_inst_constructor);
 /**
  * @ingroup mobilitydb_rgeo_constructor
- * @brief Construct a temporal rigid geometry instant from a geometry, pose,
+ * @brief Construct a temporal rigid geometry instant from a geometry, a pose,
  * and a timestamptz
  * @sqlfn trgeometryInst()
  */
@@ -405,7 +405,7 @@ PGDLLEXPORT Datum Trgeometry_to_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_to_tpose);
 /**
  * @ingroup mobilitydb_rgeo_conversion
- * @brief Return a temporal pose converted from a temporal rigid geometry
+ * @brief Convert a temporal rigid geometry into a temporal pose
  * @sqlfn tpose()
  */
 Datum
@@ -421,7 +421,7 @@ PGDLLEXPORT Datum Trgeometry_to_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_to_tpoint);
 /**
  * @ingroup mobilitydb_rgeo_conversion
- * @brief Return a temporal point converted from a temporal rigid geometry
+ * @brief Convert a temporal rigid geometry into a temporal point 
  * @sqlfn tgeompoint()
  */
 Datum
@@ -535,7 +535,7 @@ PGDLLEXPORT Datum Trgeometry_to_tinstant(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_to_tinstant);
 /**
  * @ingroup mobilitydb_rgeo_transf
- * @brief Return a temporal value transformed to a temporal instant
+ * @brief Return a temporal rigid geometry transformed into a temporal instant
  * @sqlfn trgeometryInst()
  */
 Datum
@@ -551,7 +551,7 @@ PGDLLEXPORT Datum Trgeometry_to_tsequence(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_to_tsequence);
 /**
  * @ingroup mobilitydb_rgeo_transf
- * @brief Return a temporal value transformed to a temporal sequence
+ * @brief Return a temporal rigid geometry transformed into a temporal sequence
  * @note The SQL function is not strict
  * @sqlfn trgeometrySeq()
  */
@@ -577,7 +577,8 @@ PGDLLEXPORT Datum Trgeometry_to_tsequenceset(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_to_tsequenceset);
 /**
  * @ingroup mobilitydb_rgeo_transf
- * @brief Return a temporal value transformed to a temporal sequence set
+ * @brief Return a temporal rigid geometry transformed into a temporal sequence
+ * set
  * @note The SQL function is not strict
  * @sqlfn trgeoSeqSet()
  */

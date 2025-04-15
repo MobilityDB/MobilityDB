@@ -124,15 +124,8 @@ Temporal *
 distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_tnumber_type(temp1->temptype))
+  if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype); 
-  assert(tnumber_type(temp1->temptype));
-#endif /* MEOS */
 
   /* Fill the lifted structure */
   meosType basetype = temptype_basetype(temp1->temptype);
@@ -184,8 +177,8 @@ Datum
 nad_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X(T_TBOX, box1->flags) || 
+  assert(box1); assert(box2);
+  if (! ensure_has_X(T_TBOX, box1->flags) || 
       ! ensure_has_X(T_TBOX, box2->flags) ||
       ! ensure_same_span_type(&box1->span, &box2->span))
     return (box1->span.basetype == T_INT4) ?

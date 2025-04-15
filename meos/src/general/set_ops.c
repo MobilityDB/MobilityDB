@@ -103,13 +103,8 @@ static Set *
 setop_set_set(const Set *s1, const Set *s2, SetOper op)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_set_type(s1, s2))
+  if (! ensure_valid_set_set(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->settype == s2->settype);
-#endif /* MEOS */
 
   if (op == INTER || op == MINUS)
   {
@@ -178,24 +173,6 @@ setop_set_set(const Set *s1, const Set *s2, SetOper op)
 }
 
 /*****************************************************************************
- * Validity functions
- *****************************************************************************/
-
-/**
- * @brief Return true if two sets are valid for set operations
- * @param[in] s1,s2 Sets
- */
-bool
-ensure_valid_set_set(const Set *s1, const Set *s2)
-{
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_set_type(s1, s2))
-    return false;
-  return true;
-}
-
-/*****************************************************************************
  * Contains
  *****************************************************************************/
 
@@ -209,12 +186,7 @@ bool
 contains_set_value(const Set *s, Datum value)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s))
-    return false;
-#else
-  assert(s);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(s, NULL);
   /* Bound test */
   if (! contains_bound_set_value(s, value))
     return false;
@@ -232,13 +204,8 @@ bool
 contains_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_set_type(s1, s2))
+  if (! ensure_valid_set_set(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->settype == s2->settype);
-#endif /* MEOS */
 
   /* Bound test */
   if (! contains_bound_set_set(s1, s2))
@@ -302,13 +269,8 @@ bool
 overlaps_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_set_type(s1, s2))
+  if (! ensure_valid_set_set(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->settype == s2->settype);
-#endif /* MEOS */
 
   /* Bound test */
   if (! overlaps_bound_set_set(s1, s2))
@@ -368,13 +330,8 @@ bool
 left_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_set_type(s1, s2))
+  if (! ensure_valid_set_set(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->settype == s2->settype);
-#endif /* MEOS */
   return (datum_lt(SET_VAL_N(s1, s1->count - 1), SET_VAL_N(s2, 0),
     s1->basetype));
 }
@@ -460,13 +417,8 @@ bool
 overleft_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_set_type(s1, s2))
+  if (! ensure_valid_set_set(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->settype == s2->settype);
-#endif /* MEOS */
   return datum_le(SET_VAL_N(s1, s1->count - 1), SET_VAL_N(s2, s2->count - 1),
     s1->basetype);
 }
@@ -512,13 +464,8 @@ bool
 overright_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_set_type(s1, s2))
+  if (! ensure_valid_set_set(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->settype == s2->settype);
-#endif /* MEOS */
   return datum_ge(SET_VAL_N(s1, 0), SET_VAL_N(s2, 0), s1->basetype);
 }
 
@@ -582,13 +529,8 @@ Set *
 union_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2) ||
-      ! ensure_same_set_type(s1, s2))
+  if (! ensure_valid_set_set(s1, s2))
     return false;
-#else
-  assert(s1); assert(s2); assert(s1->settype == s2->settype);
-#endif /* MEOS */
   return setop_set_set(s1, s2, UNION);
 }
 
@@ -633,14 +575,8 @@ Set *
 intersection_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2))
-    return false;
-#else
-  assert(s1); assert(s2);
-#endif /* MEOS */
-  if (! ensure_same_set_type(s1, s2))
-   return NULL;
+  if (! ensure_valid_set_set(s1, s2))
+    return NULL;
   return setop_set_set(s1, s2, INTER);
 }
 
@@ -699,13 +635,7 @@ Set *
 minus_set_set(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s1) || ! ensure_not_null((void *) s2))
-    return false;
-#else
-  assert(s1); assert(s2);
-#endif /* MEOS */
-  if (! ensure_same_set_type(s1, s2))
+  if (! ensure_valid_set_set(s1, s2))
     return NULL;
   return setop_set_set(s1, s2, MINUS);
 }

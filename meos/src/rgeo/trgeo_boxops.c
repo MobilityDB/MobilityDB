@@ -42,7 +42,7 @@
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
-#include "meos_internal.h"
+#include <meos_internal.h>
 #include "geo/stbox.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo_inst.h"
@@ -140,7 +140,8 @@ trgeoinst_make_pose_stbox(const TInstant *inst, STBox *box)
 }
 
 /**
- * @brief Set the spatiotemporal box from the array of temporal rigid geometry values
+ * @brief Set the spatiotemporal box from the array of temporal rigid geometry
+ * values
  * @param[in] geom Geometry
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array

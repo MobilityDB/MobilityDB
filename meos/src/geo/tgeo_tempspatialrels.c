@@ -30,27 +30,26 @@
 /**
  * @file
  * @brief Temporal spatial relationships for temporal geos
- *
- * These relationships are applied at each instant and result in a temporal
- * Boolean.
+ * @details These relationships are applied at each instant and result in a
+ * temporal Boolean.
  *
  * The following relationships are supported for a temporal geometry point
- * and a geometry: tcontains, tdisjoint, tintersects, ttouches, and
- * tdwithin.
+ * and a geometry: `tcontains`, `tdisjoint`, `tintersects`, `ttouches`, and
+ * `tdwithin`.
  *
  * The following relationships are supported for two temporal geometry points:
- * tdwithin.
+ * `tdwithin`.
  *
  * The following relationships are supported for two temporal geography points:
- * tdisjoint, tintersects, tdwithin.
+ * `tdisjoint`, `tintersects`, `tdwithin`.
  *
- * tintersects and tdisjoint for a temporal point and a geometry allow a fast
- * implementation by (1) using bounding box tests, and (2) splitting temporal
- * point sequences into an array of simple (that is, not self-intersecting)
- * fragments and the answer is computed for each fragment without any
- * additional call to PostGIS.
+ * `tintersects` and `tdisjoint` for a temporal point and a geometry allow a
+ * fast implementation by (1) using bounding box tests, and (2) splitting 
+ * temporal point sequences into an array of simple (that is, not 
+ * self-intersecting) fragments and the answer is computed for each fragment 
+ * without any additional call to PostGIS.
  *
- * The implementation of tcontains and ttouches involving a temporal point
+ * The implementation of `tcontains` and `ttouches` involving a temporal point
  * and a geometry is derived from the above by computing the boundary of the
  * geometry and
  * (1) tcontains(geo, tpoint) = tintersects(geo, tpoint) &
@@ -58,7 +57,7 @@
  *     where & and ~ are the temporal boolean operators and and not
  * (2) ttouches(geo, tpoint) = tintersects(st_boundary(geo), tpoint)
  *
- * Notice also that tdwithin has a custom implementation as follows
+ * Notice also that `tdwithin` has a custom implementation as follows
  * - In the case of two temporal points we need to compute the instants
  *   at which two temporal sequences have a distance d between each other,
  *   which amounts for each pair of synchronized segments seg1, seg2 to solve
@@ -434,7 +433,7 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   bool restr, bool atvalue)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tgeo_geo(temp,gs) || gserialized_is_empty(gs))
     return NULL;
 
   /* Bounding box test */
@@ -536,7 +535,7 @@ tinterrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool tinter, bool restr, bool atvalue)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_tspatial(temp1, temp2))
+  if (! ensure_valid_tgeo_tgeo(temp1, temp2))
     return NULL;
 
   Temporal *result = tinter ?
@@ -604,9 +603,9 @@ tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_has_not_Z_geo(gs) || 
-      ! ensure_has_not_Z(temp->temptype, temp->flags))
+  if (! ensure_valid_tgeo_geo(temp,gs) || ! ensure_has_not_Z_geo(gs) || 
+      ! ensure_has_not_Z(temp->temptype, temp->flags) ||
+      gserialized_is_empty(gs))
     return NULL;
 
   Temporal *inter = tinterrel_tgeo_geo(temp, gs, TINTERSECTS, restr, atvalue);
@@ -654,8 +653,9 @@ ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_has_not_Z(temp->temptype, temp->flags) || ! ensure_has_not_Z_geo(gs))
+  if (! ensure_valid_tgeo_geo(temp, gs) || ! ensure_has_not_Z_geo(gs) || 
+      ! ensure_has_not_Z(temp->temptype, temp->flags) || 
+      gserialized_is_empty(gs))
     return NULL;
 
   GSERIALIZED *gsbound = geom_boundary(gs);
@@ -1258,9 +1258,10 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool restr, bool atvalue)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tgeo_geo(temp,gs) ||
       (tpoint_type(temp->temptype) && ! ensure_point_type(gs)) ||
-      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8) ||
+      gserialized_is_empty(gs))
     return NULL;
 
   datum_func3 func =
@@ -1410,7 +1411,7 @@ tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   bool restr, bool atvalue)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_tspatial(temp1, temp2) ||
+  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 

@@ -50,6 +50,7 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
+#include "general/span.h"
 #include "general/temporal.h"
 
 /*****************************************************************************
@@ -68,8 +69,7 @@ bool
 contains_tstzspan_temporal(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
   return boxop_temporal_tstzspan(temp, s, &contains_span_span, INVERT);
 }
 
@@ -85,15 +85,14 @@ bool
 contains_temporal_tstzspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
   return boxop_temporal_tstzspan(temp, s, &contains_span_span, INVERT_NO);
 }
 
 /**
  * @ingroup meos_temporal_bbox_topo
- * @brief Return true if the time span of the first temporal value
- * contains the one of the second one
+ * @brief Return true if the time span of the first temporal value contains the
+ * one of the second one
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Contains_temporal_temporal()
  */
@@ -101,8 +100,7 @@ bool
 contains_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
-    return NULL;
+  VALIDATE_NOT_NULL(temp1, NULL); VALIDATE_NOT_NULL(temp2, NULL);
   return boxop_temporal_temporal(temp1, temp2, &contains_span_span);
 }
 
@@ -120,8 +118,7 @@ bool
 contained_tstzspan_temporal(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
   return boxop_temporal_tstzspan(temp, s, &contained_span_span, INVERT);
 }
 
@@ -137,8 +134,7 @@ bool
 contained_temporal_tstzspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
   return boxop_temporal_tstzspan(temp, s, &contained_span_span, INVERT_NO);
 }
 
@@ -153,8 +149,7 @@ bool
 contained_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
-    return NULL;
+  VALIDATE_NOT_NULL(temp1, NULL); VALIDATE_NOT_NULL(temp2, NULL);
   return boxop_temporal_temporal(temp1, temp2, &contained_span_span);
 }
 
@@ -172,8 +167,7 @@ bool
 overlaps_tstzspan_temporal(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
   return boxop_temporal_tstzspan(temp, s, &overlaps_span_span, INVERT);
 }
 
@@ -189,8 +183,7 @@ bool
 overlaps_temporal_tstzspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
   return boxop_temporal_tstzspan(temp, s, &overlaps_span_span, INVERT_NO);
 }
 
@@ -204,8 +197,7 @@ bool
 overlaps_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
-    return NULL;
+  VALIDATE_NOT_NULL(temp1, NULL); VALIDATE_NOT_NULL(temp2, NULL);
   return boxop_temporal_temporal(temp1, temp2, &overlaps_span_span);
 }
 
@@ -223,8 +215,7 @@ bool
 same_tstzspan_temporal(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
   return boxop_temporal_tstzspan(temp, s, &span_eq, INVERT);
 }
 
@@ -240,8 +231,7 @@ bool
 same_temporal_tstzspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
   return boxop_temporal_tstzspan(temp, s, &span_eq, INVERT_NO);
 }
 
@@ -255,8 +245,7 @@ bool
 same_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
-    return NULL;
+  VALIDATE_NOT_NULL(temp1, NULL); VALIDATE_NOT_NULL(temp2, NULL);
   return boxop_temporal_temporal(temp1, temp2, &span_eq);
 }
 
@@ -274,8 +263,7 @@ bool
 adjacent_tstzspan_temporal(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
   return boxop_temporal_tstzspan(temp, s, &adjacent_span_span, INVERT);
 }
 
@@ -291,8 +279,7 @@ bool
 adjacent_temporal_tstzspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
   return boxop_temporal_tstzspan(temp, s, &adjacent_span_span, INVERT_NO);
 }
 
@@ -306,8 +293,7 @@ bool
 adjacent_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
-    return NULL;
+  VALIDATE_NOT_NULL(temp1, NULL); VALIDATE_NOT_NULL(temp2, NULL);
   return boxop_temporal_temporal(temp1, temp2, &adjacent_span_span);
 }
 
@@ -327,7 +313,7 @@ bool
 contains_numspan_tnumber(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_valid_tnumber_numspan(temp, s))
     return NULL;
   return boxop_tnumber_numspan(temp, s, &contains_span_span, INVERT);
 }
@@ -344,7 +330,7 @@ bool
 contains_tnumber_numspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_valid_tnumber_numspan(temp, s))
     return NULL;
   return boxop_tnumber_numspan(temp, s, &contains_span_span, INVERT_NO);
 }
@@ -361,7 +347,7 @@ bool
 contains_tbox_tnumber(const TBox *box, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box))
+  if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
   return boxop_tnumber_tbox(temp, box, &contains_tbox_tbox, INVERT);
 }
@@ -378,7 +364,7 @@ bool
 contains_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box))
+  if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
   return boxop_tnumber_tbox(temp, box, &contains_tbox_tbox, INVERT_NO);
 }
@@ -394,7 +380,7 @@ bool
 contains_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
+  if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
   return boxop_tnumber_tnumber(temp1, temp2, &contains_tbox_tbox);
 }
@@ -413,7 +399,7 @@ bool
 contained_numspan_tnumber(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_valid_tnumber_numspan(temp, s))
     return NULL;
   return boxop_tnumber_numspan(temp, s, &contained_span_span, INVERT);
 }
@@ -430,7 +416,7 @@ bool
 contained_tnumber_numspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_valid_tnumber_numspan(temp, s))
     return NULL;
   return boxop_tnumber_numspan(temp, s, &contained_span_span, INVERT_NO);
 }
@@ -447,7 +433,7 @@ bool
 contained_tbox_tnumber(const TBox *box, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box))
+  if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
   return boxop_tnumber_tbox(temp, box, &contained_tbox_tbox, INVERT);
 }
@@ -464,7 +450,7 @@ bool
 contained_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box))
+  if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
   return boxop_tnumber_tbox(temp, box, &contained_tbox_tbox, INVERT_NO);
 }
@@ -480,7 +466,7 @@ bool
 contained_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
+  if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
   return boxop_tnumber_tnumber(temp1, temp2, &contained_tbox_tbox);
 }
@@ -499,7 +485,7 @@ bool
 overlaps_numspan_tnumber(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_valid_tnumber_numspan(temp, s))
     return NULL;
   return boxop_tnumber_numspan(temp, s, &overlaps_span_span, INVERT);
 }
@@ -516,7 +502,7 @@ bool
 overlaps_tnumber_numspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_valid_tnumber_numspan(temp, s))
     return NULL;
   return boxop_tnumber_numspan(temp, s, &overlaps_span_span, INVERT_NO);
 }
@@ -533,7 +519,7 @@ bool
 overlaps_tbox_tnumber(const TBox *box, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box))
+  if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
   return boxop_tnumber_tbox(temp, box, &overlaps_tbox_tbox, INVERT);
 }
@@ -550,7 +536,7 @@ bool
 overlaps_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box))
+  if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
   return boxop_tnumber_tbox(temp, box, &overlaps_tbox_tbox, INVERT_NO);
 }
@@ -565,7 +551,7 @@ bool
 overlaps_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
+  if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
   return boxop_tnumber_tnumber(temp1, temp2, &overlaps_tbox_tbox);
 }
@@ -584,7 +570,7 @@ bool
 same_numspan_tnumber(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_valid_tnumber_numspan(temp, s))
     return NULL;
   return boxop_tnumber_numspan(temp, s, &span_eq, INVERT);
 }
@@ -601,7 +587,7 @@ bool
 same_tnumber_numspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_valid_tnumber_numspan(temp, s))
     return NULL;
   return boxop_tnumber_numspan(temp, s, &span_eq, INVERT_NO);
 }
@@ -618,7 +604,7 @@ bool
 same_tbox_tnumber(const TBox *box, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box))
+  if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
   return boxop_tnumber_tbox(temp, box, &same_tbox_tbox, INVERT);
 }
@@ -635,7 +621,7 @@ bool
 same_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box))
+  if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
   return boxop_tnumber_tbox(temp, box, &same_tbox_tbox, INVERT_NO);
 }
@@ -650,7 +636,7 @@ bool
 same_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
+  if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
   return boxop_tnumber_tnumber(temp1, temp2, &same_tbox_tbox);
 }
@@ -669,7 +655,7 @@ bool
 adjacent_numspan_tnumber(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_valid_tnumber_numspan(temp, s))
     return NULL;
   return boxop_tnumber_numspan(temp, s, &adjacent_span_span, INVERT);
 }
@@ -686,7 +672,7 @@ bool
 adjacent_tnumber_numspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
+  if (! ensure_valid_tnumber_numspan(temp, s))
     return NULL;
   return boxop_tnumber_numspan(temp, s, &adjacent_span_span, INVERT_NO);
 }
@@ -703,7 +689,7 @@ bool
 adjacent_tbox_tnumber(const TBox *box, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box))
+  if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
   return boxop_tnumber_tbox(temp, box, &adjacent_tbox_tbox, INVERT);
 }
@@ -720,7 +706,7 @@ bool
 adjacent_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) box))
+  if (! ensure_valid_tnumber_tbox(temp, box))
     return NULL;
   return boxop_tnumber_tbox(temp, box, &adjacent_tbox_tbox, INVERT_NO);
 }
@@ -736,7 +722,7 @@ bool
 adjacent_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2))
+  if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
   return boxop_tnumber_tnumber(temp1, temp2, &adjacent_tbox_tbox);
 }

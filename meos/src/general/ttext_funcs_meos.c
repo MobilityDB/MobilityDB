@@ -52,9 +52,7 @@ Temporal *
 textcat_text_ttext(const text *txt, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_temporal_isof_type(temp, T_TTEXT))
-    return NULL;
+  VALIDATE_TTEXT(temp, NULL); VALIDATE_NOT_NULL(txt, NULL); 
   return textfunc_ttext_text(temp, PointerGetDatum(txt), &datum_textcat,
     INVERT);
 }
@@ -70,9 +68,7 @@ Temporal *
 textcat_ttext_text(const Temporal *temp, const text *txt)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) txt) ||
-      ! ensure_temporal_isof_type(temp, T_TTEXT))
-    return NULL;
+  VALIDATE_TTEXT(temp, NULL); VALIDATE_NOT_NULL(txt, NULL); 
   return textfunc_ttext_text(temp, PointerGetDatum(txt), &datum_textcat,
     INVERT_NO);
 }
@@ -87,10 +83,7 @@ Temporal *
 textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_temporal_isof_type(temp1, T_TTEXT) ||
-      ! ensure_same_temporal_type(temp1, temp2))
-    return NULL;
+  VALIDATE_TTEXT(temp1, NULL); VALIDATE_TTEXT(temp2, NULL); 
   return textfunc_ttext_ttext(temp1, temp2, &datum_textcat);
 }
 
@@ -106,9 +99,7 @@ Temporal *
 ttext_lower(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TTEXT))
-    return NULL;
+  VALIDATE_TTEXT(temp, NULL);
   return textfunc_ttext(temp, &datum_lower);
 }
 
@@ -122,9 +113,7 @@ Temporal *
 ttext_upper(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TTEXT))
-    return NULL;
+  VALIDATE_TTEXT(temp, NULL);
   return textfunc_ttext(temp, &datum_upper);
 }
 
@@ -138,9 +127,7 @@ Temporal *
 ttext_initcap(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TTEXT))
-    return NULL;
+  VALIDATE_TTEXT(temp, NULL);
   return textfunc_ttext(temp, &datum_initcap);
 }
 

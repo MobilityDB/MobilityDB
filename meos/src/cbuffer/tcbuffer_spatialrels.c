@@ -71,13 +71,7 @@ spatialrel_tcbuffer_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum param, varfunc func, int numparam, bool invert)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs))
-    return -1;
-#else
-  assert(temp); assert(gs);
-#endif /* MEOS */
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
 
   assert(numparam == 2 || numparam == 3);
@@ -116,8 +110,7 @@ spatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
   Datum param, varfunc func, int numparam, bool invert)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
-      ! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1;
 
   assert(numparam == 2 || numparam == 3);
@@ -161,8 +154,7 @@ ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
   bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
   GSERIALIZED *trav = tcbuffer_traversed_area(temp);
   bool result = ever ? geom_relate_pattern(gs, trav, "T********") :
@@ -225,8 +217,7 @@ ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
   int result = ever ?
     spatialrel_tcbuffer_trav_geo(temp, gs, (Datum) NULL,
@@ -275,8 +266,7 @@ int
 edisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
-      ! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1;
   datum_func2 func = &datum_geom_covers;
   int result = spatialrel_tcbuffer_cbuffer(temp, cbuf, (Datum) NULL,
@@ -442,8 +432,7 @@ int
 etouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
 
   /* There is no need to do a bounding box test since this is done in
@@ -481,8 +470,7 @@ int
 atouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
 
   /* There is no need to do a bounding box test since this is done in
@@ -514,8 +502,7 @@ int
 etouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
-      ! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1;
 
   /* There is no need to do a bounding box test since this is done in
@@ -553,8 +540,7 @@ int
 atouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
-      ! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
     return -1;
 
   /* There is no need to do a bounding box test since this is done in
@@ -591,8 +577,7 @@ int
 edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
   return spatialrel_tcbuffer_trav_geo(temp, gs, Float8GetDatum(dist),
@@ -612,8 +597,7 @@ int
 adwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
@@ -641,8 +625,7 @@ edwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
   double dist)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
-      ! ensure_valid_tcbuffer_cbuffer(temp, cbuf) ||
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
   return spatialrel_tcbuffer_cbuffer(temp, cbuf, Float8GetDatum(dist),
@@ -663,8 +646,7 @@ adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf,
   double dist)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) cbuf) ||
-      ! ensure_valid_tcbuffer_cbuffer(temp, cbuf) ||
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
@@ -857,6 +839,7 @@ int
 ea_dwithin_tcbuffer_tcbuffer_sync(const Temporal *sync1, const Temporal *sync2,
   double dist, bool ever)
 {
+  assert(sync1); assert(sync2);
   assert(temptype_subtype(sync1->subtype));
   switch (sync1->subtype)
   {
@@ -891,8 +874,7 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double dist, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_valid_tcbuffer_tcbuffer(temp1, temp2) ||
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
@@ -900,7 +882,7 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   /* Return NULL if the temporal circular buffers do not intersect in time
    * The operation is synchronization without adding crossings */
   if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
-    &sync1, &sync2))
+      &sync1, &sync2))
     return -1;
 
   bool result = ea_dwithin_tcbuffer_tcbuffer_sync(sync1, sync2, dist, ever);

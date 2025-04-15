@@ -288,7 +288,7 @@ static bool
 temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, meosType temptype,
   int precision)
 {
-  assert(alphanum_basetype(temptype));
+  assert(alphanum_temptype(temptype));
   switch (temptype)
   {
     case T_TBOOL:
@@ -776,8 +776,7 @@ temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags,
   int precision, const char *srs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp))
-    return NULL;
+  VALIDATE_NOT_NULL(temp, NULL);
 
   /* Get bounding box if needed */
   bboxunion *box = NULL, tmp;
@@ -1135,7 +1134,7 @@ tsequence_to_wkb_size(const TSequence *seq, uint8_t variant)
     result += MEOS_WKB_INT4_SIZE;
   /* Include the number of instants and the period bounds flag */
   result += MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE;
-  const TInstant **instants = tsequence_instants_p(seq);
+  const TInstant **instants = tsequence_insts_p(seq);
   /* Include the TInstant array */
   result += tinstarr_to_wkb_size(instants, seq->count, variant);
   pfree(instants);
@@ -1160,7 +1159,7 @@ tsequenceset_to_wkb_size(const TSequenceSet *ss, uint8_t variant)
   /* For each sequence include the number of instants and the period bounds flag */
   result += ss->count * (MEOS_WKB_INT4_SIZE + MEOS_WKB_BYTE_SIZE);
   /* Include all the instants of all the sequences */
-  const TInstant **instants = tsequenceset_insts(ss);
+  const TInstant **instants = tsequenceset_insts_p(ss);
   result += tinstarr_to_wkb_size(instants, ss->totalcount, variant);
   pfree(instants);
   return result;
@@ -2337,8 +2336,7 @@ uint8_t *
 set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
-    return NULL;
+  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return datum_as_wkb(PointerGetDatum(s), s->settype, variant, size_out);
 }
 
@@ -2356,8 +2354,7 @@ char *
 set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
-    return NULL;
+  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return (char *) datum_as_wkb(PointerGetDatum(s), s->settype,
     variant | (uint8_t) WKB_HEX, size_out);
 }
@@ -2377,8 +2374,7 @@ uint8_t *
 span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
-    return NULL;
+  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return datum_as_wkb(PointerGetDatum(s), s->spantype, variant, size_out);
 }
 
@@ -2396,8 +2392,7 @@ char *
 span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) size_out))
-    return NULL;
+  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return (char *) datum_as_wkb(PointerGetDatum(s), s->spantype,
     variant | (uint8_t) WKB_HEX, size_out);
 }
@@ -2416,8 +2411,7 @@ uint8_t *
 spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) size_out))
-    return NULL;
+  VALIDATE_NOT_NULL(ss, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return datum_as_wkb(PointerGetDatum(ss), ss->spansettype, variant, size_out);
 }
 
@@ -2435,8 +2429,7 @@ char *
 spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) size_out))
-    return NULL;
+  VALIDATE_NOT_NULL(ss, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return (char *) datum_as_wkb(PointerGetDatum(ss), ss->spansettype,
     variant | (uint8_t) WKB_HEX, size_out);
 }
@@ -2458,8 +2451,7 @@ uint8_t *
 tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
-    return NULL;
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return datum_as_wkb(PointerGetDatum(box), T_TBOX, variant,
     size_out);
 }
@@ -2478,8 +2470,7 @@ char *
 tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
-    return NULL;
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return (char *) datum_as_wkb(PointerGetDatum(box), T_TBOX,
     variant | (uint8_t) WKB_HEX, size_out);
 }
@@ -2501,8 +2492,7 @@ uint8_t *
 temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) size_out))
-    return NULL;
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return datum_as_wkb(PointerGetDatum(temp), temp->temptype, variant,
     size_out);
 }
@@ -2521,8 +2511,7 @@ char *
 temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) size_out))
-    return NULL;
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return (char *) datum_as_wkb(PointerGetDatum(temp), temp->temptype,
     variant | (uint8_t) WKB_HEX, size_out);
 }

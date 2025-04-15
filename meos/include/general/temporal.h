@@ -371,10 +371,13 @@ extern bool ensure_temporal_isof_subtype(const Temporal *temp,
 extern bool ensure_same_temporal_type(const Temporal *temp1,
   const Temporal *temp2);
 
-extern bool ensure_valid_tnumber_span(const Temporal *temp, const Span *s);
-extern bool ensure_valid_tnumber_spanset(const Temporal *temp,
+extern bool ensure_valid_tnumber_numspan(const Temporal *temp, const Span *s);
+extern bool ensure_valid_tnumber_numspanset(const Temporal *temp,
   const SpanSet *ss);
 extern bool ensure_valid_tnumber_tbox(const Temporal *temp, const TBox *box);
+extern bool ensure_valid_temporal_set(const Temporal *temp, const Set *s);
+extern bool ensure_valid_temporal_temporal(const Temporal *temp1, const Temporal *temp2);
+extern bool ensure_valid_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
 extern bool ensure_not_negative(int i);
 extern bool ensure_positive(int i);
 extern bool ensure_less_equal(int i, int j);

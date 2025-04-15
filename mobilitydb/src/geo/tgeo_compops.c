@@ -289,7 +289,7 @@ Always_ne_tgeo_tgeo(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the temporal comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -308,7 +308,7 @@ Tcomp_geo_tgeo(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the temporal comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -327,7 +327,7 @@ Tcomp_tgeo_geo(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the temporal comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -351,7 +351,8 @@ PGDLLEXPORT Datum Teq_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_comp_temp
- * @brief Return true if a temporal geo is ever equal to a geometry/geography
+ * @brief Return a temporal Boolean that states whether a temporal geo is equal
+ * to a geometry/geography
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
@@ -365,7 +366,8 @@ PGDLLEXPORT Datum Tne_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_comp_temp
- * @brief Return true if a temporal geo is ever different from a
+ * @brief Return a temporal Boolean that states whether a temporal geo is
+ * different from a geometry/geography
  * geometry/geography
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
@@ -382,7 +384,8 @@ PGDLLEXPORT Datum Teq_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_comp_temp
- * @brief Return true if a temporal geo is ever equal to a geometry/geography
+ * @brief Return a temporal Boolean that states whether a temporal geo is
+ * equal to a geometry/geography
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
@@ -396,8 +399,8 @@ PGDLLEXPORT Datum Tne_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_comp_temp
- * @brief Return true if a temporal geo is ever different from a
- * geometry/geography
+ * @brief Return a temporal Boolean that states whether a temporal geo is
+ * different from a geometry/geography
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
@@ -413,7 +416,8 @@ PGDLLEXPORT Datum Teq_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_comp_temp
- * @brief Return true if two temporal geos are ever equal
+ * @brief Return a temporal Boolean that states whether two temporal geos are
+ * equal
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
@@ -427,7 +431,8 @@ PGDLLEXPORT Datum Tne_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_comp_temp
- * @brief Return true if two temporal geos are ever different
+ * @brief Return a temporal Boolean that states whether two temporal geos are
+ * different
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */

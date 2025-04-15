@@ -233,8 +233,8 @@ DateADT
 date_get_bin(DateADT d, const Interval *duration, DateADT origin)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) duration) ||
-      ! ensure_valid_day_duration(duration))
+  VALIDATE_NOT_NULL(duration, DATEVAL_NOEND);
+  if (! ensure_valid_day_duration(duration))
     return DATEVAL_NOEND;
 
   if (DATE_NOT_FINITE(d))
@@ -309,8 +309,8 @@ timestamptz_get_bin(TimestampTz t, const Interval *duration,
   TimestampTz origin)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) duration) ||
-      ! ensure_valid_duration(duration))
+  VALIDATE_NOT_NULL(duration, DT_NOEND);
+  if (! ensure_valid_duration(duration))
     return DT_NOEND;
   int64 size = interval_units(duration);
   return timestamptz_get_bin_int(t, size, origin);
@@ -516,9 +516,9 @@ spanset_time_bin_init(const SpanSet *ss, const Interval *duration,
   Datum torigin, int *nbins)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) nbins) ||
-      ! ensure_not_null((void *) duration) ||
-      (ss->basetype != T_DATE && ! ensure_valid_duration(duration)) ||
+  VALIDATE_NOT_NULL(ss, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  VALIDATE_NOT_NULL(nbins, NULL);
+  if ((ss->basetype != T_DATE && ! ensure_valid_duration(duration)) ||
       (ss->basetype == T_DATE && ! ensure_valid_day_duration(duration)))
     return NULL;
 
@@ -553,8 +553,8 @@ spanset_value_bin_init(const SpanSet *ss, Datum vsize, Datum vorigin,
   int *nbins)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) nbins) ||
-      ! ensure_positive_datum(vsize, ss->basetype))
+  VALIDATE_NOT_NULL(ss, NULL); VALIDATE_NOT_NULL(nbins, NULL);
+  if (! ensure_positive_datum(vsize, ss->basetype))
     return NULL;
 
   /* Create function state */
@@ -579,9 +579,9 @@ temporal_time_bin_init(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, int *nbins)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) nbins) ||
-      ! ensure_not_null((void *) duration) ||
-      ! ensure_valid_duration(duration))
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  VALIDATE_NOT_NULL(nbins, NULL);
+  if (! ensure_valid_duration(duration))
     return NULL;
 
   /* Set bounding box */
@@ -608,9 +608,8 @@ tnumber_value_bin_init(const Temporal *temp, Datum vsize, Datum vorigin,
   int *nbins)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) nbins) ||
-      ! ensure_tnumber_type(temp->temptype) ||
-      ! ensure_positive_datum(vsize, temptype_basetype(temp->temptype)))
+  VALIDATE_TNUMBER(temp, NULL); VALIDATE_NOT_NULL(nbins, NULL);
+  if (! ensure_positive_datum(vsize, temptype_basetype(temp->temptype)))
     return NULL;
 
   /* Set bounding box */
@@ -1077,8 +1076,8 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin, int *ntiles)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ntiles) ||
-      ! ensure_positive_datum(vsize, temptype_basetype(temp->temptype)) ||
+  VALIDATE_TNUMBER(temp, NULL); VALIDATE_NOT_NULL(ntiles, NULL);
+  if (! ensure_positive_datum(vsize, temptype_basetype(temp->temptype)) ||
       (duration && ! ensure_valid_duration(duration)))
     return NULL;
 
@@ -1097,7 +1096,7 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
  * a value and possibly a time grid
  * @param[in] temp Temporal number
  * @param[in] vsize Size of the value dimension
- * @param[in] duration Size of the time dimension as an interval
+ * @param[in] duration Size of the time dimension as an interval, may be `NULL`
  * @param[in] vorigin Origin for the value dimension
  * @param[in] torigin Origin for the time dimension
  * @param[out] count Number of elements in the output array
@@ -1109,7 +1108,7 @@ TBox *
 tnumber_value_time_boxes(const Temporal *temp, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin, int *count)
 {
-  assert(temp);
+  VALIDATE_TNUMBER(temp, NULL); 
 
   /* Initialize state */
   int ntiles;
@@ -1154,5 +1153,33 @@ tnumber_value_time_boxes(const Temporal *temp, Datum vsize,
   *count = i;
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the temporal boxes of a temporal number split with respect to
+ * a value and possibly a time grid
+ */
+TBox *
+tint_value_time_boxes(const Temporal *temp, int vsize,
+  const Interval *duration, int vorigin, TimestampTz torigin, int *count)
+{
+  return tnumber_value_time_boxes(temp, Int32GetDatum(vsize), duration,
+    Int32GetDatum(vorigin), torigin, count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the temporal boxes of a temporal number split with respect to
+ * a value and possibly a time grid
+ */
+TBox *
+tfloat_value_time_boxes(const Temporal *temp, double vsize,
+  const Interval *duration, double vorigin, TimestampTz torigin, int *count)
+{
+  return tnumber_value_time_boxes(temp, Float8GetDatum(vsize), duration,
+    Float8GetDatum(vorigin), torigin, count);
+}
+#endif /* MEOS */
 
 /*****************************************************************************/

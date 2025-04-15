@@ -52,7 +52,7 @@
  *****************************************************************************/
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the ever/always comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -71,7 +71,7 @@ EAcomp_pose_tpose(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the ever/always comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -90,7 +90,7 @@ EAcomp_tpose_pose(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the ever/always comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -293,7 +293,7 @@ Always_ne_tpose_tpose(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the temporal comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -312,7 +312,7 @@ Tcomp_pose_tpose(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the temporal comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -331,7 +331,7 @@ Tcomp_tpose_pose(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the temporal comparison operators
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
@@ -355,6 +355,8 @@ PGDLLEXPORT Datum Teq_pose_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_pose_tpose);
 /**
  * @ingroup mobilitydb_pose_comp_temp
+ * @brief Return a temporal Boolean that states whether a pose is equal to a
+ * temporal pose
  * @brief Return true if a temporal pose is ever equal to a pose
  * @sqlfn temporal_teq()
  * @sqlop @p #=
@@ -369,8 +371,8 @@ PGDLLEXPORT Datum Tne_pose_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_pose_tpose);
 /**
  * @ingroup mobilitydb_pose_comp_temp
- * @brief Return true if a temporal pose is ever different from a
- * pose
+ * @brief Return a temporal Boolean that states whether a pose is different
+ * from a temporal pose
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
@@ -386,7 +388,8 @@ PGDLLEXPORT Datum Teq_tpose_pose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_tpose_pose);
 /**
  * @ingroup mobilitydb_pose_comp_temp
- * @brief Return true if a temporal pose is ever equal to a pose
+ * @brief Return a temporal Boolean that states whether a temporal pose is
+ * equal to a pose
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
@@ -400,8 +403,8 @@ PGDLLEXPORT Datum Tne_tpose_pose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_tpose_pose);
 /**
  * @ingroup mobilitydb_pose_comp_temp
- * @brief Return true if a temporal pose is ever different from a
- * pose
+ * @brief Return a temporal Boolean that states whether a temporal pose is
+ * different from a pose
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */
@@ -417,7 +420,8 @@ PGDLLEXPORT Datum Teq_tpose_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Teq_tpose_tpose);
 /**
  * @ingroup mobilitydb_pose_comp_temp
- * @brief Return true if two temporal poses are ever equal
+ * @brief Return a temporal Boolean that states whether two temporal poses
+ * are equal
  * @sqlfn temporal_teq()
  * @sqlop @p #=
  */
@@ -431,7 +435,8 @@ PGDLLEXPORT Datum Tne_tpose_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tne_tpose_tpose);
 /**
  * @ingroup mobilitydb_pose_comp_temp
- * @brief Return true if two temporal poses are ever different
+ * @brief Return a temporal Boolean that states whether two temporal poses
+ * are different
  * @sqlfn temporal_tne()
  * @sqlop @p #<>
  */

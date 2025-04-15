@@ -55,9 +55,7 @@ Temporal *
 add_int_tint(int i, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return NULL;
+  VALIDATE_TINT(temp, NULL);
   return arithop_tnumber_number(temp, Int32GetDatum(i), ADD, &datum_add,
     INVERT);
 }
@@ -73,9 +71,7 @@ Temporal *
 add_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
+  VALIDATE_TFLOAT(temp, NULL);
   return arithop_tnumber_number(temp, Float8GetDatum(d), ADD, &datum_add,
     INVERT);
 }
@@ -91,9 +87,7 @@ Temporal *
 add_tint_int(const Temporal *temp, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return NULL;
+  VALIDATE_TINT(temp, NULL);
   return arithop_tnumber_number(temp, Int32GetDatum(i), ADD, &datum_add,
     INVERT_NO);
 }
@@ -109,9 +103,7 @@ Temporal *
 add_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
+  VALIDATE_TFLOAT(temp, NULL);
   return arithop_tnumber_number(temp, Float8GetDatum(d), ADD, &datum_add,
     INVERT_NO);
 }
@@ -126,9 +118,7 @@ Temporal *
 add_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_tnumber_type(temp1->temptype) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return NULL;
   return arithop_tnumber_tnumber(temp1, temp2, ADD, &datum_add, NULL);
 }
@@ -148,9 +138,7 @@ Temporal *
 sub_int_tint(int i, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return NULL;
+  VALIDATE_TINT(temp, NULL);
   return arithop_tnumber_number(temp, Int32GetDatum(i), SUB, &datum_sub,
     INVERT);
 }
@@ -166,9 +154,7 @@ Temporal *
 sub_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
+  VALIDATE_TFLOAT(temp, NULL);
   return arithop_tnumber_number(temp, Float8GetDatum(d), SUB, &datum_sub,
     INVERT);
 }
@@ -184,9 +170,7 @@ Temporal *
 sub_tint_int(const Temporal *temp, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return NULL;
+  VALIDATE_TINT(temp, NULL);
   return arithop_tnumber_number(temp, Int32GetDatum(i), SUB, &datum_sub,
     INVERT_NO);
 }
@@ -202,9 +186,7 @@ Temporal *
 sub_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
+  VALIDATE_TFLOAT(temp, NULL);
   return arithop_tnumber_number(temp, Float8GetDatum(d), SUB, &datum_sub,
     INVERT_NO);
 }
@@ -219,9 +201,7 @@ Temporal *
 sub_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_tnumber_type(temp1->temptype) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
   return arithop_tnumber_tnumber(temp1, temp2, SUB, &datum_sub, NULL);
 }
@@ -242,9 +222,7 @@ Temporal *
 mult_int_tint(int i, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return NULL;
+  VALIDATE_TINT(temp, NULL);
   return arithop_tnumber_number(temp, Int32GetDatum(i), MULT, &datum_mult,
     INVERT);
 }
@@ -260,9 +238,7 @@ Temporal *
 mult_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
+  VALIDATE_TFLOAT(temp, NULL);
   return arithop_tnumber_number(temp, Float8GetDatum(d), MULT, &datum_mult,
     INVERT);
 }
@@ -279,9 +255,7 @@ Temporal *
 mult_tint_int(const Temporal *temp, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return NULL;
+  VALIDATE_TINT(temp, NULL);
   return arithop_tnumber_number(temp, Int32GetDatum(i), MULT, &datum_mult,
     INVERT_NO);
 }
@@ -297,9 +271,7 @@ Temporal *
 mult_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
+  VALIDATE_TFLOAT(temp, NULL);
   return arithop_tnumber_number(temp, Float8GetDatum(d), MULT, &datum_mult,
     INVERT_NO);
 }
@@ -314,9 +286,7 @@ Temporal *
 mult_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_tnumber_type(temp1->temptype) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
   return arithop_tnumber_tnumber(temp1, temp2, MULT, &datum_mult,
     &tnumber_mult_tp_at_timestamptz);
@@ -337,9 +307,7 @@ Temporal *
 div_int_tint(int i, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return NULL;
+  VALIDATE_TINT(temp, NULL);
   return arithop_tnumber_number(temp, Int32GetDatum(i), DIV, &datum_div,
     INVERT);
 }
@@ -355,9 +323,7 @@ Temporal *
 div_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
+  VALIDATE_TFLOAT(temp, NULL);
   return arithop_tnumber_number(temp, Float8GetDatum(d), DIV, &datum_div,
     INVERT);
 }
@@ -372,9 +338,7 @@ Temporal *
 div_tint_int(const Temporal *temp, int i)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TINT))
-    return NULL;
+  VALIDATE_TINT(temp, NULL);
   return arithop_tnumber_number(temp, Int32GetDatum(i), DIV, &datum_div,
     INVERT_NO);
 }
@@ -390,9 +354,7 @@ Temporal *
 div_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT))
-    return NULL;
+  VALIDATE_TFLOAT(temp, NULL);
   return arithop_tnumber_number(temp, Float8GetDatum(d), DIV, &datum_div,
     INVERT_NO);
 }
@@ -407,9 +369,7 @@ Temporal *
 div_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_tnumber_type(temp1->temptype) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_tnumber_tnumber(temp1, temp2))
     return NULL;
   return arithop_tnumber_tnumber(temp1, temp2, DIV, &datum_div,
     &tnumber_div_tp_at_timestamptz);

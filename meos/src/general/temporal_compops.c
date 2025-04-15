@@ -488,13 +488,8 @@ int
 ever_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   return eacomp_temporal_temporal(temp1, temp2, &datum2_eq, EVER);
 }
 
@@ -508,13 +503,8 @@ int
 ever_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   return eacomp_temporal_temporal(temp1, temp2, &datum2_ne, EVER);
 }
 
@@ -529,13 +519,8 @@ int
 ever_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   return eacomp_temporal_temporal(temp1, temp2, &datum2_lt, EVER);
 }
 
@@ -550,13 +535,8 @@ int
 ever_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   return eacomp_temporal_temporal(temp1, temp2, &datum2_le, EVER);
 }
 
@@ -571,13 +551,8 @@ int
 ever_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   return eacomp_temporal_temporal(temp1, temp2, &datum2_gt, EVER);
 }
 
@@ -592,13 +567,8 @@ int
 ever_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   return eacomp_temporal_temporal(temp1, temp2, &datum2_ge, EVER);
 }
 
@@ -614,13 +584,8 @@ int
 always_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   return eacomp_temporal_temporal(temp1, temp2, &datum2_eq, ALWAYS);
 }
 
@@ -634,13 +599,8 @@ int
 always_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   return eacomp_temporal_temporal(temp1, temp2, &datum2_ne, ALWAYS);
 }
 
@@ -655,13 +615,8 @@ int
 always_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   return eacomp_temporal_temporal(temp1, temp2, &datum2_lt, ALWAYS);
 }
 
@@ -676,13 +631,8 @@ int
 always_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   return eacomp_temporal_temporal(temp1, temp2, &datum2_le, ALWAYS);
 }
 
@@ -697,13 +647,8 @@ int
 always_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   return eacomp_temporal_temporal(temp1, temp2, &datum2_gt, ALWAYS);
 }
 
@@ -718,13 +663,8 @@ int
 always_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   return eacomp_temporal_temporal(temp1, temp2, &datum2_ge, ALWAYS);
 }
 
@@ -836,13 +776,8 @@ Temporal *
 teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return NULL;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   if (tspatial_type(temp1->temptype) && (
         ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
         ! ensure_same_dimensionality(temp1->flags, temp2->flags)))
@@ -864,13 +799,8 @@ Temporal *
 tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
     return NULL;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
   if (tspatial_type(temp1->temptype) && (
         ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
         ! ensure_same_dimensionality(temp1->flags, temp2->flags)))

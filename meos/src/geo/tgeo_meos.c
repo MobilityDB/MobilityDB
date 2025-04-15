@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for temporal geos
+ * @brief Functions for temporal geometries/geographies
  */
 
 #include "geo/tgeo_aggfuncs.h"
@@ -64,7 +64,7 @@ TInstant *
 tgeompointinst_in(const char *str)
 {
   assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
+  /* Call the superclass function */
   Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
   assert(temp->subtype == TINSTANT);
   return (TInstant *) temp;
@@ -80,7 +80,7 @@ TInstant *
 tgeogpointinst_in(const char *str)
 {
   assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
+  /* Call the superclass function */
   Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
   assert(temp->subtype == TINSTANT);
   return (TInstant *) temp;
@@ -96,7 +96,7 @@ TInstant *
 tgeometryinst_in(const char *str)
 {
   assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
+  /* Call the superclass function */
   Temporal *temp = tspatial_parse(&str, T_TGEOMETRY);
   assert(temp->subtype == TINSTANT);
   return (TInstant *) temp;
@@ -112,7 +112,7 @@ TInstant *
 tgeographyinst_in(const char *str)
 {
   assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
+  /* Call the superclass function */
   Temporal *temp = tspatial_parse(&str, T_TGEOGRAPHY);
   assert(temp->subtype == TINSTANT);
   return (TInstant *) temp;
@@ -131,7 +131,7 @@ TSequence *
 tgeompointseq_in(const char *str, interpType interp __attribute__((unused)))
 {
   assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
+  /* Call the superclass function */
   Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
   if (! temp)
     return NULL;
@@ -150,7 +150,7 @@ TSequence *
 tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
 {
   assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
+  /* Call the superclass function */
   Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
   if (! temp)
     return NULL;
@@ -169,7 +169,7 @@ TSequence *
 tgeometryseq_in(const char *str, interpType interp __attribute__((unused)))
 {
   assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
+  /* Call the superclass function */
   Temporal *temp = tspatial_parse(&str, T_TGEOMETRY);
   if (! temp)
     return NULL;
@@ -188,7 +188,7 @@ TSequence *
 tgeographyseq_in(const char *str, interpType interp __attribute__((unused)))
 {
   assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
+  /* Call the superclass function */
   Temporal *temp = tspatial_parse(&str, T_TGEOGRAPHY);
   if (! temp)
     return NULL;
@@ -208,7 +208,7 @@ TSequenceSet *
 tgeompointseqset_in(const char *str)
 {
   assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
+  /* Call the superclass function */
   Temporal *temp = tpoint_parse(&str, T_TGEOMPOINT);
   assert(temp->subtype == TSEQUENCESET);
   return (TSequenceSet *) temp;
@@ -224,7 +224,7 @@ TSequenceSet *
 tgeogpointseqset_in(const char *str)
 {
   assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
+  /* Call the superclass function */
   Temporal *temp = tpoint_parse(&str, T_TGEOGPOINT);
   assert(temp->subtype == TSEQUENCESET);
   return (TSequenceSet *) temp;
@@ -240,7 +240,7 @@ TSequenceSet *
 tgeometryseqset_in(const char *str)
 {
   assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
+  /* Call the superclass function */
   Temporal *temp = tspatial_parse(&str, T_TGEOMETRY);
   assert(temp->subtype == TSEQUENCESET);
   return (TSequenceSet *) temp;
@@ -256,7 +256,7 @@ TSequenceSet *
 tgeographyseqset_in(const char *str)
 {
   assert(str);
-  /* Call the superclass function to read the SRID at the beginning (if any) */
+  /* Call the superclass function */
   Temporal *temp = tpoint_parse(&str, T_TGEOGRAPHY);
   assert(temp->subtype == TSEQUENCESET);
   return (TSequenceSet *) temp;
@@ -509,8 +509,8 @@ char *
 tgeo_out(const Temporal *temp, int maxdd)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || 
-      ! ensure_tgeo_type_all(temp->temptype) || ! ensure_positive(maxdd))
+  VALIDATE_TGEO(temp, NULL);
+  if (! ensure_positive(maxdd))
     return NULL;
   return temporal_out(temp, maxdd);
 }
@@ -530,9 +530,8 @@ TSequence *
 tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
-      ! ensure_not_empty(gs) || ! ensure_point_type(gs) || 
-      ! ensure_set_isof_type(s, T_TSTZSET))
+ VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSET(s, NULL);
+  if (! ensure_not_empty(gs) || ! ensure_point_type(gs))
     return NULL;
   meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;
@@ -550,8 +549,8 @@ TSequence *
 tgeoseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
-      ! ensure_not_empty(gs) || ! ensure_set_isof_type(s, T_TSTZSET))
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSET(s, NULL);
+  if (! ensure_not_empty(gs))
     return NULL;
   meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGRAPHY : T_TGEOMETRY;
@@ -572,8 +571,8 @@ tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
   interpType interp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
-      gserialized_is_empty(gs) || ! ensure_span_isof_type(s, T_TSTZSPAN))
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  if (gserialized_is_empty(gs))
     return NULL;
   meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;
@@ -594,8 +593,8 @@ tgeoseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s,
   interpType interp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
-      gserialized_is_empty(gs) || ! ensure_span_isof_type(s, T_TSTZSPAN))
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  if (gserialized_is_empty(gs))
     return NULL;
   meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGRAPHY : T_TGEOMETRY;
@@ -618,9 +617,8 @@ tpointseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
   interpType interp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) ss) ||
-      ! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
+  if (! ensure_not_empty(gs) || ! ensure_point_type(gs))
     return NULL;
   meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGPOINT : T_TGEOMPOINT;
@@ -641,9 +639,8 @@ tgeoseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
   interpType interp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) ss) ||
-      ! ensure_not_empty(gs) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
+  if (! ensure_not_empty(gs))
     return NULL;
   meosType temptype = FLAGS_GET_GEODETIC(gs->gflags) ?
     T_TGEOGRAPHY : T_TGEOMETRY;
@@ -667,9 +664,7 @@ tgeo_from_base_temp_int(const GSERIALIZED *gs, const Temporal *temp,
   bool ispoint)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type_all(temp->temptype))
-    return NULL;
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs))
     return NULL;
   meosType tgeotype;
@@ -721,9 +716,7 @@ GSERIALIZED *
 tgeo_start_value(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_tgeo_type_all(temp->temptype))
-    return NULL;
+  VALIDATE_TGEO(temp, NULL);
   return DatumGetGserializedP(temporal_start_value(temp));
 }
 
@@ -738,9 +731,7 @@ GSERIALIZED *
 tgeo_end_value(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_tgeo_type_all(temp->temptype))
-    return NULL;
+  VALIDATE_TGEO(temp, NULL);
   return DatumGetGserializedP(temporal_end_value(temp));
 }
 
@@ -756,10 +747,7 @@ bool
 tgeo_value_n(const Temporal *temp, int n, GSERIALIZED **result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) result) ||
-      ! ensure_tgeo_type_all(temp->temptype))
-    return false;
-
+  VALIDATE_TGEO(temp, false); VALIDATE_NOT_NULL(result, false);
   Datum dresult;
   if (! temporal_value_n(temp, n, &dresult))
     return false;
@@ -778,10 +766,7 @@ GSERIALIZED **
 tgeo_values(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_tgeo_type_all(temp->temptype))
-    return NULL;
-
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   Datum *datumarr = temporal_values_p(temp, count);
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * *count);
   for (int i = 0; i < *count; i++)

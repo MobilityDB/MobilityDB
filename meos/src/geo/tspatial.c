@@ -149,12 +149,7 @@ char *
 spatialset_out_fn(const Set *s, int maxdd, outfunc wkt_out, bool extended)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
-    return NULL;
-#else
-  assert(s); assert(spatialset_type(s->settype));
-#endif /* MEOS */
+  VALIDATE_SPATIALSET(s, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
   
@@ -198,16 +193,9 @@ spatialset_as_text(const Set *s, int maxdd)
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Spatialset_as_ewkt()
  */
-char *
+inline char *
 spatialset_as_ewkt(const Set *s, int maxdd)
 {
-  /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
-    return NULL;
-#else
-  assert(s); assert(spatialset_type(s->settype));
-#endif /* MEOS */
   /* The SRID will be output as prefix, the elements will output the SRID*/
   return spatialset_out_fn(s, maxdd, &spatialbase_as_text, true);
 }
@@ -267,13 +255,7 @@ char *
 tspatial_as_text(const Temporal *temp, int maxdd)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || 
-      ! ensure_tspatial_type(temp->temptype))
-    return NULL;
-#else
-  assert(temp); assert(tspatial_type(temp->temptype));
-#endif /* MEOS */
+  VALIDATE_TSPATIAL(temp, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
@@ -303,13 +285,7 @@ char *
 tspatial_as_ewkt(const Temporal *temp, int maxdd)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || 
-      ! ensure_tspatial_type(temp->temptype))
-    return NULL;
-#else
-  assert(temp); assert(tspatial_type(temp->temptype));
-#endif /* MEOS */
+  VALIDATE_TSPATIAL(temp, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
@@ -348,8 +324,8 @@ spatialarr_wkt_out(const Datum *spatialarr, meosType elemtype, int count,
   int maxdd, bool extended)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) spatialarr) || ! ensure_positive(count) ||
-      ! ensure_not_negative(maxdd))
+  VALIDATE_NOT_NULL(spatialarr, NULL);
+  if (! ensure_positive(count) || ! ensure_not_negative(maxdd))
     return NULL;
 
   char **result = palloc(sizeof(char *) * count);
@@ -414,7 +390,7 @@ spatialarr_as_ewkt(const Datum *spatialarr, meosType elemtype, int count,
 void
 spatialset_set_stbox(const Set *s, STBox *box)
 {
-  assert(s); assert(box); assert(spatialset_type(s->settype));
+  assert(s); assert(box);
   memset(box, 0, sizeof(STBox));
   memcpy(box, SET_BBOX_PTR(s), sizeof(STBox));
   return;
@@ -422,7 +398,7 @@ spatialset_set_stbox(const Set *s, STBox *box)
 
 /**
  * @ingroup meos_geo_set_box
- * @brief Return a temporal spatial set converted to a spatiotemporal box
+ * @brief Convert a temporal spatial set into a spatiotemporal box
  * @param[in] s Set
  * @csqlfn #Spatialset_to_stbox()
  */
@@ -430,12 +406,7 @@ STBox *
 spatialset_stbox(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_spatialset_type(s->settype))
-    return NULL;
-#else
-  assert(s); assert(spatialset_type(s->settype));
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(s, NULL);
   STBox *result = palloc(sizeof(STBox));
   spatialset_set_stbox(s, result);
   return result;
@@ -492,22 +463,15 @@ tspatial_set_stbox(const Temporal *temp, STBox *box)
 
 /**
  * @ingroup meos_geo_conversion
- * @brief Return a temporal spatial value converted to a spatiotemporal box
+ * @brief Convert a temporal spatial value into a spatiotemporal box
  * @param[in] temp Temporal spatial value
  * @csqlfn #Tspatial_to_stbox()
  */
 STBox *
 tspatial_stbox(const Temporal *temp)
 {
-#if MEOS
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_tspatial_type(temp->temptype))
-    return NULL;
-#else
-  assert(temp); assert(tspatial_type(temp->temptype));
-#endif /* MEOS */
-
+  VALIDATE_TSPATIAL(temp, NULL);
   STBox *result = palloc(sizeof(STBox));
   tspatial_set_stbox(temp, result);
   return result;
@@ -529,12 +493,7 @@ STBox *
 geo_expand_space(const GSERIALIZED *gs, double d)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) gs))
-    return NULL;
-#else
-  assert(gs);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(gs, NULL);
   if (gserialized_is_empty(gs))
     return NULL;
 
@@ -556,14 +515,7 @@ STBox *
 tspatial_expand_space(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || 
-      ! ensure_tspatial_type(temp->temptype))
-    return NULL;
-#else
-  assert(temp);
-#endif /* MEOS */
-
+  VALIDATE_TSPATIAL(temp, NULL);
   STBox box;
   tspatial_set_stbox(temp, &box);
   return stbox_expand_space(&box, d);

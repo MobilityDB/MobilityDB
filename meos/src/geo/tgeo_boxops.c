@@ -499,13 +499,7 @@ STBox *
 tgeo_stboxes(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_tgeo_type_all(temp->temptype))
-    return NULL;
-#else
-  assert(temp); assert(count); assert(tgeo_type_all(temp->temptype));
-#endif /* MEOS */
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -744,13 +738,7 @@ STBox *
 tgeo_split_n_stboxes(const Temporal *temp, int box_count, int *count)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_tgeo_type_all(temp->temptype))
-    return NULL;
-#else
-  assert(temp); assert(count); assert(tgeo_type_all(temp->temptype));
-#endif /* MEOS */
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   if (! ensure_positive(box_count))
     return NULL;
 
@@ -923,13 +911,7 @@ STBox *
 tgeo_split_each_n_stboxes(const Temporal *temp, int elems_per_box, int *count)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_tgeo_type_all(temp->temptype))
-    return NULL;
-#else
-  assert(temp); assert(count); assert(tgeo_type_all(temp->temptype));
-#endif /* MEOS */
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   if (! ensure_positive(elems_per_box))
     return NULL;
 
@@ -1148,12 +1130,7 @@ STBox *
 geo_stboxes(const GSERIALIZED *gs, int *count)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) count))
-    return NULL;
-#else
-  assert(gs); assert(count);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(count, NULL);
   if (! ensure_not_empty(gs) || ! ensure_mline_type(gs))
     return NULL;
   
@@ -1397,12 +1374,7 @@ STBox *
 geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *count)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) count))
-    return NULL;
-#else
-  assert(gs); assert(count);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(count, NULL);
   if (! ensure_not_empty(gs) || ! ensure_positive(box_count) ||
       ! ensure_mline_type(gs))
     return NULL;
@@ -1585,12 +1557,7 @@ STBox *
 geo_split_each_n_stboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) count))
-    return NULL;
-#else
-  assert(gs); assert(count);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(count, NULL);
   if (! ensure_not_empty(gs) || ! ensure_positive(elems_per_box) || 
       ! ensure_mline_type(gs))
     return NULL;

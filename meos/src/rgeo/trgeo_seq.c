@@ -39,7 +39,7 @@
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* MEOS */
-#include "meos_internal.h"
+#include <meos_internal.h>
 #include "general/temporal.h"
 #include "general/tsequence.h"
 #include "general/type_util.h"
@@ -117,12 +117,8 @@ trgeoseq_make_valid(const GSERIALIZED *geom, const TInstant **instants,
   int count, bool lower_inc, bool upper_inc, bool linear)
 {
   if (! tsequence_make_valid(instants, count, lower_inc, upper_inc, linear))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, 
-      "TODO FIX THIS PROBLEM");
     return false;
-  }
-  if (! ensure_valid_tinstarr(instants, count, MERGE_NO, 
+  if (! ensure_valid_tinstarr(instants, count, MERGE_NO,
       linear ? LINEAR : STEP))
     return false;
   for (int i = 0; i < count; ++i)
@@ -130,7 +126,6 @@ trgeoseq_make_valid(const GSERIALIZED *geom, const TInstant **instants,
     {
       if (! ensure_same_geom(geom, trgeoinst_geom_p(instants[i])))
         return false;
-      // TODO pfree
     }
   return true;
 }
@@ -249,7 +244,7 @@ trgeoseq_make1(const GSERIALIZED *geom, const TInstant **instants, int count,
 }
 
 /**
- * @brief Construct a temporal sequence from an array of temporal instants.
+ * @brief Construct a temporal sequence from an array of temporal instants
  * @param[in] geom Reference geometry
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
@@ -263,8 +258,11 @@ trgeoseq_make_exp(const GSERIALIZED *geom, const TInstant **instants,
   int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp,
   bool normalize)
 {
-  if (! trgeoseq_make_valid(geom, instants, count, lower_inc, upper_inc,
-      interp))
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(geom, NULL); VALIDATE_NOT_NULL(instants, NULL);
+  if (! ensure_positive(count) ||
+      ! trgeoseq_make_valid(geom, instants, count, lower_inc, upper_inc,
+          interp))
     return NULL;
   return trgeoseq_make1_exp(geom, instants, count, maxcount, lower_inc,
     upper_inc, interp, normalize);
@@ -306,6 +304,11 @@ trgeoseq_make_free_exp(const GSERIALIZED *geom, TInstant **instants, int count,
   int maxcount, bool lower_inc, bool upper_inc, interpType interp,
   bool normalize)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(geom, NULL); VALIDATE_NOT_NULL(instants, NULL);
+  if (! ensure_not_negative(count))
+    return NULL;
+
   if (count == 0)
   {
     pfree(instants);
@@ -334,8 +337,8 @@ inline TSequence *
 trgeoseq_make_free(const GSERIALIZED *geom, TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
-  return trgeoseq_make_free_exp(geom, instants, count, count,
-    lower_inc, upper_inc, interp, normalize);
+  return trgeoseq_make_free_exp(geom, instants, count, count, lower_inc,
+    upper_inc, interp, normalize);
 }
 
 /*****************************************************************************

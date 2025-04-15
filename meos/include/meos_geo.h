@@ -58,6 +58,266 @@ typedef enum
   COVERS =         3,
 } spatialRel;
 
+/*****************************************************************************
+ * Validity macros
+ *****************************************************************************/
+
+/**
+ * @brief Macro ensuring that a set is a geometry set
+ */
+#if MEOS
+  #define VALIDATE_GEOMSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_set_isof_type(set, T_GEOMSET) ) \
+            return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_GEOMSET(set, ret) \
+    do { \
+      assert(temp); \
+      assert((set)->settype == T_GEOMSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro ensuring that a set is a geography set
+ */
+#if MEOS
+  #define VALIDATE_GEOGSET(set, ret) ( \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_set_isof_type(set, T_GEOGSET) ) \
+            return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_GEOGSET(set, ret) \
+    do { \
+      assert(temp); \
+      assert((set)->settype == T_GEOGSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro ensuring that a set is of a geometry or geography set
+ */
+#if MEOS
+  #define VALIDATE_GEOSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_geoset_type((set)->settype) ) \
+            return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_GEOSET(set, ret) \
+    do { \
+      assert(temp); \
+      assert(geoset_type((set)->settype); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro ensuring that a set is of a spatial set
+ */
+#if MEOS
+  #define VALIDATE_SPATIALSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+              ! ensure_spatialset_type((set)->settype) ) \
+            return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_SPATIALSET(set, ret) \
+    do { \
+      assert(set); \
+      assert(spatialset_type((set)->settype)); \
+    } while (0)
+#endif /* MEOS */
+
+/*****************************************************************************/
+
+/**
+ * @brief Macro ensuring that a temporal value is a temporal geometry
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TGEOMETRY(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+            ! ensure_temporal_isof_type((Temporal *) (temp), T_TGEOMETRY) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TGEOMETRY(temp, ret) \
+    do { \
+      assert(temp); \
+      assert((temp)->temptype == T_TGEOMETRY); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro ensuring that a temporal value is a temporal geography
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TGEOGRAPHY(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+            ! ensure_temporal_isof_type((Temporal *) (temp), T_TGEOGRAPHY) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TGEOGRAPHY(temp, ret) \
+    do { \
+      assert(temp); \
+      assert((temp)->temptype == T_TGEOGRAPHY); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro ensuring that a temporal value is a temporal geometry point
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TGEOMPOINT(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+            ! ensure_temporal_isof_type((Temporal *) (temp), T_TGEOMPOINT) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TGEOMPOINT(temp, ret) \
+    do { \
+      assert(temp); \
+      assert((temp)->temptype == T_TGEOMPOINT); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro ensuring that a temporal value is a temporal geography point
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TGEOGPOINT(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+            ! ensure_temporal_isof_type((Temporal *) (temp), T_TGEOGPOINT) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TGEOGPOINT(temp, ret) \
+    do { \
+      assert(temp); \
+      assert((temp)->temptype == T_TGEOGPOINT); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro ensuring that a temporal value is a temporal geometry or
+ * geography
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TGEO(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+            ! ensure_tgeo_type_all(((Temporal *) (temp))->temptype) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TGEO(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(tgeo_type_all(((Temporal *) (temp))->temptype)); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro ensuring that a temporal value is a temporal geometry
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TGEOM(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+            ! ensure_tgeometry_type(((Temporal *) (temp))->temptype) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TGEOM(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(tgeometry_type(((Temporal *) (temp))->temptype)); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro ensuring that a temporal value is of a temporal geography
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TGEOG(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+            ! ensure_tgeodetic_type(((Temporal *) (temp))->temptype) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TGEOG(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(tgeodetic_type(((Temporal *) (temp))->temptype)); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro ensuring that a temporal value is of a temporal
+ * geometry/geography point
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TPOINT(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+            ! ensure_tpoint_type(((Temporal *) (temp))->temptype) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TPOINT(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(tpoint_type(((Temporal *) (temp))->temptype)); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro ensuring that a temporal value is of a temporal spatial type
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TSPATIAL(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+            ! ensure_tspatial_type(((Temporal *) (temp))->temptype) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TSPATIAL(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(tspatial_type(((Temporal *) (temp))->temptype)); \
+    } while (0)
+#endif /* MEOS */
+
 /*===========================================================================*
  * Functions for PostGIS types
  *===========================================================================*/

@@ -711,7 +711,7 @@ PGDLLEXPORT Datum Tbool_to_tint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbool_to_tint);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Return a temporal Boolean converted to a temporal int
+ * @brief Convert a temporal Boolean into a temporal int
  * @sqlfn tint()
  * @sqlop @p ::
  */
@@ -728,7 +728,7 @@ PGDLLEXPORT Datum Tint_to_tfloat(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tint_to_tfloat);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Return a temporal integer converted to a temporal float
+ * @brief Convert a temporal integer into a temporal float
  * @sqlfn tfloat()
  * @sqlop @p ::
  */
@@ -745,7 +745,7 @@ PGDLLEXPORT Datum Tfloat_to_tint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tfloat_to_tint);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Return a temporal float converted to a temporal integer
+ * @brief Convert a temporal float into a temporal integer
  * @sqlfn tint()
  * @sqlop @p ::
  */
@@ -762,7 +762,7 @@ PGDLLEXPORT Datum Temporal_to_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_to_tstzspan);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Return a temporal value converted to a timestamptz span
+ * @brief Convert a temporal value into a timestamptz span
  * @sqlfn timeSpan()
  * @sqlop @p ::
  */
@@ -780,7 +780,7 @@ PGDLLEXPORT Datum Tnumber_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_to_span);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Return a temporal number converted to a value span
+ * @brief Convert a temporal number into a value span
  * @sqlfn valueSpan()
  * @sqlop @p ::
  */
@@ -797,7 +797,7 @@ PGDLLEXPORT Datum Tnumber_to_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_to_tbox);
 /**
  * @ingroup mobilitydb_temporal_conversion
- * @brief Return a temporal number converted to a temporal box
+ * @brief Convert a temporal number into a temporal box
  * @sqlfn tbox()
  * @sqlop @p ::
  */
@@ -1625,14 +1625,13 @@ Temporal_set_interp(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   text *interp_txt = PG_GETARG_TEXT_P(1);
   char *interp_str = text2cstring(interp_txt);
-  interpType interp = interptype_from_string(interp_str);
-  pfree(interp_str);
 #if RGEO
   Temporal *result = (temp->temptype == T_TRGEOMETRY) ?
-    trgeo_set_interp(temp, interp) : temporal_set_interp(temp, interp);
+    trgeo_set_interp(temp, interp_str) : temporal_set_interp(temp, interp_str);
 #else
-  Temporal *result = temporal_set_interp(temp, interp);
+  Temporal *result = temporal_set_interp(temp, interp_str);
 #endif /* RGEO */
+  pfree(interp_str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }

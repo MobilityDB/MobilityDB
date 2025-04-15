@@ -547,7 +547,7 @@ multirange_make(const SpanSet *ss)
 #if DEBUG_BUILD
 /**
  * @ingroup meos_pg_types
- * @brief Return a range converted to a string
+ * @brief Return the string representation of a range
  * @param[in] r Timestamp
  * @note PostgreSQL function: @p range_out(PG_FUNCTION_ARGS)
  */
@@ -560,7 +560,7 @@ pg_range_out(RangeType *r)
 
 /**
  * @ingroup meos_pg_types
- * @brief Return a multirange converted to a string
+ * @brief Return the string representation of a multirange
  * @param[in] r Timestamp
  * @note PostgreSQL function: @p range_out(PG_FUNCTION_ARGS)
  */

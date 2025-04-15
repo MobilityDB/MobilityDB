@@ -553,6 +553,9 @@ tspatialseqset_parse(const char **str, meosType temptype, interpType interp,
 Temporal *
 tspatial_parse(const char **str, meosType temptype)
 {
+  /* Ensure the validity of the arguments */
+   VALIDATE_NOT_NULL(str, NULL);
+
   const char *bak = *str;
   p_whitespace(str);
 
@@ -642,8 +645,7 @@ Temporal *
 tgeompoint_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
   return tpoint_parse(&str, T_TGEOMPOINT);
 }
 
@@ -657,8 +659,7 @@ Temporal *
 tgeogpoint_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
   return tpoint_parse(&str, T_TGEOGPOINT);
 }
 
@@ -672,8 +673,7 @@ Temporal *
 tgeometry_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
   return tspatial_parse(&str, T_TGEOMETRY);
 }
 /**
@@ -686,8 +686,7 @@ Temporal *
 tgeography_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
   return tspatial_parse(&str, T_TGEOGRAPHY);
 }
 #endif /* MEOS */

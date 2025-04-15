@@ -2779,7 +2779,7 @@ SELECT round(degrees(bearing(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Poi
 
 /* Errors */
 SELECT bearing(geometry 'Point(1 1)', geometry 'PointZ(2 2 2)');
-ERROR:  Operation on mixed 2D/3D dimensions
+ERROR:  The geometry cannot have Z dimension
 SELECT isSimple(tgeompoint '{Point(0 0)@2000-01-01}');
  issimple 
 ----------

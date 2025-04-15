@@ -68,8 +68,7 @@ SpanSet *
 intspanset_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
   return spanset_parse(&str, T_INTSPANSET);
 }
 
@@ -84,8 +83,7 @@ SpanSet *
 bigintspanset_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
   return spanset_parse(&str, T_BIGINTSPANSET);
 }
 
@@ -99,8 +97,7 @@ SpanSet *
 floatspanset_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
   return spanset_parse(&str, T_FLOATSPANSET);
 }
 
@@ -114,8 +111,7 @@ SpanSet *
 datespanset_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
   return spanset_parse(&str, T_DATESPANSET);
 }
 
@@ -130,8 +126,7 @@ SpanSet *
 tstzspanset_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
   return spanset_parse(&str, T_TSTZSPANSET);
 }
 
@@ -147,9 +142,7 @@ char *
 intspanset_out(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_INTSPANSET))
-    return NULL;
+  VALIDATE_INTSPANSET(ss, NULL);
   return spanset_out(ss, 0);
 }
 
@@ -163,9 +156,7 @@ char *
 bigintspanset_out(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
-    return NULL;
+  VALIDATE_BIGINTSPANSET(ss, NULL);
   return spanset_out(ss, 0);
 }
 
@@ -180,9 +171,7 @@ char *
 floatspanset_out(const SpanSet *ss, int maxdd)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_negative(maxdd) ||
-      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
-    return NULL;
+  VALIDATE_FLOATSPANSET(ss, NULL);
   return spanset_out(ss, maxdd);
 }
 
@@ -196,9 +185,7 @@ char *
 datespanset_out(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_DATESPANSET))
-    return NULL;
+  VALIDATE_DATESPANSET(ss, NULL);
   return spanset_out(ss, 0);
 }
 
@@ -212,9 +199,7 @@ char *
 tstzspanset_out(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return NULL;
+  VALIDATE_TSTZSPANSET(ss, NULL);
   return spanset_out(ss, 0);
 }
 
@@ -228,7 +213,7 @@ tstzspanset_out(const SpanSet *ss)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Return an integer converted to a span set
+ * @brief Convert an integer into a span set
  * @param[in] i Value
  * @csqlfn #Value_to_spanset()
  */
@@ -240,7 +225,7 @@ int_spanset(int i)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Return a big integer converted to a span set
+ * @brief Convert a big integer into a span set
  * @param[in] i Value
  * @csqlfn #Value_to_spanset()
  */
@@ -252,7 +237,7 @@ bigint_spanset(int i)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Return a float converted to a span set
+ * @brief Convert a float into a span set
  * @param[in] d Value
  * @csqlfn #Value_to_spanset()
  */
@@ -264,7 +249,7 @@ float_spanset(double d)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Return a date converted to a span set
+ * @brief Convert a date into a span set
  * @param[in] d Value
  * @csqlfn #Value_to_spanset()
  */
@@ -276,7 +261,7 @@ date_spanset(DateADT d)
 
 /**
  * @ingroup meos_setspan_conversion
- * @brief Return a timestamptz converted to a span set
+ * @brief Convert a timestamptz into a span set
  * @param[in] t Value
  * @csqlfn #Value_to_spanset()
  */
@@ -305,9 +290,7 @@ intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
   bool haswidth)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_INTSPANSET))
-    return NULL;
+  VALIDATE_INTSPANSET(ss, NULL);
   return numspanset_shift_scale(ss, Int32GetDatum(shift), Int32GetDatum(width),
     hasshift, haswidth);
 }
@@ -327,9 +310,7 @@ bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 width,
   bool hasshift, bool haswidth)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
-    return NULL;
+  VALIDATE_BIGINTSPANSET(ss, NULL);
   return numspanset_shift_scale(ss, Int64GetDatum(shift), Int64GetDatum(width),
     hasshift, haswidth);
 }
@@ -349,9 +330,7 @@ floatspanset_shift_scale(const SpanSet *ss, double shift, double width,
   bool hasshift, bool haswidth)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
-    return NULL;
+  VALIDATE_FLOATSPANSET(ss, NULL);
   return numspanset_shift_scale(ss, Float8GetDatum(shift),
     Float8GetDatum(width), hasshift, haswidth);
 }
@@ -371,9 +350,7 @@ datespanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift,
   bool haswidth)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_DATESPANSET))
-    return NULL;
+  VALIDATE_DATESPANSET(ss, NULL);
   return numspanset_shift_scale(ss, Int32GetDatum(shift), Int32GetDatum(width),
     hasshift, haswidth);
 }
@@ -393,9 +370,7 @@ int
 intspanset_lower(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_INTSPANSET))
-    return INT_MAX;
+  VALIDATE_INTSPANSET(ss, INT_MAX);
   return DatumGetInt32(ss->elems[0].lower);
 }
 
@@ -410,9 +385,7 @@ int64
 bigintspanset_lower(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
-    return LONG_MAX;
+  VALIDATE_BIGINTSPANSET(ss, LONG_MAX);
   return DatumGetInt64(ss->elems[0].lower);
 }
 
@@ -427,9 +400,7 @@ double
 floatspanset_lower(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
-    return DBL_MAX;
+  VALIDATE_FLOATSPANSET(ss, DBL_MAX);
   return Float8GetDatum(ss->elems[0].lower);
 }
 
@@ -444,9 +415,7 @@ TimestampTz
 tstzspanset_lower(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_timespanset_type(ss->spansettype))
-    return DT_NOEND;
+  VALIDATE_TSTZSPANSET(ss, DT_NOEND);
   return TimestampTzGetDatum(ss->elems[0].lower);
 }
 
@@ -463,9 +432,7 @@ int
 intspanset_upper(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_INTSPANSET))
-    return INT_MAX;
+  VALIDATE_INTSPANSET(ss, INT_MAX);
   return Int32GetDatum(ss->elems[ss->count - 1].upper);
 }
 
@@ -480,9 +447,7 @@ int64
 bigintspanset_upper(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
-    return LONG_MAX;
+  VALIDATE_BIGINTSPANSET(ss, LONG_MAX);
   return Int64GetDatum(ss->elems[ss->count - 1].upper);
 }
 
@@ -497,9 +462,7 @@ double
 floatspanset_upper(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
-    return DBL_MAX;
+  VALIDATE_FLOATSPANSET(ss, DBL_MAX);
   return Float8GetDatum(ss->elems[ss->count - 1].upper);
 }
 
@@ -514,9 +477,7 @@ TimestampTz
 tstzspanset_upper(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_timespanset_type(ss->spansettype))
-    return DT_NOEND;
+  VALIDATE_TSTZSPANSET(ss, DT_NOEND);
   return TimestampTzGetDatum(ss->elems[ss->count - 1].upper);
 }
 
@@ -534,9 +495,7 @@ int
 intspanset_width(const SpanSet *ss, bool boundspan)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_INTSPANSET))
-    return -1;
+  VALIDATE_INTSPANSET(ss, -1);
   return Int32GetDatum(numspanset_width(ss, boundspan));
 }
 
@@ -552,9 +511,7 @@ int64
 bigintspanset_width(const SpanSet *ss, bool boundspan)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_BIGINTSPANSET))
-    return -1;
+  VALIDATE_BIGINTSPANSET(ss, -1);
   return Int64GetDatum(numspanset_width(ss, boundspan));
 }
 
@@ -570,9 +527,7 @@ double
 floatspanset_width(const SpanSet *ss, bool boundspan)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_FLOATSPANSET))
-    return -1.0;
+  VALIDATE_FLOATSPANSET(ss, -1.0);
   return DatumGetFloat8(numspanset_width(ss, boundspan));
 }
 

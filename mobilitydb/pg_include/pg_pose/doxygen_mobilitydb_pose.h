@@ -55,6 +55,10 @@
  * @ingroup mobilitydb_pose
  * @brief Conversion functions for temporal poses
  *
+ * @defgroup mobilitydb_pose_constructor Constructor functions
+ * @ingroup mobilitydb_pose
+ * @brief Constructor functions for temporal poses
+ *
  * @defgroup mobilitydb_pose_accessor Accessor functions
  * @ingroup mobilitydb_pose
  * @brief Accessor functions for temporal poses

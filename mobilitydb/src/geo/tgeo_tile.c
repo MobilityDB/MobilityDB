@@ -274,7 +274,7 @@ Stbox_get_space_time_tile_ext(FunctionCallInfo fcinfo, bool spacetile,
   {
     torigin = PG_GETARG_TIMESTAMPTZ(i++);
   }
-  PG_RETURN_STBOX_P(stbox_space_time_tile_common(point, t, xsize, ysize, zsize,
+  PG_RETURN_STBOX_P(stbox_space_time_tile(point, t, xsize, ysize, zsize,
     duration, sorigin, torigin, hasx, hast));
 }
 

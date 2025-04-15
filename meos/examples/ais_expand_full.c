@@ -60,6 +60,7 @@
 #include <string.h> /* For memset */
 #include <time.h>
 #include <meos.h>
+#include <meos_geo.h>
 /* The expandable functions are in the internal MEOS API */
 #include <meos_internal.h>
 
@@ -73,7 +74,7 @@
 /* Maximum number of trips */
 #define MAX_SHIPS 6500
 /* Number of instants in a batch for printing a marker */
-#define NO_RECORDS_BATCH 100000
+#define NO_RECORDS_BATCH 10000
 /* Initial number of allocated instants for an input trip and SOG */
 #define INITIAL_INSTANTS 64
 /* Maximum length in characters of a record in the input CSV file */
@@ -136,7 +137,7 @@ int main(void)
    * Open the input file
    * Substitute the full file path in the first argument of fopen
    */
-  FILE *file = fopen("data/aisdk-2023-08-01.csv", "r");
+  FILE *file = fopen("data/aisdk-2025-03-01.csv", "r");
   if (! file)
   {
     printf("Error opening input file\n");

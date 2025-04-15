@@ -1237,29 +1237,29 @@ SELECT stbox 'STBOX ZT(((1.0,1.0,1.0),(2.0,2.0,2.0)),[2001-01-01,2001-01-02])' #
 
 /* Errors */
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' << stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' &< stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' >> stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' &> stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <<| stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' &<| stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' |>> stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' |&> stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' <</ stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' &</ stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' />> stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' /&> stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
-ERROR:  Operation on mixed planar and geodetic coordinates
+ERROR:  Operation on mixed SRID
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b << t2.b;
  count 
 -------

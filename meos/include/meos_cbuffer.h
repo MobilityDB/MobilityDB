@@ -52,6 +52,50 @@
 
 typedef struct Cbuffer Cbuffer;
 
+/*****************************************************************************
+ * Validity macros and functions
+ *****************************************************************************/
+
+/**
+ * @brief Macro for ensuring that the set passed as argument is a circular
+ * buffer set
+ */
+#if MEOS
+  #define VALIDATE_CBUFFERSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) (set)) || \
+            ensure_set_isof_type((set), T_CBUFFERSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_CBUFFERSET(set, ret) \
+    do { \
+      assert(set); \
+      assert((set)->settype == T_CBUFFERSET); \
+    } while (0)
+#endif /* MEOS */
+
+/**
+ * @brief Macro for ensuring that the temporal value passed as argument is a
+ * temporal circular buffer
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TCBUFFER(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+            ensure_temporal_isof_type((Temporal *) (temp), T_TCBUFFER) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TCBUFFER(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(((Temporal *) (temp))->temptype == T_TCBUFFER); \
+    } while (0)
+#endif /* MEOS */
+
 /******************************************************************************
  * Functions for circular buffers
  ******************************************************************************/
@@ -140,8 +184,6 @@ extern char **tcbufferarr_as_text(const Temporal **temparr, int count, int maxdd
  * Constructor functions for temporal types
  *****************************************************************************/
 
-extern bool ensure_valid_stbox_cbuffer(const STBox *box, const Cbuffer *cbuf);
-extern bool ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tcbuffer_make(const Temporal *tpoint, const Temporal *tfloat);
 
 /*****************************************************************************

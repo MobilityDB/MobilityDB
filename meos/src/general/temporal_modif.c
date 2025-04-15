@@ -45,6 +45,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "general/pg_types.h"
+#include "general/set.h"
 #include "general/span.h"
 #include "general/spanset.h"
 #include "general/temporal_boxops.h"
@@ -656,12 +657,7 @@ Temporal *
 temporal_merge_array(const Temporal **temparr, int count)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temparr))
-    return NULL;
-#else
-  assert(temparr);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(temparr, NULL);
   if (! ensure_positive(count))
     return NULL;
 
@@ -1507,14 +1503,8 @@ Temporal *
 temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
-    return NULL;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
-  if (! ensure_same_continuous_interp(temp1->flags, temp2->flags) ||
+  if (! ensure_valid_temporal_temporal(temp1, temp2) ||
+      ! ensure_same_continuous_interp(temp1->flags, temp2->flags) ||
       ! ensure_spatial_validity(temp1, temp2))
     return NULL;
 
@@ -1559,14 +1549,8 @@ Temporal *
 temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2))
-    return NULL;
-#else
-  assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
-#endif /* MEOS */
-  if (! ensure_same_continuous_interp(temp1->flags, temp2->flags) ||
+  if (! ensure_valid_temporal_temporal(temp1, temp2) ||
+      ! ensure_same_continuous_interp(temp1->flags, temp2->flags) ||
       ! ensure_spatial_validity(temp1, temp2))
     return NULL;
 
@@ -1592,12 +1576,7 @@ Temporal *
 temporal_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp))
-    return NULL;
-#else
-  assert(temp);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -1630,12 +1609,7 @@ Temporal *
 temporal_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
-#else
-  assert(temp); assert(s);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSET(s, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -1667,12 +1641,7 @@ Temporal *
 temporal_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) s))
-    return NULL;
-#else
-  assert(temp); assert(s);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -1705,12 +1674,7 @@ temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
   bool connect)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) ss))
-    return NULL;
-#else
-  assert(temp); assert(ss);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2272,14 +2236,8 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst,
   interpType interp, double maxdist, const Interval *maxt, bool expand)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) inst) ||
-      ! ensure_same_temporal_type(temp, (Temporal *) inst))
-    return NULL;
-#else
-  assert(temp); assert(inst); assert(temp->temptype == inst->temptype);
-#endif /* MEOS */
-  if (! ensure_spatial_validity(temp, (const Temporal *) inst) ||
+  if (! ensure_valid_temporal_temporal(temp, (Temporal *) inst) ||
+      ! ensure_spatial_validity(temp, (const Temporal *) inst) ||
       ! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT))
     return NULL;
 
@@ -2318,15 +2276,9 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst,
 Temporal *
 temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 {
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) seq) ||
-      ! ensure_same_temporal_type(temp, (Temporal *) seq))
-    return NULL;
-#else
-  assert(temp); assert(seq); assert(temp->temptype == seq->temptype);
-#endif /* MEOS */
   /* Ensure the validity of the arguments */
-  if ((temp->subtype != TINSTANT && ! ensure_same_interp(temp, (Temporal *) seq)) ||
+  if (! ensure_valid_temporal_temporal(temp, (Temporal *) seq) ||
+      (temp->subtype != TINSTANT && ! ensure_same_interp(temp, (Temporal *) seq)) ||
       ! ensure_spatial_validity(temp, (Temporal *) seq) ||
       ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE))
     return NULL;

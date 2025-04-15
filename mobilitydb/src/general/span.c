@@ -251,7 +251,7 @@ PGDLLEXPORT Datum Value_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Value_to_span);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Return a value converted to a span
+ * @brief Convert a value into a span
  * @sqlfn span()
  * @sqlop @p ::
  */
@@ -267,7 +267,7 @@ PGDLLEXPORT Datum Set_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Set_to_span);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Return a set converted to a span
+ * @brief Convert a set into a span
  * @sqlfn span()
  */
 Datum
@@ -349,7 +349,7 @@ PGDLLEXPORT Datum Intspan_to_floatspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Intspan_to_floatspan);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Return an integer span converted to a float span
+ * @brief Convert an integer span into a float span
  * @sqlfn floatspan()
  * @sqlop @p ::
  */
@@ -364,7 +364,7 @@ PGDLLEXPORT Datum Floatspan_to_intspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Floatspan_to_intspan);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Return a float span converted to a integer span
+ * @brief Convert a float span into a integer span
  * @sqlfn intspan()
  * @sqlop @p ::
  */
@@ -379,7 +379,7 @@ PGDLLEXPORT Datum Datespan_to_tstzspan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Datespan_to_tstzspan);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Return a date span converted to a timestamptz span
+ * @brief Convert a date span into a timestamptz span
  * @sqlfn tstzspan()
  * @sqlop @p ::
  */
@@ -394,7 +394,7 @@ PGDLLEXPORT Datum Tstzspan_to_datespan(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzspan_to_datespan);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Return a timestamptz span converted to a date span
+ * @brief Convert a timestamptz span into a date span
  * @sqlfn datespan()
  * @sqlop @p ::
  */
@@ -411,7 +411,7 @@ PGDLLEXPORT Datum Span_to_range(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Span_to_range);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Return a span converted to a range
+ * @brief Convert a span into a range
  * @sqlfn int4range(), tstzrange()
  * @sqlop @p ::
  */
@@ -427,7 +427,7 @@ Span_to_range(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Return a PostgreSQL range converted to a span
+ * @brief Convert a PostgreSQL range into a span
  */
 void
 range_set_span(RangeType *range, TypeCacheEntry *typcache, Span *result)
@@ -465,7 +465,7 @@ PGDLLEXPORT Datum Range_to_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Range_to_span);
 /**
  * @ingroup mobilitydb_setspan_conversion
- * @brief Return a PostgreSQL range converted to a span
+ * @brief Convert a PostgreSQL range into a span
  * @sqlfn intspan(), tstzspan()
  * @sqlop @p ::
  */

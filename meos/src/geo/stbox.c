@@ -114,6 +114,7 @@ stbox_expand(const STBox *box1, STBox *box2)
  * Input/ouput functions in string format
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup meos_geo_box_inout
  * @brief Return a spatiotemporal box from its Well-Known Text (WKT)
@@ -139,10 +140,10 @@ STBox *
 stbox_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  VALIDATE_NOT_NULL(str, NULL);
   return stbox_parse(&str);
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_geo_box_inout
@@ -155,7 +156,8 @@ char *
 stbox_out(const STBox *box, int maxdd)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_negative(maxdd))
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_not_negative(maxdd))
     return NULL;
 
   static size_t size = MAXSTBOXLEN + 1;
@@ -246,8 +248,7 @@ STBox *
 stbox_from_wkb(const uint8_t *wkb, size_t size)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) wkb))
-    return NULL;
+  VALIDATE_NOT_NULL(wkb, NULL);
   return DatumGetSTboxP(type_from_wkb(wkb, size, T_STBOX));
 }
 
@@ -262,9 +263,8 @@ STBox *
 stbox_from_hexwkb(const char *hexwkb)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) hexwkb))
-    return NULL;
-  size_t size = strlen(hexwkb);
+  VALIDATE_NOT_NULL(hexwkb, NULL);
+ size_t size = strlen(hexwkb);
   return DatumGetSTboxP(type_from_hexwkb(hexwkb, size, T_STBOX));
 }
 
@@ -283,8 +283,7 @@ uint8_t *
 stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
-    return NULL;
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return datum_as_wkb(PointerGetDatum(box), T_STBOX, variant, size_out);
 }
 
@@ -302,8 +301,7 @@ char *
 stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) size_out))
-    return NULL;
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return (char *) datum_as_wkb(PointerGetDatum(box), T_STBOX,
     variant | (uint8_t) WKB_HEX, size_out);
 }
@@ -322,7 +320,7 @@ stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
  * @param[in] srid SRID
  * @param[in] xmin,ymin,zmin Minimum bounds for the spatial dimension
  * @param[in] xmax,ymax,zmax Maximum bounds for the spatial dimension
- * @param[in] s Span
+ * @param[in] s Span, may be `NULL`
  * @csqlfn #Stbox_constructor()
  */
 STBox *
@@ -330,6 +328,13 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
   const Span *s)
 {
+#if MEOS
+  if (s && s->spantype != T_TSTZSPAN)
+    return NULL;
+#else
+  assert(! s || s->spantype == T_TSTZSPAN);
+#endif /* MEOS */
+
   /* Note: zero-fill is done in function stbox_set */
   STBox *result = palloc(sizeof(STBox));
   stbox_set(hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax, zmin, zmax, s,
@@ -396,14 +401,8 @@ stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
 STBox *
 stbox_copy(const STBox *box)
 {
-#if MEOS
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
-
+  VALIDATE_NOT_NULL(box, NULL);
   STBox *result = palloc(sizeof(STBox));
   memcpy(result, box, sizeof(STBox));
   return result;
@@ -423,7 +422,8 @@ STBox *
 geo_timestamptz_to_stbox(const GSERIALIZED *gs, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) gs) || gserialized_is_empty(gs))
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (gserialized_is_empty(gs))
     return NULL;
 
   STBox *result = palloc(sizeof(STBox));
@@ -446,8 +446,8 @@ STBox *
 geo_tstzspan_to_stbox(const GSERIALIZED *gs, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_null((void *) s) ||
-      ! ensure_span_isof_type(s, T_TSTZSPAN) || gserialized_is_empty(gs))
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  if (gserialized_is_empty(gs))
     return NULL;
 
   STBox *result = palloc(sizeof(STBox));
@@ -464,7 +464,7 @@ geo_tstzspan_to_stbox(const GSERIALIZED *gs, const Span *s)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Return in the last argument a @p GBOX contructed from a 
+ * @brief Return in the last argument a `GBOX` constructed from a 
  * spatiotemporal box
  * @param[in] box Spatiotemporal box
  * @param[out] gbox GBOX
@@ -493,7 +493,7 @@ stbox_set_gbox(const STBox *box, GBOX *gbox)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Return in the last argument a @p BOX3D contructed from a
+ * @brief Return in the last argument a `BOX3D` constructed from a
  * spatiotemporal box
  * @param[in] box Spatiotemporal box
  * @param[out] box3d BOX3D
@@ -521,24 +521,18 @@ stbox_set_box3d(const STBox *box, BOX3D *box3d)
 
 /**
  * @ingroup meos_geo_box_conversion
- * @brief Return a spatiotemporal box converted to a @p GBOX
+ * @brief Convert a spatiotemporal box into a `GBOX`
  * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_to_box2d()
  */
 GBOX *
 stbox_gbox(const STBox *box)
 {
-#if MEOS
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
-
-  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_STBOX, box->flags))
     return NULL;
+
   GBOX *result = palloc(sizeof(GBOX));
   stbox_set_gbox(box, result);
   return result;
@@ -546,22 +540,15 @@ stbox_gbox(const STBox *box)
 
 /**
  * @ingroup meos_geo_box_conversion
- * @brief Return a spatiotemporal box converted to a @p BOX3D
+ * @brief Convert a spatiotemporal box into a `BOX3D`
  * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_to_box3d()
  */
 BOX3D *
 stbox_box3d(const STBox *box)
 {
-#if MEOS
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
-
-  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_STBOX, box->flags) ||
       /* box3d does not have flags */
       ! ensure_not_geodetic(box->flags))
@@ -581,15 +568,8 @@ stbox_box3d(const STBox *box)
 GSERIALIZED *
 stbox_geo(const STBox *box)
 {
-#if MEOS
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
-
-  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_STBOX, box->flags))
     return NULL;
 
@@ -601,7 +581,7 @@ stbox_geo(const STBox *box)
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
   if (geodetic)
   {
-    /* Transform the stbox coordinates, expressed as cartesian coordinates on
+    /* Transform the stbox coordinates, expressed as Cartesian coordinates on
      * unit sphere back to lon/lat coordinates */
     POINT2D min2d, max2d;
     POINT3D p1, p2;
@@ -644,22 +624,15 @@ stbox_geo(const STBox *box)
 
 /**
  * @ingroup meos_geo_box_conversion
- * @brief Return a spatiotemporal box converted to a timestamptz span
+ * @brief Convert a spatiotemporal box into a timestamptz span
  * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_to_tstzspan()
  */
 Span *
 stbox_tstzspan(const STBox *box)
 {
-#if MEOS
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
-
-  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_T(T_STBOX, box->flags))
     return NULL;
   return span_copy(&box->period);
@@ -671,8 +644,8 @@ stbox_tstzspan(const STBox *box)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Set the a spatiotemporal box in the last argument from the @p GBOX
- ¨and the SRID
+ * @brief Set the a spatiotemporal box in the last argument from the `GBOX`
+ * and the SRID
  * @param[in] box GBOX
  * @param[in] srid SRID
  * @param[out] result Spatiotemporal box
@@ -703,7 +676,7 @@ gbox_set_stbox(const GBOX *box, int32_t srid, STBox *result)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Return a @p GBOX converted to a spatiotemporal box
+ * @brief Convert a `GBOX` into a spatiotemporal box
  * @param[in] box GBOX
  */
 STBox *
@@ -718,8 +691,8 @@ gbox_stbox(const GBOX *box)
 
 /**
  * @ingroup meos_internal_box_conversion
- * @brief Return a @p BOX3D converted to a spatiotemporal box
- * @param[out] box BOX3D
+ * @brief Convert a `BOX3D` into a spatiotemporal box
+ * @param[in] box BOX3D
  */
 STBox *
 box3d_stbox(const BOX3D *box)
@@ -828,7 +801,7 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
 #if MEOS
 /**
  * @ingroup meos_geo_box_conversion
- * @brief Return a geometry/geography converted to a spatiotemporal box
+ * @brief Convert a geometry/geography into a spatiotemporal box
  * @param[in] gs Geometry/geography
  * @csqlfn #Geo_to_stbox()
  */
@@ -836,7 +809,8 @@ STBox *
 geo_stbox(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) gs) || ! ensure_not_empty(gs))
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (ensure_not_empty(gs))
     return NULL;
 
   STBox *result = palloc(sizeof(STBox));
@@ -888,7 +862,7 @@ timestamptz_set_stbox(TimestampTz t, STBox *box)
 
 /**
  * @ingroup meos_geo_box_conversion
- * @brief return a timestamptz converted to a spatiotemporal box
+ * @brief Convert a timestamptz into a spatiotemporal box
  * @param[in] t Timestamp
  * @csqlfn #Timestamptz_to_stbox()
  */
@@ -920,21 +894,15 @@ tstzset_set_stbox(const Set *s, STBox *box)
 
 /**
  * @ingroup meos_geo_box_conversion
- * @brief Return a timestamptz set converted to a spatiotemporal box
+ * @brief Convert a timestamptz set into a spatiotemporal box
  * @param[in] s Set
  * @csqlfn #Tstzset_to_stbox()
  */
 STBox *
 tstzset_stbox(const Set *s)
 {
-#if MEOS
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s))
-    return NULL;
-#else
-  assert(s);
-#endif /* MEOS */
-
+  VALIDATE_TSTZSET(s, NULL);
   STBox *result = palloc(sizeof(STBox));
   tstzset_set_stbox(s, result);
   return result;
@@ -960,21 +928,15 @@ tstzspan_set_stbox(const Span *s, STBox *box)
 
 /**
  * @ingroup meos_geo_box_conversion
- * @brief return a timestamptz span converted to a spatiotemporal box
+ * @brief Convert a timestamptz span into a spatiotemporal box
  * @param[in] s Span
  * @csqlfn #Tstzspan_to_stbox()
  */
 STBox *
 tstzspan_stbox(const Span *s)
 {
-#if MEOS
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_span_isof_type(s, T_TSTZSPAN))
-    return NULL;
-#else
-  assert(s); assert(s->spantype == T_TSTZSPAN);
-#endif /* MEOS */
-
+  VALIDATE_TSTZSPAN(s, NULL);
   STBox *result = palloc(sizeof(STBox));
   tstzspan_set_stbox(s, result);
   return result;
@@ -1001,7 +963,7 @@ tstzspanset_set_stbox(const SpanSet *ss, STBox *box)
 #if MEOS
 /**
  * @ingroup meos_geo_box_conversion
- * @brief Return a timestamptz span set converted to a spatiotemporal box
+ * @brief Convert a timestamptz span set into a spatiotemporal box
  * @param[in] ss Span set
  * @csqlfn #Tstzspanset_to_stbox()
  */
@@ -1009,10 +971,7 @@ STBox *
 tstzspanset_stbox(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return NULL;
-
+  VALIDATE_TSTZSPANSET(ss, NULL);
   STBox *result = palloc(sizeof(STBox));
   tstzspanset_set_stbox(ss, result);
   return result;
@@ -1020,7 +979,7 @@ tstzspanset_stbox(const SpanSet *ss)
 #endif /* MEOS */
 
 /*****************************************************************************
- * Generic function
+ * Generic functions
  *****************************************************************************/
 
 /**
@@ -1073,8 +1032,7 @@ bool
 stbox_hasx(const STBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box))
-    return false;
+  VALIDATE_NOT_NULL(box, false);
   return MEOS_FLAGS_GET_X(box->flags);
 }
 
@@ -1088,8 +1046,7 @@ bool
 stbox_hasz(const STBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box))
-    return false;
+  VALIDATE_NOT_NULL(box, false);
   return MEOS_FLAGS_GET_Z(box->flags);
 }
 
@@ -1103,8 +1060,7 @@ bool
 stbox_hast(const STBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box))
-    return false;
+  VALIDATE_NOT_NULL(box, false);
   return MEOS_FLAGS_GET_T(box->flags);
 }
 
@@ -1118,8 +1074,7 @@ bool
 stbox_isgeodetic(const STBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box))
-    return false;
+  VALIDATE_NOT_NULL(box, false);
   return MEOS_FLAGS_GET_GEODETIC(box->flags);
 }
 
@@ -1136,8 +1091,9 @@ bool
 stbox_xmin(const STBox *box, double *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_X(box->flags))
+
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = box->xmin;
   return true;
@@ -1156,8 +1112,8 @@ bool
 stbox_xmax(const STBox *box, double *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_X(box->flags))
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = box->xmax;
   return true;
@@ -1176,8 +1132,8 @@ bool
 stbox_ymin(const STBox *box, double *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_X(box->flags))
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = box->ymin;
   return true;
@@ -1196,8 +1152,8 @@ bool
 stbox_ymax(const STBox *box, double *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_X(box->flags))
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
   *result = box->ymax;
   return true;
@@ -1216,8 +1172,8 @@ bool
 stbox_zmin(const STBox *box, double *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_Z(box->flags))
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_Z(box->flags))
     return false;
   *result = box->zmin;
   return true;
@@ -1236,8 +1192,8 @@ bool
 stbox_zmax(const STBox *box, double *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_Z(box->flags))
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_Z(box->flags))
     return false;
   *result = box->zmax;
   return true;
@@ -1256,8 +1212,8 @@ bool
 stbox_tmin(const STBox *box, TimestampTz *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_T(box->flags))
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.lower);
   return true;
@@ -1276,8 +1232,8 @@ bool
 stbox_tmin_inc(const STBox *box, bool *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_T(box->flags))
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = box->period.lower_inc;
   return true;
@@ -1296,8 +1252,8 @@ bool
 stbox_tmax(const STBox *box, TimestampTz *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_T(box->flags))
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = DatumGetTimestampTz(box->period.upper);
   return true;
@@ -1316,8 +1272,8 @@ bool
 stbox_tmax_inc(const STBox *box, bool *result)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) result) ||
-      ! MEOS_FLAGS_GET_T(box->flags))
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
+  if (! MEOS_FLAGS_GET_T(box->flags))
     return false;
   *result = box->period.upper_inc;
   return true;
@@ -1329,14 +1285,16 @@ stbox_tmax_inc(const STBox *box, bool *result)
  * @param[in] box Spatiotemporal box
  * @param[in] spheroid When true, the calculation uses the WGS 84 spheroid,
  * otherwise it uses a faster spherical calculation
+ * @return On error, return -1.0
  * @csqlfn #Stbox_area()
  */
 double
 stbox_area(const STBox *box, bool spheroid)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X(T_STBOX, box->flags))
-    return false;
+  VALIDATE_NOT_NULL(box, -1.0); 
+  if (! ensure_has_X(T_STBOX, box->flags))
+    return -1.0;
 
   if (! MEOS_FLAGS_GET_GEODETIC(box->flags))
     return (box->xmax - box->xmin) * (box->ymax - box->ymin);
@@ -1351,15 +1309,17 @@ stbox_area(const STBox *box, bool spheroid)
  * @ingroup meos_geo_box_accessor
  * @brief Return the volume of a 3D spatiotemporal box
  * @param[in] box Spatiotemporal box
+ * @result On error return -1.0
  * @csqlfn #Stbox_volume()
  */
 double
 stbox_volume(const STBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X(T_STBOX, box->flags) || 
+  VALIDATE_NOT_NULL(box, -1.0); 
+  if (! ensure_has_X(T_STBOX, box->flags) ||
       ! ensure_has_Z(T_STBOX, box->flags) || ! ensure_not_geodetic(box->flags))
-    return false;
+    return -1.0;
   return (box->xmax - box->xmin) * (box->ymax - box->ymin) * 
     (box->zmax - box->zmin);
 }
@@ -1370,14 +1330,16 @@ stbox_volume(const STBox *box)
  * @param[in] box Spatiotemporal box
  * @param[in] spheroid When true, the calculation uses the WGS 84 spheroid,
  * otherwise it uses a faster spherical calculation
+ * @result On error return -1.0
  * @csqlfn #Stbox_perimeter()
  */
 double
 stbox_perimeter(const STBox *box, bool spheroid)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X(T_STBOX, box->flags))
-    return false;
+  VALIDATE_NOT_NULL(box, -1.0); 
+  if (! ensure_has_X(T_STBOX, box->flags))
+    return -1.0;
 
   GSERIALIZED *geo = stbox_geo(box);
   double result = MEOS_FLAGS_GET_GEODETIC(box->flags) ?
@@ -1428,12 +1390,7 @@ STBox *
 stbox_round(const STBox *box, int maxdd)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, NULL); 
   if (! ensure_has_X(T_STBOX, box->flags) || ! ensure_not_negative(maxdd))
     return NULL;
 
@@ -1455,8 +1412,8 @@ STBox *
 stboxarr_round(const STBox *boxarr, int count, int maxdd)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) boxarr) ||
-      ! ensure_positive(count) || ! ensure_not_negative(maxdd))
+  VALIDATE_NOT_NULL(boxarr, NULL); 
+  if (! ensure_positive(count) || ! ensure_not_negative(maxdd))
     return NULL;
 
   STBox *result = palloc(sizeof(STBox) * count);
@@ -1473,8 +1430,8 @@ stboxarr_round(const STBox *boxarr, int count, int maxdd)
  * @brief Return a spatiotemporal box with the time span expanded and/or scaled
  * by two intervals
  * @param[in] box Spatiotemporal box
- * @param[in] shift Interval to shift the value span, may be @p NULL
- * @param[in] duration Duration of the result, may be @p NULL
+ * @param[in] shift Interval to shift the value span, may be `NULL`
+ * @param[in] duration Duration of the result, may be `NULL`
  * @csqlfn #Stbox_shift_time(), #Stbox_scale_time(), #Stbox_shift_scale_time()
  */
 STBox *
@@ -1482,7 +1439,8 @@ stbox_shift_scale_time(const STBox *box, const Interval *shift,
   const Interval *duration)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_T(T_STBOX, box->flags) ||
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_has_T(T_STBOX, box->flags) ||
       ! ensure_one_not_null((void *) shift, (void *) duration) ||
       (duration && ! ensure_valid_duration(duration)))
     return NULL;
@@ -1508,7 +1466,8 @@ STBox *
 stbox_get_space(const STBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X(T_STBOX, box->flags))
+  VALIDATE_NOT_NULL(box, NULL); 
+  if (! ensure_has_X(T_STBOX, box->flags))
     return NULL;
 
   STBox *result = palloc(sizeof(STBox));
@@ -1530,12 +1489,7 @@ STBox *
 stbox_expand_space(const STBox *box, double d)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) box))
-    return NULL;
-#else
-  assert(box);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(box, NULL); 
   if (! ensure_has_X(T_STBOX, box->flags))
     return NULL;
   /* When the value is negative, ensure that its absolute value is less than
@@ -1543,8 +1497,8 @@ stbox_expand_space(const STBox *box, double d)
   bool hasz = MEOS_FLAGS_GET_Z(box->flags) ||
     MEOS_FLAGS_GET_GEODETIC(box->flags);
   if (d < 0 && (
-       fabs(d) >= (box->xmax - box->xmin) || 
-       fabs(d) >= (box->ymax - box->ymin) || 
+       fabs(d) >= (box->xmax - box->xmin) ||
+       fabs(d) >= (box->ymax - box->ymin) ||
        (hasz && (fabs(d) >= (box->zmax - box->zmin)))))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -1577,8 +1531,8 @@ STBox *
 stbox_expand_time(const STBox *box, const Interval *interv)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) interv) ||
-      ! ensure_has_T(T_STBOX, box->flags))
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(interv, NULL);
+  if (! ensure_has_T(T_STBOX, box->flags))
     return NULL;
   /* When the interval is negative, ensure that its absolute value is less than
    * the duration of the spatiotemporal box */ 
@@ -1622,7 +1576,8 @@ int32_t
 stbox_srid(const STBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X(T_STBOX, box->flags))
+  VALIDATE_NOT_NULL(box, SRID_INVALID);
+  if (! ensure_has_X(T_STBOX, box->flags))
     return SRID_INVALID;
   return box->srid;
 }
@@ -1638,7 +1593,8 @@ STBox *
 stbox_set_srid(const STBox *box, int32_t srid)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_has_X(T_STBOX, box->flags))
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_has_X(T_STBOX, box->flags))
     return NULL;
   STBox *result = stbox_copy(box);
   result->srid = srid;
@@ -1649,7 +1605,7 @@ stbox_set_srid(const STBox *box, int32_t srid)
  * @brief Return a spatiotemporal box transformed to another SRID using a
  * pipeline
  * @param[in] box Spatiotemporal box
- * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN for pipeline
+ * @param[in] srid_to Target SRID, may be `SRID_UNKNOWN` for pipeline
  * transformation
  * @param[in] pj Information about the transformation
  */
@@ -1712,8 +1668,8 @@ STBox *
 stbox_transform(const STBox *box, int32_t srid_to)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_srid_known(box->srid) ||
-      ! ensure_srid_known(srid_to))
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_srid_known(box->srid) || ! ensure_srid_known(srid_to))
     return NULL;
 
   /* Input and output SRIDs are equal, noop */
@@ -1740,7 +1696,7 @@ stbox_transform(const STBox *box, int32_t srid_to)
  * pipeline
  * @param[in] box Spatiotemporal box
  * @param[in] pipeline Pipeline string
- * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
+ * @param[in] srid_to Target SRID, may be `SRID_UNKNOWN`
  * @param[in] is_forward True when the transformation is forward
  */
 STBox *
@@ -1748,8 +1704,8 @@ stbox_transform_pipeline(const STBox *box, const char *pipeline,
   int32_t srid_to, bool is_forward)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) pipeline) ||
-      ! ensure_srid_known(box->srid))
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(pipeline, NULL);
+  if (! ensure_srid_known(box->srid))
     return NULL;
 
   /* There is NO test verifying whether the input and output SRIDs are equal */
@@ -1802,6 +1758,7 @@ topo_stbox_stbox_init(const STBox *box1, const STBox *box2, bool *hasx,
   bool *hasz, bool *hast, bool *geodetic)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_common_dimension(box1->flags, box2->flags))
     return false;
   if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
@@ -1821,10 +1778,9 @@ topo_stbox_stbox_init(const STBox *box1, const STBox *box2, bool *hasx,
 bool
 contains_stbox_stbox(const STBox *box1, const STBox *box2)
 {
-  bool hasx, hasz, hast, geodetic;
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
+  bool hasx, hasz, hast, geodetic;
+  if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
     return false;
 
   if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
@@ -1860,10 +1816,9 @@ contained_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 overlaps_stbox_stbox(const STBox *box1, const STBox *box2)
 {
-  bool hasx, hasz, hast, geodetic;
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
+  bool hasx, hasz, hast, geodetic;
+  if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
     return false;
 
   if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
@@ -1888,10 +1843,9 @@ overlaps_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 same_stbox_stbox(const STBox *box1, const STBox *box2)
 {
-  bool hasx, hasz, hast, geodetic;
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
+  bool hasx, hasz, hast, geodetic;
+  if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
     return false;
 
   if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
@@ -1914,10 +1868,9 @@ same_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
 {
-  bool hasx, hasz, hast, geodetic;
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
+  bool hasx, hasz, hast, geodetic;
+  if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
     return false;
 
   STBox inter;
@@ -1957,11 +1910,13 @@ adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
  * @param[in] box1,box2 Spatiotemporal boxes
  */
 static bool
-pos_stbox_stbox_test(const STBox *box1, const STBox *box2)
+ensure_valid_pos_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_same_geodetic(box1->flags, box2->flags) ||
-      ! ensure_same_srid(stbox_srid(box1), stbox_srid(box2)))
+  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
+  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) && (
+       ! ensure_same_srid(stbox_srid(box1), stbox_srid(box2)) ||
+       ! ensure_same_geodetic(box1->flags, box2->flags)))
     return false;
   return true;
 }
@@ -1977,10 +1932,9 @@ bool
 left_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X(T_STBOX, box1->flags) || 
-      ! ensure_has_X(T_STBOX, box2->flags) ||
-      ! pos_stbox_stbox_test(box1, box2))
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_X(T_STBOX, box1->flags) ||
+      ! ensure_has_X(T_STBOX, box2->flags))
     return false;
   return (box1->xmax < box2->xmin);
 }
@@ -1996,10 +1950,9 @@ bool
 overleft_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X(T_STBOX, box1->flags) || 
-      ! ensure_has_X(T_STBOX, box2->flags) ||
-      ! pos_stbox_stbox_test(box1, box2))
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_X(T_STBOX, box1->flags) ||
+      ! ensure_has_X(T_STBOX, box2->flags))
     return false;
   return (box1->xmax <= box2->xmax);
 }
@@ -2015,10 +1968,9 @@ bool
 right_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X(T_STBOX, box1->flags) || 
-      ! ensure_has_X(T_STBOX, box2->flags) ||
-      ! pos_stbox_stbox_test(box1, box2))
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_X(T_STBOX, box1->flags) ||
+      ! ensure_has_X(T_STBOX, box2->flags))
     return false;
   return (box1->xmin > box2->xmax);
 }
@@ -2034,10 +1986,9 @@ bool
 overright_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X(T_STBOX, box1->flags) || 
-      ! ensure_has_X(T_STBOX, box2->flags) ||
-      ! pos_stbox_stbox_test(box1, box2))
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_X(T_STBOX, box1->flags) ||
+      ! ensure_has_X(T_STBOX, box2->flags))
     return false;
   return (box1->xmin >= box2->xmin);
 }
@@ -2052,10 +2003,9 @@ bool
 below_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X(T_STBOX, box1->flags) || 
-      ! ensure_has_X(T_STBOX, box2->flags) ||
-      ! pos_stbox_stbox_test(box1, box2))
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_X(T_STBOX, box1->flags) ||
+      ! ensure_has_X(T_STBOX, box2->flags))
     return false;
   return (box1->ymax < box2->ymin);
 }
@@ -2071,10 +2021,9 @@ bool
 overbelow_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X(T_STBOX, box1->flags) || 
-      ! ensure_has_X(T_STBOX, box2->flags) ||
-      ! pos_stbox_stbox_test(box1, box2))
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_X(T_STBOX, box1->flags) ||
+      ! ensure_has_X(T_STBOX, box2->flags))
     return false;
   return (box1->ymax <= box2->ymax);
 }
@@ -2089,10 +2038,9 @@ bool
 above_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X(T_STBOX, box1->flags) || 
-      ! ensure_has_X(T_STBOX, box2->flags) ||
-      ! pos_stbox_stbox_test(box1, box2))
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_X(T_STBOX, box1->flags) ||
+      ! ensure_has_X(T_STBOX, box2->flags))
     return false;
   return (box1->ymin > box2->ymax);
 }
@@ -2108,10 +2056,9 @@ bool
 overabove_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_X(T_STBOX, box1->flags) || 
-      ! ensure_has_X(T_STBOX, box2->flags) ||
-      ! pos_stbox_stbox_test(box1, box2))
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_X(T_STBOX, box1->flags) ||
+      ! ensure_has_X(T_STBOX, box2->flags))
     return false;
   return (box1->ymin >= box2->ymin);
 }
@@ -2127,10 +2074,9 @@ bool
 front_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_Z(T_STBOX, box1->flags) || 
-      ! ensure_has_Z(T_STBOX, box2->flags) ||
-      ! pos_stbox_stbox_test(box1, box2))
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_Z(T_STBOX, box1->flags) ||
+      ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
   return (box1->zmax < box2->zmin);
 }
@@ -2146,10 +2092,9 @@ bool
 overfront_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_Z(T_STBOX, box1->flags) || 
-      ! ensure_has_Z(T_STBOX, box2->flags) ||
-      ! pos_stbox_stbox_test(box1, box2))
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_Z(T_STBOX, box1->flags) ||
+      ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
   return (box1->zmax <= box2->zmax);
 }
@@ -2165,10 +2110,9 @@ bool
 back_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_Z(T_STBOX, box1->flags) || 
-      ! ensure_has_Z(T_STBOX, box2->flags) ||
-      ! pos_stbox_stbox_test(box1, box2))
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_Z(T_STBOX, box1->flags) ||
+      ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
   return (box1->zmin > box2->zmax);
 }
@@ -2184,10 +2128,9 @@ bool
 overback_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_Z(T_STBOX, box1->flags) || 
-      ! ensure_has_Z(T_STBOX, box2->flags) ||
-      ! pos_stbox_stbox_test(box1, box2))
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_Z(T_STBOX, box1->flags) ||
+      ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
   return (box1->zmin >= box2->zmin);
 }
@@ -2202,8 +2145,8 @@ bool
 before_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_T(T_STBOX, box1->flags) || 
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_T(T_STBOX, box1->flags) ||
       ! ensure_has_T(T_STBOX, box2->flags))
     return false;
   return left_span_span(&box1->period, &box2->period);
@@ -2220,8 +2163,8 @@ bool
 overbefore_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_T(T_STBOX, box1->flags) || 
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_T(T_STBOX, box1->flags) ||
       ! ensure_has_T(T_STBOX, box2->flags))
     return false;
   return overleft_span_span(&box1->period, &box2->period);
@@ -2237,8 +2180,8 @@ bool
 after_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_T(T_STBOX, box1->flags) || 
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_T(T_STBOX, box1->flags) ||
       ! ensure_has_T(T_STBOX, box2->flags))
     return false;
   return right_span_span(&box1->period, &box2->period);
@@ -2255,8 +2198,8 @@ bool
 overafter_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_has_T(T_STBOX, box1->flags) || 
+  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+      ! ensure_has_T(T_STBOX, box1->flags) ||
       ! ensure_has_T(T_STBOX, box2->flags))
     return false;
   return overright_span_span(&box1->period, &box2->period);
@@ -2277,8 +2220,8 @@ STBox *
 union_stbox_stbox(const STBox *box1, const STBox *box2, bool strict)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_same_geodetic(box1->flags, box2->flags) ||
+  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
+  if (! ensure_same_geodetic(box1->flags, box2->flags) ||
       ! ensure_same_dimensionality(box1->flags, box2->flags) ||
       ! ensure_same_srid(box1->srid, box2->srid))
     return NULL;
@@ -2361,8 +2304,8 @@ STBox *
 intersection_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2) ||
-      ! ensure_same_geodetic(box1->flags, box2->flags) ||
+  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
+  if (! ensure_same_geodetic(box1->flags, box2->flags) ||
       // ! ensure_same_dimensionality(box1->flags, box2->flags) ||
       ! ensure_same_srid(box1->srid, box2->srid))
     return NULL;
@@ -2402,8 +2345,8 @@ STBox *
 stbox_quad_split(const STBox *box, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box) || ! ensure_not_null((void *) count) ||
-      ! ensure_has_X(T_STBOX, box->flags))
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_has_X(T_STBOX, box->flags))
     return NULL;
 
   bool hasz = MEOS_FLAGS_GET_Z(box->flags);
@@ -2473,9 +2416,7 @@ bool
 stbox_eq(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return false;
-
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (box1->flags != box2->flags ||
       box1->xmin != box2->xmin || box1->ymin != box2->ymin ||
       box1->zmin != box2->zmin || box1->xmax != box2->xmax ||
@@ -2509,8 +2450,7 @@ int
 stbox_cmp(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) box1) || ! ensure_not_null((void *) box2))
-    return INT_MAX;
+  assert(box1); assert(box2);
 
   /* Compare the SRID */
   if (box1->srid < box2->srid)

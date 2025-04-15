@@ -51,6 +51,7 @@
 #include <proj.h>
 /* C */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 
 int main(void)
@@ -78,7 +79,7 @@ int main(void)
   free(str_out);
 
   Temporal *trip_out = tspatial_transform(trip, 25832);
-  str_out = tgeo_as_ewkt(trip_out, 6);
+  str_out = tspatial_as_ewkt(trip_out, 6);
   printf("--------------------------------\n");
   printf(" Transformed trip in SRID 25832\n");
   printf("--------------------------------\n%s\n", str_out);

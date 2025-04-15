@@ -430,10 +430,10 @@ SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' &<| tnpoint 'NPoint(1,0.5)@2000-
 SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' |>> tnpoint 'NPoint(1,0.5)@2000-01-01';
 SELECT stbox 'STBOX T([2000-01-01,2000-01-02])' |&> tnpoint 'NPoint(1,0.5)@2000-01-01';
 
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <<# tnpoint 'NPoint(1,0.5)@2000-01-01';
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' &<# tnpoint 'NPoint(1,0.5)@2000-01-01';
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' #>> tnpoint 'NPoint(1,0.5)@2000-01-01';
-SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' #&> tnpoint 'NPoint(1,0.5)@2000-01-01';
+SELECT stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))' <<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+SELECT stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))' &<# tnpoint 'NPoint(1,0.5)@2000-01-01';
+SELECT stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))' #>> tnpoint 'NPoint(1,0.5)@2000-01-01';
+SELECT stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))' #&> tnpoint 'NPoint(1,0.5)@2000-01-01';
 
 SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' << stbox 'STBOX T([2000-01-01,2000-01-02])';
 SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &< stbox 'STBOX T([2000-01-01,2000-01-02])';
@@ -444,10 +444,10 @@ SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<| stbox 'STBOX T([2000-01-01,2000-01
 SELECT tnpoint 'NPoint(1,0.5)@2000-01-01'|>>  stbox 'STBOX T([2000-01-01,2000-01-02])' ;
 SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' |&>  stbox 'STBOX T([2000-01-01,2000-01-02])';
 
-SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<# stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
-SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<# stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
-SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #>> stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
-SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #&> stbox 'STBOX X((1.0,1.0),(2.0,2.0))';
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' <<# stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))';
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' &<# stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))';
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #>> stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))';
+SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' #&> stbox 'SRID=5676;STBOX X((1.0,1.0),(2.0,2.0))';
 
 -------------------------------------------------------------------------------
 

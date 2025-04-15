@@ -54,6 +54,7 @@
 bool
 ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
 {
+  assert(inst1); assert(inst2);
   if (tnpointinst_route(inst1) != tnpointinst_route(inst2))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -64,62 +65,55 @@ ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
 }
 
 /*****************************************************************************
- * Interpolation functions defining functionality required by tsequence.c
- * that must be implemented by each temporal type
+ * Interpolation functions required by tsequence.c that must be implemented
+ * for each base type that supports linear interpolation
  *****************************************************************************/
 
 /**
- * @brief Return a npoint interpolated from a npoint segment with respect to 
- * the fraction of its total length
- * @param[in] start,end Circular buffers defining the segment
+ * @brief Return a network point interpolated from a network point segment
+ * with respect to a fraction of its total length
+ * @param[in] start,end Network points defining the segment
  * @param[in] ratio Float between 0 and 1 representing the fraction of the
- * total length of the segment where the interpolated buffer must be located
+ * total length of the segment where the interpolated network point is located
  */
-Datum
-npointsegm_interpolate(Datum start, Datum end, long double ratio)
+Npoint *
+npointsegm_interpolate(const Npoint *start, const Npoint *end,
+  long double ratio)
 {
-  Npoint *np1 = DatumGetNpointP(start);
-  Npoint *np2 = DatumGetNpointP(end);
-  double pos = np1->pos + (double) ((long double)(np2->pos - np1->pos) * ratio);
-  Npoint *result = npoint_make(np1->rid, pos);
-  return PointerGetDatum(result);
+  assert(ratio >= 0.0 && ratio <= 1.0);
+  double pos = start->pos + 
+    (double) ((long double)(end->pos - start->pos) * ratio);
+  Npoint *result = npoint_make(start->rid, pos);
+  return result;
 }
 
 /**
  * @brief Return true if a segment of a temporal network point value intersects
  * a base value at the timestamp
- * @param[in] inst1,inst2 Temporal instants defining the segment
+ * @param[in] start,end Temporal instants defining the segment
  * @param[in] value Base value
- * @param[out] t Timestamp
  */
-bool
-tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, TimestampTz *t)
+long double
+npointsegm_locate(const Npoint *start, const Npoint *end, const Npoint *value)
 {
-  const Npoint *np1 = DatumGetNpointP(tinstant_value_p(inst1));
-  const Npoint *np2 = DatumGetNpointP(tinstant_value_p(inst2));
-  const Npoint *np = DatumGetNpointP(value);
-  double min = Min(np1->pos, np2->pos);
-  double max = Max(np1->pos, np2->pos);
-  /* if value is to the left or to the right of the range */
-  if ((np->rid != np1->rid) ||
-    (np->pos < np1->pos && np->pos < np2->pos) ||
-    (np->pos > np1->pos && np->pos > np2->pos))
-  // if (np->rid != np1->rid || (np->pos < min && np->pos > max))
-    return false;
+  /* This function is called for temporal sequences and thus the three values
+   * have the same road identifier */
+  assert(start->rid == end->rid); assert(start->rid == value->rid);
+  double min = Min(start->pos, end->pos);
+  double max = Max(start->pos, end->pos);
+  /* If value is to the left or to the right of the range */
+  if ((value->rid != start->rid) ||
+    (value->pos < start->pos && value->pos < end->pos) ||
+    (value->pos > start->pos && value->pos > end->pos))
+  // if (value->rid != start->rid || (value->pos < min && value->pos > max))
+    return -1.0;
 
   double range = (max - min);
-  double partial = (np->pos - min);
-  double fraction = np1->pos < np2->pos ? partial / range : 1 - partial / range;
+  double partial = (value->pos - min);
+  double fraction = start->pos < end->pos ? partial / range : 1 - partial / range;
   if (fabs(fraction) < MEOS_EPSILON || fabs(fraction - 1.0) < MEOS_EPSILON)
-    return false;
-
-  if (t)
-  {
-    double duration = (double) (inst2->t - inst1->t);
-    *t = inst1->t + (long) (duration * fraction);
-  }
-  return true;
+    return -1.0;
+  return fraction;
 }
 
 /*****************************************************************************
@@ -248,6 +242,9 @@ tnpointseqset_trajectory(const TSequenceSet *ss)
 GSERIALIZED *
 tnpoint_trajectory(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, NULL);
+
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
@@ -265,6 +262,7 @@ tnpoint_trajectory(const Temporal *temp)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_npoint_comp
  * @brief Return true if two network points are approximately equal with
  * respect to an epsilon value
  * @details Two network points may be have different route identifier but
@@ -274,6 +272,9 @@ tnpoint_trajectory(const Temporal *temp)
 bool
 npoint_same(const Npoint *np1, const Npoint *np2)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np1, NULL); VALIDATE_NOT_NULL(np2, NULL);
+
   /* Equal route identifier and same position */
   if (np1->rid == np2->rid && fabs(np1->pos - np2->pos) > MEOS_EPSILON)
     return false;
@@ -334,6 +335,9 @@ tnpointseqset_length(const TSequenceSet *ss)
 double
 tnpoint_length(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, -1.0);
+
   assert(temptype_subtype(temp->subtype));
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     return 0.0;
@@ -408,6 +412,9 @@ tnpointseqset_cumulative_length(const TSequenceSet *ss)
 Temporal *
 tnpoint_cumulative_length(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, NULL);
+
   assert(temptype_subtype(temp->subtype));
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
     return temporal_from_base_temp(Float8GetDatum(0.0), T_TFLOAT, temp);
@@ -489,9 +496,8 @@ Temporal *
 tnpoint_speed(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_tspatial_type(temp->temptype) ||
-      ! ensure_linear_interp(temp->flags))
+  VALIDATE_TNPOINT(temp, NULL);
+  if (! ensure_linear_interp(temp->flags))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -519,9 +525,11 @@ tnpoint_speed(const Temporal *temp)
 GSERIALIZED *
 tnpoint_twcentroid(const Temporal *temp)
 {
-  Temporal *tgeom = tnpoint_tgeompoint(temp);
-  GSERIALIZED *result = tpoint_twcentroid(tgeom);
-  pfree(tgeom);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, NULL);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  GSERIALIZED *result = tpoint_twcentroid(tpoint);
+  pfree(tpoint);
   return result;
 }
 
@@ -539,8 +547,8 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
+  VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_has_not_Z_geo(gs))
     return NULL;
 
@@ -548,19 +556,19 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   if (gserialized_is_empty(gs))
     return atfunc ? NULL : temporal_copy(temp);
 
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *resgeom = tgeo_restrict_geom(tempgeom, gs, zspan, atfunc);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  Temporal *res = tgeo_restrict_geom(tpoint, gs, zspan, atfunc);
   Temporal *result = NULL;
-  if (resgeom)
+  if (res)
   {
     /* We do not call the function tgeompoint_tnpoint to avoid
      * roundoff errors */
-    SpanSet *ss = temporal_time(resgeom);
+    SpanSet *ss = temporal_time(res);
     result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
-    pfree(resgeom);
+    pfree(res);
     pfree(ss);
   }
-  pfree(tempgeom);
+  pfree(tpoint);
   return result;
 }
 
@@ -573,13 +581,10 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] zspan Span of values to restrict the Z dimension
  * @csqlfn #Tnpoint_at_geom()
  */
-Temporal *
+inline Temporal *
 tnpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs))
-    return NULL;
   return tnpoint_restrict_geom(temp, gs, zspan, REST_AT);
 }
 
@@ -591,13 +596,10 @@ tnpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] zspan Span of values to restrict the Z dimension
  * @csqlfn #Tnpoint_minus_geom()
  */
-Temporal *
+inline Temporal *
 tnpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs))
-    return NULL;
   return tnpoint_restrict_geom(temp, gs, zspan, REST_MINUS);
 }
 #endif /* MEOS */
@@ -617,13 +619,15 @@ Temporal *
 tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   bool atfunc)
 {
-  Temporal *tgeom = tnpoint_tgeompoint(temp);
-  Temporal *tgeomres = tgeo_restrict_stbox(tgeom, box, border_inc, atfunc);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(box, NULL);
+  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  Temporal *res = tgeo_restrict_stbox(tpoint, box, border_inc, atfunc);
   Temporal *result = NULL;
-  if (tgeomres)
+  if (res)
   {
-    result = tgeompoint_tnpoint(tgeomres);
-    pfree(tgeomres);
+    result = tgeompoint_tnpoint(res);
+    pfree(res);
   }
   return result;
 }
@@ -637,7 +641,7 @@ tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
  * @param[in] border_inc True when the box contains the upper border
  * @sqlfn #Tnpoint_at_stbox()
  */
-Temporal *
+inline Temporal *
 tnpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return tnpoint_restrict_stbox(temp, box, border_inc, REST_AT);
@@ -651,7 +655,7 @@ tnpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
  * @param[in] border_inc True when the box contains the upper border
  * @sqlfn #Tnpoint_minus_stbox()
  */
-Temporal *
+inline Temporal *
 tnpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return tnpoint_restrict_stbox(temp, box, border_inc, REST_MINUS);

@@ -61,8 +61,8 @@ eacomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
+  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return -1;
   return eacomp_temporal_base(temp, PointerGetDatum(gs), func, ever);
@@ -79,9 +79,8 @@ eacomp_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) ||
-      ! ensure_same_temporal_type(temp1, temp2) ||
-      ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
+  VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
+  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
     return -1;
   return eacomp_temporal_temporal(temp1, temp2, func, ever);
@@ -258,8 +257,8 @@ tcomp_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
   Datum (*func)(Datum, Datum, meosType))
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return NULL;
   return tcomp_base_temporal(PointerGetDatum(gs), temp, func);
@@ -276,8 +275,8 @@ tcomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, meosType))
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(gs), func);

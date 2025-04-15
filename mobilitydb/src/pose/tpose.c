@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief General functions for temporal pose objects.
+ * @file
+ * @brief General functions for temporal pose objects
  */
 
 #include "pose/tpose.h"
@@ -52,7 +53,7 @@
 #include "pg_geo/tspatial.h"
 
 /*****************************************************************************
- * Input/output
+ * Input/output functions
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tpose_in(PG_FUNCTION_ARGS);
@@ -91,7 +92,7 @@ Tpose_in(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpose_typmod_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_typmod_in);
 /**
- * @brief Input typmod information for temporal geometries
+ * @brief Input typmod information for temporal poses
  */
 Datum
 Tpose_typmod_in(PG_FUNCTION_ARGS)
@@ -108,9 +109,9 @@ Tpose_typmod_in(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpoint_tfloat_to_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_tfloat_to_tpose);
 /**
- * @ingroup mobilitydb_pose_conversion
- * @brief Return a temporal pose constructed from a temporal point and a
- * temporal float
+ * @ingroup mobilitydb_pose_constructor
+ * @brief Construct a temporal 2D pose from a temporal point and a temporal
+ * float
  * @sqlfn tpose()
  */
 Datum
@@ -134,7 +135,7 @@ PGDLLEXPORT Datum Tpose_to_tgeompoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_to_tgeompoint);
 /**
  * @ingroup mobilitydb_pose_conversion
- * @brief Return a temporal pose converted to a temporal geometry point
+ * @brief Convert a temporal pose into a temporal geometry point
  * @sqlfn tgeompoint()
  * @sqlop @p ::
  */
@@ -170,8 +171,8 @@ Tpose_points(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpose_rotation(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_rotation);
 /**
- * @ingroup mobilitydb_pose_base_accessor
- * @brief Return the rotation of a 2D temporal pose
+ * @ingroup mobilitydb_pose_accessor
+ * @brief Return the rotation of a temporal 2D pose as a temporal float
  * @sqlfn rotation()
  */
 Datum
