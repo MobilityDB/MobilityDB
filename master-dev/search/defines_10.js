@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['p_5fm_5fstr_0',['p_m_STR',['../formatting_8c_ac864500d26b1215434497f41b8f92e9b.html#ac864500d26b1215434497f41b8f92e9b',1,'formatting.c']]],
-  ['p_5fm_5fstr_1',['P_M_STR',['../formatting_8c_ac4010f9fc9c7649046a46dfc7cb808ab.html#ac4010f9fc9c7649046a46dfc7cb808ab',1,'formatting.c']]],
+  ['p_5fm_5fstr_0',['P_M_STR',['../formatting_8c_ac4010f9fc9c7649046a46dfc7cb808ab.html#ac4010f9fc9c7649046a46dfc7cb808ab',1,'formatting.c']]],
+  ['p_5fm_5fstr_1',['p_m_STR',['../formatting_8c_ac864500d26b1215434497f41b8f92e9b.html#ac864500d26b1215434497f41b8f92e9b',1,'formatting.c']]],
   ['palloc_2',['palloc',['../postgres_8h_a2126121c0951868d8dde15bbc442a804.html#a2126121c0951868d8dde15bbc442a804',1,'postgres.h']]],
   ['palloc0_3',['palloc0',['../postgres_8h_a64e631215b2a6797b047ca43f1b3ad00.html#a64e631215b2a6797b047ca43f1b3ad00',1,'postgres.h']]],
   ['partition_5fmax_5fkeys_4',['PARTITION_MAX_KEYS',['../pg__config__manual_8h_a0ff30944cdca9752a421fb6300f31e69.html#a0ff30944cdca9752a421fb6300f31e69',1,'pg_config_manual.h']]],
@@ -104,8 +104,8 @@ var searchData=
   ['place_5fleft_101',['PLACE_LEFT',['../span__gist_8c_a424a9e807daf6eb60e974ea9f419e3e8.html#a424a9e807daf6eb60e974ea9f419e3e8',1,'PLACE_LEFT():&#160;span_gist.c'],['../tnumber__gist_8c_ae07e5246685aeb781cae3f369ded146d.html#ae07e5246685aeb781cae3f369ded146d',1,'PLACE_LEFT():&#160;tnumber_gist.c']]],
   ['place_5fright_102',['PLACE_RIGHT',['../span__gist_8c_ae944aae4cfbcdf8f63b06d3ae731b6bd.html#ae944aae4cfbcdf8f63b06d3ae731b6bd',1,'PLACE_RIGHT():&#160;span_gist.c'],['../tnumber__gist_8c_a4eaa7b84019150e9aaa3ad9e484f15f6.html#a4eaa7b84019150e9aaa3ad9e484f15f6',1,'PLACE_RIGHT():&#160;tnumber_gist.c']]],
   ['pm_103',['PM',['../datetime_8h_a23c7d58108d99a089ce0824823e6b950.html#a23c7d58108d99a089ce0824823e6b950',1,'datetime.h']]],
-  ['pm_5fstr_104',['pm_STR',['../formatting_8c_a5f2d471f24307a096e2b63dcfee7b2d0.html#a5f2d471f24307a096e2b63dcfee7b2d0',1,'formatting.c']]],
-  ['pm_5fstr_105',['PM_STR',['../formatting_8c_a2f30dfa74cc97514f9896390e689d43e.html#a2f30dfa74cc97514f9896390e689d43e',1,'formatting.c']]],
+  ['pm_5fstr_104',['PM_STR',['../formatting_8c_a2f30dfa74cc97514f9896390e689d43e.html#a2f30dfa74cc97514f9896390e689d43e',1,'formatting.c']]],
+  ['pm_5fstr_105',['pm_STR',['../formatting_8c_a5f2d471f24307a096e2b63dcfee7b2d0.html#a5f2d471f24307a096e2b63dcfee7b2d0',1,'formatting.c']]],
   ['pointergetdatum_106',['PointerGetDatum',['../postgres_8h_af1af46436828db69962409e7b39f7aa8.html#af1af46436828db69962409e7b39f7aa8',1,'postgres.h']]],
   ['pointerisaligned_107',['PointerIsAligned',['../c_8h_a458ba44b8c61804a26824b8f773b5fe8.html#a458ba44b8c61804a26824b8f773b5fe8',1,'c.h']]],
   ['pointerisvalid_108',['PointerIsValid',['../c_8h_a93e0ce0d27f11a8898f500f2c259c2a1.html#a93e0ce0d27f11a8898f500f2c259c2a1',1,'c.h']]],
