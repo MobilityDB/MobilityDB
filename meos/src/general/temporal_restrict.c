@@ -1392,23 +1392,23 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   interpType interp, bool lower_inc, bool upper_inc, const Span *s,
   bool atfunc, TSequence **result)
 {
-  Datum value1 = tinstant_value_p(inst1);
-  Datum value2 = tinstant_value_p(inst2);
+  Datum start = tinstant_value_p(inst1);
+  Datum end = tinstant_value_p(inst2);
   meosType basetype = temptype_basetype(inst1->temptype);
   meosType spantype = basetype_spantype(basetype);
   TInstant *instants[2];
   bool found;
 
   /* Constant segment (step or linear interpolation) */
-  if (datum_eq(value1, value2, basetype))
+  if (datum_eq(start, end, basetype))
   {
-    found = contains_span_value(s, value1);
+    found = contains_span_value(s, start);
     if ((atfunc && ! found) || (! atfunc && found))
       return 0;
     instants[0] = (TInstant *) inst1;
     instants[1] = (TInstant *) inst2;
-    result[0] = tsequence_make((const TInstant **) instants, 2,
-      lower_inc, upper_inc, interp, NORMALIZE_NO);
+    result[0] = tsequence_make((const TInstant **) instants, 2, lower_inc,
+      upper_inc, interp, NORMALIZE_NO);
     return 1;
   }
 
@@ -1416,16 +1416,16 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   if (interp == STEP)
   {
     int nseqs = 0;
-    found = contains_span_value(s, value1);
+    found = contains_span_value(s, start);
     if ((atfunc && found) || (! atfunc && ! found))
     {
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(value1, inst1->temptype, inst2->t);
+      instants[1] = tinstant_make(start, inst1->temptype, inst2->t);
       result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, false, interp, NORMALIZE_NO);
       pfree(instants[1]);
     }
-    found = contains_span_value(s, value2);
+    found = contains_span_value(s, end);
     if (upper_inc &&
       ((atfunc && found) || (! atfunc && ! found)))
     {
@@ -1434,17 +1434,13 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
     return nseqs;
   }
 
-  /* Linear interpolation */
-
-  /* Compute the intersection of the spans */
+  /* Linear interpolation, compute the intersection of the spans */
   Span valuespan, inter;
-  bool increasing = DatumGetFloat8(value1) < DatumGetFloat8(value2);
+  bool increasing = DatumGetFloat8(start) < DatumGetFloat8(end);
   if (increasing)
-    span_set(value1, value2, lower_inc, upper_inc, basetype, spantype,
-      &valuespan);
+    span_set(start, end, lower_inc, upper_inc, basetype, spantype, &valuespan);
   else
-    span_set(value2, value1, upper_inc, lower_inc, basetype, spantype,
-      &valuespan);
+    span_set(end, start, upper_inc, lower_inc, basetype, spantype, &valuespan);
   found = inter_span_span(&valuespan, s, &inter);
   /* The intersection is empty */
   if (! found)
@@ -1454,17 +1450,81 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
     /* MINUS */
     instants[0] = (TInstant *) inst1;
     instants[1] = (TInstant *) inst2;
-    result[0] = tsequence_make((const TInstant **) instants, 2,
-      lower_inc, upper_inc, interp, NORMALIZE_NO);
+    result[0] = tsequence_make((const TInstant **) instants, 2, lower_inc,
+      upper_inc, interp, NORMALIZE_NO);
     return 1;
+  }
+
+  /* If the intersection is a singleton */
+  TimestampTz t1, t2;
+  bool lower_inc1, upper_inc1;
+  if (datum_eq(inter.lower, inter.upper, basetype))
+  {
+    if (datum_eq(start, inter.lower, basetype))
+    {
+      if (atfunc && lower_inc)
+      {
+        instants[0] = (TInstant *) inst1;
+        result[0] = tsequence_make((const TInstant **) instants, 1,
+            true, true, interp, NORMALIZE_NO);
+        return 1;
+      }
+      else if (! atfunc) /* MINUS */
+      {
+        instants[0] = (TInstant *) inst1;
+        instants[1] = (TInstant *) inst2;
+        result[0] = tsequence_make((const TInstant **) instants, 2,
+            false, upper_inc, interp, NORMALIZE_NO);
+        return 1;
+      }
+    }
+    if (datum_eq(end, inter.upper, basetype))
+    {
+      if (atfunc && upper_inc)
+      {
+        instants[0] = (TInstant *) inst2;
+        result[0] = tsequence_make((const TInstant **) instants, 1, true, true,
+          interp, NORMALIZE_NO);
+        return 1;
+      }
+      else if (! atfunc) /* MINUS */
+      {
+        instants[0] = (TInstant *) inst1;
+        instants[1] = (TInstant *) inst2;
+        result[0] = tsequence_make((const TInstant **) instants, 2, lower_inc,
+          false, interp, NORMALIZE_NO);
+        return 1;
+      }
+    }
+    if (tfloatsegm_intersection_value(inst1, inst2, inter.lower, basetype, &t1))
+    {
+      /* To reduce the roundoff errors we project the temporal number to the
+       * timestamp instead of taking the bound value */
+      instants[0] = tsegment_at_timestamptz(inst1, inst2, interp, t1);
+      if (atfunc)
+      {
+        result[0] = tsequence_make((const TInstant **) instants, 1,
+            true, true, interp, NORMALIZE_NO);
+        pfree(instants[0]);
+        return 1;
+      }
+      else /* MINUS */
+      {
+        result[0] = tsequence_make((const TInstant **) instants, 2,
+            lower_inc, false, interp, NORMALIZE_NO);
+        result[1] = tsequence_make((const TInstant **) instants, 2,
+            false, upper_inc, interp, NORMALIZE_NO);
+        pfree(instants[0]);
+        return 2;
+      }
+    }
+    return 0;
   }
 
   /* Compute the instants of the intersection */
   TInstant *inter1, *inter2;
-  bool tofree1 = false, tofree2 = false;
-  TimestampTz t1, t2;
   Datum lower, upper;
-  bool lower_inc1, upper_inc1;
+  bool tofree1 = false, tofree2 = false;
   if (increasing)
   {
     lower = inter.lower; upper = inter.upper;
@@ -1475,54 +1535,79 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
     lower = inter.upper; upper = inter.lower;
     lower_inc1 = inter.upper_inc; upper_inc1 = inter.lower_inc;
   }
-  tfloatsegm_intersection_value(inst1, inst2, lower, basetype, &t1);
-  if (t1 == inst1->t)
-    inter1 = (TInstant *) inst1;
-  else if (t1 == inst2->t)
-    inter1 = (TInstant *) inst2;
-  else
+
+  /* If the start/end value is equal to the lower value of the intersection */
+  int j = 0;
+  if (datum_eq(start, lower, basetype))
+  {
+    inter1 = (TInstant *) inst1; j++;
+  }
+  else if (datum_eq(end, lower, basetype))
+  {
+    inter1 = (TInstant *) inst2; j++;
+  }
+  else if (tfloatsegm_intersection_value(inst1, inst2, lower, basetype, &t1))
   {
     /* To reduce the roundoff errors we project the temporal number to the
      * timestamp instead of taking the bound value */
     inter1 = tsegment_at_timestamptz(inst1, inst2, interp, t1);
-    tofree1 = true;
+    tofree1 = true; j++;
   }
-  int j = 1;
   if (! datum_eq(lower, upper, basetype))
   {
-    tfloatsegm_intersection_value(inst1, inst2, upper, basetype, &t2);
-    if (t2 == inst1->t)
-      inter2 = (TInstant *) inst1;
-    else if (t2 == inst2->t)
-      inter2 = (TInstant *) inst2;
-    else
+    /* If the start/end value is equal to the upper value of the intersection */
+    if (datum_eq(start, upper, basetype))
+    {
+      inter1 = (TInstant *) inst1; j++;
+    }
+    else if (datum_eq(end, upper, basetype))
+    {
+      if (j == 0)
+        inter1 = (TInstant *) inst2;
+      else
+        inter2 = (TInstant *) inst2;
+      j++;
+    }
+    else if (tfloatsegm_intersection_value(inst1, inst2, upper, basetype, &t2))
     {
       /* To reduce the roundoff errors we project the temporal number to the
        * timestamp instead of taking the bound value */
-      inter2 = tsegment_at_timestamptz(inst1, inst2, interp, t2);
-      tofree2 = true;
+      if (j == 0)
+      {
+        inter1 = tsegment_at_timestamptz(inst1, inst2, interp, t2);
+        tofree1 = true;
+      }
+      else
+      {
+        inter2 = tsegment_at_timestamptz(inst1, inst2, interp, t2);
+        tofree2 = true;
+      }
+      j++;
     }
-    j = 2;
   }
 
+  assert(j > 0);
   /* Compute the result */
   int nseqs = 0;
   if (atfunc)
   {
-    /* We need order the instants */
-    if (j > 1 && inter1->t > inter2->t)
-    {
-      TInstant *swap = inter1;
-      inter1 = inter2;
-      inter2 = swap;
-      tofree1 = ! tofree1;
-      tofree2 = ! tofree2;
-    }
     instants[0] = inter1;
-    if (j > 1)
-      instants[1] = inter2;
+    if (j == 1)
+    {
+      if ((inter1->t == inst1->t && lower_inc) ||
+          (inter1->t == inst2->t && upper_inc))
+      {
+        result[0] = tsequence_make((const TInstant **) instants, 1, true, true,
+          interp, NORMALIZE_NO);
+        return 1;
+      }
+      return 0;
+    }
+    /* j > 1 */
+    instants[1] = inter2;
     result[nseqs++] = tsequence_make((const TInstant **) instants, j,
-        lower_inc1, upper_inc1, interp, NORMALIZE_NO);
+      lower_inc1, upper_inc1, interp, NORMALIZE_NO);
+    return 1;
   }
   else
   {
@@ -1586,7 +1671,7 @@ tnumberseq_cont_restrict_span_iter(const TSequence *seq, const Span *s,
   bool atfunc, TSequence **result)
 {
   assert(seq); assert(s); assert(result);
-  assert(tnumber_type(seq->temptype));
+  assert(tnumber_type(seq->temptype)); assert(numspan_type(s->spantype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
 
   /* Bounding box test */
@@ -1604,15 +1689,11 @@ tnumberseq_cont_restrict_span_iter(const TSequence *seq, const Span *s,
     }
   }
 
-  const TInstant *inst1, *inst2;
-
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    /* The bounding box test above does not distinguish between
-     * inclusive/exclusive bounds */
-    inst1 = TSEQUENCE_INST_N(seq, 0);
-    TInstant *inst = tnumberinst_restrict_span(inst1, s, atfunc);
+    TInstant *inst = tnumberinst_restrict_span(TSEQUENCE_INST_N(seq, 0), s,
+      atfunc);
     if (inst == NULL)
       return 0;
     pfree(inst);
@@ -1622,12 +1703,12 @@ tnumberseq_cont_restrict_span_iter(const TSequence *seq, const Span *s,
 
   /* General case */
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  inst1 = TSEQUENCE_INST_N(seq, 0);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   int nseqs = 0;
   for (int i = 1; i < seq->count; i++)
   {
-    inst2 = TSEQUENCE_INST_N(seq, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     nseqs += tnumbersegm_restrict_span(inst1, inst2, interp, lower_inc,
       upper_inc, s, atfunc, &result[nseqs]);

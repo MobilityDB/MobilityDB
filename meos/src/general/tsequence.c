@@ -211,39 +211,43 @@ datum_collinear(Datum value1, Datum value2, Datum value3, meosType basetype,
  *****************************************************************************/
 
 /**
- * @brief Return a float in [0,1] if a float segment intersects a float with
- * respect to an epsilon value
- * @param[in] value1,value2 Values defining the segment
+ * @brief Return a float in (0,1) if a float segment intersects a float with
+ * respect to an epsilon value, return -1.0 if the value is not located in the
+ * segment or if it is approximately equal to the start or the end value
+ * @param[in] start,end Values defining the segment
  * @param[in] value Value to locate
- * @result Return -1.0 if the value is not located in the segment
+ * @note The function returns -1.0 if the value is approximately equal to the
+ * start or the end value since it is used in the lifting infrastructure for
+ * determining the crossings or the turning points after verifying that the
+ * bounds of the segment are not equal to the value.
  */
 long double
-floatsegm_locate(double value1, double value2, double value)
+floatsegm_locate(double start, double end, double value)
 {
-  double min = Min(value1, value2);
-  double max = Max(value1, value2);
+  double min = Min(start, end);
+  double max = Max(start, end);
   /* if value is to the left or to the right of the span */
-  if (value < min || value > max)
+  if (value <= min || value >= max)
     return -1.0;
 
   double span = (max - min);
   double partial = (value - min);
-  long double fraction = value1 < value2 ? partial / span : 1 - partial / span;
-  if (fraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < fraction)
+  long double fraction = start < end ? partial / span : 1 - partial / span;
+  if (fabsl(fraction) < MEOS_EPSILON || fabsl(fraction - 1.0) < MEOS_EPSILON)
     return -1.0;
   return fraction;
 }
 
 /**
- * @brief Return a float value in [0,1] if a segment of base values intersects
+ * @brief Return a float value in (0,1) if a segment of base values intersects
  * a base value, return -1.0 otherwise
  * @param[in] value1,value2 Values defining the segment
  * @param[in] value Value to locate
  * @param[in] basetype Type of the values
- * @note Return -1.0 if the value is equal to the first or the last value.
- * The reason is that the function is used in the lifting infrastructure for
- * determining the crossings after testing whether the bounds of the segments
- * are equal to the given value.
+ * @result Return -1.0 if the value is not located in the segment or if the
+ * value is equal to the first or the last value. The reason is that the
+ * function is used in the lifting infrastructure for determining the crossings
+ * after testing whether the bounds of the segments are equal to a value.
  */
 long double
 datumsegm_locate(Datum value1, Datum value2, Datum value, meosType basetype)
@@ -270,7 +274,7 @@ datumsegm_locate(Datum value1, Datum value2, Datum value, meosType basetype)
 // #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown locate function for type: %s", meostype_name(basetype));
-  return false;
+  return -1.0;
 }
 
 /*****************************************************************************

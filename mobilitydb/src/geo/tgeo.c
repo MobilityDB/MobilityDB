@@ -98,7 +98,7 @@ mobilitydb_init()
 PGDLLEXPORT Datum Tpoint_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpoint_in);
 /**
- * @ingroup mobilitydb_temporal_inout
+ * @ingroup mobilitydb_geo_inout
  * @brief Return a temporal point from its Well-Known Text (WKT) representation
  * @details Input examples for the various temporal subtypes are as follows:
  * @code
@@ -130,7 +130,7 @@ Tpoint_in(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tgeo_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeo_in);
 /**
- * @ingroup mobilitydb_temporal_inout
+ * @ingroup mobilitydb_geo_inout
  * @brief Return a temporal geo from its Well-Known Text (WKT) representation
  * @sqlfn tgeo_in()
  */
@@ -469,7 +469,7 @@ Tspatial_enforce_typmod(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpointinst_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpointinst_constructor);
 /**
- * @ingroup mobilitydb_temporal_constructor
+ * @ingroup mobilitydb_geo_constructor
  * @brief Return a temporal point instant from a point and a timestamptz
  * @sqlfn tgeompoint(), tgeogpoint()
  */
@@ -486,7 +486,7 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tgeoinst_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeoinst_constructor);
 /**
- * @ingroup mobilitydb_temporal_constructor
+ * @ingroup mobilitydb_geo_constructor
  * @brief Return a temporal geo instant from a geometry/geography and a 
  * timestamptz
  * @sqlfn tgeometry(), tgeography()

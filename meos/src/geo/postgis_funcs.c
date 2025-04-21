@@ -107,7 +107,7 @@ geo_copy(const GSERIALIZED *gs)
 int32_t
 geo_srid(const GSERIALIZED *gs)
 {
-  VALIDATE_NOT_NULL(gs, NULL);
+  VALIDATE_NOT_NULL(gs, SRID_INVALID);
   return gserialized_get_srid(gs);
 }
 

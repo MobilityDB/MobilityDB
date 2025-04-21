@@ -673,7 +673,7 @@ Temporal_time_split(PG_FUNCTION_ARGS)
     /* Restrict the temporal point to the span */
     Temporal *atspan = temporal_restrict_tstzspan(state->to_split, &span,
       REST_AT);
-    if (atspan == NULL)
+    if (! atspan)
       continue;
 
     /* Form tuple and return */
@@ -773,7 +773,7 @@ Tnumber_value_time_split_ext(FunctionCallInfo fcinfo, bool valuesplit,
 
     /* Restrict the temporal point to the box */
     Temporal *attbox = tnumber_at_tbox(state->temp, &box);
-    if (attbox == NULL)
+    if (! attbox)
       continue;
 
     /* Form tuple and return */

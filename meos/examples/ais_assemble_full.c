@@ -300,7 +300,7 @@ int main(void)
         // fflush(stdout);
         new_instants = realloc(trips[j].trip_instants,
           sizeof(TInstant *) * trips[j].no_trip_instants * 2);
-        if (new_instants == NULL)
+        if (! new_instants)
         {
           printf("\nMSSI: %ld, there is no more memory to expand the trip\n",
             trips[j].MMSI);

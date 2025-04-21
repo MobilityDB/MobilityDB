@@ -139,15 +139,14 @@ tposesegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   /* Compute the value taking into account position only */
   double fraction = (double) pointsegm_locate(geom_start, geom_end, geom,
     &dist);
-  pfree(DatumGetPointer(geom_start));
-  pfree(DatumGetPointer(geom_end));
+  pfree(DatumGetPointer(geom_start)); pfree(DatumGetPointer(geom_end));
   pfree(DatumGetPointer(geom));
-  if (fabs(dist) >= MEOS_EPSILON)
+  if (fraction < 0.0)
     return false;
   /* Compare value with interpolated pose to take into account orientation as
    * well */
-  Pose *pose1 = DatumGetPoseP(start);
-  Pose *pose2 = DatumGetPoseP(end);
+  const Pose *pose1 = DatumGetPoseP(start);
+  const Pose *pose2 = DatumGetPoseP(end);
   Pose *pose_interp = pose_interpolate(pose1, pose2, fraction);
   /* Temporal rigid geometries have poses as base values but are restricted
    * to geometries */

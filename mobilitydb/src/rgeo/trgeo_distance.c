@@ -127,7 +127,7 @@ Distance_trgeo_tpoint(PG_FUNCTION_ARGS)
   Temporal *result = distance_trgeo_tpoint(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -149,7 +149,7 @@ Distance_tpoint_trgeo(PG_FUNCTION_ARGS)
   Temporal *result = distance_trgeo_tpoint(temp2, temp1);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
@@ -171,7 +171,7 @@ Distance_trgeo_trgeo(PG_FUNCTION_ARGS)
   Temporal *result = distance_trgeo_trgeo(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (! result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }

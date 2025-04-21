@@ -517,7 +517,7 @@ tstzspanset_datespanset(const SpanSet *ss)
 int
 spanset_mem_size(const SpanSet *ss)
 {
-  VALIDATE_NOT_NULL(ss, NULL);
+  VALIDATE_NOT_NULL(ss, INT_MAX);
   return (int) VARSIZE(DatumGetPointer(ss));
 }
 

@@ -71,7 +71,7 @@ tspatial_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, meosType type)
   else if (type == T_STBOX)
   {
     STBox *box = PG_GETARG_STBOX_P(1);
-    if (box == NULL)
+    if (! box)
       return false;
     memcpy(result, box, sizeof(STBox));
   }
@@ -99,19 +99,19 @@ Stbox_gist_consistent(PG_FUNCTION_ARGS)
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
   Oid typid = PG_GETARG_OID(3);
-  bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
   STBox *key = DatumGetSTboxP(entry->key), query;
+  if (! key)
+    PG_RETURN_BOOL(false);
 
   /* Determine whether the index is lossy depending on the strategy */
   *recheck = stbox_index_recheck(strategy);
-
-  if (key == NULL)
-    PG_RETURN_BOOL(false);
 
   /* Transform the query into a box */
   if (! tspatial_gist_get_stbox(fcinfo, &query, oid_type(typid)))
     PG_RETURN_BOOL(false);
 
+  bool result;
   if (GIST_LEAF(entry))
     result = stbox_index_leaf_consistent(key, &query, strategy);
   else

@@ -88,10 +88,15 @@ npointsegm_interpolate(const Npoint *start, const Npoint *end,
 }
 
 /**
- * @brief Return true if a segment of a temporal network point value intersects
- * a base value at the timestamp
- * @param[in] start,end Temporal instants defining the segment
- * @param[in] value Base value
+ * @brief Return a float in (0,1) if a network point segment intersects a 
+ * network point, return -1.0 if the network point is not located in the
+ * segment or if it is approximately equal to the start or the end valuess
+ * @param[in] start,end Values defining the segment
+ * @param[in] value Value to locate
+ * @note The function returns -1.0 if the network point is approximately equal 
+ * to the start or the end network points since it is used in the lifting
+ * infrastructure for determining the crossings or the turning points after
+ * verifying that the bounds of the segment are not equal to the value.
  */
 long double
 npointsegm_locate(const Npoint *start, const Npoint *end, const Npoint *value)
@@ -103,9 +108,8 @@ npointsegm_locate(const Npoint *start, const Npoint *end, const Npoint *value)
   double max = Max(start->pos, end->pos);
   /* If value is to the left or to the right of the range */
   if ((value->rid != start->rid) ||
-    (value->pos < start->pos && value->pos < end->pos) ||
-    (value->pos > start->pos && value->pos > end->pos))
-  // if (value->rid != start->rid || (value->pos < min && value->pos > max))
+      (value->pos <= start->pos && value->pos <= end->pos) ||
+      (value->pos >= start->pos && value->pos >= end->pos))
     return -1.0;
 
   double range = (max - min);

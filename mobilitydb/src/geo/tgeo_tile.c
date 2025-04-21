@@ -490,7 +490,7 @@ Tgeo_space_time_split_ext(FunctionCallInfo fcinfo, bool timesplit)
     /* Restrict the temporal point to the box */
     Temporal *atstbox = tgeo_restrict_stbox(state->temp, &box, BORDER_EXC,
       REST_AT);
-    if (atstbox == NULL)
+    if (! atstbox)
       continue;
 
     /* Form tuple and return */

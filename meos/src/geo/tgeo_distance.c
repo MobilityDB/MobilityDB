@@ -183,8 +183,8 @@ tpoint_geo_min_dist_at_timestamptz(const TInstant *start, const TInstant *end,
   Datum value1 = tinstant_value_p(start);
   Datum value2 = tinstant_value_p(end);
   double dist;
-  double fraction = pointsegm_locate(value1, value2, point, &dist);
-  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
+  double fraction = (double) pointsegm_locate(value1, value2, point, &dist);
+  if (fraction < 0.0)
     return false;
   *value = Float8GetDatum(dist);
   *t = start->t + (TimestampTz) (duration * fraction);

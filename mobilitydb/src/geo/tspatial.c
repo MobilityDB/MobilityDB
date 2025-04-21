@@ -218,7 +218,7 @@ Tspatial_to_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Geo_expand_space(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_expand_space);
 /**
- * @ingroup mobilitydb_temporal_transf
+ * @ingroup mobilitydb_geo_transf
  * @brief Return the bounding box of a geometry/geography expanded on the
  * spatial dimension by a value
  * @sqlfn expandSpace()

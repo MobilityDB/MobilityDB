@@ -486,7 +486,7 @@ pointsegm_locate_point(Datum start, Datum end, Datum point, double *dist)
     double dist1;
     /* Get the closest point and the distance */
     result = closest_point_on_segment_sphere(&p, &p1, &p2, &closest, &dist1);
-    /* For robustness, force 0/1 when closest point == start/endpoint */
+    /* For robustness, force 0/1 when closest point ~= start/end point */
     if (p4d_same(&p1, &closest))
       result = 0.0;
     else if (p4d_same(&p2, &closest))
@@ -510,7 +510,7 @@ pointsegm_locate_point(Datum start, Datum end, Datum point, double *dist)
       const POINT3DZ *p = DATUM_POINT3DZ_P(point);
       POINT3DZ proj;
       result = closest_point3dz_on_segment_ratio(p, p1, p2, &proj);
-      /* For robustness, force 0/1 when closest point == start/endpoint */
+      /* For robustness, force 0/1 when closest point ~= start/end point */
       if (p3d_same((POINT3D *) p1, (POINT3D *) &proj))
         result = 0.0;
       else if (p3d_same((POINT3D *) p2, (POINT3D *) &proj))
@@ -529,7 +529,8 @@ pointsegm_locate_point(Datum start, Datum end, Datum point, double *dist)
         result = 0.0;
       else if (p2d_same(p2, &proj))
         result = 1.0;
-      if (dist)
+     /* Return the distance between the closest point and the point if requested */
+     if (dist)
         *dist = distance2d_pt_pt((POINT2D *) p, &proj);
     }
   }
@@ -537,12 +538,17 @@ pointsegm_locate_point(Datum start, Datum end, Datum point, double *dist)
 }
 
 /**
- * @brief Return a float between 0 and 1 representing the location of the
- * closest point on the geometry segment to the given point, as a fraction of
- * total segment length
+ * @brief Return a float in (0,1) representing the location of the closest
+ * point on the line segment to the given point, as a fraction of the total
+ * segment length, return -1.0 if the point is not located in the segment or
+ * if is approximately equal to the start or to the end point
  * @param[in] start,end Points defining the segment
  * @param[in] point Reference point
  * @param[out] dist Distance
+ * @note The function returns -1.0 if the point is approximately equal to the
+ * start or the end point since it is used in the lifting infrastructure for
+ * determining the crossings or the turning points after verifying that the
+ * bounds of the segment are not equal to the point.
  */
 long double
 pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
@@ -558,14 +564,11 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
     datum_point4d(point, &p);
     /* Get the closest point and the distance */
     result = closest_point_on_segment_sphere(&p, &p1, &p2, &closest, &dist1);
-    if (fabs(dist1) >= MEOS_EPSILON)
+    if (fabs(dist1) >= MEOS_EPSILON || p4d_same(&p1, &closest) ||
+        p4d_same(&p2, &closest))
       return -1.0;
-    /* For robustness, force 0/1 when closest point == start/endpoint */
-    if (p4d_same(&p1, &closest))
-      result = 0.0;
-    else if (p4d_same(&p2, &closest))
-      result = 1.0;
-    /* Return the distance between the closest point and the point if requested */
+    /* Return the distance between the closest point and the point if
+     * requested */
     if (dist)
     {
       dist1 = WGS84_RADIUS * dist1;
@@ -585,13 +588,12 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
       POINT3DZ proj;
       result = closest_point3dz_on_segment_ratio(p, p1, p2, &proj);
       dist1 = distance3d_pt_pt((POINT3D *) p, (POINT3D *) &proj);
-      if (fabs(dist1) >= MEOS_EPSILON)
+      if (fabs(dist1) >= MEOS_EPSILON ||
+          p3d_same((POINT3D *) p1, (POINT3D *) &proj) ||
+          p3d_same((POINT3D *) p2, (POINT3D *) &proj))
         return -1.0;
-      /* For robustness, force 0/1 when closest point == start/endpoint */
-      if (p3d_same((POINT3D *) p1, (POINT3D *) &proj))
-        result = 0.0;
-      else if (p3d_same((POINT3D *) p2, (POINT3D *) &proj))
-        result = 1.0;
+      /* Return the distance between the closest point and the point if
+       * requested */
       if (dist)
         *dist = distance3d_pt_pt((POINT3D *) p, (POINT3D *) &proj);
     }
@@ -603,12 +605,11 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
       POINT2D proj;
       result = closest_point2d_on_segment_ratio(p, p1, p2, &proj);
       dist1 = distance2d_pt_pt((POINT2D *) p, &proj);
-      if (fabs(dist1) >= MEOS_EPSILON)
+      if (fabs(dist1) >= MEOS_EPSILON || p2d_same(p1, &proj) ||
+          p2d_same(p2, &proj))
         return -1.0;
-      if (p2d_same(p1, &proj))
-        result = 0.0;
-      else if (p2d_same(p2, &proj))
-        result = 1.0;
+      /* Return the distance between the closest point and the segment if
+       * requested */
       if (dist)
         *dist = dist1;
     }
@@ -641,7 +642,7 @@ tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum end = tinstant_value_p(inst2);
   double dist;
   double fraction = (double) pointsegm_locate(start, end, value, &dist);
-  if (fabs(dist) >= MEOS_EPSILON)
+  if (fraction < 0.0)
     return false;
   if (t)
   {
@@ -2488,7 +2489,7 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   */
 
   Temporal *temp1 = tpoint_mvt(temp, bounds, extent, buffer, clip_geom);
-  if (temp1 == NULL)
+  if (! temp1)
     return false;
 
   /* Decouple the geometry and the timestamps */
@@ -3330,6 +3331,8 @@ tpoint_geo_min_bearing_at_timestamptz(const TInstant *start,
     proj = PointerGetDatum(geopoint_make(rad2deg(inter.lon),
       rad2deg(inter.lat), 0, false, true, tspatialinst_srid(start)));
     fraction = pointsegm_locate(dstart, dend, proj, NULL);
+    if (fraction < 0.0)
+      return false;
   }
   else
   {
@@ -3339,9 +3342,9 @@ tpoint_geo_min_bearing_at_timestamptz(const TInstant *start,
     if (ds == de)
       return false;
     fraction = (long double)(p->x - p1->x) / (long double)(p2->x - p1->x);
+    if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
+      return false;
   }
-  if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
-    return false;
   long double duration = (long double) (end->t - start->t);
   *t = start->t + (TimestampTz) (duration * fraction);
   *value = (Datum) 0;

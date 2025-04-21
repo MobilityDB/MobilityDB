@@ -284,11 +284,11 @@ int main(void)
       free(t_out);
       inst = (TInstant *) tgeogpoint_in(point_buffer);
       /* Ensure there is still space for storing the temporal point instant */
-      if (trips[j].trip == NULL)
+      if (! trips[j].trip)
       {
         trips[j].trip = tsequence_make_exp((const TInstant **) &inst, 1,
           INITIAL_INSTANTS, true, true, LINEAR, false);
-        if (trips[j].trip == NULL)
+        if (! trips[j].trip)
         {
           printf("\nMSSI: %ld, there is no more memory to expand the trip\n",
             trips[j].MMSI);

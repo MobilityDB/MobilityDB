@@ -960,7 +960,7 @@ _mobdb_span_sel(PG_FUNCTION_ARGS)
 
   /* Test input parameters */
   char *relname = get_rel_name(relid);
-  if (relname == NULL)
+  if (! relname)
     ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
       errmsg("Oid %u does not refer to a table", relid)));
   const char *att_name = text2cstring(att_text);
@@ -1502,7 +1502,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
 
   /* Test input parameters */
   char *table1_name = get_rel_name(table1_oid);
-  if (table1_name == NULL)
+  if (! table1_name)
     ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
       errmsg("Oid %u does not refer to a table", table1_oid)));
   const char *att1_name = text2cstring(att1_text);
@@ -1515,7 +1515,7 @@ _mobdb_span_joinsel(PG_FUNCTION_ARGS)
   // meosType atttype1 = oid_type(get_atttype(table1_oid, att1_num));
 
   char *table2_name = get_rel_name(table2_oid);
-  if (table2_name == NULL)
+  if (! table2_name)
     ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
       errmsg("Oid %u does not refer to a table", table2_oid)));
   const char *att2_name = text2cstring(att2_text);
