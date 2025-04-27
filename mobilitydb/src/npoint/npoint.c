@@ -232,7 +232,7 @@ PGDLLEXPORT Datum Npoint_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_from_hexwkb);
 /**
  * @ingroup mobilitydb_npoint_base_inout
- * @brief Return a network point from its hex-encoded ASCII Well-Known Binary
+ * @brief Return a network point from its ASCII hex-encoded Well-Known Binary
  * (HexWKB) representation
  * @sqlfn npointFromHexWKB()
  */
@@ -332,7 +332,7 @@ PGDLLEXPORT Datum Npoint_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_as_hexwkb);
 /**
  * @ingroup mobilitydb_npoint_base_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a network point
  * @sqlfn asHexWKB()
  */
@@ -462,7 +462,7 @@ Datum
 Npoint_to_nsegment(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_NSEGMENT_P(npoint_nsegment(np));
+  PG_RETURN_NSEGMENT_P(npoint_to_nsegment(np));
 }
 
 /*****************************************************************************/
@@ -479,7 +479,7 @@ Datum
 Npoint_to_geom(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_GSERIALIZED_P(npoint_geom(np));
+  PG_RETURN_GSERIALIZED_P(npoint_to_geom(np));
 }
 
 PGDLLEXPORT Datum Geom_to_npoint(PG_FUNCTION_ARGS);
@@ -494,7 +494,7 @@ Datum
 Geom_to_npoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Npoint *result = geom_npoint(gs);
+  Npoint *result = geom_to_npoint(gs);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_NPOINT_P(result);
@@ -512,7 +512,7 @@ Datum
 Nsegment_to_geom(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  PG_RETURN_GSERIALIZED_P(nsegment_geom(ns));
+  PG_RETURN_GSERIALIZED_P(nsegment_to_geom(ns));
 }
 
 PGDLLEXPORT Datum Geom_to_nsegment(PG_FUNCTION_ARGS);
@@ -527,7 +527,7 @@ Datum
 Geom_to_nsegment(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Nsegment *result = geom_nsegment(gs);
+  Nsegment *result = geom_to_nsegment(gs);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_NSEGMENT_P(result);
@@ -713,7 +713,7 @@ Datum
 Npoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_STBOX_P(npoint_stbox(np));
+  PG_RETURN_STBOX_P(npoint_to_stbox(np));
 }
 
 PGDLLEXPORT Datum Nsegment_to_stbox(PG_FUNCTION_ARGS);
@@ -728,7 +728,7 @@ Datum
 Nsegment_to_stbox(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  PG_RETURN_STBOX_P(nsegment_stbox(ns));
+  PG_RETURN_STBOX_P(nsegment_to_stbox(ns));
 }
 
 /*****************************************************************************/

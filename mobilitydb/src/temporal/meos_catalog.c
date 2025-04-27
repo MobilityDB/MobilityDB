@@ -402,14 +402,14 @@ oid_oper(Oid oproid, meosType *ltype, meosType *rtype)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum fill_oid_cache(PG_FUNCTION_ARGS __attribute__((unused)));
+PGDLLEXPORT Datum fill_oid_cache(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(fill_oid_cache);
 /**
  * @brief Function executed during the `CREATE EXTENSION` to precompute the
  * operator cache and store it in table `mobilitydb_opcache`
  */
 Datum
-fill_oid_cache(PG_FUNCTION_ARGS __attribute__((unused)))
+fill_oid_cache(PG_FUNCTION_ARGS)
 {
   /* Get the Oid of the mobilitydb_opcache table */
   Oid cat_mob = RelnameGetRelid("mobilitydb_opcache");

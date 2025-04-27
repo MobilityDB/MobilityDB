@@ -1269,8 +1269,8 @@ tsequenceset_value_at_timestamptz(const TSequenceSet *ss, TimestampTz t,
   {
     /* Singleton sequence set */
     if (ss->count == 1)
-      return tsequence_value_at_timestamptz(TSEQUENCESET_SEQ_N(ss, 0), t, false,
-        result);
+      return tsequence_value_at_timestamptz(TSEQUENCESET_SEQ_N(ss, 0), t,
+        false, result);
 
     for (int i = 0; i < ss->count; i++)
     {
@@ -1773,7 +1773,7 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ss, const TSequence *seq,
     TSequence *interseq1, *interseq2;
     bool hasinter;
     /* mode == SYNCHRONIZE or SYNCHRONIZE_CROSS */
-    hasinter = synchronize_tsequence_tsequence(seq, seq1,
+    hasinter = synchronize_tsequence_tsequence(seq1, seq,
       &interseq1, &interseq2, mode == SYNCHRONIZE_CROSS);
     if (hasinter)
     {

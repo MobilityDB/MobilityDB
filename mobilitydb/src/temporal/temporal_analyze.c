@@ -112,7 +112,7 @@ TemporalAnalyzeExtraData *temporal_extra_data;
  */
 static void
 temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
+  int samplerows, double totalrows UNUSED)
 {
   int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
   float8 *value_lengths = NULL, *time_lengths; /* make compiler quiet */
@@ -140,7 +140,11 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   for (int i = 0; i < samplerows; i++)
   {
     /* Give backend a chance of interrupting us */
+#if POSTGRESQL_VERSION_NUMBER >= 180000
+    vacuum_delay_point(true);
+#else
     vacuum_delay_point();
+#endif
 
     bool isnull;
     Datum value = fetchfunc(stats, i, &isnull);

@@ -44,18 +44,16 @@
 #include <lwgeodetic.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
 #include "temporal/pg_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
-#include "temporal/tnumber_mathfuncs.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
 #include "geo/meos_transform.h"
 #include "geo/postgis_funcs.h"
+#include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
-#include "geo/tspatial.h"
 #include "geo/tspatial_parser.h"
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
@@ -255,7 +253,7 @@ stbox_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup meos_geo_box_inout
- * @brief Return a spatiotemporal box from its hex-encoded ASCII Well-Known
+ * @brief Return a spatiotemporal box from its ASCII hex-encoded Well-Known
  * Binary (WKB) representation
  * @param[in] hexwkb HexWKB string
  * @csqlfn #Stbox_from_hexwkb()
@@ -291,7 +289,7 @@ stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup meos_geo_box_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a spatiotemporal box
  * @param[in] box Spatiotemporal box
  * @param[in] variant Output variant
@@ -527,13 +525,12 @@ stbox_set_box3d(const STBox *box, BOX3D *box3d)
  * @csqlfn #Stbox_to_box2d()
  */
 GBOX *
-stbox_gbox(const STBox *box)
+stbox_to_gbox(const STBox *box)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_STBOX, box->flags))
     return NULL;
-
   GBOX *result = palloc(sizeof(GBOX));
   stbox_set_gbox(box, result);
   return result;
@@ -546,7 +543,7 @@ stbox_gbox(const STBox *box)
  * @csqlfn #Stbox_to_box3d()
  */
 BOX3D *
-stbox_box3d(const STBox *box)
+stbox_to_box3d(const STBox *box)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
@@ -561,7 +558,7 @@ stbox_box3d(const STBox *box)
 }
 
 /**
- * @ingroup meos_geo_box_conversion
+ * @ingroup meos_internal_geo_box_conversion
  * @brief Return a spatiotemporal box converted as a geometry/geography
  * @param[in] box Spatiotemporal box
  * @csqlfn #Stbox_to_geo()
@@ -569,11 +566,7 @@ stbox_box3d(const STBox *box)
 GSERIALIZED *
 stbox_geo(const STBox *box)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL);
-  if (! ensure_has_X(T_STBOX, box->flags))
-    return NULL;
-
+  assert(box); assert(MEOS_FLAGS_GET_X(box->flags));
   LWGEOM *geo;
   GSERIALIZED *result;
   BOX3D box3d;
@@ -619,8 +612,37 @@ stbox_geo(const STBox *box)
   FLAGS_SET_Z(geo->flags, hasz);
   FLAGS_SET_GEODETIC(geo->flags, geodetic);
   result = geo_serialize(geo);
-  lwgeom_free(geo);
+  // lwgeom_free(geo);
   return result;
+}
+
+/**
+ * @ingroup meos_geo_box_conversion
+ * @brief Return a spatiotemporal box converted as a geometry/geography
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Stbox_to_geo()
+ */
+GSERIALIZED *
+stbox_to_geo(const STBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_has_X(T_STBOX, box->flags))
+    return NULL;
+  return stbox_geo(box);
+}
+
+/**
+ * @ingroup meos_internal_geo_box_conversion
+ * @brief Convert a spatiotemporal box into a timestamptz span
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #Stbox_to_tstzspan()
+ */
+Span *
+stbox_tstzspan(const STBox *box)
+{
+  assert(box); assert(MEOS_FLAGS_GET_T(box->flags));
+  return span_copy(&box->period);
 }
 
 /**
@@ -630,7 +652,7 @@ stbox_geo(const STBox *box)
  * @csqlfn #Stbox_to_tstzspan()
  */
 Span *
-stbox_tstzspan(const STBox *box)
+stbox_to_tstzspan(const STBox *box)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
@@ -800,7 +822,7 @@ geo_set_stbox(const GSERIALIZED *gs, STBox *box)
 }
 
 /**
- * @ingroup meos_geo_box_conversion
+ * @ingroup meos_internal_geo_box_conversion
  * @brief Convert a geometry/geography into a spatiotemporal box
  * @param[in] gs Geometry/geography
  * @csqlfn #Geo_to_stbox()
@@ -809,13 +831,26 @@ STBox *
 geo_stbox(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs))
-    return NULL;
-
+  assert(gs); assert(! gserialized_is_empty(gs));
   STBox *result = palloc(sizeof(STBox));
   geo_set_stbox(gs, result);
   return result;
+}
+
+/**
+ * @ingroup meos_geo_box_conversion
+ * @brief Convert a geometry/geography into a spatiotemporal box
+ * @param[in] gs Geometry/geography
+ * @csqlfn #Geo_to_stbox()
+ */
+STBox *
+geo_to_stbox(const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_empty(gs))
+    return NULL;
+  return geo_to_stbox(gs);
 }
 
 /**
@@ -866,7 +901,7 @@ timestamptz_set_stbox(TimestampTz t, STBox *box)
  * @csqlfn #Timestamptz_to_stbox()
  */
 STBox *
-timestamptz_stbox(TimestampTz t)
+timestamptz_to_stbox(TimestampTz t)
 {
   STBox *result = palloc(sizeof(STBox));
   timestamptz_set_stbox(t, result);
@@ -892,7 +927,7 @@ tstzset_set_stbox(const Set *s, STBox *box)
 }
 
 /**
- * @ingroup meos_geo_box_conversion
+ * @ingroup meos_internal_geo_box_conversion
  * @brief Convert a timestamptz set into a spatiotemporal box
  * @param[in] s Set
  * @csqlfn #Tstzset_to_stbox()
@@ -900,11 +935,24 @@ tstzset_set_stbox(const Set *s, STBox *box)
 STBox *
 tstzset_stbox(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSET(s, NULL);
+  assert(s); assert(s->settype == T_TSTZSET);
   STBox *result = palloc(sizeof(STBox));
   tstzset_set_stbox(s, result);
   return result;
+}
+
+/**
+ * @ingroup meos_geo_box_conversion
+ * @brief Convert a timestamptz set into a spatiotemporal box
+ * @param[in] s Set
+ * @csqlfn #Tstzset_to_stbox()
+ */
+STBox *
+tstzset_to_stbox(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSET(s, NULL);
+  return tstzset_stbox(s);
 }
 
 /**
@@ -926,7 +974,7 @@ tstzspan_set_stbox(const Span *s, STBox *box)
 }
 
 /**
- * @ingroup meos_geo_box_conversion
+ * @ingroup meos_internal_geo_box_conversion
  * @brief Convert a timestamptz span into a spatiotemporal box
  * @param[in] s Span
  * @csqlfn #Tstzspan_to_stbox()
@@ -935,10 +983,24 @@ STBox *
 tstzspan_stbox(const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPAN(s, NULL);
+  assert(s); assert(s->spantype == T_TSTZSPAN);
   STBox *result = palloc(sizeof(STBox));
   tstzspan_set_stbox(s, result);
   return result;
+}
+
+/**
+ * @ingroup meos_geo_box_conversion
+ * @brief Convert a timestamptz span into a spatiotemporal box
+ * @param[in] s Span
+ * @csqlfn #Tstzspan_to_stbox()
+ */
+STBox *
+tstzspan_to_stbox(const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return tstzspan_stbox(s);
 }
 
 /**
@@ -967,7 +1029,7 @@ tstzspanset_set_stbox(const SpanSet *ss, STBox *box)
  * @csqlfn #Tstzspanset_to_stbox()
  */
 STBox *
-tstzspanset_stbox(const SpanSet *ss)
+tstzspanset_to_stbox(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPANSET(ss, NULL);

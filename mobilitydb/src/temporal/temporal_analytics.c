@@ -157,10 +157,10 @@ Temporal_tsample(PG_FUNCTION_ARGS)
   TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
   text *interp_txt = PG_GETARG_TEXT_P(3);
   char *interp_str = text2cstring(interp_txt);
-  interpType interp = interptype_from_string(interp_str);
-  pfree(interp_str);
-  Temporal *result = temporal_tsample(temp, duration, origin, interp);
+  Temporal *result = temporal_tsample(temp, duration, origin, interp_str);
   PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(interp_txt, 3);
+  pfree(interp_str);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);

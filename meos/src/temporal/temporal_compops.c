@@ -81,8 +81,6 @@ eacomp_base_temporal(Datum value, const Temporal *temp,
   lfinfo.invert = INVERT;
   lfinfo.discont = DISCONTINUOUS; /* Comparisons are always discontinuous */
   lfinfo.ever = ever;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return eafunc_temporal_base(temp, value, &lfinfo);
 }
 
@@ -113,8 +111,6 @@ eacomp_temporal_base(const Temporal *temp, Datum value,
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = DISCONTINUOUS; /* Comparisons are always discontinuous */
   lfinfo.ever = ever;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return eafunc_temporal_base(temp, value, &lfinfo);
 }
 
@@ -143,8 +139,6 @@ eacomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = DISCONTINUOUS; /* Comparisons are always discontinuous */
   lfinfo.ever = ever;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
@@ -697,8 +691,6 @@ tcomp_base_temporal(Datum value, const Temporal *temp,
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT;
   lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal_base(temp, value, &lfinfo);
 }
 
@@ -727,8 +719,6 @@ tcomp_temporal_base(const Temporal *temp, Datum value,
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal_base(temp, value, &lfinfo);
 }
 
@@ -757,8 +747,6 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
@@ -767,7 +755,7 @@ tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * @ingroup meos_temporal_meos_temporal_comp_temp
+ * @ingroup meos_temporal_comp_temp
  * @brief Return the temporal equality of two temporal values
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Teq_temporal_temporal()

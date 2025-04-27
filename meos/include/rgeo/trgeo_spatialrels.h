@@ -23,47 +23,37 @@
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
  * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
 /**
- * @brief Temporal distance for temporal circular buffers.
+ * @file
+ * @brief Distance functions for temporal rigid geometries
  */
 
-#ifndef __TPOSE_DISTANCE_H__
-#define __TPOSE_DISTANCE_H__
+#ifndef __TRGEO_SPATIALRELS_H__
+#define __TRGEO_SPATIALRELS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
+/* PostGIS */
+#include <liblwgeom.h>
 /* MEOS */
 #include "temporal/temporal.h"
-#include "pose/tpose.h"
+#include "pose/pose.h"
 
 /*****************************************************************************/
 
-extern Temporal *distance_tpose_point(const Temporal *temp,
-  const GSERIALIZED *gs);
-extern Temporal *distance_tpose_pose(const Temporal *temp, const Pose *pose);
-extern Temporal *distance_tpose_tpose(const Temporal *temp1,
-  const Temporal *temp2);
-
-extern TInstant *nai_tpose_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern TInstant *nai_tpose_pose(const Temporal *temp, const Pose *pose);
-extern TInstant *nai_tpose_tpose(const Temporal *temp, const Temporal *temp2);
-
-extern double nad_tpose_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern double nad_tpose_pose(const Temporal *temp, const Pose *pose);
-extern double nad_tpose_tpose(const Temporal *temp1,
-  const Temporal *temp2);
-
-extern GSERIALIZED *shortestline_tpose_geo(const Temporal *temp,
-  const GSERIALIZED *geo);
-extern GSERIALIZED *shortestline_tpose_pose(const Temporal *temp,
-  const Pose *pose);
-extern GSERIALIZED *shortestline_tpose_tpose(const Temporal *temp1,
-  const Temporal *temp2);
+extern int ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+  bool ever);
+extern int ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+  bool ever)
+extern int ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever);
+extern int ea_disjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever)
 
 /*****************************************************************************/
 
-#endif /* __TPOSE_DISTANCE_H__ */
+#endif /* __TRGEO_SPATIALRELS_H__ */

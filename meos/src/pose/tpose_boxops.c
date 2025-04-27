@@ -92,7 +92,7 @@ posearr_set_stbox(const Datum *values, int count, STBox *box)
 }
 
 /**
- * @ingroup meos_box_conversion
+ * @ingroup meos_pose_box_conversion
  * @brief Convert a pose into a spatiotemporal box
  * @param[in] pose Pose
  * @csqlfn #Pose_to_stbox()

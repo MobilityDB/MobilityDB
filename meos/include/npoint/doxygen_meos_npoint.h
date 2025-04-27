@@ -59,6 +59,18 @@
  * @defgroup meos_npoint_agg Aggregate functions
  * @ingroup meos_npoint
  * @brief Aggregate functions for temporal network points
+ *
+ * @defgroup meos_npoint_comp Comparison functions
+ * @ingroup meos_npoint
+ * @brief Comparison functions for temporal network points
+ *
+ *   @defgroup meos_npoint_comp_ever Ever and always comparison functions
+ *   @ingroup meos_npoint_comp
+ *   @brief Ever and always comparison functions for temporal network points
+ *
+ *   @defgroup meos_npoint_comp_temp Temporal comparison functions
+ *   @ingroup meos_npoint_comp
+ *   @brief Temporal comparison functions for temporal network points
  */
 
 /*****************************************************************************/
@@ -80,9 +92,17 @@
  * @ingroup meos_npoint_base
  * @brief Accessor functions for static network points
  *
+ * @defgroup meos_npoint_base_route Route functions
+ * @ingroup meos_npoint_base
+ * @brief Route functions for static network points
+ *
  * @defgroup meos_npoint_base_transf Transformation functions
  * @ingroup meos_npoint_base
  * @brief Transformation functions for static network points
+ *
+ * @defgroup meos_npoint_base_srid Spatial reference system functions
+ * @ingroup meos_npoint_base
+ * @brief Spatial reference system functions for static network points
  *
  * @defgroup meos_npoint_base_comp Comparison functions
  * @ingroup meos_npoint_base

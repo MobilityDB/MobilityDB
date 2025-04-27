@@ -36,13 +36,9 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
-#include "temporal/pg_types.h"
-#include "temporal/lifting.h"
 #include "temporal/temporal.h"
-#include "temporal/temporal_compops.h"
 #include "temporal/type_util.h"
-#include "geo/tgeo_spatialfuncs.h"
+#include "temporal/temporal_compops.h"
 #include "npoint/tnpoint.h"
 
 /*****************************************************************************
@@ -202,7 +198,7 @@ always_ne_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_geo_comp_ever
+ * @ingroup meos_npoint_comp_ever
  * @brief Return true if two temporal network points are ever equal
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Ever_eq_tnpoint_tnpoint()
@@ -214,7 +210,7 @@ ever_eq_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_geo_comp_ever
+ * @ingroup meos_npoint_comp_ever
  * @brief Return true if two temporal network points are ever different
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Ever_ne_tnpoint_tnpoint()
@@ -226,7 +222,7 @@ ever_ne_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_geo_comp_ever
+ * @ingroup meos_npoint_comp_ever
  * @brief Return true if two temporal network points are always equal
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Always_eq_tnpoint_tnpoint()
@@ -238,7 +234,7 @@ always_eq_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup meos_geo_comp_ever
+ * @ingroup meos_npoint_comp_ever
  * @brief Return true if two temporal network points are always different
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Always_ne_tnpoint_tnpoint()

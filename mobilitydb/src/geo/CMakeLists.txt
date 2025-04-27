@@ -9,7 +9,6 @@ add_library(pg_geo OBJECT
   tgeo_distance.c
   tgeo_spatialfuncs.c
   tgeo_spatialrels.c
-  tgeo_tempspatialrels.c
   tgeo_tile.c
   tspatial.c
   tpoint_datagen.c
@@ -18,4 +17,5 @@ add_library(pg_geo OBJECT
   tspatial_posops.c
   tspatial_selfuncs.c
   tspatial_spgist.c
+  tspatial_tempspatialrels.c
   )

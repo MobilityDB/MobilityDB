@@ -237,7 +237,7 @@ Datum
 Geomeas_to_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *result = geomeas_tpoint(gs);
+  Temporal *result = geomeas_to_tpoint(gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -606,12 +606,12 @@ PG_FUNCTION_INFO_V1(Bearing_point_point);
 Datum
 Bearing_point_point(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo1 = PG_GETARG_GSERIALIZED_P(0);
-  GSERIALIZED *geo2 = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs2 = PG_GETARG_GSERIALIZED_P(1);
   double result;
-  bool found = bearing_point_point(geo1, geo2, &result);
-  PG_FREE_IF_COPY(geo1, 0);
-  PG_FREE_IF_COPY(geo2, 1);
+  bool found = bearing_point_point(gs1, gs2, &result);
+  PG_FREE_IF_COPY(gs1, 0);
+  PG_FREE_IF_COPY(gs2, 1);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
@@ -734,13 +734,13 @@ Tgeo_restrict_geom(FunctionCallInfo fcinfo, bool atfunc)
   CREATE FUNCTION at/minusGeometry(tgeometry, geometry, floatspan)
   */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Span *zspan = NULL;
   if (PG_NARGS() == 3)
     zspan = PG_GETARG_SPAN_P(2);
-  Temporal *result = tgeo_restrict_geom(temp, geo, zspan, atfunc);
+  Temporal *result = tgeo_restrict_geom(temp, gs, zspan, atfunc);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(geo, 1);
+  PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);

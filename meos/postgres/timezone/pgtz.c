@@ -38,6 +38,7 @@ typedef struct
 } tzentry;
 
 static uint32 hash_string_pointer(const char *s);
+// static void tzcache_my_destroy(SH_TYPE *tb);
 #define SH_PREFIX tzcache
 #define SH_ELEMENT_TYPE tzentry
 #define SH_KEY_TYPE const char *
@@ -46,6 +47,7 @@ static uint32 hash_string_pointer(const char *s);
 #define SH_EQUAL(tb, a, b) (strcmp(a, b) == 0)
 #define SH_SCOPE static inline
 #define SH_RAW_ALLOCATOR palloc0
+#define SH_DESTROY tzcache_destroy(tzcache)
 #define SH_DEFINE
 #define SH_DECLARE
 #include <lib/simplehash.h>
@@ -74,6 +76,50 @@ hash_string_pointer(const char *s)
 {
   unsigned char *ss = (unsigned char *) s;
   return hash_bytes(ss, strlen(s));
+}
+
+/*
+ * We keep loaded timezones in a hashtable so we don't have to
+ * load and parse the TZ definition file every time one is selected.
+ * Because we want timezone names to be found case-insensitively,
+ * the hash key is the uppercased name of the zone.
+ * MEOS: We use a fixed size hash table instead of a dynamic hash table
+ * as in the original PG code.
+ */
+/* MEOS */
+// typedef struct {...} pg_tz_cache;
+
+static tzcache_hash *timezone_cache = NULL;
+
+static bool
+init_timezone_hashtable(void)
+{
+  /* MEOS: Create the timezone hash table */
+  timezone_cache = tzcache_create(TZCACHE_INITIAL_SIZE, NULL);
+
+  if (!timezone_cache)
+    return false;
+
+  return true;
+}
+
+/**
+ * @brief Destroy function to free the memory allocated for the hash table
+ */
+static void tzcache_my_destroy(tzcache_hash *tb)
+{
+  tzcache_iterator it;
+  tzentry *entry;
+  tzcache_start_iterate(timezone_cache, &it);
+  while ((entry = tzcache_iterate(timezone_cache, &it)) != NULL)
+  {
+    if (entry->key != NULL)
+      pfree(entry->key); 
+    if (entry->data != NULL)
+      pfree(entry->data);
+    tzcache_delete_item(timezone_cache, entry);
+  }
+  tzcache_destroy(tb);
 }
 
 /*
@@ -260,31 +306,6 @@ scan_directory_ci(const char *dirname, const char *fname, int fnamelen,
 }
 
 /*
- * We keep loaded timezones in a hashtable so we don't have to
- * load and parse the TZ definition file every time one is selected.
- * Because we want timezone names to be found case-insensitively,
- * the hash key is the uppercased name of the zone.
- * MEOS: We use a fixed size hash table instead of a dynamic hash table
- * as in the original PG code.
- */
-/* MEOS */
-// typedef struct {...} pg_tz_cache;
-
-static tzcache_hash *timezone_cache = NULL;
-
-static bool
-init_timezone_hashtable(void)
-{
-  /* MEOS: Create the timezone hash table */
-  timezone_cache = tzcache_create(TZCACHE_INITIAL_SIZE, NULL);
-
-  if (!timezone_cache)
-    return false;
-
-  return true;
-}
-
-/*
  * Load a timezone from file or from cache.
  * Does not verify that the timezone is acceptable!
  *
@@ -432,6 +453,9 @@ meos_initialize_timezone(const char *tz_str)
     /* default timezone */
     tz_str = "GMT";
 
+  /* Free the existing timezone entry */
+  if (session_timezone)
+    pfree(session_timezone); 
   session_timezone = pg_tzset(tz_str);
   if (! session_timezone)
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
@@ -446,7 +470,20 @@ void
 meos_finalize_timezone(void)
 {
   if (session_timezone)
+    pfree(session_timezone); 
+  if (timezone_cache)
+  {
+    /* Free the timezone name strings associated to the keys */
+    tzcache_iterator it;
+    tzentry *entry;
+    tzcache_start_iterate(timezone_cache, &it);
+    while ((entry = tzcache_iterate(timezone_cache, &it)) != NULL)
+    {
+      if (entry->key != NULL)
+        pfree(entry->key); 
+    }
     tzcache_destroy(timezone_cache);
+  }
   return;
 }
 /*****************************************************************************/

@@ -47,7 +47,17 @@
 /* General functions */
 
 extern void mobilitydb_init(void);
-extern GSERIALIZED *geo_copy(const GSERIALIZED *g);
+
+/* Conversion functions */
+
+extern STBox *geo_stbox(const GSERIALIZED *gs);
+extern GSERIALIZED *stbox_geo(const STBox *box);
+extern STBox *spatialset_stbox(const Set *s);
+extern BOX3D *stbox_box3d(const STBox *box);
+extern Span *stbox_tstzspan(const STBox *box);
+extern STBox *tstzset_stbox(const Set *s);
+extern STBox *tstzspan_stbox(const Span *s);
+extern STBox *tspatial_stbox(const Temporal *temp);
 
 /* Temporal comparisons */
 

@@ -28,18 +28,30 @@
  *****************************************************************************/
 
 /**
- * @brief Functions for parsing temporal pose objects.
+ * @brief Temporal spatial relationships for temporal points.
  */
 
-#ifndef __TPOSE_H__
-#define __TPOSE_H__
+#ifndef __TCBUFFER_TEMPSPATIALRELS_H__
+#define __TCBUFFER_TEMPSPATIALRELS_H__
 
+/* PostgreSQL */
+#include <postgres.h>
+/* MEOS */
 #include "temporal/temporal.h"
-#include <meos_pose.h>
+#include "cbuffer/cbuffer.h"
 
 /*****************************************************************************/
 
+extern Temporal *tinterrel_tcbuffer_cbuffer(const Temporal *temp,
+  const Cbuffer *cb, bool tinter, bool restr, bool atvalue);
+extern Temporal *tinterrel_tcbuffer_geo(const Temporal *temp,
+  const GSERIALIZED *gs, bool tinter, bool restr, bool atvalue);
+extern Temporal *tinterrel_tcbuffer_tcbuffer(const Temporal *temp1,
+  const Temporal *temp2, bool tinter, bool restr, bool atvalue);
+
+extern Temporal *tdwithin_tcbuffer_tcbuffer_sync(const Temporal *sync1,
+  const Temporal *sync2, double dist, bool restr, bool atvalue);
 
 /*****************************************************************************/
 
-#endif /* __TPOSE_H__ */
+#endif /* __TCBUFFER_TEMPSPATIALRELS_H__ */

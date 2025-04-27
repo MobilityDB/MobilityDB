@@ -38,24 +38,24 @@
 
 CREATE FUNCTION distance(geometry, cbuffer)
   RETURNS float
-  AS 'SELECT @extschema@.ST_Distance($1, geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Distance_geo_cbuffer'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION distance(stbox, cbuffer)
   RETURNS float
-  AS 'SELECT @extschema@.ST_Distance(geometry($1), geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Distance_stbox_cbuffer'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION distance(cbuffer, geometry)
   RETURNS float
-  AS 'SELECT @extschema@.ST_Distance(geometry($1), $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Distance_cbuffer_geo'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION distance(cbuffer, stbox)
   RETURNS float
-  AS 'SELECT @extschema@.ST_Distance(geometry($1), geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Distance_cbuffer_stbox'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION distance(cbuffer, cbuffer)
-  RETURNS float
-  AS 'SELECT @extschema@.ST_Distance(geometry($1), geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Distance_cbuffer_cbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
   PROCEDURE = distance,
@@ -94,7 +94,7 @@ CREATE OPERATOR <-> (
 
 CREATE FUNCTION tDistance(geometry(Point), tcbuffer)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_point_tcbuffer'
+  AS 'MODULE_PATHNAME', 'Distance_geo_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDistance(cbuffer, tcbuffer)
   RETURNS tfloat
@@ -102,7 +102,7 @@ CREATE FUNCTION tDistance(cbuffer, tcbuffer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDistance(tcbuffer, geometry(Point))
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Distance_tcbuffer_point'
+  AS 'MODULE_PATHNAME', 'Distance_tcbuffer_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDistance(tcbuffer, cbuffer)
   RETURNS tfloat

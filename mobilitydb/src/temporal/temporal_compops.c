@@ -95,7 +95,7 @@ EAcomp_temporal_base(FunctionCallInfo fcinfo,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Specific function for the ever/always comparison
  */
-static Datum
+Datum
 EAcomp_temporal_temporal(FunctionCallInfo fcinfo,
   int (*func)(const Temporal *, const Temporal *))
 {

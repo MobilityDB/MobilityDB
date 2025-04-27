@@ -44,6 +44,7 @@
 /* General functions */
 
 extern void spanset_span_slice(Datum d, Span *s);
+extern void spanset_tbox_slice(Datum d, TBox *box);
 
 /*****************************************************************************/
 

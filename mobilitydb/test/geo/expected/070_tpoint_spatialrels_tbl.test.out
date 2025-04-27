@@ -13,13 +13,13 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE aContains(g, temp);
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE eDisjoint(g, temp);
  count 
 -------
-  9078
+  9248
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom WHERE eDisjoint(temp, g);
  count 
 -------
-  9078
+  9248
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE eDisjoint(t1.temp, t2.temp);
@@ -31,13 +31,13 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE eDisjoint(t1.tem
 SELECT COUNT(*) FROM tbl_geom3D, tbl_tgeompoint3D WHERE eDisjoint(g, temp);
  count 
 -------
-  8821
+  9400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom3D WHERE eDisjoint(temp, g);
  count 
 -------
-  8821
+  9400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE eDisjoint(t1.temp, t2.temp);
@@ -193,13 +193,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eIntersects(
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE aIntersects(g, temp);
  count 
 -------
-   322
+   152
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom WHERE aIntersects(temp, g);
  count 
 -------
-   322
+   152
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE aIntersects(t1.temp, t2.temp);
@@ -211,13 +211,13 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE aIntersects(t1.t
 SELECT COUNT(*) FROM tbl_geom3D, tbl_tgeompoint3D WHERE aIntersects(g, temp);
  count 
 -------
-   610
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom3D WHERE aIntersects(temp, g);
  count 
 -------
-   610
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE aIntersects(t1.temp, t2.temp);
@@ -238,16 +238,16 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aIntersects(
    118
 (1 row)
 
-SELECT COUNT(*) FROM tbl_geom3D, tbl_tgeompoint3D WHERE eTouches(g, temp);
+SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE eTouches(g, temp);
  count 
 -------
-     0
+  1602
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom3D WHERE eTouches(temp, g);
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom WHERE eTouches(temp, g);
  count 
 -------
-     0
+  1602
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE aTouches(g, temp);
@@ -331,7 +331,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point WHERE eDwithin(temp, g, 10);
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE eDwithin(t1.temp, t2.temp, 10);
  count 
 -------
-   138
+   122
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geog_point3D, tbl_tgeogpoint3D WHERE eDwithin(g, temp, 10);
@@ -349,7 +349,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D WHERE eDwithin(temp, g, 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eDwithin(t1.temp, t2.temp, 10);
  count 
 -------
-   130
+   124
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint WHERE aDwithin(g, temp, 10);
@@ -397,13 +397,13 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE aDwithin(t1.
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE aDwithin(t1.temp, t2.temp, 10);
  count 
 -------
-   124
+   118
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aDwithin(t1.temp, t2.temp, 10);
  count 
 -------
-   124
+   118
 (1 row)
 
 CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING gist(temp);

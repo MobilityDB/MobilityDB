@@ -165,6 +165,40 @@ CREATE FUNCTION transformPipeline(cbuffer, text, srid integer DEFAULT 0,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Spatial relationships
+ *****************************************************************************/
+
+CREATE FUNCTION cbuffer_contains(cbuffer, cbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Cbuffer_contains'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION cbuffer_covers(cbuffer, cbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Cbuffer_covers'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION cbuffer_disjoint(cbuffer, cbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Cbuffer_disjoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION cbuffer_intersects(cbuffer, cbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Cbuffer_intersects'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION cbuffer_touches(cbuffer, cbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Cbuffer_touches'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION cbuffer_dwithin(cbuffer, cbuffer, float)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Cbuffer_dwithin'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Same
  *****************************************************************************/
 

@@ -32,9 +32,9 @@
  * @ingroup meos_geo
  * @brief Functions for static geometries
  *
- * @defgroup meos_geo_set Functions for geometry sets
+ * @defgroup meos_geo_set Functions for spatial sets
  * @ingroup meos_geo
- * @brief Functions for geometry sets
+ * @brief Functions for spatial sets
  *
  * @defgroup meos_geo_box Functions for spatiotemporal boxes
  * @ingroup meos_geo
@@ -80,6 +80,10 @@
  * @ingroup meos_geo
  * @brief Bounding box functions for temporal geometries
  *
+ *   @defgroup meos_geo_bbox_split Split functions
+ *   @ingroup meos_geo_bbox
+ *   @brief Split functions for temporal geometries
+ *
  *   @defgroup meos_geo_bbox_topo Topological functions
  *   @ingroup meos_geo_bbox
  *   @brief Topological functions for temporal geometries
@@ -88,17 +92,25 @@
  *   @ingroup meos_geo_bbox
  *   @brief Position functions for temporal geometries
  *
- * @defgroup meos_geo_dist Distance functions
+ * @defgroup meos_geo_distance Distance functions
  * @ingroup meos_geo
  * @brief Distance functions for temporal geometries
  *
  * @defgroup meos_geo_srid Spatial reference system functions
  * @ingroup meos_geo
- * @brief Spatial reference system functions for temporal geos
+ * @brief Spatial reference system functions for temporal geometries
  *
  * @defgroup meos_geo_rel Spatial relationship functions
  * @ingroup meos_geo
- * @brief Spatial relationship functions for temporal geos
+ * @brief Spatial relationship functions for temporal geometries
+ *
+ *   @defgroup meos_geo_rel_ever Ever/always relationship functions
+ *   @ingroup meos_geo_rel
+ *   @brief Ever/always relationship functions for temporal geometries
+ *
+ *   @defgroup meos_geo_rel_temp Temporal relationship functions
+ *   @ingroup meos_geo_rel
+ *   @brief Temporal relationship functions for temporal geometries
  *
  * @defgroup meos_geo_agg Aggregate functions
  * @ingroup meos_geo
@@ -148,6 +160,10 @@
  * @ingroup meos_geo_base
  * @brief Bounding box functions for static geometries
  *
+ * @defgroup meos_geo_base_distance Distance functions
+ * @ingroup meos_geo_base
+ * @brief Distance functions for static geometries
+ *
  * @defgroup meos_geo_base_comp Comparison functions
  * @ingroup meos_geo_base
  * @brief Comparison functions for static geometries
@@ -158,19 +174,23 @@
 /**
  * @defgroup meos_geo_set_inout Input and output functions
  * @ingroup meos_geo_set
- * @brief Input and output functions for geometry sets
+ * @brief Input and output functions for spatial sets
  *
  * @defgroup meos_geo_set_constructor Constructor functions
  * @ingroup meos_geo_set
- * @brief Constructor functions for geometry sets
+ * @brief Constructor functions for spatial sets
  *
  * @defgroup meos_geo_set_conversion Conversion functions
  * @ingroup meos_geo_set
- * @brief Conversion functions for geometry sets
+ * @brief Conversion functions for spatial sets
  *
  * @defgroup meos_geo_set_accessor Accessor functions
  * @ingroup meos_geo_set
- * @brief Accessor functions for geometry sets
+ * @brief Accessor functions for spatial sets
+ *
+ * @defgroup meos_geo_set_srid Spatial reference system functions
+ * @ingroup meos_geo_set
+ * @brief Spatial reference system functions for spatial sets
  *
  * @defgroup meos_geo_set_setops Set operations
  * @ingroup meos_geo_set
@@ -223,6 +243,10 @@
  * @defgroup meos_geo_box_comp Comparison functions
  * @ingroup meos_geo_box
  * @brief Comparison functions for spatiotemporal boxes
+ *
+ * @defgroup meos_geo_box_index Index functions
+ * @ingroup meos_geo_box
+ * @brief In-memory RTree index for spatiotemporal boxes
  */
 
 /*****************************************************************************/

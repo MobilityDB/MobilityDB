@@ -100,6 +100,14 @@
  * @ingroup meos_internal_geo
  * @brief Spatial relationship functions for temporal geos
  *
+ *   @defgroup meos_internal_geo_rel_ever Ever/always relationship functions
+ *   @ingroup meos_internal_geo_rel
+ *   @brief Ever/always relationship functions for temporal geometries
+ *
+ *   @defgroup meos_internal_geo_rel_temp Temporal relationship functions
+ *   @ingroup meos_internal_geo_rel
+ *   @brief Temporal relationship functions for temporal geometries
+ *
  * @defgroup meos_internal_geo_agg Aggregate functions
  * @ingroup meos_internal_geo
  * @brief Aggregate functions for temporal geometries

@@ -75,7 +75,7 @@ PGDLLEXPORT Datum Temporal_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_from_hexwkb);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Return a temporal value from its hex-encoded ASCII Well-Known Binary
+ * @brief Return a temporal value from its ASCII hex-encoded Well-Known Binary
  * (HexWKB) representation
  * @sqlfn tintFromHexWKB(), tfloatFromHexWKB(), ...
  */
