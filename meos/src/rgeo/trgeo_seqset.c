@@ -42,10 +42,10 @@
 #include <meos.h>
 #include <meos_rgeo.h>
 #include <meos_internal.h>
-#include "general/tsequenceset.h"
-#include "general/temporal.h"
-#include "general/type_util.h"
-#include "general/temporal_boxops.h"
+#include "temporal/tsequenceset.h"
+#include "temporal/temporal.h"
+#include "temporal/type_util.h"
+#include "temporal/temporal_boxops.h"
 #include "rgeo/trgeo_all.h"
 #include "rgeo/trgeo_boxops.h"
 #include "rgeo/trgeo_seq.h"

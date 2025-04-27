@@ -39,7 +39,7 @@
 #include <catalog/pg_statistic.h>
 #include <utils/selfuncs.h>
 /* MEOS */
-#include "general/meos_catalog.h"
+#include "temporal/meos_catalog.h"
 /* MobilityDB */
 #include "pg_geo/tspatial_analyze.h"
 

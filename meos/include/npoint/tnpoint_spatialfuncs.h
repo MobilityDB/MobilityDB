@@ -39,7 +39,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_npoint.h>
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 #include "npoint/tnpoint.h"
 
 /*****************************************************************************/

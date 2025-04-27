@@ -51,7 +51,7 @@ macro(process_file f srcdir bindir)
   file(WRITE ${bindir}/${f}.sql.in "${CURR_CONTENTS}")
 endmacro()
 
-add_subdirectory(general)
+add_subdirectory(temporal)
 add_subdirectory(geo)
 if(CBUFFER)
   add_subdirectory(cbuffer)

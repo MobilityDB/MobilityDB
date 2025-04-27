@@ -38,11 +38,11 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal.h"
-#include "general/skiplist.h"
+#include "temporal/temporal.h"
+#include "temporal/skiplist.h"
 #include "npoint/tnpoint.h"
 /* MobilityDB */
-#include "pg_general/skiplist.h"
+#include "pg_temporal/skiplist.h"
 
 /*****************************************************************************/
 

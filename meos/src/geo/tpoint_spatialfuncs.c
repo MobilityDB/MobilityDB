@@ -49,12 +49,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
-#include "general/lifting.h"
-#include "general/temporal_compops.h"
-#include "general/tnumber_mathfuncs.h"
-#include "general/tsequence.h"
-#include "general/type_util.h"
+#include "temporal/pg_types.h"
+#include "temporal/lifting.h"
+#include "temporal/temporal_compops.h"
+#include "temporal/tnumber_mathfuncs.h"
+#include "temporal/tsequence.h"
+#include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo.h"

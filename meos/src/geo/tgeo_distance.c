@@ -43,9 +43,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/lifting.h"
-#include "general/tinstant.h"
-#include "general/tsequence.h"
+#include "temporal/lifting.h"
+#include "temporal/tinstant.h"
+#include "temporal/tsequence.h"
 #include "geo/postgis_funcs.h"
 #include "geo/geography_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"

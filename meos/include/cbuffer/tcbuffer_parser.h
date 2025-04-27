@@ -36,7 +36,7 @@
 
 /* MEOS */
 #include <meos_cbuffer.h>
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 
 /*****************************************************************************/
 

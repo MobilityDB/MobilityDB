@@ -37,12 +37,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/span.h"
+#include "temporal/span.h"
 #include "geo/stbox.h"
 #include "geo/tpoint_restrfuncs.h"
 #include "npoint/tnpoint_spatialfuncs.h"
 /* MobilityDB */
-#include "pg_general/temporal.h"
+#include "pg_temporal/temporal.h"
 #include "pg_geo/postgis.h"
 
 /*****************************************************************************

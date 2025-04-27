@@ -43,11 +43,11 @@
 #include <meos.h>
 #include <meos_pose.h>
 #include <meos_internal.h>
-#include "general/lifting.h"
-#include "general/set.h"
-#include "general/span.h"
-#include "general/spanset.h"
-#include "general/type_util.h"
+#include "temporal/lifting.h"
+#include "temporal/set.h"
+#include "temporal/span.h"
+#include "temporal/spanset.h"
+#include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"

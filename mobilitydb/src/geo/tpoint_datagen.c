@@ -49,8 +49,8 @@
 #include "geo/tpoint_datagen.h"
 #include "geo/tgeo_spatialfuncs.h"
 /* MobilityDB */
-#include "pg_general/meos_catalog.h"
-#include "pg_general/temporal.h"
+#include "pg_temporal/meos_catalog.h"
+#include "pg_temporal/temporal.h"
 
 /*****************************************************************************/
 

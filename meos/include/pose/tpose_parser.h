@@ -39,7 +39,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_pose.h>
-#include "general/meos_catalog.h"
+#include "temporal/meos_catalog.h"
 
 /*****************************************************************************/
 

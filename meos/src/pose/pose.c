@@ -46,10 +46,10 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_pose.h>
-#include "general/pg_types.h"
-#include "general/type_inout.h"
-#include "general/type_parser.h"
-#include "general/type_util.h"
+#include "temporal/pg_types.h"
+#include "temporal/type_inout.h"
+#include "temporal/type_parser.h"
+#include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial.h"
 #include "geo/tspatial_parser.h"

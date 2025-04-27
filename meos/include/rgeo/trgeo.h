@@ -38,7 +38,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 
 /** Symbolic constants for the temporal instant geometry constuctor */
 #define WITH_GEOM       true

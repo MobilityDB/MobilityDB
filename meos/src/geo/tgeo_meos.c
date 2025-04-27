@@ -39,14 +39,14 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/doublen.h"
-#include "general/lifting.h"
-#include "general/set.h"
-#include "general/skiplist.h"
-#include "general/span.h"
-#include "general/spanset.h"
-#include "general/temporal_aggfuncs.h"
-#include "general/type_util.h"
+#include "temporal/doublen.h"
+#include "temporal/lifting.h"
+#include "temporal/set.h"
+#include "temporal/skiplist.h"
+#include "temporal/span.h"
+#include "temporal/spanset.h"
+#include "temporal/temporal_aggfuncs.h"
+#include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 

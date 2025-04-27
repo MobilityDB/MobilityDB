@@ -35,7 +35,7 @@
 #define __TNPOINT_PARSER_H__
 
 /* MEOS */
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 #include "npoint/tnpoint.h"
 
 /*****************************************************************************/

@@ -41,11 +41,11 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal.h>
-#include "general/lifting.h"
-#include "general/set.h"
-#include "general/span.h"
-#include "general/spanset.h"
-#include "general/tbox.h"
+#include "temporal/lifting.h"
+#include "temporal/set.h"
+#include "temporal/span.h"
+#include "temporal/spanset.h"
+#include "temporal/tbox.h"
 #include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo.h"

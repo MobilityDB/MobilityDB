@@ -40,13 +40,13 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_geo.h>
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 #include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tspatial_parser.h"
 /* MobilityDB */
-#include "pg_general/meos_catalog.h"
-#include "pg_general/temporal.h"
+#include "pg_temporal/meos_catalog.h"
+#include "pg_temporal/temporal.h"
 #include "pg_geo/postgis.h"
 
 /*****************************************************************************

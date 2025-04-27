@@ -43,8 +43,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/span.h"
-#include "general/type_util.h"
+#include "temporal/span.h"
+#include "temporal/type_util.h"
 #include "geo/stbox.h"
 #include "geo/stbox_index.h"
 

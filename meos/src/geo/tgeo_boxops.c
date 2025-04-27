@@ -53,7 +53,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "geo/stbox.h"
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 #include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include "cbuffer/tcbuffer_boxops.h"

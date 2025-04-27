@@ -40,11 +40,11 @@
 #include <assert.h>
 /* MEOS */
 #include <meos.h>
-#include "general/skiplist.h"
-#include "general/temporal_aggfuncs.h"
+#include "temporal/skiplist.h"
+#include "temporal/temporal_aggfuncs.h"
 #include "geo/stbox.h"
 /* MobilityDB */
-#include "pg_general/skiplist.h"
+#include "pg_temporal/skiplist.h"
 
 /*****************************************************************************
  * Extent

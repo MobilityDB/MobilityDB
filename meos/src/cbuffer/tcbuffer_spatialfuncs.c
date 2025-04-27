@@ -39,7 +39,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_cbuffer.h>
-#include "general/tsequence.h"
+#include "temporal/tsequence.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/cbuffer.h"

@@ -40,14 +40,14 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/lifting.h"
-#include "general/set.h"
-#include "general/temporal.h"
-#include "general/type_parser.h"
-#include "general/type_util.h"
+#include "temporal/lifting.h"
+#include "temporal/set.h"
+#include "temporal/temporal.h"
+#include "temporal/type_parser.h"
+#include "temporal/type_util.h"
 #include "npoint/tnpoint.h"
 /* MobilityDB */
-#include "pg_general/meos_catalog.h"
+#include "pg_temporal/meos_catalog.h"
 
 /*****************************************************************************
  * General functions

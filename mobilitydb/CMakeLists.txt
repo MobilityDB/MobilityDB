@@ -118,9 +118,9 @@ elseif(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
   target_compile_options(libpgcommon PRIVATE "/W0")
   target_compile_options(ryu PRIVATE "/W0")
   # Enable all warnings on MEOS and MobilityDB
-  target_compile_options(general PRIVATE "/W4")
+  target_compile_options(temporal PRIVATE "/W4")
   target_compile_options(geo PRIVATE "/W4")
-  target_compile_options(pg_general PRIVATE "/W4")
+  target_compile_options(pg_temporal PRIVATE "/W4")
   target_compile_options(pg_geo PRIVATE "/W4")
   if(CBUFFER)
     target_compile_options(cbuffer PRIVATE "/W4")
@@ -145,7 +145,7 @@ endif()
 #--------------------------------
 
 # MEOS
-set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
+set(PROJECT_OBJECTS "$<TARGET_OBJECTS:temporal>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:geo>")
 if(CBUFFER)
   message(STATUS "Including circular buffers")
@@ -170,7 +170,7 @@ set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:libpgcommon>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
 
 # MobilityDB
-set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_general>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_temporal>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_geo>")
 if(CBUFFER)
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:pg_cbuffer>")

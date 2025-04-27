@@ -36,7 +36,7 @@
 
 #include <meos.h>
 #include <meos_pose.h>
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 
 /*****************************************************************************/
 

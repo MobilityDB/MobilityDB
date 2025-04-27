@@ -42,7 +42,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_cbuffer.h>
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 #include "cbuffer/cbuffer.h"
 /* MobilityDB */
 #include "pg_geo/postgis.h"

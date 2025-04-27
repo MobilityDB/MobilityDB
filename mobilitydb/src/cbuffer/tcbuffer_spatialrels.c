@@ -45,7 +45,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal.h" /* For varfunc */
+#include "temporal/temporal.h" /* For varfunc */
 #include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/cbuffer.h"
 #include "cbuffer/tcbuffer_spatialfuncs.h"

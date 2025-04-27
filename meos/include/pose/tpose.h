@@ -34,7 +34,7 @@
 #ifndef __TPOSE_H__
 #define __TPOSE_H__
 
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 #include <meos_pose.h>
 
 /*****************************************************************************/

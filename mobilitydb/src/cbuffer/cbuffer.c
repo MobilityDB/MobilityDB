@@ -41,16 +41,17 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_cbuffer.h>
-#include "general/temporal.h"
-#include "general/tnumber_mathfuncs.h"
-#include "general/set.h"
-#include "general/span.h"
-#include "general/type_inout.h"
-#include "general/type_util.h"
+#include "temporal/temporal.h"
+#include "temporal/tnumber_mathfuncs.h"
+#include "temporal/set.h"
+#include "temporal/span.h"
+#include "temporal/type_inout.h"
+#include "temporal/type_util.h"
+#include "geo/stbox.h"
 #include "cbuffer/cbuffer.h"
 /* MobilityDB */
-#include "pg_general/temporal.h"
-#include "pg_general/type_util.h"
+#include "pg_temporal/temporal.h"
+#include "pg_temporal/type_util.h"
 #include "pg_geo/postgis.h"
 
 /*****************************************************************************

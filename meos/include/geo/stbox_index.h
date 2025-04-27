@@ -39,8 +39,8 @@
 #include <access/stratnum.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal.h"
-#include "general/meos_catalog.h"
+#include "temporal/temporal.h"
+#include "temporal/meos_catalog.h"
 
 /*****************************************************************************/
 

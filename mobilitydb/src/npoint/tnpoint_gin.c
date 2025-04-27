@@ -39,8 +39,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/set.h"
-#include "general/temporal.h"
+#include "temporal/set.h"
+#include "temporal/temporal.h"
 #include "npoint/tnpoint.h"
 
 /*****************************************************************************

@@ -47,7 +47,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_geo.h>
-#include "general/meos_catalog.h" /* For meosType */
+#include "temporal/meos_catalog.h" /* For meosType */
 
 /*****************************************************************************
  * Validity macros
