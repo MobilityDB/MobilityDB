@@ -37,7 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-// #include <catalog/pg_type.h>
 /* MEOS */
 #include "general/temporal.h"
 
@@ -46,12 +45,19 @@
 #define NO_GEOM         false
 
 /*****************************************************************************
- * Miscellaneous functions defined in trgeometry.c
+ * Miscellaneous functions defined in trgeo.c
  *****************************************************************************/
 
 extern bool ensure_has_geom(int16 flags);
+extern bool ensure_valid_trgeo_geo(const Temporal *temp,
+  const GSERIALIZED *gs);
+extern bool ensure_valid_trgeo_stbox(const Temporal *temp,
+  const STBox *box);
+extern bool ensure_valid_trgeo_trgeo(const Temporal *temp1,
+  const Temporal *temp2);
+extern bool ensure_valid_trgeo_tpoint(const Temporal *temp1,
+  const Temporal *temp2);
 extern const GSERIALIZED *trgeo_geom_p(const Temporal *temp);
-extern GSERIALIZED *trgeo_geom(const Temporal *temp);
 
 /* Input/output functions */
 
@@ -76,9 +82,6 @@ extern bool trgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t,
 
 /* Transformation functions */
 
-extern Temporal *trgeo_round(const Temporal *temp, int maxdd);
-extern TInstant *trgeo_to_tinstant(const Temporal *temp);
-extern Temporal *trgeo_set_interp(const Temporal *temp, interpType interp);
 
 /*****************************************************************************/
 

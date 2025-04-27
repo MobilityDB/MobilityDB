@@ -63,16 +63,9 @@ eacomp_tpose_pose(const Temporal *temp, const Pose *pose,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) pose) ||
-      ! ensure_not_null((void *) func) ||
-      ! ensure_temporal_isof_type(temp, T_TPOSE))
+  if (! ensure_valid_tpose_pose(temp, pose))
     return -1;
-#else
-  assert(temp); assert(pose); assert(func); assert(temp->temptype == T_TPOSE);
-#endif /* MEOS */
-  if (! ensure_same_srid(tspatial_srid(temp), pose_srid(pose)))
-    return -1;
+  assert(func);
   return eacomp_temporal_base(temp, PointerGetDatum(pose), func, ever);
 }
 
@@ -88,18 +81,9 @@ eacomp_tpose_tpose(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, meosType), bool ever)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp1) || ! ensure_not_null((void *) temp2) || 
-      ! ensure_not_null((void *) func) ||
-      ! ensure_temporal_isof_type(temp1, T_TPOSE) ||
-      ! ensure_temporal_isof_type(temp2, T_TPOSE))
+  if (! ensure_valid_tpose_tpose(temp1, temp2))
     return -1;
-#else
-  assert(temp1); assert(temp2); assert(func); 
-  assert(temp1->temptype == T_TPOSE); assert(temp2->temptype == T_TPOSE);
-#endif /* MEOS */
-  if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
-    return -1;
+  assert(func);
   return eacomp_temporal_temporal(temp1, temp2, func, ever);
 }
 
@@ -113,7 +97,7 @@ eacomp_tpose_tpose(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp Temporal value
  * @csqlfn #Ever_eq_pose_tpose()
  */
-int
+inline int
 ever_eq_pose_tpose(const Pose *pose, const Temporal *temp)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_eq, EVER);
@@ -127,7 +111,7 @@ ever_eq_pose_tpose(const Pose *pose, const Temporal *temp)
  * @param[in] pose Pose
  * @csqlfn #Ever_eq_tpose_pose()
  */
-int
+inline int
 ever_eq_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_eq, EVER);
@@ -140,7 +124,7 @@ ever_eq_tpose_pose(const Temporal *temp, const Pose *pose)
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ne_pose_tpose()
  */
-int
+inline int
 ever_ne_pose_tpose(const Pose *pose, const Temporal *temp)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_ne, EVER);
@@ -154,7 +138,7 @@ ever_ne_pose_tpose(const Pose *pose, const Temporal *temp)
  * @param[in] pose Pose
  * @csqlfn #Ever_ne_tpose_pose()
  */
-int
+inline int
 ever_ne_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_ne, EVER);
@@ -167,7 +151,7 @@ ever_ne_tpose_pose(const Temporal *temp, const Pose *pose)
  * @param[in] temp Temporal value
  * @csqlfn #Always_eq_pose_tpose()
  */
-int
+inline int
 always_eq_pose_tpose(const Pose *pose, const Temporal *temp)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_eq, ALWAYS);
@@ -181,7 +165,7 @@ always_eq_pose_tpose(const Pose *pose, const Temporal *temp)
  * @param[in] pose Pose
  * @csqlfn #Always_eq_tpose_pose()
  */
-int
+inline int
 always_eq_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_eq, ALWAYS);
@@ -194,7 +178,7 @@ always_eq_tpose_pose(const Temporal *temp, const Pose *pose)
  * @param[in] temp Temporal value
  * @csqlfn #Always_ne_pose_tpose()
  */
-int
+inline int
 always_ne_pose_tpose(const Pose *pose, const Temporal *temp)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_ne, ALWAYS);
@@ -208,7 +192,7 @@ always_ne_pose_tpose(const Pose *pose, const Temporal *temp)
  * @param[in] pose Pose
  * @csqlfn #Always_ne_tpose_pose()
  */
-int
+inline int
 always_ne_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   return eacomp_tpose_pose(temp, pose, &datum2_ne, ALWAYS);
@@ -222,7 +206,7 @@ always_ne_tpose_pose(const Temporal *temp, const Pose *pose)
  * @param[in] temp1,temp2 Temporal poses
  * @csqlfn #Ever_eq_tpose_tpose()
  */
-int
+inline int
 ever_eq_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tpose_tpose(temp1, temp2, &datum2_eq, EVER);
@@ -234,7 +218,7 @@ ever_eq_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal poses
  * @csqlfn #Ever_ne_tpose_tpose()
  */
-int
+inline int
 ever_ne_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tpose_tpose(temp1, temp2, &datum2_ne, EVER);
@@ -246,7 +230,7 @@ ever_ne_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal poses
  * @csqlfn #Always_eq_tpose_tpose()
  */
-int
+inline int
 always_eq_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tpose_tpose(temp1, temp2, &datum2_eq, ALWAYS);
@@ -258,7 +242,7 @@ always_eq_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal poses
  * @csqlfn #Always_ne_tpose_tpose()
  */
-int
+inline int
 always_ne_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tpose_tpose(temp1, temp2, &datum2_ne, ALWAYS);
@@ -279,14 +263,8 @@ tcomp_pose_tpose(const Pose *pose, const Temporal *temp,
   Datum (*func)(Datum, Datum, meosType))
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) pose) || 
-      ! ensure_not_null((void *) func) ||
-      ! ensure_temporal_isof_type(temp, T_TPOSE))
-    return NULL;
-#else
-  assert(temp); assert(pose); assert(func); assert(temp->temptype == T_TPOSE);
-#endif /* MEOS */
+  VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(pose, NULL);
+  assert(func);
   if (! ensure_same_srid(tspatial_srid(temp), pose_srid(pose)))
     return NULL;
   return tcomp_base_temporal(PointerGetDatum(pose), temp, func);
@@ -304,14 +282,8 @@ tcomp_tpose_pose(const Temporal *temp, const Pose *pose,
   Datum (*func)(Datum, Datum, meosType))
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) pose) || 
-      ! ensure_not_null((void *) func) ||
-      ! ensure_temporal_isof_type(temp, T_TPOSE))
-    return NULL;
-#else
-  assert(temp); assert(pose); assert(func); assert(temp->temptype == T_TPOSE);
-#endif /* MEOS */
+  VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(pose, NULL);
+  assert(func);
   if (! ensure_same_srid(tspatial_srid(temp), pose_srid(pose)))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(pose), func);
@@ -326,7 +298,7 @@ tcomp_tpose_pose(const Temporal *temp, const Pose *pose,
  * @param[in] temp Temporal value
  * @csqlfn #Teq_pose_tpose()
  */
-Temporal *
+inline Temporal *
 teq_pose_tpose(const Pose *pose, const Temporal *temp)
 {
   return tcomp_pose_tpose(pose, temp, &datum2_eq);
@@ -339,7 +311,7 @@ teq_pose_tpose(const Pose *pose, const Temporal *temp)
  * @param[in] temp Temporal value
  * @csqlfn #Tne_pose_tpose()
  */
-Temporal *
+inline Temporal *
 tne_pose_tpose(const Pose *pose, const Temporal *temp)
 {
   return tcomp_pose_tpose(pose, temp, &datum2_ne);
@@ -355,7 +327,7 @@ tne_pose_tpose(const Pose *pose, const Temporal *temp)
  * @param[in] pose Pose
  * @csqlfn #Teq_tpose_pose()
  */
-Temporal *
+inline Temporal *
 teq_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   return tcomp_tpose_pose(temp, pose, &datum2_eq);
@@ -369,7 +341,7 @@ teq_tpose_pose(const Temporal *temp, const Pose *pose)
  * @param[in] pose Pose
  * @csqlfn #Tne_tpose_pose()
  */
-Temporal *
+inline Temporal *
 tne_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   return tcomp_tpose_pose(temp, pose, &datum2_ne);

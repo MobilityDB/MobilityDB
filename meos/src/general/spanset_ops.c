@@ -80,13 +80,7 @@ bool
 contains_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) ||
-      ! ensure_spanset_isof_type(ss, T_TSTZSPANSET))
-    return false;
-#else
-  assert(ss); assert(ss->spansettype == T_TSTZSPANSET);
-#endif /* MEOS */
+  VALIDATE_TSTZSPANSET(ss, NULL);
   return contains_spanset_value(ss, TimestampTzGetDatum(t));
 }
 
@@ -100,23 +94,13 @@ contains_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 bool
 contains_spanset_span(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
 
   /* Singleton span set */
   if (ss->count == 1)
     return contains_span_span(SPANSET_SP_N(ss, 0), s);
-
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
-    return false;
 
   /* Bounding box test */
   if (! contains_span_span(&ss->span, s))
@@ -137,14 +121,9 @@ contains_spanset_span(const SpanSet *ss, const Span *s)
 bool
 contains_span_spanset(const Span *s, const SpanSet *ss)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
   return contains_span_span(s, &ss->span);
 }
 
@@ -157,25 +136,15 @@ contains_span_spanset(const Span *s, const SpanSet *ss)
 bool
 contains_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_spanset(ss1, ss2))
     return false;
-#else
-  assert(ss1); assert(ss2); assert(ss1->spansettype == ss2->spansettype);
-#endif /* MEOS */
 
   /* Singleton span set */
   if (ss1->count == 1)
     return contains_span_spanset(SPANSET_SP_N(ss1, 0), ss2);
   if (ss2->count == 1)
     return contains_spanset_span(ss1, SPANSET_SP_N(ss2, 0));
-
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
-    return false;
 
   /* Bounding box test */
   if (! contains_span_span(&ss1->span, &ss2->span))
@@ -279,23 +248,13 @@ contained_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 bool
 overlaps_spanset_span(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
 
   /* Singleton span set */
   if (ss->count == 1)
     return overlaps_span_span(SPANSET_SP_N(ss, 0), s);
-
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
-    return false;
 
   /* Bounding box test */
   if (! overlaps_span_span(s, &ss->span))
@@ -337,25 +296,15 @@ overlaps_span_spanset(const Span *s, const SpanSet *ss)
 bool
 overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_spanset(ss1, ss2))
     return false;
-#else
-  assert(ss1); assert(ss2); assert(ss1->spansettype == ss2->spansettype);
-#endif /* MEOS */
 
   /* Singleton span set */
   if (ss1->count == 1)
     return overlaps_spanset_span(ss2, SPANSET_SP_N(ss1, 0));
   if (ss2->count == 1)
     return overlaps_spanset_span(ss1, SPANSET_SP_N(ss2, 0));
-
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
-    return false;
 
   /* Bounding box test */
   if (! overlaps_span_span(&ss1->span, &ss2->span))
@@ -424,23 +373,13 @@ adjacent_value_spanset(Datum value, const SpanSet *ss)
 bool
 adjacent_spanset_span(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
 
   /* Singleton span set */
   if (ss->count == 1)
     return adjacent_span_span(SPANSET_SP_N(ss, 0), s);
-
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
-    return false;
 
   const Span *s1 = SPANSET_SP_N(ss, 0);
   const Span *s2 = SPANSET_SP_N(ss, ss->count - 1);
@@ -474,25 +413,15 @@ adjacent_span_spanset(const Span *s, const SpanSet *ss)
 bool
 adjacent_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_spanset(ss1, ss2))
     return false;
-#else
-  assert(ss1); assert(ss2); assert(ss1->spansettype == ss2->spansettype);
-#endif /* MEOS */
 
   /* Singleton span set */
   if (ss1->count == 1)
     return adjacent_spanset_span(ss2, SPANSET_SP_N(ss1, 0));
   if (ss2->count == 1)
     return adjacent_spanset_span(ss1, SPANSET_SP_N(ss2, 0));
-
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
-    return false;
 
   const Span *starts1 = SPANSET_SP_N(ss1, 0);
   const Span *ends1 = SPANSET_SP_N(ss1, ss1->count - 1);
@@ -532,14 +461,9 @@ left_value_spanset(Datum value, const SpanSet *ss)
 bool
 left_span_spanset(const Span *s, const SpanSet *ss)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
   return left_span_span(s, SPANSET_SP_N(ss, 0));
 }
 
@@ -565,14 +489,9 @@ left_spanset_value(const SpanSet *ss, Datum value)
 bool
 left_spanset_span(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
   return left_span_span(SPANSET_SP_N(ss, ss->count - 1), s);
 }
 
@@ -585,14 +504,9 @@ left_spanset_span(const SpanSet *ss, const Span *s)
 bool
 left_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_spanset(ss1, ss2))
     return false;
-#else
-  assert(ss1); assert(ss2); assert(ss1->spansettype == ss2->spansettype);
-#endif /* MEOS */
   return left_span_span(SPANSET_SP_N(ss1, ss1->count - 1),
     SPANSET_SP_N(ss2, 0));
 }
@@ -703,14 +617,9 @@ overleft_value_spanset(Datum value, const SpanSet *ss)
 bool
 overleft_span_spanset(const Span *s, const SpanSet *ss)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
   return overleft_span_span(s, SPANSET_SP_N(ss, ss->count - 1));
 }
 
@@ -724,14 +633,9 @@ overleft_span_spanset(const Span *s, const SpanSet *ss)
 bool
 overleft_spanset_span(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
   return overleft_span_span(SPANSET_SP_N(ss, ss->count - 1), s);
 }
 
@@ -745,14 +649,9 @@ overleft_spanset_span(const SpanSet *ss, const Span *s)
 bool
 overleft_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_spanset(ss1, ss2))
     return false;
-#else
-  assert(ss1); assert(ss2); assert(ss1->spansettype == ss2->spansettype);
-#endif /* MEOS */
   return overleft_span_span(SPANSET_SP_N(ss1, ss1->count - 1),
     SPANSET_SP_N(ss2, ss2->count - 1));
 }
@@ -784,14 +683,9 @@ overright_value_spanset(Datum value, const SpanSet *ss)
 bool
 overright_span_spanset(const Span *s, const SpanSet *ss)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
   return overright_span_span(s, SPANSET_SP_N(ss, 0));
 }
 
@@ -804,12 +698,7 @@ overright_span_spanset(const Span *s, const SpanSet *ss)
 bool
 overright_spanset_value(const SpanSet *ss, Datum value)
 {
-#if MEOS
-  if (! ensure_not_null((void *) ss))
-    return false;
-#else
-  assert(ss);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(ss, NULL);
   return overright_span_value(SPANSET_SP_N(ss, 0), value);
 }
 
@@ -823,14 +712,9 @@ overright_spanset_value(const SpanSet *ss, Datum value)
 bool
 overright_spanset_span(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
   return overright_span_span(SPANSET_SP_N(ss, 0), s);
 }
 
@@ -844,14 +728,9 @@ overright_spanset_span(const SpanSet *ss, const Span *s)
 bool
 overright_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_spanset(ss1, ss2))
     return false;
-#else
-  assert(ss1); assert(ss2); assert(ss1->spansettype == ss2->spansettype);
-#endif /* MEOS */
   return overright_span_span(SPANSET_SP_N(ss1, 0), SPANSET_SP_N(ss2, 0));
 }
 
@@ -896,23 +775,13 @@ union_value_spanset(Datum value, const SpanSet *ss)
 SpanSet *
 union_spanset_span(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
 
   /* Singleton span set */
   if (ss->count == 1)
     return union_span_span(SPANSET_SP_N(ss, 0), s);
-
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_span_type(SPANSET_SP_N(ss, 0), s))
-    return NULL;
 
   /* Is the span set fully contained in the span? */
   if (contains_span_span(s, &ss->span))
@@ -995,25 +864,15 @@ union_span_spanset(const Span *s, const SpanSet *ss)
 SpanSet *
 union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
-    return false;
-#else
-  assert(ss1); assert(ss2); assert(ss1->spansettype == ss2->spansettype);
-#endif /* MEOS */
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_spanset(ss1, ss2))
+    return NULL;
 
   /* Singleton span set */
   if (ss1->count == 1)
     return union_spanset_span(ss2, SPANSET_SP_N(ss1, 0));
   if (ss2->count == 1)
     return union_spanset_span(ss1, SPANSET_SP_N(ss2, 0));
-
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
-    return NULL;
 
   Span *spans = palloc(sizeof(Span) * (ss1->count + ss2->count));
   int i = 0, j = 0, nspans = 0;
@@ -1122,14 +981,9 @@ intersection_value_spanset(Datum value, const SpanSet *ss)
 SpanSet *
 intersection_spanset_span(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
 
   /* Singleton span set */
   if (ss->count == 1)
@@ -1139,11 +993,6 @@ intersection_spanset_span(const SpanSet *ss, const Span *s)
       return NULL;
     return spanset_make_exp((Span *) &s1, 1, 1, NORMALIZE_NO, ORDER_NO);
   }
-
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
-    return NULL;
 
   /* Bounding box test */
   if (! overlaps_span_span(s, &ss->span))
@@ -1192,25 +1041,15 @@ intersection_span_spanset(const Span *s, const SpanSet *ss)
 SpanSet *
 intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_spanset(ss1, ss2))
     return false;
-#else
-  assert(ss1); assert(ss2); assert(ss1->spansettype == ss2->spansettype);
-#endif /* MEOS */
 
   /* Singleton span set */
   if (ss1->count == 1)
     return intersection_spanset_span(ss2, SPANSET_SP_N(ss1, 0));
   if (ss2->count == 1)
     return intersection_spanset_span(ss1, SPANSET_SP_N(ss2, 0));
-
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
-    return NULL;
 
   /* Bounding box test */
   Span s;
@@ -1313,22 +1152,12 @@ mi_span_spanset(const Span *s, const SpanSet *ss, int from, int to,
 SpanSet *
 minus_span_spanset(const Span *s, const SpanSet *ss)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
   /* Singleton span set */
   if (ss->count == 1)
     return minus_span_span(s, SPANSET_SP_N(ss, 0));
-
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
-    return NULL;
 
   /* Bounding box test */
   if (! overlaps_span_span(s, &ss->span))
@@ -1371,23 +1200,13 @@ minus_spanset_value(const SpanSet *ss, Datum value)
 SpanSet *
 minus_spanset_span(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
 
   /* Singleton span set */
   if (ss->count == 1)
     return minus_span_span(SPANSET_SP_N(ss, 0), s);
-
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
-    return NULL;
 
   /* Bounding box test */
   if (! overlaps_span_span(&ss->span, s))
@@ -1413,25 +1232,15 @@ minus_spanset_span(const SpanSet *ss, const Span *s)
 SpanSet *
 minus_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_spanset(ss1, ss2))
     return false;
-#else
-  assert(ss1); assert(ss2); assert(ss1->spansettype == ss2->spansettype);
-#endif /* MEOS */
 
   /* Singleton span set */
   if (ss1->count == 1)
     return minus_span_spanset(SPANSET_SP_N(ss1, 0), ss2);
   if (ss2->count == 1)
     return minus_spanset_span(ss1, SPANSET_SP_N(ss2, 0));
-
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
-    return NULL;
 
   /* Bounding box test */
   if (! overlaps_span_span(&ss1->span, &ss2->span))
@@ -1505,15 +1314,9 @@ distance_spanset_value(const SpanSet *ss, Datum value)
 Datum
 distance_spanset_span(const SpanSet *ss, const Span *s)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss) || ! ensure_not_null((void *) s) ||
-      ! ensure_same_spanset_span_type(ss, s))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_span(ss, s))
     return false;
-#else
-  assert(ss); assert(s); assert(ss->spantype == s->spantype);
-#endif /* MEOS */
-
   return distance_span_span(&ss->span, s);
 }
 
@@ -1527,14 +1330,9 @@ distance_spanset_span(const SpanSet *ss, const Span *s)
 Datum
 distance_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  /* Ensure validity of arguments */
-#if MEOS
-  if (! ensure_not_null((void *) ss1) || ! ensure_not_null((void *) ss2) ||
-      ! ensure_same_spanset_type(ss1, ss2))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_spanset_spanset(ss1, ss2))
     return false;
-#else
-  assert(ss1); assert(ss2); assert(ss1->spansettype == ss2->spansettype);
-#endif /* MEOS */
   return distance_span_span(&ss1->span, &ss2->span);
 }
 

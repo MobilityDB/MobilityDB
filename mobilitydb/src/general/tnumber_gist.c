@@ -74,7 +74,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
   if (tnumber_spantype(type))
   {
     s = PG_GETARG_SPAN_P(1);
-    if (s == NULL)
+    if (! s)
       return false;
     numspan_set_tbox(s, result);
   }
@@ -86,7 +86,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
   else if (type == T_TBOX)
   {
     TBox *box = PG_GETARG_TBOX_P(1);
-    if (box == NULL)
+    if (! box)
       return false;
     memcpy(result, box, sizeof(TBox));
   }
@@ -114,20 +114,20 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
   Oid typid = PG_GETARG_OID(3);
-  bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
   const TBox *key = DatumGetTboxP(entry->key);
-  TBox query;
+  if (! key)
+    PG_RETURN_BOOL(false);
 
   /* Determine whether the index is lossy depending on the strategy */
   *recheck = tbox_index_recheck(strategy);
 
-  if (key == NULL)
-    PG_RETURN_BOOL(false);
-
   /* Transform the query into a box */
+  TBox query;
   if (! tnumber_gist_get_tbox(fcinfo, &query, typid))
     PG_RETURN_BOOL(false);
 
+  bool result;
   if (GIST_LEAF(entry))
     result = tbox_index_leaf_consistent(key, &query, strategy);
   else
@@ -181,7 +181,7 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
   GISTENTRY *ent = entryvec->vector;
   TBox *result = tbox_copy(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
-    tbox_adjust((void *)result, DatumGetPointer(ent[i].key));
+    tbox_adjust((void *) result, DatumGetPointer(ent[i].key));
   PG_RETURN_TBOX_P(result);
 }
 
@@ -986,7 +986,7 @@ Tbox_gist_same(PG_FUNCTION_ARGS)
       (b1->period.lower == b2->period.lower) &&
       (b1->period.upper == b2->period.upper);
   else
-    *result = (b1 == NULL && b2 == NULL);
+    *result = (! b1 && ! b2);
   PG_RETURN_POINTER(result);
 }
 
@@ -1007,23 +1007,21 @@ Tbox_gist_distance(PG_FUNCTION_ARGS)
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   TBox *key = (TBox *) DatumGetPointer(entry->key);
-  TBox query;
-  double distance;
+  if (! key)
+    PG_RETURN_FLOAT8(DBL_MAX);
 
   /* The index is lossy for leaf levels */
   if (GIST_LEAF(entry))
     *recheck = true;
 
-  if (key == NULL)
-    PG_RETURN_FLOAT8(DBL_MAX);
-
   /* Transform the query into a box */
+  TBox query;
   if (! tnumber_gist_get_tbox(fcinfo, &query, typid))
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Since we only have boxes we'll return the minimum possible distance,
    * and let the recheck sort things out in the case of leaves */
-  distance = nad_tbox_tbox(key, &query);
+  double distance = nad_tbox_tbox(key, &query);
 
   PG_RETURN_FLOAT8(distance);
 }

@@ -92,7 +92,7 @@ PGDLLEXPORT Datum Tnpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnpoint_to_tgeompoint);
 /**
  * @ingroup mobilitydb_npoint_conversion
- * @brief Return a temporal network point converted to a temporal geometry point
+ * @brief Convert a temporal network point into a temporal geometry point
  * @sqlfn tgeompoint()
  * @sqlop @p ::
  */
@@ -109,7 +109,7 @@ PGDLLEXPORT Datum Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_to_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_conversion
- * @brief Return a temporal geometry point converted to a temporal network point
+ * @brief Convert a temporal geometry point into a temporal network point
  * @sqlfn tnpoint()
  * @sqlop @p ::
  */

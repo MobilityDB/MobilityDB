@@ -226,7 +226,7 @@ PGDLLEXPORT Datum Spatialset_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spatialset_to_stbox);
 /**
  * @ingroup mobilitydb_geo_set_conversion
- * @brief Return a spatial set converted to a spatiotemporal box
+ * @brief Convert a spatial set into a spatiotemporal box
  * @sqlfn stbox()
  * @sqlop @p ::
  */

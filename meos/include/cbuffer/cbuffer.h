@@ -70,13 +70,36 @@ struct Cbuffer
 
 /* Collinear functions */
 
-extern bool cbuffer_collinear(Cbuffer *cbuf1, Cbuffer *cbuf2, Cbuffer *cbuf3,
-  double ratio);
+extern bool cbuffer_collinear(const Cbuffer *cbuf1, const Cbuffer *cbuf2,
+  const Cbuffer *cbuf3, double ratio);
 
-extern Cbuffer *cbuffer_parse(const char **str, bool end);
+/* Interpolation functions */
+
+extern long double cbuffersegm_locate(const Cbuffer *start, const Cbuffer *end,
+  const Cbuffer *value);
+extern Cbuffer *cbuffersegm_interpolate(const Cbuffer *start,
+  const Cbuffer *end, long double ratio);
+
+/* Validity functions */
+
+extern bool ensure_valid_cbuffer_geo(const Cbuffer *cbuf,
+  const GSERIALIZED *gs);
+extern bool ensure_valid_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box);
+extern bool ensure_valid_cbuffer_cbuffer(const Cbuffer *cbuf1,
+  const Cbuffer *cbuf2);
+extern bool ensure_valid_cbufferset_cbuffer(const Set *s, const Cbuffer *cbuf);
+extern bool ensure_valid_tcbuffer_cbuffer(const Temporal *temp,
+  const Cbuffer *cbuf);
+extern bool ensure_valid_tcbuffer_geo(const Temporal *temp,
+  const GSERIALIZED *gs);
+extern bool ensure_valid_tcbuffer_stbox(const Temporal *temp,
+  const STBox *box);
+extern bool ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1,
+  const Temporal *temp2);
 
 /* Input/output functions */
 
+extern Cbuffer *cbuffer_parse(const char **str, bool end);
 extern char *cbuffer_wkt_out(Datum value, int maxdd, bool extended);
 
 /* Accessor functions */

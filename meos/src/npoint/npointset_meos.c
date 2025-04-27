@@ -39,10 +39,6 @@
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
-#if ! MEOS
-  #include <libpq/pqformat.h>
-  #include <executor/spi.h>
-#endif /* ! MEOS */
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
@@ -77,12 +73,7 @@ Set *
 npointset_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) str))
-    return NULL;
-#else
-  assert(str);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(str, NULL);
   return set_parse(&str, T_NPOINTSET);
 }
 
@@ -97,12 +88,7 @@ char *
 npointset_out(const Set *s, int maxdd)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_NPOINTSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_NPOINTSET);
-#endif /* MEOS */
+  VALIDATE_NPOINTSET(s, NULL);
   return set_out(s, maxdd);
 }
 
@@ -121,12 +107,7 @@ Set *
 npointset_make(const Npoint **values, int count)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) values))
-    return NULL;
-#else 
-  assert(values);
-#endif /* MEOS */ 
+  VALIDATE_NOT_NULL(values, NULL);
   if (! ensure_positive(count))
     return NULL;
 
@@ -142,21 +123,15 @@ npointset_make(const Npoint **values, int count)
 
 /**
  * @ingroup meos_npoint_set_conversion
- * @brief Return a network point converted to a network point set
+ * @brief Convert a network point into a network point set
  * @param[in] np Value
  * @csqlfn #Value_to_set()
  */
 Set *
 npoint_to_set(const Npoint *np)
 {
-#if MEOS
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) np))
-    return NULL;
-#else
-  assert(np);
-#endif /* MEOS */
-
+  VALIDATE_NOT_NULL(np, NULL);
   Datum v = PointerGetDatum(np);
   return set_make_exp(&v, 1, 1, T_NPOINT, ORDER_NO);
 }
@@ -176,13 +151,7 @@ Npoint *
 npointset_start_value(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_NPOINTSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_NPOINTSET);
-#endif /* MEOS */
-
+  VALIDATE_NPOINTSET(s, NULL);
   return DatumGetNpointP(datum_copy(SET_VAL_N(s, 0), s->basetype));
 }
 
@@ -197,13 +166,7 @@ Npoint *
 npointset_end_value(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_NPOINTSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_NPOINTSET);
-#endif /* MEOS */
-
+  VALIDATE_NPOINTSET(s, NULL);
   return DatumGetNpointP(datum_copy(SET_VAL_N(s, s->count - 1), s->basetype));
 }
 
@@ -221,14 +184,7 @@ bool
 npointset_value_n(const Set *s, int n, Npoint **result)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_set_isof_type(s, T_NPOINTSET))
-    return false;
-#else
-  assert(s); assert(result); assert(s->settype == T_NPOINTSET);
-#endif /* MEOS */
-
+  VALIDATE_NPOINTSET(s, false); VALIDATE_NOT_NULL(result, false);
   if (n < 1 || n > s->count)
     return false;
   *result = DatumGetNpointP(datum_copy(SET_VAL_N(s, n - 1), s->basetype));
@@ -246,13 +202,7 @@ Npoint **
 npointset_values(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_NPOINTSET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_NPOINTSET);
-#endif /* MEOS */
-
+  VALIDATE_NPOINTSET(s, NULL);
   Npoint **result = palloc(sizeof(Npoint *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetNpointP(datum_copy(SET_VAL_N(s, i), s->basetype));
@@ -263,7 +213,6 @@ npointset_values(const Set *s)
  * Operators
  *****************************************************************************/
 
-#if MEOS
 /**
  * @brief Return true if a set and a network point are valid for set
  * operations
@@ -274,9 +223,7 @@ bool
 ensure_valid_set_npoint(const Set *s, const Npoint *np)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) np) ||
-      ! ensure_set_isof_type(s, T_NPOINTSET))
-    return false;
+  VALIDATE_NPOINTSET(s, false); VALIDATE_NOT_NULL(np, false);
   return true;
 }
 
@@ -401,13 +348,11 @@ minus_set_npoint(const Set *s, const Npoint *np)
     return NULL;
   return minus_set_value(s, PointerGetDatum(np));
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Aggregate functions for set types
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_npoint_set_setops
  * @brief Transition function for set union aggregate of network points
@@ -418,12 +363,10 @@ Set *
 npoint_union_transfn(Set *state, const Npoint *np)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) np))
-    return NULL;
+  VALIDATE_NOT_NULL(np, NULL);
   if (state && ! ensure_set_isof_type(state, T_NPOINTSET))
     return NULL;
   return value_union_transfn(state, PointerGetDatum(np), T_NPOINT);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/

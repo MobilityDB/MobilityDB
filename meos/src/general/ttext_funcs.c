@@ -41,6 +41,8 @@
   #include "varatt.h"
 #endif
 /* MEOS */
+#include <meos.h>
+#include <meos_internal.h>
 #include "general/lifting.h"
 
 /*****************************************************************************

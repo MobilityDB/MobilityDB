@@ -139,7 +139,7 @@ Set_union_finalfn(PG_FUNCTION_ARGS)
 
   ArrayBuildState *state = PG_ARGISNULL(0) ? NULL :
     (ArrayBuildState *) PG_GETARG_POINTER(0);
-  if (state == NULL)
+  if (! state)
     /* This shouldn't be possible, but just in case.... */
     PG_RETURN_NULL();
 

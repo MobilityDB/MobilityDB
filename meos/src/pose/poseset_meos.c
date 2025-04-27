@@ -78,12 +78,7 @@ Set *
 poseset_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) str))
-    return NULL;
-#else
-  assert(str);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(str, NULL);
   return set_parse(&str, T_POSESET);
 }
 
@@ -98,12 +93,7 @@ char *
 poseset_out(const Set *s, int maxdd)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_POSESET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_POSESET);
-#endif /* MEOS */
+  VALIDATE_POSESET(s, NULL);
   return set_out(s, maxdd);
 }
 
@@ -122,13 +112,8 @@ Set *
 poseset_make(const Pose **values, int count)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) values))
-    return NULL;
-#else 
-  assert(values);
-#endif /* MEOS */ 
-  if (! ensure_positive(count))
+  VALIDATE_NOT_NULL(values, NULL);
+  if (! ! ensure_positive(count))
     return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);
@@ -143,21 +128,15 @@ poseset_make(const Pose **values, int count)
 
 /**
  * @ingroup meos_pose_set_conversion
- * @brief Return a pose converted to a pose set
+ * @brief Convert a pose into a pose set
  * @param[in] pose Value
  * @csqlfn #Value_to_set()
  */
 Set *
 pose_to_set(const Pose *pose)
 {
-#if MEOS
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) pose))
-    return NULL;
-#else
-  assert(pose);
-#endif /* MEOS */
-
+  VALIDATE_NOT_NULL(pose, NULL);
   Datum v = PointerGetDatum(pose);
   return set_make_exp(&v, 1, 1, T_POSE, ORDER_NO);
 }
@@ -177,13 +156,7 @@ Pose *
 poseset_start_value(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_POSESET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_POSESET);
-#endif /* MEOS */
-
+  VALIDATE_POSESET(s, NULL);
   return DatumGetPoseP(datum_copy(SET_VAL_N(s, 0), s->basetype));
 }
 
@@ -198,13 +171,7 @@ Pose *
 poseset_end_value(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_POSESET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_POSESET);
-#endif /* MEOS */
-
+  VALIDATE_POSESET(s, NULL);
   return DatumGetPoseP(datum_copy(SET_VAL_N(s, s->count - 1), s->basetype));
 }
 
@@ -222,14 +189,7 @@ bool
 poseset_value_n(const Set *s, int n, Pose **result)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) result) ||
-      ! ensure_set_isof_type(s, T_POSESET))
-    return false;
-#else
-  assert(s); assert(result); assert(s->settype == T_POSESET);
-#endif /* MEOS */
-
+  VALIDATE_POSESET(s, false); VALIDATE_NOT_NULL(result, false);
   if (n < 1 || n > s->count)
     return false;
   *result = DatumGetPoseP(datum_copy(SET_VAL_N(s, n - 1), s->basetype));
@@ -247,13 +207,7 @@ Pose **
 poseset_values(const Set *s)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) s) || ! ensure_set_isof_type(s, T_POSESET))
-    return NULL;
-#else
-  assert(s); assert(s->settype == T_POSESET);
-#endif /* MEOS */
-
+  VALIDATE_POSESET(s, NULL);
   Pose **result = palloc(sizeof(Pose *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetPoseP(datum_copy(SET_VAL_N(s, i), s->basetype));
@@ -264,7 +218,6 @@ poseset_values(const Set *s)
  * Operators
  *****************************************************************************/
 
-#if MEOS
 /**
  * @brief Return true if a set and a pose are valid for set
  * operations
@@ -275,9 +228,7 @@ bool
 ensure_valid_set_pose(const Set *s, const Pose *pose)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) s) || ! ensure_not_null((void *) pose) ||
-      ! ensure_set_isof_type(s, T_POSESET))
-    return false;
+  VALIDATE_POSESET(s, false); VALIDATE_NOT_NULL(pose, false);
   return true;
 }
 
@@ -402,13 +353,11 @@ minus_set_pose(const Set *s, const Pose *pose)
     return NULL;
   return minus_set_value(s, PointerGetDatum(pose));
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Aggregate functions for set types
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_pose_set_setops
  * @brief Transition function for set union aggregate of poses
@@ -419,12 +368,10 @@ Set *
 pose_union_transfn(Set *state, const Pose *pose)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) pose))
-    return NULL;
+  VALIDATE_NOT_NULL(pose, NULL);
   if (state && ! ensure_set_isof_type(state, T_POSESET))
     return NULL;
   return value_union_transfn(state, PointerGetDatum(pose), T_POSE);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/

@@ -47,6 +47,13 @@
 
 extern bool float_collinear(double x1, double x2, double x3, double ratio);
 
+/* Interpolation functions */
+
+extern double floatsegm_interpolate(double value1, double value2,
+  long double value);
+extern long double floatsegm_locate(double value1, double value2,
+  double value);
+
 /* Normalization functions */
 
 extern bool tsequence_norm_test(Datum value1, Datum value2, Datum value3,

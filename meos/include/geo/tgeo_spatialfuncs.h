@@ -44,8 +44,12 @@
 #include "general/temporal.h"
 
 /** Symbolic constants for transforming tgeompoint <-> tgeogpoint */
-#define TGEOMP_TO_TGEOGP        true
-#define TGEOGP_TO_TGEOMP        false
+#define TGEOMP_TO_TGEOGP    true
+#define TGEOGP_TO_TGEOMP    false
+
+/** Symbolic constants for transforming tgeompoint <-> tgeogpoint */
+#define TGEOM_TO_TGEOG      true
+#define TGEOG_TO_TGEOM      false
 
 /** Symbolic constants for transforming tgeo <-> tpoint */
 #define TGEO_TO_TPOINT      true
@@ -86,13 +90,16 @@ extern Datum datum_pt_distance3d(Datum geom1, Datum geom2);
 
 extern int16 spatial_flags(Datum d, meosType basetype);
 
-/* Parameter tests */
+/* Validity functions */
 
 extern bool ensure_spatial_validity(const Temporal *temp1,
   const Temporal *temp2);
 extern bool ensure_not_geodetic(int16 flags);
 extern bool ensure_same_geodetic(int16 flags1, int16 flags2);
-extern bool ensure_same_geodetic_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern bool ensure_same_geodetic_geo(const GSERIALIZED *gs1,
+  const GSERIALIZED *gs2);
+extern bool ensure_same_geodetic_tspatial_geo(const Temporal *temp,
+  const GSERIALIZED *gs);
 extern bool ensure_srid_known(int32_t srid);
 extern bool ensure_same_srid(int32_t srid1, int32_t srid2);
 extern bool ensure_same_dimensionality(int16 flags1, int16 flags2);
@@ -105,6 +112,8 @@ extern bool same_dimensionality_tspatial_geo(const Temporal *temp,
 extern bool ensure_same_dimensionality_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs);
 extern bool ensure_same_spatial_dimensionality_stbox_geo(const STBox *box,
+  const GSERIALIZED *gs);
+extern bool ensure_same_geodetic_stbox_geo(const STBox *box,
   const GSERIALIZED *gs);
 extern bool ensure_has_Z_geo(const GSERIALIZED *gs);
 extern bool ensure_has_not_Z_geo(const GSERIALIZED *gs);
@@ -119,10 +128,18 @@ extern bool ensure_not_empty(const GSERIALIZED *gs);
 extern bool ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs);
 extern bool ensure_valid_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs);
+extern bool ensure_valid_tspatial_tspatial(const Temporal *temp1,
+  const Temporal *temp2);
 extern bool ensure_valid_spatial_stbox_stbox(const STBox *box1,
   const STBox *box2);
 extern bool ensure_valid_tgeo_stbox(const Temporal *temp, const STBox *box);
-extern bool ensure_valid_tspatial_tspatial(const Temporal *temp1,
+extern bool ensure_valid_geo_geo(const GSERIALIZED *gs1,
+  const GSERIALIZED *gs2);
+extern bool ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern bool ensure_valid_tgeo_tgeo(const Temporal *temp1,
+  const Temporal *temp2);
+extern bool ensure_valid_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern bool ensure_valid_tpoint_tpoint(const Temporal *temp1,
   const Temporal *temp2);
 
 extern bool mline_type(const GSERIALIZED *gs);
@@ -154,8 +171,11 @@ extern GSERIALIZED *geopoint_make(double x, double y, double z, bool hasz,
   bool geodetic, int32 srid);
 extern GSERIALIZED *geocircle_make(double x, double y, double radius,
   int32_t srid);
-extern Datum pointsegm_interpolate_point(Datum start, Datum end,
+extern Datum pointsegm_interpolate(Datum start, Datum end,
   long double ratio);
+extern long double pointsegm_locate(Datum start, Datum end, Datum point,
+  double *dist);
+// TODO merge this function with the previous one
 extern long double pointsegm_locate_point(Datum start, Datum end, Datum point,
   double *dist);
 

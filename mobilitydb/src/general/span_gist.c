@@ -78,7 +78,7 @@ span_gist_get_span(FunctionCallInfo fcinfo, Span *result, Oid typid)
   else if (span_type(type))
   {
     Span *s = PG_GETARG_SPAN_P(1);
-    if (s == NULL)
+    if (! s)
       PG_RETURN_BOOL(false);
     memcpy(result, s, sizeof(Span));
   }
@@ -111,20 +111,19 @@ Span_gist_consistent(PG_FUNCTION_ARGS)
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
-  bool result;
   const Span *key = DatumGetSpanP(entry->key);
-  Span query;
+  if (! key)
+    PG_RETURN_BOOL(false);
 
   /* Determine whether the operator is exact */
   *recheck = span_index_recheck(strategy);
 
-  if (key == NULL)
-    PG_RETURN_BOOL(false);
-
   /* Transform the query into a box */
+  Span query;
   if (! span_gist_get_span(fcinfo, &query, typid))
     PG_RETURN_BOOL(false);
 
+  bool result;
   if (GIST_LEAF(entry))
     result = span_index_leaf_consistent(key, &query, strategy);
   else
@@ -785,21 +784,19 @@ Span_gist_distance(PG_FUNCTION_ARGS)
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   Span *key = (Span *) DatumGetPointer(entry->key);
-  Span query;
-  Datum distance;
+  if (! key)
+    PG_RETURN_DATUM((Datum) -1);
 
   /* The index is not lossy */
   if (GIST_LEAF(entry))
     *recheck = false;
 
-  if (key == NULL)
-    PG_RETURN_DATUM((Datum) -1);
-
   /* Transform the query into a span */
+  Span query;
   if (! span_gist_get_span(fcinfo, &query, typid))
     PG_RETURN_DATUM((Datum) -1);
 
-  distance = distance_span_span(key, &query);
+  Datum distance = distance_span_span(key, &query);
 
   PG_RETURN_DATUM(distance);
 }

@@ -36,7 +36,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-// #include <catalog/pg_type.h>
 /* MEOS */
 #include "general/temporal.h"
 #include "pose/pose.h"
@@ -46,7 +45,6 @@
  *****************************************************************************/
 
 extern const GSERIALIZED *trgeoinst_geom_p(const TInstant *inst);
-
 extern size_t trgeoinst_pose_varsize(const TInstant *inst);
 extern void trgeoinst_set_pose(TInstant *inst);
 extern TInstant *trgeoinst_tposeinst(const TInstant *inst);

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Basic functions for temporal network points.
+ * @brief Basic functions for temporal network points
  */
 
 /* PostgreSQL */
@@ -90,7 +90,8 @@ PGDLLEXPORT Datum Tcbuffer_in(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcbuffer_in);
 /**
  * @ingroup mobilitydb_cbuffer_inout
- * @brief Return a circular buffer from its Well-Known Text (WKT) representation
+ * @brief Return a temporal circular buffer from its Well-Known Text (WKT)
+ * representation
  * @sqlfn tcbuffer_in()
  */
 Datum
@@ -126,7 +127,8 @@ PGDLLEXPORT Datum Tcbuffer_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcbuffer_constructor);
 /**
  * @ingroup mobilitydb_cbuffer_constructor
- * @brief Return a circular buffer from a temporal point and a temporal float
+ * @brief Construct a temporal circular buffer from a temporal point and a
+ * temporal float
  * @sqlfn tcbuffer_constructor()
  */
 Datum
@@ -150,8 +152,7 @@ PGDLLEXPORT Datum Tcbuffer_to_tgeompoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcbuffer_to_tgeompoint);
 /**
  * @ingroup mobilitydb_cbuffer_conversion
- * @brief Return a temporal geometry point constructed from the points of a 
- * temporal circular buffer
+ * @brief Convert a temporal circular buffer into a temporal geometry point
  * @sqlfn tgeompoint()
  * @sqlop @p ::
  */
@@ -168,8 +169,7 @@ PGDLLEXPORT Datum Tcbuffer_to_tfloat(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcbuffer_to_tfloat);
 /**
  * @ingroup mobilitydb_cbuffer_conversion
- * @brief Return a temporal float constructed from the radius of a temporal
- * circular buffer
+ * @brief Convert a temporal circular buffer into a temporal float
  * @sqlfn tgeompoint()
  * @sqlop @p ::
  */
@@ -186,8 +186,8 @@ PGDLLEXPORT Datum Tgeompoint_to_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_to_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_conversion
- * @brief Return a temporal geometry point converted to a temporal circular
- * buffer with a zero radius
+ * @brief Convert a temporal geometry point into a temporal circular buffer
+ * with a zero radius
  * @sqlfn tgeompoint()
  * @sqlop @p ::
  */
@@ -208,7 +208,7 @@ PGDLLEXPORT Datum Tcbuffer_points(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcbuffer_points);
 /**
  * @ingroup mobilitydb_cbuffer_accessor
- * @brief Return the array of points of a temporal circular buffer
+ * @brief Return the set of points of a temporal circular buffer
  * @sqlfn points()
  */
 Datum
@@ -224,7 +224,7 @@ PGDLLEXPORT Datum Tcbuffer_radius(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcbuffer_radius);
 /**
  * @ingroup mobilitydb_cbuffer_accessor
- * @brief Return the array of points of a temporal circular buffer
+ * @brief Return the set of radii of a temporal circular buffer
  * @sqlfn points()
  */
 Datum
@@ -237,7 +237,6 @@ Tcbuffer_radius(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Geometric positions (Trajectory) functions
  * Return the geometric positions covered by a temporal circular buffer
  *****************************************************************************/
 

@@ -30,14 +30,14 @@
 /**
  * @file
  * @brief Ever and always spatial relationships for temporal circular buffers
+ * @details These relationships compute the ever/always spatial relationship
+ * between the arguments and return a Boolean. These functions may be used for
+ * filtering purposes before applying the corresponding temporal spatial
+ * relationship.
  *
- * These relationships compute the ever/always spatial relationship between the
- * arguments and return a Boolean. These functions may be used for filtering
- * purposes before applying the corresponding temporal spatial relationship.
- *
- * The following relationships are supported for geometries: `eContains`,
- * `aContains`, `eDisjoint`, `aDisjoint`, `eIntersects`, `aIntersects`,
- * `eTouches`, aTouches`, `eDwithin`, and `aDwithin`.
+ * The following relationships are supported: `eContains`, `aContains`,
+ * `eDisjoint`, `aDisjoint`, `eIntersects`, `aIntersects`, `eTouches`,
+ * aTouches`, `eDwithin`, and `aDwithin`.
  */
 
 #include "cbuffer/tcbuffer_spatialrels.h"

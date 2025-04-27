@@ -77,6 +77,7 @@
 #include <time.h>
 #include <libpq-fe.h>
 #include <meos.h>
+#include <meos_geo.h>
 /* The expandable functions are in the internal MEOS API */
 #include <meos_internal.h>
 

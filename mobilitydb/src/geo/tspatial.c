@@ -197,7 +197,7 @@ PGDLLEXPORT Datum Tspatial_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_to_stbox);
 /**
  * @ingroup mobilitydb_geo_conversion
- * @brief Return a temporal spatial value converted to a spatiotemporal box
+ * @brief Convert a temporal spatial value into a spatiotemporal box
  * @sqlfn stbox()
  * @sqlop @p ::
  */
@@ -218,7 +218,7 @@ Tspatial_to_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Geo_expand_space(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_expand_space);
 /**
- * @ingroup mobilitydb_temporal_transf
+ * @ingroup mobilitydb_geo_transf
  * @brief Return the bounding box of a geometry/geography expanded on the
  * spatial dimension by a value
  * @sqlfn expandSpace()
@@ -294,7 +294,7 @@ PGDLLEXPORT Datum Tspatial_transform(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_transform);
 /**
  * @ingroup mobilitydb_geo_srid
- * @brief Return a temporal circular buffer transformed to an SRID
+ * @brief Return a temporal spatial value transformed to an SRID
  * @sqlfn transform()
  */
 Datum
@@ -311,8 +311,8 @@ PGDLLEXPORT Datum Tspatial_transform_pipeline(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_transform_pipeline);
 /**
  * @ingroup mobilitydb_geo_srid
- * @brief Return a temporal circular buffer transformed to an SRID using a
- * transformation pipeline
+ * @brief Return a temporal spatial value transformed to an SRID using a
+ * pipeline
  * @sqlfn transformPipeline()
  */
 Datum

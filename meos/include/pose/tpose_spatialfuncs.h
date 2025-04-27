@@ -42,10 +42,11 @@
 
 /* Validity functions */
 
+extern bool ensure_valid_pose_stbox(const Pose *pose, const STBox *box);
+extern bool ensure_valid_tpose_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern bool ensure_valid_tpose_pose(const Temporal *temp, const Pose *pose);
 extern bool ensure_valid_tpose_tpose(const Temporal *temp1,
   const Temporal *temp2);
-extern bool ensure_valid_stbox_pose(const STBox *box, const Pose *pose);
 
 /* Interpolation functions */
 

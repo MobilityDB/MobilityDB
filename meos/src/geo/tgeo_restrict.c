@@ -68,9 +68,7 @@ Temporal *
 tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tpoint_type(temp->temptype))
-    return NULL;
+  VALIDATE_TPOINT(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   return temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
 }
 
@@ -85,9 +83,7 @@ Temporal *
 tgeo_at_value(const Temporal *temp, GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
-    return NULL;
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   return temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
 }
 
@@ -102,9 +98,7 @@ Temporal *
 tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tpoint_type(temp->temptype))
-    return NULL;
+  VALIDATE_TPOINT(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   return temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
 }
 
@@ -119,9 +113,7 @@ Temporal *
 tgeo_minus_value(const Temporal *temp, GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) gs) ||
-      ! ensure_tgeo_type(temp->temptype))
-    return NULL;
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   return temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
 }
 
@@ -140,9 +132,7 @@ tgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   GSERIALIZED **value)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) value) ||
-      ! ensure_tgeo_type_all(temp->temptype))
-    return false;
+  VALIDATE_TGEO(temp, false); VALIDATE_NOT_NULL(value, false);
 
   Datum res;
   bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
@@ -150,7 +140,6 @@ tgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   return result;
 }
 #endif /* MEOS */
-
 
 /*****************************************************************************
  * Force a temporal point to be 2D
@@ -177,7 +166,8 @@ static Temporal *
 tpoint_force2d(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_tpoint_type(temp->temptype) ||
+  VALIDATE_TPOINT(temp, NULL);
+  if (! ensure_tpoint_type(temp->temptype) ||
       ! ensure_has_Z(temp->temptype, temp->flags))
     return NULL;
 
@@ -224,7 +214,8 @@ tpointsegm_timestamp_at_value1_iter(const TInstant *inst1,
   else
   {
     double dist;
-    double fraction = (double) pointsegm_locate_point(value1, value2, value, &dist);
+    double fraction = (double) pointsegm_locate_point(value1, value2, value,
+      &dist);
     if (fabs(dist) >= MEOS_EPSILON)
       result = false;
     else
@@ -1127,12 +1118,12 @@ Temporal *
 tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   bool atfunc)
 {
-  assert(temp); assert(box); assert(tgeo_type_all(temp->temptype));
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(box, NULL);
   /* At least one of MEOS_FLAGS_GET_X and MEOS_FLAGS_GET_T is true */
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   assert(hasx || hast);
-  /* Ensure the validity of the arguments */
   if (hasx && (! ensure_same_geodetic(temp->flags, box->flags) ||
       ! ensure_same_srid(tspatial_srid(temp), box->srid)))
     return NULL;
@@ -1195,12 +1186,9 @@ tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
  * @param[in] border_inc True when the box contains the upper border
  * @csqlfn #Tgeo_at_stbox()
  */
-Temporal *
+inline Temporal *
 tgeo_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_stbox(temp, box))
-    return NULL;
   return tgeo_restrict_stbox(temp, box, border_inc, REST_AT);
 }
 
@@ -1213,12 +1201,9 @@ tgeo_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
  * @param[in] border_inc True when the box contains the upper border
  * @csqlfn #Tgeo_minus_stbox()
  */
-Temporal *
+inline Temporal *
 tgeo_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_stbox(temp, box))
-    return NULL;
   return tgeo_restrict_stbox(temp, box, border_inc, REST_MINUS);
 }
 #endif /* MEOS */
@@ -1462,7 +1447,7 @@ TInstant *
 tgeoinst_restrict_geom_iter(const TInstant *inst, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  assert(inst); assert(gs); assert(tgeo_type_all(inst->temptype));
+  VALIDATE_TGEO(inst, NULL); VALIDATE_NOT_NULL(gs, NULL); 
   assert(! gserialized_is_empty(gs));
   /* Execute the specialized function for temporal points */
   if (tpoint_type(inst->temptype))
@@ -1499,7 +1484,7 @@ TInstant *
 tgeoinst_restrict_geom(const TInstant *inst, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  assert(inst); assert(gs); assert(tgeo_type_all(inst->temptype));
+  VALIDATE_TGEO(inst, NULL); VALIDATE_NOT_NULL(gs, NULL); 
   TInstant *res = tgeoinst_restrict_geom_iter(inst, gs, zspan, atfunc);
   if (! res)
     return NULL;
@@ -1519,7 +1504,7 @@ TSequence *
 tgeoseq_disc_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  assert(seq); assert(gs); assert(tgeo_type_all(seq->temptype));
+  VALIDATE_TGEO(seq, NULL); VALIDATE_NOT_NULL(gs, NULL); 
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   assert(seq->count > 1);
 
@@ -1560,7 +1545,7 @@ TSequenceSet *
 tgeoseq_step_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
    const Span *zspan, bool atfunc)
 {
-  assert(seq); assert(gs); assert(tgeo_type_all(seq->temptype));
+  VALIDATE_TGEO(seq, NULL); VALIDATE_NOT_NULL(gs, NULL); 
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
   assert(seq->count > 1);
 
@@ -1911,8 +1896,7 @@ TSequenceSet *
 tpointseq_linear_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  assert(seq); ensure_not_null((void *) gs);
-  assert(tpoint_type(seq->temptype));
+  VALIDATE_TPOINT(seq, NULL); VALIDATE_NOT_NULL(gs, NULL); 
   assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
   assert(seq->count > 1);
 
@@ -1979,7 +1963,7 @@ Temporal *
 tgeoseq_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  assert(seq); assert(gs); assert(tgeo_type_all(seq->temptype));
+  VALIDATE_TGEO(seq, NULL); VALIDATE_NOT_NULL(gs, NULL); 
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
 
   /* Instantaneous sequence */
@@ -2026,7 +2010,7 @@ TSequenceSet *
 tgeoseqset_restrict_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  assert(ss); assert(gs); assert(tgeo_type_all(ss->temptype));
+  VALIDATE_TGEO(ss, NULL); VALIDATE_NOT_NULL(gs, NULL); 
 
   /* Singleton sequence set */
   if (ss->count == 1)
@@ -2073,14 +2057,15 @@ tgeoseqset_restrict_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
  * and possibly a Z span
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
- * @param[in] zspan Span of values to restrict the Z dimension
+ * @param[in] zspan Span of values to restrict the Z dimension, may be `NULL`
  * @param[in] atfunc True if the restriction is at, false for minus
  */
 Temporal *
 tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  assert(temp); assert(gs); assert(tgeo_type_all(temp->temptype));
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL); 
   /* Ensure the validity of the arguments */
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_has_not_Z_geo(gs) ||
@@ -2155,12 +2140,9 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
  * @note This function has a last parameter for the Z dimension which is not
  * available for temporal geometries
  */
-Temporal *
+inline Temporal *
 tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs))
-    return NULL;
   return tgeo_restrict_geom(temp, gs, zspan, REST_AT);
 }
 
@@ -2171,12 +2153,9 @@ tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan)
  * @param[in] gs Geometry
  * @csqlfn #Tgeo_at_geom()
  */
-Temporal *
+inline Temporal *
 tgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs))
-    return NULL;
   return tgeo_restrict_geom(temp, gs, NULL, REST_AT);
 }
 
@@ -2190,13 +2169,10 @@ tgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs)
  * @note This function has a last parameter for the Z dimension which is not
  * available for temporal geometries
  */
-Temporal *
+inline Temporal *
 tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
   const Span *zspan)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs))
-    return NULL;
   return tgeo_restrict_geom(temp, gs, zspan, REST_MINUS);
 }
 
@@ -2207,12 +2183,9 @@ tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @csqlfn #Tgeo_minus_geom()
  */
-Temporal *
+inline Temporal *
 tgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs))
-    return NULL;
   return tgeo_restrict_geom(temp, gs, NULL, REST_MINUS);
 }
 #endif /* MEOS */

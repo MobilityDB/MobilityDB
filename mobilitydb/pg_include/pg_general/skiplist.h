@@ -72,7 +72,7 @@ extern void unset_aggregation_context(MemoryContext ctx);
     MemoryContext ctx = set_aggregation_context(fcinfo); \
     state1 = PG_ARGISNULL(0) ? NULL : (SkipList *) PG_GETARG_POINTER(0);  \
     state2 = PG_ARGISNULL(1) ? NULL : (SkipList *) PG_GETARG_POINTER(1);  \
-    if (state1 == NULL && state2 == NULL)  \
+    if (! state1 && ! state2)  \
       PG_RETURN_NULL();  \
     unset_aggregation_context(ctx); \
   } while (0)

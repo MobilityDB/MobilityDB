@@ -130,6 +130,10 @@
  * @ingroup mobilitydb_cbuffer_base
  * @brief Transformation functions for static circular buffers
  *
+ * @defgroup mobilitydb_cbuffer_base_box Bounding box functions
+ * @ingroup mobilitydb_cbuffer_base
+ * @brief Bounding box functions for static circular buffers
+ *
  * @defgroup mobilitydb_cbuffer_base_srid Spatial reference system functions
  * @ingroup mobilitydb_cbuffer_base
  * @brief Spatial reference system functions for static circular buffers

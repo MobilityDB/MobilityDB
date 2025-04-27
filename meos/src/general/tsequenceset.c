@@ -405,12 +405,7 @@ TSequenceSet *
 tsequenceset_make(const TSequence **sequences, int count, bool normalize)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) sequences))
-    return NULL;
-#else
-  assert(sequences);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(sequences, NULL);
   if (! ensure_positive(count))
     return NULL;
   return tsequenceset_make_exp(sequences, count, count, normalize);
@@ -538,12 +533,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, interpType interp,
   const Interval *maxt, double maxdist)
 {
   /* Ensure the validity of the arguments */
-#if MEOS
-  if (! ensure_not_null((void *) instants))
-    return NULL;
-#else
-  assert(instants);
-#endif /* MEOS */
+  VALIDATE_NOT_NULL(instants, NULL);
   if (! ensure_positive(count))
     return NULL;
 
@@ -1108,7 +1098,7 @@ tsequenceset_inst_n(const TSequenceSet *ss, int n)
  * @param[in] ss Temporal sequence set
  */
 const TInstant **
-tsequenceset_insts(const TSequenceSet *ss)
+tsequenceset_insts_p(const TSequenceSet *ss)
 {
   assert(ss);
   const TInstant **result = palloc(sizeof(TInstant *) * ss->totalcount);

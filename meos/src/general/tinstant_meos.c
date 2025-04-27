@@ -158,8 +158,7 @@ TInstant *
 ttextinst_make(const text *txt, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) txt))
-    return NULL;
+  VALIDATE_NOT_NULL(txt, NULL);
   return tinstant_make(PointerGetDatum(txt), T_TTEXT, t);
 }
 

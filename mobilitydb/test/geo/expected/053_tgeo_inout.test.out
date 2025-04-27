@@ -142,7 +142,7 @@ ERROR:  Error while processing MFJSON string unexpected character (at offset 0)
 SELECT tgeometryFromMFJSON('{"types":"MovingGeometry","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolation":"Discrete"}');
 ERROR:  Unable to find 'type' in MFJSON string
 SELECT tgeometryFromMFJSON('{"type":"XXX","coordinates":[1],"datetimes":"2000-01-01T00:00:00+01","interpolation":"Discrete"}');
-ERROR:  Invalid 'type' value in MFJSON string
+ERROR:  Invalid 'type' value in MFJSON string: XXX
 SELECT tgeometryFromMFJSON('{"type":"MovingFloat","values":[1],"datetimes":["2000-01-01T00:00:00+01"],"interpolation":"None"}');
 ERROR:  Invalid 'type' value in MFJSON string, expected: tgeometry, received: tfloat
 SELECT tgeometryFromMFJSON('{"type":"MovingGeometry","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interp":"Discrete"}');

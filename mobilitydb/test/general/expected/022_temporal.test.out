@@ -6717,19 +6717,19 @@ SELECT minusValues(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-17);
 SELECT minusValues(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-12);
                             minusvalues                             
 --------------------------------------------------------------------
- {(1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST]}
+ {[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
 SELECT minusValues(tfloat '(1@2000-01-01, 2@2000-01-02]', 1 + 1e-12);
- minusvalues 
--------------
- 
+                            minusvalues                             
+--------------------------------------------------------------------
+ {(1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
 SELECT round(minusValues(tfloat '[1@2000-01-01, 2@2000-01-02)', 2 - 1e-15), 12);
-                                                                                    round                                                                                     
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[1@Sat Jan 01 00:00:00 2000 PST, 1.999999999988@Sat Jan 01 23:59:59.999999 2000 PST), (1.999999999988@Sat Jan 01 23:59:59.999999 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST)}
+                               round                                
+--------------------------------------------------------------------
+ {[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST)}
 (1 row)
 
 SELECT minusValues(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 + 1e-16);
@@ -9616,7 +9616,7 @@ SELECT atTbox(tfloat '[1@2000-01-01, 2@2000-01-02)', tbox 'TBOXFLOAT XT([2,2],[2
 
 /* Errors */
 SELECT atTbox(tfloat '[1@2001-01-01, 5@2001-01-05]', tbox 'TBOXINT X([1,2])');
-ERROR:  Operation on mixed temporal number type and box span type: tfloat, intspan
+ERROR:  Operation on mixed temporal number and box span types: tfloat, intspan
 SELECT minusTBox(tint '1@2000-01-01', tbox 'TBOXINT XT([1,2],[2000-01-01,2000-01-02])');
  minustbox 
 -----------

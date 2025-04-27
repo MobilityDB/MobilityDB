@@ -60,6 +60,7 @@
 #include <string.h> /* For memset */
 #include <time.h>
 #include <meos.h>
+#include <meos_geo.h>
 /* The expandable functions are in the internal MEOS API */
 #include <meos_internal.h>
 
@@ -73,7 +74,7 @@
 /* Maximum number of trips */
 #define MAX_SHIPS 6500
 /* Number of instants in a batch for printing a marker */
-#define NO_RECORDS_BATCH 100000
+#define NO_RECORDS_BATCH 10000
 /* Initial number of allocated instants for an input trip and SOG */
 #define INITIAL_INSTANTS 64
 /* Maximum length in characters of a record in the input CSV file */
@@ -136,7 +137,7 @@ int main(void)
    * Open the input file
    * Substitute the full file path in the first argument of fopen
    */
-  FILE *file = fopen("data/aisdk-2023-08-01.csv", "r");
+  FILE *file = fopen("data/aisdk-2025-03-01.csv", "r");
   if (! file)
   {
     printf("Error opening input file\n");
@@ -283,11 +284,11 @@ int main(void)
       free(t_out);
       inst = (TInstant *) tgeogpoint_in(point_buffer);
       /* Ensure there is still space for storing the temporal point instant */
-      if (trips[j].trip == NULL)
+      if (! trips[j].trip)
       {
         trips[j].trip = tsequence_make_exp((const TInstant **) &inst, 1,
           INITIAL_INSTANTS, true, true, LINEAR, false);
-        if (trips[j].trip == NULL)
+        if (! trips[j].trip)
         {
           printf("\nMSSI: %ld, there is no more memory to expand the trip\n",
             trips[j].MMSI);

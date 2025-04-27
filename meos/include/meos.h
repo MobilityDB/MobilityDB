@@ -28,7 +28,8 @@
  *****************************************************************************/
 
 /**
- * @brief API of the Mobility Engine Open Source (MEOS) library.
+ * @file
+ * @brief External API of the Mobility Engine Open Source (MEOS) library
  */
 
 #ifndef __MEOS_H__
@@ -1300,7 +1301,7 @@ extern bool srid_is_latlong(int32_t srid);
 extern Temporal **temparr_round(const Temporal **temp, int count, int maxdd);
 extern Temporal *temporal_round(const Temporal *temp, int maxdd);
 extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *duration);
-extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);
+extern Temporal *temporal_set_interp(const Temporal *temp, const char *interp_str);
 extern Temporal *temporal_shift_scale_time(const Temporal *temp, const Interval *shift, const Interval *duration);
 extern Temporal *temporal_shift_time(const Temporal *temp, const Interval *shift);
 extern TInstant *temporal_to_tinstant(const Temporal *temp);
