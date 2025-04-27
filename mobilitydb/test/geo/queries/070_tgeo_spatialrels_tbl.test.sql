@@ -41,12 +41,25 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE aContains(g, temp);
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eContains(temp, g);
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE aContains(temp, g);
 
-SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eContains(t1.temp, t1.temp);
-SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aContains(t1.temp, t1.temp);
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eContains(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aContains(t1.temp, t2.temp);
+
+-------------------------------------------------------------------------------
+-- eCovers, aCovers
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eCovers(g, temp);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE aCovers(g, temp);
+
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eCovers(temp, g);
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE aCovers(temp, g);
+
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eCovers(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aCovers(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 -- eDisjoint, aDisjoint
--- eDisjoint is not provided for geography
+-- They support geography
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eDisjoint(g, temp);
@@ -119,20 +132,15 @@ SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE aIntersects(
 -------------------------------------------------------------------------------
 -- eTouches, aTouches
 -------------------------------------------------------------------------------
+-- The function is not supported for 3D or geographies
 
--- The implementation of the boundary function changed in PostGIS 3.2
--- The result of these queries changed in PostGIS 3.3
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eTouches(g, temp);
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eTouches(temp, g);
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eTouches(t1.temp, t2.temp);
--- 3D
-SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeometry3D WHERE eTouches(g, temp);
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE eTouches(temp, g);
 
--- aTouches for 3D is not provided since it is based in minusGeometry which
--- is performed by GEOS
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE aTouches(g, temp);
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE aTouches(temp, g);
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE aTouches(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 -- eDwithin, aDwithin

@@ -31,14 +31,14 @@
 -- Multidimensional tiling
 -------------------------------------------------------------------------------
 
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bins(i, 2) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bins(i, 2, 1) AS bl FROM tbl_intspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT SUM(array_length(bins(i, 2), 1)) AS bl FROM tbl_intspan;
+SELECT SUM(array_length(bins(i, 2, 1), 1)) AS bl FROM tbl_intspan;
 
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bins(f, 2) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bins(f, 2.5, 1.5) AS bl FROM tbl_floatspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT SUM(array_length(bins(f, 2.5), 1)) AS bl FROM tbl_floatspan;
+SELECT SUM(array_length(bins(f, 2.5, 1.5), 1)) AS bl FROM tbl_floatspan;
 
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bins(t, '2 days') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT (bl).index, COUNT((bl).span) FROM (SELECT bins(t, '2 days', '2001-06-01') AS bl FROM tbl_tstzspan) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT SUM(array_length(bins(d, '2 days'), 1)) AS bl FROM tbl_datespan;
+SELECT SUM(array_length(bins(d, '2 days', '2001-06-01'), 1)) AS bl FROM tbl_datespan;
 
 -------------------------------------------------------------------------------
 

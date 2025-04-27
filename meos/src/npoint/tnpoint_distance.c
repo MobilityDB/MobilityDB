@@ -36,12 +36,7 @@
 
 /* MEOS */
 #include <meos.h>
-#include <meos_npoint.h>
-#include <meos_internal.h>
-#include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
-#include "npoint/tnpoint.h"
-#include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Distance function

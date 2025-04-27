@@ -128,7 +128,7 @@ tgeographyinst_in(const char *str)
  * @param[in] interp Interpolation
  */
 TSequence *
-tgeompointseq_in(const char *str, interpType interp __attribute__((unused)))
+tgeompointseq_in(const char *str, interpType interp UNUSED)
 {
   assert(str);
   /* Call the superclass function */
@@ -147,7 +147,7 @@ tgeompointseq_in(const char *str, interpType interp __attribute__((unused)))
  * @param[in] interp Interpolation
  */
 TSequence *
-tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
+tgeogpointseq_in(const char *str, interpType interp UNUSED)
 {
   assert(str);
   /* Call the superclass function */
@@ -166,7 +166,7 @@ tgeogpointseq_in(const char *str, interpType interp __attribute__((unused)))
  * @param[in] interp Interpolation
  */
 TSequence *
-tgeometryseq_in(const char *str, interpType interp __attribute__((unused)))
+tgeometryseq_in(const char *str, interpType interp UNUSED)
 {
   assert(str);
   /* Call the superclass function */
@@ -185,7 +185,7 @@ tgeometryseq_in(const char *str, interpType interp __attribute__((unused)))
  * @param[in] interp Interpolation
  */
 TSequence *
-tgeographyseq_in(const char *str, interpType interp __attribute__((unused)))
+tgeographyseq_in(const char *str, interpType interp UNUSED)
 {
   assert(str);
   /* Call the superclass function */
@@ -767,7 +767,11 @@ tgeo_values(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
-  Datum *datumarr = temporal_values_p(temp, count);
+  int count1;
+  Datum *datumarr = temporal_values_p(temp, &count1);
+  meosType basetype = temptype_basetype(temp->temptype);
+  datumarr_sort(datumarr, count1, basetype);
+  *count = datumarr_remove_duplicates(datumarr, count1, basetype);
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * *count);
   for (int i = 0; i < *count; i++)
     result[i] = geo_copy(DatumGetGserializedP(datumarr[i]));

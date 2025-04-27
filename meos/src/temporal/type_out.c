@@ -88,7 +88,7 @@ size_t lwgeom_to_wkb_size(const LWGEOM *geom, uint8_t variant);
  *****************************************************************************/
 
 /**
- * @ingroup meos_pg_types
+ * @ingroup meos_base_types
  * @brief Return the string representation of a text value
  * @param[in] txt Text
  */
@@ -1005,7 +1005,7 @@ set_to_wkb_size(const Set *set, uint8_t variant)
  * representation
  */
 size_t
-span_to_wkb_size(const Span *s __attribute__((unused)), bool component)
+span_to_wkb_size(const Span *s, bool component)
 {
   size_t size = 0;
   if (! component)
@@ -2243,7 +2243,7 @@ datum_to_wkb_buf(Datum value, meosType type, uint8_t *buf, uint8_t variant)
  * Accepts either WKB_NDR or WKB_XDR, and WKB_HEX.
  * For example: Variant = WKB_NDR would return the little-endian WKB form.
  * For example: Variant = (WKB_XDR | WKB_HEX) would return the big-endian
- * WKB form as hex-encoded ASCII.
+ * WKB form as ASCII hex-encoded.
  * @param[out] size_out If supplied, will return the size of the returned
  * memory segment, including the null terminator in the case of ASCII.
  * @note Caller is responsible for freeing the returned array.
@@ -2353,8 +2353,8 @@ set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup meos_setspan_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)representation
- * of a set
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a set
  * @param[in] s Set
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
@@ -2391,7 +2391,7 @@ span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup meos_setspan_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a span
  * @param[in] s Span
  * @param[in] variant Output variant
@@ -2409,6 +2409,7 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
 #endif /* MEOS */
 
 /*****************************************************************************/
+
 /**
  * @ingroup meos_setspan_inout
  * @brief Return the Well-Known Binary (WKB) representation of a span set
@@ -2428,7 +2429,7 @@ spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup meos_setspan_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a span set
  * @param[in] ss Span set
  * @param[in] variant Output variant
@@ -2469,7 +2470,7 @@ tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup meos_box_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a temporal box
  * @param[in] box Temporal box
  * @param[in] variant Output variant
@@ -2510,7 +2511,7 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 #if MEOS
 /**
  * @ingroup meos_temporal_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a temporal value
  * @param[in] temp Temporal value
  * @param[in] variant Output variant

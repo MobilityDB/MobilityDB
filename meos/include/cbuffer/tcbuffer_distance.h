@@ -38,12 +38,13 @@
 #include <postgres.h>
 /* MEOS */
 #include "temporal/temporal.h"
-#include <meos_cbuffer.h>
+#include "cbuffer/cbuffer.h"
 
 /*****************************************************************************/
 
+extern double cbuffer_distance(const Cbuffer *cb1, const Cbuffer *cb2);
 extern Datum datum_cbuffer_distance(Datum cb1, Datum cb2);
-extern Temporal *distance_tcbuffer_point(const Temporal *temp,
+extern Temporal *distance_tcbuffer_geo(const Temporal *temp,
   const GSERIALIZED *gs);
 extern Temporal *distance_tcbuffer_cbuffer(const Temporal *temp,
   const Cbuffer *cb);
@@ -56,6 +57,7 @@ extern TInstant *nai_tcbuffer_cbuffer(const Temporal *temp,
 extern TInstant *nai_tcbuffer_tcbuffer(const Temporal *temp,
   const Temporal *temp2);
 
+extern double nad_cbuffer_stbox(const Cbuffer *cb, const STBox *box);
 extern double nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern double nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
 extern double nad_tcbuffer_tcbuffer(const Temporal *temp1,

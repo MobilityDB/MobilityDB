@@ -382,23 +382,23 @@ Stbox_gist_distance(PG_FUNCTION_ARGS)
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   STBox *key = (STBox *) DatumGetPointer(entry->key);
-  STBox query;
-  double distance;
+  if (! key)
+    PG_RETURN_FLOAT8(DBL_MAX);
 
   /* The index is lossy for leaf levels */
   if (GIST_LEAF(entry))
     *recheck = true;
 
-  if (key == NULL)
-    PG_RETURN_FLOAT8(DBL_MAX);
-
   /* Transform the query into a box */
+  STBox query;
   if (! tspatial_gist_get_stbox(fcinfo, &query, oid_type(typid)))
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Since we only have boxes we return the minimum possible distance,
    * and let the recheck sort things out in the case of leaves */
-  distance = nad_stbox_stbox(key, &query);
+  double distance = nad_stbox_stbox(key, &query);
+  if (distance < 0)
+    PG_RETURN_FLOAT8(DBL_MAX);
 
   PG_RETURN_FLOAT8(distance);
 }

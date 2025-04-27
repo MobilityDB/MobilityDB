@@ -35,10 +35,12 @@
 #ifndef __TRGEO_DISTANCE_H__
 #define __TRGEO_DISTANCE_H__
 
+/* PostgreSQL */
 #include <postgres.h>
+/* PostGIS */
 #include <liblwgeom.h>
+/* MEOS */
 #include "temporal/temporal.h"
-
 #include "pose/pose.h"
 
 /*****************************************************************************

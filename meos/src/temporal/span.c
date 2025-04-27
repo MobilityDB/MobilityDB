@@ -565,7 +565,7 @@ set_set_span(const Set *s, Span *result)
 }
 
 /**
- * @ingroup meos_setspan_conversion
+ * @ingroup meos_internal_setspan_conversion
  * @brief Convert a set into a span
  * @param[in] s Set
  * @csqlfn #Set_to_span()
@@ -573,14 +573,27 @@ set_set_span(const Set *s, Span *result)
 Span *
 set_span(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL);
+  assert(s);
   if (! ensure_set_spantype(s->settype))
     return NULL;
 
   Span *result = palloc(sizeof(Span));
   set_set_span(s, result);
   return result;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a set into a span
+ * @param[in] s Set
+ * @csqlfn #Set_to_span()
+ */
+Span *
+set_to_span(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL);
+  return set_span(s);
 }
 
 /**
@@ -600,7 +613,7 @@ intspan_set_floatspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup meos_setspan_conversion
+ * @ingroup meos_internal_setspan_conversion
  * @brief Convert an integer span into a float span
  * @param[in] s Span
  * @return On error return @p NULL
@@ -608,11 +621,24 @@ intspan_set_floatspan(const Span *s1, Span *s2)
 Span *
 intspan_floatspan(const Span *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_INTSPAN(s, NULL);
+  assert(s); assert(s->spantype == T_INTSPAN);
   Span *result = palloc(sizeof(Span));
   intspan_set_floatspan(s, result);
   return result;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert an integer span into a float span
+ * @param[in] s Span
+ * @return On error return @p NULL
+ */
+Span *
+intspan_to_floatspan(const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, NULL);
+  return intspan_floatspan(s);
 }
 
 /**
@@ -640,10 +666,23 @@ floatspan_set_intspan(const Span *s1, Span *s2)
 Span *
 floatspan_intspan(const Span *s)
 {
-  VALIDATE_FLOATSPAN(s, NULL);
+  assert(s); assert(s->spantype == T_FLOATSPAN);
   Span *result = palloc(sizeof(Span));
   floatspan_set_intspan(s, result);
   return result;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a float span into an integer span
+ * @param[in] s Span
+ * @return On error return @p NULL
+ */
+Span *
+floatspan_to_intspan(const Span *s)
+{
+  VALIDATE_FLOATSPAN(s, NULL);
+  return floatspan_intspan(s);
 }
 
 /**
@@ -666,7 +705,7 @@ datespan_set_tstzspan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup meos_setspan_conversion
+ * @ingroup meos_internal_setspan_conversion
  * @brief Convert a date span into a timestamptz span
  * @param[in] s Span
  * @return On error return @p NULL
@@ -674,11 +713,24 @@ datespan_set_tstzspan(const Span *s1, Span *s2)
 Span *
 datespan_tstzspan(const Span *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_DATESPAN(s, NULL);
+  assert(s); assert(s->spantype == T_DATESPAN);
   Span *result = palloc(sizeof(Span));
   datespan_set_tstzspan(s, result);
   return result;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a date span into a timestamptz span
+ * @param[in] s Span
+ * @return On error return @p NULL
+ */
+Span *
+datespan_to_tstzspan(const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, NULL);
+  return datespan_tstzspan(s);
 }
 
 /**
@@ -708,7 +760,7 @@ tstzspan_set_datespan(const Span *s1, Span *s2)
 }
 
 /**
- * @ingroup meos_setspan_conversion
+ * @ingroup meos_internal_setspan_conversion
  * @brief Convert a timestamptz span into a date span
  * @param[in] s Span
  * @return On error return @p NULL
@@ -716,11 +768,24 @@ tstzspan_set_datespan(const Span *s1, Span *s2)
 Span *
 tstzspan_datespan(const Span *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPAN(s, NULL);
+  assert(s); assert(s->spantype == T_TSTZSPAN);
   Span *result = palloc(sizeof(Span));
   tstzspan_set_datespan(s, result);
   return result;
+}
+
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a timestamptz span into a date span
+ * @param[in] s Span
+ * @return On error return @p NULL
+ */
+Span *
+tstzspan_to_datespan(const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return tstzspan_datespan(s);
 }
 
 /*****************************************************************************
@@ -848,7 +913,7 @@ floatspan_floor_ceil_iter(Span *s, datum_func1 func)
 }
 
 /**
- * @ingroup meos_internal_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Return a float span rounded down to the nearest integer
  * @csqlfn #Floatspan_floor()
  */
@@ -863,7 +928,7 @@ floatspan_floor(const Span *s)
 }
 
 /**
- * @ingroup meos_internal_setspan_transf
+ * @ingroup meos_setspan_transf
  * @brief Return a float span rounded up to the nearest integer
  * @csqlfn #Floatspan_ceil()
  */
@@ -1180,6 +1245,22 @@ numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift,
 }
 
 /**
+ * @ingroup meos_base_types
+ * @brief Return a timestamptz shifted by an interval
+ * @param[in] t Timestamp
+ * @param[in] interv Interval to shift the instant
+ * @return On error return `DT_NOEND`
+ * @csqlfn #Timestamptz_shift()
+ */
+TimestampTz
+timestamptz_shift(TimestampTz t, const Interval *interv)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(interv, DT_NOEND);
+  return add_timestamptz_interval(t, interv);
+}
+
+/**
  * @ingroup meos_setspan_transf
  * @brief Return a timestamptz span shifted and/or scaled by two intervals
  * @param[in] s Span
@@ -1213,7 +1294,7 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
  *****************************************************************************/
 
 /**
- * @ingroup meos_setspan_bbox
+ * @ingroup meos_setspan_bbox_split
  * @brief Return an array of spans from the values of a set
  * @param[in] s Set
  * @return On error return @p NULL
@@ -1232,7 +1313,7 @@ set_spans(const Set *s)
 }
 
 /**
- * @ingroup meos_setspan_bbox
+ * @ingroup meos_setspan_bbox_split
  * @brief Return an array of N spans from the values of a set
  * @param[in] s Set
  * @param[in] span_count Number of spans
@@ -1278,7 +1359,7 @@ set_split_n_spans(const Set *s, int span_count, int *count)
 }
 
 /**
- * @ingroup meos_setspan_bbox
+ * @ingroup meos_setspan_bbox_split
  * @brief Return an array of spans from a set obtained by merging consecutive
  * elements
  * @param[in] s Set

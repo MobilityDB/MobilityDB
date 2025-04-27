@@ -87,26 +87,26 @@ CREATE OPERATOR <-> (
  * Nearest approach instant/distance and shortest line functions
  *****************************************************************************/
 
-CREATE FUNCTION NearestApproachInstant(trgeometry, geometry)
+CREATE FUNCTION nearestApproachInstant(trgeometry, geometry)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'NAI_trgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION NearestApproachInstant(geometry, trgeometry)
+CREATE FUNCTION nearestApproachInstant(geometry, trgeometry)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'NAI_geo_trgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION NearestApproachInstant(trgeometry, tgeompoint)
+CREATE FUNCTION nearestApproachInstant(trgeometry, tgeompoint)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'NAI_trgeo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 /* TODO: Maybe change output type here.
  * Currently we return a trgeometry instant
  * even if the left argument is a tgeompoint */
-CREATE FUNCTION NearestApproachInstant(tgeompoint, trgeometry)
+CREATE FUNCTION nearestApproachInstant(tgeompoint, trgeometry)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'NAI_tpoint_trgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION NearestApproachInstant(trgeometry, trgeometry)
+CREATE FUNCTION nearestApproachInstant(trgeometry, trgeometry)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'NAI_trgeo_trgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

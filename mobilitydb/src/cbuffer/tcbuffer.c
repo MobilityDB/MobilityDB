@@ -44,12 +44,15 @@
 #include "temporal/temporal.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+#include "geo/stbox.h"
 #include "geo/tspatial_parser.h"
 #include "cbuffer/cbuffer.h"
+#include "cbuffer/tcbuffer_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/type_util.h"
+#include "pg_geo/postgis.h"
 
 /*****************************************************************************
  * Input/output functions
@@ -237,7 +240,29 @@ Tcbuffer_radius(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Return the geometric positions covered by a temporal circular buffer
+ * Transformation functions
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tcbuffer_expand(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_expand);
+/**
+ * @ingroup mobilitydb_cbuffer_transf
+ * @brief Return a temporal circular buffer with the radius expanded by a
+ * distance
+ * @sqlfn expand()
+ */
+Datum
+Tcbuffer_expand(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double dist = PG_GETARG_FLOAT8(1);
+  Temporal *result = tcbuffer_expand(temp, dist);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_SET_P(result);
+}
+
+/*****************************************************************************
+ * Traversed area
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tcbuffer_traversed_area(PG_FUNCTION_ARGS);
@@ -251,9 +276,155 @@ Datum
 Tcbuffer_traversed_area(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *result = tcbuffer_traversed_area(temp);
+  GSERIALIZED *result = tcbuffer_trav_area(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
+}
+
+/*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a temporal circular buffer restricted to (the complement of)
+ * a circular buffer
+ * @note Only 2D is supported
+ */
+static Datum
+Tcbuffer_restrict_cbuffer(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  Temporal *result = tcbuffer_restrict_cbuffer(temp, cb, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tcbuffer_at_cbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_at_cbuffer);
+/**
+ * @ingroup mobilitydb_geo_restrict
+ * @brief Return a temporal circular buffer restricted to a circular buffer
+ * @note Only 2D is supported
+ * @sqlfn atValue()
+ */
+inline Datum
+Tcbuffer_at_cbuffer(PG_FUNCTION_ARGS)
+{
+  return Tcbuffer_restrict_cbuffer(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Tcbuffer_minus_cbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_minus_cbuffer);
+/**
+ * @ingroup mobilitydb_geo_restrict
+ * @brief Return a temporal circular buffer restricted to the complement of a
+ * circular buffer
+ * @sqlfn minusValue()
+ */
+inline Datum
+Tcbuffer_minus_cbuffer(PG_FUNCTION_ARGS)
+{
+  return Tcbuffer_restrict_cbuffer(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+
+/**
+ * @brief Return a temporal circular buffer restricted to (the complement of)
+ * a circular buffer
+ * @note Only 2D is supported
+ */
+static Datum
+Tcbuffer_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBox *box = PG_GETARG_STBOX_P(1);
+  Temporal *result = tcbuffer_restrict_stbox(temp, box, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tcbuffer_at_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_at_stbox);
+/**
+ * @ingroup mobilitydb_geo_restrict
+ * @brief Return a temporal circular buffer restricted to a circular buffer
+ * @note Only 2D is supported
+ * @sqlfn atValue()
+ */
+inline Datum
+Tcbuffer_at_stbox(PG_FUNCTION_ARGS)
+{
+  return Tcbuffer_restrict_stbox(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Tcbuffer_minus_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_minus_stbox);
+/**
+ * @ingroup mobilitydb_geo_restrict
+ * @brief Return a temporal circular buffer restricted to the complement of a
+ * circular buffer
+ * @sqlfn minusValue()
+ */
+inline Datum
+Tcbuffer_minus_stbox(PG_FUNCTION_ARGS)
+{
+  return Tcbuffer_restrict_stbox(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return a temporal circular buffer restricted to (the complement of)
+ * a geometry
+ * @note Only 2D is supported
+ */
+static Datum
+Tcbuffer_restrict_geom(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
+  Temporal *result = tcbuffer_restrict_geom(temp, geo, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(geo, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tcbuffer_at_geom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_at_geom);
+/**
+ * @ingroup mobilitydb_geo_restrict
+ * @brief Return a temporal circular buffer restricted to a geometry
+ * @note Only 2D is supported
+ * @sqlfn atGeometry()
+ */
+inline Datum
+Tcbuffer_at_geom(PG_FUNCTION_ARGS)
+{
+  return Tcbuffer_restrict_geom(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Tcbuffer_minus_geom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcbuffer_minus_geom);
+/**
+ * @ingroup mobilitydb_geo_restrict
+ * @brief Return a temporal circular buffer restricted to the complement of a
+ * geometry
+ * @note Only 2D is supported
+ * @sqlfn minusGeometry()
+ */
+inline Datum
+Tcbuffer_minus_geom(PG_FUNCTION_ARGS)
+{
+  return Tcbuffer_restrict_geom(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/

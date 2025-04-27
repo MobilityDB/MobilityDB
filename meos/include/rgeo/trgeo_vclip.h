@@ -35,9 +35,13 @@
 #ifndef __TRGEO_VCLIP_H__
 #define __TRGEO_VCLIP_H__
 
+/* C */
 #include <c.h>
+/* PostgreSQL */
 #include <postgres.h>
+/* PostGIS */
 #include <liblwgeom.h>
+/* MEOS */
 #include "temporal/temporal.h"
 #include "pose/pose.h"
 

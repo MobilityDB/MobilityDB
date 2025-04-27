@@ -41,11 +41,8 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_pose.h>
 #include "temporal/temporal.h"
-#include "pose/tpose.h"
-/* MobilityDB */
-#include "pg_geo/postgis.h"
+#include "pose/pose.h"
 
 /*****************************************************************************
  * Ever/always comparison functions

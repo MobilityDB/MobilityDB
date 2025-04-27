@@ -911,7 +911,7 @@ tsequence_from_base_temp(Datum value, meosType temptype, const TSequence *seq)
  * @note The interpolation of the result is step or linear depending on whether
  * the base type is continous or not.
  */
-static TSequenceSet *
+TSequenceSet *
 tsequenceset_from_base_temp(Datum value, meosType temptype,
   const TSequenceSet *ss)
 {
@@ -1012,8 +1012,6 @@ tbool_tint(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TBOOL;
   lfinfo.restype = T_TINT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1035,8 +1033,6 @@ tint_tfloat(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TINT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1064,8 +1060,6 @@ tfloat_tint(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TINT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1209,7 +1203,7 @@ round_fn(meosType basetype)
 }
 
 /**
- * @ingroup meos_internal_temporal_transf
+ * @ingroup meos_temporal_transf
  * @brief Return a temporal value rounded to a given number of decimal places
  * @param[in] temp Temporal value
  * @param[in] maxdd Maximum number of decimal digits to output
@@ -1227,13 +1221,11 @@ temporal_round(const Temporal *temp, int maxdd)
   lfinfo.param[0] = Int32GetDatum(maxdd);
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = temp->temptype;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
 /**
- * @ingroup meos_internal_temporal_transf
+ * @ingroup meos_temporal_transf
  * @brief Return an array of temporal floats with the precision of the
  * coordinates set to a number of decimal places
  * @param[in] temparr Array of temporal values
@@ -1257,7 +1249,7 @@ temparr_round(const Temporal **temparr, int count, int maxdd)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_base_transf
+ * @ingroup meos_base_types
  * @brief Return a float number rounded to a given number of decimal places
  */
 double
@@ -1327,8 +1319,6 @@ tfloat_floor(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1350,8 +1340,6 @@ tfloat_ceil(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1417,8 +1405,6 @@ tfloat_degrees(const Temporal *temp, bool normalize)
   lfinfo.param[0] = BoolGetDatum(normalize);
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1440,8 +1426,6 @@ tfloat_radians(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -2064,7 +2048,7 @@ temporal_max_value(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return in the last argument a copy of the n-th value of a temporal
  * value 
  * @param[in] temp Temporal value

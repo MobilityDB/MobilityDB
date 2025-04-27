@@ -37,12 +37,12 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
+#include "temporal/set.h"
 #include "temporal/skiplist.h"
 #include "temporal/temporal_aggfuncs.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_aggfuncs.h"
-#include "npoint/tnpoint_spatialfuncs.h"
+#include "geo/tspatial_parser.h"
 
 /*****************************************************************************/
 

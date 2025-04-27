@@ -34,9 +34,8 @@
 #ifndef __TPOSE_SPATIALFUNCS_H__
 #define __TPOSE_SPATIALFUNCS_H__
 
-#include <meos.h>
-#include <meos_pose.h>
 #include "temporal/temporal.h"
+#include "pose/pose.h"
 
 /*****************************************************************************/
 
@@ -50,8 +49,10 @@ extern bool ensure_valid_tpose_tpose(const Temporal *temp1,
 
 /* Interpolation functions */
 
-extern bool tposesegm_intersection_value(const TInstant *inst1,
-  const TInstant *inst2, Datum value, TimestampTz *t);
+extern int tposesegm_intersection_value(Datum start, Datum end, Datum value,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t);
+extern int tposesegm_intersection(Datum start1, Datum end1, Datum start2,
+  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t);
 
 /* Trajectory function */
 

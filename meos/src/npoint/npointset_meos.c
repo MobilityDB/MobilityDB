@@ -43,21 +43,9 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_geo.h>
-#include <meos_npoint.h>
-#include <meos_internal.h>
-#include "temporal/pg_types.h"
 #include "temporal/set.h"
-#include "temporal/tsequence.h"
-#include "temporal/type_inout.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
-#include "geo/postgis_funcs.h"
-#include "geo/tgeo.h"
-#include "geo/tgeo_out.h"
-#include "geo/tgeo_spatialfuncs.h"
-#include "geo/tspatial_parser.h"
-#include "npoint/tnpoint.h"
 
 /*****************************************************************************
  * Input/output functions

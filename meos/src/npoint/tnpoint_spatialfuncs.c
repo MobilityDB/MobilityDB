@@ -38,9 +38,7 @@
 #include <assert.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
 #include "temporal/type_util.h"
-#include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
@@ -594,7 +592,7 @@ tnpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal network point
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  */
 Temporal *
 tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,

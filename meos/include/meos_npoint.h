@@ -206,6 +206,9 @@ extern Temporal *tnpoint_tgeompoint(const Temporal *temp);
  * Functions for temporal network points
  *===========================================================================*/
 
+extern Temporal *tnpoint_in(const char *str);
+extern char *tnpoint_out(const Temporal *temp, int maxdd);
+
 /*****************************************************************************
  * Ever/always temporal comparisons for temporal network points
  *****************************************************************************/

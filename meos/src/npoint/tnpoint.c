@@ -39,15 +39,10 @@
 #include <limits.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_npoint.h>
-#include <meos_internal.h>
-#include "temporal/lifting.h"
 #include "temporal/set.h"
-#include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
-#include "npoint/tnpoint.h"
 
 /*****************************************************************************
  * Validity functions
@@ -250,7 +245,7 @@ tnpointinst_in(const char *str)
  * @param[in] interp Interpolation
  */
 TSequence *
-tnpointseq_in(const char *str, interpType interp __attribute__((unused)))
+tnpointseq_in(const char *str, interpType interp UNUSED)
 {
   /* Call the superclass function */
   Temporal *temp = tnpoint_in(str);
@@ -748,7 +743,7 @@ npointset_routes(const Set *s)
  * @brief Restrict a temporal network point to (the complement of) a network point
  * @param[in] temp Temporal network point
  * @param[in] np Network point
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
@@ -802,7 +797,7 @@ tnpoint_minus_npoint(const Temporal *temp, const Npoint *np)
  * network points
  * @param[in] temp Temporal network point
  * @param[in] s Set of network points
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  * @csqlfn #Tnpoint_restrict_npointset()
  */
 Temporal *

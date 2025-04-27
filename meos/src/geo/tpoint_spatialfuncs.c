@@ -623,58 +623,57 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
  *****************************************************************************/
 
 /**
- * @brief Return true if a segment of a temporal point value intersects a point
- * at the timestamp
- * @param[in] inst1,inst2 Temporal instants defining the segment
+ * @brief Return 1 if a segment of a temporal point value intersects a point
+ * at the timestamp output in the last argument
+ * @param[in] start,end Base values defining the segment
  * @param[in] value Base value
- * @param[out] t Timestamp
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t Resulting timestamp
  * @pre The geometry is not empty
  */
-bool
-tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, TimestampTz *t)
+int
+tpointsegm_intersection_value(Datum start, Datum end, Datum value,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t)
 {
-  assert(inst1); assert(inst2);
+  assert(lower < upper); assert(t);
   assert(! gserialized_is_empty(DatumGetGserializedP(value)));
 
   /* We are sure that the trajectory is a line */
-  Datum start = tinstant_value_p(inst1);
-  Datum end = tinstant_value_p(inst2);
   double dist;
   double fraction = (double) pointsegm_locate(start, end, value, &dist);
   if (fraction < 0.0)
-    return false;
+    return 0;
   if (t)
   {
-    double duration = (double) (inst2->t - inst1->t);
+    double duration = (double) (upper - lower);
     /* Note that due to roundoff errors it may be the case that the
      * resulting timestamp t may be equal to inst1->t or to inst2->t */
-    *t = inst1->t + (TimestampTz) (duration * fraction);
+    *t = lower + (TimestampTz) (duration * fraction);
   }
-  return true;
+  return 1;
 }
 
 /**
- * @brief Return true if two segments of a temporal geometry points intersect
- * at a timestamptz
- * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[out] t Timestamp
- * @pre The instants are synchronized, i.e., start1->t = start2->t and
- * end1->t = end2->t
+ * @brief Return 1 if the segments of two temporal geometry points intersect
+ * at the timestamptz output in the last argument
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t Resulting timestamp
  */
-bool
-tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t)
+int
+tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2,
+  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t)
 {
+  assert(lower < upper); assert(t);
   double x1, y1, z1 = 0.0, x2, y2, z2 = 0.0, x3, y3, z3 = 0.0, x4, y4, z4 = 0.0;
-  bool hasz = MEOS_FLAGS_GET_Z(start1->flags);
+  bool hasz = FLAGS_GET_Z(DatumGetGserializedP(start1)->gflags);
   if (hasz)
   {
-    const POINT3DZ *p1 = DATUM_POINT3DZ_P(tinstant_value_p(start1));
-    const POINT3DZ *p2 = DATUM_POINT3DZ_P(tinstant_value_p(end1));
-    const POINT3DZ *p3 = DATUM_POINT3DZ_P(tinstant_value_p(start2));
-    const POINT3DZ *p4 = DATUM_POINT3DZ_P(tinstant_value_p(end2));
+    const POINT3DZ *p1 = DATUM_POINT3DZ_P(start1);
+    const POINT3DZ *p2 = DATUM_POINT3DZ_P(end1);
+    const POINT3DZ *p3 = DATUM_POINT3DZ_P(start2);
+    const POINT3DZ *p4 = DATUM_POINT3DZ_P(end2);
     x1 = p1->x; y1 = p1->y; z1 = p1->z;
     x2 = p2->x; y2 = p2->y; z2 = p2->z;
     x3 = p3->x; y3 = p3->y; z3 = p3->z;
@@ -682,14 +681,14 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
     /* Segments intersecting in the boundaries */
     if ((float8_eq(x1, x3) && float8_eq(y1, y3) && float8_eq(z1, z3)) ||
         (float8_eq(x2, x4) && float8_eq(y2, y4) && float8_eq(z2, z4)))
-      return false;
+      return 0;
   }
   else
   {
-    const POINT2D *p1 = DATUM_POINT2D_P(tinstant_value_p(start1));
-    const POINT2D *p2 = DATUM_POINT2D_P(tinstant_value_p(end1));
-    const POINT2D *p3 = DATUM_POINT2D_P(tinstant_value_p(start2));
-    const POINT2D *p4 = DATUM_POINT2D_P(tinstant_value_p(end2));
+    const POINT2D *p1 = DATUM_POINT2D_P(start1);
+    const POINT2D *p2 = DATUM_POINT2D_P(end1);
+    const POINT2D *p3 = DATUM_POINT2D_P(start2);
+    const POINT2D *p4 = DATUM_POINT2D_P(end2);
     x1 = p1->x; y1 = p1->y;
     x2 = p2->x; y2 = p2->y;
     x3 = p3->x; y3 = p3->y;
@@ -697,7 +696,7 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
     /* Segments intersecting in the boundaries */
     if ((float8_eq(x1, x3) && float8_eq(y1, y3)) ||
         (float8_eq(x2, x4) && float8_eq(y2, y4)))
-      return false;
+      return 0;
   }
 
   long double xdenom = x2 - x1 - x4 + x3;
@@ -707,7 +706,7 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
     zdenom = z2 - z1 - z4 + z3;
   if (xdenom == 0 && ydenom == 0 && zdenom == 0)
     /* Parallel segments */
-    return false;
+    return 0;
 
   /* Potentially avoid the division based on
    * Franklin Antonio, Faster Line Segment Intersection, Graphic Gems III
@@ -718,33 +717,33 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
     long double xnum = x3 - x1;
     if ((xdenom > 0 && (xnum < 0 || xnum > xdenom)) ||
         (xdenom < 0 && (xnum > 0 || xnum < xdenom)))
-      return false;
+      return 0;
     xfraction = xnum / xdenom;
     if (xfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < xfraction)
       /* Intersection occurs out of the period */
-      return false;
+      return 0;
   }
   if (ydenom != 0)
   {
     long double ynum = y3 - y1;
     if ((ydenom > 0 && (ynum < 0 || ynum > ydenom)) ||
         (ydenom < 0 && (ynum > 0 || ynum < ydenom)))
-      return false;
+      return 0;
     yfraction = ynum / ydenom;
     if (yfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < yfraction)
       /* Intersection occurs out of the period */
-      return false;
+      return 0;
   }
   if (hasz && zdenom != 0)
   {
     long double znum = z3 - z1;
     if ((zdenom > 0 && (znum < 0 || znum > zdenom)) ||
         (zdenom < 0 && (znum > 0 || znum < zdenom)))
-      return false;
+      return 0;
     zfraction = znum / zdenom;
     if (zfraction < -1 * MEOS_EPSILON || 1.0 + MEOS_EPSILON < zfraction)
       /* Intersection occurs out of the period */
-      return false;
+      return 0;
   }
   if (hasz)
   {
@@ -758,7 +757,7 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
         fabsl(xfraction - zfraction) > MEOS_EPSILON) ||
       (xdenom != 0 && ydenom != 0 && zdenom == 0 &&
         fabsl(xfraction - yfraction) > MEOS_EPSILON))
-      return false;
+      return 0;
     if (xdenom != 0)
       fraction = xfraction;
     else if (ydenom != 0)
@@ -771,37 +770,79 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
     /* If intersection occurs at different timestamps on each dimension */
     if (xdenom != 0 && ydenom != 0 &&
         fabsl(xfraction - yfraction) > MEOS_EPSILON)
-      return false;
+      return 0;
     fraction = xdenom != 0 ? xfraction : yfraction;
   }
-  double duration = (double) (end1->t - start1->t);
-  *t = start1->t + (TimestampTz) (duration * fraction);
+  double duration = (double) (upper - lower);
+  *t = lower + (TimestampTz) (duration * fraction);
   /* Note that due to roundoff errors it may be the case that the
    * resulting timestamp t may be equal to inst1->t or to inst2->t */
-  if (*t <= start1->t || *t >= end1->t)
-    return false;
-  return true;
+  if (*t <= lower || *t >= upper)
+    return 0;
+  return 1;
 }
 
 /**
- * @brief Return true if two temporal geography point segments
- * intersect at a timestamptz
- * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[out] t Timestamp
- * @pre The instants are synchronized, i.e., start1->t = start2->t and
- * end1->t = end2->t
+ * @brief Return 1 if the segments of two temporal geography points intersect
+ * at the timestamptz output in the last argument
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t Resulting timestamp
  */
-bool
-tgeogpointsegm_intersection(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t)
+int
+tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t)
 {
-  Datum mindist;
-  bool found = tgeogpoint_min_dist_at_timestamptz(start1, end1, start2, end2,
-    &mindist, t);
-  if (! found || DatumGetFloat8(mindist) > MEOS_EPSILON)
-    return false;
-  return true;
+  const POINT2D *p1 = DATUM_POINT2D_P(start1);
+  const POINT2D *p2 = DATUM_POINT2D_P(end1);
+  const POINT2D *q1 = DATUM_POINT2D_P(start2);
+  const POINT2D *q2 = DATUM_POINT2D_P(end2);
+  GEOGRAPHIC_EDGE e1, e2;
+  GEOGRAPHIC_POINT close1, close2;
+  POINT3D A1, A2, B1, B2;
+  geographic_point_init(p1->x, p1->y, &(e1.start));
+  geographic_point_init(p2->x, p2->y, &(e1.end));
+  geographic_point_init(q1->x, q1->y, &(e2.start));
+  geographic_point_init(q2->x, q2->y, &(e2.end));
+  geog2cart(&(e1.start), &A1);
+  geog2cart(&(e1.end), &A2);
+  geog2cart(&(e2.start), &B1);
+  geog2cart(&(e2.end), &B2);
+  // TODO: The next computation should be done on geodetic coordinates
+  // The value found by the linear approximation below could be the starting
+  // point for an iterative method such as gradient descent or Newton's method
+  double fraction;
+  bool found = point3d_min_dist((const POINT3DZ *) &A1, (const POINT3DZ *) &A2,
+    (const POINT3DZ *) &B1, (const POINT3DZ *) &B2, &fraction);
+  if (! found)
+    return 0;
+
+  /* Calculate distance and direction for the edges */
+  double dist1 = sphere_distance(&(e1.start), &(e1.end));
+  double dir1 = sphere_direction(&(e1.start), &(e1.end), dist1);
+  double dist2 = sphere_distance(&(e2.start), &(e2.end));
+  double dir2 = sphere_direction(&(e2.start), &(e2.end), dist2);
+  /* Compute minimum distance */
+  int res = sphere_project(&(e1.start), dist1 * fraction, dir1, &close1);
+  if (res == LW_FAILURE)
+    return 0;
+  res = sphere_project(&(e2.start), dist2 * fraction, dir2, &close2);
+  if (res == LW_FAILURE)
+    return 0;
+  double dist = sphere_distance(&close1, &close2);
+  /* Ensure robustness */
+  if (fabs(dist) < FP_TOLERANCE)
+    dist = 0.0;
+  if (DatumGetFloat8(dist) > MEOS_EPSILON)
+    return 0;
+  double duration = (double) (upper - lower);
+  *t = upper + (TimestampTz) (duration * fraction);
+  /* Note that due to roundoff errors it may be the case that the
+   * resulting timestamp t may be equal to inst1->t or to inst2->t */
+  if (*t <= lower || *t >= upper)
+    return 0;
+  return 1;
 }
 
 /**
@@ -1931,7 +1972,7 @@ geomeas_tpointseqset(const LWGEOM *geom, bool hasz, bool geodetic)
  * @csqlfn #Geomeas_to_tpoint()
  */
 Temporal *
-geomeas_tpoint(const GSERIALIZED *gs)
+geomeas_to_tpoint(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
@@ -2158,7 +2199,8 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
       lwpoint_make3dz(srid, p.x, p.y, p.z) : lwpoint_make2d(srid, p.x, p.y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
     lwpoint_free(lwpoint);
-    instants[ninsts++] = tinstant_make_free(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
+    instants[ninsts++] = tinstant_make_free(PointerGetDatum(gs), T_TGEOMPOINT,
+      inst->t);
     memcpy(&prev_p, &p, sizeof(POINT4D));
   }
   /* We are sure that ninsts > 0 */
@@ -3285,7 +3327,7 @@ geog_bearing(Datum point1, Datum point2)
  * @brief Select the appropriate bearing function
  */
 static inline datum_func2
-get_bearing_fn(int16 flags)
+geo_bearing_fn(int16 flags)
 {
   return MEOS_FLAGS_GET_GEODETIC(flags) ? &geog_bearing : &geom_bearing;
 }
@@ -3293,28 +3335,25 @@ get_bearing_fn(int16 flags)
 /**
  * @brief Return the value and timestamptz at which the a temporal point
  * segment and a point are at the minimum bearing
- * @param[in] start,end Instants defining the segment
- * @param[in] point Geometric/geography point
- * @param[in] basetypid Base type
- * @param[out] value Value
- * @param[out] t Timestamp
+ * @param[in] start,end Values defining the segment
+ * @param[in] point Geometric/geography point to locate
+ * @param[in] lower,upper Timestampts defining the segment
+ * @param[out] t1,t2 
  * @pre The segment is not constant and has linear interpolation
- * @note The parameter @p basetype is not needed for temporal points
+ * @post As there is a single turning point, `t2` is set to `t1`
  */
-static bool
-tpoint_geo_min_bearing_at_timestamptz(const TInstant *start,
-  const TInstant *end, Datum point, meosType basetypid __attribute__((unused)),
-  Datum *value, TimestampTz *t)
+static int
+tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point, 
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
-  Datum dstart = tinstant_value_p(start);
-  Datum dend = tinstant_value_p(end);
-  const POINT2D *p1 = DATUM_POINT2D_P(dstart);
-  const POINT2D *p2 = DATUM_POINT2D_P(dend);
+  assert(lower < upper); assert(t1); assert(t2); 
+  const POINT2D *p1 = DATUM_POINT2D_P(start);
+  const POINT2D *p2 = DATUM_POINT2D_P(end);
   const POINT2D *p = DATUM_POINT2D_P(point);
   const POINT2D *q;
   long double fraction;
   Datum proj = 0; /* make compiler quiet */
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(start->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(DatumGetGserializedP(start)->gflags);
   if (geodetic)
   {
     GEOGRAPHIC_EDGE e, e1;
@@ -3323,16 +3362,16 @@ tpoint_geo_min_bearing_at_timestamptz(const TInstant *start,
     geographic_point_init(p1->x, p1->y, &(e.start));
     geographic_point_init(p2->x, p2->y, &(e.end));
     if (! edge_contains_coplanar_point(&e, &gp))
-      return false;
+      return 0;
     /* Create an edge in the same meridian as p */
     geographic_point_init(p->x, 89.999999, &(e1.start));
     geographic_point_init(p->x, -89.999999, &(e1.end));
     edge_intersection(&e, &e1, &inter);
     proj = PointerGetDatum(geopoint_make(rad2deg(inter.lon),
-      rad2deg(inter.lat), 0, false, true, tspatialinst_srid(start)));
-    fraction = pointsegm_locate(dstart, dend, proj, NULL);
+      rad2deg(inter.lat), 0, false, true, spatial_srid(start, T_GEOMETRY)));
+    fraction = pointsegm_locate(start, end, proj, NULL);
     if (fraction < 0.0)
-      return false;
+      return 0;
   }
   else
   {
@@ -3340,20 +3379,20 @@ tpoint_geo_min_bearing_at_timestamptz(const TInstant *start,
     bool de = (p2->x - p->x) > 0;
     /* If there is not a North passage */
     if (ds == de)
-      return false;
+      return 0;
     fraction = (long double)(p->x - p1->x) / (long double)(p2->x - p1->x);
     if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
-      return false;
+      return 0;
   }
-  long double duration = (long double) (end->t - start->t);
-  *t = start->t + (TimestampTz) (duration * fraction);
-  *value = (Datum) 0;
+  long double duration = (long double) (upper - lower);
+  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
   /* Compute the projected value only for geometries */
   if (! geodetic)
-    proj = tsegment_value_at_timestamptz(start, end, LINEAR, *t);
+    proj = tsegment_value_at_timestamptz(start, end, T_TGEOMPOINT,
+      lower, upper, *t1);
   q = DATUM_POINT2D_P(proj);
   /* We add a turning point only if p is to the North of q */
-  bool result = MEOS_FP_GE(p->y, q->y) ? true : false;
+  int result = MEOS_FP_GE(p->y, q->y) ? 1 : 0;
   pfree(DatumGetPointer(proj));
   return result;
 }
@@ -3363,28 +3402,30 @@ tpoint_geo_min_bearing_at_timestamptz(const TInstant *start,
  * segments are at the minimum bearing
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
- * @param[out] value Value
- * @param[out] t Timestamp
+ * @param[in] param Additional parameter
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 Timestamp
  * @pre The segments are not both constants and are both linear
  * @note This function is currently not available for two temporal geographic
  * points
  */
-static bool
-tpointsegm_min_bearing_at_timestamptz(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2,
-  const TInstant *end2, Datum *value, TimestampTz *t)
+static int
+tpointsegm_bearing_turnpt(Datum start1, Datum end1, Datum start2,
+  Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
+  TimestampTz *t1, TimestampTz *t2)
 {
-  assert(! MEOS_FLAGS_GET_GEODETIC(start1->flags));
-  const POINT2D *sp1 = DATUM_POINT2D_P(tinstant_value_p(start1));
-  const POINT2D *ep1 = DATUM_POINT2D_P(tinstant_value_p(end1));
-  const POINT2D *sp2 = DATUM_POINT2D_P(tinstant_value_p(start2));
-  const POINT2D *ep2 = DATUM_POINT2D_P(tinstant_value_p(end2));
+  assert(lower < upper); assert(t1); assert(t2);
+  assert(! FLAGS_GET_GEODETIC(DatumGetGserializedP(start1)->gflags));
+  const POINT2D *sp1 = DATUM_POINT2D_P(start1);
+  const POINT2D *ep1 = DATUM_POINT2D_P(end1);
+  const POINT2D *sp2 = DATUM_POINT2D_P(start2);
+  const POINT2D *ep2 = DATUM_POINT2D_P(end2);
   /* It there is a North passage we call the function
     tgeompoint_min_dist_at_timestamp */
   bool ds = (sp1->x - sp2->x) > 0;
   bool de = (ep1->x - ep2->x) > 0;
   if (ds == de)
-    return false;
+    return 0;
 
   /*
    * Compute the instants t1 and t2 at which the linear functions of the two
@@ -3396,31 +3437,32 @@ tpointsegm_min_bearing_at_timestamptz(const TInstant *start1,
    * #tnumber_arithop_tp_at_timestamp1 in file tnumber_mathfuncs.c
    */
   if ((ep1->x - sp1->x) == 0.0 || (ep2->x - sp2->x) == 0.0)
-    return false;
+    return 0;
 
   long double d1 = (-1 * sp1->x) / (ep1->x - sp1->x);
   long double d2 = (-1 * sp2->x) / (ep2->x - sp2->x);
   long double min = Min(d1, d2);
   long double max = Max(d1, d2);
   long double fraction = min + (max - min)/2;
-  long double duration = (long double) (end1->t - start1->t);
+  long double duration = (long double) (upper - lower);
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
+  // if (fabsl(fraction) < MEOS_EPSILON || fabsl(fraction - 1.0) < MEOS_EPSILON)
     /* Minimum/maximum occurs out of the period */
-    return false;
+    return 0;
 
-  *t = start1->t + (TimestampTz) (duration * fraction);
+  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
   /* We need to verify that at timestamp t the first segment is to the
    * North of the second */
-  Datum value1 = tsegment_value_at_timestamptz(start1, end1, LINEAR, *t);
-  Datum value2 = tsegment_value_at_timestamptz(start2, end2, LINEAR, *t);
-  sp1 = DATUM_POINT2D_P(value1);
-  sp2 = DATUM_POINT2D_P(value2);
+  Datum v1 = tsegment_value_at_timestamptz(start1, end1, T_TGEOMPOINT,
+    lower, upper, *t1);
+  Datum v2 = tsegment_value_at_timestamptz(start2, end2, T_TGEOMPOINT,
+    lower, upper, *t2);
+  sp1 = DATUM_POINT2D_P(v1);
+  sp2 = DATUM_POINT2D_P(v2);
+  pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
   if (sp1->y > sp2->y) // TODO Use MEOS_EPSILON
-    return false;
- /* We know that the bearing is 0 */
-  if (value)
-    *value = Float8GetDatum(0.0);
-  return true;
+    return 0;
+  return 1;
 }
 
 /*****************************************************************************/
@@ -3467,7 +3509,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) get_bearing_fn(temp->flags);
+  lfinfo.func = (varfunc) geo_bearing_fn(temp->flags);
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.argtype[1] = temptype_basetype(temp->temptype);
@@ -3475,8 +3517,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc_base = &tpoint_geo_min_bearing_at_timestamptz;
-  lfinfo.tpfunc = NULL;
+  lfinfo.tpfunc_base = &tpoint_geo_bearing_turnpt;
   return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
 }
 
@@ -3497,7 +3538,7 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) get_bearing_fn(temp1->flags);
+  lfinfo.func = (varfunc) geo_bearing_fn(temp1->flags);
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TFLOAT;
@@ -3506,8 +3547,7 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = lfinfo.reslinear ?
-    &tpointsegm_min_bearing_at_timestamptz : NULL;
+  lfinfo.tpfunc = lfinfo.reslinear ? &tpointsegm_bearing_turnpt : NULL;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
@@ -3954,6 +3994,10 @@ tpointseq_discstep_find_splits(const TSequence *seq, int *count)
   bool *bitarr = palloc0(sizeof(bool) * seq->count);
   int numsplits = 0;
   int start = 0, end = seq->count - 1;
+  /* Do not account for the last instant of a sequence with step interpolation
+   * and exclusive upper bound, since its last two instants have equal value */
+  if (! seq->period.upper_inc)
+    end--;
   while (start < end)
   {
     /* Find intersections in the piece defined by start and end in a
@@ -4157,11 +4201,15 @@ tpointseq_discstep_is_simple(const TSequence *seq)
 {
   assert(seq->count > 1);
   Datum *points = palloc(sizeof(Datum) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-    points[i] = tinstant_value_p(TSEQUENCE_INST_N(seq, i));
-  datumarr_sort(points, seq->count, temptype_basetype(seq->temptype));
+  /* Add the last value only if inclusive upper bound */
+  int count = 0;
+  for (int i = 0; i < seq->count - 1; i++)
+    points[count++] = tinstant_value_p(TSEQUENCE_INST_N(seq, i));
+  if (seq->period.upper_inc)
+    points[count++] = tinstant_value_p(TSEQUENCE_INST_N(seq, seq->count - 1));
+  datumarr_sort(points, count, temptype_basetype(seq->temptype));
   bool found = false;
-  for (int i = 1; i < seq->count; i++)
+  for (int i = 1; i < count; i++)
   {
     if (datum_point_eq(points[i - 1], points[i]))
     {
@@ -4331,10 +4379,13 @@ tpointseq_cont_split(const TSequence *seq, bool *splits, int count)
   if (nseqs < count)
   {
     /* Construct last fragment containing the last instant of sequence */
-    instants[0] = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
-    result[nseqs++] = tsequence_make((const TInstant **) instants,
-      seq->count - start, true, seq->period.upper_inc,
-      linear, NORMALIZE_NO);
+    if (seq->count - start > 1 || seq->period.upper_inc)
+    {
+      instants[0] = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
+      result[nseqs++] = tsequence_make((const TInstant **) instants,
+        seq->count - start, true, seq->period.upper_inc,
+        linear, NORMALIZE_NO);
+    }
   }
   pfree(instants);
   return result;

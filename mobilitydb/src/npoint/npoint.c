@@ -232,7 +232,7 @@ PGDLLEXPORT Datum Npoint_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_from_hexwkb);
 /**
  * @ingroup mobilitydb_npoint_base_inout
- * @brief Return a network point from its hex-encoded ASCII Well-Known Binary
+ * @brief Return a network point from its ASCII hex-encoded Well-Known Binary
  * (HexWKB) representation
  * @sqlfn npointFromHexWKB()
  */
@@ -332,7 +332,7 @@ PGDLLEXPORT Datum Npoint_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Npoint_as_hexwkb);
 /**
  * @ingroup mobilitydb_npoint_base_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a network point
  * @sqlfn asHexWKB()
  */

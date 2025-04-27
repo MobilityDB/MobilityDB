@@ -237,7 +237,7 @@ SELECT tcbuffer '{[Cbuffer(Point(1 1),0.4)@2000-01-01, Cbuffer(Point(1 1),0.5)@2
 -- Selectivity tests
 -------------------------------------------------------------------------------
 
-  SELECT COUNT(*) FROM tbl_tcbuffer WHERE temp && stbox 'SRID=5676;STBOX X((0,0),(50,50))';
-SELECT COUNT(*) FROM tbl_tcbuffer WHERE temp && tcbuffer 'SRID=5676;[Cbuffer(Point(1 1),0.1)@2001-06-01, Cbuffer(Point(1 1),0.9)@2001-07-01]';
+  SELECT COUNT(*) FROM tbl_tcbuffer WHERE temp && stbox 'SRID=3812;STBOX X((0,0),(50,50))';
+SELECT COUNT(*) FROM tbl_tcbuffer WHERE temp && tcbuffer 'SRID=3812;[Cbuffer(Point(1 1),0.1)@2001-06-01, Cbuffer(Point(1 1),0.9)@2001-07-01]';
 
 -------------------------------------------------------------------------------

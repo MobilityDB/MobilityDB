@@ -32,24 +32,15 @@
  * @brief General functions for temporal pose objects
  */
 
-#include "pose/tpose.h"
-
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/array.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
-#include <meos_pose.h>
-#include "temporal/meos_catalog.h"
-#include "temporal/pg_types.h"
 #include "temporal/set.h"
-#include "geo/tspatial.h"
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"
-#include "pose/tpose_parser.h"
 /* MobilityDB */
-#include "pg_temporal/meos_catalog.h"
 #include "pg_geo/tspatial.h"
 
 /*****************************************************************************

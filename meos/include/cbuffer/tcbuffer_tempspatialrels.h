@@ -28,42 +28,30 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal distance for temporal circular buffers.
+ * @brief Temporal spatial relationships for temporal points.
  */
 
-#ifndef __TPOSE_DISTANCE_H__
-#define __TPOSE_DISTANCE_H__
+#ifndef __TCBUFFER_TEMPSPATIALRELS_H__
+#define __TCBUFFER_TEMPSPATIALRELS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
 #include "temporal/temporal.h"
-#include "pose/tpose.h"
+#include "cbuffer/cbuffer.h"
 
 /*****************************************************************************/
 
-extern Temporal *distance_tpose_point(const Temporal *temp,
-  const GSERIALIZED *gs);
-extern Temporal *distance_tpose_pose(const Temporal *temp, const Pose *pose);
-extern Temporal *distance_tpose_tpose(const Temporal *temp1,
-  const Temporal *temp2);
+extern Temporal *tinterrel_tcbuffer_cbuffer(const Temporal *temp,
+  const Cbuffer *cb, bool tinter, bool restr, bool atvalue);
+extern Temporal *tinterrel_tcbuffer_geo(const Temporal *temp,
+  const GSERIALIZED *gs, bool tinter, bool restr, bool atvalue);
+extern Temporal *tinterrel_tcbuffer_tcbuffer(const Temporal *temp1,
+  const Temporal *temp2, bool tinter, bool restr, bool atvalue);
 
-extern TInstant *nai_tpose_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern TInstant *nai_tpose_pose(const Temporal *temp, const Pose *pose);
-extern TInstant *nai_tpose_tpose(const Temporal *temp, const Temporal *temp2);
-
-extern double nad_tpose_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern double nad_tpose_pose(const Temporal *temp, const Pose *pose);
-extern double nad_tpose_tpose(const Temporal *temp1,
-  const Temporal *temp2);
-
-extern GSERIALIZED *shortestline_tpose_geo(const Temporal *temp,
-  const GSERIALIZED *geo);
-extern GSERIALIZED *shortestline_tpose_pose(const Temporal *temp,
-  const Pose *pose);
-extern GSERIALIZED *shortestline_tpose_tpose(const Temporal *temp1,
-  const Temporal *temp2);
+extern Temporal *tdwithin_tcbuffer_tcbuffer_sync(const Temporal *sync1,
+  const Temporal *sync2, double dist, bool restr, bool atvalue);
 
 /*****************************************************************************/
 
-#endif /* __TPOSE_DISTANCE_H__ */
+#endif /* __TCBUFFER_TEMPSPATIALRELS_H__ */

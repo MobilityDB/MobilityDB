@@ -1,4 +1,4 @@
-add_library(rgeo OBJECT
+set(RGEO_SRCS
   trgeo.c
   trgeo_boxops.c
   trgeo_compops.c
@@ -11,3 +11,5 @@ add_library(rgeo OBJECT
   trgeo_utils.c
   trgeo_vclip.c
   )
+
+add_library(rgeo OBJECT ${RGEO_SRCS})

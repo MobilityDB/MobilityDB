@@ -244,7 +244,7 @@ tspatialseqset_as_text(const TSequenceSet *ss, int maxdd)
 }
 
 /**
- * @ingroup meos_geo_temporal_inout
+ * @ingroup meos_geo_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal
  * spatial value
  * @param[in] temp Temporal spatial value
@@ -274,7 +274,7 @@ tspatial_as_text(const Temporal *temp, int maxdd)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_geo_temporal_inout
+ * @ingroup meos_geo_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation of a
  * temporal spatial value
  * @param[in] temp Temporal spatial value
@@ -397,7 +397,7 @@ spatialset_set_stbox(const Set *s, STBox *box)
 }
 
 /**
- * @ingroup meos_geo_set_box
+ * @ingroup meos_internal_geo_set_box
  * @brief Convert a temporal spatial set into a spatiotemporal box
  * @param[in] s Set
  * @csqlfn #Spatialset_to_stbox()
@@ -405,11 +405,24 @@ spatialset_set_stbox(const Set *s, STBox *box)
 STBox *
 spatialset_stbox(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL);
+  assert(s);
   STBox *result = palloc(sizeof(STBox));
   spatialset_set_stbox(s, result);
   return result;
+}
+
+/**
+ * @ingroup meos_geo_box_conversion
+ * @brief Convert a temporal spatial set into a spatiotemporal box
+ * @param[in] s Set
+ * @csqlfn #Spatialset_to_stbox()
+ */
+STBox *
+spatialset_to_stbox(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL);
+  return spatialset_stbox(s);
 }
 
 /*****************************************************************************/
@@ -462,7 +475,7 @@ tspatial_set_stbox(const Temporal *temp, STBox *box)
 }
 
 /**
- * @ingroup meos_geo_conversion
+ * @ingroup meos_internal_geo_conversion
  * @brief Convert a temporal spatial value into a spatiotemporal box
  * @param[in] temp Temporal spatial value
  * @csqlfn #Tspatial_to_stbox()
@@ -471,10 +484,24 @@ STBox *
 tspatial_stbox(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSPATIAL(temp, NULL);
+  assert(temp); assert(tspatial_type(temp->temptype));
   STBox *result = palloc(sizeof(STBox));
   tspatial_set_stbox(temp, result);
   return result;
+}
+
+/**
+ * @ingroup meos_geo_conversion
+ * @brief Convert a temporal spatial value into a spatiotemporal box
+ * @param[in] temp Temporal spatial value
+ * @csqlfn #Tspatial_to_stbox()
+ */
+STBox *
+tspatial_to_stbox(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSPATIAL(temp, NULL);
+  return tspatial_stbox(temp);
 }
 
 /*****************************************************************************
@@ -482,7 +509,7 @@ tspatial_stbox(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_geo_base_box
+ * @ingroup meos_geo_base_bbox
  * @brief Return the bounding box of a geometry/geography expanded on the
  * spatial dimension
  * @param[in] gs Geometry/geography

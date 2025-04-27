@@ -34,9 +34,9 @@
 
 CREATE TYPE tcbuffer;
 
-/******************************************************************************
+/*****************************************************************************
  * Input/Output
- ******************************************************************************/
+ *****************************************************************************/
 
 CREATE FUNCTION tcbuffer_in(cstring, oid, integer)
   RETURNS tcbuffer
@@ -110,7 +110,7 @@ CREATE FUNCTION tcbufferFromHexEWKB(text)
   AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/******************************************************************************/
+/*****************************************************************************/
 
 CREATE FUNCTION asText(tcbuffer, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
@@ -145,9 +145,9 @@ CREATE FUNCTION asHexEWKB(tcbuffer, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/******************************************************************************
+/*****************************************************************************
  * Constructors
- ******************************************************************************/
+ *****************************************************************************/
 
 CREATE FUNCTION tcbuffer(cbuffer, timestamptz)
   RETURNS tcbuffer
@@ -169,7 +169,7 @@ CREATE FUNCTION tcbuffer(cbuffer, tstzspanset, text DEFAULT 'linear')
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/******************************************************************************/
+/*****************************************************************************/
 
 CREATE FUNCTION tcbufferSeq(tcbuffer[], text DEFAULT 'linear',
     lower_inc boolean DEFAULT true, upper_inc boolean DEFAULT true)
@@ -189,16 +189,16 @@ CREATE FUNCTION tcbufferSeqSetGaps(tcbuffer[], maxt interval DEFAULT NULL,
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-/******************************************************************************/
+/*****************************************************************************/
 
 CREATE FUNCTION tcbuffer(tgeompoint, tfloat)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Tcbuffer_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/******************************************************************************
+/*****************************************************************************
  * Conversions
- ******************************************************************************/
+ *****************************************************************************/
 
 CREATE FUNCTION timeSpan(tcbuffer)
   RETURNS tstzspan
@@ -223,9 +223,9 @@ CREATE CAST (tcbuffer AS tgeompoint) WITH FUNCTION tgeompoint(tcbuffer);
 CREATE CAST (tcbuffer AS tfloat) WITH FUNCTION tfloat(tcbuffer);
 CREATE CAST (tgeompoint AS tcbuffer) WITH FUNCTION tcbuffer(tgeompoint);
 
-/******************************************************************************
+/*****************************************************************************
  * Accessor functions
- ******************************************************************************/
+ *****************************************************************************/
 -- Specific accessors for temporal circular buffers
 
 CREATE FUNCTION points(tcbuffer)
@@ -238,7 +238,7 @@ CREATE FUNCTION radius(tcbuffer)
   AS 'MODULE_PATHNAME', 'Tcbuffer_radius'
   LANGUAGE C IMMUTABLE STRICT;
 
-/******************************************************************************/
+/*****************************************************************************/
 -- Accessors for all temporal types
 
 CREATE FUNCTION tempSubtype(tcbuffer)
@@ -395,9 +395,17 @@ CREATE FUNCTION segments(tcbuffer)
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/******************************************************************************
+/*****************************************************************************
  * Transformation functions
- ******************************************************************************/
+ *****************************************************************************/
+
+CREATE FUNCTION expand(tcbuffer, float)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_expand'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  
+/*****************************************************************************/
+-- Transformations for all temporal types
 
 CREATE FUNCTION tcbufferInst(tcbuffer)
   RETURNS tcbuffer
@@ -443,9 +451,9 @@ CREATE FUNCTION shiftScaleTime(tcbuffer, interval, interval)
   AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/******************************************************************************
+/*****************************************************************************
  * Restriction functions
- ******************************************************************************/
+ *****************************************************************************/
 
 CREATE FUNCTION atValues(tcbuffer, cbuffer)
   RETURNS tcbuffer
@@ -583,9 +591,9 @@ CREATE FUNCTION merge(tcbuffer[])
   AS 'MODULE_PATHNAME', 'Temporal_merge_array'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/******************************************************************************
+/*****************************************************************************
  * Multidimensional tiling
- ******************************************************************************/
+ *****************************************************************************/
 
 CREATE TYPE time_tcbuffer AS (
   time timestamptz,
@@ -598,9 +606,9 @@ CREATE FUNCTION timeSplit(tcbuffer, bin_width interval,
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
-/******************************************************************************
+/*****************************************************************************
  * Comparison functions and B-tree indexing
- ******************************************************************************/
+ *****************************************************************************/
 
 CREATE FUNCTION temporal_lt(tcbuffer, tcbuffer)
   RETURNS bool
@@ -677,7 +685,7 @@ CREATE OPERATOR CLASS tcbuffer_btree_ops
     OPERATOR  5 >,
     FUNCTION  1 temporal_cmp(tcbuffer, tcbuffer);
 
-/******************************************************************************/
+/*****************************************************************************/
 
 CREATE FUNCTION temporal_hash(tcbuffer)
   RETURNS integer
@@ -689,4 +697,4 @@ CREATE OPERATOR CLASS tcbuffer_hash_ops
     OPERATOR    1   = ,
     FUNCTION    1   temporal_hash(tcbuffer);
 
-/******************************************************************************/
+/*****************************************************************************/

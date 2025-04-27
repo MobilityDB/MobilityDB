@@ -31,15 +31,14 @@
  * @brief Functions for temporal network points.
  */
 
-#ifndef __TNPOINT_H__
-#define __TNPOINT_H__
+#ifndef __NPOINT_H__
+#define __NPOINT_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
-#include <meos.h>
 #include <meos_npoint.h>
-#include "temporal/meos_catalog.h"
+#include "temporal/temporal.h"
 
 /*****************************************************************************
  * fmgr macros
@@ -118,8 +117,10 @@ extern char *nsegment_out(const Nsegment *ns, int maxdd);
 
 extern char *npoint_as_text(const Npoint *np, int maxdd);
 extern char *npoint_as_ewkt(const Npoint *np, int maxdd);
-extern uint8_t *npoint_as_wkb(const Npoint *np, uint8_t variant, size_t *size_out);
-extern char *npoint_as_hexwkb(const Npoint *np, uint8_t variant, size_t *size_out);
+extern uint8_t *npoint_as_wkb(const Npoint *np, uint8_t variant,
+  size_t *size_out);
+extern char *npoint_as_hexwkb(const Npoint *np, uint8_t variant,
+  size_t *size_out);
 extern Npoint *npoint_from_wkb(const uint8_t *wkb, size_t size);
 extern Npoint *npoint_from_hexwkb(const char *hexwkb);
 
@@ -168,8 +169,10 @@ extern Set *tnpointseqset_routes(const TSequenceSet *ss);
 
 extern Nsegment *tnpointseq_linear_positions(const TSequence *seq);
 
-extern Temporal *tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc);
-extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc, bool atfunc);
+extern Temporal *tnpoint_restrict_geom(const Temporal *temp,
+  const GSERIALIZED *gs, bool atfunc);
+extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box,
+  bool border_inc, bool atfunc);
 
 /*****************************************************************************/
 

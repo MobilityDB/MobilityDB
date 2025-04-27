@@ -42,7 +42,7 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal.h>
-#include "geo/stbox.h"
+// #include "geo/stbox.h"
 
 /*****************************************************************************
  * Struct definitions
@@ -168,6 +168,8 @@ extern Set *union_set_pose(const Set *s, const Pose *pose);
 /*===========================================================================*
  * Functions for box types
  *===========================================================================*/
+
+Temporal *tpose_in(const char *str);
 
 /*****************************************************************************
  * Constructor functions for box types

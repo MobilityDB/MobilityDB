@@ -36,123 +36,355 @@
 
 /* MEOS */
 #include <meos.h>
-#include <meos_cbuffer.h>
-#include <meos_internal.h>
-#include <meos_cbuffer.h>
-#include "geo/postgis_funcs.h"
+#include "temporal/lifting.h"
+#include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/cbuffer.h"
-#include "cbuffer/tcbuffer_spatialfuncs.h"
 
 /*****************************************************************************
- * Distance
+ * Turning point functions
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_cbuffer_dist
- * @brief Return the distance between two circular buffers
- * @note The function assumes that all validity tests have been previously
- * done
+ * @brief Return the two timestamps at which a temporal circular buffer segment
+ * and a geometry point are at the minimum distance
+ * @details These are the turning points when computing the temporal distance.
+ * @param[in] start,end Values defining the segment
+ * @param[in] value Value to locate
+ * @param[in] lower,upper Timestampts defining the segment
+ * @param[out] t1,t2 
+ * @pre The segment is not constant.
  */
-Datum
-datum_cbuffer_distance(Datum cb1, Datum cb2)
+int
+tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
-  GSERIALIZED *geom1 = cbuffer_geom(DatumGetCbufferP(cb1));
-  GSERIALIZED *geom2 = cbuffer_geom(DatumGetCbufferP(cb2));
-  return geom_distance2d(geom1, geom2);
+  /* Extract the two CBUFFER values */
+  Cbuffer *ca1 = DatumGetCbufferP(start);
+  const GSERIALIZED *gs1 = cbuffer_point(ca1);
+  const POINT2D *p1 = GSERIALIZED_POINT2D_P(gs1);
+  Cbuffer *ca2 = DatumGetCbufferP(end);
+  const GSERIALIZED *gs2 = cbuffer_point(ca2);
+  const POINT2D *p2 = GSERIALIZED_POINT2D_P(gs2);
+
+  /* Extract the circular buffer value */
+  Cbuffer *cb = DatumGetCbufferP(value);
+  const GSERIALIZED *gs = cbuffer_point(cb);
+  const POINT2D *p = GSERIALIZED_POINT2D_P(gs);
+
+  /* Extract coordinates and radius at the two instants */
+  double xa1 = p1->x;
+  double ya1 = p1->y;
+  double ra1 = ca1->radius;
+  double xa2 = p2->x;
+  double ya2 = p2->y;
+  double ra2 = ca2->radius;
+
+  /* Extract static cbuffer coordinates */
+  double xb = p->x;
+  double yb = p->y;
+  double rb = cb->radius;
+
+  /* Compute total duration in seconds */
+  double total_duration = (double) (upper - lower) / USECS_PER_SEC;
+
+  /* Initial relative position and radius at lower */
+  double dx0 = xa1 - xb;
+  double dy0 = ya1 - yb;
+  double dr0 = ra1 + rb;
+
+  /* Compute relative velocities */
+  double vx = (xa2 - xa1) / total_duration;
+  double vy = (ya2 - ya1) / total_duration;
+  double vr = (ra2 - ra1) / total_duration;
+
+  /* Coefficients of the derivative of (distance - radius)^2 */
+  double a = vx * vx + vy * vy - vr * vr;
+  double b = dx0 * vx + dy0 * vy - dr0 * vr;
+
+  /* Compute relative time (in seconds) where derivative is zero */
+  double t_rel;
+  if (a == 0.0 || b == 0.0)
+    t_rel = 0.0;
+  else
+    t_rel = -b / a;
+
+  /* Clamp t_rel within [0, total_duration] */
+  if (t_rel < 0.0)
+    t_rel = 0.0;
+  else if (t_rel > total_duration)
+    t_rel = total_duration;
+
+  /* Compute the timestamp at the turning point */
+  TimestampTz t_turn = lower + (TimestampTz) (t_rel * USECS_PER_SEC);
+
+  /* Check if the turning point is truly internal */
+  if (t_turn <= lower || t_turn >= upper)
+  {
+    /* No true internal turning point */
+    *t1 = *t2 = (TimestampTz) 0;
+    return 0;
+  }
+
+  /* Interpolate position and radius at the turning point */
+  double x_turn = xa1 + vx * t_rel;
+  double y_turn = ya1 + vy * t_rel;
+  double r_turn = ra1 + vr * t_rel;
+
+  /* Compute the distance to the static point minus the radius */
+  double dx = x_turn - xb;
+  double dy = y_turn - yb;
+  double dist = sqrt(dx * dx + dy * dy) - r_turn - rb;
+
+  /* Interpolate the distances at start and end */
+  double dx_start = xa1 - xb;
+  double dy_start = ya1 - yb;
+  double dist_start = sqrt(dx_start * dx_start + dy_start * dy_start) - ra1 - rb;
+
+  double dx_end = xa2 - xb;
+  double dy_end = ya2 - yb;
+  double dist_end = sqrt(dx_end * dx_end + dy_end * dy_end) - ra2 - rb;
+
+  if (dist > 0.0)
+  {
+    /* Check if the turning point is truly internal */
+    if (t_turn <= lower || t_turn >= upper)
+    {
+      /* No true internal turning point */
+      *t1 = *t2 = (TimestampTz) 0;
+      return 0;
+    }
+    /* Single turning point: return t1 and value1 */
+    *t1 = *t2 = t_turn;
+    return 1;
+  }
+  else
+  {
+    /* Crossing zero: compute entrance and exit times */
+    double alpha_in = (0.0 - dist_start) / (dist - dist_start);
+    double alpha_out = (0.0 - dist) / (dist_end - dist);
+
+    double t_in_secs = 0.0 + t_rel * alpha_in;
+    double t_out_secs = t_rel + (total_duration - t_rel) * alpha_out;
+
+    TimestampTz t_in = lower + (TimestampTz) (t_in_secs * USECS_PER_SEC);
+    TimestampTz t_out = lower + (TimestampTz) (t_out_secs * USECS_PER_SEC);
+
+    /* Order the turning points */
+    if (t_in > t_out)
+    {
+      TimestampTz t = t_in;
+      t_in = t_out;
+      t_out = t;
+    }
+
+    /* Check if the turning points are truly internal */
+    if (t_in > lower && t_out < upper)
+    {
+      *t1 = t_in;
+      *t2 = t_out;
+      return 2;
+    }
+    else if (t_in > lower && t_out >= upper)
+    {
+      *t1 = *t2 = t_in;
+      return 1;
+    }
+    else if (t_in <= lower && t_out < upper)
+    {
+      *t1 = *t2 = t_out;
+      return 1;
+    }
+    else
+    {
+      /* No true internal turning point */
+      *t1 = *t2 = (TimestampTz) 0;
+      return 0;
+    }
+  }
 }
 
-/*****************************************************************************/
-
 /**
- * @ingroup meos_cbuffer_dist
- * @brief Return the distance between a circular buffer and a geometry
- * @return On error return -1.0
- * @csqlfn #Distance_cbuffer_geo()
+ * @brief Return the TWO timestamps at which two temporal circular buffers 
+ * segments are at the minimum distance
+ * @details These are the turning points when computing the temporal distance.
+ * @param[in] start1,end1 Circular buffers defining the first segment
+ * @param[in] start2,end2 Circular buffers the second segment
+ * @param[out] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 Timestamps at turning points
+ * @pre The segments are not constant.
  */
-double
-distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs)
+int
+cbuffersegm_distance_turnpt(const Cbuffer *start1, const Cbuffer *end1,
+  const Cbuffer *start2, const Cbuffer *end2, TimestampTz lower,
+  TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_cbuffer_geo(cb, gs) || gserialized_is_empty(gs))
-    return -1.0;
+  assert(start1); assert(end1); assert(start2); assert(end2); 
+  assert(t1); assert(t2); assert(lower < upper);
 
-  GSERIALIZED *geo = cbuffer_geom(cb);
-  double result = geom_distance2d(geo, gs);
-  pfree(geo);
-  return result;
+  /* Extract the point values for the circular buffers */
+  const POINT2D *spt1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(start1));
+  const POINT2D *ept1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(end1));
+  const POINT2D *spt2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(start2));
+  const POINT2D *ept2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(end2));
+
+  /* Compute the duration */
+  double duration = (double) (upper - lower);
+
+  /* Compute relative position and combined radius at lower */
+  double dx = spt1->x - spt2->x;
+  double dy = spt1->x - spt2->y;
+  double dr = start1->radius + end2->radius;
+
+  /* Compute absolute velocities of centroids and radii */
+  double vx1 = (ept1->x - spt1->x) / duration;
+  double vy1 = (ept1->y - spt1->y) / duration;
+  double vr1 = (end1->radius - start1->radius) / duration;
+
+  double vx2 = (ept2->x - spt2->x) / duration;
+  double vy2 = (ept2->y - spt2->y) / duration;
+  double vr2 = (end2->radius - start2->radius) / duration;
+
+  /* Compute relative velocities */
+  double vx = vx1 - vx2;
+  double vy = vy1 - vy2;
+  double vr = vr1 + vr2;
+
+  /* Compute coefficients of the derivative of (distance - combined_radius)^2 */
+  double a = vx * vx + vy * vy - vr * vr;
+  double b = dx * vx + dy * vy - dr * vr;
+
+  /* Compute relative time where derivative is zero */
+  double t_rel;
+  if (a == 0.0 || b == 0.0)
+    t_rel = 0.0;
+  else
+    t_rel = -b / a;
+
+  /* Clamp t_rel within [0, duration] */
+  if (t_rel < 0.0)
+    t_rel = 0.0;
+  else if (t_rel > duration)
+    t_rel = duration;
+
+  /* Compute the timestamp at the turning point */
+  TimestampTz t_turn = lower + (TimestampTz) (t_rel);
+  
+  /* Check if the turning point is truly internal */
+  if (t_turn <= lower || t_turn >= upper)
+  {
+    /* No true internal turning point */
+    *t1 = *t2 = (TimestampTz) 0;
+    return 0;
+  }
+  
+  /* Interpolate position and radius at the turning point */
+  double x1_turn = spt1->x + vx1 * t_rel;
+  double y1_turn = spt1->x + vy1 * t_rel;
+  double r1_turn = start1->radius + vr1 * t_rel;
+
+  double x2_turn = start2->radius + vx2 * t_rel;
+  double y2_turn = spt2->y + vy2 * t_rel;
+  double r2_turn = end2->radius + vr2 * t_rel;
+
+  /* Compute the distance between centroids minus the combined radius */
+  double dx_turn = x1_turn - x2_turn;
+  double dy_turn = y1_turn - y2_turn;
+  double dist_turn = sqrt(dx_turn * dx_turn + dy_turn * dy_turn) -
+    r1_turn - r2_turn;
+
+  if (dist_turn > 0.0) 
+  {
+
+    /* Check if the turning point is truly internal */
+    if (dist_turn <= lower || dist_turn >= upper)
+    {
+      /* No true internal turning point */
+      *t1 = *t2 = (TimestampTz) 0;
+      return 0;
+    }
+
+    /* Single turning point */
+    *t1 = *t2 = t_turn;
+    return 1;
+  }
+  else 
+  {
+    /* Compute distance at lower */
+    double sdx = spt1->x - start2->radius;
+    double sdy = spt1->x - spt2->y;
+    double dislower = sqrt(sdx * sdx + sdy * sdy) - start1->radius - end2->radius;
+
+    /* Compute distance at upper */
+    double edx = ept1->x - ept2->x;
+    double edy = ept1->y - ept2->y;
+    double disupper = sqrt(edx * edx + edy * edy) - end1->radius - end2->radius;
+
+    /* Crossing: compute entrance and exit times */
+    double alpha_in = (0.0 - dislower) / (dist_turn - dislower);
+    double alpha_out = (0.0 - dist_turn) / (disupper - dist_turn);
+    TimestampTz t_in = lower + (TimestampTz) (t_rel * alpha_in);
+    TimestampTz t_out = lower + (TimestampTz)
+      (t_rel + (duration - t_rel) * alpha_out);
+
+    /* Check if the turning points are truly internal */
+    if (t_in > lower && t_out < upper)
+    {
+      *t1 = t_in;
+      *t2 = t_out;
+      return 2;
+    }
+    else if (t_in > lower && t_out >= upper)
+    {
+      *t1 = *t2 = t_in;
+      return 1;
+    }
+    else if (t_in <= lower && t_out < upper)
+    {
+      *t1 = *t2 = t_out;
+      return 1;
+    }
+    else
+    {
+      /* No true internal turning point */
+      *t1 = *t2 = (TimestampTz) 0;
+      return 0;
+    }
+  }
 }
 
 /**
- * @ingroup meos_cbuffer_dist
- * @brief Return the distance between a circular buffer and a spatiotemporal box
- * @return On error return -1.0
- * @csqlfn #Distance_cbuffer_stbox()
+ * @brief Return the TWO timestamps at which two temporal circular buffers 
+ * segment are at the minimum distance
+ * @details These are the turning points when computing the temporal distance.
+ * @param[in] start1,end1 Instants defining the first segment
+ * @param[in] start2,end2 Instants defining the second segment
+ * @param[in] param Additional parameter
+ * @param[in] lower,upper Minimum distances at turning points
+ * @param[out] t1,t2 Timestamps of the turning points
  */
-double
-distance_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
+int
+tcbuffer_tcbuffer_distance_turnpt(Datum start1, Datum end1, Datum start2,
+   Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
+  TimestampTz *t1, TimestampTz *t2)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_cbuffer_stbox(cb, box))
-    return -1.0;
-
-  GSERIALIZED *geo1 = cbuffer_geom(cb);
-  GSERIALIZED *geo2 = stbox_geo(box);
-  double result = geom_distance2d(geo1, geo2);
-  pfree(geo1); pfree(geo2); 
-  return result;
-}
-
-/**
- * @ingroup meos_cbuffer_dist
- * @brief Return the distance between two circular buffers
- * @return On error return -1.0
- * @csqlfn #Distance_cbuffer_cbuffer()
- */
-double
-distance_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
-{
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_cbuffer_cbuffer(cb1, cb2))
-    return -1.0;
-
-  GSERIALIZED *geo1 = cbuffer_geom(cb1);
-  GSERIALIZED *geo2 = cbuffer_geom(cb2);
-  double result = geom_distance2d(geo1, geo2);
-  pfree(geo1); pfree(geo2);
-  return result;
+  assert(lower < upper); assert(t1); assert(t2);
+  /* Extract the circular buffer values */
+  Cbuffer *sv1 = DatumGetCbufferP(start1);
+  Cbuffer *ev1 = DatumGetCbufferP(end1);
+  Cbuffer *sv2 = DatumGetCbufferP(start2);
+  Cbuffer *ev2 = DatumGetCbufferP(end2);
+  return cbuffersegm_distance_turnpt(sv1, ev1, sv2, ev2, lower, upper, t1, t2);
 }
 
 /*****************************************************************************
  * Temporal distance
- * **** TO BE IMPLEMENTED ****  
  *****************************************************************************/
-
-/**
- * @ingroup meos_cbuffer_dist
- * @brief Return the temporal distance between a geometry and a temporal
- * circular buffer
- * @csqlfn #Distance_tcbuffer_geo()
- */
-Temporal *
-distance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
-{
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
-    return NULL;
-
-  Temporal *tpoint = tcbuffer_tgeompoint(temp);
-  Temporal *result = distance_tgeo_geo((const Temporal *) tpoint, gs);
-  pfree(tpoint);
-  return result;
-}
 
 /**
  * @ingroup meos_cbuffer_dist
  * @brief Return the temporal distance between a temporal circular buffer and
  * a circular buffer
- * @param[in] temp Temporal circular buffer
- * @param[in] cb Circular buffer
  * @csqlfn #Distance_tcbuffer_cbuffer()
  */
 Temporal *
@@ -162,12 +394,41 @@ distance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
 
-  GSERIALIZED *geom = cbuffer_geom(cb);
-  Temporal *tpoint = tcbuffer_tgeompoint(temp);
-  Temporal *result = distance_tgeo_geo(tpoint, geom);
-  pfree(geom);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_cbuffer_distance;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.argtype[1] = temptype_basetype(temp->temptype);
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = lfinfo.reslinear ?
+    &tcbuffer_cbuffer_distance_turnpt : NULL;
+  return tfunc_temporal_base(temp, PointerGetDatum(cb), &lfinfo);
+}
+
+/**
+ * @ingroup meos_cbuffer_dist
+ * @brief Return the temporal distance between a temporal circular buffer and
+ * a geometry
+ * @csqlfn #Distance_tcbuffer_geo()
+ */
+Temporal *
+distance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+    return NULL;
+
+  Cbuffer *cb = geom_cbuffer(gs);
+  Temporal *result = distance_tcbuffer_cbuffer(temp, cb);
+  pfree(cb);
   return result;
 }
+
+/*****************************************************************************/
 
 /**
  * @ingroup meos_cbuffer_dist
@@ -182,40 +443,25 @@ distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
 
-  Temporal *tpoint1 = tcbuffer_tgeompoint(temp1);
-  Temporal *tpoint2 = tcbuffer_tgeompoint(temp2);
-  Temporal *result = distance_tgeo_tgeo(tpoint1, tpoint2);
-  pfree(tpoint1); pfree(tpoint2);
-  return result;
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_cbuffer_distance;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = temp1->temptype;
+  lfinfo.argtype[1] = temp2->temptype;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) &&
+                     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc = lfinfo.reslinear ?
+    &tcbuffer_tcbuffer_distance_turnpt : NULL;
+  return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
 /*****************************************************************************
  * Nearest approach instant (NAI)
  *****************************************************************************/
-
-/**
- * @ingroup meos_cbuffer_dist
- * @brief Return the nearest approach distance between a circular buffer
- * and a spatiotemporal box
- * @param[in] cb Circular buffer
- * @param[in] box Spatiotemporal box
- * @csqlfn #NAD_cbuffer_stbox()
- */
-double
-nad_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
-{
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_cbuffer_stbox(cb, box))
-    return -1.0;
-
-  Datum geocbuf = PointerGetDatum(cbuffer_geom(cb));
-  Datum geobox = PointerGetDatum(stbox_geo(box));
-  double result = DatumGetFloat8(datum_geom_distance2d(geocbuf, geobox));
-  pfree(DatumGetPointer(geocbuf)); pfree(DatumGetPointer(geobox)); 
-  return result;
-}
-
-/*****************************************************************************/
 
 /**
  * @ingroup meos_cbuffer_dist
@@ -301,6 +547,30 @@ nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @ingroup meos_cbuffer_dist
+ * @brief Return the nearest approach distance between a circular buffer
+ * and a spatiotemporal box
+ * @param[in] cb Circular buffer
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #NAD_cbuffer_stbox()
+ */
+double
+nad_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_cbuffer_stbox(cb, box))
+    return -1.0;
+
+  Datum geocbuf = PointerGetDatum(cbuffer_geom(cb));
+  Datum geobox = PointerGetDatum(stbox_geo(box));
+  double result = DatumGetFloat8(datum_geom_distance2d(geocbuf, geobox));
+  pfree(DatumGetPointer(geocbuf)); pfree(DatumGetPointer(geobox)); 
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_cbuffer_dist
  * @brief Return the nearest approach distance of a temporal circular buffer
  * and a geometry
  * @param[in] temp Temporal circular buffer
@@ -314,7 +584,7 @@ nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1.0;
 
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp);
   double result = geom_distance2d(trav, gs);
   pfree(trav);
   return result;
@@ -335,7 +605,7 @@ nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
   if (! ensure_valid_tcbuffer_stbox(temp, box))
     return -1.0;
 
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp);
   GSERIALIZED *geo = stbox_geo(box);
   double result = geom_distance2d(trav, geo);
   pfree(trav);
@@ -358,7 +628,7 @@ nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
     return -1.0;
 
   GSERIALIZED *geom = cbuffer_geom(cb);
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp);
   double result = geom_distance2d(trav, geom);
   pfree(trav); pfree(geom);
   return result;
@@ -402,7 +672,7 @@ shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp);
   GSERIALIZED *result = geom_shortestline2d(trav, gs);
   pfree(trav);
   return result;
@@ -424,7 +694,7 @@ shortestline_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
     return NULL;
 
   GSERIALIZED *geom = cbuffer_geom(cb);
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp);
+  GSERIALIZED *trav = tcbuffer_trav_area(temp);
   GSERIALIZED *result = geom_shortestline2d(trav, geom);
   pfree(geom); pfree(trav);
   return result;

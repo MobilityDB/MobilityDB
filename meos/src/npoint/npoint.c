@@ -84,7 +84,7 @@ static int32_t SRID_WAYS = SRID_INVALID;
  * of the timestamps associated to `np1` and `np3`
  */
 bool
-npoint_collinear(const Npoint *np1, const Npoint *np2, const Npoint *np3, 
+npoint_collinear(const Npoint *np1, const Npoint *np2, const Npoint *np3,
   double ratio)
 {
   assert(np1->rid == np2->rid); assert(np1->rid == np3->rid);
@@ -93,20 +93,20 @@ npoint_collinear(const Npoint *np1, const Npoint *np2, const Npoint *np3,
 
 /*****************************************************************************
  * Definitions for reading the ways.csv file
+ * Notice that the file does not have header and the separator are tabs
  *****************************************************************************/
 
 #if MEOS
-/* Maximum length in characters of a header record in the input CSV file */
-#define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a geometry in the input data */
 #define MAX_LENGTH_GEOM 100001
 /* Location of the ways.csv file */
-#define WAYS_CSV "/usr/local/lib/ways.csv"
+#define WAYS_CSV "/usr/local/share/ways.csv"
 
 typedef struct
 {
   long int gid;
   GSERIALIZED *the_geom;
+  double length;
 } ways_record;
 #endif /* MEOS */
 
@@ -139,17 +139,13 @@ get_srid_ways()
 
   bool found = false;
   ways_record rec;
-  char header_buffer[MAX_LENGTH_HEADER];
   char geo_buffer[MAX_LENGTH_GEOM];
-
-  /* Read the first line of the file with the headers */
-  fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%ld,%100000s[^\n]\n",
-      &rec.gid, geo_buffer);
+    int read = fscanf(file, "%ld,%100000[^,\n],%lf\n",
+      &rec.gid, geo_buffer, &rec.length);
 
     if (ferror(file))
     {
@@ -175,15 +171,15 @@ get_srid_ways()
 
   /* Close the input file */
   fclose(file);
-  
+
   if (! found)
     return SRID_INVALID;
-  
+
   int32_t result = gserialized_get_srid(rec.the_geom);
   free(rec.the_geom);
   /* Save the SRID value in a global variable */
   SRID_WAYS = result;
-  return result;  
+  return result;
 }
 #else
 int32_t
@@ -192,7 +188,7 @@ get_srid_ways()
   /* Get the value from the global variable if it has been already set */
   if (SRID_WAYS != SRID_INVALID)
     return SRID_WAYS;
-  
+
   /* Fetch the SRID value from the table */
   int32_t result = 0; /* make compiler quiet */
   bool isNull = true;
@@ -249,17 +245,13 @@ route_exists(int64 rid)
 
   bool result = false;
   ways_record rec;
-  char header_buffer[MAX_LENGTH_HEADER];
   char geo_buffer[MAX_LENGTH_GEOM];
-
-  /* Read the first line of the file with the headers */
-  fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%ld,%100000[^\n]\n",
-      &rec.gid, geo_buffer);
+    int read = fscanf(file, "%ld,%100000[^,\n],%lf\n",
+      &rec.gid, geo_buffer, &rec.length);
 
     if (ferror(file))
     {
@@ -269,15 +261,14 @@ route_exists(int64 rid)
     }
 
     /* Ignore the records with NULL values */
-    if (read == 2)
+    if (read == 3)
     {
       /* Transform the string representing the geometry into a geometry value */
       rec.the_geom = geom_in(geo_buffer, -1);
-      if (geo_is_empty(rec.the_geom))
-      {
-        free(rec.the_geom);
+      bool empty = geo_is_empty(rec.the_geom);
+      free(rec.the_geom);
+      if (empty)
         continue;
-      }
       if (rec.gid == rid)
       {
         result = true;
@@ -288,8 +279,8 @@ route_exists(int64 rid)
 
   /* Close the input file */
   fclose(file);
-  
-  return result; 
+
+  return result;
 }
 #else
 bool
@@ -337,17 +328,13 @@ route_length(int64 rid)
 
   bool found = false;
   ways_record rec;
-  char header_buffer[MAX_LENGTH_HEADER];
   char geo_buffer[MAX_LENGTH_GEOM];
-
-  /* Read the first line of the file with the headers */
-  fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%ld,%100000[^\n]\n",
-      &rec.gid, geo_buffer);
+    int read = fscanf(file, "%ld,%100000[^,\n],%lf\n",
+      &rec.gid, geo_buffer, &rec.length);
 
     if (ferror(file))
     {
@@ -357,7 +344,7 @@ route_length(int64 rid)
     }
 
     /* Ignore the records with NULL values */
-    if (read == 2)
+    if (read == 3)
     {
       /* Transform the string representing the geometry into a geometry value */
       rec.the_geom = geom_in(geo_buffer, -1);
@@ -376,13 +363,13 @@ route_length(int64 rid)
 
   /* Close the input file */
   fclose(file);
-  
+
   if (! found)
     return -1.0;
-  
+
   double result = geom_length(rec.the_geom);
   free(rec.the_geom);
-  return result; 
+  return result;
 }
 #else
 double
@@ -437,17 +424,13 @@ route_geom(int64 rid)
 
   bool found = false;
   ways_record rec;
-  char header_buffer[MAX_LENGTH_HEADER];
   char geo_buffer[MAX_LENGTH_GEOM];
-
-  /* Read the first line of the file with the headers */
-  fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%ld,%100000[^\n]\n",
-      &rec.gid, geo_buffer);
+    int read = fscanf(file, "%ld,%100000[^,\n],%lf\n",
+      &rec.gid, geo_buffer, &rec.length);
 
     if (ferror(file))
     {
@@ -461,28 +444,30 @@ route_geom(int64 rid)
     {
       /* Transform the string representing the geometry into a geometry value */
       rec.the_geom = geom_in(geo_buffer, -1);
-      if (geo_is_empty(rec.the_geom))
+      if (! geo_is_empty(rec.the_geom))
       {
-        free(rec.the_geom);
-        continue;
+        if (rec.gid == rid)
+        {
+          found = true;
+          break;
+        }
       }
-      if (rec.gid == rid)
-      {
-        found = true;
-        break;
-      }
+      free(rec.the_geom);
     }
   } while (! feof(file));
 
   /* Close the input file */
   fclose(file);
-  
+
   if (! found)
+  {
+    free(rec.the_geom);
     return NULL;
-  
+  }
+
   GSERIALIZED *result = geo_copy(rec.the_geom);
   free(rec.the_geom);
-  return result; 
+  return result;
 }
 #else
 GSERIALIZED *
@@ -559,21 +544,17 @@ geom_npoint(const GSERIALIZED *gs)
   /* Record holding one line of the file */
   ways_record rec;
   /* Buffers for reading one line of the file */
-  char header_buffer[MAX_LENGTH_HEADER];
   char geo_buffer[MAX_LENGTH_GEOM];
   /* Distances */
   double dist, min_dist = DBL_MAX;
   /* Position in the geometry with the shortest distance */
   double pos;
 
-  /* Read the first line of the file with the headers */
-  fscanf(file, "%1023s\n", header_buffer);
-
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%ld,%100000[^\n]\n",
-      &rec.gid, geo_buffer);
+    int read = fscanf(file, "%ld,%100000[^,\n],%lf\n",
+      &rec.gid, geo_buffer, &rec.length);
 
     if (ferror(file))
     {
@@ -598,7 +579,7 @@ geom_npoint(const GSERIALIZED *gs)
        *   FROM public.ways WHERE ST_DWithin(the_geom, geo, DIST_EPSILON)
        *   ORDER BY ST_Distance(the_geom, geo) LIMIT 1;
        */
-      
+
       pos = line_locate_point(rec.the_geom, gs);
       if (pos < 0)
       {
@@ -610,19 +591,19 @@ geom_npoint(const GSERIALIZED *gs)
       if (dist < min_dist)
         min_dist = dist;
 
-    }    
+    }
   } while (! feof(file));
 
   /* Close the input file */
   fclose(file);
-  
+
   /* If the point was not found */
   if (! gs)
     return NULL;
-  
+
   Npoint *result = npoint_make(rec.gid, pos);
   free(rec.the_geom);
-  return result; 
+  return result;
 }
 #else
 Npoint *
@@ -795,7 +776,7 @@ npoint_parse(const char **str, bool end)
   /* Parse rid */
   p_whitespace(str);
   Datum d;
-  if (! basetype_parse(str, T_INT8, ',', &d)) 
+  if (! basetype_parse(str, T_INT8, ',', &d))
     return NULL;
   int64 rid = DatumGetInt64(d);
 
@@ -1043,7 +1024,7 @@ npoint_as_ewkt(const Npoint *np, int maxdd)
 
 /**
  * @ingroup meos_npoint_base_inout
- * @brief Return a network point from its Well-Known Binary (WKB) 
+ * @brief Return a network point from its Well-Known Binary (WKB)
  * representation
  * @param[in] wkb WKB string
  * @param[in] size Size of the string
@@ -1059,7 +1040,7 @@ npoint_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup meos_npoint_base_inout
- * @brief Return a network point from its hex-encoded ASCII Well-Known Binary
+ * @brief Return a network point from its ASCII hex-encoded Well-Known Binary
  * (WKB) representation
  * @param[in] hexwkb HexWKB string
  * @csqlfn #Npoint_from_hexwkb()
@@ -1095,7 +1076,7 @@ npoint_as_wkb(const Npoint *np, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup meos_npoint_base_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a network point
  * @param[in] np Network point
  * @param[in] variant Output variant
@@ -1180,7 +1161,7 @@ nsegment_make(int64 rid, double pos1, double pos2)
 void
 nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
 {
-  assert(route_exists(rid)); 
+  assert(route_exists(rid));
   assert(pos1 >= 0 && pos1 <= 1 && pos2 >= 0 && pos2 <= 1);
 
   ns->rid = rid;
@@ -1313,7 +1294,7 @@ npoint_timestamptz_set_stbox(const Npoint *np, TimestampTz t, STBox *box)
 }
 
 /**
- * @ingroup meos_box_constructor
+ * @ingroup meos_npoint_box_constructor
  * @brief Return a spatiotemporal box constructed from a network point and a
  * timestamptz
  * @param[in] np Network point
@@ -1348,7 +1329,7 @@ npoint_tstzspan_set_stbox(const Npoint *np, const Span *s, STBox *box)
 }
 
 /**
- * @ingroup meos_box_constructor
+ * @ingroup meos_npoint_box_constructor
  * @brief Return a spatiotemporal box constructed from a network point and a
  * timestamptz
  * @param[in] np Network point
@@ -1673,7 +1654,7 @@ nsegment_end_position(const Nsegment *ns)
  * the SRID of the table
  */
 inline int32_t
-npoint_srid(const Npoint *np __attribute__((unused)))
+npoint_srid(const Npoint *np UNUSED)
 {
   return get_srid_ways();
 }
@@ -1688,7 +1669,7 @@ npoint_srid(const Npoint *np __attribute__((unused)))
  * the SRID of the table
  */
 inline int32_t
-nsegment_srid(const Nsegment *ns __attribute__((unused)))
+nsegment_srid(const Nsegment *ns UNUSED)
 {
   return get_srid_ways();
 }
