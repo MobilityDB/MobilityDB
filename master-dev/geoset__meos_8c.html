@@ -80,24 +80,15 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>General functions for sets composed of an ordered list of distinct values.  
+<p>General functions for geometry/geography sets.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="set_8h_source.html">general/set.h</a>&quot;</code><br />
-<code>#include &lt;assert.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="float_8h_source.html">float.h</a>&gt;</code><br />
-<code>#include &lt;limits.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
-<code>#include &quot;general/span.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="tnumber__mathfuncs_8h_source.html">general/tnumber_mathfuncs.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="ttext__funcs_8h_source.html">general/ttext_funcs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="type__parser_8h_source.html">general/type_parser.h</a>&quot;</code><br />
 <code>#include &quot;general/type_util.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="tgeo__out_8h_source.html">geo/tgeo_out.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
-<code>#include &quot;geo/tspatial_boxops.h&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -111,7 +102,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:af0c71bfe5a2ac077bd05b2c968091967"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a set and a geometry/geography are valid for set operations.  <a href="geoset__meos_8c_af0c71bfe5a2ac077bd05b2c968091967.html#af0c71bfe5a2ac077bd05b2c968091967">More...</a><br /></td></tr>
 <tr class="separator:af0c71bfe5a2ac077bd05b2c968091967"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaba1e71d2c789ebe130851a70a5fc24dd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__set__conversion_gaba1e71d2c789ebe130851a70a5fc24dd.html#gaba1e71d2c789ebe130851a70a5fc24dd">geo_to_set</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs)</td></tr>
-<tr class="memdesc:gaba1e71d2c789ebe130851a70a5fc24dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a geometry/geography converted to a geo set.  <a href="group__meos__geo__set__conversion_gaba1e71d2c789ebe130851a70a5fc24dd.html#gaba1e71d2c789ebe130851a70a5fc24dd">More...</a><br /></td></tr>
+<tr class="memdesc:gaba1e71d2c789ebe130851a70a5fc24dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a geometry/geography into a geo set.  <a href="group__meos__geo__set__conversion_gaba1e71d2c789ebe130851a70a5fc24dd.html#gaba1e71d2c789ebe130851a70a5fc24dd">More...</a><br /></td></tr>
 <tr class="separator:gaba1e71d2c789ebe130851a70a5fc24dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaba7b44051b98b5a7eb9ba050618e1aa6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__set__setops_gaba7b44051b98b5a7eb9ba050618e1aa6.html#gaba7b44051b98b5a7eb9ba050618e1aa6">geo_union_transfn</a> (<a class="el" href="structSet.html">Set</a> *<a class="el" href="structstate.html">state</a>, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs)</td></tr>
 <tr class="memdesc:gaba7b44051b98b5a7eb9ba050618e1aa6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transition function for set union aggregate of geometries/geographies.  <a href="group__meos__geo__set__setops_gaba7b44051b98b5a7eb9ba050618e1aa6.html#gaba7b44051b98b5a7eb9ba050618e1aa6">More...</a><br /></td></tr>
@@ -157,7 +148,7 @@ Functions</h2></td></tr>
 <tr class="separator:ga53d740ae29c8d40f0cdd118b658f9aef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >General functions for sets composed of an ordered list of distinct values. </p>
+<div class="textblock"><p >General functions for geometry/geography sets. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

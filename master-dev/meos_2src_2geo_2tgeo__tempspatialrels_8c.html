@@ -180,12 +180,12 @@ Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p ><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> spatial relationships for temporal geos. </p>
 <p >These relationships are applied at each instant and result in a temporal Boolean.</p>
-<p >The following relationships are supported for a temporal geometry point and a geometry: tcontains, tdisjoint, tintersects, ttouches, and tdwithin.</p>
-<p >The following relationships are supported for two temporal geometry points: tdwithin.</p>
-<p >The following relationships are supported for two temporal geography points: tdisjoint, tintersects, tdwithin.</p>
-<p >tintersects and tdisjoint for a temporal point and a geometry allow a fast implementation by (1) using bounding box tests, and (2) splitting temporal point sequences into an array of simple (that is, not self-intersecting) fragments and the answer is computed for each fragment without any additional call to PostGIS.</p>
-<p >The implementation of tcontains and ttouches involving a temporal point and a geometry is derived from the above by computing the boundary of the geometry and (1) tcontains(geo, tpoint) = tintersects(geo, tpoint) &amp; ~ tintersects(st_boundary(geo), tpoint) where &amp; and ~ are the temporal boolean operators and and not (2) ttouches(geo, tpoint) = tintersects(st_boundary(geo), tpoint)</p>
-<p >Notice also that tdwithin has a custom implementation as follows</p><ul>
+<p >The following relationships are supported for a temporal geometry point and a geometry: <code>tcontains</code>, <code>tdisjoint</code>, <code>tintersects</code>, <code>ttouches</code>, and <code>tdwithin</code>.</p>
+<p >The following relationships are supported for two temporal geometry points: <code>tdwithin</code>.</p>
+<p >The following relationships are supported for two temporal geography points: <code>tdisjoint</code>, <code>tintersects</code>, <code>tdwithin</code>.</p>
+<p ><code>tintersects</code> and <code>tdisjoint</code> for a temporal point and a geometry allow a fast implementation by (1) using bounding box tests, and (2) splitting temporal point sequences into an array of simple (that is, not self-intersecting) fragments and the answer is computed for each fragment without any additional call to PostGIS.</p>
+<p >The implementation of <code>tcontains</code> and <code>ttouches</code> involving a temporal point and a geometry is derived from the above by computing the boundary of the geometry and (1) tcontains(geo, tpoint) = tintersects(geo, tpoint) &amp; ~ tintersects(st_boundary(geo), tpoint) where &amp; and ~ are the temporal boolean operators and and not (2) ttouches(geo, tpoint) = tintersects(st_boundary(geo), tpoint)</p>
+<p >Notice also that <code>tdwithin</code> has a custom implementation as follows</p><ul>
 <li>In the case of two temporal points we need to compute the instants at which two temporal sequences have a distance d between each other, which amounts for each pair of synchronized segments seg1, seg2 to solve the equation distance(seg1(t), seg2(t)) = d.</li>
 <li>In the case of a temporal point and a point we partly reuse the above solution by making seg2 to be constant which amounts to solve the equation distance(seg1(t), seg2(t)) = d. </li>
 </ul>

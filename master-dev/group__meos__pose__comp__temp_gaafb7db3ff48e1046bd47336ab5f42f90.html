@@ -92,6 +92,9 @@ $(function() {
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tne_pose_tpose </td>
@@ -111,13 +114,18 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return the temporal inequality of a pose and a temporal pose. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pose</td><td><a class="el" href="structPose.html" title="Basic functions for static pose objects.">Pose</a> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value @csqlfn <a class="el" href="group__mobilitydb__pose__comp__temp_gaefe637f8918ee985951ba334c9f9c4a0.html#gaefe637f8918ee985951ba334c9f9c4a0" title="Return true if a temporal pose is ever different from a pose @sqlfn temporal_tne()">Tne_pose_tpose()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value @csqlfn <a class="el" href="group__mobilitydb__pose__comp__temp_gaefe637f8918ee985951ba334c9f9c4a0.html#gaefe637f8918ee985951ba334c9f9c4a0" title="Return a temporal Boolean that states whether a pose is different from a temporal pose @sqlfn tempora...">Tne_pose_tpose()</a> </td></tr>
   </table>
   </dd>
 </dl>
