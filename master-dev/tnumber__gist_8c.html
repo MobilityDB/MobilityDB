@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: mobilitydb/src/general/tnumber_gist.c File Reference</title>
+<title>MobilityDB: mobilitydb/src/temporal/tnumber_gist.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_b060bd5020a833a37671e1e10417da21.html">mobilitydb</a></li><li class="navelem"><a class="el" href="dir_c9f6390d5d8264054b7997353d94a8b4.html">src</a></li><li class="navelem"><a class="el" href="dir_e766d69d99f3b77fddbceae09651963b.html">general</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_b060bd5020a833a37671e1e10417da21.html">mobilitydb</a></li><li class="navelem"><a class="el" href="dir_c9f6390d5d8264054b7997353d94a8b4.html">src</a></li><li class="navelem"><a class="el" href="dir_0efae76be7137e75d3e4b51facc25044.html">temporal</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -83,7 +83,7 @@ $(function() {
 
 <p>R-tree GiST index for temporal integers and temporal floats.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="tnumber__gist_8h_source.html">pg_general/tnumber_gist.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="tnumber__gist_8h_source.html">pg_temporal/tnumber_gist.h</a>&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="float_8h_source.html">float.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
@@ -91,15 +91,15 @@ $(function() {
 <code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
-<code>#include &quot;general/span.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="span__index_8h_source.html">general/span_index.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="include_2general_2stratnum_8h_source.html">general/stratnum.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="tbox_8h_source.html">general/tbox.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="tbox__index_8h_source.html">general/tbox_index.h</a>&quot;</code><br />
-<code>#include &quot;general/temporal_boxops.h&quot;</code><br />
-<code>#include &quot;general/type_util.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__general_2meos__catalog_8h_source.html">pg_general/meos_catalog.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__general_2temporal_8h_source.html">pg_general/temporal.h</a>&quot;</code><br />
+<code>#include &quot;temporal/span.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="span__index_8h_source.html">temporal/span_index.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="include_2temporal_2stratnum_8h_source.html">temporal/stratnum.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tbox_8h_source.html">temporal/tbox.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tbox__index_8h_source.html">temporal/tbox_index.h</a>&quot;</code><br />
+<code>#include &quot;temporal/temporal_boxops.h&quot;</code><br />
+<code>#include &quot;temporal/type_util.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2meos__catalog_8h_source.html">pg_temporal/meos_catalog.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_source.html">pg_temporal/temporal.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -110,13 +110,13 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ad4db38e2f14faa82359405835f9c0215"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8c_ad4db38e2f14faa82359405835f9c0215.html#ad4db38e2f14faa82359405835f9c0215">bbox_gist_consider_split</a> (<a class="el" href="structConsiderSplitContext.html">ConsiderSplitContext</a> *context, int dimNum, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> bboxtype, double rightLower, int minLeftCount, double leftUpper, int maxLeftCount)</td></tr>
+<tr class="memitem:ad4db38e2f14faa82359405835f9c0215"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8c_ad4db38e2f14faa82359405835f9c0215.html#ad4db38e2f14faa82359405835f9c0215">bbox_gist_consider_split</a> (<a class="el" href="structConsiderSplitContext.html">ConsiderSplitContext</a> *context, int dimNum, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> bboxtype, double rightLower, int minLeftCount, double leftUpper, int maxLeftCount)</td></tr>
 <tr class="memdesc:ad4db38e2f14faa82359405835f9c0215"><td class="mdescLeft">&#160;</td><td class="mdescRight">Consider replacement of currently selected split with the better one.  <a href="tnumber__gist_8c_ad4db38e2f14faa82359405835f9c0215.html#ad4db38e2f14faa82359405835f9c0215">More...</a><br /></td></tr>
 <tr class="separator:ad4db38e2f14faa82359405835f9c0215"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a87e552a710a031efff71f231537b8991"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8c_a87e552a710a031efff71f231537b8991.html#a87e552a710a031efff71f231537b8991">bbox_gist_fallback_split</a> (GistEntryVector *entryvec, GIST_SPLITVEC *v, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> bboxtype, void(*bbox_adjust)(void *, void *))</td></tr>
+<tr class="memitem:a87e552a710a031efff71f231537b8991"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8c_a87e552a710a031efff71f231537b8991.html#a87e552a710a031efff71f231537b8991">bbox_gist_fallback_split</a> (GistEntryVector *entryvec, GIST_SPLITVEC *v, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> bboxtype, void(*bbox_adjust)(void *, void *))</td></tr>
 <tr class="memdesc:a87e552a710a031efff71f231537b8991"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trivial split: half of entries will be placed on one page and the other half on another page.  <a href="tnumber__gist_8c_a87e552a710a031efff71f231537b8991.html#a87e552a710a031efff71f231537b8991">More...</a><br /></td></tr>
 <tr class="separator:a87e552a710a031efff71f231537b8991"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6bfde59980a588c3ed13ab30fd82bb9c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8c_a6bfde59980a588c3ed13ab30fd82bb9c.html#a6bfde59980a588c3ed13ab30fd82bb9c">bbox_gist_picksplit</a> (FunctionCallInfo fcinfo, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> bboxtype, void(*bbox_adjust)(void *, void *), double(*bbox_penalty)(void *, void *))</td></tr>
+<tr class="memitem:a6bfde59980a588c3ed13ab30fd82bb9c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8c_a6bfde59980a588c3ed13ab30fd82bb9c.html#a6bfde59980a588c3ed13ab30fd82bb9c">bbox_gist_picksplit</a> (FunctionCallInfo fcinfo, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> bboxtype, void(*bbox_adjust)(void *, void *), double(*bbox_penalty)(void *, void *))</td></tr>
 <tr class="memdesc:a6bfde59980a588c3ed13ab30fd82bb9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Double sorting split algorithm.  <a href="tnumber__gist_8c_a6bfde59980a588c3ed13ab30fd82bb9c.html#a6bfde59980a588c3ed13ab30fd82bb9c">More...</a><br /></td></tr>
 <tr class="separator:a6bfde59980a588c3ed13ab30fd82bb9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aff7bf0f4bb4a1824da76546011c77ad3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__gist_8c_aff7bf0f4bb4a1824da76546011c77ad3.html#aff7bf0f4bb4a1824da76546011c77ad3">interval_cmp_lower</a> (const void *i1, const void *i2)</td></tr>

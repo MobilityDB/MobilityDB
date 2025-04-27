@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos/src/general/set_aggfuncs_meos.c File Reference</title>
+<title>MobilityDB: meos/src/temporal/set_aggfuncs_meos.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_0a74bb77045191a48e06cf40aa0b9f46.html">src</a></li><li class="navelem"><a class="el" href="dir_5d19c495bebfa7984342d3aa32d829f8.html">general</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_0a74bb77045191a48e06cf40aa0b9f46.html">src</a></li><li class="navelem"><a class="el" href="dir_92c74706ecb2aa1b9b75738cf4ec4b88.html">temporal</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -87,9 +87,9 @@ $(function() {
 <code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="set_8h_source.html">general/set.h</a>&quot;</code><br />
-<code>#include &quot;general/temporal.h&quot;</code><br />
-<code>#include &quot;general/type_util.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
+<code>#include &quot;temporal/temporal.h&quot;</code><br />
+<code>#include &quot;temporal/type_util.h&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -108,7 +108,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a5dd5a7e190f1ce363250cefba72a6bbd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="set__aggfuncs__meos_8c_a5dd5a7e190f1ce363250cefba72a6bbd.html#a5dd5a7e190f1ce363250cefba72a6bbd">set_append_value</a> (<a class="el" href="structSet.html">Set</a> *<a class="el" href="meos_2src_2cbuffer_2CMakeLists_8txt_a3270654e8f083a33144aced11d28b9b3.html#a3270654e8f083a33144aced11d28b9b3">set</a>, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value)</td></tr>
 <tr class="memdesc:a5dd5a7e190f1ce363250cefba72a6bbd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append a value to a set.  <a href="set__aggfuncs__meos_8c_a5dd5a7e190f1ce363250cefba72a6bbd.html#a5dd5a7e190f1ce363250cefba72a6bbd">More...</a><br /></td></tr>
 <tr class="separator:a5dd5a7e190f1ce363250cefba72a6bbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae98bd57d036559ca2cff8a16fcdab8a7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="set__aggfuncs__meos_8c_ae98bd57d036559ca2cff8a16fcdab8a7.html#ae98bd57d036559ca2cff8a16fcdab8a7">set_expand_bbox</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> basetype, void *box)</td></tr>
+<tr class="memitem:ae98bd57d036559ca2cff8a16fcdab8a7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="set__aggfuncs__meos_8c_ae98bd57d036559ca2cff8a16fcdab8a7.html#ae98bd57d036559ca2cff8a16fcdab8a7">set_expand_bbox</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> basetype, void *box)</td></tr>
 <tr class="memdesc:ae98bd57d036559ca2cff8a16fcdab8a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expand a bounding box with a value.  <a href="set__aggfuncs__meos_8c_ae98bd57d036559ca2cff8a16fcdab8a7.html#ae98bd57d036559ca2cff8a16fcdab8a7">More...</a><br /></td></tr>
 <tr class="separator:ae98bd57d036559ca2cff8a16fcdab8a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga688083bdddc86e3891b893d52dec68be"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__setspan__agg_ga688083bdddc86e3891b893d52dec68be.html#ga688083bdddc86e3891b893d52dec68be">set_union_finalfn</a> (<a class="el" href="structSet.html">Set</a> *<a class="el" href="structstate.html">state</a>)</td></tr>
@@ -123,7 +123,7 @@ Functions</h2></td></tr>
 <tr class="memitem:gae8b6e6dd703bf1f7971ec62d2bdcd8a9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__setspan__agg_gae8b6e6dd703bf1f7971ec62d2bdcd8a9.html#gae8b6e6dd703bf1f7971ec62d2bdcd8a9">timestamptz_union_transfn</a> (<a class="el" href="structSet.html">Set</a> *<a class="el" href="structstate.html">state</a>, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t)</td></tr>
 <tr class="memdesc:gae8b6e6dd703bf1f7971ec62d2bdcd8a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transition function for set union aggregate of timestamptz.  <a href="group__meos__setspan__agg_gae8b6e6dd703bf1f7971ec62d2bdcd8a9.html#gae8b6e6dd703bf1f7971ec62d2bdcd8a9">More...</a><br /></td></tr>
 <tr class="separator:gae8b6e6dd703bf1f7971ec62d2bdcd8a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga87a9f519d12270b92f330fc12bb9f002"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__setspan__agg_ga87a9f519d12270b92f330fc12bb9f002.html#ga87a9f519d12270b92f330fc12bb9f002">value_union_transfn</a> (<a class="el" href="structSet.html">Set</a> *<a class="el" href="structstate.html">state</a>, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> basetype)</td></tr>
+<tr class="memitem:ga87a9f519d12270b92f330fc12bb9f002"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__setspan__agg_ga87a9f519d12270b92f330fc12bb9f002.html#ga87a9f519d12270b92f330fc12bb9f002">value_union_transfn</a> (<a class="el" href="structSet.html">Set</a> *<a class="el" href="structstate.html">state</a>, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> basetype)</td></tr>
 <tr class="memdesc:ga87a9f519d12270b92f330fc12bb9f002"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transition function for set union aggregate of values.  <a href="group__meos__internal__setspan__agg_ga87a9f519d12270b92f330fc12bb9f002.html#ga87a9f519d12270b92f330fc12bb9f002">More...</a><br /></td></tr>
 <tr class="separator:ga87a9f519d12270b92f330fc12bb9f002"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>

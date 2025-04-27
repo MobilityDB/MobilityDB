@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos/include/general/ttext_funcs.h File Reference</title>
+<title>MobilityDB: meos/include/temporal/ttext_funcs.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_8c13b810ba29739bffadb2426a4b1e5d.html">general</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_aa92cce0f61242abd286802b3a4d1fb4.html">temporal</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -81,7 +81,7 @@ $(function() {
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
-<code>#include &quot;general/temporal.h&quot;</code><br />
+<code>#include &quot;temporal/temporal.h&quot;</code><br />
 </div>
 <p><a href="ttext__funcs_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -102,13 +102,13 @@ Functions</h2></td></tr>
 <tr class="memitem:ab1f69a14b5aab2b27153b6dc9b4ad45c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_af5f2dec97dfaab496adb8b568e1660c1.html#af5f2dec97dfaab496adb8b568e1660c1">text</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__funcs_8h_ab1f69a14b5aab2b27153b6dc9b4ad45c.html#ab1f69a14b5aab2b27153b6dc9b4ad45c">text_catenate</a> (const <a class="el" href="postgres__ext__defs_8in_8h_af5f2dec97dfaab496adb8b568e1660c1.html#af5f2dec97dfaab496adb8b568e1660c1">text</a> *txt1, const <a class="el" href="postgres__ext__defs_8in_8h_af5f2dec97dfaab496adb8b568e1660c1.html#af5f2dec97dfaab496adb8b568e1660c1">text</a> *txt2)</td></tr>
 <tr class="memdesc:ab1f69a14b5aab2b27153b6dc9b4ad45c"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> text functions: <code>textcat</code>, <code>lower</code>, <code>upper</code>.  <a href="ttext__funcs_8h_ab1f69a14b5aab2b27153b6dc9b4ad45c.html#ab1f69a14b5aab2b27153b6dc9b4ad45c">More...</a><br /></td></tr>
 <tr class="separator:ab1f69a14b5aab2b27153b6dc9b4ad45c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3e3a35cfb704167654fac290082ca73b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__funcs_8h_a3e3a35cfb704167654fac290082ca73b.html#a3e3a35cfb704167654fac290082ca73b">textfunc_ttext</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, <a class="el" href="meos_2include_2general_2temporal_8h_adbd869bb2866aea062f0514d80548d4b.html#adbd869bb2866aea062f0514d80548d4b">datum_func1</a> func)</td></tr>
+<tr class="memitem:a3e3a35cfb704167654fac290082ca73b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__funcs_8h_a3e3a35cfb704167654fac290082ca73b.html#a3e3a35cfb704167654fac290082ca73b">textfunc_ttext</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, <a class="el" href="meos_2include_2temporal_2temporal_8h_adbd869bb2866aea062f0514d80548d4b.html#adbd869bb2866aea062f0514d80548d4b">datum_func1</a> func)</td></tr>
 <tr class="memdesc:a3e3a35cfb704167654fac290082ca73b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the function to transform the temporal text value.  <a href="ttext__funcs_8h_a3e3a35cfb704167654fac290082ca73b.html#a3e3a35cfb704167654fac290082ca73b">More...</a><br /></td></tr>
 <tr class="separator:a3e3a35cfb704167654fac290082ca73b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3bf9eccdfcbaa137a82caa8422f9b94a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__funcs_8h_a3bf9eccdfcbaa137a82caa8422f9b94a.html#a3bf9eccdfcbaa137a82caa8422f9b94a">textfunc_ttext_text</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2general_2temporal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a> func, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> invert)</td></tr>
+<tr class="memitem:a3bf9eccdfcbaa137a82caa8422f9b94a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__funcs_8h_a3bf9eccdfcbaa137a82caa8422f9b94a.html#a3bf9eccdfcbaa137a82caa8422f9b94a">textfunc_ttext_text</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2temporal_2temporal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a> func, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> invert)</td></tr>
 <tr class="memdesc:a3bf9eccdfcbaa137a82caa8422f9b94a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the function to the temporal text value and the base text value.  <a href="ttext__funcs_8h_a3bf9eccdfcbaa137a82caa8422f9b94a.html#a3bf9eccdfcbaa137a82caa8422f9b94a">More...</a><br /></td></tr>
 <tr class="separator:a3bf9eccdfcbaa137a82caa8422f9b94a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a270ca6b4b38ab2e9e1352e553bb4c9c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__funcs_8h_a270ca6b4b38ab2e9e1352e553bb4c9c5.html#a270ca6b4b38ab2e9e1352e553bb4c9c5">textfunc_ttext_ttext</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp1, const <a class="el" href="structTemporal.html">Temporal</a> *temp2, <a class="el" href="meos_2include_2general_2temporal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a> func)</td></tr>
+<tr class="memitem:a270ca6b4b38ab2e9e1352e553bb4c9c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__funcs_8h_a270ca6b4b38ab2e9e1352e553bb4c9c5.html#a270ca6b4b38ab2e9e1352e553bb4c9c5">textfunc_ttext_ttext</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp1, const <a class="el" href="structTemporal.html">Temporal</a> *temp2, <a class="el" href="meos_2include_2temporal_2temporal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a> func)</td></tr>
 <tr class="memdesc:a270ca6b4b38ab2e9e1352e553bb4c9c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the function to the temporal text value and the base text value.  <a href="ttext__funcs_8h_a270ca6b4b38ab2e9e1352e553bb4c9c5.html#a270ca6b4b38ab2e9e1352e553bb4c9c5">More...</a><br /></td></tr>
 <tr class="separator:a270ca6b4b38ab2e9e1352e553bb4c9c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>

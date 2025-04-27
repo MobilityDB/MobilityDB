@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos/src/general/temporal_aggfuncs_meos.c File Reference</title>
+<title>MobilityDB: meos/src/temporal/temporal_aggfuncs_meos.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_0a74bb77045191a48e06cf40aa0b9f46.html">src</a></li><li class="navelem"><a class="el" href="dir_5d19c495bebfa7984342d3aa32d829f8.html">general</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_0a74bb77045191a48e06cf40aa0b9f46.html">src</a></li><li class="navelem"><a class="el" href="dir_92c74706ecb2aa1b9b75738cf4ec4b88.html">temporal</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -82,25 +82,25 @@ $(function() {
 
 <p>General aggregate functions for temporal types.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="temporal__aggfuncs_8h_source.html">general/temporal_aggfuncs.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="temporal__aggfuncs_8h_source.html">temporal/temporal_aggfuncs.h</a>&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="pg__types_8h_source.html">general/pg_types.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="set_8h_source.html">general/set.h</a>&quot;</code><br />
-<code>#include &quot;general/skiplist.h&quot;</code><br />
-<code>#include &quot;general/span.h&quot;</code><br />
-<code>#include &quot;general/spanset.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="temporal__restrict_8h_source.html">general/temporal_restrict.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="temporal__waggfuncs_8h_source.html">general/temporal_waggfuncs.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="tbool__ops_8h_source.html">general/tbool_ops.h</a>&quot;</code><br />
-<code>#include &quot;general/tinstant.h&quot;</code><br />
-<code>#include &quot;general/tsequence.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="tsequenceset_8h_source.html">general/tsequenceset.h</a>&quot;</code><br />
-<code>#include &quot;general/type_util.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="pg__types_8h_source.html">temporal/pg_types.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
+<code>#include &quot;temporal/skiplist.h&quot;</code><br />
+<code>#include &quot;temporal/span.h&quot;</code><br />
+<code>#include &quot;temporal/spanset.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="temporal__restrict_8h_source.html">temporal/temporal_restrict.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="temporal__waggfuncs_8h_source.html">temporal/temporal_waggfuncs.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tbool__ops_8h_source.html">temporal/tbool_ops.h</a>&quot;</code><br />
+<code>#include &quot;temporal/tinstant.h&quot;</code><br />
+<code>#include &quot;temporal/tsequence.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="tsequenceset_8h_source.html">temporal/tsequenceset.h</a>&quot;</code><br />
+<code>#include &quot;temporal/type_util.h&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>

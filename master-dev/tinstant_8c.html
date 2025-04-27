@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos/src/general/tinstant.c File Reference</title>
+<title>MobilityDB: meos/src/temporal/tinstant.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_0a74bb77045191a48e06cf40aa0b9f46.html">src</a></li><li class="navelem"><a class="el" href="dir_5d19c495bebfa7984342d3aa32d829f8.html">general</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_0a74bb77045191a48e06cf40aa0b9f46.html">src</a></li><li class="navelem"><a class="el" href="dir_92c74706ecb2aa1b9b75738cf4ec4b88.html">temporal</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -82,18 +82,18 @@ $(function() {
 
 <p>General functions for temporal instants.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;general/tinstant.h&quot;</code><br />
+<div class="textblock"><code>#include &quot;temporal/tinstant.h&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="hashfn_8h_source.html">common/hashfn.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
-<code>#include &quot;general/meos_catalog.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="pg__types_8h_source.html">general/pg_types.h</a>&quot;</code><br />
-<code>#include &quot;general/tsequence.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="type__parser_8h_source.html">general/type_parser.h</a>&quot;</code><br />
-<code>#include &quot;general/type_util.h&quot;</code><br />
+<code>#include &quot;temporal/meos_catalog.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="pg__types_8h_source.html">temporal/pg_types.h</a>&quot;</code><br />
+<code>#include &quot;temporal/tsequence.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="type__parser_8h_source.html">temporal/type_parser.h</a>&quot;</code><br />
+<code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tspatial__parser_8h_source.html">geo/tspatial_parser.h</a>&quot;</code><br />
 </div><table class="memberdecls">
@@ -114,16 +114,16 @@ Functions</h2></td></tr>
 <tr class="memitem:ga651420ead931dc041560e8d5b3a92272"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a1134b580f8da4de94ca6b1de4d37975e.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__accessor_ga651420ead931dc041560e8d5b3a92272.html#ga651420ead931dc041560e8d5b3a92272">tinstant_hash</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst)</td></tr>
 <tr class="memdesc:ga651420ead931dc041560e8d5b3a92272"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the 32-bit hash value of a temporal instant.  <a href="group__meos__internal__temporal__accessor_ga651420ead931dc041560e8d5b3a92272.html#ga651420ead931dc041560e8d5b3a92272">More...</a><br /></td></tr>
 <tr class="separator:ga651420ead931dc041560e8d5b3a92272"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf2bde07420d50c76463c2d21e5401369"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__inout_gaf2bde07420d50c76463c2d21e5401369.html#gaf2bde07420d50c76463c2d21e5401369">tinstant_in</a> (const char *str, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> temptype)</td></tr>
+<tr class="memitem:gaf2bde07420d50c76463c2d21e5401369"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__inout_gaf2bde07420d50c76463c2d21e5401369.html#gaf2bde07420d50c76463c2d21e5401369">tinstant_in</a> (const char *str, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> temptype)</td></tr>
 <tr class="memdesc:gaf2bde07420d50c76463c2d21e5401369"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal instant from its Well-Known Text (WKT) representation.  <a href="group__meos__internal__temporal__inout_gaf2bde07420d50c76463c2d21e5401369.html#gaf2bde07420d50c76463c2d21e5401369">More...</a><br /></td></tr>
 <tr class="separator:gaf2bde07420d50c76463c2d21e5401369"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1a3fa60713a841f743168d8ca8239ef7"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structTInstant.html">TInstant</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__accessor_ga1a3fa60713a841f743168d8ca8239ef7.html#ga1a3fa60713a841f743168d8ca8239ef7">tinstant_insts</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst, int *count)</td></tr>
 <tr class="memdesc:ga1a3fa60713a841f743168d8ca8239ef7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the singleton array of instants of a temporal instant.  <a href="group__meos__internal__temporal__accessor_ga1a3fa60713a841f743168d8ca8239ef7.html#ga1a3fa60713a841f743168d8ca8239ef7">More...</a><br /></td></tr>
 <tr class="separator:ga1a3fa60713a841f743168d8ca8239ef7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaeb6619cbbdd480db50c325d0017acd26"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__constructor_gaeb6619cbbdd480db50c325d0017acd26.html#gaeb6619cbbdd480db50c325d0017acd26">tinstant_make</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> temptype, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t)</td></tr>
+<tr class="memitem:gaeb6619cbbdd480db50c325d0017acd26"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__constructor_gaeb6619cbbdd480db50c325d0017acd26.html#gaeb6619cbbdd480db50c325d0017acd26">tinstant_make</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> temptype, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t)</td></tr>
 <tr class="memdesc:gaeb6619cbbdd480db50c325d0017acd26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal instant from the arguments.  <a href="group__meos__internal__temporal__constructor_gaeb6619cbbdd480db50c325d0017acd26.html#gaeb6619cbbdd480db50c325d0017acd26">More...</a><br /></td></tr>
 <tr class="separator:gaeb6619cbbdd480db50c325d0017acd26"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95dad66d300eac304a3e5f94d8910086"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tinstant_8c_a95dad66d300eac304a3e5f94d8910086.html#a95dad66d300eac304a3e5f94d8910086">tinstant_make_free</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> temptype, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t)</td></tr>
+<tr class="memitem:a95dad66d300eac304a3e5f94d8910086"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tinstant_8c_a95dad66d300eac304a3e5f94d8910086.html#a95dad66d300eac304a3e5f94d8910086">tinstant_make_free</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> temptype, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t)</td></tr>
 <tr class="memdesc:a95dad66d300eac304a3e5f94d8910086"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal instant created from the values and free the base value after the creation.  <a href="tinstant_8c_a95dad66d300eac304a3e5f94d8910086.html#a95dad66d300eac304a3e5f94d8910086">More...</a><br /></td></tr>
 <tr class="separator:a95dad66d300eac304a3e5f94d8910086"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9677f7566ab31755a6f92860306c3720"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__inout_ga9677f7566ab31755a6f92860306c3720.html#ga9677f7566ab31755a6f92860306c3720">tinstant_out</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst, int maxdd)</td></tr>
@@ -144,7 +144,7 @@ Functions</h2></td></tr>
 <tr class="memitem:gad9bbeacb20a3c4374393f471cc517636"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__accessor_gad9bbeacb20a3c4374393f471cc517636.html#gad9bbeacb20a3c4374393f471cc517636">tinstant_timestamps</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst, int *count)</td></tr>
 <tr class="memdesc:gad9bbeacb20a3c4374393f471cc517636"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the singleton array of timestamps of a temporal instant.  <a href="group__meos__internal__temporal__accessor_gad9bbeacb20a3c4374393f471cc517636.html#gad9bbeacb20a3c4374393f471cc517636">More...</a><br /></td></tr>
 <tr class="separator:gad9bbeacb20a3c4374393f471cc517636"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab42636c5ec100b5b0463e2745de6167e"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tinstant_8c_ab42636c5ec100b5b0463e2745de6167e.html#ab42636c5ec100b5b0463e2745de6167e">tinstant_to_string</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst, int maxdd, <a class="el" href="meos_2include_2general_2temporal_8h_aaa33a6fdb39a479161961f963bef1a97.html#aaa33a6fdb39a479161961f963bef1a97">outfunc</a> value_out)</td></tr>
+<tr class="memitem:ab42636c5ec100b5b0463e2745de6167e"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tinstant_8c_ab42636c5ec100b5b0463e2745de6167e.html#ab42636c5ec100b5b0463e2745de6167e">tinstant_to_string</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst, int maxdd, <a class="el" href="meos_2include_2temporal_2temporal_8h_aaa33a6fdb39a479161961f963bef1a97.html#aaa33a6fdb39a479161961f963bef1a97">outfunc</a> value_out)</td></tr>
 <tr class="memdesc:ab42636c5ec100b5b0463e2745de6167e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the Well-Known Text (WKT) representation of a temporal instant.  <a href="tinstant_8c_ab42636c5ec100b5b0463e2745de6167e.html#ab42636c5ec100b5b0463e2745de6167e">More...</a><br /></td></tr>
 <tr class="separator:ab42636c5ec100b5b0463e2745de6167e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga55ac9200c87673ee445a160a8cd61335"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__temporal__accessor_ga55ac9200c87673ee445a160a8cd61335.html#ga55ac9200c87673ee445a160a8cd61335">tinstant_value</a> (const <a class="el" href="structTInstant.html">TInstant</a> *inst)</td></tr>

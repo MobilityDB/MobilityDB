@@ -88,14 +88,14 @@ $(function() {
 <code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="include_2general_2stratnum_8h_source.html">general/stratnum.h</a>&quot;</code><br />
-<code>#include &quot;general/span.h&quot;</code><br />
-<code>#include &quot;general/type_util.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="include_2temporal_2stratnum_8h_source.html">temporal/stratnum.h</a>&quot;</code><br />
+<code>#include &quot;temporal/span.h&quot;</code><br />
+<code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="stbox_8h_source.html">geo/stbox.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="stbox__index_8h_source.html">geo/stbox_index.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__general_2meos__catalog_8h_source.html">pg_general/meos_catalog.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__general_2temporal_8h_source.html">pg_general/temporal.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="tnumber__gist_8h_source.html">pg_general/tnumber_gist.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2meos__catalog_8h_source.html">pg_temporal/meos_catalog.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_source.html">pg_temporal/temporal.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tnumber__gist_8h_source.html">pg_temporal/tnumber_gist.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -132,7 +132,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a32b033d53fe1525afc0537ced47b20b7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__gist_8c_a32b033d53fe1525afc0537ced47b20b7.html#a32b033d53fe1525afc0537ced47b20b7">Tspatial_gist_compress</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:a32b033d53fe1525afc0537ced47b20b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">GiST compress methods for temporal spatial values.  <a href="tspatial__gist_8c_a32b033d53fe1525afc0537ced47b20b7.html#a32b033d53fe1525afc0537ced47b20b7">More...</a><br /></td></tr>
 <tr class="separator:a32b033d53fe1525afc0537ced47b20b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad4f98705ef53688697e4b6abf55648f1"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__gist_8c_ad4f98705ef53688697e4b6abf55648f1.html#ad4f98705ef53688697e4b6abf55648f1">tspatial_gist_get_stbox</a> (FunctionCallInfo fcinfo, <a class="el" href="structSTBox.html">STBox</a> *result, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type)</td></tr>
+<tr class="memitem:ad4f98705ef53688697e4b6abf55648f1"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__gist_8c_ad4f98705ef53688697e4b6abf55648f1.html#ad4f98705ef53688697e4b6abf55648f1">tspatial_gist_get_stbox</a> (FunctionCallInfo fcinfo, <a class="el" href="structSTBox.html">STBox</a> *result, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type)</td></tr>
 <tr class="memdesc:ad4f98705ef53688697e4b6abf55648f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform a query argument into a box initializing the dimensions that must not be taken into account by the operators to infinity.  <a href="tspatial__gist_8c_ad4f98705ef53688697e4b6abf55648f1.html#ad4f98705ef53688697e4b6abf55648f1">More...</a><br /></td></tr>
 <tr class="separator:ad4f98705ef53688697e4b6abf55648f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>

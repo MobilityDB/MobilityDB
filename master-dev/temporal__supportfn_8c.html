@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: mobilitydb/src/general/temporal_supportfn.c File Reference</title>
+<title>MobilityDB: mobilitydb/src/temporal/temporal_supportfn.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_b060bd5020a833a37671e1e10417da21.html">mobilitydb</a></li><li class="navelem"><a class="el" href="dir_c9f6390d5d8264054b7997353d94a8b4.html">src</a></li><li class="navelem"><a class="el" href="dir_e766d69d99f3b77fddbceae09651963b.html">general</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_b060bd5020a833a37671e1e10417da21.html">mobilitydb</a></li><li class="navelem"><a class="el" href="dir_c9f6390d5d8264054b7997353d94a8b4.html">src</a></li><li class="navelem"><a class="el" href="dir_0efae76be7137e75d3e4b51facc25044.html">temporal</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -96,9 +96,9 @@ $(function() {
 <code>#include &lt;parser/parse_func.h&gt;</code><br />
 <code>#include &lt;utils/syscache.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
-<code>#include &quot;general/temporal_boxops.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__general_2meos__catalog_8h_source.html">pg_general/meos_catalog.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="temporal__selfuncs_8h_source.html">pg_general/temporal_selfuncs.h</a>&quot;</code><br />
+<code>#include &quot;temporal/temporal_boxops.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2meos__catalog_8h_source.html">pg_temporal/meos_catalog.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="temporal__selfuncs_8h_source.html">pg_temporal/temporal_selfuncs.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
@@ -140,9 +140,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a3fea779055d0d1c835c18ceff59af1be"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="postgres__ext_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_a3fea779055d0d1c835c18ceff59af1be.html#a3fea779055d0d1c835c18ceff59af1be">opFamilyAmOid</a> (<a class="el" href="postgres__ext_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a> opfamilyoid)</td></tr>
 <tr class="memdesc:a3fea779055d0d1c835c18ceff59af1be"><td class="mdescLeft">&#160;</td><td class="mdescRight">We only add index enhancements for indexes that support range-based searches like the &amp;&amp; operator), so only implementations based on GIST and SPGIST.  <a href="temporal__supportfn_8c_a3fea779055d0d1c835c18ceff59af1be.html#a3fea779055d0d1c835c18ceff59af1be">More...</a><br /></td></tr>
 <tr class="separator:a3fea779055d0d1c835c18ceff59af1be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa6bbb1957ffe60ef95516a6c58dbe32f"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos_2include_2general_2meos__catalog_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_aa6bbb1957ffe60ef95516a6c58dbe32f.html#aa6bbb1957ffe60ef95516a6c58dbe32f">temporal_get_strategy_by_type</a> (<a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> temptype, uint16_t index)</td></tr>
+<tr class="memitem:aa6bbb1957ffe60ef95516a6c58dbe32f"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="postgres__ext__defs_8in_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_aa6bbb1957ffe60ef95516a6c58dbe32f.html#aa6bbb1957ffe60ef95516a6c58dbe32f">temporal_get_strategy_by_type</a> (<a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> temptype, uint16_t index)</td></tr>
 <tr class="separator:aa6bbb1957ffe60ef95516a6c58dbe32f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f885a0c19d8207ac55b36aec7d2d4eb"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_a4f885a0c19d8207ac55b36aec7d2d4eb.html#a4f885a0c19d8207ac55b36aec7d2d4eb">Temporal_supportfn</a> (FunctionCallInfo fcinfo, <a class="el" href="meos_2include_2general_2temporal_8h_ac8403a67349a4b7270327a29cf9c250b.html#ac8403a67349a4b7270327a29cf9c250b">TemporalFamily</a> tempfamily)</td></tr>
+<tr class="memitem:a4f885a0c19d8207ac55b36aec7d2d4eb"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_a4f885a0c19d8207ac55b36aec7d2d4eb.html#a4f885a0c19d8207ac55b36aec7d2d4eb">Temporal_supportfn</a> (FunctionCallInfo fcinfo, <a class="el" href="meos_2include_2temporal_2temporal_8h_ac8403a67349a4b7270327a29cf9c250b.html#ac8403a67349a4b7270327a29cf9c250b">TemporalFamily</a> tempfamily)</td></tr>
 <tr class="memdesc:a4f885a0c19d8207ac55b36aec7d2d4eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">For functions that we want enhanced with spatial index lookups, add this support function to the SQL function definition, for example:  <a href="temporal__supportfn_8c_a4f885a0c19d8207ac55b36aec7d2d4eb.html#a4f885a0c19d8207ac55b36aec7d2d4eb">More...</a><br /></td></tr>
 <tr class="separator:a4f885a0c19d8207ac55b36aec7d2d4eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abdad451ea831adc74c90739145761903"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_abdad451ea831adc74c90739145761903.html#abdad451ea831adc74c90739145761903">Tnumber_supportfn</a> (PG_FUNCTION_ARGS)</td></tr>
@@ -151,7 +151,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a491014dad9e232351be009b19bdd09fd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_a491014dad9e232351be009b19bdd09fd.html#a491014dad9e232351be009b19bdd09fd">Tspatial_supportfn</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:a491014dad9e232351be009b19bdd09fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Support function for temporal number types.  <a href="temporal__supportfn_8c_a491014dad9e232351be009b19bdd09fd.html#a491014dad9e232351be009b19bdd09fd">More...</a><br /></td></tr>
 <tr class="separator:a491014dad9e232351be009b19bdd09fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af5e13e09cdbdb75330dd3a745a3d8b1c"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_af5e13e09cdbdb75330dd3a745a3d8b1c.html#af5e13e09cdbdb75330dd3a745a3d8b1c">type_to_bbox</a> (<a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type)</td></tr>
+<tr class="memitem:af5e13e09cdbdb75330dd3a745a3d8b1c"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_af5e13e09cdbdb75330dd3a745a3d8b1c.html#af5e13e09cdbdb75330dd3a745a3d8b1c">type_to_bbox</a> (<a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type)</td></tr>
 <tr class="memdesc:af5e13e09cdbdb75330dd3a745a3d8b1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform the constant into a bounding box.  <a href="temporal__supportfn_8c_af5e13e09cdbdb75330dd3a745a3d8b1c.html#af5e13e09cdbdb75330dd3a745a3d8b1c">More...</a><br /></td></tr>
 <tr class="separator:af5e13e09cdbdb75330dd3a745a3d8b1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -161,11 +161,11 @@ Variables</h2></td></tr>
 <tr class="separator:a234fac74c977494055fe1a1e979f62e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c34446963389da7cd6587e4a13fcab4"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structIndexableFunction.html">IndexableFunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_a1c34446963389da7cd6587e4a13fcab4.html#a1c34446963389da7cd6587e4a13fcab4">TNumberIndexableFunctions</a> []</td></tr>
 <tr class="separator:a1c34446963389da7cd6587e4a13fcab4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abdad065302e62f8965c5667eca9e28e4"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="meos_2include_2general_2meos__catalog_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_abdad065302e62f8965c5667eca9e28e4.html#abdad065302e62f8965c5667eca9e28e4">TNumberStrategies</a> []</td></tr>
+<tr class="memitem:abdad065302e62f8965c5667eca9e28e4"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="postgres__ext__defs_8in_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_abdad065302e62f8965c5667eca9e28e4.html#abdad065302e62f8965c5667eca9e28e4">TNumberStrategies</a> []</td></tr>
 <tr class="separator:abdad065302e62f8965c5667eca9e28e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a46e0c68f470bd467c792aa9c5e0b8797"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structIndexableFunction.html">IndexableFunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_a46e0c68f470bd467c792aa9c5e0b8797.html#a46e0c68f470bd467c792aa9c5e0b8797">TSpatialIndexableFunctions</a> []</td></tr>
 <tr class="separator:a46e0c68f470bd467c792aa9c5e0b8797"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf4a9aaea7f29021b8a2fff4efbdfb86"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="meos_2include_2general_2meos__catalog_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_abf4a9aaea7f29021b8a2fff4efbdfb86.html#abf4a9aaea7f29021b8a2fff4efbdfb86">TSpatialStrategies</a> []</td></tr>
+<tr class="memitem:abf4a9aaea7f29021b8a2fff4efbdfb86"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="postgres__ext__defs_8in_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__supportfn_8c_abf4a9aaea7f29021b8a2fff4efbdfb86.html#abf4a9aaea7f29021b8a2fff4efbdfb86">TSpatialStrategies</a> []</td></tr>
 <tr class="separator:abf4a9aaea7f29021b8a2fff4efbdfb86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>

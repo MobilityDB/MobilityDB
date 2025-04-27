@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: mobilitydb/src/general/tnumber_spgist.c File Reference</title>
+<title>MobilityDB: mobilitydb/src/temporal/tnumber_spgist.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_b060bd5020a833a37671e1e10417da21.html">mobilitydb</a></li><li class="navelem"><a class="el" href="dir_c9f6390d5d8264054b7997353d94a8b4.html">src</a></li><li class="navelem"><a class="el" href="dir_e766d69d99f3b77fddbceae09651963b.html">general</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_b060bd5020a833a37671e1e10417da21.html">mobilitydb</a></li><li class="navelem"><a class="el" href="dir_c9f6390d5d8264054b7997353d94a8b4.html">src</a></li><li class="navelem"><a class="el" href="dir_0efae76be7137e75d3e4b51facc25044.html">temporal</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -84,7 +84,7 @@ $(function() {
 
 <p>SP-GiST implementation of 4-dimensional quad-tree and kd-tree over temporal integers and temporal floats.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="tnumber__spgist_8h_source.html">pg_general/tnumber_spgist.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="tnumber__spgist_8h_source.html">pg_temporal/tnumber_spgist.h</a>&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="float_8h_source.html">float.h</a>&gt;</code><br />
 <code>#include &lt;limits.h&gt;</code><br />
@@ -93,15 +93,15 @@ $(function() {
 <code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
-<code>#include &quot;general/span.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="include_2general_2stratnum_8h_source.html">general/stratnum.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="tbox_8h_source.html">general/tbox.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="tbox__index_8h_source.html">general/tbox_index.h</a>&quot;</code><br />
-<code>#include &quot;general/type_util.h&quot;</code><br />
+<code>#include &quot;temporal/span.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="include_2temporal_2stratnum_8h_source.html">temporal/stratnum.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tbox_8h_source.html">temporal/tbox.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tbox__index_8h_source.html">temporal/tbox_index.h</a>&quot;</code><br />
+<code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="cbuffer_8h_source.html">cbuffer/cbuffer.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__general_2meos__catalog_8h_source.html">pg_general/meos_catalog.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__general_2temporal_8h_source.html">pg_general/temporal.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="tnumber__gist_8h_source.html">pg_general/tnumber_gist.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2meos__catalog_8h_source.html">pg_temporal/meos_catalog.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_source.html">pg_temporal/temporal.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tnumber__gist_8h_source.html">pg_temporal/tnumber_gist.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
@@ -188,7 +188,7 @@ Functions</h2></td></tr>
 <tr class="memitem:afafaacb535ebe10e534d448983b2807a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__spgist_8c_afafaacb535ebe10e534d448983b2807a.html#afafaacb535ebe10e534d448983b2807a">Tbox_spgist_config</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:afafaacb535ebe10e534d448983b2807a"><td class="mdescLeft">&#160;</td><td class="mdescRight">SP-GiST config function for temporal numbers.  <a href="tnumber__spgist_8c_afafaacb535ebe10e534d448983b2807a.html#afafaacb535ebe10e534d448983b2807a">More...</a><br /></td></tr>
 <tr class="separator:afafaacb535ebe10e534d448983b2807a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a73fdd04df7cecd5e3f7656c4f7a0f6f3"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__spgist_8c_a73fdd04df7cecd5e3f7656c4f7a0f6f3.html#a73fdd04df7cecd5e3f7656c4f7a0f6f3">tbox_spgist_inner_consistent</a> (FunctionCallInfo fcinfo, <a class="el" href="mobilitydb_2pg__include_2pg__general_2temporal_8h_aedaaf18d83155150aa88bf91c8304cf9.html#aedaaf18d83155150aa88bf91c8304cf9">SPGistIndexType</a> idxtype)</td></tr>
+<tr class="memitem:a73fdd04df7cecd5e3f7656c4f7a0f6f3"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__spgist_8c_a73fdd04df7cecd5e3f7656c4f7a0f6f3.html#a73fdd04df7cecd5e3f7656c4f7a0f6f3">tbox_spgist_inner_consistent</a> (FunctionCallInfo fcinfo, <a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_aedaaf18d83155150aa88bf91c8304cf9.html#aedaaf18d83155150aa88bf91c8304cf9">SPGistIndexType</a> idxtype)</td></tr>
 <tr class="memdesc:a73fdd04df7cecd5e3f7656c4f7a0f6f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic SP-GiST inner consistent function for temporal numbers.  <a href="tnumber__spgist_8c_a73fdd04df7cecd5e3f7656c4f7a0f6f3.html#a73fdd04df7cecd5e3f7656c4f7a0f6f3">More...</a><br /></td></tr>
 <tr class="separator:a73fdd04df7cecd5e3f7656c4f7a0f6f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef1d318a7c57c8e4356876871b54669a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tnumber__spgist_8c_aef1d318a7c57c8e4356876871b54669a.html#aef1d318a7c57c8e4356876871b54669a">Tbox_spgist_leaf_consistent</a> (PG_FUNCTION_ARGS)</td></tr>

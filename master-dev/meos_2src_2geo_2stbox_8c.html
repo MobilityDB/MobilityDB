@@ -91,13 +91,13 @@ $(function() {
 <code>#include &lt;lwgeodetic.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="pg__types_8h_source.html">general/pg_types.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="set_8h_source.html">general/set.h</a>&quot;</code><br />
-<code>#include &quot;general/span.h&quot;</code><br />
-<code>#include &quot;general/spanset.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="tnumber__mathfuncs_8h_source.html">general/tnumber_mathfuncs.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="type__inout_8h_source.html">general/type_inout.h</a>&quot;</code><br />
-<code>#include &quot;general/type_util.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="pg__types_8h_source.html">temporal/pg_types.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
+<code>#include &quot;temporal/span.h&quot;</code><br />
+<code>#include &quot;temporal/spanset.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="tnumber__mathfuncs_8h_source.html">temporal/tnumber_mathfuncs.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="type__inout_8h_source.html">temporal/type_inout.h</a>&quot;</code><br />
+<code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="postgis__funcs_8h_source.html">geo/postgis_funcs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
 <code>#include &quot;geo/tspatial.h&quot;</code><br />
@@ -213,7 +213,7 @@ Functions</h2></td></tr>
 <tr class="memitem:gadcec1437c602783add265ff26b835635"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__box__topo_gadcec1437c602783add265ff26b835635.html#gadcec1437c602783add265ff26b835635">same_stbox_stbox</a> (const <a class="el" href="structSTBox.html">STBox</a> *box1, const <a class="el" href="structSTBox.html">STBox</a> *box2)</td></tr>
 <tr class="memdesc:gadcec1437c602783add265ff26b835635"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the spatiotemporal boxes are equal in the common dimensions.  <a href="group__meos__geo__box__topo_gadcec1437c602783add265ff26b835635.html#gadcec1437c602783add265ff26b835635">More...</a><br /></td></tr>
 <tr class="separator:gadcec1437c602783add265ff26b835635"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga34f27573ea667680fce13cdc6f99d536"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__box__conversion_ga34f27573ea667680fce13cdc6f99d536.html#ga34f27573ea667680fce13cdc6f99d536">spatial_set_stbox</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> d, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> basetype, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
+<tr class="memitem:ga34f27573ea667680fce13cdc6f99d536"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__box__conversion_ga34f27573ea667680fce13cdc6f99d536.html#ga34f27573ea667680fce13cdc6f99d536">spatial_set_stbox</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> d, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> basetype, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
 <tr class="memdesc:ga34f27573ea667680fce13cdc6f99d536"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument a spatiotemporal box constructed from a spatial base value.  <a href="group__meos__internal__box__conversion_ga34f27573ea667680fce13cdc6f99d536.html#ga34f27573ea667680fce13cdc6f99d536">More...</a><br /></td></tr>
 <tr class="separator:ga34f27573ea667680fce13cdc6f99d536"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga08df075179ba2b3f9a538209096f3048"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__box__accessor_ga08df075179ba2b3f9a538209096f3048.html#ga08df075179ba2b3f9a538209096f3048">stbox_area</a> (const <a class="el" href="structSTBox.html">STBox</a> *box, <a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a> spheroid)</td></tr>

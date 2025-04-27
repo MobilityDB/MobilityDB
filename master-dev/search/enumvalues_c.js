@@ -26,11 +26,11 @@ var searchData=
   ['meos_5fseg_5ftouch_23',['MEOS_SEG_TOUCH',['../tpoint__spatialfuncs_8c_adc29c2ff13d900c2f185ee95427fb06c.html#adc29c2ff13d900c2f185ee95427fb06cab90c0ba9e014be15df9a10371dcb1077',1,'tpoint_spatialfuncs.c']]],
   ['meos_5fseg_5ftouch_5fend_24',['MEOS_SEG_TOUCH_END',['../tpoint__spatialfuncs_8c_adc29c2ff13d900c2f185ee95427fb06c.html#adc29c2ff13d900c2f185ee95427fb06ca3e58b2b3a31c85d47481eba9b4be1e03',1,'tpoint_spatialfuncs.c']]],
   ['meos_5fsuccess_25',['MEOS_SUCCESS',['../meos_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a3d1ad79344368c7cac78a59eb5984e85',1,'meos.h']]],
-  ['meos_5fwkb_5ftinstant_26',['MEOS_WKB_TINSTANT',['../meos_2include_2general_2temporal_8h_a0c1fd7bc66128eeb4ac2e8fe821cdc17.html#a0c1fd7bc66128eeb4ac2e8fe821cdc17a75d8eefb8ec0bb20cce6b755a3fec010',1,'temporal.h']]],
-  ['meos_5fwkb_5ftsequence_27',['MEOS_WKB_TSEQUENCE',['../meos_2include_2general_2temporal_8h_a0c1fd7bc66128eeb4ac2e8fe821cdc17.html#a0c1fd7bc66128eeb4ac2e8fe821cdc17a62e525eaa210b4717f78516920c91153',1,'temporal.h']]],
-  ['meos_5fwkb_5ftsequenceset_28',['MEOS_WKB_TSEQUENCESET',['../meos_2include_2general_2temporal_8h_a0c1fd7bc66128eeb4ac2e8fe821cdc17.html#a0c1fd7bc66128eeb4ac2e8fe821cdc17a5486d9d556dae3c052c0d2a20ecf011f',1,'temporal.h']]],
-  ['minus_29',['MINUS',['../meos_2include_2general_2temporal_8h_aea6d16f68cc33ad5b54e68733eded97b.html#aea6d16f68cc33ad5b54e68733eded97baf613d73b4e7b570ffd967df4a13c4225',1,'temporal.h']]],
-  ['minus_5fop_30',['MINUS_OP',['../meos_2include_2general_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073a70e3b26ad7f7ab25c44fc4b0a48c4417',1,'meos_catalog.h']]],
+  ['meos_5fwkb_5ftinstant_26',['MEOS_WKB_TINSTANT',['../meos_2include_2temporal_2temporal_8h_a0c1fd7bc66128eeb4ac2e8fe821cdc17.html#a0c1fd7bc66128eeb4ac2e8fe821cdc17a75d8eefb8ec0bb20cce6b755a3fec010',1,'temporal.h']]],
+  ['meos_5fwkb_5ftsequence_27',['MEOS_WKB_TSEQUENCE',['../meos_2include_2temporal_2temporal_8h_a0c1fd7bc66128eeb4ac2e8fe821cdc17.html#a0c1fd7bc66128eeb4ac2e8fe821cdc17a62e525eaa210b4717f78516920c91153',1,'temporal.h']]],
+  ['meos_5fwkb_5ftsequenceset_28',['MEOS_WKB_TSEQUENCESET',['../meos_2include_2temporal_2temporal_8h_a0c1fd7bc66128eeb4ac2e8fe821cdc17.html#a0c1fd7bc66128eeb4ac2e8fe821cdc17a5486d9d556dae3c052c0d2a20ecf011f',1,'temporal.h']]],
+  ['minus_29',['MINUS',['../meos_2include_2temporal_2temporal_8h_aea6d16f68cc33ad5b54e68733eded97b.html#aea6d16f68cc33ad5b54e68733eded97baf613d73b4e7b570ffd967df4a13c4225',1,'temporal.h']]],
+  ['minus_5fop_30',['MINUS_OP',['../meos_2include_2temporal_2meos__catalog_8h_a9d2c38a262c542ace7725e0703732073.html#a9d2c38a262c542ace7725e0703732073a70e3b26ad7f7ab25c44fc4b0a48c4417',1,'meos_catalog.h']]],
   ['month_5fnth_5fday_5fof_5fweek_31',['MONTH_NTH_DAY_OF_WEEK',['../localtime_8c_a6758906d192525c28ae9b1960626add4.html#a6758906d192525c28ae9b1960626add4a914404bce86d70e1e9cdcac1090e4fe8',1,'localtime.c']]],
   ['mult_32',['MULT',['../tnumber__mathfuncs_8h_ab9654814a05e2032f6a912760d2f8092.html#ab9654814a05e2032f6a912760d2f8092a18a2956fb463e60c1a099d6d69e2c0ef',1,'tnumber_mathfuncs.h']]]
 ];

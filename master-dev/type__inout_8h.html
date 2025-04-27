@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos/include/general/type_inout.h File Reference</title>
+<title>MobilityDB: meos/include/temporal/type_inout.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_8c13b810ba29739bffadb2426a4b1e5d.html">general</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_aa92cce0f61242abd286802b3a4d1fb4.html">temporal</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="postgres_8h_source.html">postgres.h</a>&gt;</code><br />
-<code>#include &quot;general/meos_catalog.h&quot;</code><br />
+<code>#include &quot;temporal/meos_catalog.h&quot;</code><br />
 </div>
 <p><a href="type__inout_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -103,16 +103,16 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a9d44c1a6f2316ad9ae08c90b87e30119"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__inout_8h_a9d44c1a6f2316ad9ae08c90b87e30119.html#a9d44c1a6f2316ad9ae08c90b87e30119">datum_as_hexwkb</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type, uint8_t variant, size_t *size)</td></tr>
+<tr class="memitem:a9d44c1a6f2316ad9ae08c90b87e30119"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__inout_8h_a9d44c1a6f2316ad9ae08c90b87e30119.html#a9d44c1a6f2316ad9ae08c90b87e30119">datum_as_hexwkb</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type, uint8_t variant, size_t *size)</td></tr>
 <tr class="memdesc:a9d44c1a6f2316ad9ae08c90b87e30119"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the HexWKB representation of a datum value.  <a href="type__inout_8h_a9d44c1a6f2316ad9ae08c90b87e30119.html#a9d44c1a6f2316ad9ae08c90b87e30119">More...</a><br /></td></tr>
 <tr class="separator:a9d44c1a6f2316ad9ae08c90b87e30119"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09da3cbbbde7d133c71219a879ea4068"><td class="memItemLeft" align="right" valign="top">uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__inout_8h_a09da3cbbbde7d133c71219a879ea4068.html#a09da3cbbbde7d133c71219a879ea4068">datum_as_wkb</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type, uint8_t variant, size_t *size_out)</td></tr>
+<tr class="memitem:a09da3cbbbde7d133c71219a879ea4068"><td class="memItemLeft" align="right" valign="top">uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__inout_8h_a09da3cbbbde7d133c71219a879ea4068.html#a09da3cbbbde7d133c71219a879ea4068">datum_as_wkb</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type, uint8_t variant, size_t *size_out)</td></tr>
 <tr class="memdesc:a09da3cbbbde7d133c71219a879ea4068"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the WKB representation of a datum value.  <a href="type__inout_8h_a09da3cbbbde7d133c71219a879ea4068.html#a09da3cbbbde7d133c71219a879ea4068">More...</a><br /></td></tr>
 <tr class="separator:a09da3cbbbde7d133c71219a879ea4068"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24cc970667b41d732fd8432410bfec7a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__inout_8h_a24cc970667b41d732fd8432410bfec7a.html#a24cc970667b41d732fd8432410bfec7a">type_from_hexwkb</a> (const char *hexwkb, size_t size, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type)</td></tr>
+<tr class="memitem:a24cc970667b41d732fd8432410bfec7a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__inout_8h_a24cc970667b41d732fd8432410bfec7a.html#a24cc970667b41d732fd8432410bfec7a">type_from_hexwkb</a> (const char *hexwkb, size_t size, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type)</td></tr>
 <tr class="memdesc:a24cc970667b41d732fd8432410bfec7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a value from its HexEWKB representation.  <a href="type__inout_8h_a24cc970667b41d732fd8432410bfec7a.html#a24cc970667b41d732fd8432410bfec7a">More...</a><br /></td></tr>
 <tr class="separator:a24cc970667b41d732fd8432410bfec7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adee03036a0ad07b059b667c81eeea60c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__inout_8h_adee03036a0ad07b059b667c81eeea60c.html#adee03036a0ad07b059b667c81eeea60c">type_from_wkb</a> (const uint8_t *wkb, size_t size, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type)</td></tr>
+<tr class="memitem:adee03036a0ad07b059b667c81eeea60c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="type__inout_8h_adee03036a0ad07b059b667c81eeea60c.html#adee03036a0ad07b059b667c81eeea60c">type_from_wkb</a> (const uint8_t *wkb, size_t size, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> type)</td></tr>
 <tr class="memdesc:adee03036a0ad07b059b667c81eeea60c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a value from its Well-Known Binary (WKB) representation.  <a href="type__inout_8h_adee03036a0ad07b059b667c81eeea60c.html#adee03036a0ad07b059b667c81eeea60c">More...</a><br /></td></tr>
 <tr class="separator:adee03036a0ad07b059b667c81eeea60c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>

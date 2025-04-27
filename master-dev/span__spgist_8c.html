@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: mobilitydb/src/general/span_spgist.c File Reference</title>
+<title>MobilityDB: mobilitydb/src/temporal/span_spgist.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_b060bd5020a833a37671e1e10417da21.html">mobilitydb</a></li><li class="navelem"><a class="el" href="dir_c9f6390d5d8264054b7997353d94a8b4.html">src</a></li><li class="navelem"><a class="el" href="dir_e766d69d99f3b77fddbceae09651963b.html">general</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_b060bd5020a833a37671e1e10417da21.html">mobilitydb</a></li><li class="navelem"><a class="el" href="dir_c9f6390d5d8264054b7997353d94a8b4.html">src</a></li><li class="navelem"><a class="el" href="dir_0efae76be7137e75d3e4b51facc25044.html">temporal</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -92,13 +92,13 @@ $(function() {
 <code>#include &lt;<a class="el" href="timestamp_8h_source.html">utils/timestamp.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="set_8h_source.html">general/set.h</a>&quot;</code><br />
-<code>#include &quot;general/span.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="span__index_8h_source.html">general/span_index.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="include_2general_2stratnum_8h_source.html">general/stratnum.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__general_2meos__catalog_8h_source.html">pg_general/meos_catalog.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__general_2spanset_8h_source.html">pg_general/spanset.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__general_2temporal_8h_source.html">pg_general/temporal.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
+<code>#include &quot;temporal/span.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="span__index_8h_source.html">temporal/span_index.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="include_2temporal_2stratnum_8h_source.html">temporal/stratnum.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2meos__catalog_8h_source.html">pg_temporal/meos_catalog.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2spanset_8h_source.html">pg_temporal/spanset.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_source.html">pg_temporal/temporal.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
@@ -186,7 +186,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a8d900b6d09fc75b2d8ce3f38bf28f83a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="c_8h_a97a80ca1602ebf2303258971a2c938e2.html#a97a80ca1602ebf2303258971a2c938e2">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__spgist_8c_a8d900b6d09fc75b2d8ce3f38bf28f83a.html#a8d900b6d09fc75b2d8ce3f38bf28f83a">span_spgist_get_span</a> (const ScanKeyData *scankey, <a class="el" href="structSpan.html">Span</a> *result)</td></tr>
 <tr class="memdesc:a8d900b6d09fc75b2d8ce3f38bf28f83a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform a query argument into a span.  <a href="span__spgist_8c_a8d900b6d09fc75b2d8ce3f38bf28f83a.html#a8d900b6d09fc75b2d8ce3f38bf28f83a">More...</a><br /></td></tr>
 <tr class="separator:a8d900b6d09fc75b2d8ce3f38bf28f83a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:accefa1b0655c70035db9d300eb21637c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__spgist_8c_accefa1b0655c70035db9d300eb21637c.html#accefa1b0655c70035db9d300eb21637c">Span_spgist_inner_consistent</a> (FunctionCallInfo fcinfo, <a class="el" href="mobilitydb_2pg__include_2pg__general_2temporal_8h_aedaaf18d83155150aa88bf91c8304cf9.html#aedaaf18d83155150aa88bf91c8304cf9">SPGistIndexType</a> idxtype)</td></tr>
+<tr class="memitem:accefa1b0655c70035db9d300eb21637c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__spgist_8c_accefa1b0655c70035db9d300eb21637c.html#accefa1b0655c70035db9d300eb21637c">Span_spgist_inner_consistent</a> (FunctionCallInfo fcinfo, <a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_aedaaf18d83155150aa88bf91c8304cf9.html#aedaaf18d83155150aa88bf91c8304cf9">SPGistIndexType</a> idxtype)</td></tr>
 <tr class="memdesc:accefa1b0655c70035db9d300eb21637c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic SP-GiST inner consistent function for span types.  <a href="span__spgist_8c_accefa1b0655c70035db9d300eb21637c.html#accefa1b0655c70035db9d300eb21637c">More...</a><br /></td></tr>
 <tr class="separator:accefa1b0655c70035db9d300eb21637c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b1ea4b5a2a51128a8b1d1859666411e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__spgist_8c_a4b1ea4b5a2a51128a8b1d1859666411e.html#a4b1ea4b5a2a51128a8b1d1859666411e">Span_spgist_leaf_consistent</a> (PG_FUNCTION_ARGS)</td></tr>
@@ -198,7 +198,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a155f262fa53849f0919c8be91d18dfb0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSpanNode.html">SpanNode</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__spgist_8c_a155f262fa53849f0919c8be91d18dfb0.html#a155f262fa53849f0919c8be91d18dfb0">spannode_copy</a> (const <a class="el" href="structSpanNode.html">SpanNode</a> *orig)</td></tr>
 <tr class="memdesc:a155f262fa53849f0919c8be91d18dfb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy a traversal value.  <a href="span__spgist_8c_a155f262fa53849f0919c8be91d18dfb0.html#a155f262fa53849f0919c8be91d18dfb0">More...</a><br /></td></tr>
 <tr class="separator:a155f262fa53849f0919c8be91d18dfb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af7027dc0ebf466cb60471ced39113075"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__spgist_8c_af7027dc0ebf466cb60471ced39113075.html#af7027dc0ebf466cb60471ced39113075">spannode_init</a> (<a class="el" href="structSpanNode.html">SpanNode</a> *nodebox, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> spantype, <a class="el" href="meos_2include_2general_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> basetype)</td></tr>
+<tr class="memitem:af7027dc0ebf466cb60471ced39113075"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__spgist_8c_af7027dc0ebf466cb60471ced39113075.html#af7027dc0ebf466cb60471ced39113075">spannode_init</a> (<a class="el" href="structSpanNode.html">SpanNode</a> *nodebox, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> spantype, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a0b32bc8e8dd442c3e430ac0fb9958e87.html#a0b32bc8e8dd442c3e430ac0fb9958e87">meosType</a> basetype)</td></tr>
 <tr class="memdesc:af7027dc0ebf466cb60471ced39113075"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the traversal value.  <a href="span__spgist_8c_af7027dc0ebf466cb60471ced39113075.html#af7027dc0ebf466cb60471ced39113075">More...</a><br /></td></tr>
 <tr class="separator:af7027dc0ebf466cb60471ced39113075"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3dc1a7328970e0d1a6f3a64392ca4834"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="span__spgist_8c_a3dc1a7328970e0d1a6f3a64392ca4834.html#a3dc1a7328970e0d1a6f3a64392ca4834">spannode_kdtree_next</a> (const <a class="el" href="structSpanNode.html">SpanNode</a> *nodebox, const <a class="el" href="structSpan.html">Span</a> *<a class="el" href="postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191.html#a3c50bb0dc24be98daf8640f9e4cc3191">centroid</a>, <a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a> node, int level, <a class="el" href="structSpanNode.html">SpanNode</a> *next_nodespan)</td></tr>
