@@ -29,14 +29,9 @@
 
 /**
  * @file
- * @brief Bounding box operators for temporal circular buffer
- *
- * These operators test the bounding boxes of temporal circular buffers, which
- * are @p STBox boxes. The following operators are defined:
- *    @p overlaps, @p contains, @p contained, @p same
- * The operators consider as many dimensions as they are shared in both
- * arguments: only the space dimension, only the time dimension, or both
- * the space and the time dimensions.
+ * @brief Bounding box functions for temporal circular buffer
+ * @details These functions are used for computing the bounding boxes upon
+ * creation of the temporal circular buffers.
  */
 
 #include "cbuffer/tcbuffer_boxops.h"

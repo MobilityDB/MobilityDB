@@ -57,28 +57,64 @@ extern Datum datum_geom_dwithin2d(Datum geom1, Datum geom2, Datum dist);
 extern Datum datum_geom_dwithin3d(Datum geom1, Datum geom2, Datum dist);
 extern Datum datum_geog_dwithin(Datum geog1, Datum geog2, Datum dist);
 extern Datum datum_geom_relate_pattern(Datum geog1, Datum geog2, Datum p);
+extern Datum datum_geom_touches(Datum geom1, Datum geom2);
 
-extern datum_func2 get_disjoint_fn_geo(int16 flags1, uint8_t flags2);
-extern datum_func2 get_intersects_fn(int16 flags1, int16 flags2);
-extern datum_func2 get_intersects_fn_geo(int16 flags1, uint8_t flags2);
-extern datum_func3 get_dwithin_fn(int16 flags1, int16 flags2);
-extern datum_func3 get_dwithin_fn_geo(int16 flags1, uint8_t flags2);
+extern datum_func2 geo_disjoint_fn(int16 flags1, int16 flags2);
+extern datum_func2 geo_disjoint_fn_geo(int16 flags1, uint8_t flags2);
+extern datum_func2 geo_intersects_fn(int16 flags1, int16 flags2);
+extern datum_func2 geo_intersects_fn_geo(int16 flags1, uint8_t flags2);
+extern datum_func3 geo_dwithin_fn(int16 flags1, int16 flags2);
+extern datum_func3 geo_dwithin_fn_geo(int16 flags1, uint8_t flags2);
 
-extern int tdwithin_add_solutions(int solutions, TimestampTz lower, 
-  TimestampTz upper, bool lower_inc, bool upper_inc, bool upper_inc1, 
-  TimestampTz t1, TimestampTz t2, TInstant **instants, TSequence **result);
-  
 /*****************************************************************************/
 
-extern int ea_dwithin_tgeo_tgeo_sync(const Temporal *sync1,
-  const Temporal *sync2, double dist, bool ever);
-extern int ea_dwithin_tgeo_tgeo(const Temporal *temp1,
-  const Temporal *temp2, double dist, bool ever);
-extern int ea_intersects_tgeo_tgeo(const Temporal *temp1,
-  const Temporal *temp2, bool ever);
-extern int ea_disjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
+extern int spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
+  Datum param, varfunc func, int numparam);
+
+extern int ea_contains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, 
+  bool ever);
+extern int ea_contains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever);
+extern int ea_contains_tgeo_tgeo(const Temporal *temp, const Temporal *temp2,
+  bool ever);
+  
+extern int ea_covers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
+  bool ever);
+extern int ea_covers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever);
+extern int ea_covers_tgeo_tgeo(const Temporal *temp, const Temporal *temp2,
   bool ever);
 
+extern int ea_disjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, 
+  bool ever);
+extern int ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever);
+extern int ea_disjoint_tgeo_tgeo(const Temporal *temp, const Temporal *temp2,
+  bool ever);
+
+extern int ea_intersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, 
+  bool ever);
+extern int ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever);
+extern int ea_intersects_tgeo_tgeo(const Temporal *temp, const Temporal *temp2,
+  bool ever);
+
+extern int ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever);
+extern int ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever);
+extern int ea_touches_tgeo_tgeo(const Temporal *temp, const Temporal *temp2,
+  bool ever);
+
+extern int ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  double dist, bool ever);
+extern int ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
+  double dist, bool ever);
+extern int ea_dwithin_tpoint_tpoint(const Temporal *temp1,
+  const Temporal *temp2, double dist, bool ever);
+
+extern int ea_spatialrel_tspatial_geo(const Temporal *temp,
+  const GSERIALIZED *gs, datum_func2 func, bool ever);
 extern int ea_spatialrel_tspatial_tspatial(const Temporal *temp1,
   const Temporal *temp2, datum_func2 func, bool ever);
   

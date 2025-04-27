@@ -857,6 +857,24 @@ geo_makeline_garray(GSERIALIZED **gsarr, int count)
   return geo_serialize(outlwg);
 }
 
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return a MultiPoint containing all the coordinates of a geometry
+ * @param[in] gs Geometry/geography
+ * @note PostGIS function: @p ST_Points(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+geo_points(const GSERIALIZED *gs)
+{
+  assert(gs);
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  LWMPOINT *res = lwmpoint_from_lwgeom(lwgeom);
+  lwgeom_free(lwgeom);
+  GSERIALIZED *result = geo_serialize(lwmpoint_as_lwgeom(res));
+  lwmpoint_free(res);
+  return result;
+}
+
 /*****************************************************************************
  * Functions adapted from lwgeom_geos.c
  *****************************************************************************/
@@ -1064,7 +1082,7 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
 
   /*
    * short-circuit 2: if the geoms are a point and a polygon,
-   * call the point_outside_polygon function.
+   * call the point_in_polygon function.
    */
   if ((rel == INTERSECTS || rel == CONTAINS) && (
       (gserialized_is_point(gs1) && gserialized_is_poly(gs2)) ||
@@ -1119,12 +1137,11 @@ geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   return geom_spatialrel(gs1, gs2, CONTAINS);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if the two geometries intersect on a border
  * @param[in] gs1,gs2 Geometries
- * @note PostGIS function: @p ST_Covers(PG_FUNCTION_ARGS)
+ * @note PostGIS function: @p touches(PG_FUNCTION_ARGS)
  */
 inline bool
 geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -1144,6 +1161,7 @@ geom_covers(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   return geom_spatialrel(gs1, gs2, COVERS);
 }
 
+#if MEOS
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if two geometries are disjoint in 2D

@@ -16,7 +16,7 @@ SELECT round(MAX(maxValue(t1.temp <-> t2.temp)), 6) FROM tbl_tgeometry t1, tbl_t
 WHERE t1.temp <-> t2.temp IS NOT NULL;
    round   
 -----------
- 39.250769
+ 93.199864
 (1 row)
 
 SELECT round(MAX(maxValue(g <-> temp)), 6) FROM tbl_geography t1, tbl_tgeography t2
@@ -58,7 +58,7 @@ SELECT round(MAX(maxValue(t1.temp <-> t2.temp)), 6) FROM tbl_tgeometry3D t1, tbl
 WHERE t1.temp <-> t2.temp IS NOT NULL ORDER BY 1 LIMIT 10;
    round    
 ------------
- 218.130888
+ 206.681869
 (1 row)
 
 SELECT round(MAX(maxValue(g <-> temp)), 6) FROM tbl_geography3D t1, tbl_tgeography3D t2

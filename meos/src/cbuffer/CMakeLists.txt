@@ -7,7 +7,7 @@ set(CBUFFER_SRCS
   tcbuffer_distance.c
   tcbuffer_spatialfuncs.c
   tcbuffer_spatialrels.c
-  # tcbuffer_tempspatialrels.c
+  tcbuffer_tempspatialrels.c
 )
 
 if(MEOS)

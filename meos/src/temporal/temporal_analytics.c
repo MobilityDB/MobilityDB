@@ -530,7 +530,11 @@ tsequence_tsample_iter(const TSequence *seq, TimestampTz lower_bin,
       if ((cmp1 < 0 || (cmp1 == 0 && lower_inc)) &&
           (cmp2 < 0 || (cmp2 == 0 && upper_inc)))
       {
-        Datum value = tsegment_value_at_timestamptz(start, end, interp, lower);
+        Datum startvalue = tinstant_value_p(start);
+        Datum endvalue = (interp == LINEAR) ?
+          tinstant_value_p(end) : startvalue;
+        Datum value = tsegment_value_at_timestamptz(startvalue, endvalue,
+          start->temptype, start->t, end->t, lower);
         result[ninsts++] = tinstant_make(value, seq->temptype, lower);
         /* Advance the bin */
         lower += tunits;
@@ -705,7 +709,8 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2,
   if (tnumber_type(inst1->temptype))
     return tnumberinst_distance(inst1, inst2);
   else if (tgeo_type_all(inst1->temptype))
-    return tgeoinst_distance(inst1, inst2, func);
+    return DatumGetFloat8(func(tinstant_value_p(inst1),
+      tinstant_value_p(inst2)));
   else
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -1552,7 +1557,7 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   POINT2D *p2k, *p2_sync, *p2a, *p2b;
   POINT3DZ *p3k, *p3_sync, *p3a, *p3b;
   Datum value;
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  // interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   double d = -1;
   *split = i1;
@@ -1563,6 +1568,8 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
   /* Initialization of values wrt instants i1 and i2 */
   const TInstant *start = TSEQUENCE_INST_N(seq, i1);
   const TInstant *end = TSEQUENCE_INST_N(seq, i2);
+  Datum startvalue = tinstant_value_p(start);
+  Datum endvalue = tinstant_value_p(end);
   if (hasz)
   {
     p3a = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value_p(start));
@@ -1584,7 +1591,9 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
       p3k = (POINT3DZ *) DATUM_POINT3DZ_P(tinstant_value_p(inst));
       if (syncdist)
       {
-        value = tsegment_value_at_timestamptz(start, end, interp, inst->t);
+        // TODO Should we take into account the interpolation ?
+        value = tsegment_value_at_timestamptz(startvalue, endvalue,
+          start->temptype, start->t, end->t, inst->t);
         p3_sync = (POINT3DZ *) DATUM_POINT3DZ_P(value);
         d_tmp = dist3d_pt_pt(p3k, p3_sync);
         pfree(DatumGetPointer(value));
@@ -1597,7 +1606,9 @@ tpointseq_findsplit(const TSequence *seq, int i1, int i2, bool syncdist,
       p2k = (POINT2D *) DATUM_POINT2D_P(tinstant_value_p(inst));
       if (syncdist)
       {
-        value = tsegment_value_at_timestamptz(start, end, interp, inst->t);
+        // TODO Should we take into account the interpolation ?
+        value = tsegment_value_at_timestamptz(startvalue, endvalue,
+          start->temptype, start->t, end->t, inst->t);
         p2_sync = (POINT2D *) DATUM_POINT2D_P(value);
         d_tmp = dist2d_pt_pt(p2k, p2_sync);
         pfree(DatumGetPointer(value));

@@ -59,7 +59,7 @@
  */
 bool
 contains_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
-  bool invert __attribute__((unused)))
+  bool invert UNUSED)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, NULL);
@@ -86,7 +86,7 @@ contained_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
  */
 bool
 same_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
-  bool invert __attribute__((unused)))
+  bool invert UNUSED)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, NULL);
@@ -105,7 +105,7 @@ same_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
  */
 bool
 overlaps_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
-  bool invert __attribute__((unused)))
+  bool invert UNUSED)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, NULL); VALIDATE_BIGINTSET(s, NULL);
@@ -149,7 +149,7 @@ contained_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
  */
 bool
 same_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
-  bool invert __attribute__((unused)))
+  bool invert UNUSED)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, NULL); VALIDATE_BIGINTSET(s, NULL);
@@ -167,7 +167,7 @@ same_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
  */
 bool
 contains_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  bool invert __attribute__((unused)))
+  bool invert UNUSED)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, false); VALIDATE_NOT_NULL(np, false);
@@ -194,7 +194,7 @@ contained_rid_npoint_tnpoint(const Temporal *temp, const Npoint *np,
  */
 bool
 same_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  bool invert __attribute__((unused)))
+  bool invert UNUSED)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, false); VALIDATE_NOT_NULL(np, false);

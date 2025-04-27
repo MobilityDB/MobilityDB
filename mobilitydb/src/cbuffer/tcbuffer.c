@@ -251,7 +251,7 @@ Datum
 Tcbuffer_traversed_area(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *result = tcbuffer_traversed_area(temp);
+  GSERIALIZED *result = tcbuffer_trav_area(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }

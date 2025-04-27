@@ -1005,7 +1005,7 @@ set_to_wkb_size(const Set *set, uint8_t variant)
  * representation
  */
 size_t
-span_to_wkb_size(const Span *s __attribute__((unused)), bool component)
+span_to_wkb_size(const Span *s, bool component)
 {
   size_t size = 0;
   if (! component)

@@ -52,8 +52,16 @@
 	<para>
 		The <ulink url="https://www.ogc.org/publications/standard/geopose/">GeoPose Standards Working Group</ulink> (SWG), working under the auspices of the <ulink url="https://www.ogc.org/">Open Geospatial Consortium</ulink>, has defined a standard for exchanging pose information across different users, devices, and platforms. More information about the standard can be found in the <ulink url="https://github.com/opengeospatial/GeoPose">GitHub repository</ulink> of the GeoPose SWG.
 	</para>
- 
-	<para>The <varname>pose</varname> type serves as base type for defining the temporal pose type <varname>tpose</varname>. The <varname>tpose</varname> type has similar functionality as the temporal point type <varname>tgeompoint</varname>. Thus, most functions and operators described before for the <varname>tgeompoint</varname> type are also applicable for the <varname>tpose</varname> type. In addition, there are specific functions defined for the <varname>tpose</varname> type.</para>
+
+	<para>The <varname>pose</varname> type serves as base type for defining the temporal pose type <varname>tpose</varname>. The <varname>tpose</varname> type has similar functionality as the temporal point type <varname>tgeompoint</varname>. Thus, most functions and operators described before for the <varname>tgeompoint</varname> type are also applicable for the <varname>tpose</varname> type. In addition, there are specific functions defined for the <varname>tpose</varname> type.</para> We cover these functions in this chapter.
+
+	<para>The <varname>tpose</varname> type is used for defining the type <varname>trgeometry</varname> (that is, temporal rigid geometry) defined in the next chapter. The implementation of the these types in MobilityDB has been studied in the following PhD thesis.</para>
+
+	<itemizedlist>
+		<listitem>
+			Maxime Schoemans, <ulink url="https://docs.mobilitydb.com/pub/maxime_schoemans_thesis.pdf"><emphasis>Managing Rigid Temporal Geometries in Moving Object Databases</emphasis></ulink>, PhD thesis, Université libre de Bruxelles, 2025.
+		</listitem>
+	</itemizedlist>
 
 	<sect1 xml:id="static_poses">
 		<title>Static Poses</title>

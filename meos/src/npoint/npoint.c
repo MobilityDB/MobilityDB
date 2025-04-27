@@ -1673,7 +1673,7 @@ nsegment_end_position(const Nsegment *ns)
  * the SRID of the table
  */
 inline int32_t
-npoint_srid(const Npoint *np __attribute__((unused)))
+npoint_srid(const Npoint *np UNUSED)
 {
   return get_srid_ways();
 }
@@ -1688,7 +1688,7 @@ npoint_srid(const Npoint *np __attribute__((unused)))
  * the SRID of the table
  */
 inline int32_t
-nsegment_srid(const Nsegment *ns __attribute__((unused)))
+nsegment_srid(const Nsegment *ns UNUSED)
 {
   return get_srid_ways();
 }

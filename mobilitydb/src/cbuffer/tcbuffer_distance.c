@@ -36,6 +36,9 @@
 
 /* MEOS */
 #include <meos.h>
+#include "geo/stbox.h"
+#include "cbuffer/cbuffer.h"
+#include "cbuffer/tcbuffer_distance.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 #include "pg_geo/postgis.h"
@@ -63,6 +66,25 @@ Distance_cbuffer_geo(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
+PGDLLEXPORT Datum Distance_geo_cbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_geo_cbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_dist
+ * @brief Return the temporal distance between a circular buffer and a
+ * geometry
+ * @sqlfn tDistance()
+ * @sqlop @p <->
+ */
+Datum
+Distance_geo_cbuffer(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  double result = distance_cbuffer_geo(cb, gs);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
 PGDLLEXPORT Datum Distance_cbuffer_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_cbuffer_stbox);
 /**
@@ -77,6 +99,24 @@ Distance_cbuffer_stbox(PG_FUNCTION_ARGS)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
+  double result = distance_cbuffer_stbox(cb, box);
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Distance_stbox_cbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_stbox_cbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_dist
+ * @brief Return the temporal distance between a circular buffer and a
+ * spatiotemporal box
+ * @sqlfn tDistance()
+ * @sqlop @p <->
+ */
+Datum
+Distance_stbox_cbuffer(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   double result = distance_cbuffer_stbox(cb, box);
   PG_RETURN_FLOAT8(result);
 }
@@ -325,8 +365,8 @@ NAD_cbuffer_stbox(PG_FUNCTION_ARGS)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
-  Temporal *result = nad_cbuffer_stbox(cb, box);
-  PG_RETURN_TEMPORAL_P(result);
+  double result = nad_cbuffer_stbox(cb, box);
+  PG_RETURN_FLOAT8(result);
 }
 
 /*****************************************************************************/

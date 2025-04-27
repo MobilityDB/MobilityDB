@@ -50,6 +50,58 @@
 #include "cbuffer/cbuffer.h"
 
 /*****************************************************************************
+ * Intersection functions
+ *****************************************************************************/
+
+// TODO REMOVE WHEN THE TWO FUNCTIONS BELOW HAVE BEEN WRITTEN !!!
+extern int cbuffersegm_distance_turnpt(const Cbuffer *start1,
+  const Cbuffer *end1, const Cbuffer *start2, const Cbuffer *end2,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2);
+
+/**
+ * @brief Return 1 if a segment of a temporal circular buffer and a circular
+ * buffer intersect during the period defined by the timestamps output in the
+ * last arguments
+ * @param[in] start,end Temporal instants defining the segment
+ * @param[in] value Value to locate
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 
+ * @return Number of timestamps in the result, between 0 and 2. In the case
+ * of a single result both t1 and t2 are set to the unique timestamp.
+ */
+int
+tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+{
+  assert(lower < upper); assert(t1); assert(t2);
+  /* While waiting for this function we cheat and call the function below */
+  return cbuffersegm_distance_turnpt(DatumGetCbufferP(start),
+    DatumGetCbufferP(end), DatumGetCbufferP(value), DatumGetCbufferP(value),
+    lower, upper, t1, t2);
+}
+
+/**
+ * @brief Return 1 if the segments of two temporal circular buffers intersect
+ * during the period defined by the timestamps output in the last arguments
+ * @param[in] start1,end1 Temporal instants defining the first segment
+ * @param[in] start2,end2 Temporal instants defining the second segment
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 
+ * @return Number of timestamps in the result, between 0 and 2. In the case
+ * of a single result both t1 and t2 are set to the unique timestamp
+ */
+int
+tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+{
+  assert(lower < upper); assert(t1); assert(t2);
+  /* While waiting for this function we cheat and call the function below */
+  return cbuffersegm_distance_turnpt(DatumGetCbufferP(start1),
+    DatumGetCbufferP(end1), DatumGetCbufferP(start2), DatumGetCbufferP(end2),
+    lower, upper, t1, t2);
+}
+
+/*****************************************************************************
  * Validity functions
  *****************************************************************************/
 
@@ -155,7 +207,7 @@ tcbufferinst_in(const char *str)
  * @param[in] interp Interpolation
  */
 TSequence *
-tcbufferseq_in(const char *str, interpType interp __attribute__((unused)))
+tcbufferseq_in(const char *str, interpType interp UNUSED)
 {
   /* Call the superclass function */
   Temporal *temp = tcbuffer_in(str);
@@ -187,7 +239,7 @@ tcbufferseqset_in(const char *str)
  * @ingroup meos_internal_cbuffer_constructor
  * @brief Return a temporal circular buffer from a temporal point and a 
  * temporal float
- * @note This function is called after synchronization done in function 
+ * @note This function is called after the synchronization done in function 
  * #tcbuffer_make
  */
 TInstant *
@@ -204,7 +256,7 @@ tcbufferinst_make(const TInstant *inst1, const TInstant *inst2)
 /**
  * @brief Return a temporal circular buffer from a temporal point and a 
  * temporal float
- * @note This function is called after synchronization done in function 
+ * @note This function is called after the synchronization done in function 
  * #tcbuffer_make
  */
 TSequence *
@@ -224,7 +276,7 @@ tcbufferseq_make(const TSequence *seq1, const TSequence *seq2)
 /**
  * @brief Return a temporal circular buffer from a temporal point and a 
  * temporal float
- * @note This function is called after synchronization done in function 
+ * @note This function is called after the synchronization done in function 
  * #tcbuffer_make
  */
 TSequenceSet *
@@ -692,7 +744,6 @@ tcbuffer_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TCBUFFER(temp, false); VALIDATE_NOT_NULL(value, false);
-
   Datum res;
   bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
   *value = DatumGetCbufferP(res);

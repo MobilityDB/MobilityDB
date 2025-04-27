@@ -94,11 +94,19 @@
  *
  * @defgroup meos_geo_srid Spatial reference system functions
  * @ingroup meos_geo
- * @brief Spatial reference system functions for temporal geos
+ * @brief Spatial reference system functions for temporal geometries
  *
  * @defgroup meos_geo_rel Spatial relationship functions
  * @ingroup meos_geo
- * @brief Spatial relationship functions for temporal geos
+ * @brief Spatial relationship functions for temporal geometries
+ *
+ *   @defgroup meos_geo_rel_ever Ever/always relationship functions
+ *   @ingroup meos_geo_rel
+ *   @brief Ever/always relationship functions for temporal geometries
+ *
+ *   @defgroup meos_geo_rel_temp Temporal relationship functions
+ *   @ingroup meos_geo_rel
+ *   @brief Temporal relationship functions for temporal geometries
  *
  * @defgroup meos_geo_agg Aggregate functions
  * @ingroup meos_geo

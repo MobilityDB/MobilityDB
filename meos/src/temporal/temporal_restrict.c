@@ -997,10 +997,9 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   interpType interp, bool lower_inc, bool upper_inc, Datum value, bool atfunc,
   TSequence **result)
 {
-  assert(inst1->temptype == inst2->temptype);
-  assert(interp != DISCRETE);
-  Datum value1 = tinstant_value_p(inst1);
-  Datum value2 = tinstant_value_p(inst2);
+  assert(inst1->temptype == inst2->temptype); assert(interp != DISCRETE);
+  Datum start = tinstant_value_p(inst1);
+  Datum end = tinstant_value_p(inst2);
   meosType basetype = temptype_basetype(inst1->temptype);
   // /* Temporal rigid geometries have poses as base values but are restricted
    // * to geometries */
@@ -1008,32 +1007,41 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
     // basetype;
   TInstant *instants[2];
   /* Is the segment constant? */
-  bool isconst = datum_eq(value1, value2, basetype);
+  bool isconst = datum_eq(start, end, basetype);
   /* Does the lower bound belong to the answer? */
-  bool lower = atfunc ? datum_eq(value1, value, basetype) :
-    datum_ne(value1, value, basetype);
+  bool lower = atfunc ? datum_eq(start, value, basetype) :
+    datum_ne(start, value, basetype);
   /* Does the upper bound belong to the answer? */
-  bool upper = atfunc ? datum_eq(value2, value, basetype) :
-    datum_ne(value2, value, basetype);
+  bool upper = atfunc ? datum_eq(end, value, basetype) :
+    datum_ne(end, value, basetype);
   /* For linear interpolation and not constant segment is the value in the
    * interior of the segment? */
-  Datum projvalue = 0; /* make compiler quiet */
-  TimestampTz t = 0; /* make compiler quiet */
-  bool interior = (interp == LINEAR) && ! isconst &&
-    tlinearsegm_intersection_value(inst1, inst2, value, basetype, &projvalue,
-      &t);
-
+  TimestampTz t1 = 0, t2 = 0; /* make compiler quiet */
+  int found = 0;
+  if (interp == LINEAR && ! isconst)
+    found = tsegment_intersection_value(start, end, value, inst1->temptype,
+      inst1->t, inst2->t, &t1, &t2);
+  Datum projvalue1 = 0; /* make compiler quiet */
+  if (found)
+  {
+    projvalue1 = tsegment_value_at_timestamptz(start, end, inst1->temptype,
+       inst1->t, inst2->t, t1);
+    // if (found > 1)
+      // projvalue2 = tsegment_value_at_timestamptz(start, end, inst1->temptype,
+      // inst1->t, inst2->t, t2);
+  }
+  
   /* Overall segment does not belong to the answer */
   if ((isconst && ! lower) ||
     (! isconst && atfunc && (interp == LINEAR) && ((lower && ! lower_inc) ||
-      (upper && ! upper_inc) || (! lower && ! upper && ! interior))))
+      (upper && ! upper_inc) || (! lower && ! upper && ! found))))
     return 0;
 
   /* Segment belongs to the answer but bounds may not */
   if ((isconst && lower) ||
     /* Linear interpolation: Test of bounds */
     (! isconst && (interp == LINEAR) && ! atfunc &&
-    (! lower || ! upper || ! interior)))
+    (! lower || ! upper || ! found)))
   {
     instants[0] = (TInstant *) inst1;
     instants[1] = (TInstant *) inst2;
@@ -1049,7 +1057,7 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
     if (lower)
     {
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(value1, inst1->temptype, inst2->t);
+      instants[1] = tinstant_make(start, inst1->temptype, inst2->t);
       result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, false, STEP, NORMALIZE_NO);
       pfree(instants[1]);
@@ -1068,7 +1076,7 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   /* Interpolation */
   if (atfunc)
   {
-    TInstant *inst = tinstant_make_free(projvalue, inst1->temptype, t);
+    TInstant *inst = tinstant_make_free(projvalue1, inst1->temptype, t1);
     result[0] = tinstant_to_tsequence(inst, LINEAR);
     pfree(inst);
     return 1;
@@ -1076,9 +1084,9 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
   else
   {
     /* Due to roundoff errors t may be equal to inst1-> or ins2->t */
-    if (t == inst1->t)
+    if (t1 == inst1->t)
     {
-      DATUM_FREE(projvalue, basetype);
+      DATUM_FREE(projvalue1, basetype);
       if (! lower_inc)
         return 0;
 
@@ -1088,9 +1096,9 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
         upper_inc, LINEAR, NORMALIZE_NO);
       return 1;
     }
-    else if (t == inst2->t)
+    else if (t1 == inst2->t)
     {
-      DATUM_FREE(projvalue, basetype);
+      DATUM_FREE(projvalue1, basetype);
       if (! upper_inc)
         return 0;
 
@@ -1103,7 +1111,7 @@ tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
     else
     {
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make_free(projvalue, inst1->temptype, t);
+      instants[1] = tinstant_make_free(projvalue1, inst1->temptype, t1);
       result[0] = tsequence_make((const TInstant **) instants, 2, lower_inc,
         false, LINEAR, NORMALIZE_NO);
       instants[0] = instants[1];
@@ -1496,7 +1504,8 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
         return 1;
       }
     }
-    if (tfloatsegm_intersection_value(inst1, inst2, inter.lower, basetype, &t1))
+    if (tfloatsegm_intersection_value(start, end, inter.lower, inst1->t,
+      inst2->t, &t1))
     {
       /* To reduce the roundoff errors we project the temporal number to the
        * timestamp instead of taking the bound value */
@@ -1546,7 +1555,8 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   {
     inter1 = (TInstant *) inst2; j++;
   }
-  else if (tfloatsegm_intersection_value(inst1, inst2, lower, basetype, &t1))
+  else if (tfloatsegm_intersection_value(start, end, lower, inst1->t,
+    inst2->t, &t1))
   {
     /* To reduce the roundoff errors we project the temporal number to the
      * timestamp instead of taking the bound value */
@@ -1568,7 +1578,8 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
         inter2 = (TInstant *) inst2;
       j++;
     }
-    else if (tfloatsegm_intersection_value(inst1, inst2, upper, basetype, &t2))
+    else if (tfloatsegm_intersection_value(start, end, upper, inst1->t,
+      inst2->t, &t2))
     {
       /* To reduce the roundoff errors we project the temporal number to the
        * timestamp instead of taking the bound value */
@@ -2151,7 +2162,15 @@ TInstant *
 tsegment_at_timestamptz(const TInstant *inst1, const TInstant *inst2,
   interpType interp, TimestampTz t)
 {
-  Datum value = tsegment_value_at_timestamptz(inst1, inst2, interp, t);
+  assert(inst1->t <= t); assert(t <= inst2->t);
+  Datum startvalue = tinstant_value_p(inst1);
+  if (inst1->t == t || (interp != LINEAR && t < inst2->t))
+    return tinstant_make(startvalue, inst1->temptype, t);
+  Datum endvalue = tinstant_value_p(inst2);
+  if (t == inst2->t)
+    return tinstant_make(endvalue, inst1->temptype, t);
+  Datum value = tsegment_value_at_timestamptz(startvalue, endvalue,
+    inst1->temptype, inst1->t, inst2->t, t);
   return tinstant_make_free(value, inst1->temptype, t);
 }
 
@@ -2464,9 +2483,13 @@ tcontseq_minus_tstzset_iter(const TSequence *seq, const Set *s,
       {
         /* Close the current sequence */
         if (interp == LINEAR)
+        {
           /* Interpolate */
-          value = tsegment_value_at_timestamptz(instants[ninsts - 1], inst,
-            LINEAR, t);
+          Datum startvalue = tinstant_value_p(instants[ninsts - 1]);
+          Datum endvalue = tinstant_value_p(inst);
+          value = tsegment_value_at_timestamptz(startvalue, endvalue,
+            inst->temptype, instants[ninsts - 1]->t, inst->t, t);
+        }
         else
           /* Take the value of the previous instant */
           value = tinstant_value_p(instants[ninsts - 1]);

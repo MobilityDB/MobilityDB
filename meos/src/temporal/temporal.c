@@ -1012,8 +1012,6 @@ tbool_tint(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TBOOL;
   lfinfo.restype = T_TINT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1035,8 +1033,6 @@ tint_tfloat(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TINT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1064,8 +1060,6 @@ tfloat_tint(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TINT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1227,8 +1221,6 @@ temporal_round(const Temporal *temp, int maxdd)
   lfinfo.param[0] = Int32GetDatum(maxdd);
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = temp->temptype;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1327,8 +1319,6 @@ tfloat_floor(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1350,8 +1340,6 @@ tfloat_ceil(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1417,8 +1405,6 @@ tfloat_degrees(const Temporal *temp, bool normalize)
   lfinfo.param[0] = BoolGetDatum(normalize);
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -1440,8 +1426,6 @@ tfloat_radians(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TFLOAT;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 

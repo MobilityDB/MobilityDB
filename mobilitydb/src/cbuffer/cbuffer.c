@@ -523,7 +523,120 @@ Cbuffer_transform_pipeline(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Approximate equality for circular buffers
+ * Spatial relationships
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Cbuffer_contains(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbuffer_contains);
+/**
+ * @ingroup mobilitydb_cbuffer_base_comp
+ * @brief Return true if two circular buffers are disjoint
+ * @sqlfn cbuffer_contains()
+ */
+Datum
+Cbuffer_contains(PG_FUNCTION_ARGS)
+{
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  int result = contains_cbuffer_cbuffer(cb1, cb2);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result ? true : false);
+}
+
+PGDLLEXPORT Datum Cbuffer_covers(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbuffer_covers);
+/**
+ * @ingroup mobilitydb_cbuffer_base_comp
+ * @brief Return true if two circular buffers are disjoint
+ * @sqlfn cbuffer_covers()
+ */
+Datum
+Cbuffer_covers(PG_FUNCTION_ARGS)
+{
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  int result = covers_cbuffer_cbuffer(cb1, cb2);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result ? true : false);
+}
+
+PGDLLEXPORT Datum Cbuffer_disjoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbuffer_disjoint);
+/**
+ * @ingroup mobilitydb_cbuffer_base_comp
+ * @brief Return true if two circular buffers are disjoint
+ * @sqlfn cbuffer_disjoint()
+ */
+Datum
+Cbuffer_disjoint(PG_FUNCTION_ARGS)
+{
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  int result = disjoint_cbuffer_cbuffer(cb1, cb2);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result ? true : false);
+}
+
+PGDLLEXPORT Datum Cbuffer_intersects(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbuffer_intersects);
+/**
+ * @ingroup mobilitydb_cbuffer_base_comp
+ * @brief Return true if two circular buffers intersect
+ * @sqlfn cbuffer_intersects()
+ */
+Datum
+Cbuffer_intersects(PG_FUNCTION_ARGS)
+{
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  int result = intersects_cbuffer_cbuffer(cb1, cb2);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result ? true : false);
+}
+
+PGDLLEXPORT Datum Cbuffer_touches(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbuffer_touches);
+/**
+ * @ingroup mobilitydb_cbuffer_base_comp
+ * @brief Return true if two circular buffers intersect
+ * @sqlfn cbuffer_touches()
+ */
+Datum
+Cbuffer_touches(PG_FUNCTION_ARGS)
+{
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  int result = touches_cbuffer_cbuffer(cb1, cb2);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result ? true : false);
+}
+
+PGDLLEXPORT Datum Cbuffer_dwithin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbuffer_dwithin);
+/**
+ * @ingroup mobilitydb_cbuffer_base_comp
+ * @brief Return true if two circular buffers are within a distance
+ * @sqlfn cbuffer_dwithin()
+ */
+Datum
+Cbuffer_dwithin(PG_FUNCTION_ARGS)
+{
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  double dist = PG_GETARG_FLOAT8(2);
+  int result = dwithin_cbuffer_cbuffer(cb1, cb2, dist);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result ? true : false);
+}
+
+/*****************************************************************************
+ * Approximate equality
  *****************************************************************************/
 
 PGDLLEXPORT Datum Cbuffer_same(PG_FUNCTION_ARGS);
