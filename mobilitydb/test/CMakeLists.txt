@@ -1,5 +1,5 @@
 add_subdirectory(scripts)
-add_subdirectory(general)
+add_subdirectory(temporal)
 add_subdirectory(geo)
 if(CBUFFER)
   add_subdirectory(cbuffer)

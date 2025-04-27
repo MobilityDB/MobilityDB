@@ -44,7 +44,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/meos_catalog.h"
+#include "temporal/meos_catalog.h"
 /* MobilityDB */
 #include "pg_geo/tspatial_analyze.h"
 

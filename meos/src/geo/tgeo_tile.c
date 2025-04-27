@@ -43,8 +43,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal.h"
-#include "general/temporal_tile.h"
+#include "temporal/temporal.h"
+#include "temporal/temporal_tile.h"
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tpoint_tile.h"

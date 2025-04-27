@@ -41,7 +41,7 @@
 #include <lwgeodetic.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 
 /** Symbolic constants for transforming tgeompoint <-> tgeogpoint */
 #define TGEOMP_TO_TGEOGP    true

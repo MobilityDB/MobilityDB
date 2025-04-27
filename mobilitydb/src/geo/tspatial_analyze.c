@@ -66,12 +66,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/set.h"
-#include "general/temporal.h"
+#include "temporal/set.h"
+#include "temporal/temporal.h"
 /* MobilityDB */
-#include "pg_general/meos_catalog.h"
-#include "pg_general/span_analyze.h"
-#include "pg_general/temporal_analyze.h"
+#include "pg_temporal/meos_catalog.h"
+#include "pg_temporal/span_analyze.h"
+#include "pg_temporal/temporal_analyze.h"
 
 /*****************************************************************************
  * Functions copied from PostGIS file gserialized_estimate.c

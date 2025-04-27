@@ -40,7 +40,7 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 
 /*****************************************************************************/
 

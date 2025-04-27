@@ -44,20 +44,20 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_rgeo.h>
-#include "general/set.h"
-#include "general/span.h"
-#include "general/spanset.h"
-#include "general/type_inout.h"
-#include "general/type_util.h"
+#include "temporal/set.h"
+#include "temporal/span.h"
+#include "temporal/spanset.h"
+#include "temporal/type_inout.h"
+#include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo.h"
 #include "rgeo/trgeo_parser.h"
 #include "rgeo/trgeo_all.h"
 /* MobilityDB */
-#include "pg_general/meos_catalog.h"
-#include "pg_general/temporal.h"
-#include "pg_general/type_util.h"
+#include "pg_temporal/meos_catalog.h"
+#include "pg_temporal/temporal.h"
+#include "pg_temporal/type_util.h"
 #include "pg_geo/postgis.h"
 #include "pg_geo/tspatial.h"
 

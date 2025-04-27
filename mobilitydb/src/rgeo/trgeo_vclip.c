@@ -46,9 +46,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/temporal.h"
-#include "general/type_util.h"
-#include "general/meos_catalog.h"
+#include "temporal/temporal.h"
+#include "temporal/type_util.h"
+#include "temporal/meos_catalog.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo.h"

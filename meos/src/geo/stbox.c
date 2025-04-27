@@ -45,13 +45,13 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
-#include "general/set.h"
-#include "general/span.h"
-#include "general/spanset.h"
-#include "general/tnumber_mathfuncs.h"
-#include "general/type_inout.h"
-#include "general/type_util.h"
+#include "temporal/pg_types.h"
+#include "temporal/set.h"
+#include "temporal/span.h"
+#include "temporal/spanset.h"
+#include "temporal/tnumber_mathfuncs.h"
+#include "temporal/type_inout.h"
+#include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial.h"

@@ -42,15 +42,15 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/stratnum.h"
-#include "general/span.h"
-#include "general/type_util.h"
+#include "temporal/stratnum.h"
+#include "temporal/span.h"
+#include "temporal/type_util.h"
 #include "geo/stbox.h"
 #include "geo/stbox_index.h"
 /* MobilityDB */
-#include "pg_general/meos_catalog.h"
-#include "pg_general/temporal.h"
-#include "pg_general/tnumber_gist.h"
+#include "pg_temporal/meos_catalog.h"
+#include "pg_temporal/temporal.h"
+#include "pg_temporal/tnumber_gist.h"
 
 /*****************************************************************************
  * GiST consistent methods

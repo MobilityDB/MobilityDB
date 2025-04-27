@@ -45,7 +45,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_cbuffer.h>
-#include "general/span.h"
+#include "temporal/span.h"
 #include "geo/postgis_funcs.h"
 #include "cbuffer/cbuffer.h"
 

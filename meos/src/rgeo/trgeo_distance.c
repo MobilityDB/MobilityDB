@@ -52,10 +52,10 @@
 #include <meos.h>
 #include <meos_rgeo.h>
 #include <meos_internal.h>
-#include "general/meos_catalog.h"
-#include "general/temporal.h"
-#include "general/temporal.h"
-#include "general/type_util.h"
+#include "temporal/meos_catalog.h"
+#include "temporal/temporal.h"
+#include "temporal/temporal.h"
+#include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"

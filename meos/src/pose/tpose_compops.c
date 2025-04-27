@@ -37,11 +37,11 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
-#include "general/lifting.h"
-#include "general/temporal.h"
-#include "general/temporal_compops.h"
-#include "general/type_util.h"
+#include "temporal/pg_types.h"
+#include "temporal/lifting.h"
+#include "temporal/temporal.h"
+#include "temporal/temporal_compops.h"
+#include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/tpose.h"
 #include "pose/tpose_spatialfuncs.h"

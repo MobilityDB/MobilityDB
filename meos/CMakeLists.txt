@@ -122,7 +122,7 @@ elseif(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
   target_compile_options(timezone PRIVATE "/W0")
   target_compile_options(utils PRIVATE "/W0")
   # Enable all warnings on MEOS and MobilityDB
-  target_compile_options(general PRIVATE "/W4")
+  target_compile_options(temporal PRIVATE "/W4")
   target_compile_options(geo PRIVATE "/W4")
   if(CBUFFER)
     target_compile_options(cbuffer PRIVATE "/W4")
@@ -153,14 +153,14 @@ string(REGEX REPLACE "#if MEOS\n#include \"postgres_int_defs.h\"\n#else\n#includ
 string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_EXP_2_H "${MEOS_EXP_1_H}")
 file(WRITE "${CMAKE_BINARY_DIR}/meos_export.h" "${MEOS_EXP_2_H}")
 # Generate meos_internal_export.h
-string(REGEX REPLACE "#include \"general/meos_catalog.h\"" "#include \"meos_catalog.h\"" MEOS_INTERNAL_EXP_H "${MEOS_INTERNAL_H}")
+string(REGEX REPLACE "#include \"temporal/meos_catalog.h\"" "#include \"meos_catalog.h\"" MEOS_INTERNAL_EXP_H "${MEOS_INTERNAL_H}")
 file(WRITE "${CMAKE_BINARY_DIR}/meos_internal_export.h" "${MEOS_INTERNAL_EXP_H}")
 
 # MEOS
-set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
+set(PROJECT_OBJECTS "$<TARGET_OBJECTS:temporal>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:geo>")
 if(MEOS)
-  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:general_meos>")
+  set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:temporal_meos>")
 endif()
 if(CBUFFER)
   message(STATUS "Including circular buffers")
@@ -243,7 +243,7 @@ if(RGEO)
 endif()
 
 install(
-  FILES "${CMAKE_SOURCE_DIR}/meos/include/general/meos_catalog.h"
+  FILES "${CMAKE_SOURCE_DIR}/meos/include/temporal/meos_catalog.h"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 install(TARGETS ${MEOS_LIB_NAME} DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 message(STATUS "Building MEOS:")

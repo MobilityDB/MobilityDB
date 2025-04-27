@@ -78,12 +78,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/lifting.h"
-#include "general/tbool_ops.h"
-#include "general/temporal_compops.h"
-#include "general/tinstant.h"
-#include "general/tsequence.h"
-#include "general/type_util.h"
+#include "temporal/lifting.h"
+#include "temporal/tbool_ops.h"
+#include "temporal/temporal_compops.h"
+#include "temporal/tinstant.h"
+#include "temporal/tsequence.h"
+#include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tpoint_restrfuncs.h"

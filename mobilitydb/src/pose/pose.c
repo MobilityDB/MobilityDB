@@ -45,15 +45,15 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_pose.h>
-#include "general/pg_types.h"
-#include "general/set.h"
-#include "general/span.h"
-#include "general/type_inout.h"
-#include "general/type_util.h"
+#include "temporal/pg_types.h"
+#include "temporal/set.h"
+#include "temporal/span.h"
+#include "temporal/type_inout.h"
+#include "temporal/type_util.h"
 #include "pose/pose.h"
 /* MobilityDB */
-#include "pg_general/temporal.h"
-#include "pg_general/type_util.h"
+#include "pg_temporal/temporal.h"
+#include "pg_temporal/type_util.h"
 #include "pg_geo/postgis.h"
 
 /*****************************************************************************

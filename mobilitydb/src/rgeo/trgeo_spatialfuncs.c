@@ -41,7 +41,7 @@
 #include "rgeo/trgeo.h"
 #include "rgeo/trgeo_spatialfuncs.h"
 /* MobilityDB */
-#include "pg_general/temporal.h"
+#include "pg_temporal/temporal.h"
 #include "pg_geo/postgis.h"
 
 /*****************************************************************************

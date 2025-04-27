@@ -41,7 +41,7 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 /* MobilityDB */
 #include "pg_geo/postgis.h"
 

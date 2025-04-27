@@ -11,7 +11,7 @@ configure_file(
 
 # Define list of source files
 set(DATAGEN_FILES
-  general/random_temporal.sql
+  temporal/random_temporal.sql
   geo/random_tpoint.sql
   geo/random_tgeo.sql
   )

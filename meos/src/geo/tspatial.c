@@ -43,13 +43,13 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/pg_types.h"
-#include "general/set.h"
-#include "general/lifting.h"
-#include "general/temporal.h"
-#include "general/tinstant.h"
-#include "general/tsequence.h"
-#include "general/tsequenceset.h"
+#include "temporal/pg_types.h"
+#include "temporal/set.h"
+#include "temporal/lifting.h"
+#include "temporal/temporal.h"
+#include "temporal/tinstant.h"
+#include "temporal/tsequence.h"
+#include "temporal/tsequenceset.h"
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
   #include "cbuffer/tcbuffer_boxops.h"

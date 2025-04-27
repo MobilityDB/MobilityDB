@@ -38,7 +38,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 
 #define INVERT_RESULT(result) (result < 0 ? -1 : (result > 0) ? 0 : 1)
 

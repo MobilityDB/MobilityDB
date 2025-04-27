@@ -39,7 +39,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include "general/temporal.h"
+#include "temporal/temporal.h"
 #include "geo/stbox.h"
 /* MobilityDB */
 #include "pg_geo/postgis.h"

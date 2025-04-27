@@ -45,11 +45,11 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/lifting.h"
-#include "general/span.h"
-#include "general/temporal_restrict.h"
-#include "general/tsequence.h"
-#include "general/type_util.h"
+#include "temporal/lifting.h"
+#include "temporal/span.h"
+#include "temporal/temporal_restrict.h"
+#include "temporal/tsequence.h"
+#include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_spatialrels.h"

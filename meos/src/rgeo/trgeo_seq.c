@@ -40,10 +40,10 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos_internal.h>
-#include "general/temporal.h"
-#include "general/tsequence.h"
-#include "general/type_util.h"
-#include "general/temporal_boxops.h"
+#include "temporal/temporal.h"
+#include "temporal/tsequence.h"
+#include "temporal/type_util.h"
+#include "temporal/temporal_boxops.h"
 #include "rgeo/trgeo_all.h"
 #include "rgeo/trgeo_boxops.h"
 #include "rgeo/trgeo_utils.h"

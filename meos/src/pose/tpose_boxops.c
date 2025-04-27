@@ -47,7 +47,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_pose.h>
-#include "general/span.h"
+#include "temporal/span.h"
 #include "pose/pose.h"
 
 /*****************************************************************************

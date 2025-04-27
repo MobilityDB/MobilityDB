@@ -39,8 +39,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/type_parser.h"
-#include "general/type_util.h"
+#include "temporal/type_parser.h"
+#include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************

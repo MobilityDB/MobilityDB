@@ -42,8 +42,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "general/set.h"
-#include "general/type_util.h"
+#include "temporal/set.h"
+#include "temporal/type_util.h"
 #include "geo/stbox.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"

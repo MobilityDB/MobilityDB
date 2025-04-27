@@ -41,9 +41,9 @@
 #include <meos.h>
 #include <meos_npoint.h>
 #include <meos_internal.h>
-#include "general/lifting.h"
-#include "general/temporal.h"
-#include "general/type_util.h"
+#include "temporal/lifting.h"
+#include "temporal/temporal.h"
+#include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 #include "npoint/tnpoint.h"
