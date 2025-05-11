@@ -104,14 +104,16 @@ var searchData=
   ['place_5fleft_101',['PLACE_LEFT',['../span__gist_8c_a424a9e807daf6eb60e974ea9f419e3e8.html#a424a9e807daf6eb60e974ea9f419e3e8',1,'PLACE_LEFT():&#160;span_gist.c'],['../tnumber__gist_8c_ae07e5246685aeb781cae3f369ded146d.html#ae07e5246685aeb781cae3f369ded146d',1,'PLACE_LEFT():&#160;tnumber_gist.c']]],
   ['place_5fright_102',['PLACE_RIGHT',['../span__gist_8c_ae944aae4cfbcdf8f63b06d3ae731b6bd.html#ae944aae4cfbcdf8f63b06d3ae731b6bd',1,'PLACE_RIGHT():&#160;span_gist.c'],['../tnumber__gist_8c_a4eaa7b84019150e9aaa3ad9e484f15f6.html#a4eaa7b84019150e9aaa3ad9e484f15f6',1,'PLACE_RIGHT():&#160;tnumber_gist.c']]],
   ['pm_103',['PM',['../datetime_8h_a23c7d58108d99a089ce0824823e6b950.html#a23c7d58108d99a089ce0824823e6b950',1,'datetime.h']]],
-  ['pm_5fstr_104',['PM_STR',['../formatting_8c_a2f30dfa74cc97514f9896390e689d43e.html#a2f30dfa74cc97514f9896390e689d43e',1,'formatting.c']]],
-  ['pm_5fstr_105',['pm_STR',['../formatting_8c_a5f2d471f24307a096e2b63dcfee7b2d0.html#a5f2d471f24307a096e2b63dcfee7b2d0',1,'formatting.c']]],
+  ['pm_5fstr_104',['pm_STR',['../formatting_8c_a5f2d471f24307a096e2b63dcfee7b2d0.html#a5f2d471f24307a096e2b63dcfee7b2d0',1,'formatting.c']]],
+  ['pm_5fstr_105',['PM_STR',['../formatting_8c_a2f30dfa74cc97514f9896390e689d43e.html#a2f30dfa74cc97514f9896390e689d43e',1,'formatting.c']]],
   ['pointergetdatum_106',['PointerGetDatum',['../postgres_8h_af1af46436828db69962409e7b39f7aa8.html#af1af46436828db69962409e7b39f7aa8',1,'postgres.h']]],
   ['pointerisaligned_107',['PointerIsAligned',['../c_8h_a458ba44b8c61804a26824b8f773b5fe8.html#a458ba44b8c61804a26824b8f773b5fe8',1,'c.h']]],
   ['pointerisvalid_108',['PointerIsValid',['../c_8h_a93e0ce0d27f11a8898f500f2c259c2a1.html#a93e0ce0d27f11a8898f500f2c259c2a1',1,'c.h']]],
   ['posepgetdatum_109',['PosePGetDatum',['../meos__pose_8h_ac597580cb92025a2b1753cf4c90e6d4e.html#ac597580cb92025a2b1753cf4c90e6d4e',1,'meos_pose.h']]],
   ['posix_5fcollation_5foid_110',['POSIX_COLLATION_OID',['../meos_2include_2temporal_2temporal_8h_a28a28f1cadb41ac7e09269cf709db0d9.html#a28a28f1cadb41ac7e09269cf709db0d9',1,'temporal.h']]],
   ['postgres_5fepoch_5fjdate_111',['POSTGRES_EPOCH_JDATE',['../timestamp__def_8h_afaabcbec6ec80f28212a0b379d92a769.html#afaabcbec6ec80f28212a0b379d92a769',1,'timestamp_def.h']]],
-  ['pstrdup_112',['pstrdup',['../postgres_8h_a7161cdfa108daea735297bcc709093ee.html#a7161cdfa108daea735297bcc709093ee',1,'postgres.h']]],
-  ['putenv_113',['putenv',['../win32__port_8h_a4d6acacef505fc7e06d5de2b5b751b62.html#a4d6acacef505fc7e06d5de2b5b751b62',1,'win32_port.h']]]
+  ['proj_5fbackend_5fhash_5fsize_112',['PROJ_BACKEND_HASH_SIZE',['../tspatial__transform__meos_8c_ad8e31c7538ca2209879225906e91c2e4.html#ad8e31c7538ca2209879225906e91c2e4',1,'tspatial_transform_meos.c']]],
+  ['proj_5fcache_5fitems_113',['PROJ_CACHE_ITEMS',['../tspatial__transform__meos_8c_a71e496f86477ddfc96590abdef724dbd.html#a71e496f86477ddfc96590abdef724dbd',1,'tspatial_transform_meos.c']]],
+  ['pstrdup_114',['pstrdup',['../postgres_8h_a7161cdfa108daea735297bcc709093ee.html#a7161cdfa108daea735297bcc709093ee',1,'postgres.h']]],
+  ['putenv_115',['putenv',['../win32__port_8h_a4d6acacef505fc7e06d5de2b5b751b62.html#a4d6acacef505fc7e06d5de2b5b751b62',1,'win32_port.h']]]
 ];

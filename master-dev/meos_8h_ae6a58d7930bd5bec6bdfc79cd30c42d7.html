@@ -572,6 +572,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_8h_aab197ac46d5d07bb8ae51f2498ee5414.html#aab197ac46d5d07bb8ae51f2498ee5414">meos_errno_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_ae25eac26575ca0d33b0667ca0c635278.html#ae25eac26575ca0d33b0667ca0c635278">meos_error</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_ac16f5666302795068e1735eec3b4123e.html#ac16f5666302795068e1735eec3b4123e">meos_finalize</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a0faeaa24559f5a1a311cb84905efa90e.html#a0faeaa24559f5a1a311cb84905efa90e">meos_finalize_projsrs</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a547981149a7cf179462c9c436f2fdc56.html#a547981149a7cf179462c9c436f2fdc56">meos_finalize_timezone</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a4aec42a072108791c5a6fcbd09da20bf.html#a4aec42a072108791c5a6fcbd09da20bf">meos_get_datestyle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_aa30a083e08860451ba92a1966939c82e.html#aa30a083e08860451ba92a1966939c82e">meos_get_intervalstyle</a></td></tr>
@@ -871,7 +872,6 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__set__inout_gabf29e7aea0a7950b4c934c25b667f046.html#gabf29e7aea0a7950b4c934c25b667f046">spatialset_as_ewkt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__set__inout_gac1dd4a30f117c251aebb92d439c25e67.html#gac1dd4a30f117c251aebb92d439c25e67">spatialset_as_text</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a5f52970397e99dbd3a5b0db6067a8994.html#a5f52970397e99dbd3a5b0db6067a8994">spheroid_init_from_srid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_8h_a6055cc994898c3a7a875c65c047a108f.html#a6055cc994898c3a7a875c65c047a108f">srid_is_latlong</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__math_gaf071dacdf3deda49bb9a7d648b7cc2a6.html#gaf071dacdf3deda49bb9a7d648b7cc2a6">sub_float_tfloat</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__math_ga1149dee78901522ec33d2d03b7a51234.html#ga1149dee78901522ec33d2d03b7a51234">sub_int_tint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__math_ga34bc82d22c39495d0be3e71ec099b08a.html#ga34bc82d22c39495d0be3e71ec099b08a">sub_tfloat_float</a></td></tr>
@@ -1019,7 +1019,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__agg_ga3323af2a6686ee6d66c93afbb5eb8666.html#ga3323af2a6686ee6d66c93afbb5eb8666">temporal_tcount_transfn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__accessor_ga535b9dc4ce7130d28c008536c917da1e.html#ga535b9dc4ce7130d28c008536c917da1e">temporal_time</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__tile_ga8d0289c5a18a7bdefc1a24dcfdb76a57.html#ga8d0289c5a18a7bdefc1a24dcfdb76a57">temporal_time_spans</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_8h_a0489204d26911a48dd2a5345f78b5472.html#a0489204d26911a48dd2a5345f78b5472">temporal_time_split</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__tile_gaae7195309bca8569e52b5322ae77cf85.html#gaae7195309bca8569e52b5322ae77cf85">temporal_time_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__accessor_gaf921651c4888fbc6a93cdb3b24eef36b.html#gaf921651c4888fbc6a93cdb3b24eef36b">temporal_timestamps</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__accessor_gaec939c0c350ca04c580b61ccb8b516b9.html#gaec939c0c350ca04c580b61ccb8b516b9">temporal_timestamptz_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__transf_gaf147ddc1681cd57cc0b272b51afd3490.html#gaf147ddc1681cd57cc0b272b51afd3490">temporal_to_tinstant</a></td></tr>
@@ -1093,8 +1093,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__accessor_gaac2fb9de071f9af6f3a74b558948a491.html#gaac2fb9de071f9af6f3a74b558948a491">tfloat_value_at_timestamptz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__accessor_gab80c068b769681f34f3d70ffee2f5dfb.html#gab80c068b769681f34f3d70ffee2f5dfb">tfloat_value_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__tile_gac9fcd281bb7a0ef5477e01935444ce77.html#gac9fcd281bb7a0ef5477e01935444ce77">tfloat_value_spans</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_8h_a2af9f09fe0c70c18a319d2cdc8d63da3.html#a2af9f09fe0c70c18a319d2cdc8d63da3">tfloat_value_split</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_8h_a72eefe8b64a92de3855dc1e3f2a85c7b.html#a72eefe8b64a92de3855dc1e3f2a85c7b">tfloat_value_time_split</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__tile_gabc851f69a018935f88e3f2a7995b6320.html#gabc851f69a018935f88e3f2a7995b6320">tfloat_value_split</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__tile_ga9430e71927ec1d75f4b855e24665baf7.html#ga9430e71927ec1d75f4b855e24665baf7">tfloat_value_time_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__accessor_ga8fda9ddd9ed9ccbd5e2708bfa169ce2a.html#ga8fda9ddd9ed9ccbd5e2708bfa169ce2a">tfloat_values</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__agg_ga746ab848e31a60c88bf1918575048e04.html#ga746ab848e31a60c88bf1918575048e04">tfloat_wmax_transfn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__agg_ga9ceecbc5d3b575ecbd171a3af2a4fccb.html#ga9ceecbc5d3b575ecbd171a3af2a4fccb">tfloat_wmin_transfn</a></td></tr>
@@ -1104,7 +1104,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a9b326fbf753f25e2da459c1f21458dfd.html#a9b326fbf753f25e2da459c1f21458dfd">tfloatbox_get_value_time_tile</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a0bd3bbb1712c7f16c2ba62a5a2a1ec92.html#a0bd3bbb1712c7f16c2ba62a5a2a1ec92">tfloatbox_time_tiles</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_aa29002fa542581e99d37bc0bed4e5589.html#aa29002fa542581e99d37bc0bed4e5589">tfloatbox_value_tiles</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_8h_a519e093373c03c5f2a52283f245cf8ef.html#a519e093373c03c5f2a52283f245cf8ef">tfloatbox_value_time_tiles</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__tile_ga519e093373c03c5f2a52283f245cf8ef.html#ga519e093373c03c5f2a52283f245cf8ef">tfloatbox_value_time_tiles</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__constructor_ga1753c90d680d9d9e439ec6bc7742be36.html#ga1753c90d680d9d9e439ec6bc7742be36">tfloatinst_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__constructor_ga7a969898cdd9690422c50bdc1bed3532.html#ga7a969898cdd9690422c50bdc1bed3532">tfloatseq_from_base_tstzset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__constructor_ga99ab3ebd4b889c2bd59ca80dafd07e34.html#ga99ab3ebd4b889c2bd59ca80dafd07e34">tfloatseq_from_base_tstzspan</a></td></tr>
@@ -1154,8 +1154,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__accessor_ga2f89b0c4ec195806d986f1002d6e39bc.html#ga2f89b0c4ec195806d986f1002d6e39bc">tint_value_at_timestamptz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__accessor_ga6cc62b6ba2c0705a7d12bbc6285c0601.html#ga6cc62b6ba2c0705a7d12bbc6285c0601">tint_value_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__tile_ga8342721dcd5d7dc03304b75a2f8a307c.html#ga8342721dcd5d7dc03304b75a2f8a307c">tint_value_spans</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_8h_a24eda65c5c06999d868657eb24bbdb52.html#a24eda65c5c06999d868657eb24bbdb52">tint_value_split</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_8h_a6479b58c9e9bb5b6fbc3d004b8e29004.html#a6479b58c9e9bb5b6fbc3d004b8e29004">tint_value_time_split</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__tile_gaa9e15217868801deb846e144491a695e.html#gaa9e15217868801deb846e144491a695e">tint_value_split</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__tile_ga6479b58c9e9bb5b6fbc3d004b8e29004.html#ga6479b58c9e9bb5b6fbc3d004b8e29004">tint_value_time_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__accessor_ga3299967e75b67a74c7217f3d5849ede6.html#ga3299967e75b67a74c7217f3d5849ede6">tint_values</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__agg_ga821da809320e72fd9a2338639eafaf30.html#ga821da809320e72fd9a2338639eafaf30">tint_wmax_transfn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__agg_gad209b3e20ccfcd13a399b26dc3e8dddd.html#gad209b3e20ccfcd13a399b26dc3e8dddd">tint_wmin_transfn</a></td></tr>
@@ -1165,7 +1165,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_8h_adb961ae3adbf5058d985423e0cec79b8.html#adb961ae3adbf5058d985423e0cec79b8">tintbox_get_value_time_tile</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="meos_8h_ae6a58d7930bd5bec6bdfc79cd30c42d7.html#ae6a58d7930bd5bec6bdfc79cd30c42d7">tintbox_time_tiles</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8h_a5735de8bafe11e913e75b6e243924aaf.html#a5735de8bafe11e913e75b6e243924aaf">tintbox_value_tiles</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_8h_ae50df61ca1b228aaccd88d1e569120ca.html#ae50df61ca1b228aaccd88d1e569120ca">tintbox_value_time_tiles</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__tile_gaafc964a325c94f1b5b36eddcb5900327.html#gaafc964a325c94f1b5b36eddcb5900327">tintbox_value_time_tiles</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__constructor_gafa0532e92951b63e1c3a9f5320ec9f68.html#gafa0532e92951b63e1c3a9f5320ec9f68">tintinst_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__constructor_ga10728df0721f2edfe746a92882c1d2a1.html#ga10728df0721f2edfe746a92882c1d2a1">tintseq_from_base_tstzset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__constructor_ga3577a395ac90650939091862a8f41c14.html#ga3577a395ac90650939091862a8f41c14">tintseq_from_base_tstzspan</a></td></tr>
@@ -1321,6 +1321,31 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__set_ga60142fb89199c1e16f4b59fc12b4cf78.html#ga60142fb89199c1e16f4b59fc12b4cf78">union_timestamptz_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__set_gacba16d34e06bb899c05ea3e371678a87.html#gacba16d34e06bb899c05ea3e371678a87">union_timestamptz_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__set_ga24f7d56ae158cfea2b41d50d9f240a50.html#ga24f7d56ae158cfea2b41d50d9f240a50">union_timestamptz_spanset</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a97b16a1cc2336b0db777f9ccb32ff6b9.html#a97b16a1cc2336b0db777f9ccb32ff6b9">VALIDATE_BIGINTSET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a5724dcd182406f15444658985c4f4fcb.html#a5724dcd182406f15444658985c4f4fcb">VALIDATE_BIGINTSPAN</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a855176536df2488a0a43a8d4bd61d101.html#a855176536df2488a0a43a8d4bd61d101">VALIDATE_BIGINTSPANSET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_af3edc7d2e947b881a559d92803986eca.html#af3edc7d2e947b881a559d92803986eca">VALIDATE_DATESET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a122d022b68db3e81448a1281ab2605a3.html#a122d022b68db3e81448a1281ab2605a3">VALIDATE_DATESPAN</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a57406134bc7fb804cda9f724baf8fbc7.html#a57406134bc7fb804cda9f724baf8fbc7">VALIDATE_DATESPANSET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a848a5e2de35d44d5a348a60caec84d14.html#a848a5e2de35d44d5a348a60caec84d14">VALIDATE_FLOATSET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_ac00ff7eef05500a382c3095effce52c1.html#ac00ff7eef05500a382c3095effce52c1">VALIDATE_FLOATSPAN</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_ab95d3645d0948b6d239461c40942f07f.html#ab95d3645d0948b6d239461c40942f07f">VALIDATE_FLOATSPANSET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a1f2e5a6250b090beb2095a785138766d.html#a1f2e5a6250b090beb2095a785138766d">VALIDATE_INTSET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a7035c1cba0c9d1e24d2242f0e9c06fd3.html#a7035c1cba0c9d1e24d2242f0e9c06fd3">VALIDATE_INTSPAN</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_ab1b520cb5709f941293e87561d657208.html#ab1b520cb5709f941293e87561d657208">VALIDATE_INTSPANSET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_adfba62e196e7f7367cb82d576fea54be.html#adfba62e196e7f7367cb82d576fea54be">VALIDATE_NOT_NULL</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a38ed77d98f86b021ab28c600f112c3ce.html#a38ed77d98f86b021ab28c600f112c3ce">VALIDATE_NUMSET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a4bb5bec51cea2421b74790f13a5980b9.html#a4bb5bec51cea2421b74790f13a5980b9">VALIDATE_NUMSPAN</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a600efa1eed2bc69fc43fec8d163c31fb.html#a600efa1eed2bc69fc43fec8d163c31fb">VALIDATE_NUMSPANSET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a7bee3bac97667636111afa53f6d845da.html#a7bee3bac97667636111afa53f6d845da">VALIDATE_TBOOL</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a5b98309396bd280efe174ce81bd56c70.html#a5b98309396bd280efe174ce81bd56c70">VALIDATE_TEXTSET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a055d6f3fdaa06f4a2260a186c9b3fac1.html#a055d6f3fdaa06f4a2260a186c9b3fac1">VALIDATE_TFLOAT</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_af92c45048d38d9da19a49d313c66d682.html#af92c45048d38d9da19a49d313c66d682">VALIDATE_TINT</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_aee4aa6eae7857a0fa67b5b37cc2bbad3.html#aee4aa6eae7857a0fa67b5b37cc2bbad3">VALIDATE_TNUMBER</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a5766a1ae7c2c31d52562300cfde57f9e.html#a5766a1ae7c2c31d52562300cfde57f9e">VALIDATE_TSTZSET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a6cef3bfc3388594d5db56775103e4b26.html#a6cef3bfc3388594d5db56775103e4b26">VALIDATE_TSTZSPAN</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a3a85a395cb9edbd1ffbd328b6e7fd426.html#a3a85a395cb9edbd1ffbd328b6e7fd426">VALIDATE_TSTZSPANSET</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8h_a34e319f2025cb0c3847638d86c81035c.html#a34e319f2025cb0c3847638d86c81035c">VALIDATE_TTEXT</a></td></tr>
         </table>
       </div>
    </td>

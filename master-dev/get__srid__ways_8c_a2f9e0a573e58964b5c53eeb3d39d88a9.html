@@ -99,15 +99,6 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>A simple program that get the SRID of the geometries stored in the file <code>ways.csv</code> that has the content of the PostgreSQL table ways defined as follows. </p>
-<div class="fragment"><div class="line">CREATE TABLE <span class="keyword">public</span>.ways (</div>
-<div class="line">  gid bigint NOT NULL,</div>
-<div class="line">  the_geom <span class="keyword">public</span>.geometry NOT NULL,</div>
-<div class="line">  length <span class="keywordtype">double</span> precision NOT NULL</div>
-<div class="line">);</div>
-</div><!-- fragment --><p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o <a class="code hl_function" href="group__meos__npoint__base__accessor_gae58943a3dbef640c6a8777667cf2f659.html#gae58943a3dbef640c6a8777667cf2f659">get_srid_ways</a> <a class="code hl_function" href="group__meos__npoint__base__accessor_gae58943a3dbef640c6a8777667cf2f659.html#gae58943a3dbef640c6a8777667cf2f659">get_srid_ways</a>.c -L/usr/local/lib -lmeos</div>
-<div class="ttc" id="agroup__meos__npoint__base__accessor_gae58943a3dbef640c6a8777667cf2f659_html_gae58943a3dbef640c6a8777667cf2f659"><div class="ttname"><a href="group__meos__npoint__base__accessor_gae58943a3dbef640c6a8777667cf2f659.html#gae58943a3dbef640c6a8777667cf2f659">get_srid_ways</a></div><div class="ttdeci">int32_t get_srid_ways()</div><div class="ttdoc">Return the SRID of the routes in the ways table.</div><div class="ttdef"><b>Definition:</b> npoint.c:124</div></div>
-</div><!-- fragment --> 
 </div>
 </div>
     </td>

@@ -96,18 +96,11 @@ $(function() {
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define NO_INSTANTS_BATCH&#160;&#160;&#160;1000</td>
+          <td class="memname">#define NO_INSTANTS_BATCH&#160;&#160;&#160;10000</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>A simple program that reads AIS data from a CSV file, converts them into temporal values, and stores them in MobilityDB. </p>
-<p >This program uses the libpq library <a href="https://www.postgresql.org/docs/current/libpq.html">https://www.postgresql.org/docs/current/libpq.html</a> for connecting to a PostgreSQL database that has the MobilityDB extension. For this, it is required that <code>libpq-dev</code> is installed in your system. For example, in Ubuntu you can install this library as follows </p><div class="fragment"><div class="line">sudo apt-get install libpq-dev</div>
-</div><!-- fragment --><p >You should configure PostgreSQL to accept all incoming connections by setting in the <code>pg_hba.conf</code> file </p><div class="fragment"><div class="line">host all all 0.0.0.0/0 md5</div>
-</div><!-- fragment --><p> Also, make sure that PostgreSQL allows incoming connections on all available IP interfaces by setting in the <code>postgresql.conf</code> file </p><div class="fragment"><div class="line">listen_addresses = <span class="charliteral">&#39;*&#39;</span></div>
-</div><!-- fragment --><p >This program is based on the libpq example programs <a href="https://www.postgresql.org/docs/current/libpq-example.html">https://www.postgresql.org/docs/current/libpq-example.html</a> Please read the assumptions made about the input file in the file <code><a class="el" href="02__ais__read_8c.html">02_ais_read.c</a></code> in the same directory.</p>
-<p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -I/usr/include/postgresql -o 04_ais_store 04_ais_store.c -L/usr/local/lib -lmeos -lpq</div>
-</div><!-- fragment --> 
 </div>
 </div>
     </td>

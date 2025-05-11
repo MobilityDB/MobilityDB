@@ -86,6 +86,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a6aaa5536b4f11ae4aed7a114e0f32b87.html#a6aaa5536b4f11ae4aed7a114e0f32b87">geopoint_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_ad8290327267bb18b7f28118199edfb9e.html#ad8290327267bb18b7f28118199edfb9e">lwcircle_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a8b94ab832b29cf060375f55ddf5d768c.html#a8b94ab832b29cf060375f55ddf5d768c">lwcircstring_from_lwpointarray</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_adf91ca6c0d33219d4b5841de3bc85477.html#adf91ca6c0d33219d4b5841de3bc85477">ptarray_cmp2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_ae4777e2eda111a33968ec6bbaacabf74.html#ae4777e2eda111a33968ec6bbaacabf74">tcbuffer_traversed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a471e8dc77190ba68b2c8bf977a6a8f89.html#a471e8dc77190ba68b2c8bf977a6a8f89">tcbufferinst_trav_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a8f6bb3a6ee6290b588b187f6a916bdf5.html#a8f6bb3a6ee6290b588b187f6a916bdf5">tcbufferseq_discstep_trav_area</a></td></tr>
@@ -96,6 +97,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_abfdcc36daf2bfdc592f7fa594f7248c0.html#abfdcc36daf2bfdc592f7fa594f7248c0">tcbufferseqset_step_trav_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_aabf986e4d9779bf6968becce7329592c.html#aabf986e4d9779bf6968becce7329592c">tcbufferseqset_trav_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a60b2e52584556ea166432d1993f475b1.html#a60b2e52584556ea166432d1993f475b1">trapezoid_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a081b023882f97a3d2bb35ae3a4eb0bb7.html#a081b023882f97a3d2bb35ae3a4eb0bb7">trapezoid_sort_cmp</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_aefc887d822be66a2de19ddedb340a41f.html#aefc887d822be66a2de19ddedb340a41f">trapezoidarr_remove_duplicates</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a5c8e87f394cc7eee63a9e500f0f6dce6.html#a5c8e87f394cc7eee63a9e500f0f6dce6">trapezoidarr_sort</a></td></tr>
         </table>
       </div>
    </td>
@@ -136,7 +140,8 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">seq</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffer </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID @csqlfn <a class="el" href="group__mobilitydb__cbuffer__accessor_ga85cc8e6104460481eacb1f9fb66e791e.html#ga85cc8e6104460481eacb1f9fb66e791e" title="Return the geometry covered by a temporal circular buffer @sqlfn traversedArea()">Tcbuffer_traversed_area()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>Array of output geometries @csqlfn <a class="el" href="group__mobilitydb__cbuffer__accessor_ga85cc8e6104460481eacb1f9fb66e791e.html#ga85cc8e6104460481eacb1f9fb66e791e" title="Return the geometry covered by a temporal circular buffer @sqlfn traversedArea()">Tcbuffer_traversed_area()</a> </td></tr>
   </table>
   </dd>
 </dl>

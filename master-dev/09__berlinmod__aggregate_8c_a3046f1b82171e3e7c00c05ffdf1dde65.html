@@ -95,11 +95,15 @@ $(function() {
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define MAX_LENGTH_TRIP&#160;&#160;&#160;170001</td>
+          <td class="memname">#define MAX_LENGTH_TRIP&#160;&#160;&#160;400001</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
+<p>Maximum length in characters of a trip in the input data. </p>
+<p >This value is set according to the following query executed in the database created by the MobilityDB-BerlinMOD generator. </p><div class="fragment"><div class="line">SELECT MAX(length(asHexEWKB(trip))) FROM trips;</div>
+<div class="line">-- 328178</div>
+</div><!-- fragment --> 
 </div>
 </div>
     </td>

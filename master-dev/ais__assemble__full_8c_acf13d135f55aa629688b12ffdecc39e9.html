@@ -104,15 +104,6 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>A simple program that reads AIS data from a CSV file containing one full day of observations provided by the Danish Maritime Authority in <a href="https://web.ais.dk/aisdata/">https://web.ais.dk/aisdata/</a>, constructs for each ship temporal values for the trip and the SOG, and outputs for each ship the MMSI, the number of records and instants used for contruct the temporal values, the distance travelled and the time-weighted average of the SOG. </p>
-<p >Please notice that the <code>data</code> directory DOES NOT contain the input CSV file, you must download it from the website above.</p>
-<p >Please read the assumptions made about the input CSV file in the file <code><a class="el" href="02__ais__read_8c.html">02_ais_read.c</a></code> in the same directory. The program assumes that the input file contains at most a given number of records for at most a given number of ships, as defined by two compilation constraints. Also, the program copes with minimal error correction, that is,</p><ul>
-<li>It supposes that the observations have increasing timestamp values</li>
-<li>It verifies that the latitude, longitude, and SOG values read are in specified ranges, and</li>
-<li>It takes only the first observation when there are two or more observations for the same ship with equal timestamp values.</li>
-</ul>
-<p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o ais_assemble_full ais_assemble_full.c -L/usr/local/lib -lmeos</div>
-</div><!-- fragment --> 
 </div>
 </div>
     </td>

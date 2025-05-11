@@ -105,21 +105,6 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>A simple program that generates a given number of ttext instants, appends the instant into a sequence set where each sequence of the sequence set has a fixed number of instants defined by a compiler constant. </p>
-<p >The program outputs the number of sequences and, for the last sequence, the number of instants and the last value.</p>
-<p >The instants are generated so they are not redundant, that is, all input instants will appear in the final sequence.</p>
-<p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o ttext_expand ttext_expand.c -L/usr/local/lib -lmeos</div>
-</div><!-- fragment --><p >The output of the program when MEOS is built with the flag -DDEBUG_EXPAND=1 to show debug messages for the expandable data structures is as follows </p><div class="fragment"><div class="line">Total number of instants generated: 50000</div>
-<div class="line">Maximum number of instants in a sequence: 500</div>
-<div class="line">Generating the instants (one <span class="charliteral">&#39;*&#39;</span> marker every 100 instants)</div>
-<div class="line">* Seq -&gt; 128 * Seq -&gt; 256 * Seq -&gt; 512 *************************************</div>
-<div class="line">* SS -&gt; 128 ****************************************************************</div>
-<div class="line">Number of instants in the sequence <a class="code hl_function" href="meos_2src_2cbuffer_2CMakeLists_8txt_a3270654e8f083a33144aced11d28b9b3.html#a3270654e8f083a33144aced11d28b9b3">set</a>: 50000</div>
-<div class="line">Number of sequences: 100, Maximum number of sequences : 128</div>
-<div class="line">Number of instants in the last sequence: 500, Last value : BBBBBBBBB</div>
-<div class="line">The program took 0.000000 seconds to execute</div>
-<div class="ttc" id="ameos_2src_2cbuffer_2CMakeLists_8txt_a3270654e8f083a33144aced11d28b9b3_html_a3270654e8f083a33144aced11d28b9b3"><div class="ttname"><a href="meos_2src_2cbuffer_2CMakeLists_8txt_a3270654e8f083a33144aced11d28b9b3.html#a3270654e8f083a33144aced11d28b9b3">set</a></div><div class="ttdeci">set(CBUFFER_SRCS cbuffer.c tcbuffer.c tcbuffer_boxops.c tcbuffer_compops.c tcbuffer_distance.c tcbuffer_spatialfuncs.c tcbuffer_spatialrels.c) if(1) list(APPEND CBUFFER_SRCS cbufferset_meos.c) endif() add_library(cbuffer OBJECT $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
-</div><!-- fragment --> 
 </div>
 </div>
     </td>

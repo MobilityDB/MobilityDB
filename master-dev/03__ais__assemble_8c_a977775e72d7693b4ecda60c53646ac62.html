@@ -102,11 +102,6 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>A simple program that reads AIS data from a CSV file, constructs trips from these records, and outputs for each trip the MMSI, the number of instants, and the distance travelled. </p>
-<p >The program also stores in a CSV file the assembled trips.</p>
-<p >Please read the assumptions made about the input file in the file <code><a class="el" href="02__ais__read_8c.html">02_ais_read.c</a></code> in the same directory. Furthermore, the program assumes the input file contains less than 50K observations for at most five ships. Also, the program does not cope with erroneous inputs, such as two or more observations for the same ship with equal timestamp values and supposes that the observations are in increasing timestamp value.</p>
-<p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o 03_ais_assemble 03_ais_assemble.c -L/usr/local/lib -lmeos</div>
-</div><!-- fragment --> 
 </div>
 </div>
     </td>

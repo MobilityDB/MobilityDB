@@ -80,6 +80,9 @@ $(function() {
   <div class="headertitle"><div class="title">ttext_expand.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>A simple program that generates a given number of ttext instants, appends the instant into a sequence set where each sequence of the sequence set has a fixed number of instants defined by a compiler constant.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;time.h&gt;</code><br />
@@ -89,7 +92,7 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a01fa66b89ffeecb1c172bc490622d411"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__expand_8c_a01fa66b89ffeecb1c172bc490622d411.html#a01fa66b89ffeecb1c172bc490622d411">COMPACT_COMP_SEQS</a>&#160;&#160;&#160;<a class="el" href="c_8h_a65e9886d74aaee76545e83dd09011727.html#a65e9886d74aaee76545e83dd09011727">false</a></td></tr>
+<tr class="memitem:a01fa66b89ffeecb1c172bc490622d411"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__expand_8c_a01fa66b89ffeecb1c172bc490622d411.html#a01fa66b89ffeecb1c172bc490622d411">COMPACT_COMP_SEQS</a>&#160;&#160;&#160;<a class="el" href="c_8h_a41f9c5fb8b08eb5dc3edce4dcb37fee7.html#a41f9c5fb8b08eb5dc3edce4dcb37fee7">true</a></td></tr>
 <tr class="separator:a01fa66b89ffeecb1c172bc490622d411"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad72dbcf6d0153db1b8d8a58001feed83"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__expand_8c_ad72dbcf6d0153db1b8d8a58001feed83.html#ad72dbcf6d0153db1b8d8a58001feed83">DEBUG</a>&#160;&#160;&#160;<a class="el" href="c_8h_a65e9886d74aaee76545e83dd09011727.html#a65e9886d74aaee76545e83dd09011727">false</a></td></tr>
 <tr class="separator:ad72dbcf6d0153db1b8d8a58001feed83"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -100,7 +103,6 @@ Macros</h2></td></tr>
 <tr class="memitem:a2f477c84962a50fe1d8ed029757a79eb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__expand_8c_a2f477c84962a50fe1d8ed029757a79eb.html#a2f477c84962a50fe1d8ed029757a79eb">INITIAL_SEQUENCES_SEQSET</a>&#160;&#160;&#160;64</td></tr>
 <tr class="separator:a2f477c84962a50fe1d8ed029757a79eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a977775e72d7693b4ecda60c53646ac62"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__expand_8c_a977775e72d7693b4ecda60c53646ac62.html#a977775e72d7693b4ecda60c53646ac62">MAX_INSTANTS</a>&#160;&#160;&#160;50000000</td></tr>
-<tr class="memdesc:a977775e72d7693b4ecda60c53646ac62"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple program that generates a given number of ttext instants, appends the instant into a sequence set where each sequence of the sequence set has a fixed number of instants defined by a compiler constant.  <a href="ttext__expand_8c_a977775e72d7693b4ecda60c53646ac62.html#a977775e72d7693b4ecda60c53646ac62">More...</a><br /></td></tr>
 <tr class="separator:a977775e72d7693b4ecda60c53646ac62"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad420c8d289b7ad9f06e28366c90f6758"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__expand_8c_ad420c8d289b7ad9f06e28366c90f6758.html#ad420c8d289b7ad9f06e28366c90f6758">MAX_INSTANTS_SEQ</a>&#160;&#160;&#160;50000</td></tr>
 <tr class="separator:ad420c8d289b7ad9f06e28366c90f6758"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -114,7 +116,22 @@ Functions</h2></td></tr>
 <tr class="memitem:a840291bc02cba5474a4cb46a9b9566fe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ttext__expand_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a> (void)</td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >A simple program that generates a given number of ttext instants, appends the instant into a sequence set where each sequence of the sequence set has a fixed number of instants defined by a compiler constant. </p>
+<p >The program outputs the number of sequences and, for the last sequence, the number of instants and the last value.</p>
+<p >The instants are generated so they are not redundant, that is, all input instants will appear in the final sequence.</p>
+<p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o ttext_expand ttext_expand.c -L/usr/local/lib -lmeos</div>
+</div><!-- fragment --><p >The output of the program when MEOS is built with the flag -DDEBUG_EXPAND=1 to show debug messages for the expandable data structures is as follows </p><div class="fragment"><div class="line">Total number of instants generated: 50000</div>
+<div class="line">Maximum number of instants in a sequence: 500</div>
+<div class="line">Generating the instants (one <span class="charliteral">&#39;*&#39;</span> marker every 100 instants)</div>
+<div class="line">* Seq -&gt; 128 * Seq -&gt; 256 * Seq -&gt; 512 *************************************</div>
+<div class="line">* SS -&gt; 128 ****************************************************************</div>
+<div class="line">Number of instants in the sequence <a class="code hl_function" href="meos_2src_2cbuffer_2CMakeLists_8txt_a3270654e8f083a33144aced11d28b9b3.html#a3270654e8f083a33144aced11d28b9b3">set</a>: 50000</div>
+<div class="line">Number of sequences: 100, Maximum number of sequences : 128</div>
+<div class="line">Number of instants in the last sequence: 500, Last value : BBBBBBBBB</div>
+<div class="line">The program took 0.000000 seconds to execute</div>
+<div class="ttc" id="ameos_2src_2cbuffer_2CMakeLists_8txt_a3270654e8f083a33144aced11d28b9b3_html_a3270654e8f083a33144aced11d28b9b3"><div class="ttname"><a href="meos_2src_2cbuffer_2CMakeLists_8txt_a3270654e8f083a33144aced11d28b9b3.html#a3270654e8f083a33144aced11d28b9b3">set</a></div><div class="ttdeci">set(CBUFFER_SRCS cbuffer.c tcbuffer.c tcbuffer_boxops.c tcbuffer_compops.c tcbuffer_distance.c tcbuffer_spatialfuncs.c tcbuffer_spatialrels.c) if(1) list(APPEND CBUFFER_SRCS cbufferset_meos.c) endif() add_library(cbuffer OBJECT $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
+</div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5
