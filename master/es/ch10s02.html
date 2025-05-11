@@ -33,7 +33,7 @@ FROM Trips T
 -- Filtro de índice con cuadro delimitador
 WHERE T.Trip &amp;&amp; tstzspan '[2001-01-01, 2001-01-02)';
 </pre><p>
-		</p><p>En el caso de los puntos temporales, todas las relaciones espaciales con la semántica posible (ver la <a class="xref" href="ch08s04.html" title="Relaciones espaciales">the section called “Relaciones espaciales”</a>) incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
+		</p><p>En el caso de los puntos temporales, todas las relaciones espaciales con la semántica posible (ver la <a class="xref" href="ch08s05.html" title="Relaciones espaciales">the section called “Relaciones espaciales”</a>) incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
 			</p><pre class="programlisting">
 SELECT tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R

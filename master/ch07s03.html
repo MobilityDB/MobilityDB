@@ -1,41 +1,89 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Conversions</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch07.html" title="Chapter 7. Temporal Geometry Types (Part 1)"><link rel="prev" href="ch07s02.html" title="Input and Output"><link rel="next" href="ch07s04.html" title="Accessors"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Conversions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07s02.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Temporal Geometry Types (Part 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch07s04.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_conversions"></a>Conversions</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_bbox"></a><a class="indexterm" name="id5398"></a><p>Convert a temporal spatial value to a spatiotemporal box</p><p><code class="varname">tspatial::stbox</code></p><pre class="programlisting">
-SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::tstzspan;
--- [2001-01-01, 2001-01-03]
-SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;
--- STBOX XT(((1,1),(3,3)),[2001-01-01, 2001-01-03])
-SELECT tgeography '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]'::stbox;
--- SRID=4326;GEODSTBOX ZT(((1,1,1),(3,3,3)),[2001-01-01, 2001-01-03])
-</pre></li><li class="listitem"><a name="tgeometry_tgeography"></a><a class="indexterm" name="id5406"></a><p>Convert between a temporal geometry and a temporal geography</p><p><code class="varname">tgeometry::tgeography</code></p><p><code class="varname">tgeography::tgeometry</code></p><p><code class="varname">tgeompoint::tgeogpoint</code></p><p><code class="varname">tgeogpoint::tgeompoint</code></p><pre class="programlisting">
-SELECT asText((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tgeogpoint);
--- [POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02)
-SELECT asText((tgeography 'Linestring(0 0,1 1)@2001-01-01')::tgeometry);
--- LINESTRING(0 0,1 1)@2001-01-01
-</pre></li></ul></div><p>
-			A common way to store temporal points in PostGIS is to represent them as geometries of type <code class="varname">LINESTRING M</code> and use the M dimension to encode timestamps as seconds since 1970-01-01 00:00:00. These time-enhanced geometries, called <a class="ulink" href="https://postgis.net/docs/reference.html#Temporal" target="_top">trajectories</a>, can be validated with the function <code class="varname">ST_IsValidTrajectory</code> to verify that the M value is growing from each vertex to the next. Trajectories can be manipulated with the functions <code class="varname">ST_ClosestPointOfApproach</code>, <code class="varname">ST_DistanceCPA</code>, and <code class="varname">ST_CPAWithin</code>. Temporal point values can be converted to/from PostGIS trajectories.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeompoint_geometry"></a><a class="indexterm" name="id5428"></a><p>Convert between a temporal point and a PostGIS trajectory</p><p><code class="varname">tpoint::geo</code></p><p><code class="varname">geo::tpoint</code></p><pre class="programlisting">
-SELECT ST_AsText((tgeompoint 'Point(0 0)@2001-01-01')::geometry);
--- POINT M (0 0 978307200)
-SELECT ST_AsText((tgeompoint '{Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
-  Point(1 1)@2001-01-03}')::geometry);
--- MULTIPOINT M (0 0 978307200,1 1 978393600,1 1 978480000)"
-SELECT ST_AsText((tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)')::geometry);
--- LINESTRING M (0 0 978307200,1 1 978393600)
-SELECT ST_AsText((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
-  [Point(1 1)@2001-01-03, Point(1 1)@2001-01-04),
-  [Point(1 1)@2001-01-05, Point(0 0)@2001-01-06)}')::geometry);
-/* MULTILINESTRING M ((0 0 978307200,1 1 978393600),(1 1 978480000,1 1 978566400),
-   (1 1 978652800,0 0 978739200)) */
-SELECT ST_AsText((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
-  [Point(1 1)@2001-01-03],
-  [Point(1 1)@2001-01-05, Point(0 0)@2001-01-06)}')::geometry);
-/* GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
-   POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200)) */
-</pre><pre class="programlisting">
-SELECT asText(geometry 'LINESTRING M (0 0 978307200,0 1 978393600,
-  1 1 978480000)'::tgeompoint);
--- [POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02, POINT(1 1)@2001-01-03];
-SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
-  POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))'::tgeompoint);
-/* {[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02], [POINT(1 1)@2001-01-03],
-   [POINT(1 1)@2001-01-05, POINT(0 0)@2001-01-06]} */
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch07s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch07.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch07s04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Input and Output </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Accessors</td></tr></table></div></body></html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Input and Output</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch07.html" title="Chapter 7. Temporal Geometry Types (Part 1)"><link rel="prev" href="ch07s02.html" title="Notation"><link rel="next" href="ch07s04.html" title="Conversions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Input and Output</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07s02.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Temporal Geometry Types (Part 1)</th><td width="20%" align="right"> <a accesskey="n" href="ch07s04.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_inout"></a>Input and Output</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tspatial_asText"></a><a class="indexterm" name="id5229"></a><a class="indexterm" name="id5232"></a><p>Return the Well-Known Text (WKT) or the Extended Well-Known Text (EWKT) representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
+</p><p><code class="varname">asText({tspatial,tspatial[],spatial[]}) → {text,text[]}</code></p><p><code class="varname">asEWKT({tspatial,tspatial[],spatial[]}) → {text,text[]}</code></p><pre class="programlisting">
+SELECT asText(tgeompoint 'SRID=4326;[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02)');
+-- [POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02)
+SELECT asText(ARRAY[tgeometry 'SRID=4326;[Point(0 0)@2001-01-01, 
+  Linestring(1 1,2 1)@2001-01-02]', 'Polygon((1 1,2 2,3 1,1 1))@2001-01-01']);
+/* {"[POINT(0 0)@2001-01-01, LINESTRING(1 1,2 1)@2001-01-02]",
+    "POLYGON((1 1,2 2,3 1,1 1))@2001-01-01"} */
+SELECT asText(ARRAY[geometry 'Point(0 0)', 'Point(1 1)']);
+-- {"POINT(0 0)","POINT(1 1)"}
+SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02)');
+-- SRID=4326;[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02)
+SELECT asEWKT(ARRAY[tgeometry 'SRID=4326;[Point(0 0)@2001-01-01, 
+  Linestring(1 1,2 1)@2001-01-02]', 'Polygon((1 1,2 2,3 1,1 1))@2001-01-01']);
+-- {"SRID=4326;[POINT(0 0)@2001-01-01, LINESTRING(1 1,2 1)@2001-01-02]",
+    "POLYGON((1 1,2 2,3 1,1 1))@2001-01-01"}
+SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
+-- {"SRID=5676;POINT(0 0)","SRID=5676;POINT(1 1)"}
+</pre></li><li class="listitem"><a name="tspatial_asMFJSON"></a><a class="indexterm" name="id5256"></a><p>Return the Moving Features JSON representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
+</p><p><code class="varname">asMFJSON(tspatial,options=0,flags=0,maxdecdigits=15) → bytea</code></p><p>The <code class="varname">options</code> argument can be used to add BBOX and/or CRS in MFJSON output:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: MFJSON BBOX</p></li><li class="listitem"><p>2: MFJSON Short CRS (e.g., EPSG:4326)</p></li><li class="listitem"><p>4: MFJSON Long CRS (e.g., urn:ogc:def:crs:EPSG::4326)</p></li></ul></div><p>The <code class="varname">flags</code> argument can be used to customize the JSON output, for example, to produce an easy-to-read (for human readers) JSON output. Refer to the documentation of the <code class="varname">json-c</code> library for the possible values. Typical values are as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p>0: means no option (default value)</p></li><li class="listitem"><p>1: JSON_C_TO_STRING_SPACED</p></li><li class="listitem"><p>2: JSON_C_TO_STRING_PRETTY</p></li></ul></div><p>The <code class="varname">maxdecdigits</code> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</p><pre class="programlisting">
+SELECT asMFJSON(tgeompoint 'Point(1 2)@2019-01-01 18:00:00.15+02');
+/* {"type":"MovingPoint","coordinates":[[1,2]],"datetimes":["2019-01-01T17:00:00.15+01"],
+    "interpolation":"None"} */
+SELECT asMFJSON(tgeometry 'SRID=3812;Linestring(1 1,1 2)@2019-01-01 18:00:00.15+02');
+/* {"type":"MovingGeometry",
+    "crs":{"type":"Name","properties":{"name":"EPSG:3812"}},
+    "values":[{"type":"LineString","coordinates":[[1,1],[1,2]]}],
+    "datetimes":["2019-01-01T17:00:00.15+01"],"interpolation":"None"} */
+SELECT asMFJSON(tgeompoint 'SRID=4326;
+  Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 3, 0, 2);
+/* {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},
+    "stBoundedBy":{"bbox":[50.81,4.38,50.81,4.38],
+    "period":{"begin":"2019-01-01 17:00:00.15+01","end":"2019-01-01 17:00:00.15+01"}},
+    "coordinates":[[50.81,4.38]],"datetimes":["2019-01-01T17:00:00.15+01"],
+    "interpolations":"None"} */
+</pre></li><li class="listitem"><a name="tspatial_asBinary"></a><a class="indexterm" name="id5301"></a><a class="indexterm" name="id5304"></a><a class="indexterm" name="id5307"></a><p>Return the Well-Known Binary (WKB), the Extended Well-Known Binary (EWKB) representation, or the Hexadecimal Extended Well-Known Binary (EWKB) representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
+</p><p><code class="varname">asBinary(tspatial,endian text='') → bytea</code></p><p><code class="varname">asEWKB(tspatial,endian text='') → bytea</code></p><p><code class="varname">asHexEWKB(tspatial,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
+SELECT asBinary(tgeompoint 'Point(1 2 3)@2001-01-01');
+-- \x012e0011000000000000f03f00000000000000400000000000000840009c57d3c11c0000
+SELECT asEWKB(tgeogpoint 'SRID=7844;Point(1 2 3)@2001-01-01');
+-- \x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000
+SELECT asHexEWKB(tgeompoint 'SRID=3812;Point(1 2 3)@2001-01-01');
+-- 012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000
+</pre></li><li class="listitem"><a name="tspatialFromText"></a><a class="indexterm" name="id5334"></a><a class="indexterm" name="id5337"></a><p>Input from the Well-Known Text (WKT) or from the Extended Well-Known Text (EWKT) representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
+</p><p><code class="varname">tspatialFromText(text) → tspatial</code></p><p><code class="varname">tspatialFromEWKT(text) → tspatial</code></p><p>In the above functions, <code class="varname">tspatial</code> replaces any spatial type, such as <code class="varname">tgeompoint</code>, <code class="varname">tgeometry</code>, or <code class="varname">tpose</code>.</p><pre class="programlisting">
+SELECT asEWKT(tgeompointFromText(text '[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]'));
+-- [POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
+SELECT asEWKT(tgeographyFromText(text 
+  '[Point(1 2)@2001-01-01, Linestring(1 2,3 4)@2001-01-02]'));
+-- SRID=4326;[POINT(1 2)@2001-01-01, LINESTRING(1 2,3 4)@2001-01-02]
+SELECT asEWKT(tgeompointFromEWKT(text 'SRID=3812;[Point(1 2)@2001-01-01,
+  Point(3 4)@2001-01-02]'));
+-- SRID=3812;[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
+SELECT asEWKT(tgeographyFromEWKT(text 'SRID=7844;[Point(1 2)@2001-01-01,
+  Linestring(1 2,3 4)@2001-01-02]'));
+-- SRID=7844;[POINT(1 2)@2001-01-01, LINESTRING(1 2,3 4)@2001-01-02]
+</pre></li><li class="listitem"><a name="tspatialFromMFJSON"></a><a class="indexterm" name="id5366"></a><p>Input from the Moving Features JSON representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
+</p><p><code class="varname">tspatialFromMFJSON(text) → tspatial</code></p><p>In the above function, <code class="varname">tspatial</code> replaces any spatiotemporal type, for example, <code class="varname">tgeompoint</code>, <code class="varname">tgeometry</code>, or <code class="varname">tpose</code></p><pre class="programlisting">
+SELECT asEWKT(tgeompointFromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
+  "properties":{"name":"EPSG:4326"}},"coordinates":[[50.81,4.38]],
+  "datetimes":["2019-01-01T17:00:00.15+01"],"interpolation":"None"}'));
+-- SRID=4326;POINT(50.81 4.38)@2019-01-01 17:00:00.15+01
+SELECT asEWKT(tgeogpointFromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
+  "properties":{"name":"EPSG:4326"}},"coordinates":[[50.81,4.38]],
+  "datetimes":["2019-01-01T17:00:00.15+01"],"interpolation":"None"}'));
+-- SRID=4326;POINT(50.81 4.38)@2019-01-01 17:00:00.15+01
+SELECT asEWKT(tgeographyFromMFJSON(text '{"type":"MovingGeometry",
+  "crs":{"type":"Name","properties":{"name":"EPSG:7844"}},
+  "values":[{"type":"LineString","coordinates":[[1,1],[1,2]]}],
+  "datetimes":["2019-01-01T17:00:00.15+01"],"interpolation":"None"}'));
+-- SRID=7844;LINESTRING(1 1,1 2)@2019-01-01 17:00:00.15+01
+</pre></li><li class="listitem"><a name="tspatialFromBinary"></a><a class="indexterm" name="id5393"></a><a class="indexterm" name="id5396"></a><a class="indexterm" name="id5399"></a><p>Input from the Well-Known Binary (WKB), from the Extended Well-Known Binary (EWKB), or from the Hexadecimal Extended Well-Known Binary (HexEWKB) representation <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+ <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
+</p><p><code class="varname">tspatialFromBinary(bytea) → tspatial</code></p><p><code class="varname">tspatialFromEWKB(bytea) → tspatial</code></p><p><code class="varname">tspatialFromHexEWKB(text) → tspatial</code></p><p>In the previous functions, <code class="varname">tspatial</code> replaces any spatiotemporal type, for example, <code class="varname">tgeompoint</code>, <code class="varname">tgeometry</code>, or <code class="varname">tpose</code></p><pre class="programlisting">
+SELECT asEWKT(tgeompointFromBinary(
+  '\x012e0011000000000000f03f00000000000000400000000000000840009c57d3c11c0000'));
+-- POINT Z (1 2 3)@2001-01-01
+SELECT asEWKT(tgeogpointFromEWKB(
+  '\x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000'));
+-- SRID=7844;POINT Z (1 1 1)@2001-01-01
+SELECT asEWKT(tgeompointFromHexEWKB(
+  '012E0051E40E0000000000000000F03F00000000000000400000000000000840009C57D3C11C0000'));
+-- SRID=3812;POINT(1 2 3)@2001-01-01
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch07s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch07.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch07s04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Notation </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Conversions</td></tr></table></div></body></html>
