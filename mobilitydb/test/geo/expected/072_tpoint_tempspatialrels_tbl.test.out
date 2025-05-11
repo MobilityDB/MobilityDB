@@ -20,8 +20,7 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seqset
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
-  WHERE geometrytype(trajectory(temp)) <> 'GEOMETRYCOLLECTION' AND
-  tContains(g, temp) ?= true <> eContains(g, temp);
+  WHERE tContains(g, temp) ?= true <> eContains(g, temp);
  count 
 -------
      0

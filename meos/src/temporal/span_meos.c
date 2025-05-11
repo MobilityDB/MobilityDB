@@ -684,7 +684,7 @@ floatspan_shift_scale(const Span *s, double shift, double width, bool hasshift,
  * @param[in] width Width of the result
  * @param[in] hasshift True when the shift argument is given
  * @param[in] haswidth True when the width argument is given
- * @csqlfn #Datespan_shift(), #Datespan_scale(), #Datespan_shift_scale()
+ * @csqlfn #Numspan_shift(), #Numspan_scale(), #Numspan_shift_scale()
  */
 Span *
 datespan_shift_scale(const Span *s, int shift, int width, bool hasshift,

@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that illustrates the set_union aggregate function
  * with integer values
  *

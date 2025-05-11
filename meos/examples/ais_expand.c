@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that reads AIS data from a CSV file, constructs
  * trips from these records, and outputs for each trip the MMSI, the number of
  * instants, and the distance travelled.
@@ -110,7 +111,6 @@ int main(void)
   int no_records = 0;
   int no_nulls = 0;
   char header_buffer[MAX_LENGTH_HEADER];
-  char inst_buffer[MAX_LENGTH_INST];
   char timestamp_buffer[MAX_LENGTH_TIMESTAMP];
 
   /* Read the first line of the file with the headers */
@@ -169,11 +169,8 @@ int main(void)
      * - The coordinates are given in the WGS84 geographic coordinate system
      * - The timestamps are given in GMT time zone
      */
-    char *t_out = timestamp_out(rec.T);
-    sprintf(inst_buffer, "SRID=4326;Point(%lf %lf)@%s", rec.Longitude,
-      rec.Latitude, t_out);
-    free(t_out);
-    TInstant *inst1 = (TInstant *) tgeogpoint_in(inst_buffer);
+    GSERIALIZED *gs = geogpoint_make2d(4326, rec.Longitude, rec.Latitude);
+    TInstant *inst1 = tpointinst_make(gs, rec.T);
     if (! trips[ship].trip)
       trips[ship].trip = (Temporal *) tsequence_make_exp(
         (const TInstant **) &inst1, 1, 2, true, true, LINEAR, false);

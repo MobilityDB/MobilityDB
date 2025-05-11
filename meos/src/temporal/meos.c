@@ -134,7 +134,6 @@ static void
 proj_finalize(void)
 {
   proj_context_destroy(MEOS_PJ_CONTEXT);
-  proj_cleanup();
   MEOS_PJ_CONTEXT = NULL;
   return;
 }
@@ -578,6 +577,8 @@ void
 meos_finalize(void)
 {
   meos_finalize_timezone();
+  /* Finalize PROJ SRS cache */
+  meos_finalize_projsrs();
   /* Finalize PROJ */
   proj_finalize();
   /* Finalize GSL */
@@ -585,6 +586,6 @@ meos_finalize(void)
   return;
 }
 
+/*****************************************************************************/
 #endif /* MEOS */
-
 /*****************************************************************************/

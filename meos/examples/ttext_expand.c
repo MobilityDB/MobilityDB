@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that generates a given number of ttext instants,
  * appends the instant into a sequence set where each sequence of the sequence
  * set has a fixed number of instants defined by a compiler constant.
@@ -83,7 +84,7 @@
  * - True: sequences are compacted before adding them to the sequence set
  * - False: sequences are compacted when compacting the sequence set
  */
-#define COMPACT_COMP_SEQS false
+#define COMPACT_COMP_SEQS true
 /* Determine whether debug messages showing the expansion of sequences and
  * and sequence sets are shown */
 #define DEBUG false

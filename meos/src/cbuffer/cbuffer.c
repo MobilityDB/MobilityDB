@@ -57,6 +57,7 @@
 #include "temporal/type_inout.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+#include "geo/meos_transform.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tspatial.h"
 #include "geo/tgeo.h"
@@ -71,21 +72,21 @@
 
 /**
  * @brief Return true if the three values are collinear
- * @param[in] cbuf1,cbuf2,cbuf3 Input values
+ * @param[in] cb1,cb2,cbuf3 Input values
  * @param[in] ratio Value in [0,1] representing the duration of the
- * timestamps associated to `cbuf1` and `cbuf2` divided by the duration
- * of the timestamps associated to `cbuf1` and `cbuf3`
+ * timestamps associated to `cb1` and `cb2` divided by the duration
+ * of the timestamps associated to `cb1` and `cbuf3`
  */
 bool
-cbuffer_collinear(const Cbuffer *cbuf1, const Cbuffer *cbuf2,
+cbuffer_collinear(const Cbuffer *cb1, const Cbuffer *cb2,
   const Cbuffer *cbuf3, double ratio)
 {
-  Datum value1 = PointerGetDatum(&cbuf1->point);
-  Datum value2 = PointerGetDatum(&cbuf2->point);
+  Datum value1 = PointerGetDatum(&cb1->point);
+  Datum value2 = PointerGetDatum(&cb2->point);
   Datum value3 = PointerGetDatum(&cbuf3->point);
   if (! geopoint_collinear(value1, value2, value3, ratio, false, false))
     return false;
-  return float_collinear(cbuf1->radius, cbuf2->radius, cbuf3->radius, ratio);
+  return float_collinear(cb1->radius, cb2->radius, cbuf3->radius, ratio);
 }
 
 /*****************************************************************************
@@ -171,10 +172,10 @@ cbuffersegm_interpolate(const Cbuffer *start, const Cbuffer *end,
  * @brief Ensure the validity of a circular buffer and geometry
  */
 bool
-ensure_valid_cbuffer_geo(const Cbuffer *cbuf, const GSERIALIZED *gs)
+ensure_valid_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs)
 {
-  VALIDATE_NOT_NULL(cbuf, false); VALIDATE_NOT_NULL(gs, false); 
-  if (! ensure_same_srid(cbuffer_srid(cbuf), gserialized_get_srid(gs)))
+  VALIDATE_NOT_NULL(cb, false); VALIDATE_NOT_NULL(gs, false); 
+  if (! ensure_same_srid(cbuffer_srid(cb), gserialized_get_srid(gs)))
     return false;
   return true;
 }
@@ -183,11 +184,11 @@ ensure_valid_cbuffer_geo(const Cbuffer *cbuf, const GSERIALIZED *gs)
  * @brief Ensure the validity of a circular buffer and spatiotemporal box
  */
 bool
-ensure_valid_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box)
+ensure_valid_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
 {
-  VALIDATE_NOT_NULL(cbuf, false); VALIDATE_NOT_NULL(box, false); 
+  VALIDATE_NOT_NULL(cb, false); VALIDATE_NOT_NULL(box, false); 
   if (! ensure_has_X(T_STBOX, box->flags) || 
-      ! ensure_same_srid(cbuffer_srid(cbuf), box->srid))
+      ! ensure_same_srid(cbuffer_srid(cb), box->srid))
     return false;
   return true;
 }
@@ -196,10 +197,10 @@ ensure_valid_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box)
  * @brief Ensure the validity of two circular buffers
  */
 bool
-ensure_valid_cbuffer_cbuffer(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
+ensure_valid_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  VALIDATE_NOT_NULL(cbuf1, false); VALIDATE_NOT_NULL(cbuf2, false); 
-  if (! ensure_same_srid(cbuffer_srid(cbuf1), cbuffer_srid(cbuf2)))
+  VALIDATE_NOT_NULL(cb1, false); VALIDATE_NOT_NULL(cb2, false); 
+  if (! ensure_same_srid(cbuffer_srid(cb1), cbuffer_srid(cb2)))
     return false;
   return true;
 }
@@ -208,14 +209,14 @@ ensure_valid_cbuffer_cbuffer(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
  * @brief Return true if a set and a circular buffer are valid for set
  * operations
  * @param[in] s Set
- * @param[in] cbuf Value
+ * @param[in] cb Value
  */
 bool
-ensure_valid_cbufferset_cbuffer(const Set *s, const Cbuffer *cbuf)
+ensure_valid_cbufferset_cbuffer(const Set *s, const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_CBUFFERSET(s, false); VALIDATE_NOT_NULL(cbuf, false);
-  if (! ensure_same_srid(spatialset_srid(s), cbuffer_srid(cbuf)))
+  VALIDATE_CBUFFERSET(s, false); VALIDATE_NOT_NULL(cb, false);
+  if (! ensure_same_srid(spatialset_srid(s), cbuffer_srid(cb)))
     return false;
   return true;
 }
@@ -310,21 +311,21 @@ cbuffer_in(const char *str)
 /**
  * @ingroup meos_cbuffer_base_inout
  * @brief Return the string representation of a circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Cbuffer_out()
  */
 char *
-cbuffer_out(const Cbuffer *cbuf, int maxdd)
+cbuffer_out(const Cbuffer *cb, int maxdd)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL);
+  VALIDATE_NOT_NULL(cb, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
   
-  Datum d = PointerGetDatum(&cbuf->point);
+  Datum d = PointerGetDatum(&cb->point);
   char *point = basetype_out(d, T_GEOMETRY, maxdd);
-  char *radius = float8_out(cbuf->radius, maxdd);
+  char *radius = float8_out(cb->radius, maxdd);
   size_t size = strlen(point) + strlen(radius) + 11; // Cbuffer(,) + end NULL
   char *result = palloc(size);
   snprintf(result, size, "Cbuffer(%s,%s)", point, radius);
@@ -342,14 +343,14 @@ cbuffer_out(const Cbuffer *cbuf, int maxdd)
 char *
 cbuffer_wkt_out(Datum value, int maxdd, bool extended)
 {
-  Cbuffer *cbuf = DatumGetCbufferP(value);
-  Datum d = PointerGetDatum(&cbuf->point);
+  Cbuffer *cb = DatumGetCbufferP(value);
+  Datum d = PointerGetDatum(&cb->point);
   GSERIALIZED *gs = DatumGetGserializedP(d);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   size_t len;
   char *wkt = lwgeom_to_wkt(geom, extended ? WKT_EXTENDED : WKT_ISO, maxdd, 
     &len);
-  char *radius = float8_out(cbuf->radius, maxdd);
+  char *radius = float8_out(cb->radius, maxdd);
   len += strlen(radius) + 11; // Cbuffer(,) + end NULL
   char *result = palloc(len);
   snprintf(result, len, "Cbuffer(%s,%s)", wkt, radius);
@@ -362,34 +363,34 @@ cbuffer_wkt_out(Datum value, int maxdd, bool extended)
 /**
  * @ingroup meos_cbuffer_base_inout
  * @brief Return the Well-Known Text (WKT) representation of a circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Cbuffer_as_text()
  */
 char *
-cbuffer_as_text(const Cbuffer *cbuf, int maxdd)
+cbuffer_as_text(const Cbuffer *cb, int maxdd)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL);
+  VALIDATE_NOT_NULL(cb, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return cbuffer_wkt_out(PointerGetDatum(cbuf), maxdd, false);
+  return cbuffer_wkt_out(PointerGetDatum(cb), maxdd, false);
 }
 
 /**
  * @ingroup meos_cbuffer_base_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation of a
  * circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Cbuffer_as_ewkt()
  */
 char *
-cbuffer_as_ewkt(const Cbuffer *cbuf, int maxdd)
+cbuffer_as_ewkt(const Cbuffer *cb, int maxdd)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL);
-  return spatialbase_as_ewkt(PointerGetDatum(cbuf), T_CBUFFER, maxdd);
+  VALIDATE_NOT_NULL(cb, NULL);
+  return spatialbase_as_ewkt(PointerGetDatum(cb), T_CBUFFER, maxdd);
 }
 
 /*****************************************************************************
@@ -434,34 +435,34 @@ cbuffer_from_hexwkb(const char *hexwkb)
  * @ingroup meos_cbuffer_base_inout
  * @brief Return the Well-Known Binary (WKB) representation of a circular
  * buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
  * @csqlfn #Cbuffer_recv(), #Cbuffer_as_wkb()
  */
 uint8_t *
-cbuffer_as_wkb(const Cbuffer *cbuf, uint8_t variant, size_t *size_out)
+cbuffer_as_wkb(const Cbuffer *cb, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL); VALIDATE_NOT_NULL(size_out, NULL);
-  return datum_as_wkb(PointerGetDatum(cbuf), T_CBUFFER, variant, size_out);
+  VALIDATE_NOT_NULL(cb, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return datum_as_wkb(PointerGetDatum(cb), T_CBUFFER, variant, size_out);
 }
 
 /**
  * @ingroup meos_cbuffer_base_inout
  * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
  * representation of a circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
  * @csqlfn #Cbuffer_as_hexwkb()
  */
 char *
-cbuffer_as_hexwkb(const Cbuffer *cbuf, uint8_t variant, size_t *size_out)
+cbuffer_as_hexwkb(const Cbuffer *cb, uint8_t variant, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL); VALIDATE_NOT_NULL(size_out, NULL);
-  return (char *) datum_as_wkb(PointerGetDatum(cbuf), T_CBUFFER,
+  VALIDATE_NOT_NULL(cb, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  return (char *) datum_as_wkb(PointerGetDatum(cb), T_CBUFFER,
     variant | (uint8_t) WKB_HEX, size_out);
 }
 
@@ -505,15 +506,15 @@ cbuffer_make(const GSERIALIZED *point, double radius)
 /**
  * @ingroup meos_cbuffer_base_constructor
  * @brief Return a copy of a circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  */
 Cbuffer *
-cbuffer_copy(const Cbuffer *cbuf)
+cbuffer_copy(const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL);
-  Cbuffer *result = palloc(VARSIZE(cbuf));
-  memcpy(result, cbuf, VARSIZE(cbuf));
+  VALIDATE_NOT_NULL(cb, NULL);
+  Cbuffer *result = palloc(VARSIZE(cb));
+  memcpy(result, cb, VARSIZE(cb));
   return result;
 }
 
@@ -524,18 +525,18 @@ cbuffer_copy(const Cbuffer *cbuf)
 /**
  * @ingroup meos_cbuffer_base_conversion
  * @brief Transform a circular buffer into a geometry
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @csqlfn #Cbuffer_to_geom()
  */
 GSERIALIZED *
-cbuffer_geom(const Cbuffer *cbuf)
+cbuffer_geom(const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL);
-  GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
-  POINT2D *p = (POINT2D *) GS_POINT_PTR(gs);
+  VALIDATE_NOT_NULL(cb, NULL);
+  const GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cb->point));
+  const POINT2D *p = (POINT2D *) GS_POINT_PTR(gs);
   int32_t srid = gserialized_get_srid(gs);
-  return geocircle_make(p->x, p->y, cbuf->radius, srid);
+  return geocircle_make(p->x, p->y, cb->radius, srid);
 }
 
 /**
@@ -612,20 +613,20 @@ cbufferarr_geom(Cbuffer **cbufarr, int count)
  * @ingroup meos_internal_box_conversion
  * @brief Return in the last argument the spatiotemporal box of a circular
  * buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[out] box Spatiotemporal box
  */
 bool
-cbuffer_set_stbox(const Cbuffer *cbuf, STBox *box)
+cbuffer_set_stbox(const Cbuffer *cb, STBox *box)
 {
-  assert(cbuf); assert(box);
-  const GSERIALIZED *point = cbuffer_point_p(cbuf);
+  assert(cb); assert(box);
+  const GSERIALIZED *point = cbuffer_point_p(cb);
   bool result = geo_set_stbox(point, box);
   /* Expand spatial coordinates with respect to radius */
-  box->xmin -= cbuf->radius;
-  box->ymin -= cbuf->radius;
-  box->xmax += cbuf->radius;
-  box->ymax += cbuf->radius;
+  box->xmin -= cb->radius;
+  box->ymin -= cb->radius;
+  box->xmax += cb->radius;
+  box->ymax += cb->radius;
   return result;
 }
 
@@ -653,16 +654,16 @@ cbufferarr_set_stbox(const Datum *values, int count, STBox *box)
 /**
  * @ingroup meos_cbuffer_base_conversion
  * @brief Convert a circular buffer into a spatiotemporal box
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @csqlfn #Cbuffer_to_stbox()
  */
 STBox *
-cbuffer_stbox(const Cbuffer *cbuf)
+cbuffer_stbox(const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL);
+  VALIDATE_NOT_NULL(cb, NULL);
   STBox box;
-  if (! cbuffer_set_stbox(cbuf, &box))
+  if (! cbuffer_set_stbox(cb, &box))
     return NULL;
   return stbox_copy(&box);
 }
@@ -674,44 +675,44 @@ cbuffer_stbox(const Cbuffer *cbuf)
 /**
  * @ingroup meos_internal_base_accessor
  * @brief Return a pointer to the point of a circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @csqlfn #Cbuffer_point()
  */
 const GSERIALIZED *
-cbuffer_point_p(const Cbuffer *cbuf)
+cbuffer_point_p(const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL);
-  return (const GSERIALIZED *) (&cbuf->point);
+  VALIDATE_NOT_NULL(cb, NULL);
+  return (const GSERIALIZED *) (&cb->point);
 }
 
 /**
  * @ingroup meos_cbuffer_base_accessor
  * @brief Return a copy of the point of a circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @csqlfn #Cbuffer_point()
  */
 GSERIALIZED *
-cbuffer_point(const Cbuffer *cbuf)
+cbuffer_point(const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL);
-  const GSERIALIZED *gs = (const GSERIALIZED *) (&cbuf->point);
+  VALIDATE_NOT_NULL(cb, NULL);
+  const GSERIALIZED *gs = (const GSERIALIZED *) (&cb->point);
   return geo_copy(gs);
 }
 
 /**
  * @ingroup meos_cbuffer_base_accessor
  * @brief Return the radius of a circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @csqlfn #Cbuffer_radius()
  */
 double
-cbuffer_radius(const Cbuffer *cbuf)
+cbuffer_radius(const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, DBL_MAX);
-  return cbuf->radius;
+  VALIDATE_NOT_NULL(cb, DBL_MAX);
+  return cb->radius;
 }
 
 /*****************************************************************************
@@ -724,16 +725,16 @@ cbuffer_radius(const Cbuffer *cbuf)
  * number of decimal places
  */
 Cbuffer *
-cbuffer_round(const Cbuffer *cbuf, int maxdd)
+cbuffer_round(const Cbuffer *cb, int maxdd)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL);
+  VALIDATE_NOT_NULL(cb, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
   /* Set precision of the point and the radius */
-  GSERIALIZED *point = point_round((GSERIALIZED *) (&cbuf->point), maxdd);
-  double radius = float_round(cbuf->radius, maxdd);
+  GSERIALIZED *point = point_round((GSERIALIZED *) (&cb->point), maxdd);
+  double radius = float_round(cb->radius, maxdd);
   return cbuffer_make(point, radius);
 }
 
@@ -780,31 +781,31 @@ cbufferarr_round(const Cbuffer **cbufarr, int count, int maxdd)
 /**
  * @ingroup meos_cbuffer_base_srid
  * @brief Return the SRID of a circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @csqlfn #Cbuffer_srid()
  */
 int32_t
-cbuffer_srid(const Cbuffer *cbuf)
+cbuffer_srid(const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, SRID_INVALID);
+  VALIDATE_NOT_NULL(cb, SRID_INVALID);
   return gserialized_get_srid(
-    DatumGetGserializedP(PointerGetDatum(&cbuf->point)));
+    DatumGetGserializedP(PointerGetDatum(&cb->point)));
 }
 
 /**
  * @ingroup meos_cbuffer_base_srid
  * @brief Set the coordinates of the circular buffer to an SRID
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] srid SRID
  * @csqlfn #Cbuffer_set_srid()
  */
 void
-cbuffer_set_srid(Cbuffer *cbuf, int32_t srid)
+cbuffer_set_srid(Cbuffer *cb, int32_t srid)
 {
   /* Ensure the validity of the arguments */
-  assert(cbuf);
-  GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cbuf->point));
+  assert(cb);
+  GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&cb->point));
   gserialized_set_srid(gs, srid);
   return;
 }
@@ -814,17 +815,17 @@ cbuffer_set_srid(Cbuffer *cbuf, int32_t srid)
 /**
  * @brief Return a circular buffer transformed to another SRID using a
  * pipeline
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] srid_to Target SRID, may be `SRID_UNKNOWN` for pipeline
  * transformation
  * @param[in] pj Information about the transformation
  */
 Cbuffer *
-cbuffer_transf_pj(const Cbuffer *cbuf, int32_t srid_to, const LWPROJ *pj)
+cbuffer_transf_pj(const Cbuffer *cb, int32_t srid_to, const LWPROJ *pj)
 {
-  VALIDATE_NOT_NULL(cbuf, NULL); assert(pj);
+  VALIDATE_NOT_NULL(cb, NULL); assert(pj);
   /* Copy the circular buffer to transform its point in place */
-  Cbuffer *result = cbuffer_copy(cbuf);
+  Cbuffer *result = cbuffer_copy(cb);
   GSERIALIZED *gs = DatumGetGserializedP(PointerGetDatum(&result->point));
   if (! point_transf_pj(gs, srid_to, pj))
   {
@@ -837,60 +838,56 @@ cbuffer_transf_pj(const Cbuffer *cbuf, int32_t srid_to, const LWPROJ *pj)
 /**
  * @ingroup meos_cbuffer_base_srid
  * @brief Return a circular buffer transformed to another SRID
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] srid_to Target SRID
  */
 Cbuffer *
-cbuffer_transform(const Cbuffer *cbuf, int32_t srid_to)
+cbuffer_transform(const Cbuffer *cb, int32_t srid_to)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL);
-  int32_t srid_from = cbuffer_srid(cbuf);
+  VALIDATE_NOT_NULL(cb, NULL);
+  int32_t srid_from = cbuffer_srid(cb);
   if (! ensure_srid_known(srid_from) || ! ensure_srid_known(srid_to))
     return NULL;
     
   /* Input and output SRIDs are equal, noop */
   if (srid_from == srid_to)
-    return cbuffer_copy(cbuf);
+    return cbuffer_copy(cb);
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get(srid_from, srid_to);
-  if (! pj)
+  LWPROJ *pj;
+  if (! lwproj_lookup(srid_from, srid_to, &pj))
     return NULL;
 
   /* Transform the circular buffer */
-  Cbuffer *result = cbuffer_transf_pj(cbuf, srid_to, pj);
-
-  /* Clean up and return */
-  proj_destroy(pj->pj); pfree(pj);
-  return result;
+  return cbuffer_transf_pj(cb, srid_to, pj);
 }
 
 /**
  * @ingroup meos_cbuffer_base_srid
  * @brief Return a circular buffer transformed to another SRID using a
  * pipeline
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] pipeline Pipeline string
  * @param[in] srid_to Target SRID, may be `SRID_UNKNOWN`
  * @param[in] is_forward True when the transformation is forward
  */
 Cbuffer *
-cbuffer_transform_pipeline(const Cbuffer *cbuf, const char *pipeline,
+cbuffer_transform_pipeline(const Cbuffer *cb, const char *pipeline,
   int32_t srid_to, bool is_forward)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, NULL); VALIDATE_NOT_NULL(pipeline, NULL);
+  VALIDATE_NOT_NULL(cb, NULL); VALIDATE_NOT_NULL(pipeline, NULL);
 
   /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get_pipeline(pipeline, is_forward);
+  LWPROJ *pj = lwproj_from_str_pipeline(pipeline, is_forward);
   if (! pj)
     return NULL;
 
   /* Transform the circular buffer */
-  Cbuffer *result = cbuffer_transf_pj(cbuf, srid_to, pj);
+  Cbuffer *result = cbuffer_transf_pj(cb, srid_to, pj);
 
   /* Transform the circular buffer */
   proj_destroy(pj->pj); pfree(pj);
@@ -906,10 +903,10 @@ cbuffer_transform_pipeline(const Cbuffer *cbuf, const char *pipeline,
  * @note The validity of the arguments should be done in the calling function
  */
 Datum
-cbuffer_distance(Datum cbuf1, Datum cbuf2)
+cbuffer_distance(Datum cb1, Datum cb2)
 {
-  Datum geom1 = CbufferPGetDatum(cbuffer_geom(DatumGetCbufferP(cbuf1)));
-  Datum geom2 = CbufferPGetDatum(cbuffer_geom(DatumGetCbufferP(cbuf2)));
+  Datum geom1 = CbufferPGetDatum(cbuffer_geom(DatumGetCbufferP(cb1)));
+  Datum geom2 = CbufferPGetDatum(cbuffer_geom(DatumGetCbufferP(cb2)));
   return datum_geom_distance2d(geom1, geom2);
 }
 
@@ -920,30 +917,30 @@ cbuffer_distance(Datum cbuf1, Datum cbuf2)
 /**
  * @ingroup meos_cbuffer_base_comp
  * @brief Return true if the first buffer is equal to the second one
- * @param[in] cbuf1,cbuf2 Circular buffers
+ * @param[in] cb1,cb2 Circular buffers
  * @csqlfn #Cbuffer_eq()
  */
 bool
-cbuffer_eq(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
+cbuffer_eq(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf1, false); VALIDATE_NOT_NULL(cbuf2, false);
-  Datum d1 = PointerGetDatum(&cbuf1->point);
-  Datum d2 = PointerGetDatum(&cbuf2->point);
+  VALIDATE_NOT_NULL(cb1, false); VALIDATE_NOT_NULL(cb2, false);
+  Datum d1 = PointerGetDatum(&cb1->point);
+  Datum d2 = PointerGetDatum(&cb2->point);
   return datum_point_eq(d1, d2) && 
-    fabs(cbuf1->radius - cbuf2->radius) < MEOS_EPSILON;
+    fabs(cb1->radius - cb2->radius) < MEOS_EPSILON;
 }
 
 /**
  * @ingroup meos_cbuffer_base_comp
  * @brief Return true if the first buffer is not equal to the second one
- * @param[in] cbuf1,cbuf2 Circular buffers
+ * @param[in] cb1,cb2 Circular buffers
  * @csqlfn #Cbuffer_ne()
  */
 inline bool
-cbuffer_ne(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
+cbuffer_ne(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  return (! cbuffer_eq(cbuf1, cbuf2));
+  return (! cbuffer_eq(cb1, cb2));
 }
 
 /**
@@ -952,17 +949,17 @@ cbuffer_ne(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
  * respect to an epsilon value
  */
 bool
-cbuffer_same(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
+cbuffer_same(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf1, false); VALIDATE_NOT_NULL(cbuf2, false);
+  VALIDATE_NOT_NULL(cb1, false); VALIDATE_NOT_NULL(cb2, false);
 
   /* Same radius */
-  if (fabs(cbuf1->radius - cbuf2->radius) > MEOS_EPSILON)
+  if (fabs(cb1->radius - cb2->radius) > MEOS_EPSILON)
     return false;
   /* Same points */
-  return datum_point_same(PointerGetDatum(&cbuf1->point),
-    PointerGetDatum(&cbuf2->point));
+  return datum_point_same(PointerGetDatum(&cb1->point),
+    PointerGetDatum(&cb2->point));
 }
 
 /**
@@ -971,33 +968,48 @@ cbuffer_same(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
  * respect to an epsilon value
  */
 inline bool
-cbuffer_nsame(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
+cbuffer_nsame(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  return ! cbuffer_same(cbuf1, cbuf2);
+  return ! cbuffer_same(cb1, cb2);
 }
 
 /**
  * @ingroup meos_cbuffer_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first buffer
  * is less than, equal to, or greater than the second one
- * @param[in] cbuf1,cbuf2 Circular buffers
+ * @param[in] cb1,cb2 Circular buffers
  * @csqlfn #Cbuffer_cmp()
  */
 int
-cbuffer_cmp(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
+cbuffer_cmp(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf1, false); VALIDATE_NOT_NULL(cbuf2, false);
+  VALIDATE_NOT_NULL(cb1, false); VALIDATE_NOT_NULL(cb2, false);
 
-  GSERIALIZED *gs1 = (GSERIALIZED *) (&cbuf1->point);
-  GSERIALIZED *gs2 = (GSERIALIZED *) (&cbuf2->point);
-  int cmp = geopoint_cmp(gs1, gs2);
-  if (cmp)
-    return cmp;
-  /* Both point are equal */
-  else if(cbuf1->radius < cbuf2->radius)
+  GSERIALIZED *gs1 = (GSERIALIZED *) (&cb1->point);
+  GSERIALIZED *gs2 = (GSERIALIZED *) (&cb2->point);
+  int32_t srid1 = gserialized_get_srid(gs1);
+  int32_t srid2 = gserialized_get_srid(gs2);
+  /* Compare SRID */
+  if(srid1 < srid2)
     return -1;
-  else if (cbuf1->radius > cbuf2->radius)
+  if (srid1 > srid2)
+    return 1;
+  /* Compare coordinates */
+  const POINT2D *pt1 = (POINT2D *) GS_POINT_PTR(gs1);
+  const POINT2D *pt2 = (POINT2D *) GS_POINT_PTR(gs2);
+  if (pt1->x < pt2->x)
+    return -1;
+  if (pt1->x > pt2->x)
+    return 1;
+  if (pt1->y < pt2->y)
+    return -1;
+  if (pt1->y > pt2->y)
+    return 1;
+  /* Compare radius */
+  if(cb1->radius < cb2->radius)
+    return -1;
+  if (cb1->radius > cb2->radius)
     return 1;
   return 0;
 }
@@ -1005,51 +1017,51 @@ cbuffer_cmp(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 /**
  * @ingroup meos_cbuffer_base_comp
  * @brief Return true if the first buffer is less than the second one
- * @param[in] cbuf1,cbuf2 Circular buffers
+ * @param[in] cb1,cb2 Circular buffers
  * @csqlfn #Cbuffer_lt()
  */
 inline bool
-cbuffer_lt(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
+cbuffer_lt(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  return cbuffer_cmp(cbuf1, cbuf2) < 0;
+  return cbuffer_cmp(cb1, cb2) < 0;
 }
 
 /**
  * @ingroup meos_cbuffer_base_comp
  * @brief Return true if the first buffer is less than or equal to the
  * second one
- * @param[in] cbuf1,cbuf2 Circular buffers
+ * @param[in] cb1,cb2 Circular buffers
  * @csqlfn #Cbuffer_le()
  */
 inline bool
-cbuffer_le(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
+cbuffer_le(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  return cbuffer_cmp(cbuf1, cbuf2) <= 0;
+  return cbuffer_cmp(cb1, cb2) <= 0;
 }
 
 /**
  * @ingroup meos_cbuffer_base_comp
  * @brief Return true if the first buffer is greater than the second one
- * @param[in] cbuf1,cbuf2 Circular buffers
+ * @param[in] cb1,cb2 Circular buffers
  * @csqlfn #Cbuffer_gt()
  */
 inline bool
-cbuffer_gt(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
+cbuffer_gt(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  return cbuffer_cmp(cbuf1, cbuf2) > 0;
+  return cbuffer_cmp(cb1, cb2) > 0;
 }
 
 /**
  * @ingroup meos_cbuffer_base_comp
  * @brief Return true if the first buffer is greater than or equal to
  * the second one
- * @param[in] cbuf1,cbuf2 Circular buffers
+ * @param[in] cb1,cb2 Circular buffers
  * @csqlfn #Cbuffer_ge()
  */
 inline bool
-cbuffer_ge(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
+cbuffer_ge(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  return cbuffer_cmp(cbuf1, cbuf2) >= 0;
+  return cbuffer_cmp(cb1, cb2) >= 0;
 }
 
 /*****************************************************************************
@@ -1061,18 +1073,18 @@ cbuffer_ge(const Cbuffer *cbuf1, const Cbuffer *cbuf2)
 /**
  * @ingroup meos_cbuffer_base_accessor
  * @brief Return the 32-bit hash value of a circular buffer
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  */
 uint32
-cbuffer_hash(const Cbuffer *cbuf)
+cbuffer_hash(const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, INT_MAX);
+  VALIDATE_NOT_NULL(cb, INT_MAX);
 
   /* Compute hashes of value and radius */
-  Datum d = PointerGetDatum(&cbuf->point);
+  Datum d = PointerGetDatum(&cb->point);
   uint32 point_hash = gserialized_hash(DatumGetGserializedP(d));
-  uint32 radius_hash = pg_hashfloat8(cbuf->radius);
+  uint32 radius_hash = pg_hashfloat8(cb->radius);
 
   /* Merge hashes of value and radius */
   uint32 result = point_hash;
@@ -1084,18 +1096,18 @@ cbuffer_hash(const Cbuffer *cbuf)
 /**
  * @ingroup meos_cbuffer_base_accessor
  * @brief Return the 64-bit hash value of a circular buffer using a seed
- * @param[in] cbuf Circular buffer
+ * @param[in] cb Circular buffer
  * @param[in] seed Seed
  * csqlfn hash_extended
  */
 uint64
-cbuffer_hash_extended(const Cbuffer *cbuf, uint64 seed)
+cbuffer_hash_extended(const Cbuffer *cb, uint64 seed)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbuf, LONG_MAX);
+  VALIDATE_NOT_NULL(cb, LONG_MAX);
   /* PostGIS currently does not provide an extended hash function, */
   return DatumGetUInt64(hash_any_extended(
-    (unsigned char *) VARDATA_ANY(cbuf), VARSIZE_ANY_EXHDR(cbuf), seed));
+    (unsigned char *) VARDATA_ANY(cb), VARSIZE_ANY_EXHDR(cb), seed));
 }
 
 /*****************************************************************************/

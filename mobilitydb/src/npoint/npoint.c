@@ -608,6 +608,26 @@ Nsegment_end_position(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Accessor functions for network point sets
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Npointset_routes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Npointset_routes);
+/**
+ * @ingroup mobilitydb_npoint_accessor
+ * @brief Return the array of routes of a temporal network point
+ * @sqlfn routes()
+ */
+Datum
+Npointset_routes(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  Set *result = npointset_routes(s);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_SET_P(result);
+}
+
+/*****************************************************************************
  * Transformation functions
  *****************************************************************************/
 

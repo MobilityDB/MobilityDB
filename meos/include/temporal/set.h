@@ -83,7 +83,6 @@ typedef struct
 extern char *set_out_fn(const Set *s, int maxdd, outfunc value_out);
 
 extern bool ensure_set_isof_type(const Set *s, meosType settype);
-extern bool ensure_same_set_type(const Set *s1, const Set *s2);
 extern bool ensure_valid_set_set(const Set *s1, const Set *s2);
 
 extern bool set_find_value(const Set *s, Datum, int *loc);

@@ -105,6 +105,12 @@ SELECT MIN(array_length(getValues(n), 1)) FROM tbl_npointset;
    5
 (1 row)
 
+SELECT MIN(numValues(routes(n))) FROM tbl_npointset;
+ min 
+-----
+   4
+(1 row)
+
 SELECT numValues(setUnion(np)) FROM tbl_npoint;
  numvalues 
 -----------

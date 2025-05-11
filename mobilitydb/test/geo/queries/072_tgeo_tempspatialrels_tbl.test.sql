@@ -44,17 +44,13 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seqset
 -------------------------------------------------------------------------------
 -- Robustness test
 
--- In some GEOS versions, GEOSRelatePattern does not accept GEOMETRYCOLLECTION
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry
-  WHERE geometrytype(traversedArea(temp)) <> 'GEOMETRYCOLLECTION' AND
-    tContains(g, temp) ?= true <> eContains(g, temp);
+  WHERE tContains(g, temp) ?= true <> eContains(g, temp);
 -- Step interpolation
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seq
-  WHERE geometrytype(traversedArea(seq)) <> 'GEOMETRYCOLLECTION' AND
-    tContains(g, seq) ?= true <> eContains(g, seq);
+  WHERE tContains(g, seq) ?= true <> eContains(g, seq);
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry_seqset
-  WHERE geometrytype(traversedArea(ss)) <> 'GEOMETRYCOLLECTION' AND
-    tContains(g, ss) ?= true <> eContains(g, ss);
+  WHERE tContains(g, ss) ?= true <> eContains(g, ss);
 
 -------------------------------------------------------------------------------
 -- tDisjoint

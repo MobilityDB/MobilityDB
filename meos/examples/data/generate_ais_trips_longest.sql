@@ -28,11 +28,12 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Sample program that reads AIS data from the file
- * `aisdk-2023-08-01.csv` provided by the Danish Maritime Authority in
+ * `aisdk-2025-03-01.csv` provided by the Danish Maritime Authority in
  * https://web.ais.dk/aisdata/, assembles the observations in a table trips
- * and outputs in the file `ais_trips_longest` the temporal values for trip and
- * SOG for the longest 10 trips from the input data
+ * and outputs in the file `ais_trips_longest.csv` the temporal values for
+ * trip and SOG for the longest 10 trips from the input data
  */
 DO $$
 BEGIN
@@ -74,7 +75,7 @@ COPY AISInput(T, TypeOfMobile, MMSI, Latitude, Longitude, NavigationalStatus,
   ROT, SOG, COG, Heading, IMO, CallSign, Name, ShipType, CargoType, Width,
   Length, TypeOfPositionFixingDevice, Draught, Destination, ETA,
   DataSourceType, SizeA, SizeB, SizeC, SizeD) FROM
-  '/home/esteban/src/MobilityDB/meos/examples/data/aisdk-2023-08-01.csv' CSV HEADER;
+  '/home/esteban/src/MobilityDB/meos/examples/data/aisdk-2025-03-01.csv' CSV HEADER;
 
 RAISE INFO 'Filtering input data removing erroneous records ...';
 
@@ -98,8 +99,8 @@ RAISE INFO 'Assembling the trip and the SOG from the input data ...';
 
 INSERT INTO ships(MMSI, trip, SOG)
 SELECT MMSI,
-  tgeompoint_seq(array_agg(tgeompoint_inst(ST_Transform(Geom, 25832), T) ORDER BY T)),
-  tfloat_seq(array_agg(tfloat_inst(SOG, T) ORDER BY T) FILTER (WHERE SOG IS NOT NULL))
+  tgeompointSeq(array_agg(tgeompoint(ST_Transform(Geom, 25832), T) ORDER BY T)),
+  tfloatSeq(array_agg(tfloat(SOG, T) ORDER BY T) FILTER (WHERE SOG IS NOT NULL))
 FROM AISInputFiltered
 WHERE Geom IS NOT NULL AND T IS NOT NULL
 GROUP BY MMSI

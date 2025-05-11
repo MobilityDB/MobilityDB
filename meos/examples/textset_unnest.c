@@ -28,15 +28,16 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that reads from a CSV file a set of records
  * containing text sets, group them by the key % 10, and at the end apply a
  * union aggregate to the groups.
- * @note The function tests the expandable set data structure.
  *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o textset_unnest textset_unnest.c -L/usr/local/lib -lmeos
  * @endcode
+ * @note The program illustrates the expandable set data structure.
  */
 
 #include <stdio.h>

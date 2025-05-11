@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that reads integer span values from a CSV file and
  * aggregates them into a single spanset value
  *

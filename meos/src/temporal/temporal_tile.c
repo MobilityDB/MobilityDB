@@ -783,7 +783,7 @@ temporal_time_spans(const Temporal *temp, const Interval *duration,
  * @param[in] vsize Size of the bins
  * @param[in] vorigin Origin of the bins
  * @param[out] count Number of elements in the output array
- * @note The tests for the validity of the arguments is done in function
+ * @note The tests for the validity of the arguments are done in function
  * #tnumber_value_bin_init
  */
 Span *
@@ -1153,33 +1153,5 @@ tnumber_value_time_boxes(const Temporal *temp, Datum vsize,
   *count = i;
   return result;
 }
-
-#if MEOS
-/**
- * @ingroup meos_temporal_analytics_tile
- * @brief Return the temporal boxes of a temporal number split with respect to
- * a value and possibly a time grid
- */
-TBox *
-tint_value_time_boxes(const Temporal *temp, int vsize,
-  const Interval *duration, int vorigin, TimestampTz torigin, int *count)
-{
-  return tnumber_value_time_boxes(temp, Int32GetDatum(vsize), duration,
-    Int32GetDatum(vorigin), torigin, count);
-}
-
-/**
- * @ingroup meos_temporal_analytics_tile
- * @brief Return the temporal boxes of a temporal number split with respect to
- * a value and possibly a time grid
- */
-TBox *
-tfloat_value_time_boxes(const Temporal *temp, double vsize,
-  const Interval *duration, double vorigin, TimestampTz torigin, int *count)
-{
-  return tnumber_value_time_boxes(temp, Float8GetDatum(vsize), duration,
-    Float8GetDatum(vorigin), torigin, count);
-}
-#endif /* MEOS */
 
 /*****************************************************************************/

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Spatial functions for temporal geos
+ * @brief Ever/always and temporal comparisons for temporal geos
  */
 
 /* PostgreSQL */

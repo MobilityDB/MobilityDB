@@ -345,6 +345,9 @@ Tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(typmod);
 }
 
+/* Maximum length of the typmod string */
+#define MAX_TYPMOD_LEN 64
+
 PGDLLEXPORT Datum Tspatial_typmod_out(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_typmod_out);
 /**
@@ -353,8 +356,9 @@ PG_FUNCTION_INFO_V1(Tspatial_typmod_out);
 Datum
 Tspatial_typmod_out(PG_FUNCTION_ARGS)
 {
-  char *s = palloc(64);
+  char *s = palloc(MAX_TYPMOD_LEN);
   char *str = s;
+  size_t len = 0;
   int32 typmod = PG_GETARG_INT32(0);
   int16 tempsubtype = TYPMOD_GET_TEMPSUBTYPE(typmod);
   int32 srid = TYPMOD_GET_SRID(typmod);
@@ -369,24 +373,26 @@ Tspatial_typmod_out(PG_FUNCTION_ARGS)
     PG_RETURN_CSTRING(str);
   }
   /* Opening bracket */
-  str += sprintf(str, "(");
+  len = snprintf(str, MAX_TYPMOD_LEN - 1, "(");
   /* Has temporal subtype?  */
   if (tempsubtype != ANYTEMPSUBTYPE)
-    str += sprintf(str, "%s", tempsubtype_name(tempsubtype));
+    len += snprintf(str + len, MAX_TYPMOD_LEN - len - 1, "%s",
+      tempsubtype_name(tempsubtype));
   if (geometry_type)
   {
     if (tempsubtype != ANYTEMPSUBTYPE)
-      str += sprintf(str, ",");
-    str += sprintf(str, "%s", lwtype_name(geometry_type));
+      len += snprintf(str + len, MAX_TYPMOD_LEN - len - 1, ",");
+    len += snprintf(str + len, MAX_TYPMOD_LEN - len - 1, "%s",
+      lwtype_name(geometry_type));
     /* Has Z?  */
     if (hasz)
-      str += sprintf(str, "Z");
+      len += snprintf(str + len, MAX_TYPMOD_LEN - len - 1, "Z");
     /* Has SRID?  */
     if (srid)
-      str += sprintf(str, ",%d", srid);
+      len += snprintf(str + len, MAX_TYPMOD_LEN - len - 1, ",%d", srid);
   }
   /* Closing bracket.  */
-  sprintf(str, ")");
+  snprintf(str + len, MAX_TYPMOD_LEN - len - 1, ")");
 
   PG_RETURN_CSTRING(s);
 }

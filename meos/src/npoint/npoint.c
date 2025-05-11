@@ -101,7 +101,7 @@ npoint_collinear(const Npoint *np1, const Npoint *np2, const Npoint *np3,
 /* Maximum length in characters of a geometry in the input data */
 #define MAX_LENGTH_GEOM 100001
 /* Location of the ways.csv file */
-#define WAYS_CSV "/home/esteban/src/MobilityDB/meos/examples/data/ways.csv"
+#define WAYS_CSV "/usr/local/lib/ways.csv"
 
 typedef struct
 {
@@ -148,7 +148,7 @@ get_srid_ways()
   /* Continue reading the file */
   do
   {
-    int read = fscanf(file, "%ld,%100000[^\n]\n",
+    int read = fscanf(file, "%ld,%100000s[^\n]\n",
       &rec.gid, geo_buffer);
 
     if (ferror(file))
@@ -171,7 +171,7 @@ get_srid_ways()
       found = true;
       break;
     }
-  } while (!feof(file));
+  } while (! feof(file));
 
   /* Close the input file */
   fclose(file);
@@ -284,7 +284,7 @@ route_exists(int64 rid)
         break;
       }
     }
-  } while (!feof(file));
+  } while (! feof(file));
 
   /* Close the input file */
   fclose(file);
@@ -372,7 +372,7 @@ route_length(int64 rid)
         break;
       }
     }
-  } while (!feof(file));
+  } while (! feof(file));
 
   /* Close the input file */
   fclose(file);
@@ -472,7 +472,7 @@ route_geom(int64 rid)
         break;
       }
     }
-  } while (!feof(file));
+  } while (! feof(file));
 
   /* Close the input file */
   fclose(file);

@@ -1,10 +1,10 @@
-SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_tcbuffer t2 WHERE t1.cbuf #= t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_tcbuffer t2 WHERE t1.cb #= t2.temp IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_cbuffer t2 WHERE t1.temp #= t2.cbuf IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_cbuffer t2 WHERE t1.temp #= t2.cb IS NOT NULL;
  count 
 -------
  10000
@@ -16,13 +16,13 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp #= t2.temp I
    102
 (1 row)
 
-SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_tcbuffer t2 WHERE t1.cbuf #<> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_tcbuffer t2 WHERE t1.cb #<> t2.temp IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_cbuffer t2 WHERE t1.temp #<> t2.cbuf IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_cbuffer t2 WHERE t1.temp #<> t2.cb IS NOT NULL;
  count 
 -------
  10000

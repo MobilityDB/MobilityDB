@@ -213,6 +213,99 @@ Acontains_geo_tgeo(PG_FUNCTION_ARGS)
   return EAcontains_geo_tgeo(fcinfo, ALWAYS);
 }
 
+/*****************************************************************************/
+
+/**
+ * @brief Return true if a geometry ever/always contains a temporal geo
+ * @sqlfn eContains(), aContains()
+ */
+static Datum
+EAcontains_tgeo_geo(FunctionCallInfo fcinfo, bool ever)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  int result = ever ? econtains_tgeo_geo(temp, gs) :
+    acontains_tgeo_geo(temp, gs);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Econtains_tgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Econtains_tgeo_geo);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if a temporal geo ever contains a geometry
+ * @sqlfn eContains()
+ */
+inline Datum
+Econtains_tgeo_geo(PG_FUNCTION_ARGS)
+{
+  return EAcontains_tgeo_geo(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Acontains_tgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acontains_tgeo_geo);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if a temporal geo always contains a geometry
+ * @sqlfn aContains()
+ */
+inline Datum
+Acontains_tgeo_geo(PG_FUNCTION_ARGS)
+{
+  return EAcontains_tgeo_geo(fcinfo, ALWAYS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return true if a temporal geo ever/always contains another temporal
+ * geo
+ * @sqlfn eContains(), aContains()
+ */
+static Datum
+EAcontains_tgeo_tgeo(FunctionCallInfo fcinfo, bool ever)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  int result = ever ? econtains_tgeo_tgeo(temp1, temp2) :
+    acontains_tgeo_tgeo(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Econtains_tgeo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Econtains_tgeo_tgeo);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if a temporal geo ever contains another temporal geo
+ * @sqlfn eContains()
+ */
+inline Datum
+Econtains_tgeo_tgeo(PG_FUNCTION_ARGS)
+{
+  return EAcontains_tgeo_tgeo(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Acontains_tgeo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acontains_tgeo_tgeo);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if a temporal geo always contains another temporal geo
+ * @sqlfn aContains()
+ */
+inline Datum
+Acontains_tgeo_tgeo(PG_FUNCTION_ARGS)
+{
+  return EAcontains_tgeo_tgeo(fcinfo, ALWAYS);
+}
+
 /*****************************************************************************
  * Ever disjoint (for both geometry and geography)
  *****************************************************************************/
@@ -547,6 +640,8 @@ Atouches_geo_tgeo(PG_FUNCTION_ARGS)
   return EA_touches_geo_tgeo(fcinfo, ALWAYS);
 }
 
+/*****************************************************************************/
+
 /**
  * @brief Return true if a temporal geo and a geometry ever/always touch
  * @sqlfn eTouches(), aTouches()
@@ -554,8 +649,8 @@ Atouches_geo_tgeo(PG_FUNCTION_ARGS)
 static Datum
 EA_touches_tgeo_geo(FunctionCallInfo fcinfo, bool ever)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   int result = ever ? etouches_tgeo_geo(temp, gs) :
     atouches_tgeo_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
@@ -589,6 +684,52 @@ inline Datum
 Atouches_tgeo_geo(PG_FUNCTION_ARGS)
 {
   return EA_touches_tgeo_geo(fcinfo, ALWAYS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return true if two temporal geos ever/always touch other
+ * @sqlfn eTouches(), aTouches()
+ */
+static Datum
+EA_touches_tgeo_tgeo(FunctionCallInfo fcinfo, bool ever)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  int result = ever ? etouches_tgeo_tgeo(temp1, temp2) :
+    atouches_tgeo_tgeo(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Etouches_tgeo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Etouches_tgeo_tgeo);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if two temporal geos ever touch each other
+ * @sqlfn eTouches()
+ */
+inline Datum
+Etouches_tgeo_tgeo(PG_FUNCTION_ARGS)
+{
+  return EA_touches_tgeo_tgeo(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Atouches_tgeo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Atouches_tgeo_tgeo);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if two temporal geos always touch each other
+ * @sqlfn aTouches()
+ */
+inline Datum
+Atouches_tgeo_tgeo(PG_FUNCTION_ARGS)
+{
+  return EA_touches_tgeo_tgeo(fcinfo, ALWAYS);
 }
 
 /*****************************************************************************

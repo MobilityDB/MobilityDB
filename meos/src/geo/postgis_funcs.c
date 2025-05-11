@@ -51,15 +51,13 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "geo/meos_transform.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 
 /* To avoid including lwgeom_functions_analytic.h */
 extern int point_in_polygon(LWPOLY *polygon, LWPOINT *point);
 extern int point_in_multipolygon(LWMPOLY *mpolygon, LWPOINT *point);
-
-/* To avoid including lwgeom_transform.h */
-void srid_check_latlong(int32_t srid);
 
 /* Modified version of PG_PARSER_ERROR */
 #if MEOS
@@ -93,6 +91,58 @@ geo_copy(const GSERIALIZED *gs)
   memcpy(result, gs, VARSIZE(gs));
   return result;
 }
+
+#if MEOS
+/**
+ * @ingroup meos_geo_base_constructor
+ * @brief Return a 2D geometry point constructed from the arguments
+ */
+GSERIALIZED *
+geompoint_make2d(int32_t srid, double x, double y)
+{
+  LWPOINT *point = lwpoint_make2d(srid, x, y);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) point);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_constructor
+ * @brief Return a 2D geography point constructed from the arguments
+ */
+GSERIALIZED *
+geogpoint_make2d(int32_t srid, double x, double y)
+{
+  LWPOINT *point = lwpoint_make2d(srid, x, y);
+  FLAGS_SET_GEODETIC(point->flags, true);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) point);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_constructor
+ * @brief Return a 3DZ geometry point constructed from the arguments
+ */
+GSERIALIZED *
+geompoint_make3dz(int32_t srid, double x, double y, double z)
+{
+  LWPOINT *point = lwpoint_make3dz(srid, x, y, z);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) point);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_constructor
+ * @brief Return a 3DZ geography point constructed from the arguments
+ */
+GSERIALIZED *
+geogpoint_make3dz(int32_t srid, double x, double y, double z)
+{
+  LWPOINT *point = lwpoint_make3dz(srid, x, y, z);
+  FLAGS_SET_GEODETIC(point->flags, true);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) point);
+  return result;
+}
+#endif /* MEOS */
 
 /*****************************************************************************
  * Functions borrowed from gserialized.c
@@ -594,6 +644,7 @@ geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   return (tolerance >= mindist);
 }
 
+#if MEOS
 /**
  * @ingroup meos_geo_base_transf
  * @brief Reverse vertex order of geometry/geography
@@ -674,6 +725,7 @@ geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result)
 
   return true;
 }
+#endif /* MEOS */
 
 /**
  * @ingroup meos_geo_base_spatial
@@ -1110,13 +1162,14 @@ geom_disjoint2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @brief Return true if two geometries satisfy a spatial relationship given
  * by a pattern
  * @param[in] gs1,gs2 Geometries
- * @param[in] patt Pattern
+ * @param[in] p Pattern
  * @note PostGIS function: @p relate_pattern(PG_FUNCTION_ARGS)
+ * Note also the the pattern may be modified in the function
  */
 bool
-geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *patt)
+geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
 {
-  assert(gs1); assert(gs2); assert(patt);
+  assert(gs1); assert(gs2); assert(p);
   assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
 
   /* TODO handle empty */
@@ -1142,13 +1195,13 @@ geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *patt)
   /*
   ** Need to make sure 't' and 'f' are upper-case before handing to GEOS
   */
-  for (size_t i = 0; i < strlen(patt); i++ )
+  for (size_t i = 0; i < strlen(p); i++ )
   {
-    if ( patt[i] == 't' ) patt[i] = 'T';
-    if ( patt[i] == 'f' ) patt[i] = 'F';
+    if ( p[i] == 't' ) p[i] = 'T';
+    if ( p[i] == 'f' ) p[i] = 'F';
   }
 
-  char result = GEOSRelatePattern(geos1, geos2, patt);
+  char result = GEOSRelatePattern(geos1, geos2, p);
   GEOSGeom_destroy(geos1);
   GEOSGeom_destroy(geos2);
 
@@ -1725,6 +1778,7 @@ geo_serialize(const LWGEOM *geom)
  * Functions adapted from lwgeom_transform.c
  *****************************************************************************/
 
+#if MEOS
 /**
  * @ingroup meos_geo_base_srid
  * @brief Returns the geometry/geography transformed to an SRID
@@ -1756,8 +1810,8 @@ geo_transform(GSERIALIZED *gs, int32_t srid_to)
   if (srid_from == srid_to)
     return gs;
 
-  LWPROJ *pj = lwproj_get(srid_from, srid_to);
-  if (! pj)
+  LWPROJ *pj;
+  if (! lwproj_lookup(srid_from, srid_to, &pj))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "geo_transform: Error when getting projection.");
@@ -1813,6 +1867,7 @@ geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline, int32_t srid_to,
   lwgeom_free(geom);
   return (result); /* new geometry */
 }
+#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from geography_centroid.c
@@ -3123,17 +3178,9 @@ geog_in(const char *str, int32 typmod)
 
   GSERIALIZED *result = NULL;
   /* Error on any SRID != default */
-#if MEOS 
-  /* TODO Determine whether we can reuse PostGIS cache */
   if (lwgeom->srid == SRID_UNKNOWN || ensure_srid_is_latlong(lwgeom->srid))
     /* Convert to gserialized */
     result = geog_from_lwgeom(lwgeom, typmod);
-#else
-  /* Use PostGIS cache, throw an error if not geodetic */
-  srid_check_latlong(lwgeom->srid);
-  /* Convert to gserialized */
-  result = geog_from_lwgeom(lwgeom, typmod);
-#endif /* MEOS */
 
   /* Clean up and return */
   lwgeom_free(lwgeom);

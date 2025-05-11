@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that get the SRID of the geometries stored in the 
  * file `ways.csv` that has the content of the PostgreSQL table ways defined
  * as follows
@@ -49,6 +50,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <meos.h>
+#include <meos_geo.h>
 
 /* Number of ways in a batch for printing a marker */
 #define NO_WAYS_BATCH 10

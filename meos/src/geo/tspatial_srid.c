@@ -44,6 +44,7 @@
 #include <meos_internal.h>
 #include "temporal/set.h"
 #include "temporal/type_util.h"
+#include "geo/meos_transform.h"
 #include "geo/stbox.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -64,7 +65,7 @@
 
 /*
  * Maximum length of an ESPG string to lookup
- * Notice that SRID_MAXIMUM is defined by PostGIS as 999999
+ * SRID_MAXIMUM is defined by PostGIS as 999999
  */
 #define MAX_AUTH_SRID_STR 12 /* EPSG:999999 */
 
@@ -351,131 +352,15 @@ to_dec(POINT4D *pt)
  *****************************************************************************/
 
 /**
- * @brief Return a structure with the information to perform a transformation
- * @param[in] srid_from,srid_to SRIDs
- * @note We are avoiding to have a list of recognized SRIDs cached as done in
- * PostGIS. We didn't find a way to get the authority name from an SRID.
- * Given that all (but one) entries in PostGIS spatial_ref_sys table have
- * either authority name equal to 'EPSG' or 'ESRI', we try finding the two
- * combinations for the input and output SRIDs.
- */
-LWPROJ *
-lwproj_get(int32_t srid_from, int32_t srid_to)
-{
-  char srid_from_str[MAX_AUTH_SRID_STR];
-  char srid_to_str[MAX_AUTH_SRID_STR];
-  /* From SRID */
-  snprintf(srid_from_str, MAX_AUTH_SRID_STR, "EPSG:%d", srid_from);
-  PJ *pj1 = proj_create(proj_get_context(), srid_from_str);
-  if (! pj1)
-  {
-    snprintf(srid_from_str, MAX_AUTH_SRID_STR, "ESRI:%d", srid_from);
-    pj1 = proj_create(proj_get_context(), srid_from_str);
-    if (! pj1)
-    {
-      /* Error */
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Transform: Could not form projection from 'srid=%d'", srid_from);
-      return NULL;
-    }
-  }
-  proj_destroy(pj1);
-  /* To SRID */
-  snprintf(srid_to_str, MAX_AUTH_SRID_STR, "EPSG:%d", srid_to);
-  PJ *pj2 = proj_create(proj_get_context(), srid_to_str);
-  if (! pj2)
-  {
-    snprintf(srid_to_str, MAX_AUTH_SRID_STR, "ESRI:%d", srid_to);
-    pj2 = proj_create(proj_get_context(), srid_to_str);
-    if (! pj2)
-    {
-      /* Error */
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Transform: Could not form projection to 'srid=%d'", srid_to);
-      return NULL;
-    }
-  }
-  proj_destroy(pj2);
-  LWPROJ *result = lwproj_from_str(srid_from_str, srid_to_str);
-  if (result)
-    return result;
-  /* Error */
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "Transform: Could not form projection from 'srid=%d' to 'srid=%d'",
-    srid_from, srid_to);
-  return NULL;
-}
-
-/**
- * @brief Return a structure with the information to perform a transformation
- * pipeline
- * @param[in] pipeline Pipeline string
- * @param[in] is_forward True when the transformation is forward
- */
-LWPROJ *
-lwproj_get_pipeline(const char *pipeline, bool is_forward)
-{
-  assert(pipeline);
-  LWPROJ *result = lwproj_from_str_pipeline(pipeline, is_forward);
-  if (result)
-    return result;
-  /* Error */
-  PJ *pj_in = proj_create(proj_get_context(), pipeline);
-  if (! pj_in)
-  {
-    proj_errno_reset(NULL);
-    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Transform: Could not parse coordinate operation '%s'", pipeline);
-      return NULL;
-    }
-  }
-  proj_destroy(pj_in);
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "Transform: Failed to transform '%s'", pipeline);
-  return NULL;
-}
-
-/*****************************************************************************/
-
-#if MEOS
-/**
- * @brief Return the spheroid in the last argument initialized from an SRID
- * @param[in] srid SRID
- * @param[in] s Spheroid
- * @note Based on the PostGIS function of the same name in directory
- * /libpgcommon
+ * @brief Return 1 if the SRID is geodetic, return 0 otherwise
  */
 int
-spheroid_init_from_srid(int32_t srid, SPHEROID *s)
-{
-  // TODO implement a cache system for PROJ entries or reuse PostGIS one
-  // if ( lwproj_lookup(srid, srid, &pj) == LW_FAILURE)
-  LWPROJ *pj = lwproj_get(srid, srid);
-  if (! pj)
-    return false;
-
-  if (! pj->source_is_latlong)
-    return LW_FAILURE;
-  spheroid_init(s, pj->source_semi_major_metre, pj->source_semi_minor_metre);
-
-  return LW_SUCCESS;
-}
-#endif /* MEOS */
-
-/**
- * @brief Determine whether an SRID is geodetic
- * @param[in] srid SRID
- */
-bool
 srid_is_latlong(int32_t srid)
 {
-  LWPROJ *pj = lwproj_get(srid, srid);
-  if (! pj)
-    return false;
-  bool result = pj->source_is_latlong;
-  pfree(pj);
-  return result;
+  LWPROJ *pj;
+  if (lwproj_lookup(srid, srid, &pj) == LW_FAILURE)
+    return LW_FALSE;
+  return pj->source_is_latlong;
 }
 
 /**
@@ -487,7 +372,7 @@ ensure_srid_is_latlong(int32_t srid)
   if (srid_is_latlong(srid))
     return true;
   meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-    "Only lon/lat coordinate systems are supported in geography.");
+    "Only lon/lat coordinate systems are supported in geography");
   return false;
 }
 
@@ -544,7 +429,7 @@ point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
  *****************************************************************************/
 
 /**
- * @brief Return true if the first argument has been successfully transformed
+ * @brief Return the first argument has been successfully transformed
  * to another SRID
  */
 Datum
@@ -566,7 +451,9 @@ Datum
       if (! lwgeom_transform(geo, (LWPROJ *) pj))
         return PointerGetDatum(NULL);
       geo->srid = srid_to;
-      return PointerGetDatum(geo_serialize(geo));
+      Datum result = PointerGetDatum(geo_serialize(geo));
+      pfree(geo);
+      return result;
     }
 #if CBUFFER
     case T_CBUFFER:
@@ -630,16 +517,12 @@ spatialset_transform(const Set *s, int32_t srid_to)
     return set_copy(s);
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get(srid_from, srid_to);
-  if (! pj)
+  LWPROJ *pj;
+  if (! lwproj_lookup(srid_from, srid_to, &pj))
     return NULL;
 
   /* Transform the geo set */
-  Set *result = spatialset_transf_pj(s, srid_to, pj);
-
-  /* Clean up and return */
-  proj_destroy(pj->pj); pfree(pj);
-  return result;
+  return spatialset_transf_pj(s, srid_to, pj);
 }
 
 /**
@@ -665,7 +548,7 @@ spatialset_transform_pipeline(const Set *s, const char *pipeline,
   /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get_pipeline(pipeline, is_forward);
+  LWPROJ *pj = lwproj_from_str_pipeline(pipeline, is_forward);
   if (! pj)
     return NULL;
 
@@ -783,9 +666,9 @@ tspatial_transf_pj(const Temporal *temp, int32_t srid_to, const LWPROJ *pj)
 Temporal *
 tspatial_transform(const Temporal *temp, int32_t srid_to)
 {
-  int32_t srid_from = tspatial_srid(temp);
   /* Ensure the validity of the arguments */
   VALIDATE_TSPATIAL(temp, NULL);
+  int32_t srid_from = tspatial_srid(temp);
   if (! ensure_srid_known(srid_from) || ! ensure_srid_known(srid_to))
     return NULL;
 
@@ -794,8 +677,8 @@ tspatial_transform(const Temporal *temp, int32_t srid_to)
     return temporal_copy(temp);
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get(srid_from, srid_to);
-  if (! pj)
+  LWPROJ *pj;
+  if (lwproj_lookup(srid_from, srid_to, &pj) == LW_FAILURE)
     return NULL;
 
   /* Function lwproj_get does not set pj->source_is_latlong */
@@ -803,11 +686,7 @@ tspatial_transform(const Temporal *temp, int32_t srid_to)
     pj->source_is_latlong = true;
 
   /* Transform the temporal spatial type */
-  Temporal *result = tspatial_transf_pj(temp, srid_to, pj);
-
-  /* Clean up and return */
-  proj_destroy(pj->pj); pfree(pj);
-  return result;
+  return tspatial_transf_pj(temp, srid_to, pj);
 }
 
 /**
@@ -825,14 +704,14 @@ tspatial_transform_pipeline(const Temporal *temp, const char *pipeline,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(pipeline, NULL);
-  // TODO The following currently break the tests, this should be fixed
+  // TODO The following lines currently break the tests, this should be fixed
   // if (! ensure_srid_known(srid_to))
     // return NULL;
 
   /* There is NO test verifying whether the input and output SRIDs are equal */
 
   /* Get the structure with information about the projection */
-  LWPROJ *pj = lwproj_get_pipeline(pipeline, is_forward);
+  LWPROJ *pj = lwproj_from_str_pipeline(pipeline, is_forward);
   if (! pj)
     return NULL;
 

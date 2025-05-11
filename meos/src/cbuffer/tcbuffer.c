@@ -57,14 +57,14 @@
  * @brief Return true if a temporal circular buffer and a circular buffer are
  * valid for operations
  * @param[in] temp Temporal value
- * @param[in] cbuf Value
+ * @param[in] cb Value
  */
 bool
-ensure_valid_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf)
+ensure_valid_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TCBUFFER(temp, false); VALIDATE_NOT_NULL(cbuf, false);
-  if (! ensure_same_srid(tspatial_srid(temp), cbuffer_srid(cbuf)))
+  VALIDATE_TCBUFFER(temp, false); VALIDATE_NOT_NULL(cb, false);
+  if (! ensure_same_srid(tspatial_srid(temp), cbuffer_srid(cb)))
     return false;
   return true;
 }
@@ -196,9 +196,9 @@ tcbufferinst_make(const TInstant *inst1, const TInstant *inst2)
   assert(inst1); assert(inst1->temptype == T_TGEOMPOINT);
   assert(inst2); assert(inst2->temptype == T_TFLOAT);
   assert(inst1->t == inst2->t);
-  Cbuffer *cbuf = cbuffer_make(DatumGetGserializedP(tinstant_value_p(inst1)), 
+  Cbuffer *cb = cbuffer_make(DatumGetGserializedP(tinstant_value_p(inst1)), 
     DatumGetFloat8(tinstant_value_p(inst2)));
-  return tinstant_make_free(PointerGetDatum(cbuf), T_TCBUFFER, inst1->t);
+  return tinstant_make_free(PointerGetDatum(cb), T_TCBUFFER, inst1->t);
 }
 
 /**
@@ -422,10 +422,10 @@ TInstant *
 tgeompointinst_tcbufferinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TGEOMPOINT);
-  Cbuffer *cbuf = cbuffer_make(DatumGetGserializedP(tinstant_value_p(inst)), 0.0);
-  if (cbuf == NULL)
+  Cbuffer *cb = cbuffer_make(DatumGetGserializedP(tinstant_value_p(inst)), 0.0);
+  if (cb == NULL)
     return NULL;
-  return tinstant_make_free(PointerGetDatum(cbuf), T_TCBUFFER, inst->t);
+  return tinstant_make_free(PointerGetDatum(cb), T_TCBUFFER, inst->t);
 }
 
 /**
@@ -581,9 +581,9 @@ tcbuffer_values(const Temporal *temp, int *count)
 Set *
 tcbufferinst_members(const TInstant *inst, bool point)
 {
-  Cbuffer *cbuf = DatumGetCbufferP(tinstant_value_p(inst));
+  Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
   Datum value = point ? 
-    PointerGetDatum(&cbuf->point) : Float8GetDatum(cbuf->radius);
+    PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
   return set_make_exp(&value, 1, 1, point ? T_GEOMETRY : T_TFLOAT, ORDER_NO);
 }
 
@@ -596,10 +596,10 @@ tcbufferseq_members(const TSequence *seq, bool point)
   Datum *values = palloc(sizeof(Datum) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    const Cbuffer *cbuf = DatumGetCbufferP(
+    const Cbuffer *cb = DatumGetCbufferP(
       tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
     values[i] = point ? 
-      PointerGetDatum(&cbuf->point) : Float8GetDatum(cbuf->radius);
+      PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
   }
   datumarr_sort(values, seq->count, T_GEOMETRY);
   int count = datumarr_remove_duplicates(values, seq->count, T_GEOMETRY);
@@ -618,9 +618,9 @@ tcbufferseqset_members(const TSequenceSet *ss, bool point)
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     for (int j = 0; j < seq->count; j++)
     {
-      Cbuffer *cbuf = DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq, j)));
+      Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq, j)));
       values[i] = point ? 
-        PointerGetDatum(&cbuf->point) : Float8GetDatum(cbuf->radius);
+        PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
     }
   }
   meosType basetype = point ? T_GEOMETRY : T_TFLOAT;
@@ -707,16 +707,16 @@ tcbuffer_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
  * @ingroup meos_cbuffer_restrict
  * @brief Return a temporal circular buffer restricted to a circular buffer
  * @param[in] temp Temporal value
- * @param[in] cbuf Value
+ * @param[in] cb Value
  * @csqlfn #Temporal_at_value()
  */
 Temporal *
-tcbuffer_at_value(const Temporal *temp, Cbuffer *cbuf)
+tcbuffer_at_value(const Temporal *temp, Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
-  return temporal_restrict_value(temp, PointerGetDatum(cbuf), REST_AT);
+  return temporal_restrict_value(temp, PointerGetDatum(cb), REST_AT);
 }
 
 /**
@@ -724,15 +724,15 @@ tcbuffer_at_value(const Temporal *temp, Cbuffer *cbuf)
  * @brief Return a temporal circular buffer restricted to the complement of a 
  * circular buffer
  * @param[in] temp Temporal value
- * @param[in] cbuf Value
+ * @param[in] cb Value
  * @csqlfn #Temporal_minus_value()
  */
 Temporal *
-tcbuffer_minus_value(const Temporal *temp, Cbuffer *cbuf)
+tcbuffer_minus_value(const Temporal *temp, Cbuffer *cb)
 {
-  if (! ensure_valid_tcbuffer_cbuffer(temp, cbuf))
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
-  return temporal_restrict_value(temp, PointerGetDatum(cbuf), REST_MINUS);
+  return temporal_restrict_value(temp, PointerGetDatum(cb), REST_MINUS);
 }
 
 /*****************************************************************************/

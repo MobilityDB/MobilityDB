@@ -42,29 +42,29 @@
 
 /*****************************************************************************/
 
-extern Datum datum_cbuffer_distance(Datum cbuf1, Datum cbuf2);
+extern Datum datum_cbuffer_distance(Datum cb1, Datum cb2);
 extern Temporal *distance_tcbuffer_point(const Temporal *temp,
   const GSERIALIZED *gs);
 extern Temporal *distance_tcbuffer_cbuffer(const Temporal *temp,
-  const Cbuffer *cbuf);
+  const Cbuffer *cb);
 extern Temporal *distance_tcbuffer_tcbuffer(const Temporal *temp1,
   const Temporal *temp2);
 
 extern TInstant *nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern TInstant *nai_tcbuffer_cbuffer(const Temporal *temp, 
-  const Cbuffer *cbuf);
+  const Cbuffer *cb);
 extern TInstant *nai_tcbuffer_tcbuffer(const Temporal *temp,
   const Temporal *temp2);
 
 extern double nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern double nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cbuf);
+extern double nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
 extern double nad_tcbuffer_tcbuffer(const Temporal *temp1,
   const Temporal *temp2);
 
 extern GSERIALIZED *shortestline_tcbuffer_geo(const Temporal *temp,
   const GSERIALIZED *geo);
 extern GSERIALIZED *shortestline_tcbuffer_cbuffer(const Temporal *temp,
-  const Cbuffer *cbuf);
+  const Cbuffer *cb);
 extern GSERIALIZED *shortestline_tcbuffer_tcbuffer(const Temporal *temp1,
   const Temporal *temp2);
 

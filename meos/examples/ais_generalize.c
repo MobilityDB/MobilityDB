@@ -28,11 +28,15 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A program that reads AIS data from the file `ais_trips_longest.csv`
  * containing the temporal values for trip and SOG for the longest 10 trips of
- * ships extracted from one day of observations (aisdk-2023-08-01.csv) provided
+ * ships extracted from one day of observations (aisdk-2025-03-01.csv) provided
  * by the Danish Maritime Authority in https://web.ais.dk/aisdata/, and outputs
  * the size in KB and number of instants for various simplification algorithms.
+ *
+ * Please notice that the SQL script `generate_ais_trips_longest.sql` in the
+ * `data` directory was used to generate the CSV file above.
  *
  * The program can be build as follows
  * @code

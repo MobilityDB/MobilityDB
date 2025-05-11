@@ -1966,8 +1966,8 @@ Temporal_merge_array(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Return a temporal value restricted to (the complement of) an array of
- * base values
+ * @brief Return a temporal value restricted to (the complement of) a base
+ * value
  */
 static Datum
 Temporal_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
@@ -1994,7 +1994,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_value);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal value restricted to a base value
- * @sqlfn atValues()
+ * @sqlfn atValue()
  */
 Datum
 Temporal_at_value(PG_FUNCTION_ARGS)
@@ -2007,7 +2007,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_value);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal value restricted to the complement of a base value
- * @sqlfn minusValues()
+ * @sqlfn minusValue()
  */
 Datum
 Temporal_minus_value(PG_FUNCTION_ARGS)
@@ -2018,7 +2018,7 @@ Temporal_minus_value(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @brief Return a temporal value restricted to (the complement of) an array of
+ * @brief Return a temporal value restricted to (the complement of) a set of
  * base values
  */
 static Datum
@@ -2044,7 +2044,7 @@ PGDLLEXPORT Datum Temporal_at_values(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_at_values);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Return a temporal value restricted to an array of base values
+ * @brief Return a temporal value restricted to a set of base values
  * @sqlfn atValues()
  */
 Datum
@@ -2057,7 +2057,7 @@ PGDLLEXPORT Datum Temporal_minus_values(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_minus_values);
 /**
  * @ingroup mobilitydb_temporal_restrict
- * @brief Return a temporal value restricted to the complement of an array of
+ * @brief Return a temporal value restricted to the complement of a set of
  * base values
  * @sqlfn minusValues()
  */

@@ -60,10 +60,10 @@ static Datum
 EAcomp_cbuffer_tcbuffer(FunctionCallInfo fcinfo,
   int (*func)(const Cbuffer *, const Temporal *))
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int result = func(cbuf, temp);
-  PG_FREE_IF_COPY(cbuf, 0);
+  int result = func(cb, temp);
+  PG_FREE_IF_COPY(cb, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
@@ -80,10 +80,10 @@ EAcomp_tcbuffer_cbuffer(FunctionCallInfo fcinfo,
   int (*func)(const Temporal *, const Cbuffer *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(1);
-  int result = func(temp, cbuf);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  int result = func(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(cbuf, 1);
+  PG_FREE_IF_COPY(cb, 1);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
@@ -303,10 +303,10 @@ static Datum
 Tcomp_cbuffer_tcbuffer(FunctionCallInfo fcinfo,
   Temporal * (*func)(const Cbuffer *, const Temporal *))
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = func(cbuf, temp);
-  PG_FREE_IF_COPY(cbuf, 0);
+  Temporal *result = func(cb, temp);
+  PG_FREE_IF_COPY(cb, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -323,10 +323,10 @@ Tcomp_tcbuffer_cbuffer(FunctionCallInfo fcinfo,
   Temporal * (*func)(const Temporal *, const Cbuffer *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(1);
-  Temporal *result = func(temp, cbuf);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  Temporal *result = func(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(cbuf, 1);
+  PG_FREE_IF_COPY(cb, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);

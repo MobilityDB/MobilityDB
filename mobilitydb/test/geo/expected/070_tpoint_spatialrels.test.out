@@ -923,13 +923,13 @@ SELECT eTouches(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point
 SELECT eTouches(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT eTouches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT eTouches(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
@@ -971,13 +971,13 @@ SELECT eTouches(geometry 'Point(1 1 1)', tgeompoint '{Point(1 1 1)@2000-01-01, P
 SELECT eTouches(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT eTouches(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT eTouches(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -1019,13 +1019,13 @@ SELECT eTouches(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 SELECT eTouches(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point(1 1)');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT eTouches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT eTouches(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
@@ -1067,13 +1067,13 @@ SELECT eTouches(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 SELECT eTouches(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT eTouches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT eTouches(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
@@ -1103,25 +1103,25 @@ SELECT eTouches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, 
 SELECT eTouches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT eTouches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT eTouches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT eTouches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT eTouches(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
@@ -1151,7 +1151,7 @@ SELECT eTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geo
 SELECT eTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'CircularString(1 1,2 2,3 1,2 0,1 1)');
  etouches 
 ----------
- f
+ t
 (1 row)
 
 SELECT eTouches(tgeompoint '[Point(0 0 0)@2000-01-01,Point(1 1 1)@2000-01-02]',

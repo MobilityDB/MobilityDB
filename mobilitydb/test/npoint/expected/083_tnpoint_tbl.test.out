@@ -252,7 +252,19 @@ SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp ?= t2.np;
    101
 (1 row)
 
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE t1.np ?= t2.temp;
+ count 
+-------
+   101
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp %= t2.np;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE t1.np %= t2.temp;
  count 
 -------
      0
@@ -264,7 +276,19 @@ SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE ever_eq(t1.inst, t
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint_inst t2 WHERE ever_eq(t1.np, t2.inst);
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE always_eq(t1.inst, t2.np);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint_inst t2 WHERE always_eq(t1.np, t2.inst);
  count 
 -------
      0

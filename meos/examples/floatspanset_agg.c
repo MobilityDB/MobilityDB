@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that reads float spanset values from a CSV file and
  * aggregates them into a given number of groups.
  *

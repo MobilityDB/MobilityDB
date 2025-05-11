@@ -56,7 +56,7 @@
 /**
  * @brief Macro for ensuring that a pointer is not null
  */
-#ifdef MEOS
+#if MEOS
   #define VALIDATE_NOT_NULL(ptr, ret) \
     do { if (! ensure_not_null((void *) (ptr))) return (ret); } while (0)
 #else
@@ -177,7 +177,7 @@
 /**
  * @brief Macro for ensuring that the span is a number span
  */
-#ifdef MEOS
+#if MEOS
   #define VALIDATE_NUMSET(set, ret) \
     do { \
           if (! ensure_not_null((void *) (set)) || \
@@ -270,7 +270,7 @@
 /**
  * @brief Macro for ensuring that the span is a timestamptz span
  */
-#ifdef MEOS
+#if MEOS
   #define VALIDATE_TSTZSPAN(span, ret) \
     do { \
           if (! ensure_not_null((void *) (span)) || \
@@ -288,7 +288,7 @@
 /**
  * @brief Macro for ensuring that the span is a number span
  */
-#ifdef MEOS
+#if MEOS
   #define VALIDATE_NUMSPAN(span, ret) \
     do { \
           if (! ensure_not_null((void *) (span)) || \
@@ -380,7 +380,7 @@
 /**
  * @brief Macro for ensuring that the span set is a timestamptz span set
  */
-#ifdef MEOS
+#if MEOS
   #define VALIDATE_TSTZSPANSET(ss, ret) \
     do { \
           if (! ensure_not_null((void *) (ss)) || \
@@ -398,7 +398,7 @@
 /**
  * @brief Macro for ensuring that the span set is a number span set
  */
-#ifdef MEOS
+#if MEOS
   #define VALIDATE_NUMSPANSET(ss, ret) \
     do { \
           if (! ensure_not_null((void *) (ss)) || \
@@ -673,7 +673,7 @@ extern void floatspan_round_set(const Span *s, int maxdd, Span *result);
 
 /* Macros for speeding up access to component values of sets and span sets */
 
-#ifdef DEBUG_BUILD
+#if DEBUG_BUILD
 extern void *SET_BBOX_PTR(const Set *s);
 extern size_t *SET_OFFSETS_PTR(const Set *s);
 extern Datum SET_VAL_N(const Set *s, int index);
@@ -714,7 +714,7 @@ extern const Span *SPANSET_SP_N(const SpanSet *ss, int index);
 
 /* Macros for speeding up access to components of temporal sequences (sets)*/
 
-#ifdef DEBUG_BUILD
+#if DEBUG_BUILD
 extern size_t *TSEQUENCE_OFFSETS_PTR(const TSequence *seq);
 extern const TInstant *TSEQUENCE_INST_N(const TSequence *seq, int index);
 extern size_t *TSEQUENCESET_OFFSETS_PTR(const TSequenceSet *ss);

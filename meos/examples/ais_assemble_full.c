@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that reads AIS data from a CSV file containing one
  * full day of observations provided by the Danish Maritime Authority in
  * https://web.ais.dk/aisdata/, constructs for each ship temporal values for
@@ -72,7 +73,7 @@
 /* Maximum number of trips */
 #define MAX_SHIPS 6500
 /* Number of instants in a batch for printing a marker */
-#define NO_RECORDS_BATCH 10000
+#define NO_RECORDS_BATCH 100000
 /* Initial number of allocated instants for an input trip and SOG */
 #define INITIAL_INSTANTS 64
 /* Maximum length in characters of a record in the input CSV file */
@@ -110,10 +111,9 @@ int main(void)
 {
   /* Input buffers to read the CSV file */
   char line_buffer[MAX_LENGTH_LINE];
-  char point_buffer[MAX_LENGTH_POINT];
   /* Allocate space to build the trips */
   trip_record trips[MAX_SHIPS] = {0};
-  /* Record storing one line read from of the CSV file*/
+  /* Record storing one line read from the CSV file*/
   AIS_record rec;
   /* Number of records read */
   int no_records = 0;
@@ -172,7 +172,7 @@ int main(void)
       printf("*");
       fflush(stdout);
     }
-    /* Break if maximum number of records read */
+    /* Break if maximum number of records have been read */
     if (no_records == MAX_NO_RECORDS)
       break;
 
@@ -284,11 +284,9 @@ int main(void)
     /* Create an Trip instant from the record */
     if (has_lat && has_long)
     {
-      char *t_out = timestamp_out(rec.T);
-      sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
-        rec.Latitude, t_out);
-      free(t_out);
-      inst = (TInstant *) tgeogpoint_in(point_buffer);
+      GSERIALIZED *gs = geogpoint_make2d(4326, rec.Longitude, rec.Latitude);
+      inst = tpointinst_make(gs, rec.T);
+      free(gs);
       /* Ensure there is still space for storing the temporal point instant */
       if (trips[j].free_trip_instants == 0)
       {

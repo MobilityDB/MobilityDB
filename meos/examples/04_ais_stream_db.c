@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that reads AIS data from a CSV file, accumulates the
  * observations in main memory and send the temporal values to a MobilityDB
  * database when they reach a given number of instants in order to free
@@ -135,7 +136,6 @@ main(int argc, char **argv)
   AIS_record rec;
   int no_records = 0;
   int no_nulls = 0;
-  char point_buffer[MAX_LENGTH_POINT];
   char text_buffer[MAX_LENGTH_HEADER];
   /* Allocate space to build the trips */
   trip_record trips[MAX_TRIPS] = {0};
@@ -267,24 +267,14 @@ main(int argc, char **argv)
       trips[j].MMSI = rec.MMSI;
     }
 
-    /*
-     * Append the latest observation to the corresponding ship.
-     * In the input file it is assumed that
-     * - The coordinates are given in the WGS84 geographic coordinate system
-     * - The timestamps are given in GMT time zone
-     */
-    char *t_out = timestamp_out(rec.T);
-    sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
-      rec.Latitude, t_out);
-    free(t_out);
-
     /* Send the trip to the database when its size reaches the maximum size */
     if (trips[j].trip && trips[j].trip->count == NO_INSTANTS_BATCH)
     {
       /* Construct the query to be sent to the database */
       char *temp_out = tsequence_out(trips[j].trip, 15);
-      char *query_buffer = malloc(sizeof(char) * (strlen(temp_out) + 256));
-      sprintf(query_buffer, "INSERT INTO public.AISTrips(MMSI, trip) "
+      size_t len = sizeof(char) * (strlen(temp_out) + 256);
+      char *query_buffer = malloc(len + 1);
+      snprintf(query_buffer, len, "INSERT INTO public.AISTrips(MMSI, trip) "
         "VALUES (%ld, '%s') ON CONFLICT (MMSI) DO "
         "UPDATE SET trip = public.update(AISTrips.trip, EXCLUDED.trip, true);",
         trips[j].MMSI, temp_out);
@@ -303,8 +293,13 @@ main(int argc, char **argv)
       tsequence_restart(trips[j].trip, NO_INSTANTS_KEEP);
     }
 
-    /* Append the last observation */
-    TInstant *inst = (TInstant *) tgeogpoint_in(point_buffer);
+    /* Append the last observation to the corresponding ship.
+     * In the input file it is assumed that
+     * - The coordinates are given in the WGS84 geographic coordinate system
+     * - The timestamps are given in GMT time zone */
+    GSERIALIZED *gs = geogpoint_make2d(4326, rec.Longitude, rec.Latitude);
+    TInstant *inst = tpointinst_make(gs, rec.T);
+    free(gs);
     if (! trips[j].trip)
       trips[j].trip = tsequence_make_exp((const TInstant **) &inst, 1,
         NO_INSTANTS_BATCH, true, true, LINEAR, false);
@@ -319,7 +314,7 @@ main(int argc, char **argv)
   printf("\n%d records read\n%d incomplete records ignored\n"
     "%d writes to the database\n", no_records, no_nulls, no_writes);
 
-  sprintf(text_buffer,
+  snprintf(text_buffer, MAX_LENGTH_HEADER - 1,
     "SELECT MMSI, public.numInstants(trip) FROM public.AISTrips;");
   PGresult *res = PQexec(conn, text_buffer);
   if (PQresultStatus(res) != PGRES_TUPLES_OK)

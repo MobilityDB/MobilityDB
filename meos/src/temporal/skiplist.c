@@ -247,30 +247,37 @@ skiplist_free(SkipList *list)
  * debugging purposes
  */
 #ifdef DEBUG_BUILD
+/* Maximum length of the skiplist string */
+#define MAX_SKIPLIST_LEN 65536
+
 void
 skiplist_print(const SkipList *list)
 {
-  int len = 0;
-  char buf[16384];
-  len += sprintf(buf+len, "digraph skiplist {\n");
-  len += sprintf(buf+len, "\trankdir = LR;\n");
-  len += sprintf(buf+len, "\tnode [shape = record];\n");
+  size_t len = 0;
+  char buf[MAX_SKIPLIST_LEN];
+  len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, 
+    "digraph skiplist {\n");
+  len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, "\trankdir = LR;\n");
+  len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, 
+    "\tnode [shape = record];\n");
   int cur = 0;
   while (cur != -1)
   {
     SkipListElem *e = &list->elems[cur];
-    len += sprintf(buf+len, "\telm%d [label=\"", cur);
+    len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, 
+      "\telm%d [label=\"", cur);
     for (int l = e->height - 1; l > 0; l--)
-      len += sprintf(buf+len, "<p%d>|", l);
+      len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, "<p%d>|", l);
     if (! e->value)
-      len += sprintf(buf+len, "<p0>\"];\n");
+      len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, "<p0>\"];\n");
     else
     {
       Span s;
       temporal_set_tstzspan(e->value, &s);
       /* The second argument of span_out is not used for spans */
       char *val = span_out(&s, Int32GetDatum(0));
-      len +=  sprintf(buf+len, "<p0>%s\"];\n", val);
+      len +=  snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, "<p0>%s\"];\n",
+        val);
       pfree(val);
     }
     if (e->next[0] != -1)
@@ -278,16 +285,18 @@ skiplist_print(const SkipList *list)
       for (int l = 0; l < e->height; l++)
       {
         int next = e->next[l];
-        len += sprintf(buf+len, "\telm%d:p%d -> elm%d:p%d ", cur, l, next, l);
+        len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, 
+          "\telm%d:p%d -> elm%d:p%d ", cur, l, next, l);
         if (l == 0)
-          len += sprintf(buf+len, "[weight=100];\n");
+          len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, 
+            "[weight=100];\n");
         else
-          len += sprintf(buf+len, ";\n");
+          len += snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, ";\n");
       }
     }
     cur = e->next[0];
   }
-  sprintf(buf+len, "}\n");
+  snprintf(buf + len, MAX_SKIPLIST_LEN - len - 1, "}\n");
   meos_error(WARNING, 0, "SKIPLIST: %s", buf);
   return;
 }

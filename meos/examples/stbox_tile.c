@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that generates a given number of tgeompoint instants,
  * assembles the instants into a sequence at the end of the generation process,
  * and outputs the number of instants and the distance travelled.
@@ -45,6 +46,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <meos.h>
+#include <meos_geo.h>
 
 /* Maximum length in characters of a line in the output data */
 #define MAX_LINE_LENGTH 1024
@@ -55,12 +57,19 @@ int main(void)
   char output_buffer[MAX_LINE_LENGTH];
 
   /* Set this parameter to enable/disable space split */
-  bool spacesplit = false;
+  bool spacesplit = true;
   /* Set this parameter to enable/disable time split */
   bool timesplit = true;
 
   /* Initialize MEOS */
   meos_initialize();
+
+  if (! spacesplit && ! timesplit)
+  {
+    printf("At least one of 'spacesplit' or 'timesplit' must be true\n");
+    meos_finalize();
+    return 0;
+  }
 
   /* Initialize values for tiling */
   STBox *box = stbox_in("STBOX XT(((1,1),(10,10)),[2020-03-01, 2020-03-10])");
@@ -74,9 +83,9 @@ int main(void)
   int count;
   if (spacesplit)
     boxes = timesplit ?
-      stbox_space_time_tiles(box, 5.0, 5.0, 5.0, interv, sorigin, torigin,
+      stbox_space_time_tiles(box, 5.0, 5.0, 0.0, interv, sorigin, torigin,
         true, &count) :
-      stbox_space_tiles(box, 5.0, 5.0, 5.0, sorigin, true, &count);
+      stbox_space_tiles(box, 5.0, 5.0, 0.0, sorigin, true, &count);
   else
     spans = tstzspan_bins(&box->period, interv, torigin, &count);
 
@@ -96,7 +105,7 @@ int main(void)
   {
     char *tile_str = spacesplit ?
       stbox_out(&boxes[i], 3) : tstzspan_out(&spans[i]);
-    sprintf(output_buffer, "%d: %s\n", i + 1, tile_str);
+    snprintf(output_buffer, MAX_LINE_LENGTH - 1, "%d: %s\n", i + 1, tile_str);
     printf("%s", output_buffer);
     free(tile_str);
   }

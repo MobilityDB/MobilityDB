@@ -29,24 +29,158 @@
 
 /**
  * @file
- * @brief Comparison functions and operators for temporal network points
+ * @brief Ever/always and temporal comparisons for temporal network points
  */
 
 /*****************************************************************************
- * Temporal equal
+ * Ever/Always comparisons
+ *****************************************************************************/
+
+CREATE FUNCTION ever_eq(npoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_eq_npoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_eq(tnpoint, npoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_eq_tnpoint_npoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_eq(tnpoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_eq_tnpoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?= (
+  LEFTARG = npoint, RIGHTARG = tnpoint,
+  PROCEDURE = ever_eq,
+  NEGATOR = %<>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ?= (
+  LEFTARG = tnpoint, RIGHTARG = npoint,
+  PROCEDURE = ever_eq,
+  NEGATOR = %<>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ?= (
+  LEFTARG = tnpoint, RIGHTARG = tnpoint,
+  PROCEDURE = ever_eq,
+  NEGATOR = %<>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+CREATE FUNCTION ever_ne(npoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_ne_npoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_ne(tnpoint, npoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_ne_tnpoint_npoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_ne(tnpoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Ever_ne_tnpoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?<> (
+  LEFTARG = npoint, RIGHTARG = tnpoint,
+  PROCEDURE = ever_ne,
+  NEGATOR = %=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ?<> (
+  LEFTARG = tnpoint, RIGHTARG = npoint,
+  PROCEDURE = ever_ne,
+  NEGATOR = %=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ?<> (
+  LEFTARG = tnpoint, RIGHTARG = tnpoint,
+  PROCEDURE = ever_ne,
+  NEGATOR = %=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION always_eq(npoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_npoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_eq(tnpoint, npoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_tnpoint_npoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_eq(tnpoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_tnpoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %= (
+  LEFTARG = npoint, RIGHTARG = tnpoint,
+  PROCEDURE = always_eq,
+  NEGATOR = ?<>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR %= (
+  LEFTARG = tnpoint, RIGHTARG = npoint,
+  PROCEDURE = always_eq,
+  NEGATOR = ?<>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR %= (
+  LEFTARG = tnpoint, RIGHTARG = tnpoint,
+  PROCEDURE = always_eq,
+  NEGATOR = ?<>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+CREATE FUNCTION always_ne(npoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_npoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_ne(tnpoint, npoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_tnpoint_npoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_ne(tnpoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_tnpoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %<> (
+  LEFTARG = npoint, RIGHTARG = tnpoint,
+  PROCEDURE = always_ne,
+  NEGATOR = ?=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR %<> (
+  LEFTARG = tnpoint, RIGHTARG = npoint,
+  PROCEDURE = always_ne,
+  NEGATOR = ?=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR %<> (
+  LEFTARG = tnpoint, RIGHTARG = tnpoint,
+  PROCEDURE = always_ne,
+  NEGATOR = ?=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************
+ * Temporal comparisons
  *****************************************************************************/
 
 CREATE FUNCTION temporal_teq(npoint, tnpoint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tnpoint, npoint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
+  AS 'MODULE_PATHNAME', 'Teq_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tnpoint, tnpoint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
@@ -65,21 +199,19 @@ CREATE OPERATOR #= (
   COMMUTATOR = #=
 );
 
-/*****************************************************************************
- * Temporal not equal
- *****************************************************************************/
+/*****************************************************************************/
 
 CREATE FUNCTION temporal_tne(npoint, tnpoint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tnpoint, npoint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tne_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tnpoint, tnpoint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<> (

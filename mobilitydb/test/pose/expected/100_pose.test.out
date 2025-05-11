@@ -12,9 +12,10 @@ SELECT asText(pose ' pose   (  Point  ( 1  1  ) ,	0.5   )   ');
 
 /* Errors */
 SELECT pose 'point(1,0.5)';
-ERROR:  Could not parse cbuffer value: Missing prefix 'Pose'
+ERROR:  parse error - invalid geometry
 LINE 2: SELECT pose 'point(1,0.5)';
                     ^
+HINT:  "point(1" <-- parse error at position 8 within geometry
 SELECT pose 'pose 1,0.5)';
 ERROR:  Could not parse pose value: Missing opening parenthesis
 LINE 1: SELECT pose 'pose 1,0.5)';

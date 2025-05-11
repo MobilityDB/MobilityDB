@@ -179,4 +179,96 @@ Tnpoint_routes(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
+/*****************************************************************************
+ * Restriction Functions
+ *****************************************************************************/
+
+/**
+ * @brief Return a temporal network point restricted to (the complement of) a
+ * network point
+ */
+static Datum
+Tnpoint_restrict_npoint(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Npoint *np = PG_GETARG_NPOINT_P(1);
+  Temporal *result = tnpoint_restrict_npoint(temp, np, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tnpoint_at_npoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnpoint_at_npoint);
+/**
+ * @ingroup mobilitydb_npoint_restrict
+ * @brief Return a temporal value restricted to a base value
+ * @sqlfn atValues()
+ */
+Datum
+Tnpoint_at_npoint(PG_FUNCTION_ARGS)
+{
+  return Tnpoint_restrict_npoint(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Tnpoint_minus_npoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnpoint_minus_npoint);
+/**
+ * @ingroup mobilitydb_npoint_restrict
+ * @brief Return a temporal value restricted to the complement of a base value
+ * @sqlfn minusValues()
+ */
+Datum
+Tnpoint_minus_npoint(PG_FUNCTION_ARGS)
+{
+  return Tnpoint_restrict_npoint(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return a temporal value restricted to (the complement of) a set of
+ * network points
+ */
+Datum
+Tnpoint_restrict_npointset(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Set *s = PG_GETARG_SET_P(1);
+  Temporal *result = tnpoint_restrict_npointset(temp, s, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(s, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tnpoint_at_npointset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnpoint_at_npointset);
+/**
+ * @ingroup mobilitydb_npoint_restrict
+ * @brief Return a temporal network point restricted to a set of network points
+ * @sqlfn atValues()
+ */
+inline Datum
+Tnpoint_at_npointset(PG_FUNCTION_ARGS)
+{
+  return Tnpoint_restrict_npointset(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Tnpoint_minus_npointset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnpoint_minus_npointset);
+/**
+ * @ingroup mobilitydb_npoint_restrict
+ * @brief Return a temporal network point restricted to the complement of a set
+ * of network points
+ * @sqlfn minusValues()
+ */
+inline Datum
+Tnpoint_minus_npointset(PG_FUNCTION_ARGS)
+{
+  return Tnpoint_restrict_npointset(fcinfo, REST_MINUS);
+}
+
 /*****************************************************************************/

@@ -44,10 +44,8 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seqset
 -------------------------------------------------------------------------------
 -- Robustness test
 
--- In some GEOS versions, GEOSRelatePattern does not accept GEOMETRYCOLLECTION
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
-  WHERE geometrytype(trajectory(temp)) <> 'GEOMETRYCOLLECTION' AND
-  tContains(g, temp) ?= true <> eContains(g, temp);
+  WHERE tContains(g, temp) ?= true <> eContains(g, temp);
 -- Step interpolation
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seq
   WHERE tContains(g, seq) ?= true <> eContains(g, seq);

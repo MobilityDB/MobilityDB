@@ -70,7 +70,7 @@ struct Cbuffer
 
 /* Collinear functions */
 
-extern bool cbuffer_collinear(const Cbuffer *cbuf1, const Cbuffer *cbuf2,
+extern bool cbuffer_collinear(const Cbuffer *cb1, const Cbuffer *cb2,
   const Cbuffer *cbuf3, double ratio);
 
 /* Interpolation functions */
@@ -82,14 +82,14 @@ extern Cbuffer *cbuffersegm_interpolate(const Cbuffer *start,
 
 /* Validity functions */
 
-extern bool ensure_valid_cbuffer_geo(const Cbuffer *cbuf,
+extern bool ensure_valid_cbuffer_geo(const Cbuffer *cb,
   const GSERIALIZED *gs);
-extern bool ensure_valid_cbuffer_stbox(const Cbuffer *cbuf, const STBox *box);
-extern bool ensure_valid_cbuffer_cbuffer(const Cbuffer *cbuf1,
-  const Cbuffer *cbuf2);
-extern bool ensure_valid_cbufferset_cbuffer(const Set *s, const Cbuffer *cbuf);
+extern bool ensure_valid_cbuffer_stbox(const Cbuffer *cb, const STBox *box);
+extern bool ensure_valid_cbuffer_cbuffer(const Cbuffer *cb1,
+  const Cbuffer *cb2);
+extern bool ensure_valid_cbufferset_cbuffer(const Set *s, const Cbuffer *cb);
 extern bool ensure_valid_tcbuffer_cbuffer(const Temporal *temp,
-  const Cbuffer *cbuf);
+  const Cbuffer *cb);
 extern bool ensure_valid_tcbuffer_geo(const Temporal *temp,
   const GSERIALIZED *gs);
 extern bool ensure_valid_tcbuffer_stbox(const Temporal *temp,
@@ -104,15 +104,15 @@ extern char *cbuffer_wkt_out(Datum value, int maxdd, bool extended);
 
 /* Accessor functions */
 
-extern const GSERIALIZED *cbuffer_point_p(const Cbuffer *cbuf);
+extern const GSERIALIZED *cbuffer_point_p(const Cbuffer *cb);
 
 extern Datum datum_cbuffer_round(Datum buffer, Datum size);
-extern Cbuffer *cbuffer_round(const Cbuffer *cbuf, int maxdd);
+extern Cbuffer *cbuffer_round(const Cbuffer *cb, int maxdd);
 extern Cbuffer **cbufferarr_round(const Cbuffer **cbufarr, int count, int maxdd);
 
 /* Transformation functions */
 
-extern Cbuffer *cbuffer_transf_pj(const Cbuffer *cbuf, int32_t srid_to, const LWPROJ *pj);
+extern Cbuffer *cbuffer_transf_pj(const Cbuffer *cb, int32_t srid_to, const LWPROJ *pj);
   
 /*****************************************************************************/
 

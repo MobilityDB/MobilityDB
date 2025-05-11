@@ -182,6 +182,11 @@ CREATE FUNCTION getValues(npointset)
   AS 'MODULE_PATHNAME', 'Set_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION routes(npointset)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Npointset_routes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Transformation set of values <-> set
  ******************************************************************************/

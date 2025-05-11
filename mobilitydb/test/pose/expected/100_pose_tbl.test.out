@@ -18,7 +18,7 @@ DROP TABLE
 SELECT ST_AsEWKT(MAX(point(pose)), 6) FROM tbl_pose2d;
                st_asewkt               
 ---------------------------------------
- SRID=5676;POINT(81.228497 -58.175254)
+ SRID=3812;POINT(81.228497 -58.175254)
 (1 row)
 
 SELECT MAX(rotation(pose)) FROM tbl_pose2d;

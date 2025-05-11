@@ -44,27 +44,6 @@
 #include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
- * Parameter tests
- *****************************************************************************/
-
-/**
- * @brief Ensure that two temporal network point instants have the same route
- * identifier
- */
-bool
-ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
-{
-  assert(inst1); assert(inst2);
-  if (tnpointinst_route(inst1) != tnpointinst_route(inst2))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "All network points composing a temporal sequence must have same route identifier");
-    return false;
-  }
-  return true;
-}
-
-/*****************************************************************************
  * Interpolation functions required by tsequence.c that must be implemented
  * for each base type that supports linear interpolation
  *****************************************************************************/
@@ -101,20 +80,23 @@ npointsegm_interpolate(const Npoint *start, const Npoint *end,
 long double
 npointsegm_locate(const Npoint *start, const Npoint *end, const Npoint *value)
 {
-  /* This function is called for temporal sequences and thus the three values
-   * have the same road identifier */
-  assert(start->rid == end->rid); assert(start->rid == value->rid);
+  /* This function is called for temporal sequences and thus the start and
+   * end values have the same road identifier */
+  assert(start->rid == end->rid); 
+   /* Return if the value to locate has a different road identifier */
+  if (start->rid != value->rid)
+    return -1.0;
   double min = Min(start->pos, end->pos);
   double max = Max(start->pos, end->pos);
-  /* If value is to the left or to the right of the range */
-  if ((value->rid != start->rid) ||
-      (value->pos <= start->pos && value->pos <= end->pos) ||
-      (value->pos >= start->pos && value->pos >= end->pos))
+  /* If value is to the left or to the right of the position range */
+  if ((value->pos < start->pos && value->pos < end->pos) ||
+      (value->pos > start->pos && value->pos > end->pos))
     return -1.0;
 
   double range = (max - min);
   double partial = (value->pos - min);
-  double fraction = start->pos < end->pos ? partial / range : 1 - partial / range;
+  double fraction = start->pos < end->pos ? 
+    partial / range : 1 - partial / range;
   if (fabs(fraction) < MEOS_EPSILON || fabs(fraction - 1.0) < MEOS_EPSILON)
     return -1.0;
   return fraction;
@@ -547,8 +529,7 @@ tnpoint_twcentroid(const Temporal *temp)
  * geometry
  */
 Temporal *
-tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
-  const Span *zspan, bool atfunc)
+tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
@@ -561,7 +542,7 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
     return atfunc ? NULL : temporal_copy(temp);
 
   Temporal *tpoint = tnpoint_tgeompoint(temp);
-  Temporal *res = tgeo_restrict_geom(tpoint, gs, zspan, atfunc);
+  Temporal *res = tgeo_restrict_geom(tpoint, gs, NULL, atfunc);
   Temporal *result = NULL;
   if (res)
   {
@@ -582,14 +563,12 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
  * @brief Return a temporal network point restricted to a geometry
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @param[in] zspan Span of values to restrict the Z dimension
  * @csqlfn #Tnpoint_at_geom()
  */
 inline Temporal *
-tnpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs,
-  const Span *zspan)
+tnpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return tnpoint_restrict_geom(temp, gs, zspan, REST_AT);
+  return tnpoint_restrict_geom(temp, gs, REST_AT);
 }
 
 /**
@@ -597,14 +576,12 @@ tnpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs,
  * @brief Return a temporal point restricted to (the complement of) a geometry
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @param[in] zspan Span of values to restrict the Z dimension
  * @csqlfn #Tnpoint_minus_geom()
  */
 inline Temporal *
-tnpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs,
-  const Span *zspan)
+tnpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return tnpoint_restrict_geom(temp, gs, zspan, REST_MINUS);
+  return tnpoint_restrict_geom(temp, gs, REST_MINUS);
 }
 #endif /* MEOS */
 

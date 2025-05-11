@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that reads AIS data from a CSV file, converts them
  * into temporal values, and stores them in MobilityDB.
  *
@@ -70,7 +71,7 @@
 #include <meos_geo.h>
 
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 1000
+#define NO_INSTANTS_BATCH 10000
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length for a SQL output query */
@@ -232,11 +233,11 @@ main(int argc, char **argv)
 
     /* Create the INSERT command with the values read */
     if ((no_records - 1) % NO_BULK_INSERT == 0)
-      len = sprintf(insert_buffer,
+      len = snprintf(insert_buffer, MAX_LENGTH_SQL - 1,
         "INSERT INTO public.AISInstants(MMSI, location, SOG) VALUES ");
 
     char *t_out = timestamp_out(rec.T);
-    len += sprintf(insert_buffer + len,
+    len += snprintf(insert_buffer + len, MAX_LENGTH_SQL - 1 - len,
       "(%ld, 'SRID=4326;Point(%lf %lf)@%s+00', '%lf@%s+00'),",
       rec.MMSI, rec.Longitude, rec.Latitude, t_out, rec.SOG, t_out);
     free(t_out);
@@ -267,7 +268,8 @@ main(int argc, char **argv)
   printf("\n%d records read.\n%d incomplete records ignored.\n",
     no_records, no_nulls);
 
-  sprintf(text_buffer, "SELECT COUNT(*) FROM public.AISInstants;");
+  snprintf(text_buffer, MAX_LENGTH_SQL - 1, 
+    "SELECT COUNT(*) FROM public.AISInstants;");
   PGresult *res = PQexec(conn, text_buffer);
   if (PQresultStatus(res) != PGRES_TUPLES_OK)
   {

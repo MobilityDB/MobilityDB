@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that reads AIS data from a CSV file, constructs
  * trips from these records, and outputs for each trip the MMSI, the number of
  * instants, and the distance travelled. The program also stores in a CSV file
@@ -55,7 +56,7 @@
 /* Maximum number of instants in an input trip */
 #define MAX_INSTANTS 50000
 /* Number of instants in a batch for printing a marker */
-#define NO_INSTANTS_BATCH 1000
+#define NO_INSTANTS_BATCH 10000
 /* Maximum length in characters of a header record in the input CSV file */
 #define MAX_LENGTH_HEADER 1024
 /* Maximum length in characters of a point in the input data */
@@ -118,7 +119,6 @@ int main(void)
   int no_records = 0;
   int no_nulls = 0;
   char header_buffer[MAX_LENGTH_HEADER];
-  char point_buffer[MAX_LENGTH_POINT];
   char timestamp_buffer[MAX_LENGTH_TIMESTAMP];
 
   /* Read the first line of the file with the headers */
@@ -187,11 +187,9 @@ int main(void)
      * - The coordinates are given in the WGS84 geographic coordinate system
      * - The timestamps are given in GMT time zone
      */
-    char *t_out = timestamp_out(rec.T);
-    sprintf(point_buffer, "SRID=4326;Point(%lf %lf)@%s+00", rec.Longitude,
-      rec.Latitude, t_out);
-    free(t_out);
-    TInstant *inst1 = (TInstant *) tgeogpoint_in(point_buffer);
+    GSERIALIZED *gs = geogpoint_make2d(4326, rec.Longitude, rec.Latitude);
+    TInstant *inst1 = tpointinst_make(gs, rec.T);
+    free(gs);
     trips[ship].trip_instants[trips[ship].numinstants] = inst1;
     TInstant *inst2 = (TInstant *) tfloatinst_make(rec.SOG, rec.T);
     trips[ship].SOG_instants[trips[ship].numinstants++] = inst2;

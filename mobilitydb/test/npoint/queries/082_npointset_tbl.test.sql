@@ -78,6 +78,8 @@ SELECT MIN(getPosition(endValue(n))) FROM tbl_npointset;
 SELECT MIN(getPosition(valueN(n, 1))) FROM tbl_npointset;
 SELECT MIN(array_length(getValues(n), 1)) FROM tbl_npointset;
 
+SELECT MIN(numValues(routes(n))) FROM tbl_npointset;
+
 -------------------------------------------------------------------------------
 -- Set_union and unnest functions
 

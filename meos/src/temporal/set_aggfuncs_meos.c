@@ -240,7 +240,7 @@ set_union_transfn(Set *state, Set *s)
   }
 
   /* Ensure the validity of the arguments */
-  if (! ensure_same_set_type(state, s))
+  if (! ensure_valid_set_set(state, s))
     return NULL;
 
   for (int i = 0; i < s->count; i++)

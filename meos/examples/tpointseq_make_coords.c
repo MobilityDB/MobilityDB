@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief A simple program that assembles temporal points from temporal floats,
  * one for each coordinate dimension.
  *

@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 /**
+ * @file
  * @brief Sample program that assembles the observations in the CSV file
  * `berlinmod_instants.csv` into trips stored in the file `berlinmod_trips.csv`
  */
@@ -56,7 +57,7 @@ CREATE TABLE trips (
 
 INSERT INTO trips(tripid, vehid, day, seqno, trip)
 SELECT tripid, vehid, day, seqno,
-  tgeompoint_seq(array_agg(tgeompoint_inst(ST_Transform(Geom, 3857), T) ORDER BY T))
+  tgeompointSeq(array_agg(tgeompoint(ST_Transform(Geom, 3857), T) ORDER BY T))
 FROM trips_input
 GROUP BY tripid, vehid, day, seqno
 ORDER BY tripid, vehid, day, seqno;

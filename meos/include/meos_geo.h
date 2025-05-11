@@ -145,7 +145,7 @@ typedef enum
   #define VALIDATE_TGEOMETRY(temp, ret) \
     do { \
           if (! ensure_not_null((void *) (temp)) || \
-            ! ensure_temporal_isof_type((Temporal *) (temp), T_TGEOMETRY) ) \
+              ! ensure_temporal_isof_type((Temporal *) (temp), T_TGEOMETRY) ) \
            return (ret); \
     } while (0)
 #else
@@ -165,7 +165,7 @@ typedef enum
   #define VALIDATE_TGEOGRAPHY(temp, ret) \
     do { \
           if (! ensure_not_null((void *) (temp)) || \
-            ! ensure_temporal_isof_type((Temporal *) (temp), T_TGEOGRAPHY) ) \
+              ! ensure_temporal_isof_type((Temporal *) (temp), T_TGEOGRAPHY) ) \
            return (ret); \
     } while (0)
 #else
@@ -185,7 +185,7 @@ typedef enum
   #define VALIDATE_TGEOMPOINT(temp, ret) \
     do { \
           if (! ensure_not_null((void *) (temp)) || \
-            ! ensure_temporal_isof_type((Temporal *) (temp), T_TGEOMPOINT) ) \
+              ! ensure_temporal_isof_type((Temporal *) (temp), T_TGEOMPOINT) ) \
            return (ret); \
     } while (0)
 #else
@@ -205,7 +205,7 @@ typedef enum
   #define VALIDATE_TGEOGPOINT(temp, ret) \
     do { \
           if (! ensure_not_null((void *) (temp)) || \
-            ! ensure_temporal_isof_type((Temporal *) (temp), T_TGEOGPOINT) ) \
+              ! ensure_temporal_isof_type((Temporal *) (temp), T_TGEOGPOINT) ) \
            return (ret); \
     } while (0)
 #else
@@ -226,7 +226,7 @@ typedef enum
   #define VALIDATE_TGEO(temp, ret) \
     do { \
           if (! ensure_not_null((void *) (temp)) || \
-            ! ensure_tgeo_type_all(((Temporal *) (temp))->temptype) ) \
+              ! ensure_tgeo_type_all(((Temporal *) (temp))->temptype) ) \
            return (ret); \
     } while (0)
 #else
@@ -246,7 +246,7 @@ typedef enum
   #define VALIDATE_TGEOM(temp, ret) \
     do { \
           if (! ensure_not_null((void *) (temp)) || \
-            ! ensure_tgeometry_type(((Temporal *) (temp))->temptype) ) \
+              ! ensure_tgeometry_type(((Temporal *) (temp))->temptype) ) \
            return (ret); \
     } while (0)
 #else
@@ -266,7 +266,7 @@ typedef enum
   #define VALIDATE_TGEOG(temp, ret) \
     do { \
           if (! ensure_not_null((void *) (temp)) || \
-            ! ensure_tgeodetic_type(((Temporal *) (temp))->temptype) ) \
+              ! ensure_tgeodetic_type(((Temporal *) (temp))->temptype) ) \
            return (ret); \
     } while (0)
 #else
@@ -287,7 +287,7 @@ typedef enum
   #define VALIDATE_TPOINT(temp, ret) \
     do { \
           if (! ensure_not_null((void *) (temp)) || \
-            ! ensure_tpoint_type(((Temporal *) (temp))->temptype) ) \
+              ! ensure_tpoint_type(((Temporal *) (temp))->temptype) ) \
            return (ret); \
     } while (0)
 #else
@@ -307,7 +307,7 @@ typedef enum
   #define VALIDATE_TSPATIAL(temp, ret) \
     do { \
           if (! ensure_not_null((void *) (temp)) || \
-            ! ensure_tspatial_type(((Temporal *) (temp))->temptype) ) \
+              ! ensure_tspatial_type(((Temporal *) (temp))->temptype) ) \
            return (ret); \
     } while (0)
 #else
@@ -355,6 +355,8 @@ extern GSERIALIZED *geog_in(const char *str, int32 typmod);
 extern bool geog_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool use_spheroid);
 extern double geog_length(const GSERIALIZED *g, bool use_spheroid);
 extern double geog_perimeter(const GSERIALIZED *g, bool use_spheroid);
+extern GSERIALIZED *geogpoint_make3dz(int32_t srid, double x, double y, double z);
+extern GSERIALIZED *geogpoint_make2d(int32_t srid, double x, double y);
 
 extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int count);
 extern bool geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result);
@@ -384,6 +386,8 @@ extern GSERIALIZED *geom_shortestline2d(const GSERIALIZED *gs1, const GSERIALIZE
 extern GSERIALIZED *geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *s2);
 extern bool geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_unary_union(GSERIALIZED *gs, double prec);
+extern GSERIALIZED *geompoint_make2d(int32_t srid, double x, double y);
+extern GSERIALIZED *geompoint_make3dz(int32_t srid, double x, double y, double z);
 
 extern GSERIALIZED *line_interpolate_point(GSERIALIZED *gs, double distance_fraction, bool repeat);
 extern int line_numpoints(const GSERIALIZED *gs);
@@ -398,24 +402,44 @@ extern STBox *geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *cou
  * Functions for geo and spatial sets
  *****************************************************************************/
 
-extern bool contained_geo_set(const GSERIALIZED *gs, const Set *s);
-extern bool contains_set_geo(const Set *s, GSERIALIZED *gs);
+/* Input and output */
+
+extern Set *geogset_in(const char *str);
+extern Set *geomset_in(const char *str);
+extern char *spatialset_as_text(const Set *set, int maxdd);
+extern char *spatialset_as_ewkt(const Set *set, int maxdd);
+
+/* Constructors */
+
 extern Set *geo_set(const GSERIALIZED *gs);
-extern GSERIALIZED *geoset_end_value(const Set *s);
 extern Set *geoset_make(const GSERIALIZED **values, int count);
+
+extern GSERIALIZED *geoset_end_value(const Set *s);
 extern GSERIALIZED *geoset_start_value(const Set *s);
 extern bool geoset_value_n(const Set *s, int n, GSERIALIZED **result);
 extern GSERIALIZED **geoset_values(const Set *s);
+
+/* Topological operators */
+
+extern bool contained_geo_set(const GSERIALIZED *gs, const Set *s);
+extern bool contains_set_geo(const Set *s, GSERIALIZED *gs);
+
+/* Set operations */
+
 extern Set *intersection_geo_set(const GSERIALIZED *gs, const Set *s);
 extern Set *intersection_set_geo(const Set *s, const GSERIALIZED *gs);
 extern Set *minus_geo_set(const GSERIALIZED *gs, const Set *s);
 extern Set *minus_set_geo(const Set *s, const GSERIALIZED *gs);
+extern Set *union_geo_set(const GSERIALIZED *gs, const Set *s);
+extern Set *union_set_geo(const Set *s, const GSERIALIZED *gs);
+
+/* SRID functions */
+
 extern int32_t spatialset_srid(const Set *s);
 extern Set *spatialset_set_srid(const Set *s, int32_t srid);
 extern Set *spatialset_transform(const Set *s, int32_t srid);
 extern Set *spatialset_transform_pipeline(const Set *s, const char *pipelinestr, int32_t srid, bool is_forward);
-extern Set *union_geo_set(const GSERIALIZED *gs, const Set *s);
-extern Set *union_set_geo(const Set *s, const GSERIALIZED *gs);
+
 
 /*****************************************************************************
  * Functions for box types
@@ -535,7 +559,7 @@ extern int *rtree_search(const RTree *rtree,const STBox *query, int *count);
 extern void rtree_free(RTree *rtree);
 
 /*****************************************************************************
- * Functions for temporal types
+ * Functions for temporal geometries/geographies
  *****************************************************************************/
 
 /* Input and output */
@@ -549,11 +573,6 @@ extern Temporal *tgeography_in(const char *str);
 extern Temporal *tgeometry_in(const char *str);
 extern Temporal *tgeompoint_in(const char *str);
 extern Temporal *tgeompoint_from_mfjson(const char *str);
-
-extern Set *geogset_in(const char *str);
-extern Set *geomset_in(const char *str);
-extern char *spatialset_as_text(const Set *set, int maxdd);
-extern char *spatialset_as_ewkt(const Set *set, int maxdd);
 
 /* Constructors */
 
@@ -741,6 +760,8 @@ extern bool tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *mea
 /* Ever and always spatial relationships */
 
 extern int acontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int acontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int acontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int adisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int adisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
@@ -748,7 +769,10 @@ extern int adwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, doub
 extern int aintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int aintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int atouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int atouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int econtains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
+extern int econtains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int econtains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int edisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int edisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
@@ -756,6 +780,7 @@ extern int edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, doub
 extern int eintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int eintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int etouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int etouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 
 /* Temporal spatial relationships */
 

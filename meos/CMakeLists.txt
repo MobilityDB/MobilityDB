@@ -220,6 +220,9 @@ install(
 install(
   FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+install(
+  FILES "${CMAKE_SOURCE_DIR}/meos/src/geo/spatial_ref_sys.csv"
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 
 if(CBUFFER)
   install(
@@ -230,6 +233,9 @@ if(NPOINT)
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_npoint.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/src/npoint/ways.csv"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 endif()
 if(POSE)
   install(

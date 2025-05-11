@@ -87,8 +87,8 @@ PG_FUNCTION_INFO_V1(Cbuffer_out);
 Datum
 Cbuffer_out(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
-  PG_RETURN_CSTRING(cbuffer_out(cbuf, OUT_DEFAULT_DECIMAL_DIGITS));
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  PG_RETURN_CSTRING(cbuffer_out(cb, OUT_DEFAULT_DECIMAL_DIGITS));
 }
 
 PGDLLEXPORT Datum Cbuffer_recv(PG_FUNCTION_ARGS);
@@ -120,10 +120,10 @@ PG_FUNCTION_INFO_V1(Cbuffer_send);
 Datum
 Cbuffer_send(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
-  size_t wkb_size = VARSIZE_ANY_EXHDR(cbuf);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  size_t wkb_size = VARSIZE_ANY_EXHDR(cb);
   /* A circular buffer always outputs the SRID */
-  uint8_t *wkb = cbuffer_as_wkb(cbuf, WKB_EXTENDED, &wkb_size);
+  uint8_t *wkb = cbuffer_as_wkb(cb, WKB_EXTENDED, &wkb_size);
   bytea *result = bstring2bytea(wkb, wkb_size);
   pfree(wkb);
   PG_RETURN_BYTEA_P(result);
@@ -141,15 +141,15 @@ Cbuffer_send(PG_FUNCTION_ARGS)
 static Datum
 Cbuffer_as_text_ext(FunctionCallInfo fcinfo, bool extended)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = extended ? cbuffer_as_ewkt(cbuf, dbl_dig_for_wkt) : 
-    cbuffer_as_text(cbuf, dbl_dig_for_wkt);
+  char *str = extended ? cbuffer_as_ewkt(cb, dbl_dig_for_wkt) : 
+    cbuffer_as_text(cb, dbl_dig_for_wkt);
   text *result = cstring2text(str);
   pfree(str);
-  PG_FREE_IF_COPY(cbuf, 0);
+  PG_FREE_IF_COPY(cb, 0);
   PG_RETURN_TEXT_P(result);
 }
 
@@ -233,8 +233,8 @@ PG_FUNCTION_INFO_V1(Cbuffer_as_wkb);
 Datum
 Cbuffer_as_wkb(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
-  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, PointerGetDatum(cbuf), T_CBUFFER,
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, PointerGetDatum(cb), T_CBUFFER,
     false));
 }
 
@@ -249,8 +249,8 @@ PG_FUNCTION_INFO_V1(Cbuffer_as_hexwkb);
 Datum
 Cbuffer_as_hexwkb(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
-  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(cbuf), T_CBUFFER));
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(cb), T_CBUFFER));
 }
 
 /*****************************************************************************
@@ -287,8 +287,8 @@ PG_FUNCTION_INFO_V1(Cbuffer_to_geom);
 Datum
 Cbuffer_to_geom(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
-  PG_RETURN_GSERIALIZED_P(cbuffer_geom(cbuf));
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  PG_RETURN_GSERIALIZED_P(cbuffer_geom(cb));
 }
 
 PGDLLEXPORT Datum Geom_to_cbuffer(PG_FUNCTION_ARGS);
@@ -324,8 +324,8 @@ PG_FUNCTION_INFO_V1(Cbuffer_to_stbox);
 Datum
 Cbuffer_to_stbox(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
-  PG_RETURN_STBOX_P(cbuffer_stbox(cbuf));
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  PG_RETURN_STBOX_P(cbuffer_stbox(cb));
 }
 
 PGDLLEXPORT Datum Cbuffer_timestamptz_to_stbox(PG_FUNCTION_ARGS);
@@ -340,9 +340,9 @@ PG_FUNCTION_INFO_V1(Cbuffer_timestamptz_to_stbox);
 Datum
 Cbuffer_timestamptz_to_stbox(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  PG_RETURN_STBOX_P(cbuffer_timestamptz_to_stbox(cbuf, t));
+  PG_RETURN_STBOX_P(cbuffer_timestamptz_to_stbox(cb, t));
 }
 
 PGDLLEXPORT Datum Cbuffer_tstzspan_to_stbox(PG_FUNCTION_ARGS);
@@ -358,9 +358,9 @@ PG_FUNCTION_INFO_V1(Cbuffer_tstzspan_to_stbox);
 Datum
 Cbuffer_tstzspan_to_stbox(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Span *s = PG_GETARG_SPAN_P(1);
-  PG_RETURN_STBOX_P(cbuffer_tstzspan_to_stbox(cbuf, s));
+  PG_RETURN_STBOX_P(cbuffer_tstzspan_to_stbox(cb, s));
 }
 
 /*****************************************************************************
@@ -377,8 +377,8 @@ PG_FUNCTION_INFO_V1(Cbuffer_point);
 Datum
 Cbuffer_point(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
-  Datum d = PointerGetDatum(&cbuf->point);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  Datum d = PointerGetDatum(&cb->point);
   PG_RETURN_DATUM(datum_copy(d, T_GEOMETRY));
 }
 
@@ -392,8 +392,8 @@ PG_FUNCTION_INFO_V1(Cbuffer_radius);
 Datum
 Cbuffer_radius(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
-  PG_RETURN_FLOAT8(cbuffer_radius(cbuf));
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  PG_RETURN_FLOAT8(cbuffer_radius(cb));
 }
 
 /*****************************************************************************
@@ -411,9 +411,9 @@ PG_FUNCTION_INFO_V1(Cbuffer_round);
 Datum
 Cbuffer_round(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Datum size = PG_GETARG_DATUM(1);
-  PG_RETURN_CBUFFER_P(cbuffer_round(cbuf, size));
+  PG_RETURN_CBUFFER_P(cbuffer_round(cb, size));
 }
 
 PGDLLEXPORT Datum Cbufferarr_round(PG_FUNCTION_ARGS);
@@ -459,8 +459,8 @@ PG_FUNCTION_INFO_V1(Cbuffer_srid);
 Datum
 Cbuffer_srid(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
-  int result = cbuffer_srid(cbuf);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  int result = cbuffer_srid(cb);
   PG_RETURN_INT32(result);
 }
 
@@ -475,9 +475,9 @@ PG_FUNCTION_INFO_V1(Cbuffer_set_srid);
 Datum
 Cbuffer_set_srid(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   int32_t srid = PG_GETARG_INT32(1);
-  Cbuffer *result = cbuffer_copy(cbuf);
+  Cbuffer *result = cbuffer_copy(cb);
   cbuffer_set_srid(result, srid);
   PG_RETURN_CBUFFER_P(result);
 }
@@ -492,10 +492,10 @@ PG_FUNCTION_INFO_V1(Cbuffer_transform);
 Datum
 Cbuffer_transform(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   int32_t srid = PG_GETARG_INT32(1);
-  Cbuffer *result = cbuffer_transform(cbuf, srid);
-  PG_FREE_IF_COPY(cbuf, 0);
+  Cbuffer *result = cbuffer_transform(cb, srid);
+  PG_FREE_IF_COPY(cb, 0);
   PG_RETURN_CBUFFER_P(result);
 }
 
@@ -509,15 +509,15 @@ PG_FUNCTION_INFO_V1(Cbuffer_transform_pipeline);
 Datum
 Cbuffer_transform_pipeline(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   text *pipelinetxt = PG_GETARG_TEXT_P(1);
   int32_t srid = PG_GETARG_INT32(2);
   bool is_forward = PG_GETARG_BOOL(3);
   char *pipelinestr = text2cstring(pipelinetxt);
-  Cbuffer *result = cbuffer_transform_pipeline(cbuf, pipelinestr, srid,
+  Cbuffer *result = cbuffer_transform_pipeline(cb, pipelinestr, srid,
     is_forward);
   pfree(pipelinestr);
-  PG_FREE_IF_COPY(cbuf, 0);
+  PG_FREE_IF_COPY(cb, 0);
   PG_FREE_IF_COPY(pipelinetxt, 1);
   PG_RETURN_CBUFFER_P(result);
 }
@@ -537,9 +537,9 @@ PG_FUNCTION_INFO_V1(Cbuffer_same);
 Datum
 Cbuffer_same(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf1 = PG_GETARG_CBUFFER_P(0);
-  Cbuffer *cbuf2 = PG_GETARG_CBUFFER_P(1);
-  PG_RETURN_BOOL(cbuffer_same(cbuf1, cbuf2));
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  PG_RETURN_BOOL(cbuffer_same(cb1, cb2));
 }
 
 /*****************************************************************************
@@ -557,9 +557,9 @@ PG_FUNCTION_INFO_V1(Cbuffer_eq);
 Datum
 Cbuffer_eq(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf1 = PG_GETARG_CBUFFER_P(0);
-  Cbuffer *cbuf2 = PG_GETARG_CBUFFER_P(1);
-  PG_RETURN_BOOL(cbuffer_eq(cbuf1, cbuf2));
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  PG_RETURN_BOOL(cbuffer_eq(cb1, cb2));
 }
 
 PGDLLEXPORT Datum Cbuffer_ne(PG_FUNCTION_ARGS);
@@ -574,9 +574,9 @@ PG_FUNCTION_INFO_V1(Cbuffer_ne);
 Datum
 Cbuffer_ne(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf1 = PG_GETARG_CBUFFER_P(0);
-  Cbuffer *cbuf2 = PG_GETARG_CBUFFER_P(1);
-  PG_RETURN_BOOL(cbuffer_ne(cbuf1, cbuf2));
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  PG_RETURN_BOOL(cbuffer_ne(cb1, cb2));
 }
 
 PGDLLEXPORT Datum Cbuffer_cmp(PG_FUNCTION_ARGS);
@@ -591,9 +591,9 @@ PG_FUNCTION_INFO_V1(Cbuffer_cmp);
 Datum
 Cbuffer_cmp(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf1 = PG_GETARG_CBUFFER_P(0);
-  Cbuffer *cbuf2 = PG_GETARG_CBUFFER_P(1);
-  PG_RETURN_INT32(cbuffer_cmp(cbuf1, cbuf2));
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  PG_RETURN_INT32(cbuffer_cmp(cb1, cb2));
 }
 
 PGDLLEXPORT Datum Cbuffer_lt(PG_FUNCTION_ARGS);
@@ -607,9 +607,9 @@ PG_FUNCTION_INFO_V1(Cbuffer_lt);
 Datum
 Cbuffer_lt(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf1 = PG_GETARG_CBUFFER_P(0);
-  Cbuffer *cbuf2 = PG_GETARG_CBUFFER_P(1);
-  PG_RETURN_BOOL(cbuffer_lt(cbuf1, cbuf2));
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  PG_RETURN_BOOL(cbuffer_lt(cb1, cb2));
 }
 
 PGDLLEXPORT Datum Cbuffer_le(PG_FUNCTION_ARGS);
@@ -624,9 +624,9 @@ PG_FUNCTION_INFO_V1(Cbuffer_le);
 Datum
 Cbuffer_le(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf1 = PG_GETARG_CBUFFER_P(0);
-  Cbuffer *cbuf2 = PG_GETARG_CBUFFER_P(1);
-  PG_RETURN_BOOL(cbuffer_le(cbuf1, cbuf2));
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  PG_RETURN_BOOL(cbuffer_le(cb1, cb2));
 }
 
 PGDLLEXPORT Datum Cbuffer_ge(PG_FUNCTION_ARGS);
@@ -641,9 +641,9 @@ PG_FUNCTION_INFO_V1(Cbuffer_ge);
 Datum
 Cbuffer_ge(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf1 = PG_GETARG_CBUFFER_P(0);
-  Cbuffer *cbuf2 = PG_GETARG_CBUFFER_P(1);
-  PG_RETURN_BOOL(cbuffer_ge(cbuf1, cbuf2));
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  PG_RETURN_BOOL(cbuffer_ge(cb1, cb2));
 }
 
 PGDLLEXPORT Datum Cbuffer_gt(PG_FUNCTION_ARGS);
@@ -658,9 +658,9 @@ PG_FUNCTION_INFO_V1(Cbuffer_gt);
 Datum
 Cbuffer_gt(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf1 = PG_GETARG_CBUFFER_P(0);
-  Cbuffer *cbuf2 = PG_GETARG_CBUFFER_P(1);
-  PG_RETURN_BOOL(cbuffer_gt(cbuf1, cbuf2));
+  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
+  PG_RETURN_BOOL(cbuffer_gt(cb1, cb2));
 }
 
 /*****************************************************************************
@@ -677,9 +677,9 @@ PG_FUNCTION_INFO_V1(Cbuffer_hash);
 Datum
 Cbuffer_hash(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
-  uint32 result = cbuffer_hash(cbuf);
-  PG_FREE_IF_COPY(cbuf, 0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  uint32 result = cbuffer_hash(cb);
+  PG_FREE_IF_COPY(cb, 0);
   PG_RETURN_UINT32(result);
 }
 
@@ -693,10 +693,10 @@ PG_FUNCTION_INFO_V1(Cbuffer_hash_extended);
 Datum
 Cbuffer_hash_extended(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cbuf = PG_GETARG_CBUFFER_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   uint64 seed = PG_GETARG_INT64(1);
-  uint64 result = cbuffer_hash_extended(cbuf, seed);
-  PG_FREE_IF_COPY(cbuf, 0);
+  uint64 result = cbuffer_hash_extended(cb, seed);
+  PG_FREE_IF_COPY(cb, 0);
   PG_RETURN_UINT64(result);
 }
 
