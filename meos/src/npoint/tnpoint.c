@@ -250,7 +250,7 @@ tnpointinst_in(const char *str)
  * @param[in] interp Interpolation
  */
 TSequence *
-tnpointseq_in(const char *str, interpType interp __attribute__((unused)))
+tnpointseq_in(const char *str, interpType interp UNUSED)
 {
   /* Call the superclass function */
   Temporal *temp = tnpoint_in(str);

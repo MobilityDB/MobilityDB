@@ -61,15 +61,15 @@ INSERT INTO test_tcbuffer_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tstzspan', 'tcbuffer', COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t -|- temp;
 
 INSERT INTO test_tcbuffer_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'stbox', 'tcbuffer', COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) && temp;
+SELECT '&&', 'stbox', 'tcbuffer', COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) && temp;
 INSERT INTO test_tcbuffer_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'stbox', 'tcbuffer', COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) @> temp;
+SELECT '@>', 'stbox', 'tcbuffer', COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) @> temp;
 INSERT INTO test_tcbuffer_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'stbox', 'tcbuffer', COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) <@ temp;
+SELECT '<@', 'stbox', 'tcbuffer', COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) <@ temp;
 INSERT INTO test_tcbuffer_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'stbox', 'tcbuffer', COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) ~= temp;
+SELECT '~=', 'stbox', 'tcbuffer', COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) ~= temp;
 INSERT INTO test_tcbuffer_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'stbox', 'tcbuffer', COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) -|- temp;
+SELECT '-|-', 'stbox', 'tcbuffer', COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) -|- temp;
 
 -------------------------------------------------------------------------------
 --  tcbuffer op <type>
@@ -86,15 +86,15 @@ INSERT INTO test_tcbuffer_topops(op, leftarg, rightarg, no_idx)
 SELECT '-|-', 'tcbuffer', 'tstzspan', COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp -|- t;
 
 INSERT INTO test_tcbuffer_topops(op, leftarg, rightarg, no_idx)
-SELECT '&&', 'tcbuffer', 'stbox', COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp && SetSRID(b, 5676);
+SELECT '&&', 'tcbuffer', 'stbox', COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp && SetSRID(b, 3812);
 INSERT INTO test_tcbuffer_topops(op, leftarg, rightarg, no_idx)
-SELECT '@>', 'tcbuffer', 'stbox', COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp @> SetSRID(b, 5676);
+SELECT '@>', 'tcbuffer', 'stbox', COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp @> SetSRID(b, 3812);
 INSERT INTO test_tcbuffer_topops(op, leftarg, rightarg, no_idx)
-SELECT '<@', 'tcbuffer', 'stbox', COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp <@ SetSRID(b, 5676);
+SELECT '<@', 'tcbuffer', 'stbox', COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp <@ SetSRID(b, 3812);
 INSERT INTO test_tcbuffer_topops(op, leftarg, rightarg, no_idx)
-SELECT '~=', 'tcbuffer', 'stbox', COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp ~= SetSRID(b, 5676);
+SELECT '~=', 'tcbuffer', 'stbox', COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp ~= SetSRID(b, 3812);
 INSERT INTO test_tcbuffer_topops(op, leftarg, rightarg, no_idx)
-SELECT '-|-', 'tcbuffer', 'stbox', COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp -|- SetSRID(b, 5676);
+SELECT '-|-', 'tcbuffer', 'stbox', COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp -|- SetSRID(b, 3812);
 
 INSERT INTO test_tcbuffer_topops(op, leftarg, rightarg, no_idx)
 SELECT '&&', 'tcbuffer', 'tcbuffer', COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE t1.temp && t2.temp;
@@ -131,19 +131,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t -|- te
 WHERE op = '-|-' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
 
 UPDATE test_tcbuffer_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) && temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) && temp )
 WHERE op = '&&' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 UPDATE test_tcbuffer_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) @> temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) @> temp )
 WHERE op = '@>' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 UPDATE test_tcbuffer_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) <@ temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) <@ temp )
 WHERE op = '<@' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 UPDATE test_tcbuffer_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) ~= temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) ~= temp )
 WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 UPDATE test_tcbuffer_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) -|- temp )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) -|- temp )
 WHERE op = '-|-' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 
 -------------------------------------------------------------------------------
@@ -166,19 +166,19 @@ SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp -|-
 WHERE op = '-|-' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
 
 UPDATE test_tcbuffer_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp && SetSRID(b, 5676) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp && SetSRID(b, 3812) )
 WHERE op = '&&' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 UPDATE test_tcbuffer_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp @> SetSRID(b, 5676) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp @> SetSRID(b, 3812) )
 WHERE op = '@>' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 UPDATE test_tcbuffer_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp <@ SetSRID(b, 5676) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp <@ SetSRID(b, 3812) )
 WHERE op = '<@' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 UPDATE test_tcbuffer_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp ~= SetSRID(b, 5676) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp ~= SetSRID(b, 3812) )
 WHERE op = '~=' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 UPDATE test_tcbuffer_topops
-SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp -|- SetSRID(b, 5676) )
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp -|- SetSRID(b, 3812) )
 WHERE op = '-|-' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 
 UPDATE test_tcbuffer_topops
@@ -222,19 +222,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t -|-
 WHERE op = '-|-' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
 
 UPDATE test_tcbuffer_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) && temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) && temp )
 WHERE op = '&&' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 UPDATE test_tcbuffer_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) @> temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) @> temp )
 WHERE op = '@>' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 UPDATE test_tcbuffer_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) <@ temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) <@ temp )
 WHERE op = '<@' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 UPDATE test_tcbuffer_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) ~= temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) ~= temp )
 WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 UPDATE test_tcbuffer_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) -|- temp )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) -|- temp )
 WHERE op = '-|-' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 
 -------------------------------------------------------------------------------
@@ -257,19 +257,19 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp 
 WHERE op = '-|-' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
 
 UPDATE test_tcbuffer_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp && SetSRID(b, 5676) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp && SetSRID(b, 3812) )
 WHERE op = '&&' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 UPDATE test_tcbuffer_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp @> SetSRID(b, 5676) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp @> SetSRID(b, 3812) )
 WHERE op = '@>' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 UPDATE test_tcbuffer_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp <@ SetSRID(b, 5676) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp <@ SetSRID(b, 3812) )
 WHERE op = '<@' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 UPDATE test_tcbuffer_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp ~= SetSRID(b, 5676) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp ~= SetSRID(b, 3812) )
 WHERE op = '~=' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 UPDATE test_tcbuffer_topops
-SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp -|- SetSRID(b, 5676) )
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp -|- SetSRID(b, 3812) )
 WHERE op = '-|-' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 
 UPDATE test_tcbuffer_topops
@@ -313,19 +313,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tstzspan, tbl_tcbuffer WHERE t -|- t
 WHERE op = '-|-' and leftarg = 'tstzspan' and rightarg = 'tcbuffer';
 
 UPDATE test_tcbuffer_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) && temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) && temp )
 WHERE op = '&&' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 UPDATE test_tcbuffer_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) @> temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) @> temp )
 WHERE op = '@>' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 UPDATE test_tcbuffer_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) <@ temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) <@ temp )
 WHERE op = '<@' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 UPDATE test_tcbuffer_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) ~= temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) ~= temp )
 WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 UPDATE test_tcbuffer_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 5676) -|- temp )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_stbox, tbl_tcbuffer WHERE SetSRID(b, 3812) -|- temp )
 WHERE op = '-|-' and leftarg = 'stbox' and rightarg = 'tcbuffer';
 
 -------------------------------------------------------------------------------
@@ -348,19 +348,19 @@ SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_tstzspan WHERE temp -|
 WHERE op = '-|-' and leftarg = 'tcbuffer' and rightarg = 'tstzspan';
 
 UPDATE test_tcbuffer_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp && SetSRID(b, 5676) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp && SetSRID(b, 3812) )
 WHERE op = '&&' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 UPDATE test_tcbuffer_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp @> SetSRID(b, 5676) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp @> SetSRID(b, 3812) )
 WHERE op = '@>' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 UPDATE test_tcbuffer_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp <@ SetSRID(b, 5676) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp <@ SetSRID(b, 3812) )
 WHERE op = '<@' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 UPDATE test_tcbuffer_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp ~= SetSRID(b, 5676) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp ~= SetSRID(b, 3812) )
 WHERE op = '~=' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 UPDATE test_tcbuffer_topops
-SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp -|- SetSRID(b, 5676) )
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tcbuffer, tbl_stbox WHERE temp -|- SetSRID(b, 3812) )
 WHERE op = '-|-' and leftarg = 'tcbuffer' and rightarg = 'stbox';
 
 UPDATE test_tcbuffer_topops

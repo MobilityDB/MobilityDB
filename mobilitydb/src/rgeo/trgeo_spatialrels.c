@@ -160,8 +160,6 @@ EA_dwithin_geo_trgeo(FunctionCallInfo fcinfo,
 
 /*****************************************************************************
  * Ever contains
- * The function does not accept 3D or geography since it is based on the
- * PostGIS ST_Relate function
  *****************************************************************************/
 
 /**
@@ -207,6 +205,102 @@ inline Datum
 Acontains_geo_trgeo(PG_FUNCTION_ARGS)
 {
   return EA_contains_geo_trgeo(fcinfo, ALWAYS);
+}
+
+/*****************************************************************************
+ * Ever covers
+ *****************************************************************************/
+
+/**
+ * @brief Return true if a geometry ever/always covers a temporal rigid
+ * geometry
+ * @sqlfn eCovers(), aCovers()
+ */
+Datum
+EA_covers_geo_trgeo(FunctionCallInfo fcinfo, bool ever)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  int result = ever ? ecovers_geo_trgeo(gs, temp) :
+    acovers_geo_trgeo(gs, temp);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Ecovers_geo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ecovers_geo_trgeo);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if a geometry ever covers a temporal rigid geometry
+ * @sqlfn eCovers()
+ */
+inline Datum
+Ecovers_geo_trgeo(PG_FUNCTION_ARGS)
+{
+  return EA_covers_geo_trgeo(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Acovers_geo_trgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acovers_geo_trgeo);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if a geometry always covers a temporal rigid geometry
+ * @sqlfn aCovers()
+ */
+inline Datum
+Acovers_geo_trgeo(PG_FUNCTION_ARGS)
+{
+  return EA_covers_geo_trgeo(fcinfo, ALWAYS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return true if a geometry ever/always covers a temporal rigid
+ * geometry
+ * @sqlfn eCovers(), aCovers()
+ */
+Datum
+EA_covers_trgeo_geo(FunctionCallInfo fcinfo, bool ever)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  int result = ever ? ecovers_trgeo_geo(temp, gs) :
+    acovers_trgeo_geo(temp, gs);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Ecovers_trgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ecovers_trgeo_geo);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if a geometry ever covers a temporal rigid geometry
+ * @sqlfn eCovers()
+ */
+inline Datum
+Ecovers_trgeo_geo(PG_FUNCTION_ARGS)
+{
+  return EA_covers_trgeo_geo(fcinfo, EVER);
+}
+
+PGDLLEXPORT Datum Acovers_trgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acovers_trgeo_geo);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if a geometry always covers a temporal rigid geometry
+ * @sqlfn aCovers()
+ */
+inline Datum
+Acovers_trgeo_geo(PG_FUNCTION_ARGS)
+{
+  return EA_covers_trgeo_geo(fcinfo, ALWAYS);
 }
 
 /*****************************************************************************

@@ -1901,7 +1901,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
  */
 Temporal *
 tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
-  bool expand __attribute__((unused)))
+  bool expand UNUSED)
 {
   assert(seq1); assert(seq2);
   assert(seq1->temptype == seq2->temptype);

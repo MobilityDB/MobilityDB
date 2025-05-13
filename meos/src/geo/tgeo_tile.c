@@ -299,8 +299,9 @@ fastvoxel_bm(int *coords1, double *eps1, int *coords2, double *eps2,
   /* Compute length of translation for normalization */
   length = 0;
   for (i = 0; i < ndims; ++i)
-    length += pow((double) coords2[i] + eps2[i]
-                - (double) coords1[i] - eps1[i], 2);
+    length += 
+      ((double) coords2[i] + eps2[i] - (double) coords1[i] - eps1[i]) *
+      ((double) coords2[i] + eps2[i] - (double) coords1[i] - eps1[i]);
   length = sqrt(length);
   /* Initialize all vectors */
   for (i = 0; i < ndims; ++i)

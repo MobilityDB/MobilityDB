@@ -90,17 +90,21 @@ Arithop_tnumber_number(FunctionCallInfo fcinfo, TArithmetic oper,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] func Arithmetic function
- * @param[in] tpfunc Function determining the turning point
  */
 static Datum
 Arithop_tnumber_tnumber(FunctionCallInfo fcinfo, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType),
-  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
-    const TInstant *, Datum *, TimestampTz *))
+  Datum (*func)(Datum, Datum, meosType))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = arithop_tnumber_tnumber(temp1, temp2, oper, func, tpfunc);
+  meosType basetype = temptype_basetype(temp1->temptype);
+  assert(basetype == T_INT4 || basetype == T_FLOAT8);
+  Temporal *result;
+  if (oper == MULT || oper == DIV)
+    result = arithop_tnumber_tnumber(temp1, temp2, oper, func,
+      (basetype == T_INT4) ? &tint_arithop_turnpt : &tfloat_arithop_turnpt);
+  else
+    result = arithop_tnumber_tnumber(temp1, temp2, oper, func, NULL);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
@@ -151,7 +155,7 @@ PG_FUNCTION_INFO_V1(Add_tnumber_tnumber);
 inline Datum
 Add_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return Arithop_tnumber_tnumber(fcinfo, ADD, &datum_add, NULL);
+  return Arithop_tnumber_tnumber(fcinfo, ADD, &datum_add);
 }
 
 /*****************************************************************************
@@ -197,7 +201,7 @@ PG_FUNCTION_INFO_V1(Sub_tnumber_tnumber);
 inline Datum
 Sub_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return Arithop_tnumber_tnumber(fcinfo, SUB, &datum_sub, NULL);
+  return Arithop_tnumber_tnumber(fcinfo, SUB, &datum_sub);
 }
 
 /*****************************************************************************
@@ -243,8 +247,7 @@ PG_FUNCTION_INFO_V1(Mult_tnumber_tnumber);
 inline Datum
 Mult_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return Arithop_tnumber_tnumber(fcinfo, MULT, &datum_mult,
-    &tnumber_mult_tp_at_timestamptz);
+  return Arithop_tnumber_tnumber(fcinfo, MULT, &datum_mult);
 }
 
 /*****************************************************************************
@@ -290,8 +293,7 @@ PG_FUNCTION_INFO_V1(Div_tnumber_tnumber);
 inline Datum
 Div_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return Arithop_tnumber_tnumber(fcinfo, DIV, &datum_div,
-    &tnumber_div_tp_at_timestamptz);
+  return Arithop_tnumber_tnumber(fcinfo, DIV, &datum_div);
 }
 
 /*****************************************************************************

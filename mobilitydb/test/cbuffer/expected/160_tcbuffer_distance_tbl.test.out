@@ -1,0 +1,85 @@
+SELECT round(MAX(maxValue(ST_SetSRID(g, 5676) <-> temp)), 6) FROM tbl_geom_point t1, tbl_tcbuffer t2
+WHERE ST_SetSRID(g, 5676) <-> temp IS NOT NULL;
+   round    
+------------
+ 259.965742
+(1 row)
+
+SELECT round(MAX(maxValue(temp <-> ST_SetSRID(g, 5676))), 6) FROM tbl_tcbuffer t1, tbl_geom_point t2
+WHERE temp <-> ST_SetSRID(g, 5676) IS NOT NULL;
+   round    
+------------
+ 259.965742
+(1 row)
+
+SELECT round(MAX(maxValue(t1.temp <-> t2.temp)), 6) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
+WHERE t1.temp <-> t2.temp IS NOT NULL;
+   round    
+------------
+ 121.675467
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer,
+( SELECT * FROM tbl_geom LIMIT 10 ) t
+WHERE NearestApproachInstant(temp, ST_SetSRID(g, 5676)) IS NOT NULL;
+ count 
+-------
+   900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer t1,
+( SELECT * FROM tbl_tcbuffer t2 LIMIT 10 ) t2
+WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer,
+( SELECT * FROM tbl_geom LIMIT 10 ) t
+WHERE NearestApproachDistance(temp, ST_SetSRID(g, 5676)) IS NOT NULL;
+ count 
+-------
+   900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer t1,
+( SELECT * FROM tbl_tcbuffer t2 LIMIT 10 ) t2
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer,
+( SELECT * FROM tbl_geom LIMIT 10 ) t
+WHERE ST_SetSRID(g, 5676) |=| temp IS NOT NULL;
+ count 
+-------
+   900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer t1,
+( SELECT * FROM tbl_tcbuffer t2 LIMIT 10 ) t2
+WHERE t1.temp |=| t2.temp IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer,
+( SELECT * FROM tbl_geom LIMIT 10 ) t
+WHERE shortestLine(ST_SetSRID(g, 5676), temp) IS NOT NULL;
+ count 
+-------
+   900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer t1,
+( SELECT * FROM tbl_tcbuffer t2 LIMIT 10 ) t2
+WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+    10
+(1 row)
+

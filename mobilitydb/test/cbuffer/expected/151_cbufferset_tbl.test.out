@@ -142,7 +142,7 @@ SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s >= t2.s;
 SELECT MAX(set_hash(s)) FROM tbl_cbufferset;
     max     
 ------------
- 2094387066
+ 2108338657
 (1 row)
 
 SELECT numValues(setUnion(cb)) FROM tbl_cbuffer;

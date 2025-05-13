@@ -118,20 +118,19 @@ ensure_valid_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Return true if a segment of a temporal pose value intersects
- * a base value at the timestamp
- * @param[in] inst1,inst2 Temporal instants defining the segment
+ * @brief Return 1 if a segment of a temporal pose value intersects a pose at
+ * the timestamp output in the last argument
+ * @param[in] start,end Base values defining the segment
  * @param[in] value Base value
- * @param[out] t Timestamp, may be @p NULL
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t Resulting timestamp, may be @p NULL
  */
-bool
-tposesegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, TimestampTz *t)
+int
+tposesegm_intersection_value(Datum start, Datum end, Datum value,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t)
 {
-  assert(inst1); assert(inst2);
+  assert(lower < upper); assert(t);
   /* We are sure that the trajectory is a line */
-  Datum start = tinstant_value(inst1);
-  Datum end = tinstant_value(inst2);
   Datum geom_start = datum_pose_point(start);
   Datum geom_end = datum_pose_point(end);
   Datum geom = datum_pose_point(value);
@@ -148,36 +147,38 @@ tposesegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   const Pose *pose1 = DatumGetPoseP(start);
   const Pose *pose2 = DatumGetPoseP(end);
   Pose *pose_interp = pose_interpolate(pose1, pose2, fraction);
+  Pose *pose = DatumGetPoseP(value);
+  bool same = pose_same(pose, pose_interp);
   /* Temporal rigid geometries have poses as base values but are restricted
    * to geometries */
-  bool same;
-  if (inst1->temptype == T_TRGEOMETRY)
-  {
-    const GSERIALIZED *gs1 = DatumGetGserializedP(start);
-    const GSERIALIZED *gs2 = DatumGetGserializedP(value);
-    LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
-    LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
-    LWGEOM *geom_interp = lwgeom_clone_deep(geom2);
-    lwgeom_apply_pose(pose_interp, geom_interp);
-    if (geom_interp->bbox)
-      lwgeom_refresh_bbox(geom_interp);
-    same = lwgeom_same(geom1, geom_interp);
-    lwgeom_free(geom1); lwgeom_free(geom2); lwgeom_free(geom_interp);
-  }
-  else
-  {
-    Pose *pose = DatumGetPoseP(value);
-    same = pose_same(pose, pose_interp);
-  }
+  // bool same;
+  // if (inst1->temptype == T_TRGEOMETRY)
+  // {
+    // const GSERIALIZED *gs1 = DatumGetGserializedP(start);
+    // const GSERIALIZED *gs2 = DatumGetGserializedP(value);
+    // LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
+    // LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+    // LWGEOM *geom_interp = lwgeom_clone_deep(geom2);
+    // lwgeom_apply_pose(pose_interp, geom_interp);
+    // if (geom_interp->bbox)
+      // lwgeom_refresh_bbox(geom_interp);
+    // same = lwgeom_same(geom1, geom_interp);
+    // lwgeom_free(geom1); lwgeom_free(geom2); lwgeom_free(geom_interp);
+  // }
+  // else
+  // {
+    // Pose *pose = DatumGetPoseP(value);
+    // same = pose_same(pose, pose_interp);
+  // }
   pfree(pose_interp);
   if (! same)
     return false;
   if (t)
   {
-    double duration = (double) (inst2->t - inst1->t);
+    double duration = (double) (upper - lower);
     /* Note that due to roundoff errors it may be the case that the
      * resulting timestamp t may be equal to inst1->t or to inst2->t */
-    *t = inst1->t + (TimestampTz) (duration * fraction);
+    *t = lower + (TimestampTz) (duration * fraction);
   }
   return true;
 }

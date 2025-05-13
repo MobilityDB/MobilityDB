@@ -19,7 +19,7 @@ SET(LOCAL_FILES
   078_tpoint_datagen
   )
 
-# Files added for temporal gemetries
+# Files added for temporal geometries
 # TODO These files should be added to the list above
 list(APPEND LOCAL_FILES 
   052_tgeo

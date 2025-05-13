@@ -108,7 +108,7 @@ static inline double
 compute_s(POINT4D p, POINT4D vs, POINT4D ve)
 {
   return ((p.x - vs.x) * (ve.x - vs.x) + (p.y - vs.y) * (ve.y - vs.y)) /
-    (pow(ve.x - vs.x, 2) + pow(ve.y - vs.y, 2));
+    (ve.x - vs.x) * (ve.x - vs.x) + (ve.y - vs.y) * (ve.y - vs.y);
 }
 
 /**
@@ -137,8 +137,8 @@ static inline double
 compute_dist2(POINT4D p, POINT4D vs, POINT4D ve)
 {
   double s = compute_s(p, vs, ve);
-  return pow(p.x - vs.x - (ve.x - vs.x) * s, 2) +
-    pow(p.y - vs.y - (ve.y - vs.y) * s, 2);
+  return (p.x - vs.x - (ve.x - vs.x) * s) * (p.x - vs.x - (ve.x - vs.x) * s) +
+    (p.y - vs.y - (ve.y - vs.y) * s) * (p.y - vs.y - (ve.y - vs.y) * s);
 }
 
 /**
@@ -149,11 +149,13 @@ compute_dist2_safe(POINT4D p, POINT4D vs, POINT4D ve)
 {
   double s = compute_s(p, vs, ve);
   if (s <= 0)
-    return pow(p.x - vs.x, 2) + pow(p.y - vs.y, 2);
+    return (p.x - vs.x) * (p.x - vs.x) + (p.y - vs.y) * (p.y - vs.y);
   else if (s >= 1)
-    return pow(p.x - ve.x, 2) + pow(p.y - ve.y, 2);
+    return (p.x - ve.x) * (p.x - ve.x) + (p.y - ve.y) * (p.y - ve.y);
   else
-    return pow(p.x - vs.x - (ve.x - vs.x) * s, 2) + pow(p.y - vs.y - (ve.y - vs.y) * s, 2);
+    return 
+      (p.x - vs.x - (ve.x - vs.x) * s) * (p.x - vs.x - (ve.x - vs.x) * s) + 
+      (p.y - vs.y - (ve.y - vs.y) * s) * (p.y - vs.y - (ve.y - vs.y) * s);
 }
 
 /**
@@ -333,7 +335,7 @@ v_clip_tpoly_point(const LWPOLY *poly, const LWPOINT *point,
       getPoint4d_p(poly->rings[0], i, &v);
       if (pose)
         apply_pose_point4d(&v, pose);
-      *dist = sqrt(pow(pt.x - v.x, 2) + pow(pt.y - v.y, 2));
+      *dist = sqrt((pt.x - v.x) * (pt.x - v.x) + (pt.y - v.y) * (pt.y - v.y));
     }
     else
     {
@@ -641,7 +643,8 @@ v_clip_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
       getPoint4d_p(poly2->rings[0], i2, &v2);
       if (pose2)
         apply_pose_point4d(&v2, pose2);
-      *dist = sqrt(pow(v1.x - v2.x, 2) + pow(v1.y - v2.y, 2));
+      *dist = sqrt((v1.x - v2.x) * (v1.x - v2.x) + 
+        (v1.y - v2.y) * (v1.y - v2.y));
     }
     else if (*poly1_feature % 2 == 0) /* vertex <-> edge */
     {

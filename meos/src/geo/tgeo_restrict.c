@@ -179,8 +179,6 @@ tpoint_force2d(const Temporal *temp)
   lfinfo.param[0] = Int32GetDatum(srid);
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = T_TGEOMPOINT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -557,7 +555,7 @@ tpointinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
  */
 static TInstant *
 tgeoinst_restrict_stbox_iter(const TInstant *inst, const STBox *box,
-  bool border_inc __attribute__((unused)), bool atfunc)
+  bool border_inc UNUSED, bool atfunc)
 {
   assert(! MEOS_FLAGS_GET_T(box->flags));
 
@@ -858,7 +856,8 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
           }
           else if (t1 != inst2->t)
           {
-            inter1 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, t1);
+            inter1 = tsegment_value_at_timestamptz(tinstant_value_p(inst1),
+              tinstant_value_p(inst2), inst1->temptype, inst1->t, inst2->t, t1);
             free1 = true;
             instants[ninsts] = tinstant_make(inter1, inst1->temptype, t1);
             tofree[nfree++] = instants[ninsts++];
@@ -895,7 +894,8 @@ tpointseq_linear_at_stbox_xyz(const TSequence *seq, const STBox *box,
         {
           if (t2 != inst2->t)
           {
-            inter2 = tsegment_value_at_timestamptz(inst1, inst2, LINEAR, t2);
+            inter2 = tsegment_value_at_timestamptz(tinstant_value_p(inst1),
+              tinstant_value_p(inst2), inst1->temptype, inst1->t, inst2->t, t2);
             free2 = true;
             /* Add the instant only if it is different from the previous one
              * Otherwise, assume that t1 == t2 and skip t2 */
@@ -1447,7 +1447,7 @@ TInstant *
 tgeoinst_restrict_geom_iter(const TInstant *inst, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  VALIDATE_TGEO(inst, NULL); VALIDATE_NOT_NULL(gs, NULL); 
+  assert(inst); assert(gs); assert(tgeo_type_all(inst->temptype));
   assert(! gserialized_is_empty(gs));
   /* Execute the specialized function for temporal points */
   if (tpoint_type(inst->temptype))
@@ -1484,7 +1484,7 @@ TInstant *
 tgeoinst_restrict_geom(const TInstant *inst, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  VALIDATE_TGEO(inst, NULL); VALIDATE_NOT_NULL(gs, NULL); 
+  assert(inst); assert(gs); assert(tgeo_type_all(inst->temptype));
   TInstant *res = tgeoinst_restrict_geom_iter(inst, gs, zspan, atfunc);
   if (! res)
     return NULL;
@@ -1504,7 +1504,7 @@ TSequence *
 tgeoseq_disc_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  VALIDATE_TGEO(seq, NULL); VALIDATE_NOT_NULL(gs, NULL); 
+  assert(seq); assert(gs); assert(tgeo_type_all(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
   assert(seq->count > 1);
 
@@ -1545,7 +1545,7 @@ TSequenceSet *
 tgeoseq_step_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
    const Span *zspan, bool atfunc)
 {
-  VALIDATE_TGEO(seq, NULL); VALIDATE_NOT_NULL(gs, NULL); 
+  assert(seq); assert(gs); assert(tgeo_type_all(seq->temptype));
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
   assert(seq->count > 1);
 
@@ -1963,7 +1963,7 @@ Temporal *
 tgeoseq_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  VALIDATE_TGEO(seq, NULL); VALIDATE_NOT_NULL(gs, NULL); 
+  assert(seq); assert(gs); assert(tgeo_type_all(seq->temptype));
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
 
   /* Instantaneous sequence */
@@ -2010,7 +2010,7 @@ TSequenceSet *
 tgeoseqset_restrict_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
   const Span *zspan, bool atfunc)
 {
-  VALIDATE_TGEO(ss, NULL); VALIDATE_NOT_NULL(gs, NULL); 
+  assert(ss); assert(gs); assert(tgeo_type_all(ss->temptype));
 
   /* Singleton sequence set */
   if (ss->count == 1)

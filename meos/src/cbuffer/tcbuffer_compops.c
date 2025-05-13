@@ -53,8 +53,7 @@
 
 /**
  * @brief Return true if a temporal circular buffer and a circular buffer
- * satisfy the ever/always
- * comparison
+ * satisfy the ever/always comparison
  * @param[in] temp Temporal value
  * @param[in] cb Circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics

@@ -437,7 +437,7 @@ Datum
   datum_transf_pj(Datum d, meosType basetype, int32_t srid_to, const LWPROJ *pj)
 #else
   datum_transf_pj(Datum d, meosType basetype,
-    int32_t srid_to __attribute__((unused)), const LWPROJ *pj)
+    int32_t srid_to UNUSED, const LWPROJ *pj)
 #endif /* CBUFFER */
 {
   assert(spatial_basetype(basetype));

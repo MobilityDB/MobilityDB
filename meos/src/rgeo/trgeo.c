@@ -283,8 +283,6 @@ trgeo_tpoint(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TGEOMPOINT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
 }
@@ -951,7 +949,7 @@ trgeo_restrict_value(const Temporal *temp, Datum value, bool atfunc)
  * @param[in] gs Geometry
  * @csqlfn #Temporal_at_value()
  */
-inline Temporal *
+Temporal *
 trgeo_at_value(const Temporal *temp, const GSERIALIZED *gs)
 {
   return trgeo_restrict_value(temp, PointerGetDatum(gs), REST_AT);
@@ -964,7 +962,7 @@ trgeo_at_value(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] gs Geometry
  * @csqlfn #Temporal_minus_value()
  */
-inline Temporal *
+Temporal *
 trgeo_minus_value(const Temporal *temp, const GSERIALIZED *gs)
 {
   return trgeo_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);

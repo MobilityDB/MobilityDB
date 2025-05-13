@@ -243,7 +243,7 @@ span_compute_stats_generic(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  */
 static void
 span_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows __attribute__((unused)))
+  int samplerows, double totalrows UNUSED)
 {
   int null_cnt = 0, non_null_cnt = 0;
   double total_width = 0;

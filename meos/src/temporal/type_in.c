@@ -105,7 +105,7 @@ bool
 basetype_in(const char *str, meosType type, bool end, Datum *result)
 #else
 basetype_in(const char *str, meosType type,
-  bool end __attribute__((unused)), Datum *result)
+  bool end UNUSED, Datum *result)
 #endif
 {
   assert(meos_basetype(type));

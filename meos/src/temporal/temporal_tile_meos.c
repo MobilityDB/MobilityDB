@@ -858,16 +858,18 @@ tnumberseq_linear_value_split(const TSequence *seq, Datum start_bin,
     {
       /* Choose between interpolate or take one of the segment ends */
       if (datum_lt(min_value, bin_upper, basetype) &&
-        datum_lt(bin_upper, max_value, basetype))
+          datum_lt(bin_upper, max_value, basetype))
       {
-        TimestampTz t;
-        Datum projvalue;
-        tlinearsegm_intersection_value(inst1, inst2, bin_upper, basetype,
-          &projvalue, &t);
+        TimestampTz t1, t2;
+        /* We are sure there is a unique turning point */
+        tsegment_intersection_value(value1, value2, bin_upper, inst1->temptype,
+          inst1->t, inst2->t, &t1, &t2);
         /* To reduce the roundoff errors we take the value projected to the
          * timestamp instead of the bound value */
-        tofree[nfree++] = bounds[last] =
-          tinstant_make(projvalue, seq->temptype, t);
+        Datum projvalue1 = tsegment_value_at_timestamptz(value1, value2,
+          inst1->temptype, inst1->t, inst2->t, t1);
+        tofree[nfree++] = bounds[last] = 
+          tinstant_make(projvalue1, seq->temptype, t1);
       }
       else
         bounds[last] = (cmp <= 0) ? (TInstant *) inst2 : (TInstant *) inst1;
