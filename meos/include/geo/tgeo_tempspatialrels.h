@@ -46,6 +46,11 @@
 
 /*****************************************************************************/
 
+extern Temporal *tspatialrel_tspatial_geo_int(const Temporal *temp,
+  const GSERIALIZED *gs, Datum param, varfunc func, int numparam, bool invert);
+extern Temporal *tspatialrel_tspatial_tspatial_int(const Temporal *temp1,
+  const Temporal *temp2, Datum param, varfunc func, int numparam, bool invert);
+
 extern Temporal *tinterrel_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs, bool tinter, bool restr, bool atvalue);
 extern Temporal *tinterrel_tspatial_tspatial(const Temporal *temp1,

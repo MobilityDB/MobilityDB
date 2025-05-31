@@ -112,34 +112,6 @@ Tinterrel_tcbuffer_cbuffer(FunctionCallInfo fcinfo, bool tinter)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-/**
- * @brief Return the spatiotemporal relationship between two temporal circular
- * buffers
- */
-static Datum
-Tinterrel_tcbuffer_tcbuffer(FunctionCallInfo fcinfo, bool tinter)
-{
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tcbuffer_tcbuffer(temp1, temp2, tinter, restr,
-    atvalue);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
 /*****************************************************************************
  * Temporal contains
  *****************************************************************************/
@@ -435,7 +407,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tcbuffer_tcbuffer);
 inline Datum
 Tdisjoint_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tcbuffer_tcbuffer(fcinfo, TDISJOINT);
+  return Tinterrel_tspatial_tspatial(fcinfo, TDISJOINT);
 }
 
 /*****************************************************************************
@@ -509,7 +481,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tcbuffer_tcbuffer);
 inline Datum
 Tintersects_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tcbuffer_tcbuffer(fcinfo, TINTERSECTS);
+  return Tinterrel_tspatial_tspatial(fcinfo, TINTERSECTS);
 }
 
 /*****************************************************************************

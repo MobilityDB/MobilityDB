@@ -564,7 +564,7 @@ atouches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] dist Distance
- * @csqlfn #EA_dwithin_trgeo_geo()
+ * @csqlfn #EA_dwithin_tspatial_geo()
  */
 int
 edwithin_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)

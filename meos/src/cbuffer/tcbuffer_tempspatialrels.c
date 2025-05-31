@@ -628,38 +628,6 @@ tinterrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * @brief Generic spatiotemporal relationship for a temporal circular buffer
- * and a geometry
- * @param[in] temp Temporal circular buffer
- * @param[in] gs Geometry
- * @param[in] param Parameter
- * @param[in] func PostGIS function to be called
- * @param[in] numparam Number of parameters of the function
- * @param[in] invert True if the arguments should be inverted
- * @return On error return `NULL`
- */
-static Temporal *
-tspatialrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
-  Datum param, varfunc func, int numparam, bool invert)
-{
-  assert(temp); assert(gs); assert(! gserialized_is_empty(gs));
-  assert(temp->temptype == T_TCBUFFER);
-  /* Fill the lifted structure */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = func;
-  lfinfo.numparam = numparam;
-  lfinfo.param[0] = param;
-  lfinfo.argtype[0] = temp->temptype;
-  lfinfo.argtype[1] = T_GEOMETRY;
-  lfinfo.restype = T_TBOOL;
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
-  lfinfo.invert = invert;
-  lfinfo.discont = false;
-  return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
-}
-
-/**
- * @brief Generic spatiotemporal relationship for a temporal circular buffer
  * and a circular buffer
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
@@ -689,37 +657,6 @@ tspatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   return tfunc_temporal_base(temp, PointerGetDatum(cb), &lfinfo);
 }
 
-/*****************************************************************************/
-
-/**
- * @brief Generic spatiotemporal relationship for two temporal circular buffers
- * @param[in] temp1,temp2 Temporal circular buffers
- * @param[in] param Parameter
- * @param[in] func PostGIS function to be called
- * @param[in] numparam Number of parameters of the function
- * @param[in] invert True if the arguments should be inverted
- * @return On error return `NULL`
- */
-static Temporal *
-tspatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
-  Datum param, varfunc func, int numparam, bool invert)
-{
-  assert(temp1); assert(temp2); assert(temp1->temptype == T_TCBUFFER);
-  assert(temp2->temptype == T_TCBUFFER);
-  /* Fill the lifted structure */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = func;
-  lfinfo.numparam = numparam;
-  lfinfo.param[0] = param;
-  lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
-  lfinfo.restype = T_TBOOL;
-  lfinfo.reslinear = false;
-  lfinfo.invert = invert;
-  lfinfo.discont = false;
-  return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
-}
-
 /*****************************************************************************
  * Temporal contains
  *****************************************************************************/
@@ -744,7 +681,7 @@ tcontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr,
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs))
     return NULL;
 
-  Temporal *result = tspatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
+  Temporal *result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
     (varfunc) &datum_geom_contains, 0, INVERT);
 
   /* Restrict the result to the Boolean value in the last argument if any */
@@ -777,7 +714,7 @@ tcontains_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs))
     return NULL;
 
-  Temporal *result = tspatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
+  Temporal *result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
     (varfunc) &datum_geom_contains, 0, INVERT_NO);
 
   /* Restrict the result to the Boolean value in the last argument if any */
@@ -874,8 +811,8 @@ tcontains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
 
-  Temporal *result = tspatialrel_tcbuffer_tcbuffer(temp1, temp2, (Datum) NULL,
-    (varfunc) &datum_cbuffer_contains, 0, INVERT_NO);
+  Temporal *result = tspatialrel_tspatial_tspatial_int(temp1, temp2,
+    (Datum) NULL, (varfunc) &datum_cbuffer_contains, 0, INVERT_NO);
 
   /* Restrict the result to the Boolean value in the last argument if any */
   if (result && restr)
@@ -932,7 +869,7 @@ tcovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   else
   /* Temporal circular buffermetry case */
   {
-    result = tspatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
+    result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
       (varfunc) &datum_geom_covers, 0, INVERT);
   }
 
@@ -966,7 +903,7 @@ tcovers_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs))
     return NULL;
 
-  Temporal *result = tspatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
+  Temporal *result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
     (varfunc) &datum_geom_covers, 0, INVERT_NO);
 
   /* Restrict the result to the Boolean value in the last argument if any */
@@ -1063,8 +1000,8 @@ tcovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
 
-  Temporal *result = tspatialrel_tcbuffer_tcbuffer(temp1, temp2, (Datum) NULL,
-    (varfunc) &datum_cbuffer_covers, 0, INVERT_NO);
+  Temporal *result = tspatialrel_tspatial_tspatial_int(temp1, temp2,
+    (Datum) NULL, (varfunc) &datum_cbuffer_covers, 0, INVERT_NO);
 
   /* Restrict the result to the Boolean value in the last argument if any */
   if (result && restr)
@@ -1189,9 +1126,9 @@ ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
       result = temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
   }
   else
-  /* Temporal circular buffermetry case */
+  /* Temporal circular buffer case */
   {
-    result = tspatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
+    result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
       (varfunc) &datum_geom_touches, 0, INVERT_NO);
   }
 
@@ -1289,8 +1226,8 @@ ttouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
 
-  Temporal *result =  tspatialrel_tcbuffer_tcbuffer(temp1, temp2, (Datum) NULL,
-    (varfunc) &datum_cbuffer_touches, 0, INVERT_NO);
+  Temporal *result =  tspatialrel_tspatial_tspatial_int(temp1, temp2,
+    (Datum) NULL, (varfunc) &datum_cbuffer_touches, 0, INVERT_NO);
 
   /* Restrict the result to the Boolean value in the last argument if any */
   if (result && restr)
@@ -1711,7 +1648,7 @@ tdwithin_tcbufferseqset_point(const TSequenceSet *ss, Datum point, Datum dist,
  * @param[in] dist Distance
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tdwithin_tcbuffer_geo()
+ * @csqlfn #Tdwithin_tspatial_geo()
  */
 Temporal *
 tdwithin_tcbuffer_geo_old(const Temporal *temp, const GSERIALIZED *gs,
@@ -1742,7 +1679,7 @@ tdwithin_tcbuffer_geo_old(const Temporal *temp, const GSERIALIZED *gs,
             GserializedPGetDatum(gs), Float8GetDatum(dist), func);
       else
       {
-        result = tspatialrel_tcbuffer_geo(temp, gs, Float8GetDatum(dist),
+        result = tspatialrel_tspatial_geo_int(temp, gs, Float8GetDatum(dist),
           (varfunc) func, 1, INVERT_NO);
       }
       break;
@@ -1754,7 +1691,7 @@ tdwithin_tcbuffer_geo_old(const Temporal *temp, const GSERIALIZED *gs,
           Float8GetDatum(dist), func);
       else
       {
-        result = tspatialrel_tcbuffer_geo(temp, gs, Float8GetDatum(dist),
+        result = tspatialrel_tspatial_geo_int(temp, gs, Float8GetDatum(dist),
           (varfunc) func, 1, INVERT_NO);
       }
   }
@@ -1781,7 +1718,7 @@ tdwithin_tcbuffer_geo_old(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] dist Distance
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tdwithin_tcbuffer_geo()
+ * @csqlfn #Tdwithin_tspatial_geo()
  */
 Temporal *
 tdwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
@@ -1900,7 +1837,7 @@ tdwithin_tcbuffer_tcbuffer_sync(const Temporal *sync1, const Temporal *sync2,
       else
       {
         /* Both sequences have either discrete or step interpolation */
-        result = tspatialrel_tcbuffer_tcbuffer(sync1, sync2,
+        result = tspatialrel_tspatial_tspatial_int(sync1, sync2,
           Float8GetDatum(dist), (varfunc) func, 1, INVERT_NO);
       }
       break;
@@ -1915,7 +1852,7 @@ tdwithin_tcbuffer_tcbuffer_sync(const Temporal *sync1, const Temporal *sync2,
       else
       {
         /* Both sequence sets have step interpolation */
-        result = tspatialrel_tcbuffer_tcbuffer(sync1, sync2,
+        result = tspatialrel_tspatial_tspatial_int(sync1, sync2,
           Float8GetDatum(dist), (varfunc) func, 1, INVERT_NO);
       }
     }
@@ -1938,7 +1875,7 @@ tdwithin_tcbuffer_tcbuffer_sync(const Temporal *sync1, const Temporal *sync2,
  * @param[in] dist Distance
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tdwithin_tcbuffer_tcbuffer()
+ * @csqlfn #Tdwithin_tspatial_tspatial()
  */
 Temporal *
 tdwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,

@@ -89,25 +89,6 @@ EAcomp_tnpoint_npoint(FunctionCallInfo fcinfo,
   PG_RETURN_BOOL(result);
 }
 
-/**
- * @brief Generic function for the temporal ever/always comparison operators
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Specific function for the ever/always comparison
- */
-static Datum
-EAcomp_tnpoint_tnpoint(FunctionCallInfo fcinfo,
-  int (*func)(const Temporal *, const Temporal *))
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  int result = func(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
-  PG_RETURN_BOOL(result);
-}
-
 /*****************************************************************************/
 
 PGDLLEXPORT Datum Ever_eq_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -243,7 +224,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tnpoint_tnpoint);
 inline Datum
 Ever_eq_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return EAcomp_tnpoint_tnpoint(fcinfo, &ever_eq_tnpoint_tnpoint);
+  return EAcomp_temporal_temporal(fcinfo, &ever_eq_tnpoint_tnpoint);
 }
 
 PGDLLEXPORT Datum Always_eq_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -257,7 +238,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tnpoint_tnpoint);
 inline Datum
 Always_eq_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return EAcomp_tnpoint_tnpoint(fcinfo, &always_eq_tnpoint_tnpoint);
+  return EAcomp_temporal_temporal(fcinfo, &always_eq_tnpoint_tnpoint);
 }
 
 PGDLLEXPORT Datum Ever_ne_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -271,7 +252,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tnpoint_tnpoint);
 inline Datum
 Ever_ne_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return EAcomp_tnpoint_tnpoint(fcinfo, &ever_ne_tnpoint_tnpoint);
+  return EAcomp_temporal_temporal(fcinfo, &ever_ne_tnpoint_tnpoint);
 }
 
 PGDLLEXPORT Datum Always_ne_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -285,7 +266,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tnpoint_tnpoint);
 inline Datum
 Always_ne_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return EAcomp_tnpoint_tnpoint(fcinfo, &always_ne_tnpoint_tnpoint);
+  return EAcomp_temporal_temporal(fcinfo, &always_ne_tnpoint_tnpoint);
 }
 
 /*****************************************************************************

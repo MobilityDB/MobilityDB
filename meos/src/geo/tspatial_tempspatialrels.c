@@ -517,7 +517,7 @@ tinterrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * @param[in] invert True if the arguments should be inverted
  * @return On error return `NULL`
  */
-static Temporal *
+Temporal *
 tspatialrel_tspatial_geo_int(const Temporal *temp, const GSERIALIZED *gs,
   Datum param, varfunc func, int numparam, bool invert)
 {
@@ -585,12 +585,12 @@ tspatialrel_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] invert True if the arguments should be inverted
  * @return On error return `NULL`
  */
-static Temporal *
+Temporal *
 tspatialrel_tspatial_tspatial_int(const Temporal *temp1, const Temporal *temp2,
   Datum param, varfunc func, int numparam, bool invert)
 {
-  assert(temp1); assert(temp2); assert(tgeo_type_all(temp1->temptype));
-  assert(tgeo_type_all(temp2->temptype));
+  assert(temp1); assert(temp2); assert(tspatial_type(temp1->temptype));
+  assert(tspatial_type(temp2->temptype));
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -969,8 +969,8 @@ ttouches_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
     else
       result = temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
   }
+  /* Temporal geometry, temporal cbuffer case */
   else
-  /* Temporal geometry case */
   {
     result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
       (varfunc) &datum_geom_touches, 0, INVERT_NO);
@@ -1118,167 +1118,6 @@ ttouches_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * @brief Return the timestamps at which EITHER the segments of the two
- * temporal points OR a segment of a temporal point and a point are within a
- * distance
- * @param[in] sv1,ev1 Points defining the first segment
- * @param[in] sv2,ev2 Points defining the second segment
- * @param[in] lower,upper Timestamps associated to the segments
- * @param[in] dist Distance
- * @param[in] hasz True for 3D segments
- * @param[in] func Distance function (2D or 3D)
- * @param[out] t1,t2 
- * @return Number of timestamps in the result, between 0 and 2. If there is
- * a single result both t1 and t2 are set to the unique timestamp
- * @note The function is used for both `tDwithin(tpoint, tpoint)` and
- * `tDwithin(tpoint, geo)`, where for the latter the second segment will be
- * constant, that is, the two values `sv2`and `ev2` are set to `geo`
- */
-int
-tgeosegm_tdwithin(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
-  TimestampTz lower, TimestampTz upper, double dist, bool hasz,
-  datum_func3 func, TimestampTz *t1, TimestampTz *t2)
-{
-  double duration = (double) (upper - lower);
-  long double a, b, c;
-  if (hasz) /* 3D */
-  {
-    const POINT3DZ *p1 = DATUM_POINT3DZ_P(sv1);
-    const POINT3DZ *p2 = DATUM_POINT3DZ_P(ev1);
-    const POINT3DZ *p3 = DATUM_POINT3DZ_P(sv2);
-    const POINT3DZ *p4 = DATUM_POINT3DZ_P(ev2);
-
-    /* per1 functions
-     * x(t) = a1 * t + c1
-     * y(t) = a2 * t + c2
-     * z(t) = a3 * t + c3 */
-    double a1 = (p2->x - p1->x);
-    double c1 = p1->x;
-    double a2 = (p2->y - p1->y);
-    double c2 = p1->y;
-    double a3 = (p2->z - p1->z);
-    double c3 = p1->z;
-
-    /* per2 functions
-     * x(t) = a4 * t + c4
-     * y(t) = a5 * t + c5
-     * z(t) = a6 * t + c6 */
-    double a4 = (p4->x - p3->x);
-    double c4 = p3->x;
-    double a5 = (p4->y - p3->y);
-    double c5 = p3->y;
-    double a6 = (p4->z - p3->z);
-    double c6 = p3->z;
-
-    /* compute the distance function */
-    double a_x = (a1 - a4) * (a1 - a4);
-    double a_y = (a2 - a5) * (a2 - a5);
-    double a_z = (a3 - a6) * (a3 - a6);
-    double b_x = 2 * (a1 - a4) * (c1 - c4);
-    double b_y = 2 * (a2 - a5) * (c2 - c5);
-    double b_z = 2 * (a3 - a6) * (c3 - c6);
-    double c_x = (c1 - c4) * (c1 - c4);
-    double c_y = (c2 - c5) * (c2 - c5);
-    double c_z = (c3 - c6) * (c3 - c6);
-    /* distance function = dist */
-    a = a_x + a_y + a_z;
-    b = b_x + b_y + b_z;
-    c = c_x + c_y + c_z - (dist * dist);
-  }
-  else /* 2D */
-  {
-    const POINT2D *p1 = DATUM_POINT2D_P(sv1);
-    const POINT2D *p2 = DATUM_POINT2D_P(ev1);
-    const POINT2D *p3 = DATUM_POINT2D_P(sv2);
-    const POINT2D *p4 = DATUM_POINT2D_P(ev2);
-    /* per1 functions
-     * x(t) = a1 * t + c1
-     * y(t) = a2 * t + c2 */
-    double a1 = (p2->x - p1->x);
-    double c1 = p1->x;
-    double a2 = (p2->y - p1->y);
-    double c2 = p1->y;
-    /* per2 functions
-     * x(t) = a3 * t + c3
-     * y(t) = a4 * t + c4 */
-    double a3 = (p4->x - p3->x);
-    double c3 = p3->x;
-    double a4 = (p4->y - p3->y);
-    double c4 = p3->y;
-    /* compute the distance function */
-    double a_x = (a1 - a3) * (a1 - a3);
-    double a_y = (a2 - a4) * (a2 - a4);
-    double b_x = 2 * (a1 - a3) * (c1 - c3);
-    double b_y = 2 * (a2 - a4) * (c2 - c4);
-    double c_x = (c1 - c3) * (c1 - c3);
-    double c_y = (c2 - c4) * (c2 - c4);
-    /* distance function = dist */
-    a = a_x + a_y;
-    b = b_x + b_y;
-    c = c_x + c_y - (dist * dist);
-  }
-  /* They are parallel, moving in the same direction at the same speed */
-  if (a == 0)
-  {
-    if (! func(sv1, sv2, Float8GetDatum(dist)))
-      return 0;
-    *t1 = lower;
-    *t2 = upper;
-    return 2;
-  }
-
-  /* Solving the quadratic equation for distance = dist */
-  long double discriminant = b * b - 4 * a * c;
-
-  /* One solution */
-  if (discriminant == 0)
-  {
-    long double t5 = (-1 * b) / (2 * a);
-    if (t5 < 0.0 || t5 > 1.0)
-      return 0;
-    *t1 = *t2 = lower + (TimestampTz) (t5 * duration);
-    return 1;
-  }
-  /* No solution */
-  if (discriminant < 0)
-    return 0;
-  else
-  /* At most two solutions within the time interval */
-  {
-    /* Apply a mixture of quadratic formula and Viète formula to improve precision */
-    long double t5, t6;
-    if (b >= 0)
-    {
-      t5 = (-1 * b - sqrtl(discriminant)) / (2 * a);
-      t6 = (2 * c ) / (-1 * b - sqrtl(discriminant));
-    }
-    else
-    {
-      t5 = (2 * c ) / (-1 * b + sqrtl(discriminant));
-      t6 = (-1 * b + sqrtl(discriminant)) / (2 * a);
-    }
-
-    /* If the two intervals do not intersect */
-    if (0.0 > t6 || t5 > 1.0)
-      return 0;
-    /* Compute the intersection of the two intervals */
-    long double t7 = Max(0.0, t5);
-    long double t8 = Min(1.0, t6);
-    if (fabsl(t7 - t8) < MEOS_EPSILON)
-    {
-      *t1 = *t2 = lower + (TimestampTz) (t7 * duration);
-      return 1;
-    }
-    else
-    {
-      *t1 = lower + (TimestampTz) (t7 * duration);
-      *t2 = lower + (TimestampTz) (t8 * duration);
-      return 2;
-    }
-  }
-}
-
-/**
  * @brief Construct the result of the tdwithin function of a segment from
  * the solutions of the quadratic equation found previously
  * @return Number of sequences of the result
@@ -1359,7 +1198,6 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
   int nseqs = 0;
   bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
   bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
-  bool hasz = MEOS_FLAGS_GET_Z(seq1->flags);
   Datum sv1 = tinstant_value_p(start1);
   Datum sv2 = tinstant_value_p(start2);
   TimestampTz lower = start1->t;
@@ -1399,8 +1237,8 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
       TimestampTz t1, t2;
       Datum sev1 = linear1 ? ev1 : sv1;
       Datum sev2 = linear2 ? ev2 : sv2;
-      int solutions = tgeosegm_tdwithin(sv1, sev1, sv2, sev2, lower, upper,
-        DatumGetFloat8(dist), hasz, func, &t1, &t2);
+      int solutions = tpointsegm_tdwithin_turnpt(sv1, sev1, sv2, sev2, dist,
+        lower, upper, &t1, &t2);
       bool upper_inc1 = linear1 && linear2 && upper_inc;
       nseqs += tdwithin_add_solutions(solutions, lower, upper, lower_inc,
         upper_inc, upper_inc1, t1, t2, instants, &result[nseqs]);
@@ -1495,7 +1333,6 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
 
   int nseqs = 0;
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
-  bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
   TimestampTz lower = start->t;
   bool lower_inc = seq->period.lower_inc;
   const Datum datum_true = BoolGetDatum(true);
@@ -1535,8 +1372,8 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
       /* Find the instants t1 and t2 (if any) during which the dwithin
        * function is true */
       TimestampTz t1, t2;
-      int solutions = tgeosegm_tdwithin(startvalue, endvalue, point, point,
-        lower, upper, DatumGetFloat8(dist), hasz, func, &t1, &t2);
+      int solutions = tpointsegm_tdwithin_turnpt(startvalue, endvalue, point,
+        point, dist, lower, upper, &t1, &t2);
       bool upper_inc1 = linear && upper_inc;
       nseqs += tdwithin_add_solutions(solutions, lower, upper, lower_inc,
         upper_inc, upper_inc1, t1, t2, instants, &result[nseqs]);

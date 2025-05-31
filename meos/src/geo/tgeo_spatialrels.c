@@ -513,6 +513,42 @@ ea_spatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
   return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_geo_rel_ever
+ * @brief Return 1 if two temporal geometries ever/always contains satisfy a 
+ * spatial relationship, 0 if not, and -1 on error
+ * @details
+ * - A temporal geometry *ever* contains another one if there is an instant in
+ *   which the two temporal geometries satisfy the relationship.
+ * - A temporal geometry *always* contains another one if the traversed area
+ *   of the first temporal geometry contains the traversed area of the second
+ *   one
+ * @param[in] temp1,temp2 Temporal geometries
+ * @param[in] func Spatial relationship function to apply
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+int
+ea_spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
+  datum_func2 func, bool ever)
+{
+  VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
+      ! ensure_not_geodetic(temp1->flags) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
+    return -1;
+  /* Ever */
+  if (ever)
+    return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, EVER);
+  /* Always */
+  int result = spatialrel_tgeo_tgeo(temp1, temp2, (Datum) NULL, 
+    (varfunc) func, 2);
+  return result ? 1 : 0;
+}
+
 /*****************************************************************************
  * Ever/always contains
  *****************************************************************************/
@@ -658,21 +694,7 @@ acontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 ea_contains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
-  VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
-      ! ensure_not_geodetic(temp1->flags) ||
-      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
-      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
-    return -1;
-  /* Ever */
-  if (ever)
-    return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum_geom_contains,
-      EVER);
-  /* Always */
-  int result = spatialrel_tgeo_tgeo(temp1, temp2, (Datum) NULL,
-    (varfunc) &datum_geom_contains, 2);
-  return result ? 1 : 0;
+  return ea_spatialrel_tgeo_tgeo(temp1, temp2, &datum_geom_contains, ever);
 }
 
 #if MEOS
@@ -848,21 +870,7 @@ acovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 ea_covers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
-  VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
-      ! ensure_not_geodetic(temp1->flags) ||
-      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
-      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
-    return -1;
-  /* Ever */
-  if (ever)
-    return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum_geom_covers,
-      EVER);
-  /* Always */
-  int result = spatialrel_tgeo_tgeo(temp1, temp2, (Datum) NULL,
-    (varfunc) &datum_geom_covers, 2);
-  return result ? 1 : 0;
+  return ea_spatialrel_tgeo_tgeo(temp1, temp2, &datum_geom_covers, ever);
 }
 
 #if MEOS

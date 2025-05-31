@@ -68,6 +68,10 @@ extern datum_func3 geo_dwithin_fn_geo(int16 flags1, uint8_t flags2);
 
 /*****************************************************************************/
 
+extern int tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
+  Datum end2, Datum value, TimestampTz lower, TimestampTz upper,
+  TimestampTz *t1, TimestampTz *t2);
+
 extern int spatialrel_geo_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   Datum param, varfunc func, int numparam, bool invert);
 extern int spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,

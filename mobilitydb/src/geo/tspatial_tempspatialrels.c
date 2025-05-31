@@ -115,7 +115,7 @@ Tinterrel_tspatial_geo(FunctionCallInfo fcinfo, bool tinter)
  * @brief Return the temporal disjoint/intersection relationship between two
  * temporal geos
  */
-static Datum
+Datum
 Tinterrel_tspatial_tspatial(FunctionCallInfo fcinfo, bool tinter)
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
@@ -545,8 +545,8 @@ PGDLLEXPORT Datum Tdwithin_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdwithin_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether two temporal geos
- * are within a given distance
+ * @brief Return a temporal boolean that states whether two spatiotemporal
+ * values are within a given distance
  * @sqlfn tDwithin()
  */
 Datum

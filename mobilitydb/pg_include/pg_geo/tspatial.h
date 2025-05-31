@@ -49,6 +49,16 @@ extern Temporal *tspatial_valid_typmod(Temporal *temp, int32_t typmod);
 extern uint32 tspatial_typmod_in(ArrayType *arr, int is_point, int is_geodetic);
 extern Datum Spatialarr_as_text_ext(FunctionCallInfo fcinfo, bool extended);
 
+extern Datum EAcomp_tspatial_geo(FunctionCallInfo fcinfo,
+  int (*func)(const Temporal *, const GSERIALIZED *));
+extern Datum EAcomp_geo_tspatial(FunctionCallInfo fcinfo,
+  int (*func)(const GSERIALIZED *, const Temporal *));
+  
+extern Datum Tcomp_geo_tspatial(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const GSERIALIZED *, const Temporal *));
+extern Datum Tcomp_tspatial_geo(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const Temporal *, const GSERIALIZED *));
+
 extern Datum EA_spatialrel_geo_tspatial(FunctionCallInfo fcinfo,
   int (*func)(const GSERIALIZED *, const Temporal *, bool), bool ever);
 extern Datum EA_spatialrel_tspatial_geo(FunctionCallInfo fcinfo,
@@ -58,6 +68,7 @@ extern Datum EA_spatialrel_tspatial_tspatial(FunctionCallInfo fcinfo,
 
 extern Datum Tinterrel_geo_tspatial(FunctionCallInfo fcinfo, bool tinter);
 extern Datum Tinterrel_tspatial_geo(FunctionCallInfo fcinfo, bool tinter);
+extern Datum Tinterrel_tspatial_tspatial(FunctionCallInfo fcinfo, bool tinter);
 
 extern Datum Tspatialrel_geo_tspatial(FunctionCallInfo fcinfo,
   Temporal * (*func)(const GSERIALIZED *, const Temporal *, bool, bool));
