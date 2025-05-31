@@ -81,17 +81,17 @@
 /*****************************************************************************/
 
 /**
- * @defgroup meos_pg_types Functions for PostgreSQL types
+ * @defgroup meos_base_types Functions for base and time types
  * @ingroup meos_api
- * @brief Functions for PostgreSQL types
+ * @brief Functions for base and time types
  *
  * @defgroup meos_setspan Functions for set and span types
  * @ingroup meos_api
  * @brief Functions for set and span types
  *
- * @defgroup meos_box Functions for box types
+ * @defgroup meos_box Functions for temporal boxes
  * @ingroup meos_api
- * @brief Functions for box types
+ * @brief Functions for temporal boxes
  *
  * @defgroup meos_temporal Functions for temporal types
  * @ingroup meos_api
@@ -157,13 +157,17 @@
  * @ingroup meos_setspan
  * @brief Bounding box functions for set and span types
  *
- * @defgroup meos_setspan_topo Topological functions
- * @ingroup meos_setspan_bbox
- * @brief Topological functions for set and span types
+ *   @defgroup meos_setspan_bbox_split Split functions
+ *   @ingroup meos_setspan_bbox
+ *   @brief Split functions for set and span types
  *
- * @defgroup meos_setspan_pos Position functions
- * @ingroup meos_setspan_bbox
- * @brief Position functions for set and span types
+ *   @defgroup meos_setspan_topo Topological functions
+ *   @ingroup meos_setspan_bbox
+ *   @brief Topological functions for set and span types
+ *
+ *   @defgroup meos_setspan_pos Position functions
+ *   @ingroup meos_setspan_bbox
+ *   @brief Position functions for set and span types
  *
  * @defgroup meos_setspan_set Set functions
  * @ingroup meos_setspan
@@ -176,6 +180,10 @@
  * @defgroup meos_setspan_agg Aggregate functions
  * @ingroup meos_setspan
  * @brief Aggregate functions for set and span types
+ *
+ * @defgroup meos_setspan_bin Bin functions
+ * @ingroup meos_setspan
+ * @brief Bin functions for set and span types
  */
 
 /*****************************************************************************/
@@ -183,51 +191,47 @@
 /**
  * @defgroup meos_box_inout Input and output functions
  * @ingroup meos_box
- * @brief Input and output functions for box types
+ * @brief Input and output functions for temporal boxes
  *
  * @defgroup meos_box_constructor Constructor functions
  * @ingroup meos_box
- * @brief Constructor functions for box types
+ * @brief Constructor functions for temporal boxes
  *
  * @defgroup meos_box_conversion Conversion functions
  * @ingroup meos_box
- * @brief Conversion functions for box types
+ * @brief Conversion functions for temporal boxes
  *
  * @defgroup meos_box_accessor Accessor functions
  * @ingroup meos_box
- * @brief Accessor functions for box types
+ * @brief Accessor functions for temporal boxes
  *
  * @defgroup meos_box_transf Transformation functions
  * @ingroup meos_box
- * @brief Transformation functions for box types
+ * @brief Transformation functions for temporal boxes
  *
  * @defgroup meos_box_srid Spatial reference system functions
  * @ingroup meos_box
- * @brief Spatial reference system functions for box types
+ * @brief Spatial reference system functions for temporal boxes
  *
  * @defgroup meos_box_set Set functions
  * @ingroup meos_box
- * @brief Set functions for box types
+ * @brief Set functions for temporal boxes
  *
  * @defgroup meos_box_bbox Bounding box functions
  * @ingroup meos_box
- * @brief Bounding box functions for box types
+ * @brief Bounding box functions for temporal boxes
  *
- * @defgroup meos_box_bbox_topo Topological functions
- * @ingroup meos_box_bbox
- * @brief Topological functions for box types
+ *   @defgroup meos_box_bbox_topo Topological functions
+ *   @ingroup meos_box_bbox
+ *   @brief Topological functions for temporal boxes
  *
- * @defgroup meos_box_bbox_pos Position functions
- * @ingroup meos_box_bbox
- * @brief Position functions for box types
+ *   @defgroup meos_box_bbox_pos Position functions
+ *   @ingroup meos_box_bbox
+ *   @brief Position functions for temporal boxes
  *
  * @defgroup meos_box_comp Comparison functions
  * @ingroup meos_box
- * @brief Comparison functions for box types
- *
- * @defgroup meos_box_index Index functions
- * @ingroup meos_box
- * @brief In-memory RTree index for STBox
+ * @brief Comparison functions for temporal boxes
  */
 
 /*****************************************************************************/
@@ -281,13 +285,17 @@
  * @ingroup meos_temporal
  * @brief Bounding box functions for temporal types
  *
- * @defgroup meos_temporal_bbox_topo Topological functions
- * @ingroup meos_temporal_bbox
- * @brief Topological functions for temporal types
+ *   @defgroup meos_temporal_bbox_split Split functions
+ *   @ingroup meos_temporal_bbox
+ *   @brief Split functions for temporal types
  *
- * @defgroup meos_temporal_bbox_pos Position functions
- * @ingroup meos_temporal_bbox
- * @brief Position functions for temporal types
+ *   @defgroup meos_temporal_bbox_topo Topological functions
+ *   @ingroup meos_temporal_bbox
+ *   @brief Topological functions for temporal types
+ *
+ *   @defgroup meos_temporal_bbox_pos Position functions
+ *   @ingroup meos_temporal_bbox
+ *   @brief Position functions for temporal types
  *
  * @defgroup meos_temporal_bool Boolean functions
  * @ingroup meos_temporal

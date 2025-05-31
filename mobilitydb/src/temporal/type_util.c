@@ -546,7 +546,6 @@ multirange_make(const SpanSet *ss)
 
 #if DEBUG_BUILD
 /**
- * @ingroup meos_pg_types
  * @brief Return the string representation of a range
  * @param[in] r Timestamp
  * @note PostgreSQL function: @p range_out(PG_FUNCTION_ARGS)
@@ -558,8 +557,8 @@ pg_range_out(RangeType *r)
   return DatumGetCString(call_function1(range_out, d));
 }
 
+#if POSTGRESQL_VERSION_NUMBER >= 140000
 /**
- * @ingroup meos_pg_types
  * @brief Return the string representation of a multirange
  * @param[in] r Timestamp
  * @note PostgreSQL function: @p range_out(PG_FUNCTION_ARGS)
@@ -570,6 +569,7 @@ pg_multirange_out(MultirangeType *mr)
   Datum d = PointerGetDatum(mr);
   return DatumGetCString(call_function1(multirange_out, d));
 }
+#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 #endif /* DEBUG_BUILD */
 
 /*****************************************************************************/

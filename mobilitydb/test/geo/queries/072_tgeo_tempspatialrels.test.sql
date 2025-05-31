@@ -228,6 +228,7 @@ SELECT tIntersects(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(
 -------------------------------------------------------------------------------
 -- tTouches
 -------------------------------------------------------------------------------
+-- The function does not support 3D or geographies
 
 -- Test for NULL inputs since the function is not STRICT
 SELECT tTouches(NULL::geometry, tgeometry 'Point(1 1)@2000-01-01');

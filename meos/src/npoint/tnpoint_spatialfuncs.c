@@ -38,9 +38,7 @@
 #include <assert.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
 #include "temporal/type_util.h"
-#include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
@@ -159,7 +157,7 @@ GSERIALIZED *
 tnpointinst_trajectory(const TInstant *inst)
 {
   const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
-  return npoint_geom(np);
+  return npoint_to_geom(np);
 }
 
 /**
@@ -177,7 +175,7 @@ tnpointseq_trajectory(const TSequence *seq)
   if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
   {
     Nsegment *segment = tnpointseq_linear_positions(seq);
-    result = nsegment_geom(segment);
+    result = nsegment_to_geom(segment);
     pfree(segment);
   }
   else
@@ -220,7 +218,7 @@ tnpointseqset_trajectory(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_npoint_spatial_transf
+ * @ingroup meos_npoint_accessor
  * @brief Return the geometry covered by a temporal network point
  * @param[in] temp Temporal network point
  * @csqlfn #Tnpoint_trajectory()
@@ -248,7 +246,7 @@ tnpoint_trajectory(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_npoint_comp
+ * @ingroup meos_npoint_base_comp
  * @brief Return true if two network points are approximately equal with
  * respect to an epsilon value
  * @details Two network points may be have different route identifier but
@@ -265,8 +263,8 @@ npoint_same(const Npoint *np1, const Npoint *np2)
   if (np1->rid == np2->rid && fabs(np1->pos - np2->pos) > MEOS_EPSILON)
     return false;
   /* Same point */
-  Datum point1 = PointerGetDatum(npoint_geom(np1));
-  Datum point2 = PointerGetDatum(npoint_geom(np2));
+  Datum point1 = PointerGetDatum(npoint_to_geom(np1));
+  Datum point2 = PointerGetDatum(npoint_to_geom(np2));
   bool result = datum_point_same(point1, point2);
   pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
   return result;
@@ -313,7 +311,7 @@ tnpointseqset_length(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_npoint_spatial_accessor
+ * @ingroup meos_npoint_accessor
  * @brief Length traversed by a temporal network point
  * @param[in] temp Temporal point
  * @csqlfn #Tnpoint_length()
@@ -390,7 +388,7 @@ tnpointseqset_cumulative_length(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_npoint_spatial_accessor
+ * @ingroup meos_npoint_accessor
  * @brief Cumulative length traversed by a temporal network point
  * @param[in] temp Temporal point
  * @csqlfn #Tnpoint_cumulative_length()
@@ -473,7 +471,7 @@ tnpointseqset_speed(const TSequenceSet *ss)
 }
 
 /**
- * @ingroup meos_npoint_spatial_accessor
+ * @ingroup meos_npoint_accessor
  * @brief Speed of a temporal network point
  * @param[in] temp Temporal point
  * @csqlfn #Tnpoint_speed()
@@ -503,7 +501,7 @@ tnpoint_speed(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_npoint_spatial_accessor
+ * @ingroup meos_npoint_accessor
  * @brief Return the time-weighed centroid of a temporal network point
  * @param[in] temp Temporal point
  * @csqlfn #Tnpoint_twcentroid()
@@ -513,7 +511,7 @@ tnpoint_twcentroid(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, NULL);
-  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  Temporal *tpoint = tnpoint_to_tgeompoint(temp);
   GSERIALIZED *result = tpoint_twcentroid(tpoint);
   pfree(tpoint);
   return result;
@@ -541,12 +539,12 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
   if (gserialized_is_empty(gs))
     return atfunc ? NULL : temporal_copy(temp);
 
-  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  Temporal *tpoint = tnpoint_to_tgeompoint(temp);
   Temporal *res = tgeo_restrict_geom(tpoint, gs, NULL, atfunc);
   Temporal *result = NULL;
   if (res)
   {
-    /* We do not call the function tgeompoint_tnpoint to avoid
+    /* We do not call the function tgeompoint_to_tnpoint to avoid
      * roundoff errors */
     SpanSet *ss = temporal_time(res);
     result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
@@ -594,7 +592,7 @@ tnpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal network point
  * @param[in] box Spatiotemporal box
  * @param[in] border_inc True when the box contains the upper border
- * @param[in] atfunc True if the restriction is at, false for minus
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
  */
 Temporal *
 tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
@@ -602,12 +600,12 @@ tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(box, NULL);
-  Temporal *tpoint = tnpoint_tgeompoint(temp);
+  Temporal *tpoint = tnpoint_to_tgeompoint(temp);
   Temporal *res = tgeo_restrict_stbox(tpoint, box, border_inc, atfunc);
   Temporal *result = NULL;
   if (res)
   {
-    result = tgeompoint_tnpoint(res);
+    result = tgeompoint_to_tnpoint(res);
     pfree(res);
   }
   return result;

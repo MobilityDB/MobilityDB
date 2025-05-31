@@ -55,14 +55,7 @@ extern int tnpointinst_srid(const TInstant *inst);
 extern GSERIALIZED *tnpointinst_geom(const TInstant *inst);
 extern GSERIALIZED *tnpointseq_geom(const TSequence *seq);
 extern GSERIALIZED *tnpointseqset_geom(const TSequenceSet *ss);
-extern GSERIALIZED *tnpoint_trajectory(const Temporal *temp);
 
-extern bool npoint_same(const Npoint *np1, const Npoint *np2);
-
-extern double tnpoint_length(const Temporal *temp);
-extern Temporal *tnpoint_cumulative_length(const Temporal *temp);
-extern Temporal *tnpoint_speed(const Temporal *temp);
-extern GSERIALIZED *tnpoint_twcentroid(const Temporal *temp);
 extern Temporal *tnpoint_restrict_geom(const Temporal *temp,
   const GSERIALIZED *gs, bool atfunc);
 extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box,

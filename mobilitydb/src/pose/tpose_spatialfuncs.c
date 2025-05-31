@@ -38,7 +38,8 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_pose.h>
-#include "pose/tpose.h"
+#include "geo/stbox.h"
+#include "pose/pose.h"
 #include "pose/tpose_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"

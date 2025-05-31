@@ -619,6 +619,11 @@ CREATE FUNCTION duration(tstzspan)
  * Transformation functions
  *****************************************************************************/
 
+CREATE FUNCTION shift(timestamptz, interval)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Timestamptz_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION shift(intspan, integer)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Numspan_shift'

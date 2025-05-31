@@ -32,10 +32,9 @@
  * @brief Temporal distance for temporal poses
  */
 
-#include "pose/tpose_distance.h"
-
 /* MEOS */
 #include <meos.h>
+#include <meos_pose.h>
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 #include "pg_geo/postgis.h"
@@ -56,10 +55,10 @@ PG_FUNCTION_INFO_V1(Distance_point_tpose);
 Datum
 Distance_point_tpose(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = distance_tpose_point(temp, geo);
-  PG_FREE_IF_COPY(geo, 0);
+  Temporal *result = distance_tpose_point(temp, gs);
+  PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -79,10 +78,10 @@ Datum
 Distance_tpose_point(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = distance_tpose_point(temp, geo);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  Temporal *result = distance_tpose_point(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(geo, 1);
+  PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
@@ -160,10 +159,10 @@ PG_FUNCTION_INFO_V1(NAI_geo_tpose);
 Datum
 NAI_geo_tpose(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  TInstant *result = nai_tpose_geo(temp, geo);
-  PG_FREE_IF_COPY(geo, 0);
+  TInstant *result = nai_tpose_geo(temp, gs);
+  PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -181,11 +180,11 @@ PG_FUNCTION_INFO_V1(NAI_tpose_geo);
 Datum
 NAI_tpose_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TInstant *result = nai_tpose_geo(temp, geo);
+  TInstant *result = nai_tpose_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(geo, 1);
+  PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TINSTANT_P(result);
@@ -263,10 +262,10 @@ PG_FUNCTION_INFO_V1(NAD_geo_tpose);
 Datum
 NAD_geo_tpose(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  double result = nad_tpose_geo(temp, geo);
-  PG_FREE_IF_COPY(geo, 0);
+  double result = nad_tpose_geo(temp, gs);
+  PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
@@ -285,11 +284,11 @@ PG_FUNCTION_INFO_V1(NAD_tpose_geo);
 Datum
 NAD_tpose_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  double result = nad_tpose_geo(temp, geo);
+  double result = nad_tpose_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(geo, 1);
+  PG_FREE_IF_COPY(gs, 1);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
@@ -369,10 +368,10 @@ PG_FUNCTION_INFO_V1(Shortestline_geo_tpose);
 Datum
 Shortestline_geo_tpose(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  GSERIALIZED *result = shortestline_tpose_geo(temp, geo);
-  PG_FREE_IF_COPY(geo, 0);
+  GSERIALIZED *result = shortestline_tpose_geo(temp, gs);
+  PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -391,10 +390,10 @@ Datum
 Shortestline_tpose_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
-  GSERIALIZED *result = shortestline_tpose_geo(temp, geo);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *result = shortestline_tpose_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(geo, 1);
+  PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);

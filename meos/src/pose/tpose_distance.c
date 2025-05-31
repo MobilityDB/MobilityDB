@@ -32,15 +32,13 @@
  * @brief Temporal distance for temporal poses
  */
 
-#include "pose/tpose_distance.h"
-
 /* MEOS */
 #include <meos.h>
 #include <meos_pose.h>
 #include <meos_internal.h>
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
-#include "pose/tpose.h"
+#include "pose/pose.h"
 #include "pose/tpose_spatialfuncs.h"
 
 /*****************************************************************************

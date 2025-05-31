@@ -100,7 +100,7 @@ Datum
 Tnpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tnpoint_tgeompoint(temp);
+  Temporal *result = tnpoint_to_tgeompoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -117,7 +117,7 @@ Datum
 Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tgeompoint_tnpoint(temp);
+  Temporal *result = tgeompoint_to_tnpoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();

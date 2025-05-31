@@ -43,7 +43,7 @@
 #include "temporal/temporal_compops.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
-#include "pose/tpose.h"
+#include "pose/pose.h"
 #include "pose/tpose_spatialfuncs.h"
 
 /*****************************************************************************

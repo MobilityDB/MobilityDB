@@ -44,20 +44,9 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_geo.h>
-#include <meos_cbuffer.h>
-#include <meos_internal.h>
-#include "temporal/pg_types.h"
 #include "temporal/set.h"
-#include "temporal/tsequence.h"
-#include "temporal/type_inout.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
-#include "geo/postgis_funcs.h"
-#include "geo/tgeo.h"
-#include "geo/tgeo_out.h"
-#include "geo/tgeo_spatialfuncs.h"
-#include "geo/tspatial_parser.h"
 #include "cbuffer/cbuffer.h"
 
 /*****************************************************************************
@@ -116,25 +105,6 @@ cbufferset_make(const Cbuffer **values, int count)
   for (int i = 0; i < count; ++i)
     datums[i] = PointerGetDatum(values[i]);
   return set_make_free(datums, count, T_CBUFFER, ORDER);
-}
-
-/*****************************************************************************
- * Conversion functions
- *****************************************************************************/
-
-/**
- * @ingroup meos_cbuffer_set_conversion
- * @brief Convert a circular buffer into a circular buffer set
- * @param[in] cb Value
- * @csqlfn #Value_to_set()
- */
-Set *
-cbuffer_to_set(const Cbuffer *cb)
-{
-  /* Ensure the validity of the arguments */
- VALIDATE_NOT_NULL(cb, NULL);
-  Datum v = PointerGetDatum(cb);
-  return set_make_exp(&v, 1, 1, T_CBUFFER, ORDER_NO);
 }
 
 /*****************************************************************************

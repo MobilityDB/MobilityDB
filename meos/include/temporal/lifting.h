@@ -63,11 +63,12 @@ typedef struct
   bool invert;                /**< True if the arguments of the function must be inverted */
   bool discont;               /**< True if the function has instantaneous discontinuities */
   bool ever;                  /**< True/false when computing the ever/always semantics */
-  bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, meosType,
-    Datum *, TimestampTz *); /**< Turning point function for temporal and base types*/
-  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
-    const TInstant *,
-    Datum *, TimestampTz *); /**< Turning point function for two temporal types */
+  int (*tpfunc_base)(Datum, Datum, Datum, TimestampTz, TimestampTz,
+    TimestampTz *, TimestampTz *); 
+                              /**< Turning point function for temporal and base types*/
+  int (*tpfunc)(Datum, Datum, Datum, Datum, Datum, TimestampTz, TimestampTz,
+    TimestampTz *, TimestampTz *);
+                              /**< Turning point function for two temporal types */
 } LiftedFunctionInfo;
 
 /*****************************************************************************/

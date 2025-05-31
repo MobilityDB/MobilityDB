@@ -55,7 +55,7 @@ CREATE FUNCTION tbox_gist_same(tbox, tbox, internal)
   AS 'MODULE_PATHNAME', 'Tbox_gist_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_distance(internal, tbox, smallint, oid, internal)
-  RETURNS internal
+  RETURNS float8
   AS 'MODULE_PATHNAME', 'Tbox_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

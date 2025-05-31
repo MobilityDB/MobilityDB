@@ -478,7 +478,7 @@ pose_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup meos_pose_base_inout
- * @brief Return a pose from its hex-encoded ASCII Well-Known Binary (WKB)
+ * @brief Return a pose from its ASCII hex-encoded Well-Known Binary (WKB)
  * representation
  * @param[in] hexwkb HexWKB string
  * @csqlfn #Pose_from_hexwkb()
@@ -512,7 +512,7 @@ pose_as_wkb(const Pose *pose, uint8_t variant, size_t *size_out)
 
 /**
  * @ingroup meos_pose_base_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a pose
  * @param[in] pose Pose
  * @param[in] variant Output variant

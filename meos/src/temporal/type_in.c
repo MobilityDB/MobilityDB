@@ -105,7 +105,7 @@ bool
 basetype_in(const char *str, meosType type, bool end, Datum *result)
 #else
 basetype_in(const char *str, meosType type,
-  bool end __attribute__((unused)), Datum *result)
+  bool end UNUSED, Datum *result)
 #endif
 {
   assert(meos_basetype(type));
@@ -2185,7 +2185,7 @@ set_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup meos_setspan_inout
- * @brief Return a set from its hex-encoded ASCII Well-Known Binary (WKB)
+ * @brief Return a set from its ASCII hex-encoded Well-Known Binary (WKB)
  * representation
  * @param[in] hexwkb HexWKB string
  * @csqlfn #Set_from_hexwkb()
@@ -2218,7 +2218,7 @@ span_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup meos_setspan_inout
- * @brief Return a span from its hex-encoded ASCII Well-Known Binary (WKB)
+ * @brief Return a span from its ASCII hex-encoded Well-Known Binary (WKB)
  * representation
  * @param[in] hexwkb HexWKB string
  * @csqlfn #Span_from_hexwkb()
@@ -2250,7 +2250,7 @@ spanset_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup meos_setspan_inout
- * @brief Return a span set from its hex-encoded ASCII Well-Known Binary (WKB)
+ * @brief Return a span set from its ASCII hex-encoded Well-Known Binary (WKB)
  * representation
  * @param[in] hexwkb HexWKB string
  * @csqlfn #Spanset_from_hexwkb()
@@ -2286,7 +2286,7 @@ tbox_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup meos_box_inout
- * @brief Return a temporal box from its hex-encoded ASCII Well-Known Binary
+ * @brief Return a temporal box from its ASCII hex-encoded Well-Known Binary
  * (WKB) representation
  * @param[in] hexwkb HexWKB string
  * @csqlfn #Tbox_from_hexwkb()
@@ -2324,7 +2324,7 @@ temporal_from_wkb(const uint8_t *wkb, size_t size)
 
 /**
  * @ingroup meos_temporal_inout
- * @brief Return a temporal value from its hex-encoded ASCII Extended
+ * @brief Return a temporal value from its ASCII hex-encoded Extended
  * Well-Known Binary (EWKB) representation
  * @param[in] hexwkb HexWKB string
  * @return On error return @p NULL

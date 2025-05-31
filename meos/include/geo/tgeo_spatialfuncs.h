@@ -71,16 +71,17 @@ extern bool datum_point_eq(Datum point1, Datum point2);
 extern bool datum_point_same(Datum point1, Datum point2);
 extern Datum datum2_point_eq(Datum point1, Datum point2);
 extern Datum datum2_point_ne(Datum point1, Datum point2);
-extern Datum datum2_point_same(Datum point1, Datum oint2);
+extern Datum datum2_point_same(Datum point1, Datum point2);
 extern Datum datum2_point_nsame(Datum point1, Datum point2);
 extern Datum datum2_geom_centroid(Datum geo);
 extern Datum datum2_geog_centroid(Datum geo);
+extern GSERIALIZED **geo_extract_elements(const GSERIALIZED *gs, int *count);
 extern GSERIALIZED *geo_serialize(const LWGEOM *geom);
 extern LWPROJ *lwproj_get(int32 srid_from, int32 srid_to);
 
 /* Generic functions */
 
-extern datum_func2 distance_fn(int16 flags);
+extern datum_func2 geo_distance_fn(int16 flags);
 extern datum_func2 pt_distance_fn(int16 flags);
 extern Datum datum_geom_distance2d(Datum geom1, Datum geom2);
 extern Datum datum_geom_distance3d(Datum geom1, Datum geom2);
@@ -92,8 +93,10 @@ extern int16 spatial_flags(Datum d, meosType basetype);
 
 /* Validity functions */
 
+extern bool ensure_srid_is_latlong(int32_t srid);
 extern bool ensure_spatial_validity(const Temporal *temp1,
   const Temporal *temp2);
+extern int spheroid_init_from_srid(int32_t srid, SPHEROID *s);
 extern bool ensure_not_geodetic(int16 flags);
 extern bool ensure_same_geodetic(int16 flags1, int16 flags2);
 extern bool ensure_same_geodetic_geo(const GSERIALIZED *gs1,
@@ -182,14 +185,12 @@ extern long double pointsegm_locate_point(Datum start, Datum end, Datum point,
 
 /* Intersection functions */
 
-extern bool tpointsegm_intersection_value(const TInstant *inst1,
-  const TInstant *inst2, Datum value, TimestampTz *t);
-extern bool tgeompointsegm_intersection(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2, const TInstant *end2,
-  TimestampTz *t);
-extern bool tgeogpointsegm_intersection(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2, const TInstant *end2,
-  TimestampTz *t);
+extern int tpointsegm_intersection_value(Datum start, Datum end, Datum value,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t);
+extern int tgeompointsegm_intersection(Datum start1, Datum end1, Datum start2,
+  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t);
+extern int tgeogpointsegm_intersection(Datum start1, Datum end1, Datum start2,
+  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t);
 
 extern bool geopoint_collinear(Datum value1, Datum value2, Datum value3,
   double ratio, bool hasz, bool geodetic);

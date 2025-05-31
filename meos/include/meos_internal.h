@@ -784,6 +784,21 @@ extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize, bool o
 
 /* Conversion functions for set and span types */
 
+extern Set *dateset_tstzset(const Set *s);
+extern Span *datespan_tstzspan(const Span *s);
+extern SpanSet *datespanset_tstzspanset(const SpanSet *ss);
+extern Set *floatset_intset(const Set *s);
+extern Span *floatspan_intspan(const Span *s);
+extern SpanSet *floatspanset_intspanset(const SpanSet *ss);
+extern Set *intset_floatset(const Set *s);
+extern Span *intspan_floatspan(const Span *s);
+extern SpanSet *intspanset_floatspanset(const SpanSet *ss);
+extern Span *set_span(const Set *s);
+extern SpanSet *set_spanset(const Set *s);
+extern SpanSet *span_spanset(const Span *s);
+extern Set *tstzset_dateset(const Set *s);
+extern Span *tstzspan_datespan(const Span *s);
+extern SpanSet *tstzspanset_datespanset(const SpanSet *ss);
 extern void value_set_span(Datum value, meosType basetype, Span *s);
 extern Set *value_set(Datum d, meosType basetype);
 extern Span *value_span(Datum d, meosType basetype);
@@ -965,6 +980,13 @@ extern void tstzspanset_set_tbox(const SpanSet *ss, TBox *box);
 
 /*****************************************************************************/
 
+/* Accessor functions for box types */
+
+extern bool tbox_xmax(const TBox *box, double *result);
+extern bool tbox_xmin(const TBox *box, double *result);
+
+/*****************************************************************************/
+
 /* Transformation functions for box types */
 
 extern TBox *tbox_shift_scale_value(const TBox *box, Datum shift, Datum width, bool hasshift, bool haswidth);
@@ -1074,12 +1096,14 @@ extern TInstant *tinstant_make(Datum value, meosType temptype, TimestampTz t);
 extern TInstant *tinstant_make_free(Datum value, meosType temptype, TimestampTz t);
 extern TSequence *tpointseq_make_coords(const double *xcoords, const double *ycoords, const double *zcoords, const TimestampTz *times, int count, int32 srid, bool geodetic, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequence *tsequence_copy(const TSequence *seq);
-extern TSequence *tsequence_from_base_tstzset(Datum value, meosType temptype, const Set *ss);
+extern TSequence *tsequence_from_base_temp(Datum value, meosType temptype, const TSequence *seq);
+extern TSequence *tsequence_from_base_tstzset(Datum value, meosType temptype, const Set *s);
 extern TSequence *tsequence_from_base_tstzspan(Datum value, meosType temptype, const Span *s, interpType interp);
 extern TSequence *tsequence_make_exp(const TInstant **instants, int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequence *tsequence_make_free(TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequenceSet *tsequenceset_copy(const TSequenceSet *ss);
 extern TSequenceSet *tseqsetarr_to_tseqset(TSequenceSet **seqsets, int count, int totalseqs);
+extern TSequenceSet *tsequenceset_from_base_temp(Datum value, meosType temptype, const TSequenceSet *ss);
 extern TSequenceSet *tsequenceset_from_base_tstzspanset(Datum value, meosType temptype, const SpanSet *ss, interpType interp);
 extern TSequenceSet *tsequenceset_make_exp(const TSequence **sequences, int count, int maxcount, bool normalize);
 extern TSequenceSet *tsequenceset_make_free(TSequence **sequences, int count, bool normalize);
@@ -1383,8 +1407,6 @@ extern TSequence *tgeomseq_tgeogseq(const TSequence *seq, bool oper);
 extern TSequenceSet *tgeomseqset_tgeogseqset(const TSequenceSet *ss, bool oper);
 extern Temporal *tgeom_tgeog(const Temporal *temp, bool oper);
 extern Temporal *tgeo_tpoint(const Temporal *temp, bool oper);
-extern Temporal *tgeompoint_tnpoint(const Temporal *temp);
-extern Temporal *tnpoint_tgeompoint(const Temporal *temp);
 extern void tspatialinst_set_srid(TInstant *inst, int32 srid);
 extern TSequence **tpointseq_make_simple(const TSequence *seq, int *count);
 extern void tpointseq_set_srid(TSequence *seq, int32 srid);
@@ -1422,13 +1444,12 @@ extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq
 
 /* Tile functions for span and temporal types */
 
-extern Span *numspanset_spans(const SpanSet *ss, Datum vsize, Datum vorigin, int *count);
-extern Span *spanset_time_spans(const SpanSet *ss, const Interval *duration, Datum torigin, int *count);
-extern Span *spanset_value_spans(const SpanSet *ss, Datum vsize, Datum vorigin, int *count);
-extern Span *timespanset_spans(const SpanSet *ss, const Interval *duration, Datum torigin, int *count);
-extern Span *tnumber_value_spans(const Temporal *temp, Datum size, Datum origin, int *count);
-extern TBox *tnumber_value_boxes(const Temporal *temp, Datum vsize, Datum vorigin, int *count);
+extern Span *span_bins(const Span *s, Datum size, Datum origin, int *count);
+extern Span *spanset_bins(const SpanSet *ss, Datum size, Datum origin, int *count);
+extern Span *tnumber_time_bins(const Temporal *temp, Datum size, Datum origin, int *count);
 extern TBox *tnumber_time_boxes(const Temporal *temp, const Interval *duration, TimestampTz torigin, int *count);
+extern Span *tnumber_value_bins(const Temporal *temp, Datum size, Datum origin, int *count);
+extern TBox *tnumber_value_boxes(const Temporal *temp, Datum vsize, Datum vorigin, int *count);
 extern TBox *tnumber_value_time_boxes(const Temporal *temp, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, int *count);
 extern Temporal **tnumber_value_split(const Temporal *temp, Datum vsize, Datum vorigin, Datum **bins, int *count);
 extern TBox *tbox_get_value_time_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, meosType basetype, meosType spantype);

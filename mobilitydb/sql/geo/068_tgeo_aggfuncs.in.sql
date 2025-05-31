@@ -44,17 +44,13 @@ CREATE FUNCTION tspatial_extent_transfn(stbox, tgeography)
 CREATE AGGREGATE extent(tgeometry) (
   SFUNC = tspatial_extent_transfn,
   STYPE = stbox,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = stbox_extent_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tgeography) (
   SFUNC = tspatial_extent_transfn,
   STYPE = stbox,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = stbox_extent_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   PARALLEL = safe
 );
 
@@ -73,9 +69,7 @@ CREATE FUNCTION tcount_transfn(internal, tgeography)
 CREATE AGGREGATE tcount(tgeometry) (
   SFUNC = tcount_transfn,
   STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
@@ -85,9 +79,7 @@ CREATE AGGREGATE tcount(tgeometry) (
 CREATE AGGREGATE tcount(tgeography) (
   SFUNC = tcount_transfn,
   STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tcount_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
@@ -106,9 +98,7 @@ CREATE FUNCTION wcount_transfn(internal, tgeography, interval)
 CREATE AGGREGATE wcount(tgeometry, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tint_tsum_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
@@ -117,9 +107,7 @@ CREATE AGGREGATE wcount(tgeometry, interval) (
 CREATE AGGREGATE wcount(tgeography, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = tint_tsum_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tint_tagg_finalfn,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
@@ -149,9 +137,7 @@ CREATE FUNCTION tgeography_tagg_finalfn(internal)
 CREATE AGGREGATE merge(tgeometry) (
   SFUNC = temporal_merge_transfn,
   STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = temporal_merge_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tgeometry_tagg_finalfn,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,
@@ -160,9 +146,7 @@ CREATE AGGREGATE merge(tgeometry) (
 CREATE AGGREGATE merge(tgeography) (
   SFUNC = temporal_merge_transfn,
   STYPE = internal,
-#if POSTGRESQL_VERSION_NUMBER >= 130000
   COMBINEFUNC = temporal_merge_combinefn,
-#endif //POSTGRESQL_VERSION_NUMBER >= 130000
   FINALFUNC = tgeography_tagg_finalfn,
   SERIALFUNC = taggstate_serialize,
   DESERIALFUNC = taggstate_deserialize,

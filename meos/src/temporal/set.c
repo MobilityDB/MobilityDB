@@ -532,7 +532,7 @@ value_set(Datum value, meosType basetype)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_setspan_conversion
+ * @ingroup meos_internal_setspan_conversion
  * @brief Convert an integer set into a float set
  * @param[in] s Set
  * @csqlfn #Intset_to_floatset()
@@ -540,8 +540,7 @@ value_set(Datum value, meosType basetype)
 Set *
 intset_floatset(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_INTSET(s, NULL);
+  assert(s); assert(s->settype == T_INTSET);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = Float8GetDatum((double) DatumGetInt32(SET_VAL_N(s, i)));
@@ -551,6 +550,20 @@ intset_floatset(const Set *s)
 
 /**
  * @ingroup meos_setspan_conversion
+ * @brief Convert an integer set into a float set
+ * @param[in] s Set
+ * @csqlfn #Intset_to_floatset()
+ */
+Set *
+intset_to_floatset(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSET(s, NULL);
+  return intset_floatset(s);
+}
+
+/**
+ * @ingroup meos_internal_setspan_conversion
  * @brief Convert a float set into an integer set
  * @param[in] s Set
  * @csqlfn #Floatset_to_intset()
@@ -559,7 +572,7 @@ Set *
 floatset_intset(const Set *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSET(s, NULL);
+  assert(s); assert(s->settype == T_FLOATSET);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = Int32GetDatum((int) DatumGetFloat8(SET_VAL_N(s, i)));
@@ -569,6 +582,20 @@ floatset_intset(const Set *s)
 
 /**
  * @ingroup meos_setspan_conversion
+ * @brief Convert a float set into an integer set
+ * @param[in] s Set
+ * @csqlfn #Floatset_to_intset()
+ */
+Set *
+floatset_to_intset(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSET(s, NULL);
+  return floatset_intset(s);
+}
+
+/**
+ * @ingroup meos_internal_setspan_conversion
  * @brief Convert a date set into a timestamptz set
  * @param[in] s Set
  * @csqlfn #Dateset_to_tstzset()
@@ -577,13 +604,44 @@ Set *
 dateset_tstzset(const Set *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_DATESET(s, NULL);
+  assert(s); assert(s->settype == T_DATESET);
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = TimestampTzGetDatum(date_to_timestamptz(DatumGetDateADT(
       SET_VAL_N(s, i))));
   /* All distinct dates will yield distinct timestamptz */
   return set_make_free(values, s->count, T_TIMESTAMPTZ, ORDER_NO);
+}
+/**
+ * @ingroup meos_setspan_conversion
+ * @brief Convert a date set into a timestamptz set
+ * @param[in] s Set
+ * @csqlfn #Dateset_to_tstzset()
+ */
+Set *
+dateset_to_tstzset(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESET(s, NULL);
+  return dateset_tstzset(s);
+}
+
+/**
+ * @ingroup meos_internal_setspan_conversion
+ * @brief Convert a timestamptz set into a date set
+ * @param[in] s Set
+ * @csqlfn #Tstzset_to_dateset()
+ */
+Set *
+tstzset_dateset(const Set *s)
+{
+  assert(s); assert(s->settype == T_TSTZSET);
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = DateADTGetDatum(timestamptz_to_date(DatumGetTimestampTz(
+      SET_VAL_N(s, i))));
+  /* Two distinct timestamptz can yield the same date */
+  return set_make_free(values, s->count, T_DATE, ORDER);
 }
 
 /**
@@ -593,16 +651,11 @@ dateset_tstzset(const Set *s)
  * @csqlfn #Tstzset_to_dateset()
  */
 Set *
-tstzset_dateset(const Set *s)
+tstzset_to_dateset(const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSET(s, NULL);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = DateADTGetDatum(timestamptz_to_date(DatumGetTimestampTz(
-      SET_VAL_N(s, i))));
-  /* Two distinct timestamptz can yield the same date */
-  return set_make_free(values, s->count, T_DATE, ORDER);
+  return tstzset_dateset(s);
 }
 
 /*****************************************************************************
@@ -769,6 +822,22 @@ set_compact(const Set *s)
 }
 #endif /* MEOS */
 
+/*****************************************************************************/
+
+/**
+ * @brief Return a float set obtained by applying a function to each element
+ */
+Set *
+floatset_func(const Set *s, Datum (*func)(Datum))
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSET(s, NULL);
+  Datum *values = palloc(sizeof(Datum) * s->count);
+  for (int i = 0; i < s->count; i++)
+    values[i] = func(SET_VAL_N(s, i));
+  return set_make_exp(values, s->count, s->count, T_FLOAT8, ORDER);
+}
+
 /**
  * @ingroup meos_setspan_transf
  * @brief Return a float set rounded down to the nearest integer
@@ -777,12 +846,7 @@ set_compact(const Set *s)
 Set *
 floatset_floor(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSET(s, NULL);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = datum_floor(SET_VAL_N(s, i));
-  return set_make_exp(values, s->count, s->count, T_FLOAT8, ORDER);
+  return floatset_func(s, &datum_floor);
 }
 
 /**
@@ -793,12 +857,7 @@ floatset_floor(const Set *s)
 Set *
 floatset_ceil(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSET(s, NULL);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = datum_ceil(SET_VAL_N(s, i));
-  return set_make_exp(values, s->count, s->count, T_FLOAT8, ORDER);
+  return floatset_func(s, &datum_ceil);
 }
 
 /**
@@ -828,12 +887,23 @@ floatset_degrees(const Set *s, bool normalize)
 Set *
 floatset_radians(const Set *s)
 {
+  return floatset_func(s, &datum_radians);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return a float set obtained by applying a function to each element
+ */
+Set *
+textset_func(const Set *s, Datum (*func)(Datum))
+{
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSET(s, NULL);
-  Set *result = set_copy(s);
+  VALIDATE_TEXTSET(s, NULL);
+  Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
-    (SET_OFFSETS_PTR(result))[i] = datum_radians(SET_VAL_N(s, i));
-  return result;
+    values[i] = func(SET_VAL_N(s, i));
+  return set_make_exp(values, s->count, s->count, T_TEXT, ORDER);
 }
 
 /**
@@ -845,12 +915,7 @@ floatset_radians(const Set *s)
 Set *
 textset_lower(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TEXTSET(s, NULL);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = datum_lower(SET_VAL_N(s, i));
-  return set_make_free(values, s->count, T_TEXT, ORDER_NO);
+  return textset_func(s, &datum_lower);
 }
 
 /**
@@ -862,12 +927,7 @@ textset_lower(const Set *s)
 Set *
 textset_upper(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TEXTSET(s, NULL);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = datum_upper(SET_VAL_N(s, i));
-  return set_make_free(values, s->count, T_TEXT, ORDER_NO);
+  return textset_func(s, &datum_upper);
 }
 
 /**
@@ -879,12 +939,7 @@ textset_upper(const Set *s)
 Set *
 textset_initcap(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TEXTSET(s, NULL);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = datum_initcap(SET_VAL_N(s, i));
-  return set_make_free(values, s->count, T_TEXT, ORDER_NO);
+  return textset_func(s, &datum_initcap);
 }
 
 /**

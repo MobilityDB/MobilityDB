@@ -70,15 +70,25 @@ CREATE FUNCTION traversedArea(tcbuffer)
  * AtGeometry and MinusGeometry
  *****************************************************************************/
 
--- CREATE FUNCTION atGeometry(tcbuffer, geometry)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_at_geom'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atValue(tcbuffer, cbuffer)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_at_cbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION minusGeometry(tcbuffer, geometry)
-  -- RETURNS tcbuffer
-  -- AS 'MODULE_PATHNAME', 'Tcbuffer_minus_geom'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusValue(tcbuffer, cbuffer)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_minus_cbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION atGeometry(tcbuffer, geometry)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_at_geom'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusGeometry(tcbuffer, geometry)
+  RETURNS tcbuffer
+  AS 'MODULE_PATHNAME', 'Tcbuffer_minus_geom'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- CREATE FUNCTION atStbox(tcbuffer, stbox, bool DEFAULT TRUE)
   -- RETURNS tcbuffer

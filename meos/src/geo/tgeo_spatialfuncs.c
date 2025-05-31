@@ -46,6 +46,7 @@
 #include <lwgeom_geos.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 #include "temporal/pg_types.h"
 #include "temporal/lifting.h"
@@ -113,6 +114,37 @@ geopoint_make(double x, double y, double z, bool hasz, bool geodetic,
 }
 
 /*****************************************************************************/
+
+/**
+ * @brief Return -1, 0, or 1 depending on whether the first point is less than,
+ * equal to, or greater than the second one
+ */
+int
+geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  if (FLAGS_GET_Z(gs1->gflags))
+  {
+    const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
+    const POINT3DZ *point2 = GSERIALIZED_POINT3DZ_P(gs2);
+    if (float8_lt(point1->x, point2->x) || float8_lt(point1->y, point2->y) || 
+        float8_lt(point1->z, point2->z))
+      return -1;
+    if (float8_gt(point1->x, point2->x) || float8_gt(point1->y, point2->y) || 
+        float8_gt(point1->z, point2->z))
+      return 1;
+    return 0;
+  }
+  else
+  {
+    const POINT2D *point1 = GSERIALIZED_POINT2D_P(gs1);
+    const POINT2D *point2 = GSERIALIZED_POINT2D_P(gs2);
+    if (float8_lt(point1->x, point2->x) || float8_lt(point1->y, point2->y))
+      return -1;
+    if (float8_gt(point1->x, point2->x) || float8_gt(point1->y, point2->y))
+      return 1;
+    return 0;
+  }
+}
 
 /**
  * @brief Return true if the points are equal
@@ -183,7 +215,6 @@ geopoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       MEOS_FP_EQ(point1->y, point2->y);
   }
 }
-
 
 /**
  * @brief Return true if the points are equal taking into account floating 
@@ -266,7 +297,7 @@ datum2_geog_centroid(Datum geo)
  * @brief Select the appropriate distance function
  */
 datum_func2
-distance_fn(int16 flags)
+geo_distance_fn(int16 flags)
 {
   if (MEOS_FLAGS_GET_GEODETIC(flags))
     return &datum_geog_distance;
@@ -700,7 +731,6 @@ ensure_has_not_M_geo(const GSERIALIZED *gs)
   return false;
 }
 
-#if CBUFFER
 /**
  * @brief Ensure that the geometry has planar coordinates
  */
@@ -713,7 +743,6 @@ ensure_not_geodetic_geo(const GSERIALIZED *gs)
     "Only planar coordinates supported");
   return false;
 }
-#endif /* CBUFFER */
 
 /**
  * @brief Ensure that the geometry/geography is a point
@@ -774,11 +803,10 @@ ensure_not_empty(const GSERIALIZED *gs)
 bool
 ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 {
-  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(gs, false);
-  if (! ensure_has_X(T_STBOX, box->flags) ||
+  assert(box); assert(gs);
+  if (! ensure_has_X(T_STBOX, box->flags) || gserialized_is_empty(gs) ||
       ! ensure_same_srid(box->srid, gserialized_get_srid(gs)) ||
-      ! ensure_same_geodetic_stbox_geo(box, gs) ||
-      gserialized_is_empty(gs))
+      ! ensure_same_geodetic_stbox_geo(box, gs))
     return false;
   return true;
 }
@@ -792,7 +820,7 @@ ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 bool
 ensure_valid_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  VALIDATE_TSPATIAL(temp, false); VALIDATE_NOT_NULL(gs, false);
+  assert(temp); assert(gs); assert(tspatial_type(temp->temptype));
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_same_geodetic_tspatial_geo(temp, gs))
     return false;
@@ -805,8 +833,8 @@ ensure_valid_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
 bool
 ensure_valid_spatial_stbox_stbox(const STBox *box1, const STBox *box2)
 {
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  if (! ensure_has_X(T_STBOX, box1->flags) || 
+  assert(box1); assert(box2);
+  if (! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags) ||
       ! ensure_same_srid(stbox_srid(box1), stbox_srid(box2)) ||
       ! ensure_same_geodetic(box1->flags, box2->flags))
@@ -820,7 +848,7 @@ ensure_valid_spatial_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  VALIDATE_TGEO(temp, false); VALIDATE_NOT_NULL(gs, false);
+  assert(temp); assert(gs); assert(tgeo_type_all(temp->temptype));
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_same_geodetic_tspatial_geo(temp, gs))
     return false;
@@ -833,7 +861,7 @@ ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 bool
 ensure_valid_tgeo_stbox(const Temporal *temp, const STBox *box)
 {
-  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(box, NULL);
+  assert(temp); assert(box); assert(tgeo_type_all(temp->temptype));
   if (! ensure_has_X(T_STBOX, box->flags) ||
       ! ensure_same_srid(tspatial_srid(temp), stbox_srid(box)) ||
       ! ensure_same_geodetic(temp->flags, box->flags))
@@ -847,7 +875,8 @@ ensure_valid_tgeo_stbox(const Temporal *temp, const STBox *box)
 bool
 ensure_valid_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
-  VALIDATE_TGEO(temp1, NULL); VALIDATE_TGEO(temp2, NULL);
+  assert(temp1); assert(temp2); assert(tgeo_type_all(temp1->temptype));
+  assert(tgeo_type_all(temp2->temptype));
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) &&
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return false;
@@ -861,7 +890,8 @@ ensure_valid_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 bool
 ensure_valid_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
-  VALIDATE_TSPATIAL(temp1, false); VALIDATE_TSPATIAL(temp2, false);
+  assert(temp1); assert(temp1); assert(tspatial_type(temp1->temptype));
+  assert(tspatial_type(temp2->temptype));
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return false;
@@ -982,7 +1012,7 @@ tgeom_tgeog(const Temporal *temp, bool oper)
  * @csqlfn #Tgeometry_to_tgeography()
  */
 Temporal *
-tgeometry_tgeography(const Temporal *temp)
+tgeometry_to_tgeography(const Temporal *temp)
 {
   VALIDATE_TGEOMETRY(temp, NULL);
   return tgeom_tgeog(temp, TGEOM_TO_TGEOG);
@@ -995,7 +1025,7 @@ tgeometry_tgeography(const Temporal *temp)
  * @csqlfn #Tgeography_to_tgeometry()
  */
 Temporal *
-tgeography_tgeometry(const Temporal *temp)
+tgeography_to_tgeometry(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOGRAPHY(temp, NULL);
@@ -1184,7 +1214,7 @@ tgeo_tpoint(const Temporal *temp, bool oper)
  * @csqlfn #Tgeo_to_tpoint()
  */
 Temporal *
-tgeometry_tgeompoint(const Temporal *temp)
+tgeometry_to_tgeompoint(const Temporal *temp)
 {
   VALIDATE_TGEOMETRY(temp, NULL);
   return tgeo_tpoint(temp, TGEO_TO_TPOINT);
@@ -1197,7 +1227,7 @@ tgeometry_tgeompoint(const Temporal *temp)
  * @csqlfn #Tgeo_to_tpoint()
  */
 Temporal *
-tgeography_tgeogpoint(const Temporal *temp)
+tgeography_to_tgeogpoint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOGRAPHY(temp, NULL);
@@ -1211,7 +1241,7 @@ tgeography_tgeogpoint(const Temporal *temp)
  * @csqlfn #Tpoint_to_tgeo()
  */
 Temporal *
-tgeompoint_tgeometry(const Temporal *temp)
+tgeompoint_to_tgeometry(const Temporal *temp)
 {
   VALIDATE_TGEOMPOINT(temp, NULL);
   return tgeom_tgeog(temp, TPOINT_TO_TGEO);
@@ -1224,7 +1254,7 @@ tgeompoint_tgeometry(const Temporal *temp)
  * @csqlfn #Tpoint_to_tgeo()
  */
 Temporal *
-tgeogpoint_tgeography(const Temporal *temp)
+tgeogpoint_to_tgeography(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOGPOINT(temp, NULL);

@@ -31,8 +31,6 @@
  * @brief General functions for temporal pose objects.
  */
 
-#include "pose/tpose.h"
-
 /* C */
 #include <assert.h>
 /* Postgres */
@@ -92,7 +90,7 @@ tposeinst_in(const char *str)
  * @param[in] interp Interpolation
  */
 TSequence *
-tposeseq_in(const char *str, interpType interp __attribute__((unused)))
+tposeseq_in(const char *str, interpType interp UNUSED)
 {
   /* Call the superclass function */
   Temporal *temp = tpose_in(str);
@@ -298,8 +296,6 @@ tpose_tpoint(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TGEOMPOINT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
 }
@@ -310,7 +306,7 @@ tpose_tpoint(const Temporal *temp)
 
 /**
  * @ingroup meos_pose_conversion
- * @brief Return a geometry point from a temporal pose
+ * @brief Return a the rotation of a temporal pose as a temporal float
  * @param[in] temp Temporal pose
  */
 Temporal *
@@ -327,8 +323,6 @@ tpose_rotation(const Temporal *temp)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TPOSE;
   lfinfo.restype = T_TFLOAT;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
   return result;
 }

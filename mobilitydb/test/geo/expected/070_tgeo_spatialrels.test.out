@@ -938,54 +938,6 @@ SELECT eTouches(geometry 'Point empty', tgeometry '{[Point(1 1)@2000-01-01, Poin
  
 (1 row)
 
-SELECT eTouches(geometry 'Point(1 1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
- etouches 
-----------
- f
-(1 row)
-
-SELECT eTouches(geometry 'Point(1 1 1)', tgeometry '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
- etouches 
-----------
- f
-(1 row)
-
-SELECT eTouches(geometry 'Point(1 1 1)', tgeometry '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
- etouches 
-----------
- f
-(1 row)
-
-SELECT eTouches(geometry 'Point(1 1 1)', tgeometry '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
- etouches 
-----------
- f
-(1 row)
-
-SELECT eTouches(geometry 'Point Z empty', tgeometry 'Point(1 1 1)@2000-01-01');
- etouches 
-----------
- 
-(1 row)
-
-SELECT eTouches(geometry 'Point Z empty', tgeometry '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
- etouches 
-----------
- 
-(1 row)
-
-SELECT eTouches(geometry 'Point Z empty', tgeometry '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
- etouches 
-----------
- 
-(1 row)
-
-SELECT eTouches(geometry 'Point Z empty', tgeometry '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
- etouches 
-----------
- 
-(1 row)
-
 SELECT eTouches(tgeometry 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
  etouches 
 ----------
@@ -1034,54 +986,6 @@ SELECT eTouches(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
  
 (1 row)
 
-SELECT eTouches(tgeometry 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
- etouches 
-----------
- f
-(1 row)
-
-SELECT eTouches(tgeometry '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point(1 1 1)');
- etouches 
-----------
- f
-(1 row)
-
-SELECT eTouches(tgeometry '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)');
- etouches 
-----------
- f
-(1 row)
-
-SELECT eTouches(tgeometry '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
- etouches 
-----------
- f
-(1 row)
-
-SELECT eTouches(tgeometry 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
- etouches 
-----------
- 
-(1 row)
-
-SELECT eTouches(tgeometry '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
- etouches 
-----------
- 
-(1 row)
-
-SELECT eTouches(tgeometry '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
- etouches 
-----------
- 
-(1 row)
-
-SELECT eTouches(tgeometry '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
- etouches 
-----------
- 
-(1 row)
-
 SELECT eTouches(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  etouches 
 ----------
@@ -1095,24 +999,6 @@ SELECT eTouches(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2000-01-01, Point
 (1 row)
 
 SELECT eTouches(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
- etouches 
-----------
- f
-(1 row)
-
-SELECT eTouches(tgeometry '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
- etouches 
-----------
- f
-(1 row)
-
-SELECT eTouches(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2000-01-01');
- etouches 
-----------
- f
-(1 row)
-
-SELECT eTouches(tgeometry 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
  etouches 
 ----------
  f
@@ -1136,24 +1022,13 @@ SELECT eTouches(tgeometry '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]', geom
  f
 (1 row)
 
-SELECT eTouches(tgeometry '[Point(0 0 0)@2000-01-01,Point(1 1 1)@2000-01-02]',
-  geometry 'TIN (((0 0 0,0 0 1,0 1 0,0 0 0)),((0 0 0,0 1 0,1 1 0,0 0 0)))');
- etouches 
-----------
- t
-(1 row)
-
 /* Errors */
 SELECT eTouches(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
 ERROR:  Operation on mixed SRID
 SELECT eTouches(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
 ERROR:  Operation on mixed SRID
-SELECT eTouches(tgeometry '[Point(0 0 0)@2000-01-01,Point(1 1 1)@2000-01-02]',
-  geometry 'POLYHEDRALSURFACE( ((0 0 0, 0 0 1, 0 1 1, 0 1 0, 0 0 0)),
-  ((0 0 0, 0 1 0, 1 1 0, 1 0 0, 0 0 0)), ((0 0 0, 1 0 0, 1 0 1, 0 0 1, 0 0 0)),
-  ((1 1 0, 1 1 1, 1 0 1, 1 0 0, 1 1 0)),
-  ((0 1 0, 0 1 1, 1 1 1, 1 1 0, 0 1 0)), ((0 0 1, 1 0 1, 1 1 1, 0 1 1, 0 0 1)) )');
-ERROR:  lwgeom_boundary: unsupported geometry type: PolyhedralSurface
+SELECT eTouches(geometry 'Point(1 1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
+ERROR:  The geometry cannot have Z dimension
 SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tgeometry 'Point(1 1)@2000-01-01', 2);
  edwithin 
 ----------

@@ -56,11 +56,11 @@
   #include "cbuffer/cbuffer.h"
 #endif
 #if NPOINT
-  #include <meos_pose.h>
+  // #include <meos_npoint.h>
   #include "npoint/tnpoint.h"
 #endif
 #if POSE
-  #include "pose/tpose.h"
+  #include "pose/pose.h"
 #endif
 #if RGEO
   #include "rgeo/trgeo.h"

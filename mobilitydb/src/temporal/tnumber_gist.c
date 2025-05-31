@@ -39,6 +39,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <access/gist.h>
@@ -67,9 +68,8 @@
  * that must not be taken into account by the operators to infinity
  */
 static bool
-tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, Oid typid)
+tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, meosType type)
 {
-  meosType type = oid_type(typid);
   Span *s;
   if (tnumber_spantype(type))
   {
@@ -124,7 +124,7 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
 
   /* Transform the query into a box */
   TBox query;
-  if (! tnumber_gist_get_tbox(fcinfo, &query, typid))
+  if (! tnumber_gist_get_tbox(fcinfo, &query, oid_type(typid)))
     PG_RETURN_BOOL(false);
 
   bool result;
@@ -1008,7 +1008,7 @@ Tbox_gist_distance(PG_FUNCTION_ARGS)
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   TBox *key = (TBox *) DatumGetPointer(entry->key);
   if (! key)
-    PG_RETURN_FLOAT8(DBL_MAX);
+    PG_RETURN_NULL();
 
   /* The index is lossy for leaf levels */
   if (GIST_LEAF(entry))
@@ -1016,13 +1016,17 @@ Tbox_gist_distance(PG_FUNCTION_ARGS)
 
   /* Transform the query into a box */
   TBox query;
-  if (! tnumber_gist_get_tbox(fcinfo, &query, typid))
-    PG_RETURN_FLOAT8(DBL_MAX);
+  if (! tnumber_gist_get_tbox(fcinfo, &query, oid_type(typid)))
+    PG_RETURN_NULL();
 
   /* Since we only have boxes we'll return the minimum possible distance,
-   * and let the recheck sort things out in the case of leaves */
-  double distance = nad_tbox_tbox(key, &query);
-
+   * and let the recheck sort things out in the case of leaves. Since the
+   * GiST framework expects a double for the distance method, we need to
+   * convert the integer distance for temporal integer boxes into a double */
+  double distance = 
+    datum_double(nad_tbox_tbox(key, &query), key->span.basetype);
+  if (distance < 0.0)
+    PG_RETURN_FLOAT8(DBL_MAX);
   PG_RETURN_FLOAT8(distance);
 }
 

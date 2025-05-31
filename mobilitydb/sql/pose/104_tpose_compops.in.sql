@@ -135,12 +135,12 @@ CREATE OPERATOR %<> (
 
 CREATE FUNCTION ever_eq(tpose, tpose)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_eq_tpose_tpose'
+  AS 'MODULE_PATHNAME', 'Ever_eq_temporal_temporal'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_eq(tpose, tpose)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_tpose_tpose'
+  AS 'MODULE_PATHNAME', 'Always_eq_temporal_temporal'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -159,11 +159,11 @@ CREATE OPERATOR %= (
 
 CREATE FUNCTION ever_ne(tpose, tpose)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_ne_tpose_tpose'
+  AS 'MODULE_PATHNAME', 'Ever_ne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_ne(tpose, tpose)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_tpose_tpose'
+  AS 'MODULE_PATHNAME', 'Always_ne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (

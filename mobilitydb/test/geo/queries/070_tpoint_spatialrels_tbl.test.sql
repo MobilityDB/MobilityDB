@@ -115,17 +115,11 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE aIntersects(
 -------------------------------------------------------------------------------
 -- eTouches, aTouches
 -------------------------------------------------------------------------------
+-- The function does not support 3D or geographies
 
--- The implementation of the boundary function changed in PostGIS 3.2
--- The result of these queries changed in PostGIS 3.3
--- SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE eTouches(g, temp);
--- SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom WHERE eTouches(temp, g);
--- 3D
-SELECT COUNT(*) FROM tbl_geom3D, tbl_tgeompoint3D WHERE eTouches(g, temp);
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom3D WHERE eTouches(temp, g);
+SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE eTouches(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom WHERE eTouches(temp, g);
 
--- aTouches for 3D is not provided since it is based in minusGeometry which is
--- performed by GEOS
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint WHERE aTouches(g, temp);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom WHERE aTouches(temp, g);
 

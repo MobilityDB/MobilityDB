@@ -1370,11 +1370,11 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="timeSpans"><varname>timeSpans</varname></link>: Devuelve una matriz de intervalos obtenidos a partir de los instantes o segmentos de un valor temporal con respecto a un mosaico de tiempo</para>
+						<para><link linkend="timeBins"><varname>timeBins</varname></link>: Devuelve una matriz de intervalos obtenidos a partir de los instantes o segmentos de un valor temporal con respecto a un mosaico de tiempo</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueSpans"><varname>valueSpans</varname></link>: Devuelve una matriz de intervalos obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores</para>
+						<para><link linkend="valueBins"><varname>valueBins</varname></link>: Devuelve una matriz de intervalos obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores</para>
 					</listitem>
 
 					<listitem>

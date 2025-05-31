@@ -47,6 +47,7 @@
 #include "temporal/span.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
+#include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 /* MobilityDB */
@@ -174,7 +175,7 @@ PGDLLEXPORT Datum Stbox_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_as_hexwkb);
 /**
  * @ingroup mobilitydb_geo_box_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a spatiotemporal box
  * @sqlfn asHexWKB()
  */
@@ -209,7 +210,7 @@ PGDLLEXPORT Datum Stbox_from_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_from_hexwkb);
 /**
  * @ingroup mobilitydb_geo_box_inout
- * @brief Return a spatiotemporal box from its hex-encoded ASCII Well-Known
+ * @brief Return a spatiotemporal box from its ASCII hex-encoded Well-Known
  * Binary (HexWKB) representation
  * @sqlfn stboxFromHexWKB()
  */
@@ -448,7 +449,7 @@ Datum
 Stbox_to_box2d(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  GBOX *result = stbox_gbox(box);
+  GBOX *result = stbox_to_gbox(box);
   PG_RETURN_POINTER(result);
 }
 
@@ -464,7 +465,7 @@ Datum
 Stbox_to_box3d(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  BOX3D *result = stbox_box3d(box);
+  BOX3D *result = stbox_to_box3d(box);
   PG_RETURN_POINTER(result);
 }
 
@@ -480,7 +481,7 @@ Datum
 Stbox_to_geo(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  Datum result = PointerGetDatum(stbox_geo(box));
+  Datum result = PointerGetDatum(stbox_to_geo(box));
   PG_RETURN_DATUM(result);
 }
 
@@ -496,7 +497,7 @@ Datum
 Stbox_to_tstzspan(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  Span *result = stbox_tstzspan(box);
+  Span *result = stbox_to_tstzspan(box);
   PG_RETURN_SPAN_P(result);
 }
 
@@ -581,7 +582,7 @@ Datum
 Timestamptz_to_stbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PG_RETURN_STBOX_P(timestamptz_stbox(t));
+  PG_RETURN_STBOX_P(timestamptz_to_stbox(t));
 }
 
 PGDLLEXPORT Datum Tstzset_to_stbox(PG_FUNCTION_ARGS);

@@ -42,7 +42,7 @@ DROP TABLE tbl_cbuffer_tmp;
 -- Accessing values
 -------------------------------------------------------------------------------
 
-SELECT ST_AsEWKT(MAX(point(cb)), 6) FROM tbl_cbuffer;
+SELECT MAX(ST_X(point(cb))) FROM tbl_cbuffer;
 SELECT MAX(radius(cb)) FROM tbl_cbuffer;
 
 -------------------------------------------------------------------------------
@@ -52,6 +52,12 @@ SELECT MAX(radius(cb)) FROM tbl_cbuffer;
 SELECT COUNT(*) FROM tbl_cbuffer WHERE cb::geometry IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_cbuffer WHERE cb ~= (cb::geometry)::cbuffer;
+
+-------------------------------------------------------------------------------
+-- Transformations
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_tcbuffer WHERE expand(temp, 1) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Comparisons

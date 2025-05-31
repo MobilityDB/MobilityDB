@@ -651,7 +651,7 @@ rtree_create(meosType basetype)
 }
 
 /**
- * @ingroup meos_stbox_rtree_index
+ * @ingroup meos_geo_box_index
  * @brief Insert an STBox into the RTree index. 
  * @note the parameter `id` is used for the search function, when a match
  * is found
@@ -693,7 +693,7 @@ rtree_insert(RTree *rtree, STBox *box, int64 id)
 }
 
 /**
- * @ingroup meos_stbox_rtree_index
+ * @ingroup meos_geo_box_index
  * @brief Creates an RTree index for STBoxes.
  * @return RTree initialized for STBoxes.
  */
@@ -704,7 +704,7 @@ rtree_create_stbox()
 }
 
 /**
- * @ingroup meos_stbox_rtree_index
+ * @ingroup meos_geo_box_index
  * @brief Queries an RTree with an STBox. Returns an array of ids of STBoxes.
  * @note The @p count will be the output size of the array given.
  * @param[in] rtree The RTree to query.
@@ -724,7 +724,7 @@ rtree_search(const RTree *rtree, const STBox *query, int *count)
 }
 
 /**
- * @ingroup meos_stbox_rtree_index
+ * @ingroup meos_geo_box_index
  * @brief Frees the RTree
  * @param[in] rtree The RTree to free.
  */

@@ -44,6 +44,7 @@
 #include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tspatial_parser.h"
+#include "geo/tgeo_spatialfuncs.h"
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/temporal.h"

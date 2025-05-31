@@ -466,8 +466,6 @@ Temporal *
 temporal_at_tstzset(const Temporal *temp, const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_temporal_set(temp, s))
-    return NULL;
   return temporal_restrict_tstzset(temp, s, REST_AT);
 }
 
@@ -483,8 +481,6 @@ Temporal *
 temporal_minus_tstzset(const Temporal *temp, const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_temporal_set(temp, s))
-    return NULL;
   return temporal_restrict_tstzset(temp, s, REST_MINUS);
 }
 

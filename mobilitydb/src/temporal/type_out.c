@@ -247,7 +247,7 @@ Datum_as_wkb(FunctionCallInfo fcinfo, Datum value, meosType type,
 
 /**
  * @brief Output a value in the Well-Known Binary (WKB) or Extended Well-Known
- * Binary (EWKB) representation in hex-encoded ASCII
+ * Binary (EWKB) representation in ASCII hex-encoded
  */
 text *
 Datum_as_hexwkb(FunctionCallInfo fcinfo, Datum value, meosType type)
@@ -293,7 +293,7 @@ PGDLLEXPORT Datum Temporal_as_hexwkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_as_hexwkb);
 /**
  * @ingroup mobilitydb_temporal_inout
- * @brief Return the hex-encoded ASCII Well-Known Binary (HexWKB)
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a temporal value
  * @note This will have 'SRID=#;' for temporal points
  * @sqlfn asHexWKB()

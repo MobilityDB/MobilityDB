@@ -832,9 +832,9 @@ WITH test AS (
 SELECT round(distance, 6) FROM test;
    round   
 -----------
- 15.492953
+  21.00063
  41.904817
- 47.420276
+ 55.551683
 (3 rows)
 
 WITH test AS (
@@ -842,9 +842,9 @@ WITH test AS (
 SELECT round(distance, 6) FROM test;
    round   
 -----------
-  25.97285
+ 33.126948
  36.208515
- 42.084333
+ 40.799855
 (3 rows)
 
 DROP INDEX tbl_tgeometry_rtree_idx;
@@ -866,9 +866,9 @@ WITH test AS (
 SELECT round(distance, 6) FROM test;
    round   
 -----------
- 15.492953
+  21.00063
  41.904817
- 47.420276
+ 55.551683
 (3 rows)
 
 WITH test AS (
@@ -876,9 +876,9 @@ WITH test AS (
 SELECT round(distance, 6) FROM test;
    round   
 -----------
-  25.97285
+ 33.126948
  36.208515
- 42.084333
+ 40.799855
 (3 rows)
 
 DROP INDEX tbl_tgeometry_quadtree_idx;

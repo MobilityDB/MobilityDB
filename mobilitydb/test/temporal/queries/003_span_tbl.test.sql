@@ -147,6 +147,7 @@ SELECT MAX(duration(span(t, t + i, false, false))) FROM tbl_timestamptz, tbl_int
 -- Transformation functions
 -------------------------------------------------------------------------------
 
+SELECT MAX(shift(t, '5 min')) FROM tbl_timestamptz;
 SELECT MAX(lower(shift(t, '5 min'))) FROM tbl_tstzspan;
 
 SELECT MAX(lower(shift(t1.i, t2.i))) FROM tbl_intspan t1, tbl_int t2;

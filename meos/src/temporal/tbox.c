@@ -37,6 +37,7 @@
 /* C */
 #include <assert.h>
 #include <limits.h>
+#include <assert.h>
 /* PostgreSQL */
 #include "utils/timestamp.h"
 /* MEOS */
@@ -413,7 +414,7 @@ int_set_tbox(int i, TBox *box)
  * @csqlfn #Number_to_tbox()
  */
 TBox *
-int_tbox(int i)
+int_to_tbox(int i)
 {
   TBox *result = palloc(sizeof(TBox));
   int_set_tbox(i, result);
@@ -441,7 +442,7 @@ float_set_tbox(double d, TBox *box)
  * @csqlfn #Number_to_tbox()
  */
 TBox *
-float_tbox(double d)
+float_to_tbox(double d)
 {
   TBox *result = palloc(sizeof(TBox));
   float_set_tbox(d, result);
@@ -474,7 +475,7 @@ timestamptz_set_tbox(TimestampTz t, TBox *box)
  * @csqlfn #Timestamptz_to_tbox()
  */
 TBox *
-timestamptz_tbox(TimestampTz t)
+timestamptz_to_tbox(TimestampTz t)
 {
   TBox *result = palloc(sizeof(TBox));
   timestamptz_set_tbox(t, result);
@@ -516,7 +517,7 @@ tstzset_set_tbox(const Set *s, TBox *box)
 }
 
 /**
- * @ingroup meos_box_conversion
+ * @ingroup meos_internal_box_conversion
  * @brief Convert a number or a timestamptz set into a temporal box
  * @param[in] s Set
  * @csqlfn #Set_to_tbox()
@@ -524,8 +525,7 @@ tstzset_set_tbox(const Set *s, TBox *box)
 TBox *
 set_tbox(const Set *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL);
+  assert(s);
   TBox *result = palloc(sizeof(TBox));
   if (numset_type(s->settype))
     numset_set_tbox(s, result);
@@ -539,6 +539,20 @@ set_tbox(const Set *s)
     return NULL;
   }
   return result;
+}
+
+/**
+ * @ingroup meos_box_conversion
+ * @brief Convert a number or a timestamptz set into a temporal box
+ * @param[in] s Set
+ * @csqlfn #Set_to_tbox()
+ */
+TBox *
+set_to_tbox(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL);
+  return set_tbox(s);
 }
 
 /**
@@ -572,7 +586,7 @@ tstzspan_set_tbox(const Span *s, TBox *box)
 }
 
 /**
- * @ingroup meos_box_conversion
+ * @ingroup meos_internal_box_conversion
  * @brief Convert a number span into a temporal box
  * @param[in] s Span
  * @csqlfn #Span_to_tbox()
@@ -580,8 +594,7 @@ tstzspan_set_tbox(const Span *s, TBox *box)
 TBox *
 span_tbox(const Span *s)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL);
+  assert(s);
   TBox *result = palloc(sizeof(TBox));
   if (numspan_type(s->spantype))
     numspan_set_tbox(s, result);
@@ -595,6 +608,20 @@ span_tbox(const Span *s)
     return NULL;
   }
   return result;
+}
+
+/**
+ * @ingroup meos_box_conversion
+ * @brief Convert a number span into a temporal box
+ * @param[in] s Span
+ * @csqlfn #Span_to_tbox()
+ */
+TBox *
+span_to_tbox(const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL);
+  return span_tbox(s);
 }
 
 #if MEOS
@@ -635,7 +662,7 @@ tstzspanset_set_tbox(const SpanSet *ss, TBox *box)
  * @csqlfn #Spanset_to_tbox()
  */
 TBox *
-spanset_tbox(const SpanSet *ss)
+spanset_to_tbox(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(ss, NULL);
@@ -658,7 +685,7 @@ spanset_tbox(const SpanSet *ss)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_box_conversion
+ * @ingroup meos_internal_box_conversion
  * @brief Convert a temporal box into an integer span
  * @param[in] box Temporal box
  * @csqlfn #Tbox_to_intspan()
@@ -666,8 +693,8 @@ spanset_tbox(const SpanSet *ss)
 Span *
 tbox_intspan(const TBox *box)
 {
+  assert(box);
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_TBOX, box->flags))
     return NULL;
   if (box->span.basetype == T_INT4)
@@ -680,6 +707,20 @@ tbox_intspan(const TBox *box)
 
 /**
  * @ingroup meos_box_conversion
+ * @brief Convert a temporal box into an integer span
+ * @param[in] box Temporal box
+ * @csqlfn #Tbox_to_intspan()
+ */
+Span *
+tbox_to_intspan(const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
+  return tbox_intspan(box);
+}
+
+/**
+ * @ingroup meos_internal_box_conversion
  * @brief Convert a temporal box into a float span
  * @param[in] box Temporal box
  * @csqlfn #Tbox_to_floatspan()
@@ -687,8 +728,8 @@ tbox_intspan(const TBox *box)
 Span *
 tbox_floatspan(const TBox *box)
 {
+  assert(box);
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_TBOX, box->flags))
     return NULL;
   if (box->span.basetype == T_FLOAT8)
@@ -701,6 +742,20 @@ tbox_floatspan(const TBox *box)
 
 /**
  * @ingroup meos_box_conversion
+ * @brief Convert a temporal box into a float span
+ * @param[in] box Temporal box
+ * @csqlfn #Tbox_to_floatspan()
+ */
+Span *
+tbox_to_floatspan(const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
+  return tbox_floatspan(box);
+}
+
+/**
+ * @ingroup meos_internal_box_conversion
  * @brief Convert a temporal box into a timestamptz span
  * @param[in] box Temporal box
  * @csqlfn #Tbox_to_tstzspan()
@@ -708,11 +763,24 @@ tbox_floatspan(const TBox *box)
 Span *
 tbox_tstzspan(const TBox *box)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL);
+  assert(box);
   if (! ensure_has_T(T_TBOX, box->flags))
     return NULL;
   return span_copy(&box->period);
+}
+
+/**
+ * @ingroup meos_box_conversion
+ * @brief Convert a temporal box into a timestamptz span
+ * @param[in] box Temporal box
+ * @csqlfn #Tbox_to_tstzspan()
+ */
+Span *
+tbox_to_tstzspan(const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
+  return tbox_tstzspan(box);
 }
 
 /*****************************************************************************

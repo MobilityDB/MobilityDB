@@ -38,12 +38,29 @@
 #include <postgres.h>
 /* MEOS */
 #include "temporal/temporal.h"
-#include <meos_cbuffer.h>
+#include "cbuffer/cbuffer.h"
 
 /*****************************************************************************/
 
-extern bool tcbuffersegm_intersection_value(const TInstant *inst1,
-  const TInstant *inst2, Datum value, TimestampTz *t);
+extern GSERIALIZED *tcbufferinst_trav_area(const TInstant *inst);
+extern GSERIALIZED *tcbufferseq_trav_area(const TSequence *seq);
+extern GSERIALIZED *tcbufferseqset_trav_area(const TSequenceSet *ss);
+extern GSERIALIZED *tcbuffersegm_trav_area(const TInstant *inst1,
+  const TInstant *inst2);
+
+extern Temporal *tcbuffer_restrict_cbuffer(const Temporal *temp,
+  const Cbuffer *cb, bool atfunc);
+extern Temporal *tcbuffer_restrict_stbox(const Temporal *temp,
+  const STBox *box, bool atfunc);
+extern Temporal *tcbuffer_restrict_geom(const Temporal *temp,
+  const GSERIALIZED *gs, bool atfunc);
+
+extern int tcbuffersegm_intersection_value(Datum start, Datum end,
+  Datum value, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
+  TimestampTz *t2);
+extern int tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2,
+  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
+  TimestampTz *t2);
   
 /*****************************************************************************/
 

@@ -93,9 +93,9 @@ geoarr_merge(GSERIALIZED **gsarr, int count)
   assert(gsarr); assert(count > 0);
   GSERIALIZED *result = geom_array_union(gsarr, count);
   /*
-   * ST_Union creates MultiLineString and does not sew LineStrings into a 
+   * ST_Union creates MultiLineString and does not sew LineStrings into a
    * single LineString. Use ST_LineMerge to sew LineStrings.
-   * https://postgis.net/docs/ST_Union.html 
+   * https://postgis.net/docs/ST_Union.html
    */
   if (gserialized_get_type(result) == MULTILINETYPE)
   {
@@ -120,7 +120,7 @@ geoarr_merge(GSERIALIZED **gsarr, int count)
 TInstant **
 tgeoinst_merge_array_iter(const TInstant **instants, int count, int *newcount)
 {
-  assert(instants); assert(count > 1); 
+  assert(instants); assert(count > 1);
   assert(tgeo_type(instants[0]->temptype));
 
   TInstant **newinstants = palloc(sizeof(TInstant *) * count);
@@ -142,7 +142,7 @@ tgeoinst_merge_array_iter(const TInstant **instants, int count, int *newcount)
       gsarr[k] = DatumGetGserializedP(tinstant_value_p(instants[k + i]));
     GSERIALIZED *gs = geoarr_merge(gsarr, ngeos);
     pfree(gsarr);
-    newinstants[count1++] = tinstant_make(PointerGetDatum(gs), 
+    newinstants[count1++] = tinstant_make(PointerGetDatum(gs),
       instants[i]->temptype, instants[i]->t);
     i = j;
   }
@@ -174,16 +174,18 @@ tinstant_merge_array_iter(const TInstant **instants, int count, int *newcount)
     instants1 = (TInstant **) instants;
     count1 = count;
   }
-  
+
   /* Ensure the validity of the arguments and compute the bounding box */
-  if (! ensure_valid_tinstarr((const TInstant **) instants1, count1, MERGE, 
+  if (! ensure_valid_tinstarr((const TInstant **) instants1, count1, MERGE,
       DISCRETE))
     return NULL;
 
   TInstant **newinstants = palloc(sizeof(TInstant *) * count1);
   memcpy(newinstants, instants1, sizeof(TInstant *) * count1);
-  *newcount = tinstarr_remove_duplicates((const TInstant **) newinstants, 
+  *newcount = tinstarr_remove_duplicates((const TInstant **) newinstants,
     count1);
+  if (tgeo_type(instants[0]->temptype))
+    pfree(instants1);
   return newinstants;
 }
 
@@ -206,7 +208,10 @@ tinstant_merge_array(const TInstant **instants, int count)
   /* Ensure the validity of the arguments and TODO compute the bounding box */
   if (! ensure_valid_tinstarr((const TInstant **) instants1, count1, MERGE,
       DISCRETE))
+  {
+    pfree_array((void **) instants1, count1);
     return NULL;
+  }
 
   const TInstant **newinstants = palloc(sizeof(TInstant *) * count1);
   memcpy(newinstants, instants1, sizeof(TInstant *) * count1);
@@ -218,6 +223,8 @@ tinstant_merge_array(const TInstant **instants, int count)
   pfree(newinstants);
   if (tgeo_type(instants[0]->temptype))
     pfree_array((void **) instants1, count1);
+  else
+    pfree(instants1);
   return result;
 }
 
@@ -281,7 +288,7 @@ tgeoseq_merge_array_iter(const TSequence **sequences, int count,
 {
   assert(sequences); assert(count > 0); assert(totalcount);
 
-  /* Test the validity of the composing sequences, while performing spatial 
+  /* Test the validity of the composing sequences, while performing spatial
    * union of the values for the instants with the same timestamp */
   TSequence **newsequences = palloc(sizeof(TSequence *) * count);
   TSequence **tofree = palloc(sizeof(TSequence *) * count);
@@ -320,14 +327,14 @@ tgeoseq_merge_array_iter(const TSequence **sequences, int count,
       for (int j = 0; j < seq1->count - 1; j++)
         instants[j] = TSEQUENCE_INST_N(seq1, j);
       instants[seq1->count - 1] = newinst;
-      TSequence *newseq1 = tsequence_make_exp1(instants, seq1->count, 
-        seq1->count, seq1->period.lower_inc, seq1->period.upper_inc, STEP, 
+      TSequence *newseq1 = tsequence_make_exp1(instants, seq1->count,
+        seq1->count, seq1->period.lower_inc, seq1->period.upper_inc, STEP,
         NORMALIZE_NO, NULL);
       instants[0] = newinst;
       for (int j = 1; j < seq2->count; j++)
         instants[j] = TSEQUENCE_INST_N(seq2, j);
-      TSequence *newseq2 = tsequence_make_exp1(instants, seq2->count, 
-        seq2->count, seq2->period.lower_inc, seq2->period.upper_inc, STEP, 
+      TSequence *newseq2 = tsequence_make_exp1(instants, seq2->count,
+        seq2->count, seq2->period.lower_inc, seq2->period.upper_inc, STEP,
         NORMALIZE_NO, NULL);
       tofree[nfree++] = newsequences[i - 1] = newseq1;
       tofree[nfree++] = newseq2;
@@ -366,7 +373,7 @@ tcontseq_merge_array_iter(const TSequence **sequences, int count,
    * values having the same timestamp */
   if (tgeo_type(sequences[0]->temptype))
     return tgeoseq_merge_array_iter(sequences, count, totalcount);
-  
+
   /* Test the validity of the composing sequences */
   const TSequence *seq1 = sequences[0];
   meosType basetype = temptype_basetype(seq1->temptype);
@@ -480,6 +487,7 @@ tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
   int newcount;
   TSequence **newseqs = tcontseq_merge_array_iter(sequences, totalcount,
     &newcount);
+  pfree(sequences);
   return tsequenceset_make_free(newseqs, newcount, NORMALIZE);
 }
 
@@ -713,7 +721,7 @@ temporal_merge_array(const Temporal **temparr, int count)
       result = (Temporal *) tsequenceset_merge_array(
         (const TSequenceSet **) newtemps, count);
   }
-  if (subtype != origsubtype)
+  if (newtemps != (Temporal **) temparr)
     pfree_array((void **) newtemps, count);
   return result;
 }
@@ -1703,13 +1711,13 @@ temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
  * @param[in,out] seq Temporal sequence
  * @param[in] inst Temporal instant
  * @param[in] maxdist Maximum distance for defining a gap
- * @param[in] maxt Maximum time interval for defining a gap
+ * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
  * @return When the sequence passed as first argument has space for adding the
- * instant, the function returns the updated sequence. Otherwise, a NEW 
+ * instant, the function returns the updated sequence. Otherwise, a NEW
  * sequence is returned and the input sequence is freed.
- * @note Always use the function to overwrite the existing sequence as in: 
+ * @note Always use the function to overwrite the existing sequence as in:
  * @code
  * seq = tsequence_append_tinstant(seq, inst, ...);
  * @endcode
@@ -1901,7 +1909,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
  */
 Temporal *
 tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
-  bool expand __attribute__((unused)))
+  bool expand UNUSED)
 {
   assert(seq1); assert(seq2);
   assert(seq1->temptype == seq2->temptype);
@@ -1973,13 +1981,13 @@ tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
  * @param[in,out] ss Temporal sequence set
  * @param[in] inst Temporal instant
  * @param[in] maxdist Maximum distance for defining a gap
- * @param[in] maxt Maximum time interval for defining a gap
+ * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
  * @return When the sequence set passed as first argument has space for adding
  * the instant, the  function returns the sequence set. Otherwise, a NEW
  * sequence set is returned and the input sequence set is freed.
- * @note Always use the function to overwrite the existing sequence set as in: 
+ * @note Always use the function to overwrite the existing sequence set as in:
  * @code
  * ss = tsequenceset_append_tinstant(ss, inst, ...);
  * @endcode
@@ -2220,19 +2228,19 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
  * @param[in] inst Temporal instant
  * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance for defining a gap
- * @param[in] maxt Maximum time interval for defining a gap
+ * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
- * @return When the temporal value passed as first argument has space for 
+ * @return When the temporal value passed as first argument has space for
  * adding the instant, the function returns the temporal value. Otherwise,
  * a NEW temporal value is returned and the input value is freed.
- * @note Always use the function to overwrite the existing temporal value as in: 
+ * @note Always use the function to overwrite the existing temporal value as in:
  * @code
  * temp = temporal_append_tinstant(temp, inst, ...);
  * @endcode
  */
 Temporal *
-temporal_append_tinstant(Temporal *temp, const TInstant *inst, 
+temporal_append_tinstant(Temporal *temp, const TInstant *inst,
   interpType interp, double maxdist, const Interval *maxt, bool expand)
 {
   /* Ensure the validity of the arguments */

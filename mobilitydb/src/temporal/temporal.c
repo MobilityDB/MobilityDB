@@ -274,7 +274,7 @@ temporal_slice(Datum tempdatum)
  * Version functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)));
+PGDLLEXPORT Datum Mobilitydb_version(PG_FUNCTION_ARGS UNUSED);
 PG_FUNCTION_INFO_V1(Mobilitydb_version);
 /**
  * @ingroup mobilitydb_misc
@@ -282,14 +282,14 @@ PG_FUNCTION_INFO_V1(Mobilitydb_version);
  * @sqlfn mobilitydb_version()
  */
 Datum
-Mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)))
+Mobilitydb_version(PG_FUNCTION_ARGS UNUSED)
 {
   char *version = mobilitydb_version();
   text *result = cstring2text(version);
   PG_RETURN_TEXT_P(result);
 }
 
-PGDLLEXPORT Datum Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)));
+PGDLLEXPORT Datum Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED);
 PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
 /**
  * @ingroup mobilitydb_misc
@@ -297,7 +297,7 @@ PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
  * @sqlfn mobilitydb_full_version()
  */
 Datum
-Mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)))
+Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED)
 {
   char *version = mobilitydb_full_version();
   text *result = cstring2text(version);

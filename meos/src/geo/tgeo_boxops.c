@@ -52,8 +52,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "geo/stbox.h"
 #include "temporal/temporal.h"
+#include "geo/stbox.h"
+#include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include "cbuffer/tcbuffer_boxops.h"
@@ -486,7 +487,7 @@ tgeoseqset_stboxes(const TSequenceSet *ss, int *count)
 }
 
 /**
- * @ingroup meos_geo_base_bbox
+ * @ingroup meos_geo_bbox_split
  * @brief Return an array of spatiotemporal boxes from the instants or segments
  * of a temporal geo, where the choice between instants or segments depends,
  * respectively, on whether the interpolation is discrete or continuous
@@ -723,7 +724,7 @@ tgeoseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count)
 }
 
 /**
- * @ingroup meos_geo_base_bbox
+ * @ingroup meos_geo_bbox_split
  * @brief Return an array of N spatiotemporal boxes obtained by merging
  * consecutive instants or segments of a temporal geo, where the choice
  * between instants or segments depends, respectively, on whether the
@@ -895,7 +896,7 @@ tgeoseqset_split_each_n_stboxes(const TSequenceSet *ss, int elems_per_box,
 }
 
 /**
- * @ingroup meos_geo_base_bbox
+ * @ingroup meos_geo_bbox_split
  * @brief Return an array of spatiotemporal boxes obtained by merging
  * consecutive instants or segments of a temporal geo, where the choice
  * between instants or segments depends, respectively, on whether the

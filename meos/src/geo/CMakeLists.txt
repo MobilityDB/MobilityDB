@@ -11,12 +11,12 @@ set(GEO_SRCS
   tgeo_restrict.c
   tgeo_spatialfuncs.c
   tgeo_spatialrels.c
-  tgeo_tempspatialrels.c
   tgeo_tile.c
   tpoint_datagen.c
   tpoint_spatialfuncs.c
   tspatial.c
   tspatial_parser.c
+  tspatial_tempspatialrels.c
   tspatial_srid.c
 )
 

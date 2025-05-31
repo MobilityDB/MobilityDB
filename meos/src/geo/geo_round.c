@@ -36,19 +36,10 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include <utils/float.h> /* For get_float8_infinity() */
 /* MEOS */
 #include <meos.h>
-#include <meos_geo.h>
 #include <meos_internal.h>
-#include "temporal/lifting.h"
-#include "temporal/set.h"
-#include "temporal/span.h"
-#include "temporal/spanset.h"
-#include "temporal/tbox.h"
 #include "geo/postgis_funcs.h"
-#include "geo/stbox.h"
-#include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
