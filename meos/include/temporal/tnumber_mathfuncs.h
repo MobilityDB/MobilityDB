@@ -39,6 +39,7 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 
 /*****************************************************************************/
@@ -70,9 +71,7 @@ extern Temporal *arithop_tnumber_number(const Temporal *temp, Datum value,
   TArithmetic oper, Datum (*func)(Datum, Datum, meosType), bool invert);
 extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
   const Temporal *temp2, TArithmetic oper,
-  Datum (*func)(Datum, Datum, meosType),
-  int (*tpfunc)(Datum, Datum, Datum, Datum, Datum, TimestampTz, TimestampTz,
-    TimestampTz *, TimestampTz *));
+  Datum (*func)(Datum, Datum, meosType), tpfunc_temp tpfunc);
 
 extern TSequence *tfloatseq_derivative(const TSequence *seq);
 extern TSequenceSet *tfloatseqset_derivative(const TSequenceSet *ss);

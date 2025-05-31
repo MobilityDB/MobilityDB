@@ -37,6 +37,7 @@
 
 /* MEOS */
 #include <meos.h>
+#include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 
 /**
@@ -54,7 +55,7 @@
 
 typedef struct
 {
-  Datum (*func)(Datum, ...);  /**< Variadic function that is lifted */
+  varfunc func;               /**< Variadic function that is lifted */
   int numparam;               /**< Number of parameters of the function */
   Datum param[MAX_PARAMS];    /**< Datum array for the parameters of the function */
   meosType argtype[MAX_ARGS]; /**< Type of the arguments of the function */
@@ -63,12 +64,8 @@ typedef struct
   bool invert;                /**< True if the arguments of the function must be inverted */
   bool discont;               /**< True if the function has instantaneous discontinuities */
   bool ever;                  /**< True/false when computing the ever/always semantics */
-  int (*tpfunc_base)(Datum, Datum, Datum, TimestampTz, TimestampTz,
-    TimestampTz *, TimestampTz *); 
-                              /**< Turning point function for temporal and base types*/
-  int (*tpfunc)(Datum, Datum, Datum, Datum, Datum, TimestampTz, TimestampTz,
-    TimestampTz *, TimestampTz *);
-                              /**< Turning point function for two temporal types */
+  tpfunc_base tpfn_base;      /**< Turning point function for temporal and base types*/
+  tpfunc_temp tpfn_temp;      /**< Turning point function for two temporal types */
 } LiftedFunctionInfo;
 
 /*****************************************************************************/

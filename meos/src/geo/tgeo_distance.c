@@ -397,8 +397,7 @@ distance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc_base = lfinfo.reslinear ?
-    &tpoint_geo_distance_turnpt : NULL;
+  lfinfo.tpfn_base = lfinfo.reslinear ? &tpoint_geo_distance_turnpt : NULL;
   return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
 }
 
@@ -428,7 +427,7 @@ distance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc = lfinfo.reslinear ? &tpointsegm_distance_turnpt : NULL;
+  lfinfo.tpfn_temp = lfinfo.reslinear ? &tpointsegm_distance_turnpt : NULL;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 

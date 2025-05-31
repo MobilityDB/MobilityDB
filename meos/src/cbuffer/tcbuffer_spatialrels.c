@@ -221,7 +221,7 @@ spatialrel_geo_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @param[in] inst Temporal instant
  * @param[in] gs Geometry
  * @param[in] param Optional parameter
- * @param[in] func PostGIS function to be used
+ * @param[in] func Spatial relationship function to be applied
  * @param[in] numparam Number of parameters of the function
  * @param[in] invert True when the arguments of the function must be inverted
  * @note The `ever` parameter is not used since the result is the same for the
@@ -245,7 +245,7 @@ ea_spatialrel_tcbufferinst_geo(const TInstant *inst, const GSERIALIZED *gs,
  * @param[in] seq Temporal sequence
  * @param[in] gs Geometry
  * @param[in] param Optional parameter
- * @param[in] func PostGIS function to be used
+ * @param[in] func Spatial relationship function to be applied
  * @param[in] numparam Number of parameters of the function
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @param[in] invert True when the arguments of the function must be inverted
@@ -280,7 +280,7 @@ ea_spatialrel_tcbufferseq_discstep_geo(const TSequence *seq,
  * @param[in] seq Temporal sequence
  * @param[in] gs Geometry
  * @param[in] param Optional parameter
- * @param[in] func PostGIS function to be used
+ * @param[in] func Spatial relationship function to be applied
  * @param[in] numparam Number of parameters of the function
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @param[in] invert True when the arguments of the function must be inverted
@@ -321,7 +321,7 @@ ea_spatialrel_tcbufferseq_linear_geo(const TSequence *seq,
  * @param[in] seq Temporal sequence
  * @param[in] gs Geometry
  * @param[in] param Optional parameter
- * @param[in] func PostGIS function to be used
+ * @param[in] func Spatial relationship function to be applied
  * @param[in] numparam Number of parameters of the function
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @param[in] invert True when the arguments of the function must be inverted
@@ -344,7 +344,7 @@ ea_spatialrel_tcbufferseq_geo(const TSequence *seq, const GSERIALIZED *gs,
  * @param[in] ss Temporal sequence set
  * @param[in] gs Geometry
  * @param[in] param Optional parameter
- * @param[in] func PostGIS function to be used
+ * @param[in] func Spatial relationship function to be applied
  * @param[in] numparam Number of parameters of the function
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @param[in] invert True when the arguments of the function must be inverted
@@ -379,7 +379,7 @@ ea_spatialrel_tcbufferseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs,
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
  * @param[in] param Optional parameter
- * @param[in] func PostGIS function to be used
+ * @param[in] func Spatial relationship function to be applied
  * @param[in] numparam Number of parameters of the function
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @param[in] invert True when the arguments of the function must be inverted
@@ -420,6 +420,34 @@ ea_spatialrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   }
 }
 
+/*****************************************************************************/
+
+/**
+ * @brief Return true if a temporal circular buffer and a circular buffer
+ * ever/always satisfy a spatial relationship
+ * @param[in] temp Temporal geo
+ * @param[in] cb Circular buffer
+ * @param[in] param Optional parameter
+ * @param[in] func Spatial relationship function to be applied
+ * @param[in] numparam Number of parameters of the function
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @param[in] invert True when the arguments of the function must be inverted
+ */
+int
+ea_spatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
+  Datum param, varfunc func, int numparam, bool ever, bool invert)
+{
+  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
+    return -1;
+  GSERIALIZED *gs = cbuffer_to_geom(cb);
+  int result = ea_spatialrel_tcbuffer_geo(temp, gs, param, func, numparam,
+    ever, invert);
+  pfree(gs);
+  return result;
+}
+  
 /*****************************************************************************
  * Ever/always contains
  *****************************************************************************/
@@ -439,12 +467,8 @@ ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
 {
   /* This function is not provided for the ever semantics */
   assert(! ever);
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
-      (varfunc) &datum_geom_contains, 2, ever, INVERT_NO);
+      (varfunc) &datum_geom_contains, 2, ever, INVERT);
 }
 
 /**
@@ -477,10 +501,6 @@ int
 ea_contains_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1;
   const char p[] = "T********";
   int result = ever ?
     ea_spatialrel_tcbuffer_geo(temp, gs, PointerGetDatum(p),
@@ -535,18 +555,12 @@ int
 ea_contains_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,
   bool ever)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
-    return -1;
-  GSERIALIZED *gs = cbuffer_to_geom(cb);
   const char p[] = "T********";
   int result = ever ?
-    ea_spatialrel_tcbuffer_geo(temp, gs, PointerGetDatum(p),
+    ea_spatialrel_tcbuffer_cbuffer(temp, cb, PointerGetDatum(p),
       (varfunc) &datum_geom_relate_pattern, 3, ever, INVERT) :
-    ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
+    ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
       (varfunc) &datum_geom_contains, 2, ever, INVERT);
-  pfree(gs);
   return result;
 }
 
@@ -591,18 +605,12 @@ int
 ea_contains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
-    return -1;
-  GSERIALIZED *gs = cbuffer_to_geom(cb);
   const char p[] = "T********";
   int result = ever ?
-    ea_spatialrel_tcbuffer_geo(temp, gs, PointerGetDatum(p),
+    ea_spatialrel_tcbuffer_cbuffer(temp, cb, PointerGetDatum(p),
       (varfunc) &datum_geom_relate_pattern, 3, ever, INVERT_NO) :
-    ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
+    ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
       (varfunc) &datum_geom_contains, 2, ever, INVERT_NO);
-  pfree(gs);
   return result;
 }
 
@@ -652,10 +660,6 @@ ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
   /* This function is not provided for the ever semantics */
   assert(! ever);
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
       (varfunc) &datum_geom_contains, 2, ever, INVERT);
 }
@@ -691,10 +695,6 @@ acovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 int
 ea_covers_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL, 
     (varfunc) &datum_geom_covers, 2, ever, INVERT_NO);
 }
@@ -744,14 +744,8 @@ int
 ea_covers_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,
   bool ever)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
-    return -1;
-  GSERIALIZED *gs = cbuffer_to_geom(cb);
-  int result = ea_covers_geo_tcbuffer(gs, temp, ever);
-  pfree(gs);
-  return result;
+  return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
+    (varfunc) &datum_geom_covers, 2, ever, INVERT);
 }
 
 /**
@@ -795,14 +789,8 @@ int
 ea_covers_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
-    return -1;
-  GSERIALIZED *gs = cbuffer_to_geom(cb);
-  int result = ea_covers_tcbuffer_geo(temp, gs, ever);
-  pfree(gs);
-  return result;
+  return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
+    (varfunc) &datum_geom_covers, 2, ever, INVERT_NO);
 }
 
 /**
@@ -850,10 +838,6 @@ int
 ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL, 
     (varfunc) &datum_geom_disjoint2d, 2, ever, INVERT_NO);
 }
@@ -916,15 +900,8 @@ int
 ea_disjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
-    return -1;
-  GSERIALIZED *gs = cbuffer_to_geom(cb);
-  int result = ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL, 
+  return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
     (varfunc) &datum_geom_disjoint2d, 2, ever, INVERT_NO);
-  pfree(gs);
-  return result;
 }
 
 /**
@@ -989,7 +966,6 @@ ea_disjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
 {
   return ea_spatialrel_tspatial_tspatial(temp1, temp2,
     &datum_cbuffer_disjoint, ever);
-
 }
 
 #if MEOS
@@ -1040,10 +1016,6 @@ int
 ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL, 
     (varfunc) &datum_geom_intersects2d, 2, ever, INVERT_NO);
 }
@@ -1108,15 +1080,8 @@ int
 ea_intersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
-    return -1;
-  GSERIALIZED *gs = cbuffer_to_geom(cb);
-  int result = ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL, 
+  return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
     (varfunc) &datum_geom_intersects2d, 2, ever, INVERT_NO);
-  pfree(gs);
-  return result;
 }
 
 /**
@@ -1230,10 +1195,6 @@ aintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 int
 ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL, 
     (varfunc) &datum_geom_touches, 2, ever, INVERT_NO);
 }
@@ -1296,15 +1257,8 @@ int
 ea_touches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
-    return -1;
-  GSERIALIZED *gs = cbuffer_to_geom(cb);
-  int result = ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL, 
+  return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
     (varfunc) &datum_geom_touches, 2, ever, INVERT_NO);
-  pfree(gs);
-  return result;
 }
 
 /**
@@ -1367,10 +1321,8 @@ atouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 int
 edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+  if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
   return ea_spatialrel_tcbuffer_geo(temp, gs, Float8GetDatum(dist),
     (varfunc) &datum_geom_dwithin2d, 3, EVER, INVERT_NO);
@@ -1395,7 +1347,7 @@ adwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
     return -1;
   GSERIALIZED *buffer = geom_buffer(gs, dist, "");
   int result = ea_spatialrel_tcbuffer_geo(temp, buffer, (Datum) NULL,
-    (varfunc) &datum_geom_covers, 2, ALWAYS, INVERT);
+    (varfunc) &datum_geom_covers, 2, ALWAYS, INVERT_NO);
   pfree(buffer);
   return result;
 }
@@ -1445,13 +1397,11 @@ adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
-
   GSERIALIZED *trav = cbuffer_to_geom(cb);
   GSERIALIZED *buffer = geom_buffer(trav, dist, "");
-  datum_func2 func = &datum_geom_covers;
   int result = ea_spatialrel_tcbuffer_geo(temp, buffer, (Datum) NULL,
-    (varfunc) func, 2, ALWAYS, INVERT);
-  pfree(buffer);
+    (varfunc) &datum_geom_covers, 2, ALWAYS, INVERT_NO);
+  pfree(trav); pfree(buffer);
   return result;
 }
 
@@ -1473,7 +1423,8 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
 {
   VALIDATE_TCBUFFER(temp1, -1); VALIDATE_TCBUFFER(temp2, -1);
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
   /* Fill the lifted structure */
@@ -1489,7 +1440,7 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.ever = ever;
-  lfinfo.tpfunc = &tcbuffersegm_dwithin_turnpt;
+  lfinfo.tpfn_temp = &tcbuffersegm_dwithin_turnpt;
   return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 

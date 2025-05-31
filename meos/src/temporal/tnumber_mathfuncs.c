@@ -196,9 +196,7 @@ arithop_tnumber_number(const Temporal *temp, Datum value, TArithmetic oper,
  */
 Temporal *
 arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
-  TArithmetic oper, Datum (*func)(Datum, Datum, meosType),
-  int (*tpfunc)(Datum, Datum, Datum, Datum, Datum, TimestampTz, TimestampTz,
-    TimestampTz *, TimestampTz *))
+  TArithmetic oper, Datum (*func)(Datum, Datum, meosType), tpfunc_temp tpfunc)
 {
   assert(tnumber_type(temp1->temptype));
   assert(temp1->temptype == temp2->temptype);
@@ -241,7 +239,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   lfinfo.reslinear = linear1 || linear2;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc = (oper == MULT || oper == DIV) && linear1 && linear2 ?
+  lfinfo.tpfn_temp = (oper == MULT || oper == DIV) && linear1 && linear2 ?
     tpfunc : NULL;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }

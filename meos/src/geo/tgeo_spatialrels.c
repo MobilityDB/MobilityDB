@@ -1661,7 +1661,6 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   }
 }
 
-
 /**
  * @ingroup meos_internal_cbuffer_spatial_rel_ever
  * @brief Return 1 if two temporal circular buffers are ever/always within a
@@ -1688,7 +1687,6 @@ ea_dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
   lfinfo.param[0] = Float8GetDatum(dist);
-  lfinfo.argtype[0] = T_FLOAT8;
   lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = false;
@@ -1696,7 +1694,7 @@ ea_dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.ever = ever;
-  lfinfo.tpfunc = &tpointsegm_tdwithin_turnpt;
+  lfinfo.tpfn_temp = &tpointsegm_tdwithin_turnpt;
   return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
@@ -1760,12 +1758,12 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
   lfinfo.param[0] = Float8GetDatum(dist);
-  lfinfo.argtype[0] = T_FLOAT8;
   lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = false;
   lfinfo.invert = INVERT_NO;
-  lfinfo.discont = true;
+  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.ever = ever;
   return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
 }

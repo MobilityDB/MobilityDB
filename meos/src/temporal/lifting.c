@@ -157,8 +157,8 @@
  *   lfinfo->func = (varfunc) &datum_geom_to_geog;
  *   lfinfo->numparam = 1;
  *   lfinfo->restype = T_TGEOGPOINT;
- *   lfinfo->tpfunc_base = NULL;
- *   lfinfo->tpfunc = NULL;
+ *   lfinfo->tpfn_base = NULL;
+ *   lfinfo->tpfn_temp = NULL;
  *   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
  *   PG_FREE_IF_COPY(temp, 0);
  *   PG_RETURN_TEMPORAL_P(result);
@@ -377,13 +377,13 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
     instants[ninsts++] = tfunc_tinstant_base(inst1, value, lfinfo);
     /* If not constant segment and linear compute the function on the potential
        intermediate turning points before adding the new instant */
-    if (lfinfo->tpfunc_base && interp == LINEAR &&
+    if (lfinfo->tpfn_base && interp == LINEAR &&
       ! datum_eq(value1, value2, temptype_basetype(seq->temptype)))
     {
       Datum tpvalue;
       TimestampTz tpt1, tpt2;
-      int found = lfinfo->tpfunc_base(value1, value2, value,
-        inst1->t, inst2->t, &tpt1, &tpt2);
+      int found = lfinfo->tpfn_base(value1, value2, value, inst1->t, inst2->t,
+        &tpt1, &tpt2);
       /* Avoid adding a turning point at the same timestamp added next */
       if (found)
       {
@@ -614,7 +614,7 @@ tfunc_tlinearseq_base(const TSequence *seq, Datum value,
   else
   {
     /* We are sure that the result is a single sequence */
-    if (lfinfo->tpfunc_base)
+    if (lfinfo->tpfn_base)
       tfunc_tlinearseq_base_turnpt(seq, value, lfinfo, sequences);
     else
       sequences[0] = tfunc_tsequence_base(seq, value, lfinfo);
@@ -647,7 +647,7 @@ tfunc_tsequenceset_base(const TSequenceSet *ss, Datum value,
     if (lfinfo->discont)
       nseqs += tfunc_tlinearseq_base_discfn(seq, value, lfinfo,
         &sequences[nseqs]);
-    else if (lfinfo->tpfunc_base)
+    else if (lfinfo->tpfn_base)
       nseqs += tfunc_tlinearseq_base_turnpt(seq, value, lfinfo,
         &sequences[nseqs]);
     else
@@ -1022,7 +1022,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
     }
     /* If not the first instant compute the function on the potential
        turning point before adding the new instants */
-    if (lfinfo->tpfunc && ninsts > 0)
+    if (lfinfo->tpfn_temp && ninsts > 0)
     {
       Datum start1 = tinstant_value_p(prev1);
       Datum end1 = tinstant_value_p(inst1);
@@ -1030,7 +1030,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
       Datum end2 = tinstant_value_p(inst2);
       Datum tpvalue1, tpvalue2, tpresult;
       TimestampTz tpt1, tpt2;
-      int found = lfinfo->tpfunc(start1, end1, start2, end2, lfinfo->param[0],
+      int found = lfinfo->tpfn_temp(start1, end1, start2, end2, lfinfo->param[0],
         prev1->t, inst1->t, &tpt1, &tpt2);
       /* Avoid adding a turning point at the same timestamp added next */
       if (found && tpt1 != prev1->t)
@@ -1218,8 +1218,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     {
       /* Determine whether there is a crossing and compute the value at the
        * crossing if there is one */
-      int cross = lfinfo->tpfunc ?
-        lfinfo->tpfunc(startvalue1, endvalue1, startvalue2, endvalue2,
+      int cross = lfinfo->tpfn_temp ?
+        lfinfo->tpfn_temp(startvalue1, endvalue1, startvalue2, endvalue2,
           lfinfo->param[0], start1->t, end1->t, &tpt1, &tpt2) :
         tsegment_intersection(startvalue1, endvalue1, startvalue2, endvalue2,
           start1->temptype, start1->t, end1->t, &tpt1, &tpt2);
@@ -2264,8 +2264,8 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
         datum_eq(endvalue1, endvalue2, basetype))
     {
       TimestampTz tpt1, tpt2;
-      int cross = lfinfo->tpfunc ?
-        lfinfo->tpfunc(startvalue1, endvalue1, startvalue2, endvalue2,
+      int cross = lfinfo->tpfn_temp ?
+        lfinfo->tpfn_temp(startvalue1, endvalue1, startvalue2, endvalue2,
           lfinfo->param[0], start1->t, end1->t, &tpt1, &tpt2) :
         tsegment_intersection(startvalue1, endvalue1, startvalue2, endvalue2,
           start1->temptype, start1->t, end1->t, &tpt1, &tpt2);

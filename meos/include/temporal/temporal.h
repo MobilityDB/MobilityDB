@@ -282,6 +282,14 @@ typedef int (*qsort_comparator) (const void *a, const void *b);
 /* Definition of a variadic function type for temporal lifting */
 typedef Datum (*varfunc) (Datum, ...);
 
+/* Definition of a turning point function for a temporal and a base types */
+typedef int (*tpfunc_base)(Datum, Datum, Datum, TimestampTz, TimestampTz,
+  TimestampTz *, TimestampTz *);
+
+/* Definition of a turning point function for two temporal types */
+typedef int (*tpfunc_temp)(Datum, Datum, Datum, Datum, Datum, TimestampTz,
+  TimestampTz, TimestampTz *, TimestampTz *);
+
 /* Definition of a function with one to three Datum arguments and returning 
  * a Datum */
 typedef Datum (*datum_func1) (Datum);

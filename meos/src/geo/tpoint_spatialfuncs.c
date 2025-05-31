@@ -3517,7 +3517,7 @@ bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc_base = &tpoint_geo_bearing_turnpt;
+  lfinfo.tpfn_base = &tpoint_geo_bearing_turnpt;
   return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
 }
 
@@ -3546,8 +3546,7 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = lfinfo.reslinear ? &tpointsegm_bearing_turnpt : NULL;
+  lfinfo.tpfn_temp = lfinfo.reslinear ? &tpointsegm_bearing_turnpt : NULL;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
