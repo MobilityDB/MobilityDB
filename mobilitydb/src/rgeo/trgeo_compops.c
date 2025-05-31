@@ -43,7 +43,9 @@
 #include <meos.h>
 #include <meos_rgeo.h>
 #include "temporal/temporal.h"
+#include "temporal/type_util.h"
 /* MobilityDB */
+#include "pg_temporal/temporal.h"
 #include "pg_geo/postgis.h"
 
 /*****************************************************************************
@@ -329,25 +331,6 @@ Tcomp_trgeo_geo(FunctionCallInfo fcinfo,
   PG_RETURN_TEMPORAL_P(result);
 }
 
-/**
- * @brief Generic function for the temporal ever/always comparison operators
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Specific function for the ever/always comparison
- */
-static Datum
-Tcomp_trgeo_trgeo(FunctionCallInfo fcinfo,
-  Temporal * (*func)(const Temporal *, const Temporal *))
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = func(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
 /*****************************************************************************/
 
 PGDLLEXPORT Datum Teq_geo_trgeo(PG_FUNCTION_ARGS);
@@ -423,7 +406,7 @@ PG_FUNCTION_INFO_V1(Teq_trgeo_trgeo);
 inline Datum
 Teq_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
-  return Tcomp_trgeo_trgeo(fcinfo, &teq_temporal_temporal);
+  return Tcomp_temporal_temporal(fcinfo, &datum2_eq);
 }
 
 PGDLLEXPORT Datum Tne_trgeo_trgeo(PG_FUNCTION_ARGS);
@@ -437,7 +420,7 @@ PG_FUNCTION_INFO_V1(Tne_trgeo_trgeo);
 inline Datum
 Tne_trgeo_trgeo(PG_FUNCTION_ARGS)
 {
-  return Tcomp_trgeo_trgeo(fcinfo, &tne_temporal_temporal);
+  return Tcomp_temporal_temporal(fcinfo, &datum2_ne);
 }
 
 /*****************************************************************************/

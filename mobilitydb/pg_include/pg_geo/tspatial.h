@@ -56,6 +56,9 @@ extern Datum EA_spatialrel_tspatial_geo(FunctionCallInfo fcinfo,
 extern Datum EA_spatialrel_tspatial_tspatial(FunctionCallInfo fcinfo,
   int (*func)(const Temporal *, const Temporal *, bool), bool ever);
 
+extern Datum Tinterrel_geo_tspatial(FunctionCallInfo fcinfo, bool tinter);
+extern Datum Tinterrel_tspatial_geo(FunctionCallInfo fcinfo, bool tinter);
+
 extern Datum Tspatialrel_geo_tspatial(FunctionCallInfo fcinfo,
   Temporal * (*func)(const GSERIALIZED *, const Temporal *, bool, bool));
 extern Datum Tspatialrel_tspatial_geo(FunctionCallInfo fcinfo,

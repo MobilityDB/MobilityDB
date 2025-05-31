@@ -219,20 +219,6 @@ uint_mod_sub(uint32_t i, uint32_t j, uint32_t n)
 }
 
 /**
- * @brief
- */
-static void
-apply_pose_point4d(POINT4D *p, Pose *pose)
-{
-  double c = cos(pose->data[2]);
-  double s = sin(pose->data[2]);
-  double x = p->x, y = p->y;
-  p->x = x * c - y * s + pose->data[0];
-  p->y = x * s + y * c + pose->data[1];
-  return;
-}
-
-/**
  * @brief Computes the relative position of point on segment v(vs, ve)
  * @details
  * s < 0      -> p before point vs

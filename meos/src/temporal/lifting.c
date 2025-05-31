@@ -2471,7 +2471,7 @@ eafunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-eafunc_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
+eafunc_tcontseq_tsequenceset(const TSequence *seq, const TSequenceSet *ss,
   LiftedFunctionInfo *lfinfo)
 {
   lfinfo_invert_args(lfinfo);
@@ -2608,7 +2608,7 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
           return MEOS_FLAGS_DISCRETE_INTERP(temp1->flags) ?
             eafunc_tdiscseq_tsequenceset((TSequence *) temp1,
               (TSequenceSet *) temp2, lfinfo) :
-            eafunc_tsequence_tsequenceset((TSequence *) temp1,
+            eafunc_tcontseq_tsequenceset((TSequence *) temp1,
               (TSequenceSet *) temp2, lfinfo);
       }
     }

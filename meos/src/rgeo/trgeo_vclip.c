@@ -85,7 +85,7 @@ uint_mod_sub(uint32_t i, uint32_t j, uint32_t n)
 /**
  * @brief 
  */
-static void
+void
 apply_pose_point4d(POINT4D *p, const Pose *pose)
 {
   double c = cos(pose->data[2]);

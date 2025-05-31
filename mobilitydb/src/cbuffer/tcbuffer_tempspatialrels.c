@@ -113,60 +113,6 @@ Tinterrel_tcbuffer_cbuffer(FunctionCallInfo fcinfo, bool tinter)
 }
 
 /**
- * @brief Return the spatiotemporal relationship between a geometry and a
- * temporal circular buffer
- */
-static Datum
-Tinterrel_geo_tcbuffer(FunctionCallInfo fcinfo, bool tinter)
-{
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tcbuffer_geo(temp, gs, tinter, restr, atvalue);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
-/**
- * @brief Return the spatiotemporal relationship between a temporal circular
- * buffer and a geometry
- */
-static Datum
-Tinterrel_tcbuffer_geo(FunctionCallInfo fcinfo, bool tinter)
-{
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tcbuffer_geo(temp, gs, tinter, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
-/**
  * @brief Return the spatiotemporal relationship between two temporal circular
  * buffers
  */
@@ -461,7 +407,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_geo_tcbuffer);
 inline Datum
 Tdisjoint_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_geo_tcbuffer(fcinfo, TDISJOINT);
+  return Tinterrel_geo_tspatial(fcinfo, TDISJOINT);
 }
 
 PGDLLEXPORT Datum Tdisjoint_tcbuffer_geo(PG_FUNCTION_ARGS);
@@ -475,7 +421,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tcbuffer_geo);
 inline Datum
 Tdisjoint_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tcbuffer_geo(fcinfo, TDISJOINT);
+  return Tinterrel_tspatial_geo(fcinfo, TDISJOINT);
 }
 
 PGDLLEXPORT Datum Tdisjoint_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
@@ -535,7 +481,7 @@ PG_FUNCTION_INFO_V1(Tintersects_geo_tcbuffer);
 inline Datum
 Tintersects_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_geo_tcbuffer(fcinfo, TINTERSECTS);
+  return Tinterrel_geo_tspatial(fcinfo, TINTERSECTS);
 }
 
 PGDLLEXPORT Datum Tintersects_tcbuffer_geo(PG_FUNCTION_ARGS);
@@ -549,7 +495,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tcbuffer_geo);
 inline Datum
 Tintersects_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tcbuffer_geo(fcinfo, TINTERSECTS);
+  return Tinterrel_tspatial_geo(fcinfo, TINTERSECTS);
 }
 
 PGDLLEXPORT Datum Tintersects_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
@@ -745,99 +691,6 @@ Tdwithin_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
   }
   Temporal *result = tdwithin_tcbuffer_cbuffer(temp, cb, dist, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
-PGDLLEXPORT Datum Tdwithin_geo_tcbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdwithin_geo_tcbuffer);
-/**
- * @ingroup mobilitydb_cbuffer_rel_temp
- * @brief Return a temporal boolean that states whether a geometry and a
- * temporal circular buffer are within a given distance
- * @sqlfn tDwithin()
- */
-Datum
-Tdwithin_geo_tcbuffer(PG_FUNCTION_ARGS)
-{
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
-    PG_RETURN_NULL();
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  double dist = PG_GETARG_FLOAT8(2);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
-  {
-    atvalue = PG_GETARG_BOOL(3);
-    restr = true;
-  }
-  Temporal *result = tdwithin_tcbuffer_geo(temp, gs, dist, restr, atvalue);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
-PGDLLEXPORT Datum Tdwithin_tcbuffer_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdwithin_tcbuffer_geo);
-/**
- * @ingroup mobilitydb_cbuffer_rel_temp
- * @brief Return a temporal boolean that states whether a temporal circular
- * buffer and a geometry are within a given distance
- * @sqlfn tDwithin()
- */
-Datum
-Tdwithin_tcbuffer_geo(PG_FUNCTION_ARGS)
-{
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  double dist = PG_GETARG_FLOAT8(2);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
-  {
-    atvalue = PG_GETARG_BOOL(3);
-    restr = true;
-  }
-  Temporal *result = tdwithin_tcbuffer_geo(temp, gs, dist, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
-PGDLLEXPORT Datum Tdwithin_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdwithin_tcbuffer_tcbuffer);
-/**
- * @ingroup mobilitydb_cbuffer_rel_temp
- * @brief Return a temporal boolean that states whether two temporal circular
- * buffers are within a given distance
- * @sqlfn tDwithin()
- */
-Datum
-Tdwithin_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
-{
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
-    PG_RETURN_NULL();
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  double dist = PG_GETARG_FLOAT8(2);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
-  {
-    atvalue = PG_GETARG_BOOL(3);
-    restr = true;
-  }
-  Temporal *result = tdwithin_tcbuffer_tcbuffer(temp1, temp2, dist, restr, atvalue);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);

@@ -43,8 +43,10 @@
 #include <meos.h>
 #include <meos_npoint.h>
 #include "temporal/temporal.h"
+#include "temporal/type_util.h"
 #include "npoint/tnpoint.h"
 /* MobilityDB */
+#include "pg_temporal/temporal.h"
 #include "pg_geo/postgis.h"
 
 /*****************************************************************************
@@ -326,25 +328,6 @@ Tcomp_tnpoint_npoint(FunctionCallInfo fcinfo,
   PG_RETURN_TEMPORAL_P(result);
 }
 
-/**
- * @brief Generic function for the temporal comparison operators
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Specific function for the ever/always comparison
- */
-static Datum
-Tcomp_tnpoint_tnpoint(FunctionCallInfo fcinfo,
-  Temporal * (*func)(const Temporal *, const Temporal *))
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = func(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
 /*****************************************************************************/
 
 PGDLLEXPORT Datum Teq_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -422,7 +405,7 @@ PG_FUNCTION_INFO_V1(Teq_tnpoint_tnpoint);
 inline Datum
 Teq_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Tcomp_tnpoint_tnpoint(fcinfo, &teq_temporal_temporal);
+  return Tcomp_temporal_temporal(fcinfo, &datum2_eq);
 }
 
 PGDLLEXPORT Datum Tne_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -437,7 +420,7 @@ PG_FUNCTION_INFO_V1(Tne_tnpoint_tnpoint);
 inline Datum
 Tne_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Tcomp_tnpoint_tnpoint(fcinfo, &tne_temporal_temporal);
+  return Tcomp_temporal_temporal(fcinfo, &datum2_ne);
 }
 
 /*****************************************************************************/

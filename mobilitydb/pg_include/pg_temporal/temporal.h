@@ -207,6 +207,11 @@ extern bool ensure_not_empty_array(ArrayType *array);
 
 extern Datum EAcomp_temporal_temporal(FunctionCallInfo fcinfo,
   int (*func)(const Temporal *, const Temporal *));
+extern Datum Tcomp_temporal_temporal(FunctionCallInfo fcinfo,
+  Datum (*func)(Datum, Datum, meosType));
+
+extern Datum Tcomp_temporal_base(FunctionCallInfo fcinfo,
+  Datum (*func)(Datum, Datum, meosType));
 
 /* Indexing functions */
 

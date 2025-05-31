@@ -42,7 +42,10 @@
 /* MEOS */
 #include <meos.h>
 #include "temporal/temporal.h"
+#include "temporal/type_util.h"
 #include "pose/pose.h"
+/* MobilityDB */
+#include "pg_temporal/temporal.h"
 
 /*****************************************************************************
  * Ever/always comparison functions
@@ -81,25 +84,6 @@ EAcomp_tpose_pose(FunctionCallInfo fcinfo,
   int result = func(temp, pose);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(pose, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
-  PG_RETURN_BOOL(result);
-}
-
-/**
- * @brief Generic function for the ever/always comparison operators
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Specific function for the ever/always comparison
- */
-static Datum
-EAcomp_tpose_tpose(FunctionCallInfo fcinfo,
-  int (*func)(const Temporal *, const Temporal *))
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  int result = func(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
   if (result < 0)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
@@ -240,7 +224,7 @@ PG_FUNCTION_INFO_V1(Ever_eq_tpose_tpose);
 inline Datum
 Ever_eq_tpose_tpose(PG_FUNCTION_ARGS)
 {
-  return EAcomp_tpose_tpose(fcinfo, &ever_eq_tpose_tpose);
+  return EAcomp_temporal_temporal(fcinfo, &ever_eq_tpose_tpose);
 }
 
 PGDLLEXPORT Datum Always_eq_tpose_tpose(PG_FUNCTION_ARGS);
@@ -254,7 +238,7 @@ PG_FUNCTION_INFO_V1(Always_eq_tpose_tpose);
 inline Datum
 Always_eq_tpose_tpose(PG_FUNCTION_ARGS)
 {
-  return EAcomp_tpose_tpose(fcinfo, &always_eq_tpose_tpose);
+  return EAcomp_temporal_temporal(fcinfo, &always_eq_tpose_tpose);
 }
 
 PGDLLEXPORT Datum Ever_ne_tpose_tpose(PG_FUNCTION_ARGS);
@@ -268,7 +252,7 @@ PG_FUNCTION_INFO_V1(Ever_ne_tpose_tpose);
 inline Datum
 Ever_ne_tpose_tpose(PG_FUNCTION_ARGS)
 {
-  return EAcomp_tpose_tpose(fcinfo, &ever_ne_tpose_tpose);
+  return EAcomp_temporal_temporal(fcinfo, &ever_ne_tpose_tpose);
 }
 
 PGDLLEXPORT Datum Always_ne_tpose_tpose(PG_FUNCTION_ARGS);
@@ -282,7 +266,7 @@ PG_FUNCTION_INFO_V1(Always_ne_tpose_tpose);
 inline Datum
 Always_ne_tpose_tpose(PG_FUNCTION_ARGS)
 {
-  return EAcomp_tpose_tpose(fcinfo, &always_ne_tpose_tpose);
+  return EAcomp_temporal_temporal(fcinfo, &always_ne_tpose_tpose);
 }
 
 /*****************************************************************************
@@ -322,25 +306,6 @@ Tcomp_tpose_pose(FunctionCallInfo fcinfo,
   Temporal *result = func(temp, pose);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(pose, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
-/**
- * @brief Generic function for the temporal comparison operators
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Specific function for the ever/always comparison
- */
-static Datum
-Tcomp_tpose_tpose(FunctionCallInfo fcinfo,
-  Temporal * (*func)(const Temporal *, const Temporal *))
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = func(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
@@ -425,7 +390,7 @@ PG_FUNCTION_INFO_V1(Teq_tpose_tpose);
 inline Datum
 Teq_tpose_tpose(PG_FUNCTION_ARGS)
 {
-  return Tcomp_tpose_tpose(fcinfo, &teq_temporal_temporal);
+  return Tcomp_temporal_temporal(fcinfo, &datum2_eq);
 }
 
 PGDLLEXPORT Datum Tne_tpose_tpose(PG_FUNCTION_ARGS);
@@ -440,7 +405,7 @@ PG_FUNCTION_INFO_V1(Tne_tpose_tpose);
 inline Datum
 Tne_tpose_tpose(PG_FUNCTION_ARGS)
 {
-  return Tcomp_tpose_tpose(fcinfo, &tne_temporal_temporal);
+  return Tcomp_temporal_temporal(fcinfo, &datum2_ne);
 }
 
 /*****************************************************************************/

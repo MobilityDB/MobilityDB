@@ -61,7 +61,7 @@
  * @brief Return the temporal spatial relationship between a
  * geometry and a temporal geo
  */
-static Datum
+Datum
 Tinterrel_geo_tspatial(FunctionCallInfo fcinfo, bool tinter)
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
@@ -88,7 +88,7 @@ Tinterrel_geo_tspatial(FunctionCallInfo fcinfo, bool tinter)
  * @brief Return the temporal disjoint/intersection relationship between a
  * geometry and a temporal geo
  */
-static Datum
+Datum
 Tinterrel_tspatial_geo(FunctionCallInfo fcinfo, bool tinter)
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1))

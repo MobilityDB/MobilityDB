@@ -180,17 +180,17 @@ CREATE FUNCTION tDwithin(tcbuffer, cbuffer, dist float,
 CREATE FUNCTION tDwithin(geometry, tcbuffer, dist float,
    atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tdwithin_geo_tcbuffer'
+  AS 'MODULE_PATHNAME', 'Tdwithin_geo_tspatial'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tDwithin(tcbuffer, geometry, dist float,
     atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tdwithin_tcbuffer_geo'
+  AS 'MODULE_PATHNAME', 'Tdwithin_tspatial_geo'
   LANGUAGE C IMMUTABLE  PARALLEL SAFE;
 CREATE FUNCTION tDwithin(tcbuffer, tcbuffer, dist float,
     atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tdwithin_tcbuffer_tcbuffer'
+  AS 'MODULE_PATHNAME', 'Tdwithin_tspatial_tspatial'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************/

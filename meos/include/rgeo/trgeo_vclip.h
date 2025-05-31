@@ -67,6 +67,8 @@ extern int v_clip_tpoly_tpoly(const LWPOLY *poly1, const LWPOLY *poly2,
   const Pose *pose1, const Pose *pose2, uint32_t *poly1_feature, 
   uint32_t *poly2_feature, double *dist);
 
+extern void apply_pose_point4d(POINT4D *p, const Pose *pose);
+
 /*****************************************************************************/
 
 #endif

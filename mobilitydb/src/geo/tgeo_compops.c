@@ -42,6 +42,7 @@
 /* MEOS */
 #include <meos.h>
 #include "temporal/temporal.h"
+#include "temporal/type_util.h"
 #include "temporal/temporal_compops.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
@@ -289,6 +290,7 @@ Tcomp_geo_tgeo(FunctionCallInfo fcinfo,
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
+
 
 /**
  * @brief Generic function for the temporal comparison operators
