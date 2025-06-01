@@ -147,9 +147,9 @@ int main(void)
         GSERIALIZED *gs = geom_in(geo_buffer, -1);
 
         /* Uncomment the desired function to compute */
-        // Temporal *rest = tintersects_tspatial_geo(temp, gs, false, false);
-        // Temporal *rest = tdwithin_tspatial_geo(temp, gs, 10, false, false);
-        // Temporal *rest = tcontains_tspatial_geo(temp, gs, false, false);
+        // Temporal *rest = tintersects_tgeo_geo(temp, gs, false, false);
+        // Temporal *rest = tdwithin_tgeo_geo(temp, gs, 10, false, false);
+        // Temporal *rest = tcontains_tgeo_geo(temp, gs, false, false);
         Temporal *rest = distance_tgeo_geo(temp, gs);
         if (rest)
         {

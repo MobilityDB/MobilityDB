@@ -103,6 +103,8 @@ extern bool ensure_same_geodetic_geo(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
 extern bool ensure_same_geodetic_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs);
+extern bool ensure_same_geodetic_tspatial_base(const Temporal *temp,
+  Datum base);
 extern bool ensure_srid_known(int32_t srid);
 extern bool ensure_same_srid(int32_t srid1, int32_t srid2);
 extern bool ensure_same_dimensionality(int16 flags1, int16 flags2);
@@ -131,6 +133,7 @@ extern bool ensure_not_empty(const GSERIALIZED *gs);
 extern bool ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs);
 extern bool ensure_valid_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs);
+extern bool ensure_valid_tspatial_base(const Temporal *temp, Datum base);
 extern bool ensure_valid_tspatial_tspatial(const Temporal *temp1,
   const Temporal *temp2);
 extern bool ensure_valid_spatial_stbox_stbox(const STBox *box1,

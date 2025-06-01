@@ -681,8 +681,8 @@ tcontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr,
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs))
     return NULL;
 
-  Temporal *result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
-    (varfunc) &datum_geom_contains, 0, INVERT);
+  Temporal *result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs),
+    (Datum) NULL, (varfunc) &datum_geom_contains, 0, INVERT);
 
   /* Restrict the result to the Boolean value in the last argument if any */
   if (result && restr)
@@ -714,8 +714,8 @@ tcontains_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs))
     return NULL;
 
-  Temporal *result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
-    (varfunc) &datum_geom_contains, 0, INVERT_NO);
+  Temporal *result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs),
+    (Datum) NULL, (varfunc) &datum_geom_contains, 0, INVERT_NO);
 
   /* Restrict the result to the Boolean value in the last argument if any */
   if (result && restr)
@@ -869,8 +869,8 @@ tcovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   else
   /* Temporal circular buffermetry case */
   {
-    result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
-      (varfunc) &datum_geom_covers, 0, INVERT);
+    result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs),
+      (Datum) NULL, (varfunc) &datum_geom_covers, 0, INVERT);
   }
 
   /* Restrict the result to the Boolean value in the last argument if any */
@@ -903,8 +903,8 @@ tcovers_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs))
     return NULL;
 
-  Temporal *result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
-    (varfunc) &datum_geom_covers, 0, INVERT_NO);
+  Temporal *result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs),
+    (Datum) NULL, (varfunc) &datum_geom_covers, 0, INVERT_NO);
 
   /* Restrict the result to the Boolean value in the last argument if any */
   if (result && restr)
@@ -1128,7 +1128,7 @@ ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   else
   /* Temporal circular buffer case */
   {
-    result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
+    result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs), (Datum) NULL,
       (varfunc) &datum_geom_touches, 0, INVERT_NO);
   }
 
@@ -1240,406 +1240,6 @@ ttouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
 }
 
 /*****************************************************************************
- * Functions to compute the tdwithin relationship between temporal circular
- * buffer sequences. This requires to determine the instants t1 and t2 at which
- * two temporal sequences have a distance d between each other. This amounts to
- * solve the equation
- *     distance(seg1(t), seg2(t)) = d
- * The function assumes that the two segments are synchronized, that they are
- * not instants, and that they are not both constant.
- *
- * Possible cases
- *
- * Parallel (a == 0) within distance
-
-  SELECT tdwithin(
-  tgeompoint '[POINT(0 1)@2000-01-01, POINT(1 2)@2000-01-02]',
-  tgeompoint '[POINT(0 0)@2000-01-01, POINT(1 1)@2000-01-02]', 1)
-  -- "{[t@2000-01-01, t@2000-01-02]}"
-
-  * Parallel (a == 0) but not within distance
-
-  SELECT tdwithin(
-  tgeompoint '[POINT(0 2)@2000-01-01, POINT(1 3)@2000-01-02]',
-  tgeompoint '[POINT(0 0)@2000-01-01, POINT(1 1)@2000-01-02]', 1)
-  -- "{[f@2000-01-01, f@2000-01-02]}"
-
- * No solution (root < 0)
-
-  SELECT tdwithin(
-  tgeompoint '[POINT(2 3)@2000-01-01, POINT(3 4)@2000-01-03]',
-  tgeompoint '[POINT(4 4)@2000-01-01, POINT(6 2)@2000-01-03]', 1)
-  -- "{[f@2000-01-01, f@2000-01-03]}"
-
- * One solution (root == 0)
-   - solution within segment
-
-  SELECT tdwithin(
-  tgeompoint '[POINT(2 2)@2000-01-01, POINT(1 1)@2000-01-03]',
-  tgeompoint '[POINT(3 1)@2000-01-01, POINT(2 2)@2000-01-03]', 1)
-  -- "{[f@2000-01-01, t@2000-01-02], (f@2000-01-02, f@2000-01-03]}"
-
-   - solution outside to segment
-
-  SELECT tdwithin(
-  tgeompoint '[POINT(3 3)@2000-01-01, POINT(2 2)@2000-01-03]',
-  tgeompoint '[POINT(4 0)@2000-01-01, POINT(3 1)@2000-01-03]', 1)
-  -- "{[f@2000-01-01, f@2000-01-03]}"
-
- * Two solutions (root > 0)
- - segments contains solution period
-
-  SELECT tdwithin(
-  tgeompoint '[POINT(1 1)@2000-01-01, POINT(5 5)@2000-01-05]',
-  tgeompoint '[POINT(1 3)@2000-01-01, POINT(5 3)@2000-01-05]', 1)
-  -- "{[f@2000-01-01, t@2000-01-02, t@2000-01-04], (f@2000-01-04, f@2000-01-05]}"
-
-  - solution period contains segment
-
-  SELECT tdwithin(
-  tgeompoint '[POINT(2.5 2.5)@2000-01-02 12:00, POINT(3.5 3.5)@2000-01-05 12:00]',
-  tgeompoint '[POINT(2.5 3.0)@2000-01-02 12:00, POINT(3.5 3.0)@2000-01-03 12:00]', 1)
-  -- "{[t@2000-01-02 12:00:00+00, t@2000-01-03 12:00:00+00]}"
-
-  - solution period overlaps to the left segment
-
-  SELECT tdwithin(
-  tgeompoint '[POINT(3 3)@2000-01-03, POINT(5 5)@2000-01-05]',
-  tgeompoint '[POINT(3 3)@2000-01-03, POINT(5 3)@2000-01-05]', 1)
-  -- "{[t@2000-01-03, f@2000-01-04, f@2000-01-05]}"
-
-  - solution period overlaps to the right segment
-
-  SELECT tdwithin(
-  tgeompoint '[POINT(1 1)@2000-01-01, POINT(3 3)@2000-01-03]',
-  tgeompoint '[POINT(1 3)@2000-01-01, POINT(3 3)@2000-01-03]', 1)
-  -- "{[f@2000-01-01, t@2000-01-02, t@2000-01-03]}"
-
-  - solution period intersects at an instant with the segment
-
-  SELECT tdwithin(
-  tgeompoint '[POINT(4 4)@2000-01-04, POINT(5 5)@2000-01-05]',
-  tgeompoint '[POINT(4 3)@2000-01-04, POINT(5 3)@2000-01-05]', 1)
-  -- "{[t@2000-01-04], (f@2000-01-04, f@2000-01-05]}"
-
- *****************************************************************************/
-
-/**
- * @brief Construct the result of the tdwithin function of a segment from
- * the solutions of the quadratic equation found previously
- * @return Number of sequences of the result
- */
-static int
-tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
-  bool lower_inc, bool upper_inc, bool upper_inc1, TimestampTz t1,
-  TimestampTz t2, TInstant **instants, TSequence **result)
-{
-  const Datum datum_true = BoolGetDatum(true);
-  const Datum datum_false = BoolGetDatum(false);
-  int nseqs = 0;
-  /* <  F  > */
-  if (solutions == 0 ||
-  (solutions == 1 && ((t1 == lower && ! lower_inc) ||
-    (t1 == upper && ! upper_inc))))
-  {
-    tinstant_set(instants[0], datum_false, lower);
-    tinstant_set(instants[1], datum_false, upper);
-    result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
-      lower_inc, upper_inc1, STEP, NORMALIZE_NO);
-  }
-  /*
-   *  <  T  >               2 solutions, lower == t1, upper == t2
-   *  [T](  F  )            1 solution, lower == t1 (t1 == t2)
-   *  [T  T](  F  )         2 solutions, lower == t1, upper != t2
-   *  (  F  )[T]            1 solution && upper == t1, (t1 == t2)
-   *  (  F  )[T](  F  )     1 solution, lower != t1 (t1 == t2)
-   *  (  F  )[T  T]         2 solutions, lower != t1, upper == t2
-   *  (  F  )[T  T](  F  )  2 solutions, lower != t1, upper != t2
-   */
-  else
-  {
-    int ninsts = 0;
-    if (t1 != lower)
-      tinstant_set(instants[ninsts++], datum_false, lower);
-    tinstant_set(instants[ninsts++], datum_true, t1);
-    if (solutions == 2 && t1 != t2)
-      tinstant_set(instants[ninsts++], datum_true, t2);
-    result[nseqs++] = tsequence_make((const TInstant **) instants, ninsts,
-      lower_inc, (t2 != upper) ? true : upper_inc1, STEP, NORMALIZE_NO);
-    if (t2 != upper)
-    {
-      tinstant_set(instants[0], datum_false, t2);
-      tinstant_set(instants[1], datum_false, upper);
-      result[nseqs++] = tsequence_make((const TInstant **) instants, 2, false,
-        upper_inc1, STEP, NORMALIZE_NO);
-    }
-  }
-  return nseqs;
-}
-
-/**
- * @brief Return the timestamps at which the segments of two temporal circular
- * buffer sequences are within a distance (iterator function)
- * @param[in] seq1,seq2 Temporal points
- * @param[in] dist Distance
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
- * @return Number of elements in the resulting array
- * @pre The temporal circular buffers must be synchronized.
- */
-static int
-tdwithin_tcbufferseq_tcbufferseq_iter(const TSequence *seq1,
-  const TSequence *seq2, Datum dist, TSequence **result)
-{
-  datum_func3 func = &datum_cbuffer_dwithin;
-  const TInstant *start1 = TSEQUENCE_INST_N(seq1, 0);
-  const TInstant *start2 = TSEQUENCE_INST_N(seq2, 0);
-  if (seq1->count == 1)
-  {
-    TInstant *inst = tinstant_make(func(tinstant_value_p(start1),
-      tinstant_value_p(start2), dist), T_TBOOL, start1->t);
-    result[0] = tinstant_to_tsequence_free(inst, STEP);
-    return 1;
-  }
-
-  int nseqs = 0;
-  bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
-  bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
-  Datum sv1 = tinstant_value_p(start1);
-  Datum sv2 = tinstant_value_p(start2);
-  TimestampTz lower = start1->t;
-  bool lower_inc = seq1->period.lower_inc;
-  const Datum datum_true = BoolGetDatum(true);
-  /* We create three temporal instants with arbitrary values that are set in
-   * the for loop to avoid creating and freeing the instants each time a
-   * segment of the result is computed */
-  TInstant *instants[3];
-  instants[0] = tinstant_make(datum_true, T_TBOOL, lower);
-  instants[1] = tinstant_copy(instants[0]);
-  instants[2] = tinstant_copy(instants[0]);
-  for (int i = 1; i < seq1->count; i++)
-  {
-    /* Each iteration of the for loop adds between one and three sequences */
-    const TInstant *end1 = TSEQUENCE_INST_N(seq1, i);
-    const TInstant *end2 = TSEQUENCE_INST_N(seq2, i);
-    Datum ev1 = tinstant_value_p(end1);
-    Datum ev2 = tinstant_value_p(end2);
-    TimestampTz upper = end1->t;
-    bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
-
-    /* Both segments are constant */
-    if (cbuffer_eq(DatumGetCbufferP(sv1), DatumGetCbufferP(ev1)) &&
-        cbuffer_eq(DatumGetCbufferP(sv2), DatumGetCbufferP(ev2)))
-    {
-      Datum value = func(sv1, sv2, dist);
-      tinstant_set(instants[0], value, lower);
-      tinstant_set(instants[1], value, upper);
-      result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
-        lower_inc, upper_inc, STEP, NORMALIZE_NO);
-    }
-    /* General case */
-    else
-    {
-      /* Find the instants t1 and t2 (if any) during which the dwithin
-       * function is true */
-      TimestampTz t1, t2;
-      Datum sev1 = linear1 ? ev1 : sv1;
-      Datum sev2 = linear2 ? ev2 : sv2;
-      int solutions = tcbuffersegm_dwithin_turnpt(sv1, sev1, sv2, sev2,
-        DatumGetFloat8(dist), lower, upper, &t1, &t2);
-      bool upper_inc1 = linear1 && linear2 && upper_inc;
-      nseqs += tdwithin_add_solutions(solutions, lower, upper, lower_inc,
-        upper_inc, upper_inc1, t1, t2, instants, &result[nseqs]);
-      /* Add extra final point if only one segment is linear */
-      if (upper_inc && (! linear1 || ! linear2))
-      {
-        Datum value = func(ev1, ev2, dist);
-        tinstant_set(instants[0], value, upper);
-        result[nseqs++] = tinstant_to_tsequence(instants[0], STEP);
-      }
-    }
-    sv1 = ev1;
-    sv2 = ev2;
-    lower = upper;
-    lower_inc = true;
-  }
-  pfree(instants[0]); pfree(instants[1]); pfree(instants[2]);
-  return nseqs;
-}
-
-/**
- * @brief Return the temporal dwithin relationship between two temporal
- $ circular buffer sequences
- * @param[in] seq1,seq2 Temporal points
- * @param[in] dist Distance
- * @param[in] func DWithin function (2D or 3D)
- * @pre The temporal circular buffers must be synchronized.
- */
-static TSequenceSet *
-tdwithin_tcbufferseq_tcbufferseq(const TSequence *seq1, const TSequence *seq2,
-  double dist, datum_func3 func UNUSED)
-{
-  TSequence **sequences = palloc(sizeof(TSequence *) * seq1->count * 4);
-  int count = tdwithin_tcbufferseq_tcbufferseq_iter(seq1, seq2,
-    Float8GetDatum(dist), sequences);
-  return tsequenceset_make_free(sequences, count, NORMALIZE);
-}
-
-/**
- * @brief Return the timestamps at which the segments of two temporal circular
- * buffer sequence sets are within a distance
- * @param[in] ss1,ss2 Temporal points
- * @param[in] dist Distance
- * @param[in] func DWithin function (2D or 3D)
- * @pre The temporal circular buffers must be synchronized.
- */
-static TSequenceSet *
-tdwithin_tcbufferseqset_tcbufferseqset(const TSequenceSet *ss1,
-  const TSequenceSet *ss2, double dist, datum_func3 func)
-{
-  /* Singleton sequence set */
-  if (ss1->count == 1)
-    return tdwithin_tcbufferseq_tcbufferseq(TSEQUENCESET_SEQ_N(ss1, 0),
-      TSEQUENCESET_SEQ_N(ss2, 0), dist, func);
-
-  TSequence **sequences = palloc(sizeof(TSequence *) * ss1->totalcount * 4);
-  int nseqs = 0;
-  for (int i = 0; i < ss1->count; i++)
-    nseqs += tdwithin_tcbufferseq_tcbufferseq_iter(TSEQUENCESET_SEQ_N(ss1, i),
-      TSEQUENCESET_SEQ_N(ss2, i), Float8GetDatum(dist), &sequences[nseqs]);
-  assert(nseqs > 0);
-  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Return the timestamps at which a temporal circular buffer sequence
- * and a point are within a distance (iterator function)
- * @param[in] seq Temporal point
- * @param[in] point Point
- * @param[in] dist Distance
- * @param[in] func DWithin function (2D or 3D)
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
- * @return Number of elements in the resulting array
- */
-static int
-tdwithin_tcbufferseq_point_iter(const TSequence *seq, Datum point, Datum dist,
-  datum_func3 func, TSequence **result)
-{
-  const TInstant *start = TSEQUENCE_INST_N(seq, 0);
-  Datum startvalue = tinstant_value_p(start);
-  if (seq->count == 1)
-  {
-    TInstant *inst = tinstant_make(func(startvalue, point, dist), T_TBOOL,
-      start->t);
-    result[0] = tinstant_to_tsequence_free(inst, STEP);
-    return 1;
-  }
-
-  int nseqs = 0;
-  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
-  TimestampTz lower = start->t;
-  bool lower_inc = seq->period.lower_inc;
-  const Datum datum_true = BoolGetDatum(true);
-  /* We create three temporal instants with arbitrary values that are set in
-   * the for loop to avoid creating and freeing the instants each time a
-   * segment of the result is computed */
-  TInstant *instants[3];
-  instants[0] = tinstant_make(datum_true, T_TBOOL, lower);
-  instants[1] = tinstant_copy(instants[0]);
-  instants[2] = tinstant_copy(instants[0]);
-  for (int i = 1; i < seq->count; i++)
-  {
-    /* Each iteration of the for loop adds between one and three sequences */
-    const TInstant *end = TSEQUENCE_INST_N(seq, i);
-    Datum endvalue = tinstant_value_p(end);
-    TimestampTz upper = end->t;
-    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-
-    /* Segment is constant or has step interpolation */
-    if (datum_point_eq(startvalue, endvalue) || ! linear)
-    {
-      Datum value = func(startvalue, point, dist);
-      tinstant_set(instants[0], value, lower);
-      if (! linear && upper_inc)
-      {
-        Datum value1 = func(endvalue, point, dist);
-        tinstant_set(instants[1], value1, upper);
-      }
-      else
-        tinstant_set(instants[1], value, upper);
-      result[nseqs++] = tsequence_make((const TInstant **) instants, 2,
-        lower_inc, upper_inc, STEP, NORMALIZE_NO);
-    }
-    /* General case */
-    else
-    {
-      /* Find the instants t1 and t2 (if any) during which the dwithin
-       * function is true */
-      TimestampTz t1, t2;
-      int solutions = tcbuffersegm_dwithin_turnpt(startvalue, endvalue, point,
-        point,DatumGetFloat8(dist), lower, upper, &t1, &t2);
-      bool upper_inc1 = linear && upper_inc;
-      nseqs += tdwithin_add_solutions(solutions, lower, upper, lower_inc,
-        upper_inc, upper_inc1, t1, t2, instants, &result[nseqs]);
-    }
-    start = end;
-    startvalue = endvalue;
-    lower = upper;
-    lower_inc = true;
-  }
-  pfree(instants[0]); pfree(instants[1]); pfree(instants[2]);
-  return nseqs;
-}
-
-/**
- * @brief Return the timestamps at which a temporal circular buffer sequence
- * and a point are within a distance
- * @param[in] seq Temporal point
- * @param[in] point Point
- * @param[in] dist Distance
- * @param[in] func DWithin function (2D or 3D)
- * @pre The temporal circular buffers must be synchronized.
- */
-static TSequenceSet *
-tdwithin_tcbufferseq_point(const TSequence *seq, Datum point, Datum dist,
-  datum_func3 func)
-{
-  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * 4);
-  int count = tdwithin_tcbufferseq_point_iter(seq, point, dist, func, sequences);
-  /* We are sure that nseqs > 0 since the point is non-empty */
-  return tsequenceset_make_free(sequences, count, NORMALIZE);
-}
-
-/**
- * @brief Return the timestamps at which a temporal circular buffer sequence
- * set and a point are within a distance
- * @param[in] ss Temporal point
- * @param[in] point Point
- * @param[in] dist Distance
- * @param[in] func DWithin function (2D or 3D)
- */
-static TSequenceSet *
-tdwithin_tcbufferseqset_point(const TSequenceSet *ss, Datum point, Datum dist,
-  datum_func3 func)
-{
-  /* Singleton sequence set */
-  if (ss->count == 1)
-    return tdwithin_tcbufferseq_point(TSEQUENCESET_SEQ_N(ss, 0), point, dist,
-      func);
-
-  TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount * 4);
-  int nseqs = 0;
-  for (int i = 0; i < ss->count; i++)
-    nseqs += tdwithin_tcbufferseq_point_iter(TSEQUENCESET_SEQ_N(ss, i), point,
-      dist, func, &sequences[nseqs]);
-  assert(nseqs > 0);
-  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
-}
-
-/*****************************************************************************
  * Temporal dwithin
  *****************************************************************************/
 
@@ -1694,112 +1294,14 @@ tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist,
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
-  datum_func3 func = &datum_cbuffer_dwithin;
-  Temporal *result;
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-    {
-      Datum value = tinstant_value_p((TInstant *) temp);
-      result = (Temporal *) tinstant_make(func(value, GserializedPGetDatum(cb),
-        Float8GetDatum(dist)), T_TBOOL, ((TInstant *) temp)->t);
-      break;
-    }
-    case TSEQUENCE:
-    {
-      if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-        result = (Temporal *) tdwithin_tcbufferseq_point((TSequence *) temp,
-            GserializedPGetDatum(cb), Float8GetDatum(dist), func);
-      else
-      {
-        result = tspatialrel_tcbuffer_cbuffer(temp, cb, Float8GetDatum(dist),
-          (varfunc) func, 1, INVERT_NO);
-      }
-      break;
-    }
-    default: /* TSEQUENCESET */
-      if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-        result = (Temporal *) tdwithin_tcbufferseqset_point(
-          (TSequenceSet *) temp, GserializedPGetDatum(cb),
-          Float8GetDatum(dist), func);
-      else
-      {
-        result = tspatialrel_tcbuffer_cbuffer(temp, cb, Float8GetDatum(dist),
-          (varfunc) func, 1, INVERT_NO);
-      }
-  }
-  /* Restrict the result to the Boolean value in the fourth argument if any */
-  if (result && restr)
-  {
-    Temporal *atresult = temporal_restrict_value(result, atvalue, REST_AT);
-    pfree(result);
-    result = atresult;
-  }
-  return result;
+  /* Call the generic function passing the distance and the turning point
+   * functions to be applied */
+  return tdwithin_tspatial_spatial(temp, PointerGetDatum(cb),
+    Float8GetDatum(dist), restr, atvalue, &datum_cbuffer_dwithin,
+    &tcbuffersegm_dwithin_turnpt);
 }
 
-/**
- * @brief Return a temporal Boolean that states whether two temporal circular
- * buffers are within a distance
- * @pre The temporal circular buffers are synchronized.
- */
-Temporal *
-tdwithin_tcbuffer_tcbuffer_sync(const Temporal *sync1, const Temporal *sync2,
-  double dist, bool restr, bool atvalue)
-{
-  datum_func3 func = &datum_cbuffer_dwithin;
-  Temporal *result;
-  assert(temptype_subtype(sync1->subtype));
-  switch (sync1->subtype)
-  {
-    case TINSTANT:
-    {
-      Datum value1 = tinstant_value_p((TInstant *) sync1);
-      Datum value2 = tinstant_value_p((TInstant *) sync2);
-      result = (Temporal *) tinstant_make(func(value1, value2,
-        Float8GetDatum(dist)), T_TBOOL, ((TInstant *) sync1)->t);
-      break;
-    }
-    case TSEQUENCE:
-    {
-      interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
-      interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
-      if (interp1 == LINEAR || interp2 == LINEAR)
-        result = (Temporal *) tdwithin_tcbufferseq_tcbufferseq(
-          (TSequence *) sync1, (TSequence *) sync2, dist, func);
-      else
-      {
-        /* Both sequences have either discrete or step interpolation */
-        result = tspatialrel_tspatial_tspatial_int(sync1, sync2,
-          Float8GetDatum(dist), (varfunc) func, 1, INVERT_NO);
-      }
-      break;
-    }
-    default: /* TSEQUENCESET */
-    {
-      interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
-      interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
-      if (interp1 == LINEAR || interp2 == LINEAR)
-        result = (Temporal *) tdwithin_tcbufferseqset_tcbufferseqset(
-          (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
-      else
-      {
-        /* Both sequence sets have step interpolation */
-        result = tspatialrel_tspatial_tspatial_int(sync1, sync2,
-          Float8GetDatum(dist), (varfunc) func, 1, INVERT_NO);
-      }
-    }
-  }
-  /* Restrict the result to the Boolean value in the fourth argument if any */
-  if (result && restr)
-  {
-    Temporal *atresult = temporal_restrict_value(result, atvalue, REST_AT);
-    pfree(result);
-    result = atresult;
-  }
-  return result;
-}
+/*****************************************************************************/
 
 /**
  * @ingroup meos_cbuffer_rel_temp
@@ -1809,7 +1311,7 @@ tdwithin_tcbuffer_tcbuffer_sync(const Temporal *sync1, const Temporal *sync2,
  * @param[in] dist Distance
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tdwithin_tspatial_tspatial()
+ * @csqlfn #Tdwithin_tcbuffer_tcbuffer()
  */
 Temporal *
 tdwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
@@ -1828,8 +1330,11 @@ tdwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
       &sync1, &sync2))
     return NULL;
 
-  Temporal *result = tdwithin_tcbuffer_tcbuffer_sync(sync1, sync2, dist, restr,
-    atvalue);
+  /* Call the generic function passing the distance and the turning point
+   * functions to be applied */
+  Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2,
+    Float8GetDatum(dist), restr, atvalue, &datum_cbuffer_dwithin,
+    &tcbuffersegm_dwithin_turnpt);
   pfree(sync1); pfree(sync2);
   return result;
 }

@@ -39,7 +39,7 @@
 -- ALL the following functions are not STRICT
 CREATE FUNCTION tContains(geometry, tgeompoint, atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tcontains_geo_tspatial'
+  AS 'MODULE_PATHNAME', 'Tcontains_geo_tgeo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************
@@ -49,11 +49,11 @@ CREATE FUNCTION tContains(geometry, tgeompoint, atvalue bool DEFAULT NULL)
 -- ALL the following functions are not STRICT
 CREATE FUNCTION tDisjoint(geometry, tgeompoint, atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tdisjoint_geo_tspatial'
+  AS 'MODULE_PATHNAME', 'Tdisjoint_geo_tgeo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tDisjoint(tgeompoint, geometry, atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tdisjoint_tspatial_geo'
+  AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_geo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- Alias for temporal not equals, that is, tgeo_tne or #<>
 CREATE FUNCTION tDisjoint(tgeompoint, tgeompoint, atvalue bool DEFAULT NULL)
@@ -72,11 +72,11 @@ CREATE FUNCTION tDisjoint(tgeogpoint, tgeogpoint, atvalue bool DEFAULT NULL)
 -- ALL the following functions are not STRICT
 CREATE FUNCTION tIntersects(geometry, tgeompoint, atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tintersects_geo_tspatial'
+  AS 'MODULE_PATHNAME', 'Tintersects_geo_tgeo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tIntersects(tgeompoint, geometry, atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tintersects_tspatial_geo'
+  AS 'MODULE_PATHNAME', 'Tintersects_tgeo_geo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- Alias for temporal equals, that is, tgeo_teq or #=
 CREATE FUNCTION tIntersects(tgeompoint, tgeompoint, atvalue bool DEFAULT NULL)
@@ -95,11 +95,11 @@ CREATE FUNCTION tIntersects(tgeogpoint, tgeogpoint, atvalue bool DEFAULT NULL)
 -- ALL the following functions are not STRICT
 CREATE FUNCTION tTouches(geometry, tgeompoint, atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Ttouches_geo_tspatial'
+  AS 'MODULE_PATHNAME', 'Ttouches_geo_tgeo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tTouches(tgeompoint, geometry, atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Ttouches_tspatial_geo'
+  AS 'MODULE_PATHNAME', 'Ttouches_tgeo_geo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************
@@ -110,17 +110,17 @@ CREATE FUNCTION tTouches(tgeompoint, geometry, atvalue bool DEFAULT NULL)
 CREATE FUNCTION tDwithin(geometry, tgeompoint, dist float,
    atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tdwithin_geo_tspatial'
+  AS 'MODULE_PATHNAME', 'Tdwithin_geo_tgeo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tDwithin(tgeompoint, geometry, dist float,
     atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tdwithin_tspatial_geo'
+  AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_geo'
   LANGUAGE C IMMUTABLE  PARALLEL SAFE;
 CREATE FUNCTION tDwithin(tgeompoint, tgeompoint, dist float,
     atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tdwithin_tspatial_tspatial'
+  AS 'MODULE_PATHNAME', 'Tdwithin_tgeo_tgeo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************/

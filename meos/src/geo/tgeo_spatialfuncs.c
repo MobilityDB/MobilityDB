@@ -535,6 +535,26 @@ ensure_same_geodetic_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
   return true;
 }
 
+
+/**
+ * @brief Ensure that the spatiotemporal argument and the geometry/geography
+ * have the same type of coordinates, either planar or geodetic
+ */
+bool
+ensure_same_geodetic_tspatial_base(const Temporal *temp, Datum base)
+{
+  meosType basetype = temptype_basetype(temp->temptype);
+  assert(spatial_basetype(basetype));
+  int16 flags = spatial_flags(base, basetype);
+  if (MEOS_FLAGS_GET_GEODETIC(temp->flags) != MEOS_FLAGS_GET_GEODETIC(flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed planar and geodetic coordinates");
+    return false;
+  }
+  return true;
+}
+
 /**
  * @brief Ensure that the SRID is known
  */
@@ -851,6 +871,23 @@ ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   assert(temp); assert(gs); assert(tgeo_type_all(temp->temptype));
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_same_geodetic_tspatial_geo(temp, gs))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of a temporal spatial value and a 
+ * geometry/geography
+ * @note The geometry can be empty since some functions such atGeometry or
+ * minusGeometry return different result on empty geometries.
+ */
+bool
+ensure_valid_tspatial_base(const Temporal *temp, Datum base)
+{
+  assert(temp); assert(tspatial_type(temp->temptype));
+  meosType basetype = temptype_basetype(temp->temptype);
+  if (! ensure_same_srid(tspatial_srid(temp), spatial_srid(base, basetype)) ||
+      ! ensure_same_geodetic_tspatial_base(temp, base))
     return false;
   return true;
 }

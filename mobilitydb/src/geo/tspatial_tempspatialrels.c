@@ -62,7 +62,7 @@
  * geometry and a temporal geo
  */
 Datum
-Tinterrel_geo_tspatial(FunctionCallInfo fcinfo, bool tinter)
+Tinterrel_geo_tgeo(FunctionCallInfo fcinfo, bool tinter)
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
     PG_RETURN_NULL();
@@ -76,7 +76,7 @@ Tinterrel_geo_tspatial(FunctionCallInfo fcinfo, bool tinter)
     restr = true;
   }
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tspatial_geo(temp, gs, tinter, restr, atvalue);
+  Temporal *result = tinterrel_tgeo_geo(temp, gs, tinter, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -89,7 +89,7 @@ Tinterrel_geo_tspatial(FunctionCallInfo fcinfo, bool tinter)
  * geometry and a temporal geo
  */
 Datum
-Tinterrel_tspatial_geo(FunctionCallInfo fcinfo, bool tinter)
+Tinterrel_tgeo_geo(FunctionCallInfo fcinfo, bool tinter)
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
     PG_RETURN_NULL();
@@ -103,7 +103,7 @@ Tinterrel_tspatial_geo(FunctionCallInfo fcinfo, bool tinter)
     restr = true;
   }
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tspatial_geo(temp, gs, tinter, restr, atvalue);
+  Temporal *result = tinterrel_tgeo_geo(temp, gs, tinter, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
@@ -227,8 +227,8 @@ Tspatialrel_tspatial_tspatial(FunctionCallInfo fcinfo,
  * Temporal contains
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tcontains_geo_tspatial(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tcontains_geo_tspatial);
+PGDLLEXPORT Datum Tcontains_geo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcontains_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether a geometry contains a
@@ -236,13 +236,13 @@ PG_FUNCTION_INFO_V1(Tcontains_geo_tspatial);
  * @sqlfn tContains()
  */
 Datum
-Tcontains_geo_tspatial(PG_FUNCTION_ARGS)
+Tcontains_geo_tgeo(PG_FUNCTION_ARGS)
 {
-  return Tspatialrel_geo_tspatial(fcinfo, &tcontains_geo_tspatial);
+  return Tspatialrel_geo_tspatial(fcinfo, &tcontains_geo_tgeo);
 }
 
-PGDLLEXPORT Datum Tcontains_tspatial_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tcontains_tspatial_geo);
+PGDLLEXPORT Datum Tcontains_tgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcontains_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether a temporal geometry
@@ -250,9 +250,9 @@ PG_FUNCTION_INFO_V1(Tcontains_tspatial_geo);
  * @sqlfn tContains()
  */
 Datum
-Tcontains_tspatial_geo(PG_FUNCTION_ARGS)
+Tcontains_tgeo_geo(PG_FUNCTION_ARGS)
 {
-  return Tspatialrel_tspatial_geo(fcinfo, &tcontains_tspatial_geo);
+  return Tspatialrel_tspatial_geo(fcinfo, &tcontains_tgeo_geo);
 }
 
 PGDLLEXPORT Datum Tcontains_tspatial_tspatial(PG_FUNCTION_ARGS);
@@ -273,8 +273,8 @@ Tcontains_tspatial_tspatial(PG_FUNCTION_ARGS)
  * Temporal covers
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tcovers_geo_tspatial(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tcovers_geo_tspatial);
+PGDLLEXPORT Datum Tcovers_geo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcovers_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether a geometry covers a
@@ -282,13 +282,13 @@ PG_FUNCTION_INFO_V1(Tcovers_geo_tspatial);
  * @sqlfn tCovers()
  */
 Datum
-Tcovers_geo_tspatial(PG_FUNCTION_ARGS)
+Tcovers_geo_tgeo(PG_FUNCTION_ARGS)
 {
-  return Tspatialrel_geo_tspatial(fcinfo, &tcovers_geo_tspatial);
+  return Tspatialrel_geo_tspatial(fcinfo, &tcovers_geo_tgeo);
 }
 
-PGDLLEXPORT Datum Tcovers_tspatial_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tcovers_tspatial_geo);
+PGDLLEXPORT Datum Tcovers_tgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcovers_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether a temporal geometry
@@ -296,9 +296,9 @@ PG_FUNCTION_INFO_V1(Tcovers_tspatial_geo);
  * @sqlfn tCovers()
  */
 Datum
-Tcovers_tspatial_geo(PG_FUNCTION_ARGS)
+Tcovers_tgeo_geo(PG_FUNCTION_ARGS)
 {
-  return Tspatialrel_tspatial_geo(fcinfo, &tcovers_tspatial_geo);
+  return Tspatialrel_tspatial_geo(fcinfo, &tcovers_tgeo_geo);
 }
 
 PGDLLEXPORT Datum Tcovers_tspatial_tspatial(PG_FUNCTION_ARGS);
@@ -319,8 +319,8 @@ Tcovers_tspatial_tspatial(PG_FUNCTION_ARGS)
  * Temporal disjoint
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tdisjoint_geo_tspatial(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdisjoint_geo_tspatial);
+PGDLLEXPORT Datum Tdisjoint_geo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdisjoint_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether a temporal geo
@@ -328,13 +328,13 @@ PG_FUNCTION_INFO_V1(Tdisjoint_geo_tspatial);
  * @sqlfn tDisjoint()
  */
 inline Datum
-Tdisjoint_geo_tspatial(PG_FUNCTION_ARGS)
+Tdisjoint_geo_tgeo(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_geo_tspatial(fcinfo, TDISJOINT);
+  return Tinterrel_geo_tgeo(fcinfo, TDISJOINT);
 }
 
-PGDLLEXPORT Datum Tdisjoint_tspatial_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdisjoint_tspatial_geo);
+PGDLLEXPORT Datum Tdisjoint_tgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdisjoint_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether a temporal geo
@@ -342,9 +342,9 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tspatial_geo);
  * @sqlfn tDisjoint()
  */
 inline Datum
-Tdisjoint_tspatial_geo(PG_FUNCTION_ARGS)
+Tdisjoint_tgeo_geo(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tspatial_geo(fcinfo, TDISJOINT);
+  return Tinterrel_tgeo_geo(fcinfo, TDISJOINT);
 }
 
 PGDLLEXPORT Datum Tdisjoint_tspatial_tspatial(PG_FUNCTION_ARGS);
@@ -366,8 +366,8 @@ Tdisjoint_tspatial_tspatial(PG_FUNCTION_ARGS)
  * Available for temporal geographies
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tintersects_geo_tspatial(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tintersects_geo_tspatial);
+PGDLLEXPORT Datum Tintersects_geo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tintersects_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether a temporal geo
@@ -375,13 +375,13 @@ PG_FUNCTION_INFO_V1(Tintersects_geo_tspatial);
  * @sqlfn tIntersects()
  */
 inline Datum
-Tintersects_geo_tspatial(PG_FUNCTION_ARGS)
+Tintersects_geo_tgeo(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_geo_tspatial(fcinfo, TINTERSECTS);
+  return Tinterrel_geo_tgeo(fcinfo, TINTERSECTS);
 }
 
-PGDLLEXPORT Datum Tintersects_tspatial_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tintersects_tspatial_geo);
+PGDLLEXPORT Datum Tintersects_tgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tintersects_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether a temporal geo
@@ -389,9 +389,9 @@ PG_FUNCTION_INFO_V1(Tintersects_tspatial_geo);
  * @sqlfn tIntersects()
  */
 inline Datum
-Tintersects_tspatial_geo(PG_FUNCTION_ARGS)
+Tintersects_tgeo_geo(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tspatial_geo(fcinfo, TINTERSECTS);
+  return Tinterrel_tgeo_geo(fcinfo, TINTERSECTS);
 }
 
 PGDLLEXPORT Datum Tintersects_tspatial_tspatial(PG_FUNCTION_ARGS);
@@ -412,8 +412,8 @@ Tintersects_tspatial_tspatial(PG_FUNCTION_ARGS)
  * Temporal touches
  *****************************************************************************/
 
-PGDLLEXPORT Datum Ttouches_geo_tspatial(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Ttouches_geo_tspatial);
+PGDLLEXPORT Datum Ttouches_geo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ttouches_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether a geometry touches a
@@ -423,7 +423,7 @@ PG_FUNCTION_INFO_V1(Ttouches_geo_tspatial);
  * ttouches_geo_tspatial is not defined in MEOS because it is redundant
  */
 Datum
-Ttouches_geo_tspatial(PG_FUNCTION_ARGS)
+Ttouches_geo_tgeo(PG_FUNCTION_ARGS)
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
     PG_RETURN_NULL();
@@ -436,7 +436,7 @@ Ttouches_geo_tspatial(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(2);
     restr = true;
   }
-  Temporal *result = ttouches_tspatial_geo(temp, gs, restr, atvalue);
+  Temporal *result = ttouches_tgeo_geo(temp, gs, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -444,8 +444,8 @@ Ttouches_geo_tspatial(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Ttouches_tspatial_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Ttouches_tspatial_geo);
+PGDLLEXPORT Datum Ttouches_tgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ttouches_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether a temporal geo
@@ -453,9 +453,9 @@ PG_FUNCTION_INFO_V1(Ttouches_tspatial_geo);
  * @sqlfn tTouches()
  */
 Datum
-Ttouches_tspatial_geo(PG_FUNCTION_ARGS)
+Ttouches_tgeo_geo(PG_FUNCTION_ARGS)
 {
-  return Tspatialrel_tspatial_geo(fcinfo, &ttouches_tspatial_geo);
+  return Tspatialrel_tspatial_geo(fcinfo, &ttouches_tgeo_geo);
 }
 
 PGDLLEXPORT Datum Ttouches_tspatial_tspatial(PG_FUNCTION_ARGS);
@@ -477,8 +477,8 @@ Ttouches_tspatial_tspatial(PG_FUNCTION_ARGS)
  * Available for temporal geographies
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tdwithin_geo_tspatial(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdwithin_geo_tspatial);
+PGDLLEXPORT Datum Tdwithin_geo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdwithin_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether a geometry and a
@@ -486,7 +486,7 @@ PG_FUNCTION_INFO_V1(Tdwithin_geo_tspatial);
  * @sqlfn tDwithin()
  */
 Datum
-Tdwithin_geo_tspatial(PG_FUNCTION_ARGS)
+Tdwithin_geo_tgeo(PG_FUNCTION_ARGS)
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
     PG_RETURN_NULL();
@@ -500,7 +500,7 @@ Tdwithin_geo_tspatial(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
-  Temporal *result = tdwithin_tspatial_geo(temp, gs, dist, restr, atvalue);
+  Temporal *result = tdwithin_tgeo_geo(temp, gs, dist, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -508,8 +508,8 @@ Tdwithin_geo_tspatial(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Tdwithin_tspatial_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdwithin_tspatial_geo);
+PGDLLEXPORT Datum Tdwithin_tgeo_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdwithin_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether a temporal geo and
@@ -517,7 +517,7 @@ PG_FUNCTION_INFO_V1(Tdwithin_tspatial_geo);
  * @sqlfn tDwithin()
  */
 Datum
-Tdwithin_tspatial_geo(PG_FUNCTION_ARGS)
+Tdwithin_tgeo_geo(PG_FUNCTION_ARGS)
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
     PG_RETURN_NULL();
@@ -531,7 +531,7 @@ Tdwithin_tspatial_geo(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
-  Temporal *result = tdwithin_tspatial_geo(temp, gs, dist, restr, atvalue);
+  Temporal *result = tdwithin_tgeo_geo(temp, gs, dist, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
@@ -541,8 +541,8 @@ Tdwithin_tspatial_geo(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PGDLLEXPORT Datum Tdwithin_tspatial_tspatial(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdwithin_tspatial_tspatial);
+PGDLLEXPORT Datum Tdwithin_tgeo_tgeo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdwithin_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether two spatiotemporal
@@ -550,7 +550,7 @@ PG_FUNCTION_INFO_V1(Tdwithin_tspatial_tspatial);
  * @sqlfn tDwithin()
  */
 Datum
-Tdwithin_tspatial_tspatial(PG_FUNCTION_ARGS)
+Tdwithin_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
     PG_RETURN_NULL();
@@ -564,8 +564,7 @@ Tdwithin_tspatial_tspatial(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_BOOL(3);
     restr = true;
   }
-  Temporal *result = tdwithin_tspatial_tspatial(temp1, temp2, dist, restr,
-    atvalue);
+  Temporal *result = tdwithin_tgeo_tgeo(temp1, temp2, dist, restr, atvalue);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)

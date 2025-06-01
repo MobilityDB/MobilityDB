@@ -111,20 +111,19 @@ geometry 'polygon((0 0,1 1,2 0.5,3 1,4 1,4 0,0 0))'))
  *****************************************************************************/
 
 /**
- * @brief Return a temporal Boolean that states whether a temporal geo instant
- * and a geometry intersect or are disjoint
- * @param[in] inst Temporal geo
- * @param[in] gs Geometry
+ * @brief Return a temporal Boolean that states whether a spatiotemporal
+ * instant and a base value intersect or are disjoint
+ * @param[in] inst Spatiotemporal value
+ * @param[in] base Base value
  * @param[in] tinter True when computing tintersects, false for tdisjoint
- * @param[in] func PostGIS function to be used
+ * @param[in] func Spatial relationship function to be applied
  */
 TInstant *
-tinterrel_tspatialinst_geo(const TInstant *inst, const GSERIALIZED *gs,
-  bool tinter, datum_func2 func)
+tinterrel_tspatialinst_base(const TInstant *inst, Datum base, bool tinter,
+  datum_func2 func)
 {
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  bool result = DatumGetBool(func(tinstant_value_p(inst),
-    GserializedPGetDatum(gs)));
+  bool result = DatumGetBool(func(tinstant_value_p(inst), base));
   /* Invert the result for disjoint */
   if (! tinter)
     result = ! result;
@@ -132,15 +131,15 @@ tinterrel_tspatialinst_geo(const TInstant *inst, const GSERIALIZED *gs,
 }
 
 /**
- * @brief Return a temporal Boolean that states whether a temporal geo sequence
- * and a geometry intersect or are disjoint
- * @param[in] seq Temporal geo
- * @param[in] gs Geometry
+ * @brief Return a temporal Boolean that states whether a spatiotemporal
+ * sequence and a base value intersect or are disjoint
+ * @param[in] seq Spatiotemporal value
+ * @param[in] base Base value
  * @param[in] tinter True when computing tintersects, false for tdisjoint
- * @param[in] func PostGIS function to be used
+ * @param[in] func Spatial relationship function to be applied
  */
 TSequence *
-tinterrel_tspatialseq_discstep_geo(const TSequence *seq, const GSERIALIZED *gs,
+tinterrel_tspatialseq_discstep_base(const TSequence *seq, Datum base,
   bool tinter, datum_func2 func)
 {
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
@@ -149,8 +148,7 @@ tinterrel_tspatialseq_discstep_geo(const TSequence *seq, const GSERIALIZED *gs,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    bool result = DatumGetBool(func(tinstant_value_p(inst),
-      GserializedPGetDatum(gs)));
+    bool result = DatumGetBool(func(tinstant_value_p(inst), base));
     /* Invert the result for disjoint */
     if (! tinter)
       result = ! result;
@@ -166,7 +164,7 @@ tinterrel_tspatialseq_discstep_geo(const TSequence *seq, const GSERIALIZED *gs,
  * geometry intersect or are disjoint
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
- * @param[in] box Bounding box of the geometry
+ * @param[in] box Bounding box of the base value
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  * @param[out] count Number of elements in the resulting array
  * @pre The temporal point has linear interpolation and is simple, that is,
@@ -275,9 +273,9 @@ tinterrel_tpointseq_simple_geo(const TSequence *seq, const GSERIALIZED *gs,
  * are simple (that is, not self-intersecting) and loops for each fragment
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
- * @param[in] box Bounding box of the geometry
+ * @param[in] box Bounding box of the base value
  * @param[in] tinter True when computing tintersects, false for tdisjoint
- * @param[in] func PostGIS function to be used
+ * @param[in] func Spatial relationship function to be applied
  * @param[out] count Number of elements in the output array
  */
 static TSequence **
@@ -290,8 +288,8 @@ tinterrel_tpointseq_linear_geo_iter(const TSequence *seq, const GSERIALIZED *gs,
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    TInstant *inst = tinterrel_tspatialinst_geo(TSEQUENCE_INST_N(seq, 0), gs,
-      tinter, func);
+    TInstant *inst = tinterrel_tspatialinst_base(TSEQUENCE_INST_N(seq, 0),
+      PointerGetDatum(gs), tinter, func);
     TSequence **result = palloc(sizeof(TSequence *));
     result[0] = tinstant_to_tsequence_free(inst, STEP);
     *count = 1;
@@ -326,8 +324,8 @@ tinterrel_tpointseq_linear_geo_iter(const TSequence *seq, const GSERIALIZED *gs,
  * for each piece.
  * @param[in] seq Temporal point
  * @param[in] gs Geometry
- * @param[in] box Bounding box of the geometry
- * @param[in] func PostGIS function to be used
+ * @param[in] box Bounding box of the base value
+ * @param[in] func Spatial relationship function to be applied
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  */
 TSequenceSet *
@@ -346,26 +344,26 @@ tinterrel_tpointseq_linear_geo(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
- * @brief Return a temporal Boolean that states whether a temporal geo sequence
- * set and a geometry intersect or are disjoint
- * @param[in] ss Temporal geo
- * @param[in] gs Geometry
- * @param[in] box Bounding box of the geometry
+ * @brief Return a temporal Boolean that states whether a spatiotemporal
+ * sequence set and a base value intersect or are disjoint
+ * @param[in] ss Spatiotemporal value
+ * @param[in] base Base value
+ * @param[in] box Bounding box of the base value
  * @param[in] tinter True when computing tintersects, false for tdisjoint
- * @param[in] func PostGIS function to be used
+ * @param[in] func Spatial relationship function to be applied
  */
 TSequenceSet *
-tinterrel_tspatialseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs,
+tinterrel_tspatialseqset_base(const TSequenceSet *ss, Datum base,
   const STBox *box, bool tinter, datum_func2 func)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
   {
     if (MEOS_FLAGS_LINEAR_INTERP(ss->flags))
-      return tinterrel_tpointseq_linear_geo(TSEQUENCESET_SEQ_N(ss, 0), gs,
-        box, tinter, func);
-    TSequence *res = tinterrel_tspatialseq_discstep_geo(
-      TSEQUENCESET_SEQ_N(ss, 0), gs, tinter, func);
+      return tinterrel_tpointseq_linear_geo(TSEQUENCESET_SEQ_N(ss, 0), 
+        DatumGetGserializedP(base), box, tinter, func);
+    TSequence *res = tinterrel_tspatialseq_discstep_base(
+      TSEQUENCESET_SEQ_N(ss, 0), base, tinter, func);
     TSequenceSet *result = tsequence_to_tsequenceset(res);
     pfree(res);
     return result;
@@ -384,7 +382,8 @@ tinterrel_tspatialseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs,
     for (int i = 0; i < ss->count; i++)
     {
       sequences[i] = tinterrel_tpointseq_linear_geo_iter(
-        TSEQUENCESET_SEQ_N(ss, i), gs, box, tinter, func, &countseqs[i]);
+        TSEQUENCESET_SEQ_N(ss, i), DatumGetGserializedP(base), box, tinter,
+          func, &countseqs[i]);
       totalcount += countseqs[i];
     }
     allseqs = tseqarr2_to_tseqarr(sequences, countseqs, ss->count, totalcount);
@@ -393,36 +392,34 @@ tinterrel_tspatialseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs,
   {
     allseqs = palloc(sizeof(TSequence *) * ss->count);
     for (int i = 0; i < ss->count; i++)
-      allseqs[i] = tinterrel_tspatialseq_discstep_geo(TSEQUENCESET_SEQ_N(ss, i),
-        gs, tinter, func);
+      allseqs[i] = tinterrel_tspatialseq_discstep_base(
+        TSEQUENCESET_SEQ_N(ss, i), base, tinter, func);
     totalcount = ss->count;
   }
   return tsequenceset_make_free(allseqs, totalcount, NORMALIZE);
 }
 
 /**
- * @brief Return a temporal Boolean that states whether a temporal geo and a
- * geometry intersect or are disjoint
- * @param[in] temp Temporal geo
- * @param[in] gs Geometry
+ * @brief Return a temporal Boolean that states whether a spatialtemporal
+ * value and a base value intersect or are disjoint
+ * @param[in] temp Spatiotemporal value
+ * @param[in] base Base value
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  * @param[in] restr True if the atValue function is applied to the result
  * @param[in] atvalue Value to be used for the atValue function
+ * @note The function assumes that all validity tests have been previously done
  */
 Temporal *
-tinterrel_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
-  bool restr, bool atvalue)
+tinterrel_tspatial_base(const Temporal *temp, Datum base, bool tinter,
+  bool restr, bool atvalue, datum_func2 func)
 {
-  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-    /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp,gs) || gserialized_is_empty(gs))
-    return NULL;
-
+  assert(temp); assert(DatumGetPointer(base));
   /* Bounding box test */
+  meosType basetype = temptype_basetype(temp->temptype);
   STBox box1, box2;
   tspatial_set_stbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
-  geo_set_stbox(gs, &box2);
+  spatial_set_stbox(base, basetype, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
   {
     if (tinter)
@@ -435,28 +432,24 @@ tinterrel_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
         temporal_from_base_temp(BoolGetDatum(true), T_TBOOL, temp);
   }
 
-  /* 3D only if both arguments are 3D */
-  datum_func2 func = MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
-      &datum_geom_intersects3d : &datum_geom_intersects2d;
-
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      result = (Temporal *) tinterrel_tspatialinst_geo((TInstant *) temp, gs,
-        tinter, func);
+      result = (Temporal *) tinterrel_tspatialinst_base((TInstant *) temp,
+        base, tinter, func);
       break;
     case TSEQUENCE:
       result = MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
-        (Temporal *) tinterrel_tpointseq_linear_geo((TSequence *) temp, gs,
-          &box2, tinter, func) :
-        (Temporal *) tinterrel_tspatialseq_discstep_geo((TSequence *) temp, gs,
-          tinter, func);
+        (Temporal *) tinterrel_tpointseq_linear_geo((TSequence *) temp,
+          DatumGetGserializedP(base), &box2, tinter, func) :
+        (Temporal *) tinterrel_tspatialseq_discstep_base((TSequence *) temp,
+          base, tinter, func);
       break;
     default: /* TSEQUENCESET */
-      result = (Temporal *) tinterrel_tspatialseqset_geo(
-        (TSequenceSet *) temp, gs, &box2, tinter, func);
+      result = (Temporal *) tinterrel_tspatialseqset_base(
+        (TSequenceSet *) temp, base, &box2, tinter, func);
   }
   /* Restrict the result to the Boolean value in the third argument if any */
   if (result && restr)
@@ -466,6 +459,33 @@ tinterrel_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
     result = atresult;
   }
   return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return a temporal Boolean that states whether a temporal geo and a
+ * geometry intersect or are disjoint
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @param[in] tinter True when computing tintersects, false for tdisjoint
+ * @param[in] restr True if the atValue function is applied to the result
+ * @param[in] atvalue Value to be used for the atValue function
+ */
+Temporal *
+tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
+  bool restr, bool atvalue)
+{
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+    /* Ensure the validity of the arguments */
+  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
+    return NULL;
+
+  /* 3D only if both arguments are 3D */
+  datum_func2 func = MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
+      &datum_geom_intersects3d : &datum_geom_intersects2d;
+  return tinterrel_tspatial_base(temp, PointerGetDatum(gs), tinter, restr,
+    atvalue, func);
 }
 
 /*****************************************************************************/
@@ -507,21 +527,21 @@ tinterrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * @brief Generic spatiotemporal relationship for a temporal geometry and a
- * geometry
- * @param[in] temp Temporal geo
- * @param[in] gs Geometry
+ * @brief Generic spatiotemporal relationship for a spatiotemporal value and a
+ * base value
+ * @param[in] temp Spatiotemporal value
+ * @param[in] base Base value
  * @param[in] param Parameter
- * @param[in] func PostGIS function to be called
+ * @param[in] func Spatial relationship function to be applied
  * @param[in] numparam Number of parameters of the function
  * @param[in] invert True if the arguments should be inverted
  * @return On error return `NULL`
  */
 Temporal *
-tspatialrel_tspatial_geo_int(const Temporal *temp, const GSERIALIZED *gs,
+tspatialrel_tspatial_base(const Temporal *temp, Datum base,
   Datum param, varfunc func, int numparam, bool invert)
 {
-  assert(temp); assert(gs); assert(! gserialized_is_empty(gs));
+  assert(temp); assert(DatumGetPointer(base));
   assert(tgeo_type_all(temp->temptype));
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;
@@ -535,7 +555,7 @@ tspatialrel_tspatial_geo_int(const Temporal *temp, const GSERIALIZED *gs,
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = invert;
   lfinfo.discont = lfinfo.reslinear; /* If linear interpolation */
-  return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
+  return tfunc_temporal_base(temp, base, &lfinfo);
 }
 
 /**
@@ -561,8 +581,8 @@ tspatialrel_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs,
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return NULL;
 
-  Temporal *result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
-    func, 0, INVERT_NO);
+  Temporal *result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs),
+    (Datum) NULL, func, 0, INVERT_NO);
 
   /* Restrict the result to the Boolean value in the last argument if any */
   if (result && restr)
@@ -580,7 +600,7 @@ tspatialrel_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @brief Generic spatiotemporal relationship for two temporal geometries
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] param Parameter
- * @param[in] func PostGIS function to be called
+ * @param[in] func Spatial relationship function to be applied
  * @param[in] numparam Number of parameters of the function
  * @param[in] invert True if the arguments should be inverted
  * @return On error return `NULL`
@@ -667,7 +687,7 @@ tspatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * @csqlfn #Tcontains_geo_tspatial()
  */
 Temporal *
-tcontains_geo_tspatial(const GSERIALIZED *gs, const Temporal *temp, bool restr,
+tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
@@ -681,13 +701,14 @@ tcontains_geo_tspatial(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   /* Temporal point case */
   if (tpoint_type(temp->temptype))
   {
-    Temporal *inter = tinterrel_tspatial_geo(temp, gs, TINTERSECTS, restr,
-      atvalue);
+    Temporal *inter = tinterrel_tspatial_base(temp, PointerGetDatum(gs),
+      TINTERSECTS, restr, atvalue, &datum_geom_intersects2d);
     GSERIALIZED *gsbound = geom_boundary(gs);
     if (! gserialized_is_empty(gsbound))
     {
-      Temporal *inter_bound = tinterrel_tspatial_geo(temp, gsbound,
-        TINTERSECTS, restr, atvalue);
+      Temporal *inter_bound = tinterrel_tspatial_base(temp,
+        PointerGetDatum(gsbound), TINTERSECTS, restr, atvalue,
+        &datum_geom_intersects2d);
       Temporal *not_inter_bound = tnot_tbool(inter_bound);
       result = boolop_tbool_tbool(inter, not_inter_bound, &datum_and);
       pfree(inter); pfree(gsbound); pfree(inter_bound); pfree(not_inter_bound);
@@ -698,7 +719,7 @@ tcontains_geo_tspatial(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   else
   /* Temporal geometry case */
   {
-    result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
+    result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs), (Datum) NULL,
       (varfunc) &datum_geom_contains, 0, INVERT);
   }
 
@@ -727,7 +748,7 @@ tcontains_geo_tspatial(const GSERIALIZED *gs, const Temporal *temp, bool restr,
  * function can be used instead.
  */
 Temporal *
-tcontains_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
+tcontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
   return tspatialrel_tspatial_geo(temp, gs, restr, atvalue,
@@ -781,7 +802,7 @@ tcontains_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * @csqlfn #Tcovers_geo_tspatial()
  */
 Temporal *
-tcovers_geo_tspatial(const GSERIALIZED *gs, const Temporal *temp, bool restr,
+tcovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
@@ -791,8 +812,8 @@ tcovers_geo_tspatial(const GSERIALIZED *gs, const Temporal *temp, bool restr,
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return NULL;
 
-  Temporal *result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
-      (varfunc) &datum_geom_covers, 0, INVERT);
+  Temporal *result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs),
+    (Datum) NULL, (varfunc) &datum_geom_covers, 0, INVERT);
 
   /* Restrict the result to the Boolean value in the last argument if any */
   if (result && restr)
@@ -819,7 +840,7 @@ tcovers_geo_tspatial(const GSERIALIZED *gs, const Temporal *temp, bool restr,
  * function can be used instead.
  */
 Temporal *
-tcovers_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
+tcovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
   return tspatialrel_tspatial_geo(temp, gs, restr, atvalue,
@@ -861,11 +882,12 @@ tcovers_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * @param[in] atvalue Value to restrict
  * @csqlfn #Tdisjoint_tspatial_geo()
  */
-inline Temporal *
-tdisjoint_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs,
+Temporal *
+tdisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
-  return tinterrel_tspatial_geo(temp, gs, TDISJOINT, restr, atvalue);
+  return tinterrel_tspatial_base(temp, PointerGetDatum(gs), TDISJOINT, restr,
+    atvalue, &datum_geom_intersects2d);
 }
 
 /**
@@ -898,11 +920,15 @@ tdisjoint_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * @param[in] atvalue Value to restrict
  * @csqlfn #Tintersects_tspatial_geo()
  */
-inline Temporal *
-tintersects_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs,
+Temporal *
+tintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
-  return tinterrel_tspatial_geo(temp, gs, TINTERSECTS, restr, atvalue);
+  /* 3D only if both arguments are 3D */
+  datum_func2 func = MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
+      &datum_geom_intersects3d : &datum_geom_intersects2d;
+  return tinterrel_tspatial_base(temp, PointerGetDatum(gs), TINTERSECTS, restr,
+    atvalue, func);
 }
 
 /**
@@ -944,7 +970,7 @@ tintersects_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * function `ST_Touches` only supports 2D geometries
  */
 Temporal *
-ttouches_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
+ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
@@ -962,8 +988,8 @@ ttouches_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
     GSERIALIZED *gsbound = geom_boundary(gs);
     if (! gserialized_is_empty(gsbound))
     {
-      result = tinterrel_tspatial_geo(temp, gsbound, TINTERSECTS, restr,
-        atvalue);
+      result = tinterrel_tspatial_base(temp, PointerGetDatum(gsbound),
+        TINTERSECTS, restr, atvalue, &datum_geom_intersects2d);
       pfree(gsbound);
     }
     else
@@ -972,7 +998,7 @@ ttouches_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   /* Temporal geometry, temporal cbuffer case */
   else
   {
-    result = tspatialrel_tspatial_geo_int(temp, gs, (Datum) NULL,
+    result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs), (Datum) NULL,
       (varfunc) &datum_geom_touches, 0, INVERT_NO);
   }
 
@@ -1004,10 +1030,10 @@ ttouches_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
  * function `ST_Touches` only supports 2D geometries
  */
 Temporal *
-ttouches_geo_tspatial(const GSERIALIZED *gs, const Temporal *temp, bool restr,
+ttouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   bool atvalue)
 {
-  return ttouches_tspatial_geo(temp, gs, restr, atvalue);
+  return ttouches_tgeo_geo(temp, gs, restr, atvalue);
 }
 
 /**
@@ -1019,7 +1045,7 @@ ttouches_geo_tspatial(const GSERIALIZED *gs, const Temporal *temp, bool restr,
  * @param[in] temp1,temp2 Temporal geo
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Ttouches_tspatial_geo()
+ * @csqlfn #Ttouches_tspatial_tspatial()
  * @note The function does not support 3D or geographies since the PostGIS
  * function `ST_Touches` only supports 2D geometries.
  * @note The function is not defined for temporal points
@@ -1122,7 +1148,7 @@ ttouches_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * the solutions of the quadratic equation found previously
  * @return Number of sequences of the result
  */
-static int
+int
 tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc, bool upper_inc1, TimestampTz t1,
   TimestampTz t2, TInstant **instants, TSequence **result)
@@ -1182,8 +1208,9 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
  * @pre The temporal points must be synchronized.
  */
 static int
-tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
-  Datum dist, datum_func3 func, TSequence **result)
+tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
+  const TSequence *seq2, Datum dist, datum_func3 func, tpfunc_temp tpfn,
+  TSequence **result)
 {
   const TInstant *start1 = TSEQUENCE_INST_N(seq1, 0);
   const TInstant *start2 = TSEQUENCE_INST_N(seq2, 0);
@@ -1202,10 +1229,11 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
   Datum sv2 = tinstant_value_p(start2);
   TimestampTz lower = start1->t;
   bool lower_inc = seq1->period.lower_inc;
-  const Datum datum_true = BoolGetDatum(true);
+  meosType basetype = temptype_basetype(seq1->temptype);
   /* We create three temporal instants with arbitrary values that are set in
    * the for loop to avoid creating and freeing the instants each time a
    * segment of the result is computed */
+  const Datum datum_true = BoolGetDatum(true);
   TInstant *instants[3];
   instants[0] = tinstant_make(datum_true, T_TBOOL, lower);
   instants[1] = tinstant_copy(instants[0]);
@@ -1221,7 +1249,7 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
     bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
 
     /* Both segments are constant */
-    if (datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2))
+    if (datum_eq(sv1, ev1, basetype) && datum_eq(sv2, ev2, basetype))
     {
       Datum value = func(sv1, sv2, dist);
       tinstant_set(instants[0], value, lower);
@@ -1237,8 +1265,7 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
       TimestampTz t1, t2;
       Datum sev1 = linear1 ? ev1 : sv1;
       Datum sev2 = linear2 ? ev2 : sv2;
-      int solutions = tpointsegm_tdwithin_turnpt(sv1, sev1, sv2, sev2, dist,
-        lower, upper, &t1, &t2);
+      int solutions = tpfn(sv1, sev1, sv2, sev2, dist, lower, upper, &t1, &t2);
       bool upper_inc1 = linear1 && linear2 && upper_inc;
       nseqs += tdwithin_add_solutions(solutions, lower, upper, lower_inc,
         upper_inc, upper_inc1, t1, t2, instants, &result[nseqs]);
@@ -1268,12 +1295,12 @@ tdwithin_tpointseq_tpointseq_iter(const TSequence *seq1, const TSequence *seq2,
  * @pre The temporal points must be synchronized.
  */
 static TSequenceSet *
-tdwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
-  double dist, datum_func3 func)
+tdwithin_tlinearseq_tlinearseq(const TSequence *seq1, const TSequence *seq2,
+  Datum dist, datum_func3 func, tpfunc_temp tpfn)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq1->count * 4);
-  int count = tdwithin_tpointseq_tpointseq_iter(seq1, seq2, Float8GetDatum(dist),
-    func, sequences);
+  int count = tdwithin_tlinearseq_tlinearseq_iter(seq1, seq2, dist, func, tpfn,
+    sequences);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -1286,20 +1313,19 @@ tdwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
  * @pre The temporal points must be synchronized.
  */
 static TSequenceSet *
-tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
-  const TSequenceSet *ss2, double dist, datum_func3 func)
+tdwithin_tlinearseqset_tlinearseqset(const TSequenceSet *ss1,
+  const TSequenceSet *ss2, Datum dist, datum_func3 func, tpfunc_temp tpfn)
 {
   /* Singleton sequence set */
   if (ss1->count == 1)
-    return tdwithin_tpointseq_tpointseq(TSEQUENCESET_SEQ_N(ss1, 0),
-      TSEQUENCESET_SEQ_N(ss2, 0), dist, func);
+    return tdwithin_tlinearseq_tlinearseq(TSEQUENCESET_SEQ_N(ss1, 0),
+      TSEQUENCESET_SEQ_N(ss2, 0), dist, func, tpfn);
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ss1->totalcount * 4);
   int nseqs = 0;
   for (int i = 0; i < ss1->count; i++)
-    nseqs += tdwithin_tpointseq_tpointseq_iter(TSEQUENCESET_SEQ_N(ss1, i),
-      TSEQUENCESET_SEQ_N(ss2, i), Float8GetDatum(dist), func,
-      &sequences[nseqs]);
+    nseqs += tdwithin_tlinearseq_tlinearseq_iter(TSEQUENCESET_SEQ_N(ss1, i),
+      TSEQUENCESET_SEQ_N(ss2, i), dist, func, tpfn, &sequences[nseqs]);
   assert(nseqs > 0);
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
@@ -1318,8 +1344,8 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ss1,
  * @return Number of elements in the resulting array
  */
 static int
-tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
-  datum_func3 func, TSequence **result)
+tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
+  datum_func3 func, tpfunc_temp tpfn, TSequence **result)
 {
   const TInstant *start = TSEQUENCE_INST_N(seq, 0);
   Datum startvalue = tinstant_value_p(start);
@@ -1335,10 +1361,11 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   TimestampTz lower = start->t;
   bool lower_inc = seq->period.lower_inc;
-  const Datum datum_true = BoolGetDatum(true);
+  meosType basetype = temptype_basetype(seq->temptype);
   /* We create three temporal instants with arbitrary values that are set in
    * the for loop to avoid creating and freeing the instants each time a
    * segment of the result is computed */
+  const Datum datum_true = BoolGetDatum(true);
   TInstant *instants[3];
   instants[0] = tinstant_make(datum_true, T_TBOOL, lower);
   instants[1] = tinstant_copy(instants[0]);
@@ -1352,7 +1379,7 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
 
     /* Segment is constant or has step interpolation */
-    if (datum_point_eq(startvalue, endvalue) || ! linear)
+    if (datum_eq(startvalue, endvalue, basetype) || ! linear)
     {
       Datum value = func(startvalue, point, dist);
       tinstant_set(instants[0], value, lower);
@@ -1372,8 +1399,8 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
       /* Find the instants t1 and t2 (if any) during which the dwithin
        * function is true */
       TimestampTz t1, t2;
-      int solutions = tpointsegm_tdwithin_turnpt(startvalue, endvalue, point,
-        point, dist, lower, upper, &t1, &t2);
+      int solutions = tpfn(startvalue, endvalue, point, point, dist, lower,
+        upper, &t1, &t2);
       bool upper_inc1 = linear && upper_inc;
       nseqs += tdwithin_add_solutions(solutions, lower, upper, lower_inc,
         upper_inc, upper_inc1, t1, t2, instants, &result[nseqs]);
@@ -1397,11 +1424,12 @@ tdwithin_tpointseq_point_iter(const TSequence *seq, Datum point, Datum dist,
  * @pre The temporal points must be synchronized.
  */
 static TSequenceSet *
-tdwithin_tpointseq_point(const TSequence *seq, Datum point, Datum dist,
-  datum_func3 func)
+tdwithin_tlinearseq_base(const TSequence *seq, Datum point, Datum dist,
+  datum_func3 func, tpfunc_temp tpfn)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * 4);
-  int count = tdwithin_tpointseq_point_iter(seq, point, dist, func, sequences);
+  int count = tdwithin_tlinearseq_base_iter(seq, point, dist, func, tpfn,
+    sequences);
   /* We are sure that nseqs > 0 since the point is non-empty */
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
@@ -1415,27 +1443,89 @@ tdwithin_tpointseq_point(const TSequence *seq, Datum point, Datum dist,
  * @param[in] func DWithin function (2D or 3D)
  */
 static TSequenceSet *
-tdwithin_tpointseqset_point(const TSequenceSet *ss, Datum point, Datum dist,
-  datum_func3 func)
+tdwithin_tlinearseqset_base(const TSequenceSet *ss, Datum point, Datum dist,
+  datum_func3 func, tpfunc_temp tpfn)
 {
   /* Singleton sequence set */
   if (ss->count == 1)
-    return tdwithin_tpointseq_point(TSEQUENCESET_SEQ_N(ss, 0), point, dist,
-      func);
+    return tdwithin_tlinearseq_base(TSEQUENCESET_SEQ_N(ss, 0), point, dist,
+      func, tpfn);
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->totalcount * 4);
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
-    nseqs += tdwithin_tpointseq_point_iter(TSEQUENCESET_SEQ_N(ss, i), point,
-      dist, func, &sequences[nseqs]);
+    nseqs += tdwithin_tlinearseq_base_iter(TSEQUENCESET_SEQ_N(ss, i), point,
+      dist, func, tpfn, &sequences[nseqs]);
   assert(nseqs > 0);
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_geo_rel_temp
+ * @brief Return a temporal Boolean that states whether a spatiotemporal value
+ * and a base value are within a distance
+ * @param[in] temp Spatiotemporal value
+ * @param[in] base Base value
+ * @param[in] dist Distance
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tdwithin_tgeo_geo(), #Tdwithin_tcbuffer_cbuffer(), ...
+ * @note The function assumes that all validity tests have been previously done
+ */
+Temporal *
+tdwithin_tspatial_spatial(const Temporal *temp, Datum base, Datum dist,
+  bool restr, bool atvalue, datum_func3 func, tpfunc_temp tpfn)
+{
+  assert(temp); assert(DatumGetPointer(base));
+  Temporal *result;
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+    {
+      Datum value = tinstant_value_p((TInstant *) temp);
+      result = (Temporal *) tinstant_make(func(value, base, dist), T_TBOOL,
+        ((TInstant *) temp)->t);
+      break;
+    }
+    case TSEQUENCE:
+    {
+      if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+        result = (Temporal *) tdwithin_tlinearseq_base((TSequence *) temp,
+            base, dist, func, tpfn);
+      else
+      {
+        result = tspatialrel_tspatial_base(temp, base, dist, (varfunc) func, 1,
+          INVERT_NO);
+      }
+      break;
+    }
+    default: /* TSEQUENCESET */
+      if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+        result = (Temporal *) tdwithin_tlinearseqset_base(
+          (TSequenceSet *) temp, base, dist, func, tpfn);
+      else
+      {
+        result = tspatialrel_tspatial_base(temp, base, dist, (varfunc) func, 1,
+          INVERT_NO);
+      }
+  }
+  /* Restrict the result to the Boolean value in the fourth argument if any */
+  if (result && restr)
+  {
+    Temporal *atresult = temporal_restrict_value(result, atvalue, REST_AT);
+    pfree(result);
+    result = atresult;
+  }
+  return result;
 }
 
 /*****************************************************************************
  * Temporal dwithin
  *****************************************************************************/
-
+ 
 /**
  * @ingroup meos_geo_rel_temp
  * @brief Return a temporal Boolean that states whether a temporal geo and
@@ -1457,7 +1547,7 @@ tdwithin_tpointseqset_point(const TSequenceSet *ss, Datum point, Datum dist,
  * the quadatric equation for each segment of the temporal point
  */
 Temporal *
-tdwithin_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
+tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool restr, bool atvalue)
 {
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
@@ -1468,42 +1558,70 @@ tdwithin_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
+  /* Determine the distance and the turning point functions to be applied */
   datum_func3 func =
     /* 3D only if both arguments are 3D */
     MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
     &datum_geom_dwithin3d : &datum_geom_dwithin2d;
+  tpfunc_temp tpfn = &tpointsegm_tdwithin_turnpt;
+  /* Call the generic function passing the two functions as arguments */
+  return tdwithin_tspatial_spatial(temp, PointerGetDatum(gs),
+    Float8GetDatum(dist), restr, atvalue, func, tpfn);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return a temporal Boolean that states whether two temporal geos
+ * are within a distance
+ * @pre The spatiotemporal values are synchronized.
+ */
+Temporal *
+tdwithin_tspatial_tspatial(const Temporal *sync1, const Temporal *sync2,
+  Datum dist, bool restr, bool atvalue, datum_func3 func, tpfunc_temp tpfn)
+{
+  assert(sync1); assert(sync2);
   Temporal *result;
-  assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  assert(temptype_subtype(sync1->subtype));
+  switch (sync1->subtype)
   {
     case TINSTANT:
     {
-      Datum value = tinstant_value_p((TInstant *) temp);
-      result = (Temporal *) tinstant_make(func(value, GserializedPGetDatum(gs),
-        Float8GetDatum(dist)), T_TBOOL, ((TInstant *) temp)->t);
+      Datum value1 = tinstant_value_p((TInstant *) sync1);
+      Datum value2 = tinstant_value_p((TInstant *) sync2);
+      result = (Temporal *) tinstant_make(func(value1, value2, dist), T_TBOOL,
+        ((TInstant *) sync1)->t);
       break;
     }
     case TSEQUENCE:
     {
-      if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-        result = (Temporal *) tdwithin_tpointseq_point((TSequence *) temp,
-            GserializedPGetDatum(gs), Float8GetDatum(dist), func);
+      interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
+      interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
+      if (interp1 == LINEAR || interp2 == LINEAR)
+        result = (Temporal *) tdwithin_tlinearseq_tlinearseq(
+          (TSequence *) sync1, (TSequence *) sync2, dist, func, tpfn);
       else
       {
-        result = tspatialrel_tspatial_geo_int(temp, gs, Float8GetDatum(dist),
+        /* Both sequences have either discrete or step interpolation */
+        result = tspatialrel_tspatial_tspatial_int(sync1, sync2, dist,
           (varfunc) func, 1, INVERT_NO);
       }
       break;
     }
     default: /* TSEQUENCESET */
-      if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-        result = (Temporal *) tdwithin_tpointseqset_point((TSequenceSet *) temp,
-          GserializedPGetDatum(gs), Float8GetDatum(dist), func);
+    {
+      interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
+      interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
+      if (interp1 == LINEAR || interp2 == LINEAR)
+        result = (Temporal *) tdwithin_tlinearseqset_tlinearseqset(
+          (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func, tpfn);
       else
       {
-        result = tspatialrel_tspatial_geo_int(temp, gs, Float8GetDatum(dist),
+        /* Both sequence sets have step interpolation */
+        result = tspatialrel_tspatial_tspatial_int(sync1, sync2, dist,
           (varfunc) func, 1, INVERT_NO);
       }
+    }
   }
   /* Restrict the result to the Boolean value in the fourth argument if any */
   if (result && restr)
@@ -1516,68 +1634,6 @@ tdwithin_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
 }
 
 /*****************************************************************************/
-
-/**
- * @brief Return a temporal Boolean that states whether two temporal geos
- * are within a distance
- * @pre The temporal geos are synchronized.
- */
-Temporal *
-tdwithin_tspatial_tspatial_sync(const Temporal *sync1, const Temporal *sync2,
-  double dist, bool restr, bool atvalue)
-{
-  datum_func3 func = geo_dwithin_fn(sync1->flags, sync2->flags);
-  Temporal *result;
-  assert(temptype_subtype(sync1->subtype));
-  switch (sync1->subtype)
-  {
-    case TINSTANT:
-    {
-      Datum value1 = tinstant_value_p((TInstant *) sync1);
-      Datum value2 = tinstant_value_p((TInstant *) sync2);
-      result = (Temporal *) tinstant_make(func(value1, value2,
-        Float8GetDatum(dist)), T_TBOOL, ((TInstant *) sync1)->t);
-      break;
-    }
-    case TSEQUENCE:
-    {
-      interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
-      interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
-      if (interp1 == LINEAR || interp2 == LINEAR)
-        result = (Temporal *) tdwithin_tpointseq_tpointseq((TSequence *) sync1,
-          (TSequence *) sync2, dist, func);
-      else
-      {
-        /* Both sequences have either discrete or step interpolation */
-        result = tspatialrel_tspatial_tspatial_int(sync1, sync2,
-          Float8GetDatum(dist), (varfunc) func, 1, INVERT_NO);
-      }
-      break;
-    }
-    default: /* TSEQUENCESET */
-    {
-      interpType interp1 = MEOS_FLAGS_GET_INTERP(sync1->flags);
-      interpType interp2 = MEOS_FLAGS_GET_INTERP(sync2->flags);
-      if (interp1 == LINEAR || interp2 == LINEAR)
-        result = (Temporal *) tdwithin_tpointseqset_tpointseqset(
-          (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
-      else
-      {
-        /* Both sequence sets have step interpolation */
-        result = tspatialrel_tspatial_tspatial_int(sync1, sync2, Float8GetDatum(dist),
-          (varfunc) func, 1, INVERT_NO);
-      }
-    }
-  }
-  /* Restrict the result to the Boolean value in the fourth argument if any */
-  if (result && restr)
-  {
-    Temporal *atresult = temporal_restrict_value(result, atvalue, REST_AT);
-    pfree(result);
-    result = atresult;
-  }
-  return result;
-}
 
 /**
  * @ingroup meos_geo_rel_temp
@@ -1594,18 +1650,18 @@ tdwithin_tspatial_tspatial_sync(const Temporal *sync1, const Temporal *sync2,
  * @param[in] dist Distance
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tdwithin_tspatial_tspatial()
+ * @csqlfn #Tdwithin_tgeo_tgeo()
  * @note The function is available for temporal geographies but not for
  * temporal geography points since this requires to compute the solutions of
  * the quadatric equation for each pair of segments of the temporal points
  */
 Temporal *
-tdwithin_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2, double dist,
-  bool restr, bool atvalue)
+tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
+  double dist, bool restr, bool atvalue)
 {
-  VALIDATE_TSPATIAL(temp1, NULL); VALIDATE_TSPATIAL(temp2, NULL);
+  VALIDATE_TGEO(temp1, NULL); VALIDATE_TGEO(temp2, NULL);
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_tspatial(temp1, temp2) ||
+  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
@@ -1616,8 +1672,11 @@ tdwithin_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2, double 
       &sync1, &sync2))
     return NULL;
 
-  Temporal *result = tdwithin_tspatial_tspatial_sync(sync1, sync2, dist, restr,
-    atvalue);
+  /* Call the generic function passing the distance and the turning point
+   * functions to be applied */
+  datum_func3 func = geo_dwithin_fn(sync1->flags, sync2->flags);
+  Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2,
+    Float8GetDatum(dist), restr, atvalue, func, &tpointsegm_tdwithin_turnpt);
   pfree(sync1); pfree(sync2);
   return result;
 }
