@@ -373,10 +373,19 @@ extern Temporal *tcovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal
 extern Temporal *tdwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist, bool restr, bool atvalue);
 extern Temporal *tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist, bool restr, bool atvalue);
 extern Temporal *tdwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, double dist, bool restr, bool atvalue);
+extern Temporal *tdisjoint_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,bool restr, bool atvalue);
+extern Temporal *tdisjoint_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,bool restr, bool atvalue);
+extern Temporal *tdisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
+extern Temporal *tdisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, bool restr, bool atvalue);
+extern Temporal *tdisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue);
+extern Temporal *tintersects_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,bool restr, bool atvalue);
+extern Temporal *tintersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,bool restr, bool atvalue);
 extern Temporal *tintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
 extern Temporal *tintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, bool restr, bool atvalue);
 extern Temporal *tintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue);
+extern Temporal *ttouches_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
 extern Temporal *ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
+extern Temporal *ttouches_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, bool restr, bool atvalue);
 extern Temporal *ttouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, bool restr, bool atvalue);
 extern Temporal *ttouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue);
 

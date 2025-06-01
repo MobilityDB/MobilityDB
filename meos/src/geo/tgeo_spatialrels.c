@@ -1104,7 +1104,6 @@ ea_intersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
   return ea_intersects_tgeo_geo(temp, gs, ever);
 }
 
-
 #if MEOS
 /**
  * @ingroup meos_geo_rel_ever

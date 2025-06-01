@@ -469,7 +469,7 @@ tinterrel_tcbufferseqset_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
 
 /**
  * @brief Return a temporal Boolean that states whether a temporal circular
- * buffer and a geometry intersect
+ * buffer and a geometry intersect or are disjoint
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] tinter True when computing `tintersects`, false for `tdisjoint`
@@ -867,7 +867,7 @@ tcovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr,
       result = inter;
   }
   else
-  /* Temporal circular buffermetry case */
+  /* Temporal circular buffer case */
   {
     result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs),
       (Datum) NULL, (varfunc) &datum_geom_covers, 0, INVERT);
@@ -891,7 +891,7 @@ tcovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr,
  * @param[in] gs Geometry
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tcovers_geo_tcbuffer()
+ * @csqlfn #Tcovers_tcbuffer_geo()
  */
 Temporal *
 tcovers_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
@@ -1028,10 +1028,61 @@ tcovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  * @csqlfn #Tdisjoint_tcbuffer_geo()
  */
 inline Temporal *
+tdisjoint_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
+  bool restr, bool atvalue)
+{
+  return tinterrel_tcbuffer_geo(temp, gs, TDISJOINT, restr, atvalue);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_temp
+ * @brief Return a temporal Boolean that states whether a temporal circular
+ * buffer and a geometry are disjoint
+ * @param[in] temp Temporal circular buffer
+ * @param[in] gs Geometry
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tdisjoint_tcbuffer_geo()
+ */
+inline Temporal *
 tdisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
   return tinterrel_tcbuffer_geo(temp, gs, TDISJOINT, restr, atvalue);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_temp
+ * @brief Return a temporal Boolean that states whether a temporal circular
+ * buffer and a circular buffer are disjoint
+ * @param[in] temp Temporal circular buffer
+ * @param[in] cb Circular buffer
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tdisjoint_tcbuffer_geo()
+ */
+inline Temporal *
+tdisjoint_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,
+  bool restr, bool atvalue)
+{
+  return tinterrel_tcbuffer_cbuffer(temp, cb, TDISJOINT, restr, atvalue);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_temp
+ * @brief Return a temporal Boolean that states whether a temporal circular
+ * buffer and a circular buffer are disjoint
+ * @param[in] temp Temporal circular buffer
+ * @param[in] cb Circular buffer
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tdisjoint_tcbuffer_geo()
+ */
+inline Temporal *
+tdisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
+  bool restr, bool atvalue)
+{
+  return tinterrel_tcbuffer_cbuffer(temp, cb, TDISJOINT, restr, atvalue);
 }
 
 /**
@@ -1069,6 +1120,57 @@ tintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
   return tinterrel_tcbuffer_geo(temp, gs, TINTERSECTS, restr, atvalue);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_temp
+ * @brief Return a temporal Boolean that states whether a temporal circular
+ * buffer and a geometry intersect
+ * @param[in] temp Temporal circular buffer
+ * @param[in] gs Geometry
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tintersects_tcbuffer_geo()
+ */
+inline Temporal *
+tintersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
+  bool restr, bool atvalue)
+{
+  return tinterrel_tcbuffer_geo(temp, gs, TINTERSECTS, restr, atvalue);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_temp
+ * @brief Return a temporal Boolean that states whether a temporal circular
+ * buffer and a circular buffer intersect
+ * @param[in] temp Temporal circular buffer
+ * @param[in] cb Circular buffer
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tdisjoint_tcbuffer_geo()
+ */
+inline Temporal *
+tintersects_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,
+  bool restr, bool atvalue)
+{
+  return tinterrel_tcbuffer_cbuffer(temp, cb, TDISJOINT, restr, atvalue);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_temp
+ * @brief Return a temporal Boolean that states whether a temporal circular
+ * buffer and a circular buffer intersect
+ * @param[in] temp Temporal circular buffer
+ * @param[in] cb Circular buffer
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tdisjoint_tcbuffer_geo()
+ */
+inline Temporal *
+tintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
+  bool restr, bool atvalue)
+{
+  return tinterrel_tcbuffer_cbuffer(temp, cb, TDISJOINT, restr, atvalue);
 }
 
 /**
@@ -1140,6 +1242,23 @@ ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
     result = atresult;
   }
   return result;
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_temp
+ * @brief Return a temporal Boolean that states whether a temporal circular
+ * buffer touches a geometry
+ * @param[in] temp Temporal circular buffer
+ * @param[in] gs Geometry
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Ttouches_tcbuffer_geo()
+ */
+Temporal *
+ttouches_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr,
+  bool atvalue)
+{
+  return ttouches_tcbuffer_geo(temp, gs, restr, atvalue);
 }
 
 /*****************************************************************************/

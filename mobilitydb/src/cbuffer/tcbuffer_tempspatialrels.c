@@ -59,67 +59,12 @@
  *****************************************************************************/
 
 /**
- * @brief Return the spatiotemporal relationship between a circular buffer and
- * a temporal circular buffer
- */
-static Datum
-Tinterrel_cbuffer_tcbuffer(FunctionCallInfo fcinfo, bool tinter)
-{
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tcbuffer_cbuffer(temp, cb, tinter, restr,
-    atvalue);
-  PG_FREE_IF_COPY(temp, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
-/**
- * @brief Return the spatiotemporal relationship between a temporal circular
- * buffer and a circular buffer
- */
-static Datum
-Tinterrel_tcbuffer_cbuffer(FunctionCallInfo fcinfo, bool tinter)
-{
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tcbuffer_cbuffer(temp, cb, tinter, restr,
-    atvalue);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
-/*****************************************************************************/
-
-/**
  * @brief Return the spatiotemporal relationship between a geometry and a
  * temporal circular buffer
  */
 static Datum
-Tinterrel_geo_tcbuffer(FunctionCallInfo fcinfo, bool tinter)
+Tspatialrel_geo_tcbuffer(FunctionCallInfo fcinfo,
+  Temporal *(*func)(const GSERIALIZED *, const Temporal *, bool, bool))
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
     PG_RETURN_NULL();
@@ -133,7 +78,7 @@ Tinterrel_geo_tcbuffer(FunctionCallInfo fcinfo, bool tinter)
     restr = true;
   }
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tcbuffer_geo(temp, gs, tinter, restr, atvalue);
+  Temporal *result = func(gs, temp, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
@@ -146,7 +91,8 @@ Tinterrel_geo_tcbuffer(FunctionCallInfo fcinfo, bool tinter)
  * buffer and a geometry
  */
 static Datum
-Tinterrel_tcbuffer_geo(FunctionCallInfo fcinfo, bool tinter)
+Tspatialrel_tcbuffer_geo(FunctionCallInfo fcinfo,
+  Temporal *(*func)(const Temporal *, const GSERIALIZED *, bool, bool))
 {
   if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
     PG_RETURN_NULL();
@@ -160,9 +106,67 @@ Tinterrel_tcbuffer_geo(FunctionCallInfo fcinfo, bool tinter)
     restr = true;
   }
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tcbuffer_geo(temp, gs, tinter, restr, atvalue);
+  Temporal *result = func(temp, gs, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_cbuffer_rel_temp
+ * @brief Return a temporal boolean that states whether a temporal circular
+ * buffer and a circular buffer satisfy a spatial relationship
+ * @sqlfn tContains()
+ */
+Datum
+Tspatialrel_tcbuffer_cbuffer(FunctionCallInfo fcinfo,
+  Temporal *(*func)(const Temporal *, const Cbuffer *, bool, bool))
+{
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
+  bool restr = false;
+  bool atvalue = false;
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
+  {
+    atvalue = PG_GETARG_BOOL(2);
+    restr = true;
+  }
+  Temporal *result = func(temp, cb, restr, atvalue);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+/**
+ * @ingroup mobilitydb_cbuffer_rel_temp
+ * @brief Return a temporal boolean that states whether a circular buffer
+ * and a temporal circular buffer satisfy a spatial relationship
+ * @sqlfn tContains()
+ */
+Datum
+Tspatialrel_cbuffer_tcbuffer(FunctionCallInfo fcinfo,
+  Temporal *(*func)(const Cbuffer *, const Temporal *, bool, bool))
+{
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+    PG_RETURN_NULL();
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  bool restr = false;
+  bool atvalue = false;
+  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
+  {
+    atvalue = PG_GETARG_BOOL(2);
+    restr = true;
+  }
+  Temporal *result = func(cb, temp, restr, atvalue);
+  PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
@@ -183,22 +187,7 @@ PG_FUNCTION_INFO_V1(Tcontains_cbuffer_tcbuffer);
 Datum
 Tcontains_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  Temporal *result = tcontains_cbuffer_tcbuffer(cb, temp, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Tspatialrel_cbuffer_tcbuffer(fcinfo, &tcontains_cbuffer_tcbuffer);
 }
 
 PGDLLEXPORT Datum Tcontains_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
@@ -212,22 +201,7 @@ PG_FUNCTION_INFO_V1(Tcontains_tcbuffer_cbuffer);
 Datum
 Tcontains_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  Temporal *result = tcontains_tcbuffer_cbuffer(temp, cb, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Tspatialrel_tcbuffer_cbuffer(fcinfo, &tcontains_tcbuffer_cbuffer);
 }
 
 PGDLLEXPORT Datum Tcontains_geo_tcbuffer(PG_FUNCTION_ARGS);
@@ -287,22 +261,7 @@ PG_FUNCTION_INFO_V1(Tcovers_cbuffer_tcbuffer);
 Datum
 Tcovers_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  Temporal *result = tcovers_cbuffer_tcbuffer(cb, temp, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Tspatialrel_cbuffer_tcbuffer(fcinfo, &tcovers_cbuffer_tcbuffer);
 }
 
 PGDLLEXPORT Datum Tcovers_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
@@ -316,22 +275,7 @@ PG_FUNCTION_INFO_V1(Tcovers_tcbuffer_cbuffer);
 Datum
 Tcovers_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  Temporal *result = tcovers_tcbuffer_cbuffer(temp, cb, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Tspatialrel_tcbuffer_cbuffer(fcinfo, &tcovers_tcbuffer_cbuffer);
 }
 
 PGDLLEXPORT Datum Tcovers_geo_tcbuffer(PG_FUNCTION_ARGS);
@@ -345,23 +289,7 @@ PG_FUNCTION_INFO_V1(Tcovers_geo_tcbuffer);
 Datum
 Tcovers_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  Temporal *result = tcovers_geo_tcbuffer(gs, temp, restr, atvalue);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Tspatialrel_geo_tspatial(fcinfo, &tcovers_geo_tcbuffer);
 }
 
 PGDLLEXPORT Datum Tcovers_tcbuffer_geo(PG_FUNCTION_ARGS);
@@ -407,7 +335,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_cbuffer_tcbuffer);
 inline Datum
 Tdisjoint_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_cbuffer_tcbuffer(fcinfo, TDISJOINT);
+  return Tspatialrel_cbuffer_tcbuffer(fcinfo, &tdisjoint_cbuffer_tcbuffer);
 }
 
 PGDLLEXPORT Datum Tdisjoint_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
@@ -421,7 +349,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tcbuffer_cbuffer);
 inline Datum
 Tdisjoint_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tcbuffer_cbuffer(fcinfo, TDISJOINT);
+  return Tspatialrel_tcbuffer_cbuffer(fcinfo, &tdisjoint_tcbuffer_cbuffer);
 }
 
 PGDLLEXPORT Datum Tdisjoint_geo_tcbuffer(PG_FUNCTION_ARGS);
@@ -435,7 +363,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_geo_tcbuffer);
 inline Datum
 Tdisjoint_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_geo_tcbuffer(fcinfo, TDISJOINT);
+  return Tspatialrel_geo_tcbuffer(fcinfo, &tdisjoint_geo_tcbuffer);
 }
 
 PGDLLEXPORT Datum Tdisjoint_tcbuffer_geo(PG_FUNCTION_ARGS);
@@ -449,7 +377,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tcbuffer_geo);
 inline Datum
 Tdisjoint_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tcbuffer_geo(fcinfo, TDISJOINT);
+  return Tspatialrel_tcbuffer_geo(fcinfo, &tdisjoint_tcbuffer_geo);
 }
 
 PGDLLEXPORT Datum Tdisjoint_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
@@ -463,7 +391,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tcbuffer_tcbuffer);
 inline Datum
 Tdisjoint_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tspatial_tspatial(fcinfo, TDISJOINT);
+  return Tspatialrel_tspatial_tspatial(fcinfo, &tdisjoint_tcbuffer_tcbuffer);
 }
 
 /*****************************************************************************
@@ -481,7 +409,7 @@ PG_FUNCTION_INFO_V1(Tintersects_cbuffer_tcbuffer);
 inline Datum
 Tintersects_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_cbuffer_tcbuffer(fcinfo, TINTERSECTS);
+  return Tspatialrel_cbuffer_tcbuffer(fcinfo, &tintersects_cbuffer_tcbuffer);
 }
 
 PGDLLEXPORT Datum Tintersects_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
@@ -495,7 +423,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tcbuffer_cbuffer);
 inline Datum
 Tintersects_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tcbuffer_cbuffer(fcinfo, TINTERSECTS);
+  return Tspatialrel_tcbuffer_cbuffer(fcinfo, &tintersects_tcbuffer_cbuffer);
 }
 
 PGDLLEXPORT Datum Tintersects_geo_tcbuffer(PG_FUNCTION_ARGS);
@@ -509,7 +437,7 @@ PG_FUNCTION_INFO_V1(Tintersects_geo_tcbuffer);
 inline Datum
 Tintersects_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_geo_tcbuffer(fcinfo, TINTERSECTS);
+  return Tspatialrel_geo_tcbuffer(fcinfo, &tintersects_geo_tcbuffer);
 }
 
 PGDLLEXPORT Datum Tintersects_tcbuffer_geo(PG_FUNCTION_ARGS);
@@ -523,7 +451,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tcbuffer_geo);
 inline Datum
 Tintersects_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tcbuffer_geo(fcinfo, TINTERSECTS);
+  return Tspatialrel_tcbuffer_geo(fcinfo, &tintersects_tcbuffer_geo);
 }
 
 PGDLLEXPORT Datum Tintersects_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
@@ -555,22 +483,7 @@ PG_FUNCTION_INFO_V1(Ttouches_cbuffer_tcbuffer);
 Datum
 Ttouches_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  Temporal *result = ttouches_tcbuffer_cbuffer(temp, cb, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Tspatialrel_cbuffer_tcbuffer(fcinfo, &ttouches_cbuffer_tcbuffer);
 }
 
 PGDLLEXPORT Datum Ttouches_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
@@ -584,22 +497,7 @@ PG_FUNCTION_INFO_V1(Ttouches_tcbuffer_cbuffer);
 Datum
 Ttouches_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  Temporal *result = ttouches_tcbuffer_cbuffer(temp, cb, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Tspatialrel_tcbuffer_cbuffer(fcinfo, &ttouches_tcbuffer_cbuffer);
 }
 
 PGDLLEXPORT Datum Ttouches_geo_tcbuffer(PG_FUNCTION_ARGS);
@@ -613,23 +511,7 @@ PG_FUNCTION_INFO_V1(Ttouches_geo_tcbuffer);
 Datum
 Ttouches_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  Temporal *result = ttouches_tcbuffer_geo(temp, gs, restr, atvalue);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Tspatialrel_geo_tspatial(fcinfo, &ttouches_geo_tcbuffer);
 }
 
 PGDLLEXPORT Datum Ttouches_tcbuffer_geo(PG_FUNCTION_ARGS);
