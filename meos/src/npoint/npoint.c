@@ -552,7 +552,7 @@ geom_to_npoint(const GSERIALIZED *gs)
   /* Distances */
   double dist, min_dist = DBL_MAX;
   /* Position in the geometry with the shortest distance */
-  double pos;
+  double pos = 0;
 
   /* Continue reading the file */
   do

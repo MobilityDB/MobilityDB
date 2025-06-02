@@ -38,7 +38,6 @@
 #include <postgres.h>
 /* PostGIS */
 #include <liblwgeom.h>
-#include <lwgeodetic.h>
 /* MEOS */
 #include <meos.h>
 #include "temporal/temporal.h"

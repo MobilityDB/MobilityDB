@@ -55,6 +55,7 @@
 #endif
 #if NPOINT
   #include "npoint/tnpoint.h"
+  #include "npoint/tnpoint_parser.h"
 #endif
 #if POSE
   #include <meos_pose.h>

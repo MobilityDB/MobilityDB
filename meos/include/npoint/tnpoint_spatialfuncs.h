@@ -40,7 +40,6 @@
 #include <meos.h>
 #include <meos_npoint.h>
 #include "temporal/temporal.h"
-#include "npoint/tnpoint.h"
 
 /*****************************************************************************/
 

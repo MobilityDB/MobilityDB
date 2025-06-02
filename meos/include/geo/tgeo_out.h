@@ -38,7 +38,6 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include "temporal/meos_catalog.h"
 
 /*****************************************************************************/
 

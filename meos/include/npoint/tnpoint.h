@@ -31,8 +31,8 @@
  * @brief Functions for temporal network points.
  */
 
-#ifndef __NPOINT_H__
-#define __NPOINT_H__
+#ifndef __TNPOINT_H__
+#define __TNPOINT_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -73,7 +73,6 @@ extern bool ensure_valid_tnpoint_tnpoint(const Temporal *temp1,
 
 extern bool common_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 extern bool common_rid_tnpoint_npointset(const Temporal *temp, const Set *s);
-extern bool common_rid_tnpoint_npointset(const Temporal *temp, const Set *s);
 extern bool common_rid_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2);
 
@@ -99,8 +98,6 @@ extern long double npointsegm_locate(const Npoint *start, const Npoint *end,
 
 /* General functions */
 
-extern int32_t get_srid_ways(void);
-extern Npoint *npoint_parse(const char **str, bool end);
 extern GSERIALIZED *npointarr_geom(Npoint **points, int count);
 extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int count);
 extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
@@ -152,8 +149,6 @@ extern Set *tnpointseqset_routes(const TSequenceSet *ss);
 
 extern Nsegment *tnpointseq_linear_positions(const TSequence *seq);
 
-extern Temporal *tnpoint_restrict_geom(const Temporal *temp,
-  const GSERIALIZED *gs, bool atfunc);
 extern Temporal *tnpoint_restrict_stbox(const Temporal *temp, const STBox *box,
   bool border_inc, bool atfunc);
 extern Temporal *tnpoint_restrict_npoint(const Temporal *temp, const Npoint

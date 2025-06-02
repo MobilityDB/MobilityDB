@@ -37,7 +37,6 @@
 /* C */
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_geo.h>
@@ -169,14 +168,14 @@ extern Nsegment *nsegment_round(const Nsegment *ns, int maxdd);
 
 /* Spatial reference system functions */
 
-extern int32_t get_srid_ways();
+extern int32_t get_srid_ways(void);
 extern int32_t npoint_srid(const Npoint *np);
 extern int32_t nsegment_srid(const Nsegment *ns);
 
 /* Bounding box functions */
 
-extern STBox *npoint_tstzspan_to_stbox(const Npoint *np, const Span *s);
 extern STBox *npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t);
+extern STBox *npoint_tstzspan_to_stbox(const Npoint *np, const Span *s);
 
 /* Comparison functions */
 
@@ -208,8 +207,6 @@ extern char *npointset_out(const Set *s, int maxdd);
 /* Constructor functions */
 
 extern Set *npointset_make(const Npoint **values, int count);
-extern STBox *npoint_tstzspan_to_stbox(const Npoint *np, const Span *s);
-extern STBox *npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t);
 
 /* Conversion functions */
 

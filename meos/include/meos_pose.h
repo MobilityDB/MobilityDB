@@ -37,12 +37,9 @@
 /* C */
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_geo.h>
 #include <meos_internal.h>
-// #include "geo/stbox.h"
 
 /*****************************************************************************
  * Struct definitions

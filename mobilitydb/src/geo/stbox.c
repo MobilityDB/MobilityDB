@@ -585,6 +585,23 @@ Timestamptz_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_STBOX_P(timestamptz_to_stbox(t));
 }
 
+/**
+ * @brief Peek into a set datum to find the bounding box. If the datum
+ * needs to be detoasted, extract only the header and not the full object.
+ */
+void
+tstzset_stbox_slice(Datum sdatum, STBox *box)
+{
+  Set *s = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) sdatum))
+    s = (Set *) PG_DETOAST_DATUM_SLICE(sdatum, 0, TIME_MAX_HEADER_SIZE);
+  else
+    s = (Set *) sdatum;
+  tstzset_set_stbox(s, box);
+  PG_FREE_IF_COPY_P(s, DatumGetPointer(sdatum));
+  return;
+}
+
 PGDLLEXPORT Datum Tstzset_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tstzset_to_stbox);
 /**

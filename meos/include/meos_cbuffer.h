@@ -38,11 +38,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+/* PostgreSQL */
+#include <postgres.h>
+/* PostGIS */
+#include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_geo.h>
-#include <meos_internal.h>
-// #include "geo/stbox.h"
 
 /*****************************************************************************
  * Type definitions
@@ -158,6 +159,9 @@ extern STBox *cbuffer_timestamptz_to_stbox(const Cbuffer *cb, TimestampTz t);
 /* Distance functions */
 
 extern double distance_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2);
+extern double distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs);
+extern double distance_cbuffer_stbox(const Cbuffer *cb, const STBox *box);
+extern double nad_cbuffer_stbox(const Cbuffer *cb, const STBox *box);
 
 /* Comparison functions */
 
@@ -206,13 +210,6 @@ extern Set *minus_cbuffer_set(const Cbuffer *cb, const Set *s);
 extern Set *minus_set_cbuffer(const Set *s, const Cbuffer *cb);
 extern Set *union_cbuffer_set(const Cbuffer *cb, const Set *s);
 extern Set *union_set_cbuffer(const Set *s, const Cbuffer *cb);
-
-/* Distance function */
-
-extern double distance_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2);
-extern double distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs);
-extern double distance_cbuffer_stbox(const Cbuffer *cb, const STBox *box);
-extern double nad_cbuffer_stbox(const Cbuffer *cb, const STBox *box);
 
 /*===========================================================================*
  * Functions for temporal types
@@ -299,6 +296,7 @@ extern int ever_eq_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp
 extern int ever_ne_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp);
 extern int ever_ne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
 extern int ever_ne_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
+extern int test(const Temporal *temp1, const Temporal *temp2);
 
 /* Temporal comparison functions */
 

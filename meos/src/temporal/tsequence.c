@@ -65,6 +65,7 @@
   #include "cbuffer/tcbuffer_spatialfuncs.h"
 #endif
 #if NPOINT
+  #include "npoint/tnpoint.h"
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
 #if POSE

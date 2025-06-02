@@ -430,9 +430,6 @@ extern bool ea_lt_bbox_temp_base(const Temporal *temp, Datum value, bool ever);
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
 extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
   const Datum *values, int count, int *newcount);
-extern bool temporal_bbox_restrict_set(const Temporal *temp, const Set *set);
-extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
-  bool atfunc);
 
 /*****************************************************************************/
 

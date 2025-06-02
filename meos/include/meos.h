@@ -38,7 +38,6 @@
 /* C */
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 /* PostgreSQL */
 #if MEOS
 #include "postgres_int_defs.h"
@@ -887,7 +886,7 @@ extern bool right_text_set(const text *txt, const Set *s);
  *****************************************************************************/
 
 extern Set *intersection_bigint_set(int64 i, const Set *s);
-extern Set *intersection_date_set(const DateADT d, const Set *s);
+extern Set *intersection_date_set(DateADT d, const Set *s);
 extern Set *intersection_float_set(double d, const Set *s);
 extern Set *intersection_int_set(int i, const Set *s);
 extern Set *intersection_set_bigint(const Set *s, int64 i);
@@ -912,7 +911,7 @@ extern SpanSet *intersection_spanset_span(const SpanSet *ss, const Span *s);
 extern SpanSet *intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 extern SpanSet *intersection_spanset_timestamptz(const SpanSet *ss, TimestampTz t);
 extern Set *intersection_text_set(const text *txt, const Set *s);
-extern Set *intersection_timestamptz_set(const TimestampTz t, const Set *s);
+extern Set *intersection_timestamptz_set(TimestampTz t, const Set *s);
 extern Set *minus_bigint_set(int64 i, const Set *s);
 extern SpanSet *minus_bigint_span(int64 i, const Span *s);
 extern SpanSet *minus_bigint_spanset(int64 i, const SpanSet *ss);
@@ -953,7 +952,7 @@ extern SpanSet *minus_timestamptz_spanset(TimestampTz t, const SpanSet *ss);
 extern Set *union_bigint_set(int64 i, const Set *s);
 extern SpanSet *union_bigint_span(const Span *s, int64 i);
 extern SpanSet *union_bigint_spanset(int64 i, SpanSet *ss);
-extern Set *union_date_set(const DateADT d, const Set *s);
+extern Set *union_date_set(DateADT d, const Set *s);
 extern SpanSet *union_date_span(const Span *s, DateADT d);
 extern SpanSet *union_date_spanset(DateADT d, SpanSet *ss);
 extern Set *union_float_set(double d, const Set *s);
@@ -968,7 +967,7 @@ extern Set *union_set_float(const Set *s, double d);
 extern Set *union_set_int(const Set *s, int i);
 extern Set *union_set_set(const Set *s1, const Set *s2);
 extern Set *union_set_text(const Set *s, const text *txt);
-extern Set *union_set_timestamptz(const Set *s, const TimestampTz t);
+extern Set *union_set_timestamptz(const Set *s, TimestampTz t);
 extern SpanSet *union_span_bigint(const Span *s, int64 i);
 extern SpanSet *union_span_date(const Span *s, DateADT d);
 extern SpanSet *union_span_float(const Span *s, double d);
@@ -984,7 +983,7 @@ extern SpanSet *union_spanset_span(const SpanSet *ss, const Span *s);
 extern SpanSet *union_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
 extern SpanSet *union_spanset_timestamptz(const SpanSet *ss, TimestampTz t);
 extern Set *union_text_set(const text *txt, const Set *s);
-extern Set *union_timestamptz_set(const TimestampTz t, const Set *s);
+extern Set *union_timestamptz_set(TimestampTz t, const Set *s);
 extern SpanSet *union_timestamptz_span(TimestampTz t, const Span *s);
 extern SpanSet *union_timestamptz_spanset(TimestampTz t, SpanSet *ss);
 
@@ -1137,8 +1136,8 @@ extern bool tboxint_xmin(const TBox *box, int *result);
  * Transformation functions for box types
  *****************************************************************************/
 
-extern TBox *tbox_expand_float(const TBox *box, const double d);
-extern TBox *tbox_expand_int(const TBox *box, const int i);
+extern TBox *tbox_expand_float(const TBox *box, double d);
+extern TBox *tbox_expand_int(const TBox *box, int i);
 extern TBox *tbox_expand_time(const TBox *box, const Interval *interv);
 extern TBox *tbox_round(const TBox *box, int maxdd);
 extern TBox *tbox_shift_scale_float(const TBox *box, double shift, double width, bool hasshift, bool haswidth);

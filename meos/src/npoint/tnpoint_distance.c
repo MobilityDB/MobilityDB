@@ -36,6 +36,8 @@
 
 /* MEOS */
 #include <meos.h>
+#include <meos_npoint.h>
+#include "npoint/tnpoint.h"
 #include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************

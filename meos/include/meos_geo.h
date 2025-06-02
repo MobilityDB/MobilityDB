@@ -37,7 +37,7 @@
 /* C */
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
+
 /* MEOS */
 #include <meos.h>
 
@@ -833,6 +833,7 @@ extern Temporal *tcovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
 extern Temporal *tdisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
 extern Temporal *tdisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
 extern Temporal *tdisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue);
+extern Temporal *tdwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist, bool restr, bool atvalue);
 extern Temporal *tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist, bool restr, bool atvalue);
 extern Temporal *tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist, bool restr, bool atvalue);
 extern Temporal *tintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
@@ -844,6 +845,8 @@ extern Temporal *ttouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2
 
 /* Distance */
 
+extern Temporal *distance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *distance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern double nad_stbox_geo(const STBox *box, const GSERIALIZED *gs);
 extern double nad_stbox_stbox(const STBox *box1, const STBox *box2);
 extern double nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
@@ -851,16 +854,6 @@ extern double nad_tgeo_stbox(const Temporal *temp, const STBox *box);
 extern double nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern TInstant *nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern TInstant *nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
-extern GSERIALIZED *shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern GSERIALIZED *shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
-
-extern Temporal *distance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *distance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
-extern TInstant *nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern TInstant *nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
-extern double nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern double nad_tgeo_stbox(const Temporal *temp, const STBox *box);
-extern double nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern GSERIALIZED *shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern GSERIALIZED *shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 

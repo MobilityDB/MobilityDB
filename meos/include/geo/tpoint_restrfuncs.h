@@ -38,7 +38,6 @@
 #include <postgres.h>
 /* PostGIS */
 #include <liblwgeom.h>
-#include <lwgeom_geos.h>
 /* MEOS */
 #include <meos.h>
 

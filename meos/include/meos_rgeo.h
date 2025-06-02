@@ -36,11 +36,10 @@
 
 /* C */
 #include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
+/* PostgreSQL */
+#include <postgres.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_geo.h>
 #include <meos_pose.h>
 #include <meos_internal.h>
 #include "geo/stbox.h"
@@ -104,6 +103,8 @@ extern GSERIALIZED *trgeo_end_value(const Temporal *temp);
 extern GSERIALIZED *trgeo_geom(const Temporal *temp);
 extern TInstant *trgeo_instant_n(const Temporal *temp, int n);
 extern TInstant **trgeo_instants(const Temporal *temp, int *count);
+extern Set *trgeo_points(const Temporal *temp);
+extern Temporal *trgeo_rotation(const Temporal *temp);
 extern TSequence **trgeo_segments(const Temporal *temp, int *count);
 extern TSequence *trgeo_sequence_n(const Temporal *temp, int i);
 extern TSequence **trgeo_sequences(const Temporal *temp, int *count);
@@ -166,29 +167,8 @@ extern GSERIALIZED *shortestline_trgeo_tpoint(const Temporal *temp1, const Tempo
 extern GSERIALIZED *shortestline_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2);
 
 /*****************************************************************************
- * Spatial functions for temporal points
+ * Comparison functions
  *****************************************************************************/
-
-/* Spatial accessor functions for temporal points */
-
-extern Set *trgeo_points(const Temporal *temp);
-extern Temporal *trgeo_rotation(const Temporal *temp);
-// extern GSERIALIZED *trgeo_traversed_area(const Temporal *temp);
-
-/*****************************************************************************/
-
-/* Spatial transformation functions */
-
-extern Temporal *trgeo_tpoint(const Temporal *temp);
-// extern TInstant *tposeinst_tgeompointinst(const TInstant *inst);
-
-/*****************************************************************************/
-
-/* Distance functions */
-
-
-
-/*****************************************************************************/
 
 /* Ever/always and temporal comparison functions */
 

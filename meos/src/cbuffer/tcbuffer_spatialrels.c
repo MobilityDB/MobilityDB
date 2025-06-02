@@ -1419,7 +1419,7 @@ adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  */
 int 
 ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
-  bool ever, double dist)
+  double dist, bool ever)
 {
   VALIDATE_TCBUFFER(temp1, -1); VALIDATE_TCBUFFER(temp2, -1);
   /* Ensure the validity of the arguments */

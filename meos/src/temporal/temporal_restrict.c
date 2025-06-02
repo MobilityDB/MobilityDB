@@ -1531,7 +1531,7 @@ tnumbersegm_restrict_span(const TInstant *inst1, const TInstant *inst2,
   }
 
   /* Compute the instants of the intersection */
-  TInstant *inter1, *inter2, *tofree1 = NULL, *tofree2 = NULL;
+  TInstant *inter1 = NULL, *inter2 = NULL, *tofree1 = NULL, *tofree2 = NULL;
   Datum lower, upper;
   if (increasing)
   {

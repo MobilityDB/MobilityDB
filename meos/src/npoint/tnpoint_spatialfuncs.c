@@ -40,6 +40,7 @@
 #include <meos.h>
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************
  * Interpolation functions required by tsequence.c that must be implemented

@@ -535,7 +535,7 @@ extern PJ_CONTEXT *proj_get_context(void);
 /*
  * Obtain a geometry/geography point from the GSERIALIZED WITHOUT creating
  * the corresponding LWGEOM. These functions constitute a **SERIOUS**
- * break of encapsulation but it is the only way to achieve reasonable
+ * break of encapsulation, but it is the only way to achieve reasonable
  * performance when manipulating mobility data.
  * The datum_* functions suppose that the GSERIALIZED has been already
  * detoasted. This is typically the case when the datum is within a Temporal*
@@ -911,10 +911,10 @@ extern Set *minus_value_set(Datum value, const Set *s);
 extern SpanSet *minus_value_span(Datum value, const Span *s);
 extern SpanSet *minus_value_spanset(Datum value, const SpanSet *ss);
 extern Span *super_union_span_span(const Span *s1, const Span *s2);
-extern Set *union_set_value(const Set *s, const Datum value);
+extern Set *union_set_value(const Set *s, Datum value);
 extern SpanSet *union_span_value(const Span *s, Datum value);
 extern SpanSet *union_spanset_value(const SpanSet *ss, Datum value);
-extern Set *union_value_set(const Datum value, const Set *s);
+extern Set *union_value_set(Datum value, const Set *s);
 extern SpanSet *union_value_span(Datum value, const Span *s);
 extern SpanSet *union_value_spanset(Datum value, const SpanSet *ss);
 
@@ -982,8 +982,6 @@ extern void tstzspanset_set_tbox(const SpanSet *ss, TBox *box);
 
 /* Accessor functions for box types */
 
-extern bool tbox_xmax(const TBox *box, double *result);
-extern bool tbox_xmin(const TBox *box, double *result);
 
 /*****************************************************************************/
 

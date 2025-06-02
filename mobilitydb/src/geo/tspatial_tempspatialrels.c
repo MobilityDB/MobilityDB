@@ -474,24 +474,7 @@ PG_FUNCTION_INFO_V1(Tdwithin_geo_tgeo);
 Datum
 Tdwithin_geo_tgeo(PG_FUNCTION_ARGS)
 {
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
-    PG_RETURN_NULL();
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  double dist = PG_GETARG_FLOAT8(2);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
-  {
-    atvalue = PG_GETARG_BOOL(3);
-    restr = true;
-  }
-  Temporal *result = tdwithin_tgeo_geo(temp, gs, dist, restr, atvalue);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
+  return Tdwithin_geo_tspatial(fcinfo, &tdwithin_geo_tgeo);
 }
 
 PGDLLEXPORT Datum Tdwithin_tgeo_geo(PG_FUNCTION_ARGS);

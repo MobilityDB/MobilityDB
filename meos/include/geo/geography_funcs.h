@@ -39,7 +39,6 @@
 /* PostGIS */
 #include <liblwgeom.h>
 
-
 /*****************************************************************************/
 
 extern GSERIALIZED *geography_shortestline_internal(const GSERIALIZED *g1,

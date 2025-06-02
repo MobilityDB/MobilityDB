@@ -247,13 +247,13 @@ GetProjStringsSPI(int32_t srid)
   bool found = false;
 
   /* Read the first line of the file with the headers */
-  fscanf(file, "%1023s\n", header_buffer);
+  int read = fscanf(file, "%1023s\n", header_buffer);
 
   /* Continue reading the file */
   do
   {
     /* Read each line from the file */
-    int read = fscanf(file, "%255[^,^\n],%d,%2047[^,^\n],%2047[^\n]\n",
+    read = fscanf(file, "%255[^,^\n],%d,%2047[^,^\n],%2047[^\n]\n",
       auth_name, &auth_srid, proj4text, srtext);
 
     if (ferror(file))

@@ -36,6 +36,7 @@
 
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "temporal/lifting.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"

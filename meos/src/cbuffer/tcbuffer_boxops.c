@@ -38,6 +38,7 @@
 
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include "temporal/span.h"
 #include "cbuffer/cbuffer.h"
 

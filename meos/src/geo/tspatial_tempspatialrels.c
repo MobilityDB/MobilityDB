@@ -965,7 +965,7 @@ tintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tintersects_tspatial_tspatial()
+ * @csqlfn #Tintersects_tgeo_tgeo()
  */
 inline Temporal *
 tintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
@@ -1228,7 +1228,8 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
  * sequences are within a distance (iterator function)
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
- * @param[in] func DWithin function (2D or 3D)
+ * @param[in] func Spatial relationship function to be applied
+ * @param[in] tpfn Turning point function to be applied
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @return Number of elements in the resulting array
@@ -1318,7 +1319,8 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
  * sequences
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
- * @param[in] func DWithin function (2D or 3D)
+ * @param[in] func Spatial relationship function to be applied
+ * @param[in] tpfn Turning point function to be applied
  * @pre The temporal points must be synchronized.
  */
 static TSequenceSet *
@@ -1336,7 +1338,8 @@ tdwithin_tlinearseq_tlinearseq(const TSequence *seq1, const TSequence *seq2,
  * sequence sets are within a distance
  * @param[in] ss1,ss2 Temporal points
  * @param[in] dist Distance
- * @param[in] func DWithin function (2D or 3D)
+ * @param[in] func Spatial relationship function to be applied
+ * @param[in] tpfn Turning point function to be applied
  * @pre The temporal points must be synchronized.
  */
 static TSequenceSet *
@@ -1365,7 +1368,8 @@ tdwithin_tlinearseqset_tlinearseqset(const TSequenceSet *ss1,
  * @param[in] seq Temporal point
  * @param[in] point Point
  * @param[in] dist Distance
- * @param[in] func DWithin function (2D or 3D)
+ * @param[in] func Spatial relationship function to be applied
+ * @param[in] tpfn Turning point function to be applied
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @return Number of elements in the resulting array
@@ -1447,8 +1451,8 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point, Datum dist,
  * @param[in] seq Temporal point
  * @param[in] point Point
  * @param[in] dist Distance
- * @param[in] func DWithin function (2D or 3D)
- * @pre The temporal points must be synchronized.
+ * @param[in] func Spatial relationship function to be applied
+ * @param[in] tpfn Turning point function to be applied
  */
 static TSequenceSet *
 tdwithin_tlinearseq_base(const TSequence *seq, Datum point, Datum dist,
@@ -1467,7 +1471,8 @@ tdwithin_tlinearseq_base(const TSequence *seq, Datum point, Datum dist,
  * @param[in] ss Temporal point
  * @param[in] point Point
  * @param[in] dist Distance
- * @param[in] func DWithin function (2D or 3D)
+ * @param[in] func Spatial relationship function to be applied
+ * @param[in] tpfn Turning point function to be applied
  */
 static TSequenceSet *
 tdwithin_tlinearseqset_base(const TSequenceSet *ss, Datum point, Datum dist,
@@ -1596,6 +1601,13 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   /* Call the generic function passing the two functions as arguments */
   return tdwithin_tspatial_spatial(temp, PointerGetDatum(gs),
     Float8GetDatum(dist), restr, atvalue, func, tpfn);
+}
+
+Temporal *
+tdwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
+  bool restr, bool atvalue)
+{
+  return tdwithin_tgeo_geo(temp, gs, dist, restr, atvalue);
 }
 
 /*****************************************************************************/

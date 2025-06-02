@@ -60,6 +60,7 @@
 #include "geo/tgeo.h"
 #include "geo/tgeo_distance.h"
 #if NPOINT
+  #include "npoint/tnpoint.h"
   #include "npoint/tnpoint_spatialfuncs.h"
 #endif
 
