@@ -66,6 +66,43 @@
  *****************************************************************************/
 
 /**
+ * @brief Return a temporal Boolean that states whether a temporal circular
+ * buffer and a geometry satisfy a spatial relationship
+ * @param[in] temp Temporal circular buffer
+ * @param[in] gs Geometry
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @param[in] func Spatial relationship function to be applied
+ */
+Temporal *
+tspatialrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool restr, bool atvalue, datum_func2 func)
+{
+  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs))
+    return NULL;
+
+  Cbuffer *cb = geom_to_cbuffer(gs);
+  if (! cb)
+    return NULL;
+
+  Temporal *result = tspatialrel_tspatial_base(temp, PointerGetDatum(cb),
+    (Datum) NULL, (varfunc) func, 0, INVERT_NO);
+  pfree(cb);
+
+  /* Restrict the result to the Boolean value in the last argument if any */
+  if (result && restr)
+  {
+    Temporal *atresult = temporal_restrict_value(result, atvalue, REST_AT);
+    pfree(result);
+    result = atresult;
+  }
+  return result;
+}
+
+/**
  * @brief Return a temporal Boolean that states whether two temporal circular
  * buffers satisfy a spatial relationship
  * @param[in] temp1,temp2 Temporal circular buffers
@@ -622,40 +659,6 @@ tinterrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   return result;
 }
 
-/*****************************************************************************/
-
-/**
- * @brief Return a temporal Boolean that states whether two temporal circular
- * buffers intersect or are disjoint
- * @param[in] temp1,temp2 Temporal circular buffers
- * @param[in] tinter True when computing `tintersects`, false for `tdisjoint`
- * @param[in] restr True if the atValue function is applied to the result
- * @param[in] atvalue Value to be used for the atValue function
- */
-Temporal *
-tinterrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
-  bool tinter, bool restr, bool atvalue)
-{
-  VALIDATE_TCBUFFER(temp1, NULL); VALIDATE_TCBUFFER(temp2, NULL);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
-    return NULL;
-
-  Temporal *result = tinter ?
-      tcomp_temporal_temporal(temp1, temp2, &datum2_eq) :
-      tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
-
-  /* Restrict the result to the Boolean value in the last argument if any */
-  if (result && restr)
-  {
-    Temporal *atresult = temporal_restrict_value(result, BoolGetDatum(atvalue),
-      REST_AT);
-    pfree(result);
-    result = atresult;
-  }
-  return result;
-}
-
 /*****************************************************************************
  * Generic ever/always spatiotemporal relationship functions
  *****************************************************************************/
@@ -804,23 +807,8 @@ Temporal *
 tcontains_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs))
-    return NULL;
-
-  Temporal *result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs),
-    (Datum) NULL, (varfunc) &datum_geom_contains, 0, INVERT_NO);
-
-  /* Restrict the result to the Boolean value in the last argument if any */
-  if (result && restr)
-  {
-    Temporal *atresult = temporal_restrict_value(result, atvalue, REST_AT);
-    pfree(result);
-    result = atresult;
-  }
-  return result;
+  return tspatialrel_tcbuffer_geo(temp, gs, restr, atvalue,
+    &datum_cbuffer_contains);
 }
 
 /*****************************************************************************/
@@ -979,23 +967,8 @@ Temporal *
 tcovers_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs))
-    return NULL;
-
-  Temporal *result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs),
-    (Datum) NULL, (varfunc) &datum_geom_covers, 0, INVERT_NO);
-
-  /* Restrict the result to the Boolean value in the last argument if any */
-  if (result && restr)
-  {
-    Temporal *atresult = temporal_restrict_value(result, atvalue, REST_AT);
-    pfree(result);
-    result = atresult;
-  }
-  return result;
+  return tspatialrel_tcbuffer_geo(temp, gs, restr, atvalue,
+    &datum_cbuffer_covers);
 }
 
 /*****************************************************************************/
@@ -1138,7 +1111,7 @@ inline Temporal *
 tdisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   bool restr, bool atvalue)
 {
-  return tinterrel_tcbuffer_tcbuffer(temp1, temp2, TDISJOINT, restr, atvalue);
+  return tinterrel_tspatial_tspatial(temp1, temp2, TDISJOINT, restr, atvalue);
 }
 
 /*****************************************************************************
@@ -1226,7 +1199,7 @@ inline Temporal *
 tintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   bool restr, bool atvalue)
 {
-  return tinterrel_tcbuffer_tcbuffer(temp1, temp2, TINTERSECTS, restr, atvalue);
+  return tinterrel_tspatial_tspatial(temp1, temp2, TINTERSECTS, restr, atvalue);
 }
 
 /*****************************************************************************
@@ -1247,41 +1220,8 @@ Temporal *
 ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs))
-    return NULL;
-
-  Temporal *result;
-  /* Temporal point case */
-  if (tpoint_type(temp->temptype))
-  {
-    GSERIALIZED *gsbound = geom_boundary(gs);
-    if (! gserialized_is_empty(gsbound))
-    {
-      result = tinterrel_tcbuffer_geo(temp, gsbound, TINTERSECTS, restr,
-        atvalue);
-      pfree(gsbound);
-    }
-    else
-      result = temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
-  }
-  else
-  /* Temporal circular buffer case */
-  {
-    result = tspatialrel_tspatial_base(temp, PointerGetDatum(gs), (Datum) NULL,
-      (varfunc) &datum_geom_touches, 0, INVERT_NO);
-  }
-
-  /* Restrict the result to the Boolean value in the last argument if any */
-  if (result && restr)
-  {
-    Temporal *atresult = temporal_restrict_value(result, atvalue, REST_AT);
-    pfree(result);
-    result = atresult;
-  }
-  return result;
+  return tspatialrel_tcbuffer_geo(temp, gs, restr, atvalue,
+    &datum_cbuffer_touches);
 }
 
 /**
