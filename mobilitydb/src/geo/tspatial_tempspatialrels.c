@@ -58,90 +58,6 @@
  *****************************************************************************/
 
 /**
- * @brief Return the temporal spatial relationship between a
- * geometry and a temporal geo
- */
-Datum
-Tinterrel_geo_tgeo(FunctionCallInfo fcinfo, bool tinter)
-{
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tgeo_geo(temp, gs, tinter, restr, atvalue);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
-/**
- * @brief Return the temporal disjoint/intersection relationship between a
- * geometry and a temporal geo
- */
-Datum
-Tinterrel_tgeo_geo(FunctionCallInfo fcinfo, bool tinter)
-{
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tgeo_geo(temp, gs, tinter, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
-/**
- * @brief Return the temporal disjoint/intersection relationship between two
- * temporal geos
- */
-Datum
-Tinterrel_tspatial_tspatial(FunctionCallInfo fcinfo, bool tinter)
-{
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-    PG_RETURN_NULL();
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  bool restr = false;
-  bool atvalue = false;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-  {
-    atvalue = PG_GETARG_BOOL(2);
-    restr = true;
-  }
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tspatial_tspatial(temp1, temp2, tinter, restr,
-    atvalue);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
-/*****************************************************************************/
-
-/**
  * @brief Return a temporal boolean that states whether a geometry and a
  * spatiotemporal value satisfy a spatial relationship
  */
@@ -330,7 +246,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_geo_tgeo);
 inline Datum
 Tdisjoint_geo_tgeo(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_geo_tgeo(fcinfo, TDISJOINT);
+  return Tspatialrel_geo_tspatial(fcinfo, &tdisjoint_geo_tgeo);
 }
 
 PGDLLEXPORT Datum Tdisjoint_tgeo_geo(PG_FUNCTION_ARGS);
@@ -344,7 +260,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tgeo_geo);
 inline Datum
 Tdisjoint_tgeo_geo(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tgeo_geo(fcinfo, TDISJOINT);
+  return Tspatialrel_tspatial_geo(fcinfo, &tdisjoint_tgeo_geo);
 }
 
 PGDLLEXPORT Datum Tdisjoint_tspatial_tspatial(PG_FUNCTION_ARGS);
@@ -358,7 +274,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tspatial_tspatial);
 inline Datum
 Tdisjoint_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tspatial_tspatial(fcinfo, TDISJOINT);
+  return Tspatialrel_tspatial_tspatial(fcinfo, &tdisjoint_tspatial_tspatial);
 }
 
 /*****************************************************************************
@@ -377,7 +293,7 @@ PG_FUNCTION_INFO_V1(Tintersects_geo_tgeo);
 inline Datum
 Tintersects_geo_tgeo(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_geo_tgeo(fcinfo, TINTERSECTS);
+  return Tspatialrel_geo_tspatial(fcinfo, &tintersects_geo_tgeo);
 }
 
 PGDLLEXPORT Datum Tintersects_tgeo_geo(PG_FUNCTION_ARGS);
@@ -391,7 +307,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tgeo_geo);
 inline Datum
 Tintersects_tgeo_geo(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tgeo_geo(fcinfo, TINTERSECTS);
+  return Tspatialrel_tspatial_geo(fcinfo, &tintersects_tgeo_geo);
 }
 
 PGDLLEXPORT Datum Tintersects_tspatial_tspatial(PG_FUNCTION_ARGS);
@@ -405,7 +321,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tspatial_tspatial);
 inline Datum
 Tintersects_tspatial_tspatial(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tspatial_tspatial(fcinfo, TINTERSECTS);
+  return Tspatialrel_tspatial_tspatial(fcinfo, &tintersects_tspatial_tspatial);
 }
 
 /*****************************************************************************

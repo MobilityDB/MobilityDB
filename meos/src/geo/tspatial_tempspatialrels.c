@@ -883,11 +883,27 @@ tcovers_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * @csqlfn #Tdisjoint_tspatial_geo()
  */
 Temporal *
+tdisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
+  bool restr, bool atvalue)
+{
+  return tinterrel_tgeo_geo(temp, gs, TDISJOINT, restr, atvalue);
+}
+
+/**
+ * @ingroup meos_geo_rel_temp
+ * @brief Return a temporal Boolean that states whether a temporal geo and a
+ * geometry are disjoint
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tdisjoint_tspatial_geo()
+ */
+Temporal *
 tdisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
-  return tinterrel_tspatial_base(temp, PointerGetDatum(gs), TDISJOINT, restr,
-    atvalue, &datum_geom_intersects2d);
+  return tinterrel_tgeo_geo(temp, gs, TDISJOINT, restr, atvalue);
 }
 
 /**
@@ -924,11 +940,24 @@ Temporal *
 tintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue)
 {
-  /* 3D only if both arguments are 3D */
-  datum_func2 func = MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
-      &datum_geom_intersects3d : &datum_geom_intersects2d;
-  return tinterrel_tspatial_base(temp, PointerGetDatum(gs), TINTERSECTS, restr,
-    atvalue, func);
+  return tinterrel_tgeo_geo(temp, gs, TINTERSECTS, restr, atvalue);
+}
+
+/**
+ * @ingroup meos_geo_rel_temp
+ * @brief Return a temporal Boolean that states whether a temporal geo and a
+ * geometry intersect
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @param[in] restr True when the result is restricted to a value
+ * @param[in] atvalue Value to restrict
+ * @csqlfn #Tintersects_geo_tspatial()
+ */
+Temporal *
+tintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
+  bool restr, bool atvalue)
+{
+  return tinterrel_tgeo_geo(temp, gs, TINTERSECTS, restr, atvalue);
 }
 
 /**

@@ -465,7 +465,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tcbuffer_tcbuffer);
 inline Datum
 Tintersects_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return Tinterrel_tspatial_tspatial(fcinfo, TINTERSECTS);
+  return Tspatialrel_tspatial_tspatial(fcinfo, &tintersects_tcbuffer_tcbuffer);
 }
 
 /*****************************************************************************
