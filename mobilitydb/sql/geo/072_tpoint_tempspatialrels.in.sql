@@ -58,11 +58,11 @@ CREATE FUNCTION tDisjoint(tgeompoint, geometry, atvalue bool DEFAULT NULL)
 -- Alias for temporal not equals, that is, tgeo_tne or #<>
 CREATE FUNCTION tDisjoint(tgeompoint, tgeompoint, atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tdisjoint_tspatial_tspatial'
+  AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_tgeo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tDisjoint(tgeogpoint, tgeogpoint, atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tdisjoint_tspatial_tspatial'
+  AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_tgeo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************
@@ -81,11 +81,11 @@ CREATE FUNCTION tIntersects(tgeompoint, geometry, atvalue bool DEFAULT NULL)
 -- Alias for temporal equals, that is, tgeo_teq or #=
 CREATE FUNCTION tIntersects(tgeompoint, tgeompoint, atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tintersects_tspatial_tspatial'
+  AS 'MODULE_PATHNAME', 'Tintersects_tgeo_tgeo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tIntersects(tgeogpoint, tgeogpoint, atvalue bool DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tintersects_tspatial_tspatial'
+  AS 'MODULE_PATHNAME', 'Tintersects_tgeo_tgeo'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************

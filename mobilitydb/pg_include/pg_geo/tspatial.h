@@ -80,6 +80,13 @@ extern Datum EA_dwithin_geo_tspatial(FunctionCallInfo fcinfo,
   int (*func)(const GSERIALIZED *, const Temporal *, double dist, bool),
   bool ever);
 
+extern Datum Tdwithin_geo_tspatial(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const GSERIALIZED *, const Temporal *, double, bool, bool));
+extern Datum Tdwithin_tspatial_geo(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const Temporal *, const GSERIALIZED *, double, bool, bool));
+extern Datum Tdwithin_tspatial_tspatial(FunctionCallInfo fcinfo,
+  Temporal * (*func)(const Temporal *, const Temporal *, double, bool, bool));
+
 /*****************************************************************************/
 
 #endif /* __PG_TSPATIAL_H__ */

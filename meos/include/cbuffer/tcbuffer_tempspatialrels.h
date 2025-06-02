@@ -49,9 +49,6 @@ extern Temporal *tinterrel_tcbuffer_geo(const Temporal *temp,
 extern Temporal *tinterrel_tcbuffer_tcbuffer(const Temporal *temp1,
   const Temporal *temp2, bool tinter, bool restr, bool atvalue);
 
-extern Temporal *tdwithin_tcbuffer_tcbuffer_sync(const Temporal *sync1,
-  const Temporal *sync2, double dist, bool restr, bool atvalue);
-
 /*****************************************************************************/
 
 #endif /* __TCBUFFER_TEMPSPATIALRELS_H__ */

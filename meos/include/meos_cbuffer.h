@@ -370,6 +370,7 @@ extern Temporal *tcovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *tem
 extern Temporal *tcovers_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);
 extern Temporal *tcovers_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, bool restr, bool atvalue);
 extern Temporal *tcovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, bool restr, bool atvalue);
+extern Temporal *tdwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist, bool restr, bool atvalue);
 extern Temporal *tdwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist, bool restr, bool atvalue);
 extern Temporal *tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist, bool restr, bool atvalue);
 extern Temporal *tdwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2, double dist, bool restr, bool atvalue);

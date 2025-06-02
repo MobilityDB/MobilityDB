@@ -407,6 +407,7 @@ tinterrel_tspatialseqset_base(const TSequenceSet *ss, Datum base,
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  * @param[in] restr True if the atValue function is applied to the result
  * @param[in] atvalue Value to be used for the atValue function
+ * @param[in] func Spatial relationship function to be applied
  * @note The function assumes that all validity tests have been previously done
  */
 Temporal *
@@ -570,7 +571,7 @@ tspatialrel_tspatial_base(const Temporal *temp, Datum base,
  * @param[in] atvalue Value to restrict
  */
 Temporal *
-tspatialrel_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs,
+tspatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, bool atvalue, varfunc func)
 {
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
@@ -633,7 +634,6 @@ tspatialrel_tspatial_tspatial_int(const Temporal *temp1, const Temporal *temp2,
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
  * @param[in] func Spatial relationship function
- * @csqlfn #Tcontains_geo_tspatial(), #Tcovers_geo_tspatial()
  */
 Temporal *
 tspatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
@@ -684,7 +684,7 @@ tspatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp Temporal geo
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tcontains_geo_tspatial()
+ * @csqlfn #Tcontains_geo_tgeo()
  */
 Temporal *
 tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
@@ -743,7 +743,7 @@ tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
  * @param[in] gs Geometry
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tcontains_geo_tspatial()
+ * @csqlfn #Tcontains_tgeo_geo()
  * @note The function is not available for temporal points, the `tintersects`
  * function can be used instead.
  */
@@ -751,7 +751,7 @@ Temporal *
 tcontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
-  return tspatialrel_tspatial_geo(temp, gs, restr, atvalue,
+  return tspatialrel_tgeo_geo(temp, gs, restr, atvalue,
     (varfunc) datum_geom_contains);
 }
 
@@ -764,12 +764,11 @@ tcontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
  * @param[in] temp1,temp2 Temporal geometries
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tcontains_geo_tspatial()
  * @note The function is not available for temporal points, the `tintersects`
  * function can be used instead.
  */
 Temporal *
-tcontains_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
+tcontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool restr, bool atvalue)
 {
   return tspatialrel_tspatial_tspatial(temp1, temp2, restr, atvalue,
@@ -799,7 +798,7 @@ tcontains_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp Temporal geo
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tcovers_geo_tspatial()
+ * @csqlfn #Tcovers_geo_tgeo()
  */
 Temporal *
 tcovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
@@ -835,7 +834,7 @@ tcovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
  * @param[in] gs Geometry
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tcovers_geo_tspatial()
+ * @csqlfn #Tcovers_tgeo_geo()
  * @note The function is not available for temporal points, the `tintersects`
  * function can be used instead.
  */
@@ -843,25 +842,24 @@ Temporal *
 tcovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
   bool atvalue)
 {
-  return tspatialrel_tspatial_geo(temp, gs, restr, atvalue,
+  return tspatialrel_tgeo_geo(temp, gs, restr, atvalue,
     (varfunc) datum_geom_covers);
 }
 
 /**
  * @ingroup meos_geo_rel_temp
- * @brief Return a temporal Boolean that states whether a temporal geometry
+ * @brief Return a temporal Boolean that states whether a spatiotemporal value
  * covers another one
  * @details The temporal covers relationship for two temporal geometries
  * is computed at each instant using the lifting infrastructure
  * @param[in] temp1,temp2 Temporal geometries
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tcovers_geo_tspatial()
  * @note The function is not available for temporal points, the `tintersects`
  * function can be used instead.
  */
 Temporal *
-tcovers_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
+tcovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool restr, bool atvalue)
 {
   return tspatialrel_tspatial_tspatial(temp1, temp2, restr, atvalue,
@@ -880,7 +878,7 @@ tcovers_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * @param[in] gs Geometry
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tdisjoint_tspatial_geo()
+ * @csqlfn #Tdisjoint_geo_tgeo()
  */
 Temporal *
 tdisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
@@ -897,7 +895,7 @@ tdisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
  * @param[in] gs Geometry
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tdisjoint_tspatial_geo()
+ * @csqlfn #Tdisjoint_tgeo_geo()
  */
 Temporal *
 tdisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
@@ -913,10 +911,10 @@ tdisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tdisjoint_tspatial_tspatial()
+ * @csqlfn #Tdisjoint_tgeo_tgeo()
  */
 inline Temporal *
-tdisjoint_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
+tdisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool restr, bool atvalue)
 {
   return tinterrel_tspatial_tspatial(temp1, temp2, TDISJOINT, restr, atvalue);
@@ -934,7 +932,7 @@ tdisjoint_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * @param[in] gs Geometry
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tintersects_tspatial_geo()
+ * @csqlfn #Tintersects_tgeo_geo()
  */
 Temporal *
 tintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
@@ -951,7 +949,7 @@ tintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tintersects_geo_tspatial()
+ * @csqlfn #Tintersects_geo_tgeo()
  */
 Temporal *
 tintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
@@ -970,7 +968,7 @@ tintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
  * @csqlfn #Tintersects_tspatial_tspatial()
  */
 inline Temporal *
-tintersects_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
+tintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool restr, bool atvalue)
 {
   return tinterrel_tspatial_tspatial(temp1, temp2, TINTERSECTS, restr,
@@ -994,7 +992,7 @@ tintersects_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * @param[in] gs Geometry
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Ttouches_tspatial_geo()
+ * @csqlfn #Ttouches_tgeo_geo()
  * @note The function does not support 3D or geographies since the PostGIS
  * function `ST_Touches` only supports 2D geometries
  */
@@ -1054,7 +1052,7 @@ ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr,
  * @param[in] gs Geometry
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Ttouches_tspatial_geo()
+ * @csqlfn #Ttouches_geo_tgeo()
  * @note The function does not support 3D or geographies since the PostGIS
  * function `ST_Touches` only supports 2D geometries
  */
@@ -1074,13 +1072,13 @@ ttouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr,
  * @param[in] temp1,temp2 Temporal geo
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Ttouches_tspatial_tspatial()
+ * @csqlfn #Ttouches_tgeo_tgeo()
  * @note The function does not support 3D or geographies since the PostGIS
  * function `ST_Touches` only supports 2D geometries.
  * @note The function is not defined for temporal points
  */
 Temporal *
-ttouches_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
+ttouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool restr, bool atvalue)
 {
   return tspatialrel_tspatial_tspatial(temp1, temp2, restr, atvalue,
@@ -1500,6 +1498,8 @@ tdwithin_tlinearseqset_base(const TSequenceSet *ss, Datum point, Datum dist,
  * @param[in] dist Distance
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
+ * @param[in] func Spatial relationship function to be applied
+ * @param[in] tpfn Turning point function to be applied
  * @csqlfn #Tdwithin_tgeo_geo(), #Tdwithin_tcbuffer_cbuffer(), ...
  * @note The function assumes that all validity tests have been previously done
  */
@@ -1570,7 +1570,7 @@ tdwithin_tspatial_spatial(const Temporal *temp, Datum base, Datum dist,
  * @param[in] dist Distance
  * @param[in] restr True when the result is restricted to a value
  * @param[in] atvalue Value to restrict
- * @csqlfn #Tdwithin_tspatial_geo()
+ * @csqlfn #Tdwithin_tgeo_geo()
  * @note The function is available for temporal geographies but not for
  * temporal geography points since this requires to compute the solutions of
  * the quadatric equation for each segment of the temporal point
