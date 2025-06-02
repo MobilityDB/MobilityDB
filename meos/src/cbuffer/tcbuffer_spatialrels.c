@@ -1321,8 +1321,10 @@ atouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 int
 edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
+  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   /* Ensure the validity of the arguments */
-  if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
   return ea_spatialrel_tcbuffer_geo(temp, gs, Float8GetDatum(dist),
     (varfunc) &datum_geom_dwithin2d, 3, EVER, INVERT_NO);

@@ -767,7 +767,7 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-0
 /* Errors */
 SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
   stbox 'STBOX X((40,40),(40,40))');
-ERROR:  tpoint_AsMVTGeom: Geometric bounds are too small
+ERROR:  Mapbox Vector Tiles: Geometric bounds are too small
 SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
   stbox 'STBOX X((40,40),(60,60))', 0);
-ERROR:  tpoint_AsMVTGeom: Extent must be greater than 0
+ERROR:  Mapbox Vector Tiles: Extent must be greater than 0

@@ -1001,7 +1001,7 @@ datum_float_to_int(Datum d)
  * @csqlfn #Tbool_to_tint()
  */
 Temporal *
-tbool_tint(const Temporal *temp)
+tbool_to_tint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TBOOL(temp, NULL);
@@ -1022,7 +1022,7 @@ tbool_tint(const Temporal *temp)
  * @csqlfn #Tint_to_tfloat()
  */
 Temporal *
-tint_tfloat(const Temporal *temp)
+tint_to_tfloat(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL);
@@ -1043,7 +1043,7 @@ tint_tfloat(const Temporal *temp)
  * @csqlfn #Tfloat_to_tint()
  */
 Temporal *
-tfloat_tint(const Temporal *temp)
+tfloat_to_tint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
@@ -1096,7 +1096,7 @@ temporal_set_tstzspan(const Temporal *temp, Span *s)
  * @csqlfn #Temporal_to_tstzspan()
  */
 Span *
-temporal_tstzspan(const Temporal *temp)
+temporal_to_tstzspan(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
@@ -1140,7 +1140,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
  * @csqlfn #Tnumber_to_span()
  */
 Span *
-tnumber_span(const Temporal *temp)
+tnumber_to_span(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNUMBER(temp, NULL); 
@@ -1156,7 +1156,7 @@ tnumber_span(const Temporal *temp)
  * @csqlfn #Tnumber_to_tbox()
  */
 TBox *
-tnumber_tbox(const Temporal *temp)
+tnumber_to_tbox(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNUMBER(temp, NULL); 

@@ -244,7 +244,7 @@ static void
 pose_as_json_sb(stringbuffer_t *sb, const Pose *pose, int precision)
 {
   assert(precision <= OUT_MAX_DOUBLE_PRECISION);
-  GSERIALIZED *gs = pose_point(pose);
+  GSERIALIZED *gs = pose_to_point(pose);
   stringbuffer_append_len(sb, "{\"position\":{", 13);
   if (MEOS_FLAGS_GET_Z(pose->flags))
   {

@@ -249,7 +249,7 @@ trgeo_as_ewkt(const Temporal *temp, int maxdd)
  * @param[in] temp Temporal rigid geometry
  */
 Temporal *
-trgeo_tpose(const Temporal *temp)
+trgeo_to_tpose(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -272,7 +272,7 @@ trgeo_tpose(const Temporal *temp)
  * @param[in] temp Temporal rigid geometry
  */
 Temporal *
-trgeo_tpoint(const Temporal *temp)
+trgeo_to_tpoint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
@@ -790,7 +790,7 @@ trgeo_round(const Temporal *temp, int maxdd)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   GSERIALIZED *res_geo = geo_round(trgeo_geom_p(temp), maxdd);
   Temporal *res_tpose = temporal_round(tpose, maxdd);
   Temporal *result = geo_tpose_to_trgeo(res_geo, res_tpose);
@@ -850,7 +850,7 @@ trgeo_to_tsequence(const Temporal *temp, const char *interp_str)
     else
       interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
   }
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   TSequence *res = temporal_tsequence(tpose, interp);
   TSequence *result = geo_tposeseq_to_trgeo(trgeo_geom_p(temp), res);
   pfree(res); pfree(tpose);
@@ -881,7 +881,7 @@ trgeo_to_tsequenceset(const Temporal *temp, const char *interp_str)
     if (interp == INTERP_NONE || interp == DISCRETE)
       interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
   }
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   TSequenceSet *res = temporal_tsequenceset(tpose, interp);
   TSequenceSet *result = geo_tposeseqset_to_trgeo(trgeo_geom_p(temp), res);
   pfree(res); pfree(tpose);
@@ -902,7 +902,7 @@ trgeo_set_interp(const Temporal *temp, const char *interp_str)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(interp_str, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_set_interp(tpose, interp_str);
   if (! res)
     return NULL;
@@ -1036,7 +1036,7 @@ trgeo_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_restrict_timestamptz(tpose, t, atfunc);
   pfree(tpose); 
   if (! res)
@@ -1089,7 +1089,7 @@ trgeo_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSET(s, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_restrict_tstzset(tpose, s, atfunc);
   pfree(tpose);
   if (! res)
@@ -1142,7 +1142,7 @@ trgeo_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_restrict_tstzspan(tpose, s, atfunc);
   pfree(tpose);
   if (! res)
@@ -1196,7 +1196,7 @@ trgeo_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_restrict_tstzspanset(tpose, ss, atfunc);
   pfree(tpose);
   if (! res)
@@ -1265,7 +1265,7 @@ trgeo_append_tinstant(Temporal *temp, const TInstant *inst,
       ! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT))
     return NULL;
 
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   TInstant *tpose_inst = trgeoinst_tposeinst(inst);
   Temporal *res = temporal_append_tinstant(tpose, tpose_inst, interp, maxdist,
     maxt, expand);
@@ -1296,7 +1296,7 @@ trgeo_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
       ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE))
     return NULL;
 
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   TSequence *tpose_seq = trgeoseq_tposeseq(seq);
   Temporal *res = temporal_append_tsequence(tpose, tpose_seq, expand);
   if (! res)
@@ -1318,7 +1318,7 @@ trgeo_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_delete_timestamptz(tpose, t, connect);
   pfree(tpose);
   if (! res)
@@ -1343,7 +1343,7 @@ trgeo_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSET(s, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_delete_tstzset(tpose, s, connect);
   pfree(tpose);
   if (! res)
@@ -1367,7 +1367,7 @@ trgeo_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_delete_tstzspan(tpose, s, connect);
   pfree(tpose);
   if (! res)
@@ -1392,7 +1392,7 @@ trgeo_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
-  Temporal *tpose = trgeo_tpose(temp);
+  Temporal *tpose = trgeo_to_tpose(temp);
   Temporal *res = temporal_delete_tstzspanset(tpose, ss, connect);
   pfree(tpose);
   if (! res)

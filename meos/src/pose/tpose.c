@@ -285,7 +285,7 @@ tpoint_tfloat_to_tpose(const Temporal *tpoint, const Temporal *tradius)
  * @param[in] temp Temporal pose
  */
 Temporal *
-tpose_tpoint(const Temporal *temp)
+tpose_to_tpoint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL);
@@ -305,7 +305,7 @@ tpose_tpoint(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_pose_conversion
+ * @ingroup meos_pose_accessor
  * @brief Return a the rotation of a temporal pose as a temporal float
  * @param[in] temp Temporal pose
  */
@@ -410,7 +410,7 @@ Set *
 tposeinst_points(const TInstant *inst)
 {
   Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
-  Datum value = PointerGetDatum(pose_point(pose));
+  Datum value = PointerGetDatum(pose_to_point(pose));
   return set_make_exp(&value, 1, 1, T_GEOMETRY, ORDER_NO);
 }
 
@@ -424,7 +424,7 @@ tposeseq_points(const TSequence *seq)
   for (int i = 0; i < seq->count; i++)
   {
     const Pose *pose = DatumGetPoseP(tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
-    values[i] = PointerGetDatum(pose_point(pose));
+    values[i] = PointerGetDatum(pose_to_point(pose));
   }
   datumarr_sort(values, seq->count, T_GEOMETRY);
   int count = datumarr_remove_duplicates(values, seq->count, T_GEOMETRY);
@@ -446,7 +446,7 @@ tposeseqset_points(const TSequenceSet *ss)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
-      values[nvalues++] = PointerGetDatum(pose_point(pose));
+      values[nvalues++] = PointerGetDatum(pose_to_point(pose));
     }
   }
   datumarr_sort(values, ss->totalcount, T_GEOMETRY);
@@ -515,7 +515,7 @@ tpose_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
  * @csqlfn #Temporal_at_value()
  */
 Temporal *
-tpose_at_value(const Temporal *temp, Pose *pose)
+tpose_at_pose(const Temporal *temp, Pose *pose)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(pose, NULL);
@@ -531,7 +531,7 @@ tpose_at_value(const Temporal *temp, Pose *pose)
  * @csqlfn #Temporal_minus_value()
  */
 Temporal *
-tpose_minus_value(const Temporal *temp, Pose *pose)
+tpose_minus_pose(const Temporal *temp, Pose *pose)
 {
   VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(pose, NULL);
   return temporal_restrict_value(temp, PointerGetDatum(pose), REST_MINUS);

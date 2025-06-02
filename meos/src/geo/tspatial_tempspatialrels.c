@@ -636,12 +636,12 @@ tspatialrel_tspatial_tspatial_int(const Temporal *temp1, const Temporal *temp2,
  * @param[in] func Spatial relationship function
  */
 Temporal *
-tspatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
+tspatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool restr, bool atvalue, varfunc func)
 {
-  VALIDATE_TSPATIAL(temp1, NULL); VALIDATE_TSPATIAL(temp2, NULL);
+  VALIDATE_TGEO(temp1, NULL); VALIDATE_TGEO(temp2, NULL);
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_tspatial( temp1, temp2) ||
+  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
       /* The validity function ensures that both have the same geodetic flag */
       ! ensure_not_geodetic(temp1->flags) ||
       ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
@@ -771,7 +771,7 @@ Temporal *
 tcontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool restr, bool atvalue)
 {
-  return tspatialrel_tspatial_tspatial(temp1, temp2, restr, atvalue,
+  return tspatialrel_tgeo_tgeo(temp1, temp2, restr, atvalue,
     (varfunc) &datum_geom_contains);
 }
 
@@ -862,7 +862,7 @@ Temporal *
 tcovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool restr, bool atvalue)
 {
-  return tspatialrel_tspatial_tspatial(temp1, temp2, restr, atvalue,
+  return tspatialrel_tgeo_tgeo(temp1, temp2, restr, atvalue,
     (varfunc) &datum_geom_covers);
 }
 
@@ -1081,7 +1081,7 @@ Temporal *
 ttouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool restr, bool atvalue)
 {
-  return tspatialrel_tspatial_tspatial(temp1, temp2, restr, atvalue,
+  return tspatialrel_tgeo_tgeo(temp1, temp2, restr, atvalue,
     (varfunc) &datum_geom_touches);
 }
 

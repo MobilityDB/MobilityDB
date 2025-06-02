@@ -958,9 +958,9 @@ tgeominst_tgeoginst(const TInstant *inst, bool oper)
   const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
   GSERIALIZED *res;
   if (oper == TGEOMP_TO_TGEOGP)
-    res = geog_from_geom(gs);
+    res = geom_to_geog(gs);
   else
-    res = geom_from_geog(gs);
+    res = geog_to_geom(gs);
   meosType temptype;
   if (oper == TGEOMP_TO_TGEOGP)
     temptype = (inst->temptype == T_TGEOMPOINT) ? T_TGEOGPOINT : T_TGEOGRAPHY;

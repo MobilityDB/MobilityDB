@@ -348,7 +348,7 @@ pose_out(const Pose *pose, int maxdd)
     return NULL;
 
   char *result = palloc(MAXPOSELEN);
-  GSERIALIZED *gs = pose_point(pose);
+  GSERIALIZED *gs = pose_to_point(pose);
   char *point = basetype_out(PointerGetDatum(gs), T_GEOMETRY, maxdd);
   if (!MEOS_FLAGS_GET_Z(pose->flags))
   {
@@ -701,7 +701,7 @@ pose_copy(const Pose *pose)
  * @param[in] pose Pose
  */
 GSERIALIZED *
-pose_point(const Pose *pose)
+pose_to_point(const Pose *pose)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL);
@@ -723,7 +723,7 @@ pose_point(const Pose *pose)
 Datum
 datum_pose_point(Datum pose)
 {
-  return GserializedPGetDatum(pose_point(DatumGetPoseP(pose)));
+  return GserializedPGetDatum(pose_to_point(DatumGetPoseP(pose)));
 }
 
 /*****************************************************************************/
@@ -752,7 +752,7 @@ posearr_points(Pose **posearr, int count)
       pfree(geoms);
       return NULL;
     }
-    geoms[i] = pose_point(posearr[i]);
+    geoms[i] = pose_to_point(posearr[i]);
   }
   GSERIALIZED *result = geo_collect_garray(geoms, count);
   pfree_array((void **) geoms, count);
@@ -819,6 +819,9 @@ pose_orientation(const Pose *pose)
  * @ingroup meos_pose_base_transf
  * @brief Return a pose with the precision of the values set to a number of
  * decimal places
+ * @param[in] pose Poses
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Pose_round()
  */
 Pose *
 pose_round(const Pose *pose, int maxdd)
@@ -951,7 +954,7 @@ pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
   VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(pj, NULL);
   /* Copy the pose to transform its point in place */
   Pose *result = pose_copy(pose);
-  GSERIALIZED *gs = pose_point(pose);
+  GSERIALIZED *gs = pose_to_point(pose);
   if (! point_transf_pj(gs, srid_to, pj))
   {
     pfree(result);
@@ -1046,8 +1049,8 @@ pose_transform_pipeline(const Pose *pose, const char *pipeline,
 Datum
 pose_distance(Datum pose1, Datum pose2)
 {
-  Datum geom1 = PosePGetDatum(pose_point(DatumGetPoseP(pose1)));
-  Datum geom2 = PosePGetDatum(pose_point(DatumGetPoseP(pose2)));
+  Datum geom1 = PosePGetDatum(pose_to_point(DatumGetPoseP(pose1)));
+  Datum geom2 = PosePGetDatum(pose_to_point(DatumGetPoseP(pose2)));
   return datum_pt_distance2d(geom1, geom2);
 }
 

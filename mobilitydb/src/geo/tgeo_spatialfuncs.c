@@ -347,7 +347,7 @@ Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
   GSERIALIZED *geom;
   int64 *times; /* Timestamps are returned in Unix time */
   int count;
-  bool found = tpoint_AsMVTGeom(temp, bounds, extent, buffer, clip_geom,
+  bool found = tpoint_as_mvtgeom(temp, bounds, extent, buffer, clip_geom,
     &geom, &times, &count);
   if (! found)
   {

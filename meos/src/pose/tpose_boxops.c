@@ -63,7 +63,7 @@ bool
 pose_set_stbox(const Pose *pose, STBox *box)
 {
   assert(pose); assert(box);
-  GSERIALIZED *geom = pose_point(pose);
+  GSERIALIZED *geom = pose_to_point(pose);
   bool result = geo_set_stbox(geom, box);
   pfree(geom);
   return result;
@@ -92,13 +92,13 @@ posearr_set_stbox(const Datum *values, int count, STBox *box)
 }
 
 /**
- * @ingroup meos_pose_box_conversion
+ * @ingroup meos_pose_base_conversion
  * @brief Convert a pose into a spatiotemporal box
  * @param[in] pose Pose
  * @csqlfn #Pose_to_stbox()
  */
 STBox *
-pose_stbox(const Pose *pose)
+pose_to_stbox(const Pose *pose)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL);
@@ -200,7 +200,7 @@ pose_timestamptz_set_stbox(const Pose *pose, TimestampTz t, STBox *box)
 }
 
 /**
- * @ingroup meos_pose_box
+ * @ingroup meos_pose_base_bbox
  * @brief Return a spatiotemporal box constructed from a pose and a
  * timestamptz
  * @param[in] pose Pose
@@ -237,7 +237,7 @@ pose_tstzspan_set_stbox(const Pose *pose, const Span *s, STBox *box)
 }
 
 /**
- * @ingroup meos_pose_box
+ * @ingroup meos_pose_base_bbox
  * @brief Return a spatiotemporal box constructed from a pose and a
  * timestamptz
  * @param[in] pose Pose

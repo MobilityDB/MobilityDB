@@ -348,8 +348,8 @@ extern GSERIALIZED *geompoint_make3dz(int32_t srid, double x, double y, double z
 
 /* Conversion functions */
 
-extern GSERIALIZED *geog_from_geom(const GSERIALIZED *geom);
-extern GSERIALIZED *geom_from_geog(const GSERIALIZED *geog);
+extern GSERIALIZED *geom_to_geog(const GSERIALIZED *geom);
+extern GSERIALIZED *geog_to_geom(const GSERIALIZED *geog);
 
 /* Accessor functions */
 
@@ -636,7 +636,7 @@ extern Temporal *tgeography_to_tgeometry(const Temporal *temp);
 extern Temporal *tgeometry_to_tgeography(const Temporal *temp);
 extern Temporal *tgeometry_to_tgeompoint(const Temporal *temp);
 extern Temporal *tgeompoint_to_tgeometry(const Temporal *temp);
-extern bool tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr, int *count);
+extern bool tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr, int *count);
 extern bool tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
 extern STBox *tspatial_to_stbox(const Temporal *temp);
 

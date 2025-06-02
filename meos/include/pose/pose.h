@@ -80,8 +80,6 @@ extern Datum datum_pose_rotation(Datum pose);
 /* Transformation functions */
 
 extern Datum datum_pose_round(Datum pose, Datum size);
-extern Pose **posearr_round(const Pose **posearr, int count, int maxdd);
-extern Temporal *tpose_round(const Temporal *temp, int maxdd);
 
 /* Distance */
 

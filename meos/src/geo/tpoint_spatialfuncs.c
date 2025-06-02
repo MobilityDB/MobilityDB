@@ -2489,7 +2489,7 @@ tpoint_decouple(const Temporal *temp, int64 **timesarr, int *count)
  * @csqlfn #Tpoint_AsMVTGeom()
  */
 bool
-tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
+tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr,
   int *count)
 {
@@ -2501,13 +2501,13 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "%s: Geometric bounds are too small", __func__);
+      "Mapbox Vector Tiles: Geometric bounds are too small");
     return false;
   }
   if (extent <= 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "%s: Extent must be greater than 0", __func__);
+      "Mapbox Vector Tiles: Extent must be greater than 0");
     return false;
   }
 

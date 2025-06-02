@@ -133,7 +133,8 @@ tspatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
 }
 
 /*****************************************************************************
- * `tintersects` and `tdisjoint` functions
+ * `tintersects` and `tdisjoint` functions with a geometry
+ * Note that these functions with a cbuffer are provided for all spatial types
  *****************************************************************************/
 
 /**
@@ -562,8 +563,16 @@ tinterrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
-    return restr && atvalue ? NULL :
-      temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
+  {
+    if (tinter)
+      /* Computing intersection */
+      return restr && atvalue ? NULL :
+        temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
+    else
+      /* Computing disjoint */
+      return restr && ! atvalue ? NULL :
+        temporal_from_base_temp(BoolGetDatum(true), T_TBOOL, temp);
+  }
 
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
@@ -608,55 +617,8 @@ tinterrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
-
-  /* Bounding box test */
-  STBox box1, box2;
-  tspatial_set_stbox(temp, &box1);
-  /* Non-empty geometries have a bounding box */
-  cbuffer_set_stbox(cb, &box2);
-  if (! overlaps_stbox_stbox(&box1, &box2))
-  {
-    if (tinter)
-      /* Computing intersection */
-      return restr && atvalue ? NULL :
-        temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
-    else
-      /* Computing disjoint */
-      return restr && ! atvalue ? NULL :
-        temporal_from_base_temp(BoolGetDatum(true), T_TBOOL, temp);
-  }
-
-  datum_func2 func = &datum_geom_intersects2d;
-  /* Cheat the compiler to avoid warnings before having the implementation */
-  assert(func); 
-  Temporal *result = NULL;
-  assert(temptype_subtype(temp->subtype));
-  // switch (temp->subtype)
-  // {
-    // case TINSTANT:
-      // result = (Temporal *) tinterrel_tcbufferinst_cbuffer((TInstant *) temp,
-        // cb, tinter, func);
-      // break;
-    // case TSEQUENCE:
-      // result = MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
-        // (Temporal *) tinterrel_tcbufferseq_linear_cbuffer((TSequence *) temp,
-          // cb, &box2, tinter, func) :
-        // (Temporal *) tinterrel_tcbufferseq_discstep_cbuffer((TSequence *) temp,
-          // cb, tinter, func);
-      // break;
-    // default: /* TSEQUENCESET */
-      // result = (Temporal *) tinterrel_tcbufferseqset_cbuffer(
-        // (TSequenceSet *) temp, cb, &box2, tinter, func);
-  // }
-
-  /* Restrict the result to the Boolean value in the last argument if any */
-  if (result && restr)
-  {
-    Temporal *atresult = temporal_restrict_value(result, atvalue, REST_AT);
-    pfree(result);
-    result = atresult;
-  }
-  return result;
+  return tinterrel_tspatial_base(temp, PointerGetDatum(cb), tinter, restr,
+    atvalue, tinter ? &datum_cbuffer_intersects : &datum_cbuffer_disjoint);
 }
 
 /*****************************************************************************

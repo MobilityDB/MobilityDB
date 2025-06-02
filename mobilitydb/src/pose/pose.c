@@ -370,7 +370,7 @@ Datum
 Pose_to_point(PG_FUNCTION_ARGS)
 {
   Pose *pose = PG_GETARG_POSE_P(0);
-  GSERIALIZED *result = pose_point(pose);
+  GSERIALIZED *result = pose_to_point(pose);
   PG_RETURN_POINTER(result);
 }
 
@@ -442,7 +442,7 @@ Datum
 Pose_point(PG_FUNCTION_ARGS)
 {
   Pose *pose = PG_GETARG_POSE_P(0);
-  Datum d = PointerGetDatum(pose_point(pose));
+  Datum d = PointerGetDatum(pose_to_point(pose));
   PG_RETURN_DATUM(datum_copy(d, T_GEOMETRY));
 }
 

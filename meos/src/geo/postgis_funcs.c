@@ -3425,7 +3425,7 @@ geog_from_binary(const char *wkb_bytea)
  * @note PostGIS function: @p geography_from_geometry(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-geog_from_geom(const GSERIALIZED *gs)
+geom_to_geog(const GSERIALIZED *gs)
 {
   VALIDATE_NOT_NULL(gs, NULL);
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
@@ -3462,7 +3462,7 @@ geog_from_geom(const GSERIALIZED *gs)
  * @note PostGIS function: @p geometry_from_geography(PG_FUNCTION_ARGS)
  */
 GSERIALIZED *
-geom_from_geog(const GSERIALIZED *gs)
+geog_to_geom(const GSERIALIZED *gs)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   /* Recalculate the boxes after re-setting the geodetic bit */

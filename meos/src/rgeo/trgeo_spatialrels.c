@@ -285,8 +285,8 @@ ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
   GSERIALIZED *trav = tgeo_traversed_area(temp);
-  bool result = ever ? geom_relate_pattern(gs, trav, "T********") :
-    geom_covers(gs, trav);
+  bool result = ever ? geom_relate_pattern(trav, gs, "T********") :
+    geom_covers(trav, gs);
   pfree(trav);
   return result ? 1 : 0;
 }

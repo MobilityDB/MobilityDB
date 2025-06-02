@@ -719,7 +719,7 @@ Datum
 Tbool_to_tint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tbool_tint(temp);
+  Temporal *result = tbool_to_tint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -736,7 +736,7 @@ Datum
 Tint_to_tfloat(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tint_tfloat(temp);
+  Temporal *result = tint_to_tfloat(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -753,7 +753,7 @@ Datum
 Tfloat_to_tint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tfloat_tint(temp);
+  Temporal *result = tfloat_to_tint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -788,7 +788,7 @@ Datum
 Tnumber_to_span(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Span *result = tnumber_span(temp);
+  Span *result = tnumber_to_span(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_SPAN_P(result);
 }
