@@ -37,8 +37,9 @@
 #include <utils/float.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
 #include <meos_geo.h>
+#include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/cbuffer.h"
 

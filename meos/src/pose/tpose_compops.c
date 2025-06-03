@@ -37,7 +37,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/pg_types.h"
+#include "temporal/postgres_types.h"
 #include "temporal/lifting.h"
 #include "temporal/temporal.h"
 #include "temporal/temporal_compops.h"

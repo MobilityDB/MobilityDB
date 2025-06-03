@@ -616,9 +616,9 @@ tnumber_value_bins(const Temporal *temp, Datum vsize, Datum vorigin,
  * @brief Create the initial state for tiling operations
  * @param[in] temp Temporal number, may be @p NULL
  * @param[in] box Bounds of the multidimensional grid
- * @param[in] vsize Value size of the tiles, may be 0 for time boxes
+ * @param[in] vsize Value size of the tiles, may be 0 for time tiles
  * @param[in] duration Interval defining the time size of the tile, may be
- * @p NULL for value boxes
+ * @p NULL for value tiles
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  */
@@ -635,27 +635,38 @@ tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
   state->ntiles = 1;
   Datum start_bin, end_bin;
   /* Set the value dimension of the state box*/
-  int j = 0;
   if (datum_double(vsize, box->span.basetype))
   {
+    /* The given vsize is greater than 0 */
     state->vsize = vsize;
-    state->max_coords[j] = span_num_bins(&box->span, vsize, vorigin, &start_bin,
-      &end_bin) - 1;
-    state->ntiles *= (state->max_coords[j] + 1);
+    state->max_coords[0] = span_num_bins(&box->span, vsize, vorigin,
+      &start_bin, &end_bin) - 1;
+    state->ntiles *= (state->max_coords[0] + 1);
     span_set(start_bin, end_bin, true, false, box->span.basetype,
       box->span.spantype, &state->box.span);
-    MEOS_FLAGS_SET_X(state->box.flags, true);
-    /* Advance max_coords */
-    j++;
   }
+  else
+  {
+    /* If the given vsize is 0, set the vsize to the value size of the box */
+    state->vsize = datum_sub(box->span.upper, box->span.lower,
+      box->span.basetype);
+    /* The upper bound of an integer span in canonical form is non exclusive */
+    if (! span_canon_basetype(box->span.basetype))
+      state->vsize = Float8GetDatum(DatumGetFloat8(state->vsize) + 1.0);
+    state->max_coords[0] = 0;
+    span_set(box->span.lower, box->span.upper, box->span.lower_inc,
+      box->span.upper_inc, box->span.basetype, box->span.spantype,
+      &state->box.span);
+  }
+  MEOS_FLAGS_SET_X(state->box.flags, true);
   /* Set the time dimension of the state box */
   if (duration)
   {
     state->tunits = interval_units(duration);
-    state->max_coords[j] = span_num_bins(&box->period,
+    state->max_coords[1] = span_num_bins(&box->period,
       Int64GetDatum(state->tunits), TimestampTzGetDatum(torigin),
       &start_bin, &end_bin) - 1;
-    state->ntiles *= (state->max_coords[j] + 1);
+    state->ntiles *= (state->max_coords[1] + 1);
     span_set(start_bin, end_bin, true, false, T_TIMESTAMPTZ, T_TSTZSPAN,
       &state->box.period);
     MEOS_FLAGS_SET_T(state->box.flags, true);

@@ -116,8 +116,6 @@ extern int ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   double dist, bool ever);
 extern int ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   double dist, bool ever);
-extern int ea_dwithin_tpoint_tpoint(const Temporal *temp1,
-  const Temporal *temp2, double dist, bool ever);
 
 extern int ea_spatialrel_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs, datum_func2 func, bool ever);

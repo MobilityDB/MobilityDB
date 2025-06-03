@@ -492,7 +492,7 @@ etouches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
     return -1;
 
   /* Bounding box test */
-  STBox *box1 = tspatial_stbox(temp);
+  STBox *box1 = tspatial_to_stbox(temp);
   STBox *box2 = geo_stbox(gs);
   if (! overlaps_stbox_stbox(box1, box2))
     return 0;
@@ -534,7 +534,7 @@ atouches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
     return -1;
 
   /* Bounding box test */
-  STBox *box1 = tspatial_stbox(temp);
+  STBox *box1 = tspatial_to_stbox(temp);
   STBox *box2 = geo_stbox(gs);
   if (! overlaps_stbox_stbox(box1, box2))
     return 0;

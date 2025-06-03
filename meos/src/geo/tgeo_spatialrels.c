@@ -51,6 +51,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/lifting.h"
 #include "temporal/tsequence.h"
 #include "geo/postgis_funcs.h"
@@ -1220,7 +1221,7 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
     return -1;
 
   /* Bounding box test */
-  STBox *box1 = tspatial_stbox(temp);
+  STBox *box1 = tspatial_to_stbox(temp);
   STBox *box2 = geo_stbox(gs);
   if (! overlaps_stbox_stbox(box1, box2))
     return 0;
@@ -1320,7 +1321,7 @@ ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
     return -1;
 
   /* Bounding box test */
-  STBox *box1 = tspatial_stbox(temp);
+  STBox *box1 = tspatial_to_stbox(temp);
   STBox *box2 = geo_stbox(gs);
   if (! overlaps_stbox_stbox(box1, box2))
     return 0;
@@ -1362,7 +1363,7 @@ atouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @ingroup meos_internal_geo_rel_ever
- * @brief Return 1 if a temporal geometry ever/alwaus touches another one,
+ * @brief Return 1 if a temporal geometry ever/always touches another one,
  * 0 if not, and -1 on error
  * @details
  * - A temporal geometry *ever* touches another one if there is an instant
@@ -1373,7 +1374,6 @@ atouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @csqlfn #Etouches_tgeo_tgeo()
-
  */
 int
 ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
@@ -1388,8 +1388,8 @@ ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
     return -1;
 
   /* Bounding box test */
-  STBox *box1 = tspatial_stbox(temp1);
-  STBox *box2 = tspatial_stbox(temp2);
+  STBox *box1 = tspatial_to_stbox(temp1);
+  STBox *box2 = tspatial_to_stbox(temp2);
   if (! overlaps_stbox_stbox(box1, box2))
     return 0;
 
@@ -1409,7 +1409,6 @@ etouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_touches_tgeo_tgeo(temp1, temp2, EVER);
 }
-
 
 /**
  * @ingroup meos_geo_rel_ever
@@ -1661,22 +1660,21 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
 }
 
 /**
- * @ingroup meos_internal_cbuffer_spatial_rel_ever
- * @brief Return 1 if two temporal circular buffers are ever/always within a
- * distance, 0 if not, -1 on error or if the temporal circular buffers do not
- * intersect on time
- * @param[in] temp1,temp2 Temporal circular buffers
+ * @ingroup meos_internal_geo_spatial_rel_ever
+ * @brief Return 1 if two temporal geos are ever/always within a distance,
+ * 0 if not, -1 on error or if the temporal geos do not intersect on time
+ * @param[in] temp1,temp2 Temporal geos
  * @param[in] dist Distance
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Edwithin_tcbuffer_tcbuffer(), #Adwithin_tcbuffer_tcbuffer()
+ * @csqlfn #Edwithin_tgeo_tgeo(), #Adwithin_tgeo_tgeo()
  */
 int 
-ea_dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
-  double dist, bool ever)
+ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
+  bool ever)
 {
-  VALIDATE_TPOINT(temp1, -1); VALIDATE_TPOINT(temp2, -1);
+  VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpoint_tpoint(temp1, temp2))
+  if (! ensure_valid_tgeo_tgeo(temp1, temp2))
     return -1;
 
   datum_func3 func = geo_dwithin_fn(temp1->flags, temp2->flags);
@@ -1693,78 +1691,39 @@ ea_dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.ever = ever;
-  lfinfo.tpfn_temp = &tpointsegm_tdwithin_turnpt;
+  lfinfo.tpfn_temp = tpoint_type(temp1->temptype) ?
+    &tpointsegm_tdwithin_turnpt : NULL;
   return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
 #if MEOS
 /**
  * @ingroup meos_geo_rel_ever
- * @brief Return 1 if two temporal points are ever within a distance,
+ * @brief Return 1 if two temporal geos are ever within a distance,
  * 0 if not, -1 on error or if they do not intersect on time
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] dist Distance
  * @csqlfn #Edwithin_tgeo_tgeo()
  */
 inline int
-edwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
-  double dist)
+edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist)
 {
-  return ea_dwithin_tpoint_tpoint(temp1, temp2, dist, EVER);
+  return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, EVER);
 }
 
 /**
  * @ingroup meos_geo_rel_ever
- * @brief Return 1 if two temporal points are always within a distance,
+ * @brief Return 1 if two temporal geos are always within a distance,
  * 0 if not, -1 on error or if they do not intersect on time
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] dist Distance
  * @csqlfn #Adwithin_tgeo_tgeo()
  */
 inline int
-adwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
-  double dist)
+adwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist)
 {
-  return ea_dwithin_tpoint_tpoint(temp1, temp2, dist, ALWAYS);
+  return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, ALWAYS);
 }
 #endif /* MEOS */
-
-/*****************************************************************************/
-
-/**
- * @ingroup meos_internal_geo_rel_ever
- * @brief Return 1 if two temporal geos are ever within a distance,
- * 0 if not, -1 on error or if they do not intersect on time
- * @param[in] temp1,temp2 Temporal geos
- * @param[in] dist Distance
- * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Edwithin_tgeo_tgeo()
- */
-int
-ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
-  double dist, bool ever)
-{
-  VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
-      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
-    return -1;
-
-  datum_func3 func = geo_dwithin_fn(temp1->flags, temp2->flags);
-  /* Fill the lifted structure */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = Float8GetDatum(dist);
-  lfinfo.argtype[0] = lfinfo.argtype[1] = temp1->temptype;
-  lfinfo.restype = T_TFLOAT;
-  lfinfo.reslinear = false;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
-    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
-  lfinfo.ever = ever;
-  return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
-}
 
 /*****************************************************************************/

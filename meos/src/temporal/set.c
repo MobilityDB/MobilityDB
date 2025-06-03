@@ -50,11 +50,11 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/span.h"
 #include "temporal/ttext_funcs.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
-#include "geo/tgeo_out.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_boxops.h"
 

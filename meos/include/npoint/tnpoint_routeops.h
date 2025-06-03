@@ -46,25 +46,25 @@
 /*****************************************************************************/
 
 extern bool contains_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
-  bool invert);
+  bool invert UNUSED);
 extern bool contained_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
   bool invert);
 extern bool same_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
-  bool invert);
+  bool invert UNUSED);
 extern bool overlaps_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
-  bool invert);
+  bool invert UNUSED);
 extern bool contains_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert);
 extern bool contained_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert);
 extern bool same_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
-  bool invert);
+  bool invert UNUSED);
 extern bool contains_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  bool invert);
+  bool invert UNUSED);
 extern bool contained_rid_npoint_tnpoint(const Temporal *temp, const Npoint *np,
   bool invert);
 extern bool same_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  bool invert);
+  bool invert UNUSED);
 extern bool overlaps_rid_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2);
 extern bool contains_rid_tnpoint_tnpoint(const Temporal *temp1,

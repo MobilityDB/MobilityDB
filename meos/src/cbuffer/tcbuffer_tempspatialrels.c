@@ -49,6 +49,7 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal_geo.h>
 #include "temporal/lifting.h"
 #include "temporal/tbool_ops.h"
 #include "temporal/temporal_compops.h"

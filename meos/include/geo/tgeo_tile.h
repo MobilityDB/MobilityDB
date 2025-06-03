@@ -34,6 +34,8 @@
 #ifndef __TPOINT_TILE_H__
 #define __TPOINT_TILE_H__
 
+/* PostGIS */
+#include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
 

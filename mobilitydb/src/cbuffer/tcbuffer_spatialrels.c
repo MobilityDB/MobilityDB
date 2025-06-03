@@ -307,6 +307,37 @@ Acovers_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
     ALWAYS);
 }
 
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Ecovers_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ecovers_tcbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if a temporal circular buffer and a circular buffer 
+ * ever touch
+ * @sqlfn eTouches()
+ */
+inline Datum
+Ecovers_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_covers_tcbuffer_tcbuffer,
+    EVER);
+}
+
+PGDLLEXPORT Datum Acovers_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acovers_tcbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if a temporal circular buffer and a circular buffer 
+ * always touch
+ * @sqlfn aTouches()
+ */
+inline Datum
+Acovers_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_covers_tcbuffer_tcbuffer,
+    ALWAYS);
+}
 /*****************************************************************************
  * Ever/always disjoint
  *****************************************************************************/
@@ -731,6 +762,37 @@ Atouches_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
     ALWAYS);
 }
 
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Etouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Etouches_tcbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if a temporal circular buffer and a circular buffer 
+ * ever touch
+ * @sqlfn eTouches()
+ */
+inline Datum
+Etouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_touches_tcbuffer_tcbuffer,
+    EVER);
+}
+
+PGDLLEXPORT Datum Atouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Atouches_tcbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if a temporal circular buffer and a circular buffer 
+ * always touch
+ * @sqlfn aTouches()
+ */
+inline Datum
+Atouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_touches_tcbuffer_tcbuffer,
+    ALWAYS);
+}
 /*****************************************************************************
  * Ever/always dwithin
  * The function only accepts points and not arbitrary geometries
@@ -909,7 +971,7 @@ Adwithin_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
  * ever/always within a distance
  * @sqlfn eDwithin()
  */
-static Datum
+Datum
 EA_dwithin_tcbuffer_cbuffer(FunctionCallInfo fcinfo, bool ever)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(1);

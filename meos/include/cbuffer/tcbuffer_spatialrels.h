@@ -56,8 +56,8 @@ extern int ea_contains_tcbuffer_cbuffer(const Temporal *temp,
   const Cbuffer *cb, bool ever);
 extern int ea_contains_cbuffer_tcbuffer(const Cbuffer *cb,
   const Temporal *temp, bool ever);
-extern int ea_contains_tcbuffer_tcbuffer(const Temporal *temp1,
-  const Temporal *temp2, bool ever);
+// extern int ea_contains_tcbuffer_tcbuffer(const Temporal *temp1,
+//   const Temporal *temp2, bool ever);
 
 extern int ea_covers_geo_tcbuffer(const GSERIALIZED *gs,
   const Temporal *temp, bool ever);

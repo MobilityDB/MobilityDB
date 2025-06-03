@@ -50,6 +50,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/span.h"
 #include "temporal/tbox.h"
 #include "geo/stbox.h"

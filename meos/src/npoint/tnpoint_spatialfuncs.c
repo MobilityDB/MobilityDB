@@ -38,6 +38,7 @@
 #include <assert.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal_geo.h>
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "npoint/tnpoint.h"

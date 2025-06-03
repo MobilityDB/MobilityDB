@@ -39,7 +39,7 @@
 #include <stdint.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
+#include <meos_internal_geo.h>
 
 /*****************************************************************************
  * Struct definitions
@@ -49,15 +49,6 @@
  * Opaque structure to represent pose values
  */
 typedef struct Pose Pose;
-
-/*****************************************************************************
- * fmgr macros
- *****************************************************************************/
-
-#define DatumGetPoseP(X)         ((Pose *) DatumGetPointer(X))
-#define PosePGetDatum(X)         PointerGetDatum(X)
-#define PG_GETARG_POSE_P(X)      DatumGetPoseP(PG_GETARG_DATUM(X))
-#define PG_RETURN_POSE_P(X)      PG_RETURN_POINTER(X)
 
 /*****************************************************************************
  * Validity macros
@@ -146,13 +137,19 @@ extern Pose **posearr_round(const Pose **posearr, int count, int maxdd);
 
 extern void pose_set_srid(Pose *pose, int32_t srid);
 extern int32_t pose_srid(const Pose *pose);
-extern Pose *pose_transform(const Pose *pose, int32 srid);
-extern Pose *pose_transform_pipeline(const Pose *pose, const char *pipelinestr, int32 srid, bool is_forward);
+extern Pose *pose_transform(const Pose *pose, int32_t srid);
+extern Pose *pose_transform_pipeline(const Pose *pose, const char *pipelinestr, int32_t srid, bool is_forward);
 
 /* Bounding box functions */
 
 extern STBox *pose_tstzspan_to_stbox(const Pose *pose, const Span *s);
 extern STBox *pose_timestamptz_to_stbox(const Pose *pose, TimestampTz t);
+
+/* Distance functions */
+
+extern double distance_pose_geo(const Pose *pose, const GSERIALIZED *gs);
+extern double distance_pose_pose(const Pose *pose1, const Pose *pose2);
+extern double distance_pose_stbox(const Pose *pose, const STBox *box);
 
 /* Comparison functions */
 
@@ -244,22 +241,18 @@ extern Pose **tpose_values(const Temporal *temp, int *count);
 
 extern Temporal *tpose_at_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
 extern Temporal *tpose_at_stbox(const Temporal *temp, const STBox *box, bool border_inc);
-extern Temporal *tpose_at_pose(const Temporal *temp, const Pose *pose, const Span *zspan);
+extern Temporal *tpose_at_pose(const Temporal *temp, const Pose *pose);
 extern Temporal *tpose_minus_geom(const Temporal *temp, const GSERIALIZED *gs, const Span *zspan);
-extern Temporal *tpose_minus_pose(const Temporal *temp, const Pose *pose, const Span *zspan);
+extern Temporal *tpose_minus_pose(const Temporal *temp, const Pose *pose);
 extern Temporal *tpose_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
 
 /*****************************************************************************
  * Distance functions
  *****************************************************************************/
 
-extern double distance_pose_geo(const Pose *pose, const GSERIALIZED *gs);
-extern double distance_pose_stbox(const Pose *pose, const STBox *box);
-extern double distance_pose_pose(const Pose *pose1, const Pose *pose2);
 extern Temporal *distance_tpose_pose(const Temporal *temp, const Pose *pose);
 extern Temporal *distance_tpose_point(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *distance_tpose_tpose(const Temporal *temp1, const Temporal *temp2);
-extern double nad_stbox_tpose(const STBox *box, const Temporal *temp);
 extern double nad_tpose_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern double nad_tpose_pose(const Temporal *temp, const Pose *pose);
 extern double nad_tpose_stbox(const Temporal *temp, const STBox *box);

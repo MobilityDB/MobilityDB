@@ -131,8 +131,6 @@ extern bool tsequence_make_valid(const TInstant **instants, int count,
 
 /* Transformation functions */
 
-extern void tsequence_compact_iter(const TSequence *seq, size_t seqsize,
-  size_t insts_size, TSequence *result);
 extern void tnumberseq_shift_scale_value_iter(TSequence *seq, Datum origin,
   Datum delta, bool hasdelta, double scale);
 extern void tsequence_shift_scale_time_iter(TSequence *seq, TimestampTz delta,
@@ -142,7 +140,6 @@ extern TSequenceSet *tstepseq_to_linear(const TSequence *seq);
 
 /* Accessor functions */
 
-extern int tfloatseq_spans(const TSequence *seq, Span *result);
 extern int tsequence_segments_iter(const TSequence *seq, TSequence **result);
 extern int tsequence_timestamps_iter(const TSequence *seq, TimestampTz *result);
 

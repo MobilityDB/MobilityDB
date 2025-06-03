@@ -53,7 +53,7 @@
 #ifndef FMGR_H
   /* To avoid including fmgr.h However this implies that the text values must
    * be ALWAYS detoasted */
-  #define DatumGetTextP(X)      ((text *) DatumGetPointer(X)) // PG_DETOAST_DATUM(X))
+  #define DatumGetTextP(X)      ((text *) DatumGetPointer(X)) // ((text *) PG_DETOAST_DATUM(X))
 #endif /* FMGR_H */
 
 /**
@@ -395,7 +395,6 @@ extern bool ensure_valid_temporal_temporal(const Temporal *temp1, const Temporal
 extern bool ensure_valid_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
 extern bool ensure_not_negative(int i);
 extern bool ensure_positive(int i);
-extern bool ensure_less_equal(int i, int j);
 extern bool not_negative_datum(Datum size, meosType basetype);
 extern bool ensure_not_negative_datum(Datum size, meosType basetype);
 extern bool positive_datum(Datum size, meosType basetype);
@@ -420,16 +419,9 @@ extern char *mobilitydb_full_version(void);
 
 extern datum_func2 round_fn(meosType basetype);
 
-/* Ever/always equal operators */
-
-extern bool ea_eq_bbox_temp_base(const Temporal *temp, Datum value, bool ever);
-extern bool ea_lt_bbox_temp_base(const Temporal *temp, Datum value, bool ever);
-
 /* Restriction functions */
 
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
-extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
-  const Datum *values, int count, int *newcount);
 
 /*****************************************************************************/
 

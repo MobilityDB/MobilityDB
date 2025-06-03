@@ -48,8 +48,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/doublen.h"
-#include "temporal/pg_types.h"
+#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
@@ -268,11 +269,11 @@ datumsegm_locate(Datum value1, Datum value2, Datum value, meosType basetype)
     return npointsegm_locate(DatumGetNpointP(value1), DatumGetNpointP(value2),
       DatumGetNpointP(value));
 #endif
-// #if POSE || RGEO
-  // if (basetype == T_POSE)
-    // return posesegm_locate(DatumGetPoseP(value1), DatumGetPoseP(value2),
-      // DatumGetPoseP(value));
-// #endif
+#if POSE || RGEO
+  if (basetype == T_POSE)
+    return posesegm_locate(DatumGetPoseP(value1), DatumGetPoseP(value2),
+      DatumGetPoseP(value));
+#endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown locate function for type: %s", meostype_name(basetype));
   return -1.0;

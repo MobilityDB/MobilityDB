@@ -46,8 +46,6 @@
 #include <utils/date.h>
 #include <utils/timestamp.h>
 #endif
-/* PostGIS */
-#include <liblwgeom.h>
 
 /*****************************************************************************
  * Toolchain dependent definitions
@@ -354,7 +352,7 @@ extern void meos_initialize(void);
 extern void meos_finalize(void);
 
 /******************************************************************************
- * Functions for PostgreSQL types
+ * Functions for base and time types
  ******************************************************************************/
 
 extern DateADT add_date_int(DateADT d, int32 days);
@@ -383,14 +381,13 @@ extern text *text_lower(const text *txt);
 extern char *text_out(const text *txt);
 extern text *text_upper(const text *txt);
 extern text *textcat_text_text(const text *txt1, const text *txt2);
-extern DateADT timestamp_to_date(TimestampTz t);
 extern TimestampTz timestamptz_shift(TimestampTz t, const Interval *interv);
 extern DateADT timestamp_to_date(Timestamp t);
 extern DateADT timestamptz_to_date(TimestampTz t);
 
-/*===========================================================================*
+/*============================================================================
  * Functions for set and span types
- *===========================================================================*/
+  ===========================================================================*/
 
 /*****************************************************************************
  * Input/output functions for set and span types
@@ -658,10 +655,10 @@ extern bool spanset_ne(const SpanSet *ss1, const SpanSet *ss2);
 /* Split functions */
 
 extern Span *set_spans(const Set *s);
-extern Span *set_split_each_n_spans(const Set *s, int elem_count, int *count);
+extern Span *set_split_each_n_spans(const Set *s, int elems_per_span, int *count);
 extern Span *set_split_n_spans(const Set *s, int span_count, int *count);
 extern Span *spanset_spans(const SpanSet *ss);
-extern Span *spanset_split_each_n_spans(const SpanSet *ss, int elem_count, int *count);
+extern Span *spanset_split_each_n_spans(const SpanSet *ss, int elems_per_span, int *count);
 extern Span *spanset_split_n_spans(const SpanSet *ss, int span_count, int *count);
 
 /* Topological functions */

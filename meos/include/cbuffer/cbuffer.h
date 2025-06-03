@@ -60,7 +60,6 @@ struct Cbuffer
  * fmgr macros
  *****************************************************************************/
 
-/* Cbuffer */
 #define DatumGetCbufferP(X)         ((Cbuffer *) DatumGetPointer(X))
 #define CbufferPGetDatum(X)         PointerGetDatum(X)
 #define PG_GETARG_CBUFFER_P(X)      DatumGetCbufferP(PG_GETARG_DATUM(X))
@@ -107,8 +106,6 @@ extern char *cbuffer_wkt_out(Datum value, int maxdd, bool extended);
 extern const GSERIALIZED *cbuffer_point_p(const Cbuffer *cb);
 
 extern Datum datum_cbuffer_round(Datum buffer, Datum size);
-extern Cbuffer *cbuffer_round(const Cbuffer *cb, int maxdd);
-extern Cbuffer **cbufferarr_round(const Cbuffer **cbufarr, int count, int maxdd);
 
 /* Transformation functions */
 
@@ -117,6 +114,7 @@ extern Cbuffer *cbuffer_transf_pj(const Cbuffer *cb, int32_t srid_to, const LWPR
 /* Distance function */
 
 extern double cbuffer_distance(const Cbuffer *cb1, const Cbuffer *cb2);
+extern Datum datum_cbuffer_distance(Datum cb1, Datum cb2);
 
 /* Spatial relationship functions */
 

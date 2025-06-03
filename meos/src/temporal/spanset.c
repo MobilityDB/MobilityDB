@@ -47,7 +47,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/pg_types.h"
+#include "temporal/postgres_types.h"
 #include "temporal/span.h"
 #include "temporal/temporal.h"
 #include "temporal/type_parser.h"
@@ -1441,7 +1441,7 @@ spanset_split_n_spans(const SpanSet *ss, int span_count, int *count)
  * @csqlfn #Spanset_split_each_n_spans()
  */
 Span *
-spanset_split_each_n_spans(const SpanSet *ss, int32 elems_per_span, int *count)
+spanset_split_each_n_spans(const SpanSet *ss, int elems_per_span, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(ss, NULL); VALIDATE_NOT_NULL(count, NULL);

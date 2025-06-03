@@ -57,15 +57,4 @@ extern void tnpointseq_expand_stbox(const TSequence *seq, const TInstant *inst);
 
 /*****************************************************************************/
 
-extern int boxop_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
-  bool (*func)(const STBox *, const STBox *), bool invert);
-extern int boxop_tnpoint_stbox(const Temporal *temp, const STBox *box,
-  bool (*func)(const STBox *, const STBox *), bool spatial, bool invert);
-extern bool boxop_tnpoint_npoint(const Temporal *temp, const Npoint *np,
-  bool (*func)(const STBox *, const STBox *), bool invert);
-extern bool boxop_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
-  bool (*func)(const STBox *, const STBox *));
-
-/*****************************************************************************/
-
 #endif /* __TNPOINT_BOXOPS_H__ */

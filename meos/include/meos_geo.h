@@ -40,6 +40,8 @@
 
 /* MEOS */
 #include <meos.h>
+/* PostGIS */
+#include <liblwgeom.h>
 
 /*****************************************************************************
  * Type definitions
@@ -373,7 +375,7 @@ extern GSERIALIZED *geo_round(const GSERIALIZED *gs, int maxdd);
 
 /* Spatial reference system functions */
 
-extern GSERIALIZED * geo_set_srid(const GSERIALIZED *gs, int32_t srid);
+extern GSERIALIZED *geo_set_srid(const GSERIALIZED *gs, int32_t srid);
 extern int32_t geo_srid(const GSERIALIZED *gs);
 extern GSERIALIZED *geo_transform(GSERIALIZED *geom, int32_t srid_to);
 extern GSERIALIZED *geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline, int32_t srid_to, bool is_forward);
@@ -619,16 +621,18 @@ extern char *tspatial_as_text(const Temporal *temp, int maxdd);
 extern Temporal *tgeo_from_base_temp(const GSERIALIZED *gs, const Temporal *temp);
 extern TInstant *tgeoinst_make(const GSERIALIZED *gs, TimestampTz t);
 extern TSequence *tgeoseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s);
-extern TSequenceSet *tgeoseqset_from_base_tstzspan(const GSERIALIZED *gs, const Span *s, interpType interp);
+extern TSequence *tgeoseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s, interpType interp);
 extern TSequenceSet *tgeoseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss, interpType interp);
 extern Temporal *tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp);
 extern TInstant *tpointinst_make(const GSERIALIZED *gs, TimestampTz t);
-extern TSequence *tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s, interpType interp);
 extern TSequence *tpointseq_from_base_tstzset(const GSERIALIZED *gs, const Set *s);
+extern TSequence *tpointseq_from_base_tstzspan(const GSERIALIZED *gs, const Span *s, interpType interp);
 extern TSequenceSet *tpointseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss, interpType interp);
 
 /* Conversion functions */
 
+extern STBox *box3d_to_stbox(const BOX3D *box);
+extern STBox *gbox_to_stbox(const GBOX *box);
 extern Temporal *geomeas_to_tpoint(const GSERIALIZED *gs);
 extern Temporal *tgeogpoint_to_tgeography(const Temporal *temp);
 extern Temporal *tgeography_to_tgeogpoint(const Temporal *temp);
@@ -676,8 +680,8 @@ extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
 
 int32_t tspatial_srid(const Temporal *temp);
 extern Temporal *tspatial_set_srid(const Temporal *temp, int32_t srid);
-extern Temporal *tspatial_transform(const Temporal *temp, int32 srid);
-extern Temporal *tspatial_transform_pipeline(const Temporal *temp, const char *pipelinestr, int32 srid, bool is_forward);
+extern Temporal *tspatial_transform(const Temporal *temp, int32_t srid);
+extern Temporal *tspatial_transform_pipeline(const Temporal *temp, const char *pipelinestr, int32_t srid, bool is_forward);
 
 /* Restriction functions */
 
@@ -871,9 +875,8 @@ extern STBox *stbox_get_time_tile(TimestampTz t, const Interval *duration, Times
 extern STBox *stbox_space_tiles(const STBox *bounds, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool border_inc, int *count);
 extern STBox *stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool border_inc, int *count);
 extern STBox *stbox_time_tiles(const STBox *bounds, const Interval *duration, TimestampTz torigin, bool border_inc, int *count);
-extern Temporal **tpoint_space_split(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_bins, int *count);
+extern Temporal **tgeo_space_split(const Temporal *temp, double xsize, double ysize, double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_bins, int *count);
 extern Temporal **tgeo_space_time_split(const Temporal *temp, double xsize, double ysize, double zsize, const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix, bool border_inc, GSERIALIZED ***space_bins, TimestampTz **time_bins, int *count);
-extern Temporal **tgeo_time_split(const Temporal *temp, const Interval *duration, TimestampTz torigin, bool border_inc, TimestampTz **time_bins, int *count);
 
 
 /*****************************************************************************/

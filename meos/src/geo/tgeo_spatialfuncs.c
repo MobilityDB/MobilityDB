@@ -48,7 +48,8 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal.h>
-#include "temporal/pg_types.h"
+#include <meos_internal_geo.h>
+#include "temporal/postgres_types.h"
 #include "temporal/lifting.h"
 #include "temporal/temporal.h"
 #include "temporal/temporal_compops.h"
@@ -868,7 +869,7 @@ ensure_valid_spatial_stbox_stbox(const STBox *box1, const STBox *box2)
 bool
 ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  assert(temp); assert(gs); assert(tgeo_type_all(temp->temptype));
+  VALIDATE_TGEO(temp, false); VALIDATE_NOT_NULL(gs, false);
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_same_geodetic_tspatial_geo(temp, gs))
     return false;
@@ -884,7 +885,8 @@ ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 bool
 ensure_valid_tspatial_base(const Temporal *temp, Datum base)
 {
-  assert(temp); assert(tspatial_type(temp->temptype));
+  VALIDATE_TSPATIAL(temp, false);
+  VALIDATE_NOT_NULL(DatumGetPointer(base), false);;
   meosType basetype = temptype_basetype(temp->temptype);
   if (! ensure_same_srid(tspatial_srid(temp), spatial_srid(base, basetype)) ||
       ! ensure_same_geodetic_tspatial_base(temp, base))

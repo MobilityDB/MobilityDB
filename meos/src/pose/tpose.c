@@ -41,6 +41,7 @@
 #include <meos.h>
 #include <meos_pose.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/lifting.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
@@ -515,7 +516,7 @@ tpose_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
  * @csqlfn #Temporal_at_value()
  */
 Temporal *
-tpose_at_pose(const Temporal *temp, Pose *pose)
+tpose_at_pose(const Temporal *temp, const Pose *pose)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(pose, NULL);
@@ -531,7 +532,7 @@ tpose_at_pose(const Temporal *temp, Pose *pose)
  * @csqlfn #Temporal_minus_value()
  */
 Temporal *
-tpose_minus_pose(const Temporal *temp, Pose *pose)
+tpose_minus_pose(const Temporal *temp, const Pose *pose)
 {
   VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(pose, NULL);
   return temporal_restrict_value(temp, PointerGetDatum(pose), REST_MINUS);

@@ -291,7 +291,7 @@ CREATE FUNCTION eDwithin(tgeompoint, geometry, dist float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDwithin(tgeompoint, tgeompoint, dist float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edwithin_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Edwithin_tgeo_tgeo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -328,7 +328,7 @@ CREATE FUNCTION aDwithin(tgeompoint, geometry, dist float)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(tgeompoint, tgeompoint, dist float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Adwithin_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Adwithin_tgeo_tgeo'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

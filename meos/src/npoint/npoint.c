@@ -51,7 +51,8 @@
 #include <meos_geo.h>
 #include <meos_npoint.h>
 #include <meos_internal.h>
-#include "temporal/pg_types.h"
+#include <meos_internal_geo.h>
+#include "temporal/postgres_types.h"
 #include "temporal/span.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_inout.h"
@@ -59,7 +60,6 @@
 #include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo.h"
-#include "geo/tgeo_out.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 #include "npoint/tnpoint_parser.h"

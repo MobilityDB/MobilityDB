@@ -48,7 +48,8 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
-#include "temporal/pg_types.h"
+#include <meos_internal_geo.h>
+#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_inout.h"
@@ -582,21 +583,21 @@ geom_to_cbuffer(const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_internal_base_conversion
+ * @ingroup meos_cbuffer_base_conversion
  * @brief Return a geometry converted from an array of circular buffers
- * @param[in] cbufarr Array of circular buffers
+ * @param[in] cbarr Array of circular buffers
  * @param[in] count Number of elements in the input array
  */
 GSERIALIZED *
-cbufferarr_geom(Cbuffer **cbufarr, int count)
+cbufferarr_to_geom(const Cbuffer **cbarr, int count)
 {
-  assert(cbufarr); assert(count > 1);
+  assert(cbarr); assert(count > 1);
   GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * count);
   /* SRID of the first element of the array */
-  int32_t srid = cbuffer_srid(cbufarr[0]);
+  int32_t srid = cbuffer_srid(cbarr[0]);
   for (int i = 0; i < count; i++)
   {
-    int32_t srid_elem = cbuffer_srid(cbufarr[i]);
+    int32_t srid_elem = cbuffer_srid(cbarr[i]);
     if (! ensure_same_srid(srid, srid_elem))
     {
       for (int j = 0; j < i; j++)
@@ -604,7 +605,7 @@ cbufferarr_geom(Cbuffer **cbufarr, int count)
       pfree(geoms);
       return NULL;
     }
-    geoms[i] = cbuffer_to_geom(cbufarr[i]);
+    geoms[i] = cbuffer_to_geom(cbarr[i]);
   }
   GSERIALIZED *result = geo_collect_garray(geoms, count);
   pfree_array((void **) geoms, count);
@@ -778,22 +779,22 @@ datum_cbuffer_round(Datum cbuffer, Datum size)
  * @ingroup meos_cbuffer_base_transf
  * @brief Return an array of circular buffers with the precision of the values
  * set to a number of decimal places
- * @param[in] cbufarr Array of circular buffers
+ * @param[in] cbarr Array of circular buffers
  * @param[in] count Number of elements in the array
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Cbufferarr_round()
  */
 Cbuffer **
-cbufferarr_round(const Cbuffer **cbufarr, int count, int maxdd)
+cbufferarr_round(const Cbuffer **cbarr, int count, int maxdd)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cbufarr, NULL);
+  VALIDATE_NOT_NULL(cbarr, NULL);
   if (! ensure_positive(count) || ! ensure_not_negative(maxdd))
     return NULL;
 
   Cbuffer **result = palloc(sizeof(Cbuffer *) * count);
   for (int i = 0; i < count; i++)
-    result[i] = cbuffer_round(cbufarr[i], maxdd);
+    result[i] = cbuffer_round(cbarr[i], maxdd);
   return result;
 }
 

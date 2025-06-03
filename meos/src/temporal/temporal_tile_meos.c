@@ -74,7 +74,7 @@ tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
   Datum vorigin, TimestampTz torigin, int *count)
 {
   assert(box); assert(count);
-  assert(positive_datum(vsize, box->span.basetype));
+  assert(not_negative_datum(vsize, box->span.basetype));
   assert(! duration || valid_duration(duration));
 
   TboxGridState *state = tbox_tile_state_make(NULL, box, vsize, duration,

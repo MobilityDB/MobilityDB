@@ -44,9 +44,11 @@
 #include <utils/float.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
 #include <meos_pose.h>
-#include "temporal/pg_types.h"
+#include <meos_internal.h>
+#include <meos_internal_geo.h>
+#include "temporal/postgres_types.h"
+#include "temporal/tsequence.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
@@ -64,17 +66,44 @@
  *****************************************************************************/
 
 /**
+ * @brief Ensure the validity of a pose and a geometry/geography
+ */
+bool
+ensure_valid_pose_geo(const Pose *pose, const GSERIALIZED *gs)
+{
+  VALIDATE_NOT_NULL(pose, false); VALIDATE_NOT_NULL(gs, false); 
+  if (gserialized_is_empty(gs) ||
+      ! ensure_same_srid(pose_srid(pose), gserialized_get_srid(gs)) ||
+      MEOS_FLAGS_GET_Z(pose->flags) != FLAGS_GET_Z(gs->gflags))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Ensure the validity of a pose and a spatiotemporal box
+ */
+bool
+ensure_valid_pose_stbox(const Pose *pose, const STBox *box)
+{
+  VALIDATE_NOT_NULL(pose, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_has_X(T_STBOX, box->flags) ||
+      ! ensure_same_srid(pose_srid(pose), box->srid))
+    return false;
+  return true;
+}
+
+/**
  * @brief Ensure the validity of two circular poses
  */
 bool
 ensure_valid_pose_pose(const Pose *pose1, const Pose *pose2)
 {
   VALIDATE_NOT_NULL(pose1, false); VALIDATE_NOT_NULL(pose2, false); 
-  if (! ensure_same_srid(pose_srid(pose1), pose_srid(pose2)))
+  if (! ensure_same_srid(pose_srid(pose1), pose_srid(pose2)) ||
+      MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags))
     return false;
   return true;
 }
-
 
 /*****************************************************************************
  * Interpolation function
@@ -82,47 +111,47 @@ ensure_valid_pose_pose(const Pose *pose1, const Pose *pose2)
 
 /**
  * @brief Return the pose value interpolated from the two poses and a ratio
- * @param[in] pose1,pose2 Poses
+ * @param[in] start,end Poses
  * @param[in] ratio Value in [0,1] representing the duration of the
  * timestamps associated to `p1` and `p2` divided by the duration
  * of the timestamps associated to `p1` and `p3`
  */
 Pose *
-pose_interpolate(const Pose *pose1, const Pose *pose2, double ratio)
+posesegm_interpolate(const Pose *start, const Pose *end, double ratio)
 {
-  if (! ensure_valid_pose_pose(pose1, pose2))
+  if (! ensure_valid_pose_pose(start, end))
     return NULL; 
   Pose *result;
-  if (! MEOS_FLAGS_GET_Z(pose1->flags))
+  if (! MEOS_FLAGS_GET_Z(start->flags))
   {
-    double x = pose1->data[0] * (1 - ratio) + pose2->data[0] * ratio;
-    double y = pose1->data[1] * (1 - ratio) + pose2->data[1] * ratio;
+    double x = start->data[0] * (1 - ratio) + end->data[0] * ratio;
+    double y = start->data[1] * (1 - ratio) + end->data[1] * ratio;
     double theta;
-    double theta_delta = pose2->data[2] - pose1->data[2];
+    double theta_delta = end->data[2] - start->data[2];
     /* If fabs(theta_delta) == M_PI: Always turn counter-clockwise */
     if (fabs(theta_delta) < MEOS_EPSILON)
-      theta = pose1->data[2];
+      theta = start->data[2];
     else if (theta_delta > 0 && fabs(theta_delta) <= M_PI)
-      theta = pose1->data[2] + theta_delta * ratio;
+      theta = start->data[2] + theta_delta * ratio;
     else if (theta_delta > 0 && fabs(theta_delta) > M_PI)
-      theta = pose2->data[2] + (2 * M_PI - theta_delta) * (1 - ratio);
+      theta = end->data[2] + (2 * M_PI - theta_delta) * (1 - ratio);
     else if (theta_delta < 0 && fabs(theta_delta) < M_PI)
-      theta = pose1->data[2] + theta_delta * ratio;
+      theta = start->data[2] + theta_delta * ratio;
     else /* (theta_delta < 0 && fabs(theta_delta) >= M_PI) */
-      theta = pose1->data[2] + (2 * M_PI + theta_delta) * ratio;
+      theta = start->data[2] + (2 * M_PI + theta_delta) * ratio;
     if (theta > M_PI)
       theta = theta - 2 * M_PI;
-    result = pose_make_2d(x, y, theta, pose_srid(pose1));
+    result = pose_make_2d(x, y, theta, pose_srid(start));
   }
   else
   {
-    double x = pose1->data[0] * (1 - ratio) + pose2->data[0] * ratio;
-    double y = pose1->data[1] * (1 - ratio) + pose2->data[1] * ratio;
-    double z = pose1->data[2] * (1 - ratio) + pose2->data[2] * ratio;
-    double W, W1 = pose1->data[3], W2 = pose2->data[3];
-    double X, X1 = pose1->data[4], X2 = pose2->data[4];
-    double Y, Y1 = pose1->data[5], Y2 = pose2->data[5];
-    double Z, Z1 = pose1->data[6], Z2 = pose2->data[6];
+    double x = start->data[0] * (1 - ratio) + end->data[0] * ratio;
+    double y = start->data[1] * (1 - ratio) + end->data[1] * ratio;
+    double z = start->data[2] * (1 - ratio) + end->data[2] * ratio;
+    double W, W1 = start->data[3], W2 = end->data[3];
+    double X, X1 = start->data[4], X2 = end->data[4];
+    double Y, Y1 = start->data[5], Y2 = end->data[5];
+    double Z, Z1 = start->data[6], Z2 = end->data[6];
     double dot =  W1 * W2 + X1 * X2 + Y1 * Y2 + Z1 * Z2;
     if (dot < 0.0f)
     {
@@ -158,9 +187,80 @@ pose_interpolate(const Pose *pose1, const Pose *pose2, double ratio)
     X /= norm;
     Y /= norm;
     Z /= norm;
-    result = pose_make_3d(x, y, z, W, X, Y, Z, pose_srid(pose1));
+    result = pose_make_3d(x, y, z, W, X, Y, Z, pose_srid(start));
   }
   return result;
+}
+
+/**
+ * @brief Return a float in (0,1) if a network point segment intersects a 
+ * network point, return -1.0 if the network point is not located in the
+ * segment or if it is approximately equal to the start or the end valuess
+ * @param[in] start,end Values defining the segment
+ * @param[in] value Value to locate
+ * @note The function returns -1.0 if the network point is approximately equal 
+ * to the start or the end network points since it is used in the lifting
+ * infrastructure for determining the crossings or the turning points after
+ * verifying that the bounds of the segment are not equal to the value.
+ */
+long double
+posesegm_locate(const Pose *start, const Pose *end, const Pose *value)
+{
+   /* Return if the value to locate has a different road identifier */
+  if (ensure_valid_pose_pose(start, end) || 
+      ensure_valid_pose_pose(start, value))
+    return -1.0;
+
+  GSERIALIZED *gs1 = pose_to_point(start);
+  GSERIALIZED *gs2 = pose_to_point(end);
+  GSERIALIZED *gs = pose_to_point(value);
+  long double result1 = -1.0;
+  long double result2 = -1.0;
+  if (! geopoint_eq(gs1, gs2))
+  {
+    result1 = pointsegm_locate(PointerGetDatum(gs1), PointerGetDatum(gs2),
+      PointerGetDatum(gs), NULL);
+    if (result1 < 0.0)
+      return -1.0;
+  }
+  else
+  {
+    /* If constant segment and the point of the value is different */
+    if (! geopoint_eq(gs1, gs))
+      return -1.0;
+  }
+  if (MEOS_FLAGS_GET_Z(start->flags))
+  {
+    // TODO
+      return -1.0;
+  }
+  else
+  {
+    double rotation1 = pose_rotation(start);
+    double rotation2 = pose_rotation(value);
+    double rotation = pose_rotation(value);
+    if (rotation1 != rotation2)
+    {
+      result2 = floatsegm_locate(rotation1, rotation2, rotation);
+      if (result2 < 0.0)
+        return -1.0;
+    }
+    else
+    {
+      /* If the rotiation are equal return result1 where
+       * - result1 = -1.0 if gs1 == gs2 == gs, or
+       * - result1 in [0,1] if gs1 != gs2 */
+      return result1;
+    }
+  }
+  if (result1 >= 0.0 && result2 >= 0.0)
+    return (fabsl(result1 - result2) <= MEOS_EPSILON) ? result1 : -1.0;
+  if (result1 < 0.0 && result2 >= 0)
+    return result2;
+  else if(result1 >= 0 && result2 <= 0)
+    return result1;
+  else /* The three values are equal */
+    return -1.0;
 }
 
 /*****************************************************************************
@@ -178,7 +278,7 @@ bool
 pose_collinear(const Pose *p1, const Pose *p2, const Pose *p3, double ratio)
 {
   assert(p1); assert(p2); assert(p3); 
-  Pose *p2_interpolated = pose_interpolate(p1, p3, ratio);
+  Pose *p2_interpolated = posesegm_interpolate(p1, p3, ratio);
   bool result = pose_same(p2, p2_interpolated);
   pfree(p2_interpolated);
   return result;
@@ -1052,6 +1152,78 @@ pose_distance(Datum pose1, Datum pose2)
   Datum geom1 = PosePGetDatum(pose_to_point(DatumGetPoseP(pose1)));
   Datum geom2 = PosePGetDatum(pose_to_point(DatumGetPoseP(pose2)));
   return datum_pt_distance2d(geom1, geom2);
+}
+
+/**
+ * @ingroup meos_pose_base_dist
+ * @brief Return the distance between two poses
+ * @return On error return -1.0
+ * @csqlfn #Distance_pose_pose()
+ */
+double
+distance_pose_pose(const Pose *pose1, const Pose *pose2)
+{
+  VALIDATE_NOT_NULL(pose1, -1.0); VALIDATE_NOT_NULL(pose2, -1.0);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_pose_pose(pose1, pose2))
+    return -1.0;
+  /* The following function assumes that all validity tests have been done */
+  return pose_distance(PointerGetDatum(pose1), PointerGetDatum(pose2));
+}
+
+/**
+ * @ingroup meos_internal_pose_dist
+ * @brief Return the distance between two circular buffers
+ * @param[in] pose1,pose2 Poses
+ * @note The function assumes that all validity tests have been previously done
+ */
+Datum
+datum_pose_distance(Datum pose1, Datum pose2)
+{
+  return Float8GetDatum(pose_distance(pose1, pose2));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_pose_base_dist
+ * @brief Return the distance between a pose and a geometry
+ * @return On error return -1.0
+ * @csqlfn #Distance_pose_geo()
+ */
+double
+distance_pose_geo(const Pose *pose, const GSERIALIZED *gs)
+{
+  VALIDATE_NOT_NULL(pose, -1.0); VALIDATE_NOT_NULL(gs, -1.0);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_pose_geo(pose, gs) || gserialized_is_empty(gs))
+    return -1.0;
+
+  GSERIALIZED *geo = pose_to_point(pose);
+  double result = geom_distance2d(geo, gs);
+  pfree(geo);
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_base_dist
+ * @brief Return the distance between a pose and a spatiotemporal box
+ * @return On error return -1.0
+ * @csqlfn #Distance_pose_stbox()
+ */
+double
+distance_pose_stbox(const Pose *pose, const STBox *box)
+{
+  VALIDATE_NOT_NULL(pose, -1.0); VALIDATE_NOT_NULL(box, -1.0);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_pose_stbox(pose, box))
+    return -1.0;
+
+  GSERIALIZED *geo1 = pose_to_point(pose);
+  GSERIALIZED *geo2 = stbox_geo(box);
+  double result = geom_distance2d(geo1, geo2);
+  pfree(geo1); pfree(geo2); 
+  return result;
 }
 
 /*****************************************************************************

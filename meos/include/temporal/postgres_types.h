@@ -33,8 +33,8 @@
  * PostgreSQL functions in order to bypass the function manager @p fmgr.c.
  */
 
-#ifndef PG_CALL_H
-#define PG_CALL_H
+#ifndef POSTGRES_TYPES_H
+#define POSTGRES_TYPES_H
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -73,8 +73,6 @@ extern int pg_interval_cmp(const Interval *interv1, const Interval *interv2);
 extern Interval *pg_interval_in(const char *str, int32 prec);
 extern Interval *pg_interval_justify_hours(const Interval *span);
 extern char *pg_interval_out(const Interval *interv);
-extern TimeADT pg_time_in(const char *str, int32 typmod);
-extern char *pg_time_out(TimeADT t);
 extern Timestamp pg_timestamp_in(const char *str, int32 typmod);
 extern char *pg_timestamp_out(Timestamp t);
 extern TimestampTz pg_timestamptz_in(const char *str, int32 prec);
@@ -93,4 +91,4 @@ extern uint64 pg_hashtextextended(text *key, uint64 seed);
 
 /*****************************************************************************/
 
-#endif /* PG_CALL_H */
+#endif /* POSTGRES_TYPES_H */

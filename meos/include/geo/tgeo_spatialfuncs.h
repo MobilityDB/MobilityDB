@@ -58,11 +58,7 @@
 
 /* Utility functions */
 
-extern POINT2D datum_point2d(Datum value);
-extern POINT3DZ datum_point3dz(Datum value);
-extern void gs_point4d(const GSERIALIZED *gs, POINT4D *p);
 extern void datum_point4d(Datum value, POINT4D *p);
-
 extern int geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geopoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
@@ -76,7 +72,6 @@ extern Datum datum2_geom_centroid(Datum geo);
 extern Datum datum2_geog_centroid(Datum geo);
 extern GSERIALIZED **geo_extract_elements(const GSERIALIZED *gs, int *count);
 extern GSERIALIZED *geo_serialize(const LWGEOM *geom);
-extern LWPROJ *lwproj_get(int32 srid_from, int32 srid_to);
 
 /* Generic functions */
 
@@ -87,7 +82,6 @@ extern Datum datum_geom_distance3d(Datum geom1, Datum geom2);
 extern Datum datum_geog_distance(Datum geog1, Datum geog2);
 extern Datum datum_pt_distance2d(Datum geom1, Datum geom2);
 extern Datum datum_pt_distance3d(Datum geom1, Datum geom2);
-
 extern int16 spatial_flags(Datum d, meosType basetype);
 
 /* Validity functions */
@@ -155,7 +149,7 @@ extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 
 /* Ever/always comparisons */
 
-extern int eacomp_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
+extern int eacomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, meosType), bool ever);
 
 /* Functions derived from PostGIS to increase floating-point precision */
@@ -173,7 +167,7 @@ extern void interpolate_point4d_spheroid(const POINT4D *p1, const POINT4D *p2,
  * ST_LineLocatePoint */
 
 extern GSERIALIZED *geopoint_make(double x, double y, double z, bool hasz,
-  bool geodetic, int32 srid);
+  bool geodetic, int32_t srid);
 extern LWGEOM *lwcircle_make(double x, double y, double radius, int32_t srid);
 extern GSERIALIZED *geocircle_make(double x, double y, double radius,
   int32_t srid);

@@ -43,7 +43,7 @@
 #include <meos.h>
 #include <meos_rgeo.h>
 #include <meos_internal.h>
-#include "temporal/pg_types.h"
+#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/tbox.h"
@@ -268,7 +268,7 @@ findMemberByName(json_object *poObj, const char *pszName)
  * such as `"coordinates":[1,1]`.
  */
 static Datum
-parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
+parse_mfjson_coord(json_object *poObj, int32_t srid, bool geodetic)
 {
   if (json_type_array != json_object_get_type(poObj))
   {
@@ -401,7 +401,7 @@ parse_mfjson_values(json_object *mfjson, meosType temptype, int *count)
  * cordinates such as `"values":[1.5,2.5]`.
  */
 static Datum *
-parse_mfjson_points(json_object *mfjson, int srid, bool geodetic, int *count)
+parse_mfjson_points(json_object *mfjson, int32_t srid, bool geodetic, int *count)
 {
   json_object *mfjsonTmp = mfjson;
   json_object *coordinates = NULL;
@@ -442,7 +442,7 @@ parse_mfjson_points(json_object *mfjson, int srid, bool geodetic, int *count)
  * representation
  */
 static Datum *
-parse_mfjson_geos(json_object *mfjson, int srid, bool geodetic, int *count)
+parse_mfjson_geos(json_object *mfjson, int32_t srid, bool geodetic, int *count)
 {
   json_object *mfjsonTmp = mfjson;
   json_object *values_json = NULL;
@@ -501,7 +501,7 @@ parse_mfjson_geos(json_object *mfjson, int srid, bool geodetic, int *count)
  * MF-JSON representation
  */
 static GSERIALIZED *
-parse_mfjson_ref_geo(json_object *mfjson, int srid, bool geodetic)
+parse_mfjson_ref_geo(json_object *mfjson, int32_t srid, bool geodetic)
 {
   json_object *mfjsonTmp = mfjson;
   json_object *geo_json = NULL;
@@ -537,7 +537,7 @@ parse_mfjson_ref_geo(json_object *mfjson, int srid, bool geodetic)
 /**
  * @brief Return a pose from its GeoJSON representation
  */Pose *
-parse_mfjson_pose(json_object *mfjson, int srid)
+parse_mfjson_pose(json_object *mfjson, int32_t srid)
 {
   assert(mfjson);
   /* Determine if the pose is 2D or 3D depending on whether there is an 
@@ -649,7 +649,7 @@ parse_mfjson_pose(json_object *mfjson, int srid)
  * @brief Return an array of poses from its GeoJSON pose values
  */
 static Datum *
-parse_mfjson_poses(json_object *mfjson, int srid, int *count)
+parse_mfjson_poses(json_object *mfjson, int32_t srid, int *count)
 {
   json_object *mfjsonTmp = mfjson;
   json_object *values_json = NULL;
@@ -748,7 +748,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
  * @param[in] temptype Temporal type
  */
 TInstant *
-tinstant_from_mfjson(json_object *mfjson, bool spatial, int srid,
+tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
   meosType temptype)
 {
   assert(mfjson); assert(temporal_type(temptype));
@@ -795,7 +795,7 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int srid,
  * representation
  */
 static TInstant **
-tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
+tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
   meosType temptype, int *count)
 {
   assert(mfjson); assert(count);
@@ -852,7 +852,7 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int srid,
  * @param[in] interp Interpolation
  */
 TSequence *
-tsequence_from_mfjson(json_object *mfjson, bool spatial, int srid,
+tsequence_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
   meosType temptype, interpType interp)
 {
   assert(mfjson);
@@ -900,7 +900,7 @@ tsequence_from_mfjson(json_object *mfjson, bool spatial, int srid,
  * @param[in] interp Interpolation
  */
 TSequenceSet *
-tsequenceset_from_mfjson(json_object *mfjson, bool spatial, int srid,
+tsequenceset_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
   meosType temptype, interpType interp)
 {
   assert(mfjson);
@@ -1060,7 +1060,7 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
   }
 
   const char *pszName = NULL;
-  int srid = 0;
+  int32_t srid = 0;
   bool spatial = tspatial_type(temptype);
   if (spatial)
   {

@@ -56,16 +56,14 @@ extern Temporal *tinterrel_tgeo_geo(const Temporal *temp,
 extern Temporal *tinterrel_tspatial_base(const Temporal *temp, Datum base,
   bool tinter, bool restr, bool atvalue, datum_func2 func);
 
-extern Temporal *tinterrel_tspatial_geo(const Temporal *temp,
-  const GSERIALIZED *gs, bool tinter, bool restr, bool atvalue);
+extern Temporal *tinterrel_tspatial_base(const Temporal *temp,
+  Datum base, bool tinter, bool restr, bool atvalue, datum_func2 func);
 extern Temporal *tinterrel_tspatial_tspatial(const Temporal *temp1,
   const Temporal *temp2, bool tinter, bool restr, bool atvalue);
 
-extern Temporal *tdwithin_tgeo_tgeo_sync(const Temporal *sync1,
-  const Temporal *sync2, double dist, bool restr, bool atvalue);
-extern int tgeosegm_tdwithin(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
-  TimestampTz lower, TimestampTz upper, double dist, bool hasz,
-  datum_func3 func, TimestampTz *t1, TimestampTz *t2);
+extern Temporal *tdwithin_tspatial_tspatial(const Temporal *sync1,
+  const Temporal *sync2, Datum dist, bool restr, bool atvalue,
+  datum_func3 func, tpfunc_temp tpfn);
 
 extern int tdwithin_add_solutions(int solutions, TimestampTz lower,
   TimestampTz upper, bool lower_inc, bool upper_inc, bool upper_inc1,

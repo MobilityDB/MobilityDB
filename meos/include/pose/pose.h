@@ -45,8 +45,8 @@
  *****************************************************************************/
 
 /**
- * Structure to represent pose values
- *
+ * @brief Structure to represent pose values
+ * @details
  * flags (8 bits, x = unused): xxZXxxxx
  * data: 2D: [x, y, theta]
  *       3D: [x, y, z, W, X, Z, Y]
@@ -61,11 +61,20 @@ struct Pose
 };
 
 /*****************************************************************************
- * pose.c
+ * fmgr macros
  *****************************************************************************/
+
+#define DatumGetPoseP(X)         ((Pose *) DatumGetPointer(X))
+#define PosePGetDatum(X)         PointerGetDatum(X)
+#define PG_GETARG_POSE_P(X)      DatumGetPoseP(PG_GETARG_DATUM(X))
+#define PG_RETURN_POSE_P(X)      PG_RETURN_POINTER(X)
+
+/*****************************************************************************/
 
 /* Validity functions */
 
+extern bool ensure_valid_pose_geo(const Pose *pose, const GSERIALIZED *gs);
+extern bool ensure_valid_pose_stbox(const Pose *pose, const STBox *box);
 extern bool ensure_valid_pose_pose(const Pose *pose1, const Pose *pose2);
 
 /* Input/output functions */
@@ -87,7 +96,8 @@ extern Datum pose_distance(Datum pose1, Datum pose2);
 
 /* Interpolation */
 
-extern Pose *pose_interpolate(const Pose *pose1, const Pose *pose2, double ratio);
+extern Pose *posesegm_interpolate(const Pose *start, const Pose *end, double ratio);
+extern long double posesegm_locate(const Pose *start, const Pose *end, const Pose *value);
 extern bool pose_collinear(const Pose *pose1, const Pose *pose2, const Pose *pose3, double ratio);
 
 /* Interpolation */
@@ -98,25 +108,6 @@ extern bool pose_timestamptz_set_stbox(const Pose *pose, TimestampTz t,
   STBox *box);
 extern bool pose_tstzspan_set_stbox(const Pose *pose, const Span *p,
   STBox *box);
-
-/* Comparison functions */
-
-extern bool pose_eq(const Pose *pose1, const Pose *pose2);
-extern bool pose_ne(const Pose *pose1, const Pose *pose2);
-
-extern bool pose_same(const Pose *pose1, const Pose *pose2);
-extern bool pose_nsame(const Pose *pose1, const Pose *pose2);
-
-extern int pose_cmp(const Pose *pose1, const Pose *pose2);
-extern bool pose_lt(const Pose *pose1, const Pose *pose2);
-extern bool pose_le(const Pose *pose1, const Pose *pose2);
-extern bool pose_gt(const Pose *pose1, const Pose *pose2);
-extern bool pose_ge(const Pose *pose1, const Pose *pose2);
-
-/* Hash functions */
-
-extern uint32 pose_hash(const Pose *pose);
-extern uint64 pose_hash_extended(const Pose *pose, uint64 seed);
 
 /*****************************************************************************/
 

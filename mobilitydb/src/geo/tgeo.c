@@ -38,8 +38,9 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
-#include <meos_internal.h>
 #include <meos_geo.h>
+#include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/temporal.h"
 #include "geo/postgis_funcs.h"
 #include "geo/stbox.h"

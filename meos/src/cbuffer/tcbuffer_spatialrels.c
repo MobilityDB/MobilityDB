@@ -46,6 +46,7 @@
 #include <assert.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal_geo.h>
 #include "temporal/lifting.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -661,7 +662,7 @@ ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
   /* This function is not provided for the ever semantics */
   assert(! ever);
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
-      (varfunc) &datum_geom_contains, 2, ever, INVERT);
+      (varfunc) &datum_geom_covers, 2, ever, INVERT);
 }
 
 /**
@@ -819,6 +820,61 @@ inline int
 acovers_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   return ea_covers_tcbuffer_cbuffer(temp, cb, ALWAYS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a temporal circular buffer ever/always covers another
+ * one, 0 if not, and -1 on error
+ * @param[in] temp1,temp2 Temporal circular buffers
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Ecovers_tcbuffer_tcbuffer()
+ */
+int
+ea_covers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
+  bool ever)
+{
+  VALIDATE_TCBUFFER(temp1, -1); VALIDATE_TCBUFFER(temp2, -1);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
+    return -1;
+
+  /* Bounding box test */
+  STBox *box1 = tspatial_to_stbox(temp1);
+  STBox *box2 = tspatial_to_stbox(temp2);
+  if (! overlaps_stbox_stbox(box1, box2))
+    return 0;
+
+  return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum_cbuffer_covers,
+    ever);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a temporal circular buffer ever covers another one, 0 if not,
+ * and -1 on error
+ * @param[in] temp1,temp2 Temporal geos
+ * @csqlfn #Ecovers_tcbuffer_tcbuffer()
+ */
+int
+ecovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
+{
+  return ea_covers_tcbuffer_tcbuffer(temp1, temp2, EVER);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a temporal circular buffer always covers another one, 0 if not,
+ * and -1 on error
+ * @param[in] temp1,temp2 Temporal geos
+ * @csqlfn #Acovers_tcbuffer_tcbuffer()
+ */
+int
+acovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
+{
+  return ea_covers_tcbuffer_tcbuffer(temp1, temp2, EVER);
 }
 
 /*****************************************************************************
@@ -1302,6 +1358,62 @@ inline int
 atouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   return ea_touches_tcbuffer_cbuffer(temp, cb, ALWAYS); 
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a temporal circular buffer ever/always touches another
+ * one, 0 if not, and -1 on error
+ * @param[in] temp1,temp2 Temporal circular buffers
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Etouches_tcbuffer_tcbuffer()
+ */
+int
+ea_touches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
+  bool ever)
+{
+  VALIDATE_TCBUFFER(temp1, -1); VALIDATE_TCBUFFER(temp2, -1);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
+    return -1;
+
+  /* Bounding box test */
+  STBox *box1 = tspatial_to_stbox(temp1);
+  STBox *box2 = tspatial_to_stbox(temp2);
+  if (! overlaps_stbox_stbox(box1, box2))
+    return 0;
+
+  return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum_cbuffer_touches,
+    ever);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a temporal circular buffer ever touches another one, 0 if not,
+ * and -1 on error
+ * @param[in] temp1,temp2 Temporal geos
+ * @csqlfn #Etouches_tcbuffer_tcbuffer()
+ */
+int
+etouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
+{
+  return ea_touches_tcbuffer_tcbuffer(temp1, temp2, EVER);
+}
+
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a temporal circular buffer always touches another one, 0 if not,
+ * and -1 on error
+ * @param[in] temp1,temp2 Temporal geos
+ * @csqlfn #Atouches_tcbuffer_tcbuffer()
+ */
+int
+atouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
+{
+  return ea_touches_tcbuffer_tcbuffer(temp1, temp2, EVER);
 }
 
 /*****************************************************************************

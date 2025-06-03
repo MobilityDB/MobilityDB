@@ -66,7 +66,6 @@ extern char *basetype_out(Datum value, meosType type, int maxdd);
 /* Array functions */
 
 extern void pfree_array(void **array, int count);
-extern void pfree_datumarr(Datum *array, int count);
 extern char *stringarr_to_string(char **strings, int count, size_t outlen,
   char *prefix, char open, char close, bool quotes, bool spaces);
 
@@ -74,8 +73,6 @@ extern char *stringarr_to_string(char **strings, int count, size_t outlen,
 
 extern void datumarr_sort(Datum *values, int count, meosType basetype);
 extern void tstzarr_sort(TimestampTz *times, int count);
-extern void double2arr_sort(double2 *doubles, int count);
-extern void double3arr_sort(double3 *triples, int count);
 extern void spanarr_sort(Span *spans, int count);
 extern void tinstarr_sort(TInstant **instants, int count);
 extern void tseqarr_sort(TSequence **sequences, int count);
@@ -117,7 +114,6 @@ extern Datum datum2_ge(Datum l, Datum r, meosType type);
 /* Hypothenuse functions */
 
 extern double hypot3d(double x, double y, double z);
-// extern double hypot4d(double x, double y, double z, double m);
 
 /*****************************************************************************/
 

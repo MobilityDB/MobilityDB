@@ -285,19 +285,19 @@ SELECT getValueTile(15.5, 2.5, 1.5);
 (1 row)
 
 SELECT timeTiles(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, '1 week') LIMIT 3;
-                                 timetiles                                  
-----------------------------------------------------------------------------
- (1,"TBOX T([Mon Jan 10 00:00:00 2000 PST, Mon Jan 17 00:00:00 2000 PST))")
- (2,"TBOX T([Mon Jan 17 00:00:00 2000 PST, Mon Jan 24 00:00:00 2000 PST))")
- (3,"TBOX T([Mon Jan 24 00:00:00 2000 PST, Mon Jan 31 00:00:00 2000 PST))")
+                                         timetiles                                         
+-------------------------------------------------------------------------------------------
+ (1,"TBOXFLOAT XT([15, 26),[Mon Jan 10 00:00:00 2000 PST, Mon Jan 17 00:00:00 2000 PST))")
+ (2,"TBOXFLOAT XT([15, 26),[Mon Jan 17 00:00:00 2000 PST, Mon Jan 24 00:00:00 2000 PST))")
+ (3,"TBOXFLOAT XT([15, 26),[Mon Jan 24 00:00:00 2000 PST, Mon Jan 31 00:00:00 2000 PST))")
 (3 rows)
 
 SELECT timeTiles(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, '1 week', '2020-06-15') LIMIT 3;
-                                 timetiles                                  
-----------------------------------------------------------------------------
- (1,"TBOX T([Sun Jan 09 23:00:00 2000 PST, Sun Jan 16 23:00:00 2000 PST))")
- (2,"TBOX T([Sun Jan 16 23:00:00 2000 PST, Sun Jan 23 23:00:00 2000 PST))")
- (3,"TBOX T([Sun Jan 23 23:00:00 2000 PST, Sun Jan 30 23:00:00 2000 PST))")
+                                         timetiles                                         
+-------------------------------------------------------------------------------------------
+ (1,"TBOXFLOAT XT([15, 26),[Sun Jan 09 23:00:00 2000 PST, Sun Jan 16 23:00:00 2000 PST))")
+ (2,"TBOXFLOAT XT([15, 26),[Sun Jan 16 23:00:00 2000 PST, Sun Jan 23 23:00:00 2000 PST))")
+ (3,"TBOXFLOAT XT([15, 26),[Sun Jan 23 23:00:00 2000 PST, Sun Jan 30 23:00:00 2000 PST))")
 (3 rows)
 
 SELECT getTboxTimeTile(timestamptz '2000-01-15', interval '1 week');

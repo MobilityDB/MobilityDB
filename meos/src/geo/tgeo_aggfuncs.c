@@ -41,6 +41,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/doublen.h"
 #include "temporal/skiplist.h"
 #include "temporal/temporal_aggfuncs.h"

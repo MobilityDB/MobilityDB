@@ -39,6 +39,8 @@ typedef struct varlena
 typedef varlena text;
 typedef struct varlena bytea;
 
+/* The following functions have the same name as external PostgreSQL functions */
+
 extern DateADT date_in(const char *str);
 extern char *date_out(DateADT d);
 extern int interval_cmp(const Interval *interv1, const Interval *interv2);
@@ -51,4 +53,4 @@ extern char *timestamp_out(Timestamp t);
 extern TimestampTz timestamptz_in(const char *str, int32 typmod);
 extern char *timestamptz_out(TimestampTz t);
 
-#endif              /* POSTGRES_H */
+#endif /* POSTGRES_H */

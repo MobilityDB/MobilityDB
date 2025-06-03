@@ -46,7 +46,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/pg_types.h"
+#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/temporal.h"
 #include "temporal/tnumber_mathfuncs.h"
@@ -1363,13 +1363,13 @@ set_split_n_spans(const Set *s, int span_count, int *count)
  * @brief Return an array of spans from a set obtained by merging consecutive
  * elements
  * @param[in] s Set
- * @param[in] elems_per_span Number of elements merge into an ouput span
+ * @param[in] elems_per_span Number of elements merged into an ouput span
  * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_split_each_n_spans()
  */
 Span *
-set_split_each_n_spans(const Set *s, int32 elems_per_span, int *count)
+set_split_each_n_spans(const Set *s, int elems_per_span, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NUMSET(s, NULL); VALIDATE_NOT_NULL(count, NULL);

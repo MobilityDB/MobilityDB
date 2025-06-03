@@ -48,12 +48,7 @@
 extern bool ensure_same_rid_tnpointinst(const TInstant *inst1,
   const TInstant *inst2);
 
-/* Functions for spatial reference systems */
-
-extern int tnpointinst_srid(const TInstant *inst);
-extern GSERIALIZED *tnpointinst_geom(const TInstant *inst);
-extern GSERIALIZED *tnpointseq_geom(const TSequence *seq);
-extern GSERIALIZED *tnpointseqset_geom(const TSequenceSet *ss);
+/* Restriction functions */
 
 extern Temporal *tnpoint_restrict_geom(const Temporal *temp,
   const GSERIALIZED *gs, bool atfunc);

@@ -55,6 +55,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/lifting.h"
 #include "temporal/tbool_ops.h"
 #include "temporal/temporal_compops.h"
@@ -62,8 +63,8 @@
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
+#include "geo/tgeo_restrict.h"
 #include "geo/tgeo_spatialfuncs.h"
-#include "geo/tpoint_restrfuncs.h"
 #include "geo/tgeo_spatialrels.h"
 #include "cbuffer/tcbuffer_spatialrels.h"
 

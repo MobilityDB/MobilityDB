@@ -72,17 +72,6 @@ extern TSequence *trgeoseq_make_free(const GSERIALIZED *geom, TInstant **instant
 extern TSequence *trgeoinst_to_tsequence(const TInstant *inst, interpType interp);
 extern TInstant *trgeoseq_to_tinstant(const TSequence *seq);
 
-extern TSequence *trgeoseq_to_discseq(const TSequence *seq);
-extern TSequence *trgeoseq_to_contseq(const TSequence *seq);
-extern TSequence *trgeoseqset_to_seq(const TSequenceSet *ss);
-
-/* Accessor functions */
-
-extern TSequence **trgeoseq_sequences(const TSequence *seq, int *count);
-extern int trgeoseq_segments1(Datum geom, const TSequence *seq,
-  TSequence **result);
-extern TSequence **trgeoseq_segments(const TSequence *seq, int *count);
-
 /*****************************************************************************/
 
 #endif /* __TRGEO_SEQ_H__ */

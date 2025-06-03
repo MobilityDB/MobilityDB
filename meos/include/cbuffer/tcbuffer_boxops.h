@@ -56,15 +56,4 @@ extern void tcbufferseq_expand_stbox(const TSequence *seq, const TInstant *inst)
 
 /*****************************************************************************/
 
-extern int boxop_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *geo,
-  bool (*func)(const STBox *, const STBox *), bool invert);
-extern int boxop_tcbuffer_stbox(const Temporal *temp, const STBox *box,
-  bool (*func)(const STBox *, const STBox *), bool spatial, bool invert);
-extern bool boxop_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
-  bool (*func)(const STBox *, const STBox *), bool invert);
-extern bool boxop_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
-  bool (*func)(const STBox *, const STBox *));
-
-/*****************************************************************************/
-
 #endif /* __TCBUFFER_BOXOPS_H__ */

@@ -49,7 +49,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/pg_types.h"
+#include <meos_internal_geo.h>
+#include "temporal/postgres_types.h"
 #include "temporal/lifting.h"
 #include "temporal/temporal_compops.h"
 #include "temporal/tnumber_mathfuncs.h"
@@ -1470,7 +1471,6 @@ tpointseq_cont_to_geomeas(const TSequence *seq, const TSequence *meas)
  * @param[in] ss Temporal point
  * @param[in] meas Temporal float, may be @p NULL
  * @pre The temporal point and the measure are synchronized
- * @note This function has a similar algorithm as #tpointseqset_trajectory
  */
 static GSERIALIZED *
 tpointseqset_to_geomeas(const TSequenceSet *ss, const TSequenceSet *meas)

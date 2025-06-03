@@ -43,8 +43,6 @@
  * Definitions
  *****************************************************************************/
 
-
-/*****************************************************************************/
 #define MAXITEMS 64
 #define SEARCH_ARRAY_STARTING_SIZE 64
 #define MINITEMS_PERCENTAGE 10
@@ -52,21 +50,18 @@
 #define RTREE_INNER_NODE_NO true
 #define RTREE_INNER_NODE false
 
-/*****************************************************************************/
-
-
 /*****************************************************************************
  * Structs
  *****************************************************************************/
 
-
 /**
- * Internal representation of an RTree node.
+ * @brief Internal representation of an RTree node.
  */
 typedef struct RTreeNode{
   bool kind;
   int count;
-  union {
+  union 
+  {
     struct RTreeNode * nodes[MAXITEMS];
     int64 ids[MAXITEMS];
   };
@@ -75,8 +70,8 @@ typedef struct RTreeNode{
 } RTreeNode;
 
 /**
- * Rtree in memory index basic structure.
- *
+ * @brief Rtree in memory index basic structure.
+ * 
  * It works based on STBox. The spliting criteria is based on the largest axis.
  * The inserting criteria is based on least enlarging square.
  *

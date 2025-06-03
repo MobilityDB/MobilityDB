@@ -51,7 +51,6 @@ extern char **spatialarr_wkt_out(const Datum *spatialarr, meosType basetype,
 extern char *spatialbase_as_text(Datum value, meosType type, int maxdd);
 extern char *spatialbase_as_ewkt(Datum value, meosType type, int maxdd);
 
-extern LWPROJ *lwproj_get_pipeline(const char *pipeline, bool is_forward);
 extern bool point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj);
 
 /*****************************************************************************/

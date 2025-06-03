@@ -42,6 +42,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/temporal.h"
@@ -49,7 +50,6 @@
 #include "geo/tspatial.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/stbox.h"
-#include "geo/tpoint_restrfuncs.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/type_util.h"

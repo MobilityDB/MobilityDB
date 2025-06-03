@@ -72,8 +72,6 @@ typedef struct
 
 extern TInstant *tfunc_tinstant(const TInstant *inst,
   LiftedFunctionInfo *lfinfo);
-extern TSequence *tfunc_tdiscseq(const TSequence *is,
-  LiftedFunctionInfo *lfinfo);
 extern TSequence *tfunc_tsequence(const TSequence *seq,
   LiftedFunctionInfo *lfinfo);
 extern TSequenceSet *tfunc_tsequenceset(const TSequenceSet *ss,

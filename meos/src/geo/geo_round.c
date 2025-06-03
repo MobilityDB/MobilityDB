@@ -39,6 +39,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 

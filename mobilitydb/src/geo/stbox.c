@@ -43,6 +43,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/type_inout.h"
@@ -515,7 +516,7 @@ Datum
 Box2d_to_stbox(PG_FUNCTION_ARGS)
 {
   GBOX *box = (GBOX *) PG_GETARG_POINTER(0);
-  PG_RETURN_STBOX_P(gbox_stbox(box));
+  PG_RETURN_STBOX_P(gbox_to_stbox(box));
 }
 
 PGDLLEXPORT Datum Box3d_to_stbox(PG_FUNCTION_ARGS);
@@ -530,7 +531,7 @@ Datum
 Box3d_to_stbox(PG_FUNCTION_ARGS)
 {
   BOX3D *box = (BOX3D *) PG_GETARG_POINTER(0);
-  PG_RETURN_STBOX_P(box3d_stbox(box));
+  PG_RETURN_STBOX_P(box3d_to_stbox(box));
 }
 
 PGDLLEXPORT Datum Geo_to_stbox(PG_FUNCTION_ARGS);

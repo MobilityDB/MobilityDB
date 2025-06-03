@@ -44,7 +44,8 @@
 #include <lwgeodetic.h>
 /* MEOS */
 #include <meos.h>
-#include "temporal/pg_types.h"
+#include <meos_internal_geo.h>
+#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
@@ -63,6 +64,7 @@
   #include "npoint/tnpoint_boxops.h"
 #endif
 #if POSE
+  #include "pose/pose.h"
   #include "pose/tpose_boxops.h"
 #endif
 #if RGEO
@@ -698,14 +700,15 @@ gbox_set_stbox(const GBOX *box, int32_t srid, STBox *result)
 }
 
 /**
- * @ingroup meos_internal_box_conversion
+ * @ingroup meos_geo_box_conversion
  * @brief Convert a `GBOX` into a spatiotemporal box
  * @param[in] box GBOX
  */
 STBox *
-gbox_stbox(const GBOX *box)
+gbox_to_stbox(const GBOX *box)
 {
-  assert(box);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
   /* Note: zero-fill is required here, just as in heap tuples */
   STBox *result = palloc0(sizeof(STBox));
   gbox_set_stbox(box, 0, result);
@@ -713,14 +716,15 @@ gbox_stbox(const GBOX *box)
 }
 
 /**
- * @ingroup meos_internal_box_conversion
+ * @ingroup meos_geo_box_conversion
  * @brief Convert a `BOX3D` into a spatiotemporal box
  * @param[in] box BOX3D
  */
 STBox *
-box3d_stbox(const BOX3D *box)
+box3d_to_stbox(const BOX3D *box)
 {
-  assert(box);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
   /* Note: zero-fill is required here, just as in heap tuples */
   STBox *result = palloc0(sizeof(STBox));
   MEOS_FLAGS_SET_X(result->flags, true);
@@ -850,7 +854,7 @@ geo_to_stbox(const GSERIALIZED *gs)
   VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs))
     return NULL;
-  return geo_to_stbox(gs);
+  return geo_stbox(gs);
 }
 
 /**

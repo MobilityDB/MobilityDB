@@ -33,7 +33,7 @@
  * PostgreSQL functions in order to bypass the function manager @p fmgr.c.
  */
 
-#include "temporal/pg_types.h"
+#include "temporal/postgres_types.h"
 
 /* C */
 #include <float.h>

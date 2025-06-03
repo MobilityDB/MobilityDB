@@ -76,14 +76,6 @@ extern bool common_rid_tnpoint_npointset(const Temporal *temp, const Set *s);
 extern bool common_rid_tnpoint_tnpoint(const Temporal *temp1,
   const Temporal *temp2);
 
-extern bool ensure_same_srid_tnpoint_stbox(const Temporal *temp,
-  const STBox *box);
-
-/* Utility functions */
-
-extern TSequenceSet *tnpointseqset_filter_rid(const TSequenceSet *ss,
-  int64 rid);
-
 /* Collinear functions */
 
 extern bool npoint_collinear(const Npoint *np1, const Npoint *np2, 

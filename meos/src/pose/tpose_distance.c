@@ -36,6 +36,7 @@
 #include <meos.h>
 #include <meos_pose.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
@@ -208,6 +209,28 @@ nad_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
 
   GSERIALIZED *traj = tpose_trajectory(temp);
   double result = geom_distance2d(traj, gs);
+  pfree(traj);
+  return result;
+}
+
+/**
+ * @ingroup meos_cbuffer_dist
+ * @brief Return the nearest approach distance of a temporal pose and a
+ * spatiotemporal box
+ * @param[in] temp Temporal pose
+ * @param[in] box Spatiotemporal box
+ * @csqlfn #NAD_tpose_geo()
+ */
+double
+nad_tpose_stbox(const Temporal *temp, const STBox *box)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpose_stbox(temp, box))
+    return -1.0;
+
+  GSERIALIZED *traj = tpose_trajectory(temp);
+  GSERIALIZED *geo = stbox_geo(box);
+  double result = geom_distance2d(traj, geo);
   pfree(traj);
   return result;
 }

@@ -44,12 +44,12 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/stbox.h"
-#include "geo/tpoint_restrfuncs.h"
 #include "geo/tspatial_parser.h"
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h" /* For oid_type() */

@@ -244,7 +244,6 @@ extern bool set_type(meosType type);
 extern bool numset_type(meosType type);
 extern bool ensure_numset_type(meosType type);
 extern bool timeset_type(meosType type);
-extern bool ensure_timeset_type(meosType type);
 extern bool set_spantype(meosType type);
 extern bool ensure_set_spantype(meosType type);
 extern bool alphanumset_type(meosType settype);
@@ -262,10 +261,8 @@ extern bool numspan_type(meosType type);
 extern bool ensure_numspan_type(meosType type);
 extern bool timespan_basetype(meosType type);
 extern bool timespan_type(meosType type);
-extern bool ensure_timespan_type(meosType type);
 
 extern bool spanset_type(meosType type);
-extern bool numspanset_type(meosType type);
 extern bool timespanset_type(meosType type);
 extern bool ensure_timespanset_type(meosType type);
 
@@ -280,7 +277,7 @@ extern bool talpha_type(meosType type);
 extern bool tnumber_type(meosType type);
 extern bool ensure_tnumber_type(meosType type);
 extern bool ensure_tnumber_basetype(meosType type);
-extern bool tnumber_settype(meosType type);
+// extern bool tnumber_settype(meosType type);
 extern bool tnumber_spantype(meosType type);
 extern bool tnumber_spansettype(meosType type);
 extern bool spatial_basetype(meosType type);

@@ -364,16 +364,16 @@ strarr_to_textarray(char **strarr, int count)
  * @brief Return a C array of circular buffers converted into a PostgreSQL array
  */
 ArrayType *
-cbufferarr_to_array(Cbuffer **cbufarr, int count, bool free_all)
+cbufferarr_to_array(Cbuffer **cbarr, int count, bool free_all)
 {
   assert(count > 0);
   Oid cbuftypid = type_oid(T_CBUFFER);
-  ArrayType *result = construct_array((Datum *) cbufarr, count, cbuftypid, -1,
+  ArrayType *result = construct_array((Datum *) cbarr, count, cbuftypid, -1,
     false, 'd');
   if (free_all)
     for (int i = 0; i < count; i++)
-      pfree(cbufarr[i]);
-  pfree(cbufarr);
+      pfree(cbarr[i]);
+  pfree(cbarr);
   return result;
 }
 #endif /* CBUFFER */

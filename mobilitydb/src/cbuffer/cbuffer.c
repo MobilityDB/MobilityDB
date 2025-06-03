@@ -437,10 +437,10 @@ Cbufferarr_round(PG_FUNCTION_ARGS)
   }
   int maxdd = PG_GETARG_INT32(1);
 
-  Cbuffer **cbufarr = cbufferarr_extract(array, &count);
-  Cbuffer **resarr = cbufferarr_round((const Cbuffer **) cbufarr, count, maxdd);
+  Cbuffer **cbarr = cbufferarr_extract(array, &count);
+  Cbuffer **resarr = cbufferarr_round((const Cbuffer **) cbarr, count, maxdd);
   ArrayType *result = cbufferarr_to_array((const Cbuffer **) resarr, count);
-  pfree(cbufarr);
+  pfree(cbarr);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }

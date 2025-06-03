@@ -962,6 +962,7 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', 5.0, '5 days
 					<para><varname>spaceSplit(tgeompoint,xsize float,[ysize float,zsize float,]</varname></para>
 					<para><varname>  origin geompoint='Point(0 0 0)',bitmatrix boolean=true,borderInc bool=true) →</varname></para>
 					<para><varname>  {(point,tpoint)}</varname></para>
+					<para><varname>timeSplit(tpoint,duration interval,torigin timestamptz='2000-01-03') → {(time,tpoint)}</varname></para>
 					<para><varname>spaceTimeSplit(tgeompoint,xsize float,[ysize float,zsize float,]</varname></para>
 					<para><varname>  duration interval,sorigin geompoint='Point(0 0 0)',</varname></para>
 					<para><varname>  torigin timestamptz='2000-01-03',bitmatrix boolean=true,borderInc boolean=true) →</varname></para>
@@ -982,6 +983,16 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2001-03-01,
 -- POINT Z(3 3 3) | {[POINT Z (3 3 3)@2001-03-03, POINT Z (5 5 5)@2001-03-05)}
 -- POINT Z(5 5 5) | {[POINT Z (5 5 5)@2001-03-05, POINT Z (7 7 7)@2001-03-07)}
 -- ...
+</programlisting>
+
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT (sp).time, astext((sp).temp) AS tpoint
+FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2001-02-01, Point(10 10)@2001-02-10]',
+  interval '2 days') AS sp) t;
+-- 2001-01-31 | [POINT(1 1)@2001-02-01, POINT(2 2)@2001-02-02)
+-- 2001-02-02 | [POINT(2 2)@2001-02-02, POINT(4 4)@2001-02-04)
+-- 2001-02-04 | [POINT(4 4)@2001-02-04, POINT(6 6)@2001-02-06)
+-- ... 
 </programlisting>
 
 					<programlisting language="sql" xml:space="preserve" format="linespecific">

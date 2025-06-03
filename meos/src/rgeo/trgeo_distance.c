@@ -586,7 +586,7 @@ compute_turnpoints_tpoly_point(cfp_elem *cfp_s, cfp_elem *cfp_e,
       ratio = (dx * (q.x - p.x) + dy * (q.y - p.y)) / (dx * dx + dy * dy);
       if (0 < ratio && ratio < 1)
       {
-        Pose *pose_at_ratio = pose_interpolate(cfp_s->pose_1, cfp_e->pose_1,
+        Pose *pose_at_ratio = posesegm_interpolate(cfp_s->pose_1, cfp_e->pose_1,
           ratio);
         getPoint4d_p(poly->rings[0], v, &q);
         apply_pose_point4d(&q, pose_at_ratio);
@@ -607,7 +607,7 @@ compute_turnpoints_tpoly_point(cfp_elem *cfp_s, cfp_elem *cfp_e,
       ratio = ((q.x - p.x) * (r.y - q.y) + (q.y - p.y) * (r.x - q.x)) / det;
       if (0 < ratio && ratio < 1)
       {
-        Pose *pose_at_ratio = pose_interpolate(cfp_s->pose_1, cfp_e->pose_1,
+        Pose *pose_at_ratio = posesegm_interpolate(cfp_s->pose_1, cfp_e->pose_1,
           ratio);
         getPoint4d_p(poly->rings[0], v, &q);
         apply_pose_point4d(&q, pose_at_ratio);
@@ -846,7 +846,7 @@ dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs)
       if (state == MEOS_CONTINUE)
       {
         cfp.t = inst1->t + (inst2->t - inst1->t) * ratio;
-        cfp.pose_1 = pose_interpolate(pose1, pose2, ratio);
+        cfp.pose_1 = posesegm_interpolate(pose1, pose2, ratio);
         cfp.free_pose_1 = MEOS_CFP_FREE;
         cfp.store = MEOS_CFP_STORE_NO;
         append_cfp_elem(&cfpa, cfp);
@@ -1329,7 +1329,7 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
     getPoint4d_p(poly2->rings[0], i2, &ps);
     getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
-    Pose *pose = pose_interpolate(pose_start, pose_end, ratio_3);
+    Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_3);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
     pfree(pose);
@@ -1381,7 +1381,7 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     getPoint4d_p(poly1->rings[0], i1, &qe);
     getPoint4d_p(poly2->rings[0], i2, &ps);
     getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
-    Pose *pose = pose_interpolate(pose_start, pose_end, ratio_4);
+    Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_4);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
     pfree(pose);
@@ -1492,7 +1492,7 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
     getPoint4d_p(poly2->rings[0], i2, &ps);
     getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
-    Pose *pose = pose_interpolate(pose_start, pose_end, ratio_3);
+    Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_3);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
     pfree(pose);
@@ -1544,7 +1544,7 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
     getPoint4d_p(poly2->rings[0], uint_mod_sub(i2, 1, n2), &ps);
     getPoint4d_p(poly2->rings[0], i2, &pe);
-    Pose *pose = pose_interpolate(pose_start, pose_end, ratio_4);
+    Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_4);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
     pfree(pose);
@@ -1713,7 +1713,7 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
       if (state == MEOS_CONTINUE)
       {
         cfp.t = inst1->t + (inst2->t - inst1->t) * ratio;
-        cfp.pose_1 = pose_interpolate(pose1, pose2, ratio);
+        cfp.pose_1 = posesegm_interpolate(pose1, pose2, ratio);
         cfp.free_pose_1 = MEOS_CFP_FREE;
         cfp.store = MEOS_CFP_STORE_NO;
         append_cfp_elem(&cfpa, cfp);

@@ -52,6 +52,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/temporal.h"
 #include "geo/stbox.h"
 #include "geo/tgeo.h"
@@ -921,7 +922,7 @@ tgeo_split_each_n_stboxes(const Temporal *temp, int elems_per_box, int *count)
   {
     case TINSTANT:
       *count = 1;
-      return tspatial_stbox(temp);
+      return tspatial_to_stbox(temp);
     case TSEQUENCE:
       return tgeoseq_split_each_n_stboxes((TSequence *) temp, elems_per_box,
         count);

@@ -32,11 +32,10 @@
  * @brief Temporal distance for temporal circular buffers
  */
 
-#include "cbuffer/tcbuffer_distance.h"
-
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include "temporal/lifting.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -452,7 +451,7 @@ distance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   lfinfo.argtype[1] = temp2->temptype;
   lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp1->flags) &&
-                     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
+    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfn_temp = lfinfo.reslinear ?

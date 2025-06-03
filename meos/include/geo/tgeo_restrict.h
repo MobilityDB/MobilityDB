@@ -28,22 +28,28 @@
  *****************************************************************************/
 
 /**
- * @brief Spatial functions for PostGIS geography.
+ * @brief Restriction functions for temporal points.
  */
 
-#ifndef __GEOGRAPHY_FUNCTIONS_H__
-#define __GEOGRAPHY_FUNCTIONS_H__
+#ifndef __TPOINT_RESTRICT_H__
+#define __TPOINT_RESTRICT_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 /* PostGIS */
 #include <liblwgeom.h>
+/* MEOS */
+#include <meos.h>
 
 /*****************************************************************************/
 
-extern GSERIALIZED *geography_shortestline_internal(const GSERIALIZED *g1,
-  const GSERIALIZED *g2, bool use_spheroid);
+/* Restriction functions */
+
+extern TSequence **tpointseq_at_geom(const TSequence *seq,
+  const GSERIALIZED *gs, int *count);
+extern Span *tpointseq_interperiods(const TSequence *seq,
+  const GSERIALIZED *gs, int *count);
 
 /*****************************************************************************/
 
-#endif
+#endif /* __TPOINT_RESTRICT_H__ */

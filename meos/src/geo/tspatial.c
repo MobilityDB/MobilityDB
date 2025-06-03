@@ -43,7 +43,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/pg_types.h"
+#include <meos_internal_geo.h>
+#include "temporal/postgres_types.h"
 #include "temporal/set.h"
 #include "temporal/lifting.h"
 #include "temporal/temporal.h"
@@ -475,22 +476,6 @@ tspatial_set_stbox(const Temporal *temp, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_geo_conversion
- * @brief Convert a temporal spatial value into a spatiotemporal box
- * @param[in] temp Temporal spatial value
- * @csqlfn #Tspatial_to_stbox()
- */
-STBox *
-tspatial_stbox(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  assert(temp); assert(tspatial_type(temp->temptype));
-  STBox *result = palloc(sizeof(STBox));
-  tspatial_set_stbox(temp, result);
-  return result;
-}
-
-/**
  * @ingroup meos_geo_conversion
  * @brief Convert a temporal spatial value into a spatiotemporal box
  * @param[in] temp Temporal spatial value
@@ -501,7 +486,9 @@ tspatial_to_stbox(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSPATIAL(temp, NULL);
-  return tspatial_stbox(temp);
+  STBox *result = palloc(sizeof(STBox));
+  tspatial_set_stbox(temp, result);
+  return result;
 }
 
 /*****************************************************************************
