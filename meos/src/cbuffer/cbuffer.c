@@ -64,7 +64,7 @@
 #include "cbuffer/cbuffer.h"
 
 /*****************************************************************************
- * Collinear function
+ * Collinear and interpolation function
  *****************************************************************************/
 
 /**
@@ -85,10 +85,6 @@ cbuffer_collinear(const Cbuffer *cb1, const Cbuffer *cb2, const Cbuffer *cb3,
     return false;
   return float_collinear(cb1->radius, cb2->radius, cb3->radius, ratio);
 }
-
-/*****************************************************************************
- * Interpolation functions
- *****************************************************************************/
 
 /**
  * @brief Return a float in [0,1] representing the location of the closest

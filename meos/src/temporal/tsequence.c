@@ -63,7 +63,7 @@
 #include "geo/tspatial_parser.h"
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
-  #include "cbuffer/tcbuffer_spatialfuncs.h"
+  #include "cbuffer/tcbuffer.h"
 #endif
 #if NPOINT
   #include "npoint/tnpoint.h"

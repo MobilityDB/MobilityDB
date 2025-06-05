@@ -52,65 +52,8 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_spatialrels.h"
 #include "cbuffer/cbuffer.h"
+#include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_spatialfuncs.h"
-
-/*****************************************************************************
- * Turning point functions
- *****************************************************************************/
-
-// TODO REMOVE WHEN THE TWO FUNCTIONS BELOW HAVE BEEN WRITTEN !!!
-extern int cbuffersegm_distance_turnpt(const Cbuffer *start1,
-  const Cbuffer *end1, const Cbuffer *start2, const Cbuffer *end2,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2);
-
-/**
- * @brief Return 1 if the segments of two temporal geography points are within
- * a distance at the timestamptz output in the last argument
- * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[in] dist Distance
- * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
- * @return Number of timestamps in the result, between 0 and 2. In the case
- * of a single result both t1 and t2 are set to the unique timestamp
- * @pre The two segments are synchronized
- */
-int
-tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2,
-  Datum end2, Datum dist, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2)
-{
-  assert(lower < upper); assert(t1); assert(t2);
-  assert(DatumGetFloat8(dist) >= 0);
-  /* While waiting for this function we cheat and call the function below */
-  return cbuffersegm_distance_turnpt(DatumGetCbufferP(start1),
-    DatumGetCbufferP(end1), DatumGetCbufferP(start2), DatumGetCbufferP(end2),
-    lower, upper, t1, t2);
-}
-
-/**
- * @brief Return 1 if the segments of two temporal geography points intersect
- * at the timestamptz output in the last argument
- * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[in] param Additional parameter
- * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
- * @return Number of timestamps in the result, between 0 and 2. In the case
- * of a single result both t1 and t2 are set to the unique timestamp
- * @pre The two segments are synchronized
- */
-int
-tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
-  Datum end2, Datum param UNUSED, TimestampTz lower, TimestampTz upper,
-  TimestampTz *t1, TimestampTz *t2)
-{
-  assert(lower < upper); assert(t1); assert(t2);
-  /* While waiting for this function we cheat and call the function below */
-  return cbuffersegm_distance_turnpt(DatumGetCbufferP(start1),
-    DatumGetCbufferP(end1), DatumGetCbufferP(start2), DatumGetCbufferP(end2),
-    lower, upper, t1, t2);
-}
 
 /*****************************************************************************
  * Some GEOS versions cannot handle spatial relationships where one of the

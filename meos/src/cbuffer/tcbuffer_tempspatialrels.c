@@ -58,6 +58,7 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_spatialrels.h"
 #include "cbuffer/cbuffer.h"
+#include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_boxops.h"
 #include "cbuffer/tcbuffer_spatialfuncs.h"
 #include "cbuffer/tcbuffer_spatialrels.h"

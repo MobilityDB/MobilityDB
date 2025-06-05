@@ -40,6 +40,7 @@
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/cbuffer.h"
+#include "cbuffer/tcbuffer.h"
 
 /*****************************************************************************
  * Ever/always comparisons

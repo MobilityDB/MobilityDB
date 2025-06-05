@@ -44,7 +44,7 @@
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
-#include "pose/tpose_spatialfuncs.h"
+#include "pose/tpose.h"
 
 /*****************************************************************************
  * Ever/always comparisons

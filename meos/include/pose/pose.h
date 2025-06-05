@@ -76,6 +76,16 @@ struct Pose
 extern bool ensure_valid_pose_geo(const Pose *pose, const GSERIALIZED *gs);
 extern bool ensure_valid_pose_stbox(const Pose *pose, const STBox *box);
 extern bool ensure_valid_pose_pose(const Pose *pose1, const Pose *pose2);
+extern bool ensure_valid_poseset_pose(const Set *s, const Pose *pose);
+
+/* Collinear and interpolation functions */
+
+extern bool pose_collinear(const Pose *pose1, const Pose *pose2,
+  const Pose *pose3, double ratio);
+extern Pose *posesegm_interpolate(const Pose *start, const Pose *end,
+  double ratio);
+extern long double posesegm_locate(const Pose *start, const Pose *end,
+  const Pose *value);
 
 /* Input/output functions */
 
@@ -94,13 +104,7 @@ extern Datum datum_pose_round(Datum pose, Datum size);
 
 extern Datum pose_distance(Datum pose1, Datum pose2);
 
-/* Interpolation */
-
-extern Pose *posesegm_interpolate(const Pose *start, const Pose *end, double ratio);
-extern long double posesegm_locate(const Pose *start, const Pose *end, const Pose *value);
-extern bool pose_collinear(const Pose *pose1, const Pose *pose2, const Pose *pose3, double ratio);
-
-/* Interpolation */
+/* Box functions */
 
 extern bool pose_set_stbox(const Pose *pose, STBox *box);
 extern void posearr_set_stbox(const Datum *values, int count, STBox *box);

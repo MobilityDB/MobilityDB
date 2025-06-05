@@ -48,6 +48,7 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/postgres_types.h"
+#include "temporal/set.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_parser.h"
@@ -101,6 +102,22 @@ ensure_valid_pose_pose(const Pose *pose1, const Pose *pose2)
   VALIDATE_NOT_NULL(pose1, false); VALIDATE_NOT_NULL(pose2, false); 
   if (! ensure_same_srid(pose_srid(pose1), pose_srid(pose2)) ||
       MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags))
+    return false;
+  return true;
+}
+
+/**
+ * @brief Return true if a set and a pose are valid for set operations
+ * @param[in] s Set
+ * @param[in] pose Value
+ */
+bool
+ensure_valid_poseset_pose(const Set *s, const Pose *pose)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_POSESET(s, false); VALIDATE_NOT_NULL(pose, false);
+  if (! ensure_same_srid(spatialset_srid(s), pose_srid(pose)) ||
+      MEOS_FLAGS_GET_Z(pose->flags) != MEOS_FLAGS_GET_Z(s->flags))
     return false;
   return true;
 }

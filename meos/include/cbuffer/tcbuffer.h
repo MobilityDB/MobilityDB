@@ -28,28 +28,40 @@
  *****************************************************************************/
 
 /**
- * @brief Spatial functions for temporal pose objects.
+ * @brief Temporal distance for temporal network points.
  */
 
-#ifndef __TPOSE_SPATIALFUNCS_H__
-#define __TPOSE_SPATIALFUNCS_H__
+#ifndef __TCBUFFER_H__
+#define __TCBUFFER_H__
 
+/* PostgreSQL */
+#include <postgres.h>
+/* MEOS */
 #include "temporal/temporal.h"
-#include "pose/pose.h"
+#include "cbuffer/cbuffer.h"
 
 /*****************************************************************************/
 
-/* Trajectory function */
+/* Validity functions */
 
-extern GSERIALIZED *tpose_trajectory(const Temporal *temp);
+extern bool ensure_valid_tcbuffer_cbuffer(const Temporal *temp,
+  const Cbuffer *cb);
+extern bool ensure_valid_tcbuffer_geo(const Temporal *temp,
+  const GSERIALIZED *gs);
+extern bool ensure_valid_tcbuffer_stbox(const Temporal *temp,
+  const STBox *box);
+extern bool ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1,
+  const Temporal *temp2);
 
-/* Restriction functions */
+/* Interpolation functions */
 
-extern Temporal *tpose_restrict_geom(const Temporal *temp,
-  const GSERIALIZED *gs, const Span *zspan, bool atfunc);
-extern Temporal *tpose_restrict_stbox(const Temporal *temp, const STBox *box,
-  bool border_inc, bool atfunc);
+extern int tcbuffersegm_intersection_value(Datum start, Datum end,
+  Datum value, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
+  TimestampTz *t2);
+extern int tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2,
+  Datum end2, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
+  TimestampTz *t2);
 
 /*****************************************************************************/
 
-#endif /* __TPOSE_SPATIALFUNCS_H__ */
+#endif /* __TCBUFFER_H__ */

@@ -40,6 +40,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal_geo.h>
+#include "temporal/set.h"
 
 /*****************************************************************************
  * Struct definitions
@@ -68,7 +69,7 @@ typedef struct Pose Pose;
   #define VALIDATE_POSESET(set, ret) \
     do { \
       assert(set); \
-      assert(set_isof_type((set), T_POSESET)); \
+      assert((set)->settype == T_POSESET); \
     } while (0)
 #endif
 

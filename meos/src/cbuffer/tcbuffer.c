@@ -45,67 +45,6 @@
 #include "cbuffer/cbuffer.h"
 
 /*****************************************************************************
- * Intersection functions
- *****************************************************************************/
-
-// TODO REMOVE WHEN THE TWO FUNCTIONS BELOW HAVE BEEN WRITTEN !!!
-extern int cbuffersegm_distance_turnpt(const Cbuffer *start1,
-  const Cbuffer *end1, const Cbuffer *start2, const Cbuffer *end2,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2);
-
-/**
- * @brief Return 1 if a segment of a temporal circular buffer and a circular
- * buffer intersect during the period defined by the timestamps output in the
- * last arguments
- * @param[in] start,end Temporal instants defining the segment
- * @param[in] value Value to locate
- * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
- * @return Number of timestamps in the result, between 0 and 2. In the case
- * of a single result both t1 and t2 are set to the unique timestamp.
- */
-int
-tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
-{
-  assert(lower < upper); assert(t1); assert(t2);
-  /* While waiting for this function we cheat and call the function below */
-  int result = cbuffersegm_distance_turnpt(DatumGetCbufferP(start),
-    DatumGetCbufferP(end), DatumGetCbufferP(value), DatumGetCbufferP(value),
-    lower, upper, t1, t2);
-  /* The above temporary function sometimes provides inverted timestamps 
-   * We patch it for the moment */
-  if (*t1 > *t2)
-  {
-    TimestampTz temp = *t2;
-    *t2 = *t1;
-    *t1 = temp;
-  }
-  return result;
-}
-
-/**
- * @brief Return 1 if the segments of two temporal circular buffers intersect
- * during the period defined by the timestamps output in the last arguments
- * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 
- * @return Number of timestamps in the result, between 0 and 2. In the case
- * of a single result both t1 and t2 are set to the unique timestamp
- */
-int
-tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
-{
-  assert(lower < upper); assert(t1); assert(t2);
-  /* While waiting for this function we cheat and call the function below */
-  return cbuffersegm_distance_turnpt(DatumGetCbufferP(start1),
-    DatumGetCbufferP(end1), DatumGetCbufferP(start2), DatumGetCbufferP(end2),
-    lower, upper, t1, t2);
-}
-
-/*****************************************************************************
  * Validity functions
  *****************************************************************************/
 
@@ -168,6 +107,228 @@ ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
     return false;
   return true;
+}
+
+/*****************************************************************************
+ * Intersection functions
+ *****************************************************************************/
+
+/**
+ * @brief Return the TWO timestamps at which two temporal circular buffers 
+ * segments are at the distance d
+ * @details These are the turning points when computing the temporal distance.
+ * @param[in] start1,end1 Circular buffers defining the first segment
+ * @param[in] start2,end2 Circular buffers the second segment
+ * @param[in] d Distance threshold
+ * @param[out] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 Timestamps at turning points
+ * @pre The segments are not constant.
+ */
+int
+tcbuffersegm_dwithin_turnpt(const Cbuffer *start1, const Cbuffer *end1,
+  const Cbuffer *start2, const Cbuffer *end2, double d,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+{
+  assert(start1); assert(end1); assert(start2); assert(end2);
+  assert(t1); assert(t2); assert(lower < upper);
+
+  const POINT2D *spt1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(start1));
+  const POINT2D *ept1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(end1));
+  const POINT2D *spt2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(start2));
+  const POINT2D *ept2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(end2));
+
+  double duration = (double)(upper - lower);
+
+  /* Initial and final relative positions */
+  double dx0 = spt1->x - spt2->x;
+  double dy0 = spt1->y - spt2->y;
+  double dx1 = ept1->x - ept2->x;
+  double dy1 = ept1->y - ept2->y;
+
+  /* Initial and final combined radii */
+  double r0 = start1->radius + start2->radius;
+  double r1 = end1->radius + end2->radius;
+
+  /* Relative velocities */
+  double vx = (ept1->x - spt1->x - (ept2->x - spt2->x)) / duration;
+  double vy = (ept1->y - spt1->y - (ept2->y - spt2->y)) / duration;
+  double vr = (end1->radius - start1->radius + end2->radius - start2->radius) /
+    duration;
+
+  /* Quadratic derivative coefficients of f(t) = (distance - d)^2 */
+  double a = vx * vx + vy * vy - vr * vr;
+  double b = dx0 * vx + dy0 * vy - r0 * vr;
+
+  double t_rel = (a == 0.0 || b == 0.0) ? 0.0 : -b / a;
+  t_rel = fmax(0.0, fmin(duration, t_rel));  /* Clamp to [0, duration] */
+
+  /* Interpolation at turning point */
+  double cx1 = spt1->x + (ept1->x - spt1->x) * t_rel / duration;
+  double cy1 = spt1->y + (ept1->y - spt1->y) * t_rel / duration;
+  double rbuf1 = start1->radius + (end1->radius - start1->radius) * t_rel /
+    duration;
+
+  double cx2 = spt2->x + (ept2->x - spt2->x) * t_rel / duration;
+  double cy2 = spt2->y + (ept2->y - spt2->y) * t_rel / duration;
+  double rbuf2 = start2->radius + (end2->radius - start2->radius) * t_rel /
+    duration;
+
+  /* Distance between buffer edges at turning point */
+  double dist_turn = sqrt((cx1 - cx2) * (cx1 - cx2) +
+    (cy1 - cy2) * (cy1 - cy2)) - rbuf1 - rbuf2;
+
+  /* Distance between edges at lower and upper bounds */
+  double dist0 = sqrt(dx0 * dx0 + dy0 * dy0) - r0;
+  double dist1 = sqrt(dx1 * dx1 + dy1 * dy1) - r1;
+
+  /* Shift distances by d (target threshold) */
+  double dist0_shift = dist0 - d;
+  double dist1_shift = dist1 - d;
+  double dist_turn_shift = dist_turn - d;
+
+  /* No crossing if all are on the same side of d */
+  if ((dist0_shift * dist1_shift > 0.0) && 
+    (dist0_shift * dist_turn_shift > 0.0))
+  {
+    *t1 = *t2 = (TimestampTz) 0;
+    return 0;
+  }
+
+  TimestampTz t_tp = lower + (TimestampTz)t_rel;
+
+  /* Contact exactly at turning point */
+  if (fabs(dist_turn_shift) < __DBL_EPSILON__ && t_tp > lower && t_tp < upper)
+  {
+    *t1 = *t2 = t_tp;
+    return 1;
+  }
+
+  /* Estimate entry and exit times by linear interpolation */
+  TimestampTz t_in = 0;
+  TimestampTz t_out = 0;
+
+  if (fabs(dist_turn_shift - dist0_shift) < __DBL_EPSILON__)
+  {
+    if (fabs(dist_turn_shift) < __DBL_EPSILON__ && t_tp > lower && t_tp < upper)
+    {
+      *t1 = *t2 = t_tp;
+      return 1;
+    }
+    *t1 = *t2 = 0;
+    return 0;
+  }
+
+  double alpha_in = (0.0 - dist0_shift) / (dist_turn_shift - dist0_shift);
+  t_in = lower + (TimestampTz)(t_rel * alpha_in);
+
+  if (fabs(dist1_shift - dist_turn_shift) < __DBL_EPSILON__)
+  {
+    if (fabs(dist_turn_shift) < __DBL_EPSILON__ && t_tp > lower && t_tp < upper)
+    {
+      *t1 = *t2 = t_tp;
+      return 1;
+    }
+    *t1 = *t2 = 0;
+    return 0;
+  }
+
+  double alpha_out = (0.0 - dist_turn_shift) / (dist1_shift - dist_turn_shift);
+  t_out = lower + (TimestampTz)(t_rel + (duration - t_rel) * alpha_out);
+
+  /* Return valid internal times */
+  if (t_in > lower && t_out < upper)
+  {
+    *t1 = t_in;
+    *t2 = t_out;
+    return 2;
+  }
+  else if (t_in > lower && t_out >= upper)
+  {
+    *t1 = *t2 = t_in;
+    return 1;
+  }
+  else if (t_in <= lower && t_out < upper)
+  {
+    *t1 = *t2 = t_out;
+    return 1;
+  }
+  else
+  {
+    *t1 = *t2 = 0;
+    return 0;
+  }
+}
+
+/**
+ * @brief Return the TWO timestamps at which two temporal circular buffers 
+ * segments are at the minimum distance
+ * @details These are the turning points when computing the temporal distance.
+ * @param[in] start1,end1 Circular buffers defining the first segment
+ * @param[in] start2,end2 Circular buffers the second segment
+ * @param[out] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 Timestamps at turning points
+ * @pre The segments are not constant.
+ */
+int
+tcbuffersegm_distance_turnpt(const Cbuffer *start1, const Cbuffer *end1,
+  const Cbuffer *start2, const Cbuffer *end2, TimestampTz lower,
+  TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+{
+  return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, 0.0,
+    lower, upper, t1, t2);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return 1 if a segment of a temporal circular buffer and a circular
+ * buffer intersect during the period defined by the timestamps output in the
+ * last arguments
+ * @param[in] start,end Temporal instants defining the segment
+ * @param[in] value Value to locate
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 
+ * @return Number of timestamps in the result, between 0 and 2. In the case
+ * of a single result both t1 and t2 are set to the unique timestamp.
+ */
+int
+tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+{
+  assert(lower < upper); assert(t1); assert(t2);
+  int result = tcbuffersegm_distance_turnpt(DatumGetCbufferP(start),
+    DatumGetCbufferP(end), DatumGetCbufferP(value), DatumGetCbufferP(value),
+    lower, upper, t1, t2);
+  /* The above temporary function sometimes provides inverted timestamps 
+   * We patch it for the moment */
+  if (*t1 > *t2)
+  {
+    TimestampTz temp = *t2;
+    *t2 = *t1;
+    *t1 = temp;
+  }
+  return result;
+}
+
+/**
+ * @brief Return 1 if the segments of two temporal circular buffers intersect
+ * during the period defined by the timestamps output in the last arguments
+ * @param[in] start1,end1 Temporal instants defining the first segment
+ * @param[in] start2,end2 Temporal instants defining the second segment
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 
+ * @return Number of timestamps in the result, between 0 and 2. In the case
+ * of a single result both t1 and t2 are set to the unique timestamp
+ */
+int
+tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
+{
+  assert(lower < upper); assert(t1); assert(t2);
+  /* While waiting for this function we cheat and call the function below */
+  return tcbuffersegm_distance_turnpt(DatumGetCbufferP(start1),
+    DatumGetCbufferP(end1), DatumGetCbufferP(start2), DatumGetCbufferP(end2),
+    lower, upper, t1, t2);
 }
 
 /*****************************************************************************
@@ -639,7 +800,7 @@ tcbuffer_values(const Temporal *temp, int *count)
 /**
  * @brief Return the points or radii of a temporal circular buffer
  */
-Set *
+static Set *
 tcbufferinst_members(const TInstant *inst, bool point)
 {
   Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
@@ -651,7 +812,7 @@ tcbufferinst_members(const TInstant *inst, bool point)
 /**
  * @brief Return the points or radii of a temporal circular buffer
  */
-Set *
+static Set *
 tcbufferseq_members(const TSequence *seq, bool point)
 {
   Datum *values = palloc(sizeof(Datum) * seq->count);
@@ -673,7 +834,7 @@ tcbufferseq_members(const TSequence *seq, bool point)
 /**
  * @brief Return the points or radii of a temporal circular buffer
  */
-Set *
+static Set *
 tcbufferseqset_members(const TSequenceSet *ss, bool point)
 {
   Datum *values = palloc(sizeof(Datum) * ss->count);
@@ -701,7 +862,7 @@ tcbufferseqset_members(const TSequenceSet *ss, bool point)
  * @brief Return the points or radii or radius of a temporal circular buffer
  * @csqlfn #Tcbuffer_points()
  */
-Set *
+static Set *
 tcbuffer_members(const Temporal *temp, bool point)
 {
   /* Ensure the validity of the arguments */

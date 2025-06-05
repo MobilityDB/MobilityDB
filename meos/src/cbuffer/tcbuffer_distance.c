@@ -40,6 +40,7 @@
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/cbuffer.h"
+#include "cbuffer/tcbuffer.h"
 
 /*****************************************************************************
  * Turning point functions

@@ -67,18 +67,6 @@ struct Cbuffer
 
 /*****************************************************************************/
 
-/* Collinear functions */
-
-extern bool cbuffer_collinear(const Cbuffer *cb1, const Cbuffer *cb2,
-  const Cbuffer *cbuf3, double ratio);
-
-/* Interpolation functions */
-
-extern long double cbuffersegm_locate(const Cbuffer *start, const Cbuffer *end,
-  const Cbuffer *value);
-extern Cbuffer *cbuffersegm_interpolate(const Cbuffer *start,
-  const Cbuffer *end, long double ratio);
-
 /* Validity functions */
 
 extern bool ensure_valid_cbuffer_cbuffer(const Cbuffer *cb1,
@@ -87,14 +75,15 @@ extern bool ensure_valid_cbuffer_geo(const Cbuffer *cb,
   const GSERIALIZED *gs);
 extern bool ensure_valid_cbuffer_stbox(const Cbuffer *cb, const STBox *box);
 extern bool ensure_valid_cbufferset_cbuffer(const Set *s, const Cbuffer *cb);
-extern bool ensure_valid_tcbuffer_cbuffer(const Temporal *temp,
-  const Cbuffer *cb);
-extern bool ensure_valid_tcbuffer_geo(const Temporal *temp,
-  const GSERIALIZED *gs);
-extern bool ensure_valid_tcbuffer_stbox(const Temporal *temp,
-  const STBox *box);
-extern bool ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1,
-  const Temporal *temp2);
+
+/* Collinear and interpolation functions */
+
+extern bool cbuffer_collinear(const Cbuffer *cb1, const Cbuffer *cb2,
+  const Cbuffer *cbuf3, double ratio);
+extern Cbuffer *cbuffersegm_interpolate(const Cbuffer *start,
+  const Cbuffer *end, long double ratio);
+extern long double cbuffersegm_locate(const Cbuffer *start, const Cbuffer *end,
+  const Cbuffer *value);
 
 /* Input/output functions */
 
@@ -115,6 +104,9 @@ extern Cbuffer *cbuffer_transf_pj(const Cbuffer *cb, int32_t srid_to, const LWPR
 
 extern double cbuffer_distance(const Cbuffer *cb1, const Cbuffer *cb2);
 extern Datum datum_cbuffer_distance(Datum cb1, Datum cb2);
+extern int cbuffersegm_distance_turnpt(const Cbuffer *start1,
+  const Cbuffer *end1, const Cbuffer *start2, const Cbuffer *end2,
+  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2);
 
 /* Spatial relationship functions */
 
