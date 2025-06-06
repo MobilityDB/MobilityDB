@@ -208,7 +208,7 @@ SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', tstzspan '[2001-01-03, 2001-01
 	</sect1>
 
 	<sect1 xml:id="box_conversions">
-		<title>Conversiones de tipo</title>
+		<title>Conversión de tipos</title>
 
 		<itemizedlist>
 			<listitem xml:id="tbox_convert_to">

@@ -1279,23 +1279,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_hausdorffDistance"><varname>hausdorffDistance</varname></link>: Devuelve la distancia de Hausdorff discreta entre dos valores temporales</para>
+					<para><link linkend="ttype_similarityDistance"><varname>hausdorffDistance</varname>, <varname>frechetDistance</varname>, <varname>dynTimeWarpDistance</varname></link>: Devuelve la distancia de Hausdorff discreta, la distancia de Fréchet discreta o la distancia de distorsión de tiempo dinámica (Dynamic Time Warp) entre dos valores temporales</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_frechetDistance"><varname>frechetDistance</varname></link>: Devuelve la distancia de Fréchet discreta entre dos valores temporales</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_frechetDistancePath"><varname>frechetDistancePath</varname></link>: Devuelve las parejas de correspondencia entre dos valores temporales con respecto a la distancia de Fréchet discreta</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_dynTimeWarpDistance"><varname>dynTimeWarpDistance</varname></link>: Devuelve la distancia de distorsión de tiempo dinámica (Dynamic Time Warp) entre dos valores temporales</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_dynTimeWarpPath"><varname>dynTimeWarpPath</varname></link>: Devuelve las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
+					<para><link linkend="ttype_similarityPath"><varname>frechetDistancePath</varname>, <varname>dynTimeWarpDistance</varname></link>: Devuelve las parejas de correspondencia entre dos valores temporales con respecto a la distancia de Fréchet discreta o a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1370,11 +1358,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="timeBins"><varname>timeBins</varname></link>: Devuelve una matriz de intervalos obtenidos a partir de los instantes o segmentos de un valor temporal con respecto a un mosaico de tiempo</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="valueBins"><varname>valueBins</varname></link>: Devuelve una matriz de intervalos obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores</para>
+						<para><link linkend="valueTimeBins"><varname>valueBins</varname>, <varname>timeBins</varname></link>: Devuelve una matriz de intervalos de valores or de tiempo obtenidos a partir de los instantes o segmentos de un número temporal con respecto a un mosaico de valores o de tiempo</para>
 					</listitem>
 
 					<listitem>

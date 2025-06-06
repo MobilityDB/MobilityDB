@@ -23,11 +23,11 @@
 			</mediaobject>
 		</figure>
 
-		<para>En este capítulo y el siguiente cubrimos el tipo <varname>TGeo</varname> y sus subtipos, es decir, los tipos espaciotemporales derivados de los tipos PostGIS <varname>geometry</varname> y <varname>geography</varname>. En los capítulos siguientes, continuamos describiendo los tipos espaciotemporales restantes.</para>
+		<para>En este capítulo y el siguiente cubrimos el tipo <varname>TGeo</varname> y sus subtipos, es decir, los tipos espaciotemporales derivados de los tipos <varname>geometry</varname> y <varname>geography</varname> de PostGIS. En los capítulos siguientes, continuamos describiendo los tipos espaciotemporales restantes.</para>
 	</sect1>
 
 	<sect1 xml:id="tgeo_notation">
-		<title>Notation</title>
+		<title>Notación</title>
 		<para>Presentamos en la <xref linkend="ttype_notation"/> y en la <xref linkend="talpha_notation"/> la notación utilizada para definir la firma de las funciones y operadores para tipos temporales. A continuación, ampliamos estas notaciones para tipos espaciotemporales.</para>
 
 		<itemizedlist>
@@ -229,7 +229,7 @@ SELECT asEWKT(tgeompointFromHexEWKB(
 	</sect1>
 
 	<sect1 xml:id="tgeo_conversions">
-		<title>Conversions</title>
+		<title>Conversión de tipos</title>
 		<itemizedlist>
 			<listitem xml:id="tgeo_bbox">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>

@@ -1281,23 +1281,11 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_hausdorffDistance"><varname>hausdorffDistance</varname></link>: Return the discrete Hausdorff distance between two temporal values</para>
+					<para><link linkend="ttype_similarityDistance"><varname>hausdorffDistance</varname>, <varname>frechetDistance</varname>, <varname>dynTimeWarpDistance</varname></link>: Return the discrete Hausdorff distance, the discrete Fréchet distance, or the Dynamic Time Warp distance between two temporal values</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_frechetDistance"><varname>frechetDistance</varname></link>: Return the discrete Fréchet distance between two temporal values</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_frechetDistancePath"><varname>frechetDistancePath</varname></link>: Return the correspondence pairs between two temporal values with respect to the discrete Fréchet distance</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_dynTimeWarpDistance"><varname>dynTimeWarpDistance</varname></link>: Return the Dynamic Time Warp distance between two temporal values</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="ttype_dynTimeWarpPath"><varname>dynTimeWarpPath</varname></link>: Return the correspondence pairs between two temporal values with respect to the Dynamic Time Warp distance</para>
+					<para><link linkend="ttype_similarityDistancePath"><varname>frechetDistancePath</varname>, <varname>dynTimeWarpPath</varname></link>: Return the correspondence pairs between two temporal values with respect to the discrete Fréchet distance or the Dynamic Time Warp distance</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1375,11 +1363,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="timeBins"><varname>timeBins</varname></link>: Return an array of time spans obtained from the instants or segments of a temporal value with respect to a time grid</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="valueBins"><varname>valueBins</varname></link>: Return an array of value spans obtained from the instants or segments of a temporal number with respect to a value grid</para>
+						<para><link linkend="valueTimeBins"><varname>valueBins</varname>, <varname>timeBins</varname></link>: Return an array of value or times spans obtained from the instants or segments of a temporal number with respect to a value or time grid</para>
 					</listitem>
 
 					<listitem>

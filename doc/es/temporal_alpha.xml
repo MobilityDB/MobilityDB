@@ -12,7 +12,7 @@
 	<title>Tipos alfanuméricos temporales</title>
 
 	<sect1 xml:id="talpha_notation">
-		<title>Notation</title>
+		<title>Notación</title>
 		<para>En <xref linkend="ttype_notation"/> presentamos la notación utilizada para definir la firma de las funciones y operadores para tipos temporales. A continuación, ampliamos estas notaciones para tipos alfanuméricos temporales.</para>
 
 		<itemizedlist>
@@ -39,7 +39,7 @@
 	</sect1>
 
 	<sect1 xml:id="talpha_conversions">
-		<title>Conversions</title>
+		<title>Conversión de tipos</title>
 
 		<para>Un valor temporal se puede convertir en un tipo compatible utilizando la notación <varname>CAST(ttype1 AS ttype2)</varname> o la notación <varname>ttype1::ttype2</varname>.</para>
 		<itemizedlist>
