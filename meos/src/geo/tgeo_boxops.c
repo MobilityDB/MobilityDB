@@ -211,7 +211,7 @@ tgeoinstarr_set_stbox(const TInstant **instants, int count, STBox *box)
 }
 
 /**
- * @brief Set a bounding box from an array of temporal spatial instant values
+ * @brief Set a bounding box from an array of spatiotemporal instant values
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
  * @param[in] lower_inc,upper_inc Period bounds
@@ -274,7 +274,7 @@ tgeoseq_expand_stbox(TSequence *seq, const TInstant *inst)
 
 /**
  * @ingroup meos_internal_geo_bbox
- * @brief Expand the bounding box of a temporal spatial sequence with an
+ * @brief Expand the bounding box of a spatiotemporal sequence with an
  * additional instant
  * @param[inout] seq Temporal sequence
  * @param[in] inst Temporal instant
@@ -1580,7 +1580,7 @@ geo_split_each_n_stboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
  *****************************************************************************/
 
 /**
- * @brief Generic bounding box function for a temporal spatial value and a
+ * @brief Generic bounding box function for a spatiotemporal value and a
  * spatiotemporal box
  */
 bool
@@ -1593,7 +1593,7 @@ boxop_tspatial_stbox(const Temporal *temp, const STBox *box,
 }
 
 /**
- * @brief Generic topological function for two temporal spatial values
+ * @brief Generic topological function for two spatiotemporal values
  */
 bool
 boxop_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,

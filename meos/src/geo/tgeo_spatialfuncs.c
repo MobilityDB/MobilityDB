@@ -639,7 +639,7 @@ ensure_same_dimensionality_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @brief Return true if a temporal spatial value and a geometry/geography have
+ * @brief Return true if a spatiotemporal value and a geometry/geography have
  * thesame dimensionality
  */
 bool
@@ -651,7 +651,7 @@ same_dimensionality_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @brief Ensure that a temporal spatial value and a geometry/geography have 
+ * @brief Ensure that a spatiotemporal value and a geometry/geography have 
  * the same dimensionality
  */
 bool
@@ -833,7 +833,7 @@ ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 }
 
 /**
- * @brief Ensure the validity of a temporal spatial value and a 
+ * @brief Ensure the validity of a spatiotemporal value and a 
  * geometry/geography
  * @note The geometry can be empty since some functions such atGeometry or
  * minusGeometry return different result on empty geometries.
@@ -877,7 +877,7 @@ ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @brief Ensure the validity of a temporal spatial value and a 
+ * @brief Ensure the validity of a spatiotemporal value and a 
  * geometry/geography
  * @note The geometry can be empty since some functions such atGeometry or
  * minusGeometry return different result on empty geometries.

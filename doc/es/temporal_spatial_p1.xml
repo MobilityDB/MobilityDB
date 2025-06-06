@@ -12,7 +12,7 @@
 
 	<sect1 xml:id="tspatial">
 		<title>Tipos espaciotemporales</title>
-		<para>MobilityDB proporciona un conjunto de tipos espaciotemporales: <varname>tgeometry</varname> (geometría temporal), <varname>tgeography</varname> (geografía temporal), <varname>tgeompoint</varname> (punto geométrico temporal), <varname>tgeogpoint</varname> (punto geográfico temporal), <varname>tcbuffer</varname> (buffer circular temporal), <varname>tnpoint</varname> (punto de red temporal), <varname>tpose</varname> (pose temporal) y <varname>trgeometry</varname> (geometría rígida temporal). A nivel conceptual, estos tipos espaciotemporales se organizan en la jerarquía que se muestra en la <xref linkend="tspatial_fig" />.</para>
+		<para>MobilityDB proporciona un conjunto de tipos espaciotemporales, a saber, <varname>tgeometry</varname> (geometría temporal), <varname>tgeography</varname> (geografía temporal), <varname>tgeompoint</varname> (punto geométrico temporal), <varname>tgeogpoint</varname> (punto geográfico temporal), <varname>tcbuffer</varname> (buffer circular temporal), <varname>tnpoint</varname> (punto de red temporal), <varname>tpose</varname> (pose temporal) y <varname>trgeometry</varname> (geometría rígida temporal). A nivel conceptual, estos tipos espaciotemporales se organizan en la jerarquía que se muestra en la <xref linkend="tspatial_fig" />.</para>
 
 		<figure xml:id="tspatial_fig" float="start">
 			<title>Jerarquía de tipos espaciotemporales en MobilityDB.</title>
@@ -77,7 +77,7 @@
 			<listitem xml:id="tspatial_asText">
 				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
-				<para>Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT)&Z_support; &geography_support;</para>
+				<para>Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT) &Z_support; &geography_support;</para>
 				<para><varname>asText({tspatial,tspatial[],spatial[]}) → {text,text[]}</varname></para>
 				<para><varname>asEWKT({tspatial,tspatial[],spatial[]}) → {text,text[]}</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -89,6 +89,8 @@ SELECT asText(ARRAY[tgeometry 'SRID=4326;[Point(0 0)@2001-01-01,
     "POLYGON((1 1,2 2,3 1,1 1))@2001-01-01"} */
 SELECT asText(ARRAY[geometry 'Point(0 0)', 'Point(1 1)']);
 -- {"POINT(0 0)","POINT(1 1)"}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
 SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02)');
 -- SRID=4326;[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02)
 SELECT asEWKT(ARRAY[tgeometry 'SRID=4326;[Point(0 0)@2001-01-01, 
@@ -169,6 +171,8 @@ SELECT asEWKT(tgeompointFromText(text '[POINT(1 2)@2001-01-01, POINT(3 4)@2001-0
 SELECT asEWKT(tgeographyFromText(text 
   '[Point(1 2)@2001-01-01, Linestring(1 2,3 4)@2001-01-02]'));
 -- SRID=4326;[POINT(1 2)@2001-01-01, LINESTRING(1 2,3 4)@2001-01-02]
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
 SELECT asEWKT(tgeompointFromEWKT(text 'SRID=3812;[Point(1 2)@2001-01-01,
   Point(3 4)@2001-01-02]'));
 -- SRID=3812;[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
@@ -593,7 +597,7 @@ ramp_color('RdYlBu', scale_linear(
 
 			<listitem xml:id="tgeo_affine">
 				<indexterm significance="normal"><primary><varname>affine</varname></primary></indexterm>
-				<para>Devuelve la transformación afín 3D de una geometría temporal para hacer cosas como trasladar, rotar y escalar en un solo paso &Z_support;</para>
+				<para>Devuelve la transformación afín 3D de una geometría temporal para traducirla, rotarla y/o escalarla en un solo paso &Z_support;</para>
 				<para><varname>affine(tgeo,float a,float b,float c,float d,float e,float f,float g,</varname></para>
 				<para><varname>  float h,float i,float xoff,float yoff,float zoff) → tgeo</varname></para>
 				<para><varname>affine(tgeo,float a,float b,float d,float e,float xoff,float yoff) → tgeo</varname></para>

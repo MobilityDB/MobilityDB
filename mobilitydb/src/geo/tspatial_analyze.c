@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Functions for gathering statistics from temporal spatial columns
+ * @brief Functions for gathering statistics from spatiotemporal columns
  * @details
  * Various kind of statistics are collected for both the value and the time
  * dimensions of temporal types. The kind of statistics depends on the subtype
@@ -1056,7 +1056,7 @@ spatialset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  *****************************************************************************/
 
 /**
- * @brief Compute the statistics for temporal spatial columns (callback function)
+ * @brief Compute the statistics for spatiotemporal columns (callback function)
  */
 void
 tspatial_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
@@ -1187,7 +1187,7 @@ Spatialset_analyze(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tspatial_analyze(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_analyze);
 /**
- * @brief Compute the statistics for temporal spatial columns
+ * @brief Compute the statistics for spatiotemporal columns
  */
 Datum
 Tspatial_analyze(PG_FUNCTION_ARGS)

@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal spatial relationships for temporal geos
+ * @brief Spatiotemporal relationships for spatiotemporal values
  * @details These relationships are applied at each instant and result in a
  * temporal Boolean.
  *
@@ -53,7 +53,7 @@
 #include "pg_geo/tspatial.h"
 
 /*****************************************************************************
- * Generic functions for computing the temporal spatial relationships
+ * Generic functions for computing the spatiotemporal relationships
  * with arbitrary geometries
  *****************************************************************************/
 

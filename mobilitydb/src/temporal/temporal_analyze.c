@@ -107,7 +107,7 @@ TemporalAnalyzeExtraData *temporal_extra_data;
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
  * @param[in] samplerows Number of sample rows
- * @param[in] totalrows Only used for temporal spatial types.
+ * @param[in] totalrows Only used for spatiotemporal types.
  * @note Function derived from compute_span_stats of file spantypes_typanalyze.c
  */
 static void

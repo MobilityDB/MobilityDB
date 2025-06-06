@@ -32,7 +32,7 @@
  * @brief Ever and always spatial relationships for temporal circular buffers
  * @details These relationships compute the ever/always spatial relationship
  * between the arguments and return a Boolean. These functions may be used for
- * filtering purposes before applying the corresponding temporal spatial
+ * filtering purposes before applying the corresponding spatiotemporal
  * relationship.
  *
  * The following relationships are supported: `eContains`, `aContains`,
@@ -85,7 +85,7 @@ EA_spatialrel_cbuffer_tcbuffer(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Return true if a geometry and a temporal spatial value ever/always
+ * @brief Return true if a geometry and a spatiotemporal value ever/always
  * satisfy a spatial relationship
  */
 Datum

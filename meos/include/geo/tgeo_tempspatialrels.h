@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief Temporal spatial relationships for temporal points.
+ * @brief Spatiotemporal relationships for temporal points.
  */
 
 #ifndef __TGEO_TEMPSPATIALRELS_H__

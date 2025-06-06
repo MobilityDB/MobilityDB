@@ -298,7 +298,7 @@ extern Temporal *tne_tpose_pose(const Temporal *temp, const Pose *pose);
 
 /*****************************************************************************/
 
-/* Temporal spatial relationship functions */
+/* Spatiotemporal relationship functions */
 
 
 /*****************************************************************************/

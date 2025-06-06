@@ -32,7 +32,7 @@
  * @brief Ever/always spatial relationships for temporal rigid geometries
  * @details These relationships compute the ever/always spatial relationship
  * between the arguments and return a Boolean. These functions may be used for
- * filtering purposes before applying the corresponding temporal spatial
+ * filtering purposes before applying the corresponding spatiotemporal
  * relationship.
  *
  * The following relationships are supported: `contains`, `disjoint`,

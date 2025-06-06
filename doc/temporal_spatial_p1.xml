@@ -12,7 +12,7 @@
 
 	<sect1 xml:id="tspatial">
 		<title>Spatiotemporal Types</title>
-		<para>MobilityDB provides a set spatiotemporal types, namely, <varname>tgeometry</varname> (temporal geometry), <varname>tgeography</varname> (temporal geography), <varname>tgeompoint</varname> (temporal geometry point), <varname>tgeogpoint</varname> (temporal geography point), <varname>tcbuffer</varname> (temporal circular buffer), <varname>tnpoint</varname> (temporal network point), <varname>tpose</varname> (temporal pose), and <varname>trgeometry</varname> (temporal rigid geometry). At a conceptual level, these spatiotemporal types are organized in the hierarchy depicted in  <xref linkend="tspatial_fig" />.</para>
+		<para>MobilityDB provides a set of spatiotemporal types, namely, <varname>tgeometry</varname> (temporal geometry), <varname>tgeography</varname> (temporal geography), <varname>tgeompoint</varname> (temporal geometry point), <varname>tgeogpoint</varname> (temporal geography point), <varname>tcbuffer</varname> (temporal circular buffer), <varname>tnpoint</varname> (temporal network point), <varname>tpose</varname> (temporal pose), and <varname>trgeometry</varname> (temporal rigid geometry). At a conceptual level, these spatiotemporal types are organized in the hierarchy depicted in  <xref linkend="tspatial_fig" />.</para>
 
 		<figure xml:id="tspatial_fig" float="start">
 			<title>Hierarchy of spatiotemporal types in MobilityDB.</title>
@@ -89,6 +89,8 @@ SELECT asText(ARRAY[tgeometry 'SRID=4326;[Point(0 0)@2001-01-01,
     "POLYGON((1 1,2 2,3 1,1 1))@2001-01-01"} */
 SELECT asText(ARRAY[geometry 'Point(0 0)', 'Point(1 1)']);
 -- {"POINT(0 0)","POINT(1 1)"}
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
 SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02)');
 -- SRID=4326;[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02)
 SELECT asEWKT(ARRAY[tgeometry 'SRID=4326;[Point(0 0)@2001-01-01, 
@@ -169,6 +171,8 @@ SELECT asEWKT(tgeompointFromText(text '[POINT(1 2)@2001-01-01, POINT(3 4)@2001-0
 SELECT asEWKT(tgeographyFromText(text 
   '[Point(1 2)@2001-01-01, Linestring(1 2,3 4)@2001-01-02]'));
 -- SRID=4326;[POINT(1 2)@2001-01-01, LINESTRING(1 2,3 4)@2001-01-02]
+</programlisting>
+				<programlisting language="sql" xml:space="preserve">
 SELECT asEWKT(tgeompointFromEWKT(text 'SRID=3812;[Point(1 2)@2001-01-01,
   Point(3 4)@2001-01-02]'));
 -- SRID=3812;[POINT(1 2)@2001-01-01, POINT(3 4)@2001-01-02]
@@ -593,7 +597,7 @@ ramp_color('RdYlBu', scale_linear(
 
 			<listitem xml:id="tgeo_affine">
 				<indexterm significance="normal"><primary><varname>affine</varname></primary></indexterm>
-				<para>Return the 3D affine transform of a temporal geometry to do things like translate, rotate, scale in one step &Z_support;</para>
+				<para>Return the 3D affine transform of a temporal geometry to translate, rotate, and/or scale it in a single step &Z_support;</para>
 				<para><varname>affine(tgeo,float a,float b,float c,float d,float e,float f,float g,</varname></para>
 				<para><varname>  float h,float i,float xoff,float yoff,float zoff) → tgeo</varname></para>
 				<para><varname>affine(tgeo,float a,float b,float d,float e,float xoff,float yoff) → tgeo</varname></para>

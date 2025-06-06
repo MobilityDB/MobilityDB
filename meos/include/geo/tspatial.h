@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief Bounding box operators for temporal spatial values
+ * @brief Generic functions for spatiotemporal values
  */
 
 #ifndef __TSPATIAL_H__

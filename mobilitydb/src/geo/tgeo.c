@@ -179,7 +179,7 @@ tspatial_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
    */
   deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
   if (n > TSPATIAL_MAX_TYPMOD)
-    elog(ERROR, "Incorrect number of type modifiers for temporal spatial values");
+    elog(ERROR, "Incorrect number of type modifiers for spatiotemporal values");
 
   /* Set default values for typmod if they are not given */
   int16 tempsubtype = ANYTEMPSUBTYPE;

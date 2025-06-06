@@ -1218,7 +1218,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Temporal Spatial Relationships</title>
+				<title>Spatiotemporal Relationships</title>
 
 				<itemizedlist>
 					<listitem>
@@ -2241,7 +2241,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tcbuffer_tspatialrels"><varname>tContains, tDisjoint, tIntersects, tTouches, tDwithin</varname></link>: Temporal spatial relationships</para>
+						<para><link linkend="tcbuffer_tspatialrels"><varname>tContains, tDisjoint, tIntersects, tTouches, tDwithin</varname></link>: Spatiotemporal relationships</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

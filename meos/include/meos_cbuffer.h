@@ -351,7 +351,7 @@ extern int etouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *tem
 
 /*****************************************************************************/
 
-/* Temporal spatial relationship functions */
+/* Spatiotemporal relationship functions */
 
 extern Temporal *tcontains_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, bool restr, bool atvalue);
 extern Temporal *tcontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);

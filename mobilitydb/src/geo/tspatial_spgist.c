@@ -121,8 +121,8 @@
  *****************************************************************************/
 
 /**
- * @brief Structure to represent the bounding box of a temporal spatial value
- * as a 6- or 8-dimensional point depending on whether the temporal spatial
+ * @brief Structure to represent the bounding box of a spatiotemporal value
+ * as a 6- or 8-dimensional point depending on whether the spatiotemporal
  * value is in 2D+T or 3D+T.
  */
 typedef struct
@@ -721,7 +721,7 @@ tspatial_spgist_get_stbox(const ScanKeyData *scankey, STBox *result)
 PGDLLEXPORT Datum Stbox_spgist_config(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_spgist_config);
 /**
- * @brief SP-GiST config function for temporal spatial values
+ * @brief SP-GiST config function for spatiotemporal values
  */
 Datum
 Stbox_spgist_config(PG_FUNCTION_ARGS)
@@ -743,7 +743,7 @@ Stbox_spgist_config(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_quadtree_choose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_quadtree_choose);
 /**
- * @brief SP-GiST choose function for temporal spatial values
+ * @brief SP-GiST choose function for spatiotemporal values
  */
 Datum
 Stbox_quadtree_choose(PG_FUNCTION_ARGS)
@@ -925,7 +925,7 @@ stbox_level_cmp(STBox *centroid, STBox *query, int level)
 PGDLLEXPORT Datum Stbox_kdtree_choose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_kdtree_choose);
 /**
- * @brief K-d tree choose function for temporal spatial values
+ * @brief K-d tree choose function for spatiotemporal values
  */
 Datum
 Stbox_kdtree_choose(PG_FUNCTION_ARGS)
@@ -951,7 +951,7 @@ Stbox_kdtree_choose(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_quadtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_quadtree_picksplit);
 /**
- * @brief SP-GiST pick-split function for temporal spatial values
+ * @brief SP-GiST pick-split function for spatiotemporal values
  *
  * It splits a list of boxes into quadrants by choosing a central 8D
  * point as the median of the coordinates of the boxes.
@@ -1348,7 +1348,7 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
 PGDLLEXPORT Datum Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_quadtree_inner_consistent);
 /**
- * @brief Quad-tree inner consistent function for temporal spatial values
+ * @brief Quad-tree inner consistent function for spatiotemporal values
  */
 Datum
 Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
@@ -1359,7 +1359,7 @@ Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_kdtree_inner_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_kdtree_inner_consistent);
 /**
- * @brief Kd-tree inner consistent function for temporal spatial values
+ * @brief Kd-tree inner consistent function for spatiotemporal values
  */
 Datum
 Stbox_kdtree_inner_consistent(PG_FUNCTION_ARGS)
@@ -1374,7 +1374,7 @@ Stbox_kdtree_inner_consistent(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_spgist_leaf_consistent);
 /**
- * @brief SP-GiST leaf consistency function for temporal spatial values
+ * @brief SP-GiST leaf consistency function for spatiotemporal values
  */
 Datum
 Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
@@ -1434,7 +1434,7 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tspatial_spgist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_spgist_compress);
 /**
- * @brief SP-GiST compress functions for temporal spatial values
+ * @brief SP-GiST compress functions for spatiotemporal values
  */
 Datum
 Tspatial_spgist_compress(PG_FUNCTION_ARGS)

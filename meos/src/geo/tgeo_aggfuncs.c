@@ -246,10 +246,10 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
 
 /**
  * @ingroup meos_geo_agg
- * @brief Transition function for temporal extent aggregation of temporal
- * spatial values
+ * @brief Transition function for temporal extent aggregation of spatiotemporal
+ * values
  * @param[in] box Current aggregate value
- * @param[in] temp Temporal spatial value
+ * @param[in] temp Spatiotemporal value
  * @csqlfn #Tspatial_extent_transfn()
  */
 STBox *

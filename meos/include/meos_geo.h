@@ -300,7 +300,7 @@ typedef enum
 #endif /* MEOS */
 
 /**
- * @brief Macro ensuring that a temporal value is of a temporal spatial type
+ * @brief Macro ensuring that a temporal value is of a spatiotemporal type
  * @note The macro works for the Temporal type and its subtypes TInstant,
  * TSequence, and TSequenceSet
  */
@@ -826,7 +826,7 @@ extern int etouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int etouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 
-/* Temporal spatial relationships */
+/* Spatiotemporal relationships */
 
 extern Temporal *tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool restr, bool atvalue);
 extern Temporal *tcontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool restr, bool atvalue);

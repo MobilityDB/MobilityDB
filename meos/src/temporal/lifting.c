@@ -62,7 +62,7 @@
  *    temporal point is geometric or geographic are needed.
  * 6. Whether the function has instantaneous discontinuities at the crossings.
  *    Examples of such functions are temporal comparisons for temporal floats
- *    or temporal spatial relationships since the value of the result may
+ *    or spatiotemporal relationships since the value of the result may
  *    change immediately before, at, or immediately after a crossing.
  * 7. Whether intermediate points between synchronized instants must be added
  *    to take into account the crossings or the turning points (or local

@@ -1308,7 +1308,7 @@ ensure_tspatial_type(meosType type)
   if (tspatial_type(type))
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-    "The value must be a temporal spatial value");
+    "The value must be a spatiotemporal value");
   return false;
 }
 

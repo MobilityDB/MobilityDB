@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal spatial relationships for temporal geos
+ * @brief Spatiotemporal relationships for temporal geos
  * @details These relationships are applied at each instant and result in a
  * temporal Boolean.
  *
@@ -69,7 +69,7 @@
 #include "cbuffer/tcbuffer_spatialrels.h"
 
 /*****************************************************************************
- * Generic functions for computing the temporal spatial relationships
+ * Generic functions for computing the spatiotemporal relationships
  * with arbitrary geometries
  *****************************************************************************/
 

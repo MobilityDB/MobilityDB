@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief Temporal spatial relationships for temporal circular buffers
+ * @brief Spatiotemporal relationships for temporal circular buffers
  * @details These relationships are applied at each instant and result in a
  * temporal Boolean.
  *

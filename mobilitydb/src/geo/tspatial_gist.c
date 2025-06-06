@@ -29,7 +29,7 @@
 
 /**
  * @file
- * @brief R-tree GiST index for temporal spatial values
+ * @brief R-tree GiST index for spatiotemporal values
  */
 
 /* C */
@@ -92,7 +92,7 @@ tspatial_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, meosType type)
 PGDLLEXPORT Datum Stbox_gist_consistent(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_consistent);
 /**
- * @brief GiST consistent method for temporal spatial values
+ * @brief GiST consistent method for spatiotemporal values
  */
 Datum
 Stbox_gist_consistent(PG_FUNCTION_ARGS)
@@ -151,7 +151,7 @@ stbox_adjust(void *bbox1, void *bbox2)
 PGDLLEXPORT Datum Stbox_gist_union(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_union);
 /**
- * @brief GiST union method for temporal spatial values
+ * @brief GiST union method for spatiotemporal values
  * @details Return the minimal bounding box that encloses all the entries in 
  * entryvec
  */
@@ -173,7 +173,7 @@ Stbox_gist_union(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tspatial_gist_compress(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_gist_compress);
 /**
- * @brief GiST compress methods for temporal spatial values
+ * @brief GiST compress methods for spatiotemporal values
  */
 Datum
 Tspatial_gist_compress(PG_FUNCTION_ARGS)
@@ -286,7 +286,7 @@ stbox_penalty(void *bbox1, void *bbox2)
 PGDLLEXPORT Datum Stbox_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_penalty);
 /**
- * @brief GiST penalty method for temporal spatial values
+ * @brief GiST penalty method for spatiotemporal values
  * @note As in the R-tree paper, we use change in area as our penalty metric
  */
 Datum
@@ -308,7 +308,7 @@ Stbox_gist_penalty(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_gist_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_picksplit);
 /**
- * @brief GiST picksplit method for temporal spatial values
+ * @brief GiST picksplit method for spatiotemporal values
  * @details
  * The algorithm finds split of boxes by considering splits along each axis.
  * Each entry is first projected as an interval on the X-axis, and different
@@ -343,7 +343,7 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_gist_same(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_same);
 /**
- * @brief GiST same method for temporal spatial values
+ * @brief GiST same method for spatiotemporal values
  * @details Return true only when boxes are exactly the same.  We can't use 
  * fuzzy comparisons here without breaking index consistency; therefore, this 
  * isn't equivalent to #same_stbox_stbox().
@@ -373,7 +373,7 @@ Stbox_gist_same(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_distance);
 /**
- * @brief GiST distance for temporal spatial values
+ * @brief GiST distance for spatiotemporal values
  * @note Take in a query and an entry and return the "distance" between them
 */
 Datum

@@ -1064,7 +1064,7 @@ temporal_from_mfjson(const char *mfjson, meosType temptype)
   bool spatial = tspatial_type(temptype);
   if (spatial)
   {
-    /* Parse crs and set SRID of temporal spatial value */
+    /* Parse crs and set SRID of spatiotemporal value */
     json_object *poObjSrs = findMemberByName(poObj, "crs");
     if (poObjSrs)
     {

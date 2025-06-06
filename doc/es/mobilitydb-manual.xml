@@ -120,7 +120,7 @@
 	&temporal_alpha;
 	&temporal_spatial_p1;
 	&temporal_spatial_p2;
-	&temporal_types_analytics;
+	<!-- &temporal_types_analytics; -->
 	&temporal_types_aggregation;
 	&temporal_network_points;
 	&reference;

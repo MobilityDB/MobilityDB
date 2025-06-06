@@ -196,7 +196,7 @@ extern Temporal *tne_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 
 /*****************************************************************************/
 
-/* Temporal spatial relationship functions */
+/* Spatiotemporal relationship functions */
 
 
 /*****************************************************************************/

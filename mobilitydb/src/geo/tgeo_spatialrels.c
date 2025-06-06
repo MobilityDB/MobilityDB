@@ -32,7 +32,7 @@
  * @brief Ever and always spatial relationships for temporal geometries
  * @details These relationships compute the ever/always spatial relationship 
  * between the arguments and return a Boolean. These functions may be used for
- * filtering purposes before applying the corresponding temporal spatial
+ * filtering purposes before applying the corresponding spatiotemporal
  * relationship.
  *
  * The following relationships are supported for geometries: `eContains`,
@@ -63,7 +63,7 @@
  *****************************************************************************/
 
 /**
- * @brief Return true if a geometry and a temporal spatial value ever/always
+ * @brief Return true if a geometry and a spatiotemporal value ever/always
  * satisfy a spatial relationship
  */
 Datum
@@ -81,7 +81,7 @@ EA_spatialrel_geo_tspatial(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Return true if a temporal spatial value and a geometry ever/always
+ * @brief Return true if a spatiotemporal value and a geometry ever/always
  * satisfy a spatial relationship
  */
 Datum
@@ -99,7 +99,7 @@ EA_spatialrel_tspatial_geo(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Return true if two temporal spatial values ever/always satisfy the
+ * @brief Return true if two spatiotemporal values ever/always satisfy the
  * spatial relationship
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Spatial relationship for temporal geometry/geography
@@ -122,7 +122,7 @@ EA_spatialrel_tspatial_tspatial(FunctionCallInfo fcinfo,
 /*****************************************************************************/
 
 /**
- * @brief Return true if a geometry and a temporal spatial value are 
+ * @brief Return true if a geometry and a spatiotemporal value are 
  * ever/always within a distance
  */
 Datum
@@ -142,8 +142,8 @@ EA_dwithin_geo_tspatial(FunctionCallInfo fcinfo,
 }
 
 /**
- * @brief Return true if a temporal spatial value and a geometry are 
- * ever/always within a distance
+ * @brief Return true if a spatiotemporal value and a geometry are ever/always
+ * within a distance
  */
 Datum
 EA_dwithin_tspatial_geo(FunctionCallInfo fcinfo,
